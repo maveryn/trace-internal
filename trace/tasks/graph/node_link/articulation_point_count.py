@@ -3,15 +3,24 @@ from __future__ import annotations
 from typing import Any, Dict
 from ...base import TaskOutput
 from ...registry import register_task
-from .shared.lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
-from ..shared.graph_sampling import sample_articulation_point_count_graph
+from ._lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
+from .shared.sampling import feasible_node_counts_for_articulation_point_count, sample_articulation_point_count_graph
 TASK_ID = 'task_graph__node_link__articulation_point_count'
 SCENE_ID = 'node_link'
 SUPPORTED_QUERY_IDS = ('articulation_point_count',)
 
 def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
     """Sample a graph satisfying this public objective contract."""
-    return sample_articulation_point_count_graph(rng, node_count=int(axes.node_count), target_count=int(axes.values['target_count']), topology_profile=str(axes.topology_profile), label_variant=str(axes.label_variant), attempts=int(attempts))
+    target_count = int(axes.values['target_count'])
+    feasible_nodes = feasible_node_counts_for_articulation_point_count(
+        target_count=target_count,
+        node_count_min=5,
+        node_count_max=max(6, int(axes.node_count)),
+    )
+    if not feasible_nodes:
+        raise ValueError('no feasible node count for articulation-point query')
+    node_count = int(axes.node_count) if int(axes.node_count) in feasible_nodes else int(feasible_nodes[-1])
+    return sample_articulation_point_count_graph(rng, node_count=node_count, target_count=target_count, topology_profile=str(axes.topology_profile), label_variant=str(axes.label_variant), attempts=int(attempts))
 
 def _build_objective_plan() -> NodeLinkObjectivePlan:
     """Bind query ids, sampler, answer, and annotation for this objective."""

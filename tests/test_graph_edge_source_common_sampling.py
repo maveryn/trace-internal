@@ -6,24 +6,7 @@ import networkx as nx
 
 from trace.tasks.graph.shared import graph_common_neighbor_sampling
 from trace.tasks.graph.shared import graph_edge_sampling
-from trace.tasks.graph.shared import graph_sampling
 from trace.tasks.graph.shared import graph_source_sink_sampling
-
-
-def test_graph_sampling_reexports_edge_and_relation_sampler_helpers() -> None:
-    assert graph_sampling._profile_extra_edge_budget is graph_edge_sampling._profile_extra_edge_budget
-    assert (
-        graph_sampling._add_directed_edge_without_reciprocal
-        is graph_edge_sampling._add_directed_edge_without_reciprocal
-    )
-    assert (
-        graph_sampling.sample_source_sink_count_graph
-        is graph_source_sink_sampling.sample_source_sink_count_graph
-    )
-    assert (
-        graph_sampling.sample_common_neighbor_count_graph
-        is graph_common_neighbor_sampling.sample_common_neighbor_count_graph
-    )
 
 
 def test_directed_edge_helper_rejects_reciprocal_edges() -> None:

@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Any, Dict
 from ...base import TaskOutput
 from ...registry import register_task
-from .shared.lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
-from ..shared.graph_sampling import sample_unique_node_label_relation_graph
+from ._lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
+from .shared.sampling import sample_unique_node_label_relation_graph
 TASK_ID = 'task_graph__node_link__unique_related_node_label'
 SCENE_ID = 'node_link'
 SUPPORTED_QUERY_IDS = ('unique_neighbor_label', 'unique_successor_label', 'unique_predecessor_label')

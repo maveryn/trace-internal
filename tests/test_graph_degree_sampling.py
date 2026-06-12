@@ -2,20 +2,7 @@ from __future__ import annotations
 
 import random
 
-from trace.tasks.graph.shared import graph_degree_sampling, graph_sampling, graph_topology_helpers
-
-
-def test_graph_sampling_reexports_degree_sampler_helpers() -> None:
-    assert graph_sampling.sample_degree_count_graph is graph_degree_sampling.sample_degree_count_graph
-    assert (
-        graph_sampling.feasible_node_counts_for_degree_count
-        is graph_degree_sampling.feasible_node_counts_for_degree_count
-    )
-    assert (
-        graph_sampling._build_labeled_graph_topology_sample
-        is graph_topology_helpers._build_labeled_graph_topology_sample
-    )
-    assert graph_sampling._has_reciprocal_edges is graph_topology_helpers._has_reciprocal_edges
+from trace.tasks.graph.shared import graph_degree_sampling
 
 
 def test_degree_sampler_constructs_requested_undirected_support() -> None:

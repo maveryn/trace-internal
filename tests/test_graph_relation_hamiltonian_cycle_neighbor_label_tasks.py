@@ -5,7 +5,7 @@ import itertools
 import networkx as nx
 from trace.core.seed import hash64
 from trace.tasks.graph.relation.hamiltonian_cycle_neighbor_label import GraphRelationHamiltonianCycleNeighborLabelTask
-from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
+from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.registry import TASK_REGISTRY
 from trace.tasks.shared.named_colors import named_color
 

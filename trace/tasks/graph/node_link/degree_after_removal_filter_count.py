@@ -1,7 +1,7 @@
 from __future__ import annotations
 from ...registry import register_task
-from .shared.lifecycle import NodeLinkObjectivePlan, run_node_link_plan
-from ..shared.graph_sampling import sample_degree_count_graph
+from ._lifecycle import NodeLinkObjectivePlan, run_node_link_plan
+from .shared.sampling import sample_degree_count_graph
 TASK_ID = 'task_graph__node_link__degree_after_removal_filter_count'
 SCENE_ID = 'node_link'
 SUPPORTED_QUERY_IDS = ('undirected_degree_one_filter_remaining_count', 'directed_in_degree_one_filter_remaining_count', 'directed_out_degree_one_filter_remaining_count')

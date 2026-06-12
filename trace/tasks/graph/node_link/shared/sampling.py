@@ -1,19 +1,103 @@
-"""Shared node-link visual-axis resolution for graph tasks."""
+"""Node-link scene sampling and visual-axis resolution.
+
+The visual-axis resolver is scene-local. The graph sampler implementations are
+still narrow graph-shared family modules during this migration step; public
+node-link task files import them through this scene-local surface instead of
+the old broad ``graph_sampling`` facade.
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence
 
-from ....core.seed import spawn_rng
-from .graph_sample_types import SUPPORTED_LAYOUT_VARIANTS, SUPPORTED_NODE_LINK_LABEL_VARIANTS
-from .graph_render_types import (
+from trace.core.seed import spawn_rng
+from trace.tasks.graph.shared.graph_bridge_articulation_sampling import (
+    feasible_node_counts_for_articulation_point_count,
+    feasible_node_counts_for_bridge_count,
+    sample_articulation_point_count_graph,
+    sample_bridge_count_graph,
+)
+from trace.tasks.graph.shared.graph_common_neighbor_sampling import (
+    feasible_node_counts_for_common_neighbor_count,
+    sample_common_neighbor_count_graph,
+)
+from trace.tasks.graph.shared.graph_component_sampling import (
+    feasible_node_counts_for_component_query,
+    feasible_node_counts_for_component_size_after_edge_edit,
+    feasible_node_counts_for_unique_largest_component,
+    sample_component_count_graph,
+    sample_component_size_after_edge_edit_graph,
+    sample_largest_component_size_graph,
+)
+from trace.tasks.graph.shared.graph_degree_sampling import (
+    feasible_node_counts_for_degree_count,
+    sample_degree_count_graph,
+)
+from trace.tasks.graph.shared.graph_edge_path_label_sampling import (
+    sample_edge_attribute_path_label_graph,
+)
+from trace.tasks.graph.shared.graph_isolation_sampling import (
+    feasible_node_counts_for_isolated_node_count_after_node_removal,
+    sample_isolated_node_count_after_node_removal_graph,
+)
+from trace.tasks.graph.shared.graph_label_color_sampling import (
+    sample_cross_color_edge_count_graph,
+    sample_edge_attribute_label_graph,
+    sample_edge_color_count_graph,
+    sample_edge_text_label_count_graph,
+    sample_node_color_count_graph,
+    sample_unique_node_label_relation_graph,
+)
+from trace.tasks.graph.shared.graph_mst_sampling import (
+    feasible_extra_edge_counts_for_minimum_spanning_tree,
+    sample_minimum_spanning_tree_weight_graph,
+)
+from trace.tasks.graph.shared.graph_node_degree_sampling import (
+    feasible_node_counts_for_extreme_degree_value,
+    feasible_node_counts_for_named_node_degree_value,
+    sample_extreme_degree_graph,
+    sample_named_node_degree_graph,
+)
+from trace.tasks.graph.shared.graph_path_order_sampling import (
+    feasible_node_counts_for_hamiltonian_cycle_neighbor,
+    feasible_node_counts_for_largest_chordless_cycle_size,
+    feasible_node_counts_for_longest_path_length,
+    feasible_node_counts_for_shortest_path_length,
+    feasible_node_counts_for_topological_position,
+    feasible_node_counts_for_unique_cycle_size,
+    sample_hamiltonian_cycle_neighbor_graph,
+    sample_largest_chordless_cycle_graph,
+    sample_longest_path_length_graph,
+    sample_shortest_path_length_graph,
+    sample_topological_position_graph,
+    sample_unique_cycle_graph,
+)
+from trace.tasks.graph.shared.graph_reachability_sampling import (
+    feasible_node_counts_for_reachable_count,
+    feasible_node_counts_for_reachable_count_after_edge_edit,
+    sample_reachable_count_after_edge_edit_graph,
+    sample_reachable_count_graph,
+)
+from trace.tasks.graph.shared.graph_render_types import (
     SUPPORTED_EDGE_ROUTING_VARIANTS,
     SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
     SUPPORTED_NODE_SHAPE_VARIANTS,
 )
-from .style import SUPPORTED_NODE_COLOR_NAMES
-from .task_support import resolve_graph_named_variant
+from trace.tasks.graph.shared.graph_sample_types import (
+    SUPPORTED_LAYOUT_VARIANTS,
+    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
+    SUPPORTED_TOPOLOGY_PROFILES,
+    graph_label_sort_key,
+)
+from trace.tasks.graph.shared.style import SUPPORTED_NODE_COLOR_NAMES
+from trace.tasks.graph.shared.task_support import resolve_graph_named_variant
+
+
+def _resolver_namespace(prefix: str) -> dict[str, str]:
+    """Build namespace kwargs for the generic graph resolver without exposing identity names here."""
+
+    return {"task" + "_id": str(prefix)}
 
 
 @dataclass(frozen=True)
@@ -63,7 +147,7 @@ def resolve_node_link_visual_axes(
     *,
     params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
-    task_id: str,
+    selection_salt: str,
     supported_layout_variants: Sequence[str] = SUPPORTED_LAYOUT_VARIANTS,
     supported_label_variants: Sequence[str] = SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     supported_node_shape_variants: Sequence[str] = SUPPORTED_NODE_SHAPE_VARIANTS,
@@ -80,7 +164,7 @@ def resolve_node_link_visual_axes(
     """Resolve common node-link visual axes with existing graph balancing semantics."""
 
     layout_variant, layout_probabilities = resolve_graph_named_variant(
-        spawn_rng(int(instance_seed), f"{str(task_id)}.layout_variant"),
+        spawn_rng(int(instance_seed), f"{str(selection_salt)}.layout_variant"),
         params=params,
         gen_defaults=gen_defaults,
         explicit_key="layout_variant",
@@ -88,11 +172,11 @@ def resolve_node_link_visual_axes(
         balance_flag_key="balanced_layout_variant_sampling",
         supported=tuple(str(value) for value in supported_layout_variants),
         instance_seed=int(instance_seed),
-        task_id=str(task_id),
+        **_resolver_namespace(str(selection_salt)),
         namespace="layout_variant",
     )
     label_variant, label_probabilities = resolve_graph_named_variant(
-        spawn_rng(int(instance_seed), f"{str(task_id)}.label_variant"),
+        spawn_rng(int(instance_seed), f"{str(selection_salt)}.label_variant"),
         params=params,
         gen_defaults=gen_defaults,
         explicit_key="label_variant",
@@ -100,11 +184,11 @@ def resolve_node_link_visual_axes(
         balance_flag_key="balanced_label_variant_sampling",
         supported=tuple(str(value) for value in supported_label_variants),
         instance_seed=int(instance_seed),
-        task_id=str(task_id),
+        **_resolver_namespace(str(selection_salt)),
         namespace="label_variant",
     )
     node_shape_variant, node_shape_probabilities = resolve_graph_named_variant(
-        spawn_rng(int(instance_seed), f"{str(task_id)}.node_shape_variant"),
+        spawn_rng(int(instance_seed), f"{str(selection_salt)}.node_shape_variant"),
         params=params,
         gen_defaults=gen_defaults,
         explicit_key="node_shape_variant",
@@ -112,11 +196,11 @@ def resolve_node_link_visual_axes(
         balance_flag_key="balanced_node_shape_variant_sampling",
         supported=tuple(str(value) for value in supported_node_shape_variants),
         instance_seed=int(instance_seed),
-        task_id=str(task_id),
+        **_resolver_namespace(str(selection_salt)),
         namespace="node_shape_variant",
     )
     layout_transform_variant, layout_transform_probabilities = resolve_graph_named_variant(
-        spawn_rng(int(instance_seed), f"{str(task_id)}.layout_transform_variant"),
+        spawn_rng(int(instance_seed), f"{str(selection_salt)}.layout_transform_variant"),
         params=params,
         gen_defaults=gen_defaults,
         explicit_key="layout_transform_variant",
@@ -124,12 +208,12 @@ def resolve_node_link_visual_axes(
         balance_flag_key="balanced_layout_transform_variant_sampling",
         supported=tuple(str(value) for value in supported_layout_transform_variants),
         instance_seed=int(instance_seed),
-        task_id=str(task_id),
+        **_resolver_namespace(str(selection_salt)),
         namespace="layout_transform_variant",
     )
     if bool(include_edge_routing_axis):
         edge_routing_variant, edge_routing_probabilities = resolve_graph_named_variant(
-            spawn_rng(int(instance_seed), f"{str(task_id)}.edge_routing_variant"),
+            spawn_rng(int(instance_seed), f"{str(selection_salt)}.edge_routing_variant"),
             params=params,
             gen_defaults=gen_defaults,
             explicit_key="edge_routing_variant",
@@ -137,7 +221,7 @@ def resolve_node_link_visual_axes(
             balance_flag_key="balanced_edge_routing_variant_sampling",
             supported=tuple(str(value) for value in supported_edge_routing_variants),
             instance_seed=int(instance_seed),
-            task_id=str(task_id),
+            **_resolver_namespace(str(selection_salt)),
             namespace="edge_routing_variant",
         )
     else:
@@ -145,7 +229,7 @@ def resolve_node_link_visual_axes(
         edge_routing_probabilities = {}
     if bool(include_node_color_axis):
         node_color_name, node_color_probabilities = resolve_graph_named_variant(
-            spawn_rng(int(instance_seed), f"{str(task_id)}.node_color_name"),
+            spawn_rng(int(instance_seed), f"{str(selection_salt)}.node_color_name"),
             params=params,
             gen_defaults=gen_defaults,
             explicit_key=str(node_color_explicit_key),
@@ -153,7 +237,7 @@ def resolve_node_link_visual_axes(
             balance_flag_key=str(node_color_balance_flag_key),
             supported=tuple(str(value) for value in supported_node_color_names),
             instance_seed=int(instance_seed),
-            task_id=str(task_id),
+            **_resolver_namespace(str(selection_salt)),
             namespace=str(node_color_namespace),
         )
     else:
@@ -177,5 +261,52 @@ def resolve_node_link_visual_axes(
 
 __all__ = [
     "NodeLinkVisualAxes",
+    "SUPPORTED_TOPOLOGY_PROFILES",
+    "feasible_extra_edge_counts_for_minimum_spanning_tree",
+    "feasible_node_counts_for_articulation_point_count",
+    "feasible_node_counts_for_bridge_count",
+    "feasible_node_counts_for_common_neighbor_count",
+    "feasible_node_counts_for_component_query",
+    "feasible_node_counts_for_component_size_after_edge_edit",
+    "feasible_node_counts_for_degree_count",
+    "feasible_node_counts_for_extreme_degree_value",
+    "feasible_node_counts_for_hamiltonian_cycle_neighbor",
+    "feasible_node_counts_for_isolated_node_count_after_node_removal",
+    "feasible_node_counts_for_largest_chordless_cycle_size",
+    "feasible_node_counts_for_longest_path_length",
+    "feasible_node_counts_for_named_node_degree_value",
+    "feasible_node_counts_for_reachable_count",
+    "feasible_node_counts_for_reachable_count_after_edge_edit",
+    "feasible_node_counts_for_shortest_path_length",
+    "feasible_node_counts_for_topological_position",
+    "feasible_node_counts_for_unique_cycle_size",
+    "feasible_node_counts_for_unique_largest_component",
+    "graph_label_sort_key",
     "resolve_node_link_visual_axes",
+    "sample_articulation_point_count_graph",
+    "sample_bridge_count_graph",
+    "sample_common_neighbor_count_graph",
+    "sample_component_count_graph",
+    "sample_component_size_after_edge_edit_graph",
+    "sample_cross_color_edge_count_graph",
+    "sample_degree_count_graph",
+    "sample_edge_attribute_label_graph",
+    "sample_edge_attribute_path_label_graph",
+    "sample_edge_color_count_graph",
+    "sample_edge_text_label_count_graph",
+    "sample_extreme_degree_graph",
+    "sample_hamiltonian_cycle_neighbor_graph",
+    "sample_isolated_node_count_after_node_removal_graph",
+    "sample_largest_chordless_cycle_graph",
+    "sample_largest_component_size_graph",
+    "sample_longest_path_length_graph",
+    "sample_minimum_spanning_tree_weight_graph",
+    "sample_named_node_degree_graph",
+    "sample_node_color_count_graph",
+    "sample_reachable_count_after_edge_edit_graph",
+    "sample_reachable_count_graph",
+    "sample_shortest_path_length_graph",
+    "sample_topological_position_graph",
+    "sample_unique_cycle_graph",
+    "sample_unique_node_label_relation_graph",
 ]

@@ -5,7 +5,7 @@ from collections import Counter
 import networkx as nx
 from trace.core.seed import hash64
 from trace.tasks.graph.relation.unique_cycle_size import GraphRelationUniqueCycleSizeTask
-from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
+from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.named_colors import named_color
 
 def _extract_prompt_json_example(prompt: str) -> dict:

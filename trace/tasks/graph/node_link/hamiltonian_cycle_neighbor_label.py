@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Any, Dict
 from ...base import TaskOutput
 from ...registry import register_task
-from .shared.lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
-from ..shared.graph_sampling import sample_hamiltonian_cycle_neighbor_graph
+from ._lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
+from .shared.sampling import sample_hamiltonian_cycle_neighbor_graph
 TASK_ID = 'task_graph__node_link__hamiltonian_cycle_neighbor_label'
 SCENE_ID = 'node_link'
 SUPPORTED_QUERY_IDS = ('next_in_hamiltonian_cycle_label', 'previous_in_hamiltonian_cycle_label')

@@ -127,11 +127,10 @@ need for them:
 - `graph_reachability_sampling.py`
 - `graph_source_sink_sampling.py`
 
-`graph_sampling.py` is currently a temporary compatibility facade over many of
-those modules. After the first shared-boundary cleanup, only legacy
-`graph/node_link` source may import it. Migrated scenes and non-node-link graph
-scenes must import concrete scene-local or graph-shared role modules instead of
-relying on a broad facade that hides ownership.
+The old broad `graph_sampling.py` facade has been removed. Graph scenes must
+import concrete graph-shared modules or scene-local role modules such as
+`graph/node_link/shared/sampling.py`; do not recreate a facade that hides
+ownership.
 
 ### Scene-Local Shared
 
@@ -772,11 +771,11 @@ other domains.
    are genuinely reused across many scenes.
 
 4. Compatibility facades are allowed only outside migrated scene internals.
-   `graph_sampling.py` is allowed only as temporary legacy support for
-   `graph/node_link`; non-node-link graph scenes must import concrete role
-   modules such as `graph_sample_types.py`, `label_assets.py`, or a scene-local
-   `shared/sampling.py`. Rendering facades such as `graph_scene.py` may remain
-   for shared renderer exports until their import surface is split further.
+   The old `graph_sampling.py` facade has been removed; graph scenes must
+   import concrete role modules such as `graph_sample_types.py`,
+   `label_assets.py`, or a scene-local `shared/sampling.py`. Rendering facades
+   such as `graph_scene.py` may remain for shared renderer exports until their
+   import surface is split further.
 
 5. Scene-local shared role files must stay role-named, not objective-named.
    For graph this means `algorithms.py` and `sampling.py`, not

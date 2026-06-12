@@ -4,7 +4,7 @@ import json
 from collections import Counter
 from trace.core.seed import hash64
 from trace.tasks.graph.comparison.largest_component_size import GraphComparisonLargestComponentSizeTask
-from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
+from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.named_colors import named_color
 
 def _extract_prompt_json_example(prompt: str) -> dict:

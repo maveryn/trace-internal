@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Any, Dict
 from ...base import TaskOutput
 from ...registry import register_task
-from .shared.lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
-from ..shared.graph_sampling import sample_common_neighbor_count_graph
+from ._lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
+from .shared.sampling import sample_common_neighbor_count_graph
 TASK_ID = 'task_graph__node_link__common_related_node_count'
 SCENE_ID = 'node_link'
 SUPPORTED_QUERY_IDS = ('undirected_common_neighbor_count', 'directed_common_successor_count', 'directed_common_predecessor_count')

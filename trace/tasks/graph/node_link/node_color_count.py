@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Any, Dict
 from ...base import TaskOutput
 from ...registry import register_task
-from .shared.lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
-from ..shared.graph_sampling import sample_node_color_count_graph
+from ._lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
+from .shared.sampling import sample_node_color_count_graph
 TASK_ID = 'task_graph__node_link__node_color_count'
 SCENE_ID = 'node_link'
 SUPPORTED_QUERY_IDS = ('node_color_count',)

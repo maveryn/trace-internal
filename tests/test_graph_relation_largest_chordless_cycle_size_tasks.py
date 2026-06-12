@@ -4,7 +4,7 @@ from collections import Counter
 import networkx as nx
 from trace.core.seed import hash64
 from trace.tasks.graph.relation.largest_chordless_cycle_size import GraphRelationLargestChordlessCycleSizeTask
-from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
+from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.named_colors import named_color
 
 def _graph_from_trace_adjacency(adjacency_by_label: dict[str, list[str]]) -> nx.Graph:

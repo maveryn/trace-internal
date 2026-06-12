@@ -5,7 +5,7 @@ from collections import Counter
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
 from trace.tasks.graph.path.longest_path_length import GraphPathLongestPathLengthTask
-from trace.tasks.graph.shared.graph_sampling import graph_label_sort_key
+from trace.tasks.graph.shared.graph_sample_types import graph_label_sort_key
 
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = 'Example JSON:\n'

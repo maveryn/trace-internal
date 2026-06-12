@@ -7,26 +7,14 @@ and final ``TaskOutput`` assembly that is identical for every node-link task.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
 from trace.core.seed import hash64, spawn_rng
 from trace.core.types import TypedValue
-from trace.core.visual.background import make_background_canvas
-from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
-from trace.tasks.graph.shared.graph_sampling import SUPPORTED_TOPOLOGY_PROFILES, graph_label_sort_key
-from trace.tasks.graph.shared.graph_scene import (
-    projected_edge_label_bbox_annotation,
-    projected_edge_pair_annotation,
-    projected_node_point_annotation,
-    render_graph_scene,
-)
-from trace.tasks.graph.shared.graph_visual_axes import resolve_node_link_visual_axes
-from trace.tasks.graph.shared.prompt_examples import build_graph_prompt_json_examples
 from trace.tasks.graph.shared.task_support import resolve_graph_named_variant, resolve_graph_render_params
-from trace.tasks.graph.shared.visual_defaults import load_graph_scene_background_defaults, load_graph_scene_noise_defaults
 from trace.tasks.shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.output_metadata import default_task_versions
@@ -36,59 +24,13 @@ from trace.tasks.shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 
-
-@dataclass(frozen=True)
-class NodeLinkTaskBundle:
-    """Built node-link instance before public TaskOutput assembly."""
-
-    prompt: str
-    answer_gt: TypedValue
-    annotation_gt: TypedValue
-    image: Any
-    image_id: str
-    trace_payload: dict[str, Any]
-    prompt_variants: dict[str, Any]
-    scene_id: str = "node_link"
-    query_id: str = ""
-
-
-@dataclass(frozen=True)
-class NodeLinkDefaults:
-    """Fallback scene defaults used by compact public objective plans."""
-
-    node_count_min: int = 5
-    node_count_max: int = 10
-    target_count_min: int = 1
-    target_count_max: int = 5
-    query_degree_min: int = 0
-    query_degree_max: int = 4
-    path_length_min: int = 2
-    path_length_max: int = 5
-    cycle_size_min: int = 3
-    cycle_size_max: int = 6
-    component_count_min: int = 2
-    component_count_max: int = 4
-    extra_edge_count_min: int = 1
-    extra_edge_count_max: int = 4
-    edge_weight_min: int = 1
-    edge_weight_max: int = 9
-    degree_sequence_max_degree: int = 5
-    directed_degree_sequence_max_degree: int = 4
-    graph_search_attempts: int = 600
-    canvas_width: int = 864
-    canvas_height: int = 640
-    outer_margin_px: int = 28
-    panel_padding_px: int = 24
-    panel_corner_radius_px: int = 20
-    panel_title_font_size_px: int = 24
-    node_shape_variant: str = "circle"
-    node_radius_min_px: int = 18
-    node_radius_max_px: int = 24
-    edge_width_px: int = 4
-    arrow_length_px: int = 12
-    arrow_width_px: int = 7
-    node_border_width_px: int = 2
-    label_font_size_px: int = 20
+from .shared.annotations import annotation_value, answer_value
+from .shared.defaults import NodeLinkDefaults
+from .shared.output import edge_entities, node_entities
+from .shared.prompts import build_graph_prompt_json_examples, resolve_prompt_slot
+from .shared.rendering import render_node_link_sample
+from .shared.sampling import SUPPORTED_TOPOLOGY_PROFILES, resolve_node_link_visual_axes
+from .shared.state import SCENE_ID
 
 
 @dataclass(frozen=True)
@@ -109,8 +51,23 @@ class NodeLinkAxes:
 
 
 @dataclass(frozen=True)
+class NodeLinkTaskBundle:
+    """Built node-link instance before public TaskOutput assembly."""
+
+    prompt: str
+    answer_gt: TypedValue
+    annotation_gt: TypedValue
+    image: Any
+    image_id: str
+    trace_payload: dict[str, Any]
+    prompt_variants: dict[str, Any]
+    scene_id: str = SCENE_ID
+    query_id: str = ""
+
+
+@dataclass(frozen=True)
 class NodeLinkObjectivePlan:
-    """Task-owned semantic plan consumed by neutral scene lifecycle code."""
+    """Task-owned semantic plan consumed by scene-private lifecycle code."""
 
     public_id: str
     class_name: str
@@ -136,14 +93,6 @@ class NodeLinkObjectivePlan:
     semantic_colors: tuple[str, ...] = ("red", "blue", "green", "yellow", "orange", "purple")
     annotation_example: Any = field(default_factory=lambda: [[180, 220], [310, 180]])
     answer_example: Any = 2
-
-
-def _resolve_slot(value: Callable[[NodeLinkAxes], str] | str, axes: NodeLinkAxes) -> str:
-    """Resolve a plan slot that may depend on query axes."""
-
-    if callable(value):
-        return str(value(axes))
-    return str(value)
 
 
 def _resolve_int_axis(
@@ -177,6 +126,16 @@ def _resolve_int_axis(
         )
     value = int(support[int(cursor) % len(support)])
     return value, {str(item): 1.0 / float(len(support)) for item in support}
+
+
+def _trace_with_public_task_id(trace_payload: Mapping[str, Any], *, public_task_id: str) -> dict[str, Any]:
+    """Attach the public task id to task-owned trace sections."""
+
+    trace = dict(trace_payload)
+    for section in ("scene_ir", "query_spec", "execution_trace"):
+        if isinstance(trace.get(section), Mapping):
+            trace[section] = {**dict(trace[section]), "task_id": str(public_task_id)}
+    return trace
 
 
 def _resolve_axes(
@@ -230,10 +189,11 @@ def _resolve_axes(
     for key, fallback in {**fallback_ranges, **plan.value_ranges}.items():
         if key in values:
             continue
+        axis_defaults = {} if key in plan.value_ranges else gen_defaults
         selected_value, selected_probabilities = _resolve_int_axis(
             key=key,
             params=params,
-            gen_defaults=gen_defaults,
+            gen_defaults=axis_defaults,
             fallback=tuple(int(item) for item in fallback),
             instance_seed=int(instance_seed),
             task_id=str(plan.public_id),
@@ -258,7 +218,7 @@ def _resolve_axes(
         int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,
-        task_id=str(plan.public_id),
+        selection_salt=str(plan.public_id),
     )
     return NodeLinkAxes(
         query_id=str(selected_query),
@@ -284,124 +244,6 @@ def _resolve_axes(
     )
 
 
-def _labels_from_sample(sample: Any, field_name: str) -> tuple[str, ...]:
-    """Read one label sequence from a graph sample field."""
-
-    raw = getattr(sample, str(field_name))
-    if isinstance(raw, str):
-        return (str(raw),)
-    return tuple(str(item) for item in raw)
-
-
-def _edges_from_sample(sample: Any, field_name: str) -> tuple[tuple[str, str], ...]:
-    """Read one edge-label sequence from a graph sample field."""
-
-    raw = getattr(sample, str(field_name))
-    if raw and isinstance(raw[0], str):
-        return (tuple(str(item) for item in raw[:2]),)
-    return tuple(tuple(str(item) for item in edge[:2]) for edge in raw)
-
-
-def _answer_value(sample: Any, plan: NodeLinkObjectivePlan) -> Any:
-    """Resolve the typed answer value from the public task plan."""
-
-    if hasattr(sample, str(plan.answer_field)):
-        value = getattr(sample, str(plan.answer_field))
-    elif hasattr(sample, "target_labels"):
-        value = len(getattr(sample, "target_labels"))
-    elif hasattr(sample, "target_edges"):
-        value = len(getattr(sample, "target_edges"))
-    else:
-        raise AttributeError(f"sample has no answer field {plan.answer_field!r}")
-    if str(plan.answer_type) == "integer":
-        return int(value)
-    return str(value)
-
-
-def _annotation_value(sample: Any, rendered_scene: Any, plan: NodeLinkObjectivePlan) -> tuple[TypedValue, dict[str, Any], dict[str, Any]]:
-    """Project task-selected minimal witnesses into pixel annotation space."""
-
-    kind = str(plan.annotation_kind)
-    if kind in {"node_point_set", "node_point_sequence"}:
-        labels = _labels_from_sample(sample, str(plan.annotation_field))
-        projection = projected_node_point_annotation(rendered_scene, labels)
-        points = [list(point) for point in projection["pixel_point_set"]]
-        annotation_type = "point_sequence" if kind == "node_point_sequence" else "point_set"
-        return (
-            TypedValue(type=annotation_type, value=list(points)),
-            {"type": annotation_type, annotation_type: list(points), **dict(projection)},
-            {"type": "object_sequence" if kind == "node_point_sequence" else "object_set", "labels": list(labels)},
-        )
-    if kind == "edge_point_pair_set":
-        edges = _edges_from_sample(sample, str(plan.annotation_field))
-        projection = projected_edge_pair_annotation(rendered_scene, edges)
-        pairs = [[list(pair[0]), list(pair[1])] for pair in projection["point_pair_set"]]
-        return (
-            TypedValue(type="point_pair_set", value=list(pairs)),
-            {"type": "point_pair_set", "point_pair_set": list(pairs), **dict(projection)},
-            {"type": "edge_set", "edge_labels": [list(edge) for edge in edges]},
-        )
-    if kind == "edge_label_bbox_set":
-        edges = _edges_from_sample(sample, str(plan.annotation_field))
-        boxes: list[list[float]] = []
-        projections: list[dict[str, Any]] = []
-        for edge in edges:
-            projection = projected_edge_label_bbox_annotation(rendered_scene, edge)
-            boxes.extend([list(box) for box in projection["pixel_bbox_set"]])
-            projections.append(dict(projection))
-        return (
-            TypedValue(type="bbox_set", value=list(boxes)),
-            {"type": "bbox_set", "bbox_set": list(boxes), "edge_label_projections": projections},
-            {"type": "edge_label_set", "edge_labels": [list(edge) for edge in edges]},
-        )
-    raise ValueError(f"unsupported node-link annotation kind: {kind}")
-
-
-def _node_entities(rendered_scene: Any) -> list[dict[str, Any]]:
-    """Return generic rendered-node entities for trace inspection."""
-
-    return [
-        {
-            "entity_id": f"node_{node.label}",
-            "entity_kind": "graph_node",
-            "label": str(node.label),
-            "degree": int(node.degree),
-            "neighbors": list(node.neighbors),
-            "successors": list(node.successors),
-            "predecessors": list(node.predecessors),
-            "center_px": list(node.center_xy),
-            "bbox_xyxy": list(node.bbox_xyxy),
-        }
-        for node in rendered_scene.nodes
-    ]
-
-
-def _edge_entities(rendered_scene: Any, sample: Any) -> list[dict[str, Any]]:
-    """Return generic rendered-edge entities for trace inspection."""
-
-    labels_by_edge = getattr(sample, "edge_attribute_labels_by_label", {})
-    colors_by_edge = getattr(sample, "edge_color_names_by_label", {})
-    weights_by_edge = getattr(sample, "edge_weights_by_label", {})
-    return [
-        {
-            "entity_id": str(edge.edge_id),
-            "entity_kind": "graph_edge",
-            "node_u_label": str(edge.node_u_label),
-            "node_v_label": str(edge.node_v_label),
-            "directed": bool(edge.directed),
-            "segment_px": [list(edge.segment_px[0]), list(edge.segment_px[1])],
-            "route_variant": str(edge.route_variant),
-            "control_px": list(edge.control_px) if edge.control_px is not None else None,
-            "edge_text_label": labels_by_edge.get((str(edge.node_u_label), str(edge.node_v_label))),
-            "edge_color_name": colors_by_edge.get((str(edge.node_u_label), str(edge.node_v_label))),
-            "edge_weight": weights_by_edge.get((str(edge.node_u_label), str(edge.node_v_label))),
-        }
-        for edge in rendered_scene.edges
-    ]
-
-
-
-
 def run_node_link_plan(
     *,
     plan: NodeLinkObjectivePlan,
@@ -411,7 +253,7 @@ def run_node_link_plan(
 ) -> TaskOutput:
     """Generate one node-link task from public-owned objective hooks."""
 
-    scene_id = "node_link"
+    scene_id = SCENE_ID
     scene_id_defaults = {}
     from trace.core.scene_config import get_scene_defaults
 
@@ -451,8 +293,6 @@ def run_node_link_plan(
         node_shape_variant=str(axes.node_shape_variant),
         edge_routing_variant=str(axes.edge_routing_variant),
     )
-    background_defaults = load_graph_scene_background_defaults(scene_id=scene_id)
-    noise_defaults = load_graph_scene_noise_defaults(scene_id=scene_id, apply_prob=0.5)
     search_attempts = int(params.get("graph_search_attempts", group_default(gen_defaults, "graph_search_attempts", defaults.graph_search_attempts)))
 
     sample = None
@@ -465,30 +305,22 @@ def run_node_link_plan(
     for attempt in range(max(1, int(max_attempts))):
         try:
             sample = plan.sample_graph(graph_rng, axes, max(80, int(search_attempts) // max(1, int(max_attempts)) + 80))
-            background, background_meta = make_background_canvas(
-                canvas_width=int(render_params.canvas_width),
-                canvas_height=int(render_params.canvas_height),
-                instance_seed=int(instance_seed),
-                params=params,
-                default_config=background_defaults,
-            )
-            directionality = _resolve_slot(plan.graph_directionality, axes)
-            rendered_scene = render_graph_scene(
-                graph_sample=sample,
+            directionality = resolve_prompt_slot(plan.graph_directionality, axes)
+            rendered = render_node_link_sample(
+                sample=sample,
                 layout_variant=str(axes.layout_variant),
                 layout_transform_variant=str(axes.layout_transform_variant),
                 render_params=render_params,
                 layout_seed=int(instance_seed + attempt),
-                scene_title="Graph",
                 directed=str(directionality) == "directed",
-                base_image=background,
-            )
-            image, post_noise_meta = apply_post_image_noise(
-                rendered_scene.image,
-                instance_seed=int(instance_seed),
                 params=params,
-                default_config=noise_defaults,
+                instance_seed=int(instance_seed),
+                scene_id=scene_id,
             )
+            rendered_scene = rendered.rendered_scene
+            image = rendered.image
+            background_meta = dict(rendered.background_meta)
+            post_noise_meta = dict(rendered.post_noise_meta)
             break
         except Exception as exc:  # pragma: no cover - retry loop depends on random graph feasibility
             last_error = exc
@@ -496,12 +328,24 @@ def run_node_link_plan(
     else:
         raise RuntimeError(f"failed to generate node-link task instance for {plan.class_name}") from last_error
 
-    answer_gt = TypedValue(type=str(plan.answer_type), value=_answer_value(sample, plan))
-    annotation_gt, projected_annotation, witness_symbolic = _annotation_value(sample, rendered_scene, plan)
-    object_description_key = _resolve_slot(plan.object_description_key, axes)
+    answer_gt = TypedValue(
+        type=str(plan.answer_type),
+        value=answer_value(
+            sample,
+            answer_field=str(plan.answer_field),
+            answer_type=str(plan.answer_type),
+        ),
+    )
+    annotation_gt, projected_annotation, witness_symbolic = annotation_value(
+        sample,
+        rendered_scene,
+        annotation_kind=str(plan.annotation_kind),
+        annotation_field=str(plan.annotation_field),
+    )
+    object_description_key = resolve_prompt_slot(plan.object_description_key, axes)
     if object_description_key not in prompt_defaults and "object_description" in prompt_defaults:
         object_description_key = "object_description"
-    annotation_hint_key = _resolve_slot(plan.annotation_hint_key, axes)
+    annotation_hint_key = resolve_prompt_slot(plan.annotation_hint_key, axes)
     query_annotation_hint_key = f"annotation_hint_{axes.query_id}"
     if annotation_hint_key not in prompt_defaults and query_annotation_hint_key in prompt_defaults:
         annotation_hint_key = query_annotation_hint_key
@@ -531,7 +375,7 @@ def run_node_link_plan(
         bundle_id=str(prompt_defaults_required["bundle_id"]),
         scene_key=str(prompt_defaults_required["scene_key"]),
         task_key=str(prompt_defaults_required["task_key"]),
-        query_key=_resolve_slot(plan.prompt_query_key, axes),
+        query_key=resolve_prompt_slot(plan.prompt_query_key, axes),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots={
             "object_description": str(prompt_defaults_required[str(object_description_key)]),
@@ -568,7 +412,7 @@ def run_node_link_plan(
         instance_seed=int(instance_seed),
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-    directionality = _resolve_slot(plan.graph_directionality, axes)
+    directionality = resolve_prompt_slot(plan.graph_directionality, axes)
     query_params = {
         "query_id": str(axes.query_id),
         "graph_directionality": str(directionality),
@@ -581,7 +425,7 @@ def run_node_link_plan(
         "scene_ir": {
             "scene_kind": str(plan.scene_kind),
             "scene_id": scene_id,
-            "entities": [*_node_entities(rendered_scene), *_edge_entities(rendered_scene, sample)],
+            "entities": [*node_entities(rendered_scene), *edge_entities(rendered_scene, sample)],
             "relations": {
                 "graph_directionality": str(directionality),
                 "adjacency_by_label": {str(key): list(values) for key, values in getattr(sample, "adjacency_by_label", {}).items()},
@@ -620,7 +464,7 @@ def run_node_link_plan(
         "execution_trace": {
             "query_id": str(axes.query_id),
             "scene_id": scene_id,
-            "question_format": _resolve_slot(plan.question_format, axes) or str(axes.query_id),
+            "question_format": resolve_prompt_slot(plan.question_format, axes) or str(axes.query_id),
             "graph_directionality": str(directionality),
             "node_count": int(axes.node_count),
             "edge_count": int(getattr(sample, "edge_count", 0)),
@@ -704,16 +548,6 @@ def bundle_query_id(bundle: NodeLinkTaskBundle, *, fallback_query_id: str) -> st
     return str(fallback_query_id)
 
 
-def trace_with_public_task_id(trace_payload: Mapping[str, Any], *, public_task_id: str) -> dict[str, Any]:
-    """Attach the public task id to task-owned trace sections."""
-
-    trace = dict(trace_payload)
-    for section in ("scene_ir", "query_spec", "execution_trace"):
-        if isinstance(trace.get(section), Mapping):
-            trace[section] = {**dict(trace[section]), "task_id": str(public_task_id)}
-    return trace
-
-
 def task_output_from_bundle(
     bundle: NodeLinkTaskBundle,
     *,
@@ -721,7 +555,7 @@ def task_output_from_bundle(
     scene_id: str,
     query_id: str,
 ) -> TaskOutput:
-    """Assemble the final TaskOutput from public-owned answer and annotation."""
+    """Temporary final TaskOutput assembly until public node-link tasks own it."""
 
     answer_gt = TypedValue(type=str(bundle.answer_gt.type), value=bundle.answer_gt.value)
     annotation_gt = TypedValue(type=str(bundle.annotation_gt.type), value=bundle.annotation_gt.value)
@@ -731,7 +565,7 @@ def task_output_from_bundle(
         annotation_gt=annotation_gt,
         image=bundle.image,
         image_id=str(bundle.image_id),
-        trace_payload=trace_with_public_task_id(bundle.trace_payload, public_task_id=str(public_task_id)),
+        trace_payload=_trace_with_public_task_id(bundle.trace_payload, public_task_id=str(public_task_id)),
         task_versions=default_task_versions(),
         scene_id=str(scene_id),
         query_id=str(query_id),

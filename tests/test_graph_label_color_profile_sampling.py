@@ -6,31 +6,6 @@ import networkx as nx
 
 from trace.tasks.graph.shared import graph_label_color_sampling
 from trace.tasks.graph.shared import graph_profile_sampling
-from trace.tasks.graph.shared import graph_sampling
-
-
-def test_graph_sampling_reexports_label_color_and_profile_helpers() -> None:
-    assert graph_sampling._choose_attachment_parent is graph_profile_sampling._choose_attachment_parent
-    assert graph_sampling._edge_weight_for_profile is graph_profile_sampling._edge_weight_for_profile
-    assert graph_sampling._sample_profile_tree_graph is graph_profile_sampling._sample_profile_tree_graph
-    assert graph_sampling.sample_node_color_count_graph is graph_label_color_sampling.sample_node_color_count_graph
-    assert graph_sampling.sample_edge_color_count_graph is graph_label_color_sampling.sample_edge_color_count_graph
-    assert (
-        graph_sampling.sample_edge_text_label_count_graph
-        is graph_label_color_sampling.sample_edge_text_label_count_graph
-    )
-    assert (
-        graph_sampling.sample_edge_attribute_label_graph
-        is graph_label_color_sampling.sample_edge_attribute_label_graph
-    )
-    assert (
-        graph_sampling.sample_unique_node_label_relation_graph
-        is graph_label_color_sampling.sample_unique_node_label_relation_graph
-    )
-    assert (
-        graph_sampling.sample_cross_color_edge_count_graph
-        is graph_label_color_sampling.sample_cross_color_edge_count_graph
-    )
 
 
 def test_profile_tree_and_extra_edge_helpers_construct_expected_graphs() -> None:

@@ -5,7 +5,7 @@ from collections import Counter
 import networkx as nx
 from trace.core.seed import hash64
 from trace.tasks.graph.optimization.minimum_spanning_tree_weight import GraphOptimizationMinimumSpanningTreeWeightTask
-from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
+from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.graph.shared.graph_scene import _segment_intersects_bbox
 from trace.tasks.shared.named_colors import named_color
 

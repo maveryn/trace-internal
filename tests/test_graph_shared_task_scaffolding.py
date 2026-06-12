@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from trace.core.seed import hash64
-from trace.tasks.graph.shared.node_link_axes import resolve_node_link_visual_axes
+from trace.tasks.graph.node_link.shared.sampling import resolve_node_link_visual_axes
 from trace.tasks.graph.shared.task_scaffolding import (
     GraphBalancedAxisSpec,
     graph_decoupled_selection_index,

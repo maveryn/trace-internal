@@ -11,7 +11,7 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
 from trace.tasks.graph.relation.reachable_count_after_edge_edit import GraphRelationReachableCountAfterEdgeEditTask
-from trace.tasks.graph.shared.graph_sampling import graph_label_sort_key
+from trace.tasks.graph.shared.graph_sample_types import graph_label_sort_key
 from tests.helpers import read_jsonl
 
 

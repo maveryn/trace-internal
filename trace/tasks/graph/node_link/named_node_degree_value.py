@@ -1,9 +1,7 @@
-from __future__ import annotations
 from ...registry import register_task
-from .shared.lifecycle import NodeLinkObjectivePlan, run_node_link_plan
-from ..shared.graph_sampling import feasible_node_counts_for_named_node_degree_value, sample_named_node_degree_graph
+from ._lifecycle import NodeLinkObjectivePlan, run_node_link_plan
+from .shared.sampling import feasible_node_counts_for_named_node_degree_value, sample_named_node_degree_graph
 TASK_ID = 'task_graph__node_link__named_node_degree_value'
-SCENE_ID = 'node_link'
 SUPPORTED_QUERY_IDS = ('undirected_named_node_degree_value', 'directed_named_node_in_degree_value', 'directed_named_node_out_degree_value', 'directed_named_node_total_degree_value')
 
 def _sample_graph(rng, axes, attempts):
@@ -17,8 +15,39 @@ def _sample_graph(rng, axes, attempts):
     node_count = int(axes.node_count) if int(axes.node_count) in feasible_nodes else int(feasible_nodes[-1])
     return sample_named_node_degree_graph(rng, graph_directionality=directionality, degree_mode=degree_mode, node_count=node_count, target_degree=target_degree, max_degree=4, topology_profile=str(axes.topology_profile), label_variant=str(axes.label_variant))
 
+def _prompt_key(axes):
+    query = str(axes.query_id)
+    if 'in_degree' in query:
+        return 'named_node_in_degree_value'
+    if 'out_degree' in query:
+        return 'named_node_out_degree_value'
+    if 'total_degree' in query:
+        return 'named_node_total_degree_value'
+    return 'named_node_degree_value'
+
+def _direction(axes):
+    return 'directed' if str(axes.query_id).startswith('directed') else 'undirected'
+
 def _build_objective_plan():
-    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphCountingNamedNodeDegreeValueTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='integer', answer_field='target_degree', annotation_type='point_pair_set', annotation_kind='edge_point_pair_set', annotation_field='target_edges', annotation_hint_key='annotation_hint_degree_count', prompt_query_key=lambda axes: 'named_node_in_degree_value' if 'in_degree' in str(axes.query_id) else 'named_node_out_degree_value' if 'out_degree' in str(axes.query_id) else 'named_node_total_degree_value' if 'total_degree' in str(axes.query_id) else 'named_node_degree_value', graph_directionality=lambda axes: 'directed' if str(axes.query_id).startswith('directed') else 'undirected', scene_kind='graph_named_node_degree_value', question_format=lambda axes: str(axes.query_id), value_ranges={'target_degree': (0, 3)}, annotation_example=[[[180, 220], [310, 180]]])
+    plan_args = {
+        'public_id': TASK_ID,
+        'class_name': 'GraphCountingNamedNodeDegreeValueTask',
+        'supported_query_ids': SUPPORTED_QUERY_IDS,
+        'sample_graph': _sample_graph,
+        'answer_type': 'integer',
+        'answer_field': 'target_degree',
+        'annotation_type': 'point_pair_set',
+        'annotation_kind': 'edge_point_pair_set',
+        'annotation_field': 'target_edges',
+        'annotation_hint_key': 'annotation_hint_degree_count',
+        'prompt_query_key': _prompt_key,
+        'graph_directionality': _direction,
+        'scene_kind': 'graph_named_node_degree_value',
+        'question_format': lambda axes: str(axes.query_id),
+        'value_ranges': {'target_degree': (0, 3)},
+        'annotation_example': [[[180, 220], [310, 180]]],
+    }
+    return NodeLinkObjectivePlan(**plan_args)
 
 @register_task
 class GraphCountingNamedNodeDegreeValueTask:
@@ -26,9 +55,7 @@ class GraphCountingNamedNodeDegreeValueTask:
     domain = 'graph'
     supported_query_ids = SUPPORTED_QUERY_IDS
 
-    def _build_objective_plan(self):
-        return _build_objective_plan()
-
     def generate(self, instance_seed, *, params, max_attempts):
-        return run_node_link_plan(plan=self._build_objective_plan(), instance_seed=int(instance_seed), params=dict(params), max_attempts=int(max_attempts))
+        plan = _build_objective_plan()
+        return run_node_link_plan(plan=plan, instance_seed=int(instance_seed), params=dict(params), max_attempts=int(max_attempts))
 __all__ = ['GraphCountingNamedNodeDegreeValueTask', 'TASK_ID']

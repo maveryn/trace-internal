@@ -3,18 +3,6 @@
 from __future__ import annotations
 
 from trace.tasks.graph.shared import graph_feasibility
-from trace.tasks.graph.shared import graph_sampling
-
-
-def test_graph_sampling_reexports_feasible_support_helpers() -> None:
-    assert (
-        graph_sampling.feasible_node_counts_for_shortest_path_length
-        is graph_feasibility.feasible_node_counts_for_shortest_path_length
-    )
-    assert (
-        graph_sampling.feasible_extra_edge_counts_for_minimum_spanning_tree
-        is graph_feasibility.feasible_extra_edge_counts_for_minimum_spanning_tree
-    )
 
 
 def test_path_and_reachability_feasible_supports() -> None:

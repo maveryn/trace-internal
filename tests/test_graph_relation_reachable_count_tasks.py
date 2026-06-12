@@ -4,7 +4,7 @@ import json
 from collections import Counter
 from trace.core.seed import hash64
 from trace.tasks.graph.relation.reachable_count import GraphRelationReachableCountTask
-from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
+from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.graph_algorithms import bfs_dist_count_by_adjacency
 from trace.tasks.shared.named_colors import named_color
 

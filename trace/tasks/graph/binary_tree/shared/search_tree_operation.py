@@ -501,7 +501,6 @@ def build_operation_render_bundle(
     params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
-    complexity_weights: Mapping[str, float],
     query_support: Sequence[str],
     sampling_namespace: str,
     max_attempts: int,

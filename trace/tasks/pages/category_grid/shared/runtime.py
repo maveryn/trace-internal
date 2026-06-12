@@ -884,7 +884,6 @@ def _generate_category_grid_output(
     gen_defaults: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
     prompt_defaults_raw: Mapping[str, Any],
-    complexity_weights: Mapping[str, float],
 ) -> TaskOutput:
     scene_variant, scene_variant_probabilities = _resolve_named_variant(
         task_id=task_id,

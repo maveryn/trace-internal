@@ -2,20 +2,25 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Sequence
 
-from trace.core.seed import hash64, spawn_rng
-from trace.core.types import TypedValue
+from trace.core.seed import spawn_rng
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.combo_mark.shared.annotations import keyed_point_artifacts
-from trace.tasks.charts.combo_mark.shared.panel_common import DOMAIN, SCENE_ID
-from trace.tasks.charts.combo_mark.shared.panel_sampling import sample_base_dataset, select_condition_count
-from trace.tasks.charts.combo_mark.shared.prompts import build_prompt_artifacts
-from trace.tasks.charts.combo_mark.shared.runtime import build_trace_scaffold, render_dataset
+from ._lifecycle import (
+    ComboTaskPlan,
+    combo_task_output_fields,
+    make_combo_plan,
+    run_combo_public_task,
+)
+from .shared.defaults import DOMAIN, SCENE_NAMESPACE
+from .shared.prompts import build_prompt_artifacts
+from .shared.sampling import (
+    balanced_count_from_bounds,
+    sample_base_dataset,
+    threshold_candidates_for,
+)
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
 
 PRIMARY_INTERVAL_LINE_ABOVE_QUERY_ID = "primary_between_and_line_above"
@@ -30,98 +35,179 @@ def _interval_role(selected_query_id: str) -> str:
     raise ValueError(f"unsupported interval-threshold query: {selected_query_id}")
 
 
+def _primary_interval_line_threshold(
+    *,
+    primary: Sequence[int],
+    line: Sequence[int],
+    interval_target_count: int,
+    rng: Any,
+) -> tuple[list[int], dict[str, int]]:
+    """Choose a primary-value interval plus line lower threshold."""
+
+    candidates: list[tuple[list[int], dict[str, int]]] = []
+    primary_values = sorted(set(int(value) for value in primary))
+    line_interval_thresholds = threshold_candidates_for(line, above=True)
+    for low_index, low in enumerate(primary_values):
+        for high in primary_values[low_index:]:
+            for line_threshold in line_interval_thresholds:
+                interval_matches = [
+                    idx
+                    for idx, (a, b) in enumerate(zip(primary, line))
+                    if int(low) <= int(a) <= int(high) and int(b) > int(line_threshold)
+                ]
+                if len(interval_matches) == int(interval_target_count):
+                    candidates.append(
+                        (
+                            [int(idx) for idx in interval_matches],
+                            {
+                                "lower_threshold_value": int(low),
+                                "upper_threshold_value": int(high),
+                                "line_threshold_value": int(line_threshold),
+                            },
+                        )
+                    )
+    if not candidates:
+        raise ValueError("no primary-interval threshold pair")
+    return candidates[int(rng.randrange(0, len(candidates)))]
+
+
+def _line_interval_primary_threshold(
+    *,
+    primary: Sequence[int],
+    line: Sequence[int],
+    interval_target_count: int,
+    rng: Any,
+) -> tuple[list[int], dict[str, int]]:
+    """Choose a line-value interval plus primary lower threshold."""
+
+    candidates: list[tuple[list[int], dict[str, int]]] = []
+    line_values = sorted(set(int(value) for value in line))
+    primary_interval_thresholds = threshold_candidates_for(primary, above=True)
+    for low_index, low in enumerate(line_values):
+        for high in line_values[low_index:]:
+            for primary_threshold in primary_interval_thresholds:
+                interval_matches = [
+                    idx
+                    for idx, (a, b) in enumerate(zip(primary, line))
+                    if int(low) <= int(b) <= int(high) and int(a) > int(primary_threshold)
+                ]
+                if len(interval_matches) == int(interval_target_count):
+                    candidates.append(
+                        (
+                            [int(idx) for idx in interval_matches],
+                            {
+                                "lower_threshold_value": int(low),
+                                "upper_threshold_value": int(high),
+                                "primary_threshold_value": int(primary_threshold),
+                            },
+                        )
+                    )
+    if not candidates:
+        raise ValueError("no line-interval threshold pair")
+    return candidates[int(rng.randrange(0, len(candidates)))]
+
+
 @register_task
 class ChartsComboIntervalThresholdConditionCountTask:
     """Count categories satisfying one interval condition and one threshold condition."""
 
     task_id = "task_charts__combo_mark__interval_threshold_condition_count"
     domain = DOMAIN
-    scene_id = SCENE_ID
     objective_contract = "interval_threshold_condition_count"
     supported_query_ids = (PRIMARY_INTERVAL_LINE_ABOVE_QUERY_ID, LINE_INTERVAL_PRIMARY_ABOVE_QUERY_ID)
-    default_dataset_enabled = True
+    default_interval_count_dataset_enabled = True
 
-    def _generate_once(self, instance_seed: int, *, params: dict[str, Any], selected_query_id: str) -> TaskOutput:
-        dataset, dataset_trace = sample_base_dataset(
+    def _build_interval_threshold_plan(
+        self,
+        instance_seed: int,
+        params: dict[str, Any],
+        selected_query_id: str,
+    ) -> ComboTaskPlan:
+        """Bind the interval predicate, threshold predicate, and witnesses."""
+
+        interval_count_dataset, interval_count_trace = sample_base_dataset(
             params=params,
             instance_seed=int(instance_seed),
             scene_sampling_divisor=len(self.supported_query_ids),
         )
-        artifacts = render_dataset(dataset=dataset, params=params, instance_seed=int(instance_seed))
-        selection = select_condition_count(
-            artifacts.scene,
+        interval_target_count, interval_target_probabilities, interval_target_range = balanced_count_from_bounds(
             params=params,
             instance_seed=int(instance_seed),
-            rng=spawn_rng(int(instance_seed), f"{self.task_id}.selection"),
+            low_key="dual_condition_interval_target_count_min",
+            high_key="dual_condition_interval_target_count_max",
+            fallback=(1, 5),
+            high_cap=max(1, len(interval_count_dataset.labels) - 1),
             sampling_divisor=len(self.supported_query_ids),
-            interval_role=_interval_role(str(selected_query_id)),
+            namespace=f"{SCENE_NAMESPACE}.dual_condition_interval_target_count",
         )
-        annotation = keyed_point_artifacts(selection.annotation_points)
-        dynamic_slots = {
-            "primary_name": f'"{dataset.primary_name}"',
-            "line_name": f'"{dataset.line_name}"',
-            "lower_threshold_value": str(selection.trace["lower_threshold_value"]),
-            "upper_threshold_value": str(selection.trace["upper_threshold_value"]),
+        rng = spawn_rng(int(instance_seed), f"{self.task_id}.selection")
+        if _interval_role(str(selected_query_id)) == "primary":
+            interval_matches, interval_thresholds = _primary_interval_line_threshold(
+                primary=interval_count_dataset.primary_values,
+                line=interval_count_dataset.line_values,
+                interval_target_count=int(interval_target_count),
+                rng=rng,
+            )
+        else:
+            interval_matches, interval_thresholds = _line_interval_primary_threshold(
+                primary=interval_count_dataset.primary_values,
+                line=interval_count_dataset.line_values,
+                interval_target_count=int(interval_target_count),
+                rng=rng,
+            )
+        interval_slots = {
+            "primary_name": f'"{interval_count_dataset.primary_name}"',
+            "line_name": f'"{interval_count_dataset.line_name}"',
+            "lower_threshold_value": str(interval_thresholds["lower_threshold_value"]),
+            "upper_threshold_value": str(interval_thresholds["upper_threshold_value"]),
         }
         if str(selected_query_id) == PRIMARY_INTERVAL_LINE_ABOVE_QUERY_ID:
-            dynamic_slots["line_threshold_value"] = str(selection.trace["line_threshold_value"])
+            interval_slots["line_threshold_value"] = str(interval_thresholds["line_threshold_value"])
         else:
-            dynamic_slots["primary_threshold_value"] = str(selection.trace["primary_threshold_value"])
-        prompt_artifacts = build_prompt_artifacts(
-            scene_variant=dataset.scene_variant,
+            interval_slots["primary_threshold_value"] = str(interval_thresholds["primary_threshold_value"])
+        interval_count_prompt = build_prompt_artifacts(
+            scene_variant=interval_count_dataset.scene_variant,
             prompt_query_key=str(selected_query_id),
-            dynamic_slots=dynamic_slots,
+            dynamic_slots=interval_slots,
             instance_seed=int(instance_seed),
         )
-        relations = {
-            **dict(dataset_trace),
-            **dict(selection.trace),
-            "question_format": str(selection.question_format),
-            "answer": int(selection.answer),
-            "answer_type": str(selection.answer_type),
-            "labels": list(dataset.labels),
-            "primary_name": str(dataset.primary_name),
-            "line_name": str(dataset.line_name),
-            "primary_values": [int(value) for value in dataset.primary_values],
-            "line_values": [int(value) for value in dataset.line_values],
-        }
-        trace_payload = build_trace_scaffold(artifacts=artifacts, annotation=annotation, relations=relations)
-        trace_payload["scene_ir"]["relations"]["query_id"] = str(selected_query_id)
-        trace_payload["query_spec"] = build_prompt_query_spec(
-            prompt_artifacts=prompt_artifacts,
-            query_id=str(selected_query_id),
-            params={"query_id": str(selected_query_id), **relations},
-        )
-        trace_payload["execution_trace"]["query_id"] = str(selected_query_id)
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=TypedValue(type="integer", value=int(selection.answer)),
-            annotation_gt=annotation.annotation_gt,
-            image=artifacts.scene.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(selected_query_id),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
+        return make_combo_plan(
+            dataset=interval_count_dataset,
+            dataset_trace=interval_count_trace,
+            answer_type="integer",
+            answer_value=int(len(interval_matches)),
+            question_format="dual_condition_count_query",
+            annotation_indices=tuple(int(idx) for idx in interval_matches),
+            annotation_include_primary=True,
+            annotation_include_line=True,
+            relations={
+                **interval_thresholds,
+                "interval_target_count": int(interval_target_count),
+                "interval_target_count_range": [int(interval_target_range[0]), int(interval_target_range[1])],
+                "interval_target_count_probabilities": {str(key): float(value) for key, value in interval_target_probabilities.items()},
+                "interval_matches_indices": [int(idx) for idx in interval_matches],
+            },
+            prompt_artifacts=interval_count_prompt,
         )
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, _probabilities, task_params = select_task_query_id(
+        selected_query_id, _probabilities, interval_count_params = select_task_query_id(
             instance_seed=int(instance_seed),
             params=params,
             supported_query_ids=self.supported_query_ids,
             default_query_id=PRIMARY_INTERVAL_LINE_ABOVE_QUERY_ID,
             task_id=self.task_id,
         )
-        last_error: Exception | None = None
-        for attempt in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt == 0 else int(hash64(int(instance_seed), "charts.combo_mark.retry", int(attempt)))
-            try:
-                return self._generate_once(int(attempt_seed), params=task_params, selected_query_id=str(selected_query_id))
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
+        interval_count_materialized = run_combo_public_task(
+            instance_seed=int(instance_seed),
+            params=interval_count_params,
+            max_attempts=int(max_attempts),
+            selected_query_id=str(selected_query_id),
+            failure_label=self.task_id,
+            build_plan=self._build_interval_threshold_plan,
+        )
+        interval_count_fields = combo_task_output_fields(interval_count_materialized)
+        return TaskOutput(**interval_count_fields)
 
 
 __all__ = ["ChartsComboIntervalThresholdConditionCountTask"]

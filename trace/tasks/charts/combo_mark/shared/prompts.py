@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from trace.tasks.charts.combo_mark.shared.panel_common import (
+from trace.tasks.charts.combo_mark.shared.defaults import (
     DOMAIN,
     PROMPT_BUNDLE_ID,
     PROMPT_DEFAULTS,
     SCENE_ID,
 )
+from trace.tasks.charts.combo_mark.shared.state import ComboDataset
 from trace.tasks.shared.prompt_variants import (
     PromptTraceArtifacts,
     build_prompt_trace_artifacts,
@@ -24,6 +25,16 @@ SCENE_PROMPT_KEY_BY_VARIANT = {
     "area_line_overlay": "area_line_overlay",
 }
 TASK_PROMPT_KEY = "combo_mark_query"
+
+
+def combo_series_slots(dataset: ComboDataset, **extra_slots: Any) -> dict[str, Any]:
+    """Return quoted combo-series names plus any task-owned dynamic slots."""
+
+    return {
+        "primary_name": f'"{dataset.primary_name}"',
+        "line_name": f'"{dataset.line_name}"',
+        **dict(extra_slots),
+    }
 
 
 def build_prompt_artifacts(
@@ -46,4 +57,4 @@ def build_prompt_artifacts(
     return build_prompt_trace_artifacts(rendered_prompt)
 
 
-__all__ = ["build_prompt_artifacts"]
+__all__ = ["build_prompt_artifacts", "combo_series_slots"]

@@ -1,4 +1,4 @@
-"""Rendering helpers for combo chart panel tasks."""
+"""Rendering helpers for combo-mark chart tasks."""
 
 from __future__ import annotations
 
@@ -7,25 +7,44 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ....shared.bbox_projection import bbox_union
-from ....shared.config_defaults import group_default
-from ....shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
-from ....shared.text_legibility import draw_text_traced
-from ....shared.text_rendering import draw_text_centered, load_font
-from .panel_common import (
+from trace.core.visual.background import make_background_canvas
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.charts.combo_mark.shared.defaults import (
+    POST_IMAGE_BACKGROUND_DEFAULTS,
+    POST_IMAGE_NOISE_DEFAULTS,
     RENDERING_DEFAULTS,
     SCENE_NAMESPACE,
-    ComboScene,
-    RenderParams,
+    scene_default,
 )
+from trace.tasks.charts.combo_mark.shared.state import ComboDataset, ComboRenderArtifacts, ComboScene, RenderParams
+from trace.tasks.charts.shared.visual_defaults import (
+    chart_font_asset_metadata,
+    sample_chart_font_family,
+)
+from trace.tasks.shared.bbox_projection import bbox_union
+from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
+from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_rendering import draw_text_centered, load_font, temporary_default_font_family
+
 
 def render_params(params: Mapping[str, Any], *, instance_seed: int) -> RenderParams:
-    canvas_width = int(params.get("canvas_width", group_default(RENDERING_DEFAULTS, "canvas_width", 1080)))
-    canvas_height = int(params.get("canvas_height", group_default(RENDERING_DEFAULTS, "canvas_height", 660)))
-    plot_left = int(params.get("plot_left_px", group_default(RENDERING_DEFAULTS, "plot_left_px", 86)))
-    plot_right_margin = int(params.get("plot_right_margin_px", group_default(RENDERING_DEFAULTS, "plot_right_margin_px", 176)))
-    plot_top = int(params.get("plot_top_px", group_default(RENDERING_DEFAULTS, "plot_top_px", 58)))
-    plot_bottom_margin = int(params.get("plot_bottom_margin_px", group_default(RENDERING_DEFAULTS, "plot_bottom_margin_px", 92)))
+    """Resolve combo chart dimensions, style colors, fonts, and jitter.
+
+    The helper is intentionally visual-only: public task files provide sampled
+    data and semantic target bindings, while this function only derives the
+    scene's rendering parameters from config and seed.
+    """
+
+    canvas_width = int(params.get("canvas_width", scene_default(RENDERING_DEFAULTS, "canvas_width", 1080)))
+    canvas_height = int(params.get("canvas_height", scene_default(RENDERING_DEFAULTS, "canvas_height", 660)))
+    plot_left = int(params.get("plot_left_px", scene_default(RENDERING_DEFAULTS, "plot_left_px", 86)))
+    plot_right_margin = int(
+        params.get("plot_right_margin_px", scene_default(RENDERING_DEFAULTS, "plot_right_margin_px", 176))
+    )
+    plot_top = int(params.get("plot_top_px", scene_default(RENDERING_DEFAULTS, "plot_top_px", 58)))
+    plot_bottom_margin = int(
+        params.get("plot_bottom_margin_px", scene_default(RENDERING_DEFAULTS, "plot_bottom_margin_px", 92))
+    )
     plot_left, plot_right_margin, plot_top, plot_bottom_margin, layout_jitter_meta = apply_layout_jitter_to_margins(
         left_px=int(plot_left),
         right_px=int(plot_right_margin),
@@ -43,30 +62,88 @@ def render_params(params: Mapping[str, Any], *, instance_seed: int) -> RenderPar
         plot_right=int(canvas_width - int(plot_right_margin)),
         plot_top=int(plot_top),
         plot_bottom=int(canvas_height - int(plot_bottom_margin)),
-        axis_width=resolve_render_int(params, RENDERING_DEFAULTS, "axis_line_width_px", 2, instance_seed=instance_seed, namespace=SCENE_NAMESPACE),
-        grid_width=resolve_render_int(params, RENDERING_DEFAULTS, "grid_line_width_px", 1, instance_seed=instance_seed, namespace=SCENE_NAMESPACE),
-        line_width=resolve_render_int(params, RENDERING_DEFAULTS, "line_width_px", 4, instance_seed=instance_seed, namespace=SCENE_NAMESPACE),
-        point_radius=resolve_render_int(params, RENDERING_DEFAULTS, "point_radius_px", 7, instance_seed=instance_seed, namespace=SCENE_NAMESPACE),
-        tick_font_size=int(params.get("tick_font_size_px", group_default(RENDERING_DEFAULTS, "tick_font_size_px", 16))),
-        label_font_size=int(params.get("label_font_size_px", group_default(RENDERING_DEFAULTS, "label_font_size_px", 18))),
-        value_font_size=int(params.get("value_font_size_px", group_default(RENDERING_DEFAULTS, "value_font_size_px", 15))),
-        legend_font_size=int(params.get("legend_font_size_px", group_default(RENDERING_DEFAULTS, "legend_font_size_px", 18))),
-        primary_rgb=resolve_render_rgb(params, RENDERING_DEFAULTS, "primary_rgb", (73, 125, 203), instance_seed=instance_seed, namespace=SCENE_NAMESPACE),
-        primary_alt_rgb=resolve_render_rgb(params, RENDERING_DEFAULTS, "primary_alt_rgb", (104, 171, 130), instance_seed=instance_seed, namespace=SCENE_NAMESPACE),
-        line_rgb=resolve_render_rgb(params, RENDERING_DEFAULTS, "line_rgb", (220, 115, 55), instance_seed=instance_seed, namespace=SCENE_NAMESPACE),
-        area_rgb=resolve_render_rgb(params, RENDERING_DEFAULTS, "area_rgb", (117, 166, 214), instance_seed=instance_seed, namespace=SCENE_NAMESPACE),
-        axis_rgb=resolve_render_rgb(params, RENDERING_DEFAULTS, "axis_color_rgb", (66, 72, 82), instance_seed=instance_seed, namespace=SCENE_NAMESPACE),
-        grid_rgb=resolve_render_rgb(params, RENDERING_DEFAULTS, "grid_color_rgb", (224, 228, 234), instance_seed=instance_seed, namespace=SCENE_NAMESPACE),
-        text_rgb=resolve_render_rgb(params, RENDERING_DEFAULTS, "text_color_rgb", (36, 42, 52), instance_seed=instance_seed, namespace=SCENE_NAMESPACE),
-        panel_rgb=resolve_render_rgb(params, RENDERING_DEFAULTS, "plot_fill_rgb", (255, 255, 255), instance_seed=instance_seed, namespace=SCENE_NAMESPACE),
+        axis_width=resolve_render_int(
+            params, RENDERING_DEFAULTS, "axis_line_width_px", 2, instance_seed=instance_seed, namespace=SCENE_NAMESPACE
+        ),
+        grid_width=resolve_render_int(
+            params, RENDERING_DEFAULTS, "grid_line_width_px", 1, instance_seed=instance_seed, namespace=SCENE_NAMESPACE
+        ),
+        line_width=resolve_render_int(
+            params, RENDERING_DEFAULTS, "line_width_px", 4, instance_seed=instance_seed, namespace=SCENE_NAMESPACE
+        ),
+        point_radius=resolve_render_int(
+            params, RENDERING_DEFAULTS, "point_radius_px", 7, instance_seed=instance_seed, namespace=SCENE_NAMESPACE
+        ),
+        tick_font_size=int(params.get("tick_font_size_px", scene_default(RENDERING_DEFAULTS, "tick_font_size_px", 16))),
+        label_font_size=int(
+            params.get("label_font_size_px", scene_default(RENDERING_DEFAULTS, "label_font_size_px", 18))
+        ),
+        value_font_size=int(
+            params.get("value_font_size_px", scene_default(RENDERING_DEFAULTS, "value_font_size_px", 15))
+        ),
+        legend_font_size=int(
+            params.get("legend_font_size_px", scene_default(RENDERING_DEFAULTS, "legend_font_size_px", 18))
+        ),
+        primary_rgb=resolve_render_rgb(
+            params, RENDERING_DEFAULTS, "primary_rgb", (73, 125, 203), instance_seed=instance_seed, namespace=SCENE_NAMESPACE
+        ),
+        primary_alt_rgb=resolve_render_rgb(
+            params,
+            RENDERING_DEFAULTS,
+            "primary_alt_rgb",
+            (104, 171, 130),
+            instance_seed=instance_seed,
+            namespace=SCENE_NAMESPACE,
+        ),
+        line_rgb=resolve_render_rgb(
+            params, RENDERING_DEFAULTS, "line_rgb", (220, 115, 55), instance_seed=instance_seed, namespace=SCENE_NAMESPACE
+        ),
+        area_rgb=resolve_render_rgb(
+            params, RENDERING_DEFAULTS, "area_rgb", (117, 166, 214), instance_seed=instance_seed, namespace=SCENE_NAMESPACE
+        ),
+        axis_rgb=resolve_render_rgb(
+            params,
+            RENDERING_DEFAULTS,
+            "axis_color_rgb",
+            (66, 72, 82),
+            instance_seed=instance_seed,
+            namespace=SCENE_NAMESPACE,
+        ),
+        grid_rgb=resolve_render_rgb(
+            params,
+            RENDERING_DEFAULTS,
+            "grid_color_rgb",
+            (224, 228, 234),
+            instance_seed=instance_seed,
+            namespace=SCENE_NAMESPACE,
+        ),
+        text_rgb=resolve_render_rgb(
+            params,
+            RENDERING_DEFAULTS,
+            "text_color_rgb",
+            (36, 42, 52),
+            instance_seed=instance_seed,
+            namespace=SCENE_NAMESPACE,
+        ),
+        panel_rgb=resolve_render_rgb(
+            params,
+            RENDERING_DEFAULTS,
+            "plot_fill_rgb",
+            (255, 255, 255),
+            instance_seed=instance_seed,
+            namespace=SCENE_NAMESPACE,
+        ),
         layout_jitter_meta=dict(layout_jitter_meta),
     )
+
 
 def _round_axis_max(value: int) -> int:
     return int(max(20, int(math.ceil((float(value) + 8.0) / 10.0) * 10)))
 
+
 def _value_to_y(value: int, *, top: int, bottom: int, axis_max: int) -> float:
     return float(bottom) - ((float(value) / float(max(1, int(axis_max)))) * float(bottom - top))
+
 
 def _draw_label_box(
     draw: ImageDraw.ImageDraw,
@@ -88,6 +165,7 @@ def _draw_label_box(
     draw_text_centered(draw, text=str(text), center=center, font=font, fill=fill, stroke_width=0)
     return (x0, y0, x1, y1)
 
+
 def _draw_axes(
     draw: ImageDraw.ImageDraw,
     *,
@@ -100,15 +178,23 @@ def _draw_axes(
     tick_font = load_font(p.tick_font_size, bold=False)
     label_font = load_font(p.label_font_size, bold=True)
     left, right, top, bottom = p.plot_left, p.plot_right, p.plot_top, p.plot_bottom
-    draw.rounded_rectangle((left - 14, top - 18, right + 14, bottom + 12), radius=10, fill=p.panel_rgb, outline=(211, 216, 224), width=1)
+    draw.rounded_rectangle(
+        (left - 14, top - 18, right + 14, bottom + 12),
+        radius=10,
+        fill=p.panel_rgb,
+        outline=(211, 216, 224),
+        width=1,
+    )
     for i in range(5):
         value = int(round(primary_axis_max * i / 4))
         y = _value_to_y(value, top=top, bottom=bottom, axis_max=primary_axis_max)
         draw.line((left, y, right, y), fill=p.grid_rgb, width=p.grid_width)
-        draw_text_traced(draw,(left - 12, y), str(value), anchor="rm", font=tick_font, fill=p.text_rgb, role="readout", required=False)
+        draw_text_traced(draw, (left - 12, y), str(value), anchor="rm", font=tick_font, fill=p.text_rgb, role="readout", required=False)
         if dual_axis:
             line_value = int(round(line_axis_max * i / 4))
-            draw_text_traced(draw,(right + 12, y), str(line_value), anchor="lm", font=tick_font, fill=p.text_rgb, role="readout", required=False)
+            draw_text_traced(
+                draw, (right + 12, y), str(line_value), anchor="lm", font=tick_font, fill=p.text_rgb, role="readout", required=False
+            )
     draw.line((left, top, left, bottom), fill=p.axis_rgb, width=p.axis_width)
     draw.line((left, bottom, right, bottom), fill=p.axis_rgb, width=p.axis_width)
     if dual_axis:
@@ -118,6 +204,7 @@ def _draw_axes(
         x = float(left) + (float(idx) + 0.5) * step
         draw.line((x, bottom, x, bottom + 6), fill=p.axis_rgb, width=1)
         draw_text_centered(draw, text=str(label), center=(x, bottom + 24), font=label_font, fill=p.text_rgb, stroke_width=1)
+
 
 def _draw_legend(
     draw: ImageDraw.ImageDraw,
@@ -133,9 +220,8 @@ def _draw_legend(
     boxes: list[Sequence[float]] = []
     title_bbox = draw.textbbox((x0, y0), "Legend", font=font)
     boxes.append(title_bbox)
-    draw_text_traced(draw,(x0, y0), "Legend", font=font, fill=p.text_rgb, role="readout", required=False)
+    draw_text_traced(draw, (x0, y0), "Legend", font=font, fill=p.text_rgb, role="readout", required=False)
     y = y0 + 34
-    primary_swatch_bbox: Tuple[float, float, float, float]
     if scene_variant == "area_line_overlay":
         primary_swatch_bbox = (x0, y + 2, x0 + 28, y + 18)
         draw.rectangle(primary_swatch_bbox, fill=p.area_rgb, outline=p.primary_rgb)
@@ -149,7 +235,7 @@ def _draw_legend(
     boxes.append(primary_swatch_bbox)
     primary_text_bbox = draw.textbbox((x0 + 38, y), str(primary_name), font=font)
     boxes.append(primary_text_bbox)
-    draw_text_traced(draw,(x0 + 38, y), str(primary_name), font=font, fill=p.text_rgb, role="readout", required=False)
+    draw_text_traced(draw, (x0 + 38, y), str(primary_name), font=font, fill=p.text_rgb, role="readout", required=False)
     y += 34
     line_swatch_bbox = (x0, y + 2, x0 + 30, y + 12 + max(0, p.line_width // 2))
     boxes.append(line_swatch_bbox)
@@ -157,8 +243,9 @@ def _draw_legend(
     draw.ellipse((x0 + 11, y + 2, x0 + 21, y + 12), fill=(255, 255, 255), outline=p.line_rgb, width=3)
     line_text_bbox = draw.textbbox((x0 + 38, y), str(line_name), font=font)
     boxes.append(line_text_bbox)
-    draw_text_traced(draw,(x0 + 38, y), str(line_name), font=font, fill=p.text_rgb, role="readout", required=False)
+    draw_text_traced(draw, (x0 + 38, y), str(line_name), font=font, fill=p.text_rgb, role="readout", required=False)
     return tuple(float(value) for value in bbox_union(boxes, padding=8.0))
+
 
 def render_combo_scene(
     base: Image.Image,
@@ -172,11 +259,17 @@ def render_combo_scene(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> ComboScene:
+    """Render one combo-mark chart and return projected mark centers."""
+
     p = render_params(params, instance_seed=int(instance_seed))
     image = base.convert("RGB")
     draw = ImageDraw.Draw(image)
     primary_axis_max = _round_axis_max(max(primary_values))
-    line_axis_max = _round_axis_max(max(line_values)) if scene_variant == "bar_line_dual_axis" else _round_axis_max(max(max(primary_values), max(line_values)))
+    line_axis_max = (
+        _round_axis_max(max(line_values))
+        if scene_variant == "bar_line_dual_axis"
+        else _round_axis_max(max(max(primary_values), max(line_values)))
+    )
     if scene_variant != "bar_line_dual_axis":
         primary_axis_max = line_axis_max
     _draw_axes(
@@ -220,8 +313,18 @@ def render_combo_scene(
             split = int(round(int(primary_value) * (0.42 + 0.16 * (idx % 3) / 2.0)))
             split = max(2, min(int(primary_value) - 2, split))
             y_split = _value_to_y(split, top=p.plot_top, bottom=p.plot_bottom, axis_max=primary_axis_max)
-            draw.rectangle((x - 0.5 * bar_width, y_split, x + 0.5 * bar_width, p.plot_bottom), fill=p.primary_rgb, outline=(55, 62, 72), width=1)
-            draw.rectangle((x - 0.5 * bar_width, y, x + 0.5 * bar_width, y_split), fill=p.primary_alt_rgb, outline=(55, 62, 72), width=1)
+            draw.rectangle(
+                (x - 0.5 * bar_width, y_split, x + 0.5 * bar_width, p.plot_bottom),
+                fill=p.primary_rgb,
+                outline=(55, 62, 72),
+                width=1,
+            )
+            draw.rectangle(
+                (x - 0.5 * bar_width, y, x + 0.5 * bar_width, y_split),
+                fill=p.primary_alt_rgb,
+                outline=(55, 62, 72),
+                width=1,
+            )
         _draw_label_box(draw, text=str(int(primary_value)), center=(x, max(p.plot_top + 12, y - 15)), font=value_font, fill=p.primary_rgb)
         entities.append(
             {
@@ -234,7 +337,7 @@ def render_combo_scene(
             }
         )
 
-    for idx, (label, line_value) in enumerate(zip(labels, line_values)):
+    for idx, line_value in enumerate(line_values):
         x = float(p.plot_left) + (float(idx) + 0.5) * step
         y = _value_to_y(int(line_value), top=p.plot_top, bottom=p.plot_bottom, axis_max=line_axis_max)
         line_points.append((x, y))
@@ -245,7 +348,13 @@ def render_combo_scene(
         r = float(p.point_radius)
         draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 255, 255), outline=p.line_rgb, width=3)
         offset = -21 if float(y) > float(primary_points[idx][1]) - 22 else 22
-        _draw_label_box(draw, text=str(int(line_value)), center=(x, min(p.plot_bottom - 14, max(p.plot_top + 12, y + offset))), font=value_font, fill=p.line_rgb)
+        _draw_label_box(
+            draw,
+            text=str(int(line_value)),
+            center=(x, min(p.plot_bottom - 14, max(p.plot_top + 12, y + offset))),
+            font=value_font,
+            fill=p.line_rgb,
+        )
         entities.append(
             {
                 "type": "combo_line_point",
@@ -274,4 +383,69 @@ def render_combo_scene(
         legend_bbox=tuple(float(value) for value in legend_bbox),
     )
 
-__all__ = ["render_combo_scene", "render_params"]
+
+def render_dataset(
+    *,
+    dataset: ComboDataset,
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> ComboRenderArtifacts:
+    """Render a sampled combo dataset without binding task semantics."""
+
+    background, background_meta = make_background_canvas(
+        canvas_width=int(params.get("canvas_width", scene_default(RENDERING_DEFAULTS, "canvas_width", 1080))),
+        canvas_height=int(params.get("canvas_height", scene_default(RENDERING_DEFAULTS, "canvas_height", 660))),
+        instance_seed=int(instance_seed),
+        params=dict(params),
+        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+    )
+    chart_font_family = sample_chart_font_family(
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.chart_font",
+        params=params,
+    )
+    resolved_render_params = render_params(params, instance_seed=int(instance_seed))
+    with temporary_default_font_family(str(chart_font_family)):
+        scene = render_combo_scene(
+            background,
+            labels=dataset.labels,
+            primary_values=dataset.primary_values,
+            line_values=dataset.line_values,
+            scene_variant=str(dataset.scene_variant),
+            primary_name=str(dataset.primary_name),
+            line_name=str(dataset.line_name),
+            params=params,
+            instance_seed=int(instance_seed),
+        )
+    image, post_noise_meta = apply_post_image_noise(
+        scene.image,
+        instance_seed=int(instance_seed),
+        params=dict(params),
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    scene = ComboScene(
+        image=image,
+        labels=tuple(scene.labels),
+        primary_values=tuple(scene.primary_values),
+        line_values=tuple(scene.line_values),
+        primary_points=tuple(scene.primary_points),
+        line_points=tuple(scene.line_points),
+        entities=tuple(dict(entity) for entity in scene.entities),
+        scene_variant=str(scene.scene_variant),
+        primary_name=str(scene.primary_name),
+        line_name=str(scene.line_name),
+        primary_axis_max=int(scene.primary_axis_max),
+        line_axis_max=int(scene.line_axis_max),
+        plot_bbox=tuple(int(value) for value in scene.plot_bbox),
+        legend_bbox=tuple(float(value) for value in scene.legend_bbox),
+    )
+    return ComboRenderArtifacts(
+        scene=scene,
+        render_params=resolved_render_params,
+        background_style=dict(background_meta),
+        font_assets=chart_font_asset_metadata(str(chart_font_family)),
+        post_image_noise=dict(post_noise_meta),
+    )
+
+
+__all__ = ["render_combo_scene", "render_dataset", "render_params"]

@@ -10,7 +10,7 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 
 from ._lifecycle import (
     ChessObjectivePlan,
-    prepare_chess_bbox_count_objective,
+    prepare_chess_point_count_objective,
     run_chess_public_entry,
 )
 from .shared.sampling import resolve_player_color, sample_player_capture_scene
@@ -47,7 +47,7 @@ def _prepare_player_capture_objective(
             "opponent_color_name": color_name(opponent(sample.player_color)),
         }
 
-    return prepare_chess_bbox_count_objective(
+    return prepare_chess_point_count_objective(
         instance_seed=int(instance_seed),
         task_params=task_params,
         task_id=TASK_ID,

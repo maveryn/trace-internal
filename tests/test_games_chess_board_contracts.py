@@ -99,13 +99,14 @@ def test_games_chess_board_emits_expected_contract(
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert out.query_id == str(expected_query)
     assert trace["query_spec"]["query_id"] == str(expected_query)
     assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
     assert execution["query_id"] == str(expected_query)
     assert int(execution["target_answer"]) == int(out.answer_gt.value)
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
     assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
 
 
@@ -365,14 +366,14 @@ def test_games_chess_checkmate_move_label_has_unique_mating_option() -> None:
     board = _board_from_execution(execution)
 
     assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "keyed_point_map"
     assert out.answer_gt.value == "D"
     assert execution["answer_option_label"] == out.answer_gt.value
     assert trace["query_spec"]["params"]["answer_support"] == ["A", "B", "C", "D", "E", "F"]
     assert set(out.annotation_gt.value) == {"from", "to", "king"}
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "keyed_point_map"
+    assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
     assert trace["render_map"]["coordinate_label_bboxes_px"]["files"]
     assert set(trace["render_map"]["move_option_panel"]["option_bboxes_px"]) == {"A", "B", "C", "D", "E", "F"}
 

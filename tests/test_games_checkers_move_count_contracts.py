@@ -37,6 +37,23 @@ def _assert_point_annotation_matches_piece_ids(trace: dict, annotation: list[lis
     assert trace["projected_annotation"]["pixel_point_set"] == annotation
 
 
+def _assert_point_annotation_matches_entity_ids(trace: dict, annotation: list[list[float]]) -> None:
+    """Verify point annotations use cell centers for cells and piece centers for pieces."""
+
+    execution = trace["execution_trace"]
+    expected: list[list[float]] = []
+    for entity_id in execution["annotation_entity_ids"]:
+        entity_id = str(entity_id)
+        if entity_id.startswith("piece_"):
+            expected.append(_bbox_center(trace["render_map"]["piece_bboxes_px"][entity_id]))
+        else:
+            expected.append(_bbox_center(trace["render_map"]["cell_bboxes_px"][entity_id]))
+    assert annotation == expected
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == annotation
+    assert trace["projected_annotation"]["pixel_point_set"] == annotation
+
+
 def _expected_piece_state_coords(board_rows: list[list[int]], query_id: str) -> set[tuple[int, int]]:
     target = RED if str(query_id).startswith("red_") else BLACK
     edge_only = "_edge_" in str(query_id)
@@ -98,12 +115,12 @@ def test_games_checkers_move_count_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == int(expected_annotation_count)
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert len(execution["annotation_entity_ids"]) == int(expected_annotation_count)
+    _assert_point_annotation_matches_entity_ids(trace, out.annotation_gt.value)
     if str(params["query_id"]) == "max_capture_chain_length":
         assert all(str(entity_id).startswith("piece_") for entity_id in execution["annotation_entity_ids"])
         assert execution["annotation_kind"] == "piece"

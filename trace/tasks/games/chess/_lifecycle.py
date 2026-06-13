@@ -15,10 +15,10 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
 from .shared.annotations import (
-    bbox_set_for_entities,
-    keyed_move_bboxes,
-    projected_bbox_payload,
-    projected_keyed_bbox_payload,
+    keyed_move_points,
+    point_set_for_entities,
+    projected_keyed_point_payload,
+    projected_point_payload,
 )
 from .shared.prompts import build_chess_prompt_artifacts
 from .shared.rendering import RenderedChessTaskContext
@@ -232,14 +232,14 @@ def prepare_chess_piece_count_objective(
         construct_attempt=construct_attempt,
         render_sample=render_sample,
         build_answer=lambda _sample: TypedValue(type="integer", value=int(target_answer)),
-        build_annotation=lambda sample, rendered: bbox_set_annotation_for_sample(sample, rendered, witness_type="piece_set"),
+        build_annotation=lambda sample, rendered: point_set_annotation_for_sample(sample, rendered, witness_type="piece_set"),
         build_trace_payload=lambda sample, rendered: common_trace_sections(sample=sample, rendered_context=rendered),
         build_prompt_dynamic_slots=prompt_slots,
         execution_extra={"target_answer": int(target_answer)},
     )
 
 
-def prepare_chess_bbox_count_objective(
+def prepare_chess_point_count_objective(
     *,
     instance_seed: int,
     task_params: Mapping[str, Any],
@@ -259,7 +259,7 @@ def prepare_chess_bbox_count_objective(
     build_execution_extra: ExecutionExtraBuilder | None = None,
     build_prompt_dynamic_slots: PromptDynamicSlotBuilder | None = None,
 ) -> ChessObjectivePlan:
-    """Prepare a bbox-set integer count objective from task-owned semantics."""
+    """Prepare a point-set integer count objective from task-owned semantics."""
 
     target_answer, answer_support, answer_probs = resolve_chess_task_target(
         instance_seed=int(instance_seed),
@@ -302,7 +302,7 @@ def prepare_chess_bbox_count_objective(
         construct_attempt=construct_attempt,
         render_sample=render_sample,
         build_answer=lambda _sample: TypedValue(type="integer", value=int(target_answer)),
-        build_annotation=lambda sample, rendered: bbox_set_annotation_for_sample(sample, rendered, witness_type=str(witness_type)),
+        build_annotation=lambda sample, rendered: point_set_annotation_for_sample(sample, rendered, witness_type=str(witness_type)),
         build_trace_payload=lambda sample, rendered: common_trace_sections(sample=sample, rendered_context=rendered),
         execution_extra={"target_answer": int(target_answer), **dict(execution_extra or {})},
         build_query_params=build_query_params,
@@ -311,22 +311,22 @@ def prepare_chess_bbox_count_objective(
     )
 
 
-def bbox_set_annotation_for_sample(
+def point_set_annotation_for_sample(
     sample: ChessSceneSample,
     rendered_context: RenderedChessTaskContext,
     *,
     witness_type: str,
 ) -> ChessAnnotationArtifacts:
-    """Project one Chess sample's annotation entity ids to bbox-set output."""
+    """Project one Chess sample's annotation entity ids to point-set output."""
 
-    annotation_bboxes = bbox_set_for_entities(
+    annotation_points = point_set_for_entities(
         rendered_context.rendered_scene,
         entity_ids=sample.annotation_entity_ids,
         annotation_kind=sample.annotation_kind,
     )
     return ChessAnnotationArtifacts(
-        annotation_gt=TypedValue(type="bbox_set", value=annotation_bboxes),
-        projected_annotation=projected_bbox_payload(annotation_bboxes),
+        annotation_gt=TypedValue(type="point_set", value=annotation_points),
+        projected_annotation=projected_point_payload(annotation_points),
         witness_symbolic={
             "type": str(witness_type),
             "ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
@@ -338,17 +338,17 @@ def keyed_checkmate_annotation_for_sample(
     sample: ChessCheckmateSample,
     rendered_context: RenderedChessTaskContext,
 ) -> ChessAnnotationArtifacts:
-    """Project source, destination, and opposing king cells to keyed bboxes."""
+    """Project source, destination, and opposing king cells to keyed points."""
 
-    annotation_map = keyed_move_bboxes(
+    annotation_map = keyed_move_points(
         rendered_context.rendered_scene,
         source=sample.correct_option.source,
         destination=sample.correct_option.destination,
         king=sample.defender_king_coord,
     )
     return ChessAnnotationArtifacts(
-        annotation_gt=TypedValue(type="keyed_bbox_map", value=annotation_map),
-        projected_annotation=projected_keyed_bbox_payload(annotation_map),
+        annotation_gt=TypedValue(type="keyed_point_map", value=annotation_map),
+        projected_annotation=projected_keyed_point_payload(annotation_map),
         witness_symbolic={
             "type": "cell_map",
             "ids": {
@@ -477,11 +477,11 @@ def run_chess_public_entry(task: Any, instance_seed: int, *, params: Mapping[str
 __all__ = [
     "ChessAnnotationArtifacts",
     "ChessObjectivePlan",
-    "bbox_set_annotation_for_sample",
     "chess_target_trace_params",
     "keyed_checkmate_annotation_for_sample",
-    "prepare_chess_bbox_count_objective",
+    "prepare_chess_point_count_objective",
     "prepare_chess_piece_count_objective",
+    "point_set_annotation_for_sample",
     "resolve_chess_task_target",
     "run_chess_public_entry",
     "run_chess_lifecycle",

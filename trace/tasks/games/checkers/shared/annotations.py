@@ -6,7 +6,6 @@ from typing import Sequence
 
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
-    bbox_set_annotation_artifacts,
     point_set_annotation_artifacts,
 )
 
@@ -42,6 +41,12 @@ def piece_points_for_ids(rendered_scene: RenderedCheckersScene, entity_ids: Sequ
     return [_bbox_center(bbox) for bbox in piece_bboxes_for_ids(rendered_scene, entity_ids)]
 
 
+def cell_points_for_ids(rendered_scene: RenderedCheckersScene, entity_ids: Sequence[str]) -> list[list[float]]:
+    """Return rendered cell-center points for stable cell ids."""
+
+    return [_bbox_center(bbox) for bbox in cell_bboxes_for_ids(rendered_scene, entity_ids)]
+
+
 def checkers_annotation_artifacts(
     *,
     rendered_scene: RenderedCheckersScene,
@@ -53,12 +58,13 @@ def checkers_annotation_artifacts(
     if str(annotation_kind) == "piece_point":
         return point_set_annotation_artifacts(piece_points_for_ids(rendered_scene, entity_ids))
     if str(annotation_kind) == "piece":
-        return bbox_set_annotation_artifacts(piece_bboxes_for_ids(rendered_scene, entity_ids))
-    return bbox_set_annotation_artifacts(cell_bboxes_for_ids(rendered_scene, entity_ids))
+        return point_set_annotation_artifacts(piece_points_for_ids(rendered_scene, entity_ids))
+    return point_set_annotation_artifacts(cell_points_for_ids(rendered_scene, entity_ids))
 
 
 __all__ = [
     "cell_bboxes_for_ids",
+    "cell_points_for_ids",
     "checkers_annotation_artifacts",
     "piece_bboxes_for_ids",
     "piece_points_for_ids",

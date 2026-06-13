@@ -6,7 +6,7 @@ from typing import Any
 
 from trace.tasks.games.shared.style import SUPPORTED_CONNECT_FOUR_STYLE_VARIANTS
 
-from .common import COLUMNS, ROWS
+from .rules import COLUMNS, ROWS
 
 
 SCENE_ID = "connect_four"

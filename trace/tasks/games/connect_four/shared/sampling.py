@@ -10,7 +10,7 @@ from trace.tasks.shared.config_defaults import group_default, load_scene_generat
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
-from .common import (
+from .rules import (
     Board,
     COLUMNS,
     RED,
@@ -406,6 +406,8 @@ def _augment_board_density(
     target_answer: int,
     scene_variant: str,
 ) -> Board:
+    """Add legal filler discs while preserving the task's exact answer count."""
+
     rows, columns = board_dimensions(board)
     minimum_occupied, maximum_occupied = _occupancy_bounds(str(scene_variant), rows=int(rows), columns=int(columns))
     current_board = board
@@ -467,6 +469,8 @@ def _random_gravity_board(
     columns: int,
     search_attempts: int = 1024,
 ) -> Board:
+    """Sample a gravity-valid board with turn-count parity and no existing win."""
+
     feasible_occupied: list[int] = []
     for occupied in range(int(minimum_occupied), int(maximum_occupied) + 1):
         if occupied >= int(rows * columns):

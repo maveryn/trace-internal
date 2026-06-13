@@ -6,7 +6,7 @@
 3. Public task id: `task_games__connect_four__safe_move_count`
 4. Supported `query_id` values: `safe_move_count`
 5. Answer schema: `integer_count`
-6. Annotation schema: `bbox_set`
+6. Annotation schema: `point_set`
 7. Program schema: `count(filter(legal_columns, opponent_wins_next=False)); scene=connect_four; scope=safe_move_count`
 
 ## Generation Notes

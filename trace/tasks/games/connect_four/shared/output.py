@@ -6,7 +6,7 @@ from typing import Any
 
 from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts
 
-from .common import board_dimensions, player_name
+from .rules import board_dimensions, player_name
 from .rendering import RenderedConnectFourTaskContext
 from .state import ConnectFourCountSample, ConnectFourLabelSample, ConnectFourSceneAxes
 

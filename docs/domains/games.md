@@ -192,7 +192,7 @@ Review artifacts for these tasks use `review/task-reviews/games/<scene_id>/<task
 - Visual styles include six board/disc themes (`classic`, `soft`, `outlined`, `arcade_blue`, `teal_frame`, `charcoal`) layered over the shared games/puzzles panel scene styles.
 - Rendering uses deterministic font-family sampling for player badges, unit-size and fractional layout jitter, variable board dimensions, and dynamic canvas sizing for smaller sampled boards.
 - Reasoning coverage: immediate winning-drop counting, safe-drop counting, and labeled immediate winning-column selection.
-- Annotation uses homogeneous `bbox_set` witnesses over qualifying landing cells for count tasks; the label task marks the selected column's landing cell rather than the rendered column label.
+- Annotation uses homogeneous `point_set` witnesses at qualifying landing-cell centers for count tasks; the label task marks the selected column's landing cell center rather than the rendered column label.
 - Active default tasks:
   - `task_games__connect_four__safe_move_count`
   - `task_games__connect_four__winning_move_column_label`

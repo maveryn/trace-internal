@@ -12,7 +12,7 @@ from trace.tasks.shared.config_defaults import (
 )
 from trace.tasks.shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 
-from .common import player_name
+from .rules import player_name
 from .defaults import PROMPT_WIRING_KEYS, SCENE_ID
 
 
@@ -26,7 +26,7 @@ def json_examples_for_integer_answer() -> tuple[str, str]:
     """Return generic integer-answer JSON examples for this scene."""
 
     return (
-        json.dumps({"annotation": [[120, 180, 190, 250]], "answer": 3}, separators=(",", ":")),
+        json.dumps({"annotation": [[155, 215]], "answer": 3}, separators=(",", ":")),
         json.dumps({"answer": 3}, separators=(",", ":")),
     )
 
@@ -35,7 +35,7 @@ def json_examples_for_label_answer() -> tuple[str, str]:
     """Return generic label-answer JSON examples for this scene."""
 
     return (
-        json.dumps({"annotation": [[120, 180, 190, 250]], "answer": "C"}, separators=(",", ":")),
+        json.dumps({"annotation": [[155, 215]], "answer": "C"}, separators=(",", ":")),
         json.dumps({"answer": "C"}, separators=(",", ":")),
     )
 

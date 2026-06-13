@@ -86,8 +86,8 @@ _ANSWER_ONLY_MODE = "answer_only"
 
 
 _EXPLICIT_VARIANT_PARAMS: dict[str, list[tuple[str, dict[str, Any]]]] = {
-    "task_games__connect_four__winning_move_count": [("winning_move_count", {"query_id": "winning_move_count"})],
-    "task_games__connect_four__safe_move_count": [("safe_move_count", {"query_id": "safe_move_count"})],
+    "task_games__connect_four__winning_move_count": [("winning_move_count", {})],
+    "task_games__connect_four__safe_move_count": [("safe_move_count", {})],
 }
 
 

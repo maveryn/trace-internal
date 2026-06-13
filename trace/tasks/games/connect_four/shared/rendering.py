@@ -12,7 +12,7 @@ from trace.tasks.shared.config_defaults import group_default, load_scene_generat
 from trace.tasks.shared.font_assets import get_font_family_record, sample_font_family
 from ....shared.text_rendering import fit_font_to_box, load_font, resolve_text_stroke_fill
 from ...shared.text import draw_game_text_traced as draw_text_traced
-from .common import RED, YELLOW, Coord, board_dimensions, coord_to_cell_id, player_name
+from .rules import RED, YELLOW, Coord, board_dimensions, coord_to_cell_id, player_name
 from ...shared.layout import (
     apply_games_layout_jitter_to_bbox,
     attach_games_unit_size_jitter,

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .common import Board, Coord
+from .rules import Board, Coord
 from .defaults import SCENE_ID
 
 

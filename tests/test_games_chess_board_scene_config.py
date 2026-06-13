@@ -14,8 +14,10 @@ def test_games_chess_board_defaults_present() -> None:
     assert set(generation['scene_variant_weights'].keys()) == {'sparse_board', 'crowded_board'}
     assert 'balanced_query_id_sampling' not in generation
     assert 'query_id_weights' not in generation
+    assert bool(generation['balanced_marked_piece_kind_sampling']) is True
     assert list(generation['marked_piece_move_count_support']) == [1, 2, 3, 4, 5, 6, 7, 8]
     assert list(generation['marked_piece_capture_count_support']) == [0, 1, 2, 3, 4]
+    assert set(generation['marked_piece_kind_weights'].keys()) == {'knight', 'bishop', 'rook', 'queen'}
     player_generation, _player_rendering, _player_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__chess__player_capture_piece_count')
     attacker_generation, _attacker_rendering, _attacker_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__chess__target_square_attacker_count')
     blocker_generation, _blocker_rendering, _blocker_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__chess__marked_piece_blocker_count')

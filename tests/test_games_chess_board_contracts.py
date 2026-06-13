@@ -153,6 +153,53 @@ def test_games_chess_marked_capture_count_matches_rules() -> None:
     assert set(execution["annotation_entity_ids"]) == {coord_to_cell_id(coord) for coord in captures}
 
 
+@pytest.mark.parametrize(
+    ("query_id", "marked_piece_kind", "target_answer"),
+    (
+        ("marked_piece_move_count", "knight", 5),
+        ("marked_piece_move_count", "bishop", 5),
+        ("marked_piece_move_count", "rook", 6),
+        ("marked_piece_move_count", "queen", 8),
+        ("marked_piece_capture_count", "knight", 3),
+        ("marked_piece_capture_count", "bishop", 2),
+        ("marked_piece_capture_count", "rook", 3),
+        ("marked_piece_capture_count", "queen", 4),
+    ),
+)
+def test_games_chess_marked_destination_count_supports_multiple_piece_kinds(
+    query_id: str,
+    marked_piece_kind: str,
+    target_answer: int,
+) -> None:
+    out = GamesChessMarkedPieceDestinationCountTask().generate(
+        61200 + int(target_answer) + len(str(marked_piece_kind)),
+        params={
+            "query_id": str(query_id),
+            "target_answer": int(target_answer),
+            "marked_piece_kind": str(marked_piece_kind),
+        },
+        max_attempts=192,
+    )
+    execution = out.trace_payload["execution_trace"]
+    board = _board_from_execution(execution)
+    marked = tuple(int(value) for value in execution["marked_coord"])
+    marked_piece = board[int(marked[0])][int(marked[1])]
+    if str(query_id) == "marked_piece_capture_count":
+        expected_coords = tuple(sorted(piece_capture_targets(board, marked)))
+        trace_key = "capture_coords"
+    else:
+        expected_coords = tuple(sorted(piece_move_destinations(board, marked)))
+        trace_key = "destination_coords"
+
+    assert marked_piece is not None
+    assert str(marked_piece.kind) == str(marked_piece_kind)
+    assert execution["marked_piece_kind"] == str(marked_piece_kind)
+    assert out.trace_payload["query_spec"]["params"]["marked_piece_kind"] == str(marked_piece_kind)
+    assert len(expected_coords) == int(out.answer_gt.value) == int(target_answer)
+    assert [list(coord) for coord in expected_coords] == sorted(execution[trace_key])
+    assert set(execution["annotation_entity_ids"]) == {coord_to_cell_id(coord) for coord in expected_coords}
+
+
 def test_games_chess_player_capture_count_matches_rules() -> None:
     out = GamesChessPlayerCapturePieceCountTask().generate(
         50231,
@@ -516,6 +563,13 @@ def test_games_chess_board_prompt_bundle_requires_rule_texts() -> None:
     assert "normal chess" in static["query:marked_piece_move_count"]["standard_rule_text"].lower()
     assert "red outlined square" in static["query:marked_piece_move_count"]["marked_piece_rule_text"].lower()
     assert "blue outlined square" in static["query:rook_line_blocker_count"]["blocker_rule_text"].lower()
+    assert "movement line" in static["query:rook_line_blocker_count"]["blocker_rule_text"].lower()
+    assert "movement line" in static["query:bishop_diagonal_blocker_count"]["blocker_rule_text"].lower()
+    assert "movement line" in static["query:queen_line_blocker_count"]["blocker_rule_text"].lower()
+    assert "strictly between" not in static["query:rook_line_blocker_count"]["blocker_rule_text"].lower()
+    for query_key in ("white_piece_attacks_target_square_count", "black_piece_attacks_target_square_count"):
+        assert all("attackers" not in str(template).lower() for template in bundle["templates"]["query"][query_key])
+        assert any("pieces attack" in str(template).lower() for template in bundle["templates"]["query"][query_key])
     assert "from" in static["query:checkmate_move_label"]["annotation_hint"]
     for slots in static.values():
         annotation_hint = str(slots.get("annotation_hint", ""))

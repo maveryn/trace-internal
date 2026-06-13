@@ -52,38 +52,38 @@
       ],
       "white_piece_attacks_target_square_count": [
         "{standard_rule_text} {target_square_rule_text} How many white pieces attack the target square?",
-        "{target_square_rule_text} Count the white pieces attacking that square.",
+        "{target_square_rule_text} How many white pieces attack that square?",
         "{standard_rule_text} Determine how many white pieces attack the marked target square.",
         "How many white pieces currently attack the red outlined target square?",
-        "{target_square_rule_text} Count the white attackers of that target square."
+        "{target_square_rule_text} Count the white pieces attacking that target square."
       ],
       "black_piece_attacks_target_square_count": [
         "{standard_rule_text} {target_square_rule_text} How many black pieces attack the target square?",
-        "{target_square_rule_text} Count the black pieces attacking that square.",
+        "{target_square_rule_text} How many black pieces attack that square?",
         "{standard_rule_text} Determine how many black pieces attack the marked target square.",
         "How many black pieces currently attack the red outlined target square?",
-        "{target_square_rule_text} Count the black attackers of that target square."
+        "{target_square_rule_text} Count the black pieces attacking that target square."
       ],
       "rook_line_blocker_count": [
-        "{blocker_rule_text} How many pieces are strictly between the marked rook and the target square?",
-        "{blocker_rule_text} Count the pieces between the marked rook and the blue target square.",
+        "{blocker_rule_text} How many pieces are on the intervening squares along that rook movement line?",
+        "{blocker_rule_text} Count the pieces on the row or column segment from the marked rook to the blue target square.",
         "Count only the pieces lying on the line segment between the red marked rook and the blue target square.",
         "{blocker_rule_text} Determine the number of intervening pieces on that rook line.",
-        "How many blockers lie between the marked rook and the blue outlined target square?"
+        "How many pieces lie on the row or column path from the marked rook to the blue outlined target square?"
       ],
       "bishop_diagonal_blocker_count": [
-        "{blocker_rule_text} How many pieces are strictly between the marked bishop and the target square?",
-        "{blocker_rule_text} Count the pieces between the marked bishop and the blue target square.",
+        "{blocker_rule_text} How many pieces are on the intervening squares along that bishop diagonal?",
+        "{blocker_rule_text} Count the pieces on the diagonal segment from the marked bishop to the blue target square.",
         "Count only the pieces lying on the diagonal between the red marked bishop and the blue target square.",
         "{blocker_rule_text} Determine the number of intervening pieces on that bishop diagonal.",
-        "How many blockers lie between the marked bishop and the blue outlined target square?"
+        "How many pieces lie on the diagonal path from the marked bishop to the blue outlined target square?"
       ],
       "queen_line_blocker_count": [
-        "{blocker_rule_text} How many pieces are strictly between the marked queen and the target square?",
-        "{blocker_rule_text} Count the pieces between the marked queen and the blue target square.",
+        "{blocker_rule_text} How many pieces are on the intervening squares along that queen movement line?",
+        "{blocker_rule_text} Count the pieces on the row, column, or diagonal segment from the marked queen to the blue target square.",
         "Count only the pieces lying on the row, column, or diagonal between the red marked queen and the blue target square.",
         "{blocker_rule_text} Determine the number of intervening pieces on that queen line.",
-        "How many blockers lie between the marked queen and the blue outlined target square?"
+        "How many pieces lie on the row, column, or diagonal path from the marked queen to the blue outlined target square?"
       ],
       "king_escape_square_count": [
         "{standard_rule_text} {king_escape_rule_text} How many safe squares can the marked king move to?",
@@ -183,23 +183,23 @@
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:rook_line_blocker_count": {
-      "blocker_rule_text": "The red outlined square contains the source piece. The blue outlined square is the target square. Count only pieces strictly between them.",
-      "answer_hint": "set \"answer\" to the count of pieces strictly between the marked rook and the target square",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every intervening piece; use an empty array if none are between them",
+      "blocker_rule_text": "The red outlined square contains the source piece. The blue outlined square is the target square. Count only pieces on the intervening squares along the rook's row or column movement line.",
+      "answer_hint": "set \"answer\" to the count of pieces on the intervening squares along the marked rook's movement line to the target square",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every intervening piece on that rook movement line; use an empty array if none are on the path",
       "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:bishop_diagonal_blocker_count": {
-      "blocker_rule_text": "The red outlined square contains the source piece. The blue outlined square is the target square. Count only pieces strictly between them.",
-      "answer_hint": "set \"answer\" to the count of pieces strictly between the marked bishop and the target square",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every intervening piece; use an empty array if none are between them",
+      "blocker_rule_text": "The red outlined square contains the source piece. The blue outlined square is the target square. Count only pieces on the intervening squares along the bishop's diagonal movement line.",
+      "answer_hint": "set \"answer\" to the count of pieces on the intervening squares along the marked bishop's diagonal to the target square",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every intervening piece on that bishop diagonal; use an empty array if none are on the path",
       "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:queen_line_blocker_count": {
-      "blocker_rule_text": "The red outlined square contains the source piece. The blue outlined square is the target square. Count only pieces strictly between them.",
-      "answer_hint": "set \"answer\" to the count of pieces strictly between the marked queen and the target square",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every intervening piece; use an empty array if none are between them",
+      "blocker_rule_text": "The red outlined square contains the source piece. The blue outlined square is the target square. Count only pieces on the intervening squares along the queen's row, column, or diagonal movement line.",
+      "answer_hint": "set \"answer\" to the count of pieces on the intervening squares along the marked queen's movement line to the target square",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every intervening piece on that queen movement line; use an empty array if none are on the path",
       "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },

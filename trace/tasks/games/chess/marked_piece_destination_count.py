@@ -14,6 +14,7 @@ from ._lifecycle import (
     run_chess_public_entry,
 )
 from .shared.sampling import sample_marked_piece_destination_scene
+from .shared.sampling import resolve_string_axis
 from .shared.state import SCENE_ID
 
 
@@ -21,6 +22,7 @@ TASK_ID = "task_games__chess__marked_piece_destination_count"
 SUPPORTED_QUERY_IDS = ("marked_piece_move_count", "marked_piece_capture_count")
 MARKED_MOVE_SUPPORT = (1, 2, 3, 4, 5, 6, 7, 8)
 MARKED_CAPTURE_SUPPORT = (0, 1, 2, 3, 4)
+MARKED_PIECE_KIND_SUPPORT = ("knight", "bishop", "rook", "queen")
 _GEN_DEFAULTS = load_scene_generation_rendering_prompt_defaults("games", SCENE_ID, task_id=TASK_ID)[0]
 
 
@@ -41,12 +43,24 @@ def _prepare_marked_piece_destination_objective(
     """Bind marked-piece destination/capture semantics for one selected query."""
 
     destination_mode, fallback_support, support_key = _destination_query(str(query_id))
+    marked_piece_kind, marked_piece_kind_probs = resolve_string_axis(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        explicit_key="marked_piece_kind",
+        weights_key="marked_piece_kind_weights",
+        balance_flag_key="balanced_marked_piece_kind_sampling",
+        supported_values=MARKED_PIECE_KIND_SUPPORT,
+        namespace=f"{TASK_ID}.marked_piece_kind",
+        gen_defaults=_GEN_DEFAULTS,
+    )
+
     def construct_sample(rng, axes, target_answer):
         return sample_marked_piece_destination_scene(
             rng=rng,
             axes=axes,
             destination_mode=str(destination_mode),
             target_answer=int(target_answer),
+            marked_piece_kind=str(marked_piece_kind),
         )
 
     return prepare_chess_point_count_objective(
@@ -63,7 +77,12 @@ def _prepare_marked_piece_destination_objective(
         if sample.marked_piece is None
         else f"Marked {piece_name(sample.marked_piece)}",
         witness_type="cell_set",
-        query_params={"destination_mode": str(destination_mode)},
+        query_params={
+            "destination_mode": str(destination_mode),
+            "marked_piece_kind": str(marked_piece_kind),
+            "marked_piece_kind_probabilities": dict(marked_piece_kind_probs),
+        },
+        execution_extra={"marked_piece_kind": str(marked_piece_kind)},
     )
 
 

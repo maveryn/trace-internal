@@ -263,6 +263,43 @@ def resolve_player_color(rng, *, params: Mapping[str, Any]) -> str:
     raise ValueError(f"unsupported player_color: {explicit}")
 
 
+def _ray_coords_from(origin: Coord, direction: Coord) -> Tuple[Coord, ...]:
+    """Return in-bounds coordinates along one ray from a source square."""
+
+    row, col = int(origin[0]), int(origin[1])
+    delta_row, delta_col = int(direction[0]), int(direction[1])
+    coords: list[Coord] = []
+    row += int(delta_row)
+    col += int(delta_col)
+    while in_bounds(row, col):
+        coords.append((int(row), int(col)))
+        row += int(delta_row)
+        col += int(delta_col)
+    return tuple(coords)
+
+
+def _allocate_ray_lengths(rng, ray_lengths: Sequence[int], target_answer: int) -> Tuple[int, ...]:
+    """Randomly split a target destination count across bounded movement rays."""
+
+    lengths = [int(value) for value in ray_lengths]
+    if int(target_answer) < 0 or int(target_answer) > sum(lengths):
+        raise ValueError("target answer is not feasible for marked-piece rays")
+    allocations = [0 for _ in lengths]
+    remaining = int(target_answer)
+    order = list(range(len(lengths)))
+    rng.shuffle(order)
+    for order_index, ray_index in enumerate(order):
+        remaining_ray_indices = order[order_index + 1 :]
+        remaining_capacity = sum(lengths[index] for index in remaining_ray_indices)
+        min_count = max(0, int(remaining) - int(remaining_capacity))
+        max_count = min(int(lengths[ray_index]), int(remaining))
+        allocations[ray_index] = int(rng.randint(int(min_count), int(max_count)))
+        remaining -= int(allocations[ray_index])
+    if int(remaining) != 0:
+        raise ValueError("failed to allocate marked-piece ray lengths")
+    return tuple(int(value) for value in allocations)
+
+
 def _piece_count_target_rng_color(rng) -> str:
     return str(rng.choice(PIECE_COUNT_COLOR_SUPPORT))
 
@@ -316,14 +353,137 @@ def sample_piece_count_scene(
     )
 
 
+def _sample_marked_slider_destination_scene(
+    *,
+    rng,
+    axes: ResolvedChessSceneAxes,
+    destination_mode: str,
+    target_answer: int,
+    marked_piece_kind: str,
+) -> ChessSceneSample:
+    """Construct an exact destination/capture scene for a marked sliding piece."""
+
+    if str(marked_piece_kind) not in {"bishop", "rook", "queen"}:
+        raise ValueError(f"unsupported slider marked piece kind: {marked_piece_kind}")
+    marked_coord: Coord = (3, 3)
+    piece_color = WHITE if int(rng.randrange(2)) == 0 else BLACK
+    opponent_color = opponent(piece_color)
+    directions = tuple(slider_directions(str(marked_piece_kind)))
+    rays = tuple(_ray_coords_from(marked_coord, direction) for direction in directions)
+    ray_cells = tuple(coord for ray in rays for coord in ray)
+
+    for _attempt in range(80):
+        mutable = [list(row) for row in empty_board()]
+        mutable[marked_coord[0]][marked_coord[1]] = ChessPiece(piece_color, str(marked_piece_kind))
+
+        if str(destination_mode) == "move":
+            allocations = _allocate_ray_lengths(rng, tuple(len(ray) for ray in rays), int(target_answer))
+            for ray, allowed_count in zip(rays, allocations):
+                if int(allowed_count) >= len(ray):
+                    continue
+                blocker_coord = ray[int(allowed_count)]
+                if not place_capped_random_piece(
+                    rng=rng,
+                    mutable=mutable,
+                    coord=blocker_coord,
+                    colors=(piece_color,),
+                    kinds=("pawn", "knight", "bishop", "rook", "queen"),
+                ):
+                    raise ValueError("failed to place friendly ray blocker")
+        elif str(destination_mode) == "capture":
+            if int(target_answer) > len(rays):
+                raise ValueError("capture target exceeds slider ray count")
+            selected_indices = list(range(len(rays)))
+            rng.shuffle(selected_indices)
+            capture_ray_indices = set(selected_indices[: int(target_answer)])
+            for ray_index, ray in enumerate(rays):
+                if not ray:
+                    continue
+                if ray_index in capture_ray_indices:
+                    capture_coord = tuple(rng.choice(tuple(ray)))
+                    if not place_capped_random_piece(
+                        rng=rng,
+                        mutable=mutable,
+                        coord=capture_coord,
+                        colors=(opponent_color,),
+                        kinds=("pawn", "knight", "bishop", "rook", "queen"),
+                    ):
+                        raise ValueError("failed to place slider capture target")
+                elif int(rng.randrange(2)) == 0:
+                    blocker_coord = tuple(rng.choice(tuple(ray)))
+                    place_capped_random_piece(
+                        rng=rng,
+                        mutable=mutable,
+                        coord=blocker_coord,
+                        colors=(piece_color,),
+                        kinds=("pawn", "knight", "bishop", "rook", "queen"),
+                    )
+        else:
+            raise ValueError(f"unsupported destination mode: {destination_mode}")
+
+        try:
+            place_non_adjacent_kings(
+                rng=rng,
+                mutable=mutable,
+                first_color=piece_color,
+                second_color=opponent_color,
+                forbidden=(marked_coord,) + tuple(ray_cells),
+            )
+        except ValueError:
+            continue
+        board = freeze_board(mutable)
+        coords = evaluate_marked_destinations(board, marked_coord, destination_mode=str(destination_mode))
+        if len(coords) != int(target_answer):
+            continue
+        board = add_material_fillers_preserving(
+            rng=rng,
+            board=board,
+            scene_variant=str(axes.scene_variant),
+            preserved_coords=(marked_coord,) + tuple(ray_cells),
+            expected_coords=coords,
+            evaluator=lambda candidate: evaluate_marked_destinations(candidate, marked_coord, destination_mode=str(destination_mode)),
+        )
+        coords = evaluate_marked_destinations(board, marked_coord, destination_mode=str(destination_mode))
+        piece = board[marked_coord[0]][marked_coord[1]]
+        return ChessSceneSample(
+            board=board,
+            scene_variant=str(axes.scene_variant),
+            style_variant=str(axes.style_variant),
+            construction_mode=f"direct_marked_{str(marked_piece_kind)}_{str(destination_mode)}_count",
+            player_color=str(piece_color),
+            marked_coord=marked_coord,
+            marked_piece=piece,
+            destination_coords=coords,
+            capture_coords=coords if str(destination_mode) == "capture" else (),
+            annotation_coords=coords,
+            annotation_entity_ids=cell_entity_ids(coords),
+            annotation_kind="cell",
+            occupied_count=int(occupied_piece_count(board)),
+            extra={"marked_piece_kind": str(marked_piece_kind)},
+        )
+    raise ValueError("failed to construct marked-slider destination scene")
+
+
 def sample_marked_piece_destination_scene(
     *,
     rng,
     axes: ResolvedChessSceneAxes,
     destination_mode: str,
     target_answer: int,
+    marked_piece_kind: str = "knight",
 ) -> ChessSceneSample:
     """Construct a marked-piece destination or capture-count scene."""
+
+    if str(marked_piece_kind) in {"bishop", "rook", "queen"}:
+        return _sample_marked_slider_destination_scene(
+            rng=rng,
+            axes=axes,
+            destination_mode=str(destination_mode),
+            target_answer=int(target_answer),
+            marked_piece_kind=str(marked_piece_kind),
+        )
+    if str(marked_piece_kind) != "knight":
+        raise ValueError(f"unsupported marked piece kind: {marked_piece_kind}")
 
     marked_coord: Coord = (3, 3)
     piece_color = WHITE if int(rng.randrange(2)) == 0 else BLACK
@@ -380,6 +540,7 @@ def sample_marked_piece_destination_scene(
             annotation_entity_ids=cell_entity_ids(coords),
             annotation_kind="cell",
             occupied_count=int(occupied_piece_count(board)),
+            extra={"marked_piece_kind": str(marked_piece_kind)},
         )
     raise ValueError("failed to construct marked-piece destination scene")
 

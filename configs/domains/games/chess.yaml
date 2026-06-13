@@ -15,8 +15,14 @@ generation:
   task_overrides:
     task_games__chess__marked_piece_destination_count:
       balanced_target_answer_sampling: true
+      balanced_marked_piece_kind_sampling: true
       marked_piece_move_count_support: [1, 2, 3, 4, 5, 6, 7, 8]
       marked_piece_capture_count_support: [0, 1, 2, 3, 4]
+      marked_piece_kind_weights:
+        knight: 1.0
+        bishop: 1.0
+        rook: 1.0
+        queen: 1.0
     task_games__chess__player_capture_piece_count:
       balanced_target_answer_sampling: true
       player_capture_piece_count_support: [1, 2, 3, 4, 5, 6]

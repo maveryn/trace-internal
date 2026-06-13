@@ -69,7 +69,9 @@
             <a class="button-link" href="{{ app_path('/taxonomy') }}">Taxonomy</a>
             <a class="button-link" href="{{ app_path('/issues') }}">Issues{% if feedback_open_count|default(0) %} {{ feedback_open_count }}{% endif %}</a>
             <form action="{{ app_path('/api/reload') }}" method="post">
-              <button type="submit" formaction="{{ app_path('/api/reload') }}" data-reload>Reload Index</button>
+              <button type="submit" formaction="{{ app_path('/api/reload') }}" data-reload>
+                {% if review_reload_status.in_progress|default(false) %}Reloading...{% else %}Reload Index{% endif %}
+              </button>
             </form>
             {% if request.app.state.auth_token %}
               <form action="{{ app_path('/logout') }}" method="post">
@@ -97,10 +99,23 @@
         {% if review_index_stale %}
           <section class="notice stale">
             <strong>Review artifacts changed.</strong>
-            <span>Reload Index before inspecting generated samples.</span>
+            <span>Start an index reload before inspecting generated samples. Existing pages stay available while the index rebuilds.</span>
             <form action="{{ app_path('/api/reload') }}" method="post">
-              <button type="submit" formaction="{{ app_path('/api/reload') }}" data-reload>Reload Index</button>
+              <button type="submit" formaction="{{ app_path('/api/reload') }}" data-reload>
+                {% if review_reload_status.in_progress|default(false) %}Reloading...{% else %}Reload Index{% endif %}
+              </button>
             </form>
+          </section>
+        {% endif %}
+        {% if review_reload_status.in_progress|default(false) %}
+          <section class="notice">
+            <strong>Index reload running.</strong>
+            <span>The current index is still being served and will refresh when the rebuild finishes.</span>
+          </section>
+        {% elif review_reload_status.status|default('idle') == 'failed' %}
+          <section class="notice error">
+            <strong>Index reload failed.</strong>
+            <span>{{ review_reload_status.error }}</span>
           </section>
         {% endif %}
         {% if index.errors %}
@@ -119,7 +134,10 @@
         {% block content %}{% endblock %}
       </main>
     </div>
-    <script>window.TRACE_REVIEW_BASE = "{{ request.app.state.base_url }}";</script>
+    <script>
+      window.TRACE_REVIEW_BASE = {{ request.app.state.base_url|tojson }};
+      window.TRACE_REVIEW_RELOAD_STATUS = {{ review_reload_status|tojson }};
+    </script>
     <script src="{{ app_path('/static/app.js?v=' ~ static_version) }}"></script>
   </body>
 </html>

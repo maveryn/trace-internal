@@ -53,9 +53,11 @@ Confirm:
 - shared code is identity-free
 - prompt prose is externalized
 - config has no query/task routing in shared sections
+- taxonomy review status exists and passed
 - manual code audit status exists and passed
 - migration test status exists and passed
 - fresh task-review artifacts exist under `review/task-reviews`
+- the reviewer checked the task-level taxonomy review gate for every active task
 - open reviewer issues for the scene are fixed and re-reviewed
 
 If any item is false, do not write the receipt.

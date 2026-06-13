@@ -158,8 +158,17 @@ TECHNICAL_DIAGRAM_TREATMENTS: dict[str, TechnicalDiagramTreatment] = {
     "whiteboard": TechnicalDiagramTreatment(
         "whiteboard", ("light",), "whiteboard", "none", 40, 0, 1, 1, 4, 3, 1, "wipe_marks"
     ),
+    "clean_panel": TechnicalDiagramTreatment(
+        "clean_panel", ("light",), "plain_sheet", "none", 44, 0, 1, 1, 3, 2, 1, "none"
+    ),
     "chalkboard_dark": TechnicalDiagramTreatment(
         "chalkboard_dark", ("dark",), "chalkboard", "none", 42, 0, 1, 1, 4, 3, 2, "chalk_dust"
+    ),
+    "dark_slide": TechnicalDiagramTreatment(
+        "dark_slide", ("dark",), "presentation_slide", "none", 48, 0, 1, 1, 3, 2, 2, "none"
+    ),
+    "slate_problem_box": TechnicalDiagramTreatment(
+        "slate_problem_box", ("dark",), "exam_problem_box", "none", 40, 0, 1, 1, 3, 2, 2, "none"
     ),
     "drafting_vellum": TechnicalDiagramTreatment(
         "drafting_vellum", ("light",), "drafting_vellum", "crosshair", 44, 4, 1, 1, 3, 2, 1, "paper_fiber"
@@ -175,6 +184,9 @@ TECHNICAL_DIAGRAM_TREATMENTS: dict[str, TechnicalDiagramTreatment] = {
     ),
     "lab_card": TechnicalDiagramTreatment(
         "lab_card", ("light",), "lab_card", "lab_grid", 36, 4, 1, 2, 3, 2, 1, "none"
+    ),
+    "dark_lab_grid": TechnicalDiagramTreatment(
+        "dark_lab_grid", ("dark",), "lab_card", "lab_grid", 36, 4, 1, 2, 4, 2, 2, "none"
     ),
     "monochrome_print": TechnicalDiagramTreatment(
         "monochrome_print", ("light",), "monochrome_print", "none", 40, 0, 1, 1, 3, 2, 1, "print"

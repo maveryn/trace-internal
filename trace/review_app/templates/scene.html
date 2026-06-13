@@ -17,6 +17,10 @@
     <span>{% if scene.manual_code_audit_pass %}PASS{% elif scene.manual_code_audit_pass is none %}MISSING{% else %}FAIL{% endif %}</span>
     <label>code audit</label>
   </div>
+  <div class="metric">
+    <span>{% if scene.taxonomy_review_pass %}PASS{% elif scene.taxonomy_review_pass is none %}MISSING{% else %}FAIL{% endif %}</span>
+    <label>taxonomy audit</label>
+  </div>
   <a class="metric metric-link" href="{{ app_path('/domains/' ~ scene.domain ~ '/scenes/' ~ scene.scene_id ~ '/review') }}">
     <span>{{ scene_open_feedback|length }}</span>
     <label>open scene issues</label>
@@ -27,6 +31,44 @@
   <strong>Scene-level review.</strong>
   <span class="muted">Inspect two samples per query across every task in this scene and file scene-level issues.</span>
   <a class="button-link" href="{{ app_path('/domains/' ~ scene.domain ~ '/scenes/' ~ scene.scene_id ~ '/review') }}">Open Scene Review</a>
+</section>
+
+{% set taxonomy_review = scene.taxonomy_review_summary %}
+<section class="table-panel compact migration-test-panel">
+  <h2>Taxonomy Review</h2>
+  <div class="migration-test-summary">
+    <span class="{% if scene.taxonomy_review_pass %}status ok{% else %}status warn{% endif %}">
+      {% if scene.taxonomy_review_pass %}PASS{% elif scene.taxonomy_review_pass is none %}MISSING{% else %}FAIL{% endif %}
+    </span>
+    {% if taxonomy_review %}
+      <span class="muted">{{ taxonomy_review.summary or 'no summary recorded' }}</span>
+      <span class="muted">{{ taxonomy_review.checked_at or 'no timestamp' }}</span>
+      {% if taxonomy_review.checked_by %}
+        <span class="muted">by {{ taxonomy_review.checked_by }}</span>
+      {% endif %}
+      {% if scene.taxonomy_review_status_rel_path %}
+        <span class="muted">{{ scene.taxonomy_review_status_rel_path }}</span>
+      {% endif %}
+    {% else %}
+      <span class="muted">No taxonomy_review_status.json was indexed for this scene.</span>
+    {% endif %}
+  </div>
+  {% if taxonomy_review %}
+    {% if taxonomy_review.notes %}
+      <p>{{ taxonomy_review.notes }}</p>
+    {% endif %}
+    {% if taxonomy_review.checklist %}
+      <p class="muted">
+        Checklist:
+        {% for key, value in taxonomy_review.checklist.items() %}
+          {{ key }}={{ 'true' if value else 'false' }}{% if not loop.last %}, {% endif %}
+        {% endfor %}
+      </p>
+    {% endif %}
+    {% if taxonomy_review.task_ids %}
+      <p class="muted">Tasks reviewed: {{ taxonomy_review.task_ids|join(', ') }}</p>
+    {% endif %}
+  {% endif %}
 </section>
 
 {% set manual_code_audit = scene.manual_code_audit_summary %}
@@ -132,7 +174,7 @@
               <span class="{% if task_status.review_pass %}status ok{% else %}status warn{% endif %}">
                 review {% if task_status.review_pass %}done{% else %}pending{% endif %}
               </span>
-              <span class="muted">{{ task_status.review_count|default(0) }}/{{ task_status.review_total|default(5) }}</span>
+              <span class="muted">{{ task_status.review_count|default(0) }}/{{ task_status.review_total|default(6) }}</span>
               <span class="{% if task_status.solve_rate_pass %}status ok{% else %}status warn{% endif %}">
                 solve rate {% if task_status.solve_rate_pass %}done{% else %}pending{% endif %}
               </span>
@@ -144,6 +186,7 @@
               <label><input type="checkbox" name="annotation_pass" value="1" {% if audit.annotation_pass %}checked{% endif %}> Annotation</label>
               <label><input type="checkbox" name="distribution_pass" value="1" {% if audit.distribution_pass %}checked{% endif %}> Distribution</label>
               <label><input type="checkbox" name="code_review_pass" value="1" {% if audit.code_review_pass %}checked{% endif %}> Code review</label>
+              <label><input type="checkbox" name="taxonomy_review_pass" value="1" {% if audit.taxonomy_review_pass %}checked{% endif %}> Taxonomy review</label>
               <label><input type="checkbox" name="solve_rate_pass" value="1" {% if audit.solve_rate_pass %}checked{% endif %}> Solve rate</label>
               <button type="submit">Save</button>
             </form>

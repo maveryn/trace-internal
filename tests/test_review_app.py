@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import re
 import sqlite3
+import threading
 import time
 
 from PIL import Image
@@ -77,6 +78,25 @@ def _make_review_fixture(tmp_path: Path, *, prompt: str = "What label is on the 
         },
     )
     _write_json(
+        root / "pages" / "workspace" / "taxonomy_review_status.json",
+        {
+            "schema": "trace_scene_taxonomy_review_status_v1",
+            "domain": "pages",
+            "scene_id": "workspace",
+            "passed": True,
+            "status": "passed",
+            "summary": "taxonomy contract audit passed",
+            "checked_at": "2026-06-12T00:00:00+00:00",
+            "checked_by": "test",
+            "checklist": {
+                "program_codes_concrete": True,
+                "query_ids_semantic": True,
+                "task_contracts_stable": True,
+            },
+            "task_ids": [TASK_ID],
+        },
+    )
+    _write_json(
         task_dir / "manifest.json",
         {
             "calibration_baseline": "v0",
@@ -146,6 +166,27 @@ def _make_review_fixture(tmp_path: Path, *, prompt: str = "What label is on the 
                 },
             },
         },
+    )
+    task_doc = tmp_path / "docs" / "tasks" / f"{TASK_ID}.md"
+    task_doc.parent.mkdir(parents=True, exist_ok=True)
+    task_doc.write_text(
+        "\n".join(
+            [
+                f"# `{TASK_ID}`",
+                "",
+                "## Contract",
+                "1. Domain: `pages`",
+                "2. Scene id: `workspace`",
+                "3. Query id: `lookup`",
+                "4. Answer schema: `option_letter`",
+                "5. Annotation schema: `bbox_set`",
+                "",
+                "## Program Contract",
+                "- `select_labeled_control(toolbar_palette, target_role=palette_control); scene=workspace; scope=toolbar_palette_control_label`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
     )
     return root
 
@@ -327,6 +368,9 @@ def test_review_index_scans_domain_scene_task_query_samples(tmp_path: Path) -> N
     assert scene.manual_code_audit_pass is True
     assert scene.manual_code_audit_summary["summary"] == "role-boundary audit passed"
     assert scene.manual_code_audit_status_rel_path == "pages/workspace/manual_code_audit_status.json"
+    assert scene.taxonomy_review_pass is True
+    assert scene.taxonomy_review_summary["summary"] == "taxonomy contract audit passed"
+    assert scene.taxonomy_review_status_rel_path == "pages/workspace/taxonomy_review_status.json"
     sample = next(iter(index.samples.values()))
     assert sample.answer_value == "G"
     assert sample.image_exists is True
@@ -430,6 +474,7 @@ def test_feedback_store_persists_task_audit_status(tmp_path: Path) -> None:
         annotation_pass=True,
         distribution_pass=True,
         code_review_pass=True,
+        taxonomy_review_pass=True,
         solve_rate_pass=True,
         updated_by="reviewer",
     )
@@ -437,8 +482,9 @@ def test_feedback_store_persists_task_audit_status(tmp_path: Path) -> None:
     assert updated.manual_pass is True
     assert updated.review_pass is True
     assert updated.code_review_pass is True
-    assert updated.review_count == 5
-    assert updated.passed_count == 6
+    assert updated.taxonomy_review_pass is True
+    assert updated.review_count == 6
+    assert updated.passed_count == 7
     assert store.task_audits_by_task()[f"pages/workspace/{TASK_ID}"].updated_by == "reviewer"
 
     illustration_review = store.update_illustration_object_review(
@@ -492,14 +538,17 @@ def test_feedback_store_migrates_task_audit_code_review_gate(tmp_path: Path) -> 
         annotation_pass=True,
         distribution_pass=True,
         code_review_pass=True,
+        taxonomy_review_pass=True,
         solve_rate_pass=True,
     )
 
     assert migrated.code_review_pass is True
+    assert migrated.taxonomy_review_pass is True
     assert migrated.review_pass is True
     with sqlite3.connect(db_path) as conn:
         columns = {row[1] for row in conn.execute("PRAGMA table_info(task_audit)").fetchall()}
     assert "code_review_pass" in columns
+    assert "taxonomy_review_pass" in columns
 
 
 def test_illustration_object_review_uses_variant_pixel_footprints() -> None:
@@ -644,6 +693,7 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
     assert 'href="/proxy/7860/domains/pages"' in page.text
     assert 'href="/proxy/7860/static/app.css?v=' in page.text
     assert 'src="/proxy/7860/static/app.js?v=' in page.text
+    assert 'window.TRACE_REVIEW_BASE = "/proxy/7860";' in page.text
     assert "Review root: review/task-reviews" in page.text
     assert str(root.resolve()) not in page.text
     assert 'class="site-header"' in page.text
@@ -683,6 +733,13 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
     assert 'class="sample-row"' in task_page.text
     assert 'data-task-feedback-toggle' in task_page.text
     assert 'data-task-feedback-form' in task_page.text
+    assert "<h2>Taxonomy</h2>" in task_page.text
+    assert "Program Code" in task_page.text
+    assert "select_labeled_control(toolbar_palette, target_role=palette_control)" in task_page.text
+    assert "Answer Schema" in task_page.text
+    assert "option_letter" in task_page.text
+    assert "Annotation Schema" in task_page.text
+    assert "bbox_set" in task_page.text
     assert "<h2>Distribution</h2>" in task_page.text
     assert "PASS" in task_page.text
     assert "mode single_sample" in task_page.text
@@ -1227,8 +1284,9 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
     assert old_gate_update.json()["status"]["complete"] is False
     assert old_gate_update.json()["status"]["review_pass"] is False
     assert old_gate_update.json()["status"]["code_review_pass"] is False
+    assert old_gate_update.json()["status"]["taxonomy_review_pass"] is False
     assert old_gate_update.json()["status"]["review_count"] == 4
-    assert old_gate_update.json()["status"]["review_total"] == 5
+    assert old_gate_update.json()["status"]["review_total"] == 6
 
     update = client.patch(
         f"/api/tasks/pages/workspace/{TASK_ID}/audit",
@@ -1239,6 +1297,7 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
             "annotation_pass": True,
             "distribution_pass": True,
             "code_review_pass": True,
+            "taxonomy_review_pass": True,
             "solve_rate_pass": True,
             "updated_by": "reviewer",
         },
@@ -1247,6 +1306,7 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
     assert update.json()["status"]["complete"] is True
     assert update.json()["status"]["review_pass"] is True
     assert update.json()["status"]["code_review_pass"] is True
+    assert update.json()["status"]["taxonomy_review_pass"] is True
     assert update.json()["status"]["solve_rate_pass"] is True
     assert update.json()["status"]["solve_artifact_pass"] is True
 
@@ -1258,7 +1318,7 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
     scene_page = client.get("/domains/pages/scenes/workspace", headers={"Authorization": "Bearer secret"})
     assert scene_page.status_code == 200
     assert "review done" in scene_page.text
-    assert "5/5" in scene_page.text
+    assert "6/6" in scene_page.text
     assert "solve rate done" in scene_page.text
 
 
@@ -1284,7 +1344,9 @@ def test_review_app_supports_scene_review_and_scene_level_issues(tmp_path: Path)
     assert scene_page.status_code == 200
     assert "Open Scene Review" in scene_page.text
     assert "Migration Tests" in scene_page.text
+    assert "Taxonomy Review" in scene_page.text
     assert "3 passed" in scene_page.text
+    assert "taxonomy contract audit passed" in scene_page.text
     assert 'href="/domains/pages/scenes/workspace/review"' in scene_page.text
     assert "<label>open scene issues</label>" in scene_page.text
 
@@ -1364,12 +1426,168 @@ def test_review_app_warns_when_review_artifacts_are_stale(tmp_path: Path) -> Non
 
     stale_page = client.get("/", headers={"Authorization": "Bearer secret"})
     assert "Review artifacts changed." in stale_page.text
-    assert "Reload Index before inspecting generated samples." in stale_page.text
+    assert "Start an index reload before inspecting generated samples." in stale_page.text
 
     reload_response = client.post("/api/reload", headers={"Authorization": "Bearer secret"})
     assert reload_response.status_code == 200
+    deadline = time.time() + 5
+    while time.time() < deadline:
+        status = client.get("/api/reload/status", headers={"Authorization": "Bearer secret"}).json()
+        if not status["in_progress"]:
+            break
+        time.sleep(0.01)
+    assert status["status"] == "succeeded"
     fresh_page = client.get("/", headers={"Authorization": "Bearer secret"})
     assert "Review artifacts changed." not in fresh_page.text
+
+
+def test_review_app_reload_keeps_serving_current_index_while_rebuilding(tmp_path: Path, monkeypatch) -> None:
+    __import__("pytest").importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    import trace.review_app.server as review_server
+
+    root = _make_review_fixture(tmp_path)
+    from trace.review_app.server import create_app
+
+    app = create_app(
+        review_root=root,
+        enforce_migration_registry=False,
+        repo_root=tmp_path,
+        feedback_db=tmp_path / "feedback.sqlite",
+        token="secret",
+    )
+    client = TestClient(app)
+    current_index = app.state.review.index()
+    started = threading.Event()
+    release = threading.Event()
+
+    def slow_build_review_index(*args, **kwargs):
+        started.set()
+        if not release.wait(timeout=5):
+            raise TimeoutError("test did not release index rebuild")
+        return current_index
+
+    monkeypatch.setattr(review_server, "build_review_index", slow_build_review_index)
+
+    began = time.monotonic()
+    reload_response = client.post("/api/reload", headers={"Authorization": "Bearer secret"})
+    elapsed = time.monotonic() - began
+    assert reload_response.status_code == 200
+    assert elapsed < 1.0
+    assert reload_response.json()["in_progress"] is True
+    assert started.wait(timeout=2)
+
+    page = client.get("/", headers={"Authorization": "Bearer secret"})
+    assert page.status_code == 200
+    assert "Index reload running." in page.text
+
+    running = client.get("/api/reload/status", headers={"Authorization": "Bearer secret"}).json()
+    assert running["status"] == "running"
+    assert running["in_progress"] is True
+
+    release.set()
+    deadline = time.time() + 5
+    while time.time() < deadline:
+        finished = client.get("/api/reload/status", headers={"Authorization": "Bearer secret"}).json()
+        if not finished["in_progress"]:
+            break
+        time.sleep(0.01)
+    assert finished["status"] == "succeeded"
+
+
+def test_review_app_scene_reload_updates_one_scene_without_full_rebuild(tmp_path: Path, monkeypatch) -> None:
+    __import__("pytest").importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    import trace.review_app.server as review_server
+
+    root = _make_review_fixture(tmp_path)
+    from trace.review_app.server import create_app
+
+    app = create_app(
+        review_root=root,
+        enforce_migration_registry=False,
+        repo_root=tmp_path,
+        feedback_db=tmp_path / "feedback.sqlite",
+        token="secret",
+    )
+    client = TestClient(app)
+    assert next(iter(app.state.review.index().samples.values())).prompt == "What label is on the target control?"
+
+    data_path = root / "pages" / "workspace" / TASK_ID / "data" / "lookup" / "0000.json"
+    payload = json.loads(data_path.read_text(encoding="utf-8"))
+    payload["prompt"] = "Updated prompt from scoped reload."
+    _write_json(data_path, payload)
+
+    def fail_full_rebuild(*args, **kwargs):
+        raise AssertionError("scene-scoped reload should not call full build_review_index")
+
+    monkeypatch.setattr(review_server, "build_review_index", fail_full_rebuild)
+
+    reload_response = client.post(
+        "/api/reload/scene/pages/workspace",
+        headers={"Authorization": "Bearer secret"},
+    )
+    assert reload_response.status_code == 200
+    assert reload_response.json()["scope"] == "scene:pages/workspace"
+
+    deadline = time.time() + 5
+    while time.time() < deadline:
+        finished = client.get("/api/reload/status", headers={"Authorization": "Bearer secret"}).json()
+        if not finished["in_progress"]:
+            break
+        time.sleep(0.01)
+    assert finished["status"] == "succeeded"
+    assert finished["scope"] == "scene:pages/workspace"
+    assert next(iter(app.state.review.index().samples.values())).prompt == "Updated prompt from scoped reload."
+
+
+def test_review_app_deferred_initial_index_binds_before_index_scan(tmp_path: Path, monkeypatch) -> None:
+    __import__("pytest").importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    import trace.review_app.server as review_server
+
+    root = _make_review_fixture(tmp_path)
+    from trace.review_app.server import create_app
+
+    original_build_review_index = review_server.build_review_index
+    started = threading.Event()
+    release = threading.Event()
+
+    def slow_build_review_index(*args, **kwargs):
+        started.set()
+        if not release.wait(timeout=5):
+            raise TimeoutError("test did not release deferred index rebuild")
+        return original_build_review_index(*args, **kwargs)
+
+    monkeypatch.setattr(review_server, "build_review_index", slow_build_review_index)
+
+    began = time.monotonic()
+    app = create_app(
+        review_root=root,
+        enforce_migration_registry=False,
+        repo_root=tmp_path,
+        feedback_db=tmp_path / "feedback.sqlite",
+        token="secret",
+        defer_initial_index=True,
+    )
+    elapsed = time.monotonic() - began
+    assert elapsed < 1.0
+    assert started.wait(timeout=2)
+
+    client = TestClient(app)
+    page = client.get("/", headers={"Authorization": "Bearer secret"})
+    assert page.status_code == 200
+    assert "Index reload running." in page.text
+    assert "Review index is loading in the background." in page.text
+
+    release.set()
+    deadline = time.time() + 5
+    while time.time() < deadline:
+        finished = client.get("/api/reload/status", headers={"Authorization": "Bearer secret"}).json()
+        if not finished["in_progress"]:
+            break
+        time.sleep(0.01)
+    assert finished["status"] == "succeeded"
 
 
 def test_review_app_adds_feedback_via_api(tmp_path: Path) -> None:
@@ -1506,3 +1724,18 @@ def test_review_app_reviews_three_d_object_profiles(tmp_path: Path) -> None:
     multipart_review = app.state.review.feedback.get_three_d_object_review(profile_id=profile_id)
     assert multipart_review.decision == "approve"
     assert multipart_review.notes == "Browser FormData save should keep 3D notes."
+
+
+def test_review_app_launcher_defaults_to_proxy_base_url(monkeypatch) -> None:
+    import scripts.run_review_app as run_review_app
+
+    monkeypatch.delenv("TRACE_REVIEW_APP_BASE_URL", raising=False)
+    assert run_review_app._resolve_base_url(None, port=7860) == "/proxy/7860"
+    assert run_review_app._resolve_base_url(None, port=7877) == "/proxy/7877"
+
+    monkeypatch.setenv("TRACE_REVIEW_APP_BASE_URL", "/custom/{port}")
+    assert run_review_app._resolve_base_url(None, port=7860) == "/custom/7860"
+
+    assert run_review_app._resolve_base_url("", port=7860) == ""
+    assert run_review_app._resolve_base_url("none", port=7860) == ""
+    assert run_review_app._resolve_base_url("/review", port=7860) == "/review"

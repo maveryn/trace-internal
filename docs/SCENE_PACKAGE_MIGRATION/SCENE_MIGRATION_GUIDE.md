@@ -99,30 +99,34 @@ classes, or scene ids.
    annotation projection assumptions.
 3. Write one task contract per active public task: answer schema, annotation
    schema, query ids, reasoning program, and owned logic.
-4. Decide any split/merge/delete before moving code.
-5. Extract reusable scene primitives into `shared/`.
-6. Rewrite each public task file so it owns the objective.
-7. Record any cross-scene promotion candidates, but do not promote them during
+4. Apply `TAXONOMY_REVIEW_CHECKLIST.md`: verify concrete program codes,
+   explicit allowed arguments, stable answer/annotation contracts, and semantic
+   query ids before moving code.
+5. Decide any split/merge/delete before moving code.
+6. Extract reusable scene primitives into `shared/`.
+7. Rewrite each public task file so it owns the objective.
+8. Record any cross-scene promotion candidates, but do not promote them during
    the scene migration unless the domain companion doc already approves that
    family boundary.
-8. Remove retired source files, aliases, stale configs, stale prompts, and stale
+9. Remove retired source files, aliases, stale configs, stale prompts, and stale
    review folders for that scene.
-9. Smoke-generate every task and every supported query branch.
-10. Add the scene to `SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES`.
-11. Manually audit source boundaries before generating review artifacts.
-12. Run the required scene-scoped migration/review tests with
+10. Smoke-generate every task and every supported query branch.
+11. Add the scene to `SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES`.
+12. Manually audit taxonomy and source boundaries before generating review
+    artifacts.
+13. Run the required scene-scoped migration/review tests with
     `TRACE_SCENE_PACKAGE_REVIEW_SCENE=<domain>/<scene_id>`.
-13. Record passing manual audit and migration test status under
+14. Record passing taxonomy review, manual audit, and migration test status under
     `review/task-reviews/<domain>/<scene_id>/`.
-14. Generate fresh task-review artifacts only after the gates pass.
-15. Reload the review app index.
+15. Generate fresh task-review artifacts only after the gates pass.
+16. Reload the review app index.
 
 ## Failure Rule
 
 If a gate fails, fix the scene source or remove the scene from the
 review-candidate registry. Do not edit tests, weaken policies, rename the
-violation, fake manual audit status, fake migration status, or hand over stale
-review artifacts.
+violation, fake taxonomy status, fake manual audit status, fake migration
+status, or hand over stale review artifacts.
 
 ## Handoff
 
@@ -132,6 +136,7 @@ Report:
 - active task ids
 - files changed
 - tests run
+- taxonomy review status
 - review artifacts generated
 - app reload/restart status
 - blockers or reviewer issues

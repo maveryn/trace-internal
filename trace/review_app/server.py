@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, replace
+from datetime import datetime, timezone
 from functools import lru_cache
 import io
 import json
@@ -22,7 +23,7 @@ from PIL import Image as PILImage
 
 from trace.core.review_overlays import render_annotation_overlay, resolve_overlay_annotation
 
-from .artifact_index import build_review_index, load_sample_payload
+from .artifact_index import build_review_index, build_review_scene_index, load_sample_payload, merge_review_scene_index
 from .feedback import FeedbackStore
 from .illustration_object_review import (
     RENDERER_LABELS as ILLUSTRATION_RENDERER_LABELS,
@@ -48,21 +49,36 @@ class ReviewAppState:
         repo_root: Path,
         feedback_db: Path,
         enforce_migration_registry: bool = True,
+        defer_initial_index: bool = False,
     ) -> None:
         self.review_root = Path(review_root).resolve()
         self.repo_root = Path(repo_root).resolve()
         self.enforce_migration_registry = bool(enforce_migration_registry)
         self.feedback = FeedbackStore(feedback_db)
         self._lock = threading.RLock()
-        self._index = build_review_index(
-            self.review_root,
-            repo_root=self.repo_root,
-            enforce_migration_registry=self.enforce_migration_registry,
-        )
-        self._review_mtime_snapshot_ns = _max_review_file_mtime_ns(self.review_root)
+        if defer_initial_index:
+            self._index = _loading_review_index(review_root=self.review_root, repo_root=self.repo_root)
+            self._review_mtime_snapshot_ns = 0
+        else:
+            self._index = build_review_index(
+                self.review_root,
+                repo_root=self.repo_root,
+                enforce_migration_registry=self.enforce_migration_registry,
+            )
+            self._review_mtime_snapshot_ns = _max_review_file_mtime_ns(self.review_root)
         self._stale_cache = False
         self._stale_cache_until_ns = 0
         self._stale_check_interval_ns = 2_000_000_000
+        self._reload_in_progress = False
+        self._reload_status = "idle"
+        self._reload_started_at = ""
+        self._reload_finished_at = ""
+        self._reload_error = ""
+        self._reload_generation = 0
+        self._reload_scope = "all"
+        self._reload_thread: threading.Thread | None = None
+        if defer_initial_index:
+            self.request_reload()
 
     def index(self) -> ReviewIndex:
         with self._lock:
@@ -80,7 +96,110 @@ class ReviewAppState:
             self._review_mtime_snapshot_ns = fresh_mtime
             self._stale_cache = False
             self._stale_cache_until_ns = 0
+            self._reload_in_progress = False
+            self._reload_status = "succeeded"
+            self._reload_started_at = self._reload_started_at or _utc_timestamp()
+            self._reload_finished_at = _utc_timestamp()
+            self._reload_error = ""
             return self._index
+
+    def request_reload(self, *, domain: str = "", scene_id: str = "") -> Dict[str, Any]:
+        """Start an index rebuild in the background and keep serving the old index."""
+
+        scope = "all"
+        domain_name = str(domain).strip()
+        scene_name = str(scene_id).strip()
+        if domain_name or scene_name:
+            if not domain_name or not scene_name:
+                raise ValueError("scene reload requires both domain and scene_id")
+            scope = f"scene:{domain_name}/{scene_name}"
+        with self._lock:
+            if self._reload_in_progress:
+                payload = self._reload_status_payload_locked()
+                payload.update({"accepted": False, "already_running": True})
+                return payload
+
+            self._reload_generation += 1
+            generation = self._reload_generation
+            self._reload_in_progress = True
+            self._reload_status = "running"
+            self._reload_started_at = _utc_timestamp()
+            self._reload_finished_at = ""
+            self._reload_error = ""
+            self._reload_scope = scope
+            thread = threading.Thread(
+                target=self._reload_worker,
+                args=(generation, domain_name, scene_name),
+                name=f"trace-review-index-reload-{generation}",
+                daemon=True,
+            )
+            self._reload_thread = thread
+            payload = self._reload_status_payload_locked()
+            payload.update({"accepted": True, "already_running": False})
+
+        thread.start()
+        return payload
+
+    def reload_status(self) -> Dict[str, Any]:
+        stale = self.review_artifacts_stale()
+        with self._lock:
+            payload = self._reload_status_payload_locked()
+            payload["stale"] = stale
+            return payload
+
+    def _reload_worker(self, generation: int, domain: str = "", scene_id: str = "") -> None:
+        try:
+            if domain and scene_id:
+                scene_fresh = build_review_scene_index(
+                    self.review_root,
+                    domain=domain,
+                    scene_id=scene_id,
+                    repo_root=self.repo_root,
+                    enforce_migration_registry=self.enforce_migration_registry,
+                )
+                fresh = merge_review_scene_index(self.index(), scene_fresh, domain=domain, scene_id=scene_id)
+            else:
+                fresh = build_review_index(
+                    self.review_root,
+                    repo_root=self.repo_root,
+                    enforce_migration_registry=self.enforce_migration_registry,
+                )
+            fresh_mtime = _max_review_file_mtime_ns(self.review_root)
+        except Exception as exc:  # pragma: no cover - exercised through route tests.
+            with self._lock:
+                if generation != self._reload_generation:
+                    return
+                self._reload_in_progress = False
+                self._reload_status = "failed"
+                self._reload_finished_at = _utc_timestamp()
+                self._reload_error = str(exc)
+                self._stale_cache = True
+                self._stale_cache_until_ns = 0
+            return
+
+        with self._lock:
+            if generation != self._reload_generation:
+                return
+            self._index = fresh
+            self._review_mtime_snapshot_ns = fresh_mtime
+            self._stale_cache = False
+            self._stale_cache_until_ns = 0
+            self._reload_in_progress = False
+            self._reload_status = "succeeded"
+            self._reload_finished_at = _utc_timestamp()
+            self._reload_error = ""
+
+    def _reload_status_payload_locked(self) -> Dict[str, Any]:
+        return {
+            "status": self._reload_status,
+            "in_progress": self._reload_in_progress,
+            "started_at": self._reload_started_at,
+            "finished_at": self._reload_finished_at,
+            "error": self._reload_error,
+            "generation": self._reload_generation,
+            "scope": self._reload_scope,
+            "stale": self._stale_cache,
+        }
 
     def review_artifacts_stale(self) -> bool:
         now = time.monotonic_ns()
@@ -104,6 +223,7 @@ def create_app(
     token: str | None = None,
     base_url: str = "",
     enforce_migration_registry: bool = True,
+    defer_initial_index: bool = False,
 ) -> FastAPI:
     """Create the task-review web app."""
 
@@ -120,6 +240,7 @@ def create_app(
         repo_root=resolved_repo_root,
         feedback_db=resolved_feedback_db,
         enforce_migration_registry=bool(enforce_migration_registry),
+        defer_initial_index=bool(defer_initial_index),
     )
 
     package_dir = Path(__file__).resolve().parent
@@ -995,6 +1116,7 @@ def create_app(
             annotation_pass=_truthy(data.get("annotation_pass")),
             distribution_pass=_truthy(data.get("distribution_pass")),
             code_review_pass=_truthy(data.get("code_review_pass")),
+            taxonomy_review_pass=_truthy(data.get("taxonomy_review_pass")),
             solve_rate_pass=_truthy(data.get("solve_rate_pass")),
             notes=str(data.get("notes", "")),
             updated_by=str(data.get("updated_by", "")),
@@ -1027,7 +1149,18 @@ def create_app(
 
     @app.post("/api/reload")
     async def api_reload() -> Dict[str, Any]:
-        return state.reload().as_summary()
+        return state.request_reload()
+
+    @app.post("/api/reload/scene/{domain}/{scene_id}")
+    async def api_reload_scene(domain: str, scene_id: str) -> Dict[str, Any]:
+        try:
+            return state.request_reload(domain=domain, scene_id=scene_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.get("/api/reload/status")
+    async def api_reload_status() -> Dict[str, Any]:
+        return state.reload_status()
 
     @app.get("/api/index")
     async def api_index() -> Dict[str, Any]:
@@ -1091,6 +1224,7 @@ def create_app(
             annotation_pass=_truthy(data.get("annotation_pass", existing.annotation_pass)),
             distribution_pass=_truthy(data.get("distribution_pass", existing.distribution_pass)),
             code_review_pass=_truthy(data.get("code_review_pass", existing.code_review_pass)),
+            taxonomy_review_pass=_truthy(data.get("taxonomy_review_pass", existing.taxonomy_review_pass)),
             solve_rate_pass=_truthy(data.get("solve_rate_pass", existing.solve_rate_pass)),
             notes=str(data.get("notes", existing.notes)),
             updated_by=str(data.get("updated_by", existing.updated_by)),
@@ -1847,12 +1981,14 @@ def _context(request: Request, *, index: ReviewIndex, title: str, **extra: Any) 
     audit_by_task = _effective_audits_by_task(index, feedback.task_audits_by_task())
     task_status_by_task, status_by_scene, status_by_domain = _status_summaries(index, audit_by_task)
     feedback_by_domain = feedback.counts_by_domain()
+    reload_status = request.app.state.review.reload_status()
     context: Dict[str, Any] = {
         "request": request,
         "title": title,
         "index": index,
         "review_root_display": _display_path(index.root, repo_root=index.repo_root),
-        "review_index_stale": request.app.state.review.review_artifacts_stale(),
+        "review_index_stale": bool(reload_status.get("stale")),
+        "review_reload_status": reload_status,
         "feedback_by_domain": feedback_by_domain,
         "feedback_by_scene": feedback.counts_by_scene(),
         "feedback_by_task": feedback.counts_by_task(),
@@ -1932,15 +2068,16 @@ def _task_status_payload(*, task: Any, audit: Any) -> Dict[str, Any]:
     return {
         "review_pass": review_pass,
         "review_count": int(getattr(audit, "review_count", 0)),
-        "review_total": int(getattr(audit, "review_total", 5)),
+        "review_total": int(getattr(audit, "review_total", 6)),
         "code_review_pass": bool(getattr(audit, "code_review_pass", False)),
+        "taxonomy_review_pass": bool(getattr(audit, "taxonomy_review_pass", False)),
         "solve_rate_pass": solve_rate_pass,
         "solve_artifact_pass": solve_artifact_pass,
         "complete": complete,
         # Backward-compatible API aliases.
         "manual_pass": review_pass,
         "manual_count": int(getattr(audit, "review_count", 0)),
-        "manual_total": int(getattr(audit, "review_total", 5)),
+        "manual_total": int(getattr(audit, "review_total", 6)),
         "solve_pass": solve_artifact_pass,
     }
 
@@ -2337,6 +2474,19 @@ def _display_path(path: Path | str, *, repo_root: Path | str) -> str:
         return str(resolved_path.relative_to(resolved_repo_root))
     except ValueError:
         return str(resolved_path)
+
+
+def _utc_timestamp() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def _loading_review_index(*, review_root: Path, repo_root: Path) -> ReviewIndex:
+    return ReviewIndex(
+        root=Path(review_root).resolve(),
+        repo_root=Path(repo_root).resolve(),
+        built_at=_utc_timestamp(),
+        errors=["Review index is loading in the background."],
+    )
 
 
 def _max_review_file_mtime_ns(root: Path) -> int:

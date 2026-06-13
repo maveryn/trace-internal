@@ -655,6 +655,54 @@ tbody tr:hover {
   justify-content: flex-end;
 }
 
+.task-taxonomy-panel {
+  margin-bottom: 16px;
+}
+
+.task-taxonomy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 14px;
+  padding: 12px 16px 16px;
+}
+
+.task-taxonomy-grid label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.task-taxonomy-grid code {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 6px;
+  background: var(--panel-soft);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.task-taxonomy-query-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.task-taxonomy-program {
+  grid-column: 1 / -1;
+}
+
+.task-taxonomy-program code {
+  display: block;
+  padding: 8px;
+}
+
 .distribution-panel {
   margin-bottom: 16px;
 }

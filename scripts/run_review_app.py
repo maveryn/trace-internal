@@ -22,8 +22,12 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--token", default="", help="Auth token. Defaults to TRACE_REVIEW_APP_TOKEN.")
     parser.add_argument(
         "--base-url",
-        default="",
-        help="External URL path prefix, e.g. /proxy/7860 behind Jupyter Server Proxy. Defaults to TRACE_REVIEW_APP_BASE_URL.",
+        default=None,
+        help=(
+            "External URL path prefix, e.g. /proxy/7860 behind Jupyter Server Proxy. "
+            "Defaults to TRACE_REVIEW_APP_BASE_URL, then /proxy/{port}. "
+            "Pass an empty string or 'none' for root-relative local-only links."
+        ),
     )
     parser.add_argument("--reload", action="store_true", help="Enable uvicorn development reload")
     return parser.parse_args()
@@ -31,6 +35,21 @@ def _parse_args() -> argparse.Namespace:
 
 def _requires_token(host: str) -> bool:
     return str(host).strip() not in {"127.0.0.1", "localhost", "::1"}
+
+
+def _resolve_base_url(cli_base_url: str | None, *, port: int) -> str:
+    """Resolve the browser-facing prefix used for app links and assets."""
+
+    if cli_base_url is not None:
+        template = str(cli_base_url)
+    elif "TRACE_REVIEW_APP_BASE_URL" in os.environ:
+        template = str(os.environ.get("TRACE_REVIEW_APP_BASE_URL", ""))
+    else:
+        template = "/proxy/{port}"
+    text = template.strip()
+    if text.lower() in {"", "/", "none", "off", "root"}:
+        return ""
+    return text.format(port=int(port))
 
 
 def main() -> int:
@@ -63,7 +82,8 @@ def main() -> int:
         repo_root=repo_root,
         feedback_db=feedback_db,
         token=token,
-        base_url=str(args.base_url or os.environ.get("TRACE_REVIEW_APP_BASE_URL", "")),
+        base_url=_resolve_base_url(args.base_url, port=int(args.port)),
+        defer_initial_index=True,
     )
     uvicorn.run(app, host=str(args.host), port=int(args.port), reload=bool(args.reload))
     return 0

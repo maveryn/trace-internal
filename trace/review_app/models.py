@@ -75,6 +75,7 @@ class TaskRecord:
     distribution_mode: str = ""
     distribution_pass: bool | None = None
     distribution_summary: Dict[str, Any] = field(default_factory=dict)
+    taxonomy_summary: Dict[str, Any] = field(default_factory=dict)
     solve_stats: List[SolveStats] = field(default_factory=list)
 
     @property
@@ -100,6 +101,7 @@ class TaskAuditRecord:
     annotation_pass: bool = False
     distribution_pass: bool = False
     code_review_pass: bool = False
+    taxonomy_review_pass: bool = False
     solve_rate_pass: bool = False
     notes: str = ""
     updated_at: str = ""
@@ -115,6 +117,7 @@ class TaskAuditRecord:
             and self.annotation_pass
             and self.distribution_pass
             and self.code_review_pass
+            and self.taxonomy_review_pass
         )
 
     @property
@@ -125,11 +128,12 @@ class TaskAuditRecord:
             + int(self.annotation_pass)
             + int(self.distribution_pass)
             + int(self.code_review_pass)
+            + int(self.taxonomy_review_pass)
         )
 
     @property
     def review_total(self) -> int:
-        return 5
+        return 6
 
     @property
     def solve_rate_review_pass(self) -> bool:
@@ -149,7 +153,7 @@ class TaskAuditRecord:
 
     @property
     def total_count(self) -> int:
-        return 6
+        return 7
 
     @classmethod
     def empty(cls, *, domain: str, scene_id: str, task_id: str) -> "TaskAuditRecord":
@@ -166,6 +170,7 @@ class TaskAuditRecord:
             annotation_pass=bool(int(row["annotation_pass"] or 0)),
             distribution_pass=bool(int(row["distribution_pass"] or 0)),
             code_review_pass=bool(int(row.get("code_review_pass", 0) or 0)),
+            taxonomy_review_pass=bool(int(row.get("taxonomy_review_pass", 0) or 0)),
             solve_rate_pass=bool(int(row.get("solve_rate_pass", 0) or 0)),
             notes=str(row["notes"] or ""),
             updated_at=str(row["updated_at"] or ""),
@@ -308,6 +313,9 @@ class SceneRecord:
     manual_code_audit_status_rel_path: str = ""
     manual_code_audit_pass: bool | None = None
     manual_code_audit_summary: Dict[str, Any] = field(default_factory=dict)
+    taxonomy_review_status_rel_path: str = ""
+    taxonomy_review_pass: bool | None = None
+    taxonomy_review_summary: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

@@ -22,8 +22,9 @@ artifacts, forged status files, or compatibility aliases.
 ## Read Order
 
 1. `SCENE_MIGRATION_GUIDE.md`
-2. `ENFORCEMENT_TESTS.md`
-3. `RECEIPT_SCHEMA.md`
+2. `TAXONOMY_REVIEW_CHECKLIST.md`
+3. `ENFORCEMENT_TESTS.md`
+4. `RECEIPT_SCHEMA.md`
 
 Domain-level companion docs may be added here only when a domain has shared
 scene infrastructure that needs explicit ownership rules before scene work can
@@ -36,6 +37,16 @@ proceed. Current companion docs:
 - `CHARTS_SHARED_BOUNDARY.md`: charts-domain ownership plan for implementation-
   only renderer families, chart-domain shared helpers, and scene-local shared
   packages.
+- `GEOMETRY_SHARED_BOUNDARY.md`: geometry-domain ownership plan for approved
+  low-level primitives, scene-local diagram grammars, and legacy shared
+  surfaces to decompose during scene migration.
+- `ICONS_SHARED_BOUNDARY.md`: icons-domain ownership plan for curated/procedural
+  icon assets, shared visual primitives, scene-local icon grammars, and legacy
+  output/query plumbing to decompose during scene migration.
+- `ILLUSTRATIONS_SHARED_BOUNDARY.md`: illustrations-domain ownership plan for
+  reusable object/person renderers, scene-local visual grammars, derived visual
+  scenes, and legacy counting/task-common surfaces to decompose during scene
+  migration.
 - `THREE_D_SHARED_BOUNDARY.md`: three_d-domain ownership plan for reusable 3D
   object resources/renderers, scene-local spatial grammars, and legacy
   objective-base surfaces to decompose during scene migration.
@@ -58,6 +69,10 @@ Even with a companion doc, migrate one scene correctly before broad domain work.
 - No hardcoded user-facing prompt prose in task modules.
 - No stale task ids, compatibility aliases, or disabled retired tasks.
 - No generated review artifacts for scenes that fail pre-review gates.
+- No generated review artifacts without a passing scene-level taxonomy review
+  status file.
+- No task can be review-done until the human reviewer checks the task-level
+  taxonomy review gate in the browser app.
 - No speculative domain-shared promotion. Keep helpers scene-local first, then
   promote only after confirmed multi-scene reuse or an approved family boundary.
 
@@ -73,13 +88,18 @@ valid.
 - `review-candidate`: scene is listed in
   `SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES` so migration tests and review gates
   inspect it.
-- `review-ready`: source audit, tests, smoke generation, review artifacts, and
-  app reload are complete. Human review is still required.
+- `review-ready`: source audit, taxonomy audit, tests, smoke generation, review
+  artifacts, and app reload are complete. Human review is still required.
 - `accepted`: the human reviewer accepted the scene in the browser app and a
   receipt was recorded in the review workspace.
 
 There is no Python "complete" registry. Human acceptance is not represented by
 adding a source allowlist entry.
+
+Use `migrated` only for an `accepted` scene. A scene-shaped source package,
+passing migration tests, passing manual source audit, passing taxonomy audit,
+or appearing as a review-candidate is not by itself migrated. Before human
+review, the best status is `review-ready`.
 
 ## Scope
 

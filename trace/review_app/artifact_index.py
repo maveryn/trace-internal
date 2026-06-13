@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -66,6 +67,81 @@ def build_review_index(
     return index
 
 
+def build_review_scene_index(
+    review_root: Path | str,
+    *,
+    domain: str,
+    scene_id: str,
+    repo_root: Path | str | None = None,
+    enforce_migration_registry: bool = True,
+) -> ReviewIndex:
+    """Build an index containing only one review scene, if it is currently eligible."""
+
+    root = Path(review_root).resolve()
+    resolved_repo_root = Path(repo_root).resolve() if repo_root is not None else _infer_repo_root(root)
+    index = ReviewIndex(
+        root=root,
+        repo_root=resolved_repo_root,
+        built_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    )
+    if not root.exists():
+        index.errors.append(f"review root does not exist: {root}")
+        return index
+
+    domain_name = str(domain)
+    scene_name = str(scene_id)
+    if domain_name not in ACTIVE_DOMAINS:
+        index.errors.append(f"unknown active domain: {domain_name}")
+        return index
+    if bool(enforce_migration_registry) and not is_scene_package_review_target_scene(domain_name, scene_name):
+        return index
+
+    scene_dir = root / domain_name / scene_name
+    if not scene_dir.is_dir():
+        return index
+
+    index.domains.setdefault(domain_name, DomainRecord(domain=domain_name))
+    _scan_scene(index=index, domain=domain_name, scene_id=scene_name, scene_dir=scene_dir)
+    _attach_solve_stats(index)
+    _finalize_counts(index)
+    return index
+
+
+def merge_review_scene_index(current: ReviewIndex, scene_index: ReviewIndex, *, domain: str, scene_id: str) -> ReviewIndex:
+    """Return ``current`` with one scene replaced by ``scene_index`` content."""
+
+    domain_name = str(domain)
+    scene_name = str(scene_id)
+    merged = copy.deepcopy(current)
+    _remove_scene_from_index(merged, domain=domain_name, scene_id=scene_name)
+
+    for key, scene in scene_index.scenes.items():
+        merged.scenes[key] = copy.deepcopy(scene)
+    for key, task in scene_index.tasks.items():
+        merged.tasks[key] = copy.deepcopy(task)
+    for key, sample in scene_index.samples.items():
+        merged.samples[key] = copy.deepcopy(sample)
+    for key, sample_uids in scene_index.samples_by_task.items():
+        merged.samples_by_task[key] = list(sample_uids)
+    for key, sample_uids in scene_index.samples_by_query.items():
+        merged.samples_by_query[key] = list(sample_uids)
+    for key, path in scene_index.media.items():
+        merged.media[key] = path
+    for key, domain_record in scene_index.domains.items():
+        existing = merged.domains.setdefault(key, DomainRecord(domain=domain_record.domain))
+        existing.scenes.extend(scene_id for scene_id in domain_record.scenes if scene_id not in existing.scenes)
+
+    merged.built_at = scene_index.built_at
+    merged.errors = [
+        error
+        for error in merged.errors
+        if f"{domain_name}/{scene_name}" not in str(error) and f"{domain_name}/{scene_name}/" not in str(error)
+    ] + list(scene_index.errors)
+    _reset_counts(merged)
+    _finalize_counts(merged)
+    return merged
+
+
 def load_sample_payload(index: ReviewIndex, sample: SampleRecord) -> Dict[str, Any]:
     """Load one sample JSON payload from the review root."""
 
@@ -90,6 +166,8 @@ def _scan_scene(*, index: ReviewIndex, domain: str, scene_id: str, scene_dir: Pa
     migration_test_status = _load_json_safe(migration_test_status_path, index.errors)
     manual_code_audit_status_path = scene_dir / "manual_code_audit_status.json"
     manual_code_audit_status = _load_json_safe(manual_code_audit_status_path, index.errors)
+    taxonomy_review_status_path = scene_dir / "taxonomy_review_status.json"
+    taxonomy_review_status = _load_json_safe(taxonomy_review_status_path, index.errors)
     scene_record = SceneRecord(
         domain=domain,
         scene_id=scene_id,
@@ -114,6 +192,15 @@ def _scan_scene(*, index: ReviewIndex, domain: str, scene_id: str, scene_dir: Pa
             else None
         ),
         manual_code_audit_summary=_manual_code_audit_summary(manual_code_audit_status),
+        taxonomy_review_status_rel_path=(
+            _rel_or_empty(taxonomy_review_status_path, index.root) if taxonomy_review_status_path.exists() else ""
+        ),
+        taxonomy_review_pass=(
+            bool(taxonomy_review_status.get("passed"))
+            if isinstance(taxonomy_review_status, Mapping) and "passed" in taxonomy_review_status
+            else None
+        ),
+        taxonomy_review_summary=_taxonomy_review_summary(taxonomy_review_status),
     )
     index.scenes[scene_key] = scene_record
     index.domains.setdefault(domain, DomainRecord(domain=domain)).scenes.append(scene_id)
@@ -175,6 +262,32 @@ def _manual_code_audit_summary(status: Any) -> Dict[str, Any]:
     }
 
 
+def _taxonomy_review_summary(status: Any) -> Dict[str, Any]:
+    """Normalize a pre-review taxonomy audit artifact for template rendering."""
+
+    if not isinstance(status, Mapping):
+        return {}
+    task_ids = status.get("task_ids", [])
+    if isinstance(task_ids, str):
+        task_ids = [task_ids]
+    elif not isinstance(task_ids, Iterable):
+        task_ids = []
+    checklist = status.get("checklist", {})
+    if not isinstance(checklist, Mapping):
+        checklist = {}
+    return {
+        "schema": str(status.get("schema", "")),
+        "status": str(status.get("status", "")),
+        "passed": bool(status.get("passed")) if "passed" in status else None,
+        "summary": str(status.get("summary", "")),
+        "checked_at": str(status.get("checked_at", status.get("timestamp", ""))),
+        "checked_by": str(status.get("checked_by", status.get("auditor", ""))),
+        "notes": str(status.get("notes", "")),
+        "task_ids": [str(item) for item in task_ids if str(item).strip()],
+        "checklist": {str(key): bool(value) for key, value in checklist.items()},
+    }
+
+
 def _scan_task(*, index: ReviewIndex, domain: str, scene_id: str, task_dir: Path) -> TaskRecord | None:
     task_id = task_dir.name
     task_key = ReviewIndex.task_key(domain, scene_id, task_id)
@@ -223,7 +336,97 @@ def _scan_task(*, index: ReviewIndex, domain: str, scene_id: str, task_dir: Path
         actual_counts[sample.query_id] = int(actual_counts.get(sample.query_id, 0) + 1)
     if actual_counts:
         task_record.query_counts = dict(sorted(actual_counts.items()))
+    task_record.taxonomy_summary = _task_taxonomy_summary(index=index, task=task_record, sample_uids=samples)
     return task_record
+
+
+def _task_taxonomy_summary(*, index: ReviewIndex, task: TaskRecord, sample_uids: list[str]) -> Dict[str, Any]:
+    """Return condensed task taxonomy and schema metadata for the review UI."""
+
+    doc_path = index.repo_root / "docs" / "tasks" / f"{task.task_id}.md"
+    doc_summary = _parse_task_doc_taxonomy(doc_path)
+    answer_schemas = sorted(
+        {
+            str(index.samples[uid].answer_type)
+            for uid in sample_uids
+            if uid in index.samples and str(index.samples[uid].answer_type).strip()
+        }
+    )
+    annotation_schemas = sorted(
+        {
+            str(index.samples[uid].annotation_type)
+            for uid in sample_uids
+            if uid in index.samples and str(index.samples[uid].annotation_type).strip()
+        }
+    )
+    query_ids = list(doc_summary.get("query_ids", [])) or sorted(task.query_counts)
+    return {
+        "domain": str(doc_summary.get("domain") or task.domain),
+        "scene_id": str(doc_summary.get("scene_id") or task.scene_id),
+        "task_id": task.task_id,
+        "query_ids": query_ids,
+        "answer_schema": str(doc_summary.get("answer_schema") or ", ".join(answer_schemas)),
+        "annotation_schema": str(doc_summary.get("annotation_schema") or ", ".join(annotation_schemas)),
+        "program_contract": str(doc_summary.get("program_contract", "")),
+        "doc_rel_path": _rel_or_empty(doc_path, index.repo_root) if doc_path.exists() else "",
+    }
+
+
+def _parse_task_doc_taxonomy(doc_path: Path) -> Dict[str, Any]:
+    if not doc_path.exists():
+        return {}
+    try:
+        text = doc_path.read_text(encoding="utf-8")
+    except OSError:
+        return {}
+
+    summary: Dict[str, Any] = {}
+    contract_body = _markdown_section(text, "Contract")
+    for raw_line in contract_body.splitlines():
+        line = raw_line.strip()
+        match = re.match(r"(?:[-*]|\d+\.)\s*([^:]+):\s*(.+)$", line)
+        if not match:
+            continue
+        key = match.group(1).strip().lower().replace(" ", "_")
+        value = _clean_markdown_value(match.group(2))
+        if key == "domain":
+            summary["domain"] = value
+        elif key == "scene_id":
+            summary["scene_id"] = value
+        elif key in {"query_id", "query_ids"}:
+            summary["query_ids"] = _split_markdown_values(value)
+        elif key == "answer_schema":
+            summary["answer_schema"] = value
+        elif key == "annotation_schema":
+            summary["annotation_schema"] = value
+
+    program_body = _markdown_section(text, "Program Contract")
+    for raw_line in program_body.splitlines():
+        line = _clean_markdown_value(re.sub(r"^[-*]\s*", "", raw_line.strip()))
+        if line:
+            summary["program_contract"] = line
+            break
+    return summary
+
+
+def _markdown_section(text: str, heading: str) -> str:
+    pattern = re.compile(rf"^##\s+{re.escape(heading)}\s*$\n(?P<body>.*?)(?=^##\s+|\Z)", re.MULTILINE | re.DOTALL)
+    match = pattern.search(text)
+    return str(match.group("body")) if match else ""
+
+
+def _clean_markdown_value(value: str) -> str:
+    cleaned = str(value).strip()
+    if cleaned.startswith("`") and cleaned.endswith("`") and cleaned.count("`") == 2:
+        cleaned = cleaned[1:-1]
+    return cleaned.replace("`", "").strip()
+
+
+def _split_markdown_values(value: str) -> list[str]:
+    text = _clean_markdown_value(value)
+    if not text:
+        return []
+    return [part.strip() for part in re.split(r"\s*,\s*|\s*\|\s*", text) if part.strip()]
 
 
 def _scan_task_samples(
@@ -556,6 +759,54 @@ def _finalize_counts(index: ReviewIndex) -> None:
             if preview_uid:
                 domain_record.preview_uid = preview_uid
                 break
+
+
+def _remove_scene_from_index(index: ReviewIndex, *, domain: str, scene_id: str) -> None:
+    """Remove one scene and its dependent task/sample records from an index."""
+
+    scene_key = ReviewIndex.scene_key(str(domain), str(scene_id))
+    scene = index.scenes.pop(scene_key, None)
+    task_ids = list(scene.tasks) if scene is not None else [
+        task.task_id for task in index.tasks.values() if task.domain == str(domain) and task.scene_id == str(scene_id)
+    ]
+    removed_sample_uids: set[str] = set()
+    removed_media_ids: set[str] = set()
+    for task_id in task_ids:
+        task_key = ReviewIndex.task_key(str(domain), str(scene_id), str(task_id))
+        index.tasks.pop(task_key, None)
+        for sample_uid in index.samples_by_task.pop(task_key, []):
+            removed_sample_uids.add(str(sample_uid))
+    for sample_uid in list(removed_sample_uids):
+        sample = index.samples.pop(sample_uid, None)
+        if sample is not None and sample.media_id:
+            removed_media_ids.add(str(sample.media_id))
+    for query_key, sample_uids in list(index.samples_by_query.items()):
+        filtered = [uid for uid in sample_uids if uid not in removed_sample_uids]
+        if filtered:
+            index.samples_by_query[query_key] = filtered
+        else:
+            index.samples_by_query.pop(query_key, None)
+    for media_id in removed_media_ids:
+        index.media.pop(media_id, None)
+    domain_record = index.domains.get(str(domain))
+    if domain_record is not None:
+        domain_record.scenes = [name for name in domain_record.scenes if name != str(scene_id)]
+        if not domain_record.scenes:
+            index.domains.pop(str(domain), None)
+
+
+def _reset_counts(index: ReviewIndex) -> None:
+    """Clear derived counts before recomputing them."""
+
+    for scene in index.scenes.values():
+        scene.tasks = sorted(dict.fromkeys(scene.tasks))
+        scene.task_count = 0
+        scene.sample_count = 0
+    for domain_record in index.domains.values():
+        domain_record.scenes = sorted(dict.fromkeys(domain_record.scenes))
+        domain_record.task_count = 0
+        domain_record.sample_count = 0
+        domain_record.preview_uid = ""
 
 
 def _load_json(path: Path) -> Dict[str, Any]:

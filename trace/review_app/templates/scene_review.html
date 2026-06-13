@@ -41,6 +41,10 @@
     <span>{% if scene.manual_code_audit_pass %}PASS{% elif scene.manual_code_audit_pass is none %}MISSING{% else %}FAIL{% endif %}</span>
     <label>code audit</label>
   </div>
+  <div class="metric">
+    <span>{% if scene.taxonomy_review_pass %}PASS{% elif scene.taxonomy_review_pass is none %}MISSING{% else %}FAIL{% endif %}</span>
+    <label>taxonomy audit</label>
+  </div>
   <div class="metric"><span>{{ scene_open_feedback|length }}</span><label>open scene issues</label></div>
 </section>
 
@@ -48,6 +52,13 @@
   <section class="notice warn">
     <strong>Manual code audit is not passing.</strong>
     <span class="muted">Do not treat these task-review artifacts as review-ready until the scene has a passing role-boundary audit.</span>
+  </section>
+{% endif %}
+
+{% if not scene.taxonomy_review_pass %}
+  <section class="notice warn">
+    <strong>Taxonomy review is not passing.</strong>
+    <span class="muted">Do not treat these task-review artifacts as review-ready until task contracts, query ids, and program codes have a passing taxonomy audit.</span>
   </section>
 {% endif %}
 

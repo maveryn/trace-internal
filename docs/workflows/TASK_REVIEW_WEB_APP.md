@@ -22,17 +22,23 @@ Then use this review loop:
    `manual_code_audit_status.json` exists for the scene and has `passed: true`.
    This file records the agent-side manual source audit for role boundaries and
    the app shows it as the scene-level code audit status.
+   Scene-package migration also requires `taxonomy_review_status.json` for the
+   scene with `passed: true`; the app shows it as the scene-level taxonomy
+   audit status.
 2. Generate review artifacts under `review/task-reviews` as usual.
-3. If anything under `review/task-reviews` changed, click **Reload Index** in
-   the app or call `POST /api/reload`.
+3. If one scene under `review/task-reviews` changed, prefer the scene-scoped
+   reload API, `POST /api/reload/scene/<domain>/<scene_id>`. If many scenes or
+   shared review assets changed, click **Reload Index** in the app or call
+   `POST /api/reload`. Reload runs in the background; the app keeps serving the
+   previous index until the rebuild finishes and swaps in.
 4. Inspect through the browser app by domain, scene, task, and query id.
 5. Use scene, task, and sample pages to review image, prompt, answer, annotation,
    distribution status, review status, and solve-rate status.
 6. Save sample-specific issues in the app so comments are keyed to the exact
    sample identity; do not use Excel notes as the default issue channel.
 7. Mark the review checkboxes only after prompt, image, annotation,
-   distribution, and code review are acceptable. This is the non-solve-rate
-   review completion status shown in domain and scene views.
+   distribution, code review, and taxonomy review are acceptable. This is the
+   non-solve-rate review completion status shown in domain and scene views.
 8. Mark the solve-rate checkbox separately after solve-rate artifacts have been
    inspected. Domain and scene views show solve-rate completion separately
    because solve-rate review often happens after visual/manual review.
@@ -65,11 +71,14 @@ Local-only access:
 PYTHONPATH=. python scripts/run_review_app.py --host 127.0.0.1 --port 7860
 ```
 
+The launcher emits browser-facing links under `/proxy/{port}` by default, so
+the same process works through Jupyter Server Proxy. For root-relative
+localhost-only links during debugging, pass `--base-url ''` explicitly.
+
 Remote access:
 
 ```bash
 export TRACE_REVIEW_APP_TOKEN='<shared-review-token>'
-export TRACE_REVIEW_APP_BASE_URL='/proxy/7860'  # when using Jupyter Server Proxy
 PYTHONPATH=. python scripts/run_review_app.py --host 0.0.0.0 --port 7860
 ```
 
@@ -91,16 +100,26 @@ proxy URL and enter `TRACE_REVIEW_APP_TOKEN` at the TRACE Review login screen.
 Agents must refresh the app before reporting that regenerated review artifacts
 are ready:
 
-- If anything under `review/task-reviews` changes, click **Reload Index** or call
-  `POST /api/reload` before inspecting or handing off the app URL. This includes
-  task samples, images, `data/*.json`, manifests, distribution files, solve-rate
-  artifacts, scene review manifests, and files under `review/task-reviews/assets`.
+- If one scene under `review/task-reviews` changes, prefer
+  `POST /api/reload/scene/<domain>/<scene_id>` before inspecting or handing off
+  the app URL. This rebuilds only that scene in the index and swaps it into the
+  current in-memory index.
+- If many scenes changed, or files under `review/task-reviews/assets` changed,
+  click **Reload Index** or call `POST /api/reload`. This starts a full
+  background index rebuild and returns immediately; poll
+  `GET /api/reload/status` or wait for the browser to refresh after the new
+  index is installed. Refreshing includes task samples, images, `data/*.json`,
+  manifests, distribution files, solve-rate artifacts, and scene review
+  manifests.
 - The app shows a `Review artifacts changed` banner when files under
   `review/task-reviews` are newer than the loaded index. Treat that banner as a
-  blocker for visual inspection until **Reload Index** has run.
+  blocker for visual inspection until **Reload Index** has completed
+  successfully.
 - If review-app code changes, restart the server. This includes templates,
   CSS/JS, server routes, indexer logic, resource indexing, feedback storage, and
-  schema changes.
+  schema changes. The launcher binds the server before the first full index scan
+  finishes; if the app shows an index-loading notice, wait for the background
+  reload to complete before reviewing regenerated samples.
 - After either refresh path, open the affected domain/scene/task/sample page and
   verify the displayed image/prompt/annotation/status reflects the local files.
 - Issue comments, manual audit checkboxes, theme changes, and ordinary
@@ -115,6 +134,10 @@ The app scans:
 - `distribution_review.json` and `random_review_100.json` when present
 - `data/<query_id>/*.json`
 - `images/<query_id>/*.png`
+- `docs/tasks/<task_id>.md` for the condensed task-page taxonomy summary:
+  domain, scene id, query ids, answer schema, annotation schema, and program
+  contract. If the task doc is missing, the app falls back to indexed sample
+  query ids and observed answer/annotation schemas.
 
 Domain discovery is registry-driven: only public active domains listed in
 `trace.core.taxonomy.ACTIVE_DOMAINS` are eligible for task-review indexing.
@@ -246,11 +269,12 @@ review status passes when the reviewer has checked all non-solve-rate gates:
 - annotation
 - distribution check
 - code review
+- taxonomy review
 
 The solve-rate review checkbox records that a human has inspected the displayed
 solve-rate status and accepted it as operationally sufficient for the task. It
 does not replace the generated solve-rate artifact. Domain and scene pages show
-two completion counts: review completion from the five non-solve-rate gates,
+two completion counts: review completion from the six non-solve-rate gates,
 and solve-rate completion from the separate solve-rate checkbox. Reviewers can
 uncheck either status later; the affected completion count immediately becomes
 pending again.
@@ -289,8 +313,8 @@ Issue fields:
 The `/issues` page is the minimal issue work queue. It groups actionable
 tasks by domain, scene, and task, and shows only these blockers:
 
-- missing manual audit gates for prompt, image, annotation, distribution, or
-  code review;
+- missing manual audit gates for prompt, image, annotation, distribution,
+  code review, or taxonomy review;
 - solve-rate manual checkbox not checked;
 - automated solve-rate artifact missing;
 - automated solve-rate artifact present but not accepted;

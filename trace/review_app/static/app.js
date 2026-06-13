@@ -39,26 +39,82 @@ function setupThemeSwitch() {
   });
 }
 
+async function fetchReloadStatus() {
+  const base = window.TRACE_REVIEW_BASE || "";
+  const response = await fetch(`${base}/api/reload/status`);
+  if (!response.ok) {
+    throw new Error(`reload status failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+function setReloadButtons(text, disabled) {
+  document.querySelectorAll("[data-reload]").forEach((reloadButton) => {
+    reloadButton.disabled = disabled;
+    reloadButton.textContent = text;
+  });
+}
+
+async function pollReloadStatus() {
+  try {
+    const payload = await fetchReloadStatus();
+    if (payload.in_progress) {
+      setReloadButtons("Reloading...", true);
+      window.setTimeout(pollReloadStatus, 1500);
+      return;
+    }
+    if (payload.status === "succeeded") {
+      window.location.reload();
+      return;
+    }
+    if (payload.status === "failed") {
+      setReloadButtons("Reload failed", false);
+      return;
+    }
+    setReloadButtons("Reload Index", false);
+  } catch (error) {
+    setReloadButtons("Reload status failed", false);
+    console.error(error);
+  }
+}
+
 document.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-reload]");
   if (!button) {
     return;
   }
   event.preventDefault();
-  button.disabled = true;
-  button.textContent = "Reloading...";
+  setReloadButtons("Starting reload...", true);
   const base = window.TRACE_REVIEW_BASE || "";
   try {
     const response = await fetch(`${base}/api/reload`, { method: "POST" });
     if (!response.ok) {
       throw new Error(`reload failed: ${response.status}`);
     }
+    const payload = await response.json();
+    if (payload.in_progress) {
+      setReloadButtons("Reloading...", true);
+      window.setTimeout(pollReloadStatus, 500);
+      return;
+    }
+    if (payload.status === "failed") {
+      setReloadButtons("Reload failed", false);
+      return;
+    }
     window.location.reload();
   } catch (error) {
-    button.textContent = "Reload failed";
+    setReloadButtons("Reload failed", false);
     console.error(error);
   }
 });
+
+function setupReloadStatusPolling() {
+  const status = window.TRACE_REVIEW_RELOAD_STATUS || {};
+  if (status.in_progress) {
+    setReloadButtons("Reloading...", true);
+    window.setTimeout(pollReloadStatus, 500);
+  }
+}
 
 function setupSearchSuggestions() {
   const input = document.getElementById("review-search");
@@ -706,6 +762,7 @@ function setupThreeDObjectReviewForms() {
 }
 
 setupThemeSwitch();
+setupReloadStatusPolling();
 setupSearchSuggestions();
 setupPreviewSwitch();
 setupOpenFeedbackFilter();

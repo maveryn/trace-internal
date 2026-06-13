@@ -396,9 +396,9 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "strip_reconstruction",
         "support_configs": ["spatial_action-spatial_ssrl", "spatial_action-visual_jigsaw_2d"],
         "pattern": r"\b(shuffled|strip|patch|restore|reassemble|missing part|alignment|continuity)\b",
-        "rationale": "Vero spatial_ssl and jigsaw examples repeatedly ask for strip/patch reconstruction. TRACE has jigsaw and missing patch tasks, but not strip/region ordering as a first-class scene.",
+        "rationale": "Vero spatial_ssl and jigsaw examples repeatedly ask for strip/patch reconstruction. TRACE keeps generic cutout mechanics as shared helpers, but not strip/region ordering as a first-class active scene.",
         "annotation_contract": "strip/patch ids, option ids, edge-continuity refs, position slots",
-        "overlap_risk": "Medium with `image_cutout_board` and `missing_patch_options`; require ordered reconstruction output.",
+        "overlap_risk": "Medium with future source-scene-owned reconstruction tasks; require ordered reconstruction output.",
         "tasks": [
             {
                 "task_id": "proposal:puzzles/strip_reconstruction/order_label",

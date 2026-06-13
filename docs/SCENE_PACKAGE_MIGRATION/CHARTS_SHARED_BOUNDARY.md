@@ -126,6 +126,12 @@ Example:
 - Good shared arguments: `comparison="above"`, `threshold=32`,
   `candidate_marks=[...]`
 
+For chart tasks with mirrored threshold/comparison wording, expose the mirror
+as task-local query ids when the answer and annotation schemas stay fixed. For
+example, use separate query ids for above/below or at-least/below threshold
+counts, then translate the selected query id inside the public task file into a
+semantic comparator passed to shared helpers.
+
 ## Scene Shared
 
 `trace/tasks/charts/<scene_id>/shared/` owns one scene's reusable primitives.

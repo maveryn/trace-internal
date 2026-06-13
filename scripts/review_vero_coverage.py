@@ -480,7 +480,7 @@ def classify_config(config: str) -> tuple[str, str, str, str]:
     if config in {"stem-pathvqa", "stem-vqarad"}:
         return ("exclude", "", "", "medical/radiology")
     if config in {"spatial_action-visual_jigsaw_2d"}:
-        return ("new_task_existing_scene", "puzzles", "image_cutout_board", "2D jigsaw expansion")
+        return ("new_scene_existing_domain", "puzzles", "strip_reconstruction", "2D reconstruction puzzle expansion")
     if config in {"spatial_action-visual_jigsaw_3d"}:
         return ("new_scene_existing_domain", "puzzles", "jigsaw_3d", "3D jigsaw assembly")
     if config in {"spatial_action-magma_aitw", "spatial_action-magma_mind2web"}:

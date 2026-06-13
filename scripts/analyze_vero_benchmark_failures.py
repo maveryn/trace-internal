@@ -345,7 +345,6 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
             [
                 "task_three_d__object_scene__object_relation_label",
                 "task_three_d__object_scene__between_references_label",
-                "task_illustrations__image_cutout_board__jigsaw_piece_order",
                 "task_icons__reference_canvas__anchor_position_count",
                 "task_geometry__shape_gallery__reflection_match",
                 "task_geometry__shape_gallery__rotation_match",

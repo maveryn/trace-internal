@@ -40,6 +40,10 @@ PYTHONPATH=. python scripts/run_task_review.py --tasks task_geometry__graph_pape
 PYTHONPATH=. python scripts/run_review_app.py --host 127.0.0.1 --port 7860
 ```
 
+The review-app launcher defaults browser-facing links to `/proxy/{port}` so
+Jupyter Server Proxy URLs keep CSS, JavaScript, media, and form actions working
+after restarts.
+
 The required current artifacts are the JSON sidecars, images, manifests, and
 distribution reports under:
 

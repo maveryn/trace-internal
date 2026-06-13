@@ -307,6 +307,10 @@ Manual inspection should happen in the browser review app by default:
 PYTHONPATH=. python scripts/run_review_app.py --host 127.0.0.1 --port 7860
 ```
 
+The launcher defaults browser-facing links to `/proxy/{port}`. Pass
+`--base-url ''` only when intentionally debugging root-relative localhost
+links.
+
 The app reads the sidecars, shows image/annotation/prompt/answer details by
 domain, scene, task, and query id, and persists sample-level issues. Excel
 workbooks are optional archival/fallback artifacts and should not be the normal

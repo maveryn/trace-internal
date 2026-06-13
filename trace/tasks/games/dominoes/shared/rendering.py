@@ -4,16 +4,28 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
 from ....shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.text import draw_game_text_traced as draw_text_traced
 from ...shared.layout import apply_games_layout_jitter_to_bbox, offset_bbox
-from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
+from ...shared.scene_style import (
+    GamePanelSceneStyle,
+    draw_panel_scene_chrome,
+    game_panel_scene_style_metadata,
+    make_panel_scene_background,
+    resolve_game_panel_scene_style,
+)
 from ...shared.style import DominoTheme, build_games_domino_theme
+from ...shared.visual_defaults import load_games_scene_noise_defaults
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.font_assets import get_font_family_record
 
+from .defaults import DOMINOES_NAMESPACE, SCENE_ID
+from .state import DominoTileInstance
 
 _PIP_LAYOUTS: Dict[int, Tuple[Tuple[float, float], ...]] = {
     0: (),
@@ -31,19 +43,6 @@ _PIP_LAYOUTS: Dict[int, Tuple[Tuple[float, float], ...]] = {
         (0.72, 0.76),
     ),
 }
-
-
-@dataclass(frozen=True)
-class DominoTileInstance:
-    """One visible domino tile before rendering."""
-
-    tile_id: str
-    left_value: int
-    right_value: int
-    role: str
-    is_reference: bool = False
-    highlight_right_half: bool = False
-    option_label: str | None = None
 
 
 @dataclass(frozen=True)
@@ -93,6 +92,21 @@ class RenderedDominoScene:
     domino_specs: Tuple[RenderedDominoSpec, ...]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
+
+
+@dataclass(frozen=True)
+class RenderedDominoTaskContext:
+    """Rendered image and metadata after applying scene background and noise."""
+
+    image: Image.Image
+    rendered_scene: RenderedDominoScene
+    background_meta: Dict[str, Any]
+    panel_style_meta: Dict[str, Any]
+    text_style_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+
+
+POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.0)
 
 
 def _draw_shadow(
@@ -735,10 +749,76 @@ def render_domino_chain_scene(
     )
 
 
+def _allowed_panel_treatments(params: Mapping[str, Any], render_defaults: Mapping[str, Any]) -> tuple[str, ...] | None:
+    """Return optional panel treatment restrictions from params or config."""
+
+    raw = params.get("panel_scene_treatments", group_default(render_defaults, "panel_scene_treatments", None))
+    if isinstance(raw, str):
+        return (str(raw),)
+    if raw is None:
+        return None
+    return tuple(str(item) for item in raw)
+
+
+def render_domino_task_scene(
+    *,
+    chain_tiles: Sequence[DominoTileInstance],
+    candidate_tiles: Sequence[DominoTileInstance],
+    scene_variant: str,
+    style_variant: str,
+    render_params: DominoRenderParams,
+    render_defaults: Mapping[str, Any],
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> RenderedDominoTaskContext:
+    """Render a complete domino task scene with shared panel styling and noise."""
+
+    panel_style, panel_style_meta = resolve_game_panel_scene_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{DOMINOES_NAMESPACE}.panel_scene_style",
+        treatments=_allowed_panel_treatments(params, render_defaults),
+        treatment_weights=params.get("panel_scene_treatment_weights", group_default(render_defaults, "panel_scene_treatment_weights", None)),
+        palette_weights=params.get("panel_scene_palette_weights", group_default(render_defaults, "panel_scene_palette_weights", None)),
+    )
+    background, background_meta = make_panel_scene_background(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        style=panel_style,
+    )
+    rendered_scene = render_domino_chain_scene(
+        chain_tiles=chain_tiles,
+        candidate_tiles=candidate_tiles,
+        background=background,
+        scene_variant=str(scene_variant),
+        style_variant=str(style_variant),
+        params=render_params,
+        panel_style=panel_style,
+    )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    text_style_meta = {
+        "font_family": str(render_params.font_family),
+        "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+    }
+    return RenderedDominoTaskContext(
+        image=image,
+        rendered_scene=rendered_scene,
+        background_meta=dict(background_meta),
+        panel_style_meta=dict(panel_style_meta),
+        text_style_meta=dict(text_style_meta),
+        post_noise_meta=dict(post_noise_meta),
+    )
+
+
 __all__ = [
     "DominoRenderParams",
-    "DominoTileInstance",
     "RenderedDominoScene",
     "RenderedDominoSpec",
+    "RenderedDominoTaskContext",
     "render_domino_chain_scene",
+    "render_domino_task_scene",
 ]

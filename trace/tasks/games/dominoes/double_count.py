@@ -2,29 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-from trace.core.seed import spawn_rng
-from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
 
-from .shared.assembly import build_domino_components
-from .shared.sampling import (
-    resolve_domino_candidate_count_axis,
-    resolve_domino_scene_axes,
-    resolve_domino_target_axis,
-    sample_double_scene,
-)
-from .shared.state import DEFAULTS, SCENE_ID
+from ._lifecycle import prepare_domino_count_objective, run_domino_lifecycle
+from .shared.defaults import DEFAULTS, SCENE_ID
+from .shared.sampling import sample_counted_candidate_scene, sample_generic_chain
+from .shared.state import DominoSceneAxes
 
 
 TASK_ID = "task_games__dominoes__double_count"
 QUERY_ID = "double_count"
-PROMPT_QUERY_KEY = QUERY_ID
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
     "games",
@@ -33,96 +21,74 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation
 )
 
 
+def _sample_double_scene(rng, *, candidate_count: int, target_answer: int):
+    """Construct a scene with exactly the target number of loose doubles."""
+
+    for _ in range(256):
+        try:
+            oriented_chain = sample_generic_chain(rng, avoid_doubles=True)
+        except ValueError:
+            continue
+        try:
+            return sample_counted_candidate_scene(
+                rng,
+                oriented_chain=oriented_chain,
+                candidate_count=int(candidate_count),
+                target_answer=int(target_answer),
+                is_annotation_tile=lambda tile: int(tile[0]) == int(tile[1]),
+                reference_role=None,
+                highlight_open_end=False,
+            )
+        except ValueError:
+            continue
+    raise ValueError("unable to sample double-count domino scene")
+
+
+def _prepare_double_objective(
+    instance_seed,
+    task_params,
+    _query_id,
+    _query_probabilities,
+    axes: DominoSceneAxes,
+):
+    """Resolve count axes and bind loose-double semantics."""
+
+    return prepare_domino_count_objective(
+        instance_seed=int(instance_seed),
+        task_params=task_params,
+        gen_defaults=_GEN_DEFAULTS,
+        axes=axes,
+        prompt_query_key=QUERY_ID,
+        attempt_namespace="games.dominoes.double",
+        target_support_key="double_target_answer_support",
+        target_fallback_support=DEFAULTS.double_target_answer_support,
+        target_namespace="double.target_answer",
+        minimum_candidate_count=lambda target: max(7, int(target)),
+        candidate_namespace="double",
+        sample_scene=_sample_double_scene,
+        example_answer=2,
+    )
+
+
 @register_task
 class GamesDominoesDoubleCountTask:
     """Count loose dominoes whose two halves match."""
 
     task_id = TASK_ID
     domain = "games"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_id_probabilities, task_params = select_task_query_id(
+    def generate(self, instance_seed, *, params, max_attempts):
+        return run_domino_lifecycle(
+            task_id=TASK_ID,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
             instance_seed=int(instance_seed),
             params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        scene_axes = resolve_domino_scene_axes(
-            instance_seed=int(instance_seed),
-            params=task_params,
+            max_attempts=int(max_attempts),
             gen_defaults=_GEN_DEFAULTS,
-        )
-        target_axis = resolve_domino_target_axis(
-            instance_seed=int(instance_seed),
-            params=task_params,
-            gen_defaults=_GEN_DEFAULTS,
-            support_key="double_target_answer_support",
-            fallback_support=DEFAULTS.double_target_answer_support,
-            namespace=f"{QUERY_ID}.target_answer",
-        )
-        candidate_axis = resolve_domino_candidate_count_axis(
-            instance_seed=int(instance_seed),
-            params=task_params,
-            gen_defaults=_GEN_DEFAULTS,
-            scene_variant=str(scene_axes.scene_variant),
-            objective_key=QUERY_ID,
-            target_answer=int(target_axis.value),
-        )
-        sampled_scene = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            rng = spawn_rng(int(instance_seed), f"games.dominoes.{QUERY_ID}.attempt.{int(attempt_index)}")
-            try:
-                sampled_scene = sample_double_scene(
-                    rng,
-                    candidate_count=int(candidate_axis.value),
-                    target_answer=int(target_axis.value),
-                )
-            except ValueError:
-                continue
-            break
-        if sampled_scene is None:
-            raise RuntimeError(f"{TASK_ID} failed to generate a valid dominoes scene after {max_attempts} attempts")
-
-        query_params = {
-            "target_answer": int(sampled_scene.answer_value),
-            "target_answer_index": int(target_axis.value),
-            "target_answer_support": [int(value) for value in target_axis.support],
-            "target_answer_probabilities": dict(target_axis.probabilities),
-            "candidate_count": int(candidate_axis.value),
-            "candidate_count_support": [int(value) for value in candidate_axis.support],
-            "candidate_count_probabilities": dict(candidate_axis.probabilities),
-            "target_total": None if sampled_scene.target_total is None else int(sampled_scene.target_total),
-        }
-        components = build_domino_components(
-            domain=self.domain,
-            instance_seed=int(instance_seed),
-            params=task_params,
             render_defaults=_RENDER_DEFAULTS,
-            query_id=str(query_id),
-            query_id_probabilities=query_id_probabilities,
-            scene_axes=scene_axes,
-            sampled_scene=sampled_scene,
-            query_params=query_params,
-            prompt_query_key=PROMPT_QUERY_KEY,
-        )
-        answer_gt = TypedValue(type=str(components.answer_type), value=components.answer_value)
-        annotation_gt = TypedValue(type=str(components.annotation_type), value=components.annotation_value)
-        return TaskOutput(
-            prompt=str(components.prompt),
-            prompt_variants=dict(components.prompt_variants),
-            answer_gt=answer_gt,
-            annotation_gt=annotation_gt,
-            image=components.image,
-            image_id="img0",
-            trace_payload=dict(components.trace_payload),
-            task_versions=default_task_versions(),
-            query_id=str(components.query_id),
-            scene_id=SCENE_ID,
+            prepare_objective=_prepare_double_objective,
         )
 
 

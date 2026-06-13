@@ -2,29 +2,23 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import List
 
-from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.support_sampling import resolve_integer_support
 
-from .shared.assembly import build_domino_components
-from .shared.sampling import (
-    resolve_domino_candidate_count_axis,
-    resolve_domino_scene_axes,
-    resolve_domino_target_axis,
-    sample_sum_to_target_scene,
-)
-from .shared.state import DEFAULTS, SCENE_ID
+from ._lifecycle import DominoObjectivePlan, domino_bbox_set_attempt, resolve_domino_count_axes, run_domino_lifecycle
+from .shared.defaults import DEFAULTS, SCENE_ID
+from .shared.prompts import domino_integer_json_examples, domino_output_slots
+from .shared.rules import tile_sum
+from .shared.sampling import build_sampled_scene, build_scene_instances, candidate_pool_for_chain, sample_generic_chain
+from .shared.state import DominoSceneAxes
 
 
 TASK_ID = "task_games__dominoes__sum_to_target_count"
 QUERY_ID = "sum_to_target_count"
-PROMPT_QUERY_KEY = QUERY_ID
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
     "games",
@@ -33,98 +27,148 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation
 )
 
 
+def _sample_sum_to_target_scene(
+    rng,
+    *,
+    candidate_count: int,
+    target_answer: int,
+    target_total_support: tuple[int, ...],
+    explicit_target_total: int | None,
+):
+    """Construct a scene where exactly the target candidates match a pip total."""
+
+    for _ in range(320):
+        try:
+            oriented_chain = sample_generic_chain(rng, avoid_doubles=False)
+        except ValueError:
+            continue
+        candidate_pool = candidate_pool_for_chain(oriented_chain)
+        feasible_totals: List[int] = []
+        for total in target_total_support:
+            exact_pool = [tile for tile in candidate_pool if tile_sum(tile) == int(total)]
+            filler_pool = [tile for tile in candidate_pool if tile_sum(tile) != int(total)]
+            if int(target_answer) == 0:
+                if int(len(filler_pool)) >= int(candidate_count):
+                    feasible_totals.append(int(total))
+            elif int(len(exact_pool)) >= int(target_answer) and int(len(filler_pool)) >= int(candidate_count - target_answer):
+                feasible_totals.append(int(total))
+        if explicit_target_total is not None:
+            target_total = int(explicit_target_total)
+            if int(target_total) not in set(feasible_totals):
+                raise ValueError(f"unsupported target total: {target_total}")
+        else:
+            if not feasible_totals:
+                continue
+            target_total = int(feasible_totals[int(rng.randrange(len(feasible_totals)))])
+
+        exact_pool = [tile for tile in candidate_pool if tile_sum(tile) == int(target_total)]
+        filler_pool = [tile for tile in candidate_pool if tile_sum(tile) != int(target_total)]
+        annotation_tiles = [] if int(target_answer) == 0 else list(rng.sample(exact_pool, int(target_answer)))
+        selected_candidates = list(annotation_tiles) + list(rng.sample(filler_pool, int(candidate_count - target_answer)))
+        chain_instances, candidate_instances, annotation_tile_ids, reference_tile_id = build_scene_instances(
+            rng=rng,
+            oriented_chain=oriented_chain,
+            candidate_tiles=selected_candidates,
+            annotation_tiles=annotation_tiles,
+            reference_role=None,
+            highlight_open_end=False,
+        )
+        return build_sampled_scene(
+            chain_instances=chain_instances,
+            candidate_instances=candidate_instances,
+            annotation_tile_ids=annotation_tile_ids,
+            answer_value=int(target_answer),
+            reference_tile_id=reference_tile_id,
+            target_total=int(target_total),
+        )
+    raise ValueError("unable to sample target-sum domino scene")
+
+
+def _prepare_sum_to_target_objective(
+    instance_seed,
+    task_params,
+    _query_id,
+    _query_probabilities,
+    axes: DominoSceneAxes,
+):
+    """Resolve target count/total axes and bind pip-sum equality semantics."""
+
+    count_axes = resolve_domino_count_axes(
+        instance_seed=int(instance_seed),
+        task_params=task_params,
+        gen_defaults=_GEN_DEFAULTS,
+        axes=axes,
+        target_support_key="sum_to_target_answer_support",
+        target_fallback_support=DEFAULTS.sum_to_target_answer_support,
+        target_namespace="sum_to_target.target_answer",
+        minimum_candidate_count=lambda target: 7 if int(target) == 0 else max(7, int(target)),
+        candidate_namespace="sum_to_target",
+    )
+    target_total_support = resolve_integer_support(
+        task_params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="sum_target_total_support",
+        fallback=DEFAULTS.sum_target_total_support,
+    )
+    explicit_target_total = None if task_params.get("target_total") is None else int(task_params["target_total"])
+    json_example, json_example_answer_only = domino_integer_json_examples(answer_value=3)
+    prompt_dynamic_slots = {
+        **domino_output_slots(
+            prompt_query_key=QUERY_ID,
+            json_example=json_example,
+            json_example_answer_only=json_example_answer_only,
+        ),
+    }
+    query_params = {
+        **dict(count_axes.query_params),
+        "target_total_support": [int(value) for value in target_total_support],
+        "target_total": explicit_target_total,
+    }
+
+    def construct_attempt(rng, _axes: DominoSceneAxes):
+        sample = _sample_sum_to_target_scene(
+            rng,
+            candidate_count=int(count_axes.candidate_axis.value),
+            target_answer=int(count_axes.target_axis.value),
+            target_total_support=tuple(int(value) for value in target_total_support),
+            explicit_target_total=explicit_target_total,
+        )
+        return domino_bbox_set_attempt(
+            sample=sample,
+            answer_gt=TypedValue(type="integer", value=int(sample.answer_value)),
+            query_params={"target_total": int(sample.target_total) if sample.target_total is not None else None},
+            execution_extra={"target_answer": int(sample.answer_value)},
+            prompt_dynamic_slots={"target_total_text": str(sample.target_total)},
+        )
+
+    return DominoObjectivePlan(
+        attempt_namespace="games.dominoes.sum_to_target",
+        prompt_query_key=QUERY_ID,
+        query_params=query_params,
+        prompt_dynamic_slots=prompt_dynamic_slots,
+        construct_attempt=construct_attempt,
+    )
+
+
 @register_task
 class GamesDominoesSumToTargetCountTask:
     """Count loose dominoes whose pip sum equals the sampled target total."""
 
     task_id = TASK_ID
     domain = "games"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_id_probabilities, task_params = select_task_query_id(
+    def generate(self, instance_seed, *, params, max_attempts):
+        return run_domino_lifecycle(
+            task_id=TASK_ID,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
             instance_seed=int(instance_seed),
             params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        scene_axes = resolve_domino_scene_axes(
-            instance_seed=int(instance_seed),
-            params=task_params,
+            max_attempts=int(max_attempts),
             gen_defaults=_GEN_DEFAULTS,
-        )
-        target_axis = resolve_domino_target_axis(
-            instance_seed=int(instance_seed),
-            params=task_params,
-            gen_defaults=_GEN_DEFAULTS,
-            support_key="sum_to_target_answer_support",
-            fallback_support=DEFAULTS.sum_to_target_answer_support,
-            namespace=f"{QUERY_ID}.target_answer",
-        )
-        candidate_axis = resolve_domino_candidate_count_axis(
-            instance_seed=int(instance_seed),
-            params=task_params,
-            gen_defaults=_GEN_DEFAULTS,
-            scene_variant=str(scene_axes.scene_variant),
-            objective_key=QUERY_ID,
-            target_answer=int(target_axis.value),
-        )
-        sampled_scene = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            rng = spawn_rng(int(instance_seed), f"games.dominoes.{QUERY_ID}.attempt.{int(attempt_index)}")
-            try:
-                sampled_scene = sample_sum_to_target_scene(
-                    rng,
-                    candidate_count=int(candidate_axis.value),
-                    target_answer=int(target_axis.value),
-                    params=task_params,
-                    gen_defaults=_GEN_DEFAULTS,
-                )
-            except ValueError:
-                continue
-            break
-        if sampled_scene is None:
-            raise RuntimeError(f"{TASK_ID} failed to generate a valid dominoes scene after {max_attempts} attempts")
-
-        query_params = {
-            "target_answer": int(sampled_scene.answer_value),
-            "target_answer_index": int(target_axis.value),
-            "target_answer_support": [int(value) for value in target_axis.support],
-            "target_answer_probabilities": dict(target_axis.probabilities),
-            "candidate_count": int(candidate_axis.value),
-            "candidate_count_support": [int(value) for value in candidate_axis.support],
-            "candidate_count_probabilities": dict(candidate_axis.probabilities),
-            "target_total": None if sampled_scene.target_total is None else int(sampled_scene.target_total),
-        }
-        components = build_domino_components(
-            domain=self.domain,
-            instance_seed=int(instance_seed),
-            params=task_params,
             render_defaults=_RENDER_DEFAULTS,
-            query_id=str(query_id),
-            query_id_probabilities=query_id_probabilities,
-            scene_axes=scene_axes,
-            sampled_scene=sampled_scene,
-            query_params=query_params,
-            prompt_query_key=PROMPT_QUERY_KEY,
-        )
-        answer_gt = TypedValue(type=str(components.answer_type), value=components.answer_value)
-        annotation_gt = TypedValue(type=str(components.annotation_type), value=components.annotation_value)
-        return TaskOutput(
-            prompt=str(components.prompt),
-            prompt_variants=dict(components.prompt_variants),
-            answer_gt=answer_gt,
-            annotation_gt=annotation_gt,
-            image=components.image,
-            image_id="img0",
-            trace_payload=dict(components.trace_payload),
-            task_versions=default_task_versions(),
-            query_id=str(components.query_id),
-            scene_id=SCENE_ID,
+            prepare_objective=_prepare_sum_to_target_objective,
         )
 
 

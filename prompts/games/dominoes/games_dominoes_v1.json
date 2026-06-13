@@ -32,7 +32,7 @@
       "higher_sum_than_reference_count": [
         "The tile marked `REF` is part of the top chain. {pip_sum_rule_text} How many loose dominoes below have a larger pip sum than `REF`?",
         "{pip_sum_rule_text} Count the loose dominoes below whose pip sum is greater than the `REF` tile in the top chain.",
-        "Using the `REF` tile in the chain as the reference, {pip_sum_rule_text} how many loose dominoes below have a higher total?",
+        "Using the `REF` tile in the chain as the reference, how many loose dominoes below have a higher total? {pip_sum_rule_text}",
         "{pip_sum_rule_text} What is the number of loose dominoes below whose pip sum exceeds the `REF` tile's pip sum?",
         "Compare the loose dominoes below against the chain tile marked `REF`. {pip_sum_rule_text} How many loose dominoes below have a larger total?"
       ],
@@ -119,20 +119,36 @@
       "json_example"
     ]
   },
+  "static_slots_by_key": {
+    "scene:visible_domino_chain": {
+      "object_description": "a short face-up domino chain across the top with loose face-up dominoes below"
+    },
+    "query:matching_end_count": {
+      "connection_rule_text": "A loose domino can connect to the open right end if either half has the same number of pips as that open end."
+    },
+    "query:higher_sum_than_reference_count": {
+      "pip_sum_rule_text": "The pip sum of a domino is the total number of pips across its two halves."
+    },
+    "query:sum_to_target_count": {
+      "pip_sum_rule_text": "The pip sum of a domino is the total number of pips across its two halves."
+    },
+    "query:double_count": {
+      "double_rule_text": "A double has the same number of pips on both halves."
+    },
+    "query:second_play_candidate_count": {
+      "connection_rule_text": "A loose domino can connect to the open right end if either half has the same number of pips as that open end.",
+      "second_play_rule_text": "Exactly one loose domino can connect directly to `REF`; after playing it, count the remaining loose dominoes that could connect to the new open end."
+    },
+    "query:extendable_first_play_count": {
+      "connection_rule_text": "A loose domino can connect to the open right end if either half has the same number of pips as that open end.",
+      "extendable_first_play_rule_text": "Count loose dominoes that can connect directly to `REF` and would leave a new open end that at least one remaining loose domino could connect to."
+    }
+  },
   "dynamic_slots": {
     "annotation_hint": {
       "type": "string"
     },
     "answer_hint": {
-      "type": "string"
-    },
-    "connection_rule_text": {
-      "type": "string"
-    },
-    "double_rule_text": {
-      "type": "string"
-    },
-    "extendable_first_play_rule_text": {
       "type": "string"
     },
     "json_example": {
@@ -145,15 +161,6 @@
       "type": "string"
     },
     "json_output_contract_answer_only": {
-      "type": "string"
-    },
-    "object_description": {
-      "type": "string"
-    },
-    "pip_sum_rule_text": {
-      "type": "string"
-    },
-    "second_play_rule_text": {
       "type": "string"
     },
     "target_total_text": {

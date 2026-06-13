@@ -8,10 +8,24 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.core.seed import spawn_rng
+from trace.core.visual.noise import apply_post_image_noise
+
 from ....shared.color_distance import color_distance
+from ....shared.config_defaults import group_default
+from ....shared.font_assets import get_font_family_record
 from ....shared.text_rendering import load_font
 from ...shared.text import draw_game_text_traced as draw_text_traced
-from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
+from ...shared.scene_style import (
+    GamePanelSceneStyle,
+    draw_panel_scene_chrome,
+    game_panel_scene_style_metadata,
+    make_panel_scene_background,
+    resolve_game_panel_scene_style,
+)
+from ...shared.visual_defaults import load_games_scene_noise_defaults
+
+from .defaults import DARTS_NAMESPACE, SCENE_ID
 
 
 STANDARD_DART_SECTORS: Tuple[int, ...] = (
@@ -90,7 +104,6 @@ class DartboardRenderParams:
     board_radius_px: int
     marker_radius_px: int
     number_font_size_px: int
-    title_font_size_px: int
     font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
@@ -116,6 +129,21 @@ class RenderedDartsScene:
     dart_specs: Tuple[RenderedDartSpec, ...]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
+
+
+@dataclass(frozen=True)
+class RenderedDartsTaskContext:
+    """Rendered darts image plus scene-wide visual metadata."""
+
+    image: Image.Image
+    rendered_scene: RenderedDartsScene
+    panel_style_meta: Dict[str, Any]
+    background_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+    text_style_meta: Dict[str, Any]
+
+
+POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.0)
 
 
 _STYLE_PALETTES: Mapping[str, Mapping[str, Tuple[int, int, int]]] = {
@@ -419,21 +447,6 @@ def _draw_board(
             stroke_width=2,
         )
 
-    title_font = load_font(
-        int(params.title_font_size_px),
-        bold=True,
-        font_family=str(params.font_family) or None,
-    )
-    title_y = max(38.0, float(cy - radius - 78.0))
-    _draw_centered_text(
-        draw,
-        (cx, title_y),
-        "DARTBOARD",
-        font=title_font,
-        fill=tuple(int(v) for v in palette["number"]),
-        stroke_fill=(20, 24, 28),
-        stroke_width=2,
-    )
     return {
         "center_px": [round(cx, 3), round(cy, 3)],
         "radius_px": round(radius, 3),
@@ -605,9 +618,8 @@ def _panel_bbox(
     cx = float(params.board_center_x_px)
     cy = float(params.board_center_y_px)
     radius = float(params.board_radius_px)
-    title_y = max(38.0, float(cy - radius - 78.0))
     x0 = max(10, int(round(cx - radius - 62.0)))
-    y0 = max(10, int(round(title_y - 34.0)))
+    y0 = max(10, int(round(cy - radius - 44.0)))
     x1 = min(int(params.canvas_width) - 10, int(round(cx + radius + 62.0)))
     if has_score_options:
         y1 = int(params.canvas_height) - 18
@@ -629,7 +641,11 @@ def render_darts_scene(
     score_options: Sequence[DartScoreOption] = (),
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedDartsScene:
-    """Render one dartboard scene."""
+    """Render the board, optional target highlight, darts, and option strip.
+
+    The renderer only projects an already-sampled scene; scoring semantics,
+    answer binding, and annotation membership are owned outside this layer.
+    """
 
     image = background.convert("RGBA")
     panel_bbox = _panel_bbox(params=params, has_score_options=bool(score_options))
@@ -736,16 +752,99 @@ def render_darts_scene(
     )
 
 
+def _allowed_panel_treatments(params: Mapping[str, Any], render_defaults: Mapping[str, Any]) -> tuple[str, ...] | None:
+    """Resolve optional panel-scene treatment filters from rendering config."""
+
+    raw = params.get(
+        "panel_scene_treatments",
+        group_default(render_defaults, "panel_scene_treatments", None),
+    )
+    if isinstance(raw, str):
+        return (str(raw),)
+    if raw is None:
+        return None
+    return tuple(str(item) for item in raw)
+
+
+def render_darts_task_scene(
+    *,
+    darts: Sequence[DartInstance],
+    score_options: Sequence[DartScoreOption],
+    target_ring: str | None,
+    style_variant: str,
+    render_params: DartboardRenderParams,
+    render_defaults: Mapping[str, Any],
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> RenderedDartsTaskContext:
+    """Render a full darts task image with shared panel style and post-noise."""
+
+    panel_style, panel_style_meta = resolve_game_panel_scene_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{DARTS_NAMESPACE}.panel_scene_style",
+        treatments=_allowed_panel_treatments(params, render_defaults),
+        treatment_weights=params.get(
+            "panel_scene_treatment_weights",
+            group_default(render_defaults, "panel_scene_treatment_weights", None),
+        ),
+        palette_weights=params.get(
+            "panel_scene_palette_weights",
+            group_default(render_defaults, "panel_scene_palette_weights", None),
+        ),
+    )
+    color_rng = spawn_rng(int(instance_seed), f"{DARTS_NAMESPACE}.dart_color")
+    dart_fill_color, dart_fill_min_lab_distance = sample_dart_marker_color(
+        color_rng,
+        style_variant=str(style_variant),
+        min_lab_distance=40.0,
+    )
+    background, background_meta = make_panel_scene_background(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        style=panel_style,
+    )
+    rendered_scene = render_darts_scene(
+        darts=tuple(darts),
+        background=background,
+        style_variant=str(style_variant),
+        params=render_params,
+        target_ring=target_ring,
+        dart_fill_color=dart_fill_color,
+        dart_fill_min_lab_distance=float(dart_fill_min_lab_distance),
+        score_options=tuple(score_options),
+        panel_style=panel_style,
+    )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    return RenderedDartsTaskContext(
+        image=image,
+        rendered_scene=rendered_scene,
+        panel_style_meta=dict(panel_style_meta),
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
+        text_style_meta={
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        },
+    )
+
+
 __all__ = [
     "DartInstance",
     "DartScoreOption",
     "DartboardRenderParams",
     "DARTBOARD_BAND_RADII_FRACTIONS",
     "DARTBOARD_SAMPLE_RADIUS_FRACTIONS",
+    "RenderedDartsTaskContext",
     "RenderedDartsScene",
     "STANDARD_DART_SECTORS",
     "dartboard_anchor_colors",
     "polar_to_xy",
     "render_darts_scene",
+    "render_darts_task_scene",
     "sample_dart_marker_color",
 ]

@@ -88,6 +88,20 @@
       "json_example"
     ]
   },
+  "static_slots_by_key": {
+    "scene:visible_dartboard": {
+      "object_description": "a labeled dartboard with visible dart markers"
+    },
+    "query:total_score": {
+      "scoring_rule_text": "A dart in a numbered single area scores that number; a dart in the double ring scores twice the number; a dart in the triple ring scores three times the number; the outer bull scores 25 and the inner bull scores 50."
+    },
+    "query:ring_count": {
+      "ring_rule_text": "The yellow highlight marks the requested scoring area. The double ring is the outer scoring band near the board edge. The triple ring is the inner scoring band between the bull and the outer edge. The bull is the center area. Single areas are the numbered wedge areas outside the bull that are not in the double or triple ring."
+    },
+    "query:threshold_score_count": {
+      "scoring_rule_text": "A dart in a numbered single area scores that number; a dart in the double ring scores twice the number; a dart in the triple ring scores three times the number; the outer bull scores 25 and the inner bull scores 50."
+    }
+  },
   "dynamic_slots": {
     "annotation_hint": {
       "type": "string"
@@ -105,15 +119,6 @@
       "type": "string"
     },
     "json_output_contract_answer_only": {
-      "type": "string"
-    },
-    "object_description": {
-      "type": "string"
-    },
-    "ring_rule_text": {
-      "type": "string"
-    },
-    "scoring_rule_text": {
       "type": "string"
     },
     "target_ring_text": {

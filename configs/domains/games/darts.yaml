@@ -44,7 +44,6 @@ rendering:
     board_radius_px: 330
     marker_radius_px: 17
     number_font_size_px: 36
-    title_font_size_px: 30
 prompt:
   shared:
     bundle_id: games_darts_v1

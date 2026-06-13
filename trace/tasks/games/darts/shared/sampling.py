@@ -13,36 +13,29 @@ from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
 from .rendering import (
-    DARTBOARD_SAMPLE_RADIUS_FRACTIONS,
     STANDARD_DART_SECTORS,
     DartInstance,
     DartScoreOption,
     DartboardRenderParams,
     polar_to_xy,
 )
-from .state import (
+from .defaults import (
     DARTS_NAMESPACE,
     DEFAULTS,
     SUPPORTED_DARTS_SCENE_VARIANTS,
     SUPPORTED_DARTS_TARGET_RINGS,
     SUPPORTED_DARTS_THRESHOLDS,
+)
+from .state import (
     DartsIntegerAxis,
     DartsSampledScene,
     DartsSceneAxes,
     DartsScoreSlot,
 )
+from .rules import RING_RADIUS_FRACTIONS, SCORE_SLOTS, score_slot_public_ring
 
 
 _SECTOR_TO_INDEX = {int(value): int(index) for index, value in enumerate(STANDARD_DART_SECTORS)}
-_RING_RADIUS_FRACTIONS: Mapping[str, Tuple[float, float]] = DARTBOARD_SAMPLE_RADIUS_FRACTIONS
-_RING_SCORE_KIND = {
-    "inner_bull": "bull",
-    "outer_bull": "bull",
-    "inner_single": "single",
-    "outer_single": "single",
-    "triple": "triple",
-    "double": "double",
-}
 
 
 def _resolve_named_axis(
@@ -232,46 +225,6 @@ def resolve_darts_target_threshold(
     )
 
 
-def score_slot_public_ring(slot: DartsScoreSlot) -> str:
-    """Return the prompt-facing ring family for one slot."""
-
-    return _RING_SCORE_KIND[str(slot.ring)]
-
-
-def score_slot_in_ring(slot: DartsScoreSlot, *, target_ring: str) -> bool:
-    """Return whether one score slot belongs to the requested public ring."""
-
-    return str(score_slot_public_ring(slot)) == str(target_ring)
-
-
-def score_slot_at_least(slot: DartsScoreSlot, *, threshold: int) -> bool:
-    """Return whether one score slot meets a score threshold."""
-
-    return int(slot.score) >= int(threshold)
-
-
-def _all_score_slots() -> Tuple[DartsScoreSlot, ...]:
-    """Return the supported dart scoring slots."""
-
-    slots: List[DartsScoreSlot] = [
-        DartsScoreSlot(sector_value=None, ring="inner_bull", score=50),
-        DartsScoreSlot(sector_value=None, ring="outer_bull", score=25),
-    ]
-    for sector_value in STANDARD_DART_SECTORS:
-        slots.extend(
-            (
-                DartsScoreSlot(sector_value=int(sector_value), ring="inner_single", score=int(sector_value)),
-                DartsScoreSlot(sector_value=int(sector_value), ring="outer_single", score=int(sector_value)),
-                DartsScoreSlot(sector_value=int(sector_value), ring="triple", score=int(sector_value) * 3),
-                DartsScoreSlot(sector_value=int(sector_value), ring="double", score=int(sector_value) * 2),
-            )
-        )
-    return tuple(slots)
-
-
-SCORE_SLOTS = _all_score_slots()
-
-
 def _sample_slot(rng, slots: Sequence[DartsScoreSlot]) -> DartsScoreSlot:
     """Return one random score slot from a non-empty pool."""
 
@@ -286,7 +239,7 @@ def _slot_position(rng, *, slot: DartsScoreSlot, params: DartboardRenderParams) 
     board_radius = float(params.board_radius_px)
     if slot.sector_value is None:
         angle = float(rng.uniform(-180.0, 180.0))
-        radius_min, radius_max = _RING_RADIUS_FRACTIONS[str(slot.ring)]
+        radius_min, radius_max = RING_RADIUS_FRACTIONS[str(slot.ring)]
         radius = float(rng.uniform(float(radius_min), float(radius_max)) * board_radius)
         return polar_to_xy(
             cx=float(params.board_center_x_px),
@@ -298,7 +251,7 @@ def _slot_position(rng, *, slot: DartsScoreSlot, params: DartboardRenderParams) 
     sector_index = _SECTOR_TO_INDEX[int(slot.sector_value)]
     center_angle = float(sector_index * 18.0)
     angle = float(rng.uniform(center_angle - 6.4, center_angle + 6.4))
-    radius_min, radius_max = _RING_RADIUS_FRACTIONS[str(slot.ring)]
+    radius_min, radius_max = RING_RADIUS_FRACTIONS[str(slot.ring)]
     radius = float(rng.uniform(float(radius_min), float(radius_max)) * board_radius)
     return polar_to_xy(
         cx=float(params.board_center_x_px),
@@ -526,9 +479,6 @@ def resolve_darts_render_params(
         number_font_size_px=int(
             params.get("number_font_size_px", group_default(render_defaults, "number_font_size_px", DEFAULTS.number_font_size_px))
         ),
-        title_font_size_px=int(
-            params.get("title_font_size_px", group_default(render_defaults, "title_font_size_px", DEFAULTS.title_font_size_px))
-        ),
         font_family=str(font_family),
         layout_jitter_meta=dict(layout_jitter),
     )
@@ -547,7 +497,4 @@ __all__ = [
     "resolve_score_option_answer_label",
     "sample_darts_for_count",
     "sample_darts_for_score_options",
-    "score_slot_at_least",
-    "score_slot_in_ring",
-    "score_slot_public_ring",
 ]

@@ -16,15 +16,6 @@ generation:
     gap_threshold_step: 4
     gap_threshold_count_min: 2
     gap_threshold_count_max: 10
-    rank_order_weights:
-      largest: 1.0
-      smallest: 1.0
-    side_direction_weights:
-      series_a_greater: 1.0
-      series_b_greater: 1.0
-    gap_threshold_relation_weights:
-      at_least: 1.0
-      at_most: 1.0
 rendering:
   shared:
     canvas_width: 1280

@@ -1,34 +1,34 @@
-"""Runtime helpers for dumbbell chart tasks."""
+"""Neutral output helpers for dumbbell chart scenes."""
 
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import Any, Dict, Mapping
+from typing import Any, Mapping
 
-from trace.core.types import TypedValue
 from trace.core.visual.background import make_background_canvas
 from trace.core.visual.noise import apply_post_image_noise
-from trace.tasks.charts.dumbbell.shared.pairwise_comparison_query import (
+from trace.tasks.charts.dumbbell.shared.defaults import (
     POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     SCENE_ID,
-    SCENE_NAMESPACE,
-    _Dataset,
-    _REASONING_LOAD_BY_VARIANT,
-    _Rendered,
-    _SCENE_LOAD_BY_VARIANT,
+    SCENE_LOAD_BY_VARIANT,
+)
+from trace.tasks.charts.dumbbell.shared.rendering import (
     render_dumbbell_chart,
+    render_metadata,
     resolve_dumbbell_render_params,
 )
-from trace.tasks.shared.font_assets import font_asset_version
+from trace.tasks.charts.dumbbell.shared.state import DumbbellDataset, RenderedDumbbell
 
 
 def render_dataset(
-    dataset: _Dataset,
+    dataset: DumbbellDataset,
     *,
     params: Mapping[str, Any],
     instance_seed: int,
-) -> tuple[_Rendered, Dict[str, Any], Dict[str, Any]]:
+) -> tuple[RenderedDumbbell, dict[str, Any], dict[str, Any]]:
+    """Render one task-owned dumbbell dataset on the configured background."""
+
     render_params = resolve_dumbbell_render_params(params, instance_seed=int(instance_seed))
     background, background_meta = make_background_canvas(
         canvas_width=int(render_params.canvas_width),
@@ -50,63 +50,14 @@ def render_dataset(
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
     rendered = replace(rendered, image=image)
-    render_meta = {
-        "canvas_width": int(render_params.canvas_width),
-        "canvas_height": int(render_params.canvas_height),
-        "coord_space": "pixel",
-        "scene_variant": str(dataset.scene_variant),
-        "row_count": int(len(dataset.rows)),
-        "plot_bbox_px": list(rendered.plot_bbox_px),
-        "legend_bboxes_px": dict(rendered.legend_bboxes_px),
-        "layout_jitter": dict(render_params.layout_jitter_meta or {}),
-        "font_assets": {
-            "asset_version": str(font_asset_version()),
-            "chart_font_family": str(render_params.font_family),
-        },
-        "chart_font_family": str(render_params.font_family),
-        "font_asset_version": str(font_asset_version()),
-        "post_image_noise": dict(post_noise_meta),
-    }
+    render_meta = render_metadata(render_params, rendered, dataset)
+    render_meta["post_image_noise"] = dict(post_noise_meta)
     return rendered, dict(render_meta), {"background": dict(background_meta), "post_image_noise": dict(post_noise_meta)}
 
 
-def answer_typed_value(dataset: _Dataset) -> TypedValue:
-    answer_value: int | str = int(dataset.query.answer) if str(dataset.query.answer_type) == "integer" else str(dataset.query.answer)
-    return TypedValue(type=str(dataset.query.answer_type), value=answer_value)
+def row_records(dataset: DumbbellDataset) -> list[dict[str, Any]]:
+    """Return serializable row records for execution traces."""
 
-
-def annotation_payload(
-    *,
-    dataset: _Dataset,
-    rendered: _Rendered,
-) -> tuple[str, list[list[float]], Dict[str, Any], list[dict[str, Any]]]:
-    rows_by_id = {str(row.row_id): row for row in dataset.rows}
-    annotation_rows = [str(row_id) for row_id in dataset.query.annotation_row_ids]
-    annotation = [list(rendered.row_pair_bboxes_px[str(row_id)]) for row_id in annotation_rows]
-    records = [
-        {
-            "row_id": str(row_id),
-            "row_label": str(rows_by_id[str(row_id)].label),
-            "value_a": int(rows_by_id[str(row_id)].value_a),
-            "value_b": int(rows_by_id[str(row_id)].value_b),
-            "gap": int(rows_by_id[str(row_id)].gap),
-            "row_pair_bbox_px": list(rendered.row_pair_bboxes_px[str(row_id)]),
-            "connector_bbox_px": list(rendered.connector_bboxes_px[str(row_id)]),
-            "point_a_bbox_px": list(rendered.point_bboxes_px[f"{row_id}:series_a"]),
-            "point_b_bbox_px": list(rendered.point_bboxes_px[f"{row_id}:series_b"]),
-        }
-        for row_id in annotation_rows
-    ]
-    projected = {
-        "type": "bbox_set",
-        "bbox_set": list(annotation),
-        "pixel_bbox_set": list(annotation),
-        "annotation_refs": [dict(record) for record in records],
-    }
-    return "bbox_set", list(annotation), dict(projected), [dict(record) for record in records]
-
-
-def row_records(dataset: _Dataset) -> list[dict[str, Any]]:
     return [
         {
             "row_id": str(row.row_id),
@@ -114,6 +65,7 @@ def row_records(dataset: _Dataset) -> list[dict[str, Any]]:
             "value_a": int(row.value_a),
             "value_b": int(row.value_b),
             "gap": int(row.gap),
+            "signed_delta_a_minus_b": int(row.signed_delta_a_minus_b),
         }
         for row in dataset.rows
     ]
@@ -121,14 +73,18 @@ def row_records(dataset: _Dataset) -> list[dict[str, Any]]:
 
 def build_trace_scaffold(
     *,
-    dataset: _Dataset,
-    rendered: _Rendered,
+    dataset: DumbbellDataset,
+    rendered: RenderedDumbbell,
     render_meta: Mapping[str, Any],
     sidecar_meta: Mapping[str, Any],
     projected_annotation: Mapping[str, Any],
     annotation_refs: list[dict[str, Any]],
     answer_value: int | str,
-) -> Dict[str, Any]:
+    reasoning_load: float,
+    question_format: str,
+) -> dict[str, Any]:
+    """Build task-neutral trace sections for a rendered dumbbell sample."""
+
     return {
         "scene_ir": {
             "scene_kind": "chart_dumbbell",
@@ -139,6 +95,8 @@ def build_trace_scaffold(
                 "series_b_name": str(dataset.series_b_name),
                 "answer": answer_value,
                 "annotation_row_ids": [str(row_id) for row_id in dataset.query.annotation_row_ids],
+                "reasoning_load": float(reasoning_load),
+                "scene_load": float(SCENE_LOAD_BY_VARIANT.get(str(dataset.scene_variant), 0.58)),
             },
         },
         "render_spec": dict(render_meta),
@@ -156,10 +114,14 @@ def build_trace_scaffold(
             "scene_variant": str(dataset.scene_variant),
             "series_a_name": str(dataset.series_a_name),
             "series_b_name": str(dataset.series_b_name),
+            "row_count": int(len(dataset.rows)),
+            "row_labels": [str(row.label) for row in dataset.rows],
             "row_records": row_records(dataset),
+            "rows": row_records(dataset),
             "query_params": dict(dataset.query.params),
+            "annotation_row_ids": [str(row_id) for row_id in dataset.query.annotation_row_ids],
             "answer": answer_value,
-            "question_format": "dumbbell_pairwise_comparison",
+            "question_format": str(question_format),
         },
         "witness_symbolic": {
             "type": "row_set",
@@ -171,5 +133,8 @@ def build_trace_scaffold(
     }
 
 
-
-
+__all__ = [
+    "build_trace_scaffold",
+    "render_dataset",
+    "row_records",
+]

@@ -14,7 +14,7 @@ import re
 
 MIGRATED_SCENE_PACKAGE_DOMAINS: frozenset[str] = frozenset()
 MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell"}),
     "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes"}),
     "geometry": frozenset(
         {
@@ -28,9 +28,11 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
+    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field"}),
+    "illustrations": frozenset({"construction_site"}),
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell"}),
     "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes"}),
     "geometry": frozenset(
         {
@@ -44,6 +46,8 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
+    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field"}),
+    "illustrations": frozenset({"construction_site"}),
 }
 SCENE_PACKAGE_PILOT_TASK_IDS: frozenset[str] = frozenset()
 

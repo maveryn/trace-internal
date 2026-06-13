@@ -4,11 +4,11 @@
 1. Domain: `charts`
 2. Scene id: `dumbbell`
 3. Source implementation domain/group: `charts/dumbbell`
-4. Query id: `side_winner_count`
+4. Query ids: `series_a_greater_threshold_count`, `series_b_greater_threshold_count`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.dumbbell.pairwise_comparison_query.ChartsDumbbellSideWinnerCountTask`
+1. Registered class: `trace.tasks.charts.dumbbell.side_winner_count.ChartsDumbbellSideWinnerCountTask`
 2. Prompt lookup domain/group: `charts/dumbbell`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
@@ -23,7 +23,8 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `side_winner_count` | `count.pairwise_comparison` | `integer_count` | `bbox_set` |
+| `series_a_greater_threshold_count` | `count.pairwise_comparison` | `integer_count` | `bbox_set` |
+| `series_b_greater_threshold_count` | `count.pairwise_comparison` | `integer_count` | `bbox_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

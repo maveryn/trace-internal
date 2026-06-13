@@ -4,11 +4,11 @@
 1. Domain: `charts`
 2. Scene id: `dumbbell`
 3. Source implementation domain/group: `charts/dumbbell`
-4. Query id: `gap_rank_row_label`
+4. Query ids: `largest_gap_rank_row_label`, `smallest_gap_rank_row_label`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.dumbbell.pairwise_comparison_query.ChartsDumbbellGapRankRowLabelTask`
+1. Registered class: `trace.tasks.charts.dumbbell.gap_rank_row_label.ChartsDumbbellGapRankRowLabelTask`
 2. Prompt lookup domain/group: `charts/dumbbell`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
@@ -23,7 +23,8 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `gap_rank_row_label` | `selection.ranked_item` | `string_label` | `bbox_set` |
+| `largest_gap_rank_row_label` | `selection.ranked_item` | `string_label` | `bbox_set` |
+| `smallest_gap_rank_row_label` | `selection.ranked_item` | `string_label` | `bbox_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

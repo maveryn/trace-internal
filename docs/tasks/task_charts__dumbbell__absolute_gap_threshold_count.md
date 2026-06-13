@@ -4,11 +4,11 @@
 1. Domain: `charts`
 2. Scene id: `dumbbell`
 3. Source implementation domain/group: `charts/dumbbell`
-4. Query id: `absolute_gap_threshold_count`
+4. Query ids: `absolute_gap_at_least_threshold_count`, `absolute_gap_at_most_threshold_count`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.dumbbell.pairwise_comparison_query.ChartsDumbbellAbsoluteGapThresholdCountTask`
+1. Registered class: `trace.tasks.charts.dumbbell.absolute_gap_threshold_count.ChartsDumbbellAbsoluteGapThresholdCountTask`
 2. Prompt lookup domain/group: `charts/dumbbell`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
@@ -23,7 +23,8 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `absolute_gap_threshold_count` | `count.one_bound_threshold` | `integer_count` | `bbox_set` |
+| `absolute_gap_at_least_threshold_count` | `count.one_bound_threshold` | `integer_count` | `bbox_set` |
+| `absolute_gap_at_most_threshold_count` | `count.one_bound_threshold` | `integer_count` | `bbox_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

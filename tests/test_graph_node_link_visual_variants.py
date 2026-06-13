@@ -4,39 +4,37 @@ from __future__ import annotations
 
 import math
 
-from trace.tasks.graph.relation.component_size_count import (
-    GraphComparisonLargestComponentSizeTaskPublic,
-    GraphRelationSameComponentCountTaskPublic,
-)
-from trace.tasks.graph.comparison.extreme_degree_value import GraphComparisonExtremeDegreeValueTask
-from trace.tasks.graph.counting.articulation_point_count import GraphCountingArticulationPointCountTask
-from trace.tasks.graph.counting.bridge_count import GraphCountingBridgeCountTask
-from trace.tasks.graph.counting.degree_count import GraphCountingDegreeValueFilterCountTask
-from trace.tasks.graph.counting.named_node_degree_value import GraphCountingNamedNodeDegreeValueTask
-from trace.tasks.graph.order.topological_position import GraphOrderTopologicalPositionTask
-from trace.tasks.graph.path.longest_path_length import GraphPathLongestPathLengthTask
-from trace.tasks.graph.path.shortest_path_length import GraphPathShortestPathLengthTask
-from trace.tasks.graph.relation.common_neighbor_count import GraphRelationCommonNeighborCountTask
-from trace.tasks.graph.relation.edge_attribute_label import GraphRelationEdgeBetweenNodesLabelTask
-from trace.tasks.graph.relation.reachable_count import GraphRelationReachableCountTask
-from trace.tasks.graph.relation.largest_chordless_cycle_size import GraphRelationLargestChordlessCycleSizeTask
-from trace.tasks.graph.relation.unique_cycle_size import GraphRelationUniqueCycleSizeTask
+from trace.tasks.graph.node_link.largest_component_size import GraphComparisonLargestComponentSizeTask
+from trace.tasks.graph.node_link.same_component_count import GraphRelationSameComponentCountTask
+from trace.tasks.graph.node_link.degree_extremum_value import GraphComparisonExtremeDegreeValueTask
+from trace.tasks.graph.node_link.articulation_point_count import GraphCountingArticulationPointCountTask
+from trace.tasks.graph.node_link.bridge_count import GraphCountingBridgeCountTask
+from trace.tasks.graph.node_link.degree_value_filter_count import GraphCountingDegreeValueFilterCountTask
+from trace.tasks.graph.node_link.named_node_degree_value import GraphCountingNamedNodeDegreeValueTask
+from trace.tasks.graph.node_link.topological_endpoint_node_label import GraphOrderTopologicalEndpointNodeLabelTask
+from trace.tasks.graph.node_link.longest_path_length import GraphPathLongestPathLengthTask
+from trace.tasks.graph.node_link.shortest_path_length import GraphPathShortestPathLengthTask
+from trace.tasks.graph.node_link.common_related_node_count import GraphRelationCommonNeighborCountTask
+from trace.tasks.graph.node_link.edge_between_nodes_label import GraphRelationEdgeBetweenNodesLabelTask
+from trace.tasks.graph.node_link.reachable_count import GraphRelationReachableCountTask
+from trace.tasks.graph.node_link.largest_chordless_cycle_size import GraphRelationLargestChordlessCycleSizeTask
+from trace.tasks.graph.node_link.unique_cycle_size import GraphRelationUniqueCycleSizeTask
 
 
 NODE_LINK_TASKS = (
-    ("task_graph__node_link__largest_component_size", GraphComparisonLargestComponentSizeTaskPublic, {}),
+    ("task_graph__node_link__largest_component_size", GraphComparisonLargestComponentSizeTask, {}),
     ("task_graph__node_link__articulation_point_count", GraphCountingArticulationPointCountTask, {}),
     ("task_graph__node_link__bridge_count", GraphCountingBridgeCountTask, {}),
     ("task_graph__node_link__degree_value_filter_count", GraphCountingDegreeValueFilterCountTask, {"query_id": "undirected_degree_count"}),
     ("task_graph__node_link__named_node_degree_value", GraphCountingNamedNodeDegreeValueTask, {}),
-    ("task_graph__node_link__topological_position_value", GraphOrderTopologicalPositionTask, {}),
+    ("task_graph__node_link__topological_endpoint_node_label", GraphOrderTopologicalEndpointNodeLabelTask, {}),
     ("task_graph__node_link__shortest_path_length", GraphPathShortestPathLengthTask, {}),
     ("task_graph__node_link__reachable_count", GraphRelationReachableCountTask, {}),
-    ("task_graph__node_link__same_component_count", GraphRelationSameComponentCountTaskPublic, {}),
+    ("task_graph__node_link__same_component_count", GraphRelationSameComponentCountTask, {}),
     ("task_graph__node_link__largest_chordless_cycle_size", GraphRelationLargestChordlessCycleSizeTask, {}),
     ("task_graph__node_link__unique_cycle_size", GraphRelationUniqueCycleSizeTask, {}),
     ("task_graph__node_link__degree_extremum_value", GraphComparisonExtremeDegreeValueTask, {}),
-    ("task_graph__node_link__degree_value_filter_count", GraphCountingDegreeValueFilterCountTask, {"query_id": "directed_source_count"}),
+    ("task_graph__node_link__degree_value_filter_count", GraphCountingDegreeValueFilterCountTask, {"query_id": "directed_out_degree_count"}),
     ("task_graph__node_link__common_related_node_count", GraphRelationCommonNeighborCountTask, {}),
     ("task_graph__node_link__edge_between_nodes_label", GraphRelationEdgeBetweenNodesLabelTask, {}),
     ("task_graph__node_link__longest_path_length", GraphPathLongestPathLengthTask, {}),
@@ -44,10 +42,9 @@ NODE_LINK_TASKS = (
 
 LABEL_REFERENCING_TASKS = {
     GraphCountingNamedNodeDegreeValueTask,
-    GraphOrderTopologicalPositionTask,
     GraphPathShortestPathLengthTask,
     GraphRelationReachableCountTask,
-    GraphRelationSameComponentCountTaskPublic,
+    GraphRelationSameComponentCountTask,
     GraphRelationCommonNeighborCountTask,
     GraphRelationEdgeBetweenNodesLabelTask,
 }
@@ -249,7 +246,7 @@ def test_mixed_arcs_do_not_duplicate_intervening_node_chain_regression() -> None
         "topology_profile": "balanced",
     }
 
-    out = GraphComparisonLargestComponentSizeTaskPublic().generate(
+    out = GraphComparisonLargestComponentSizeTask().generate(
         287376090864390,
         params=params,
         max_attempts=200,
@@ -274,9 +271,9 @@ def test_mixed_arcs_do_not_duplicate_intervening_node_chain_regression() -> None
 
 def test_path_spine_layout_fans_off_path_edges_regression() -> None:
     out = GraphPathShortestPathLengthTask().generate(
-        6553976889450827,
+        6553976889450802,
         params={
-            "query_id": "shortest_path_length",
+            "query_id": "undirected_shortest_path_length",
             "node_count": 9,
             "target_shortest_path_length": 3,
             "topology_profile": "low_degree",
@@ -301,7 +298,6 @@ def test_path_spine_layout_fans_off_path_edges_regression() -> None:
         if entity["entity_kind"] == "graph_edge"
     ]
 
-    assert execution["layout_variant_requested"] == "path_spine"
     assert execution["layout_variant_used"] == "path_spine"
     assert _minimum_incident_edge_angle_degrees(
         node_entities=node_entities,

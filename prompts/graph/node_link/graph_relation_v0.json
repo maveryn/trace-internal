@@ -192,13 +192,11 @@
     "query:largest_chordless_cycle_size": [],
     "query:next_in_hamiltonian_cycle_label": [
       "orientation_start_label",
-      "orientation_next_label",
-      "query_label"
+      "orientation_final_label"
     ],
     "query:previous_in_hamiltonian_cycle_label": [
       "orientation_start_label",
-      "orientation_next_label",
-      "query_label"
+      "orientation_final_label"
     ],
     "query:edge_between_nodes_label": [
       "source_label",
@@ -318,7 +316,7 @@
       "How many nodes, including node {query_label} itself, are in the same connected component as {query_label}?",
       "Count the nodes in the connected component containing {query_label}, including {query_label}.",
       "What is the size of the connected component that contains node {query_label}?",
-      "Starting from node {query_label}, how many nodes are connected to it in the same component, including itself?",
+      "For node {query_label}, how many nodes are connected to it in the same component, including itself?",
       "How many labeled nodes belong to node {query_label}'s connected component?"
     ],
     "largest_component_size": [
@@ -329,11 +327,11 @@
       "How many labeled nodes belong to the largest connected component?"
     ],
     "reachable_count": [
-      "How many nodes, including node {query_label} itself, are reachable from {query_label} by following the direction of the arrows?",
-      "Following arrow directions from node {query_label}, how many nodes can be reached, including {query_label}?",
-      "What is the number of nodes reachable from {query_label} along directed edges, counting {query_label} itself?",
-      "Start at node {query_label} and follow arrows only. How many nodes are reachable?",
-      "How many labeled nodes can be reached from {query_label} when edge directions are respected?"
+      "How many nodes, excluding node {query_label} itself, are reachable from {query_label} by following the direction of the arrows?",
+      "Following arrow directions from node {query_label}, how many other nodes can be reached?",
+      "What is the number of nodes reachable from {query_label} along directed edges, excluding {query_label} itself?",
+      "Start at node {query_label} and follow arrows only. How many other nodes are reachable?",
+      "How many labeled nodes besides {query_label} can be reached from {query_label} when edge directions are respected?"
     ],
     "reachable_count_after_edge_removal": [
       "If the arrow from node {edit_label_a} to node {edit_label_b} were removed, how many nodes, including node {query_label} itself, would be reachable from {query_label} by following arrows?",
@@ -420,18 +418,18 @@
       "What is the maximum number of nodes in a chordless cycle in this graph?"
     ],
     "next_in_hamiltonian_cycle_label": [
-      "The graph has exactly one Hamiltonian cycle. Starting at node {orientation_start_label} and then node {orientation_next_label}, follow that cycle. Which node comes immediately after node {query_label}?",
-      "Follow the unique Hamiltonian cycle, beginning with {orientation_start_label} then {orientation_next_label}. What node is immediately after {query_label}?",
-      "In the unique Hamiltonian cycle, use the traversal direction from {orientation_start_label} to {orientation_next_label}. Which node follows {query_label}?",
-      "Starting with {orientation_start_label}, then {orientation_next_label}, move around the graph's only Hamiltonian cycle. What is the next node after {query_label}?",
-      "Along the unique Hamiltonian cycle in the direction {orientation_start_label} to {orientation_next_label}, which node comes after {query_label}?"
+      "Use the Hamiltonian-cycle direction that starts at node {orientation_start_label} and returns to it from node {orientation_final_label}. Which node comes immediately after the starting node {orientation_start_label} along this cycle?",
+      "Start at {orientation_start_label} and move around the Hamiltonian cycle so that {orientation_final_label} is last before returning to the start. What node is immediately after {orientation_start_label} along that cycle?",
+      "With {orientation_start_label} as the first cycle node and {orientation_final_label} as the final node before returning, which node follows {orientation_start_label} along the Hamiltonian cycle?",
+      "Traverse the Hamiltonian cycle from {orientation_start_label} through to {orientation_final_label}. What is the next node after {orientation_start_label} on that cycle?",
+      "In the stated start-to-final Hamiltonian-cycle direction, which node comes after the start node {orientation_start_label}?"
     ],
     "previous_in_hamiltonian_cycle_label": [
-      "The graph has exactly one Hamiltonian cycle. Starting at node {orientation_start_label} and then node {orientation_next_label}, follow that cycle. Which node comes immediately before node {query_label}?",
-      "Follow the unique Hamiltonian cycle, beginning with {orientation_start_label} then {orientation_next_label}. What node is immediately before {query_label}?",
-      "In the unique Hamiltonian cycle, use the traversal direction from {orientation_start_label} to {orientation_next_label}. Which node precedes {query_label}?",
-      "Starting with {orientation_start_label}, then {orientation_next_label}, move around the graph's only Hamiltonian cycle. What is the previous node before {query_label}?",
-      "Along the unique Hamiltonian cycle in the direction {orientation_start_label} to {orientation_next_label}, which node comes before {query_label}?"
+      "Use the Hamiltonian-cycle direction that starts at node {orientation_start_label} and returns to it from node {orientation_final_label}. Which node comes immediately before the final node {orientation_final_label} along this cycle?",
+      "Start at {orientation_start_label} and move around the Hamiltonian cycle so that {orientation_final_label} is last before returning to the start. What node is immediately before {orientation_final_label} along that cycle?",
+      "With {orientation_start_label} as the first cycle node and {orientation_final_label} as the final node before returning, which node precedes {orientation_final_label} along the Hamiltonian cycle?",
+      "Traverse the Hamiltonian cycle from {orientation_start_label} through to {orientation_final_label}. What is the previous node before {orientation_final_label} on that cycle?",
+      "In the stated start-to-final Hamiltonian-cycle direction, which node comes before the final node {orientation_final_label}?"
     ],
     "edge_between_nodes_label": [
       "What label is shown on the edge between node {source_label} and node {target_label}?",

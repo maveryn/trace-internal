@@ -58,6 +58,7 @@ from trace.tasks.graph.shared.graph_node_degree_sampling import (
     feasible_node_counts_for_named_node_degree_value,
     sample_extreme_degree_graph,
     sample_named_node_degree_graph,
+    sample_unique_extreme_degree_graph,
 )
 from trace.tasks.graph.shared.graph_path_order_sampling import (
     feasible_node_counts_for_hamiltonian_cycle_neighbor,
@@ -308,5 +309,6 @@ __all__ = [
     "sample_shortest_path_length_graph",
     "sample_topological_position_graph",
     "sample_unique_cycle_graph",
+    "sample_unique_extreme_degree_graph",
     "sample_unique_node_label_relation_graph",
 ]

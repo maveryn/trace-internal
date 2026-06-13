@@ -144,7 +144,7 @@ def feasible_node_counts_for_largest_chordless_cycle_size(
     target_size = int(target_cycle_size)
     if int(target_size) < 3:
         return ()
-    secondary_cycle_extra_nodes = 1 if int(target_size) == 3 else 2
+    secondary_cycle_extra_nodes = 0 if int(target_size) == 3 else 1
     minimum = max(int(node_count_min), int(target_size) + int(secondary_cycle_extra_nodes))
     maximum = int(node_count_max)
     if int(minimum) > int(maximum):

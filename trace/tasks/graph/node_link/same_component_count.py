@@ -11,7 +11,13 @@ SUPPORTED_QUERY_IDS = ('same_component_count',)
 
 def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
     """Sample a graph satisfying this public objective contract."""
-    return sample_component_count_graph(rng, node_count=int(axes.node_count), target_component_size=int(axes.values['target_component_size']), component_count=int(axes.values['component_count']), topology_profile=str(axes.topology_profile), label_variant=str(axes.label_variant))
+    node_count = int(axes.node_count)
+    component_count = min(int(axes.values['component_count']), max(2, int(node_count) - 1))
+    target_component_size = min(
+        int(axes.values['target_component_size']),
+        max(2, int(node_count) - int(component_count) + 1),
+    )
+    return sample_component_count_graph(rng, node_count=int(node_count), target_component_size=int(target_component_size), component_count=int(component_count), topology_profile=str(axes.topology_profile), label_variant=str(axes.label_variant))
 
 def _build_objective_plan() -> NodeLinkObjectivePlan:
     """Bind query ids, sampler, answer, and annotation for this objective."""

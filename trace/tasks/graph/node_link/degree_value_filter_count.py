@@ -17,7 +17,10 @@ def _hint_key(axes):
 
 def _sample_graph(rng, axes, attempts):
     directed = str(axes.query_id).startswith('directed')
-    return sample_degree_count_graph(rng, query_id='directed_degree_count' if directed else 'degree_count', degree_mode=_mode(axes.query_id), node_count=int(axes.node_count), query_degree=int(axes.values['query_degree']), target_count=int(axes.values['target_count']), max_degree=4, topology_profile=str(axes.topology_profile), label_variant=str(axes.label_variant), search_attempts=int(attempts))
+    target_count = int(axes.values['target_count'])
+    if directed:
+        target_count = min(int(target_count), 4)
+    return sample_degree_count_graph(rng, query_id='directed_degree_count' if directed else 'degree_count', degree_mode=_mode(axes.query_id), node_count=int(axes.node_count), query_degree=int(axes.values['query_degree']), target_count=int(target_count), max_degree=4, topology_profile=str(axes.topology_profile), label_variant=str(axes.label_variant), search_attempts=int(attempts))
 
 def _build_objective_plan():
     return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphCountingDegreeValueFilterCountTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='integer', answer_field='target_count', annotation_type='point_set', annotation_kind='node_point_set', annotation_field='target_labels', prompt_query_key=_prompt_key, annotation_hint_key=_hint_key, graph_directionality=lambda axes: 'directed' if str(axes.query_id).startswith('directed') else 'undirected', scene_kind='graph_degree_value_filter_counting', question_format=lambda axes: str(axes.query_id), value_ranges={'target_count': (1, 5), 'query_degree': (1, 4)}, prompt_bundle_id='graph_counting_v0', prompt_scene_key='single_graph_counting', prompt_task_key='degree_count_query')

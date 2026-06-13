@@ -14,7 +14,8 @@ from typing import Any, Mapping
 from trace.core.seed import hash64, spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.graph.shared.task_support import resolve_graph_named_variant, resolve_graph_render_params
+from trace.tasks.graph.shared.task_support import format_graph_prompt_label, graph_edge_label_entries, resolve_graph_named_variant, resolve_graph_render_params
+from trace.tasks.shared.color_format import format_named_color_with_hex
 from trace.tasks.shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.output_metadata import default_task_versions
@@ -31,6 +32,13 @@ from .shared.prompts import build_graph_prompt_json_examples, resolve_prompt_slo
 from .shared.rendering import render_node_link_sample
 from .shared.sampling import SUPPORTED_TOPOLOGY_PROFILES, resolve_node_link_visual_axes
 from .shared.state import SCENE_ID
+
+
+class _SafePromptSlots(dict):
+    """Leave unknown prompt slots intact instead of failing at runtime."""
+
+    def __missing__(self, key: str) -> str:
+        return "{" + str(key) + "}"
 
 
 @dataclass(frozen=True)
@@ -93,6 +101,7 @@ class NodeLinkObjectivePlan:
     semantic_colors: tuple[str, ...] = ("red", "blue", "green", "yellow", "orange", "purple")
     annotation_example: Any = field(default_factory=lambda: [[180, 220], [310, 180]])
     answer_example: Any = 2
+    strict_edge_label_placement: bool = False
 
 
 def _resolve_int_axis(
@@ -138,6 +147,44 @@ def _trace_with_public_task_id(trace_payload: Mapping[str, Any], *, public_task_
     return trace
 
 
+def _format_prompt_default(value: Any, slots: Mapping[str, Any]) -> str:
+    """Format task prompt-default prose with runtime slots when present."""
+
+    text = str(value)
+    if "{" not in text:
+        return text
+    return text.format_map(_SafePromptSlots({str(key): value for key, value in slots.items()}))
+
+
+def _sample_label_variant(sample: Any, axes: NodeLinkAxes) -> str:
+    """Return the label variant used by the rendered sample."""
+
+    return str(getattr(sample, "label_variant", axes.label_variant))
+
+
+def _prompt_label(sample: Any, axes: NodeLinkAxes, label: Any) -> str:
+    """Return one prompt-facing graph label with named labels quoted."""
+
+    text = str(label)
+    if not text:
+        return ""
+    return format_graph_prompt_label(text, label_variant=_sample_label_variant(sample, axes))
+
+
+def _prompt_color_label(color_name: Any) -> str:
+    """Return prompt-facing color text with canonical hex code."""
+
+    text = str(color_name).strip().lower()
+    if not text:
+        return ""
+    try:
+        from trace.tasks.shared.named_colors import named_color
+
+        return format_named_color_with_hex(text, named_color(text))
+    except Exception:
+        return text
+
+
 def _resolve_axes(
     *,
     plan: NodeLinkObjectivePlan,
@@ -170,6 +217,39 @@ def _resolve_axes(
         task_id=str(plan.public_id),
     )
     values: dict[str, Any] = dict(plan.fixed_values)
+    for semantic_key in ("source_color_name", "target_color_name", "target_edge_label"):
+        raw_value = params.get(semantic_key)
+        if raw_value is not None and str(raw_value).strip():
+            values[str(semantic_key)] = str(raw_value).strip().lower()
+    raw_edge_label_support = params.get("edge_label_support", group_default(gen_defaults, "edge_label_support", None))
+    if raw_edge_label_support is not None:
+        if isinstance(raw_edge_label_support, str):
+            values["edge_label_support"] = [
+                str(item).strip().lower()
+                for item in raw_edge_label_support.split(",")
+                if str(item).strip()
+            ]
+        else:
+            values["edge_label_support"] = [
+                str(item).strip().lower()
+                for item in raw_edge_label_support
+                if str(item).strip()
+            ]
+    for semantic_key in (
+        "edge_label_support_size",
+        "edge_label_min_chars",
+        "edge_label_max_chars",
+        "max_labeled_edge_count",
+    ):
+        raw_value = params.get(semantic_key, group_default(gen_defaults, semantic_key, None))
+        if raw_value is not None:
+            values[str(semantic_key)] = int(raw_value)
+    raw_edge_label_bucket_weights = params.get(
+        "edge_label_bucket_weights",
+        group_default(gen_defaults, "edge_label_bucket_weights", None),
+    )
+    if isinstance(raw_edge_label_bucket_weights, Mapping):
+        values["edge_label_bucket_weights"] = dict(raw_edge_label_bucket_weights)
     probabilities: dict[str, Any] = {
         "query_id_probabilities": dict(query_probabilities),
         "node_count_probabilities": dict(node_probabilities),
@@ -316,6 +396,7 @@ def run_node_link_plan(
                 params=params,
                 instance_seed=int(instance_seed),
                 scene_id=scene_id,
+                strict_edge_label_placement=bool(plan.strict_edge_label_placement),
             )
             rendered_scene = rendered.rendered_scene
             image = rendered.image
@@ -342,7 +423,14 @@ def run_node_link_plan(
         annotation_kind=str(plan.annotation_kind),
         annotation_field=str(plan.annotation_field),
     )
+    directionality = resolve_prompt_slot(plan.graph_directionality, axes)
     object_description_key = resolve_prompt_slot(plan.object_description_key, axes)
+    if (
+        str(directionality) == "directed"
+        and str(object_description_key) == "object_description_undirected"
+        and "object_description_directed" in prompt_defaults
+    ):
+        object_description_key = "object_description_directed"
     if object_description_key not in prompt_defaults and "object_description" in prompt_defaults:
         object_description_key = "object_description"
     annotation_hint_key = resolve_prompt_slot(plan.annotation_hint_key, axes)
@@ -369,6 +457,42 @@ def run_node_link_plan(
         annotation_value=plan.annotation_example,
         answer_value=plan.answer_example,
     )
+    query_edge = tuple(str(value) for value in getattr(sample, "query_edge", ("", ""))[:2])
+    if len(query_edge) < 2:
+        query_edge = ("", "")
+    edit_edge = tuple(str(value) for value in getattr(sample, "edit_edge", ("", ""))[:2])
+    if len(edit_edge) < 2:
+        edit_edge = ("", "")
+    target_color_name = str(getattr(sample, "target_color_name", axes.values.get("target_color_name", "")))
+    source_color_name = str(getattr(sample, "source_color_name", axes.values.get("source_color_name", "")))
+    runtime_slots = {
+        "query_node_label": _prompt_label(sample, axes, getattr(sample, "query_label", "")),
+        "query_label": _prompt_label(sample, axes, getattr(sample, "query_label", "")),
+        "query_node_label_a": _prompt_label(sample, axes, getattr(sample, "query_label_a", "")),
+        "query_node_label_b": _prompt_label(sample, axes, getattr(sample, "query_label_b", "")),
+        "query_label_a": _prompt_label(sample, axes, getattr(sample, "query_label_a", "")),
+        "query_label_b": _prompt_label(sample, axes, getattr(sample, "query_label_b", "")),
+        "source_node_label": _prompt_label(sample, axes, getattr(sample, "source_label", "")),
+        "target_node_label": _prompt_label(sample, axes, getattr(sample, "goal_label", "")),
+        "source_label": _prompt_label(sample, axes, getattr(sample, "source_label", query_edge[0])),
+        "target_label": _prompt_label(sample, axes, getattr(sample, "goal_label", query_edge[1])),
+        "goal_label": _prompt_label(sample, axes, getattr(sample, "goal_label", "")),
+        "edit_label_a": _prompt_label(sample, axes, edit_edge[0]),
+        "edit_label_b": _prompt_label(sample, axes, edit_edge[1]),
+        "orientation_start_label": _prompt_label(sample, axes, getattr(sample, "orientation_start_label", "")),
+        "orientation_next_label": _prompt_label(sample, axes, getattr(sample, "orientation_next_label", "")),
+        "query_degree": int(axes.values.get("query_degree", axes.values.get("target_degree", 0))),
+        "target_color": _prompt_color_label(target_color_name),
+        "target_color_label": _prompt_color_label(target_color_name),
+        "target_color_name": target_color_name,
+        "source_color": _prompt_color_label(source_color_name),
+        "source_color_label": _prompt_color_label(source_color_name),
+        "source_color_name": source_color_name,
+        "target_edge_label": str(getattr(sample, "target_edge_label", "")),
+        "path_edge_term": "arrow" if str(directionality) == "directed" else "edge",
+        "path_follow_clause": " following arrow direction" if str(directionality) == "directed" else "",
+        "orientation_final_label": _prompt_label(sample, axes, getattr(sample, "orientation_final_label", "")),
+    }
     prompt_selection = render_scene_prompt_variants(
         domain="graph",
         scene_id=scene_id,
@@ -378,47 +502,127 @@ def run_node_link_plan(
         query_key=resolve_prompt_slot(plan.prompt_query_key, axes),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots={
-            "object_description": str(prompt_defaults_required[str(object_description_key)]),
+            "object_description": _format_prompt_default(prompt_defaults_required[str(object_description_key)], runtime_slots),
             "json_output_contract": str(prompt_defaults_required["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults_required["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults_required[str(annotation_hint_key)]),
-            "answer_hint": str(prompt_defaults_required[str(plan.answer_hint_key)]),
+            "annotation_hint": _format_prompt_default(prompt_defaults_required[str(annotation_hint_key)], runtime_slots),
+            "answer_hint": _format_prompt_default(prompt_defaults_required[str(plan.answer_hint_key)], runtime_slots),
             "json_example": str(prompt_json_example),
             "json_example_answer_only": str(prompt_json_example_answer_only),
-            "query_node_label": str(getattr(sample, "query_label", "")),
-            "query_label": str(getattr(sample, "query_label", "")),
-            "query_node_label_a": str(getattr(sample, "query_label_a", "")),
-            "query_node_label_b": str(getattr(sample, "query_label_b", "")),
-            "query_label_a": str(getattr(sample, "query_label_a", "")),
-            "query_label_b": str(getattr(sample, "query_label_b", "")),
-            "source_node_label": str(getattr(sample, "source_label", "")),
-            "target_node_label": str(getattr(sample, "goal_label", "")),
-            "source_label": str(getattr(sample, "source_label", getattr(sample, "query_edge", ("", ""))[0])),
-            "target_label": str(getattr(sample, "goal_label", getattr(sample, "query_edge", ("", ""))[1])),
-            "goal_label": str(getattr(sample, "goal_label", "")),
-            "edit_label_a": str(getattr(sample, "edit_edge", ("", ""))[0]),
-            "edit_label_b": str(getattr(sample, "edit_edge", ("", ""))[1]),
-            "orientation_start_label": str(getattr(sample, "orientation_start_label", "")),
-            "orientation_next_label": str(getattr(sample, "orientation_next_label", "")),
-            "query_degree": int(axes.values.get("query_degree", axes.values.get("target_degree", 0))),
-            "target_color": str(getattr(sample, "target_color_name", axes.values.get("target_color_name", ""))),
-            "target_color_label": str(getattr(sample, "target_color_name", axes.values.get("target_color_name", ""))),
-            "source_color": str(getattr(sample, "source_color_name", axes.values.get("source_color_name", ""))),
-            "source_color_label": str(getattr(sample, "source_color_name", axes.values.get("source_color_name", ""))),
-            "target_edge_label": str(getattr(sample, "target_edge_label", "")),
-            "path_edge_term": str(getattr(sample, "query_path_edge_position", "edge") or "edge"),
-            "path_follow_clause": " following arrow direction" if str(directionality) == "directed" else "",
+            **runtime_slots,
         },
         instance_seed=int(instance_seed),
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-    directionality = resolve_prompt_slot(plan.graph_directionality, axes)
+    realized_query_values: dict[str, Any] = {}
+    for key in (
+        "target_degree",
+        "target_count",
+        "query_degree",
+        "target_position",
+        "target_reachable_count",
+        "target_component_size",
+        "component_count",
+        "target_shortest_path_length",
+        "target_cycle_size",
+    ):
+        if hasattr(sample, key):
+            realized_query_values[str(key)] = int(getattr(sample, key))
+    for key in ("source_color_name", "target_color_name"):
+        if hasattr(sample, key):
+            realized_query_values[str(key)] = str(getattr(sample, key))
+    realized_execution_values: dict[str, Any] = {}
+    for key in ("target_degree", "target_count", "query_degree", "target_position", "target_reachable_count", "target_shortest_path_length", "target_component_size", "component_count"):
+        if hasattr(sample, key):
+            realized_execution_values[str(key)] = int(getattr(sample, key))
+    for key in ("target_cycle_size", "attachment_count", "extra_edge_count"):
+        if hasattr(sample, key):
+            realized_execution_values[str(key)] = int(getattr(sample, key))
+    for key in (
+        "answer_label",
+        "degree_mode",
+        "extremum_mode",
+        "orientation_final_label",
+        "orientation_next_label",
+        "orientation_start_label",
+        "query_label",
+        "relation_mode",
+        "source_color_name",
+        "source_label",
+        "target_color_name",
+        "target_edge_label",
+        "answer_label",
+        "goal_label",
+    ):
+        if hasattr(sample, key):
+            realized_execution_values[str(key)] = str(getattr(sample, key))
+    for key in ("queried_degrees_by_label", "node_color_names_by_label"):
+        if hasattr(sample, key):
+            realized_execution_values[str(key)] = {
+                str(item_key): str(item_value) if key == "node_color_names_by_label" else int(item_value)
+                for item_key, item_value in getattr(sample, key).items()
+            }
+    for key in ("chordless_cycle_sizes", "chordless_cycle_labels"):
+        if hasattr(sample, key):
+            realized_execution_values[str(key)] = [
+                list(item) if isinstance(item, tuple) else int(item)
+                for item in getattr(sample, key)
+            ]
+    for key in ("annotation_labels", "target_labels"):
+        if hasattr(sample, key):
+            realized_execution_values[str(key)] = [
+                str(item)
+                for item in getattr(sample, key)
+            ]
+    if hasattr(sample, "target_shortest_path_length") and hasattr(sample, "target_labels"):
+        realized_execution_values["shortest_path_labels"] = [
+            str(item)
+            for item in getattr(sample, "target_labels")
+        ]
+    if hasattr(sample, "target_position") and hasattr(sample, "target_labels"):
+        realized_execution_values["topological_order_labels"] = [
+            str(item)
+            for item in getattr(sample, "target_labels")
+        ]
+    if hasattr(sample, "color_counts_by_name"):
+        realized_execution_values["color_counts_by_name"] = {
+            str(key): int(value)
+            for key, value in getattr(sample, "color_counts_by_name").items()
+        }
+    if hasattr(sample, "edge_label_counts_by_value"):
+        realized_execution_values["edge_label_counts_by_value"] = {
+            str(key): int(value)
+            for key, value in getattr(sample, "edge_label_counts_by_value").items()
+        }
+    if hasattr(sample, "edge_attribute_labels_by_label"):
+        edge_label_entries = list(graph_edge_label_entries(getattr(sample, "edge_attribute_labels_by_label")))
+        realized_execution_values["edge_attribute_labels_by_label_pair"] = edge_label_entries
+    if hasattr(sample, "edge_label_support"):
+        realized_execution_values["edge_label_support"] = [
+            str(label)
+            for label in getattr(sample, "edge_label_support")
+        ]
+    for key in (
+        "edge_label_source_kind",
+        "edge_label_bucket",
+        "edge_label_manifest",
+    ):
+        if hasattr(sample, key):
+            realized_execution_values[str(key)] = str(getattr(sample, key))
+    if hasattr(sample, "edge_label_filter"):
+        realized_execution_values["edge_label_filter"] = dict(getattr(sample, "edge_label_filter"))
+    if hasattr(sample, "edge_label_bucket_probabilities"):
+        realized_execution_values["edge_label_bucket_probabilities"] = {
+            str(key): float(value)
+            for key, value in getattr(sample, "edge_label_bucket_probabilities").items()
+        }
     query_params = {
         "query_id": str(axes.query_id),
         "graph_directionality": str(directionality),
         "node_count": int(axes.node_count),
         "edge_count": int(getattr(sample, "edge_count", 0)),
         **{str(key): value for key, value in axes.values.items()},
+        **realized_query_values,
         **dict(axes.probabilities),
     }
     trace_payload = {
@@ -472,8 +676,9 @@ def run_node_link_plan(
             "layout_transform_variant": str(rendered_scene.layout_transform_variant),
             "edge_routing_variant": str(rendered_scene.edge_routing_variant),
             "label_variant": str(getattr(sample, "label_variant", axes.label_variant)),
-            "matching_labels": list(getattr(sample, "target_labels", ())),
+            "matching_labels": list(getattr(sample, "annotation_labels", ()) or getattr(sample, "target_labels", ())),
             "matching_edges": [list(edge) for edge in getattr(sample, "target_edges", ())],
+            **realized_execution_values,
         },
         "witness_symbolic": dict(witness_symbolic),
         "projected_annotation": dict(projected_annotation),

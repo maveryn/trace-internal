@@ -685,6 +685,123 @@ def _sample_extreme_directed_degree_graph(
             return graph
     raise ValueError("failed to sample a directed graph for the requested min-degree value")
 
+
+def _sample_unique_extreme_random_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    directed: bool,
+    edge_probability: float,
+) -> nx.Graph | nx.DiGraph:
+    """Sample one simple graph candidate for unique extreme-degree search."""
+
+    node_count_int = int(node_count)
+    probability = max(0.0, min(1.0, float(edge_probability)))
+    if bool(directed):
+        graph = nx.DiGraph()
+        graph.add_nodes_from(range(int(node_count_int)))
+        for left in range(int(node_count_int)):
+            for right in range(int(left) + 1, int(node_count_int)):
+                if rng.random() >= probability:
+                    continue
+                if rng.random() < 0.5:
+                    graph.add_edge(int(left), int(right))
+                else:
+                    graph.add_edge(int(right), int(left))
+        return graph
+
+    graph = nx.Graph()
+    graph.add_nodes_from(range(int(node_count_int)))
+    for left in range(int(node_count_int)):
+        for right in range(int(left) + 1, int(node_count_int)):
+            if rng.random() < probability:
+                graph.add_edge(int(left), int(right))
+    return graph
+
+
+def _unique_extreme_queried_values(
+    graph: nx.Graph | nx.DiGraph,
+    *,
+    directed: bool,
+    degree_mode: str,
+) -> Dict[int, int]:
+    """Return the degree map used by an extreme-degree query."""
+
+    if not bool(directed):
+        return {int(node): int(graph.degree(int(node))) for node in graph.nodes()}
+    mode = str(degree_mode)
+    if mode == "in_degree":
+        return {int(node): int(graph.in_degree(int(node))) for node in graph.nodes()}
+    if mode == "out_degree":
+        return {int(node): int(graph.out_degree(int(node))) for node in graph.nodes()}
+    if mode == "total_degree":
+        return {
+            int(node): int(graph.in_degree(int(node))) + int(graph.out_degree(int(node)))
+            for node in graph.nodes()
+        }
+    raise ValueError(f"unsupported directed degree mode: {degree_mode}")
+
+
+def _unique_extreme_search_plan(
+    *,
+    graph_directionality: str,
+    degree_mode: str,
+    extremum_mode: str,
+    target_degree: int,
+    requested_node_count: int,
+) -> Tuple[Tuple[int, float], ...]:
+    """Return deterministic node-count/density candidates for unique extrema."""
+
+    directionality = str(graph_directionality)
+    mode = str(degree_mode)
+    extremum = str(extremum_mode)
+    target = int(target_degree)
+    requested = max(5, int(requested_node_count))
+
+    if directionality == "undirected" and extremum == "max":
+        defaults = {
+            2: ((7, 0.10), (7, 0.18), (8, 0.18), (6, 0.26)),
+            3: ((6, 0.34), (7, 0.34), (6, 0.42), (8, 0.26)),
+            4: ((5, 0.62), (6, 0.62), (7, 0.50), (6, 0.74)),
+            5: ((6, 0.74), (7, 0.62), (6, 0.88), (8, 0.50)),
+        }.get(target, ())
+    elif directionality == "undirected" and extremum == "min":
+        defaults = {
+            0: ((7, 0.26), (6, 0.26), (8, 0.18), (7, 0.34)),
+            1: ((8, 0.50), (7, 0.50), (8, 0.62), (9, 0.42)),
+            2: ((9, 0.50), (8, 0.62), (9, 0.62), (10, 0.50)),
+            3: ((7, 0.74), (8, 0.74), (9, 0.74), (8, 0.88)),
+        }.get(target, ())
+    elif directionality == "directed" and extremum == "max" and mode in {"in_degree", "out_degree"}:
+        defaults = {
+            1: ((5, 0.10), (6, 0.10), (5, 0.18), (7, 0.10)),
+            2: ((5, 0.42), (6, 0.34), (7, 0.26), (5, 0.50)),
+            3: ((5, 0.74), (6, 0.62), (5, 0.88), (7, 0.50)),
+            4: ((6, 0.88), (7, 0.74), (6, 1.00), (8, 0.74)),
+        }.get(target, ())
+    elif directionality == "directed" and extremum == "min" and mode in {"in_degree", "out_degree"}:
+        defaults = {
+            0: ((5, 0.74), (6, 0.74), (5, 0.88), (7, 0.62)),
+            1: ((7, 1.00), (8, 0.88), (7, 0.88), (8, 1.00)),
+        }.get(target, ())
+    else:
+        defaults = ()
+
+    candidates = [(int(node_count), float(probability)) for node_count, probability in defaults]
+    for probability in (0.18, 0.26, 0.34, 0.42, 0.50, 0.62, 0.74, 0.88):
+        candidates.append((int(requested), float(probability)))
+
+    deduped: list[Tuple[int, float]] = []
+    seen: set[Tuple[int, float]] = set()
+    for node_count, probability in candidates:
+        key = (max(5, int(node_count)), round(float(probability), 3))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append((int(key[0]), float(key[1])))
+    return tuple(deduped)
+
+
 @lru_cache(maxsize=128)
 def feasible_node_counts_for_extreme_degree_value(
     *,
@@ -725,47 +842,22 @@ def feasible_node_counts_for_extreme_degree_value(
         feasible.append(int(node_count_int))
     return tuple(int(value) for value in feasible)
 
-def sample_extreme_degree_graph(
+
+def _extreme_degree_sample_from_graph(
     rng: random.Random,
     *,
-    graph_directionality: str,
+    graph: nx.Graph | nx.DiGraph,
+    directed: bool,
     degree_mode: str,
     extremum_mode: str,
-    node_count: int,
     target_degree: int,
-    max_degree: int,
     topology_profile: str,
     label_variant: str,
 ) -> GraphExtremeDegreeSample:
-    """Construct one labeled graph whose queried extreme degree equals target_degree."""
+    """Finalize one graph as a labeled extreme-degree sample."""
 
-    directionality = str(graph_directionality)
     degree_mode_text = str(degree_mode)
     extremum_text = str(extremum_mode)
-    if directionality == "undirected":
-        graph = _sample_extreme_undirected_degree_graph(
-            rng,
-            node_count=int(node_count),
-            target_degree=int(target_degree),
-            max_degree=int(max_degree),
-            topology_profile=str(topology_profile),
-            extremum_mode=str(extremum_text),
-        )
-        directed = False
-    elif directionality == "directed":
-        graph = _sample_extreme_directed_degree_graph(
-            rng,
-            node_count=int(node_count),
-            target_degree=int(target_degree),
-            max_degree=int(max_degree),
-            topology_profile=str(topology_profile),
-            degree_mode=str(degree_mode_text),
-            extremum_mode=str(extremum_text),
-        )
-        directed = True
-    else:
-        raise ValueError(f"unsupported graph directionality: {graph_directionality}")
-
     topology_sample, label_by_node = _build_labeled_graph_topology_sample(
         rng,
         graph=graph,
@@ -840,9 +932,148 @@ def sample_extreme_degree_graph(
     )
 
 
+def sample_extreme_degree_graph(
+    rng: random.Random,
+    *,
+    graph_directionality: str,
+    degree_mode: str,
+    extremum_mode: str,
+    node_count: int,
+    target_degree: int,
+    max_degree: int,
+    topology_profile: str,
+    label_variant: str,
+) -> GraphExtremeDegreeSample:
+    """Construct one labeled graph whose queried extreme degree equals target_degree."""
+
+    directionality = str(graph_directionality)
+    degree_mode_text = str(degree_mode)
+    extremum_text = str(extremum_mode)
+    if directionality == "undirected":
+        graph = _sample_extreme_undirected_degree_graph(
+            rng,
+            node_count=int(node_count),
+            target_degree=int(target_degree),
+            max_degree=int(max_degree),
+            topology_profile=str(topology_profile),
+            extremum_mode=str(extremum_text),
+        )
+        directed = False
+    elif directionality == "directed":
+        graph = _sample_extreme_directed_degree_graph(
+            rng,
+            node_count=int(node_count),
+            target_degree=int(target_degree),
+            max_degree=int(max_degree),
+            topology_profile=str(topology_profile),
+            degree_mode=str(degree_mode_text),
+            extremum_mode=str(extremum_text),
+        )
+        directed = True
+    else:
+        raise ValueError(f"unsupported graph directionality: {graph_directionality}")
+
+    return _extreme_degree_sample_from_graph(
+        rng,
+        graph=graph,
+        directed=bool(directed),
+        degree_mode=str(degree_mode_text),
+        extremum_mode=str(extremum_text),
+        target_degree=int(target_degree),
+        topology_profile=str(topology_profile),
+        label_variant=str(label_variant),
+    )
+
+
+def sample_unique_extreme_degree_graph(
+    rng: random.Random,
+    *,
+    graph_directionality: str,
+    degree_mode: str,
+    extremum_mode: str,
+    node_count: int,
+    target_degree: int,
+    max_degree: int,
+    topology_profile: str,
+    label_variant: str,
+    search_attempts: int = 512,
+) -> GraphExtremeDegreeSample:
+    """Construct a graph where exactly one node attains the queried extreme value."""
+
+    directionality = str(graph_directionality)
+    directed = bool(directionality == "directed")
+    degree_mode_text = str(degree_mode)
+    extremum_text = str(extremum_mode)
+    target_degree_int = int(target_degree)
+    if directionality not in SUPPORTED_EXTREME_DEGREE_DIRECTIONS:
+        raise ValueError(f"unsupported graph directionality: {graph_directionality}")
+    if extremum_text not in SUPPORTED_EXTREME_DEGREE_EXTREMA:
+        raise ValueError(f"unsupported extreme degree mode: {extremum_mode}")
+    if not directed and degree_mode_text != "degree":
+        raise ValueError("undirected unique extreme-degree queries require degree mode")
+    if directed and degree_mode_text not in SUPPORTED_EXTREME_DEGREE_DIRECTED_MODES:
+        raise ValueError(f"unsupported directed degree mode: {degree_mode}")
+
+    max_degree_int = max(0, int(max_degree))
+    if int(target_degree_int) < 0 or int(target_degree_int) > int(max_degree_int):
+        raise ValueError("target_degree is infeasible for unique extreme-degree sampling")
+
+    candidates = _unique_extreme_search_plan(
+        graph_directionality=str(directionality),
+        degree_mode=str(degree_mode_text),
+        extremum_mode=str(extremum_text),
+        target_degree=int(target_degree_int),
+        requested_node_count=int(node_count),
+    )
+    if not candidates:
+        raise ValueError("no unique-extreme search plan for requested degree branch")
+
+    attempts_per_candidate = max(32, int(search_attempts) // max(1, len(candidates)))
+    last_error: Exception | None = None
+    for candidate_node_count, probability in candidates:
+        if int(target_degree_int) > int(candidate_node_count) - 1:
+            continue
+        for _attempt in range(int(attempts_per_candidate)):
+            graph = _sample_unique_extreme_random_graph(
+                rng,
+                node_count=int(candidate_node_count),
+                directed=bool(directed),
+                edge_probability=float(probability),
+            )
+            values_by_node = _unique_extreme_queried_values(
+                graph,
+                directed=bool(directed),
+                degree_mode=str(degree_mode_text),
+            )
+            if not values_by_node:
+                continue
+            observed_extreme = max(values_by_node.values()) if extremum_text == "max" else min(values_by_node.values())
+            if int(observed_extreme) != int(target_degree_int):
+                continue
+            target_nodes = [node for node, value in values_by_node.items() if int(value) == int(target_degree_int)]
+            if len(target_nodes) != 1:
+                continue
+            try:
+                return _extreme_degree_sample_from_graph(
+                    rng,
+                    graph=graph,
+                    directed=bool(directed),
+                    degree_mode=str(degree_mode_text),
+                    extremum_mode=str(extremum_text),
+                    target_degree=int(target_degree_int),
+                    topology_profile=str(topology_profile),
+                    label_variant=str(label_variant),
+                )
+            except Exception as exc:
+                last_error = exc
+                continue
+    raise ValueError("failed to sample a unique extreme-degree graph") from last_error
+
+
 __all__ = [
     'feasible_node_counts_for_extreme_degree_value',
     'feasible_node_counts_for_named_node_degree_value',
     'sample_extreme_degree_graph',
+    'sample_unique_extreme_degree_graph',
     'sample_named_node_degree_graph',
 ]

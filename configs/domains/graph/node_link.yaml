@@ -140,7 +140,7 @@ generation:
       depth_min: 1
       depth_max: 4
       max_depth: 4
-      label_max_chars: 5
+      label_max_chars: 3
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     graph_binary_tree_node_relation_label_source:
@@ -207,7 +207,7 @@ generation:
         paper_tree: 1.0
         boxed_tree: 1.0
       max_depth: 4
-      label_max_chars: 5
+      label_max_chars: 3
       balanced_scene_variant_sampling: true
     graph_metro_single_route_station_count_internal:
       node_count_min: 5
@@ -535,7 +535,6 @@ generation:
       topology_profile_weights:
         balanced: 1.0
         low_degree: 1.0
-        hub_heavy: 1.0
       label_variant_weights:
         letters: 1.0
         numbers: 1.0
@@ -584,9 +583,10 @@ generation:
       graph_directionality_weights:
         undirected: 1.0
         directed: 1.0
-      edge_label_support_size: 6
+      edge_label_support_size: 16
       edge_label_min_chars: 3
-      edge_label_max_chars: 12
+      edge_label_max_chars: 5
+      max_labeled_edge_count: 12
       edge_label_bucket_weights:
         people_first: 1.0
         people_surnames: 1.0
@@ -607,8 +607,8 @@ generation:
       directed_node_count_max: 8
       target_shortest_path_length_min: 2
       target_shortest_path_length_max: 3
-      degree_sequence_max_degree: 4
-      directed_degree_sequence_max_degree: 4
+      degree_sequence_max_degree: 3
+      directed_degree_sequence_max_degree: 3
     graph_node_link_largest_component_size_internal:
       query_id_weights:
         largest_component_size: 1.0
@@ -794,7 +794,7 @@ generation:
       balanced_edge_routing_variant_sampling: true
       directed_node_count_max: 9
       target_reachable_count_min: 1
-      target_reachable_count_max: 7
+      target_reachable_count_max: 6
     graph_node_link_same_component_count_internal:
       balanced_query_id_sampling: true
       node_count_min: 6
@@ -1544,7 +1544,7 @@ generation:
       internal_count_min: 3
       internal_count_max: 7
       max_depth: 4
-      label_max_chars: 5
+      label_max_chars: 3
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     task_graph__binary_tree__depth_level_node_count:
@@ -1612,7 +1612,7 @@ generation:
       depth_min: 1
       depth_max: 4
       max_depth: 4
-      label_max_chars: 5
+      label_max_chars: 3
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     task_graph__binary_tree__heap_property_violation_label:
@@ -1741,7 +1741,7 @@ generation:
         paper_tree: 1.0
         boxed_tree: 1.0
       max_depth: 4
-      label_max_chars: 5
+      label_max_chars: 3
       balanced_scene_variant_sampling: true
     task_graph__binary_tree__lowest_common_ancestor_label:
       balanced_query_id_sampling: true
@@ -1803,7 +1803,7 @@ generation:
         paper_tree: 1.0
         boxed_tree: 1.0
       max_depth: 4
-      label_max_chars: 5
+      label_max_chars: 3
       balanced_scene_variant_sampling: true
     task_graph__binary_tree__traversal_kth_label:
       query_id_weights:
@@ -1869,7 +1869,7 @@ generation:
       traversal_position_min: 2
       traversal_position_max: 10
       max_depth: 4
-      label_max_chars: 5
+      label_max_chars: 3
       balanced_scene_variant_sampling: true
     task_graph__flow_network__max_flow_value:
       query_id_weights:
@@ -2921,7 +2921,6 @@ generation:
       topology_profile_weights:
         balanced: 1.0
         low_degree: 1.0
-        hub_heavy: 1.0
       label_variant_weights:
         letters: 1.0
         numbers: 1.0
@@ -2969,9 +2968,10 @@ generation:
       graph_directionality_weights:
         undirected: 1.0
         directed: 1.0
-      edge_label_support_size: 6
+      edge_label_support_size: 16
       edge_label_min_chars: 3
-      edge_label_max_chars: 12
+      edge_label_max_chars: 5
+      max_labeled_edge_count: 12
       edge_label_bucket_weights:
         people_first: 1.0
         people_surnames: 1.0
@@ -2990,8 +2990,8 @@ generation:
       balanced_target_edge_label_sampling: true
       balanced_edge_routing_variant_sampling: true
       directed_node_count_max: 8
-      degree_sequence_max_degree: 4
-      directed_degree_sequence_max_degree: 4
+      degree_sequence_max_degree: 3
+      directed_degree_sequence_max_degree: 3
     task_graph__node_link__edge_color_count:
       node_count_min: 5
       node_count_max: 10
@@ -3071,19 +3071,18 @@ generation:
       balanced_edge_routing_variant_sampling: true
     task_graph__node_link__edge_text_count:
       node_count_min: 5
-      node_count_max: 9
-      directed_node_count_max: 9
+      node_count_max: 8
+      directed_node_count_max: 8
       query_degree_min: 0
       query_degree_max: 4
       target_count_min: 1
       target_count_max: 5
-      degree_sequence_max_degree: 4
-      directed_degree_sequence_max_degree: 4
+      degree_sequence_max_degree: 3
+      directed_degree_sequence_max_degree: 3
       graph_search_attempts: 600
       topology_profile_weights:
         balanced: 1.0
         low_degree: 1.0
-        hub_heavy: 1.0
       label_variant_weights:
         letters: 1.0
         numbers: 1.0
@@ -3128,9 +3127,10 @@ generation:
       graph_directionality_weights:
         undirected: 1.0
         directed: 1.0
-      edge_label_support_size: 6
+      edge_label_support_size: 16
       edge_label_min_chars: 3
-      edge_label_max_chars: 10
+      edge_label_max_chars: 5
+      max_labeled_edge_count: 12
       edge_routing_variant_weights:
         straight: 1.0
         mixed_arc: 1.0
@@ -3705,7 +3705,7 @@ generation:
       balanced_edge_routing_variant_sampling: true
       directed_node_count_max: 9
       target_reachable_count_min: 1
-      target_reachable_count_max: 7
+      target_reachable_count_max: 6
     task_graph__node_link__reachable_count_after_edge_edit:
       balanced_query_id_sampling: true
       node_count_min: 5
@@ -3841,7 +3841,6 @@ generation:
       topology_profile_weights:
         balanced: 1.0
         low_degree: 1.0
-        hub_heavy: 1.0
       label_variant_weights:
         letters: 1.0
         numbers: 1.0
@@ -3888,9 +3887,10 @@ generation:
       graph_directionality_weights:
         undirected: 1.0
         directed: 1.0
-      edge_label_support_size: 6
+      edge_label_support_size: 16
       edge_label_min_chars: 3
-      edge_label_max_chars: 12
+      edge_label_max_chars: 5
+      max_labeled_edge_count: 12
       edge_label_bucket_weights:
         people_first: 1.0
         people_surnames: 1.0
@@ -3911,8 +3911,8 @@ generation:
       directed_node_count_max: 8
       target_shortest_path_length_min: 2
       target_shortest_path_length_max: 3
-      degree_sequence_max_degree: 4
-      directed_degree_sequence_max_degree: 4
+      degree_sequence_max_degree: 3
+      directed_degree_sequence_max_degree: 3
     task_graph__node_link__shortest_path_length:
       node_count_min: 5
       node_count_max: 15
@@ -3972,14 +3972,13 @@ generation:
         mixed_arc: 1.0
       balanced_query_id_sampling: true
       balanced_edge_routing_variant_sampling: true
-    task_graph__node_link__topological_position_value:
+    task_graph__node_link__topological_endpoint_node_label:
       query_id_weights:
-        topological_position: 1.0
+        first_in_topological_order_label: 1.0
+        last_in_topological_order_label: 1.0
       balanced_query_id_sampling: true
       node_count_min: 3
       node_count_max: 7
-      target_position_min: 1
-      target_position_max: 7
       topology_profile_weights:
         balanced: 1.0
         low_degree: 1.0
@@ -5310,12 +5309,12 @@ prompt:
       object_description: a labeled undirected graph
       object_description_directed: a labeled directed graph
       annotation_hint_shortest_path_length: set "annotation" to an ordered array of
-        [x,y] pixel points at node centers along the unique shortest path from node
-        {source_label} to node {goal_label}, including both endpoints
+        [x,y] pixel points at node centers after node {source_label} along the unique
+        shortest path to node {goal_label}, ending at {goal_label}
       annotation_hint_directed_shortest_path_length: set "annotation" to an ordered
-        array of [x,y] pixel points at node centers along the unique shortest path
-        from node {source_label} to node {goal_label} while following arrow directions,
-        including both endpoints
+        array of [x,y] pixel points at node centers after node {source_label} along
+        the unique shortest path to node {goal_label} while following arrow directions,
+        ending at {goal_label}
       answer_hint: set "answer" to the number of edges in that path as an integer
       json_example: '{"annotation":[[180,220],[310,180],[430,260]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
@@ -5335,21 +5334,24 @@ prompt:
         as an integer
       json_example: '{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]],[[430,260],[520,340]]],"answer":12}'
       json_example_answer_only: '{"answer":12}'
-    task_graph__node_link__topological_position_value:
+    task_graph__node_link__topological_endpoint_node_label:
       bundle_id: graph_order_v0
       scene_key: single_graph_order
-      task_key: topological_position_query
+      task_key: topological_endpoint_node_label_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
         in that order for the final answer.
       json_output_contract_answer_only: Use a valid JSON object with key "answer"
         for the final answer.
       object_description: a labeled directed acyclic graph
-      annotation_hint: set "annotation" to an ordered array of [x,y] pixel points
-        at node centers in the unique topological order from first to last
-      answer_hint: set "answer" to the position of node {query_label} as an integer,
-        counting from 1
-      json_example: '{"annotation":[[180,160],[310,220],[430,260]],"answer":2}'
-      json_example_answer_only: '{"answer":2}'
+      annotation_hint_first_in_topological_order_label: set "annotation" to an array
+        containing one [x,y] pixel point at the center of the first node in the unique
+        topological order
+      annotation_hint_last_in_topological_order_label: set "annotation" to an array
+        containing one [x,y] pixel point at the center of the last node in the unique
+        topological order
+      answer_hint: set "answer" to that node label as a string
+      json_example: '{"annotation":[[180,160]],"answer":"A"}'
+      json_example_answer_only: '{"answer":"A"}'
     graph_node_link_degree_predicate_count_source:
       bundle_id: graph_counting_v0
       scene_key: single_graph_counting
@@ -5481,11 +5483,11 @@ prompt:
       answer_hint: set "answer" to the count of those nodes as an integer
       json_example: '{"annotation":[[180,220],[310,180],[430,260]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
-      question_text_reachable_count: How many nodes, including node {query_label}
+      question_text_reachable_count: How many nodes, excluding node {query_label}
         itself, are reachable from {query_label} by following the direction of the
         arrows?
       annotation_hint_reachable_count: set "annotation" to an array of [x,y] pixel
-        points at the centers of all nodes reachable from {query_label}, including
+        points at the centers of all nodes reachable from {query_label}, excluding
         {query_label} itself
     graph_node_link_source_sink_count_internal:
       bundle_id: graph_counting_v0
@@ -6328,6 +6330,31 @@ prompt:
         {target_color_label} node; each pair is two [x,y] pixel points in source-to-target
         order, [[source_x,source_y],[target_x,target_y]]; use an empty array when
         the answer is zero
+    task_graph__node_link__degree_after_removal_filter_count:
+      bundle_id: graph_counting_v0
+      scene_key: single_graph_counting
+      task_key: node_count_after_degree_filter_query
+      json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
+        in that order for the final answer.
+      json_output_contract_answer_only: Use a valid JSON object with key "answer"
+        for the final answer.
+      object_description_undirected: a labeled undirected graph
+      object_description_directed: a labeled directed graph
+      answer_hint: set "answer" to the count of remaining nodes as an integer
+      json_example: '{"annotation":[[180,220],[310,180],[430,260]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+      annotation_hint_undirected_degree_one_filter_remaining_count: set "annotation"
+        to an array of [x,y] pixel points at the centers of all nodes that would remain
+        after removing every node with degree 1; use an empty array when the answer
+        is zero
+      annotation_hint_directed_in_degree_one_filter_remaining_count: set "annotation"
+        to an array of [x,y] pixel points at the centers of all nodes that would remain
+        after removing every node with in-degree 1; use an empty array when the answer
+        is zero
+      annotation_hint_directed_out_degree_one_filter_remaining_count: set "annotation"
+        to an array of [x,y] pixel points at the centers of all nodes that would remain
+        after removing every node with out-degree 1; use an empty array when the answer
+        is zero
     task_graph__node_link__degree_extremum_value:
       bundle_id: graph_comparison_v0
       scene_key: single_graph_comparison
@@ -6336,41 +6363,24 @@ prompt:
         in that order for the final answer.
       json_output_contract_answer_only: Use a valid JSON object with key "answer"
         for the final answer.
-      object_description: a labeled undirected graph
-      question_text_largest_component_size: How many nodes are in the largest connected
-        component?
-      annotation_hint: set "annotation" to an array of [x,y] pixel points at the centers
-        of all nodes in the unique largest connected component
       answer_hint: set "answer" to the requested maximum or minimum degree value as
         an integer
-      json_example: '{"annotation":[[180,220],[310,180]],"answer":3}'
+      json_example: '{"annotation":[[180,220]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
       object_description_undirected: a labeled undirected graph
       object_description_directed: a labeled directed graph
-      annotation_hint_max_degree_value: set "annotation" to an array of [x,y] pixel
-        points at the centers of every node whose degree equals the maximum degree
-        value; include every tied node
-      annotation_hint_min_degree_value: set "annotation" to an array of [x,y] pixel
-        points at the centers of every node whose degree equals the minimum degree
-        value; include every tied node
-      annotation_hint_max_in_degree_value: set "annotation" to an array of [x,y] pixel
-        points at the centers of every node whose in-degree equals the maximum in-degree
-        value; include every tied node
-      annotation_hint_min_in_degree_value: set "annotation" to an array of [x,y] pixel
-        points at the centers of every node whose in-degree equals the minimum in-degree
-        value; include every tied node
-      annotation_hint_max_out_degree_value: set "annotation" to an array of [x,y]
-        pixel points at the centers of every node whose out-degree equals the maximum
-        out-degree value; include every tied node
-      annotation_hint_min_out_degree_value: set "annotation" to an array of [x,y]
-        pixel points at the centers of every node whose out-degree equals the minimum
-        out-degree value; include every tied node
-      annotation_hint_max_total_degree_value: set "annotation" to an array of [x,y]
-        pixel points at the centers of every node whose total degree equals the maximum
-        total-degree value; include every tied node
-      annotation_hint_min_total_degree_value: set "annotation" to an array of [x,y]
-        pixel points at the centers of every node whose total degree equals the minimum
-        total-degree value; include every tied node
+      annotation_hint_max_degree_value: set "annotation" to an array containing
+        one [x,y] pixel point at the center of the node whose degree equals the
+        maximum degree value
+      annotation_hint_min_degree_value: set "annotation" to an array containing
+        one [x,y] pixel point at the center of the node whose degree equals the
+        minimum degree value
+      annotation_hint_max_in_degree_value: set "annotation" to an array containing
+        one [x,y] pixel point at the center of the node whose in-degree equals
+        the maximum in-degree value
+      annotation_hint_max_out_degree_value: set "annotation" to an array containing
+        one [x,y] pixel point at the center of the node whose out-degree equals
+        the maximum out-degree value
     task_graph__node_link__edge_between_nodes_label:
       bundle_id: graph_relation_v0
       scene_key: single_graph_relation
@@ -6476,13 +6486,14 @@ prompt:
       answer_hint: set "answer" to the label of the requested node as a string
       json_example: '{"annotation":[[180,220],[310,180],[430,260],[520,340]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
-      question_text_next_in_hamiltonian_cycle_label: The graph has exactly one Hamiltonian
-        cycle. Starting at node {orientation_start_label} and then node {orientation_next_label},
-        follow that cycle. Which node comes immediately after node {query_label}?
-      question_text_previous_in_hamiltonian_cycle_label: The graph has exactly one
-        Hamiltonian cycle. Starting at node {orientation_start_label} and then node
-        {orientation_next_label}, follow that cycle. Which node comes immediately
-        before node {query_label}?
+      question_text_next_in_hamiltonian_cycle_label: Use the Hamiltonian-cycle direction
+        that starts at node {orientation_start_label} and returns to it from node {orientation_final_label}.
+        Which node comes immediately after the starting node {orientation_start_label}
+        along this cycle?
+      question_text_previous_in_hamiltonian_cycle_label: Use the Hamiltonian-cycle
+        direction that starts at node {orientation_start_label} and returns to it
+        from node {orientation_final_label}. Which node comes immediately before
+        the final node {orientation_final_label} along this cycle?
     task_graph__node_link__isolated_after_removal_count:
       bundle_id: graph_counting_v0
       scene_key: single_graph_counting
@@ -6648,11 +6659,11 @@ prompt:
       answer_hint: set "answer" to the count of those nodes as an integer
       json_example: '{"annotation":[[180,220],[310,180],[430,260]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
-      question_text_reachable_count: How many nodes, including node {query_label}
+      question_text_reachable_count: How many nodes, excluding node {query_label}
         itself, are reachable from {query_label} by following the direction of the
         arrows?
       annotation_hint_reachable_count: set "annotation" to an array of [x,y] pixel
-        points at the centers of all nodes reachable from {query_label}, including
+        points at the centers of all nodes reachable from {query_label}, excluding
         {query_label} itself
     task_graph__node_link__reachable_count_after_edge_edit:
       bundle_id: graph_relation_v0

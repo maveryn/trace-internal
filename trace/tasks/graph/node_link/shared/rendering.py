@@ -7,6 +7,7 @@ from typing import Any, Mapping
 
 from trace.core.visual.background import make_background_canvas
 from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.shared.named_colors import darken_color, named_color
 from trace.tasks.graph.shared.graph_scene import render_graph_scene
 from trace.tasks.graph.shared.visual_defaults import load_graph_scene_background_defaults, load_graph_scene_noise_defaults
 
@@ -23,6 +24,62 @@ class NodeLinkRenderedSample:
     post_noise_meta: dict[str, Any]
 
 
+def _semantic_node_styles(sample: Any) -> dict[str, dict[str, Any]]:
+    """Return visible node styles for semantic node-color graph samples."""
+
+    color_names = getattr(sample, "node_color_names_by_label", None)
+    if not isinstance(color_names, Mapping):
+        return {}
+    styles: dict[str, dict[str, Any]] = {}
+    for label, color_name in color_names.items():
+        try:
+            fill_rgb = tuple(int(value) for value in named_color(str(color_name)))
+        except Exception:
+            continue
+        styles[str(label)] = {
+            "color_name": str(color_name),
+            "fill_rgb": fill_rgb,
+            "border_rgb": tuple(int(value) for value in darken_color(fill_rgb, factor=0.55)),
+        }
+    return styles
+
+
+def _semantic_edge_styles(sample: Any) -> dict[tuple[str, str], dict[str, Any]]:
+    """Return visible edge styles for semantic edge-color graph samples."""
+
+    color_names = getattr(sample, "edge_color_names_by_label", None)
+    if not isinstance(color_names, Mapping):
+        return {}
+    styles: dict[tuple[str, str], dict[str, Any]] = {}
+    for edge, color_name in color_names.items():
+        try:
+            left, right = edge
+            rgb = tuple(int(value) for value in named_color(str(color_name)))
+        except Exception:
+            continue
+        styles[(str(left), str(right))] = {
+            "color_name": str(color_name),
+            "edge_color_rgb": tuple(int(value) for value in darken_color(rgb, factor=0.82)),
+        }
+    return styles
+
+
+def _semantic_edge_text_labels(sample: Any) -> dict[tuple[str, str], str]:
+    """Return visible text labels for edge-label graph samples."""
+
+    labels = getattr(sample, "edge_attribute_labels_by_label", None)
+    if not isinstance(labels, Mapping):
+        return {}
+    visible_labels: dict[tuple[str, str], str] = {}
+    for edge, label in labels.items():
+        try:
+            left, right = edge
+        except Exception:
+            continue
+        visible_labels[(str(left), str(right))] = str(label)
+    return visible_labels
+
+
 def render_node_link_sample(
     *,
     sample: Any,
@@ -34,6 +91,7 @@ def render_node_link_sample(
     params: Mapping[str, Any],
     instance_seed: int,
     scene_id: str = SCENE_ID,
+    strict_edge_label_placement: bool = False,
 ) -> NodeLinkRenderedSample:
     """Render one graph sample and apply scene-local background/noise policy."""
 
@@ -55,6 +113,10 @@ def render_node_link_sample(
         scene_title="Graph",
         directed=bool(directed),
         base_image=background,
+        node_style_by_label=_semantic_node_styles(sample),
+        edge_style_by_label=_semantic_edge_styles(sample),
+        edge_text_labels_by_label=_semantic_edge_text_labels(sample),
+        edge_text_label_strict_placement=bool(strict_edge_label_placement),
     )
     image, post_noise_meta = apply_post_image_noise(
         rendered_scene.image,

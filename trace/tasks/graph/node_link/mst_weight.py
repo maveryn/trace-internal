@@ -15,7 +15,7 @@ def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
 
 def _build_objective_plan() -> NodeLinkObjectivePlan:
     """Bind query ids, sampler, answer, and annotation for this objective."""
-    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphOptimizationMinimumSpanningTreeWeightTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='integer', answer_field='target_total_weight', annotation_type='point_pair_set', annotation_kind='edge_point_pair_set', annotation_field='target_edges', prompt_query_key='minimum_spanning_tree_weight', scene_kind='graph_mst_weight', question_format='minimum_spanning_tree_weight', value_ranges={'extra_edge_count': (1, 4)}, annotation_example=[[[180, 220], [310, 180]]])
+    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphOptimizationMinimumSpanningTreeWeightTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='integer', answer_field='target_total_weight', annotation_type='point_pair_set', annotation_kind='edge_point_pair_set', annotation_field='target_edges', prompt_query_key='minimum_spanning_tree_weight', scene_kind='graph_mst_weight', question_format='minimum_spanning_tree_weight', value_ranges={'extra_edge_count': (1, 2)}, annotation_example=[[[180, 220], [310, 180]]])
 
 @register_task
 class GraphOptimizationMinimumSpanningTreeWeightTask:

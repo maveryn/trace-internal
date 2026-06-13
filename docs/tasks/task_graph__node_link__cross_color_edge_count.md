@@ -11,11 +11,12 @@
 1. Branch metadata: `query_id`
 2. `query_id`: `cross_color_edge_count` for undirected graphs, `directed_cross_color_edge_count` for directed graphs
 3. Supported `graph_directionality` values: `undirected|directed`
-4. Supported node colors: shared TRACE named-color palette
+4. Supported node colors: the 10-color shared TRACE named-color palette: red, blue, green, yellow, orange, purple, brown, cyan, magenta, and maroon
 5. `answer_gt.type`: `integer`
 6. `annotation_gt.type`: `point_pair_set`
 7. Undirected query: count edges with one endpoint in the first queried color and the other endpoint in the second queried color.
 8. Directed query: count arrows whose source node has the first queried color and target node has the second queried color.
+9. The queried source/target color names are sampled as an ordered distinct pair unless both are provided explicitly.
 
 ## 3) Prompt contract
 1. Bundle: `graph_counting_v0`
@@ -35,7 +36,7 @@
 
 ## 5) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. The sampler assigns node colors so the realized graph has exactly the requested cross-color edge count.
+2. The sampler assigns node colors so the realized graph has exactly the requested cross-color edge count for the selected color pair.
 3. Failures reject/resample; generation does not relax color, directionality, or target-count constraints.
 
 ## 6) Complexity + tests

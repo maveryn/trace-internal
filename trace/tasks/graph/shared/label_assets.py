@@ -216,12 +216,18 @@ def resolve_graph_edge_label_support(
     max_chars: int = 12,
     bucket_weights: Mapping[str, float] | None = None,
     min_bucket_size: int = GRAPH_NAMED_LABEL_MIN_BUCKET_SIZE,
+    exclude_labels: Sequence[str] = (),
 ) -> ResolvedGraphLabels:
     """Resolve visible text labels for edge-attribute graph tasks."""
 
     size = int(support_size)
     if size < 2:
         raise ValueError("edge label support_size must be at least 2")
+    excluded = {
+        str(label).strip().lower()
+        for label in exclude_labels
+        if str(label).strip()
+    }
     eligible = _eligible_named_label_buckets(
         object_count=size,
         min_chars=int(min_chars),
@@ -229,6 +235,17 @@ def resolve_graph_edge_label_support(
         lowercase=True,
         min_bucket_size=int(min_bucket_size),
     )
+    if excluded:
+        required_count = max(int(size), int(min_bucket_size))
+        eligible = {
+            str(bucket): tuple(str(label) for label in labels if str(label).strip().lower() not in excluded)
+            for bucket, labels in eligible.items()
+        }
+        eligible = {
+            str(bucket): tuple(labels)
+            for bucket, labels in eligible.items()
+            if len(labels) >= int(required_count)
+        }
     if not eligible:
         raise ValueError("no edge label bucket satisfies the requested constraints")
     probabilities = _resolve_bucket_probabilities(

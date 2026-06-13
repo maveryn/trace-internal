@@ -26,7 +26,7 @@ def _build_labeled_graph_topology_sample(
         rng,
         label_variant=str(label_variant),
         object_count=int(graph.number_of_nodes()),
-        max_chars=5,
+        max_chars=3,
         sequential_numbers=True,
     )
     labels = tuple(str(label) for label in resolved_labels.labels)

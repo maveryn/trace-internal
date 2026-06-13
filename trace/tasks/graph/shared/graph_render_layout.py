@@ -10,6 +10,7 @@ import networkx as nx
 
 from .graph_sample_types import GraphTopologySample
 from .graph_render_types import BBox, Point
+from .graph_render_geometry import _segment_intersects_bbox
 
 
 def _scale_layout_to_content(
@@ -479,6 +480,55 @@ def _min_incident_edge_angle_degrees(graph: nx.Graph, positions: Mapping[int, Po
     return float(min_angle)
 
 
+def _inflated_node_bbox(*, center: Point, node_radius_px: int, clearance_px: int) -> BBox:
+    """Return a node bbox inflated by a visual edge-clearance margin."""
+
+    radius = int(node_radius_px) + int(clearance_px)
+    return (
+        int(center[0]) - int(radius),
+        int(center[1]) - int(radius),
+        int(center[0]) + int(radius),
+        int(center[1]) + int(radius),
+    )
+
+
+def _unrelated_edge_node_conflict_count(
+    graph_sample: GraphTopologySample,
+    *,
+    positions: Mapping[int, Point],
+    node_radius_px: int,
+) -> int:
+    """Count edges whose straight centerline passes too close to unrelated nodes."""
+
+    label_to_node = _label_to_node_map(graph_sample)
+    clearance_px = max(6, int(round(float(node_radius_px) * 0.35)))
+    conflicts = 0
+    for left_label, right_label in graph_sample.edge_labels:
+        left_node = label_to_node.get(str(left_label))
+        right_node = label_to_node.get(str(right_label))
+        if left_node is None or right_node is None:
+            continue
+        start = positions.get(int(left_node))
+        end = positions.get(int(right_node))
+        if start is None or end is None:
+            continue
+        edge_nodes = {int(left_node), int(right_node)}
+        segment = (tuple(int(value) for value in start), tuple(int(value) for value in end))
+        for node, center in positions.items():
+            if int(node) in edge_nodes:
+                continue
+            if _segment_intersects_bbox(
+                segment,
+                _inflated_node_bbox(
+                    center=tuple(int(value) for value in center),
+                    node_radius_px=int(node_radius_px),
+                    clearance_px=int(clearance_px),
+                ),
+            ):
+                conflicts += 1
+    return int(conflicts)
+
+
 def _raw_layout_for_variant(
     graph_sample: GraphTopologySample,
     *,
@@ -522,17 +572,24 @@ def _resolve_positions(
     actual_transform = str(layout_transform_variant)
     min_node_distance_px = float(max(18, int(node_radius_px) * 2 + 4))
     min_incident_angle_degrees = float(max(5.0, min(8.0, float(node_radius_px) * 0.25)))
+    component_count = len(_component_node_sets(graph))
+    if int(component_count) > 1 and str(layout_variant) not in {"component_clustered", "layered", "radial_tree"}:
+        layout_variant = "component_clustered"
     fallback_variants = tuple(str(value) for value in layout_fallback_variants) if layout_fallback_variants is not None else (
-        "spring",
-        "shell",
-        "circular",
+        ("layered", "radial_tree", "grid_jitter", "spring", "shell", "circular")
+        if int(component_count) > 1
+        else ("spring", "shell", "circular")
     )
-    seed_offsets = {"spring": 97, "shell": 0, "circular": 0}
-    layout_candidates: List[Tuple[str, int]] = [(str(layout_variant), int(layout_seed))]
+    seed_offsets = {"spring": 97, "grid_jitter": 131, "component_clustered": 179, "radial_tree": 223, "shell": 0, "circular": 0}
+    stochastic_layouts = {"spring", "grid_jitter", "component_clustered", "radial_tree"}
+    layout_candidates: List[Tuple[str, int]] = []
+    for seed_delta in ((0, 101, 211) if str(layout_variant) in stochastic_layouts else (0,)):
+        layout_candidates.append((str(layout_variant), int(layout_seed) + int(seed_delta)))
     for fallback_variant in fallback_variants:
         if str(fallback_variant) == str(layout_variant):
             continue
-        layout_candidates.append((str(fallback_variant), int(layout_seed) + int(seed_offsets.get(str(fallback_variant), 0))))
+        for seed_delta in ((0, 101, 211) if str(fallback_variant) in stochastic_layouts else (0,)):
+            layout_candidates.append((str(fallback_variant), int(layout_seed) + int(seed_offsets.get(str(fallback_variant), 0)) + int(seed_delta)))
 
     best_positions: Dict[int, Point] | None = None
     best_layout = "circular"
@@ -551,10 +608,19 @@ def _resolve_positions(
         )
         node_distance = float(_min_node_distance(positions))
         incident_angle = float(_min_incident_edge_angle_degrees(graph, positions))
+        edge_node_conflicts = int(
+            _unrelated_edge_node_conflict_count(
+                graph_sample,
+                positions=positions,
+                node_radius_px=int(node_radius_px),
+            )
+        )
         angle_score = 180.0 if math.isinf(float(incident_angle)) else float(incident_angle)
         score = (
+            1.0 if edge_node_conflicts == 0 else 0.0,
             1.0 if node_distance >= min_node_distance_px else 0.0,
             1.0 if angle_score >= min_incident_angle_degrees else 0.0,
+            float(-edge_node_conflicts),
             float(angle_score),
             float(node_distance),
         )
@@ -562,7 +628,7 @@ def _resolve_positions(
             best_score = tuple(float(value) for value in score)
             best_positions = dict(positions)
             best_layout = str(actual_layout)
-        if node_distance >= min_node_distance_px and angle_score >= min_incident_angle_degrees:
+        if edge_node_conflicts == 0 and node_distance >= min_node_distance_px and angle_score >= min_incident_angle_degrees:
             return positions, str(actual_layout), actual_transform
     if best_positions is None:
         fallback_positions = _scale_layout_to_content(

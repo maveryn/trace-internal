@@ -244,19 +244,12 @@ def _sample_largest_chordless_cycle_graph(
     graph = nx.cycle_graph(int(target_size_int))
     next_node = int(target_size_int)
     secondary_edge = (0, 1)
-    if int(target_size_int) == 3:
-        graph.add_node(int(next_node))
-        graph.add_edge(int(secondary_edge[0]), int(next_node))
-        graph.add_edge(int(secondary_edge[1]), int(next_node))
-        next_node += 1
-    else:
+    if int(target_size_int) > 3 and int(next_node) < int(node_count_int):
         first_extra = int(next_node)
-        second_extra = int(next_node + 1)
-        graph.add_nodes_from((first_extra, second_extra))
+        graph.add_node(first_extra)
         graph.add_edge(int(secondary_edge[0]), first_extra)
-        graph.add_edge(first_extra, second_extra)
-        graph.add_edge(second_extra, int(secondary_edge[1]))
-        next_node += 2
+        graph.add_edge(first_extra, int(secondary_edge[1]))
+        next_node += 1
 
     attachment_count = 0
     while int(next_node) < int(node_count_int):
@@ -271,7 +264,8 @@ def _sample_largest_chordless_cycle_graph(
         next_node += 1
 
     cycles = _chordless_cycles(graph)
-    if not cycles or len(cycles[0]) != int(target_size_int):
+    largest_cycles = tuple(cycle for cycle in cycles if len(cycle) == int(target_size_int))
+    if not cycles or len(cycles[0]) != int(target_size_int) or len(largest_cycles) != 1:
         raise ValueError("largest-chordless-cycle construction failed before adding distractor edges")
 
     if str(topology_profile) == "hub_heavy":
@@ -289,17 +283,18 @@ def _sample_largest_chordless_cycle_graph(
             break
         graph.add_edge(int(left), int(right))
         candidate_cycles = _chordless_cycles(graph)
-        if candidate_cycles and len(candidate_cycles[0]) == int(target_size_int):
+        candidate_largest_cycles = tuple(cycle for cycle in candidate_cycles if len(cycle) == int(target_size_int))
+        if candidate_cycles and len(candidate_cycles[0]) == int(target_size_int) and len(candidate_largest_cycles) == 1:
             extra_edges_kept += 1
             cycles = candidate_cycles
             continue
         graph.remove_edge(int(left), int(right))
 
     cycles = _chordless_cycles(graph)
-    if not cycles or len(cycles[0]) != int(target_size_int):
-        raise ValueError("largest-chordless-cycle sampler failed to preserve target size")
-    cycle_rank = int(rng.randrange(sum(1 for cycle in cycles if len(cycle) == int(target_size_int))))
-    target_cycle = tuple(cycle for cycle in cycles if len(cycle) == int(target_size_int))[int(cycle_rank)]
+    largest_cycles = tuple(cycle for cycle in cycles if len(cycle) == int(target_size_int))
+    if not cycles or len(cycles[0]) != int(target_size_int) or len(largest_cycles) != 1:
+        raise ValueError("largest-chordless-cycle sampler failed to preserve one unique target-size cycle")
+    target_cycle = tuple(largest_cycles[0])
     return graph, tuple(int(node) for node in target_cycle), cycles, int(attachment_count), int(extra_edges_kept)
 
 
@@ -882,13 +877,18 @@ def sample_hamiltonian_cycle_neighbor_graph(
         label_variant=str(label_variant),
     )
     cycle_labels = tuple(str(label_by_node[int(node)]) for node in cycle_nodes)
-    query_index = int(rng.randrange(len(cycle_labels)))
-    query_label = str(cycle_labels[int(query_index)])
+    if len(cycle_labels) < 3:
+        raise ValueError("Hamiltonian-cycle neighbor queries require at least three cycle nodes")
+    orientation_start_label = str(cycle_labels[0])
+    orientation_next_label = str(cycle_labels[1])
+    orientation_final_label = str(cycle_labels[-1])
     if str(query_id) == "next_in_hamiltonian_cycle_label":
-        answer_label = str(cycle_labels[(int(query_index) + 1) % len(cycle_labels)])
+        query_label = str(orientation_start_label)
+        answer_label = str(orientation_next_label)
         relation_mode = "next"
     elif str(query_id) == "previous_in_hamiltonian_cycle_label":
-        answer_label = str(cycle_labels[(int(query_index) - 1) % len(cycle_labels)])
+        query_label = str(orientation_final_label)
+        answer_label = str(cycle_labels[-2])
         relation_mode = "previous"
     else:
         raise ValueError(f"unsupported Hamiltonian-cycle query id: {query_id}")
@@ -911,8 +911,9 @@ def sample_hamiltonian_cycle_neighbor_graph(
         query_label=str(query_label),
         answer_label=str(answer_label),
         relation_mode=str(relation_mode),
-        orientation_start_label=str(cycle_labels[0]),
-        orientation_next_label=str(cycle_labels[1]),
+        orientation_start_label=str(orientation_start_label),
+        orientation_next_label=str(orientation_next_label),
+        orientation_final_label=str(orientation_final_label),
         hamiltonian_cycle_count=int(len(hamiltonian_cycles)),
         extra_edge_count=int(extra_edge_count),
     )

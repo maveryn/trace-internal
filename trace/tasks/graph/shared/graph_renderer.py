@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
@@ -28,7 +29,7 @@ from .graph_render_edges import (
 )
 from .graph_render_geometry import _count_edge_crossings
 from .graph_render_layout import _resolve_positions
-from .graph_render_nodes import _draw_node_shape, _resolve_node_label_font
+from .graph_render_nodes import _draw_node_shape, _resolve_effective_node_radius_px, _resolve_node_label_font
 from .graph_render_panel import _draw_panel_chrome, _resolve_panel_geometry
 from .graph_render_types import (
     BBox,
@@ -59,6 +60,7 @@ def render_graph_scene(
     edge_text_label_font_size_px: int | None = None,
     edge_text_label_offset_px: int = 12,
     edge_text_label_padding_px: int = 5,
+    edge_text_label_strict_placement: bool = False,
     node_style_by_label: Mapping[str, Mapping[str, Any]] | None = None,
     edge_style_by_label: Mapping[Tuple[str, str], Mapping[str, Any]] | None = None,
     layout_fallback_variants: Sequence[str] | None = None,
@@ -148,12 +150,18 @@ def render_graph_scene(
         layout_seed=int(layout_seed),
     )
     content_bbox = tuple(int(value) for value in panel_geometry["scene_content_xyxy"])
+    effective_node_radius_px = _resolve_effective_node_radius_px(
+        node_labels=tuple(str(label) for label in graph_sample.node_labels),
+        render_params=render_params,
+    )
+    effective_render_params = replace(render_params, node_radius_px=int(effective_node_radius_px))
+    panel_geometry["effective_node_radius_px"] = int(effective_node_radius_px)
     positions, actual_layout_variant, actual_layout_transform_variant = _resolve_positions(
         graph_sample,
         layout_variant=str(layout_variant),
         layout_transform_variant=str(layout_transform_variant),
         content_bbox=content_bbox,
-        node_radius_px=int(render_params.node_radius_px),
+        node_radius_px=int(effective_render_params.node_radius_px),
         layout_seed=int(layout_seed),
         layout_fallback_variants=layout_fallback_variants,
     )
@@ -174,10 +182,10 @@ def render_graph_scene(
     )
     node_bbox_lookup = {
         str(label): (
-            int(positions[int(node)][0] - int(render_params.node_radius_px)),
-            int(positions[int(node)][1] - int(render_params.node_radius_px)),
-            int(positions[int(node)][0] + int(render_params.node_radius_px)),
-            int(positions[int(node)][1] + int(render_params.node_radius_px)),
+            int(positions[int(node)][0] - int(effective_render_params.node_radius_px)),
+            int(positions[int(node)][1] - int(effective_render_params.node_radius_px)),
+            int(positions[int(node)][0] + int(effective_render_params.node_radius_px)),
+            int(positions[int(node)][1] + int(effective_render_params.node_radius_px)),
         )
         for node, label in zip(graph_sample.graph.nodes(), graph_sample.node_labels)
     }
@@ -187,7 +195,7 @@ def render_graph_scene(
         positions=positions,
         content_bbox=content_bbox,
         edge_routing_variant=str(actual_edge_routing_variant),
-        node_radius_px=int(render_params.node_radius_px),
+        node_radius_px=int(effective_render_params.node_radius_px),
     )
     edge_styles = {
         (str(left), str(right)): dict(style)
@@ -209,7 +217,7 @@ def render_graph_scene(
             start=start,
             end=end,
             control=control,
-            node_radius_px=int(render_params.node_radius_px),
+            node_radius_px=int(effective_render_params.node_radius_px),
             edge_width_px=max(1, int(edge_width_px)),
             edge_color_rgb=edge_color_rgb,
             directed=bool(directed),
@@ -258,6 +266,7 @@ def render_graph_scene(
                 reserved_boxes=tuple(reserved_edge_label_boxes),
                 node_bboxes=tuple(node_bbox_lookup.values()),
                 side_seed=int(side_seed),
+                require_strict=bool(edge_text_label_strict_placement),
             )
             reserved_edge_label_boxes.append(tuple(int(value) for value in edge_text_label_bbox))
             _draw_edge_boxed_label(
@@ -338,10 +347,10 @@ def render_graph_scene(
     label_font, label_stroke_width = _resolve_node_label_font(
         draw,
         node_labels=tuple(str(label) for label in graph_sample.node_labels),
-        render_params=render_params,
+        render_params=effective_render_params,
     )
     rendered_nodes: List[RenderedGraphNode] = []
-    radius = int(render_params.node_radius_px)
+    radius = int(effective_render_params.node_radius_px)
     node_styles = {str(key): dict(value) for key, value in (node_style_by_label or {}).items()}
     for node, label in zip(graph_sample.graph.nodes(), graph_sample.node_labels):
         center = tuple(int(value) for value in positions[int(node)])

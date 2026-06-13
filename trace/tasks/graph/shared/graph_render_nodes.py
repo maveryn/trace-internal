@@ -125,8 +125,25 @@ def _resolve_node_label_font(
     return fitted_font, int(stroke_width)
 
 
+def _resolve_effective_node_radius_px(
+    *,
+    node_labels: Sequence[str],
+    render_params: GraphRenderParams,
+) -> int:
+    """Return a node radius large enough for the longest visible label."""
+
+    base_radius = int(render_params.node_radius_px)
+    longest = max((len(str(label)) for label in node_labels), default=1)
+    if int(longest) <= 2:
+        return int(base_radius)
+    # Named labels need materially more room than letter/number labels. Keep the
+    # growth bounded so dense graphs still fit after layout quality checks.
+    return int(max(base_radius, min(38, base_radius + ((int(longest) - 2) * 5))))
+
+
 __all__ = [
     "_draw_node_shape",
     "_node_label_box",
+    "_resolve_effective_node_radius_px",
     "_resolve_node_label_font",
 ]

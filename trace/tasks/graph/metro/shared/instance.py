@@ -132,7 +132,7 @@ class MetroRouteInstanceBuilder:
         self.prompt_annotation_key = str(prompt_annotation_key)
         self.prompt_task_key_fallback = str(prompt_task_key_fallback)
 
-    def _load_defaults(self) -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+    def _load_defaults(self) -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
         group_defaults = get_scene_defaults(self.domain, PUBLIC_METRO_SCENE_ID)
         gen_defaults, render_defaults, prompt_defaults = split_scene_generation_rendering_prompt_defaults(
             group_defaults if isinstance(group_defaults, Mapping) else {},
@@ -140,6 +140,13 @@ class MetroRouteInstanceBuilder:
         )
         background_defaults = load_graph_scene_background_defaults(scene_id=PUBLIC_METRO_SCENE_ID)
         noise_defaults = load_graph_scene_noise_defaults(scene_id=PUBLIC_METRO_SCENE_ID, apply_prob=0.5)
+        return (
+            dict(gen_defaults),
+            dict(render_defaults),
+            dict(prompt_defaults),
+            dict(background_defaults),
+            dict(noise_defaults),
+        )
 
     def _target_support(self, gen_defaults: Mapping[str, Any], params: Mapping[str, Any], *, query_distance: int = 0) -> Tuple[int, ...]:
         if self.query_id == "metro_shortest_path_length":
@@ -547,6 +554,7 @@ class MetroRouteInstanceBuilder:
             if requested is not None and str(requested) not in {"", "default", str(self.query_id)}:
                 raise ValueError(f"unsupported query_id for {self.instance_key}: {requested}")
 
+        gen_defaults, render_defaults, prompt_defaults, background_defaults, noise_defaults = self._load_defaults()
         query = self._resolve_query(int(instance_seed), params=params, gen_defaults=gen_defaults)
         render_params = resolve_graph_render_params(
             params,

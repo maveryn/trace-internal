@@ -3,7 +3,7 @@
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`
-3. Scene: `relation`
+3. Scene: `node_link`
 4. Task id: `task_graph__node_link__edge_between_nodes_label`
 5. Objective: return the visible text label on the edge between two named nodes.
 
@@ -21,6 +21,9 @@
 1. The scene uses the graph-domain renderer for `node_link`.
 2. Visual style, fonts, panel treatment, layout jitter, and post-render noise are non-semantic and must be recorded in trace metadata.
 3. Annotation projection is computed after final layout and style placement.
+4. Visible edge labels are sampled from the shared label manifest with per-instance support size `16`.
+5. Edge labels are lowercase text of `3..5` characters and are filtered so they do not duplicate any visible node label.
+6. Instances cap visible labeled edges at `12`; edge-label boxes must be collision-free with node boxes and other edge-label boxes.
 
 ## Prompt Contract
 1. Prompt text comes from graph prompt templates and scene config, not hardcoded user-facing text.

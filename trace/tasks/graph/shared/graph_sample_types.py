@@ -69,7 +69,10 @@ SUPPORTED_HAMILTONIAN_CYCLE_QUERY_IDS: Tuple[str, ...] = (
 SUPPORTED_COMPONENT_COMPARISON_QUERY_IDS: Tuple[str, ...] = ("largest_component_size",)
 SUPPORTED_PATH_QUERY_IDS: Tuple[str, ...] = ("shortest_path_length", "directed_shortest_path_length")
 SUPPORTED_LONGEST_PATH_QUERY_IDS: Tuple[str, ...] = ("directed_longest_path_length",)
-SUPPORTED_ORDER_QUERY_IDS: Tuple[str, ...] = ("topological_position",)
+SUPPORTED_ORDER_QUERY_IDS: Tuple[str, ...] = (
+    "first_in_topological_order_label",
+    "last_in_topological_order_label",
+)
 SUPPORTED_REACHABLE_EDGE_EDIT_MODES: Tuple[str, ...] = ("edge_removal", "edge_addition")
 
 
@@ -176,9 +179,15 @@ class GraphEdgeTextLabelCountSample(GraphTopologySample):
     target_edges: Tuple[Tuple[str, str], ...]
     target_count: int
     target_edge_label: str
+    edge_label_support: Tuple[str, ...]
     edge_attribute_labels_by_label: Dict[Tuple[str, str], str]
     edge_label_counts_by_value: Dict[str, int]
     graph_directionality: str
+    edge_label_source_kind: str = field(default="", kw_only=True)
+    edge_label_bucket: str = field(default="", kw_only=True)
+    edge_label_manifest: str = field(default="", kw_only=True)
+    edge_label_filter: Dict[str, Any] = field(default_factory=dict, kw_only=True)
+    edge_label_bucket_probabilities: Dict[str, float] = field(default_factory=dict, kw_only=True)
 
 
 @dataclass(frozen=True)
@@ -187,12 +196,18 @@ class GraphEdgeAttributeLabelSample(GraphTopologySample):
 
     query_edge: Tuple[str, str]
     target_edge_label: str
+    edge_label_support: Tuple[str, ...]
     edge_attribute_labels_by_label: Dict[Tuple[str, str], str]
     edge_label_counts_by_value: Dict[str, int]
     graph_directionality: str
     query_path_labels: Tuple[str, ...] = ()
     query_path_edge_index: int | None = None
     query_path_edge_position: str | None = None
+    edge_label_source_kind: str = field(default="", kw_only=True)
+    edge_label_bucket: str = field(default="", kw_only=True)
+    edge_label_manifest: str = field(default="", kw_only=True)
+    edge_label_filter: Dict[str, Any] = field(default_factory=dict, kw_only=True)
+    edge_label_bucket_probabilities: Dict[str, float] = field(default_factory=dict, kw_only=True)
 
 
 @dataclass(frozen=True)
@@ -298,6 +313,7 @@ class GraphReachableSample(GraphTopologySample):
     unreachable_labels: Tuple[str, ...]
     reachable_edge_count: int
     unreachable_edge_count: int
+    annotation_labels: Tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -362,6 +378,7 @@ class GraphHamiltonianCycleNeighborSample(GraphTopologySample):
     relation_mode: str
     orientation_start_label: str
     orientation_next_label: str
+    orientation_final_label: str
     hamiltonian_cycle_count: int
     extra_edge_count: int
 
@@ -376,6 +393,7 @@ class GraphShortestPathSample(GraphTopologySample):
     target_shortest_path_length: int
     attachment_count: int
     extra_edge_count: int
+    annotation_labels: Tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -424,6 +442,8 @@ class GraphTopologicalOrderSample(GraphTopologySample):
     target_labels: Tuple[str, ...]
     target_position: int
     extra_edge_count: int
+    answer_label: str = ""
+    annotation_labels: Tuple[str, ...] = ()
 
 
 def graph_label_sort_key(label: str) -> Tuple[int, int | str]:
@@ -473,7 +493,13 @@ def graph_directionality_for_query_id(query_id: str) -> str:
     """Return the graph directionality implied by one query id."""
 
     variant = str(query_id)
-    if variant in {"directed_degree_count", "directed_shortest_path_length", "topological_position"}:
+    if variant in {
+        "directed_degree_count",
+        "directed_shortest_path_length",
+        "first_in_topological_order_label",
+        "last_in_topological_order_label",
+        "topological_position",
+    }:
         return "directed"
     return "undirected"
 

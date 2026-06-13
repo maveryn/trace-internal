@@ -27,7 +27,7 @@
    - directed branch asks how many edges are in the unique path from node X to node Y when following arrow direction,
    - `target_shortest_path_length` support is `3..7`,
    - answer is the number of edges on that path,
-   - annotation is the ordered node-center pixel path from source to goal.
+   - annotation is the ordered node-center pixel path after the source node, ending at the goal node.
 
 ## 3) Prompt contract
 1. Bundle: `graph_path_v0`
@@ -35,13 +35,13 @@
 3. `task_key`: `shortest_path_length_query`
 4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":2}`
-6. Answer+annotation JSON shape: `{"annotation":[[180,220],[310,180],[430,260]],"answer":2}`
+6. Answer+annotation JSON shape: `{"annotation":[[310,180],[430,260]],"answer":2}`
 7. Prompt-facing annotation uses an ordered pixel point path because shortest-path semantics depend on source-to-goal order.
 
 ## 4) Annotation + trace contract
-1. Prompt-facing annotation is the `point_sequence` of node-center pixel points along the unique shortest path, ordered from source to goal.
-2. The annotation path includes both queried endpoints.
-3. `answer_gt.value == len(annotation_gt.value) - 1` by construction.
+1. Prompt-facing annotation is the `point_sequence` of node-center pixel points after the source node along the unique shortest path, ending at the goal node.
+2. The annotation path excludes the source endpoint.
+3. `answer_gt.value == len(annotation_gt.value)` by construction.
 4. `execution_trace.query_id` records the concrete public branch: `undirected_shortest_path_length` or `directed_shortest_path_length`.
 5. The internal generator records `internal_query_id == "shortest_path_length"` or `internal_query_id == "directed_shortest_path_length"` for diagnostic compatibility.
 6. `execution_trace.graph_directionality` records `undirected` or `directed`.

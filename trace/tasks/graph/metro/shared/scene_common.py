@@ -559,7 +559,7 @@ def _build_labeled_metro_sample(
         rng,
         label_variant=str(label_variant),
         object_count=len(station_coords),
-        max_chars=4,
+        max_chars=3,
         sequential_numbers=False,
     )
     station_labels = tuple(str(label) for label in resolved_labels.labels)

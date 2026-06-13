@@ -83,7 +83,7 @@ For cross-domain rollups, use `docs/ACTIVE_TASK_INVENTORY.md`. This file is the 
 1. `task_graph__node_link__same_component_count`
 1. `task_graph__node_link__shortest_path_first_edge_label`
 1. `task_graph__node_link__shortest_path_length`
-1. `task_graph__node_link__topological_position_value`
+1. `task_graph__node_link__topological_endpoint_node_label`
 1. `task_graph__node_link__unique_cycle_size`
 1. `task_graph__node_link__unique_related_node_label`
 

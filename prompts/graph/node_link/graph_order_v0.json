@@ -2,7 +2,7 @@
   "bundle_id": "graph_order_v0",
   "schema_version": "v0",
   "task_templates": {
-    "topological_position_query": [
+    "topological_endpoint_node_label_query": [
       "",
       "",
       "",
@@ -34,9 +34,8 @@
     "scene:binary_tree_order": [
       "object_description"
     ],
-    "query:topological_position": [
-      "query_label"
-    ],
+    "query:first_in_topological_order_label": [],
+    "query:last_in_topological_order_label": [],
     "query:bfs_kth_visit_label": [
       "source_label",
       "traversal_position"
@@ -109,12 +108,19 @@
     ]
   },
   "query_templates": {
-    "topological_position": [
-      "What is the position of node {query_label} in the unique topological order, counting from 1?",
-      "In the unique topological order, what 1-based position does node {query_label} occupy?",
-      "Using the unique topological order, what is node {query_label}'s position, counting from 1?",
-      "Counting from the first node in the unique topological order, where is node {query_label}?",
-      "What is the 1-based index of node {query_label} in the graph's unique topological order?"
+    "first_in_topological_order_label": [
+      "Which node is first in the unique topological order?",
+      "In the unique topological order, what is the first node label?",
+      "Using the graph's unique topological order, which node comes first?",
+      "What node label appears at the start of the unique topological order?",
+      "Find the first node in the unique topological ordering. What is its label?"
+    ],
+    "last_in_topological_order_label": [
+      "Which node is last in the unique topological order?",
+      "In the unique topological order, what is the last node label?",
+      "Using the graph's unique topological order, which node comes last?",
+      "What node label appears at the end of the unique topological order?",
+      "Find the final node in the unique topological ordering. What is its label?"
     ],
     "bfs_kth_visit_label": [
       "Starting from row {source_label}, run breadth-first search using each row's neighbors from left to right. What label is visited at position {traversal_position}, counting from 1?",

@@ -5,7 +5,7 @@
 2. Scene id: `node_link`
 3. Scene: `relation`
 4. Task id: `task_graph__node_link__reachable_count`
-5. Objective: count nodes reachable from a reference node in a directed graph.
+5. Objective: count nodes reachable from a reference node in a directed graph, excluding the reference node itself.
 
 ## Query IDs
 1. `reachable_count`
@@ -16,6 +16,7 @@
 2. Annotation type: `point_set`.
 3. Annotation marks minimal pixel-space visual witnesses for the answer, not answer labels or non-witness annotations.
 4. Count tasks require `answer_gt.value == len(annotation_gt.value)` unless the annotation schema is keyed or sequence based.
+5. The start/reference node is not included in the answer or annotation.
 
 ## Rendering Contract
 1. The scene uses the graph-domain renderer for `node_link`.

@@ -10,7 +10,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.counting.edge_text_label_count import (
+from trace.tasks.graph.node_link.edge_text_count import (
     GraphCountingEdgeTextLabelCountTask,
 )
 from tests.helpers import read_jsonl
@@ -28,7 +28,6 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
     out = task.generate(
         21001,
         params={
-            "graph_directionality": "directed",
             "target_edge_label": "feeds",
             "edge_label_support": [
                 "feeds",
@@ -61,12 +60,11 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
     assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == 3
     assert len(out.annotation_gt.value) == 3
-    assert trace["scene_ir"]["scene_kind"] == "graph_edge_text_label_counting"
+    assert trace["scene_ir"]["scene_kind"] == "graph_edge_text_counting"
     assert execution["query_id"] == "edge_text_label_count"
-    assert execution["graph_directionality"] == "directed"
+    assert execution["graph_directionality"] == "undirected"
     assert execution["target_edge_label"] == "feeds"
     assert execution["question_format"] == "edge_text_label_count"
-    assert execution["layout_variant_requested"] == "shell"
     assert execution["edge_routing_variant"] == "mixed_arc"
     assert execution["label_variant"] == "named"
     assert '"feeds"' in str(out.prompt)
@@ -79,25 +77,19 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
         for entry in execution["edge_attribute_labels_by_label_pair"]
     }
     assert int(out.answer_gt.value) == len(matching_edges) == len(out.annotation_gt.value)
-    assert trace["witness_symbolic"]["edges"] == [list(edge) for edge in matching_edges]
-    assert trace["witness_symbolic"]["target_edge_label"] == "feeds"
+    assert trace["witness_symbolic"]["edge_labels"] == [list(edge) for edge in matching_edges]
     assert all(labels_by_edge[tuple(edge)] == "feeds" for edge in matching_edges)
     assert sum(1 for label in labels_by_edge.values() if str(label) == "feeds") == 3
-    assert sum(1 for edge in edge_entities if bool(edge["is_target_edge_label"])) == 3
     assert all(
-        str(edge["edge_attribute_label"]) == "feeds"
+        str(edge["edge_text_label"]) == "feeds"
         for edge in edge_entities
-        if bool(edge["is_target_edge_label"])
+        if (str(edge["node_u_label"]), str(edge["node_v_label"])) in set(matching_edges)
     )
-    assert all(edge["edge_label_bbox_xyxy"] is not None for edge in edge_entities)
+    assert all(edge["label_bbox_xyxy"] is not None for edge in edge_entities)
     assert len(edge_entities) == int(execution["edge_count"])
-    assert any(bool(edge["directed"]) for edge in edge_entities)
+    assert not any(bool(edge["directed"]) for edge in edge_entities)
     assert trace["projected_annotation"]["type"] == "bbox_set"
     assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert (
-        trace["render_spec"]["style"]["semantic_edge_text_labels_by_label_pair"]
-        == execution["edge_attribute_labels_by_label_pair"]
-    )
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
@@ -141,16 +133,7 @@ def test_graph_counting_edge_text_label_sampling_covers_target_counts() -> None:
     for index in range(80):
         out = task.generate(
             hash64(21010, "graph_counting_edge_text_label_count", index),
-            params={
-                "edge_label_support": [
-                    "feeds",
-                    "blocks",
-                    "joins",
-                    "routes",
-                    "checks",
-                    "updates",
-                ],
-            },
+            params={},
             max_attempts=100,
         )
         execution = out.trace_payload["execution_trace"]
@@ -163,9 +146,18 @@ def test_graph_counting_edge_text_label_sampling_covers_target_counts() -> None:
         assert execution["edge_label_counts_by_value"][
             execution["target_edge_label"]
         ] == int(out.answer_gt.value)
+        assert len(execution["edge_label_support"]) == 16
+        assert all(3 <= len(str(label)) <= 5 for label in execution["edge_label_support"])
+        node_labels = {
+            str(entity["label"]).strip().lower()
+            for entity in out.trace_payload["scene_ir"]["entities"]
+            if entity["entity_kind"] == "graph_node"
+        }
+        assert not (set(str(label) for label in execution["edge_label_support"]) & node_labels)
+        assert int(execution["edge_count"]) <= 12
 
     assert set(answers) == set(range(1, 6))
-    assert set(directionality) == {"undirected", "directed"}
+    assert set(directionality) == {"undirected"}
     assert set(label_variants) == {"letters", "numbers", "named"}
     assert set(edge_routing_variants) == {"straight", "mixed_arc"}
 
@@ -194,7 +186,6 @@ def test_graph_counting_edge_text_label_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
-    assert all(record["scene_id"] == "counting" for record in train_records)
     assert all(record["scene_id"] == "node_link" for record in train_records)
 
     build_report = json.loads(

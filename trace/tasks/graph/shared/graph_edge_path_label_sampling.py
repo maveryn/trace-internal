@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import random
 from functools import lru_cache
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Callable, Dict, Mapping, Sequence, Tuple
 
 import networkx as nx
 
@@ -39,6 +39,47 @@ from .graph_topology_helpers import (
 from .graph_path_order_sampling import sample_shortest_path_length_graph
 
 
+EdgeLabelSupportResolver = Callable[[random.Random, Sequence[str]], Tuple[Sequence[str], Mapping[str, Any]]]
+
+
+def _resolve_visible_edge_label_support(
+    rng: random.Random,
+    *,
+    node_labels: Sequence[str],
+    target_edge_label: str,
+    edge_label_support: Sequence[str],
+    target_edge_label_index: int,
+    edge_label_support_resolver: EdgeLabelSupportResolver | None,
+) -> Tuple[Tuple[str, ...], str, Dict[str, Any]]:
+    """Resolve visible edge labels after shortest-path node labels exist."""
+
+    metadata: Dict[str, Any] = {}
+    if edge_label_support_resolver is not None:
+        resolved_support, resolved_metadata = edge_label_support_resolver(
+            rng,
+            tuple(str(label) for label in node_labels),
+        )
+        edge_labels_supported = tuple(
+            str(label).strip().lower()
+            for label in resolved_support
+            if str(label).strip()
+        )
+        metadata = dict(resolved_metadata)
+        explicit_target = str(target_edge_label).strip().lower()
+        target_label = explicit_target or (edge_labels_supported[int(target_edge_label_index) % len(edge_labels_supported)] if edge_labels_supported else "")
+    else:
+        edge_labels_supported = tuple(str(label).strip().lower() for label in edge_label_support if str(label).strip())
+        target_label = str(target_edge_label).strip().lower()
+    if len(set(edge_labels_supported)) != len(edge_labels_supported) or len(edge_labels_supported) < 2:
+        raise ValueError("edge_label_support must contain at least two unique labels")
+    node_label_set = {str(label).strip().lower() for label in node_labels if str(label).strip()}
+    if any(str(label) in node_label_set for label in edge_labels_supported):
+        raise ValueError("edge labels must not overlap node labels")
+    if target_label not in set(edge_labels_supported):
+        raise ValueError("target_edge_label is outside edge_label_support")
+    return tuple(str(label) for label in edge_labels_supported), str(target_label), dict(metadata)
+
+
 def sample_edge_attribute_path_label_graph(
     rng: random.Random,
     *,
@@ -49,19 +90,15 @@ def sample_edge_attribute_path_label_graph(
     edge_label_support: Sequence[str],
     topology_profile: str,
     label_variant: str,
+    target_edge_label_index: int = 0,
+    edge_label_support_resolver: EdgeLabelSupportResolver | None = None,
+    max_labeled_edge_count: int | None = None,
 ) -> GraphEdgeAttributeLabelSample:
     """Construct one labeled graph and query the first edge on a unique shortest path."""
 
     directionality = str(graph_directionality)
     if directionality not in SUPPORTED_EDGE_ATTRIBUTE_LABEL_DIRECTIONS:
         raise ValueError(f"unsupported graph_directionality: {graph_directionality}")
-    edge_labels_supported = tuple(str(label).strip().lower() for label in edge_label_support if str(label).strip())
-    if len(set(edge_labels_supported)) != len(edge_labels_supported) or len(edge_labels_supported) < 2:
-        raise ValueError("edge_label_support must contain at least two unique labels")
-    target_label = str(target_edge_label).strip().lower()
-    if target_label not in set(edge_labels_supported):
-        raise ValueError("target_edge_label is outside edge_label_support")
-
     path_query_id = "directed_shortest_path_length" if directionality == "directed" else "shortest_path_length"
     topology_sample = sample_shortest_path_length_graph(
         rng,
@@ -82,6 +119,16 @@ def sample_edge_attribute_path_label_graph(
     edge_labels = tuple((str(left), str(right)) for left, right in topology_sample.edge_labels)
     if tuple(query_edge) not in set(edge_labels):
         raise ValueError("queried shortest-path edge is absent from labeled edge set")
+    if max_labeled_edge_count is not None and len(edge_labels) > int(max_labeled_edge_count):
+        raise ValueError("sampled graph exceeds max_labeled_edge_count")
+    edge_labels_supported, target_label, edge_label_metadata = _resolve_visible_edge_label_support(
+        rng,
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        target_edge_label=str(target_edge_label),
+        edge_label_support=edge_label_support,
+        target_edge_label_index=int(target_edge_label_index),
+        edge_label_support_resolver=edge_label_support_resolver,
+    )
 
     edge_attribute_labels_by_label: Dict[Tuple[str, str], str] = {}
     for edge in edge_labels:
@@ -115,6 +162,7 @@ def sample_edge_attribute_path_label_graph(
         label_variant=str(topology_sample.label_variant),
         query_edge=(str(query_edge[0]), str(query_edge[1])),
         target_edge_label=str(target_label),
+        edge_label_support=tuple(str(label) for label in edge_labels_supported),
         edge_attribute_labels_by_label={
             (str(left), str(right)): str(label)
             for (left, right), label in edge_attribute_labels_by_label.items()
@@ -124,6 +172,14 @@ def sample_edge_attribute_path_label_graph(
         query_path_labels=tuple(str(label) for label in path_labels),
         query_path_edge_index=0,
         query_path_edge_position="first",
+        edge_label_source_kind=str(edge_label_metadata.get("edge_label_source_kind", "")),
+        edge_label_bucket=str(edge_label_metadata.get("edge_label_bucket", "")),
+        edge_label_manifest=str(edge_label_metadata.get("edge_label_manifest", "")),
+        edge_label_filter=dict(edge_label_metadata.get("edge_label_filter", {})),
+        edge_label_bucket_probabilities={
+            str(key): float(value)
+            for key, value in dict(edge_label_metadata.get("edge_label_bucket_probabilities", {})).items()
+        },
     )
 
 

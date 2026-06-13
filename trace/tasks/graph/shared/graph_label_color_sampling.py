@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import random
 from itertools import product
-from typing import Dict, Mapping, Sequence, Tuple
+from typing import Any, Callable, Dict, Mapping, Sequence, Tuple
 
 import networkx as nx
 
@@ -32,6 +32,47 @@ from .graph_sample_types import (
     sort_graph_edge_labels,
 )
 from .graph_topology_helpers import _build_labeled_graph_topology_sample, _has_reciprocal_edges
+
+
+EdgeLabelSupportResolver = Callable[[random.Random, Sequence[str]], Tuple[Sequence[str], Mapping[str, Any]]]
+
+
+def _resolve_visible_edge_label_support(
+    rng: random.Random,
+    *,
+    node_labels: Sequence[str],
+    target_edge_label: str,
+    edge_label_support: Sequence[str],
+    target_edge_label_index: int,
+    edge_label_support_resolver: EdgeLabelSupportResolver | None,
+) -> Tuple[Tuple[str, ...], str, Dict[str, Any]]:
+    """Resolve per-instance visible edge-text labels after node labels exist."""
+
+    metadata: Dict[str, Any] = {}
+    if edge_label_support_resolver is not None:
+        resolved_support, resolved_metadata = edge_label_support_resolver(
+            rng,
+            tuple(str(label) for label in node_labels),
+        )
+        edge_labels_supported = tuple(
+            str(label).strip().lower()
+            for label in resolved_support
+            if str(label).strip()
+        )
+        metadata = dict(resolved_metadata)
+        explicit_target = str(target_edge_label).strip().lower()
+        target_label = explicit_target or (edge_labels_supported[int(target_edge_label_index) % len(edge_labels_supported)] if edge_labels_supported else "")
+    else:
+        edge_labels_supported = tuple(str(label).strip().lower() for label in edge_label_support if str(label).strip())
+        target_label = str(target_edge_label).strip().lower()
+    if len(set(edge_labels_supported)) != len(edge_labels_supported) or len(edge_labels_supported) < 2:
+        raise ValueError("edge_label_support must contain at least two unique labels")
+    node_label_set = {str(label).strip().lower() for label in node_labels if str(label).strip()}
+    if any(str(label) in node_label_set for label in edge_labels_supported):
+        raise ValueError("edge labels must not overlap node labels")
+    if target_label not in set(edge_labels_supported):
+        raise ValueError("target_edge_label is outside edge_label_support")
+    return tuple(str(label) for label in edge_labels_supported), str(target_label), dict(metadata)
 
 
 def _sample_unique_node_label_undirected_graph(
@@ -256,6 +297,7 @@ def _sample_node_color_count_base_graph(
     graph_directionality: str,
     topology_profile: str,
     max_degree: int,
+    max_edge_count: int | None = None,
 ) -> nx.Graph | nx.DiGraph:
     """Sample one simple node-link graph for semantic color-count queries."""
 
@@ -277,6 +319,11 @@ def _sample_node_color_count_base_graph(
                 graph.add_edge(int(left), int(right))
             else:
                 graph.add_edge(int(right), int(left))
+        if max_edge_count is not None:
+            extra_edges = min(
+                int(extra_edges),
+                max(0, int(max_edge_count) - int(graph.number_of_edges())),
+            )
         _add_random_directed_distractor_edges(
             graph,
             rng,
@@ -289,6 +336,11 @@ def _sample_node_color_count_base_graph(
         return graph
 
     graph = base_graph.copy()
+    if max_edge_count is not None:
+        extra_edges = min(
+            int(extra_edges),
+            max(0, int(max_edge_count) - int(graph.number_of_edges())),
+        )
     _add_random_undirected_distractor_edges(
         graph,
         rng,
@@ -391,6 +443,7 @@ def _sample_edge_color_count_base_graph(
     graph_directionality: str,
     topology_profile: str,
     max_degree: int,
+    max_edge_count: int | None = None,
 ) -> nx.Graph | nx.DiGraph:
     """Sample one simple node-link graph for semantic edge-color queries."""
 
@@ -400,6 +453,7 @@ def _sample_edge_color_count_base_graph(
         graph_directionality=str(graph_directionality),
         topology_profile=str(topology_profile),
         max_degree=int(max_degree),
+        max_edge_count=max_edge_count,
     )
 
 
@@ -509,6 +563,9 @@ def sample_edge_text_label_count_graph(
     topology_profile: str,
     label_variant: str,
     max_degree: int,
+    target_edge_label_index: int = 0,
+    edge_label_support_resolver: EdgeLabelSupportResolver | None = None,
+    max_labeled_edge_count: int | None = None,
 ) -> GraphEdgeTextLabelCountSample:
     """Construct one labeled graph with exactly ``target_count`` visible edge-text labels."""
 
@@ -520,22 +577,13 @@ def sample_edge_text_label_count_graph(
     if int(target_count_int) < 0:
         raise ValueError("target_count cannot be negative")
 
-    edge_labels_supported = tuple(str(label).strip().lower() for label in edge_label_support if str(label).strip())
-    if len(set(edge_labels_supported)) != len(edge_labels_supported) or len(edge_labels_supported) < 2:
-        raise ValueError("edge_label_support must contain at least two unique labels")
-    target_label = str(target_edge_label).strip().lower()
-    if str(target_label) not in set(edge_labels_supported):
-        raise ValueError("target_edge_label is outside edge_label_support")
-    non_target_labels = tuple(str(label) for label in edge_labels_supported if str(label) != str(target_label))
-    if not non_target_labels:
-        raise ValueError("edge_label_support must include a non-target label")
-
     graph = _sample_edge_color_count_base_graph(
         rng,
         node_count=int(node_count_int),
         graph_directionality=str(directionality),
         topology_profile=str(topology_profile),
         max_degree=int(max_degree),
+        max_edge_count=max_labeled_edge_count,
     )
     topology_sample, _label_by_node = _build_labeled_graph_topology_sample(
         rng,
@@ -545,6 +593,19 @@ def sample_edge_text_label_count_graph(
         label_variant=str(label_variant),
     )
     edge_labels = tuple((str(left), str(right)) for left, right in topology_sample.edge_labels)
+    if max_labeled_edge_count is not None and len(edge_labels) > int(max_labeled_edge_count):
+        raise ValueError("sampled graph exceeds max_labeled_edge_count")
+    edge_labels_supported, target_label, edge_label_metadata = _resolve_visible_edge_label_support(
+        rng,
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        target_edge_label=str(target_edge_label),
+        edge_label_support=edge_label_support,
+        target_edge_label_index=int(target_edge_label_index),
+        edge_label_support_resolver=edge_label_support_resolver,
+    )
+    non_target_labels = tuple(str(label) for label in edge_labels_supported if str(label) != str(target_label))
+    if not non_target_labels:
+        raise ValueError("edge_label_support must include a non-target label")
     if int(target_count_int) > len(edge_labels):
         raise ValueError("target_count must be no larger than the sampled edge count")
 
@@ -593,12 +654,21 @@ def sample_edge_text_label_count_graph(
         target_edges=tuple((str(left), str(right)) for left, right in target_edges),
         target_count=int(target_count_int),
         target_edge_label=str(target_label),
+        edge_label_support=tuple(str(label) for label in edge_labels_supported),
         edge_attribute_labels_by_label={
             (str(left), str(right)): str(label)
             for (left, right), label in edge_attribute_labels_by_label.items()
         },
         edge_label_counts_by_value={str(key): int(value) for key, value in edge_label_counts_by_value.items()},
         graph_directionality=str(directionality),
+        edge_label_source_kind=str(edge_label_metadata.get("edge_label_source_kind", "")),
+        edge_label_bucket=str(edge_label_metadata.get("edge_label_bucket", "")),
+        edge_label_manifest=str(edge_label_metadata.get("edge_label_manifest", "")),
+        edge_label_filter=dict(edge_label_metadata.get("edge_label_filter", {})),
+        edge_label_bucket_probabilities={
+            str(key): float(value)
+            for key, value in dict(edge_label_metadata.get("edge_label_bucket_probabilities", {})).items()
+        },
     )
 
 
@@ -612,6 +682,9 @@ def sample_edge_attribute_label_graph(
     topology_profile: str,
     label_variant: str,
     max_degree: int,
+    target_edge_label_index: int = 0,
+    edge_label_support_resolver: EdgeLabelSupportResolver | None = None,
+    max_labeled_edge_count: int | None = None,
 ) -> GraphEdgeAttributeLabelSample:
     """Construct one labeled graph with visible text labels on every edge."""
 
@@ -622,19 +695,13 @@ def sample_edge_attribute_label_graph(
     if int(node_count_int) < 2:
         raise ValueError("edge-attribute label graphs require at least two nodes")
 
-    edge_labels_supported = tuple(str(label).strip().lower() for label in edge_label_support if str(label).strip())
-    if len(set(edge_labels_supported)) != len(edge_labels_supported) or len(edge_labels_supported) < 2:
-        raise ValueError("edge_label_support must contain at least two unique labels")
-    target_label = str(target_edge_label).strip().lower()
-    if target_label not in set(edge_labels_supported):
-        raise ValueError("target_edge_label is outside edge_label_support")
-
     graph = _sample_edge_color_count_base_graph(
         rng,
         node_count=int(node_count_int),
         graph_directionality=str(directionality),
         topology_profile=str(topology_profile),
         max_degree=int(max_degree),
+        max_edge_count=max_labeled_edge_count,
     )
     topology_sample, _label_by_node = _build_labeled_graph_topology_sample(
         rng,
@@ -646,6 +713,16 @@ def sample_edge_attribute_label_graph(
     edge_labels = tuple((str(left), str(right)) for left, right in topology_sample.edge_labels)
     if not edge_labels:
         raise ValueError("edge-attribute label graph has no edges")
+    if max_labeled_edge_count is not None and len(edge_labels) > int(max_labeled_edge_count):
+        raise ValueError("sampled graph exceeds max_labeled_edge_count")
+    edge_labels_supported, target_label, edge_label_metadata = _resolve_visible_edge_label_support(
+        rng,
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        target_edge_label=str(target_edge_label),
+        edge_label_support=edge_label_support,
+        target_edge_label_index=int(target_edge_label_index),
+        edge_label_support_resolver=edge_label_support_resolver,
+    )
 
     query_edge = tuple(str(value) for value in rng.choice(edge_labels))
     non_target_labels = tuple(str(label) for label in edge_labels_supported if str(label) != str(target_label))
@@ -685,12 +762,21 @@ def sample_edge_attribute_label_graph(
         label_variant=str(topology_sample.label_variant),
         query_edge=(str(query_edge[0]), str(query_edge[1])),
         target_edge_label=str(target_label),
+        edge_label_support=tuple(str(label) for label in edge_labels_supported),
         edge_attribute_labels_by_label={
             (str(left), str(right)): str(label)
             for (left, right), label in edge_attribute_labels_by_label.items()
         },
         edge_label_counts_by_value={str(key): int(value) for key, value in edge_label_counts_by_value.items()},
         graph_directionality=str(directionality),
+        edge_label_source_kind=str(edge_label_metadata.get("edge_label_source_kind", "")),
+        edge_label_bucket=str(edge_label_metadata.get("edge_label_bucket", "")),
+        edge_label_manifest=str(edge_label_metadata.get("edge_label_manifest", "")),
+        edge_label_filter=dict(edge_label_metadata.get("edge_label_filter", {})),
+        edge_label_bucket_probabilities={
+            str(key): float(value)
+            for key, value in dict(edge_label_metadata.get("edge_label_bucket_probabilities", {})).items()
+        },
     )
 
 

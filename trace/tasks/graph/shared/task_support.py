@@ -135,22 +135,30 @@ def resolve_graph_edge_label_support_from_params(
     default_support_size: int = 6,
     default_min_chars: int = 3,
     default_max_chars: int = 12,
+    exclude_labels: Sequence[str] = (),
 ) -> Tuple[Tuple[str, ...], Dict[str, Any]]:
     """Resolve visible edge-text label support from explicit params or shared label assets."""
 
+    excluded = {
+        str(label).strip().lower()
+        for label in exclude_labels
+        if str(label).strip()
+    }
     raw_support = params.get("edge_label_support", group_default(gen_defaults, "edge_label_support", None))
     if raw_support is not None:
         if isinstance(raw_support, str):
             support = tuple(str(item).strip().lower() for item in raw_support.split(",") if str(item).strip())
         else:
             support = tuple(str(item).strip().lower() for item in raw_support if str(item).strip())
+        if excluded:
+            support = tuple(str(label) for label in support if str(label).strip().lower() not in excluded)
         if len(set(support)) != len(support) or len(support) < 2:
             raise ValueError("edge_label_support must contain at least two unique labels")
         return tuple(str(label) for label in support), {
             "edge_label_source_kind": "explicit_support",
             "edge_label_bucket": "",
             "edge_label_manifest": "",
-            "edge_label_filter": {},
+            "edge_label_filter": {"excluded_node_labels": sorted(excluded)} if excluded else {},
             "edge_label_bucket_probabilities": {},
         }
 
@@ -183,12 +191,16 @@ def resolve_graph_edge_label_support_from_params(
         min_chars=int(min_chars),
         max_chars=int(max_chars),
         bucket_weights=bucket_weights,
+        exclude_labels=tuple(sorted(excluded)),
     )
+    label_filter = dict(resolved.label_filter)
+    if excluded:
+        label_filter["excluded_node_labels"] = sorted(excluded)
     return tuple(str(label) for label in resolved.labels), {
         "edge_label_source_kind": str(resolved.label_source_kind),
         "edge_label_bucket": str(resolved.label_bucket),
         "edge_label_manifest": str(resolved.label_manifest),
-        "edge_label_filter": dict(resolved.label_filter),
+        "edge_label_filter": dict(label_filter),
         "edge_label_bucket_probabilities": dict(resolved.label_bucket_probabilities),
     }
 

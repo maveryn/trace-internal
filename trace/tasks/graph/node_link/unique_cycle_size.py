@@ -11,7 +11,8 @@ SUPPORTED_QUERY_IDS = ('unique_cycle_size',)
 
 def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
     """Sample a graph satisfying this public objective contract."""
-    return sample_unique_cycle_graph(rng, node_count=int(axes.node_count), target_cycle_size=int(axes.values['target_cycle_size']), topology_profile=str(axes.topology_profile), label_variant=str(axes.label_variant))
+    target_cycle_size = min(int(axes.values['target_cycle_size']), max(3, int(axes.node_count) - 1))
+    return sample_unique_cycle_graph(rng, node_count=int(axes.node_count), target_cycle_size=int(target_cycle_size), topology_profile=str(axes.topology_profile), label_variant=str(axes.label_variant))
 
 def _build_objective_plan() -> NodeLinkObjectivePlan:
     """Bind query ids, sampler, answer, and annotation for this objective."""

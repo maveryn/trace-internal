@@ -44,10 +44,13 @@ LEN_EQ_ANSWER_TASKS = {
 }
 
 PATH_LEN_EQ_ANSWER_PLUS_ONE_TASKS = {
-    "task_graph__node_link__shortest_path_length",
     "task_graph__node_link__longest_path_length",
     "task_graph__metro__shortest_path_length",
     "task_graph__pipe_network__shortest_path_length",
+}
+
+PATH_LEN_EQ_ANSWER_TASKS = {
+    "task_graph__node_link__shortest_path_length",
 }
 
 SINGLE_ANNOTATION_LABEL_TASKS = {
@@ -132,10 +135,6 @@ GRAPH_QUERY_IDS = {
     "task_graph__node_link__degree_extremum_value": (
         "directed_max_in_degree_value",
         "directed_max_out_degree_value",
-        "directed_max_total_degree_value",
-        "directed_min_in_degree_value",
-        "directed_min_out_degree_value",
-        "directed_min_total_degree_value",
         "undirected_max_degree_value",
         "undirected_min_degree_value",
     ),
@@ -147,8 +146,6 @@ GRAPH_QUERY_IDS = {
     "task_graph__node_link__degree_value_filter_count": (
         "directed_in_degree_count",
         "directed_out_degree_count",
-        "directed_sink_count",
-        "directed_source_count",
         "undirected_degree_count",
     ),
     "task_graph__node_link__edge_between_nodes_label": (
@@ -186,7 +183,10 @@ GRAPH_QUERY_IDS = {
         "directed_shortest_path_length",
         "undirected_shortest_path_length",
     ),
-    "task_graph__node_link__topological_position_value": ("topological_position",),
+    "task_graph__node_link__topological_endpoint_node_label": (
+        "first_in_topological_order_label",
+        "last_in_topological_order_label",
+    ),
     "task_graph__node_link__unique_cycle_size": ("unique_cycle_size",),
     "task_graph__node_link__unique_related_node_label": (
         "unique_neighbor_label",
@@ -404,10 +404,22 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
             or execution_trace.get("longest_path_labels"),
         )
 
+    if task_id in PATH_LEN_EQ_ANSWER_TASKS:
+        if annotation_len != int(answer_value):
+            errors.append(
+                f"path annotation length {annotation_len} != answer {answer_value}"
+            )
+        _check_len(
+            errors,
+            name="matching_labels",
+            annotation_len=annotation_len,
+            values=execution_trace.get("matching_labels"),
+        )
+
     if task_id in SINGLE_ANNOTATION_LABEL_TASKS and annotation_len != 1:
         errors.append(f"single-label annotation length {annotation_len} != 1")
 
-    if "matching_labels" in execution_trace and annotation_type in {
+    if execution_trace.get("matching_labels") and annotation_type in {
         "point_set",
         "point_sequence",
         "bbox_set",
@@ -419,7 +431,7 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
             annotation_len=annotation_len,
             values=execution_trace.get("matching_labels"),
         )
-    if "matching_edges" in execution_trace and annotation_type == "point_pair_set":
+    if execution_trace.get("matching_edges") and annotation_type in {"point_pair_set", "bbox_set"}:
         _check_len(
             errors,
             name="matching_edges",
@@ -459,6 +471,11 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
         )
 
     if task_id == "task_graph__node_link__degree_extremum_value":
+        if int(annotation_len) != 1:
+            errors.append(
+                "degree-extremum annotation must contain exactly one unique "
+                f"extremum node, got {annotation_len}"
+            )
         labels = execution_trace.get("matching_labels") or []
         if execution_trace.get("target_degree") is not None and int(
             answer_value
@@ -479,29 +496,19 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
                 f"degree-extremum labels do not match answer: {mismatched[:3]!r}"
             )
 
-    if task_id == "task_graph__node_link__topological_position_value":
+    if task_id == "task_graph__node_link__topological_endpoint_node_label":
         order = execution_trace.get("topological_order_labels") or []
-        _check_len(
-            errors,
-            name="topological_order_labels",
-            annotation_len=annotation_len,
-            values=order,
-        )
-        if execution_trace.get("target_position") is not None and int(
-            answer_value
-        ) != int(execution_trace["target_position"]):
-            errors.append(
-                f"topological answer {answer_value} != target_position "
-                f"{execution_trace['target_position']}"
-            )
-        if order and 1 <= int(answer_value) <= len(order):
-            if str(order[int(answer_value) - 1]) != str(
-                execution_trace.get("query_label")
-            ):
-                errors.append("topological answer index does not identify query_label")
+        if annotation_len != 1:
+            errors.append(f"topological endpoint annotation length {annotation_len} != 1")
+        if str(answer_value) != str(execution_trace.get("answer_label")):
+            errors.append("topological endpoint answer does not match answer_label")
+        if query_id == "first_in_topological_order_label" and order and str(answer_value) != str(order[0]):
+            errors.append("topological endpoint answer is not the first order label")
+        if query_id == "last_in_topological_order_label" and order and str(answer_value) != str(order[-1]):
+            errors.append("topological endpoint answer is not the last order label")
 
     if task_id == "task_graph__node_link__mst_weight":
-        mst_edges = execution_trace.get("minimum_spanning_tree_edges") or []
+        mst_edges = execution_trace.get("minimum_spanning_tree_edges") or execution_trace.get("matching_edges") or []
         _check_len(
             errors,
             name="minimum_spanning_tree_edges",
@@ -557,14 +564,21 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
                 break
 
     if task_id == "task_graph__flow_network__max_flow_value":
-        cut_edges = execution_trace.get("original_min_cut_edges") or []
+        cut_edges = (
+            execution_trace.get("minimum_cut_edges")
+            or execution_trace.get("original_min_cut_edges")
+            or []
+        )
         _check_len(
             errors,
-            name="original_min_cut_edges",
+            name="minimum_cut_edges",
             annotation_len=annotation_len,
             values=cut_edges,
         )
-        if int(answer_value) != int(execution_trace.get("original_max_flow_value")):
+        max_flow_value = execution_trace.get(
+            "max_flow_value", execution_trace.get("original_max_flow_value")
+        )
+        if int(answer_value) != int(max_flow_value):
             errors.append("max-flow answer does not match trace max flow")
         capacities = {
             _directed_edge(item["edge"]): int(item["capacity"])
@@ -574,7 +588,7 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
         if capacities:
             cut_capacity = sum(
                 capacities.get(_directed_edge(edge), 0)
-                for edge in execution_trace.get("annotation_edges", []) or []
+                for edge in cut_edges
             )
             if cut_capacity != int(answer_value):
                 errors.append(

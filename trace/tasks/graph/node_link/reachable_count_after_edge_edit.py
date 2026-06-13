@@ -12,7 +12,11 @@ SUPPORTED_QUERY_IDS = ('reachable_count_after_edge_removal', 'reachable_count_af
 def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
     """Sample a graph satisfying this public objective contract."""
     operation = 'edge_removal' if str(axes.query_id).endswith('removal') else 'edge_addition'
-    return sample_reachable_count_after_edge_edit_graph(rng, edit_operation=operation, node_count=int(axes.node_count), target_reachable_count=int(axes.values['target_count']), topology_profile=str(axes.topology_profile), label_variant=str(axes.label_variant))
+    target_count = int(axes.values['target_count'])
+    if operation == 'edge_addition':
+        target_count = max(2, int(target_count))
+    target_count = min(int(target_count), int(axes.node_count) - (1 if operation == 'edge_removal' else 0))
+    return sample_reachable_count_after_edge_edit_graph(rng, edit_operation=operation, node_count=int(axes.node_count), target_reachable_count=int(target_count), topology_profile=str(axes.topology_profile), label_variant=str(axes.label_variant))
 
 def _build_objective_plan() -> NodeLinkObjectivePlan:
     """Bind query ids, sampler, answer, and annotation for this objective."""

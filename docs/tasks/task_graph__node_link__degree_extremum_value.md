@@ -9,9 +9,9 @@
 
 ## 2) Scene + task contract
 1. Branch metadata: `query_id`
-2. `query_id`: one of `undirected_max_degree_value`, `undirected_min_degree_value`, `directed_max_in_degree_value`, `directed_min_in_degree_value`, `directed_max_out_degree_value`, `directed_min_out_degree_value`, `directed_max_total_degree_value`, or `directed_min_total_degree_value`
+2. `query_id`: one of `undirected_max_degree_value`, `undirected_min_degree_value`, `directed_max_in_degree_value`, or `directed_max_out_degree_value`
 3. Supported `graph_directionality` values: `undirected`, `directed`
-4. Supported directed `degree_mode` values: `in_degree`, `out_degree`, `total_degree`
+4. Supported directed `degree_mode` values: `in_degree`, `out_degree`
 5. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 6. `answer_gt.type`: `integer`
 7. `annotation_gt.type`: `point_set`
@@ -24,12 +24,13 @@
    - node count is sampled from `5..10`.
 9. Query contract:
    - undirected branches ask for the maximum or minimum node degree value,
-   - directed branches ask for the maximum or minimum in-degree, out-degree, or total-degree value,
-   - the default sampler is uniform over the eight public `query_id` branches,
+   - directed branches ask for the maximum in-degree or out-degree value,
+   - the default sampler is uniform over the four public `query_id` branches,
    - `graph_directionality`, `degree_mode`, and `extremum_mode` are derived from
      the selected public `query_id`,
-   - `target_degree` support is `0..4`,
-   - answer is the queried extreme degree value.
+   - branch answer supports are `undirected_max=2..5`, `undirected_min=0..3`, and `directed_max_in/out=1..4`,
+   - answer is the queried extreme degree value,
+   - every generated instance has exactly one node attaining the queried extreme value.
 
 ## 3) Prompt contract
 1. Bundle: `graph_comparison_v0`
@@ -37,19 +38,19 @@
 3. `task_key`: `extreme_degree_value_query`
 4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":3}`
-6. Answer+annotation JSON shape: `{"annotation":[[180,220],[310,180]],"answer":3}`
-7. Prompt-facing annotation uses pixel-space node centers for every node attaining the active branch's maximum/minimum degree, in-degree, out-degree, or total-degree value; tied extreme nodes are all included.
-8. If the node label format is `short_names`, prompt references quote the node label, for example node `"Abby"`.
+6. Answer+annotation JSON shape: `{"annotation":[[180,220]],"answer":3}`
+7. Prompt-facing annotation uses one pixel-space node center for the unique node attaining the active branch's maximum/minimum degree or maximum directed in/out-degree value.
+8. If the node label format is `named`, prompt references quote the node label, for example node `"Lima"`.
 
 ## 4) Annotation + trace contract
-1. Prompt-facing annotation is the `point_set` of node centers for all nodes whose branch-specific degree value equals the requested maximum or minimum.
+1. Prompt-facing annotation is the `point_set` containing the one node center whose branch-specific degree value equals the requested maximum or minimum.
 2. `answer_gt.value == execution_trace.target_degree` by construction.
-3. `len(annotation_gt.value)` may be greater than one when multiple nodes tie for the same extreme value.
-4. `execution_trace.graph_directionality` records `undirected` or `directed`; `execution_trace.degree_mode` records `degree`, `in_degree`, `out_degree`, or `total_degree`.
+3. `len(annotation_gt.value) == 1` by construction.
+4. `execution_trace.graph_directionality` records `undirected` or `directed`; `execution_trace.degree_mode` records `degree`, `in_degree`, or `out_degree`.
 5. `execution_trace.extremum_mode` records `max` or `min`.
 6. `execution_trace.query_id_probabilities` records the public branch sampling distribution.
 7. `execution_trace.queried_degrees_by_label` stores the degree map used to compute the answer.
-8. `execution_trace.matching_labels` and `witness_symbolic.labels` store every label attaining the queried extreme value.
+8. `execution_trace.matching_labels` and `witness_symbolic.labels` store the label attaining the queried extreme value.
 9. `scene_ir.entities` stores node labels, total degrees, directed degrees, queried degree values, center points, bboxes, and `is_extreme_degree_node`.
 10. `projected_annotation` includes `point_set`.
 
@@ -62,9 +63,8 @@
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
 2. Answers and annotation come from the same adjacency map and rendered node assignment.
-3. Generation rejects samples that cannot realize the requested `(query_id, target_degree)` exactly.
-4. Explicit `graph_directionality`, `degree_mode`, and `extremum_mode` overrides must be provided together and must map to exactly one supported `query_id`.
-5. There is no unique-node constraint: the answer is unique because it is the single extreme integer value.
+3. Generation rejects samples that cannot realize the requested `(query_id, target_degree)` exactly with one unique extremum node.
+4. Explicit `query_id` overrides must map to one supported public branch.
 
 ## 7) Complexity + tests
 1. Complexity components: `topology_reasoning`, `visual_scan`, `ambiguity`, `clutter`

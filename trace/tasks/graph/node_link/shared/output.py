@@ -18,6 +18,9 @@ def node_entities(rendered_scene: Any) -> list[dict[str, Any]]:
             "predecessors": list(node.predecessors),
             "center_px": list(node.center_xy),
             "bbox_xyxy": list(node.bbox_xyxy),
+            "node_color_name": str(node.color_name) if node.color_name is not None else None,
+            "fill_rgb": list(node.fill_rgb) if node.fill_rgb is not None else None,
+            "border_rgb": list(node.border_rgb) if node.border_rgb is not None else None,
         }
         for node in rendered_scene.nodes
     ]
@@ -40,7 +43,15 @@ def edge_entities(rendered_scene: Any, sample: Any) -> list[dict[str, Any]]:
             "route_variant": str(edge.route_variant),
             "control_px": list(edge.control_px) if edge.control_px is not None else None,
             "edge_text_label": labels_by_edge.get((str(edge.node_u_label), str(edge.node_v_label))),
-            "edge_color_name": colors_by_edge.get((str(edge.node_u_label), str(edge.node_v_label))),
+            "edge_color_name": str(edge.color_name)
+            if edge.color_name is not None
+            else colors_by_edge.get((str(edge.node_u_label), str(edge.node_v_label))),
+            "edge_color_rgb": list(edge.edge_color_rgb) if edge.edge_color_rgb is not None else None,
+            "label_bbox_xyxy": list(edge.edge_label_bbox_xyxy) if edge.edge_label_bbox_xyxy is not None else None,
+            "label_center_px": [
+                int(round((float(edge.edge_label_bbox_xyxy[0]) + float(edge.edge_label_bbox_xyxy[2])) / 2.0)),
+                int(round((float(edge.edge_label_bbox_xyxy[1]) + float(edge.edge_label_bbox_xyxy[3])) / 2.0)),
+            ] if edge.edge_label_bbox_xyxy is not None else None,
             "edge_weight": weights_by_edge.get((str(edge.node_u_label), str(edge.node_v_label))),
         }
         for edge in rendered_scene.edges

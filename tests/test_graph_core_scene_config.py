@@ -256,7 +256,7 @@ def test_graph_relation_defaults_loaded() -> None:
     assert int(reachable_generation_defaults['node_count_min']) == 5
     assert int(reachable_generation_defaults['directed_node_count_max']) == 9
     assert int(reachable_generation_defaults['target_reachable_count_min']) == 1
-    assert int(reachable_generation_defaults['target_reachable_count_max']) == 7
+    assert int(reachable_generation_defaults['target_reachable_count_max']) == 6
     assert int(reachable_rendering_defaults['canvas_width']) > 0
     assert int(reachable_rendering_defaults['node_radius_min_px']) > 0
     assert str(reachable_prompt_defaults['bundle_id']).strip() == 'graph_relation_v0'
@@ -306,7 +306,10 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(common_prompt_defaults['annotation_hint_common_predecessor_count']).strip()
     edge_attribute_generation_defaults, edge_attribute_rendering_defaults, edge_attribute_prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__edge_between_nodes_label')
     assert sorted(edge_attribute_generation_defaults['graph_directionality_weights'].keys()) == ['directed', 'undirected']
-    assert int(edge_attribute_generation_defaults['edge_label_support_size']) == 6
+    assert int(edge_attribute_generation_defaults['edge_label_support_size']) == 16
+    assert int(edge_attribute_generation_defaults['edge_label_min_chars']) == 3
+    assert int(edge_attribute_generation_defaults['edge_label_max_chars']) == 5
+    assert int(edge_attribute_generation_defaults['max_labeled_edge_count']) == 12
     assert set(edge_attribute_generation_defaults['query_id_weights'].keys()) == {'edge_between_nodes_label', 'directed_edge_between_nodes_label'}
     assert set(edge_attribute_generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(edge_attribute_generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
@@ -327,6 +330,10 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(edge_attribute_prompt_defaults['annotation_hint_shortest_path_first_edge_label']).strip()
     shortest_edge_generation_defaults, _, shortest_edge_prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__shortest_path_first_edge_label')
     assert sorted(shortest_edge_generation_defaults['query_id_weights'].keys()) == ['shortest_path_first_edge_label']
+    assert int(shortest_edge_generation_defaults['edge_label_support_size']) == 16
+    assert int(shortest_edge_generation_defaults['edge_label_min_chars']) == 3
+    assert int(shortest_edge_generation_defaults['edge_label_max_chars']) == 5
+    assert int(shortest_edge_generation_defaults['max_labeled_edge_count']) == 12
     assert int(shortest_edge_generation_defaults['target_shortest_path_length_min']) == 2
     assert int(shortest_edge_generation_defaults['target_shortest_path_length_max']) == 3
     assert str(shortest_edge_prompt_defaults['task_key']).strip() == 'edge_attribute_label_query'
@@ -604,21 +611,18 @@ def test_graph_order_defaults_loaded() -> None:
     prompt_shared = cfg['prompt']['shared']
     assert str(prompt_shared['bundle_id']).strip() == 'graph_order_v0'
     assert str(prompt_shared['scene_key']).strip() == 'single_graph_order'
-    assert str(prompt_shared['task_key']).strip() == 'topological_position_query'
+    assert str(prompt_shared['task_key']).strip() == 'topological_endpoint_node_label_query'
     assert str(prompt_shared['object_description']).strip()
-    assert str(prompt_shared['question_text_topological_position']).strip()
     assert str(prompt_shared['annotation_hint']).strip()
     assert str(prompt_shared['answer_hint']).strip()
     assert str(prompt_shared['json_example']).strip()
     assert str(prompt_shared['json_example_answer_only']).strip()
-    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__topological_position_value')
-    assert sorted(generation_defaults['query_id_weights'].keys()) == ['topological_position']
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__topological_endpoint_node_label')
+    assert sorted(generation_defaults['query_id_weights'].keys()) == ['first_in_topological_order_label', 'last_in_topological_order_label']
     assert set(generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
     assert int(generation_defaults['node_count_min']) == 3
     assert int(generation_defaults['node_count_max']) == 7
-    assert int(generation_defaults['target_position_min']) == 1
-    assert int(generation_defaults['target_position_max']) == 7
     assert int(rendering_defaults['canvas_width']) > 0
     assert int(rendering_defaults['node_radius_min_px']) > 0
     assert str(prompt_defaults['bundle_id']).strip() == 'graph_order_v0'

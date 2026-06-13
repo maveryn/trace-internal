@@ -422,6 +422,7 @@ def _resolve_edge_boxed_label_box(
     reserved_boxes: Sequence[BBox],
     node_bboxes: Sequence[BBox],
     side_seed: int,
+    require_strict: bool = False,
 ) -> BBox:
     """Choose one readable edge-label bbox that avoids edge and node collisions."""
 
@@ -498,6 +499,8 @@ def _resolve_edge_boxed_label_box(
                         return tuple(int(value) for value in best_box)
     if best_box is None:
         raise ValueError("failed to resolve one edge label box")
+    if bool(require_strict) and (best_score is None or best_score[:4] != (0.0, 0.0, 0.0, 0.0)):
+        raise ValueError("failed to resolve a collision-free edge label box")
     return tuple(int(value) for value in best_box)
 
 

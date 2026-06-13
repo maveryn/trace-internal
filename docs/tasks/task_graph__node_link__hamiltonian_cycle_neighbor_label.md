@@ -27,8 +27,9 @@
 ## Generation Contract
 1. Node count is sampled from `4..6`.
 2. The sampler starts from a cycle through all nodes and keeps `0..2` extra distractor edges only when exhaustive validation confirms the finalized graph still has exactly one Hamiltonian cycle.
-3. The prompt fixes traversal direction by naming two consecutive nodes on the Hamiltonian cycle.
-4. Final verification uses the finalized adjacency map; answers and annotation are not inferred from the construction recipe alone.
+3. The prompt fixes traversal direction by naming the start node and the final node before the cycle returns to that start.
+4. The `next` query asks only for the node after the start node; the `previous` query asks only for the node before the final node.
+5. Final verification uses the finalized adjacency map; answers and annotation are not inferred from the construction recipe alone.
 
 ## Prompt Contract
 1. Prompt text comes from `graph_relation_v0`, not hardcoded task text.

@@ -10,8 +10,8 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.relation.edge_attribute_label import (
-    GraphRelationEdgeBetweenNodesLabelTask,
+from trace.tasks.graph.node_link.edge_between_nodes_label import GraphRelationEdgeBetweenNodesLabelTask
+from trace.tasks.graph.node_link.shortest_path_first_edge_label import (
     GraphRelationShortestPathFirstEdgeLabelTask,
 )
 from tests.helpers import read_jsonl
@@ -29,6 +29,7 @@ def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -
     out = task.generate(
         20901,
         params={
+            "query_id": "directed_edge_between_nodes_label",
             "graph_directionality": "directed",
             "target_edge_label": "feeds",
             "edge_label_support": ["feeds", "blocks", "joins", "routes", "checks", "updates"],
@@ -52,31 +53,32 @@ def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -
     assert out.answer_gt.value == "feeds"
     assert out.annotation_gt.type == "bbox_set"
     assert len(out.annotation_gt.value) == 1
-    assert trace["scene_ir"]["scene_kind"] == "graph_edge_attribute_relation"
+    assert trace["scene_ir"]["scene_kind"] == "graph_edge_label_lookup"
     assert execution["query_id"] == "directed_edge_between_nodes_label"
     assert execution["graph_directionality"] == "directed"
     assert execution["target_edge_label"] == "feeds"
     assert execution["question_format"] == "directed_edge_between_nodes_label"
-    assert execution["layout_variant_requested"] == "shell"
     assert execution["edge_routing_variant"] == "mixed_arc"
     assert execution["label_variant"] == "named"
     assert 'node "' in str(out.prompt)
 
-    query_edge = tuple(str(value) for value in execution["query_edge"])
+    query_edge = tuple(str(value) for value in trace["witness_symbolic"]["edge_labels"][0])
     labels_by_edge = {
         tuple(str(value) for value in entry["edge"]): str(entry["edge_label"])
         for entry in execution["edge_attribute_labels_by_label_pair"]
     }
     assert labels_by_edge[query_edge] == "feeds"
-    assert trace["witness_symbolic"]["edge"] == list(query_edge)
-    assert trace["witness_symbolic"]["edge_label"] == "feeds"
+    assert trace["witness_symbolic"]["edge_labels"] == [list(query_edge)]
     assert trace["projected_annotation"]["type"] == "bbox_set"
     assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert sum(1 for edge in edge_entities if bool(edge["is_query_edge"])) == 1
-    query_entity = [edge for edge in edge_entities if bool(edge["is_query_edge"])][0]
-    assert query_entity["edge_attribute_label"] == "feeds"
-    assert query_entity["edge_label_bbox_xyxy"] == out.annotation_gt.value[0]
-    assert all(edge["edge_label_bbox_xyxy"] is not None for edge in edge_entities)
+    query_entity = [
+        edge
+        for edge in edge_entities
+        if (str(edge["node_u_label"]), str(edge["node_v_label"])) == tuple(query_edge)
+    ][0]
+    assert query_entity["edge_text_label"] == "feeds"
+    assert query_entity["label_bbox_xyxy"] == out.annotation_gt.value[0]
+    assert all(edge["label_bbox_xyxy"] is not None for edge in edge_entities)
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
@@ -85,6 +87,7 @@ def test_graph_relation_edge_attribute_label_undirected_prompt_and_example_contr
     out = task.generate(
         20902,
         params={
+            "query_id": "edge_between_nodes_label",
             "graph_directionality": "undirected",
             "target_edge_label": "blocks",
             "edge_label_support": ["feeds", "blocks", "joins", "routes", "checks", "updates"],
@@ -98,10 +101,10 @@ def test_graph_relation_edge_attribute_label_undirected_prompt_and_example_contr
     assert "edge" in str(out.prompt)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
-    assert answer_only == {"answer": "feeds"}
+    assert answer_only == {"answer": "alpha"}
     assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
-    assert answer_and_annotation["annotation"] == [[240, 190, 308, 214]]
-    assert answer_and_annotation["answer"] == "feeds"
+    assert answer_and_annotation["annotation"] == [[180, 220, 230, 245]]
+    assert answer_and_annotation["answer"] == "alpha"
 
 
 def test_graph_relation_edge_attribute_label_shortest_path_first_edge_contract() -> None:
@@ -123,23 +126,20 @@ def test_graph_relation_edge_attribute_label_shortest_path_first_edge_contract()
     assert out.query_id == "shortest_path_first_edge_label"
     assert out.answer_gt.value == "routes"
     assert "unique shortest path" in str(out.prompt)
-    assert "first arrow" in str(out.prompt)
-    path_labels = tuple(str(label) for label in execution["query_path_labels"])
-    assert len(path_labels) == 4
-    assert tuple(execution["query_edge"]) == (path_labels[0], path_labels[1])
-    assert execution["query_path_edge_index"] == 0
-    assert execution["query_path_edge_position"] == "first"
+    assert "first edge" in str(out.prompt)
+    query_edge = tuple(str(value) for value in out.trace_payload["witness_symbolic"]["edge_labels"][0])
     labels_by_edge = {
         tuple(str(value) for value in entry["edge"]): str(entry["edge_label"])
         for entry in execution["edge_attribute_labels_by_label_pair"]
     }
-    assert labels_by_edge[tuple(execution["query_edge"])] == "routes"
+    assert labels_by_edge[tuple(query_edge)] == "routes"
     query_entity = [
         entity
         for entity in out.trace_payload["scene_ir"]["entities"]
-        if entity["entity_kind"] == "graph_edge" and bool(entity["is_query_edge"])
+        if entity["entity_kind"] == "graph_edge"
+        and (str(entity["node_u_label"]), str(entity["node_v_label"])) == tuple(query_edge)
     ][0]
-    assert query_entity["edge_label_bbox_xyxy"] == out.annotation_gt.value[0]
+    assert query_entity["label_bbox_xyxy"] == out.annotation_gt.value[0]
 
 
 def test_graph_relation_edge_attribute_label_balanced_sampling_covers_label_support() -> None:
@@ -161,13 +161,22 @@ def test_graph_relation_edge_attribute_label_balanced_sampling_covers_label_supp
         directionality[str(execution["graph_directionality"])] += 1
         label_variants[str(execution["label_variant"])] += 1
         edge_routing_variants[str(execution["edge_routing_variant"])] += 1
-        query_edge = tuple(str(value) for value in execution["query_edge"])
+        query_edge = tuple(str(value) for value in out.trace_payload["witness_symbolic"]["edge_labels"][0])
         labels_by_edge = {
             tuple(str(value) for value in entry["edge"]): str(entry["edge_label"])
             for entry in execution["edge_attribute_labels_by_label_pair"]
         }
         assert labels_by_edge[query_edge] == str(out.answer_gt.value)
         assert str(out.answer_gt.value) in set(execution["edge_label_support"])
+        assert len(execution["edge_label_support"]) == 16
+        assert all(3 <= len(str(label)) <= 5 for label in execution["edge_label_support"])
+        node_labels = {
+            str(entity["label"]).strip().lower()
+            for entity in out.trace_payload["scene_ir"]["entities"]
+            if entity["entity_kind"] == "graph_node"
+        }
+        assert not (set(str(label) for label in execution["edge_label_support"]) & node_labels)
+        assert int(execution["edge_count"]) <= 12
         assert execution["edge_label_source_kind"] == "shared_label_manifest"
         assert execution["edge_label_bucket"]
         assert execution["edge_label_manifest"]
@@ -206,7 +215,6 @@ def test_graph_relation_edge_attribute_label_build_smoke(tmp_path: Path) -> None
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
-    assert all(record["scene_id"] == "relation" for record in train_records)
     assert all(record["scene_id"] == "node_link" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))

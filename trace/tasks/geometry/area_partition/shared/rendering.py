@@ -9,6 +9,7 @@ from PIL import Image, ImageDraw
 
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import (
+    GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
     geometry_diagram_style_metadata,
     geometry_shape_style_from_diagram_style,
     prepare_geometry_diagram_style_and_background,
@@ -317,6 +318,7 @@ def create_area_partition_render_context(
         scene_id=SCENE_ID,
         params=params,
         allow_dark=True,
+        style_profile=GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
     )
     shape_style = geometry_shape_style_from_diagram_style(diagram_style)
     font_family = sample_font_family(

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 
 import pytest
 
@@ -12,15 +13,15 @@ from trace.tasks.geometry.circle_polygon_composite.square_circle_tangent_angle_v
     TASK_ID as SQUARE_CIRCLE_TANGENT_ANGLE_TASK_ID,
     GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask,
 )
-from trace.tasks.geometry.circle_polygon_composite.tangential_quadrilateral_side_sum_value import (
+from trace.tasks.geometry.circle_polygon_composite.tangential_quadrilateral_side_length_value import (
     QUERY_ID,
     TASK_ID,
-    GeometryCirclePolygonCompositeTangentialQuadrilateralSideSumValueTask,
+    GeometryCirclePolygonCompositeTangentialQuadrilateralSideLengthValueTask,
 )
 
 
 def _generate(seed: int, **params):
-    task = GeometryCirclePolygonCompositeTangentialQuadrilateralSideSumValueTask()
+    task = GeometryCirclePolygonCompositeTangentialQuadrilateralSideLengthValueTask()
     return task.generate(seed, params=dict(params), max_attempts=80)
 
 
@@ -31,23 +32,25 @@ def _generate_angle(seed: int, **params):
 
 def test_circle_polygon_composite_registered_public_task() -> None:
     assert TASK_ID in TASK_REGISTRY
-    assert TASK_REGISTRY[TASK_ID] is GeometryCirclePolygonCompositeTangentialQuadrilateralSideSumValueTask
+    assert TASK_REGISTRY[TASK_ID] is GeometryCirclePolygonCompositeTangentialQuadrilateralSideLengthValueTask
     assert SQUARE_CIRCLE_TANGENT_ANGLE_TASK_ID in TASK_REGISTRY
     assert TASK_REGISTRY[SQUARE_CIRCLE_TANGENT_ANGLE_TASK_ID] is GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask
 
 
 @pytest.mark.parametrize(
-    ("target_pair", "expected"),
+    ("missing_side", "expected"),
     [
-        ("AB_CD", 18),
-        ("BC_DA", 18),
+        ("AB", 7),
+        ("BC", 9),
+        ("CD", 11),
+        ("DA", 9),
     ],
 )
-def test_tangential_quadrilateral_side_sum_formula(target_pair: str, expected: int) -> None:
+def test_tangential_quadrilateral_side_length_formula(missing_side: str, expected: int) -> None:
     out = _generate(
         20260604,
         query_id=QUERY_ID,
-        target_pair=target_pair,
+        missing_side=missing_side,
         tangent_lengths=(3, 4, 5, 6),
     )
     trace = out.trace_payload
@@ -59,20 +62,16 @@ def test_tangential_quadrilateral_side_sum_formula(target_pair: str, expected: i
     assert out.answer_gt.value == expected == execution["answer"]
     side_lengths = execution["side_lengths"]
     assert side_lengths["AB"] + side_lengths["CD"] == side_lengths["BC"] + side_lengths["DA"]
-    assert execution["answer"] == side_lengths[target_pair[:2]] + side_lengths[target_pair[-2:]]
+    assert execution["answer"] == side_lengths[missing_side]
+    assert execution["missing_side"] == missing_side
 
     assert out.annotation_gt.type == "keyed_point_map"
     annotation = out.annotation_gt.value
     assert set(annotation) == {
-        "vertex_A",
-        "vertex_B",
-        "vertex_C",
-        "vertex_D",
-        "tangent_AB",
-        "tangent_BC",
-        "tangent_CD",
-        "tangent_DA",
-        "incircle_center",
+        "A",
+        "B",
+        "C",
+        "D",
     }
     _assert_point_map_inside_image(annotation, out.image.size)
     assert "task_variant" not in json.dumps(trace)
@@ -81,7 +80,7 @@ def test_tangential_quadrilateral_side_sum_formula(target_pair: str, expected: i
 def test_tangential_quadrilateral_generation_is_deterministic() -> None:
     params = {
         "query_id": QUERY_ID,
-        "target_pair": "AB_CD",
+        "missing_side": "AB",
         "tangent_lengths": (5, 6, 7, 8),
     }
     first = _generate(314159, **params)
@@ -94,11 +93,11 @@ def test_tangential_quadrilateral_generation_is_deterministic() -> None:
 
 
 def test_tangential_quadrilateral_rejects_invalid_params() -> None:
-    task = GeometryCirclePolygonCompositeTangentialQuadrilateralSideSumValueTask()
+    task = GeometryCirclePolygonCompositeTangentialQuadrilateralSideLengthValueTask()
     with pytest.raises(ValueError):
         task.generate(1, params={"query_id": "bad_query"}, max_attempts=1)
     with pytest.raises(ValueError):
-        task.generate(1, params={"target_pair": "AB_BC"}, max_attempts=1)
+        task.generate(1, params={"missing_side": "AC"}, max_attempts=1)
     with pytest.raises(ValueError):
         task.generate(1, params={"tangent_lengths": (3, 4, 5)}, max_attempts=1)
 
@@ -124,19 +123,20 @@ def test_square_circle_tangent_angle_contract(query_id: str, side_sign: int) -> 
 
     assert out.annotation_gt.type == "keyed_point_map"
     annotation = out.annotation_gt.value
-    assert set(annotation) == {
-        "shape_corner_A",
-        "shape_corner_B",
-        "shape_corner_C",
-        "shape_corner_D",
-        "circle_center",
-        "tangent_point",
-        "known_angle_vertex",
-        "known_angle_reference_point",
-        "target_angle_vertex",
-        "target_reference_point",
-    }
-    assert annotation["target_angle_vertex"] == annotation["circle_center"]
+    assert set(annotation) == {"A", "B", "C", "D", "O", "T"}
+    render_map = trace["render_map"]
+    assert annotation["O"] == render_map["circle_center"]
+    assert annotation["T"] == render_map["tangent_point"]
+    assert _angle_at(
+        render_map["known_angle_vertex"],
+        render_map["known_angle_reference_point"],
+        render_map["tangent_point"],
+    ) == pytest.approx(45.0, abs=0.5)
+    assert _angle_at(
+        render_map["target_angle_vertex"],
+        render_map["target_reference_point"],
+        render_map["tangent_point"],
+    ) == pytest.approx(45.0, abs=0.5)
     _assert_point_map_inside_image(annotation, out.image.size)
     assert "task_variant" not in json.dumps(trace)
 
@@ -174,3 +174,14 @@ def _assert_point_map_inside_image(annotation: dict[str, list[float]], image_siz
         x, y = [float(value) for value in point]
         assert 0.0 <= x <= float(width)
         assert 0.0 <= y <= float(height)
+
+
+def _angle_at(vertex: list[float], arm_a: list[float], arm_b: list[float]) -> float:
+    ax = float(arm_a[0]) - float(vertex[0])
+    ay = float(arm_a[1]) - float(vertex[1])
+    bx = float(arm_b[0]) - float(vertex[0])
+    by = float(arm_b[1]) - float(vertex[1])
+    denom = math.hypot(ax, ay) * math.hypot(bx, by)
+    assert denom > 0.0
+    cosine = max(-1.0, min(1.0, ((ax * bx) + (ay * by)) / denom))
+    return math.degrees(math.acos(cosine))

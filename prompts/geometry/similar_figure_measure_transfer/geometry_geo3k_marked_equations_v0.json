@@ -340,7 +340,7 @@
     "object_description": "similar figures with expression-labeled corresponding sides",
     "json_output_contract": "Return a JSON object with keys \"answer\" and \"annotation\".",
     "json_output_contract_answer_only": "Return a JSON object with key \"answer\".",
-    "annotation_hint": "set \"annotation\" to a JSON object mapping each required label ({annotation_keys}) to one pixel point [x,y]",
+    "annotation_hint": "set \"annotation\" to a JSON object mapping each visible point-label key ({annotation_keys}) to that labeled construction point's pixel point [x,y]",
     "answer_hint_number": "set \"answer\" to the requested value as a number"
   }
 }

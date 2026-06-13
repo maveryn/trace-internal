@@ -73,7 +73,7 @@ def render_circle_theorem_runtime(
             prompt_defaults, prompt_artifacts = build_circle_theorem_prompt_artifacts(
                 prompt_query_key=str(selected_query),
                 prompt_slots=dict(scene_payload.get("prompt_slots", {})),
-                annotation_roles=rendered_scene.annotation_point_labels,
+                annotation_keys=rendered_scene.annotation_point_labels,
                 answer_hint_key=str(answer_hint_key),
                 answer_example=answer_example,
                 annotation_hint_key=str(annotation_hint_key),
@@ -177,7 +177,6 @@ def circle_theorem_trace_payload(
             "answer_type": str(answer_type),
             "answer_value": rendered.answer_value,
             "annotation_point_labels": list(rendered.annotation_point_labels),
-            "annotation_roles": list(rendered.annotation_point_labels),
             "support_measurement_tokens": list(rendered.support_measurement_tokens),
             "annotation_values": dict(rendered.annotation_values),
             **theorem_trace,
@@ -326,7 +325,7 @@ def run_integer_circle_theorem_task(
     )
 
 
-def run_role_keyed_number_circle_theorem_task(
+def run_label_keyed_number_circle_theorem_task(
     *,
     task_id: str,
     instance_seed: int,
@@ -343,7 +342,7 @@ def run_role_keyed_number_circle_theorem_task(
     answer_hint_key: str,
     annotation_hint_key: str,
 ) -> TaskOutput:
-    """Render and serialize a number-answer task with role-keyed annotation."""
+    """Render and serialize a number-answer task with visible-label annotation."""
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.scene")
     rendered_scene: RenderedCircleTheoremScene | None = None
@@ -378,22 +377,21 @@ def run_role_keyed_number_circle_theorem_task(
     if rendered_scene is None or scene_payload is None:
         raise RuntimeError(f"failed to generate {task_id}") from last_error
 
-    annotation_role_to_label = {
-        str(key): str(value)
-        for key, value in scene_payload["annotation_role_to_label"].items()
-    }
+    annotation_labels = tuple(
+        str(label) for label in scene_payload["annotation_point_labels"]
+    )
     annotation_keyed_points = {
-        str(role): [
+        str(label): [
             round(float(rendered_scene.point_pixels[str(label)][0]), 3),
             round(float(rendered_scene.point_pixels[str(label)][1]), 3),
         ]
-        for role, label in annotation_role_to_label.items()
+        for label in annotation_labels
     }
     annotation_keys = tuple(annotation_keyed_points)
     prompt_defaults, prompt_artifacts = build_circle_theorem_prompt_artifacts(
         prompt_query_key=str(query_id),
         prompt_slots=dict(scene_payload.get("prompt_slots", {})),
-        annotation_roles=annotation_keys,
+        annotation_keys=annotation_keys,
         answer_hint_key=str(answer_hint_key),
         answer_example=float(answer_value),
         annotation_hint_key=str(annotation_hint_key),
@@ -404,7 +402,7 @@ def run_role_keyed_number_circle_theorem_task(
         "scene_id": SCENE_ID,
         "query_id": str(query_id),
         **dict(query_params),
-        "annotation_role_to_label": dict(annotation_role_to_label),
+        "annotation_point_labels": list(annotation_keys),
     }
     prompt_query_spec = build_prompt_query_spec(
         prompt_artifacts=prompt_artifacts,
@@ -423,7 +421,7 @@ def run_role_keyed_number_circle_theorem_task(
                 "answer_segment": str(rendered_scene.theorem_trace["answer_segment"]),
                 "answer_value": float(answer_value),
                 "theorem": str(rendered_scene.theorem_trace["theorem"]),
-                "annotation_roles": list(annotation_keys),
+                "annotation_point_labels": list(annotation_keys),
             },
         },
         "query_spec": prompt_query_spec,
@@ -454,10 +452,10 @@ def run_role_keyed_number_circle_theorem_task(
             "answer_value": float(answer_value),
             "answer_rounding": "nearest_tenth",
             "support_measurement_tokens": list(rendered_scene.support_measurement_tokens),
-            "annotation_roles": list(annotation_keys),
             "annotation_values": dict(rendered_scene.annotation_values),
             **dict(query_params),
             **dict(rendered_scene.theorem_trace),
+            "annotation_point_labels": list(annotation_keys),
         },
         "witness_symbolic": {
             "type": str(witness_type),
@@ -467,7 +465,7 @@ def run_role_keyed_number_circle_theorem_task(
             "answer_value": float(answer_value),
             "source_witness_type": "keyed_point_map",
             "original_annotation_value": dict(annotation_keyed_points),
-            "annotation_role_to_label": dict(annotation_role_to_label),
+            "annotation_point_labels": list(annotation_keys),
             "support_measurement_tokens": list(rendered_scene.support_measurement_tokens),
         },
         "projected_annotation": {
@@ -497,6 +495,6 @@ __all__ = [
     "circle_theorem_trace_payload",
     "render_circle_theorem_runtime",
     "run_integer_circle_theorem_task",
-    "run_role_keyed_number_circle_theorem_task",
+    "run_label_keyed_number_circle_theorem_task",
     "run_circle_theorem_lifecycle",
 ]

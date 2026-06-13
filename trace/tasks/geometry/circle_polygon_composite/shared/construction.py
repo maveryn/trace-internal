@@ -9,7 +9,7 @@ from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import geometry_selected_probability_map
 from trace.tasks.geometry.shared.vector2d import mul as _mul
 
-from .state import CONSTRUCTION_KINDS, Point, TARGET_PAIRS
+from .state import CONSTRUCTION_KINDS, Point, SIDE_KEYS
 
 
 TANGENT_CASES: tuple[tuple[int, int, int, int], ...] = (
@@ -36,27 +36,27 @@ def case_key(case: Sequence[int]) -> str:
     return "-".join(str(int(value)) for value in case)
 
 
-def select_target_pair(
+def select_missing_side(
     *,
     params: Mapping[str, Any],
     instance_seed: int,
     namespace: str,
 ) -> tuple[str, dict[str, float]]:
-    """Select which opposite side-pair sum is hidden in the diagram."""
+    """Select which quadrilateral side length is hidden."""
 
-    explicit = params.get("target_pair")
+    explicit = params.get("missing_side")
     if explicit is not None:
-        target_pair = str(explicit)
-        if target_pair not in TARGET_PAIRS:
-            raise ValueError(f"unsupported target_pair: {target_pair}")
-        return target_pair, geometry_selected_probability_map(TARGET_PAIRS, selected=target_pair)
+        missing_side = str(explicit)
+        if missing_side not in SIDE_KEYS:
+            raise ValueError(f"unsupported missing_side: {missing_side}")
+        return missing_side, geometry_selected_probability_map(SIDE_KEYS, selected=missing_side)
     index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
         namespace=str(namespace),
     )
-    target_pair = str(TARGET_PAIRS[int(index) % len(TARGET_PAIRS)])
-    return target_pair, geometry_selected_probability_map(TARGET_PAIRS)
+    missing_side = str(SIDE_KEYS[int(index) % len(SIDE_KEYS)])
+    return missing_side, geometry_selected_probability_map(SIDE_KEYS)
 
 
 def select_tangent_case(
@@ -232,8 +232,8 @@ __all__ = [
     "TANGENT_CASES",
     "case_key",
     "select_angle_degrees",
+    "select_missing_side",
     "select_side_sign",
-    "select_target_pair",
     "select_tangent_case",
     "side_lengths_from_vertex_tangents",
     "tangential_local_geometry",

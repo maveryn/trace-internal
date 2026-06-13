@@ -183,7 +183,7 @@
     "object_description": "a labeled special quadrilateral with visible construction marks and measurement labels",
     "json_output_contract": "Return one JSON object with keys \"answer\" and \"annotation\".",
     "json_output_contract_answer_only": "Return one JSON object with key \"answer\".",
-    "annotation_hint": "set \"annotation\" to a JSON object mapping each required role ({annotation_keys}) to one pixel point [x,y]",
+    "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point",
     "answer_hint_integer_angle": "set \"answer\" to the angle measure as an integer number of degrees",
     "answer_hint_integer_length": "set \"answer\" to the segment length as an integer",
     "task_key": "diagonal_angle_value_query"

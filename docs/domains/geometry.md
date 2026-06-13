@@ -2,7 +2,7 @@
 
 Geometry is migrated to scene-package layout: each public task id maps to `trace/tasks/geometry/<scene_id>/<objective_contract>.py`, scene-local helpers live under `<scene_id>/shared/`, and configs/prompts are scene keyed.
 
-Geometry follows the public taxonomy `domain -> scene_id -> task_id`. Most active geometry code still uses legacy scene-package implementation routing while the scene-package migration is in progress; `angle_relations`, `area_partition`, and `bearing_route` are review-candidate scenes under the current scene-package gate, and human acceptance is still required after each scene passes source audit, tests, fresh review artifacts, and browser review. Sampling is over public task ids, with narrow `query_id` branches kept inside a task only when they preserve the same program contract.
+Geometry follows the public taxonomy `domain -> scene_id -> task_id`. Most active geometry code still uses legacy scene-package implementation routing while the scene-package migration is in progress; `angle_relations`, `area_partition`, `bearing_route`, `circle_centerline_overlap`, `circle_pair_tangents`, `circle_polygon_composite`, and `circle_theorem` are review-candidate scenes under the current scene-package gate, and human acceptance is still required after each scene passes source audit, tests, fresh review artifacts, and browser review. Sampling is over public task ids, with narrow `query_id` branches kept inside a task only when they preserve the same program contract.
 
 This file is synchronized with the contract-v0 geometry migration source in `review/taxonomy-audit/contract_v0_reanalysis/`.
 
@@ -10,13 +10,13 @@ Scene-package migration tracking lives in `review/taxonomy-audit/scene_package_m
 
 ## Public Surface
 
-- Active geometry tasks: `191`
+- Active geometry tasks: `192`
 - Active geometry scenes: `46`
 
 | Scene package | Public task count | Primary scene ids |
 |---|---:|---|
 | `analytical` | 6 | `function_panels` |
-| `circle` | 14 | `circle_theorem` |
+| `circle` | 15 | `circle_theorem` |
 | `comparison` | 4 | `graph_paper` |
 | `coordinate` | 14 | `coordinate_composite`, `coordinate_panels`, `coordinate_plane` |
 | `counting` | 5 | `graph_paper` |
@@ -37,6 +37,7 @@ Scene-package migration tracking lives in `review/taxonomy-audit/scene_package_m
 - Geometry measurement question wording belongs in prompt bundles or query templates. Task modules should pass structured slots such as labels, segment names, and object descriptions instead of constructing full user-facing question text.
 - Renderers must project annotation after final layout, jitter, panel placement, and style selection.
 - Compact single-object or coherent single-diagram scenes may use the shared `single_object_scene_rotation` rendering axis. It samples a non-semantic whole-diagram rotation before drawing/annotation projection, keeps text upright, preserves existing layout jitter, and records transform metadata in `render_spec.single_object_scene_rotation`. Do not apply this axis to graph-paper/coordinate scenes, paired-figure transfer scenes, option-panel scenes, measuring-tool scenes, orthographic/panel scenes, or shape/volume conversion scenes where absolute orientation or multiple separated objects are part of the scene grammar.
+- Geometry technical-diagram styles use one explicit scene profile. `coordinate_grid` is reserved for scenes where axes, graph-paper scale, or coordinate-grid measurement is part of the reasoning (`coordinate_composite`, `coordinate_panels`, `coordinate_plane`, `function_graph`, `function_panels`, and `graph_paper`). All other geometry scenes should use `analytical_diagram`, which samples non-grid treatments only. Both profiles expose 12 treatments: 9 light and 3 dark. Do not mix graph and non-graph treatments within one scene unless the scene contract is explicitly changed and documented.
 
 ## Scenes And Tasks
 
@@ -70,11 +71,12 @@ Scene-package status: source-audited review candidate; prompt bundle schema `v1`
 ### `circle_polygon_composite` (2)
 
 - `task_geometry__circle_polygon_composite__square_circle_tangent_angle_value`: query_id=square_incircle_tangent_angle, square_semicircle_tangent_angle; answer=integer_value; annotation=keyed_point_map
-- `task_geometry__circle_polygon_composite__tangential_quadrilateral_side_sum_value`: query_id=opposite_side_sum_from_tangent_quadrilateral; answer=integer_value; annotation=keyed_point_map
+- `task_geometry__circle_polygon_composite__tangential_quadrilateral_side_length_value`: query_id=missing_side_from_tangent_quadrilateral; answer=integer_value; annotation=keyed_point_map
 
-### `circle_theorem` (14)
+### `circle_theorem` (15)
 
-- `task_geometry__circle_theorem__chord_length_from_radius_angle_value`: query_id=chord_length_from_radius_and_central_angle, chord_length_from_radius_and_inscribed_angle; answer=decimal_value_1dp; annotation=keyed_point_map
+- `task_geometry__circle_theorem__chord_length_from_radius_central_angle_value`: query_id=chord_length_from_radius_and_central_angle; answer=decimal_value_1dp; annotation=keyed_point_map
+- `task_geometry__circle_theorem__chord_length_from_radius_inscribed_angle_value`: query_id=chord_length_from_radius_and_inscribed_angle; answer=decimal_value_1dp; annotation=keyed_point_map
 - `task_geometry__circle_theorem__cyclic_quadrilateral_angle_value`: query_id=opposite_angle_supplement, exterior_angle_from_opposite_interior; answer=integer_value; annotation=keyed_point_map
 - `task_geometry__circle_theorem__diameter_perpendicular_chord_length_value`: query_id=diameter_perpendicular_chord_length; answer=integer_value; annotation=keyed_point_map
 - `task_geometry__circle_theorem__external_secant_angle_value`: query_id=external_two_secants_angle_from_arcs; answer=integer_value; annotation=keyed_point_map

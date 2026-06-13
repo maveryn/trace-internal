@@ -83,8 +83,8 @@ prompt:
       these visible point-label keys: {annotation_point_keys}; each value must be
       that label''s pixel point [x,y]'
     annotation_hint_chord_length_points: 'set "annotation" to a JSON object with exactly
-      these role keys: {annotation_keys}; each value must be the role''s pixel point
-      [x,y]'
+      these visible point-label keys: {annotation_keys}; each value must be that
+      label''s pixel point [x,y]'
     annotation_hint_tangent_radius_points: 'set "annotation" to a JSON object with
-      exactly these role keys: {annotation_keys}; each value must be the role''s pixel
-      point [x,y]'
+      exactly these visible point-label keys: {annotation_keys}; each value must
+      be that label''s pixel point [x,y]'

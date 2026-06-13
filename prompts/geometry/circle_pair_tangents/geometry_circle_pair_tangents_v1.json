@@ -30,18 +30,18 @@
     },
     "query": {
       "external_common_tangent_length": [
-        "What is the length of tangent segment T1T2?",
-        "Find the length of the common tangent segment T1T2.",
-        "Using the labeled radii and center distance, determine T1T2.",
-        "The segment from T1 to T2 is marked with ?. What is its length?",
-        "What is the value of the tangent length T1T2?"
+        "What is the length of tangent segment AB?",
+        "Find the length of the common tangent segment AB.",
+        "Using the labeled radii and center distance, determine AB.",
+        "The segment from A to B is marked with ?. What is its length?",
+        "What is the value of the tangent length AB?"
       ],
       "external_common_tangent_center_distance": [
-        "What is the distance O1O2 between the two circle centers?",
-        "Find the center-to-center distance O1O2.",
-        "Using the labeled radii and tangent segment, determine O1O2.",
-        "The segment from O1 to O2 is marked with ?. What is its length?",
-        "What is the value of the center distance O1O2?"
+        "What is the distance CD between the two circle centers?",
+        "Find the center-to-center distance CD.",
+        "Using the labeled radii and tangent segment, determine CD.",
+        "The segment from C to D is marked with ?. What is its length?",
+        "What is the value of the center distance CD?"
       ]
     },
     "output": {
@@ -63,7 +63,7 @@
   },
   "static_slots_by_key": {
     "scene:circle_pair_tangents_scene": {
-      "object_description": "two separated non-concentric circles, their centers O1 and O2, a common tangent touching them at T1 and T2, radii to the tangent points, right-angle markers, and one center or tangent segment marked with ?"
+      "object_description": "two separated non-concentric circles with centers C and D, a common tangent touching them at A and B, radii to the tangent points, right-angle markers, and one center or tangent segment marked with ?"
     }
   },
   "dynamic_slots": {

@@ -463,16 +463,6 @@ def _render_problem(problem: _ResolvedProblem, ctx: _RenderContext) -> _Rendered
         construction_bboxes["target_angle_arc"] = target_arc
         readout_bboxes["source_angle_label"] = source_label
         readout_bboxes["target_angle_label"] = target_label
-        src_v, src_r1, src_r2 = _angle_annotation(geometry.source_vertices, case.source_angle_index)
-        tgt_v, tgt_r1, tgt_r2 = _angle_annotation(geometry.target_vertices, case.target_angle_index)
-        annotation = {
-            "target_angle_vertex": tgt_v,
-            "target_angle_ray_1": tgt_r1,
-            "target_angle_ray_2": tgt_r2,
-            "source_angle_vertex": src_v,
-            "source_angle_ray_1": src_r1,
-            "source_angle_ray_2": src_r2,
-        }
     else:
         readout_bboxes["source_target_side_label"] = _draw_side_label(
             ctx,
@@ -494,12 +484,6 @@ def _render_problem(problem: _ResolvedProblem, ctx: _RenderContext) -> _Rendered
             geometry.target_vertices[case.target_side[1]],
             count=1,
         )
-        annotation = {
-            "target_side_start": geometry.target_vertices[case.target_side[0]],
-            "target_side_end": geometry.target_vertices[case.target_side[1]],
-            "source_corresponding_side_start": geometry.source_vertices[case.source_side[0]],
-            "source_corresponding_side_end": geometry.source_vertices[case.source_side[1]],
-        }
         if problem.objective_id == ALGEBRAIC_SIDE_OBJECTIVE:
             readout_bboxes["source_support_side_label"] = _draw_side_label(ctx, geometry.source_vertices, case.support_side, str(case.source_support_expression), offset=30.0)
             readout_bboxes["target_support_side_label"] = _draw_side_label(ctx, geometry.target_vertices, case.support_side, str(case.target_support_expression), offset=-34.0)
@@ -515,14 +499,6 @@ def _render_problem(problem: _ResolvedProblem, ctx: _RenderContext) -> _Rendered
                 geometry.target_vertices[case.support_side[1]],
                 count=2,
             )
-            annotation.update(
-                {
-                    "support_source_side_start": geometry.source_vertices[case.support_side[0]],
-                    "support_source_side_end": geometry.source_vertices[case.support_side[1]],
-                    "support_target_side_start": geometry.target_vertices[case.support_side[0]],
-                    "support_target_side_end": geometry.target_vertices[case.support_side[1]],
-                }
-            )
         elif case.query_id != "tick_mark_side_transfer":
             construction_bboxes["source_support_side_tick"] = _draw_tick(
                 ctx,
@@ -537,6 +513,10 @@ def _render_problem(problem: _ResolvedProblem, ctx: _RenderContext) -> _Rendered
                 count=2,
             )
 
+    annotation = {
+        **{label: point for label, point in zip(geometry.source_labels, geometry.source_vertices, strict=True)},
+        **{label: point for label, point in zip(geometry.target_labels, geometry.target_vertices, strict=True)},
+    }
     render_map = {
         "source_vertices": {label: _point_to_list(point) for label, point in zip(geometry.source_labels, geometry.source_vertices)},
         "target_vertices": {label: _point_to_list(point) for label, point in zip(geometry.target_labels, geometry.target_vertices)},

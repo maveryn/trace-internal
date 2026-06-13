@@ -16,12 +16,14 @@ from .defaults import PROMPT_DEFAULTS
 from .state import DOMAIN, SCENE_ID
 
 
-def _keyed_point_prompt_examples(annotation_roles: Sequence[str], *, answer: int | float) -> tuple[str, str]:
-    """Build JSON examples using the requested annotation role keys."""
+def _keyed_point_prompt_examples(
+    annotation_keys: Sequence[str], *, answer: int | float
+) -> tuple[str, str]:
+    """Build JSON examples using the requested visible point-label keys."""
 
     example_points = {
-        str(role): [120 + (37 * index), 180 + (23 * index)]
-        for index, role in enumerate(annotation_roles)
+        str(key): [120 + (37 * index), 180 + (23 * index)]
+        for index, key in enumerate(annotation_keys)
     }
     return dump_prompt_json_examples(
         annotation=example_points,
@@ -34,7 +36,7 @@ def build_circle_theorem_prompt_artifacts(
     *,
     prompt_query_key: str,
     prompt_slots: Mapping[str, Any],
-    annotation_roles: Sequence[str],
+    annotation_keys: Sequence[str],
     answer_hint_key: str,
     answer_example: int | float,
     annotation_hint_key: str = "annotation_hint_circle_points",
@@ -57,13 +59,13 @@ def build_circle_theorem_prompt_artifacts(
         ),
         context="circle_theorem prompt wiring defaults",
     )
-    role_text = ", ".join(f'"{role}"' for role in annotation_roles)
+    key_text = ", ".join(f'"{key}"' for key in annotation_keys)
     annotation_hint = str(prompt_defaults[annotation_hint_key]).format(
-        annotation_point_keys=role_text,
-        annotation_keys=role_text,
+        annotation_point_keys=key_text,
+        annotation_keys=key_text,
     )
     json_example, json_example_answer_only = _keyed_point_prompt_examples(
-        annotation_roles,
+        annotation_keys,
         answer=answer_example,
     )
     prompt_selection = render_scene_prompt_variants(

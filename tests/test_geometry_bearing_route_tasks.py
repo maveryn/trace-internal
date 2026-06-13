@@ -31,12 +31,8 @@ ANNOTATION_TYPE_BY_TASK = {
 
 ANNOTATION_KEYS_BY_TASK = {
     GeometryBearingRouteFinalBearingValueTask: {
-        "start_point",
-        "finish_point",
-    },
-    GeometryBearingRouteEndpointPositionLabelTask: {
-        "start_point",
-        "reached_endpoint",
+        "S",
+        "F",
     },
 }
 
@@ -51,7 +47,8 @@ def test_bearing_route_tasks_emit_public_contract(task_cls) -> None:
     assert out.query_id == query_id
     assert out.answer_gt.type == ANSWER_TYPE_BY_TASK[task_cls]
     assert out.annotation_gt.type == ANNOTATION_TYPE_BY_TASK[task_cls]
-    assert set(out.annotation_gt.value) == ANNOTATION_KEYS_BY_TASK[task_cls]
+    expected_annotation_keys = ANNOTATION_KEYS_BY_TASK.get(task_cls, {"S", str(out.answer_gt.value)})
+    assert set(out.annotation_gt.value) == expected_annotation_keys
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
@@ -91,7 +88,7 @@ def test_bearing_route_final_bearing_uses_requested_bearing() -> None:
 
     assert out.answer_gt.value == 135
     assert out.annotation_gt.type == "keyed_point_map"
-    assert set(out.annotation_gt.value) == {"start_point", "finish_point"}
+    assert set(out.annotation_gt.value) == {"S", "F"}
     assert "compass_rose" not in out.annotation_gt.value
     assert int(trace["final_bearing"]) == 135
     assert int(trace["answer_value"]) == 135
@@ -108,7 +105,7 @@ def test_bearing_endpoint_uses_selected_candidate_label() -> None:
     assert out.answer_gt.value == labels[2]
     assert trace["answer_value"] == labels[2]
     assert out.annotation_gt.type == "keyed_point_map"
-    assert set(out.annotation_gt.value) == {"start_point", "reached_endpoint"}
+    assert set(out.annotation_gt.value) == {"S", str(labels[2])}
     assert "route_instructions" not in out.annotation_gt.value
     assert "instruction_panel_bbox" in out.trace_payload["render_map"]
     assert "graph-paper candidate grid" in out.prompt
@@ -119,7 +116,7 @@ def test_bearing_endpoint_uses_selected_candidate_label() -> None:
     assert 3 <= int(trace["leg_b"]) <= 7
     assert abs(int(trace["leg_a"]) - int(trace["leg_b"])) >= 2
     selected_label_bbox = out.trace_payload["render_map"]["selected_candidate_label_bbox"]
-    assert out.annotation_gt.value["reached_endpoint"] != selected_label_bbox
+    assert out.annotation_gt.value[str(labels[2])] != selected_label_bbox
 
 
 def test_bearing_endpoint_candidate_labels_avoid_fixed_scene_labels() -> None:

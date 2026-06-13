@@ -1086,14 +1086,8 @@ def _render_similar_pair(problem: _ResolvedProblem, ctx: _RenderContext) -> _Ren
     construction["support_source_side_tick"] = _draw_tick(ctx, source_points[support_side[0]], source_points[support_side[1]], count=2)
     construction["support_target_side_tick"] = _draw_tick(ctx, target_points[support_side[0]], target_points[support_side[1]], count=2)
     annotation = {
-        "target_side_start": source_points[target_side[0]],
-        "target_side_end": source_points[target_side[1]],
-        "corresponding_side_start": target_points[target_side[0]],
-        "corresponding_side_end": target_points[target_side[1]],
-        "support_source_side_start": source_points[support_side[0]],
-        "support_source_side_end": source_points[support_side[1]],
-        "support_target_side_start": target_points[support_side[0]],
-        "support_target_side_end": target_points[support_side[1]],
+        **{label: point for label, point in zip(source_labels, source_points)},
+        **{label: point for label, point in zip(target_labels, target_points)},
     }
     render_map = {
         "source_vertices": {label: _point_to_list(point) for label, point in zip(source_labels, source_points)},
@@ -1273,7 +1267,7 @@ def _render_marked_polygon(problem: _ResolvedProblem, ctx: _RenderContext) -> _R
         "readout_bboxes": _json_ready(readouts),
         "construction_bboxes": _json_ready(construction),
     }
-    return _RenderedScene(ctx.image, annotation, render_map)
+    return _RenderedScene(ctx.image, dict(vertex_payload), render_map)
 
 
 def _render_parallel(problem: _ResolvedProblem, ctx: _RenderContext) -> _RenderedScene:
@@ -1310,16 +1304,6 @@ def _render_parallel(problem: _ResolvedProblem, ctx: _RenderContext) -> _Rendere
         readouts["left_bottom_label"] = _draw_text_centered(ctx, labels["left_bottom"], _add(_mid(d, left_base), (-36.0, 8.0)), small=True)
         readouts["right_top_label"] = _draw_text_centered(ctx, labels["right_top"], _add(_mid(apex, e), (31.0, -7.0)), small=True)
         readouts["right_bottom_label"] = _draw_text_centered(ctx, labels["right_bottom"], _add(_mid(e, right_base), (40.0, 8.0)), small=True)
-        annotation = {
-            "left_top_segment_start": apex,
-            "left_top_segment_end": d,
-            "left_bottom_segment_start": d,
-            "left_bottom_segment_end": left_base,
-            "right_top_segment_start": apex,
-            "right_top_segment_end": e,
-            "right_bottom_segment_start": e,
-            "right_bottom_segment_end": right_base,
-        }
         vertex_payload = {"A": apex, "B": left_base, "C": right_base, "D": d, "E": e}
     else:
         x0 = ctx.width * 0.25 + rng.uniform(-8.0, 8.0)
@@ -1353,16 +1337,6 @@ def _render_parallel(problem: _ResolvedProblem, ctx: _RenderContext) -> _Rendere
         readouts["left_bottom_label"] = _draw_text_centered(ctx, labels["left_bottom"], _add(_mid(left[1], left[2]), (-45.0, 3.0)), small=True)
         readouts["right_top_label"] = _draw_text_centered(ctx, labels["right_top"], _add(_mid(right[0], right[1]), (44.0, -2.0)), small=True)
         readouts["right_bottom_label"] = _draw_text_centered(ctx, labels["right_bottom"], _add(_mid(right[1], right[2]), (45.0, 3.0)), small=True)
-        annotation = {
-            "left_top_segment_start": left[0],
-            "left_top_segment_end": left[1],
-            "left_bottom_segment_start": left[1],
-            "left_bottom_segment_end": left[2],
-            "right_top_segment_start": right[0],
-            "right_top_segment_end": right[1],
-            "right_bottom_segment_start": right[1],
-            "right_bottom_segment_end": right[2],
-        }
         vertex_payload = {"A": left[0], "B": left[1], "C": left[2], "U": right[0], "V": right[1], "W": right[2]}
     render_map = {
         "vertices": {label: _point_to_list(point) for label, point in vertex_payload.items()},
@@ -1370,7 +1344,7 @@ def _render_parallel(problem: _ResolvedProblem, ctx: _RenderContext) -> _Rendere
         "readout_bboxes": _json_ready(readouts),
         "construction_bboxes": _json_ready(construction),
     }
-    return _RenderedScene(ctx.image, annotation, render_map)
+    return _RenderedScene(ctx.image, dict(vertex_payload), render_map)
 
 
 def _render_problem(problem: _ResolvedProblem, ctx: _RenderContext) -> _RenderedScene:
@@ -1566,5 +1540,3 @@ class EquationRuntime:
             query_id=str(problem.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
-
-

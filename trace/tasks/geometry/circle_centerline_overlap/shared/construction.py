@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Any, Mapping, Sequence
 
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
@@ -9,19 +10,132 @@ from trace.tasks.shared.fixed_query import geometry_selected_probability_map
 
 from .state import BOUNDARY_PAIRS, BOUNDARY_TARGET_ROLES, LABEL_MODES, CircleOverlapCase
 
+RADIUS_A_RANGE: tuple[int, int] = (8, 15)
+RADIUS_B_RANGE: tuple[int, int] = (12, 24)
+RADIUS_C_RANGE: tuple[int, int] = (8, 15)
+OVERLAP_RANGE: tuple[int, int] = (2, 8)
 
-CIRCLE_OVERLAP_CASES: tuple[CircleOverlapCase, ...] = (
-    CircleOverlapCase(5, 15, 5, 2, 2),
-    CircleOverlapCase(6, 14, 8, 3, 4),
-    CircleOverlapCase(7, 12, 6, 2, 3),
-    CircleOverlapCase(6, 13, 11, 3, 2),
-    CircleOverlapCase(8, 16, 7, 4, 3),
-    CircleOverlapCase(6, 12, 10, 2, 5),
-    CircleOverlapCase(9, 15, 8, 3, 4),
-    CircleOverlapCase(6, 12, 9, 3, 2),
-    CircleOverlapCase(9, 14, 9, 4, 5),
-    CircleOverlapCase(7, 16, 10, 4, 6),
-)
+
+def _select_int_inclusive(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    namespace: str,
+    low: int,
+    high: int,
+) -> int:
+    """Select one deterministic integer from an inclusive range."""
+
+    low_int = int(low)
+    high_int = int(high)
+    if high_int < low_int:
+        raise ValueError(f"invalid integer range: {low_int}..{high_int}")
+    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
+    return low_int + (int(index) % (high_int - low_int + 1))
+
+
+def _max_overlap_for_pair(left_radius: int, right_radius: int) -> int:
+    """Return the largest overlap that preserves clear positive boundary segments."""
+
+    return min(int(OVERLAP_RANGE[1]), int(left_radius) - 3, int(right_radius) - 3)
+
+
+def _sample_overlap_for_pair(
+    *,
+    left_radius: int,
+    right_radius: int,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    namespace: str,
+) -> int:
+    """Sample one valid adjacent overlap for a selected radius pair."""
+
+    high = _max_overlap_for_pair(int(left_radius), int(right_radius))
+    return _select_int_inclusive(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=str(namespace),
+        low=int(OVERLAP_RANGE[0]),
+        high=int(high),
+    )
+
+
+def _sample_generated_overlap_case(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    namespace: str,
+) -> CircleOverlapCase:
+    """Sample a broad deterministic valid overlap case instead of a tiny bank."""
+
+    radius_a = _select_int_inclusive(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=f"{namespace}.radius_a",
+        low=RADIUS_A_RANGE[0],
+        high=RADIUS_A_RANGE[1],
+    )
+    radius_b = _select_int_inclusive(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=f"{namespace}.radius_b",
+        low=RADIUS_B_RANGE[0],
+        high=RADIUS_B_RANGE[1],
+    )
+    radius_c = _select_int_inclusive(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=f"{namespace}.radius_c",
+        low=RADIUS_C_RANGE[0],
+        high=RADIUS_C_RANGE[1],
+    )
+    overlap_ab = _sample_overlap_for_pair(
+        left_radius=radius_a,
+        right_radius=radius_b,
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=f"{namespace}.overlap_ab",
+    )
+    overlap_bc = _sample_overlap_for_pair(
+        left_radius=radius_b,
+        right_radius=radius_c,
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=f"{namespace}.overlap_bc",
+    )
+    case = CircleOverlapCase(
+        radius_a=int(radius_a),
+        radius_b=int(radius_b),
+        radius_c=int(radius_c),
+        overlap_ab=int(overlap_ab),
+        overlap_bc=int(overlap_bc),
+    )
+    validate_overlap_case(case)
+    return case
+
+
+@lru_cache(maxsize=1)
+def generated_overlap_cases() -> tuple[CircleOverlapCase, ...]:
+    """Return the finite support induced by the broad range sampler."""
+
+    cases: list[CircleOverlapCase] = []
+    for radius_a in range(RADIUS_A_RANGE[0], RADIUS_A_RANGE[1] + 1):
+        for radius_b in range(RADIUS_B_RANGE[0], RADIUS_B_RANGE[1] + 1):
+            for radius_c in range(RADIUS_C_RANGE[0], RADIUS_C_RANGE[1] + 1):
+                max_overlap_ab = _max_overlap_for_pair(radius_a, radius_b)
+                max_overlap_bc = _max_overlap_for_pair(radius_b, radius_c)
+                for overlap_ab in range(OVERLAP_RANGE[0], max_overlap_ab + 1):
+                    for overlap_bc in range(OVERLAP_RANGE[0], max_overlap_bc + 1):
+                        case = CircleOverlapCase(
+                            radius_a=int(radius_a),
+                            radius_b=int(radius_b),
+                            radius_c=int(radius_c),
+                            overlap_ab=int(overlap_ab),
+                            overlap_bc=int(overlap_bc),
+                        )
+                        validate_overlap_case(case)
+                        cases.append(case)
+    return tuple(cases)
 
 
 def segment_length(case: CircleOverlapCase, pair: str, role: str) -> int:
@@ -78,10 +192,12 @@ def select_overlap_case(
         case = CircleOverlapCase(*(int(value) for value in explicit))
         validate_overlap_case(case)
         return case, {case.key: 1.0}
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    case = CIRCLE_OVERLAP_CASES[int(index) % len(CIRCLE_OVERLAP_CASES)]
-    probability = 1.0 / float(len(CIRCLE_OVERLAP_CASES))
-    return case, {candidate.key: probability for candidate in CIRCLE_OVERLAP_CASES}
+    case = _sample_generated_overlap_case(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=str(namespace),
+    )
+    return case, {case.key: 1.0}
 
 
 def select_label_mode(
@@ -170,7 +286,7 @@ def boundary_names(pair: str, role: str) -> tuple[str, str, tuple[str, str], tup
 def center_distance_answer_support(selected: int) -> dict[str, float]:
     """Return support probabilities for possible full centerline distances."""
 
-    support = tuple(sorted({int(case.distance_ac) for case in CIRCLE_OVERLAP_CASES}))
+    support = tuple(sorted({int(case.distance_ac) for case in generated_overlap_cases()} | {int(selected)}))
     return geometry_selected_probability_map(support, selected=int(selected))
 
 
@@ -181,20 +297,21 @@ def boundary_segment_answer_support(selected: int) -> dict[str, float]:
         sorted(
             {
                 segment_length(case, pair, role)
-                for case in CIRCLE_OVERLAP_CASES
+                for case in generated_overlap_cases()
                 for pair in BOUNDARY_PAIRS
                 for role in BOUNDARY_TARGET_ROLES
             }
+            | {int(selected)}
         )
     )
     return geometry_selected_probability_map(support, selected=int(selected))
 
 
 __all__ = [
-    "CIRCLE_OVERLAP_CASES",
     "boundary_names",
     "boundary_segment_answer_support",
     "center_distance_answer_support",
+    "generated_overlap_cases",
     "segment_length",
     "select_boundary_pair",
     "select_boundary_target_role",

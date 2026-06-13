@@ -13,6 +13,7 @@ from trace.tasks.shared.font_assets import font_asset_version, get_font_family_r
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.geometry.shared.diagram_style import (
+    GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
     geometry_diagram_style_metadata,
     prepare_geometry_diagram_style_and_background,
 )
@@ -52,6 +53,7 @@ def make_render_context(
         protected_colors=protected,
         allow_dark=False,
         require_grid=False,
+        style_profile=GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
     )
     font_family = sample_font_family(
         role="readout",
@@ -152,26 +154,14 @@ def _draw_panel(ctx: RenderContext, bbox: BBox, *, fill: Color | None = None, ra
     return pad_bbox(bbox, 2.0, width=ctx.width, height=ctx.height)
 
 
-def _blend_color(base: Color, accent: Color, amount: float) -> Color:
-    return tuple(
-        int(round((float(base[idx]) * (1.0 - float(amount))) + (float(accent[idx]) * float(amount))))
-        for idx in range(3)
-    )
-
-
-def _draw_graph_paper_projection(
+def _resolve_route_projection(
     ctx: RenderContext,
     panel_bbox: BBox,
     unit_points: Tuple[Point, ...],
 ) -> tuple[float, Point, Dict[str, Any]]:
-    """Draw one-step graph paper and return the projection for route units.
-
-    Endpoint candidates are semantic grid points. This helper fixes the final
-    graph-paper layout first, then task annotations are projected from the same
-    scale/origin used to draw the visible grid.
-    """
+    """Return a route-unit projection and draw its visible graph-paper grid."""
     if not unit_points:
-        raise ValueError("graph paper projection requires at least one point")
+        raise ValueError("route projection requires at least one point")
 
     xs = [round(float(point[0])) for point in unit_points]
     ys = [round(float(point[1])) for point in unit_points]
@@ -195,32 +185,29 @@ def _draw_graph_paper_projection(
     top = ((inner[1] + inner[3]) / 2.0) - (grid_h / 2.0)
     origin = (left - (float(grid_min_x) * float(cell)), top - (float(grid_min_y) * float(cell)))
 
-    grid_color = _blend_color(ctx.panel_alt_fill, ctx.guide_color, 0.55)
-    axis_color = _blend_color(ctx.panel_alt_fill, ctx.secondary_color, 0.78)
-    for gx in range(grid_min_x, grid_max_x + 1):
-        x = origin[0] + (float(gx) * float(cell))
-        width = 2 if gx == 0 else 1
-        color = axis_color if gx == 0 else grid_color
-        ctx.draw.line([(x, top), (x, top + grid_h)], fill=color, width=width)
-    for gy in range(grid_min_y, grid_max_y + 1):
-        y = origin[1] + (float(gy) * float(cell))
-        width = 2 if gy == 0 else 1
-        color = axis_color if gy == 0 else grid_color
-        ctx.draw.line([(left, y), (left + grid_w, y)], fill=color, width=width)
+    for unit_x in range(int(grid_min_x), int(grid_max_x) + 1):
+        x = float(origin[0]) + (float(unit_x) * float(cell))
+        ctx.draw.line((x, top, x, top + grid_h), fill=ctx.guide_color, width=1)
+    for unit_y in range(int(grid_min_y), int(grid_max_y) + 1):
+        y = float(origin[1]) + (float(unit_y) * float(cell))
+        ctx.draw.line((left, y, left + grid_w, y), fill=ctx.guide_color, width=1)
 
-    grid_meta = {
-        "grid_bounds_units": {
+    projection_meta = {
+        "unit_bounds": {
             "min_x": int(grid_min_x),
             "max_x": int(grid_max_x),
             "min_y": int(grid_min_y),
             "max_y": int(grid_max_y),
         },
-        "grid_cell_px": round(float(cell), 3),
-        "grid_origin_px": [round(float(origin[0]), 3), round(float(origin[1]), 3)],
-        "grid_bbox": bbox_to_list((left, top, left + grid_w, top + grid_h)),
+        "unit_scale_px": round(float(cell), 3),
+        "unit_origin_px": [round(float(origin[0]), 3), round(float(origin[1]), 3)],
+        "projection_bbox": bbox_to_list((left, top, left + grid_w, top + grid_h)),
+        "visible_grid": True,
         "grid_unit": "one_square_equals_one_step",
+        "grid_cell_px": round(float(cell), 3),
+        "unit_role": "graph_paper_route_step_layout",
     }
-    return float(cell), origin, grid_meta
+    return float(cell), origin, projection_meta
 
 
 def _draw_arrow_line(
@@ -384,7 +371,7 @@ def render_final_bearing_scene(ctx: RenderContext, route_case: RouteCase) -> Ren
         answer=int(route_case.final_bearing),
         answer_type="number",
         annotation_bboxes=(start_bbox, end_bbox),
-        annotation_roles=("start_point", "finish_point"),
+        annotation_roles=("S", "F"),
         annotation_points=(start, end),
         scene_entities=scene_entities,
         render_map={
@@ -432,7 +419,7 @@ def render_endpoint_label_scene(ctx: RenderContext, route_case: RouteCase) -> Re
     all_points = [(0.0, 0.0)] + [point for _, point in ordered_candidates]
     plot_panel = (60.0, 84.0, 552.0, 510.0)
     plot_panel_bbox = _draw_panel(ctx, plot_panel, fill=ctx.panel_alt_fill)
-    scale, origin, grid_meta = _draw_graph_paper_projection(ctx, plot_panel, tuple(all_points))
+    scale, origin, projection_meta = _resolve_route_projection(ctx, plot_panel, tuple(all_points))
     start = project_point((0.0, 0.0), scale=scale, origin=origin)
     start_bbox = _draw_marker(ctx, start, radius=10.0, color=ctx.secondary_color)
     _draw_text(ctx, "S", (start[0] - 20.0, start[1] + 20.0), font=ctx.small_font)
@@ -512,13 +499,19 @@ def render_endpoint_label_scene(ctx: RenderContext, route_case: RouteCase) -> Re
         answer=str(route_case.option_labels[int(route_case.target_index)]),
         answer_type="option_letter",
         annotation_bboxes=(start_bbox, selected_bbox),
-        annotation_roles=("start_point", "reached_endpoint"),
+        annotation_roles=("S", str(route_case.option_labels[int(route_case.target_index)])),
         annotation_points=(start, selected_center),
         scene_entities=scene_entities,
         render_map={
             "coord_space": "pixel",
             "candidate_panel_bbox": bbox_to_list(plot_panel_bbox),
-            "candidate_graph_paper": dict(grid_meta),
+            "candidate_projection": dict(projection_meta),
+            "candidate_graph_paper": {
+                "grid_unit": "one_square_equals_one_step",
+                "grid_cell_px": round(float(scale), 3),
+                "projection_bbox": list(projection_meta["projection_bbox"]),
+                "unit_bounds": dict(projection_meta["unit_bounds"]),
+            },
             "instruction_panel_bbox": bbox_to_list(instruction_annotation_bbox),
             "start_center_px": [round(start[0], 3), round(start[1], 3)],
             "selected_candidate_center_px": [round(selected_center[0], 3), round(selected_center[1], 3)],

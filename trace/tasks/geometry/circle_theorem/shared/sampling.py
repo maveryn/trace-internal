@@ -6,13 +6,18 @@ import math
 from typing import Dict, List, Tuple
 
 from .state import (
+    DIAMETER_CHORD_MAX_CHORD,
+    DIAMETER_CHORD_RADIUS_MAX,
+    TANGENT_SECANT_INTERNAL_MAX,
+    TANGENT_SECANT_OUTSIDE_MAX,
+    TANGENT_SECANT_TANGENT_MAX,
     TANGENT_SECANT_TARGET_KINDS,
     VARIABLE_SECANT_TARGET_KINDS,
 )
 
 def _candidate_diameter_chord_values(target_answer: int) -> List[Dict[str, int]]:
     candidates: List[Dict[str, int]] = []
-    for radius in range(8, 41):
+    for radius in range(8, DIAMETER_CHORD_RADIUS_MAX + 1):
         for offset in range(2, radius - 1):
             half_chord_sq = (radius * radius) - (offset * offset)
             half_chord = int(math.isqrt(int(half_chord_sq)))
@@ -21,9 +26,11 @@ def _candidate_diameter_chord_values(target_answer: int) -> List[Dict[str, int]]
             answer_value = int(radius - offset)
             if int(answer_value) != int(target_answer):
                 continue
+            if int(answer_value) < 4:
+                continue
             chord_length = int(2 * half_chord)
             diameter_length = int(2 * radius)
-            if half_chord < 4 or chord_length > 64:
+            if half_chord < 4 or chord_length > DIAMETER_CHORD_MAX_CHORD:
                 continue
             candidates.append(
                 {
@@ -58,13 +65,13 @@ def _candidate_tangent_secant_values(
 
         raise ValueError(f"unsupported tangent secant target kind: {target_kind}")
     candidates: List[Dict[str, int | str]] = []
-    for outside in range(16, 81):
-        for internal in range(10, 71):
+    for outside in range(16, TANGENT_SECANT_OUTSIDE_MAX + 1):
+        for internal in range(10, TANGENT_SECANT_INTERNAL_MAX + 1):
             tangent_sq = int(outside * (outside + internal))
             tangent = int(math.isqrt(tangent_sq))
             if int(tangent * tangent) != int(tangent_sq):
                 continue
-            if int(tangent) > 100:
+            if int(tangent) > TANGENT_SECANT_TANGENT_MAX:
                 continue
             if not _hard_tangent_secant_triple(
                 outside=int(outside), internal=int(internal), tangent=int(tangent)
@@ -108,20 +115,20 @@ def _feasible_tangent_secant_target_kinds(target_answer: int) -> Tuple[str, ...]
 def _candidate_secant_secant_values(target_answer: int) -> List[Dict[str, int]]:
     candidates: List[Dict[str, int]] = []
     pa = int(target_answer)
-    for ab in range(11, 35):
+    for ab in range(11, 201):
         power = int(pa * (pa + ab))
         center_x = float(pa + (0.5 * ab))
-        for pc in range(3, 25):
+        for pc in range(3, 181):
             if int(power) % int(pc) != 0:
                 continue
             pd = int(power // pc)
             cd = int(pd - pc)
-            if not (3 <= int(cd) <= 30):
+            if not (3 <= int(cd) <= 260):
                 continue
             if int(pc) == int(pa) and int(cd) == int(ab):
                 continue
             cos_theta = float(pc + pd) / float(2.0 * center_x)
-            if 0.25 <= float(cos_theta) <= 0.86:
+            if 0.18 <= float(cos_theta) <= 0.92:
                 candidates.append(
                     {
                         "PA": int(pa),

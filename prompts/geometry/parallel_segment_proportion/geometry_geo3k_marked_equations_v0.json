@@ -338,7 +338,7 @@
   "allow_empty_task_templates": true,
   "code_prompt_defaults": {
     "object_description": "a labeled parallel-line proportion diagram with expression and measurement labels",
-    "annotation_hint": "set \"annotation\" to a JSON object with exactly these keys: {annotation_keys}; each value must be the pixel point [x,y] at the keyed segment endpoint",
+    "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be that labeled construction point's pixel point [x,y]",
     "answer_hint_number": "set \"answer\" to the requested value as a number"
   }
 }

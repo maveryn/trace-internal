@@ -171,6 +171,7 @@ def _render_problem(
         outward = _unit(_sub(vertex, centroid))
         point_label_center = _add(vertex, outward, 25.0)
         point_label_bboxes[label] = _draw_text_centered(ctx, label, point_label_center, small=True)
+        annotation_points[label] = vertex
 
     label_bboxes = list(point_label_bboxes.values())
     for index, vertex in enumerate(vertices):
@@ -188,12 +189,6 @@ def _render_problem(
         angle_arc_bboxes[angle_name] = arc_bbox
         angle_label_bboxes[angle_name] = label_bbox
         label_bboxes.append(label_bbox)
-        if index == int(problem.target_index):
-            annotation_points["target_vertex"] = vertex
-        else:
-            support_index = len([key for key in annotation_points if key.startswith("known_angle_")]) + 1
-            annotation_points[f"known_angle_{support_index}_vertex"] = vertex
-
     _assert_non_overlapping(label_bboxes)
     for bbox in label_bboxes:
         x0, y0, x1, y1 = [float(value) for value in bbox]
@@ -422,13 +417,8 @@ def _render_rectangle_diagonal_angle(
 
     return _RenderedSymmetryAngleScene(
         image=ctx.image,
-        annotation_keyed_points={
-            "target_vertex": a,
-            "known_angle_vertex": a,
-            "diagonal_endpoint_1": a,
-            "diagonal_endpoint_2": c,
-        },
-        annotation_roles=("target_vertex", "known_angle_vertex", "diagonal_endpoint_1", "diagonal_endpoint_2"),
+        annotation_keyed_points={"A": a, "B": b, "C": c, "D": d},
+        annotation_roles=("A", "B", "C", "D"),
         angle_arc_bboxes={
             "known_angle": support_arc,
             "target_angle": target_arc,
@@ -488,6 +478,8 @@ def _render_reflection_axis_angle(
     )
     point_bboxes = [
         _draw_text_centered(ctx, "P", _add(vertex, (0.0, -1.0), 26.0), small=True),
+        _draw_text_centered(ctx, "Q", _add(axis_top, (0.0, -1.0), 22.0), small=True),
+        _draw_text_centered(ctx, "R", _add(axis_bottom, (0.0, 1.0), 22.0), small=True),
     ]
     _assert_symmetry_angle_layout(
         [*point_bboxes, support_label_bbox, target_label_bbox],
@@ -498,12 +490,11 @@ def _render_reflection_axis_angle(
     return _RenderedSymmetryAngleScene(
         image=ctx.image,
         annotation_keyed_points={
-            "target_vertex": vertex,
-            "support_vertex": vertex,
-            "axis_point_1": axis_top,
-            "axis_point_2": axis_bottom,
+            "P": vertex,
+            "Q": axis_top,
+            "R": axis_bottom,
         },
-        annotation_roles=("target_vertex", "support_vertex", "axis_point_1", "axis_point_2"),
+        annotation_roles=("P", "Q", "R"),
         angle_arc_bboxes={
             "known_angle": support_arc,
             "target_angle": target_arc,
@@ -519,9 +510,9 @@ def _render_reflection_axis_angle(
             "ray_right": (vertex, right_endpoint),
         },
         construction_points={
-            "target_vertex": vertex,
-            "axis_point_1": axis_top,
-            "axis_point_2": axis_bottom,
+            "P": vertex,
+            "Q": axis_top,
+            "R": axis_bottom,
             "left_ray_endpoint": left_endpoint,
             "right_ray_endpoint": right_endpoint,
         },
@@ -584,8 +575,6 @@ def _render_isosceles_base_angle_chain(
             label=support_label,
             radius=47.0,
         )
-        target_vertex = base_left
-        support_vertex = apex
     else:
         target_arc, target_label_bbox, _ = _draw_angle_marker(
             ctx,
@@ -603,8 +592,6 @@ def _render_isosceles_base_angle_chain(
             label=support_label,
             radius=43.0,
         )
-        target_vertex = apex
-        support_vertex = base_left
 
     _assert_symmetry_angle_layout(
         [*point_bboxes, support_label_bbox, target_label_bbox],
@@ -614,14 +601,8 @@ def _render_isosceles_base_angle_chain(
 
     return _RenderedSymmetryAngleScene(
         image=ctx.image,
-        annotation_keyed_points={
-            "target_vertex": target_vertex,
-            "support_vertex": support_vertex,
-            "apex_vertex": apex,
-            "base_left_vertex": base_left,
-            "base_right_vertex": base_right,
-        },
-        annotation_roles=("target_vertex", "support_vertex", "apex_vertex", "base_left_vertex", "base_right_vertex"),
+        annotation_keyed_points={"A": apex, "B": base_left, "C": base_right},
+        annotation_roles=("A", "B", "C"),
         angle_arc_bboxes={
             "known_angle": support_arc,
             "target_angle": target_arc,
@@ -718,16 +699,21 @@ def _render_single_transversal_chain(
         label=str(problem.target_angle_label),
         radius=36.0,
     )
-    _assert_parallel_line_layout([support_label_bbox, target_label_bbox], width=ctx.width, height=ctx.height)
+    point_label_bboxes = [
+        _draw_text_centered(ctx, "P", _add(support_vertex, (-1.0, -1.0), 24.0), small=True),
+        _draw_text_centered(ctx, "Q", _add(bridge_vertex, (-1.0, 0.0), 25.0), small=True),
+        _draw_text_centered(ctx, "R", _add(target_vertex, (1.0, 1.0), 24.0), small=True),
+    ]
+    _assert_parallel_line_layout(
+        [*point_label_bboxes, support_label_bbox, target_label_bbox],
+        width=ctx.width,
+        height=ctx.height,
+    )
 
     return _RenderedParallelLineScene(
         image=ctx.image,
-        annotation_keyed_points={
-            "target_vertex": target_vertex,
-            "support_vertex": support_vertex,
-            "bridge_vertex": bridge_vertex,
-        },
-        annotation_roles=("target_vertex", "support_vertex", "bridge_vertex"),
+        annotation_keyed_points={"P": support_vertex, "Q": bridge_vertex, "R": target_vertex},
+        annotation_roles=("P", "Q", "R"),
         angle_arc_bboxes={
             "support_angle": support_arc,
             "target_angle": target_arc,
@@ -744,9 +730,9 @@ def _render_single_transversal_chain(
             "transversal": (trans_start, trans_end),
         },
         intersections={
-            "support_vertex": support_vertex,
-            "bridge_vertex": bridge_vertex,
-            "target_vertex": target_vertex,
+            "P": support_vertex,
+            "Q": bridge_vertex,
+            "R": target_vertex,
         },
     )
 
@@ -807,20 +793,21 @@ def _render_two_transversal_angle_sum(
         label=str(problem.target_angle_label),
         radius=42.0,
     )
+    point_label_bboxes = [
+        _draw_text_centered(ctx, "P", _add(support_vertex_1, (-1.0, -1.0), 24.0), small=True),
+        _draw_text_centered(ctx, "Q", _add(target_vertex, (0.0, 1.0), 27.0), small=True),
+        _draw_text_centered(ctx, "R", _add(support_vertex_2, (1.0, -1.0), 24.0), small=True),
+    ]
     _assert_parallel_line_layout(
-        [support_label_bbox_1, support_label_bbox_2, target_label_bbox],
+        [*point_label_bboxes, support_label_bbox_1, support_label_bbox_2, target_label_bbox],
         width=ctx.width,
         height=ctx.height,
     )
 
     return _RenderedParallelLineScene(
         image=ctx.image,
-        annotation_keyed_points={
-            "target_vertex": target_vertex,
-            "support_vertex_1": support_vertex_1,
-            "support_vertex_2": support_vertex_2,
-        },
-        annotation_roles=("target_vertex", "support_vertex_1", "support_vertex_2"),
+        annotation_keyed_points={"P": support_vertex_1, "Q": target_vertex, "R": support_vertex_2},
+        annotation_roles=("P", "Q", "R"),
         angle_arc_bboxes={
             "support_angle_1": support_arc_1,
             "support_angle_2": support_arc_2,
@@ -839,9 +826,9 @@ def _render_two_transversal_angle_sum(
             "transversal_2": (support_vertex_2, bottom_left),
         },
         intersections={
-            "target_vertex": target_vertex,
-            "support_vertex_1": support_vertex_1,
-            "support_vertex_2": support_vertex_2,
+            "P": support_vertex_1,
+            "Q": target_vertex,
+            "R": support_vertex_2,
         },
     )
 

@@ -5,14 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Tuple
 
-
 SCENE_ID = "circle_pair_tangents"
 
 Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
 Color = Tuple[int, int, int]
 
-ANNOTATION_KEYS: tuple[str, str, str, str] = ("O1", "O2", "T1", "T2")
+ANNOTATION_KEYS: tuple[str, str, str, str] = ("C", "D", "A", "B")
 LARGER_CIRCLE_SIDES: tuple[str, str] = ("left", "right")
 TANGENT_SIDES: tuple[str, str] = ("above", "below")
 
@@ -78,8 +77,6 @@ class PairTangentRenderContext:
     label_color: Color
     label_stroke_color: Color
     label_backing_color: Color
-    circle_fill_o1: Color
-    circle_fill_o2: Color
     accent_color: Color
     line_width: int
     label_stroke_width: int

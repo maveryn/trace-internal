@@ -10,6 +10,7 @@ from trace.tasks import TASK_REGISTRY
 from trace.tasks.geometry.pythagorean_tree.missing_square_area_value import (
     TASK_ID,
     GeometryPythagoreanTreeMissingSquareAreaValueTask,
+    _TRIPLES,
 )
 
 
@@ -21,6 +22,18 @@ def _generate(seed: int, **params):
 def test_pythagorean_tree_registered_public_task() -> None:
     assert TASK_ID in TASK_REGISTRY
     assert TASK_REGISTRY[TASK_ID] is GeometryPythagoreanTreeMissingSquareAreaValueTask
+
+
+def test_pythagorean_tree_default_pool_has_distinct_square_area_support() -> None:
+    assert len(_TRIPLES) >= 10
+
+    legs = [value for leg_a, leg_b, _hypotenuse in _TRIPLES for value in (leg_a, leg_b)]
+    hypotenuses = [hypotenuse for _leg_a, _leg_b, hypotenuse in _TRIPLES]
+
+    assert len(set(legs)) == len(legs)
+    assert len(set(hypotenuses)) == len(hypotenuses)
+    for leg_a, leg_b, hypotenuse in _TRIPLES:
+        assert int(leg_a) ** 2 + int(leg_b) ** 2 == int(hypotenuse) ** 2
 
 
 def test_pythagorean_tree_hypotenuse_square_area_formula() -> None:

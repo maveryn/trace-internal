@@ -460,7 +460,6 @@ def _render_problem(problem: _ResolvedProblem, ctx: _RenderContext) -> _Rendered
         ctx.draw.line((center, vertex), fill=ctx.secondary_color, width=max(1, ctx.line_width - 1))
     center_dot = max(4, ctx.line_width + 2)
     ctx.draw.ellipse((center[0] - center_dot, center[1] - center_dot, center[0] + center_dot, center[1] + center_dot), fill=ctx.line_color)
-    _draw_text_centered(ctx, "O", _add(center, (0.0, -22.0)), small=True, role="label")
 
     construction_bboxes["regular_polygon"] = bbox_from_points(vertices, width=ctx.width, height=ctx.height, pad=ctx.line_width + 4)
     end_index = (int(problem.start_index) + int(problem.wedge_count)) % int(problem.n_sides)
@@ -538,37 +537,57 @@ def _render_problem(problem: _ResolvedProblem, ctx: _RenderContext) -> _Rendered
 
     start_vertex = vertices[problem.start_index]
     end_vertex = vertices[end_index]
+    readout_bboxes["label_O"] = _draw_text_centered(ctx, "O", _add(center, (0.0, -22.0)), small=True, role="label")
+    readout_bboxes["label_A"] = _draw_text_centered(
+        ctx,
+        "A",
+        _add(start_vertex, _unit(_sub(start_vertex, center)), 25.0),
+        small=True,
+        role="label",
+    )
+    readout_bboxes["label_B"] = _draw_text_centered(
+        ctx,
+        "B",
+        _add(end_vertex, _unit(_sub(end_vertex, center)), 25.0),
+        small=True,
+        role="label",
+    )
+    if problem.objective_key == PIECE_OBJECTIVE_KEY or problem.query_id == "side_length_from_wedge_area_and_apothem":
+        readout_bboxes["label_W"] = _draw_text_centered(ctx, "W", target_midpoint, small=True, role="label")
+    if problem.query_id in {"perimeter_from_total_area_and_apothem", "side_length_from_total_area_and_apothem", "side_length_from_wedge_area_and_apothem"}:
+        readout_bboxes["label_M"] = _draw_text_centered(ctx, "M", _add(side_mid, _unit(_sub(side_mid, center)), 19.0), small=True, role="label")
+
     if problem.objective_key == PIECE_OBJECTIVE_KEY:
         annotation = {
-            "center": center,
-            "wedge_vertex_start": start_vertex,
-            "wedge_vertex_end": end_vertex,
-            "target_region_midpoint": target_midpoint,
+            "O": center,
+            "A": start_vertex,
+            "B": end_vertex,
+            "W": target_midpoint,
         }
     elif problem.objective_key == ANGLE_OBJECTIVE_KEY:
         annotation = {
-            "center": center,
-            "angle_ray_start": start_vertex,
-            "angle_ray_end": end_vertex,
+            "O": center,
+            "A": start_vertex,
+            "B": end_vertex,
         }
     elif problem.objective_key == PERIMETER_OBJECTIVE_KEY:
         annotation = {
-            "center": center,
-            "side_start": side_start,
-            "side_end": side_end,
+            "O": center,
+            "A": side_start,
+            "B": side_end,
         }
         if problem.query_id == "perimeter_from_total_area_and_apothem":
-            annotation["apothem_foot"] = side_mid
+            annotation["M"] = side_mid
     elif problem.objective_key == SIDE_LENGTH_OBJECTIVE_KEY:
         annotation = {
-            "center": center,
-            "target_side_start": side_start,
-            "target_side_end": side_end,
+            "O": center,
+            "A": side_start,
+            "B": side_end,
         }
         if problem.query_id in {"side_length_from_total_area_and_apothem", "side_length_from_wedge_area_and_apothem"}:
-            annotation["apothem_foot"] = side_mid
+            annotation["M"] = side_mid
         if problem.query_id == "side_length_from_wedge_area_and_apothem":
-            annotation["target_region_midpoint"] = target_midpoint
+            annotation["W"] = target_midpoint
     else:
         raise ValueError(f"unsupported task_id: {problem.task_id}")
 

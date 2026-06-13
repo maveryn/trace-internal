@@ -3,7 +3,7 @@
   "schema_version": "v0",
   "code_prompt_defaults": {
     "object_description": "a labeled polygon or special triangle with marked equal parts and algebraic labels",
-    "annotation_hint": "set \"annotation\" to a JSON object with exactly these keys: {annotation_keys}; each value must be the pixel point [x,y] at the keyed visual witness",
+    "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be that labeled construction point's pixel point [x,y]",
     "answer_hint_number": "set \"answer\" to the requested value as a number"
   },
   "task_templates": {

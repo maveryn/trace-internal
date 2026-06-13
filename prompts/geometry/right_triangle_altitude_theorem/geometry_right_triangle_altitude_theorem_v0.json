@@ -105,7 +105,7 @@
     "object_description": "a right triangle with an altitude drawn from the right angle to the hypotenuse, labeled segment lengths, and one target length marker",
     "json_output_contract": "Return a JSON object with keys \"annotation\" and \"answer\".",
     "json_output_contract_answer_only": "Return a JSON object with key \"answer\".",
-    "annotation_hint": "set \"annotation\" to a JSON object with exactly these keys: {annotation_keys}; each value must be the pixel point [x,y] for that visible construction point",
+    "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be that labeled construction point's pixel point [x,y]",
     "answer_hint_integer_length": "set \"answer\" to the requested length as an integer",
     "json_example_answer_only": "{\"answer\":12}"
   }

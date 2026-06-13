@@ -165,7 +165,7 @@
     "object_description": "a pair of congruent triangles with visible markings, measurements, or expressions",
     "json_output_contract": "Return one JSON object with keys \"answer\" and \"annotation\".",
     "json_output_contract_answer_only": "Return one JSON object with key \"answer\".",
-    "annotation_hint": "set \"annotation\" to a JSON object mapping these required role keys to pixel points [x,y]: {annotation_keys}",
+    "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point",
     "answer_hint_integer_length": "set \"answer\" to the requested side length as an integer",
     "answer_hint_integer_angle": "set \"answer\" to the requested angle measure as an integer number of degrees"
   }

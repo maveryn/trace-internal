@@ -11,7 +11,10 @@ from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_rendering import load_font
-from trace.tasks.geometry.shared.diagram_style import prepare_geometry_diagram_style_and_background
+from trace.tasks.geometry.shared.diagram_style import (
+    GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
+    prepare_geometry_diagram_style_and_background,
+)
 from trace.tasks.geometry.shared.measurement_rendering import (
     assert_bboxes_inside,
     bbox_to_list,
@@ -38,7 +41,6 @@ from .state import (
     RenderedCenterlineOverlapScene,
 )
 
-
 def create_centerline_overlap_render_context(
     *,
     instance_seed: int,
@@ -56,7 +58,8 @@ def create_centerline_overlap_render_context(
         canvas_width=int(width),
         canvas_height=int(height),
         allow_dark=False,
-        require_grid=None,
+        require_grid=False,
+        style_profile=GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
     )
     fill_palettes = (
         ((238, 246, 255), (255, 247, 231), (241, 248, 239)),
@@ -191,7 +194,7 @@ def render_centerline_overlap_scene(
     for index, label in enumerate(CENTER_LABELS):
         bbox = _circle_bbox(points[label], radius_px[label])
         circle_bboxes[label] = bbox
-        ctx.draw.ellipse(bbox, fill=ctx.fill_colors[index], outline=ctx.line_color, width=ctx.line_width)
+        ctx.draw.ellipse(bbox, outline=ctx.line_color, width=ctx.line_width)
     assert_bboxes_inside(
         circle_bboxes.values(),
         width=ctx.width,
@@ -225,9 +228,8 @@ def render_centerline_overlap_scene(
         point = points[label]
         ctx.draw.ellipse(
             (point[0] - dot_radius, point[1] - dot_radius, point[0] + dot_radius, point[1] + dot_radius),
-            fill=ctx.line_color,
             outline=ctx.line_color,
-            width=1,
+            width=max(1, ctx.line_width - 1),
         )
         label_bboxes[f"{label}_label"] = draw_readout_centered(ctx, label, add(point, point_offsets[label]), small=True)
     for label in ("X", "Y", "U", "V"):
@@ -239,9 +241,8 @@ def render_centerline_overlap_scene(
                 point[0] + boundary_dot_radius,
                 point[1] + boundary_dot_radius,
             ),
-            fill=ctx.accent_color,
-            outline=ctx.line_color,
-            width=1,
+            outline=ctx.accent_color,
+            width=max(1, ctx.line_width - 1),
         )
         label_bboxes[f"{label}_label"] = draw_readout_centered(ctx, label, add(point, point_offsets[label]), small=True)
 
@@ -305,26 +306,7 @@ def render_centerline_overlap_scene(
         height=ctx.height,
         error_message="circle centerline overlap label too close to canvas edge",
     )
-    role_points = {
-        "center_a": points["A"],
-        "center_b": points["B"],
-        "center_c": points["C"],
-        "overlap_ab_left": points["Y"],
-        "overlap_ab_right": points["X"],
-        "overlap_bc_left": points["V"],
-        "overlap_bc_right": points["U"],
-    }
-    if not spec.show_overlap_dimensions:
-        target_start, target_end = spec.target_segment_points
-        known_start, known_end = spec.known_segment_points
-        role_points.update(
-            {
-                "target_start": points[target_start],
-                "target_end": points[target_end],
-                "known_segment_start": points[known_start],
-                "known_segment_end": points[known_end],
-            }
-        )
+    role_points = {label: points[label] for label in ("A", "B", "C", "X", "Y", "U", "V")}
     scene_entities = tuple(
         {
             "entity_id": f"circle_{label.lower()}",

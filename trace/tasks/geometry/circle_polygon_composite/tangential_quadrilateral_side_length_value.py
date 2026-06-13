@@ -1,4 +1,4 @@
-"""Compute an opposite-side sum in a tangential quadrilateral."""
+"""Compute a missing side length in a tangential quadrilateral."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from trace.tasks.geometry.shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 from ._lifecycle import projected_keyed_point_payload, render_spec_payload, render_with_layout_retry
 from .shared.annotations import keyed_point_annotation
 from .shared.construction import (
-    select_target_pair,
+    select_missing_side,
     select_tangent_case,
     side_lengths_from_vertex_tangents,
     vertex_tangents_from_case,
@@ -29,8 +29,8 @@ from .shared.rendering import create_circle_polygon_render_context, render_tange
 from .shared.state import SCENE_ID, RenderedTangentialScene, TangentialDiagramSpec
 
 
-TASK_ID = "task_geometry__circle_polygon_composite__tangential_quadrilateral_side_sum_value"
-QUERY_ID = "opposite_side_sum_from_tangent_quadrilateral"
+TASK_ID = "task_geometry__circle_polygon_composite__tangential_quadrilateral_side_length_value"
+QUERY_ID = "missing_side_from_tangent_quadrilateral"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
 
 _SCENE_DEFAULTS = get_scene_defaults("geometry", SCENE_ID)
@@ -42,30 +42,43 @@ _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generatio
 
 @dataclass(frozen=True)
 class _TangentialProblem:
-    """Task-owned answer, prompt, and trace facts for one side-sum instance."""
+    """Task-owned answer, prompt, and trace facts for one missing-side instance."""
 
     diagram_spec: TangentialDiagramSpec
-    target_pair: str
-    target_pair_label: str
-    known_pair: str
-    known_pair_label: str
+    missing_side: str
+    visible_sides: Tuple[str, ...]
     answer: int
-    target_pair_probabilities: dict[str, float]
+    missing_side_probabilities: dict[str, float]
     tangent_case_probabilities: dict[str, float]
 
 
-def _bind_side_sum_problem(
+def _pitot_missing_side_answer(side_lengths: Mapping[str, int], missing_side: str) -> int:
+    """Return one missing side from Pitot's theorem."""
+
+    side = str(missing_side)
+    if side == "AB":
+        return int(side_lengths["BC"] + side_lengths["DA"] - side_lengths["CD"])
+    if side == "BC":
+        return int(side_lengths["AB"] + side_lengths["CD"] - side_lengths["DA"])
+    if side == "CD":
+        return int(side_lengths["BC"] + side_lengths["DA"] - side_lengths["AB"])
+    if side == "DA":
+        return int(side_lengths["AB"] + side_lengths["CD"] - side_lengths["BC"])
+    raise ValueError(f"unsupported missing side: {side}")
+
+
+def _bind_side_length_problem(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
     selected_query: str,
 ) -> _TangentialProblem:
-    """Bind the hidden side pair and answer before rendering."""
+    """Bind the hidden side and answer before rendering."""
 
-    target_pair, target_pair_probabilities = select_target_pair(
+    missing_side, missing_side_probabilities = select_missing_side(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.{selected_query}.target_pair",
+        namespace=f"{TASK_ID}.{selected_query}.missing_side",
     )
     tangent_case, tangent_case_probabilities = select_tangent_case(
         params=params,
@@ -74,30 +87,18 @@ def _bind_side_sum_problem(
     )
     vertex_tangents = vertex_tangents_from_case(tangent_case)
     side_lengths = side_lengths_from_vertex_tangents(tangent_case)
-    if target_pair == "AB_CD":
-        target_pair_label = "AB + CD"
-        known_pair = "BC_DA"
-        known_pair_label = "BC and DA"
-        unknown_sides = ("AB", "CD")
-        answer = int(side_lengths["AB"] + side_lengths["CD"])
-    else:
-        target_pair_label = "BC + DA"
-        known_pair = "AB_CD"
-        known_pair_label = "AB and CD"
-        unknown_sides = ("BC", "DA")
-        answer = int(side_lengths["BC"] + side_lengths["DA"])
+    visible_sides = tuple(side for side in ("AB", "BC", "CD", "DA") if side != missing_side)
+    answer = _pitot_missing_side_answer(side_lengths, missing_side)
     return _TangentialProblem(
         diagram_spec=TangentialDiagramSpec(
             vertex_tangents=dict(vertex_tangents),
             side_lengths=dict(side_lengths),
-            unknown_sides=tuple(unknown_sides),
+            unknown_sides=(str(missing_side),),
         ),
-        target_pair=str(target_pair),
-        target_pair_label=str(target_pair_label),
-        known_pair=str(known_pair),
-        known_pair_label=str(known_pair_label),
+        missing_side=str(missing_side),
+        visible_sides=tuple(str(side) for side in visible_sides),
         answer=int(answer),
-        target_pair_probabilities=dict(target_pair_probabilities),
+        missing_side_probabilities=dict(missing_side_probabilities),
         tangent_case_probabilities=dict(tangent_case_probabilities),
     )
 
@@ -137,7 +138,7 @@ def _draw_tangential_diagram_with_retry(
     )
 
 
-def _build_side_sum_trace_payload(
+def _build_side_length_trace_payload(
     *,
     rendered: RenderedTangentialScene,
     image_size: tuple[int, int],
@@ -149,7 +150,7 @@ def _build_side_sum_trace_payload(
     problem: _TangentialProblem,
     annotation_value: Mapping[str, list[float]],
 ) -> dict[str, Any]:
-    """Serialize task-owned side-sum facts into trace metadata."""
+    """Serialize task-owned missing-side facts into trace metadata."""
 
     side_lengths = problem.diagram_spec.side_lengths
     opposite_sum_ab_cd = int(side_lengths["AB"] + side_lengths["CD"])
@@ -160,8 +161,8 @@ def _build_side_sum_trace_payload(
         params={
             "query_id": str(selected_query),
             "query_id_probabilities": dict(query_probabilities),
-            "target_pair": str(problem.target_pair),
-            "target_pair_probabilities": dict(problem.target_pair_probabilities),
+            "missing_side": str(problem.missing_side),
+            "missing_side_probabilities": dict(problem.missing_side_probabilities),
             "tangent_case_probabilities": dict(problem.tangent_case_probabilities),
         },
     )
@@ -180,9 +181,9 @@ def _build_side_sum_trace_payload(
                 "incircle_center": list(rendered.render_map["incircle_center"]),
             },
             "relations": {
-                "type": "tangential_quadrilateral_opposite_side_sum",
-                "target_pair": str(problem.target_pair),
-                "known_pair": str(problem.known_pair),
+                "type": "tangential_quadrilateral_missing_side",
+                "missing_side": str(problem.missing_side),
+                "visible_sides": list(problem.visible_sides),
             },
         },
         "query_spec": query_spec,
@@ -200,8 +201,8 @@ def _build_side_sum_trace_payload(
             "task_id": TASK_ID,
             "scene_id": SCENE_ID,
             "query_id": str(selected_query),
-            "target_pair": str(problem.target_pair),
-            "known_pair": str(problem.known_pair),
+            "missing_side": str(problem.missing_side),
+            "visible_sides": list(problem.visible_sides),
             "vertex_tangents": dict(problem.diagram_spec.vertex_tangents),
             "side_lengths": dict(side_lengths),
             "opposite_sum_AB_CD": int(opposite_sum_ab_cd),
@@ -214,8 +215,8 @@ def _build_side_sum_trace_payload(
             "scene_id": SCENE_ID,
             "query_id": str(selected_query),
             "formula_family": "pitot_theorem_tangential_quadrilateral",
-            "target_pair": str(problem.target_pair),
-            "known_pair": str(problem.known_pair),
+            "missing_side": str(problem.missing_side),
+            "visible_sides": list(problem.visible_sides),
             "vertex_tangents": dict(problem.diagram_spec.vertex_tangents),
             "side_lengths": dict(side_lengths),
             "opposite_sum_AB_CD": int(opposite_sum_ab_cd),
@@ -227,8 +228,8 @@ def _build_side_sum_trace_payload(
 
 
 @register_task
-class GeometryCirclePolygonCompositeTangentialQuadrilateralSideSumValueTask:
-    """Compute an opposite side sum in a tangential quadrilateral."""
+class GeometryCirclePolygonCompositeTangentialQuadrilateralSideLengthValueTask:
+    """Compute a missing side length in a tangential quadrilateral."""
 
     task_id = TASK_ID
     domain = "geometry"
@@ -236,7 +237,7 @@ class GeometryCirclePolygonCompositeTangentialQuadrilateralSideSumValueTask:
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Select a side-sum query and bind answer/annotation in this public task."""
+        """Select a side-length query and bind answer/annotation in this public task."""
 
         selected_query, query_probabilities, task_params = select_task_query_id(
             instance_seed=int(instance_seed),
@@ -245,7 +246,7 @@ class GeometryCirclePolygonCompositeTangentialQuadrilateralSideSumValueTask:
             default_query_id=QUERY_ID,
             task_id=TASK_ID,
         )
-        problem = _bind_side_sum_problem(
+        problem = _bind_side_length_problem(
             instance_seed=int(instance_seed),
             params=task_params,
             selected_query=str(selected_query),
@@ -266,14 +267,14 @@ class GeometryCirclePolygonCompositeTangentialQuadrilateralSideSumValueTask:
         _prompt_defaults, prompt_artifacts = tangential_prompt_artifacts(
             prompt_defaults=_PROMPT_DEFAULTS,
             prompt_query_key=str(selected_query),
-            target_pair=str(problem.target_pair_label),
-            known_pair=str(problem.known_pair_label),
+            target_side=str(problem.missing_side),
+            visible_sides=", ".join(problem.visible_sides),
             answer_value=int(problem.answer),
             annotation_keys=rendered.annotation_roles,
             instance_seed=int(instance_seed),
         )
         annotation_value = keyed_point_annotation(rendered)
-        trace_payload = _build_side_sum_trace_payload(
+        trace_payload = _build_side_length_trace_payload(
             rendered=rendered,
             image_size=image.size,
             render_context=render_context,
@@ -299,7 +300,7 @@ class GeometryCirclePolygonCompositeTangentialQuadrilateralSideSumValueTask:
 
 
 __all__ = [
-    "GeometryCirclePolygonCompositeTangentialQuadrilateralSideSumValueTask",
+    "GeometryCirclePolygonCompositeTangentialQuadrilateralSideLengthValueTask",
     "QUERY_ID",
     "SUPPORTED_QUERY_IDS",
     "TASK_ID",

@@ -402,7 +402,6 @@ def _render_trig_case(problem: _ResolvedProblem, ctx: _RenderContext, *, instanc
         for label, direction in (("A", (0.0, -1.0)), ("B", (-1.0, 1.0)), ("C", (1.0, 1.0)), ("D", (0.0, 1.0)))
     }
     readouts: Dict[str, BBox] = {}
-    annotation: Dict[str, Point]
     if "BD" in labels and labels["BD"] != "?":
         readouts["BD"] = _draw_side_label(ctx, pts["B"], pts["D"], labels["BD"], offset=32.0)
     if "AB" in labels and labels["AB"] != "?":
@@ -410,43 +409,20 @@ def _render_trig_case(problem: _ResolvedProblem, ctx: _RenderContext, *, instanc
     if "AC" in labels and labels["AC"] != "?":
         readouts["AC"] = _draw_side_label(ctx, pts["A"], pts["C"], labels["AC"], offset=36.0)
     if "angle_B" in labels:
-        _, p_b = _draw_angle_label(ctx, labels["angle_B"], pts["B"], pts["A"], pts["D"], radius=52.0)
-    else:
-        p_b = _angle_point(pts["B"], pts["A"], pts["D"], radius=52.0)
+        _draw_angle_label(ctx, labels["angle_B"], pts["B"], pts["A"], pts["D"], radius=52.0)
     if "angle_C" in labels:
-        _, p_c = _draw_angle_label(ctx, labels["angle_C"], pts["C"], pts["D"], pts["A"], radius=52.0)
-    else:
-        p_c = _angle_point(pts["C"], pts["D"], pts["A"], radius=52.0)
+        _draw_angle_label(ctx, labels["angle_C"], pts["C"], pts["D"], pts["A"], radius=52.0)
     if problem.case.target_name == "AC":
         readouts["target_AC"] = _draw_side_label(ctx, pts["A"], pts["C"], "?", offset=36.0)
-        annotation = {
-            "target_segment_start": pts["A"],
-            "target_segment_end": pts["C"],
-            "altitude_start": pts["A"],
-            "altitude_end": pts["D"],
-            "known_angle_left": p_b,
-            "known_angle_right": p_c,
-            "known_segment_start": pts["B"] if "BD" in labels else pts["A"],
-            "known_segment_end": pts["D"] if "BD" in labels else pts["B"],
-        }
     else:
         readouts["target_AB"] = _draw_side_label(ctx, pts["A"], pts["B"], "?", offset=-36.0)
-        annotation = {
-            "target_segment_start": pts["A"],
-            "target_segment_end": pts["B"],
-            "altitude_start": pts["A"],
-            "altitude_end": pts["D"],
-            "known_angle": p_b,
-            "known_segment_start": pts["B"],
-            "known_segment_end": pts["D"],
-        }
     render_map = {
         "vertices": {key: _point_to_list(value) for key, value in pts.items()},
         "point_label_bboxes": point_labels,
         "construction_bboxes": _json_ready(construction),
         "readout_bboxes": _json_ready(readouts),
     }
-    return _RenderedScene(ctx.image, annotation, render_map)
+    return _RenderedScene(ctx.image, dict(pts), render_map)
 
 
 def _make_prompt_examples(annotation_keys: Sequence[str], *, answer: float | int) -> tuple[str, str]:

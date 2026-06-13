@@ -10,7 +10,8 @@ from trace.core.scene_config import get_scene_defaults
 from trace.tasks.geometry.circle_theorem.cyclic_quadrilateral_angle_value import GeometryCircleCyclicQuadrilateralAngleValueTask
 from trace.tasks.geometry.circle_theorem.diameter_perpendicular_chord_length_value import GeometryCircleDiameterPerpendicularChordLengthValueTask
 from trace.tasks.geometry.circle_theorem.external_secant_angle_value import GeometryCircleExternalSecantAngleValueTask
-from trace.tasks.geometry.circle_theorem.chord_length_from_radius_angle_value import GeometryCircleChordLengthFromRadiusAngleValueTask
+from trace.tasks.geometry.circle_theorem.chord_length_from_radius_central_angle_value import GeometryCircleChordLengthFromRadiusCentralAngleValueTask
+from trace.tasks.geometry.circle_theorem.chord_length_from_radius_inscribed_angle_value import GeometryCircleChordLengthFromRadiusInscribedAngleValueTask
 from trace.tasks.geometry.circle_theorem.inscribed_angle_value_central_angle_from_inscribed import GeometryCircleCentralAngleFromInscribedTask
 from trace.tasks.geometry.circle_theorem.inscribed_angle_value_inscribed_angle_from_arc import GeometryCircleInscribedAngleFromArcTask
 from trace.tasks.geometry.circle_theorem.inscribed_angle_value_inscribed_angle_from_central import GeometryCircleInscribedAngleFromCentralTask
@@ -24,6 +25,17 @@ from trace.tasks.geometry.circle_theorem.tangent_radius_right_triangle_length_va
     _DEFAULT_TRIPLES,
 )
 from trace.tasks.geometry.circle_theorem.tangent_secant_length_value import GeometryCircleTangentSecantLengthValueTask
+from trace.tasks.geometry.circle_theorem.shared.state import (
+    CENTRAL_ANGLE_ANSWER_SUPPORT,
+    CYCLIC_QUADRILATERAL_ANGLE_SUPPORT,
+    DIAMETER_CHORD_ANSWER_SUPPORT,
+    EXTERNAL_SECANT_ANGLE_ANSWER_SUPPORT,
+    INSCRIBED_ANGLE_ANSWER_SUPPORT,
+    INTERSECTING_CHORDS_ARC_ANSWER_SUPPORT,
+    MULTI_STEP_ANGLE_ANSWER_SUPPORT,
+    SECANT_SECANT_ANSWER_SUPPORT,
+    TANGENT_CHORD_ANGLE_ANSWER_SUPPORT,
+)
 from trace.tasks.shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
@@ -101,7 +113,7 @@ def _task_for_query(query_id: str):
 
 
 def test_circle_theorem_tangent_radius_default_pool_has_broad_support() -> None:
-    assert len(_DEFAULT_TRIPLES) >= 12
+    assert len(_DEFAULT_TRIPLES) >= 80
 
     radii = [radius for radius, _tangent, _external in _DEFAULT_TRIPLES]
     tangent_lengths = [tangent for _radius, tangent, _external in _DEFAULT_TRIPLES]
@@ -114,28 +126,39 @@ def test_circle_theorem_tangent_radius_default_pool_has_broad_support() -> None:
         assert int(radius) ** 2 + int(tangent) ** 2 == int(external) ** 2
 
 
+def test_circle_theorem_answer_supports_are_broad() -> None:
+    """Guard against reverting theorem answers to tiny review-frequency pools."""
+
+    assert len(DIAMETER_CHORD_ANSWER_SUPPORT) >= 50
+    assert len(SECANT_SECANT_ANSWER_SUPPORT) >= 40
+    assert len(INSCRIBED_ANGLE_ANSWER_SUPPORT) >= 50
+    assert len(CENTRAL_ANGLE_ANSWER_SUPPORT) >= 50
+    assert len(TANGENT_CHORD_ANGLE_ANSWER_SUPPORT) >= 50
+    assert len(EXTERNAL_SECANT_ANGLE_ANSWER_SUPPORT) >= 50
+    assert len(CYCLIC_QUADRILATERAL_ANGLE_SUPPORT) >= 80
+    assert len(INTERSECTING_CHORDS_ARC_ANSWER_SUPPORT) >= 100
+    assert len(MULTI_STEP_ANGLE_ANSWER_SUPPORT) >= 80
+
+
 @pytest.mark.parametrize(
-    "query_id,expected_keys",
+    "task_cls,query_id,expected_keys",
     (
         (
+            GeometryCircleChordLengthFromRadiusCentralAngleValueTask,
             "chord_length_from_radius_and_central_angle",
-            ("center", "chord_endpoint_1", "chord_endpoint_2"),
+            ("O", "A", "B"),
         ),
         (
+            GeometryCircleChordLengthFromRadiusInscribedAngleValueTask,
             "chord_length_from_radius_and_inscribed_angle",
-            (
-                "center",
-                "chord_endpoint_1",
-                "chord_endpoint_2",
-                "inscribed_angle_vertex",
-            ),
+            ("O", "A", "B", "C"),
         ),
     ),
 )
 def test_circle_chord_length_from_radius_angle_contract(
-    query_id: str, expected_keys: tuple[str, ...]
+    task_cls, query_id: str, expected_keys: tuple[str, ...]
 ) -> None:
-    out = GeometryCircleChordLengthFromRadiusAngleValueTask().generate(
+    out = task_cls().generate(
         29031,
         params={"query_id": query_id, "radius_value": 10, "angle_degrees": 60},
         max_attempts=40,
@@ -157,13 +180,13 @@ def test_circle_chord_length_from_radius_angle_contract(
     assert execution["answer_value"] == pytest.approx(expected_answer)
     assert out.annotation_gt.type == "keyed_point_map"
     assert tuple(out.annotation_gt.value) == tuple(expected_keys)
-    assert set(out.annotation_gt.value) == set(execution["annotation_roles"])
+    assert set(out.annotation_gt.value) == set(execution["annotation_point_labels"])
     assert out.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
     assert (
         out.trace_payload["projected_annotation"]["keyed_point_map"]
         == out.annotation_gt.value
     )
-    assert "role keys" in out.prompt
+    assert "visible point-label keys" in out.prompt
     for key in expected_keys:
         assert f'"{key}"' in out.prompt
     assert "task_variant" not in str(out.trace_payload)
@@ -239,19 +262,15 @@ def test_circle_tangent_radius_right_triangle_length_contract(
         external * external
     )
     assert out.annotation_gt.type == "keyed_point_map"
-    assert tuple(out.annotation_gt.value) == (
-        "center",
-        "tangent_point",
-        "external_point",
-    )
-    assert set(out.annotation_gt.value) == set(execution["annotation_roles"])
+    assert tuple(out.annotation_gt.value) == ("O", "T", "P")
+    assert set(out.annotation_gt.value) == set(execution["annotation_point_labels"])
     assert out.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
     assert (
         out.trace_payload["projected_annotation"]["keyed_point_map"]
         == out.annotation_gt.value
     )
-    assert "role keys" in out.prompt
-    for key in ("center", "tangent_point", "external_point"):
+    assert "visible point-label keys" in out.prompt
+    for key in ("O", "T", "P"):
         assert f'"{key}"' in out.prompt
     assert "task_variant" not in str(out.trace_payload)
 
@@ -438,7 +457,7 @@ def test_geometry_circle_theorem_value_is_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
-def test_geometry_circle_theorem_reserves_visible_o_for_center() -> None:
+def test_geometry_circle_theorem_uses_fixed_visible_point_labels() -> None:
     variants = (
         "diameter_perpendicular_chord_length",
         "secant_secant_variable_segment_length",
@@ -463,12 +482,7 @@ def test_geometry_circle_theorem_reserves_visible_o_for_center() -> None:
             )
             label_map = out.trace_payload["execution_trace"]["label_map"]
 
-            assert label_map["O"] == "O"
-            assert all(
-                visible != "O"
-                for canonical, visible in label_map.items()
-                if canonical != "O"
-            )
+            assert label_map == {label: label for label in label_map}
 
 
 def test_geometry_circle_theorem_value_rejects_unsupported_variant() -> None:
@@ -735,7 +749,7 @@ def test_cyclic_quadrilateral_exterior_angle_variant_matches_opposite_angle() ->
     assert int(trace["answer_value"]) == int(out.answer_gt.value)
     assert int(out.answer_gt.value) == 75
     assert str(trace["extension_point"]) in out.annotation_gt.value
-    assert str(trace["known_angle"]) in out.prompt
+    assert str(trace["answer_segment"]) in out.prompt
     assert "∠" in out.prompt
     assert "angleADE" not in out.prompt
     assert "angleEBC" not in out.prompt
@@ -853,13 +867,17 @@ def test_geometry_circle_scene_config_keeps_render_and_prompt_defaults_only() ->
     assert int(rendering["line_width"]) > 0
     assert str(prompt["bundle_id"]) == "geometry_circle_theorem_v0"
 
-    chord_generation, _, chord_prompt = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_geometry__circle_theorem__chord_length_from_radius_angle_value",
-    )
-    assert chord_generation == {}
-    assert str(chord_prompt["answer_hint_number"]).strip()
-    assert str(chord_prompt["annotation_hint_chord_length_points"]).strip()
+    for chord_task_id in (
+        "task_geometry__circle_theorem__chord_length_from_radius_central_angle_value",
+        "task_geometry__circle_theorem__chord_length_from_radius_inscribed_angle_value",
+    ):
+        chord_generation, _, chord_prompt = split_generation_rendering_prompt_defaults(
+            cfg,
+            task_id=chord_task_id,
+        )
+        assert chord_generation == {}
+        assert str(chord_prompt["answer_hint_number"]).strip()
+        assert str(chord_prompt["annotation_hint_chord_length_points"]).strip()
 
     tangent_radius_generation, _, tangent_radius_prompt = (
         split_generation_rendering_prompt_defaults(

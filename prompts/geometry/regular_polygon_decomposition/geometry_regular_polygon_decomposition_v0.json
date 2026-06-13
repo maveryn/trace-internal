@@ -179,7 +179,7 @@
     "object_description": "a regular polygon partitioned into equal center wedges with marked measurements and shaded or marked wedge regions",
     "json_output_contract": "Return a JSON object with keys \"annotation\" and \"answer\".",
     "json_output_contract_answer_only": "Return a JSON object with key \"answer\".",
-    "annotation_hint": "set \"annotation\" to a JSON object with exactly these keys: {annotation_keys}; each value must be the pixel point [x,y] for that visible witness",
+    "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point",
     "answer_hint_number_area": "set \"answer\" to the requested area as a number",
     "answer_hint_integer_degrees": "set \"answer\" to the requested angle in degrees as an integer",
     "answer_hint_integer_length": "set \"answer\" to the requested length as an integer",

@@ -20,6 +20,7 @@ def circle_centerline_prompt_artifacts(
     prompt_defaults: Mapping[str, Any],
     prompt_query_key: str,
     target_name: str,
+    label_mode: str,
     answer_value: int,
     annotation_keys: Sequence[str],
     instance_seed: int,
@@ -53,6 +54,7 @@ def circle_centerline_prompt_artifacts(
         query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         dynamic_slots={
+            "measure_label_kind": "diameter" if str(label_mode) == "diameter" else "radius",
             "target_name": str(target_name),
             "annotation_keys": str(annotation_key_text),
             "json_example": str(json_example),

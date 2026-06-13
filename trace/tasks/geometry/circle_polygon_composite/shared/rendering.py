@@ -12,13 +12,14 @@ from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
-from trace.tasks.geometry.shared.diagram_style import prepare_geometry_diagram_style_and_background
+from trace.tasks.geometry.shared.diagram_style import (
+    GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
+    prepare_geometry_diagram_style_and_background,
+)
 from trace.tasks.geometry.shared.measurement_rendering import (
     bbox_from_points,
     bbox_to_list,
-    draw_label_backplate,
     pad_bbox,
-    readout_text_metadata,
 )
 from trace.tasks.geometry.shared.scene_transform import LazySceneTransform
 from trace.tasks.geometry.shared.vector2d import (
@@ -63,6 +64,7 @@ def create_circle_polygon_render_context(
         canvas_height=int(height),
         allow_dark=False,
         require_grid=None,
+        style_profile=GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
     )
     fill_palettes: Tuple[Tuple[Color, Color], ...] = (
         ((238, 246, 255), (255, 252, 232)),
@@ -148,7 +150,6 @@ def _draw_text_centered(ctx: CirclePolygonRenderContext, text: str, center: Poin
         font=font,
         stroke_width=max(0, int(ctx.label_stroke_width)),
     )
-    draw_label_backplate(ctx, bbox)
     draw_text_traced(
         ctx.draw,
         (float(center[0]), float(center[1])),
@@ -160,7 +161,6 @@ def _draw_text_centered(ctx: CirclePolygonRenderContext, text: str, center: Poin
         stroke_fill=ctx.label_stroke_color,
         role="readout",
         required=True,
-        extra_metadata=readout_text_metadata(ctx, ctx.label_color),
     )
     return pad_bbox(bbox, 4.0, width=ctx.width, height=ctx.height)
 
@@ -343,7 +343,7 @@ def render_angle_scene(
     tangent_direction = (-float(sign) * math.cos(theta), math.sin(theta))
     tangent_endpoints = _line_rectangle_intersections(tangent_point, tangent_direction, bounds)
     known_angle_vertex = max(tangent_endpoints, key=lambda point: point[1])
-    known_angle_reference_point = (known_angle_vertex[0] - (float(sign) * 0.36), known_angle_vertex[1])
+    known_angle_reference_point = (known_angle_vertex[0] + (float(sign) * 0.36), known_angle_vertex[1])
     target_angle_vertex = (0.0, 0.0)
     target_reference_point = (0.0, 1.0)
     circle_center = (0.0, 0.0)
@@ -423,7 +423,13 @@ def render_angle_scene(
         _add(tangent_point_px, (float(sign) * 18.0, -16.0)),
         small=True,
     )
-    known_label_local = (known_angle_vertex[0] - (float(sign) * 0.05), known_angle_vertex[1] + 0.26)
+    known_label_direction = _unit(
+        _add(
+            _unit(_sub(known_angle_reference_point, known_angle_vertex)),
+            _unit(_sub(tangent_point, known_angle_vertex)),
+        )
+    )
+    known_label_local = _add(known_angle_vertex, _mul(known_label_direction, 0.30))
     target_label_local = _add(
         target_angle_vertex,
         _mul(_unit(_add(_sub(target_reference_point, target_angle_vertex), _sub(tangent_point, target_angle_vertex))), 0.43),
@@ -444,16 +450,12 @@ def render_angle_scene(
     _assert_bboxes_inside(label_bboxes.values(), width=ctx.width, height=ctx.height)
 
     annotation = {
-        "shape_corner_A": corner_px["A"],
-        "shape_corner_B": corner_px["B"],
-        "shape_corner_C": corner_px["C"],
-        "shape_corner_D": corner_px["D"],
-        "circle_center": circle_center_px,
-        "tangent_point": tangent_point_px,
-        "known_angle_vertex": known_angle_vertex_px,
-        "known_angle_reference_point": known_angle_reference_px,
-        "target_angle_vertex": circle_center_px,
-        "target_reference_point": target_reference_px,
+        "A": corner_px["A"],
+        "B": corner_px["B"],
+        "C": corner_px["C"],
+        "D": corner_px["D"],
+        "O": circle_center_px,
+        "T": tangent_point_px,
     }
     render_map = {
         "coord_space": "pixel",
@@ -583,22 +585,17 @@ def render_tangential_scene(
     for vertex_key, point in vertices.items():
         direction = _unit(_sub(point, poly_center))
         label_center = _add(point, _mul(direction, vertex_label_offset))
-        label_bboxes[f"vertex_{vertex_key}_label"] = _draw_text_centered(ctx, str(vertex_key), label_center, small=True)
+        label_bboxes[f"{vertex_key}_label"] = _draw_text_centered(ctx, str(vertex_key), label_center, small=True)
         x, y = float(point[0]), float(point[1])
         dot_radius = max(3, int(ctx.line_width + 1))
         ctx.draw.ellipse((x - dot_radius, y - dot_radius, x + dot_radius, y + dot_radius), fill=ctx.line_color)
     _assert_bboxes_inside(label_bboxes.values(), width=ctx.width, height=ctx.height)
 
     annotation = {
-        "vertex_A": vertices["A"],
-        "vertex_B": vertices["B"],
-        "vertex_C": vertices["C"],
-        "vertex_D": vertices["D"],
-        "tangent_AB": tangencies["AB"],
-        "tangent_BC": tangencies["BC"],
-        "tangent_CD": tangencies["CD"],
-        "tangent_DA": tangencies["DA"],
-        "incircle_center": center,
+        "A": vertices["A"],
+        "B": vertices["B"],
+        "C": vertices["C"],
+        "D": vertices["D"],
     }
     render_map = {
         "coord_space": "pixel",

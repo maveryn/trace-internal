@@ -37,6 +37,11 @@ from trace.tasks.shared.fixed_query import (
 )
 from ..shared.measurement_rendering import bbox_from_points, bbox_to_list, pad_bbox
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
+from ..shared.pythagorean import (
+    IntegerRightTriangle,
+    integer_right_triangles,
+    validate_integer_right_triangle,
+)
 from ..shared.scene_transform import LazySceneTransform
 from ..shared.vector2d import add as _add, dot as _dot, mul as _mul, sub as _sub, unit as _unit
 
@@ -51,18 +56,35 @@ TASK_ID = "task_geometry__pythagorean_tree__missing_square_area_value"
 _SCENE_DEFAULTS = get_scene_defaults("geometry", "pythagorean_tree")
 _QUERY_IDS: Tuple[str, ...] = ("hypotenuse_square_area", "leg_square_area")
 _LEG_TARGET_ROLES: Tuple[str, ...] = ("leg_square_1", "leg_square_2")
-_TRIPLES: Tuple[Tuple[int, int, int], ...] = (
-    (3, 4, 5),
-    (5, 12, 13),
-    (6, 8, 10),
-    (7, 24, 25),
-    (8, 15, 17),
-    (9, 12, 15),
-    (9, 40, 41),
-    (10, 24, 26),
-    (12, 16, 20),
-    (15, 20, 25),
-)
+
+
+def _default_tree_triples() -> Tuple[Tuple[int, int, int], ...]:
+    """Return attached-square cases with distinct leg and hypotenuse answers."""
+
+    triples: list[Tuple[int, int, int]] = []
+    used_legs: set[int] = set()
+    used_hypotenuses: set[int] = set()
+    for triangle in integer_right_triangles(
+        min_leg=3,
+        max_leg=55,
+        max_hypotenuse=65,
+    ):
+        leg_a = int(triangle.leg_a)
+        leg_b = int(triangle.leg_b)
+        hypotenuse = int(triangle.hypotenuse)
+        if leg_a in used_legs or leg_b in used_legs:
+            continue
+        if hypotenuse in used_hypotenuses:
+            continue
+        triples.append((leg_a, leg_b, hypotenuse))
+        used_legs.update((leg_a, leg_b))
+        used_hypotenuses.add(hypotenuse)
+    if len(triples) < 10:
+        raise RuntimeError("pythagorean tree triple pool is unexpectedly small")
+    return tuple(triples)
+
+
+_TRIPLES: Tuple[Tuple[int, int, int], ...] = _default_tree_triples()
 
 
 @dataclass(frozen=True)
@@ -149,8 +171,13 @@ def _resolve_problem(*, instance_seed: int, params: Mapping[str, Any]) -> _Resol
         if not isinstance(explicit_triple, Sequence) or len(explicit_triple) != 3:
             raise ValueError("triple must be a three-item sequence")
         leg_a, leg_b, hypotenuse = [int(value) for value in explicit_triple]
-        if (leg_a * leg_a) + (leg_b * leg_b) != hypotenuse * hypotenuse:
-            raise ValueError("triple must satisfy the Pythagorean relation")
+        validate_integer_right_triangle(
+            IntegerRightTriangle(
+                leg_a=int(leg_a),
+                leg_b=int(leg_b),
+                hypotenuse=int(hypotenuse),
+            )
+        )
         triple = (leg_a, leg_b, hypotenuse)
         triple_probabilities = {_triple_key(triple): 1.0}
     else:

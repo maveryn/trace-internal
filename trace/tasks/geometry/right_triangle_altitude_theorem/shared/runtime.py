@@ -443,24 +443,7 @@ def _render_problem(problem: _ResolvedProblem, ctx: _RenderContext) -> _Rendered
     point_label_bboxes.update(_draw_vertex_labels(ctx, points))
     readout_bboxes.update(_draw_measurement_labels(ctx, problem.case, points))
 
-    if problem.objective_key == ALTITUDE_OBJECTIVE_KEY:
-        annotation = {
-            "right_angle_vertex": a,
-            "altitude_foot": d,
-            "hypotenuse_left_endpoint": b,
-            "hypotenuse_right_endpoint": c,
-        }
-    else:
-        if problem.case.target_role in {"left_leg", "left_projection"}:
-            leg_endpoint, other_endpoint = b, c
-        else:
-            leg_endpoint, other_endpoint = c, b
-        annotation = {
-            "right_angle_vertex": a,
-            "leg_hypotenuse_endpoint": leg_endpoint,
-            "altitude_foot": d,
-            "other_hypotenuse_endpoint": other_endpoint,
-        }
+    annotation = dict(points)
 
     render_map = {
         "points": {key: _point_to_list(point) for key, point in points.items()},

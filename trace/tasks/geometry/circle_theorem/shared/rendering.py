@@ -8,7 +8,6 @@ from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from .....core.visual.background import make_background_canvas
 from .....core.visual.noise import apply_post_image_noise
 from ....shared.config_defaults import group_default
 from ....shared.text_rendering import (
@@ -16,20 +15,22 @@ from ....shared.text_rendering import (
     load_font,
     resolve_text_label_center,
 )
+from ...shared.diagram_style import (
+    GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
+    geometry_diagram_style_metadata,
+    geometry_shape_style_from_diagram_style,
+    prepare_geometry_diagram_style_and_background,
+)
 from ...shared.render_variation import sample_int_render_param
 from ...shared.scene_transform import LazySceneTransform
-from ...shared.shape_style import (
-    extract_background_anchor_colors,
-    sample_geometry_shape_style,
-)
 
 from .state import (
     Point,
     BBox,
-    BACKGROUND_DEFAULTS,
     DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RenderedCircleTheoremScene,
+    SCENE_ID,
     _text_bbox_for_center,
     _bbox_to_list,
 )
@@ -563,27 +564,25 @@ def _render_base_scene(
     center_px = scene_transform.point(center_px)
     radius_px *= float(scene_transform.transform.scale)
 
-    image, background_meta = make_background_canvas(
-        canvas_size=int(canvas_size),
+    image, background_meta, diagram_style, diagram_style_meta = prepare_geometry_diagram_style_and_background(
+        canvas_width=int(canvas_size),
+        canvas_height=int(canvas_size),
         instance_seed=int(instance_seed),
         params=dict(params),
-        default_config=BACKGROUND_DEFAULTS,
-        fallback_color=(252, 252, 252),
+        scene_id=SCENE_ID,
+        allow_dark=False,
+        require_grid=False,
+        style_profile=GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
     )
     draw = ImageDraw.Draw(image)
-    shape_style = sample_geometry_shape_style(
-        rng,
-        params=params,
-        render_defaults=render_defaults,
-        anchor_colors=extract_background_anchor_colors(background_meta),
-    )
+    shape_style = geometry_shape_style_from_diagram_style(diagram_style)
     line_color = tuple(int(value) for value in shape_style.line_color)
     label_color = tuple(int(value) for value in shape_style.label_color)
     stroke_color = tuple(int(value) for value in shape_style.label_stroke_color)
     label_font = load_font(label_font_size_px, bold=True)
     measurement_font = load_font(measurement_font_size_px, bold=True)
-    label_stroke_width = max(1, int(round(label_font_size_px * 0.08)))
-    measurement_stroke_width = max(1, int(round(measurement_font_size_px * 0.08)))
+    label_stroke_width = 1
+    measurement_stroke_width = 1
 
     circle_bbox = (
         float(center_px[0] - radius_px),
@@ -839,6 +838,8 @@ def _render_base_scene(
             "single_object_scene_rotation": scene_transform.metadata(),
             "measurement_label_offset_px": float(measurement_offset_px),
             "point_label_offset_px": float(point_label_offset_px),
+            "technical_diagram_style": geometry_diagram_style_metadata(diagram_style),
+            "technical_diagram_style_resolution": dict(diagram_style_meta),
         },
     )
 

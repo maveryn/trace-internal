@@ -164,7 +164,7 @@
   "allow_empty_task_templates": true,
   "code_prompt_defaults": {
     "object_description": "a geometry angle-chase diagram with labeled points and marked angle labels",
-    "annotation_hint": "set \"annotation\" to a JSON object with exactly these keys: {annotation_keys}; each value must be the pixel point [x,y] at the keyed angle vertex or construction point",
+    "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point",
     "answer_hint_integer": "set \"answer\" to the requested angle measure as an integer number of degrees"
   }
 }

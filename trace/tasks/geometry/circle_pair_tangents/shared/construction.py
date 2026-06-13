@@ -7,20 +7,58 @@ from typing import Any, Mapping, Sequence
 
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import geometry_selected_probability_map
+from trace.tasks.geometry.shared.pythagorean import integer_right_triangles
 
 from .state import LARGER_CIRCLE_SIDES, TANGENT_SIDES, TangentCase
 
 
-TANGENT_CASES: tuple[TangentCase, ...] = (
-    TangentCase(3, 8, 13, 12),
-    TangentCase(2, 11, 15, 12),
-    TangentCase(4, 12, 17, 15),
-    TangentCase(3, 15, 20, 16),
-    TangentCase(5, 12, 25, 24),
-    TangentCase(6, 16, 26, 24),
-    TangentCase(4, 24, 29, 21),
-    TangentCase(6, 22, 34, 30),
-)
+def _default_tangent_cases() -> tuple[TangentCase, ...]:
+    """Build separated-circle tangent cases from integer right triangles."""
+
+    cases: list[TangentCase] = []
+    seen_tangent_lengths: set[int] = set()
+    seen_center_distances: set[int] = set()
+    for triangle in integer_right_triangles(
+        min_leg=2,
+        max_leg=420,
+        max_hypotenuse=420,
+    ):
+        radius_difference = min(int(triangle.leg_a), int(triangle.leg_b))
+        tangent_length = max(int(triangle.leg_a), int(triangle.leg_b))
+        center_distance = int(triangle.hypotenuse)
+        if not 10 <= int(tangent_length) <= 320:
+            continue
+        if not 2 <= int(radius_difference) <= 120:
+            continue
+        max_small_radius = (int(center_distance) - int(radius_difference)) // 2
+        if int(max_small_radius) < 2:
+            continue
+        small_radius = min(
+            int(max_small_radius),
+            max(2, min(20, int(radius_difference) // 2 + 1)),
+        )
+        large_radius = int(small_radius) + int(radius_difference)
+        if int(large_radius) > 140:
+            continue
+        if int(tangent_length) in seen_tangent_lengths:
+            continue
+        if int(center_distance) in seen_center_distances:
+            continue
+
+        case = TangentCase(
+            small_radius=int(small_radius),
+            large_radius=int(large_radius),
+            center_distance=int(center_distance),
+            tangent_length=int(tangent_length),
+        )
+        validate_tangent_case(case)
+        cases.append(case)
+        seen_tangent_lengths.add(int(tangent_length))
+        seen_center_distances.add(int(center_distance))
+
+    if len(cases) < 64:
+        raise RuntimeError("circle-pair tangent case pool is unexpectedly small")
+    return tuple(cases)
 
 
 @dataclass(frozen=True)
@@ -49,6 +87,9 @@ def validate_tangent_case(case: TangentCase) -> None:
     expected = int(case.center_distance) ** 2 - int(case.radius_difference) ** 2
     if expected <= 0 or int(case.tangent_length) ** 2 != expected:
         raise ValueError("tangent_case must satisfy t^2 = d^2 - (r_large-r_small)^2")
+
+
+TANGENT_CASES: tuple[TangentCase, ...] = _default_tangent_cases()
 
 
 def select_tangent_case(

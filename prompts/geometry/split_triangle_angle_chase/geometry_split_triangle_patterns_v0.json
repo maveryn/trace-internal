@@ -91,7 +91,7 @@
     "object_description": "a triangle split into adjacent smaller triangles by one interior segment, with visible angle measures and one marked target angle",
     "json_output_contract": "Return one JSON object with keys \"answer\" and \"annotation\".",
     "json_output_contract_answer_only": "Return one JSON object with key \"answer\".",
-    "annotation_hint": "set \"annotation\" to a JSON object with exactly these keys: {annotation_keys}; each value must be the pixel point [x,y] at that keyed target angle, supporting angle, or shared vertex",
+    "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point",
     "answer_hint": "set \"answer\" to the target angle measure in degrees as an integer"
   }
 }

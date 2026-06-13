@@ -417,30 +417,26 @@ def _render_angle_case(problem: _ResolvedProblem, ctx: _RenderContext, *, instan
         "D": bbox_to_list(_draw_point_label(ctx, "D", pts["D"], (0.0, 1.0))),
     }
     readouts: Dict[str, Any] = {}
-    annotation: Dict[str, Point] = {}
     if problem.query_id == "single_cevian_triangle_angle_sum":
-        _, p_a = _draw_angle_label(ctx, labels["given_left_A"], pts["A"], pts["B"], pts["D"], radius=50.0)
-        _, p_b = _draw_angle_label(ctx, labels["given_left_B"], pts["B"], pts["A"], pts["D"], radius=50.0)
-        _, p_t = _draw_angle_label(ctx, labels["target"], pts["D"], pts["A"], pts["B"], radius=58.0)
-        annotation = {"target_angle": p_t, "given_angle_1": p_a, "given_angle_2": p_b}
+        _draw_angle_label(ctx, labels["given_left_A"], pts["A"], pts["B"], pts["D"], radius=50.0)
+        _draw_angle_label(ctx, labels["given_left_B"], pts["B"], pts["A"], pts["D"], radius=50.0)
+        _draw_angle_label(ctx, labels["target"], pts["D"], pts["A"], pts["B"], radius=58.0)
     elif problem.query_id == "shared_vertex_split_angle_sum":
-        _, p_a = _draw_angle_label(ctx, labels["given_left_A"], pts["A"], pts["B"], pts["D"], radius=50.0)
-        _, p_d = _draw_angle_label(ctx, labels["given_left_D"], pts["D"], pts["A"], pts["B"], radius=58.0)
-        _, p_t = _draw_angle_label(ctx, labels["target"], pts["B"], pts["A"], pts["D"], radius=50.0)
-        annotation = {"target_angle": p_t, "given_angle_1": p_a, "given_angle_2": p_d}
+        _draw_angle_label(ctx, labels["given_left_A"], pts["A"], pts["B"], pts["D"], radius=50.0)
+        _draw_angle_label(ctx, labels["given_left_D"], pts["D"], pts["A"], pts["B"], radius=58.0)
+        _draw_angle_label(ctx, labels["target"], pts["B"], pts["A"], pts["D"], radius=50.0)
     else:
-        _, p_a = _draw_angle_label(ctx, labels["given_left_A"], pts["A"], pts["B"], pts["D"], radius=50.0)
-        _, p_d = _draw_angle_label(ctx, labels["given_left_D"], pts["D"], pts["A"], pts["B"], radius=58.0)
-        _, p_c = _draw_angle_label(ctx, labels["given_right_C"], pts["C"], pts["B"], pts["D"], radius=50.0)
-        _, p_t = _draw_angle_label(ctx, labels["target"], pts["D"], pts["B"], pts["C"], radius=58.0)
-        annotation = {"target_angle": p_t, "given_angle_1": p_a, "given_angle_2": p_d, "given_angle_3": p_c, "shared_straight_angle_vertex": pts["B"]}
+        _draw_angle_label(ctx, labels["given_left_A"], pts["A"], pts["B"], pts["D"], radius=50.0)
+        _draw_angle_label(ctx, labels["given_left_D"], pts["D"], pts["A"], pts["B"], radius=58.0)
+        _draw_angle_label(ctx, labels["given_right_C"], pts["C"], pts["B"], pts["D"], radius=50.0)
+        _draw_angle_label(ctx, labels["target"], pts["D"], pts["B"], pts["C"], radius=58.0)
     render_map = {
         "vertices": {key: _point_to_list(value) for key, value in pts.items()},
         "point_label_bboxes": point_labels,
         "construction_bboxes": _json_ready(construction),
         "readout_bboxes": _json_ready(readouts),
     }
-    return _RenderedScene(ctx.image, annotation, render_map)
+    return _RenderedScene(ctx.image, dict(pts), render_map)
 
 
 def _make_prompt_examples(annotation_keys: Sequence[str], *, answer: float | int) -> tuple[str, str]:

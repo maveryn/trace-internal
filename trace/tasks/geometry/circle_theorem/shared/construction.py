@@ -10,8 +10,7 @@ from .state import (
     CircleTheoremProblem,
     CYCLIC_QUADRILATERAL_ANGLE_SUPPORT,
     EXTERNAL_SECANT_ANGLE_ANSWER_SUPPORT,
-    CENTER_LABEL,
-    _sample_point_label_map,
+    _fixed_point_label_map,
     _visible_segment,
     _visible_angle,
     _visible_arc,
@@ -46,7 +45,7 @@ def _build_diameter_perpendicular_chord_scene(
             f"unsupported target answer for diameter chord theorem: {problem.target_answer}"
         )
     spec = dict(candidates[int(rng.randrange(len(candidates)))])
-    label_map = _sample_point_label_map(rng, ("O", "B", "D", "E", "A", "C"))
+    label_map = _fixed_point_label_map(("O", "B", "D", "E", "A", "C"))
     radius = float(spec["radius"])
     offset = float(spec["offset"])
     half_chord = float(spec["half_chord"])
@@ -138,7 +137,7 @@ def _build_tangent_secant_scene(rng, *, problem: CircleTheoremProblem) -> Dict[s
             f"unsupported target answer for tangent secant theorem: {problem.target_answer}"
         )
     spec = dict(candidates[int(rng.randrange(len(candidates)))])
-    label_map = _sample_point_label_map(rng, ("P", "A", "B", "T", "O"))
+    label_map = _fixed_point_label_map(("P", "A", "B", "T", "O"))
     outside = float(spec["PA"])
     internal = float(spec["AB"])
     tangent = float(spec["PT"])
@@ -288,7 +287,7 @@ def _build_secant_secant_scene(rng, *, problem: CircleTheoremProblem) -> Dict[st
             f"unsupported target answer for secant secant theorem: {problem.target_answer}"
         )
     spec = dict(candidates[int(rng.randrange(len(candidates)))])
-    label_map = _sample_point_label_map(rng, ("P", "A", "B", "C", "D", "O"))
+    label_map = _fixed_point_label_map(("P", "A", "B", "C", "D", "O"))
     pa = float(spec["PA"])
     ab = float(spec["AB"])
     pc = float(spec["PC"])
@@ -430,7 +429,7 @@ def _build_secant_secant_variable_scene(
             f"unsupported target answer for variable secant secant theorem: {problem.target_answer}"
         )
     spec = dict(candidates[int(rng.randrange(len(candidates)))])
-    label_map = _sample_point_label_map(rng, ("P", "A", "B", "C", "D", "O"))
+    label_map = _fixed_point_label_map(("P", "A", "B", "C", "D", "O"))
     pa = float(spec["PA"])
     ab = float(spec["AB"])
     pc = float(spec["PC"])
@@ -581,22 +580,23 @@ def _build_intersecting_chords_arc_scene(
     """Build an intersecting-chords angle scene and solve the missing intercepted arc."""
     target_arc = int(problem.target_answer)
 
-    if int(target_arc) % 10 != 0 or not (40 <= int(target_arc) <= 180):
+    if not (40 <= int(target_arc) <= 180):
         raise ValueError(
             f"unsupported target answer for intersecting-chords arc theorem: {problem.target_answer}"
         )
-    label_map = _sample_point_label_map(rng, ("O", "A", "B", "C", "D", "E"))
+    label_map = _fixed_point_label_map(("O", "A", "B", "C", "D", "E"))
     known_arc_candidates = [
         value
-        for value in range(40, 171, 10)
+        for value in range(40, 171)
         if 35 <= int(360 - int(target_arc) - int(value) - 55)
+        and int(value + target_arc) % 2 == 0
     ]
     if not known_arc_candidates:
         raise ValueError(f"no feasible known arc for target arc: {problem.target_answer}")
     known_arc = int(rng.choice(known_arc_candidates))
     gap_bc_candidates = [
         value
-        for value in range(45, 131, 5)
+        for value in range(45, 131)
         if int(360 - int(known_arc) - int(target_arc) - int(value)) >= 45
     ]
     if not gap_bc_candidates:
@@ -712,14 +712,14 @@ def _build_multi_step_angle_scene(rng, *, problem: CircleTheoremProblem) -> Dict
     """Build an intersecting-chords scene where arc sums determine the target angle."""
     target_angle = int(problem.target_answer)
 
-    if int(target_angle) % 5 != 0 or not (45 <= int(target_angle) <= 135):
+    if not (45 <= int(target_angle) <= 135):
         raise ValueError(
             f"unsupported target answer for multi-step circle angle theorem: {problem.target_answer}"
         )
-    label_map = _sample_point_label_map(rng, ("O", "A", "B", "C", "D", "E"))
+    label_map = _fixed_point_label_map(("O", "A", "B", "C", "D", "E"))
     arc_sum = int(2 * int(target_angle))
     known_arc_candidates = [
-        value for value in range(40, 171, 10) if 40 <= int(arc_sum - int(value)) <= 170
+        value for value in range(40, 171) if 40 <= int(arc_sum - int(value)) <= 170
     ]
     if not known_arc_candidates:
         raise ValueError(
@@ -734,7 +734,7 @@ def _build_multi_step_angle_scene(rng, *, problem: CircleTheoremProblem) -> Dict
         )
     gap_bc_candidates = [
         value
-        for value in range(45, int(remaining_arc) - 44, 5)
+        for value in range(45, int(remaining_arc) - 44)
         if int(remaining_arc - int(value)) >= 45
     ]
     if not gap_bc_candidates:
@@ -861,13 +861,13 @@ def _build_inscribed_angle_scene(
 
     if source == "known_inscribed":
         central_angle = int(problem.target_answer)
-        if int(central_angle) % 10 != 0 or not (40 <= int(central_angle) <= 160):
+        if int(central_angle) % 2 != 0 or not (40 <= int(central_angle) <= 160):
             raise ValueError(f"unsupported central angle answer: {problem.target_answer}")
         inscribed_angle = int(central_angle // 2)
         answer_kind = "central"
     elif source in {"known_central", "known_arc"}:
         inscribed_angle = int(problem.target_answer)
-        if int(inscribed_angle) % 5 != 0 or not (20 <= int(inscribed_angle) <= 80):
+        if not (20 <= int(inscribed_angle) <= 80):
             raise ValueError(
                 f"unsupported inscribed angle answer: {problem.target_answer}"
             )
@@ -906,7 +906,7 @@ def _build_inscribed_angle_scene(
     if abs(int(observed_central) - int(central_angle)) > 1:
         raise ValueError("sampled central angle does not match intercepted arc")
 
-    label_map = _sample_point_label_map(rng, ("O", "A", "B", "C"))
+    label_map = _fixed_point_label_map(("O", "A", "B", "C"))
     point_model = {
         label_map[key]: value for key, value in canonical_point_model.items()
     }
@@ -1093,7 +1093,7 @@ def _build_tangent_chord_angle_scene(
     source = str(source_kind)
 
     tangent_chord_angle = int(problem.target_answer)
-    if int(tangent_chord_angle) % 5 != 0 or not (25 <= int(tangent_chord_angle) <= 75):
+    if not (25 <= int(tangent_chord_angle) <= 75):
         raise ValueError(
             f"unsupported tangent-chord angle answer: {problem.target_answer}"
         )
@@ -1132,7 +1132,7 @@ def _build_tangent_chord_angle_scene(
     if abs(int(observed_inscribed) - int(tangent_chord_angle)) > 1:
         raise ValueError("sampled inscribed angle does not match tangent-chord angle")
 
-    label_map = _sample_point_label_map(rng, ("O", "P", "T", "A", "B"))
+    label_map = _fixed_point_label_map(("O", "P", "T", "A", "B"))
     point_model = {
         label_map[key]: value for key, value in canonical_point_model.items()
     }
@@ -1270,7 +1270,7 @@ def _build_external_secant_angle_scene(
         )
     beta_candidates = [
         value
-        for value in range(10, 61, 5)
+        for value in range(10, 61)
         if int(value + target_angle) <= 85
         and int(180 - (value + target_angle) - value) >= 35
     ]
@@ -1331,7 +1331,7 @@ def _build_external_secant_angle_scene(
     elif str(external_point_side) != "right":
         raise ValueError(f"unsupported external point side: {external_point_side!r}")
 
-    label_map = _sample_point_label_map(rng, ("O", "P", "A", "B", "C", "D"))
+    label_map = _fixed_point_label_map(("O", "P", "A", "B", "C", "D"))
     point_model = {
         label_map[key]: value for key, value in canonical_point_model.items()
     }
@@ -1527,7 +1527,7 @@ def _build_cyclic_quadrilateral_angle_scene(
         raise ValueError("sampled cyclic quadrilateral target angle does not match")
 
     labels = ("O", "A", "B", "C", "D", "E") if exterior_point else ("O", "A", "B", "C", "D")
-    label_map = _sample_point_label_map(rng, labels)
+    label_map = _fixed_point_label_map(labels)
     point_model = {
         label_map[key]: value for key, value in canonical_point_model.items()
     }

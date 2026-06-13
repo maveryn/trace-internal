@@ -91,7 +91,7 @@
     "object_description": "a split right-triangle diagram with a shared altitude, visible side or angle measurements, and one marked target side",
     "json_output_contract": "Return one JSON object with keys \"answer\" and \"annotation\".",
     "json_output_contract_answer_only": "Return one JSON object with key \"answer\".",
-    "annotation_hint": "set \"annotation\" to a JSON object with exactly these keys: {annotation_keys}; each value must be the pixel point [x,y] for that keyed target/support segment endpoint or angle witness",
+    "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point",
     "answer_hint": "set \"answer\" to the target side length as a number rounded to one decimal place"
   }
 }

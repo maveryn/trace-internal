@@ -58,15 +58,15 @@
     "query:final_bearing_value": {
       "object_description": "a compass-bearing route diagram from start point S to finish point F, with bearings measured clockwise from north",
       "answer_hint": "set \"answer\" to the final direct bearing from S to F as an integer number of degrees clockwise from north",
-      "annotation_hint": "set \"annotation\" to a JSON object mapping \"start_point\" and \"finish_point\" to pixel points [x,y]",
-      "json_example": "{\"annotation\":{\"start_point\":[185,405],\"finish_point\":[485,180]},\"answer\":45}",
+      "annotation_hint": "set \"annotation\" to a JSON object mapping the visible point-label keys \"S\" and \"F\" to their pixel points [x,y]",
+      "json_example": "{\"annotation\":{\"S\":[185,405],\"F\":[485,180]},\"answer\":45}",
       "json_example_answer_only": "{\"answer\":45}"
     },
     "query:endpoint_position_label": {
       "object_description": "a compass-bearing route instruction panel, a graph-paper candidate grid where each square is one step, the start point marked S, and labeled candidate endpoint points, with bearings measured clockwise from north",
       "answer_hint": "set \"answer\" to the reached endpoint label as a capital letter",
-      "annotation_hint": "set \"annotation\" to a JSON object mapping \"start_point\" and \"reached_endpoint\" to pixel points [x,y]",
-      "json_example": "{\"annotation\":{\"start_point\":[235,260],\"reached_endpoint\":[306,196]},\"answer\":\"R\"}",
+      "annotation_hint": "set \"annotation\" to a JSON object mapping the visible point-label keys \"S\" and the reached endpoint label to their pixel points [x,y]",
+      "json_example": "{\"annotation\":{\"S\":[235,260],\"R\":[306,196]},\"answer\":\"R\"}",
       "json_example_answer_only": "{\"answer\":\"R\"}"
     }
   },

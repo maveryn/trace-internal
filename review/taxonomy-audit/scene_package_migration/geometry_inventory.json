@@ -606,14 +606,16 @@
         }
       ],
       "current_source_modules": [
-        "trace.tasks.geometry.circle.chord_length",
         "trace.tasks.geometry.circle.tangent_radius",
-        "trace.tasks.geometry.circle.theorem_value"
+        "trace.tasks.geometry.circle.theorem_value",
+        "trace.tasks.geometry.circle_theorem.chord_length_from_radius_central_angle_value",
+        "trace.tasks.geometry.circle_theorem.chord_length_from_radius_inscribed_angle_value"
       ],
       "current_source_paths": [
-        "trace/tasks/geometry/circle/chord_length.py",
         "trace/tasks/geometry/circle/tangent_radius.py",
-        "trace/tasks/geometry/circle/theorem_value.py"
+        "trace/tasks/geometry/circle/theorem_value.py",
+        "trace/tasks/geometry/circle_theorem/chord_length_from_radius_central_angle_value.py",
+        "trace/tasks/geometry/circle_theorem/chord_length_from_radius_inscribed_angle_value.py"
       ],
       "legacy_scene_ids": [
         "circle"
@@ -624,30 +626,60 @@
       "target_config_path": "configs/domains/geometry/circle_theorem.yaml",
       "target_package": "trace/tasks/geometry/circle_theorem/",
       "target_prompt_root": "prompts/geometry/circle_theorem/",
-      "task_count": 14,
+      "task_count": 15,
       "tasks": [
         {
-          "config_scene_aligned": false,
+          "config_scene_aligned": true,
           "current_prompt": {
             "bundle_id": "geometry_circle_theorem_v0",
-            "current_path": "prompts/geometry/circle/geometry_circle_theorem_v0.json",
-            "source": "legacy_scene_config",
-            "source_file_prompt_ids": [],
+            "current_path": "prompts/geometry/circle_theorem/geometry_circle_theorem_v0.json",
+            "source": "scene_config",
+            "source_file_prompt_ids": [
+              "geometry_circle_theorem_v0"
+            ],
             "target_path": "prompts/geometry/circle_theorem/geometry_circle_theorem_v0.json"
           },
-          "current_source_module": "trace.tasks.geometry.circle.chord_length",
-          "current_source_path": "trace/tasks/geometry/circle/chord_length.py",
+          "current_source_module": "trace.tasks.geometry.circle_theorem.chord_length_from_radius_central_angle_value",
+          "current_source_path": "trace/tasks/geometry/circle_theorem/chord_length_from_radius_central_angle_value.py",
           "legacy_config_path": "configs/domains/geometry/circle.yaml",
           "legacy_source_scene_id": "circle",
-          "migration_status": "legacy_or_partial",
-          "objective_contract": "chord_length_from_radius_angle_value",
-          "prompt_scene_aligned": false,
+          "migration_status": "scene_package_pilot",
+          "objective_contract": "chord_length_from_radius_central_angle_value",
+          "prompt_scene_aligned": true,
           "source_file_public_task_count": 1,
-          "source_scene_aligned": false,
+          "source_scene_aligned": true,
           "target_config_path": "configs/domains/geometry/circle_theorem.yaml",
-          "target_review_path": "review/task-reviews/geometry/circle_theorem/task_geometry__circle_theorem__chord_length_from_radius_angle_value/",
-          "target_source_path": "trace/tasks/geometry/circle_theorem/chord_length_from_radius_angle_value.py",
-          "task_id": "task_geometry__circle_theorem__chord_length_from_radius_angle_value",
+          "target_review_path": "review/task-reviews/geometry/circle_theorem/task_geometry__circle_theorem__chord_length_from_radius_central_angle_value/",
+          "target_source_path": "trace/tasks/geometry/circle_theorem/chord_length_from_radius_central_angle_value.py",
+          "task_id": "task_geometry__circle_theorem__chord_length_from_radius_central_angle_value",
+          "tests": [
+            "tests/test_geometry_circle_theorem_value.py"
+          ]
+        },
+        {
+          "config_scene_aligned": true,
+          "current_prompt": {
+            "bundle_id": "geometry_circle_theorem_v0",
+            "current_path": "prompts/geometry/circle_theorem/geometry_circle_theorem_v0.json",
+            "source": "scene_config",
+            "source_file_prompt_ids": [
+              "geometry_circle_theorem_v0"
+            ],
+            "target_path": "prompts/geometry/circle_theorem/geometry_circle_theorem_v0.json"
+          },
+          "current_source_module": "trace.tasks.geometry.circle_theorem.chord_length_from_radius_inscribed_angle_value",
+          "current_source_path": "trace/tasks/geometry/circle_theorem/chord_length_from_radius_inscribed_angle_value.py",
+          "legacy_config_path": "configs/domains/geometry/circle.yaml",
+          "legacy_source_scene_id": "circle",
+          "migration_status": "scene_package_pilot",
+          "objective_contract": "chord_length_from_radius_inscribed_angle_value",
+          "prompt_scene_aligned": true,
+          "source_file_public_task_count": 1,
+          "source_scene_aligned": true,
+          "target_config_path": "configs/domains/geometry/circle_theorem.yaml",
+          "target_review_path": "review/task-reviews/geometry/circle_theorem/task_geometry__circle_theorem__chord_length_from_radius_inscribed_angle_value/",
+          "target_source_path": "trace/tasks/geometry/circle_theorem/chord_length_from_radius_inscribed_angle_value.py",
+          "task_id": "task_geometry__circle_theorem__chord_length_from_radius_inscribed_angle_value",
           "tests": [
             "tests/test_geometry_circle_theorem_value.py"
           ]
@@ -6523,5 +6555,5 @@
     }
   },
   "source": "trace.core.taxonomy.TASK_TAXONOMY plus static trace/tasks/geometry source scan",
-  "task_count": 192
+  "task_count": 193
 }

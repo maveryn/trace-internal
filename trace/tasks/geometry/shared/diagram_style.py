@@ -9,6 +9,7 @@ from ...shared.color_distance import color_distance
 from ...shared.text_legibility import READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO, resolve_readable_text_style
 from ...shared.visual_style.technical_diagram import (
     Color,
+    TECHNICAL_DIAGRAM_TREATMENTS,
     TechnicalDiagramStyle,
     make_technical_diagram_background,
     resolve_technical_diagram_style,
@@ -20,8 +21,100 @@ from .shape_style import GeometryShapeStyle
 
 GeometryDiagramStyle = TechnicalDiagramStyle
 
+GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM = "analytical_diagram"
+GEOMETRY_STYLE_PROFILE_COORDINATE_GRID = "coordinate_grid"
+GEOMETRY_STYLE_PROFILES = (
+    GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
+    GEOMETRY_STYLE_PROFILE_COORDINATE_GRID,
+)
+COORDINATE_GRID_SCENE_IDS: frozenset[str] = frozenset(
+    {
+        "coordinate_composite",
+        "coordinate_panels",
+        "coordinate_plane",
+        "function_graph",
+        "function_panels",
+        "graph_paper",
+        "graph_paper_panel",
+    }
+)
+
+ANALYTICAL_DIAGRAM_TREATMENTS: tuple[str, ...] = tuple(
+    treatment_id
+    for treatment_id, treatment in TECHNICAL_DIAGRAM_TREATMENTS.items()
+    if str(treatment.grid_kind) == "none"
+)
+COORDINATE_GRID_TREATMENTS: tuple[str, ...] = tuple(
+    treatment_id
+    for treatment_id, treatment in TECHNICAL_DIAGRAM_TREATMENTS.items()
+    if str(treatment.grid_kind) != "none"
+)
+
 _GEOMETRY_LABEL_DARK_RGB: Color = (10, 14, 22)
 _GEOMETRY_LABEL_LIGHT_RGB: Color = (250, 252, 255)
+
+
+def _normalize_style_profile(style_profile: str | None) -> str | None:
+    if style_profile is None:
+        return None
+    normalized = str(style_profile).strip().lower()
+    if not normalized:
+        return None
+    if normalized not in set(GEOMETRY_STYLE_PROFILES):
+        raise ValueError(f"unknown geometry style profile: {style_profile!r}")
+    return normalized
+
+
+def _default_style_profile_for_scene(scene_id: str) -> str:
+    if str(scene_id) in COORDINATE_GRID_SCENE_IDS:
+        return GEOMETRY_STYLE_PROFILE_COORDINATE_GRID
+    return GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM
+
+
+def _profile_treatments(style_profile: str | None) -> tuple[str, ...] | None:
+    normalized = _normalize_style_profile(style_profile)
+    if normalized == GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM:
+        return ANALYTICAL_DIAGRAM_TREATMENTS
+    if normalized == GEOMETRY_STYLE_PROFILE_COORDINATE_GRID:
+        return COORDINATE_GRID_TREATMENTS
+    return None
+
+
+def _normalize_treatment_sequence(treatments: Sequence[str] | str | None) -> tuple[str, ...] | None:
+    if treatments is None:
+        return None
+    if isinstance(treatments, str):
+        text = treatments.strip()
+        return (text,) if text else None
+    return tuple(str(item) for item in treatments)
+
+
+def _resolve_profile_treatments(
+    *,
+    style_profile: str | None,
+    requested_treatments: Sequence[str] | str | None,
+) -> tuple[str, ...] | None:
+    profile_treatments = _profile_treatments(style_profile)
+    requested = _normalize_treatment_sequence(requested_treatments)
+    if profile_treatments is None:
+        return requested
+    if requested is None:
+        return tuple(profile_treatments)
+    filtered = tuple(item for item in requested if item in set(profile_treatments))
+    return filtered or tuple(profile_treatments)
+
+
+def _resolve_profile_require_grid(
+    *,
+    style_profile: str | None,
+    require_grid: bool | None,
+) -> bool | None:
+    normalized = _normalize_style_profile(style_profile)
+    if normalized == GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM:
+        return False
+    if normalized == GEOMETRY_STYLE_PROFILE_COORDINATE_GRID:
+        return True
+    return require_grid
 
 
 def _relative_luminance(color: Color) -> float:
@@ -87,7 +180,7 @@ def _resolve_geometry_label_contrast(style: GeometryDiagramStyle) -> tuple[Geome
         style,
         label_rgb=tuple(int(v) for v in label_rgb),
         label_stroke_rgb=tuple(int(v) for v in label_rgb),
-        label_stroke_width_px=max(1, int(style.label_stroke_width_px)),
+        label_stroke_width_px=min(1, max(0, int(style.label_stroke_width_px))),
     )
     guard_meta = {
         "enabled": True,
@@ -114,27 +207,46 @@ def resolve_geometry_diagram_style(
     protected_colors: Sequence[Color] | None = None,
     allow_dark: bool = False,
     require_grid: bool | None = None,
+    style_profile: str | None = None,
 ) -> tuple[GeometryDiagramStyle, dict[str, Any]]:
     """Resolve the shared technical style for one geometry scene."""
 
     resolved_params = params or {}
+    normalized_profile = _normalize_style_profile(style_profile) or _default_style_profile_for_scene(str(scene_id))
+    requested_treatments = treatments or resolved_params.get("technical_diagram_treatments")
+    resolved_treatments = _resolve_profile_treatments(
+        style_profile=normalized_profile,
+        requested_treatments=requested_treatments,
+    )
+    resolved_require_grid = _resolve_profile_require_grid(
+        style_profile=normalized_profile,
+        require_grid=require_grid,
+    )
     style, metadata = resolve_technical_diagram_style(
         instance_seed=int(instance_seed),
         namespace=f"geometry.{str(scene_id)}.technical_diagram_style",
-        treatments=treatments or resolved_params.get("technical_diagram_treatments"),
+        treatments=resolved_treatments,
         treatment_weights=resolved_params.get("technical_diagram_treatment_weights", {}),
         palettes=resolved_params.get("technical_diagram_palettes"),
         palette_weights=resolved_params.get("technical_diagram_palette_weights", {}),
         frame_modes=resolved_params.get("technical_diagram_frame_modes"),
         frame_mode_weights=resolved_params.get("technical_diagram_frame_mode_weights", {}),
-        allow_dark=bool(allow_dark),
-        require_grid=require_grid,
+        allow_dark=True if normalized_profile is not None else bool(allow_dark),
+        require_grid=resolved_require_grid,
         protected_colors=protected_colors or (),
     )
     adjusted_style, guard_meta = _resolve_geometry_label_contrast(style)
     adjusted_metadata = technical_diagram_style_metadata(adjusted_style)
     if isinstance(metadata, Mapping) and isinstance(metadata.get("selection"), Mapping):
         adjusted_metadata["selection"] = dict(metadata["selection"])
+    adjusted_metadata["geometry_style_profile"] = normalized_profile
+    adjusted_metadata["profile_treatments"] = list(_profile_treatments(normalized_profile) or [])
+    if normalized_profile is not None:
+        adjusted_metadata["available_treatments"] = list(_profile_treatments(normalized_profile) or [])
+    normalized_requested_treatments = _normalize_treatment_sequence(requested_treatments)
+    adjusted_metadata["requested_treatments_before_profile"] = (
+        list(normalized_requested_treatments) if normalized_requested_treatments is not None else None
+    )
     adjusted_metadata["geometry_label_contrast_guard"] = dict(guard_meta)
     return adjusted_style, adjusted_metadata
 
@@ -169,6 +281,7 @@ def prepare_geometry_diagram_style_and_background(
     allow_dark: bool = False,
     require_grid: bool | None = None,
     treatments: Sequence[str] | None = None,
+    style_profile: str | None = None,
     namespace_suffix: str = "technical_diagram_background",
 ) -> tuple[Any, dict[str, Any], GeometryDiagramStyle, dict[str, Any]]:
     """Resolve one geometry technical style and create its background before rendering."""
@@ -181,6 +294,7 @@ def prepare_geometry_diagram_style_and_background(
         protected_colors=protected_colors or (),
         allow_dark=bool(allow_dark),
         require_grid=require_grid,
+        style_profile=style_profile,
     )
     background, background_meta = make_geometry_diagram_background(
         canvas_width=int(canvas_width),
@@ -189,6 +303,15 @@ def prepare_geometry_diagram_style_and_background(
         instance_seed=int(instance_seed),
         namespace=f"geometry.{str(scene_id)}.{str(namespace_suffix)}",
     )
+    normalized_profile = _normalize_style_profile(style_profile) or _default_style_profile_for_scene(str(scene_id))
+    if normalized_profile is not None and isinstance(background_meta, dict):
+        background_meta["geometry_style_profile"] = normalized_profile
+        style_spec = background_meta.get("style_spec")
+        if isinstance(style_spec, dict):
+            profile_treatments = list(_profile_treatments(normalized_profile) or [])
+            style_spec["geometry_style_profile"] = normalized_profile
+            style_spec["profile_treatments"] = profile_treatments
+            style_spec["available_treatments"] = profile_treatments
     return background, background_meta, diagram_style, diagram_style_meta
 
 
@@ -269,7 +392,13 @@ def geometry_graph_style_from_diagram_style(
 
 
 __all__ = [
+    "ANALYTICAL_DIAGRAM_TREATMENTS",
+    "COORDINATE_GRID_TREATMENTS",
+    "COORDINATE_GRID_SCENE_IDS",
     "GeometryDiagramStyle",
+    "GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM",
+    "GEOMETRY_STYLE_PROFILE_COORDINATE_GRID",
+    "GEOMETRY_STYLE_PROFILES",
     "geometry_coordinate_panel_style_from_diagram_style",
     "geometry_diagram_style_metadata",
     "geometry_graph_style_from_diagram_style",

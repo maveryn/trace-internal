@@ -40,6 +40,47 @@ AREA_PARTITION_CASES: tuple[PartitionCase, ...] = (
     *TRIANGLE_PARTITION_CASES,
 )
 
+SHADED_AREA_RANGE_BY_DENOMINATOR: dict[int, tuple[int, int]] = {
+    2: (60, 172),
+    4: (30, 86),
+    6: (20, 57),
+    8: (15, 43),
+}
+
+
+def _answer_support_values(partition_cases: Sequence[PartitionCase]) -> tuple[int, ...]:
+    """Return all feasible total-area answers from the denominator-aware ranges."""
+
+    values: set[int] = set()
+    for _scene_variant, _shaded_area, denominator in partition_cases:
+        low, high = SHADED_AREA_RANGE_BY_DENOMINATOR.get(int(denominator), (0, -1))
+        values.update(int(shaded_area) * int(denominator) for shaded_area in range(int(low), int(high) + 1))
+    return tuple(sorted(values))
+
+
+def _sample_shaded_area(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    denominator: int,
+    namespace: str,
+) -> int:
+    """Sample a deterministic shaded area for the selected partition denominator."""
+
+    explicit = params.get("shaded_area")
+    if explicit is not None:
+        return int(explicit)
+    if int(denominator) not in SHADED_AREA_RANGE_BY_DENOMINATOR:
+        raise ValueError(f"unsupported area partition denominator: {denominator}")
+    low, high = SHADED_AREA_RANGE_BY_DENOMINATOR[int(denominator)]
+    span = int(high) - int(low) + 1
+    index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
+    return int(low) + (int(index) % int(span))
+
 
 def resolve_area_partition_problem(
     *,
@@ -59,10 +100,15 @@ def resolve_area_partition_problem(
         instance_seed=int(instance_seed),
         namespace=str(sampling_namespace),
     )
-    scene_variant, shaded_area, denominator = cases[int(case_index) % len(cases)]
+    scene_variant, _case_shaded_area, denominator = cases[int(case_index) % len(cases)]
     scene_variant = str(params.get("scene_variant", scene_variant))
-    shaded_area = int(params.get("shaded_area", shaded_area))
     denominator = int(params.get("area_denominator", denominator))
+    shaded_area = _sample_shaded_area(
+        instance_seed=int(instance_seed),
+        params=params,
+        denominator=int(denominator),
+        namespace=f"{sampling_namespace}.shaded_area",
+    )
 
     allowed_variants = {str(case[0]) for case in cases}
     if scene_variant not in allowed_variants:
@@ -72,7 +118,7 @@ def resolve_area_partition_problem(
         shaded_area=int(shaded_area),
         denominator=int(denominator),
     )
-    support_values = tuple(case[1] * case[2] for case in cases)
+    support_values = tuple(sorted({*_answer_support_values(cases), int(answer)}))
     return AreaPartitionProblem(
         scene_variant=str(scene_variant),
         answer=float(answer),
@@ -86,6 +132,7 @@ def resolve_area_partition_problem(
 __all__ = [
     "AREA_PARTITION_CASES",
     "PARALLELOGRAM_PARTITION_CASES",
+    "SHADED_AREA_RANGE_BY_DENOMINATOR",
     "TRIANGLE_PARTITION_CASES",
     "resolve_area_partition_problem",
 ]

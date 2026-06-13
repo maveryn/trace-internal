@@ -2724,11 +2724,6 @@
       "missing": "annotation_schema"
     },
     {
-      "current_query_id": "chord_length_from_radius_angle_value",
-      "current_task_id": "task_geometry__circle_theorem__chord_length_from_radius_angle_value",
-      "missing": "annotation_schema"
-    },
-    {
       "current_query_id": "cyclic_quadrilateral_angle_value",
       "current_task_id": "task_geometry__circle_theorem__cyclic_quadrilateral_angle_value",
       "missing": "annotation_schema"

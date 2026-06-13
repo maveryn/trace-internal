@@ -140,6 +140,17 @@ def test_area_partition_tasks_sample_all_scene_variants(task_cls) -> None:
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_area_partition_tasks_sample_broad_numeric_answers(task_cls) -> None:
+    task = task_cls()
+    answers = {
+        task.generate(62101 + index, params={}, max_attempts=20).answer_gt.value
+        for index in range(60)
+    }
+
+    assert len(answers) >= 30
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
 def test_area_partition_annotation_stays_inside_canvas(task_cls) -> None:
     task = task_cls()
     for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):

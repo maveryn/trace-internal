@@ -572,29 +572,9 @@ def _render_problem(problem: _ResolvedProblem, ctx: _RenderContext) -> _Rendered
             readout_bboxes["target_area_label"] = _draw_caption(ctx, f"area = {case.target_area}", _add(target_center, (0.0, 142.0)))
 
     annotation = {
-        "target_side_start": geometry.target_vertices[target_target_side[0]],
-        "target_side_end": geometry.target_vertices[target_target_side[1]],
-        "source_corresponding_side_start": geometry.source_vertices[source_target_side[0]],
-        "source_corresponding_side_end": geometry.source_vertices[source_target_side[1]],
+        **{label: point for label, point in zip(geometry.source_labels, geometry.source_vertices)},
+        **{label: point for label, point in zip(geometry.target_labels, geometry.target_vertices)},
     }
-    if case.support_source_side_value is not None and case.support_target_side_value is not None:
-        annotation.update(
-            {
-                "support_source_side_start": geometry.source_vertices[source_support_side[0]],
-                "support_source_side_end": geometry.source_vertices[source_support_side[1]],
-                "support_target_side_start": geometry.target_vertices[target_support_side[0]],
-                "support_target_side_end": geometry.target_vertices[target_support_side[1]],
-            }
-        )
-    if problem.objective_key == SCALE_FACTOR_OBJECTIVE and case.source_target_side_value is None:
-        annotation = {
-            "source_figure_anchor": source_center,
-            "target_figure_anchor": target_center,
-            "source_reference_side_start": geometry.source_vertices[source_support_side[0]],
-            "source_reference_side_end": geometry.source_vertices[source_support_side[1]],
-            "target_reference_side_start": geometry.target_vertices[target_support_side[0]],
-            "target_reference_side_end": geometry.target_vertices[target_support_side[1]],
-        }
 
     render_map = {
         "source_vertices": {label: _point_to_list(point) for label, point in zip(geometry.source_labels, geometry.source_vertices)},
@@ -904,4 +884,3 @@ class MeasureTransferRuntime:
             query_id=str(problem.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
-

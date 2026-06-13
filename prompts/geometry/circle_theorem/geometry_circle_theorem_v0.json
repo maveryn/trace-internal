@@ -248,18 +248,18 @@
       "Use the labeled arcs {far_arc} and {near_arc} to determine the measure of {answer_angle}."
     ],
     "opposite_angle_supplement": [
-      "In the cyclic quadrilateral, {known_angle} is labeled. What is the measure of the opposite angle {answer_angle}?",
-      "Using the labeled angle {known_angle}, find the opposite angle {answer_angle} in the circle.",
-      "The quadrilateral's vertices lie on the circle and {known_angle} is labeled. Determine the missing opposite angle {answer_angle}.",
-      "Find the measure of {answer_angle} from the visible angle label {known_angle}.",
-      "Use the labeled cyclic quadrilateral angle {known_angle} to determine the measure of {answer_angle}."
+      "What is the measure of {answer_angle}?",
+      "Find the measure of {answer_angle}.",
+      "Determine the measure of {answer_angle}.",
+      "What is angle {answer_angle}?",
+      "Find angle {answer_angle}."
     ],
     "exterior_angle_from_opposite_interior": [
-      "One side of the cyclic quadrilateral is extended to {extension_point}. Using the labeled opposite angle {known_angle}, what is the measure of exterior angle {answer_angle}?",
-      "The side extension through {extension_point} forms exterior angle {answer_angle}. Find its measure from the labeled angle {known_angle}.",
-      "Using the cyclic quadrilateral, extension point {extension_point}, and labeled angle {known_angle}, determine the missing exterior angle {answer_angle}.",
-      "Find the measure of exterior angle {answer_angle} from the visible opposite angle {known_angle}.",
-      "Use the labeled circle diagram and angle {known_angle} to determine the exterior angle {answer_angle}."
+      "What is the measure of {answer_angle}?",
+      "Find the measure of {answer_angle}.",
+      "Determine the measure of {answer_angle}.",
+      "What is angle {answer_angle}?",
+      "Find angle {answer_angle}."
     ],
     "chord_length_from_radius_and_central_angle": [
       "Using radius {radius_segment} and central angle {angle_name}, what is the length of chord {answer_segment}?",

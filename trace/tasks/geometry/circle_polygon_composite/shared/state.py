@@ -11,32 +11,23 @@ Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
 Color = Tuple[int, int, int]
 
-TARGET_PAIRS: Tuple[str, ...] = ("AB_CD", "BC_DA")
+SIDE_KEYS: Tuple[str, ...] = ("AB", "BC", "CD", "DA")
 CONSTRUCTION_KINDS: Tuple[str, ...] = ("incircle", "semicircle")
 
 TANGENTIAL_ANNOTATION_KEYS: Tuple[str, ...] = (
-    "vertex_A",
-    "vertex_B",
-    "vertex_C",
-    "vertex_D",
-    "tangent_AB",
-    "tangent_BC",
-    "tangent_CD",
-    "tangent_DA",
-    "incircle_center",
+    "A",
+    "B",
+    "C",
+    "D",
 )
 
 ANGLE_ANNOTATION_KEYS: Tuple[str, ...] = (
-    "shape_corner_A",
-    "shape_corner_B",
-    "shape_corner_C",
-    "shape_corner_D",
-    "circle_center",
-    "tangent_point",
-    "known_angle_vertex",
-    "known_angle_reference_point",
-    "target_angle_vertex",
-    "target_reference_point",
+    "A",
+    "B",
+    "C",
+    "D",
+    "O",
+    "T",
 )
 
 
@@ -120,7 +111,7 @@ __all__ = [
     "RenderedAngleScene",
     "RenderedTangentialScene",
     "SCENE_ID",
-    "TARGET_PAIRS",
+    "SIDE_KEYS",
     "TANGENTIAL_ANNOTATION_KEYS",
     "TangentialDiagramSpec",
 ]

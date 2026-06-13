@@ -996,24 +996,20 @@ def _draw_diagonal_case(ctx: _RenderContext, problem: _ResolvedProblem) -> _Rend
     vertices = _transformed_base_vertices(ctx, problem.case.shape_kind, instance_seed=problem.layout_seed)
     construction_bboxes = _draw_base_shape(ctx, vertices, shape_kind=problem.case.shape_kind)
     readout_bboxes: Dict[str, BBox] = {}
-    annotation: Dict[str, Point] = {}
+    extra_annotation_points: Dict[str, Point] = {}
 
     if problem.case.query_id == "rhombus_vertex_angle_bisected_by_diagonal":
         ctx.draw.line((vertices["B"], vertices["D"]), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
         o = _mid(vertices["B"], vertices["D"])
         construction_bboxes["diagonal_BD"] = bbox_from_points((vertices["B"], vertices["D"]), width=ctx.width, height=ctx.height, pad=4.0)
+        readout_bboxes["point_label_O"] = _draw_text_centered(ctx, "O", _add(o, (0.0, 22.0)), small=True)
         _, readout_bboxes["support_angle_label"], _ = _draw_angle_marker(
             ctx, vertex=vertices["B"], ray_a=vertices["A"], ray_b=o, label=problem.case.support_label
         )
         _, readout_bboxes["target_angle_label"], _ = _draw_angle_marker(
             ctx, vertex=vertices["D"], ray_a=o, ray_b=vertices["A"], label="?"
         )
-        annotation = {
-            "target_vertex": vertices["D"],
-            "support_vertex": vertices["B"],
-            "diagonal_start": vertices["B"],
-            "diagonal_end": vertices["D"],
-        }
+        extra_annotation_points["O"] = o
     elif problem.case.query_id == "kite_vertex_angle_bisected_by_symmetry_diagonal":
         ctx.draw.line((vertices["A"], vertices["C"]), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
         construction_bboxes["symmetry_diagonal_AC"] = bbox_from_points(
@@ -1025,12 +1021,6 @@ def _draw_diagonal_case(ctx: _RenderContext, problem: _ResolvedProblem) -> _Rend
         _, readout_bboxes["target_angle_label"], _ = _draw_angle_marker(
             ctx, vertex=vertices["A"], ray_a=vertices["C"], ray_b=vertices["B"], label="?"
         )
-        annotation = {
-            "target_vertex": vertices["A"],
-            "support_vertex": vertices["A"],
-            "diagonal_start": vertices["A"],
-            "diagonal_end": vertices["C"],
-        }
     else:
         ctx.draw.line((vertices["A"], vertices["C"]), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
         ctx.draw.line((vertices["B"], vertices["D"]), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
@@ -1038,19 +1028,17 @@ def _draw_diagonal_case(ctx: _RenderContext, problem: _ResolvedProblem) -> _Rend
         construction_bboxes["diagonal_AC"] = bbox_from_points((vertices["A"], vertices["C"]), width=ctx.width, height=ctx.height, pad=4.0)
         construction_bboxes["diagonal_BD"] = bbox_from_points((vertices["B"], vertices["D"]), width=ctx.width, height=ctx.height, pad=4.0)
         construction_bboxes["right_angle"] = _draw_right_angle_marker(ctx, o, ray_a=vertices["A"], ray_b=vertices["B"])
+        readout_bboxes["point_label_O"] = _draw_text_centered(ctx, "O", _add(o, (0.0, 22.0)), small=True)
         _, readout_bboxes["support_angle_label"], _ = _draw_angle_marker(
             ctx, vertex=vertices["A"], ray_a=vertices["B"], ray_b=vertices["C"], label=problem.case.support_label
         )
         _, readout_bboxes["target_angle_label"], _ = _draw_angle_marker(
             ctx, vertex=vertices["B"], ray_a=vertices["A"], ray_b=vertices["D"], label="?"
         )
-        annotation = {
-            "target_vertex": vertices["B"],
-            "support_vertex": vertices["A"],
-            "diagonal_intersection": o,
-        }
+        extra_annotation_points["O"] = o
 
     point_label_bboxes = _draw_vertex_labels(ctx, vertices)
+    annotation = {**dict(vertices), **extra_annotation_points}
     render_map = {
         "vertices": {key: _point_to_list(point) for key, point in vertices.items()},
         "readout_bboxes": _json_ready(readout_bboxes),
@@ -1064,6 +1052,7 @@ def _draw_algebraic_case(ctx: _RenderContext, problem: _ResolvedProblem) -> _Ren
     vertices = _transformed_base_vertices(ctx, problem.case.shape_kind, instance_seed=problem.layout_seed)
     construction_bboxes = _draw_base_shape(ctx, vertices, shape_kind=problem.case.shape_kind)
     readout_bboxes: Dict[str, BBox] = {}
+    extra_annotation_points: Dict[str, Point] = {}
 
     if problem.case.query_id == "parallelogram_opposite_angle_expression":
         _, readout_bboxes["support_angle_label"], _ = _draw_angle_marker(
@@ -1072,7 +1061,6 @@ def _draw_algebraic_case(ctx: _RenderContext, problem: _ResolvedProblem) -> _Ren
         _, readout_bboxes["target_angle_label"], _ = _draw_angle_marker(
             ctx, vertex=vertices["C"], ray_a=vertices["D"], ray_b=vertices["B"], label=problem.case.target_label
         )
-        annotation = {"target_angle_vertex": vertices["C"], "support_angle_vertex": vertices["A"]}
     elif problem.case.query_id == "parallelogram_consecutive_angle_expression":
         _, readout_bboxes["support_angle_label"], _ = _draw_angle_marker(
             ctx, vertex=vertices["A"], ray_a=vertices["B"], ray_b=vertices["D"], label=problem.case.support_label
@@ -1080,18 +1068,18 @@ def _draw_algebraic_case(ctx: _RenderContext, problem: _ResolvedProblem) -> _Ren
         _, readout_bboxes["target_angle_label"], _ = _draw_angle_marker(
             ctx, vertex=vertices["B"], ray_a=vertices["C"], ray_b=vertices["A"], label=problem.case.target_label
         )
-        annotation = {"target_angle_vertex": vertices["B"], "support_angle_vertex": vertices["A"]}
     elif problem.case.query_id == "rhombus_diagonal_half_angle_expression":
         ctx.draw.line((vertices["B"], vertices["D"]), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
         o = _mid(vertices["B"], vertices["D"])
         construction_bboxes["diagonal_BD"] = bbox_from_points((vertices["B"], vertices["D"]), width=ctx.width, height=ctx.height, pad=4.0)
+        readout_bboxes["point_label_O"] = _draw_text_centered(ctx, "O", _add(o, (0.0, 22.0)), small=True)
         _, readout_bboxes["support_angle_label"], _ = _draw_angle_marker(
             ctx, vertex=vertices["B"], ray_a=vertices["A"], ray_b=o, label=problem.case.support_label
         )
         _, readout_bboxes["target_angle_label"], _ = _draw_angle_marker(
             ctx, vertex=vertices["B"], ray_a=o, ray_b=vertices["C"], label=problem.case.target_label
         )
-        annotation = {"target_angle_vertex": vertices["B"], "support_angle_vertex": vertices["B"], "diagonal_start": vertices["B"], "diagonal_end": vertices["D"]}
+        extra_annotation_points["O"] = o
     else:
         _, readout_bboxes["target_angle_label"], _ = _draw_angle_marker(
             ctx, vertex=vertices["B"], ray_a=vertices["A"], ray_b=vertices["C"], label=problem.case.target_label
@@ -1099,9 +1087,9 @@ def _draw_algebraic_case(ctx: _RenderContext, problem: _ResolvedProblem) -> _Ren
         _, readout_bboxes["support_angle_label"], _ = _draw_angle_marker(
             ctx, vertex=vertices["D"], ray_a=vertices["C"], ray_b=vertices["A"], label=problem.case.support_label
         )
-        annotation = {"target_angle_vertex": vertices["B"], "support_angle_vertex": vertices["D"]}
 
     point_label_bboxes = _draw_vertex_labels(ctx, vertices)
+    annotation = {**dict(vertices), **extra_annotation_points}
     render_map = {
         "vertices": {key: _point_to_list(point) for key, point in vertices.items()},
         "readout_bboxes": _json_ready(readout_bboxes),
@@ -1115,6 +1103,7 @@ def _draw_segment_case(ctx: _RenderContext, problem: _ResolvedProblem) -> _Rende
     vertices = _transformed_base_vertices(ctx, problem.case.shape_kind, instance_seed=problem.layout_seed)
     construction_bboxes = _draw_base_shape(ctx, vertices, shape_kind=problem.case.shape_kind)
     readout_bboxes: Dict[str, BBox] = {}
+    extra_annotation_points: Dict[str, Point] = {}
 
     if problem.case.query_id == "parallelogram_opposite_side_expression":
         readout_bboxes["support_segment_label"] = _draw_segment_label(
@@ -1123,12 +1112,6 @@ def _draw_segment_case(ctx: _RenderContext, problem: _ResolvedProblem) -> _Rende
         readout_bboxes["target_segment_label"] = _draw_segment_label(
             ctx, a=vertices["B"], b=vertices["C"], text=problem.case.target_label, offset=34.0
         )
-        annotation = {
-            "target_segment_start": vertices["B"],
-            "target_segment_end": vertices["C"],
-            "support_segment_start": vertices["D"],
-            "support_segment_end": vertices["A"],
-        }
     elif problem.case.query_id == "rhombus_all_sides_expression":
         readout_bboxes["support_segment_label"] = _draw_segment_label(
             ctx, a=vertices["A"], b=vertices["B"], text=problem.case.support_label, offset=-34.0
@@ -1136,12 +1119,6 @@ def _draw_segment_case(ctx: _RenderContext, problem: _ResolvedProblem) -> _Rende
         readout_bboxes["target_segment_label"] = _draw_segment_label(
             ctx, a=vertices["C"], b=vertices["D"], text=problem.case.target_label, offset=34.0
         )
-        annotation = {
-            "target_segment_start": vertices["C"],
-            "target_segment_end": vertices["D"],
-            "support_segment_start": vertices["A"],
-            "support_segment_end": vertices["B"],
-        }
     elif problem.case.query_id == "kite_adjacent_equal_side_expression":
         readout_bboxes["support_segment_label"] = _draw_segment_label(
             ctx, a=vertices["A"], b=vertices["B"], text=problem.case.support_label, offset=-34.0
@@ -1149,12 +1126,6 @@ def _draw_segment_case(ctx: _RenderContext, problem: _ResolvedProblem) -> _Rende
         readout_bboxes["target_segment_label"] = _draw_segment_label(
             ctx, a=vertices["A"], b=vertices["D"], text=problem.case.target_label, offset=34.0
         )
-        annotation = {
-            "target_segment_start": vertices["A"],
-            "target_segment_end": vertices["D"],
-            "support_segment_start": vertices["A"],
-            "support_segment_end": vertices["B"],
-        }
     else:
         ctx.draw.line((vertices["A"], vertices["C"]), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
         o = _mid(vertices["A"], vertices["C"])
@@ -1168,14 +1139,10 @@ def _draw_segment_case(ctx: _RenderContext, problem: _ResolvedProblem) -> _Rende
             ctx, a=o, b=vertices["C"], text=problem.case.target_label, offset=30.0
         )
         readout_bboxes["intersection_label"] = _draw_text_centered(ctx, "O", _add(o, (0.0, 24.0)), small=True)
-        annotation = {
-            "target_segment_start": o,
-            "target_segment_end": vertices["C"],
-            "support_segment_start": vertices["A"],
-            "support_segment_end": o,
-        }
+        extra_annotation_points["O"] = o
 
     point_label_bboxes = _draw_vertex_labels(ctx, vertices)
+    annotation = {**dict(vertices), **extra_annotation_points}
     render_map = {
         "vertices": {key: _point_to_list(point) for key, point in vertices.items()},
         "readout_bboxes": _json_ready(readout_bboxes),

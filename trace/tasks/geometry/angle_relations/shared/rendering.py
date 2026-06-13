@@ -19,6 +19,7 @@ from ...shared.composite_measurement_cases import (
     _RenderContext,
 )
 from ...shared.diagram_style import (
+    GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
     geometry_diagram_style_metadata,
     geometry_shape_style_from_diagram_style,
     prepare_geometry_diagram_style_and_background,
@@ -55,6 +56,7 @@ def make_angle_relation_render_context(
         canvas_width=int(width),
         canvas_height=int(height),
         allow_dark=True,
+        style_profile=GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
     )
     shape_style = geometry_shape_style_from_diagram_style(diagram_style)
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 4)))

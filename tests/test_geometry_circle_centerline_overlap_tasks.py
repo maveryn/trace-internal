@@ -15,8 +15,14 @@ from trace.tasks.geometry.circle_centerline_overlap.segment_length_value import 
     QUERY_ID_BOUNDARY_SEGMENT,
     QUERY_ID_CENTER_DISTANCE,
     SCENE_ID,
-    _CASES,
     _segment_length,
+)
+from trace.tasks.geometry.circle_centerline_overlap.shared.state import CircleOverlapCase
+from trace.tasks.geometry.circle_centerline_overlap.shared.construction import (
+    generated_overlap_cases,
+    select_boundary_pair,
+    select_boundary_target_role,
+    select_overlap_case,
 )
 
 
@@ -44,6 +50,11 @@ def test_circle_centerline_overlap_queries_emit_keyed_point_annotation(query_id:
     assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
     assert trace["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
     assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_circle_centerline_overlap_v1"
+    technical_style = trace["render_spec"]["style"]["technical_diagram"]
+    background_style = trace["render_spec"]["style"]["background"]["style_spec"]["background_style"]
+    assert technical_style["selection"]["require_grid"] is False
+    assert technical_style["grid_style"]["kind"] == "none"
+    assert background_style["kind"] != "graph_paper"
     assert "task_variant" not in json.dumps(trace)
     _assert_point_map_inside_image(out.annotation_gt.value, out.image.size)
 
@@ -61,15 +72,9 @@ def test_circle_centerline_overlap_center_distance_formula() -> None:
     assert execution["distance_ab"] == execution["radius_a"] + execution["radius_b"] - execution["overlap_ab"]
     assert execution["distance_bc"] == execution["radius_b"] + execution["radius_c"] - execution["overlap_bc"]
     assert execution["answer"] == execution["distance_ac"] == execution["distance_ab"] + execution["distance_bc"]
-    assert tuple(out.annotation_gt.value.keys()) == (
-        "center_a",
-        "center_b",
-        "center_c",
-        "overlap_ab_left",
-        "overlap_ab_right",
-        "overlap_bc_left",
-        "overlap_bc_right",
-    )
+    assert tuple(out.annotation_gt.value.keys()) == ("A", "C")
+    assert "diameter labels" in out.prompt
+    assert "radius or diameter" not in out.prompt
 
 
 @pytest.mark.parametrize("boundary_pair", BOUNDARY_PAIRS)
@@ -83,39 +88,91 @@ def test_circle_centerline_overlap_boundary_segment_formula(boundary_pair: str, 
         boundary_target_role=boundary_target_role,
     )
     execution = out.trace_payload["execution_trace"]
-    expected = _segment_length(_CASES[1], boundary_pair, boundary_target_role)
+    expected = _segment_length(CircleOverlapCase(6, 14, 8, 3, 4), boundary_pair, boundary_target_role)
 
     assert out.answer_gt.value == expected
     assert execution["answer"] == expected
     assert execution["boundary_pair"] == boundary_pair
     assert execution["boundary_target_role"] == boundary_target_role
-    assert tuple(out.annotation_gt.value.keys()) == (
-        "target_start",
-        "target_end",
-        "known_segment_start",
-        "known_segment_end",
-        "center_a",
-        "center_b",
-        "center_c",
+    expected_keys = {
+        ("AB", "left_center_to_right_boundary"): ("A", "Y"),
+        ("AB", "left_boundary_to_right_center"): ("X", "B"),
+        ("BC", "left_center_to_right_boundary"): ("B", "V"),
+        ("BC", "left_boundary_to_right_center"): ("U", "C"),
+    }
+    assert tuple(out.annotation_gt.value.keys()) == expected_keys[(boundary_pair, boundary_target_role)]
+
+
+def test_circle_centerline_overlap_prompt_describes_selected_measure_label_mode() -> None:
+    diameter = _generate(
+        20260704,
+        query_id=QUERY_ID_BOUNDARY_SEGMENT,
+        label_mode="diameter",
     )
+    radius = _generate(
+        20260705,
+        query_id=QUERY_ID_BOUNDARY_SEGMENT,
+        label_mode="radius",
+    )
+
+    assert "diameter labels" in diameter.prompt
+    assert "radius labels" not in diameter.prompt
+    assert "radius labels" in radius.prompt
+    assert "diameter labels" not in radius.prompt
+    assert "radius or diameter" not in diameter.prompt
+    assert "radius or diameter" not in radius.prompt
 
 
 def test_circle_centerline_overlap_case_bank_constraints_and_support() -> None:
-    center_answers = {case.distance_ac for case in _CASES}
+    generated_cases = generated_overlap_cases()
+    center_answers = {case.distance_ac for case in generated_cases}
     boundary_answers = {
         _segment_length(case, pair, role)
-        for case in _CASES
+        for case in generated_cases
         for pair in BOUNDARY_PAIRS
         for role in BOUNDARY_TARGET_ROLES
     }
-    assert len(center_answers) >= 7
-    assert len(boundary_answers) >= 7
+    assert len(center_answers) >= 35
+    assert len(boundary_answers) >= 18
     assert min(center_answers) > 0
     assert min(boundary_answers) >= 3
-    for case in _CASES:
+    for case in generated_cases:
         assert abs(case.radius_a - case.radius_b) + 1 < case.distance_ab < case.radius_a + case.radius_b
         assert abs(case.radius_b - case.radius_c) + 1 < case.distance_bc < case.radius_b + case.radius_c
         assert case.distance_ac > case.radius_a + case.radius_c + 1
+
+
+def test_circle_centerline_overlap_default_sampling_uses_broad_answer_support() -> None:
+    answers_by_query = {QUERY_ID_CENTER_DISTANCE: [], QUERY_ID_BOUNDARY_SEGMENT: []}
+    for index in range(100):
+        case, _case_probs = select_overlap_case(
+            instance_seed=1234500 + index,
+            params={},
+            namespace=f"{TASK_ID}.{QUERY_ID_CENTER_DISTANCE}.overlap_case",
+        )
+        answers_by_query[QUERY_ID_CENTER_DISTANCE].append(case.distance_ac)
+
+        boundary_case, _case_probs = select_overlap_case(
+            instance_seed=1234500 + index,
+            params={},
+            namespace=f"{TASK_ID}.{QUERY_ID_BOUNDARY_SEGMENT}.overlap_case",
+        )
+        boundary_pair, _pair_probs = select_boundary_pair(
+            params={},
+            instance_seed=1234500 + index,
+            namespace=f"{TASK_ID}.{QUERY_ID_BOUNDARY_SEGMENT}.boundary_pair",
+        )
+        boundary_target_role, _role_probs = select_boundary_target_role(
+            params={},
+            instance_seed=1234500 + index,
+            namespace=f"{TASK_ID}.{QUERY_ID_BOUNDARY_SEGMENT}.boundary_target_role",
+        )
+        answers_by_query[QUERY_ID_BOUNDARY_SEGMENT].append(
+            _segment_length(boundary_case, boundary_pair, boundary_target_role)
+        )
+
+    assert len(set(answers_by_query[QUERY_ID_CENTER_DISTANCE])) >= 25
+    assert len(set(answers_by_query[QUERY_ID_BOUNDARY_SEGMENT])) >= 15
 
 
 def test_circle_centerline_overlap_generation_is_deterministic() -> None:

@@ -23,8 +23,8 @@ from ..shared.pythagorean import (
     integer_right_triangles,
     validate_integer_right_triangle,
 )
-from ._lifecycle import run_role_keyed_number_circle_theorem_task
-from .shared.state import _sample_point_label_map, _visible_angle, _visible_segment
+from ._lifecycle import run_label_keyed_number_circle_theorem_task
+from .shared.state import _fixed_point_label_map, _visible_angle, _visible_segment
 
 
 Point = Tuple[float, float]
@@ -45,8 +45,8 @@ def _default_tangent_radius_triples() -> Tuple[Tuple[int, int, int], ...]:
     used_external_distances: set[int] = set()
     for triangle in integer_right_triangles(
         min_leg=3,
-        max_leg=55,
-        max_hypotenuse=65,
+        max_leg=320,
+        max_hypotenuse=420,
     ):
         radius = min(int(triangle.leg_a), int(triangle.leg_b))
         tangent = max(int(triangle.leg_a), int(triangle.leg_b))
@@ -59,14 +59,14 @@ def _default_tangent_radius_triples() -> Tuple[Tuple[int, int, int], ...]:
         used_radii.add(radius)
         used_tangent_lengths.add(tangent)
         used_external_distances.add(external)
-    if len(triples) < 12:
+    if len(triples) < 80:
         raise RuntimeError("tangent-radius triple pool is unexpectedly small")
     return tuple(triples)
 
 
 _DEFAULT_TRIPLES: Tuple[Tuple[int, int, int], ...] = _default_tangent_radius_triples()
-_DEFAULT_EXTERNAL_DISTANCE_SUPPORT: Tuple[int, ...] = (8, 10, 12, 14, 16, 18, 20)
-_DEFAULT_ANGLE_SUPPORT: Tuple[int, ...] = (30, 45, 60)
+_DEFAULT_EXTERNAL_DISTANCE_SUPPORT: Tuple[int, ...] = tuple(range(10, 71))
+_DEFAULT_ANGLE_SUPPORT: Tuple[int, ...] = tuple(range(25, 71))
 
 _SCENE_DEFAULTS = get_scene_defaults("geometry", "circle_theorem")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = (
@@ -284,7 +284,7 @@ def _tangent_radius_payload(
         "T": _rotate((radius, 0.0), rotation),
         "P": _rotate((radius, side * tangent), rotation),
     }
-    label_map = _sample_point_label_map(rng, ("O", "P", "T"))
+    label_map = _fixed_point_label_map(("O", "P", "T"))
     point_model = {label_map[key]: value for key, value in canonical_points.items()}
 
     radius_segment = _visible_segment(label_map, "O", "T")
@@ -342,11 +342,7 @@ def _tangent_radius_payload(
         "PT": (label_map["P"], label_map["T"]),
         "OP": (label_map["O"], label_map["P"]),
     }
-    annotation_role_to_label = {
-        "center": label_map["O"],
-        "tangent_point": label_map["T"],
-        "external_point": label_map["P"],
-    }
+    annotation_point_labels = (label_map["O"], label_map["T"], label_map["P"])
     theorem_trace = {
         "theorem": "tangent_radius_right_triangle",
         "label_map": dict(label_map),
@@ -362,7 +358,6 @@ def _tangent_radius_payload(
         else int(query.angle_degrees),
         "right_angle_vertex": str(label_map["T"]),
         "formula": "OT^2+PT^2=OP^2",
-        "annotation_role_to_label": dict(annotation_role_to_label),
         "distractor_tokens": [],
     }
     return {
@@ -372,8 +367,7 @@ def _tangent_radius_payload(
         "segments": segments,
         "measurement_specs": tuple(measurement_specs),
         "support_measurement_tokens": tuple(support_measurement_tokens),
-        "annotation_point_labels": tuple(annotation_role_to_label.values()),
-        "annotation_role_to_label": dict(annotation_role_to_label),
+        "annotation_point_labels": tuple(annotation_point_labels),
         "annotation_values": dict(annotation_values),
         "theorem_trace": theorem_trace,
         "angle_marker_specs": angle_marker_specs,
@@ -424,7 +418,7 @@ class GeometryCircleTangentRadiusRightTriangleLengthValueTask:
             "support_probabilities": dict(query.support_probabilities),
             "answer_rounding": "nearest_tenth",
         }
-        return run_role_keyed_number_circle_theorem_task(
+        return run_label_keyed_number_circle_theorem_task(
             task_id=TASK_ID,
             instance_seed=int(instance_seed),
             params=params,

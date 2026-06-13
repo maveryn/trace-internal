@@ -9,7 +9,6 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....shared.prompt_json_example import dump_prompt_json_examples
-from ...shared.background_defaults import load_geometry_background_defaults
 from ...shared.noise_defaults import load_geometry_noise_defaults
 
 DOMAIN = "geometry"
@@ -29,77 +28,87 @@ def _build_keyed_point_prompt_examples(
     }
     return dump_prompt_json_examples(annotation=example_points, answer=8, ensure_ascii=False)
 
-DIAMETER_CHORD_ANSWER_SUPPORT: Tuple[int, ...] = (4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18)
+DIAMETER_CHORD_RADIUS_MAX = 320
+DIAMETER_CHORD_MAX_CHORD = 500
 
-TANGENT_SECANT_ANSWER_SUPPORT: Tuple[int, ...] = (
-    11,
-    13,
-    14,
-    15,
-    16,
-    17,
-    18,
-    20,
-    21,
-    22,
-    24,
-    25,
-    26,
-    27,
-    28,
-    30,
-    32,
-    33,
-    35,
-    36,
-    39,
-    40,
-    42,
-    44,
-    45,
-    48,
-    49,
-    50,
-    51,
-    52,
-    54,
-    55,
-    56,
-    57,
-    60,
-    63,
-    64,
-    65,
-    66,
-    70,
-    72,
-    75,
-    78,
-    80,
-    84,
-    88,
-    90,
-    96,
-    100,
-)
 
-SECANT_SECANT_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(3, 16))
+def _diameter_chord_answer_support() -> Tuple[int, ...]:
+    answers: set[int] = set()
+    for radius in range(8, DIAMETER_CHORD_RADIUS_MAX + 1):
+        for offset in range(2, radius - 1):
+            half_chord_sq = (radius * radius) - (offset * offset)
+            half_chord = int(math.isqrt(int(half_chord_sq)))
+            if int(half_chord * half_chord) != int(half_chord_sq):
+                continue
+            chord_length = int(2 * half_chord)
+            if half_chord < 4 or chord_length > DIAMETER_CHORD_MAX_CHORD:
+                continue
+            answer_value = int(radius - offset)
+            if answer_value < 4:
+                continue
+            answers.add(answer_value)
+    return tuple(sorted(answers))
+
+
+DIAMETER_CHORD_ANSWER_SUPPORT: Tuple[int, ...] = _diameter_chord_answer_support()
+
+TANGENT_SECANT_OUTSIDE_MAX = 160
+TANGENT_SECANT_INTERNAL_MAX = 160
+TANGENT_SECANT_TANGENT_MAX = 240
+
+
+def _hard_tangent_secant_values(
+    *, outside: int, internal: int, tangent: int
+) -> bool:
+    if int(outside) < 16 or int(internal) < 10:
+        return False
+    if len({int(outside), int(internal), int(tangent)}) != 3:
+        return False
+    if int(tangent) == int(2 * outside) or int(tangent) % int(outside) == 0:
+        return False
+    if int(internal) in {int(outside), int(2 * outside), int(3 * outside)}:
+        return False
+    if int(outside) % 2 == 0 and int(internal) == int(outside // 2):
+        return False
+    return True
+
+
+def _tangent_secant_answer_support() -> Tuple[int, ...]:
+    answers: set[int] = set()
+    for outside in range(16, TANGENT_SECANT_OUTSIDE_MAX + 1):
+        for internal in range(10, TANGENT_SECANT_INTERNAL_MAX + 1):
+            tangent_sq = int(outside * (outside + internal))
+            tangent = int(math.isqrt(tangent_sq))
+            if int(tangent * tangent) != int(tangent_sq):
+                continue
+            if int(tangent) > TANGENT_SECANT_TANGENT_MAX:
+                continue
+            if not _hard_tangent_secant_values(
+                outside=int(outside), internal=int(internal), tangent=int(tangent)
+            ):
+                continue
+            answers.update((int(outside), int(internal), int(tangent)))
+    return tuple(sorted(answers))
+
+TANGENT_SECANT_ANSWER_SUPPORT: Tuple[int, ...] = _tangent_secant_answer_support()
+
+SECANT_SECANT_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(3, 121))
 
 VARIABLE_SECANT_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(4, 61))
 
-INTERSECTING_CHORDS_ARC_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(40, 181, 10))
+INTERSECTING_CHORDS_ARC_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(40, 181))
 
-MULTI_STEP_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(45, 136, 5))
+MULTI_STEP_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(45, 136))
 
-INSCRIBED_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(20, 81, 5))
+INSCRIBED_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(20, 81))
 
-CENTRAL_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(40, 161, 10))
+CENTRAL_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(40, 161, 2))
 
-TANGENT_CHORD_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(25, 76, 5))
+TANGENT_CHORD_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(25, 76))
 
-EXTERNAL_SECANT_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(20, 76, 5))
+EXTERNAL_SECANT_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(20, 76))
 
-CYCLIC_QUADRILATERAL_ANGLE_SUPPORT: Tuple[int, ...] = tuple(range(45, 136, 5))
+CYCLIC_QUADRILATERAL_ANGLE_SUPPORT: Tuple[int, ...] = tuple(range(45, 136))
 
 TANGENT_SECANT_TARGET_KINDS: Tuple[str, ...] = ("outside", "inside", "tangent")
 
@@ -109,12 +118,6 @@ VARIABLE_SECANT_TARGET_KINDS: Tuple[str, ...] = (
     "outside_second",
     "inside_second",
 )
-
-POINT_LABEL_ALPHABET: Tuple[str, ...] = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-CENTER_LABEL = "O"
-
-BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id="circle")
 
 POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id="circle")
 
@@ -213,29 +216,13 @@ def _circle_from_three_points(a: Point, b: Point, c: Point) -> Tuple[Point, floa
     radius = math.hypot(ax - ux, ay - uy)
     return (float(ux), float(uy)), float(radius)
 
-def _sample_point_label_map(rng, canonical_labels: Sequence[str]) -> Dict[str, str]:
-    """Map canonical construction labels to random visible one-letter labels."""
+def _fixed_point_label_map(canonical_labels: Sequence[str]) -> Dict[str, str]:
+    """Use canonical analytical-geometry labels as the visible point labels."""
 
     labels = [str(label) for label in canonical_labels]
     if len(set(labels)) != len(labels):
         raise ValueError("canonical point labels must be unique")
-    sample_pool = [label for label in POINT_LABEL_ALPHABET if label != CENTER_LABEL]
-    if CENTER_LABEL in labels:
-        if len(labels) - 1 > len(sample_pool):
-            raise ValueError(
-                "not enough visible point labels for circle theorem diagram"
-            )
-        sampled = iter(rng.sample(sample_pool, len(labels) - 1))
-        return {
-            canonical: (
-                CENTER_LABEL if canonical == CENTER_LABEL else str(next(sampled))
-            )
-            for canonical in labels
-        }
-    if len(labels) > len(sample_pool):
-        raise ValueError("not enough visible point labels for circle theorem diagram")
-    visible = list(rng.sample(sample_pool, len(labels)))
-    return {canonical: str(sampled) for canonical, sampled in zip(labels, visible)}
+    return {label: label for label in labels}
 
 def _visible_segment(label_map: Mapping[str, str], *canonical_labels: str) -> str:
     return "".join(str(label_map[str(label)]) for label in canonical_labels)
@@ -275,10 +262,8 @@ def _angle_degrees_at(vertex: Point, arm0: Point, arm1: Point) -> int:
     return int(round(float(angle)))
 
 __all__ = [
-    'BACKGROUND_DEFAULTS',
     'Point',
     'BBox',
-    'CENTER_LABEL',
     'CENTRAL_ANGLE_ANSWER_SUPPORT',
     'CYCLIC_QUADRILATERAL_ANGLE_SUPPORT',
     'CircleTheoremProblem',
@@ -289,7 +274,6 @@ __all__ = [
     'INSCRIBED_ANGLE_ANSWER_SUPPORT',
     'INTERSECTING_CHORDS_ARC_ANSWER_SUPPORT',
     'MULTI_STEP_ANGLE_ANSWER_SUPPORT',
-    'POINT_LABEL_ALPHABET',
     'POST_IMAGE_NOISE_DEFAULTS',
     'RenderedCircleTheoremScene',
     'SCENE_ID',
@@ -304,7 +288,7 @@ __all__ = [
     '_text_bbox_for_center',
     '_bbox_to_list',
     '_circle_from_three_points',
-    '_sample_point_label_map',
+    '_fixed_point_label_map',
     '_visible_segment',
     '_visible_angle',
     '_visible_arc',

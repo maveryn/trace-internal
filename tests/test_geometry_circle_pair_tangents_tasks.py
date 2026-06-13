@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 
 import pytest
 
@@ -21,6 +22,10 @@ from trace.tasks.geometry.circle_pair_tangents.common_tangent_length_value impor
     TASK_ID,
     TASK_ID_COMMON_TANGENT_LENGTH,
 )
+from trace.tasks.geometry.circle_pair_tangents.shared.construction import (
+    TANGENT_CASES,
+    validate_tangent_case,
+)
 
 
 def _generate(seed: int, *, task_id: str = TASK_ID, **params):
@@ -33,6 +38,18 @@ def test_circle_pair_tangent_length_registered() -> None:
     assert TASK_REGISTRY[TASK_ID_COMMON_TANGENT_LENGTH] is GeometryCirclePairTangentsCommonTangentLengthValueTask
     assert TASK_ID_CENTER_DISTANCE in TASK_REGISTRY
     assert TASK_REGISTRY[TASK_ID_CENTER_DISTANCE] is GeometryCirclePairTangentsCenterDistanceValueTask
+
+
+def test_circle_pair_tangent_default_pool_has_broad_unique_answer_support() -> None:
+    assert len(TANGENT_CASES) >= 64
+
+    tangent_lengths = [int(case.tangent_length) for case in TANGENT_CASES]
+    center_distances = [int(case.center_distance) for case in TANGENT_CASES]
+
+    assert len(set(tangent_lengths)) == len(tangent_lengths)
+    assert len(set(center_distances)) == len(center_distances)
+    for case in TANGENT_CASES:
+        validate_tangent_case(case)
 
 
 @pytest.mark.parametrize(
@@ -98,6 +115,7 @@ def test_circle_pair_tangent_formula_and_annotation(
     assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_circle_pair_tangents_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_point_map_inside_image(annotation, out.image.size)
+    _assert_rendered_tangent_geometry(trace["render_map"])
 
 
 def test_circle_pair_tangent_length_generation_is_deterministic() -> None:
@@ -157,3 +175,75 @@ def _assert_point_map_inside_image(annotation: dict[str, list[float]], image_siz
         x, y = [float(value) for value in point]
         assert 0.0 <= x <= float(width)
         assert 0.0 <= y <= float(height)
+
+
+def _assert_rendered_tangent_geometry(render_map: dict[str, object]) -> None:
+    centers = render_map["centers"]
+    tangent_points = render_map["tangent_points"]
+    circle_bboxes = render_map["circle_bboxes"]
+    label_bboxes = render_map["label_bboxes"]
+
+    c = _point(centers["C"])
+    d = _point(centers["D"])
+    a = _point(tangent_points["A"])
+    b = _point(tangent_points["B"])
+    tangent_vector = _sub(b, a)
+    radius_c = _bbox_radius(circle_bboxes["C"])
+    radius_d = _bbox_radius(circle_bboxes["D"])
+
+    assert abs(_distance(c, a) - radius_c) <= 1.5
+    assert abs(_distance(d, b) - radius_d) <= 1.5
+    assert abs(_cosine(tangent_vector, _sub(a, c))) <= 1e-3
+    assert abs(_cosine(tangent_vector, _sub(b, d))) <= 1e-3
+    assert _bbox_outside_circle(label_bboxes["radius_o1"], center=c, radius=radius_c)
+    assert _bbox_outside_circle(label_bboxes["radius_o2"], center=d, radius=radius_d)
+    for radius_label in ("radius_o1", "radius_o2"):
+        for point_label in ("A_label", "B_label", "C_label", "D_label"):
+            assert not _bboxes_overlap(label_bboxes[radius_label], label_bboxes[point_label], pad=2.0)
+
+
+def _point(value: list[float]) -> tuple[float, float]:
+    return float(value[0]), float(value[1])
+
+
+def _sub(a: tuple[float, float], b: tuple[float, float]) -> tuple[float, float]:
+    return a[0] - b[0], a[1] - b[1]
+
+
+def _distance(a: tuple[float, float], b: tuple[float, float]) -> float:
+    return math.hypot(a[0] - b[0], a[1] - b[1])
+
+
+def _dot(a: tuple[float, float], b: tuple[float, float]) -> float:
+    return a[0] * b[0] + a[1] * b[1]
+
+
+def _norm(value: tuple[float, float]) -> float:
+    return math.hypot(value[0], value[1])
+
+
+def _cosine(a: tuple[float, float], b: tuple[float, float]) -> float:
+    return _dot(a, b) / (_norm(a) * _norm(b))
+
+
+def _bbox_radius(bbox: list[float]) -> float:
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    return ((x1 - x0) + (y1 - y0)) / 4.0
+
+
+def _bboxes_overlap(a: list[float], b: list[float], *, pad: float = 0.0) -> bool:
+    ax0, ay0, ax1, ay1 = [float(value) for value in a]
+    bx0, by0, bx1, by1 = [float(value) for value in b]
+    return not (
+        ax1 + float(pad) < bx0
+        or bx1 + float(pad) < ax0
+        or ay1 + float(pad) < by0
+        or by1 + float(pad) < ay0
+    )
+
+
+def _bbox_outside_circle(bbox: list[float], *, center: tuple[float, float], radius: float) -> bool:
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    closest_x = max(x0, min(float(center[0]), x1))
+    closest_y = max(y0, min(float(center[1]), y1))
+    return _distance((closest_x, closest_y), center) >= float(radius) - 2.0

@@ -5,11 +5,11 @@
   "templates": {
     "scene": {
       "circle_centerline_overlap_scene": [
-        "The diagram shows {object_description}.",
-        "The figure shows {object_description}.",
-        "The image shows {object_description}.",
-        "This diagram shows {object_description}.",
-        "This figure shows {object_description}."
+        "The diagram shows three overlapping circles whose centers lie on one line, with center labels, boundary-point labels, {measure_label_kind} labels, and centerline segment labels.",
+        "The figure shows three overlapping circles whose centers lie on one line, with center labels, boundary-point labels, {measure_label_kind} labels, and centerline segment labels.",
+        "The image shows three overlapping circles whose centers lie on one line, with center labels, boundary-point labels, {measure_label_kind} labels, and centerline segment labels.",
+        "This diagram shows three overlapping circles whose centers lie on one line, with center labels, boundary-point labels, {measure_label_kind} labels, and centerline segment labels.",
+        "This figure shows three overlapping circles whose centers lie on one line, with center labels, boundary-point labels, {measure_label_kind} labels, and centerline segment labels."
       ]
     },
     "task": {
@@ -46,20 +46,19 @@
         "Use JSON only.\nFinal answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "Return a JSON object with \"annotation\" and \"answer\" fields.\nAnnotation format: set \"annotation\" to a JSON object with exactly these role keys: {annotation_keys}; each value must be the pixel point [x,y] at that visible center, boundary point, or segment endpoint.\nAnswer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
-        "Return only JSON with \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to a JSON object with exactly these role keys: {annotation_keys}; each value must be the pixel point [x,y] at that visible center, boundary point, or segment endpoint.\nRequired answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
-        "Respond with JSON only.\nAnnotation format: set \"annotation\" to a JSON object with exactly these role keys: {annotation_keys}; each value must be the pixel point [x,y] at that visible center, boundary point, or segment endpoint.\nFormat for the \"answer\" field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
-        "Return a JSON object.\nAnnotation format: set \"annotation\" to a JSON object with exactly these role keys: {annotation_keys}; each value must be the pixel point [x,y] at that visible center, boundary point, or segment endpoint.\nAnswer field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
-        "Use JSON only.\nFinal answer format: set \"answer\" to the requested segment length as an integer.\nAnnotation format: set \"annotation\" to a JSON object with exactly these role keys: {annotation_keys}; each value must be the pixel point [x,y] at that visible center, boundary point, or segment endpoint.\nExample JSON:\n{json_example}"
+        "Return a JSON object with \"annotation\" and \"answer\" fields.\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point.\nAnswer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Return only JSON with \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point.\nRequired answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Respond with JSON only.\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point.\nFormat for the \"answer\" field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Return a JSON object.\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point.\nAnswer field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Use JSON only.\nFinal answer format: set \"answer\" to the requested segment length as an integer.\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point.\nExample JSON:\n{json_example}"
       ]
     }
   },
-  "static_slots_by_key": {
-    "scene:circle_centerline_overlap_scene": {
-      "object_description": "three overlapping circles whose centers lie on one line, with center labels, boundary-point labels, radius or diameter labels, and centerline segment labels"
-    }
-  },
+  "static_slots_by_key": {},
   "dynamic_slots": {
+    "measure_label_kind": {
+      "type": "string"
+    },
     "target_name": {
       "type": "string"
     },
@@ -75,7 +74,7 @@
   },
   "required_slots_by_key": {
     "scene:circle_centerline_overlap_scene": [
-      "object_description"
+      "measure_label_kind"
     ],
     "query:center_distance_from_overlap": [
       "target_name"

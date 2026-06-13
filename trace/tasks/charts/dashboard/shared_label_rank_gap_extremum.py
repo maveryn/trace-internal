@@ -4,107 +4,82 @@ from __future__ import annotations
 
 from typing import Any
 
-from trace.core.seed import hash64
+from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.dashboard.shared.cross_panel_common import SCENE_ID
-from trace.tasks.charts.dashboard.shared.cross_panel_sampling import build_shared_label_rank_gap_dataset
+from trace.tasks.charts.dashboard._lifecycle import DashboardTaskPlan, MaterializedDashboardTask, dashboard_task_output_fields, run_dashboard_public_task
 from trace.tasks.charts.dashboard.shared.prompts import build_prompt_artifacts, build_prompt_slots
-from trace.tasks.charts.dashboard.shared.runtime import (
-    annotation_payload,
-    answer_typed_value,
-    build_trace_scaffold,
-    render_dataset,
-)
+from trace.tasks.charts.dashboard.shared.sampling import build_dashboard_base_sample, sample_panel_title_labels
+from trace.tasks.charts.dashboard.shared.state import DOMAIN, SCENE_ID, SCENE_VARIANT, OPTION_LETTERS, DashboardDataset, DashboardQuery
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.prompt_variants import build_prompt_query_spec
+
+
+def _build_task_output(materialized: MaterializedDashboardTask) -> TaskOutput:
+    return TaskOutput(**dashboard_task_output_fields(materialized))
+from trace.tasks.charts.dashboard.shared.metrics import category_by_id, panel_by_id, rank_positions_by_category_id, weighted_choice_from_defaults
+from trace.tasks.charts.dashboard.shared.state import SUPPORTED_RANK_DIRECTIONS
 
 
 QUERY_ID = "shared_label_rank_gap_extremum"
-TASK_PARAM_DEFAULTS: dict[str, Any] = {}
-ANNOTATION_KIND = "label_pair"
 
 
 @register_task
 class ChartsDashboardSharedLabelRankGapExtremumTask:
-    """Return the shared category with an extremal rank-position gap."""
+    """Compare category rank positions across two panels and return the extremum gap label."""
 
     task_id = "task_charts__dashboard__shared_label_rank_gap_extremum"
-    domain = "charts"
-    scene_id = SCENE_ID
+    domain = DOMAIN
     objective_contract = "shared_label_rank_gap_extremum"
     supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True
 
-    def _generate_once(self, instance_seed: int, *, params: dict[str, Any], selected_query_id: str) -> TaskOutput:
-        effective_params = {**TASK_PARAM_DEFAULTS, **dict(params)}
-        dataset = build_shared_label_rank_gap_dataset(effective_params, instance_seed=int(instance_seed))
-        rendered, render_meta, sidecar_meta = render_dataset(dataset, params=effective_params, instance_seed=int(instance_seed))
-        answer_gt = answer_typed_value(dataset)
-        annotation_type, annotation, projected_annotation, annotation_refs = annotation_payload(
-            dataset=dataset,
-            rendered=rendered,
-            annotation_kind=ANNOTATION_KIND,
-        )
-        prompt_artifacts = build_prompt_artifacts(
-            prompt_query_key=QUERY_ID,
-            dynamic_slots=build_prompt_slots(dataset=dataset),
-            instance_seed=int(instance_seed),
-        )
-        trace_payload = build_trace_scaffold(
-            dataset=dataset,
-            rendered=rendered,
-            render_meta=render_meta,
-            sidecar_meta=sidecar_meta,
-            projected_annotation=projected_annotation,
-            annotation_refs=annotation_refs,
-            answer_value=answer_gt.value,
-        )
-        relation_params = {
-            "query_id": str(selected_query_id),
-            "scene_id": SCENE_ID,
-            "scene_variant": str(dataset.scene_variant),
-            "question_format": "dashboard_cross_panel_query",
-            **dict(dataset.query.params),
+    def _resolve_shared_rank_gap_plan(self, instance_seed: int, params: dict[str, Any], selected_query_id: str) -> DashboardTaskPlan:
+        """Bind the category whose rank-position gap is uniquely largest or smallest."""
+        del selected_query_id
+        rng = spawn_rng(int(instance_seed), f"{SCENE_ID}.{self.objective_contract}.selection")
+        base_sample = build_dashboard_base_sample(params, instance_seed=int(instance_seed))
+        first_panel_id, second_panel_id = rng.sample([str(panel.panel_id) for panel in base_sample.panels], 2)
+        first_panel = panel_by_id(base_sample.panels, first_panel_id)
+        second_panel = panel_by_id(base_sample.panels, second_panel_id)
+        rank_direction = weighted_choice_from_defaults(rng, params=params, key="rank_direction", supported=SUPPORTED_RANK_DIRECTIONS, fallback_weights_key="rank_direction_weights")
+        gap_direction = weighted_choice_from_defaults(rng, params=params, key="gap_extremum_direction", supported=SUPPORTED_RANK_DIRECTIONS, fallback_weights_key="gap_extremum_weights")
+        first_ranks = rank_positions_by_category_id(categories=base_sample.categories, panel=first_panel, direction=str(rank_direction))
+        second_ranks = rank_positions_by_category_id(categories=base_sample.categories, panel=second_panel, direction=str(rank_direction))
+        gaps_by_category = {str(category.category_id): abs(int(first_ranks[str(category.category_id)]) - int(second_ranks[str(category.category_id)])) for category in base_sample.categories}
+        target_gap = max(int(value) for value in gaps_by_category.values()) if str(gap_direction) == "largest" else min(int(value) for value in gaps_by_category.values())
+        answer_category_ids = [str(category_id) for category_id, gap in gaps_by_category.items() if int(gap) == int(target_gap)]
+        if len(answer_category_ids) != 1:
+            raise ValueError("shared-label rank-gap extremum must have a unique answer")
+        answer_category = category_by_id(base_sample.categories, answer_category_ids[0])
+        rank_direction_phrase = "highest-to-lowest" if str(rank_direction) == "largest" else "lowest-to-highest"
+        relations = {
+            **dict(base_sample.common_params),
+            "first_rank_gap_panel_id": str(first_panel_id),
+            "first_rank_gap_panel_name": str(first_panel.name),
+            "second_rank_gap_panel_id": str(second_panel_id),
+            "second_rank_gap_panel_name": str(second_panel.name),
+            "rank_direction": str(rank_direction),
+            "rank_direction_phrase": str(rank_direction_phrase),
+            "gap_extremum_direction": str(gap_direction),
+            "gap_extremum_phrase": "largest" if str(gap_direction) == "largest" else "smallest",
+            "answer_category_id": str(answer_category.category_id),
+            "answer_category_label": str(answer_category.label),
+            "first_rank_position": int(first_ranks[str(answer_category.category_id)]),
+            "second_rank_position": int(second_ranks[str(answer_category.category_id)]),
+            "answer_rank_gap": int(target_gap),
+            "first_rank_positions_by_category_id": dict(first_ranks),
+            "second_rank_positions_by_category_id": dict(second_ranks),
+            "rank_gaps_by_category_id": dict(gaps_by_category),
         }
-        trace_payload["scene_ir"]["relations"]["query_id"] = str(selected_query_id)
-        trace_payload["query_spec"] = build_prompt_query_spec(
-            prompt_artifacts=prompt_artifacts,
-            query_id=str(selected_query_id),
-            params=relation_params,
-        )
-        trace_payload["execution_trace"]["query_id"] = str(selected_query_id)
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=answer_gt,
-            annotation_gt=TypedValue(type=str(annotation_type), value=annotation),
-            image=rendered.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(selected_query_id),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-        )
+        refs = ((str(first_panel_id), str(answer_category.category_id)), (str(second_panel_id), str(answer_category.category_id)))
+        dataset = DashboardDataset(scene_variant=SCENE_VARIANT, categories=base_sample.categories, panels=base_sample.panels, query=DashboardQuery(answer=str(answer_category.label), answer_type="string", annotation_refs=refs, params=dict(relations)))
+        prompt_artifacts = build_prompt_artifacts(prompt_query_key=QUERY_ID, dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
+        return DashboardTaskPlan(dataset=dataset, prompt_artifacts=prompt_artifacts, relations=relations, answer_gt=TypedValue(type="string", value=str(answer_category.label)), annotation_refs=refs, annotation_roles={"first_panel": refs[0], "second_panel": refs[1]})
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, _probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=QUERY_ID,
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), "charts.dashboard.retry", int(attempt_index)))
-            try:
-                return self._generate_once(int(attempt_seed), params=task_params, selected_query_id=str(selected_query_id))
-            except Exception as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
+        selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params=params, supported_query_ids=self.supported_query_ids, default_query_id=QUERY_ID, task_id=self.task_id)
+        return run_dashboard_public_task(instance_seed=int(instance_seed), params=task_params, max_attempts=int(max_attempts), selected_query_id=str(selected_query_id), build_plan=self._resolve_shared_rank_gap_plan, build_output=_build_task_output)
 
 
 __all__ = ["ChartsDashboardSharedLabelRankGapExtremumTask"]

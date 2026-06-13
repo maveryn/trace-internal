@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping
 
-from trace.core.scene_config import get_scene_defaults
-from trace.tasks.charts.dashboard.shared.cross_panel_common import SCENE_ID, _Dataset, _join_quoted_labels
-from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
+from trace.tasks.charts.dashboard.shared.defaults import prompt_default
+from trace.tasks.charts.dashboard.shared.metrics import join_quoted_labels
+from trace.tasks.charts.dashboard.shared.state import SCENE_ID, DashboardDataset
 from trace.tasks.shared.prompt_variants import (
     PromptTraceArtifacts,
     build_prompt_trace_artifacts,
@@ -16,11 +16,6 @@ from trace.tasks.shared.prompt_variants import (
 
 DOMAIN = "charts"
 PROMPT_BUNDLE_ID = "charts_dashboard_v1"
-_DEFAULTS = get_scene_defaults(DOMAIN, SCENE_ID)
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
-    _DEFAULTS if isinstance(_DEFAULTS, Mapping) else {},
-    **{"task" "_id": "charts_dashboard_prompt"},
-)
 _DYNAMIC_SLOT_NAMES = {
     "condition_category_label",
     "first_condition_panel_name",
@@ -49,10 +44,10 @@ _DYNAMIC_SLOT_NAMES = {
 }
 
 
-def _object_description(dataset: _Dataset) -> str:
+def _object_description(dataset: DashboardDataset) -> str:
     return (
         f"a dashboard with {int(len(dataset.panels))} titled panels named "
-        f"{_join_quoted_labels([str(panel.name) for panel in dataset.panels])}. "
+        f"{join_quoted_labels([str(panel.name) for panel in dataset.panels])}. "
         f"Styles may be bar, line, donut, or radar, and a style may repeat. "
         f"All panels share the same {int(len(dataset.categories))} category labels and colors, "
         "with exact integer values shown"
@@ -61,7 +56,7 @@ def _object_description(dataset: _Dataset) -> str:
 
 def build_prompt_slots(
     *,
-    dataset: _Dataset,
+    dataset: DashboardDataset,
     extra_slots: Mapping[str, Any] | None = None,
 ) -> Dict[str, str]:
     slots: Dict[str, str] = {
@@ -86,7 +81,7 @@ def build_prompt_artifacts(
     rendered_prompt = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
-        bundle_id=str(_PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
+        bundle_id=str(prompt_default("bundle_id", PROMPT_BUNDLE_ID)),
         scene_key="dashboard_mixed_chart",
         task_key="dashboard_cross_panel_query",
         query_key=str(prompt_query_key),

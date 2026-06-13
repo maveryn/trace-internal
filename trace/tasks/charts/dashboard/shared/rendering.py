@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ....shared.config_defaults import group_default
 from ....shared.font_assets import sample_font_family
 from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import load_font, resolve_text_stroke_fill
@@ -16,20 +15,18 @@ from ....shared.visual_style.context_layer import (
     resolve_dashboard_context_layout,
     sample_dashboard_title,
 )
-from .cross_panel_common import (
+from .defaults import render_default, render_rgb, resolve_context_text_params
+from .state import (
     SCENE_NAMESPACE,
     BBox,
     Point,
     RGB,
-    _OPTION_LETTERS,
-    _RENDER_DEFAULTS,
-    _Category,
-    _Dataset,
-    _Panel,
-    _RenderParams,
-    _Rendered,
-    _render_rgb,
-    _resolve_context_text_params,
+    OPTION_LETTERS,
+    Category,
+    DashboardDataset,
+    Panel,
+    RenderParams,
+    RenderedDashboard,
 )
 
 
@@ -132,7 +129,7 @@ def _draw_text(
     return _bbox_tuple(bbox)
 
 
-def _panel_layout(render_params: _RenderParams, panel_count: int) -> Tuple[BBox, ...]:
+def _panel_layout(render_params: RenderParams, panel_count: int) -> Tuple[BBox, ...]:
     margin = int(render_params.dashboard_margin_px)
     offset_x = int(render_params.layout_offset_x_px)
     offset_y = int(render_params.layout_offset_y_px)
@@ -174,11 +171,11 @@ def _panel_layout(render_params: _RenderParams, panel_count: int) -> Tuple[BBox,
 
 def _option_panel_render_defaults(params: Mapping[str, Any]) -> Dict[str, int]:
     return {
-        "height_px": int(params.get("option_panel_height_px", group_default(_RENDER_DEFAULTS, "option_panel_height_px", 238))),
-        "gap_px": int(params.get("option_panel_gap_px", group_default(_RENDER_DEFAULTS, "option_panel_gap_px", 16))),
-        "padding_px": int(params.get("option_panel_padding_px", group_default(_RENDER_DEFAULTS, "option_panel_padding_px", 16))),
-        "font_size_px": int(params.get("option_panel_font_size_px", group_default(_RENDER_DEFAULTS, "option_panel_font_size_px", 15))),
-        "letter_font_size_px": int(params.get("option_panel_letter_font_size_px", group_default(_RENDER_DEFAULTS, "option_panel_letter_font_size_px", 16))),
+        "height_px": int(params.get("option_panel_height_px", render_default("option_panel_height_px", 238))),
+        "gap_px": int(params.get("option_panel_gap_px", render_default("option_panel_gap_px", 16))),
+        "padding_px": int(params.get("option_panel_padding_px", render_default("option_panel_padding_px", 16))),
+        "font_size_px": int(params.get("option_panel_font_size_px", render_default("option_panel_font_size_px", 15))),
+        "letter_font_size_px": int(params.get("option_panel_letter_font_size_px", render_default("option_panel_letter_font_size_px", 16))),
     }
 
 
@@ -191,9 +188,9 @@ def _scale_y(value: int, plot_bbox: BBox) -> float:
 def _draw_panel_chrome(
     draw: ImageDraw.ImageDraw,
     *,
-    panel: _Panel,
+    panel: Panel,
     panel_bbox: BBox,
-    render_params: _RenderParams,
+    render_params: RenderParams,
 ) -> BBox:
     draw.rounded_rectangle(
         panel_bbox,
@@ -218,11 +215,13 @@ def _draw_panel_chrome(
 def _draw_bar_panel(
     draw: ImageDraw.ImageDraw,
     *,
-    panel: _Panel,
+    panel: Panel,
     panel_bbox: BBox,
-    categories: Sequence[_Category],
-    render_params: _RenderParams,
+    categories: Sequence[Category],
+    render_params: RenderParams,
 ) -> Tuple[Dict[str, BBox], Dict[str, BBox], Dict[str, Point], List[Dict[str, Any]]]:
+    """Draw one bar panel and record one support point per category mark."""
+
     pad = int(render_params.panel_padding_px)
     label_size = 10 if len(categories) > 12 else int(render_params.label_font_size_px)
     value_size = 10 if len(categories) > 12 else int(render_params.value_font_size_px)
@@ -279,11 +278,13 @@ def _draw_bar_panel(
 def _draw_line_panel(
     draw: ImageDraw.ImageDraw,
     *,
-    panel: _Panel,
+    panel: Panel,
     panel_bbox: BBox,
-    categories: Sequence[_Category],
-    render_params: _RenderParams,
+    categories: Sequence[Category],
+    render_params: RenderParams,
 ) -> Tuple[Dict[str, BBox], Dict[str, BBox], Dict[str, Point], List[Dict[str, Any]]]:
+    """Draw one line panel with category points as annotation witnesses."""
+
     pad = int(render_params.panel_padding_px)
     label_size = 10 if len(categories) > 12 else int(render_params.label_font_size_px)
     value_size = 10 if len(categories) > 12 else int(render_params.value_font_size_px)
@@ -352,11 +353,13 @@ def _draw_line_panel(
 def _draw_donut_panel(
     draw: ImageDraw.ImageDraw,
     *,
-    panel: _Panel,
+    panel: Panel,
     panel_bbox: BBox,
-    categories: Sequence[_Category],
-    render_params: _RenderParams,
+    categories: Sequence[Category],
+    render_params: RenderParams,
 ) -> Tuple[Dict[str, BBox], Dict[str, BBox], Dict[str, Point], List[Dict[str, Any]]]:
+    """Draw one donut panel and use segment centers as category witness points."""
+
     label_size = 9 if len(categories) > 12 else int(render_params.label_font_size_px)
     value_size = 9 if len(categories) > 12 else int(render_params.value_font_size_px)
     label_font = load_font(int(label_size), bold=True, font_family=render_params.font_family)
@@ -424,11 +427,13 @@ def _draw_donut_panel(
 def _draw_radar_panel(
     draw: ImageDraw.ImageDraw,
     *,
-    panel: _Panel,
+    panel: Panel,
     panel_bbox: BBox,
-    categories: Sequence[_Category],
-    render_params: _RenderParams,
+    categories: Sequence[Category],
+    render_params: RenderParams,
 ) -> Tuple[Dict[str, BBox], Dict[str, BBox], Dict[str, Point], List[Dict[str, Any]]]:
+    """Draw one radar panel and preserve each vertex point for annotations."""
+
     label_size = 9 if len(categories) > 12 else int(render_params.label_font_size_px)
     value_size = 9 if len(categories) > 12 else int(render_params.value_font_size_px)
     label_font = load_font(int(label_size), bold=True, font_family=render_params.font_family)
@@ -514,10 +519,12 @@ def _fit_font_for_width(
 def _draw_statement_option_panel(
     draw: ImageDraw.ImageDraw,
     *,
-    dataset: _Dataset,
-    render_params: _RenderParams,
+    dataset: DashboardDataset,
+    render_params: RenderParams,
     params: Mapping[str, Any],
 ) -> Tuple[Dict[str, BBox], List[Dict[str, Any]]]:
+    """Render visual answer options without making option boxes annotation targets."""
+
     raw_options = dataset.query.params.get("statement_options", ())
     if not isinstance(raw_options, Sequence) or isinstance(raw_options, (str, bytes)) or not raw_options:
         return {}, []
@@ -533,8 +540,8 @@ def _draw_statement_option_panel(
     y1 = int(render_params.canvas_height) - int(render_params.dashboard_margin_px)
     y0 = int(y1) - int(height_px)
     panel_bbox = (int(x0), int(y0), int(x1), int(y1))
-    fill_rgb = _render_rgb(params, "option_panel_fill_rgb", render_params.panel_fill_rgb)
-    border_rgb = _render_rgb(params, "option_panel_border_rgb", render_params.panel_border_rgb)
+    fill_rgb = render_rgb(params, "option_panel_fill_rgb", render_params.panel_fill_rgb)
+    border_rgb = render_rgb(params, "option_panel_border_rgb", render_params.panel_border_rgb)
     draw.rounded_rectangle(panel_bbox, radius=10, fill=tuple(fill_rgb), outline=tuple(border_rgb), width=2)
 
     title_font = load_font(16, bold=True, font_family=render_params.font_family)
@@ -563,7 +570,7 @@ def _draw_statement_option_panel(
         }
     ]
     for index, option in enumerate(options):
-        option_label = str(option.get("option_label", _OPTION_LETTERS[int(index)]))
+        option_label = str(option.get("option_label", OPTION_LETTERS[int(index)]))
         option_id = str(option.get("option_id", f"option_{option_label}"))
         statement_text = str(option.get("text", ""))
         row_y0 = int(content_top + index * row_height)
@@ -619,17 +626,19 @@ def _draw_statement_option_panel(
     return bboxes, entities
 
 
-def _render_dashboard(
+def render_dashboard(
     background: Image.Image,
     *,
-    dataset: _Dataset,
-    render_params: _RenderParams,
+    dataset: DashboardDataset,
+    render_params: RenderParams,
     params: Mapping[str, Any],
     instance_seed: int,
-) -> _Rendered:
+) -> RenderedDashboard:
+    """Render the dashboard scene after the public task has fixed answer semantics."""
+
     image = background.copy()
     draw = ImageDraw.Draw(image)
-    context_params = _resolve_context_text_params(params)
+    context_params = resolve_context_text_params(params)
     has_option_panel = bool(dataset.query.params.get("statement_options"))
     if bool(has_option_panel):
         context_params["context_text_enabled"] = False
@@ -652,7 +661,7 @@ def _render_dashboard(
             "option_panel_height_px": int(option_defaults["height_px"]),
             "option_panel_gap_px": int(option_defaults["gap_px"]),
         }
-    render_params = _RenderParams(
+    render_params = RenderParams(
         **{
             **render_params.__dict__,
             "layout_jitter_meta": {
@@ -804,7 +813,7 @@ def _render_dashboard(
             params=params,
         )
         entities.extend(option_entities)
-    return _Rendered(
+    return RenderedDashboard(
         image=image,
         entities=tuple(entities),
         panel_bboxes_px=dict(panel_bboxes),

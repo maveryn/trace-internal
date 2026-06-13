@@ -2,109 +2,98 @@
 
 from __future__ import annotations
 
-from typing import Any
+from dataclasses import dataclass
+from typing import Any, Sequence
 
-from trace.core.seed import hash64
+from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.dashboard.shared.cross_panel_common import SCENE_ID
-from trace.tasks.charts.dashboard.shared.cross_panel_sampling import build_category_panel_condition_dataset
+from trace.tasks.charts.dashboard._lifecycle import DashboardTaskPlan, MaterializedDashboardTask, dashboard_task_output_fields, run_dashboard_public_task
 from trace.tasks.charts.dashboard.shared.prompts import build_prompt_artifacts, build_prompt_slots
-from trace.tasks.charts.dashboard.shared.runtime import (
-    annotation_payload,
-    answer_typed_value,
-    build_trace_scaffold,
-    render_dataset,
-)
+from trace.tasks.charts.dashboard.shared.sampling import build_dashboard_base_sample
+from trace.tasks.charts.dashboard.shared.state import DOMAIN, SCENE_ID, SCENE_VARIANT, DashboardDataset, DashboardQuery
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.prompt_variants import build_prompt_query_spec
+
+
+def _build_task_output(materialized: MaterializedDashboardTask) -> TaskOutput:
+    return TaskOutput(**dashboard_task_output_fields(materialized))
+from trace.tasks.charts.dashboard.shared.defaults import generation_default
+from trace.tasks.charts.dashboard.shared.metrics import balanced_support_choice, category_by_id, compare_condition, condition_phrase, panel_by_id, panel_condition_count_support, weighted_choice_from_defaults
+from trace.tasks.charts.dashboard.shared.state import SUPPORTED_CONDITION_COMPARISONS
 
 
 QUERY_ID = "category_panel_condition_count"
-TASK_PARAM_DEFAULTS: dict[str, Any] = {}
-ANNOTATION_KIND = "point_set"
+
+
+@dataclass(frozen=True)
+class PanelConditionSelection:
+    """Local selection record for a category scoped across dashboard panels."""
+
+    category_id: str
+    threshold: int
+    matching_panel_ids: tuple[str, ...]
 
 
 @register_task
 class ChartsDashboardCategoryPanelConditionCountTask:
-    """Count dashboard panels where one category satisfies a value condition."""
+    """Count dashboard panels where one shared category satisfies a value threshold."""
 
     task_id = "task_charts__dashboard__category_panel_condition_count"
-    domain = "charts"
-    scene_id = SCENE_ID
+    domain = DOMAIN
     objective_contract = "category_panel_condition_count"
     supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True
 
-    def _generate_once(self, instance_seed: int, *, params: dict[str, Any], selected_query_id: str) -> TaskOutput:
-        effective_params = {**TASK_PARAM_DEFAULTS, **dict(params)}
-        dataset = build_category_panel_condition_dataset(effective_params, instance_seed=int(instance_seed))
-        rendered, render_meta, sidecar_meta = render_dataset(dataset, params=effective_params, instance_seed=int(instance_seed))
-        answer_gt = answer_typed_value(dataset)
-        annotation_type, annotation, projected_annotation, annotation_refs = annotation_payload(
-            dataset=dataset,
-            rendered=rendered,
-            annotation_kind=ANNOTATION_KIND,
+    def _construct_category_panel_count_plan(self, instance_seed: int, params: dict[str, Any], selected_query_id: str) -> DashboardTaskPlan:
+        """Bind a single category and threshold whose matching panel count is controlled."""
+        del selected_query_id
+        rng = spawn_rng(int(instance_seed), f"{SCENE_ID}.{self.objective_contract}.selection")
+        base_sample = build_dashboard_base_sample(params, instance_seed=int(instance_seed))
+        comparison = weighted_choice_from_defaults(rng, params=params, key="panel_condition_comparison", supported=SUPPORTED_CONDITION_COMPARISONS, fallback_weights_key="condition_comparison_weights")
+        support = panel_condition_count_support(params, len(base_sample.panels))
+        target_count = balanced_support_choice(params=params, instance_seed=int(instance_seed), namespace=f"{SCENE_ID}.category_panel_condition_count.answer", support=support)
+        value_min = int(params.get("value_min", generation_default("value_min", 12)))
+        value_max = int(params.get("value_max", generation_default("value_max", 92)))
+        candidates: list[tuple[str, int, tuple[str, ...]]] = []
+        for category in base_sample.categories:
+            category_id = str(category.category_id)
+            for threshold in range(int(value_min) + 2, int(value_max) - 1):
+                matches = tuple(str(panel.panel_id) for panel in base_sample.panels if compare_condition(int(panel.values_by_category_id[str(category_id)]), str(comparison), int(threshold)))
+                if len(matches) == int(target_count):
+                    candidates.append((str(category_id), int(threshold), matches))
+        if not candidates:
+            raise ValueError("no dashboard category/threshold realizes requested panel-condition count")
+        category_id, threshold, matches = candidates[int(rng.randrange(len(candidates)))]
+        category = category_by_id(base_sample.categories, category_id)
+        panel_order = {str(panel.panel_id): index for index, panel in enumerate(base_sample.panels)}
+        matching_panel_ids = tuple(sorted(matches, key=lambda panel_id: panel_order[str(panel_id)]))
+        selection = PanelConditionSelection(
+            category_id=str(category_id),
+            threshold=int(threshold),
+            matching_panel_ids=tuple(str(panel_id) for panel_id in matching_panel_ids),
         )
-        prompt_artifacts = build_prompt_artifacts(
-            prompt_query_key=QUERY_ID,
-            dynamic_slots=build_prompt_slots(dataset=dataset),
-            instance_seed=int(instance_seed),
-        )
-        trace_payload = build_trace_scaffold(
-            dataset=dataset,
-            rendered=rendered,
-            render_meta=render_meta,
-            sidecar_meta=sidecar_meta,
-            projected_annotation=projected_annotation,
-            annotation_refs=annotation_refs,
-            answer_value=answer_gt.value,
-        )
-        relation_params = {
-            "query_id": str(selected_query_id),
-            "scene_id": SCENE_ID,
-            "scene_variant": str(dataset.scene_variant),
-            "question_format": "dashboard_cross_panel_query",
-            **dict(dataset.query.params),
+        refs = tuple((str(panel_id), str(selection.category_id)) for panel_id in selection.matching_panel_ids)
+        relations = {
+            **dict(base_sample.common_params),
+            "condition_category_id": str(selection.category_id),
+            "condition_category_label": str(category.label),
+            "panel_condition_comparison": str(comparison),
+            "panel_threshold": int(selection.threshold),
+            "panel_condition_phrase": condition_phrase(str(comparison), int(selection.threshold)),
+            "matching_panel_ids": list(selection.matching_panel_ids),
+            "matching_panel_names": [str(panel_by_id(base_sample.panels, panel_id).name) for panel_id in selection.matching_panel_ids],
+            "target_count_support": list(support),
+            "count_value": int(len(selection.matching_panel_ids)),
+            "predicate_scope": "one_category_across_panels",
         }
-        trace_payload["scene_ir"]["relations"]["query_id"] = str(selected_query_id)
-        trace_payload["query_spec"] = build_prompt_query_spec(
-            prompt_artifacts=prompt_artifacts,
-            query_id=str(selected_query_id),
-            params=relation_params,
-        )
-        trace_payload["execution_trace"]["query_id"] = str(selected_query_id)
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=answer_gt,
-            annotation_gt=TypedValue(type=str(annotation_type), value=annotation),
-            image=rendered.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(selected_query_id),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-        )
+        dataset = DashboardDataset(scene_variant=SCENE_VARIANT, categories=base_sample.categories, panels=base_sample.panels, query=DashboardQuery(answer=int(len(selection.matching_panel_ids)), answer_type="integer", annotation_refs=refs, params=dict(relations)))
+        prompt_artifacts = build_prompt_artifacts(prompt_query_key=QUERY_ID, dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
+        return DashboardTaskPlan(dataset=dataset, prompt_artifacts=prompt_artifacts, relations=relations, answer_gt=TypedValue(type="integer", value=int(len(selection.matching_panel_ids))), annotation_refs=refs)
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, _probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=QUERY_ID,
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), "charts.dashboard.retry", int(attempt_index)))
-            try:
-                return self._generate_once(int(attempt_seed), params=task_params, selected_query_id=str(selected_query_id))
-            except Exception as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
+        selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params=params, supported_query_ids=self.supported_query_ids, default_query_id=QUERY_ID, task_id=self.task_id)
+        return run_dashboard_public_task(instance_seed=int(instance_seed), params=task_params, max_attempts=int(max_attempts), selected_query_id=str(selected_query_id), build_plan=self._construct_category_panel_count_plan, build_output=_build_task_output)
 
 
 __all__ = ["ChartsDashboardCategoryPanelConditionCountTask"]

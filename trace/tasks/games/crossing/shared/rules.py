@@ -61,6 +61,28 @@ def route_first_collision_tick(
     return None
 
 
+def route_first_collision_vehicle_ids(
+    route: CrossingRouteOption,
+    vehicles: tuple[CrossingVehicle, ...],
+    *,
+    lane_count: int,
+) -> tuple[str, ...]:
+    """Return vehicle ids that collide with a route at its first collision tick."""
+
+    first_tick = route_first_collision_tick(route, vehicles, lane_count=int(lane_count))
+    if first_tick is None:
+        return ()
+    first_hits: list[str] = []
+    route_col = int(route.path_cols[int(first_tick) - 1])
+    for vehicle in vehicles:
+        if int(vehicle.row) != int(first_tick) - 1:
+            continue
+        vehicle_col = vehicle_col_at_tick(vehicle, tick=int(first_tick), lane_count=int(lane_count))
+        if vehicle_col is not None and int(vehicle_col) == int(route_col):
+            first_hits.append(str(vehicle.vehicle_id))
+    return tuple(sorted(set(first_hits)))
+
+
 def validate_crossing_sample(sample: CrossingSample) -> None:
     """Validate scene geometry, symbolic entities, answer counts, and annotation ids."""
 
@@ -134,6 +156,26 @@ def validate_crossing_sample(sample: CrossingSample) -> None:
         expected_annotation = {str(target_vehicle.vehicle_id)}
         if str(sample.answer) != str(expected_answer):
             raise ValueError("crossing answer does not match active query")
+    elif count_mode == "labeled_route_first_collision":
+        marked = next((route for route in sample.route_options if route.label == sample.marked_route_label), None)
+        if marked is None:
+            raise ValueError("first-hit label task requires marked route")
+        expected_hit_ids = route_collision_vehicle_ids(marked, sample.vehicles, lane_count=lane_count)
+        if len(expected_hit_ids) < 2:
+            raise ValueError("first-hit label task requires multiple route collisions")
+        first_hit_ids = route_first_collision_vehicle_ids(marked, sample.vehicles, lane_count=lane_count)
+        if len(first_hit_ids) != 1:
+            raise ValueError("first-hit label task requires one earliest collision")
+        vehicle_by_id = {str(vehicle.vehicle_id): vehicle for vehicle in sample.vehicles}
+        target_vehicle = vehicle_by_id.get(str(first_hit_ids[0]))
+        if target_vehicle is None or target_vehicle.option_label is None:
+            raise ValueError("first-hit label task target must have an option label")
+        expected_answer = str(target_vehicle.option_label)
+        expected_annotation = {str(target_vehicle.vehicle_id)}
+        if tuple(sample.intersecting_vehicle_ids) != tuple(expected_hit_ids):
+            raise ValueError("first-hit label task trace must list all route collisions")
+        if str(sample.answer) != str(expected_answer):
+            raise ValueError("crossing answer does not match active query")
     else:
         raise ValueError(f"unsupported crossing count mode: {count_mode}")
 
@@ -144,6 +186,7 @@ def validate_crossing_sample(sample: CrossingSample) -> None:
 __all__ = [
     "route_collision_vehicle_ids",
     "route_first_collision_tick",
+    "route_first_collision_vehicle_ids",
     "validate_crossing_sample",
     "vehicle_col_at_tick",
 ]

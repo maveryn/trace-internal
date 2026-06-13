@@ -1,4 +1,4 @@
-"""Identify the labeled moving object that hits the marked crossing route."""
+"""Identify the labeled moving object that hits the marked route first."""
 
 from __future__ import annotations
 
@@ -12,13 +12,13 @@ from trace.tasks.games.crossing._lifecycle import (
     run_crossing_lifecycle,
 )
 from trace.tasks.games.crossing.shared.defaults import SCENE_ID
-from trace.tasks.games.crossing.shared.sampling import sample_labeled_route_collision_scene
+from trace.tasks.games.crossing.shared.sampling import sample_labeled_route_first_collision_scene
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
 
 
-TASK_ID = "task_games__crossing__hit_object_label"
-QUERY_ID = "hit_object_label"
+TASK_ID = "task_games__crossing__first_hit_object_label"
+QUERY_ID = "first_hit_object_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
 TARGET_LABEL_INDEX_SUPPORT: Tuple[int, ...] = (0, 1, 2, 3)
 _GEN_DEFAULTS, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
@@ -28,39 +28,40 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS_UNUSED = load_scene_gen
 )
 
 
-def _construct_unique_hit_scene(
+def _construct_first_collision_scene(
     rng: Any,
     axes,
     target_label: str,
     _task_params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
 ):
-    """Construct the one-collision scene required by this objective."""
+    """Construct the multi-collision scene with the target label as earliest hit."""
 
-    return sample_labeled_route_collision_scene(
+    return sample_labeled_route_first_collision_scene(
         rng=rng,
         axes=axes,
         target_label=str(target_label),
-        max_extra_per_row=int(group_default(gen_defaults, "hit_object_max_extra_per_row", 1)),
+        min_collision_count=int(group_default(gen_defaults, "first_hit_min_collision_count", 2)),
+        max_extra_per_row=int(group_default(gen_defaults, "first_hit_max_extra_per_row", 1)),
     )
 
 
-def _prepare_hit_object_label_objective(
+def _prepare_first_hit_object_label_objective(
     instance_seed: int,
     task_params: Mapping[str, Any],
     selected_query_id: str,
     _query_probabilities: Mapping[str, float],
 ) -> CrossingObjectivePlan:
-    """Bind unique route-hit semantics to the generic label-output lifecycle."""
+    """Bind earliest route-hit semantics to the generic label-output lifecycle."""
 
     return prepare_label_objective_from_spec(
         task_id=TASK_ID,
         spec=CrossingLabelObjectiveSpec(
             prompt_query_key=QUERY_ID,
-            count_mode="hit_object_label",
-            label_support_key="hit_object_label_index_support",
+            count_mode="first_hit_object_label",
+            label_support_key="first_hit_label_index_support",
             fallback_label_index_support=TARGET_LABEL_INDEX_SUPPORT,
-            construct_attempt=_construct_unique_hit_scene,
+            construct_attempt=_construct_first_collision_scene,
         ),
         instance_seed=int(instance_seed),
         task_params=task_params,
@@ -70,8 +71,8 @@ def _prepare_hit_object_label_objective(
 
 
 @register_task
-class GamesCrossingHitObjectLabelTask:
-    """Identify which labeled moving object collides with the marked route."""
+class GamesCrossingFirstHitObjectLabelTask:
+    """Identify which labeled moving object collides with the route earliest."""
 
     task_id = TASK_ID
     domain = "games"
@@ -79,7 +80,7 @@ class GamesCrossingHitObjectLabelTask:
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Generate a straight marked-route collision label question."""
+        """Generate a straight marked-route first-collision label question."""
 
         return run_crossing_lifecycle(
             task_id=TASK_ID,
@@ -89,8 +90,8 @@ class GamesCrossingHitObjectLabelTask:
             instance_seed=int(instance_seed),
             params=params,
             max_attempts=int(max_attempts),
-            prepare_objective=_prepare_hit_object_label_objective,
+            prepare_objective=_prepare_first_hit_object_label_objective,
         )
 
 
-__all__ = ["GamesCrossingHitObjectLabelTask"]
+__all__ = ["GamesCrossingFirstHitObjectLabelTask"]

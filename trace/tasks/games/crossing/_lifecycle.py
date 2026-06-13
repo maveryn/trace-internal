@@ -12,9 +12,10 @@ from trace.tasks.shared.annotation_artifacts import bbox_set_annotation_artifact
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
+from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 
 from .shared.annotations import entity_bboxes_for_ids
-from .shared.defaults import SCENE_ID
+from .shared.defaults import SCENE_ID, VEHICLE_OPTION_LABELS
 from .shared.output import common_trace_params, common_trace_sections
 from .shared.prompts import (
     build_crossing_prompt_artifacts,
@@ -22,6 +23,7 @@ from .shared.prompts import (
     crossing_object_description,
     crossing_output_slots,
     json_examples_for_integer_answer,
+    json_examples_for_label_answer,
 )
 from .shared.rendering import render_crossing_sample
 from .shared.sampling import resolve_crossing_scene_axes, resolve_target_answer, sample_crossing_scene
@@ -32,6 +34,7 @@ CrossingAttemptBuilder = Callable[[Any], CrossingSample]
 CrossingAnswerBuilder = Callable[[CrossingSample], TypedValue]
 CrossingEntityIdsBuilder = Callable[[CrossingSample], Sequence[str]]
 CrossingMappingBuilder = Callable[[CrossingSample], Mapping[str, Any]]
+CrossingLabelAttemptBuilder = Callable[[Any, CrossingSceneAxes, str, Mapping[str, Any], Mapping[str, Any]], CrossingSample]
 CrossingObjectivePreparer = Callable[
     [int, Mapping[str, Any], str, Mapping[str, float]],
     "CrossingObjectivePlan",
@@ -65,6 +68,64 @@ class CrossingCountObjectiveSpec:
     include_motion_rule_text: bool = False
     min_lane_count_answer_padding: int | None = None
     min_row_count_from_answer: bool = False
+
+
+@dataclass(frozen=True)
+class CrossingLabelObjectiveSpec:
+    """Task-owned semantic parameters for one labeled-vehicle Crossing objective."""
+
+    prompt_query_key: str
+    count_mode: str
+    label_support_key: str
+    fallback_label_index_support: tuple[int, ...]
+    construct_attempt: CrossingLabelAttemptBuilder
+    min_lane_count: int = 5
+    min_row_count: int = 5
+
+
+def _resolve_vehicle_option_label(
+    *,
+    instance_seed: int,
+    task_params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    support_key: str,
+    fallback_support: tuple[int, ...],
+    namespace: str,
+) -> tuple[str, int, tuple[int, ...], dict[str, float]]:
+    """Resolve a visible moving-object option label from task-owned support."""
+
+    labels = tuple(str(label) for label in VEHICLE_OPTION_LABELS)
+    support = resolve_integer_support(
+        task_params,
+        gen_defaults=gen_defaults,
+        key=str(support_key),
+        fallback=tuple(int(value) for value in fallback_support),
+    )
+    if task_params.get("target_label") is not None:
+        label = str(task_params["target_label"])
+        if label not in labels:
+            raise ValueError(f"unsupported crossing target label: {label}")
+        index = int(labels.index(label))
+        if index not in set(int(value) for value in support):
+            raise ValueError(f"target label {label} is outside configured support")
+        probabilities = {str(value): 1.0 if int(value) == int(index) else 0.0 for value in support}
+        return label, index, tuple(int(value) for value in support), probabilities
+
+    index, probabilities = resolve_integer_choice(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        gen_defaults=gen_defaults,
+        support_key=str(support_key),
+        explicit_key="target_label_index",
+        fallback_support=tuple(int(value) for value in support),
+        namespace=str(namespace),
+        balanced_flag_key="balanced_target_answer_sampling",
+        namespace_support_permutation=True,
+    )
+    label_index = int(index)
+    if label_index < 0 or label_index >= len(labels):
+        raise ValueError(f"target label index out of range: {label_index}")
+    return str(labels[label_index]), label_index, tuple(int(value) for value in support), dict(probabilities)
 
 
 def prepare_count_objective_from_spec(
@@ -139,6 +200,81 @@ def prepare_count_objective_from_spec(
         annotation_entity_ids=lambda sample: sample.annotation_entity_ids,
         query_spec_params=query_spec_params,
         execution_updates=lambda _sample: {"target_answer": int(target_answer)},
+    )
+
+
+def prepare_label_objective_from_spec(
+    *,
+    task_id: str,
+    spec: CrossingLabelObjectiveSpec,
+    instance_seed: int,
+    task_params: Mapping[str, Any],
+    selected_query_id: str,
+    gen_defaults: Mapping[str, Any],
+) -> CrossingObjectivePlan:
+    """Build a Crossing labeled-vehicle objective from task-owned semantic arguments."""
+
+    target_label, target_label_index, target_label_support, target_label_probabilities = _resolve_vehicle_option_label(
+        instance_seed=int(instance_seed),
+        task_params=task_params,
+        gen_defaults=gen_defaults,
+        support_key=str(spec.label_support_key),
+        fallback_support=tuple(int(value) for value in spec.fallback_label_index_support),
+        namespace=f"{task_id}.target_label_index",
+    )
+    axes = resolve_crossing_scene_axes(
+        int(instance_seed),
+        params=task_params,
+        gen_defaults=gen_defaults,
+        min_lane_count=int(spec.min_lane_count),
+        min_row_count=int(spec.min_row_count),
+        namespace_suffix=str(selected_query_id),
+    )
+
+    def construct_attempt(rng):
+        return spec.construct_attempt(
+            rng,
+            axes,
+            str(target_label),
+            task_params,
+            gen_defaults,
+        )
+
+    def prompt_slots(_sample) -> dict[str, Any]:
+        json_example, json_example_answer_only = json_examples_for_label_answer()
+        return {
+            "object_description": crossing_object_description(include_route=True),
+            "crossing_motion_rule_text": crossing_motion_rule_text(),
+            **crossing_output_slots(
+                prompt_query_key=str(spec.prompt_query_key),
+                json_example=json_example,
+                json_example_answer_only=json_example_answer_only,
+            ),
+        }
+
+    def query_spec_params(sample) -> dict[str, Any]:
+        return {
+            "count_mode": str(spec.count_mode),
+            "vehicle_option_labels": [str(label) for label in VEHICLE_OPTION_LABELS],
+            "target_label": str(sample.target_object_label),
+            "target_label_index": int(target_label_index),
+            "target_label_index_support": [int(value) for value in target_label_support],
+            "target_label_index_probabilities": dict(target_label_probabilities),
+        }
+
+    return CrossingObjectivePlan(
+        axes=axes,
+        attempt_namespace=str(task_id),
+        construct_attempt=construct_attempt,
+        prompt_query_key=str(spec.prompt_query_key),
+        prompt_dynamic_slots=prompt_slots,
+        answer_gt=lambda sample: TypedValue(type="string", value=str(sample.answer)),
+        annotation_entity_ids=lambda sample: sample.annotation_entity_ids,
+        query_spec_params=query_spec_params,
+        execution_updates=lambda sample: {
+            "target_label": str(sample.target_object_label),
+            "target_label_index": int(sample.target_label_index) if sample.target_label_index is not None else None,
+        },
     )
 
 
@@ -254,8 +390,10 @@ def run_crossing_lifecycle(
 
 __all__ = [
     "CrossingCountObjectiveSpec",
+    "CrossingLabelObjectiveSpec",
     "CrossingObjectivePlan",
     "prepare_count_objective_from_spec",
+    "prepare_label_objective_from_spec",
     "run_crossing_lifecycle",
     "sample_with_retries",
 ]

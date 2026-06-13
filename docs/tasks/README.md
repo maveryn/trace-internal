@@ -238,6 +238,7 @@ Public task identity uses `domain -> scene_id -> task_id`. Generated outputs rec
 1. [task_games__connect_four__safe_move_count.md](task_games__connect_four__safe_move_count.md)
 1. [task_games__connect_four__winning_move_column_label.md](task_games__connect_four__winning_move_column_label.md)
 1. [task_games__connect_four__winning_move_count.md](task_games__connect_four__winning_move_count.md)
+1. [task_games__crossing__first_hit_object_label.md](task_games__crossing__first_hit_object_label.md)
 1. [task_games__crossing__hit_object_label.md](task_games__crossing__hit_object_label.md)
 1. [task_games__crossing__moving_object_direction_count.md](task_games__crossing__moving_object_direction_count.md)
 1. [task_games__darts__ring_count.md](task_games__darts__ring_count.md)

@@ -7,10 +7,10 @@ from typing import Any, Dict, Mapping, Sequence
 
 from PIL import Image
 
-from trace.core.visual.background import make_background_canvas
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.games.shared.layout import resolve_games_layout_jitter
-from trace.tasks.games.shared.visual_defaults import load_games_scene_background_defaults, load_games_scene_noise_defaults
+from trace.tasks.games.shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from trace.tasks.games.shared.visual_defaults import load_games_scene_noise_defaults
 from trace.tasks.shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.font_assets import sample_font_family
 
@@ -22,7 +22,6 @@ _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_gen
     "games",
     SCENE_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_scene_background_defaults(scene_id=SCENE_ID)
 POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.0)
 
 
@@ -33,6 +32,7 @@ class RenderedCardsTaskContext:
     image: Image.Image
     rendered_scene: RenderedCardHandScene
     render_params: CardRenderParams
+    panel_style_meta: Dict[str, Any]
     background_meta: Dict[str, Any]
     post_noise_meta: Dict[str, Any]
 
@@ -115,12 +115,33 @@ def render_cards_task_scene(
     """Render cards on a background and apply post-image noise."""
 
     resolved_params = render_params or resolve_cards_render_params(params, instance_seed=int(instance_seed))
-    background, background_meta = make_background_canvas(
+    allowed_panel_treatments_raw = params.get(
+        "panel_scene_treatments",
+        group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+    )
+    if isinstance(allowed_panel_treatments_raw, str):
+        allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+    elif allowed_panel_treatments_raw is None:
+        allowed_panel_treatments = None
+    else:
+        allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+    panel_style, panel_style_meta = resolve_game_panel_scene_style(
+        instance_seed=int(instance_seed),
+        namespace="games.cards.panel_scene_style",
+        treatments=allowed_panel_treatments,
+        treatment_weights=params.get(
+            "panel_scene_treatment_weights",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+        ),
+        palette_weights=params.get(
+            "panel_scene_palette_weights",
+            group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+        ),
+    )
+    background, background_meta = make_panel_scene_background(
         canvas_width=int(resolved_params.canvas_width),
         canvas_height=int(resolved_params.canvas_height),
-        instance_seed=int(instance_seed),
-        params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        style=panel_style,
     )
     rendered_scene = render_cards_hand_scene(
         cards=list(cards),
@@ -128,6 +149,7 @@ def render_cards_task_scene(
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         params=resolved_params,
+        panel_style=panel_style,
         show_continuation_cue=bool(show_continuation_cue),
         row_card_counts=tuple(int(value) for value in row_card_counts) if row_card_counts else None,
     )
@@ -141,6 +163,7 @@ def render_cards_task_scene(
         image=image,
         rendered_scene=rendered_scene,
         render_params=resolved_params,
+        panel_style_meta=dict(panel_style_meta),
         background_meta=dict(background_meta),
         post_noise_meta=dict(post_noise_meta),
     )

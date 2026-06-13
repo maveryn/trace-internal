@@ -29,11 +29,11 @@ from .state import (
     bubble_entity_id,
 )
 from .rules import (
-    all_bubble_coords,
     board_from_mapping,
     bubble_neighbors,
     compute_shot_outcome,
     occupied_coords,
+    playable_landing_coords,
     sorted_coords,
     top_connected_occupied,
     validate_bubble_shooter_state,
@@ -350,16 +350,25 @@ def _make_connected_shape(
     return sorted_coords(shape)
 
 
-def _landing_candidates_for_shape(*, rows: int, cols: int, shape: Sequence[Coord], blocked: set[Coord]) -> Tuple[Coord, ...]:
+def _landing_candidates_for_shape(
+    *,
+    board: Board,
+    shape: Sequence[Coord],
+    min_row: int = 1,
+    max_row: int | None = None,
+) -> Tuple[Coord, ...]:
+    """Return exposed landing slots that touch the target shape."""
+
+    rows = len(board)
+    cols = len(board[0]) if rows else 0
+    limit_row = int(rows) - 2 if max_row is None else int(max_row)
     shape_set = {tuple(coord) for coord in shape}
-    candidates: set[Coord] = set()
-    for coord in shape_set:
-        for neighbor in bubble_neighbors(coord, rows=rows, cols=cols):
-            if neighbor in shape_set or neighbor in blocked:
-                continue
-            if 1 <= int(neighbor[0]) <= int(rows) - 2:
-                candidates.add(neighbor)
-    return sorted_coords(candidates)
+    return sorted_coords(
+        coord
+        for coord in playable_landing_coords(board)
+        if int(min_row) <= int(coord[0]) <= int(limit_row)
+        and any(neighbor in shape_set for neighbor in bubble_neighbors(coord, rows=rows, cols=cols))
+    )
 
 
 def _support_path_to_top(*, rng, rows: int, cols: int, start: Coord, blocked: set[Coord]) -> Tuple[Coord, ...]:
@@ -429,24 +438,21 @@ def _make_no_pop_board(
         excluded_colors=(str(color_key),),
         scene_variant=str(scene_variant),
     )
-    occupied = set(values)
+    board = board_from_mapping(rows=rows, cols=cols, values=values)
+    _assert_top_supported(board)
     candidates = [
         coord
-        for coord in all_bubble_coords(rows, cols)
-        if coord not in occupied
-        and 1 <= int(coord[0]) <= int(rows) - 2
-        and any(neighbor in occupied for neighbor in bubble_neighbors(coord, rows=rows, cols=cols))
+        for coord in playable_landing_coords(board)
+        if 1 <= int(coord[0]) <= int(rows) - 2
     ]
     if not candidates:
         raise ValueError("no landing candidate for no-pop construction")
     rng.shuffle(candidates)
-    landing = tuple(candidates[0])
-    board = board_from_mapping(rows=rows, cols=cols, values=values)
-    _assert_top_supported(board)
-    outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(color_key))
-    if outcome.popped_coords or outcome.dropped_coords:
-        raise ValueError("constructed no-pop board unexpectedly changed state")
-    return board, landing
+    for landing in candidates:
+        outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(color_key))
+        if not outcome.popped_coords and not outcome.dropped_coords:
+            return board, tuple(landing)
+    raise ValueError("constructed no-pop board unexpectedly changed state")
 
 
 def _make_pop_board(
@@ -480,12 +486,7 @@ def _make_pop_board(
         min_row=1,
         max_row=max(2, rows - 2),
     )
-    landing_candidates = list(_landing_candidates_for_shape(rows=rows, cols=cols, shape=component, blocked=set(component)))
-    if not landing_candidates:
-        raise ValueError("no landing candidate for pop component")
-    rng.shuffle(landing_candidates)
-    landing = tuple(landing_candidates[0])
-    protected = set(component) | {landing}
+    protected = set(component)
     values: Dict[Coord, str] = {coord: str(color_key) for coord in component}
     support_blocked = set(protected)
     support = _support_path_to_top(rng=rng, rows=rows, cols=cols, start=component[0], blocked=support_blocked)
@@ -504,10 +505,15 @@ def _make_pop_board(
     )
     board = board_from_mapping(rows=rows, cols=cols, values=values)
     _assert_top_supported(board)
-    outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(color_key))
-    if len(outcome.popped_coords) != int(target):
-        raise ValueError("constructed pop board did not hit target pop count")
-    return board, landing
+    landing_candidates = list(_landing_candidates_for_shape(board=board, shape=component))
+    if not landing_candidates:
+        raise ValueError("no exposed landing candidate for pop component")
+    rng.shuffle(landing_candidates)
+    for landing in landing_candidates:
+        outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(color_key))
+        if len(outcome.popped_coords) == int(target):
+            return board, tuple(landing)
+    raise ValueError("constructed pop board did not hit target pop count")
 
 
 def _make_drop_board(
@@ -534,7 +540,6 @@ def _make_drop_board(
         min_row=1,
         max_row=max(2, rows - 3),
     )
-    landing_candidates = list(_landing_candidates_for_shape(rows=rows, cols=cols, shape=pop_component, blocked=set(pop_component)))
     below_candidates = [
         neighbor
         for coord in pop_component
@@ -542,14 +547,12 @@ def _make_drop_board(
         if int(neighbor[0]) > max(int(item[0]) for item in pop_component)
         and neighbor not in set(pop_component)
     ]
-    if not landing_candidates or not below_candidates:
-        raise ValueError("drop construction needs landing and tail candidates")
-    rng.shuffle(landing_candidates)
+    if not below_candidates:
+        raise ValueError("drop construction needs tail candidates")
     rng.shuffle(below_candidates)
-    landing = tuple(landing_candidates[0])
-    blocked = set(pop_component) | {landing}
+    blocked = set(pop_component)
     if int(target) > 0:
-        tail_seed = next((coord for coord in below_candidates if coord != landing), None)
+        tail_seed = next(iter(below_candidates), None)
         if tail_seed is None:
             raise ValueError("drop construction has no tail seed")
         tail = _make_connected_shape(
@@ -564,7 +567,7 @@ def _make_drop_board(
         )
     else:
         tail = tuple()
-    protected = set(pop_component) | set(tail) | {landing}
+    protected = set(pop_component) | set(tail)
     support_blocked = set(protected)
     support = _support_path_to_top(rng=rng, rows=rows, cols=cols, start=pop_component[0], blocked=support_blocked)
     protected.update(support)
@@ -586,10 +589,15 @@ def _make_drop_board(
     )
     board = board_from_mapping(rows=rows, cols=cols, values=values)
     _assert_top_supported(board)
-    outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(color_key))
-    if len(outcome.popped_coords) != 2 or len(outcome.dropped_coords) != int(target):
-        raise ValueError("constructed drop board did not hit target drop count")
-    return board, landing
+    landing_candidates = list(_landing_candidates_for_shape(board=board, shape=pop_component))
+    if not landing_candidates:
+        raise ValueError("no exposed landing candidate for drop component")
+    rng.shuffle(landing_candidates)
+    for landing in landing_candidates:
+        outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(color_key))
+        if len(outcome.popped_coords) == 2 and len(outcome.dropped_coords) == int(target):
+            return board, tuple(landing)
+    raise ValueError("constructed drop board did not hit target drop count")
 
 
 def sample_pop_state(

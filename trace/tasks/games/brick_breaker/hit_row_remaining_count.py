@@ -8,8 +8,8 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 
 from ._lifecycle import (
     BrickBreakerObjectivePlan,
-    bbox_set_attempt,
     brick_breaker_integer_axis_spec,
+    point_set_attempt,
     resolve_brick_breaker_integer_axis_spec,
     resolve_brick_breaker_playfield_axis_specs,
     run_brick_breaker_lifecycle,
@@ -24,7 +24,7 @@ QUERY_ID = "hit_row_remaining_count"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 BRICK_ROW_COUNT_SUPPORT = (4, 5)
 BRICK_COL_COUNT_SUPPORT = (5, 6)
-CATCH_LANE_COUNT_SUPPORT = (5, 6, 7, 8)
+CATCH_LANE_COUNT_SUPPORT = (5, 6)
 ROW_REMAINING_AXIS_SPEC = brick_breaker_integer_axis_spec(
     "row_remaining_count",
     (1, 2, 3, 4, 5),
@@ -70,7 +70,7 @@ def _prepare_hit_row_remaining_objective(
         )
         if sample.target_row_remaining_count is None:
             raise ValueError("hit-row Brick-breaker sample is missing row remaining count")
-        return bbox_set_attempt(
+        return point_set_attempt(
             sample=sample,
             answer_gt=TypedValue(type="integer", value=int(sample.target_row_remaining_count)),
             annotation_entity_ids=tuple(str(entity_id) for entity_id in sample.target_row_remaining_brick_ids),

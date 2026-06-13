@@ -187,6 +187,7 @@ def test_games_cards_prompt_bundle_is_v1_and_static_prompt_owned() -> None:
     assert "rank_order_text" in static["query:higher_than_reference_count"]
     assert "continuation_rule_text" in static["query:longest_run_length"]
     assert "blackjack_rule_text" in static["query:blackjack_best_hand_label"]
+    assert "after Ace reductions" in static["query:blackjack_best_hand_label"]["blackjack_rule_text"]
     assert "poker_rule_text" in static["query:poker_best_hand_label"]
     assert "trick_winner_rule_text" in static["query:trick_taking_winner_label"]
     assert "trick_play_rule_text" in static["query:trick_winning_play_label"]

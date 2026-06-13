@@ -7,7 +7,7 @@
 4. Public task id: `task_games__brick_breaker__next_hit_label`
 5. Supported `query_id` values: `next_hit_label`
 6. Answer schema: `string_label`
-7. Annotation schema: `bbox_set`
+7. Annotation schema: `point_set`
 8. Program schema: `label(first_collision(ball_trajectory, bricks)); scene=brick_breaker; scope=next_hit_label`
 
 ## Generation Notes

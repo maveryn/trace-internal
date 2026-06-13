@@ -14,7 +14,7 @@ def test_games_bingo_completed_column_label_defaults_expose_scene_query_and_targ
     )
     line_sum_generation, _, _ = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_games__bingo__line_sum_extremum_value",
+        task_id="task_games__bingo__completed_line_sum_value",
     )
     near_complete_generation, _, _ = split_generation_rendering_prompt_defaults(
         cfg,
@@ -22,7 +22,7 @@ def test_games_bingo_completed_column_label_defaults_expose_scene_query_and_targ
     )
     called_generation, _, _ = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_games__bingo__called_number_mark_count",
+        task_id="task_games__bingo__called_number_match_count",
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
@@ -46,10 +46,12 @@ def test_games_bingo_completed_column_label_defaults_expose_scene_query_and_targ
     assert set(generation["mark_shape_weights"].keys()) == {"ellipse", "cell", "ring", "slash"}
     assert set(generation["cell_fill_pattern_weights"].keys()) == {"solid", "column_tint", "checker_tint"}
     assert "line_sum_completed_line_count_support" not in generation
-    assert set(line_sum_generation["extremum_weights"].keys()) == {"max", "min"}
-    assert list(line_sum_generation["line_sum_completed_line_count_support"]) == [2, 3, 4]
+    assert "extremum_weights" not in line_sum_generation
+    assert "balanced_extremum_sampling" not in line_sum_generation
+    assert list(line_sum_generation["target_line_index_support"]) == [0, 1, 2, 3, 4]
+    assert bool(line_sum_generation["balanced_target_line_index_sampling"]) is True
     assert list(near_complete_generation["near_complete_line_count_support"]) == [0, 1, 2, 3, 4]
-    assert list(called_generation["called_marked_number_count_support"]) == [0, 1, 2, 3, 4, 5]
+    assert list(called_generation["called_number_match_count_support"]) == [0, 1, 2, 3, 4, 5]
     assert list(called_generation["called_number_count_support"]) == [5, 6, 7, 8]
     assert "line_sum_distractor_mark_prob" not in generation
     assert float(line_sum_generation["line_sum_distractor_mark_prob"]) == 0.2

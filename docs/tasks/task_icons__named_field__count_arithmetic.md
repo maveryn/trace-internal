@@ -4,7 +4,7 @@
 - domain: `icons`
 - scene_id: `named_field`
 - scene_id: `counting`
-- module: `trace/tasks/icons/counting/named_shape_pair_arithmetic_count.py`
+- module: `trace/tasks/icons/named_field/count_arithmetic.py`
 - prompt bundle: `icons_counting_v0`
 
 ## Contract

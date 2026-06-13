@@ -5,7 +5,7 @@ import pytest
 from trace.core.scene_config import get_domain_defaults, get_scene_defaults, get_scene_defaults, resolve_scene_section_defaults, resolve_scene_section_defaults
 from trace.core.prompts import load_scene_prompt_bundle
 from trace.tasks.shared.config_defaults import required_group_default, required_group_defaults, resolve_optional_int_bounds, resolve_required_float_bounds, resolve_required_int_bounds, split_generation_rendering_prompt_defaults
-from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
+from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 FULL_NODE_LINK_LAYOUT_VARIANTS = set(SUPPORTED_LAYOUT_VARIANTS)
 
 def test_icons_single_transform_options_scene_defaults_loaded() -> None:
@@ -73,6 +73,42 @@ def test_icons_reference_canvas_scene_defaults_loaded() -> None:
     assert bundle.bundle_id == 'icons_reference_canvas_v0'
     assert set(bundle.scene_templates.keys()) == {'reference_canvas_anchor', 'reference_canvas_counting'}
 
+def test_icons_icon_field_scene_defaults_loaded() -> None:
+    cfg = get_scene_defaults('icons', 'icon_field')
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id='task_icons__icon_field__type_frequency_count',
+    )
+    assert str(generation['pool_manifest']).strip() == 'all_icons.txt'
+    singleton_params = generation['variant_generation_params']['singleton_type_count']
+    assert int(singleton_params['object_count_min']) == 5
+    assert int(singleton_params['object_count_max']) == 10
+    assert int(singleton_params['target_count_min']) == 0
+    assert int(singleton_params['target_count_max']) == 4
+    assert int(singleton_params['repeated_type_count_min']) == 1
+    assert int(singleton_params['repeated_type_count_max']) == 4
+    assert int(singleton_params['repeated_type_multiplicity_min']) == 2
+    assert int(singleton_params['repeated_type_multiplicity_max']) == 4
+    most_frequent_params = generation['variant_generation_params']['most_frequent_type_count']
+    assert str(most_frequent_params['pool_manifest']).strip() == 'all_icons.txt'
+    assert int(most_frequent_params['object_count_min']) == 7
+    assert int(most_frequent_params['object_count_max']) == 12
+    assert int(most_frequent_params['target_count_min']) == 2
+    assert int(most_frequent_params['target_count_max']) == 6
+    assert int(most_frequent_params['other_repeated_type_count_max']) == 3
+    assert int(rendering['canvas_width']) == 960
+    assert int(rendering['canvas_height']) == 544
+    assert int(rendering['scene_icon_size_min_px']) == 64
+    assert int(rendering['scene_icon_size_max_px']) == 96
+    assert list(rendering['rotation_candidates_degrees']) == [0, 90, 180, 270]
+    assert str(prompt['bundle_id']) == 'icons_icon_field_v1'
+    assert str(prompt['scene_key']) == 'single_scene_counting'
+    assert str(prompt['task_key']) == 'type_frequency_query'
+    bundle = load_scene_prompt_bundle('icons', 'icon_field', 'icons_icon_field_v1')
+    assert bundle.bundle_id == 'icons_icon_field_v1'
+    assert set(bundle.scene_templates.keys()) == {'single_scene_counting'}
+    assert set(bundle.query_templates.keys()) == {'most_frequent_type_count', 'singleton_type_count'}
+
 def test_icons_counting_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'counting')
     generation_shared = cfg['generation']['shared']
@@ -83,14 +119,16 @@ def test_icons_counting_defaults_loaded() -> None:
     assert int(generation_shared['distractor_count_min']) == 1
     assert int(generation_shared['distractor_count_max']) == 10
     assert bool(generation_shared['balanced_sampling']) is True
-    assert 'task_icons__icon_field__type_frequency_count' in cfg['generation']['task_overrides']
-    assert 'task_icons__named_field__count_arithmetic' in cfg['generation']['task_overrides']
-    assert 'task_icons__named_field__closer_to_reference_count' in cfg['generation']['task_overrides']
+    assert 'task_icons__named_field__count_arithmetic' not in cfg['generation']['task_overrides']
+    assert 'task_icons__named_field__closer_to_reference_count' not in cfg['generation']['task_overrides']
     assert 'task_icons__named_grid__scoped_attribute_count' in cfg['generation']['task_overrides']
     assert 'task_icons__named_grid__row_column_shape_extreme_number' in cfg['generation']['task_overrides']
     assert 'task_icons__named_grid__group_predicate_count' in cfg['generation']['task_overrides']
     assert 'task_icons__named_ring__scoped_attribute_count' in cfg['generation']['task_overrides']
     assert 'task_icons__venn_field__scoped_attribute_count' in cfg['generation']['task_overrides']
+    named_cfg = get_scene_defaults('icons', 'named_field')
+    assert 'task_icons__named_field__count_arithmetic' in named_cfg['generation']['task_overrides']
+    assert 'task_icons__named_field__closer_to_reference_count' in named_cfg['generation']['task_overrides']
     render_shared = cfg['rendering']['shared']
     assert int(render_shared['canvas_width']) > 0
     assert int(render_shared['canvas_height']) > 0
@@ -112,47 +150,7 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(prompt_shared['task_key']).strip()
     assert str(prompt_shared['json_output_contract']).strip()
     assert str(prompt_shared['json_output_contract_answer_only']).strip()
-    singleton_generation, singleton_rendering, singleton_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__icon_field__type_frequency_count')
-    assert str(singleton_generation['pool_manifest']).strip() == 'all_icons.txt'
-    assert sorted(singleton_generation['query_id_weights'].keys()) == ['most_frequent_type_count', 'singleton_type_count']
-    singleton_params = singleton_generation['variant_generation_params']['singleton_type_count']
-    assert int(singleton_params['object_count_min']) == 5
-    assert int(singleton_params['object_count_max']) == 10
-    assert int(singleton_params['target_count_min']) == 0
-    assert int(singleton_params['target_count_max']) == 4
-    assert int(singleton_params['repeated_type_count_min']) == 1
-    assert int(singleton_params['repeated_type_count_max']) == 4
-    assert int(singleton_params['repeated_type_multiplicity_min']) == 2
-    assert int(singleton_params['repeated_type_multiplicity_max']) == 4
-    assert int(singleton_rendering['canvas_width']) > 0
-    assert int(singleton_rendering['canvas_height']) > 0
-    assert int(singleton_rendering['scene_icon_size_min_px']) == 64
-    assert int(singleton_rendering['scene_icon_size_max_px']) == 96
-    assert str(singleton_prompt['scene_key']).strip() == 'single_scene_counting'
-    assert str(singleton_prompt['object_description']).strip()
-    assert str(singleton_prompt['question_text_by_variant']['singleton_type_count']).strip()
-    assert str(singleton_prompt['annotation_hint_by_variant']['singleton_type_count']).strip()
-    assert str(singleton_prompt['answer_hint']).strip()
-    assert str(singleton_prompt['json_example']).strip()
-    assert str(singleton_prompt['json_example_answer_only']).strip()
-    most_frequent_generation, most_frequent_rendering, most_frequent_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__icon_field__type_frequency_count')
-    most_frequent_params = most_frequent_generation['variant_generation_params']['most_frequent_type_count']
-    assert str(most_frequent_params['pool_manifest']).strip() == 'all_icons.txt'
-    assert int(most_frequent_params['object_count_min']) == 7
-    assert int(most_frequent_params['object_count_max']) == 12
-    assert int(most_frequent_params['target_count_min']) == 2
-    assert int(most_frequent_params['target_count_max']) == 6
-    assert int(most_frequent_params['other_repeated_type_count_max']) == 3
-    assert int(most_frequent_rendering['canvas_width']) > 0
-    assert int(most_frequent_rendering['canvas_height']) > 0
-    assert str(most_frequent_prompt['scene_key']).strip() == 'single_scene_counting'
-    assert str(most_frequent_prompt['object_description']).strip()
-    assert str(most_frequent_prompt['question_text_by_variant']['most_frequent_type_count']).strip()
-    assert str(most_frequent_prompt['annotation_hint_by_variant']['most_frequent_type_count']).strip()
-    assert str(most_frequent_prompt['answer_hint']).strip()
-    assert str(most_frequent_prompt['json_example']).strip()
-    assert str(most_frequent_prompt['json_example_answer_only']).strip()
-    pair_generation, pair_rendering, pair_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__named_field__count_arithmetic')
+    pair_generation, pair_rendering, pair_prompt = split_generation_rendering_prompt_defaults(named_cfg, task_id='task_icons__named_field__count_arithmetic')
     assert int(pair_generation['operand_count_min']) == 1
     assert int(pair_generation['operand_count_max']) == 6
     assert int(pair_generation['total_answer_min']) == 2
@@ -244,19 +242,18 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(ring_prompt['answer_hint']).strip()
     assert str(ring_prompt['json_example']).strip()
     assert str(ring_prompt['json_example_answer_only']).strip()
-    closer_generation, closer_rendering, closer_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__named_field__closer_to_reference_count')
+    closer_generation, closer_rendering, closer_prompt = split_generation_rendering_prompt_defaults(named_cfg, task_id='task_icons__named_field__closer_to_reference_count')
     assert int(closer_generation['target_icon_count_min']) == 4
     assert int(closer_generation['target_icon_count_max']) == 8
     assert int(closer_generation['target_answer_min']) == 0
     assert int(closer_generation['target_answer_max']) == 4
-    assert sorted(closer_generation['query_weights'].keys()) == ['closer_to_reference_a_count', 'closer_to_reference_b_count']
+    assert dict(closer_generation['queried_reference_label_weights']) == {'A': 1.0, 'B': 1.0}
     assert list(closer_generation['reference_axis_degrees']) == [0, 35, 90, 145]
     assert int(closer_rendering['canvas_width']) > 0
     assert int(closer_rendering['canvas_height']) > 0
     assert int(closer_rendering['distance_margin_px']) == 42
     assert str(closer_prompt['scene_key']).strip() == 'single_scene_counting'
-    assert str(closer_prompt['question_text_closer_to_reference_a_count']).strip()
-    assert str(closer_prompt['question_text_closer_to_reference_b_count']).strip()
+    assert str(closer_prompt['question_text_closer_to_reference_count']).strip()
     assert str(closer_prompt['annotation_hint']).strip()
     assert str(closer_prompt['answer_hint']).strip()
     assert str(closer_prompt['json_example']).strip()
@@ -363,6 +360,28 @@ def test_icons_paired_canvas_scene_defaults_loaded() -> None:
     assert bundle.bundle_id == 'icons_paired_canvas_v0'
     assert set(bundle.scene_templates.keys()) == {'paired_canvas_attribute_change', 'paired_canvas_movement_direction', 'paired_canvas_original_attribute', 'paired_canvas_set_relation'}
 
+
+def test_icons_mirror_grid_scene_defaults_loaded() -> None:
+    cfg = get_scene_defaults('icons', 'mirror_grid')
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id='task_icons__mirror_grid__mirror_symmetry_match_label',
+    )
+    assert str(generation['pool_manifest']).strip() == 'non_symmetry.txt'
+    assert list(generation['option_count_choices']) == [4, 6]
+    assert int(rendering['canvas_width']) == 1104
+    assert int(rendering['canvas_height']) == 640
+    assert int(rendering['reference_panel_width_px']) == 296
+    assert list(rendering['symmetric_icon_count_choices']) == [2, 4, 6]
+    assert list(rendering['both_axes_icon_count_choices']) == [4]
+    assert list(rendering['nonsymmetric_icon_count_choices']) == [2, 4, 6]
+    assert int(rendering['patch_inner_margin_px']) == 8
+    assert int(rendering['patch_min_gap_px']) == 6
+    assert str(prompt['bundle_id']) == 'icons_mirror_grid_v1'
+    assert str(prompt['scene_key']).strip() == 'reference_mirror_grid'
+    assert str(prompt['task_key']).strip() == 'mirror_symmetry_match_label'
+
+
 def test_icons_relation_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'relation')
     generation_shared = cfg['generation']['shared']
@@ -376,10 +395,11 @@ def test_icons_relation_defaults_loaded() -> None:
     assert bool(generation_shared['balanced_sampling']) is True
     assert bool(generation_shared['balanced_variant_sampling']) is True
     assert 'task_icons__two_anchor__between_anchors_count' in cfg['generation']['task_overrides']
-    assert 'task_icons__mirror_grid__mirror_symmetry_count' in cfg['generation']['task_overrides']
     assert 'task_icons__overlap_grid__occlusion_order_count' in cfg['generation']['task_overrides']
-    assert 'task_icons__named_field__reference_distance_rank_label' in cfg['generation']['task_overrides']
+    assert 'task_icons__named_field__reference_distance_rank_label' not in cfg['generation']['task_overrides']
     assert 'task_icons__named_path__path_neighbor_label' in cfg['generation']['task_overrides']
+    named_cfg = get_scene_defaults('icons', 'named_field')
+    assert 'task_icons__named_field__reference_distance_rank_label' in named_cfg['generation']['task_overrides']
     render_shared = cfg['rendering']['shared']
     assert int(render_shared['canvas_width']) > 0
     assert int(render_shared['canvas_height']) > 0
@@ -397,30 +417,6 @@ def test_icons_relation_defaults_loaded() -> None:
     assert str(prompt_shared['task_key']).strip()
     assert str(prompt_shared['json_output_contract']).strip()
     assert str(prompt_shared['json_output_contract_answer_only']).strip()
-    mirror_generation, mirror_rendering, mirror_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__mirror_grid__mirror_symmetry_count')
-    assert str(mirror_generation['pool_manifest']).strip() == 'non_symmetry.txt'
-    assert int(mirror_generation['object_count_min']) == 6
-    assert int(mirror_generation['object_count_max']) == 6
-    assert int(mirror_generation['target_count_max']) == 4
-    assert int(mirror_generation['distractor_count_min']) == 2
-    assert int(mirror_generation['distractor_count_max']) == 6
-    mirror_signature_weights = {str(key): float(value) for key, value in dict(mirror_generation['mirror_signature_weights']).items() if str(key) in {'mirror_vertical', 'mirror_horizontal', 'mirror_diagonal_main', 'mirror_diagonal_anti', 'mirror_both_axes'}}
-    assert mirror_signature_weights == {'mirror_vertical': 1.0, 'mirror_horizontal': 1.0, 'mirror_diagonal_main': 1.0, 'mirror_diagonal_anti': 1.0, 'mirror_both_axes': 1.0}
-    assert int(mirror_rendering['canvas_width']) == 1104
-    assert int(mirror_rendering['canvas_height']) == 640
-    assert int(mirror_rendering['reference_panel_width_px']) == 296
-    assert list(mirror_rendering['symmetric_icon_count_choices']) == [2, 4, 6]
-    assert list(mirror_rendering['both_axes_icon_count_choices']) == [4]
-    assert list(mirror_rendering['nonsymmetric_icon_count_choices']) == [2, 4, 6]
-    assert int(mirror_rendering['patch_inner_margin_px']) == 8
-    assert int(mirror_rendering['patch_min_gap_px']) == 6
-    assert str(mirror_prompt['scene_key']).strip() == 'reference_grid_mirror_symmetry_relation'
-    assert str(mirror_prompt['object_description']).strip()
-    assert str(mirror_prompt['question_text']).strip()
-    assert str(mirror_prompt['annotation_hint']).strip()
-    assert str(mirror_prompt['answer_hint']).strip()
-    assert str(mirror_prompt['json_example']).strip()
-    assert str(mirror_prompt['json_example_answer_only']).strip()
     strip_generation, strip_rendering, strip_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__two_anchor__between_anchors_count')
     assert str(strip_generation['pool_manifest']).strip() == 'all_icons.txt'
     assert int(strip_generation['target_count_max']) == 5
@@ -457,7 +453,7 @@ def test_icons_relation_defaults_loaded() -> None:
     assert str(occlusion_prompt['answer_hint']).strip()
     assert str(occlusion_prompt['json_example']).strip()
     assert str(occlusion_prompt['json_example_answer_only']).strip()
-    distance_generation, distance_rendering, distance_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__named_field__reference_distance_rank_label')
+    distance_generation, distance_rendering, distance_prompt = split_generation_rendering_prompt_defaults(named_cfg, task_id='task_icons__named_field__reference_distance_rank_label')
     assert int(distance_generation['candidate_count']) == 6
     assert int(distance_generation['distractor_count_min']) == 4
     assert int(distance_generation['distractor_count_max']) == 8
@@ -469,7 +465,7 @@ def test_icons_relation_defaults_loaded() -> None:
     assert int(distance_rendering['scene_icon_size_max_px']) == 72
     assert int(distance_rendering['distance_rank_margin_px']) == 24
     assert int(distance_rendering['candidate_label_font_size_px']) == 24
-    assert str(distance_prompt['scene_key']).strip() == 'named_reference_distance_relation'
+    assert str(distance_prompt['scene_key']).strip() == 'single_scene_counting'
     assert str(distance_prompt['object_description']).strip()
     assert str(distance_prompt['question_text_closest_to_named_reference_label']).strip()
     assert str(distance_prompt['question_text_second_closest_to_named_reference_label']).strip()

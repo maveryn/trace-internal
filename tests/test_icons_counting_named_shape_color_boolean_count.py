@@ -6,7 +6,7 @@ from collections import Counter
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
-from trace.tasks.icons.counting.named_shape_color_boolean_count import QUERY_IDS, QUERY_IDS_BY_TASK_ID
+from trace.tasks.icons.named_field.multi_attribute_and_count import QUERY_IDS, QUERY_IDS_BY_TASK_ID
 
 
 TASK_ID_BY_QUERY_ID = {

@@ -8,7 +8,6 @@ from .state import (
     BINGO_BOARD_SIZE,
     BINGO_COLUMN_LABELS,
     BINGO_COLUMN_RANGES,
-    SUPPORTED_BINGO_EXTREMA,
     BingoCardState,
     BingoCellInstance,
     cell_id,
@@ -105,6 +104,49 @@ def _build_single_completed_column_marks(
     return tuple(tuple(bool(value) for value in row) for row in marks)
 
 
+def _build_single_completed_line_marks(
+    *,
+    rng,
+    line_axis: str,
+    target_line_index: int,
+    distractor_mark_prob: float,
+) -> Tuple[Tuple[bool, ...], ...]:
+    """Mark exactly one requested row or column while preventing accidental lines."""
+
+    axis = str(line_axis)
+    target_index = int(target_line_index)
+    if target_index < 0 or target_index >= BINGO_BOARD_SIZE:
+        raise ValueError("single completed-line target index is outside the card")
+    if axis == "column":
+        return _build_single_completed_column_marks(
+            rng=rng,
+            target_column_index=int(target_index),
+            distractor_mark_prob=float(distractor_mark_prob),
+        )
+    if axis != "row":
+        raise ValueError(f"unsupported bingo line axis: {line_axis}")
+
+    mark_prob = max(0.0, min(1.0, float(distractor_mark_prob)))
+    marks: List[List[bool]] = [[False] * BINGO_BOARD_SIZE for _ in range(BINGO_BOARD_SIZE)]
+    other_rows = [int(row_index) for row_index in range(BINGO_BOARD_SIZE) if int(row_index) != target_index]
+    if not other_rows:
+        raise ValueError("completed-line scenes require non-target rows")
+
+    marks[target_index] = [True] * BINGO_BOARD_SIZE
+    for row_index in other_rows:
+        gap_column = int(rng.randrange(BINGO_BOARD_SIZE))
+        for column_index in range(BINGO_BOARD_SIZE):
+            marks[row_index][column_index] = (
+                False if int(column_index) == gap_column else bool(rng.random() < mark_prob)
+            )
+
+    for column_index in range(BINGO_BOARD_SIZE):
+        if all(bool(marks[row_index][column_index]) for row_index in range(BINGO_BOARD_SIZE)):
+            marks[int(rng.choice(other_rows))][column_index] = False
+
+    return tuple(tuple(bool(value) for value in row) for row in marks)
+
+
 def _build_near_complete_row_marks(
     *,
     rng,
@@ -156,65 +198,54 @@ def _build_near_complete_column_marks(
     return tuple(tuple(bool(value) for value in row) for row in marks)
 
 
-def _build_called_number_mark_state(
+def _build_called_number_match_state(
     *,
     rng,
     numbers_grid: Sequence[Sequence[int]],
-    marked_called_count: int,
+    present_called_count: int,
     called_number_count: int,
-    distractor_mark_prob: float,
-) -> Tuple[Tuple[Tuple[bool, ...], ...], Tuple[int, ...], Tuple[str, ...], Tuple[str, ...]]:
-    """Construct called-number marks while preserving exact called/marked counts."""
+) -> Tuple[Tuple[Tuple[bool, ...], ...], Tuple[int, ...], Tuple[str, ...], Tuple[int, ...]]:
+    """Construct a CALLED list with an exact count of values present on the card."""
 
     called_count = int(called_number_count)
-    answer = int(marked_called_count)
+    answer = int(present_called_count)
     if called_count < 1 or called_count > BINGO_BOARD_SIZE * BINGO_BOARD_SIZE:
         raise ValueError("called-number count must fit on the visible bingo card")
     if answer < 0 or answer > called_count:
-        raise ValueError("called marked-number target must be between zero and called-number count")
+        raise ValueError("called-number match target must be between zero and called-number count")
 
     coordinates = [
         (int(row_index), int(column_index))
         for row_index in range(BINGO_BOARD_SIZE)
         for column_index in range(BINGO_BOARD_SIZE)
     ]
-    called_coordinates = [tuple(value) for value in rng.sample(coordinates, called_count)]
-    marked_called_coordinates = set(tuple(value) for value in rng.sample(called_coordinates, answer))
-    called_coordinate_set = set(tuple(value) for value in called_coordinates)
-
-    marks: List[List[bool]] = [[False] * BINGO_BOARD_SIZE for _ in range(BINGO_BOARD_SIZE)]
-    forced_unmarked_coordinate: Tuple[int, int] | None = None
-    non_called_coordinates = [coord for coord in coordinates if tuple(coord) not in called_coordinate_set]
-    if answer == called_count and non_called_coordinates:
-        forced_unmarked_coordinate = tuple(rng.choice(non_called_coordinates))
-
-    for row_index, column_index in coordinates:
-        coord = (int(row_index), int(column_index))
-        if coord in called_coordinate_set:
-            marks[row_index][column_index] = coord in marked_called_coordinates
-        elif forced_unmarked_coordinate is not None and coord == forced_unmarked_coordinate:
-            marks[row_index][column_index] = False
-        else:
-            marks[row_index][column_index] = bool(rng.random() < float(distractor_mark_prob))
-
-    called_cell_ids = tuple(
+    present_coordinates = [tuple(value) for value in rng.sample(coordinates, answer)]
+    present_cell_ids = tuple(
         cell_id(row_index=int(row_index), column_index=int(column_index))
-        for row_index, column_index in called_coordinates
+        for row_index, column_index in present_coordinates
     )
-    called_marked_cell_ids = tuple(
-        cell_id(row_index=int(row_index), column_index=int(column_index))
-        for row_index, column_index in called_coordinates
-        if (int(row_index), int(column_index)) in marked_called_coordinates
-    )
-    called_numbers = tuple(
+    present_numbers = [
         int(numbers_grid[int(row_index)][int(column_index)])
-        for row_index, column_index in called_coordinates
-    )
+        for row_index, column_index in present_coordinates
+    ]
+    visible_number_set = {
+        int(numbers_grid[row_index][column_index])
+        for row_index in range(BINGO_BOARD_SIZE)
+        for column_index in range(BINGO_BOARD_SIZE)
+    }
+    absent_count = int(called_count - answer)
+    absent_pool = [int(value) for value in range(1, 76) if int(value) not in visible_number_set]
+    if absent_count > len(absent_pool):
+        raise ValueError("not enough absent Bingo numbers for called-number matching")
+    absent_numbers = [int(value) for value in rng.sample(absent_pool, absent_count)]
+    called_numbers = [int(value) for value in present_numbers + absent_numbers]
+    rng.shuffle(called_numbers)
+    marks: List[List[bool]] = [[False] * BINGO_BOARD_SIZE for _ in range(BINGO_BOARD_SIZE)]
     return (
         tuple(tuple(bool(value) for value in row) for row in marks),
         tuple(int(value) for value in called_numbers),
-        tuple(str(value) for value in called_cell_ids),
-        tuple(str(value) for value in called_marked_cell_ids),
+        tuple(str(value) for value in present_cell_ids),
+        tuple(int(value) for value in absent_numbers),
     )
 
 
@@ -318,26 +349,6 @@ def _completed_line_sums_for_axis(
     return tuple(sums)
 
 
-def _select_unique_line_sum_extremum(
-    *,
-    line_sums: Sequence[Tuple[str, int, int]],
-    extremum: str,
-) -> Tuple[str, int, int]:
-    if not line_sums:
-        raise ValueError("line-sum extremum query requires at least one completed line")
-    mode = str(extremum)
-    if mode == "max":
-        target_value = max(int(value) for _axis, _line_index, value in line_sums)
-    elif mode == "min":
-        target_value = min(int(value) for _axis, _line_index, value in line_sums)
-    else:
-        raise ValueError(f"unsupported bingo line-sum extremum: {extremum}")
-    winners = [record for record in line_sums if int(record[2]) == int(target_value)]
-    if len(winners) != 1:
-        raise ValueError("line-sum extremum must be unique")
-    return winners[0]
-
-
 def _state_from_marks(
     *,
     numbers_grid: Sequence[Sequence[int]],
@@ -345,8 +356,6 @@ def _state_from_marks(
     near_complete_gap_cell_ids: Sequence[str] = (),
     called_numbers: Sequence[int] = (),
     called_number_cell_ids: Sequence[str] = (),
-    called_marked_cell_ids: Sequence[str] = (),
-    line_sum_extremum: str | None = None,
     line_sum_target_axis: str | None = None,
     line_sum_target_line_index: int | None = None,
     line_sum_target_cell_ids: Sequence[str] = (),
@@ -388,8 +397,6 @@ def _state_from_marks(
         near_complete_gap_cell_ids=tuple(str(value) for value in near_complete_gap_cell_ids),
         called_numbers=tuple(int(value) for value in called_numbers),
         called_number_cell_ids=tuple(str(value) for value in called_number_cell_ids),
-        called_marked_cell_ids=tuple(str(value) for value in called_marked_cell_ids),
-        line_sum_extremum=None if line_sum_extremum is None else str(line_sum_extremum),
         line_sum_target_axis=None if line_sum_target_axis is None else str(line_sum_target_axis),
         line_sum_target_line_index=None if line_sum_target_line_index is None else int(line_sum_target_line_index),
         line_sum_target_cell_ids=tuple(str(value) for value in line_sum_target_cell_ids),
@@ -460,39 +467,31 @@ def build_completed_column_label_card_state(
     return state
 
 
-def build_line_sum_extremum_card_state(
+def build_completed_line_sum_card_state(
     *,
     rng,
     line_axis: str,
-    extremum: str,
-    completed_line_count: int,
+    line_index: int,
     distractor_mark_prob: float = 0.20,
 ) -> BingoCardState:
-    """Construct a card with completed lines and a unique line-sum extremum."""
+    """Construct a card with one completed row or column to sum."""
 
     axis = str(line_axis)
-    mode = str(extremum or "max")
-    if mode not in SUPPORTED_BINGO_EXTREMA:
-        raise ValueError(f"unsupported bingo line-sum extremum: {extremum}")
-    base_state = build_completed_line_card_state(
+    target_index = int(line_index)
+    mark_grid = _build_single_completed_line_marks(
         rng=rng,
         line_axis=axis,
-        completed_line_count=int(completed_line_count),
+        target_line_index=int(target_index),
         distractor_mark_prob=float(distractor_mark_prob),
     )
-    completed_indices = base_state.completed_row_indices if axis == "row" else base_state.completed_column_indices
-    if len(completed_indices) != int(completed_line_count):
-        raise ValueError("line-sum scene drifted from the requested completed-line count")
+    numbers_grid = build_bingo_number_grid(rng)
     completed_line_sums = _completed_line_sums_for_axis(
-        numbers_grid=base_state.numbers_grid,
+        numbers_grid=numbers_grid,
         line_axis=axis,
-        completed_line_indices=completed_indices,
+        completed_line_indices=(int(target_index),),
     )
-    selected_axis, selected_index, selected_value = _select_unique_line_sum_extremum(
-        line_sums=completed_line_sums,
-        extremum=mode,
-    )
-    if str(selected_axis) == "row":
+    _selected_axis, selected_index, selected_value = completed_line_sums[0]
+    if axis == "row":
         target_cell_ids = tuple(
             cell_id(row_index=int(selected_index), column_index=int(column_index))
             for column_index in range(BINGO_BOARD_SIZE)
@@ -502,16 +501,22 @@ def build_line_sum_extremum_card_state(
             cell_id(row_index=int(row_index), column_index=int(selected_index))
             for row_index in range(BINGO_BOARD_SIZE)
         )
-    return _state_from_marks(
-        numbers_grid=base_state.numbers_grid,
-        mark_grid=base_state.mark_grid,
-        line_sum_extremum=mode,
-        line_sum_target_axis=str(selected_axis),
+
+    state = _state_from_marks(
+        numbers_grid=numbers_grid,
+        mark_grid=mark_grid,
+        line_sum_target_axis=axis,
         line_sum_target_line_index=int(selected_index),
         line_sum_target_cell_ids=target_cell_ids,
         line_sum_target_value=int(selected_value),
         completed_line_sums=completed_line_sums,
     )
+    if axis == "row":
+        if tuple(state.completed_row_indices) != (int(target_index),) or state.completed_column_indices:
+            raise ValueError("completed-line sum scene must have exactly one completed row")
+    elif tuple(state.completed_column_indices) != (int(target_index),) or state.completed_row_indices:
+        raise ValueError("completed-line sum scene must have exactly one completed column")
+    return state
 
 
 def build_near_complete_line_card_state(
@@ -557,24 +562,22 @@ def build_near_complete_line_card_state(
     )
 
 
-def build_called_marked_number_card_state(
+def build_called_number_match_card_state(
     *,
     rng,
-    marked_called_count: int,
+    present_called_count: int,
     called_number_count: int,
-    distractor_mark_prob: float = 0.45,
 ) -> BingoCardState:
-    """Construct a card with an exact number of called values currently marked."""
+    """Construct a card with an exact number of called values present."""
 
     numbers_grid = build_bingo_number_grid(rng)
-    mark_grid, called_numbers, called_cell_ids, called_marked_cell_ids = _build_called_number_mark_state(
+    mark_grid, called_numbers, called_cell_ids, _absent_numbers = _build_called_number_match_state(
         rng=rng,
         numbers_grid=numbers_grid,
-        marked_called_count=int(marked_called_count),
+        present_called_count=int(present_called_count),
         called_number_count=int(called_number_count),
-        distractor_mark_prob=max(0.0, min(1.0, float(distractor_mark_prob))),
     )
-    if len(called_marked_cell_ids) != int(marked_called_count):
+    if len(called_cell_ids) != int(present_called_count):
         raise ValueError("constructed bingo called-number scene drifted from the target answer")
     if len(called_numbers) != int(called_number_count):
         raise ValueError("constructed bingo called-number scene drifted from the called-number count")
@@ -583,16 +586,15 @@ def build_called_marked_number_card_state(
         mark_grid=mark_grid,
         called_numbers=called_numbers,
         called_number_cell_ids=called_cell_ids,
-        called_marked_cell_ids=called_marked_cell_ids,
     )
 
 
 __all__ = [
     "build_bingo_number_grid",
-    "build_called_marked_number_card_state",
+    "build_called_number_match_card_state",
     "build_completed_column_label_card_state",
     "build_completed_line_card_state",
-    "build_line_sum_extremum_card_state",
+    "build_completed_line_sum_card_state",
     "build_near_complete_line_card_state",
     "completed_columns",
     "completed_rows",

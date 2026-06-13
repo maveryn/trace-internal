@@ -7,7 +7,7 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.counting.most_frequent_type import IconsIconFieldTypeFrequencyCountTask
+from trace.tasks.icons.icon_field.type_frequency_count import IconsIconFieldTypeFrequencyCountTask
 from tests.helpers import read_jsonl
 
 
@@ -73,7 +73,7 @@ def test_icons_counting_singleton_type_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 8
     assert all(record["domain"] == "icons" for record in train_records)
-    assert all(record["scene_id"] == "counting" for record in train_records)
+    assert all(record["scene_id"] == "icon_field" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"][task_id]) == 8

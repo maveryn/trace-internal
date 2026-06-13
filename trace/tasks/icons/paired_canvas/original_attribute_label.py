@@ -1014,6 +1014,7 @@ class IconsRelationNamedOriginalAttributeLabelTask:
 
     task_id = TASK_ID
     domain = "icons"
+    supported_query_ids = QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         sample_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:sample")

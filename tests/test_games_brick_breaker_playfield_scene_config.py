@@ -33,7 +33,7 @@ def test_games_brick_breaker_defaults_present() -> None:
     assert len(SUPPORTED_BRICK_BREAKER_STYLE_VARIANTS) >= 5
     assert list(generation["brick_row_count_support"]) == [4, 5]
     assert list(generation["brick_col_count_support"]) == [5, 6]
-    assert list(generation["catch_lane_count_support"]) == [5, 6, 7, 8]
+    assert list(generation["catch_lane_count_support"]) == [5, 6]
     assert int(rendering["canvas_width"]) == 980
     assert int(rendering["canvas_height"]) == 740
     assert bool(rendering["dynamic_canvas_size_enabled"]) is True

@@ -1220,7 +1220,6 @@ def _render_scene(
     badge_font = load_font(_int_default(params, "badge_font_size_px", _DEFAULTS.badge_font_size_px), bold=True, font_family=str(font_family))
     label_font = load_font(_int_default(params, "label_font_size_px", _DEFAULTS.label_font_size_px), bold=True, font_family=str(font_family))
     option_font = load_font(_int_default(params, "option_font_size_px", _DEFAULTS.option_font_size_px), bold=True, font_family=str(font_family))
-    title_font = load_font(24, bold=True, font_family=str(font_family))
     solitaire_style, solitaire_style_meta = _resolve_solitaire_visual_style(str(style_variant), style)
     text_rgb = tuple(int(value) for value in solitaire_style.text_rgb)
     border_rgb = tuple(int(value) for value in solitaire_style.card_border_rgb)
@@ -1228,16 +1227,6 @@ def _render_scene(
     back_fill = tuple(int(value) for value in solitaire_style.card_back_rgb)
     badge_fill = tuple(int(value) for value in solitaire_style.badge_fill_rgb)
     badge_text = tuple(int(value) for value in solitaire_style.badge_text_rgb)
-
-    title = "Solitaire tableau"
-    draw_text_traced(draw,
-        (float(margin + dx), float(20.0 + dy)),
-        title,
-        font=title_font,
-        fill=text_rgb,
-        stroke_width=1,
-        stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(text_rgb)),
-     role="readout", required=False,)
 
     foundation_y = 58 + int(round(dy))
     foundation_start_x = int(canvas_width - margin - (4 * card_width) - (3 * foundation_gap) + round(dx))

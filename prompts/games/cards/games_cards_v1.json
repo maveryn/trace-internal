@@ -163,7 +163,7 @@
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:blackjack_best_hand_label": {
-      "blackjack_rule_text": "Use blackjack values: number cards count as printed, J/Q/K count as 10, and each Ace counts as 11 unless that would bust, then it counts as 1. A bust hand is worse than any non-bust hand.",
+      "blackjack_rule_text": "Use blackjack values: number cards count as printed and J/Q/K count as 10. Count each Ace as 11, but reduce Aces to 1 as needed to keep the hand at 21 or below. If a hand is still over 21 after Ace reductions, it is bust and worse than any non-bust hand.",
       "annotation_hint": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every card in the winning blackjack hand",
       "answer_hint": "set \"answer\" to only the winning blackjack hand option letter",
       "json_example": "{\"annotation\":[[120,80,200,190],[220,80,300,190],[320,80,400,190]],\"answer\":\"B\"}",

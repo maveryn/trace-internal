@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections import Counter
 from trace.core.seed import hash64
-from trace.tasks.icons.relation.named_reference_distance_rank_label import IconsRelationNamedReferenceDistanceRankLabelTask
+from trace.tasks.icons.named_field.reference_distance_rank_label import IconsRelationNamedReferenceDistanceRankLabelTask
 
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = 'Example JSON:\n'

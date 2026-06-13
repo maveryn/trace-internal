@@ -37,18 +37,18 @@
         "Count every opponent-occupied destination cell the red marked piece can capture. {circular_board_rule_text} {piece_rule_text} {landing_rule_text}"
       ],
       "white_piece_reaches_target_count": [
-        "The blue marked cell is the target cell. {circular_board_rule_text} {piece_rule_text} {landing_rule_text} How many {target_color_name} pieces can move to the target cell?",
-        "{circular_board_rule_text} The blue marked cell is the target. {piece_rule_text} {landing_rule_text} Count the {target_color_name} pieces that can reach it.",
-        "Use the blue marked cell as the target. {circular_board_rule_text} {piece_rule_text} {landing_rule_text} What is the number of {target_color_name} pieces that can move there?",
-        "{piece_rule_text} {circular_board_rule_text} {landing_rule_text} Count every {target_color_name} piece that has the blue marked cell as a legal destination.",
-        "How many {target_color_name} pieces could legally move onto the blue marked target cell? {circular_board_rule_text} {piece_rule_text} {landing_rule_text}"
+        "The red marked cell is the target cell. {circular_board_rule_text} {piece_rule_text} {landing_rule_text} How many {target_color_name} pieces can move to the target cell?",
+        "{circular_board_rule_text} The red marked cell is the target. {piece_rule_text} {landing_rule_text} Count the {target_color_name} pieces that can reach it.",
+        "Use the red marked cell as the target. {circular_board_rule_text} {piece_rule_text} {landing_rule_text} What is the number of {target_color_name} pieces that can move there?",
+        "{piece_rule_text} {circular_board_rule_text} {landing_rule_text} Count every {target_color_name} piece that has the red marked cell as a legal destination.",
+        "How many {target_color_name} pieces could legally move onto the red marked target cell? {circular_board_rule_text} {piece_rule_text} {landing_rule_text}"
       ],
       "black_piece_reaches_target_count": [
-        "The blue marked cell is the target cell. {circular_board_rule_text} {piece_rule_text} {landing_rule_text} How many {target_color_name} pieces can move to the target cell?",
-        "{circular_board_rule_text} The blue marked cell is the target. {piece_rule_text} {landing_rule_text} Count the {target_color_name} pieces that can reach it.",
-        "Use the blue marked cell as the target. {circular_board_rule_text} {piece_rule_text} {landing_rule_text} What is the number of {target_color_name} pieces that can move there?",
-        "{piece_rule_text} {circular_board_rule_text} {landing_rule_text} Count every {target_color_name} piece that has the blue marked cell as a legal destination.",
-        "How many {target_color_name} pieces could legally move onto the blue marked target cell? {circular_board_rule_text} {piece_rule_text} {landing_rule_text}"
+        "The red marked cell is the target cell. {circular_board_rule_text} {piece_rule_text} {landing_rule_text} How many {target_color_name} pieces can move to the target cell?",
+        "{circular_board_rule_text} The red marked cell is the target. {piece_rule_text} {landing_rule_text} Count the {target_color_name} pieces that can reach it.",
+        "Use the red marked cell as the target. {circular_board_rule_text} {piece_rule_text} {landing_rule_text} What is the number of {target_color_name} pieces that can move there?",
+        "{piece_rule_text} {circular_board_rule_text} {landing_rule_text} Count every {target_color_name} piece that has the red marked cell as a legal destination.",
+        "How many {target_color_name} pieces could legally move onto the red marked target cell? {circular_board_rule_text} {piece_rule_text} {landing_rule_text}"
       ]
     },
     "output": {
@@ -155,9 +155,9 @@
     "answer_hint_marked_piece_move_count": "set \"answer\" to the number of legal destination cells for the marked piece",
     "annotation_hint_marked_piece_capture_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every opponent-occupied destination cell the marked piece can capture",
     "answer_hint_marked_piece_capture_count": "set \"answer\" to the number of opponent pieces the marked piece can capture",
-    "annotation_hint_white_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every White piece that can move to the blue marked target cell",
-    "answer_hint_white_piece_reaches_target_count": "set \"answer\" to the number of White pieces that can move to the blue marked target cell",
-    "annotation_hint_black_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every Black piece that can move to the blue marked target cell",
-    "answer_hint_black_piece_reaches_target_count": "set \"answer\" to the number of Black pieces that can move to the blue marked target cell"
+    "annotation_hint_white_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every White piece that can move to the red marked target cell",
+    "answer_hint_white_piece_reaches_target_count": "set \"answer\" to the number of White pieces that can move to the red marked target cell",
+    "annotation_hint_black_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every Black piece that can move to the red marked target cell",
+    "answer_hint_black_piece_reaches_target_count": "set \"answer\" to the number of Black pieces that can move to the red marked target cell"
   }
 }

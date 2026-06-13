@@ -499,14 +499,17 @@ def render_brick_breaker_scene(
             }
         )
 
-    paddle_y = float(lane_top - 28.0)
-    paddle_w = float((clip_right - clip_left) * 0.62)
+    paddle_height = max(6.0, min(9.0, float(params.lane_pad_height_px) * 0.22))
+    paddle_y = float(lane_top - 24.0)
+    first_lane_bbox = lane_bboxes[lane_entity_id(0)]
+    paddle_w = round(float(first_lane_bbox[2] - first_lane_bbox[0]), 3)
     paddle_cx = float((clip_left + clip_right) / 2.0)
+    paddle_left = round(paddle_cx - (0.5 * paddle_w), 3)
     paddle_bbox = (
-        round(paddle_cx - (0.5 * paddle_w), 3),
+        paddle_left,
         round(paddle_y, 3),
-        round(paddle_cx + (0.5 * paddle_w), 3),
-        round(paddle_y + 14.0, 3),
+        round(paddle_left + paddle_w, 3),
+        round(paddle_y + paddle_height, 3),
     )
     draw.rounded_rectangle(
         paddle_bbox,

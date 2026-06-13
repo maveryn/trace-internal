@@ -13,6 +13,7 @@ from trace.tasks.games.bubble_shooter.pop_color_label import GamesBubbleShooterP
 from trace.tasks.games.bubble_shooter.pop_count import GamesBubbleShooterPopCountTask
 from trace.tasks.games.bubble_shooter.shared.rules import (
     compute_shot_outcome,
+    is_playable_landing_coord,
     sorted_coords,
 )
 from trace.tasks.games.bubble_shooter.shared.state import (
@@ -31,6 +32,24 @@ def _board_from_trace(execution: dict) -> tuple[tuple[str | None, ...], ...]:
         row, col = [int(value) for value in bubble["coord"]]
         values[row][col] = str(bubble["color_key"])
     return tuple(tuple(row) for row in values)
+
+
+def _assert_trace_landing_is_playable(execution: dict) -> None:
+    board = _board_from_trace(execution)
+    landing = tuple(int(value) for value in execution["landing_coord"])
+    assert is_playable_landing_coord(board, landing)
+
+
+def test_games_bubble_shooter_rejects_enclosed_landing_slot() -> None:
+    board = (
+        ("red", "yellow", "blue", "green", "red"),
+        ("yellow", None, "green", "blue", "yellow"),
+        ("blue", "green", "red", "yellow", "blue"),
+        (None, None, None, None, None),
+        (None, None, None, None, None),
+    )
+
+    assert not is_playable_landing_coord(board, (1, 1))
 
 
 @pytest.mark.parametrize(
@@ -61,6 +80,7 @@ def test_games_bubble_shooter_public_tasks_emit_expected_contract(
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
+    _assert_trace_landing_is_playable(execution)
     assert out.answer_gt.type == answer_type
     assert out.annotation_gt.type == "point_set"
     assert out.query_id == expected_query
@@ -94,6 +114,7 @@ def test_games_bubble_shooter_pop_count_matches_computed_outcome() -> None:
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
+    _assert_trace_landing_is_playable(execution)
     board = _board_from_trace(execution)
     landing = tuple(int(value) for value in execution["landing_coord"])
     outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(execution["shooter_color_key"]))
@@ -126,6 +147,7 @@ def test_games_bubble_shooter_pop_count_allows_zero_pop_case() -> None:
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
+    _assert_trace_landing_is_playable(execution)
     board = _board_from_trace(execution)
     landing = tuple(int(value) for value in execution["landing_coord"])
     outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(execution["shooter_color_key"]))
@@ -142,6 +164,7 @@ def test_games_bubble_shooter_drop_count_matches_computed_outcome() -> None:
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
+    _assert_trace_landing_is_playable(execution)
     board = _board_from_trace(execution)
     landing = tuple(int(value) for value in execution["landing_coord"])
     outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(execution["shooter_color_key"]))
@@ -157,6 +180,7 @@ def test_games_bubble_shooter_drop_count_allows_zero_drop_case() -> None:
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
+    _assert_trace_landing_is_playable(execution)
     board = _board_from_trace(execution)
     landing = tuple(int(value) for value in execution["landing_coord"])
     outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(execution["shooter_color_key"]))
@@ -173,6 +197,7 @@ def test_games_bubble_shooter_pop_color_label_has_one_displayed_popping_option()
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
+    _assert_trace_landing_is_playable(execution)
     board = _board_from_trace(execution)
     landing = tuple(int(value) for value in execution["landing_coord"])
     positives: list[str] = []
@@ -230,6 +255,7 @@ def test_games_bubble_shooter_task_axes_cover_support() -> None:
                 max_attempts=256,
             )
             execution = out.trace_payload["execution_trace"]
+            _assert_trace_landing_is_playable(execution)
             queries.add(str(out.query_id))
             rows.add(int(execution["row_count"]))
             cols.add(int(execution["col_count"]))

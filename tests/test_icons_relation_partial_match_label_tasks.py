@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections import Counter
 from trace.core.seed import hash64
-from trace.tasks.icons.relation.partial_match_label import IconsRelationPartialMatchLabelTask
+from trace.tasks.icons.icon_cutout.partial_match_label import IconsIconCutoutPartialMatchLabelTask
 
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = 'Example JSON:\n'
@@ -11,7 +11,7 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(str(prompt).split(marker, 1)[1].strip())
 
 def test_icons_relation_partial_match_contract_matches_scene() -> None:
-    task = IconsRelationPartialMatchLabelTask()
+    task = IconsIconCutoutPartialMatchLabelTask()
     out = task.generate(2026052801, params={'answer_index': 2}, max_attempts=120)
     trace = out.trace_payload
     execution = trace['execution_trace']
@@ -51,7 +51,7 @@ def test_icons_relation_partial_match_contract_matches_scene() -> None:
     assert 'cell_label_stroke_rgb' in render_style
 
 def test_icons_relation_partial_match_prompt_example_matches_contract() -> None:
-    task = IconsRelationPartialMatchLabelTask()
+    task = IconsIconCutoutPartialMatchLabelTask()
     out = task.generate(2026052802, params={'answer_label': 'C'}, max_attempts=120)
     answer_only = _extract_prompt_json_example(out.prompt_variants['answer_only'])
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
@@ -61,7 +61,7 @@ def test_icons_relation_partial_match_prompt_example_matches_contract() -> None:
     assert answer_and_annotation['answer'] == 'C'
 
 def test_icons_relation_partial_match_default_sampling() -> None:
-    task = IconsRelationPartialMatchLabelTask()
+    task = IconsIconCutoutPartialMatchLabelTask()
     answer_counts: Counter[str] = Counter()
     styles: Counter[str] = Counter()
     for index in range(18):

@@ -67,14 +67,14 @@ def circular_chess_theme(style_variant: str) -> CircularChessTheme:
 
     variant = str(style_variant)
     if variant == "slate_ring":
-        return CircularChessTheme((42, 48, 58), (230, 235, 238), (214, 221, 229), (105, 124, 145), (38, 45, 54), (218, 54, 62), (50, 111, 214), (24, 29, 36), "charcoal")
+        return CircularChessTheme((42, 48, 58), (230, 235, 238), (214, 221, 229), (105, 124, 145), (38, 45, 54), (218, 54, 62), (218, 54, 62), (24, 29, 36), "charcoal")
     if variant == "parchment_ring":
-        return CircularChessTheme((119, 86, 52), (248, 240, 219), (242, 218, 170), (172, 124, 78), (96, 68, 42), (204, 45, 48), (42, 95, 178), (46, 32, 20), "classic")
+        return CircularChessTheme((119, 86, 52), (248, 240, 219), (242, 218, 170), (172, 124, 78), (96, 68, 42), (204, 45, 48), (204, 45, 48), (46, 32, 20), "classic")
     if variant == "emerald_ring":
-        return CircularChessTheme((24, 91, 74), (225, 241, 233), (205, 231, 218), (62, 150, 121), (21, 75, 62), (216, 47, 57), (36, 99, 208), (20, 48, 42), "soft")
+        return CircularChessTheme((24, 91, 74), (225, 241, 233), (205, 231, 218), (62, 150, 121), (21, 75, 62), (216, 47, 57), (216, 47, 57), (20, 48, 42), "soft")
     if variant == "monochrome_ring":
-        return CircularChessTheme((34, 34, 38), (246, 246, 244), (230, 230, 226), (132, 134, 138), (48, 50, 54), (210, 44, 54), (40, 88, 190), (24, 24, 26), "monochrome_glyph")
-    return CircularChessTheme((56, 73, 122), (239, 244, 250), (222, 232, 244), (118, 150, 194), (52, 68, 104), (220, 56, 62), (42, 98, 204), (26, 34, 50), "classic")
+        return CircularChessTheme((34, 34, 38), (246, 246, 244), (230, 230, 226), (132, 134, 138), (48, 50, 54), (210, 44, 54), (210, 44, 54), (24, 24, 26), "monochrome_glyph")
+    return CircularChessTheme((56, 73, 122), (239, 244, 250), (222, 232, 244), (118, 150, 194), (52, 68, 104), (220, 56, 62), (220, 56, 62), (26, 34, 50), "classic")
 
 
 def _sector_polygon(

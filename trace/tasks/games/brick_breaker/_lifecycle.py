@@ -8,7 +8,10 @@ from typing import Any, Callable, Mapping
 from trace.core.seed import hash64, spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import (
+    AnnotationArtifacts,
+    point_set_annotation_artifacts,
+)
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
@@ -144,26 +147,34 @@ def resolve_brick_breaker_integer_axis_spec(
     }
 
 
-def bbox_set_attempt(
+def point_set_attempt(
     *,
     sample: BrickBreakerSample,
     answer_gt: TypedValue,
     annotation_entity_ids: tuple[str, ...] | None = None,
     execution_extra: Mapping[str, Any] | None = None,
 ) -> BrickBreakerAttemptResult:
-    """Package an answer whose annotation is the bbox set for scene entities."""
+    """Package an answer whose annotation is the center point set for scene entities."""
 
     resolved_entity_ids = tuple(str(entity_id) for entity_id in (annotation_entity_ids or sample.annotation_entity_ids))
+
+    def build_annotation(rendered_context: RenderedBrickBreakerTaskContext) -> AnnotationArtifacts:
+        entity_bboxes = rendered_context.rendered_scene.render_map["entity_bboxes_px"]
+        return point_set_annotation_artifacts(
+            [
+                [
+                    round(float(entity_bboxes[str(entity_id)][0] + entity_bboxes[str(entity_id)][2]) / 2.0, 3),
+                    round(float(entity_bboxes[str(entity_id)][1] + entity_bboxes[str(entity_id)][3]) / 2.0, 3),
+                ]
+                for entity_id in resolved_entity_ids
+            ]
+        )
+
     return BrickBreakerAttemptResult(
         sample=sample,
         answer_gt=answer_gt,
         annotation_entity_ids=resolved_entity_ids,
-        build_annotation=lambda rendered_context: bbox_set_annotation_artifacts(
-            [
-                rendered_context.rendered_scene.render_map["entity_bboxes_px"][str(entity_id)]
-                for entity_id in resolved_entity_ids
-            ]
-        ),
+        build_annotation=build_annotation,
         execution_extra=dict(execution_extra or {}),
     )
 
@@ -284,8 +295,8 @@ __all__ = [
     "BrickBreakerAttemptResult",
     "BrickBreakerIntegerAxisSpec",
     "BrickBreakerObjectivePlan",
-    "bbox_set_attempt",
     "brick_breaker_integer_axis_spec",
+    "point_set_attempt",
     "resolve_brick_breaker_integer_axis_spec",
     "resolve_brick_breaker_playfield_axis_specs",
     "run_brick_breaker_lifecycle",

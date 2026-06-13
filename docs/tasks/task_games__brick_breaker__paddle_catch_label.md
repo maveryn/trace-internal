@@ -7,7 +7,7 @@
 4. Public task id: `task_games__brick_breaker__paddle_catch_label`
 5. Supported `query_id` values: `paddle_catch_label`
 6. Answer schema: `string_label`
-7. Annotation schema: `bbox_set`
+7. Annotation schema: `point_set`
 8. Program schema: `label(paddle_zone_intersected_by(ball_trajectory)); scene=brick_breaker; scope=paddle_catch_label`
 
 ## Generation Notes

@@ -7,7 +7,7 @@ Status: pending taxonomy-v0 review refresh.
 - scene_id: `named_field`
 - scene_id: `counting`
 - task: `named_shape_color_boolean_count`
-- module: `trace/tasks/icons/counting/named_shape_color_boolean_count.py`
+- module: `trace/tasks/icons/named_field/multi_attribute_and_count.py`
 - prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
 
 ## Scene And Query

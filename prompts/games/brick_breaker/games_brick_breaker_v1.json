@@ -68,22 +68,22 @@
     "query:next_hit_label": {
       "brick_breaker_motion_rule_text": "The short dashed arrow shows the ball's current straight direction.",
       "answer_hint": "set \"answer\" to the selected brick label as a string",
-      "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the brick hit first after extrapolating the ball direction",
-      "json_example": "{\"annotation\":[[438,186,514,228]],\"answer\":\"H\"}",
+      "annotation_hint": "set \"annotation\" to one pixel-space point [x, y] at the center of the brick hit first after extrapolating the ball direction",
+      "json_example": "{\"annotation\":[[476,207]],\"answer\":\"H\"}",
       "json_example_answer_only": "{\"answer\":\"H\"}"
     },
     "query:paddle_catch_label": {
       "brick_breaker_motion_rule_text": "The short dashed arrow shows the ball's current straight direction.",
       "answer_hint": "set \"answer\" to the selected bottom lane label as a string",
-      "annotation_hint": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the selected bottom catch lane pad",
-      "json_example": "{\"annotation\":[[245,382,345,424]],\"answer\":\"C\"}",
+      "annotation_hint": "set \"annotation\" to one pixel-space point [x, y] at the center of the selected bottom catch lane pad",
+      "json_example": "{\"annotation\":[[295,403]],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "query:hit_row_remaining_count": {
       "brick_breaker_motion_rule_text": "The short dashed arrow shows the ball's current straight direction.",
       "answer_hint": "set \"answer\" to the number of bricks left in that row after the hit brick is removed",
-      "annotation_hint": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] around the bricks left in the same row after the hit brick is removed",
-      "json_example": "{\"annotation\":[[120,255,220,302],[230,255,330,302],[340,255,440,302],[450,255,550,302]],\"answer\":4}",
+      "annotation_hint": "set \"annotation\" to an array of pixel-space points [x, y] at the centers of the bricks left in the same row after the hit brick is removed",
+      "json_example": "{\"annotation\":[[170,278],[280,278],[390,278],[500,278]],\"answer\":4}",
       "json_example_answer_only": "{\"answer\":4}"
     }
   },

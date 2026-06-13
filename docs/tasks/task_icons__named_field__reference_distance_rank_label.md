@@ -7,7 +7,7 @@ Status: pending taxonomy-v0 review refresh.
 - scene_id: `named_field`
 - scene_id: `relation`
 - task: `named_reference_distance_rank_label`
-- module: `trace/tasks/icons/relation/named_reference_distance_rank_label.py`
+- module: `trace/tasks/icons/named_field/reference_distance_rank_label.py`
 - prompt bundle: `prompts/icons/relation/icons_relation_v0.json`
 
 ## Scene And Query

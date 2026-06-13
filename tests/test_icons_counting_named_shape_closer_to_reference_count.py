@@ -6,7 +6,7 @@ from collections import Counter
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
-from trace.tasks.icons.counting.named_shape_closer_to_reference_count import QUERY_IDS
+from trace.tasks.icons.named_field.closer_to_reference_count import QUERY_ID, QUERIED_REFERENCE_LABELS
 
 
 TASK_ID = "task_icons__named_field__closer_to_reference_count"
@@ -20,11 +20,12 @@ def _distance(entity: dict[str, object], reference: dict[str, object]) -> float:
 
 def test_icons_counting_named_shape_closer_to_reference_contract_all_queries() -> None:
     task = create_task(TASK_ID)
-    for index, query_id in enumerate(QUERY_IDS):
+    for index, reference_label in enumerate(QUERIED_REFERENCE_LABELS):
         out = task.generate(
             hash64(20260524, "named-shape-closer-reference-contract", index),
             params={
-                "query_id": query_id,
+                "query_id": QUERY_ID,
+                "queried_reference_label": reference_label,
                 "target_shape_id": "star",
                 "reference_a_shape_id": "circle",
                 "reference_b_shape_id": "square",
@@ -50,7 +51,7 @@ def test_icons_counting_named_shape_closer_to_reference_contract_all_queries() -
         ]
 
         assert out.scene_id == "named_field"
-        assert out.query_id == query_id
+        assert out.query_id == QUERY_ID
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == 3
         assert out.annotation_gt.type == "bbox_set"
@@ -82,7 +83,8 @@ def test_icons_counting_named_shape_closer_to_reference_supports_zero_answer() -
     out = task.generate(
         hash64(20260524, "named-shape-closer-reference-zero", 0),
         params={
-            "query_id": "closer_to_reference_a_count",
+            "query_id": QUERY_ID,
+            "queried_reference_label": "A",
             "target_shape_id": "triangle",
             "target_answer": 0,
             "target_icon_count": 5,
@@ -100,6 +102,7 @@ def test_icons_counting_named_shape_closer_to_reference_supports_zero_answer() -
 def test_icons_counting_named_shape_closer_to_reference_sampling_distribution() -> None:
     task = create_task(TASK_ID)
     query_counts: Counter[str] = Counter()
+    reference_label_counts: Counter[str] = Counter()
     answer_counts: Counter[int] = Counter()
     axes: set[int] = set()
     for index in range(120):
@@ -110,13 +113,15 @@ def test_icons_counting_named_shape_closer_to_reference_sampling_distribution() 
         )
         execution = out.trace_payload["execution_trace"]
         query_counts[str(out.query_id)] += 1
+        reference_label_counts[str(execution["queried_reference_label"])] += 1
         answer_counts[int(out.answer_gt.value)] += 1
         axes.add(int(execution["reference_axis_degrees"]))
         assert 4 <= int(execution["target_icon_count"]) <= 8
         assert 0 <= int(out.answer_gt.value) <= 4
         assert len(out.annotation_gt.value) == int(out.answer_gt.value)
 
-    assert set(query_counts) == set(QUERY_IDS)
+    assert set(query_counts) == {QUERY_ID}
+    assert set(reference_label_counts) == set(QUERIED_REFERENCE_LABELS)
     assert set(answer_counts).issubset(set(range(0, 5)))
     assert len(answer_counts) >= 5
     assert axes.issubset({0, 35, 90, 145})

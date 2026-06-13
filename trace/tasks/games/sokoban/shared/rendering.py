@@ -1166,9 +1166,7 @@ def render_sokoban_scene(
             params=render_params,
         )
     board_bbox = _bbox_union(cell_bbox_map.values())
-    title_font = load_font(20, bold=True)
     subtitle_font = load_font(16, bold=False)
-    draw_text_traced(draw,(board_panel[0] + 22, board_panel[1] + 16), "Sokoban grid", fill=render_params.text_color_rgb, font=title_font, role="readout", required=False)
     if str(dataset.get("contract_kind")) == "path_sequence_label":
         draw_text_traced(draw,
             (board_panel[0] + 22, board_panel[3] - 56),

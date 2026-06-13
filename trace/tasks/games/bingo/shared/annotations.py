@@ -26,7 +26,7 @@ def completed_line_cell_ids(card_state: BingoCardState, *, line_axis: str) -> Tu
 
 
 def line_sum_target_cell_ids(card_state: BingoCardState) -> Tuple[str, ...]:
-    """Return the five cell ids in the unique extremum completed line."""
+    """Return the five cell ids in the completed line used for the sum."""
 
     if not card_state.line_sum_target_cell_ids:
         raise ValueError("line-sum annotation requires target line cell ids")
@@ -39,10 +39,10 @@ def near_complete_gap_cell_ids(card_state: BingoCardState) -> Tuple[str, ...]:
     return tuple(str(value) for value in card_state.near_complete_gap_cell_ids)
 
 
-def called_marked_cell_ids(card_state: BingoCardState) -> Tuple[str, ...]:
-    """Return called-number cell ids that are currently marked."""
+def called_number_cell_ids(card_state: BingoCardState) -> Tuple[str, ...]:
+    """Return card cell ids whose printed number appears in the CALLED list."""
 
-    return tuple(str(value) for value in card_state.called_marked_cell_ids)
+    return tuple(str(value) for value in card_state.called_number_cell_ids)
 
 
 def row_cell_ids(row_index: int) -> Tuple[str, ...]:
@@ -85,7 +85,7 @@ def cell_point_pairs_for_id_pairs(
 
 
 __all__ = [
-    "called_marked_cell_ids",
+    "called_number_cell_ids",
     "cell_bboxes_for_ids",
     "cell_point_pairs_for_id_pairs",
     "cell_points_for_ids",

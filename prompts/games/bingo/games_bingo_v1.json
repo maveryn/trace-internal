@@ -23,18 +23,18 @@
     },
     "query": {
       "completed_column_label": [
-        "{completed_column_rule_text} Which BINGO column is fully marked?",
-        "Which column label has all five cells marked? {completed_column_rule_text}",
-        "Identify the completed BINGO column. {completed_column_rule_text}",
-        "{completed_column_rule_text} What is the completed column label?",
+        "Which BINGO column is fully marked?",
+        "Which column label has all five cells marked?",
+        "Identify the completed BINGO column.",
+        "What is the completed column label?",
         "Looking at the marked cells, which column is complete?"
       ],
-      "line_sum_extremum_value": [
-        "{line_sum_extremum_rule_text} What is that {extremum} sum?",
-        "Among the completed {line_axis}s, what is the {extremum} sum of printed numbers? {line_sum_extremum_rule_text}",
-        "Find each completed {line_axis}, add the printed numbers in it, and report the {extremum} sum.",
-        "{line_sum_extremum_rule_text} What number is the {extremum} completed-{line_axis} sum?",
-        "Using only completed {line_axis}s, which sum is the {extremum} after adding the five printed numbers in each completed {line_axis}?"
+      "completed_line_sum_value": [
+        "What is the sum of the five printed numbers in the completed {line_axis}?",
+        "Add the printed numbers in the completed {line_axis}. What is the sum?",
+        "Find the completed {line_axis} and report the sum of its five printed numbers.",
+        "Using the completed {line_axis}, what total do its five numbers make?",
+        "What number do you get after adding the five values in the completed {line_axis}?"
       ],
       "near_complete_row_count": [
         "{near_complete_line_rule_text} How many near-complete rows are there?",
@@ -50,12 +50,12 @@
         "{near_complete_line_rule_text} What is the number of near-complete columns?",
         "Looking at the marked cells, how many columns need one more mark to be complete?"
       ],
-      "called_marked_number_count": [
-        "{called_marked_number_rule_text} How many called numbers are marked on the card?",
-        "Using the CALLED list and the marked card cells, how many called numbers are marked?",
-        "How many numbers in the CALLED list have marked cells on the bingo card?",
-        "{called_marked_number_rule_text} Count the called numbers that are currently marked.",
-        "Using the CALLED list, what is the number of called values that are marked on the card?"
+      "called_number_match_count": [
+        "{called_number_match_rule_text} How many numbers in the CALLED list appear on the bingo card?",
+        "Using the CALLED list, count how many listed numbers are printed on the bingo card.",
+        "How many CALLED numbers can you find on the card?",
+        "{called_number_match_rule_text} Count the CALLED-list values that appear on the card.",
+        "Compare the CALLED list with the card. How many called values are present?"
       ]
     },
     "output": {
@@ -77,19 +77,17 @@
   },
   "static_slots_by_key": {
     "scene:visible_bingo_card": {
-      "object_description": "one face-up 5 x 5 bingo card with some cells marked"
+      "object_description": "one face-up 5 x 5 bingo card"
     },
     "query:completed_column_label": {
-      "completed_column_rule_text": "Exactly one BINGO column has all five cells marked.",
       "answer_hint": "set \"answer\" to the completed column label as B, I, N, G, or O",
       "annotation_hint": "set \"annotation\" to an array containing one pair of pixel-space points [x, y]: the centers of the top and bottom cells in the completed column",
       "json_example": "{\"annotation\":[[[180,90],[180,330]]],\"answer\":\"I\"}",
       "json_example_answer_only": "{\"answer\":\"I\"}"
     },
-    "query:line_sum_extremum_value": {
-      "line_sum_extremum_rule_text": "A completed line has all five cells marked. Sum the printed numbers in each completed requested line, then use the requested extreme sum.",
-      "answer_hint": "set \"answer\" to the unique requested extreme sum among completed requested lines",
-      "annotation_hint": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for the five cells in the completed requested line with the unique requested extreme sum",
+    "query:completed_line_sum_value": {
+      "answer_hint": "set \"answer\" to the sum of the five printed numbers in the completed row or column",
+      "annotation_hint": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for the five cells in the completed row or column",
       "json_example": "{\"annotation\":[[40,80,90,130],[100,80,150,130],[160,80,210,130],[220,80,270,130],[280,80,330,130]],\"answer\":184}",
       "json_example_answer_only": "{\"answer\":184}"
     },
@@ -107,26 +105,22 @@
       "json_example": "{\"annotation\":[[160,160,210,210],[280,240,330,290]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
-    "query:called_marked_number_count": {
-      "called_marked_number_rule_text": "The CALLED list shows numbers that appear on the card.",
-      "answer_hint": "set \"answer\" to the number of called numbers that are marked on the card",
-      "annotation_hint": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for each card cell whose number is in the CALLED list and is marked",
-      "json_example": "{\"annotation\":[[100,80,150,130],[220,240,270,290]],\"answer\":2}",
+    "query:called_number_match_count": {
+      "called_number_match_rule_text": "Some CALLED-list numbers may not appear on the card.",
+      "answer_hint": "set \"answer\" to the number of CALLED-list numbers that appear on the card",
+      "annotation_hint": "set \"annotation\" to an array of pixel-space points [x, y] for the card cells whose printed numbers are in the CALLED list",
+      "json_example": "{\"annotation\":[[125,105],[245,265]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     }
   },
   "dynamic_slots": {
     "line_axis": {
       "type": "string"
-    },
-    "extremum": {
-      "type": "string"
     }
   },
   "required_slots_by_key": {
-    "query:line_sum_extremum_value": [
-      "line_axis",
-      "extremum"
+    "query:completed_line_sum_value": [
+      "line_axis"
     ]
   }
 }

@@ -1,0 +1,5 @@
+task_id: task_icons__mirror_grid__mirror_symmetry_match_label
+params:
+  query_id: mirror_vertical
+  option_count: 6
+  answer_label: C

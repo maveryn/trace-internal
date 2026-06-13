@@ -213,7 +213,7 @@ def non_target_path_clearance_px(
 
 
 def make_path_options(*, rng: Any, option_count: int, target_index: int, target_aim_x: float) -> Tuple[BowlingPathOption, ...]:
-    """Create labeled aiming paths with one target option."""
+    """Create path options numbered by their left-to-right visual order."""
 
     candidate_offsets = [-0.29, -0.24, -0.19, -0.14, -0.095, 0.095, 0.14, 0.19, 0.24, 0.29]
     candidate_positions: list[float] = []
@@ -228,16 +228,21 @@ def make_path_options(*, rng: Any, option_count: int, target_index: int, target_
             continue
         if all(abs(float(candidate) - other) >= 0.045 for other in candidate_positions):
             candidate_positions.append(float(candidate))
-    rng.shuffle(candidate_positions)
+    left_candidates = [value for value in candidate_positions if value < float(target_aim_x)]
+    right_candidates = [value for value in candidate_positions if value > float(target_aim_x)]
+    rng.shuffle(left_candidates)
+    rng.shuffle(right_candidates)
 
-    aim_values: list[float] = []
-    for index in range(int(option_count)):
-        if int(index) == int(target_index):
-            aim_values.append(float(target_aim_x))
-            continue
-        if not candidate_positions:
-            raise ValueError("not enough distinct Bowling path aim positions")
-        aim_values.append(float(candidate_positions.pop()))
+    left_needed = int(target_index)
+    right_needed = int(option_count) - int(target_index) - 1
+    if len(left_candidates) < left_needed or len(right_candidates) < right_needed:
+        raise ValueError("not enough distinct Bowling path aim positions")
+
+    aim_values = (
+        sorted(float(value) for value in left_candidates[:left_needed])
+        + [float(target_aim_x)]
+        + sorted(float(value) for value in right_candidates[:right_needed])
+    )
     return tuple(
         BowlingPathOption(
             path_id=path_entity_id(index),
@@ -247,6 +252,18 @@ def make_path_options(*, rng: Any, option_count: int, target_index: int, target_
         )
         for index in range(int(option_count))
     )
+
+
+def path_target_aim_x_range(*, option_count: int, target_index: int) -> Tuple[float, float]:
+    """Return an aim-x range with enough room for left/right ranked options."""
+
+    left_needed = int(target_index)
+    right_needed = int(option_count) - int(target_index) - 1
+    min_x = float(0.34 + (0.058 * left_needed))
+    max_x = float(0.66 - (0.058 * right_needed))
+    if min_x > max_x:
+        raise ValueError("Bowling path rank cannot fit within lane option bounds")
+    return max(0.36, min_x), min(0.64, max_x)
 
 
 def sample_first_pin_hit_scene(
@@ -340,7 +357,11 @@ def sample_spare_path_scene(
     if target_index < 0 or target_index >= option_count:
         raise ValueError("target path index must be visible")
     group = tuple(int(value) for value in SPARE_GROUPS[int(rng.randrange(len(SPARE_GROUPS)))])
-    target_aim_x = float(rng.uniform(0.36, 0.64))
+    target_aim_min, target_aim_max = path_target_aim_x_range(
+        option_count=option_count,
+        target_index=target_index,
+    )
+    target_aim_x = float(rng.uniform(float(target_aim_min), float(target_aim_max)))
     positions = jitter_pin_positions(rng=rng)
     line_t_values = [0.79, 0.86]
     perpendicular_jitter = float(rng.uniform(-0.004, 0.004))
@@ -381,6 +402,7 @@ __all__ = [
     "first_intersected_pin_id",
     "make_path_options",
     "make_pins",
+    "path_target_aim_x_range",
     "sample_first_pin_hit_scene",
     "sample_spare_path_scene",
 ]

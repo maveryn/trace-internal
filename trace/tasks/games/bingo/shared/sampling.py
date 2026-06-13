@@ -12,7 +12,7 @@ from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
 from .rendering import SUPPORTED_BINGO_CELL_FILL_PATTERNS, SUPPORTED_BINGO_MARK_SHAPES
-from .state import SUPPORTED_BINGO_EXTREMA, SUPPORTED_BINGO_LINE_AXES, SUPPORTED_BINGO_SCENE_VARIANTS
+from .state import SUPPORTED_BINGO_LINE_AXES, SUPPORTED_BINGO_SCENE_VARIANTS
 from .defaults import SCENE_ID
 
 
@@ -144,20 +144,6 @@ def resolve_bingo_line_axis(instance_seed: int, *, params: Mapping[str, Any]) ->
     )
 
 
-def resolve_bingo_extremum(instance_seed: int, *, params: Mapping[str, Any]) -> tuple[str, Dict[str, float]]:
-    """Resolve min/max line-sum extremum direction."""
-
-    return _resolve_named_axis(
-        instance_seed=int(instance_seed),
-        params=params,
-        namespace="extremum",
-        explicit_key="extremum",
-        weights_key="extremum_weights",
-        balance_flag_key="balanced_extremum_sampling",
-        supported=SUPPORTED_BINGO_EXTREMA,
-    )
-
-
 def resolve_bingo_integer_target(
     instance_seed: int,
     *,
@@ -212,7 +198,6 @@ def resolve_bingo_float_param(
 __all__ = [
     "ResolvedBingoSceneAxes",
     "ResolvedBingoTarget",
-    "resolve_bingo_extremum",
     "resolve_bingo_float_param",
     "resolve_bingo_integer_target",
     "resolve_bingo_line_axis",

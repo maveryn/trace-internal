@@ -34,17 +34,16 @@ generation:
         O: 1.0
       balanced_target_column_label_sampling: true
       column_distractor_mark_prob: 0.2
-    task_games__bingo__line_sum_extremum_value:
+    task_games__bingo__completed_line_sum_value:
       line_axis_weights:
         row: 1.0
         column: 1.0
-      extremum_weights:
-        max: 1.0
-        min: 1.0
       balanced_line_axis_sampling: true
-      balanced_extremum_sampling: true
+      balanced_target_line_index_sampling: true
       line_sum_distractor_mark_prob: 0.2
-      line_sum_completed_line_count_support:
+      target_line_index_support:
+      - 0
+      - 1
       - 2
       - 3
       - 4
@@ -56,10 +55,9 @@ generation:
       - 2
       - 3
       - 4
-    task_games__bingo__called_number_mark_count:
+    task_games__bingo__called_number_match_count:
       balanced_called_number_count_sampling: true
-      axis_distractor_mark_prob: 0.2
-      called_marked_number_count_support:
+      called_number_match_count_support:
       - 0
       - 1
       - 2

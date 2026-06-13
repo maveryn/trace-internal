@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw
 from ....shared.text_rendering import load_font, resolve_text_stroke_fill, temporary_default_font_family
 from ...shared.text import draw_game_text_traced as draw_text_traced
 from ...shared.layout import apply_games_layout_jitter_to_bbox
+from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from ...shared.style import CardTheme, build_games_card_theme, suit_color
 from .state import CardInstance
 
@@ -484,6 +485,7 @@ def render_cards_hand_scene(
     style_variant: str,
     params: CardRenderParams,
     show_continuation_cue: bool,
+    panel_style: GamePanelSceneStyle | None = None,
     move_options: Sequence[CardMoveOption] = (),
     row_card_counts: Sequence[int] | None = None,
 ) -> RenderedCardHandScene:
@@ -536,6 +538,23 @@ def render_cards_hand_scene(
             for row_lefts in row_left_positions
         ]
         row_ys = [float(row_y + dy) for row_y in row_ys]
+
+        if panel_style is not None:
+            label_pad_px = max(38.0, float(params.group_label_font_size_px) * 3.2)
+            panel_pad_px = max(22.0, float(params.panel_margin_px) * 0.55)
+            panel_bbox = (
+                int(max(8.0, _group_bbox[0] - panel_pad_px - label_pad_px)),
+                int(max(8.0, _group_bbox[1] - panel_pad_px)),
+                int(min(float(params.canvas_width - 8), _group_bbox[2] + panel_pad_px)),
+                int(min(float(params.canvas_height - 8), _group_bbox[3] + panel_pad_px)),
+            )
+            draw_panel_scene_chrome(
+                draw,
+                bbox=panel_bbox,
+                style=panel_style,
+                radius=max(8, int(params.card_corner_radius_px) + 8),
+                border_width=2,
+            )
 
         order_index = 0
         for row_index, row_cards in enumerate(row_groups):
@@ -703,6 +722,7 @@ def render_cards_hand_scene(
         "layout_jitter": dict(layout_jitter),
         "font_family": str(params.font_family),
         "suit_symbol_font_family": "system_fallback",
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
         **dict(option_map),
     }
     return RenderedCardHandScene(

@@ -178,12 +178,12 @@ For cross-domain coverage rollups, use `docs/ACTIVE_TASK_INVENTORY.md` instead o
    - internal axis: `strip_axis=vertical|horizontal`
    - answer type: `integer`
    - annotation: scene-only `bbox_set` over matching icon instances
-3. `task_icons__mirror_grid__mirror_symmetry_count`
+3. `task_icons__mirror_grid__mirror_symmetry_match_label`
    - scene_id: `mirror_grid`
-   - scaffold: `Reference` cell + labeled `Scene` grid of icon-arrangement cells; grid labels are fixed row-major `A`..`F`
+   - scaffold: `Reference` cell + labeled option cells; option labels are fixed row-major `A`..`D` or `A`..`F`
    - query_id: `mirror_vertical|mirror_horizontal|mirror_diagonal_main|mirror_diagonal_anti|mirror_both_axes`
-   - answer type: `integer`
-   - annotation: `bbox_set` around matching Scene cells
+   - answer type: `option_letter`
+   - annotation: `keyed_bbox_map` with `reference_cell` and `matching_option_cell`
 4. `task_icons__icon_cutout__partial_match_label`
    - scene_id: `icon_cutout`
    - scaffold: left partial icon fragment plus six labeled full-icon options

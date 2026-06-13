@@ -17,7 +17,6 @@ BINGO_COLUMN_RANGES: Tuple[Tuple[int, int], ...] = (
 BINGO_BOARD_SIZE = 5
 SUPPORTED_BINGO_SCENE_VARIANTS: Tuple[str, ...] = ("single_card",)
 SUPPORTED_BINGO_LINE_AXES: Tuple[str, ...] = ("row", "column")
-SUPPORTED_BINGO_EXTREMA: Tuple[str, ...] = ("max", "min")
 
 
 @dataclass(frozen=True)
@@ -46,8 +45,6 @@ class BingoCardState:
     near_complete_gap_cell_ids: Tuple[str, ...] = ()
     called_numbers: Tuple[int, ...] = ()
     called_number_cell_ids: Tuple[str, ...] = ()
-    called_marked_cell_ids: Tuple[str, ...] = ()
-    line_sum_extremum: str | None = None
     line_sum_target_axis: str | None = None
     line_sum_target_line_index: int | None = None
     line_sum_target_cell_ids: Tuple[str, ...] = ()
@@ -65,7 +62,6 @@ __all__ = [
     "BINGO_BOARD_SIZE",
     "BINGO_COLUMN_LABELS",
     "BINGO_COLUMN_RANGES",
-    "SUPPORTED_BINGO_EXTREMA",
     "SUPPORTED_BINGO_LINE_AXES",
     "SUPPORTED_BINGO_SCENE_VARIANTS",
     "BingoCardState",

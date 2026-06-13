@@ -1,14 +1,13 @@
 # `task_icons__named_field__closer_to_reference_count`
 
-Status: pending taxonomy-v0 review refresh.
+Status: pending browser-review refresh.
 
 ## Identity
 - domain: `icons`
 - scene_id: `named_field`
-- scene_id: `counting`
-- task: `named_shape_closer_to_reference_count`
-- module: `trace/tasks/icons/counting/named_shape_closer_to_reference_count.py`
-- prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
+- task: `closer_to_reference_count`
+- module: `trace/tasks/icons/named_field/closer_to_reference_count.py`
+- prompt bundle: `prompts/icons/named_field/icons_named_field_v1.json`
 
 ## Scene And Query
 The task renders one panel labeled `Scene` containing two larger reference
@@ -17,11 +16,12 @@ identified in the prompt by icon name, and there are no unrelated distractor
 icon types in the scene.
 
 Supported query ids:
-- `closer_to_reference_a_count`
-- `closer_to_reference_b_count`
+- `closer_to_reference_count`
 
 The prompt asks how many target-shape icons are closer to one named reference
-icon than to the other named reference icon.
+icon than to the other named reference icon. The selected reference side is a
+sampled operand parameter recorded as `queried_reference_label`, not a public
+query-id split.
 
 ## Answer Contract
 - `answer_gt.type = integer`

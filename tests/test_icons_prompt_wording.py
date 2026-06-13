@@ -41,11 +41,15 @@ def _prompt_strings(value: Any) -> list[str]:
 
 def test_icons_prompt_defaults_avoid_generator_facing_scene_phrases() -> None:
     configs = [get_scene_defaults("icons", group) for group in ("counting", "relation", "pattern", "sequence")]
+    configs.append(get_scene_defaults("icons", "named_field"))
     configs.append(get_scene_defaults("icons", "paired_canvas"))
     configs.append(get_scene_defaults("icons", "pair_grid"))
     configs.append(get_scene_defaults("icons", "single_transform_options"))
+    configs.append(get_scene_defaults("icons", "mirror_grid"))
     for cfg in configs:
-        prompt_overrides = dict(cfg["prompt"]["task_overrides"])
+        prompt_overrides = dict(cfg["prompt"].get("task_overrides", {}))
+        if not prompt_overrides:
+            prompt_overrides = {"__shared__": dict(cfg["prompt"].get("shared", {}))}
         for task_id, values in prompt_overrides.items():
             prompt_strings = [
                 text
@@ -63,7 +67,8 @@ def test_icons_named_feedback_tasks_render_natural_prompt_text() -> None:
         (
             "task_icons__named_field__closer_to_reference_count",
             {
-                "query_id": "closer_to_reference_a_count",
+                "query_id": "closer_to_reference_count",
+                "queried_reference_label": "A",
                 "target_shape_id": "star",
                 "reference_a_shape_id": "circle",
                 "reference_b_shape_id": "square",
@@ -91,6 +96,10 @@ def test_icons_named_feedback_tasks_render_natural_prompt_text() -> None:
         (
             "task_icons__paired_canvas__original_attribute_label",
             {"query_id": "original_shape_label", "answer_label": "C", "distractor_count": 5},
+        ),
+        (
+            "task_icons__mirror_grid__mirror_symmetry_match_label",
+            {"query_id": "mirror_horizontal", "option_count": 6, "answer_label": "C"},
         ),
         (
             "task_icons__wallpaper_panels__reference_pattern_match_count",

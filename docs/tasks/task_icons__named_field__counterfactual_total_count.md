@@ -7,7 +7,7 @@ Status: pending taxonomy-v0 review refresh.
 - scene_id: `named_field`
 - scene_id: `counting`
 - task: `named_shape_counterfactual_count`
-- module: `trace/tasks/icons/counting/named_shape_counterfactual_count.py`
+- module: `trace/tasks/icons/named_field/counterfactual_attribute_count.py`
 - prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
 
 ## Scene And Query

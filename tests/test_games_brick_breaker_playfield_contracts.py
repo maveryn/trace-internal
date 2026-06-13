@@ -26,13 +26,13 @@ from tests.helpers import read_jsonl
         ),
         (
             GamesBrickBreakerPaddleCatchLabelTask,
-            {"query_id": "paddle_catch_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 8, "style_variant": "paper"},
+            {"query_id": "paddle_catch_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 6, "style_variant": "paper"},
             "paddle_catch_label",
             "string",
         ),
         (
             GamesBrickBreakerHitRowRemainingCountTask,
-            {"brick_rows": 5, "brick_cols": 6, "lane_count": 7, "style_variant": "classic"},
+            {"brick_rows": 5, "brick_cols": 6, "lane_count": 6, "style_variant": "classic"},
             "hit_row_remaining_count",
             "integer",
         ),
@@ -49,14 +49,14 @@ def test_games_brick_breaker_public_tasks_emit_expected_contract(
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == expected_answer_type
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) >= 1
     assert out.query_id == expected_query
     assert out.scene_id == "brick_breaker"
     assert trace["query_spec"]["query_id"] == expected_query
     assert trace["query_spec"]["params"]["query_id"] == expected_query
     assert execution["query_id"] == expected_query
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
     assert trace["render_spec"]["canvas_width"] <= 980
     assert trace["render_spec"]["canvas_height"] <= 740
@@ -64,15 +64,31 @@ def test_games_brick_breaker_public_tasks_emit_expected_contract(
     assert trace["render_spec"]["text_style"]["font_family"]
     assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
     assert float(trace["render_map"]["guide_color_safety"]["guide_anchor_lab_distance"]) >= 40.0
-    for x0, y0, x1, y1 in out.annotation_gt.value:
-        assert 0 <= float(x0) <= float(x1) <= float(trace["render_spec"]["canvas_width"])
-        assert 0 <= float(y0) <= float(y1) <= float(trace["render_spec"]["canvas_height"])
+    paddle_bbox = trace["render_map"]["paddle_bbox_px"]
+    lane_bboxes = trace["render_map"]["lane_bboxes_px"]
+    first_lane_bbox = lane_bboxes["lane_0"]
+    assert round(float(paddle_bbox[2] - paddle_bbox[0]), 3) == round(
+        float(first_lane_bbox[2] - first_lane_bbox[0]),
+        3,
+    )
+    assert float(paddle_bbox[3] - paddle_bbox[1]) <= 9.0
+    entity_bboxes = trace["render_map"]["entity_bboxes_px"]
+    for entity_id, point in zip(execution["annotation_entity_ids"], out.annotation_gt.value):
+        bbox = entity_bboxes[str(entity_id)]
+        expected_point = [
+            round(float(bbox[0] + bbox[2]) / 2.0, 3),
+            round(float(bbox[1] + bbox[3]) / 2.0, 3),
+        ]
+        assert list(point) == expected_point
+        x, y = point
+        assert 0 <= float(x) <= float(trace["render_spec"]["canvas_width"])
+        assert 0 <= float(y) <= float(trace["render_spec"]["canvas_height"])
 
 
 def test_games_brick_breaker_next_hit_label_matches_target_brick() -> None:
     out = GamesBrickBreakerNextHitLabelTask().generate(
         91010,
-        params={"query_id": "next_hit_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 7},
+        params={"query_id": "next_hit_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 6},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
@@ -99,7 +115,7 @@ def test_games_brick_breaker_next_hit_label_matches_target_brick() -> None:
 def test_games_brick_breaker_paddle_catch_label_matches_target_lane() -> None:
     out = GamesBrickBreakerPaddleCatchLabelTask().generate(
         91020,
-        params={"query_id": "paddle_catch_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 8},
+        params={"query_id": "paddle_catch_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 6},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
@@ -119,7 +135,7 @@ def test_games_brick_breaker_paddle_catch_label_matches_target_lane() -> None:
 def test_games_brick_breaker_hit_row_remaining_count_matches_row_survivors() -> None:
     out = GamesBrickBreakerHitRowRemainingCountTask().generate(
         91030,
-        params={"brick_rows": 5, "brick_cols": 6, "lane_count": 7},
+        params={"brick_rows": 5, "brick_cols": 6, "lane_count": 6},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]

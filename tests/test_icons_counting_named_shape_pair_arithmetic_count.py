@@ -6,7 +6,7 @@ from collections import Counter
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
-from trace.tasks.icons.counting.named_shape_pair_arithmetic_count import DIFFERENCE_QUERY_IDS, TOTAL_QUERY_IDS
+from trace.tasks.icons.named_field.count_arithmetic import DIFFERENCE_QUERY_IDS, TOTAL_QUERY_IDS
 
 
 TASK_ID = "task_icons__named_field__count_arithmetic"

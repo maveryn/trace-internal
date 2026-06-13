@@ -114,7 +114,6 @@ def render_nine_mens_morris_scene(
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image)
     theme = build_games_nine_mens_morris_theme(style_variant=str(style_variant))
-    title_font = load_font(int(params.title_font_size_px), bold=True, font_family=str(params.font_family))
 
     board_left = float((int(params.canvas_width) - int(params.board_width_px)) / 2)
     board_top = float((int(params.canvas_height) - int(params.board_height_px)) / 2)
@@ -159,23 +158,8 @@ def render_nine_mens_morris_scene(
         width=int(theme.board_border_width_px),
     )
 
-    title_text = "Nine Men's Morris"
-    title_bbox = draw.textbbox((0, 0), title_text, font=title_font, stroke_width=1)
-    title_width = float(title_bbox[2] - title_bbox[0])
-    title_height = float(title_bbox[3] - title_bbox[1])
-    title_x = float(board_left + ((int(params.board_width_px) - title_width) / 2.0))
-    title_y = float(board_top + ((int(params.title_band_height_px) - title_height) / 2.0))
-    draw_text_traced(draw,
-        (title_x, title_y),
-        title_text,
-        font=title_font,
-        fill=tuple(int(value) for value in theme.title_rgb),
-        stroke_width=1,
-        stroke_fill=resolve_text_stroke_fill(tuple(int(value) for value in theme.title_rgb)),
-     role="readout", required=False,)
-
     inner_left = float(board_left + int(params.board_padding_px))
-    inner_top = float(board_top + int(params.title_band_height_px) + int(params.board_padding_px))
+    inner_top = float(board_top + int(params.board_padding_px))
     inner_right = float(board_right - int(params.board_padding_px))
     inner_bottom = float(board_bottom - int(params.board_padding_px))
     board_size_px = float(min(inner_right - inner_left, inner_bottom - inner_top))

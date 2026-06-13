@@ -3,7 +3,7 @@
 ## 1) Identity
 1. Domain: `icons`
 2. Scene id: `icon_cutout`
-3. Scene: `relation`
+3. Scene: `icon_cutout`
 4. Task id: `task_icons__icon_cutout__partial_match_label`
 5. Objective: select the labeled full-icon option that generated the partial icon fragment.
 
@@ -20,7 +20,7 @@
 10. Noise policy: subtle per-icon edits may be sampled before compositing and are recorded per option. The correct full option uses the same edits as the source sprite.
 
 ## 3) Prompt contract
-1. `prompt_bundle_id`: `icons_relation_v0`
+1. `prompt_bundle_id`: `icons_icon_cutout_v1`
 2. `scene_key`: `icon_cutout_relation`
 3. `task_key`: `relation_query`
 4. Answer+annotation JSON shape: `{"annotation":{"source_fragment":[84,168,248,332],"selected_option":[492,112,662,282]},"answer":"C"}`
@@ -43,4 +43,5 @@
 ## 5) Complexity + tests
 1. Complexity definition/components: option count, visible-fragment fraction, fragment window style, and option-cell clutter.
 2. Behavior/trace/prompt tests: `tests/test_icons_relation_partial_match_label_tasks.py`
+3. Implementation: `trace/tasks/icons/icon_cutout/partial_match_label.py`
 3. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_scene_config.py`

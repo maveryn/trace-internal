@@ -17,9 +17,6 @@
     "scene:reference_grid_mirror_symmetry_relation": [
       "object_description"
     ],
-    "scene:icon_cutout_relation": [
-      "object_description"
-    ],
     "scene:reference_scene_anchor_relation": [
       "object_description"
     ],
@@ -72,13 +69,6 @@
       "The picture shows {object_description}."
     ],
     "reference_grid_mirror_symmetry_relation": [
-      "The image shows {object_description}.",
-      "The figure shows {object_description}.",
-      "This image shows {object_description}.",
-      "The scene shows {object_description}.",
-      "The picture shows {object_description}."
-    ],
-    "icon_cutout_relation": [
       "The image shows {object_description}.",
       "The figure shows {object_description}.",
       "This image shows {object_description}.",

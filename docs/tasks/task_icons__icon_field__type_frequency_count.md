@@ -3,9 +3,8 @@
 ## Identity
 - domain: `icons`
 - scene_id: `icon_field`
-- scene_id: `counting`
-- module: `trace/tasks/icons/counting/most_frequent_type.py`
-- prompt bundle: `icons_counting_v0`
+- module: `trace/tasks/icons/icon_field/type_frequency_count.py`
+- prompt bundle: `icons_icon_field_v1`
 
 ## Contract
 Renders one Scene panel with assorted icons and asks for an integer count based

@@ -3,8 +3,7 @@ from __future__ import annotations
 import json
 from collections import Counter
 from trace.core.seed import hash64
-from trace.tasks.icons.counting.most_frequent_type import IconsIconFieldTypeFrequencyCountTask
-from trace.tasks.icons.counting.singleton_type import IconsCountingSingletonTypeTask
+from trace.tasks.icons.icon_field.type_frequency_count import IconsIconFieldTypeFrequencyCountTask
 
 def _overlap_fraction_smaller(left: list[int], right: list[int]) -> float:
     ix0 = max(int(left[0]), int(right[0]))
@@ -25,7 +24,7 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 def test_icons_counting_singleton_type_contract_matches_scene() -> None:
-    task = IconsCountingSingletonTypeTask()
+    task = IconsIconFieldTypeFrequencyCountTask()
     out = task.generate(18310, params={'object_count': 9, 'target_count': 3, 'query_id': 'singleton_type_count'}, max_attempts=200)
     trace = out.trace_payload
     execution = trace['execution_trace']
@@ -75,7 +74,7 @@ def test_icons_counting_singleton_type_contract_matches_scene() -> None:
             assert _overlap_fraction_smaller(left['bbox_xyxy'], right['bbox_xyxy']) <= 0.1 + 1e-06
 
 def test_icons_counting_singleton_type_supports_zero_singletons() -> None:
-    task = IconsCountingSingletonTypeTask()
+    task = IconsIconFieldTypeFrequencyCountTask()
     out = task.generate(18311, params={'object_count': 8, 'target_count': 0, 'query_id': 'singleton_type_count'}, max_attempts=200)
     execution = out.trace_payload['execution_trace']
     assert int(out.answer_gt.value) == 0
@@ -83,7 +82,7 @@ def test_icons_counting_singleton_type_supports_zero_singletons() -> None:
     assert execution['singleton_indices'] == []
 
 def test_icons_counting_singleton_type_prompt_example_matches_contract() -> None:
-    task = IconsCountingSingletonTypeTask()
+    task = IconsIconFieldTypeFrequencyCountTask()
     out = task.generate(18312, params={'object_count': 9, 'target_count': 2, 'query_id': 'singleton_type_count'}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants['answer_only'])
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
@@ -94,7 +93,7 @@ def test_icons_counting_singleton_type_prompt_example_matches_contract() -> None
     assert answer_and_annotation['answer'] == 2
 
 def test_icons_counting_singleton_type_repeated_distractors_share_visual_style() -> None:
-    task = IconsCountingSingletonTypeTask()
+    task = IconsIconFieldTypeFrequencyCountTask()
     out = task.generate(18314, params={'object_count': 8, 'target_count': 2, 'query_id': 'singleton_type_count'}, max_attempts=200)
     trace = out.trace_payload
     execution = trace['execution_trace']

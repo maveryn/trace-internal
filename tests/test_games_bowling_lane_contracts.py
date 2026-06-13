@@ -135,8 +135,14 @@ def test_games_bowling_spare_path_label_matches_target_path() -> None:
     target_id = str(execution["target_path_id"])
     target_path = next(path for path in execution["path_options"] if str(path["path_id"]) == target_id)
     standing_pin_ids = {str(pin["pin_id"]) for pin in execution["pins"] if bool(pin["standing"])}
+    paths_by_x = sorted(execution["path_options"], key=lambda path: float(path["aim_x_norm"]))
+    path_labels_by_x = [str(path["label"]) for path in paths_by_x]
+    target_rank = int(execution["target_path_index"])
 
     assert str(out.answer_gt.value) == str(target_path["label"]) == str(execution["target_path_label"])
+    assert path_labels_by_x == [str(index + 1) for index in range(len(paths_by_x))]
+    assert str(out.answer_gt.value) == str(target_rank + 1)
+    assert str(paths_by_x[target_rank]["path_id"]) == target_id
     assert list(execution["annotation_entity_ids"]) == [target_id]
     assert set(execution["remaining_pin_ids"]) == standing_pin_ids
     assert len(standing_pin_ids) >= 1

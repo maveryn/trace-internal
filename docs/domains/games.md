@@ -38,6 +38,11 @@ For cross-domain coverage rollups, use `docs/ACTIVE_TASK_INVENTORY.md` instead o
 11. Required game readouts, board labels, option labels, card ranks, and readable game symbols must route through `trace/tasks/games/shared/text.py`. Scene themes may provide preferred text colors, but the helper resolves final nonsemantic ink/stroke against the actual surface and records required text-legibility metadata in the trace.
 12. Required game markers, including marked cells, selected moves, highlighted groups, routes, rings, and semantic option cues, must route through `trace/tasks/games/shared/marking.py` or an equivalent wrapper over `trace/tasks/shared/marker_legibility.py`. Resolve marker colors against the actual board/cell/object surface, draw a halo/accent marker, and record marker-legibility metadata; do not use fixed outline RGBs on variable game surfaces.
 
+## 2.3 In-image text policy
+1. Do not draw generic scene titles that only name the game or artifact, such as `DARTBOARD`, `Dots and Boxes`, `Solitaire tableau`, or `Sokoban grid`; the prompt can provide that context.
+2. Keep image text when it is part of the board grammar, answer interface, or local rule/readout needed to parse the visible state. Examples include `BINGO`, called-number headers, row/column coordinates, card ranks/suits, dice values, `Original`, option labels, movement direction strips, roll panels, and fleet-shape legends.
+3. If a scene needs a concise legend or status strip, it should describe the local visible rule or state, not restate the scene name.
+
 ## 3) Active scenes and tasks
 Review artifacts for these tasks use `review/task-reviews/games/<scene_id>/<task_id>/`.
 
@@ -68,12 +73,12 @@ Review artifacts for these tasks use `review/task-reviews/games/<scene_id>/<task
 - Visual grammar: 5 x 5 bingo card.
 - Visual styles use the shared game panel treatment/palette layer for canvas and card chrome, while Bingo card palettes, mark shapes, and cell-fill patterns remain scene-local for number and mark readability.
 - Card size, cell size, marker geometry, labels, and canvas dimensions vary together; cell annotation is projected from the final jittered card geometry.
-- The title, column headers, and cell numbers sample one deterministic font family from the readout font pool.
-- Reasoning coverage: completed-column identification, near-complete-line counting, called-number mark counting, and summing printed numbers across completed lines.
+- The `BINGO` wordmark, column headers, and cell numbers sample one deterministic font family from the readout font pool.
+- Reasoning coverage: completed-column identification, near-complete-line counting, called-number matching, and summing printed numbers in one completed row or column.
 - Active default tasks:
-  - `task_games__bingo__called_number_mark_count`
+  - `task_games__bingo__called_number_match_count`
   - `task_games__bingo__completed_column_label`
-  - `task_games__bingo__line_sum_extremum_value`
+  - `task_games__bingo__completed_line_sum_value`
   - `task_games__bingo__near_complete_line_count`
 
 ### `bowling`
@@ -93,6 +98,7 @@ Review artifacts for these tasks use `review/task-reviews/games/<scene_id>/<task
 - Visual styles use the shared game panel treatment/palette layer for canvas and playfield chrome, while classic, neon, paper, blueprint, and arcade playfield palettes stay scene-local.
 - Brick and lane labels sample one deterministic font family from the readout font pool; the dashed trajectory cue is resolved against panel, playfield, lane, and paddle colors using the shared Lab-distance contrast guard.
 - The canvas follows the resolved playfield size so small unit-size samples do not float in an oversized fixed frame.
+- Annotation uses homogeneous `point_set` witnesses at selected brick or catch-lane pad centers.
 - Reasoning coverage: trajectory-target labeling by extrapolating straight ball motion, plus same-row counting after the hit brick is removed.
 - Active default tasks:
   - `task_games__brick_breaker__hit_row_remaining_count`
@@ -238,7 +244,7 @@ Review artifacts for these tasks use `review/task-reviews/games/<scene_id>/<task
 ### `dots_and_boxes`
 - Visual grammar: dots-and-boxes board state.
 - Visual styles include six board themes (`classic`, `soft`, `outlined`, `notebook`, `slate`, `wood_panel`) layered over shared games/puzzles panel-scene treatments.
-- Rendering uses deterministic font-family sampling for the board title, unit-size jitter, dynamic canvas sizing for smaller sampled boards, and fractional layout jitter before annotation projection.
+- Rendering uses deterministic font-family sampling for board labels, unit-size jitter, dynamic canvas sizing for smaller sampled boards, and fractional layout jitter before annotation projection.
 - Reasoning coverage: three-sided box count, capture move count, and claimed-box ownership count; the capture task includes both all-missing-edge and highlighted-candidate query ids.
 - Annotation uses homogeneous witnesses: full-cell `bbox_set` boxes for three-sided-box and owned-box queries, and `point_pair_set` edge endpoints for capture-move queries.
 - Active default tasks:
@@ -417,7 +423,7 @@ Review artifacts for these tasks use `review/task-reviews/games/<scene_id>/<task
 ### `nine_mens_morris`
 - Visual grammar: Nine Men's Morris board.
 - Visual styles use the shared game panel treatment/palette layer for canvas and surrounding chrome, while classic, soft, outlined, wood-panel, slate, and parchment Morris boards stay scene-local for line/piece readability.
-- Rendering samples the role-aware font family for the board title, uses unit-size jitter with a canvas that follows the resolved board size, and applies layout jitter before annotation projection.
+- Rendering samples the role-aware font family for board labels, uses unit-size jitter with a canvas that follows the resolved board size, and applies layout jitter before annotation projection.
 - Reasoning coverage: all-piece mill membership counts and empty completion-point counts.
 - Annotation uses homogeneous `point_set` witnesses at counted piece centers or empty board-point centers.
 - Active default tasks:

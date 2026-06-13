@@ -50,6 +50,61 @@ def empty_coords(board: Sequence[Sequence[str | None]]) -> tuple[Coord, ...]:
     )
 
 
+def outside_reachable_empty_coords(board: Sequence[Sequence[str | None]]) -> tuple[Coord, ...]:
+    """Return empty slots connected to the open shooter-side exterior."""
+
+    rows = len(board)
+    cols = len(board[0]) if rows else 0
+    if rows <= 0 or cols <= 0:
+        return tuple()
+    empty = set(empty_coords(board))
+    starts = [
+        coord
+        for coord in empty
+        if int(coord[0]) == rows - 1 or int(coord[1]) in (0, cols - 1)
+    ]
+    stack = list(starts)
+    seen: set[Coord] = set()
+    while stack:
+        coord = stack.pop()
+        if coord in seen or coord not in empty:
+            continue
+        seen.add(coord)
+        for neighbor in bubble_neighbors(coord, rows=rows, cols=cols):
+            if neighbor not in seen and neighbor in empty:
+                stack.append(neighbor)
+    return sorted_coords(seen)
+
+
+def is_playable_landing_coord(board: Sequence[Sequence[str | None]], landing_coord: Coord) -> bool:
+    """Return whether a shot can plausibly land at an exposed empty slot."""
+
+    rows = len(board)
+    cols = len(board[0]) if rows else 0
+    row, col = int(landing_coord[0]), int(landing_coord[1])
+    if not (0 <= row < rows and 0 <= col < cols):
+        return False
+    if board_value(board, (row, col)) is not None:
+        return False
+    reachable_empty = set(outside_reachable_empty_coords(board))
+    if (row, col) not in reachable_empty:
+        return False
+    return any(
+        board_value(board, neighbor) is not None
+        for neighbor in bubble_neighbors((row, col), rows=rows, cols=cols)
+    )
+
+
+def playable_landing_coords(board: Sequence[Sequence[str | None]]) -> tuple[Coord, ...]:
+    """Return exposed empty slots where a shot can attach to the bubble cluster."""
+
+    return tuple(
+        coord
+        for coord in outside_reachable_empty_coords(board)
+        if is_playable_landing_coord(board, coord)
+    )
+
+
 def sorted_coords(coords: Iterable[Coord]) -> tuple[Coord, ...]:
     """Return canonical sorted coordinates."""
 
@@ -211,6 +266,8 @@ def validate_bubble_shooter_state(state: BubbleShooterState) -> None:
         raise ValueError("bubble shooter board dimensions do not match row_count/col_count")
     if board_value(state.board, state.landing_coord) is not None:
         raise ValueError("bubble shooter landing slot must be empty")
+    if not is_playable_landing_coord(state.board, state.landing_coord):
+        raise ValueError("bubble shooter landing slot must be exposed to the shooter side")
 
     outcome = compute_shot_outcome(
         state.board,
@@ -248,7 +305,10 @@ __all__ = [
     "compute_shot_outcome",
     "connected_component",
     "empty_coords",
+    "is_playable_landing_coord",
     "occupied_coords",
+    "outside_reachable_empty_coords",
+    "playable_landing_coords",
     "same_color_component_from_landing",
     "sorted_coords",
     "top_connected_occupied",

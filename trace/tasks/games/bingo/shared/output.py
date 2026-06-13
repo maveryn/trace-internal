@@ -69,7 +69,6 @@ def build_bingo_trace_payload(
                 "mark_shape": str(rendered_context.render_params.mark_shape),
                 "cell_fill_pattern": str(rendered_context.render_params.cell_fill_pattern),
                 "target_answer": answer_value,
-                "line_sum_extremum": card_state.line_sum_extremum,
                 "line_sum_target_axis": card_state.line_sum_target_axis,
                 "line_sum_target_line_index": card_state.line_sum_target_line_index,
                 "line_sum_target_cell_ids": list(card_state.line_sum_target_cell_ids),
@@ -79,7 +78,6 @@ def build_bingo_trace_payload(
                 "near_complete_gap_cell_ids": list(card_state.near_complete_gap_cell_ids),
                 "called_numbers": [int(value) for value in card_state.called_numbers],
                 "called_number_cell_ids": [str(value) for value in card_state.called_number_cell_ids],
-                "called_marked_cell_ids": [str(value) for value in card_state.called_marked_cell_ids],
                 "completed_line_sums": completed_line_sums,
                 "annotation_entity_ids": [str(cell_id) for cell_id in annotation_cell_ids],
                 "annotation_entity_id_pairs": [
@@ -114,7 +112,6 @@ def build_bingo_trace_payload(
             "mark_grid": [[bool(value) for value in row] for row in card_state.mark_grid],
             "completed_row_indices": [int(value) for value in card_state.completed_row_indices],
             "completed_column_indices": [int(value) for value in card_state.completed_column_indices],
-            "line_sum_extremum": card_state.line_sum_extremum,
             "line_sum_target_axis": card_state.line_sum_target_axis,
             "line_sum_target_line_index": card_state.line_sum_target_line_index,
             "line_sum_target_cell_ids": list(card_state.line_sum_target_cell_ids),
@@ -124,7 +121,6 @@ def build_bingo_trace_payload(
             "near_complete_gap_cell_ids": [str(value) for value in card_state.near_complete_gap_cell_ids],
             "called_numbers": [int(value) for value in card_state.called_numbers],
             "called_number_cell_ids": [str(value) for value in card_state.called_number_cell_ids],
-            "called_marked_cell_ids": [str(value) for value in card_state.called_marked_cell_ids],
             "completed_line_sums": completed_line_sums,
             "cell_specs": [
                 {

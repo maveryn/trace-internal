@@ -7,7 +7,7 @@ from typing import Any, Dict, Mapping, Tuple
 
 from trace.tasks.games.shared.style import SUPPORTED_CHECKERS_STYLE_VARIANTS as _SUPPORTED_CHECKERS_STYLE_VARIANTS
 
-from .mechanics import Board, CheckersCaptureChain, CheckersMove, Coord
+from .rules import Board, CheckersCaptureChain, CheckersMove, Coord
 
 
 SCENE_ID = "checkers"

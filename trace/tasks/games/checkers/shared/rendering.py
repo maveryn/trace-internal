@@ -13,7 +13,7 @@ from trace.tasks.shared.font_assets import get_font_family_record, sample_font_f
 from ....shared.marker_legibility import draw_semantic_bbox_marker, resolve_semantic_marker_style
 from ....shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.text import draw_game_text_traced as draw_text_traced
-from .mechanics import BLACK, BOARD_SIZE, RED, Coord, coord_to_cell_id, piece_to_entity_id, player_name
+from .rules import BLACK, BOARD_SIZE, RED, Coord, coord_to_cell_id, piece_to_entity_id, player_name
 from ...shared.layout import (
     apply_games_layout_jitter_to_bbox,
     attach_games_unit_size_jitter,

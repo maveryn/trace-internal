@@ -9,7 +9,7 @@ from trace.tasks.shared.config_defaults import group_default, load_scene_generat
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
-from .mechanics import (
+from .rules import (
     BLACK,
     BOARD_SIZE,
     RED,

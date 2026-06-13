@@ -15,7 +15,7 @@ import re
 MIGRATED_SCENE_PACKAGE_DOMAINS: frozenset[str] = frozenset()
 MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
     "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density"}),
-    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards"}),
+    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers"}),
     "geometry": frozenset(
         {
             "angle_relations",
@@ -30,7 +30,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
     "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density"}),
-    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards"}),
+    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers"}),
     "geometry": frozenset(
         {
             "angle_relations",

@@ -14,7 +14,7 @@ from trace.tasks.games.checkers.max_capture_chain_length import GamesCheckersMax
 from trace.tasks.games.checkers.move_count import GamesCheckersMoveCountPublicTask
 from trace.tasks.games.checkers.piece_mobility_count import GamesCheckersPieceMobilityCountTask
 from trace.tasks.games.checkers.piece_state_count import GamesCheckersPieceStateCountTask
-from trace.tasks.games.checkers.shared.common import BLACK, BOARD_SIZE, RED, piece_to_entity_id, playable_coords
+from trace.tasks.games.checkers.shared.rules import BLACK, BOARD_SIZE, RED, piece_to_entity_id, playable_coords
 from tests.helpers import read_jsonl
 
 

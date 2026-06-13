@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from .mechanics import BOARD_SIZE, coord_to_cell_id, player_name
+from .rules import BOARD_SIZE, coord_to_cell_id, player_name
 from .rendering import RenderedCheckersTaskContext
 from .state import ResolvedCheckersSceneAxes, SampledCheckersScene
 
@@ -100,16 +100,11 @@ def build_checkers_common_trace_payload(
             "board_rows": board_rows,
             "construction_mode": str(sample.construction_mode),
             "occupied_count": int(sample.occupied_count),
-            "legal_move_count": int(len(sample.evaluation.legal_moves)),
-            "capture_move_count": int(len(sample.evaluation.capture_moves)),
             "legal_move_specs": legal_move_specs(sample),
             "marked_coord": None
             if sample.evaluation.marked_coord is None
             else [int(sample.evaluation.marked_coord[0]), int(sample.evaluation.marked_coord[1])],
             "marked_piece_kind": "king" if sample.evaluation.marked_coord is not None else None,
-            "max_capture_chain_length": None
-            if sample.evaluation.selected_capture_chain is None
-            else int(len(sample.evaluation.selected_capture_chain.captured)),
             "max_capture_chain_specs": [
                 {
                     "origin": [int(chain.origin[0]), int(chain.origin[1])],

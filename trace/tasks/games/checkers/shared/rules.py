@@ -1,4 +1,4 @@
-"""Identity-free Checkers board mechanics and entity-id helpers."""
+"""Identity-free Checkers board rules and entity-id helpers."""
 
 from __future__ import annotations
 

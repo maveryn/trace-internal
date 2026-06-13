@@ -7,6 +7,13 @@ from typing import Any, Mapping
 from .state import ChessVariantEvaluation
 
 
+def _bbox_center(bbox: list[float]) -> list[float]:
+    return [
+        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
+        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
+    ]
+
+
 def annotation_from_evaluation(
     *,
     evaluation: ChessVariantEvaluation,
@@ -14,25 +21,16 @@ def annotation_from_evaluation(
 ) -> tuple[str, list[list[float]], dict[str, Any]]:
     """Project semantic annotation ids to the public annotation payload."""
 
-    if evaluation.annotation_kind == "piece_point":
-        points: list[list[float]] = []
-        for entity_id in evaluation.annotation_entity_ids:
-            bbox = render_map["piece_bboxes_px"][str(entity_id)]
-            points.append([
-                round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
-                round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
-            ])
-        return "point_set", points, {
-            "type": "point_set",
-            "point_set": [list(point) for point in points],
-            "pixel_point_set": [list(point) for point in points],
-        }
-
     if evaluation.annotation_kind == "cell":
-        bboxes = [list(render_map["cell_bboxes_px"][entity_id]) for entity_id in evaluation.annotation_entity_ids]
+        bbox_map = render_map["cell_bboxes_px"]
     else:
-        bboxes = [list(render_map["piece_bboxes_px"][entity_id]) for entity_id in evaluation.annotation_entity_ids]
-    return "bbox_set", [list(bbox) for bbox in bboxes], {"bbox_set": [list(bbox) for bbox in bboxes]}
+        bbox_map = render_map["piece_bboxes_px"]
+    points = [_bbox_center(list(bbox_map[str(entity_id)])) for entity_id in evaluation.annotation_entity_ids]
+    return "point_set", points, {
+        "type": "point_set",
+        "point_set": [list(point) for point in points],
+        "pixel_point_set": [list(point) for point in points],
+    }
 
 
 __all__ = ["annotation_from_evaluation"]

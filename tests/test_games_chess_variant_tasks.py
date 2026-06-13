@@ -5,7 +5,7 @@ from __future__ import annotations
 import trace.tasks  # noqa: F401
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.games.chess_variant.marked_piece_destination_count import GamesChessVariantMarkedPieceDestinationCountTask
-from trace.tasks.games.chess_variant.shared.mechanics import (
+from trace.tasks.games.chess_variant.shared.rules import (
     evaluate_marked_piece_board,
     evaluate_target_square_reachers,
     with_destination_annotation,
@@ -48,6 +48,23 @@ def _assert_point_annotation_matches_piece_ids(trace: dict, annotation: list[lis
     assert trace["projected_annotation"]["pixel_point_set"] == annotation
 
 
+def _assert_point_annotation_matches_entity_ids(trace: dict, annotation: list[list[float]]) -> None:
+    """Verify point annotations use cell centers for cells and piece centers for pieces."""
+
+    execution = trace["execution_trace"]
+    expected: list[list[float]] = []
+    for entity_id in execution["annotation_entity_ids"]:
+        entity_id = str(entity_id)
+        if entity_id.startswith("cell_"):
+            expected.append(_bbox_center(trace["render_map"]["cell_bboxes_px"][entity_id]))
+        else:
+            expected.append(_bbox_center(trace["render_map"]["piece_bboxes_px"][entity_id]))
+    assert annotation == expected
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == annotation
+    assert trace["projected_annotation"]["pixel_point_set"] == annotation
+
+
 def test_games_chess_variant_move_count_contract_and_rule_match() -> None:
     out = GamesChessVariantMarkedPieceDestinationCountTask().generate(
         26052401,
@@ -76,13 +93,19 @@ def test_games_chess_variant_move_count_contract_and_rule_match() -> None:
     assert out.scene_id == "chess_variant"
     assert out.query_id == "marked_piece_move_count"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == int(evaluated.answer) == 4
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
+    assert execution["annotation_kind"] == "cell"
+    assert set(execution["annotation_entity_ids"]) == set(evaluated.annotation_entity_ids)
+    _assert_point_annotation_matches_entity_ids(trace, out.annotation_gt.value)
     assert trace["query_spec"]["query_id"] == "marked_piece_move_count"
     assert trace["query_spec"]["params"]["query_id"] == "marked_piece_move_count"
     assert "panel_scene_style" in trace["render_spec"]
     assert "text_style" in trace["render_spec"]
+    assert "bounding" not in out.prompt.lower()
+    assert "bbox" not in out.prompt.lower()
+    assert "[x0" not in out.prompt.lower()
 
 
 def test_games_chess_variant_capture_count_contract_and_rule_match() -> None:
@@ -91,7 +114,8 @@ def test_games_chess_variant_capture_count_contract_and_rule_match() -> None:
         params={"query_id": "marked_piece_capture_count", "rule_family": "leaper_2_1", "target_answer": 3},
         max_attempts=128,
     )
-    execution = out.trace_payload["execution_trace"]
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
     board = _board_from_execution(execution)
     marked = tuple(int(v) for v in execution["marked_coord"])
     evaluated = with_destination_annotation(
@@ -106,9 +130,15 @@ def test_games_chess_variant_capture_count_contract_and_rule_match() -> None:
 
     assert out.scene_id == "chess_variant"
     assert out.query_id == "marked_piece_capture_count"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == int(evaluated.answer) == 3
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
     assert execution["annotation_kind"] == "cell"
+    assert set(execution["annotation_entity_ids"]) == set(evaluated.annotation_entity_ids)
+    _assert_point_annotation_matches_entity_ids(trace, out.annotation_gt.value)
+    assert "bounding" not in out.prompt.lower()
+    assert "bbox" not in out.prompt.lower()
+    assert "[x0" not in out.prompt.lower()
 
 
 def test_games_chess_variant_white_target_square_reacher_count_contract_and_rule_match() -> None:
@@ -147,6 +177,9 @@ def test_games_chess_variant_white_target_square_reacher_count_contract_and_rule
     assert set(execution["annotation_entity_ids"]) == set(evaluated.annotation_entity_ids)
     assert set(tuple(coord) for coord in execution["annotation_coords"]) == set(evaluated.annotation_coords)
     _assert_point_annotation_matches_piece_ids(trace, out.annotation_gt.value)
+    assert "bounding" not in out.prompt.lower()
+    assert "bbox" not in out.prompt.lower()
+    assert "[x0" not in out.prompt.lower()
 
 
 def test_games_chess_variant_black_target_square_reacher_count_contract_and_rule_match() -> None:
@@ -176,6 +209,9 @@ def test_games_chess_variant_black_target_square_reacher_count_contract_and_rule
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
     assert execution["target_color"] == "black"
     assert set(execution["annotation_entity_ids"]) == set(evaluated.annotation_entity_ids)
+    assert "bounding" not in out.prompt.lower()
+    assert "bbox" not in out.prompt.lower()
+    assert "[x0" not in out.prompt.lower()
 
 
 def test_games_chess_variant_target_square_zero_count_uses_empty_point_set() -> None:
@@ -214,8 +250,13 @@ def test_games_chess_variant_prompt_is_marker_color_neutral() -> None:
     assert "token" not in str(prompt["marked_piece_rule_text"]).lower()
     assert "blue" not in str(prompt["marked_piece_rule_text"]).lower()
     assert "blue outlined square" in str(prompt["target_square_rule_text"]).lower()
-    assert "pixel-space points" in str(prompt["annotation_hint_white_piece_reaches_target_count"])
-    assert "pixel-space points" in str(prompt["annotation_hint_black_piece_reaches_target_count"])
+    annotation_hints = {key: str(value) for key, value in prompt.items() if str(key).startswith("annotation_hint_")}
+    assert annotation_hints
+    for hint in annotation_hints.values():
+        assert "pixel-space points" in hint
+        assert "bounding" not in hint.lower()
+        assert "bbox" not in hint.lower()
+        assert "[x0" not in hint.lower()
 
 
 def test_games_chess_variant_boards_are_material_plausible() -> None:

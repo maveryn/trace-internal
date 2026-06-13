@@ -88,9 +88,12 @@ def json_examples(*, point_annotation: bool, answer_value: int) -> tuple[str, st
     """Return valid output-format examples for one annotation contract."""
 
     if bool(point_annotation):
-        annotation_value = [[180, 245], [310, 375], [440, 505]][: max(0, int(answer_value))]
+        annotation_value = [[180 + (70 * index), 245 + (55 * index)] for index in range(max(0, int(answer_value)))]
     else:
-        annotation_value = [[140, 220, 210, 290], [210, 220, 280, 290]][: max(0, min(2, int(answer_value)))]
+        annotation_value = [
+            [140 + (70 * index), 220, 210 + (70 * index), 290]
+            for index in range(max(0, int(answer_value)))
+        ]
     return (
         json.dumps({"annotation": annotation_value, "answer": int(answer_value)}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": int(answer_value)}, separators=(",", ":"), ensure_ascii=False),

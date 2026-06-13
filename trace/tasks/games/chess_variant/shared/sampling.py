@@ -31,7 +31,7 @@ from .defaults import (
     SUPPORTED_SCENE_VARIANTS,
     SUPPORTED_STYLE_VARIANTS,
 )
-from .mechanics import (
+from .rules import (
     all_empty_board_destinations,
     directions_for_rule,
     evaluate_by_semantic_query,
@@ -360,6 +360,8 @@ def _construct_move_board(*, rng, axes: ChessVariantSceneAxes, target_answer: in
 
 
 def _construct_capture_board(*, rng, axes: ChessVariantSceneAxes, target_answer: int) -> tuple[Board, Coord]:
+    """Build a minimal board with exactly the requested capture destinations."""
+
     marked_color = WHITE if int(rng.randrange(2)) == 0 else BLACK
     marked = _random_marked_coord(
         rng,
@@ -476,6 +478,8 @@ def _add_fillers_preserving(
     target_answer: int,
     desired_count: int,
 ) -> Board:
+    """Add visual clutter while preserving the marked-piece destination answer."""
+
     mutable = [list(row) for row in board]
     attempts = 0
     while occupied_piece_count(mutable) < int(desired_count) and attempts < 640:
@@ -519,6 +523,8 @@ def _add_fillers_preserving_reachers(
     target_answer: int,
     desired_count: int,
 ) -> Board:
+    """Add visual clutter while preserving the target-square reacher answer."""
+
     mutable = [list(row) for row in board]
     attempts = 0
     while occupied_piece_count(mutable) < int(desired_count) and attempts < 960:
@@ -565,7 +571,7 @@ def sample_marked_destination_scene(
     destination_mode: str,
     target_answer: int,
 ) -> ChessVariantSample:
-    """Sample a marked-piece destination-count board."""
+    """Sample a marked-piece board, then validate the exact destination-count answer."""
 
     for _ in range(240):
         try:
@@ -628,7 +634,7 @@ def sample_target_reacher_scene(
     target_color: str,
     target_answer: int,
 ) -> ChessVariantSample:
-    """Sample a target-square reacher-count board."""
+    """Sample a target-square board, then validate the exact reacher-count answer."""
 
     for _ in range(240):
         try:

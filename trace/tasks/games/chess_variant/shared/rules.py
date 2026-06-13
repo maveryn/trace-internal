@@ -1,4 +1,4 @@
-"""Pure movement-rule mechanics for chess-variant games tasks."""
+"""Pure movement rules for chess-variant games tasks."""
 
 from __future__ import annotations
 

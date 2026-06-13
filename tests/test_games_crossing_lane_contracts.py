@@ -11,7 +11,7 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.games.crossing.moving_object_count import GamesCrossingMovingObjectCountTask
 from trace.tasks.games.crossing.moving_object_direction_count import GamesCrossingMovingObjectDirectionCountTask
-from trace.tasks.games.crossing.shared.mechanics import route_collision_vehicle_ids
+from trace.tasks.games.crossing.shared.rules import route_collision_vehicle_ids
 from trace.tasks.games.crossing.shared.state import (
     CrossingRouteOption,
     CrossingVehicle,

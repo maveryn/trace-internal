@@ -131,7 +131,7 @@ def resolve_crossing_render_params(params: Mapping[str, Any], *, instance_seed: 
 
 
 def build_games_crossing_theme(*, style_variant: str) -> CrossingTheme:
-    """Return one lane-crossing visual theme."""
+    """Resolve lane-crossing colors while keeping route and vehicle contrast stable."""
 
     style = str(style_variant)
     if style == "night":
@@ -299,7 +299,7 @@ def render_crossing_scene(
     params: CrossingRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedCrossingScene:
-    """Render one lane-crossing playfield."""
+    """Render the full playfield and record every task-addressable entity geometry."""
 
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")

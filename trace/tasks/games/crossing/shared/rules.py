@@ -62,7 +62,7 @@ def route_first_collision_tick(
 
 
 def validate_crossing_sample(sample: CrossingSample) -> None:
-    """Validate the generated answer/annotation contract."""
+    """Validate scene geometry, symbolic entities, answer counts, and annotation ids."""
 
     lane_count = int(sample.lane_count)
     row_count = int(sample.row_count)

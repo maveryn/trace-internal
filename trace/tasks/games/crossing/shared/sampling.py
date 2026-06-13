@@ -16,7 +16,7 @@ from .defaults import (
     SUPPORTED_CROSSING_SCENE_VARIANTS,
     SUPPORTED_CROSSING_STYLE_VARIANTS,
 )
-from .mechanics import route_collision_vehicle_ids, route_first_collision_tick, validate_crossing_sample, vehicle_col_at_tick
+from .rules import route_collision_vehicle_ids, route_first_collision_tick, validate_crossing_sample, vehicle_col_at_tick
 from .state import CrossingRouteOption, CrossingSample, CrossingSceneAxes, CrossingVehicle, route_entity_id, vehicle_entity_id
 
 
@@ -200,6 +200,8 @@ def _random_route_path(
     row_count: int,
     required_cols_by_row: Mapping[int, Sequence[int]] | None = None,
 ) -> tuple[int, ...] | None:
+    """Sample a valid upward route while satisfying per-row column constraints."""
+
     constraints: dict[int, set[int]] = {}
     if isinstance(required_cols_by_row, Mapping):
         for raw_row, raw_cols in required_cols_by_row.items():
@@ -310,6 +312,8 @@ def _sample_route_intersection_count(
     target_answer: int,
     max_extra_per_row: int,
 ) -> CrossingSample | None:
+    """Construct a marked route with exactly the requested collision count."""
+
     lane_count = int(axes.lane_count)
     target_count = int(target_answer)
     row_count = max(int(axes.row_count), int(target_count))
@@ -381,6 +385,8 @@ def _sample_direction_count(
     target_answer: int,
     direction: int,
 ) -> CrossingSample | None:
+    """Construct a scene with exactly the requested number of same-direction vehicles."""
+
     target_direction = int(direction)
     lane_count = int(axes.lane_count)
     row_count = int(axes.row_count)

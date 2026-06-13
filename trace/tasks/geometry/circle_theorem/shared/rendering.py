@@ -8,38 +8,30 @@ from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ......core.visual.background import make_background_canvas
-from ......core.visual.noise import apply_post_image_noise
-from .....shared.config_defaults import group_default
-from .....shared.text_rendering import (
+from .....core.visual.background import make_background_canvas
+from .....core.visual.noise import apply_post_image_noise
+from ....shared.config_defaults import group_default
+from ....shared.text_rendering import (
     draw_text_centered,
     load_font,
     resolve_text_label_center,
 )
-from ....shared.render_variation import sample_int_render_param
-from ....shared.scene_transform import LazySceneTransform
-from ....shared.shape_style import (
+from ...shared.render_variation import sample_int_render_param
+from ...shared.scene_transform import LazySceneTransform
+from ...shared.shape_style import (
     extract_background_anchor_colors,
     sample_geometry_shape_style,
 )
 
-from .theorem_common import (
+from .state import (
     Point,
     BBox,
-    _RENDER_DEFAULTS,
-    _BACKGROUND_DEFAULTS,
-    _POST_IMAGE_NOISE_DEFAULTS,
-    _RenderedScene,
-    _DEFAULTS,
+    BACKGROUND_DEFAULTS,
+    DEFAULTS,
+    POST_IMAGE_NOISE_DEFAULTS,
+    RenderedCircleTheoremScene,
     _text_bbox_for_center,
     _bbox_to_list,
-    _circle_from_three_points,
-    _sample_point_label_map,
-    _visible_segment,
-    _visible_angle,
-    _visible_arc,
-    _line_intersection,
-    _angle_degrees_at,
 )
 
 
@@ -151,7 +143,9 @@ def _draw_measurement_label(
     occupied_boxes: List[BBox],
     canvas_size: int,
 ) -> BBox:
+    """Place one measurement label while avoiding existing geometry and label boxes."""
     anchor = (
+
         float(0.5 * (float(p0[0]) + float(p1[0]))),
         float(0.5 * (float(p0[1]) + float(p1[1]))),
     )
@@ -214,7 +208,9 @@ def _draw_angle_annotation(
     occupied_boxes: List[BBox],
     canvas_size: int,
 ) -> BBox | None:
+    """Draw an angle marker and attach its token without obscuring construction geometry."""
     vx, vy = float(vertex_px[0]), float(vertex_px[1])
+
     vectors: List[Point] = []
     for point in (arm0_px, arm1_px):
         dx, dy = float(point[0]) - vx, float(point[1]) - vy
@@ -302,7 +298,9 @@ def _draw_circle_arc_annotation(
     occupied_boxes: List[BBox],
     canvas_size: int,
 ) -> BBox | None:
+    """Draw an arc marker and place its token outside the circle when possible."""
     cx, cy = float(center_px[0]), float(center_px[1])
+
     angle0 = math.atan2(float(start_px[1]) - cy, float(start_px[0]) - cx)
     angle1 = math.atan2(float(end_px[1]) - cy, float(end_px[0]) - cx)
     unit_path = _screen_angle_path(angle0, angle1, steps=28)
@@ -359,7 +357,9 @@ def _draw_point_label(
     occupied_boxes: List[BBox],
     canvas_size: int,
 ) -> BBox:
+    """Place one point label near its construction point without crossing geometry."""
     center, bbox = resolve_text_label_center(
+
         draw,
         text=str(label),
         anchor=(float(point_px[0]), float(point_px[1])),
@@ -391,6 +391,7 @@ def _render_base_scene(
     rng,
     instance_seed: int,
     params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
     point_model: Mapping[str, Point],
     circle_center: Point,
     circle_radius: float,
@@ -403,12 +404,17 @@ def _render_base_scene(
     angle_marker_specs: Sequence[Mapping[str, Any]] | None = None,
     right_angle_marker_specs: Sequence[Mapping[str, Any]] | None = None,
     circle_arc_specs: Sequence[Mapping[str, Any]] | None = None,
-) -> _RenderedScene:
+) -> RenderedCircleTheoremScene:
+    """Render one already-selected circle-theorem construction.
+
+    The caller owns the task/query semantics; this function only projects
+    model-space points, draws the diagram, and returns pixel-space metadata.
+    """
     canvas_min = int(
-        group_default(_RENDER_DEFAULTS, "canvas_size_min", _DEFAULTS.canvas_size_min)
+        group_default(render_defaults, "canvas_size_min", DEFAULTS.canvas_size_min)
     )
     canvas_max = int(
-        group_default(_RENDER_DEFAULTS, "canvas_size_max", _DEFAULTS.canvas_size_max)
+        group_default(render_defaults, "canvas_size_max", DEFAULTS.canvas_size_max)
     )
     explicit_canvas_size = params.get("canvas_size")
     if explicit_canvas_size is not None:
@@ -421,7 +427,7 @@ def _render_base_scene(
         params.get(
             "outer_margin_px",
             group_default(
-                _RENDER_DEFAULTS, "outer_margin_px", _DEFAULTS.outer_margin_px
+                render_defaults, "outer_margin_px", DEFAULTS.outer_margin_px
             ),
         )
     )
@@ -429,9 +435,9 @@ def _render_base_scene(
         sample_int_render_param(
             rng,
             params=params,
-            render_defaults=_RENDER_DEFAULTS,
+            render_defaults=render_defaults,
             key="line_width",
-            fallback=_DEFAULTS.line_width,
+            fallback=DEFAULTS.line_width,
             minimum_value=1,
         )
     )
@@ -439,9 +445,9 @@ def _render_base_scene(
         params.get(
             "circle_line_width",
             group_default(
-                _RENDER_DEFAULTS,
+                render_defaults,
                 "circle_line_width",
-                max(line_width, _DEFAULTS.circle_line_width),
+                max(line_width, DEFAULTS.circle_line_width),
             ),
         )
     )
@@ -449,7 +455,7 @@ def _render_base_scene(
         params.get(
             "point_radius_px",
             group_default(
-                _RENDER_DEFAULTS, "point_radius_px", _DEFAULTS.point_radius_px
+                render_defaults, "point_radius_px", DEFAULTS.point_radius_px
             ),
         )
     )
@@ -457,9 +463,9 @@ def _render_base_scene(
         params.get(
             "measurement_label_offset_px",
             group_default(
-                _RENDER_DEFAULTS,
+                render_defaults,
                 "measurement_label_offset_px",
-                _DEFAULTS.measurement_label_offset_px,
+                DEFAULTS.measurement_label_offset_px,
             ),
         )
     )
@@ -467,9 +473,9 @@ def _render_base_scene(
         params.get(
             "point_label_offset_px",
             group_default(
-                _RENDER_DEFAULTS,
+                render_defaults,
                 "point_label_offset_px",
-                _DEFAULTS.point_label_offset_px,
+                DEFAULTS.point_label_offset_px,
             ),
         )
     )
@@ -477,16 +483,16 @@ def _render_base_scene(
         rng.randint(
             int(
                 group_default(
-                    _RENDER_DEFAULTS,
+                    render_defaults,
                     "label_font_size_min",
-                    _DEFAULTS.label_font_size_min,
+                    DEFAULTS.label_font_size_min,
                 )
             ),
             int(
                 group_default(
-                    _RENDER_DEFAULTS,
+                    render_defaults,
                     "label_font_size_max",
-                    _DEFAULTS.label_font_size_max,
+                    DEFAULTS.label_font_size_max,
                 )
             ),
         )
@@ -495,16 +501,16 @@ def _render_base_scene(
         rng.randint(
             int(
                 group_default(
-                    _RENDER_DEFAULTS,
+                    render_defaults,
                     "measurement_font_size_min",
-                    _DEFAULTS.measurement_font_size_min,
+                    DEFAULTS.measurement_font_size_min,
                 )
             ),
             int(
                 group_default(
-                    _RENDER_DEFAULTS,
+                    render_defaults,
                     "measurement_font_size_max",
-                    _DEFAULTS.measurement_font_size_max,
+                    DEFAULTS.measurement_font_size_max,
                 )
             ),
         )
@@ -536,7 +542,7 @@ def _render_base_scene(
     scene_transform = LazySceneTransform(
         rng,
         params=params,
-        render_defaults=_RENDER_DEFAULTS,
+        render_defaults=render_defaults,
         canvas_width=int(canvas_size),
         canvas_height=int(canvas_size),
     )
@@ -561,14 +567,14 @@ def _render_base_scene(
         canvas_size=int(canvas_size),
         instance_seed=int(instance_seed),
         params=dict(params),
-        default_config=_BACKGROUND_DEFAULTS,
+        default_config=BACKGROUND_DEFAULTS,
         fallback_color=(252, 252, 252),
     )
     draw = ImageDraw.Draw(image)
     shape_style = sample_geometry_shape_style(
         rng,
         params=params,
-        render_defaults=_RENDER_DEFAULTS,
+        render_defaults=render_defaults,
         anchor_colors=extract_background_anchor_colors(background_meta),
     )
     line_color = tuple(int(value) for value in shape_style.line_color)
@@ -726,7 +732,7 @@ def _render_base_scene(
         image,
         instance_seed=int(instance_seed),
         params=dict(params),
-        default_config=_POST_IMAGE_NOISE_DEFAULTS,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
     scene_entities = [
         {
@@ -778,7 +784,7 @@ def _render_base_scene(
         for index, token in enumerate(token_bboxes)
     )
 
-    return _RenderedScene(
+    return RenderedCircleTheoremScene(
         image=image,
         answer_value=float(theorem_trace["answer_value"]),
         support_measurement_tokens=[

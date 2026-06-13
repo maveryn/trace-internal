@@ -131,12 +131,12 @@ def test_review_generation_refuses_unregistered_migration_review_scene(tmp_path:
     monkeypatch.setattr(
         review,
         "resolve_task_taxonomy",
-        lambda *args, **kwargs: SimpleNamespace(domain="geometry", scene_id="circle_theorem"),
+        lambda *args, **kwargs: SimpleNamespace(domain="geometry", scene_id="unregistered_review_scene"),
     )
 
     with pytest.raises(ValueError, match="not centrally registered"):
         review._validate_tasks_may_write_review_artifacts(
-            task_ids=["task_geometry__circle_theorem__arc_angle_value"],
+            task_ids=["task_geometry__unregistered_review_scene__arc_angle_value"],
             out_root=tmp_path / "review" / "task-reviews",
         )
 

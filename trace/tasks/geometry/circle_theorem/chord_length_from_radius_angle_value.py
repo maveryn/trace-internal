@@ -8,33 +8,24 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ....core.scene_config import get_scene_defaults
-from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
-    required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
 
 SCENE_ID = "circle_theorem"
-from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import (
-    PROMPT_OUTPUT_MODES,
-    build_prompt_trace_artifacts,
-    render_scene_prompt_variants,
-)
 from ...shared.prompt_json_example import dump_prompt_json_examples
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from trace.tasks.shared.fixed_query import geometry_probability_map as _probability_map
-from .shared.circle.theorem_builders import _circle_point
-from .shared.circle.theorem_common import (
-    _CENTER_LABEL,
+from ._lifecycle import run_role_keyed_number_circle_theorem_task
+from .shared.spatial_primitives import _circle_point
+from .shared.state import (
     _sample_point_label_map,
     _visible_angle,
     _visible_segment,
 )
-from .shared.circle.theorem_rendering import _render_base_scene
 
 
 Point = Tuple[float, float]
@@ -102,7 +93,9 @@ def _select_int(
 def _resolve_query(
     instance_seed: int, *, params: Mapping[str, Any]
 ) -> _ResolvedChordLengthQuery:
+    """Resolve the chord-length query, supports, and rounded numeric target."""
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query")
+
     query_id, query_probabilities = resolve_variant(
         rng,
         params=params,
@@ -180,7 +173,9 @@ def _build_keyed_role_prompt_examples(
 
 
 def _chord_payload(rng, *, query: _ResolvedChordLengthQuery) -> Dict[str, Any]:
+    """Construct the chord/radius diagram while preserving the selected formula witness."""
     radius = float(query.radius_value)
+
     central_angle = int(query.central_angle_degrees)
     rotation = float(rng.choice((18, 34, 50, 66, 82, 98, 114, 130, 146)))
     center = (0.0, 0.0)
@@ -304,113 +299,15 @@ class GeometryCircleChordLengthFromRadiusAngleValueTask:
     task_id = TASK_ID
     domain = "geometry"
     default_dataset_enabled = True
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(
         self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int
     ) -> TaskOutput:
+        """Generate a chord-length instance after binding the numeric query."""
+
         query = _resolve_query(int(instance_seed), params=params)
-        rng = spawn_rng(int(instance_seed), f"{self.task_id}.scene")
-        rendered_scene = None
-        scene_payload: Dict[str, Any] | None = None
-        last_error: Exception | None = None
-        for _ in range(max(1, int(max_attempts))):
-            try:
-                candidate_payload = _chord_payload(rng, query=query)
-                rendered_scene = _render_base_scene(
-                    rng=rng,
-                    instance_seed=int(instance_seed),
-                    params=params,
-                    point_model=candidate_payload["point_model"],
-                    circle_center=candidate_payload["circle_center"],
-                    circle_radius=float(candidate_payload["circle_radius"]),
-                    segments=candidate_payload["segments"],
-                    measurement_specs=candidate_payload["measurement_specs"],
-                    support_measurement_tokens=candidate_payload[
-                        "support_measurement_tokens"
-                    ],
-                    annotation_point_labels=candidate_payload["annotation_point_labels"],
-                    annotation_values=candidate_payload["annotation_values"],
-                    theorem_trace=candidate_payload["theorem_trace"],
-                    angle_marker_specs=candidate_payload["angle_marker_specs"],
-                    circle_arc_specs=candidate_payload["circle_arc_specs"],
-                )
-                scene_payload = dict(candidate_payload)
-                break
-            except Exception as exc:
-                last_error = exc
-                continue
-        if rendered_scene is None or scene_payload is None:
-            raise RuntimeError(f"failed to generate {self.task_id}") from last_error
-
-        prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
-            (
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "object_description_chord_length",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "answer_hint_number",
-                "annotation_hint_chord_length_points",
-            ),
-            context=f"prompt defaults for {self.task_id}",
-        )
-        annotation_role_to_label = {
-            str(key): str(value)
-            for key, value in scene_payload["annotation_role_to_label"].items()
-        }
-        annotation_keyed_points = {
-            str(role): [
-                round(float(rendered_scene.point_pixels[str(label)][0]), 3),
-                round(float(rendered_scene.point_pixels[str(label)][1]), 3),
-            ]
-            for role, label in annotation_role_to_label.items()
-        }
-        annotation_keys = tuple(annotation_keyed_points)
-        annotation_hint = str(prompt_defaults["annotation_hint_chord_length_points"]).format(
-            annotation_keys=", ".join(f'"{key}"' for key in annotation_keys)
-        )
-        json_example, json_example_answer_only = _build_keyed_role_prompt_examples(
-            annotation_keys=annotation_keys,
-            answer_value=float(query.answer_value),
-        )
-        prompt_selection = render_scene_prompt_variants(
-            domain=self.domain,
-            scene_id=str(getattr(self, "scene_id", "") or getattr(self, "public_scene_id", "") or globals().get("SCENE_ID", "")),
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_id),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(
-                    prompt_defaults["object_description_chord_length"]
-                ),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(
-                    prompt_defaults["json_output_contract_answer_only"]
-                ),
-                "annotation_hint": str(annotation_hint),
-                "answer_hint": str(prompt_defaults["answer_hint_number"]),
-                "json_example": str(json_example),
-                "json_example_answer_only": str(json_example_answer_only),
-                **dict(scene_payload.get("prompt_slots", {})),
-            },
-            instance_seed=int(instance_seed),
-        )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
-        answer_gt = TypedValue(type="number", value=float(query.answer_value))
-        annotation_gt = TypedValue(
-            type="keyed_point_map", value=dict(annotation_keyed_points)
-        )
         query_params = {
-            "scene_id": SCENE_ID,
-            "query_id": str(query.query_id),
             "query_id_probabilities": dict(query.query_id_probabilities),
             "radius_value": int(query.radius_value),
             "radius_probabilities": dict(query.radius_probabilities),
@@ -418,102 +315,22 @@ class GeometryCircleChordLengthFromRadiusAngleValueTask:
             "angle_probabilities": dict(query.angle_probabilities),
             "central_angle_degrees": int(query.central_angle_degrees),
             "answer_rounding": "nearest_tenth",
-            "annotation_role_to_label": dict(annotation_role_to_label),
         }
-        annotation_points = [list(point) for point in annotation_keyed_points.values()]
-        trace_payload: Dict[str, Any] = {
-            "scene_ir": {
-                "scene_kind": "geometry_circle_theorem_chord_length",
-                "scene_id": SCENE_ID,
-                "entities": list(rendered_scene.scene_entities),
-                "relations": {
-                    "query_id": str(query.query_id),
-                    "answer_segment": str(
-                        rendered_scene.theorem_trace["answer_segment"]
-                    ),
-                    "answer_value": float(query.answer_value),
-                    "theorem": str(rendered_scene.theorem_trace["theorem"]),
-                    "annotation_roles": list(annotation_keys),
-                },
-            },
-            "query_spec": {
-                "scene_id": SCENE_ID,
-                "query_id": str(query.query_id),
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(
-                    prompt_artifacts.prompt_variant_active_key
-                ),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": dict(query_params),
-            },
-            "render_spec": {
-                "canvas_size": int(rendered_scene.image.size[0]),
-                "coord_space": "pixel",
-                "background_style": dict(rendered_scene.background_meta),
-                "post_image_noise": dict(rendered_scene.post_noise_meta),
-                "shape_style": dict(rendered_scene.shape_style),
-                **dict(rendered_scene.render_params),
-            },
-            "render_map": {
-                "point_pixels": dict(rendered_scene.point_pixels),
-                "point_label_bboxes": dict(rendered_scene.point_label_bboxes),
-                "point_model": dict(rendered_scene.point_model),
-                "segment_pixels": dict(rendered_scene.segment_pixels),
-                "circle_center_pixel": list(rendered_scene.circle_center_pixel),
-                "circle_center_model": list(rendered_scene.circle_center_model),
-                "circle_radius_px": float(rendered_scene.circle_radius_px),
-                "circle_radius_model": float(rendered_scene.circle_radius_model),
-                "measurement_token_bboxes": dict(rendered_scene.token_bboxes),
-                "coord_space": "pixel",
-            },
-            "execution_trace": {
-                "scene_id": SCENE_ID,
-                "query_id": str(query.query_id),
-                "query_id_probabilities": dict(query.query_id_probabilities),
-                "answer_type": "number",
-                "answer_value": float(query.answer_value),
-                "answer_rounding": "nearest_tenth",
-                "support_measurement_tokens": list(
-                    rendered_scene.support_measurement_tokens
-                ),
-                "annotation_roles": list(annotation_keys),
-                "annotation_values": dict(rendered_scene.annotation_values),
-                **dict(rendered_scene.theorem_trace),
-            },
-            "witness_symbolic": {
-                "type": "circle_theorem_chord_length_formula",
-                "scene_id": SCENE_ID,
-                "query_id": str(query.query_id),
-                "answer_segment": str(rendered_scene.theorem_trace["answer_segment"]),
-                "answer_value": float(query.answer_value),
-                "source_witness_type": "keyed_point_map",
-                "original_annotation_value": dict(annotation_keyed_points),
-                "annotation_role_to_label": dict(annotation_role_to_label),
-                "support_measurement_tokens": list(
-                    rendered_scene.support_measurement_tokens
-                ),
-            },
-            "projected_annotation": {
-                "type": "keyed_point_map",
-                "keyed_point_map": dict(annotation_keyed_points),
-                "pixel_keyed_point_map": dict(annotation_keyed_points),
-                "point_set": list(annotation_points),
-                "pixel_point_set": list(annotation_points),
-            },
-        }
-
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=answer_gt,
-            annotation_gt=annotation_gt,
-            image=rendered_scene.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
+        return run_role_keyed_number_circle_theorem_task(
+            task_id=TASK_ID,
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
             query_id=str(query.query_id),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
+            answer_value=float(query.answer_value),
+            query_params=query_params,
+            build_scene_payload=lambda rng: _chord_payload(rng, query=query),
+            render_defaults=_RENDER_DEFAULTS,
+            scene_kind="geometry_circle_theorem_chord_length",
+            witness_type="circle_theorem_chord_length_formula",
+            object_description_key="object_description_chord_length",
+            answer_hint_key="answer_hint_number",
+            annotation_hint_key="annotation_hint_chord_length_points",
         )
 
 

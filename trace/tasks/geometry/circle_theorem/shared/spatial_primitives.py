@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from typing import Dict, Mapping, Tuple
 
-from .theorem_common import Point
+from .state import Point
 
 def _sample_external_point_side(rng) -> str:
     return "right" if int(rng.randrange(2)) else "left"

@@ -1,18 +1,19 @@
-"""Shared circle-theorem constants and geometry helpers."""
+"""State contracts and scene-level constants for circle-theorem diagrams."""
 
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ......core.scene_config import get_scene_defaults
-from .....shared.config_defaults import split_scene_generation_rendering_prompt_defaults
-from .....shared.prompt_json_example import dump_prompt_json_examples
-from ....shared.background_defaults import load_geometry_background_defaults
-from ....shared.noise_defaults import load_geometry_noise_defaults
+from ....shared.prompt_json_example import dump_prompt_json_examples
+from ...shared.background_defaults import load_geometry_background_defaults
+from ...shared.noise_defaults import load_geometry_noise_defaults
+
+DOMAIN = "geometry"
+SCENE_ID = "circle_theorem"
 
 Point = Tuple[float, float]
 
@@ -28,9 +29,9 @@ def _build_keyed_point_prompt_examples(
     }
     return dump_prompt_json_examples(annotation=example_points, answer=8, ensure_ascii=False)
 
-_DIAMETER_SUPPORT: Tuple[int, ...] = (4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18)
+DIAMETER_CHORD_ANSWER_SUPPORT: Tuple[int, ...] = (4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18)
 
-_TANGENT_SECANT_SUPPORT: Tuple[int, ...] = (
+TANGENT_SECANT_ANSWER_SUPPORT: Tuple[int, ...] = (
     11,
     13,
     14,
@@ -82,67 +83,40 @@ _TANGENT_SECANT_SUPPORT: Tuple[int, ...] = (
     100,
 )
 
-_SECANT_SECANT_SUPPORT: Tuple[int, ...] = tuple(range(3, 16))
+SECANT_SECANT_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(3, 16))
 
-_SECANT_SECANT_VARIABLE_SUPPORT: Tuple[int, ...] = tuple(range(4, 61))
+VARIABLE_SECANT_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(4, 61))
 
-_INTERSECTING_CHORDS_ARC_SUPPORT: Tuple[int, ...] = tuple(range(40, 181, 10))
+INTERSECTING_CHORDS_ARC_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(40, 181, 10))
 
-_MULTI_STEP_ANGLE_SUPPORT: Tuple[int, ...] = tuple(range(45, 136, 5))
+MULTI_STEP_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(45, 136, 5))
 
-_INSCRIBED_ANGLE_SUPPORT: Tuple[int, ...] = tuple(range(20, 81, 5))
+INSCRIBED_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(20, 81, 5))
 
-_CENTRAL_ANGLE_SUPPORT: Tuple[int, ...] = tuple(range(40, 161, 10))
+CENTRAL_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(40, 161, 10))
 
-_TANGENT_CHORD_ANGLE_SUPPORT: Tuple[int, ...] = tuple(range(25, 76, 5))
+TANGENT_CHORD_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(25, 76, 5))
 
-_EXTERNAL_SECANT_ANGLE_SUPPORT: Tuple[int, ...] = tuple(range(20, 76, 5))
+EXTERNAL_SECANT_ANGLE_ANSWER_SUPPORT: Tuple[int, ...] = tuple(range(20, 76, 5))
 
-_CYCLIC_QUADRILATERAL_ANGLE_SUPPORT: Tuple[int, ...] = tuple(range(45, 136, 5))
+CYCLIC_QUADRILATERAL_ANGLE_SUPPORT: Tuple[int, ...] = tuple(range(45, 136, 5))
 
-_ANSWER_SUPPORT_BY_VARIANT: Dict[str, Tuple[int, ...]] = {
-    "diameter_perpendicular_chord_length": _DIAMETER_SUPPORT,
-    "secant_secant_variable_segment_length": _SECANT_SECANT_VARIABLE_SUPPORT,
-    "tangent_secant_length": _TANGENT_SECANT_SUPPORT,
-    "secant_secant_length": _SECANT_SECANT_SUPPORT,
-    "intersecting_chords_arc_measure": _INTERSECTING_CHORDS_ARC_SUPPORT,
-    "multi_step_angle_value": _MULTI_STEP_ANGLE_SUPPORT,
-    "inscribed_angle_from_central": _INSCRIBED_ANGLE_SUPPORT,
-    "central_angle_from_inscribed": _CENTRAL_ANGLE_SUPPORT,
-    "inscribed_angle_from_arc": _INSCRIBED_ANGLE_SUPPORT,
-    "tangent_chord_angle_from_arc": _TANGENT_CHORD_ANGLE_SUPPORT,
-    "tangent_chord_angle_from_inscribed": _TANGENT_CHORD_ANGLE_SUPPORT,
-    "external_two_secants_angle_from_arcs": _EXTERNAL_SECANT_ANGLE_SUPPORT,
-    "opposite_angle_supplement": _CYCLIC_QUADRILATERAL_ANGLE_SUPPORT,
-    "exterior_angle_from_opposite_interior": _CYCLIC_QUADRILATERAL_ANGLE_SUPPORT,
-}
+TANGENT_SECANT_TARGET_KINDS: Tuple[str, ...] = ("outside", "inside", "tangent")
 
-_TANGENT_SECANT_TARGET_KINDS: Tuple[str, ...] = ("outside", "inside", "tangent")
-
-_SECANT_SECANT_VARIABLE_TARGET_KINDS: Tuple[str, ...] = (
+VARIABLE_SECANT_TARGET_KINDS: Tuple[str, ...] = (
     "outside_first",
     "inside_first",
     "outside_second",
     "inside_second",
 )
 
-_POINT_LABEL_ALPHABET: Tuple[str, ...] = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+POINT_LABEL_ALPHABET: Tuple[str, ...] = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-_CENTER_LABEL = "O"
+CENTER_LABEL = "O"
 
-_SCENE_DEFAULTS = get_scene_defaults("geometry", "circle_theorem")
-_BASE_CONFIG_TASK_KEY = "geometry_circle_theorem_value_base"
+BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id="circle")
 
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = (
-    split_scene_generation_rendering_prompt_defaults(
-        _SCENE_DEFAULTS if isinstance(_SCENE_DEFAULTS, Mapping) else {},
-        task_id=_BASE_CONFIG_TASK_KEY,
-    )
-)
-
-_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id="circle")
-
-_POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id="circle")
+POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id="circle")
 
 @dataclass(frozen=True)
 class _Defaults:
@@ -163,10 +137,10 @@ class _Defaults:
     point_label_offset_px: int = 36
 
 @dataclass(frozen=True)
-class _ResolvedQuery:
-    query_id: str
+class CircleTheoremProblem:
+    """Task-selected numeric target and optional construction target kind."""
+
     target_answer: int
-    query_id_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
     tangent_secant_target_kind: str | None = None
     tangent_secant_target_kind_probabilities: Dict[str, float] | None = None
@@ -174,7 +148,9 @@ class _ResolvedQuery:
     secant_secant_variable_target_kind_probabilities: Dict[str, float] | None = None
 
 @dataclass(frozen=True)
-class _RenderedScene:
+class RenderedCircleTheoremScene:
+    """Rendered circle-theorem diagram and projected metadata."""
+
     image: Image.Image
     answer_value: float
     support_measurement_tokens: List[str]
@@ -196,7 +172,7 @@ class _RenderedScene:
     shape_style: Dict[str, Any]
     render_params: Dict[str, Any]
 
-_DEFAULTS = _Defaults()
+DEFAULTS = _Defaults()
 
 def _text_bbox_for_center(
     draw: ImageDraw.ImageDraw,
@@ -243,8 +219,8 @@ def _sample_point_label_map(rng, canonical_labels: Sequence[str]) -> Dict[str, s
     labels = [str(label) for label in canonical_labels]
     if len(set(labels)) != len(labels):
         raise ValueError("canonical point labels must be unique")
-    sample_pool = [label for label in _POINT_LABEL_ALPHABET if label != _CENTER_LABEL]
-    if _CENTER_LABEL in labels:
+    sample_pool = [label for label in POINT_LABEL_ALPHABET if label != CENTER_LABEL]
+    if CENTER_LABEL in labels:
         if len(labels) - 1 > len(sample_pool):
             raise ValueError(
                 "not enough visible point labels for circle theorem diagram"
@@ -252,7 +228,7 @@ def _sample_point_label_map(rng, canonical_labels: Sequence[str]) -> Dict[str, s
         sampled = iter(rng.sample(sample_pool, len(labels) - 1))
         return {
             canonical: (
-                _CENTER_LABEL if canonical == _CENTER_LABEL else str(next(sampled))
+                CENTER_LABEL if canonical == CENTER_LABEL else str(next(sampled))
             )
             for canonical in labels
         }
@@ -299,36 +275,32 @@ def _angle_degrees_at(vertex: Point, arm0: Point, arm1: Point) -> int:
     return int(round(float(angle)))
 
 __all__ = [
+    'BACKGROUND_DEFAULTS',
     'Point',
     'BBox',
+    'CENTER_LABEL',
+    'CENTRAL_ANGLE_ANSWER_SUPPORT',
+    'CYCLIC_QUADRILATERAL_ANGLE_SUPPORT',
+    'CircleTheoremProblem',
+    'DEFAULTS',
+    'DIAMETER_CHORD_ANSWER_SUPPORT',
+    'DOMAIN',
+    'EXTERNAL_SECANT_ANGLE_ANSWER_SUPPORT',
+    'INSCRIBED_ANGLE_ANSWER_SUPPORT',
+    'INTERSECTING_CHORDS_ARC_ANSWER_SUPPORT',
+    'MULTI_STEP_ANGLE_ANSWER_SUPPORT',
+    'POINT_LABEL_ALPHABET',
+    'POST_IMAGE_NOISE_DEFAULTS',
+    'RenderedCircleTheoremScene',
+    'SCENE_ID',
+    'SECANT_SECANT_ANSWER_SUPPORT',
+    'TANGENT_CHORD_ANGLE_ANSWER_SUPPORT',
+    'TANGENT_SECANT_ANSWER_SUPPORT',
+    'TANGENT_SECANT_TARGET_KINDS',
+    'VARIABLE_SECANT_ANSWER_SUPPORT',
+    'VARIABLE_SECANT_TARGET_KINDS',
     '_build_keyed_point_prompt_examples',
-    '_DIAMETER_SUPPORT',
-    '_TANGENT_SECANT_SUPPORT',
-    '_SECANT_SECANT_SUPPORT',
-    '_SECANT_SECANT_VARIABLE_SUPPORT',
-    '_INTERSECTING_CHORDS_ARC_SUPPORT',
-    '_MULTI_STEP_ANGLE_SUPPORT',
-    '_INSCRIBED_ANGLE_SUPPORT',
-    '_CENTRAL_ANGLE_SUPPORT',
-    '_TANGENT_CHORD_ANGLE_SUPPORT',
-    '_EXTERNAL_SECANT_ANGLE_SUPPORT',
-    '_CYCLIC_QUADRILATERAL_ANGLE_SUPPORT',
-    '_ANSWER_SUPPORT_BY_VARIANT',
-    '_TANGENT_SECANT_TARGET_KINDS',
-    '_SECANT_SECANT_VARIABLE_TARGET_KINDS',
-    '_POINT_LABEL_ALPHABET',
-    '_CENTER_LABEL',
-    '_SCENE_DEFAULTS',
-    '_BASE_CONFIG_TASK_KEY',
-    '_GEN_DEFAULTS',
-    '_RENDER_DEFAULTS',
-    '_PROMPT_DEFAULTS',
-    '_BACKGROUND_DEFAULTS',
-    '_POST_IMAGE_NOISE_DEFAULTS',
     '_Defaults',
-    '_ResolvedQuery',
-    '_RenderedScene',
-    '_DEFAULTS',
     '_text_bbox_for_center',
     '_bbox_to_list',
     '_circle_from_three_points',

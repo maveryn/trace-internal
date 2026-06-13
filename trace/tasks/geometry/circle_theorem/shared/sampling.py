@@ -1,37 +1,14 @@
-"""Query sampling and candidate enumeration for circle-theorem value tasks."""
+"""Candidate enumeration primitives for circle-theorem tasks."""
 
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Dict, List, Tuple
 
-from ......core.seed import spawn_rng
-from .....shared.support_sampling import resolve_integer_choice
-from .theorem_common import (
-    _ANSWER_SUPPORT_BY_VARIANT,
-    _TANGENT_SECANT_TARGET_KINDS,
-    _SECANT_SECANT_VARIABLE_TARGET_KINDS,
-    _GEN_DEFAULTS,
-    _ResolvedQuery,
+from .state import (
+    TANGENT_SECANT_TARGET_KINDS,
+    VARIABLE_SECANT_TARGET_KINDS,
 )
-
-BASE_QUERY_IDS: Tuple[str, ...] = (
-    "diameter_perpendicular_chord_length",
-    "secant_secant_variable_segment_length",
-    "tangent_secant_length",
-    "secant_secant_length",
-    "intersecting_chords_arc_measure",
-    "multi_step_angle_value",
-    "inscribed_angle_from_central",
-    "central_angle_from_inscribed",
-    "inscribed_angle_from_arc",
-    "tangent_chord_angle_from_arc",
-    "tangent_chord_angle_from_inscribed",
-    "external_two_secants_angle_from_arcs",
-    "opposite_angle_supplement",
-    "exterior_angle_from_opposite_interior",
-)
-BASE_SAMPLING_NAMESPACE = "geometry_circle_theorem_value_base"
 
 def _candidate_diameter_chord_values(target_answer: int) -> List[Dict[str, int]]:
     candidates: List[Dict[str, int]] = []
@@ -76,7 +53,9 @@ def _hard_tangent_secant_triple(*, outside: int, internal: int, tangent: int) ->
 def _candidate_tangent_secant_values(
     target_answer: int, *, target_kind: str | None = None
 ) -> List[Dict[str, int | str]]:
-    if target_kind is not None and str(target_kind) not in _TANGENT_SECANT_TARGET_KINDS:
+    """Enumerate integer tangent-secant power configurations by target answer."""
+    if target_kind is not None and str(target_kind) not in TANGENT_SECANT_TARGET_KINDS:
+
         raise ValueError(f"unsupported tangent secant target kind: {target_kind}")
     candidates: List[Dict[str, int | str]] = []
     for outside in range(16, 81):
@@ -124,7 +103,7 @@ def _feasible_tangent_secant_target_kinds(target_answer: int) -> Tuple[str, ...]
             for candidate in _candidate_tangent_secant_values(int(target_answer))
         }
     )
-    return tuple(kind for kind in _TANGENT_SECANT_TARGET_KINDS if kind in set(kinds))
+    return tuple(kind for kind in TANGENT_SECANT_TARGET_KINDS if kind in set(kinds))
 
 def _candidate_secant_secant_values(target_answer: int) -> List[Dict[str, int]]:
     candidates: List[Dict[str, int]] = []
@@ -161,9 +140,11 @@ def _candidate_secant_secant_variable_values(
     *,
     target_kind: str | None = None,
 ) -> List[Dict[str, int | str]]:
+    """Enumerate integer two-secant power configurations for all hidden segment choices."""
     if (
+
         target_kind is not None
-        and str(target_kind) not in _SECANT_SECANT_VARIABLE_TARGET_KINDS
+        and str(target_kind) not in VARIABLE_SECANT_TARGET_KINDS
     ):
         raise ValueError(f"unsupported secant secant target kind: {target_kind}")
     candidates: List[Dict[str, int | str]] = []
@@ -235,90 +216,7 @@ def _feasible_secant_secant_variable_target_kinds(
         }
     )
     return tuple(
-        kind for kind in _SECANT_SECANT_VARIABLE_TARGET_KINDS if kind in set(kinds)
-    )
-
-def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    rng = spawn_rng(int(instance_seed), f"{BASE_SAMPLING_NAMESPACE}.query")
-    query_id = str(params.get("query_id", "")).strip()
-    if query_id not in BASE_QUERY_IDS:
-        raise ValueError(f"circle theorem shared sampling requires a supported query_id: {query_id!r}")
-    query_id_probabilities = {
-        str(candidate): (1.0 if str(candidate) == str(query_id) else 0.0)
-        for candidate in BASE_QUERY_IDS
-    }
-    support_key = f"{query_id}_answer_support"
-    target_answer, target_answer_probabilities = resolve_integer_choice(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        support_key=str(support_key),
-        explicit_key="target_answer",
-        fallback_support=_ANSWER_SUPPORT_BY_VARIANT[str(query_id)],
-        namespace=f"{BASE_SAMPLING_NAMESPACE}.{query_id}.target_answer",
-        balanced_flag_key="balanced_answer_sampling",
-        namespace_support_permutation=True,
-    )
-    tangent_secant_target_kind: str | None = None
-    tangent_secant_target_kind_probabilities: Dict[str, float] = {}
-    secant_secant_variable_target_kind: str | None = None
-    secant_secant_variable_target_kind_probabilities: Dict[str, float] = {}
-    if str(query_id) == "tangent_secant_length":
-        feasible_target_kinds = _feasible_tangent_secant_target_kinds(
-            int(target_answer)
-        )
-        if not feasible_target_kinds:
-            raise ValueError(
-                f"unsupported target answer for tangent secant theorem: {target_answer}"
-            )
-        explicit_target_kind = params.get("tangent_secant_target_kind")
-        if explicit_target_kind is not None:
-            if str(explicit_target_kind) not in feasible_target_kinds:
-                raise ValueError(
-                    f"unsupported tangent secant target kind {explicit_target_kind!r} for target answer {target_answer}"
-                )
-            tangent_secant_target_kind = str(explicit_target_kind)
-        else:
-            tangent_secant_target_kind = str(rng.choice(feasible_target_kinds))
-        probability = 1.0 / float(len(feasible_target_kinds))
-        tangent_secant_target_kind_probabilities = {
-            str(kind): float(probability) for kind in feasible_target_kinds
-        }
-    if str(query_id) == "secant_secant_variable_segment_length":
-        feasible_target_kinds = _feasible_secant_secant_variable_target_kinds(
-            int(target_answer)
-        )
-        if not feasible_target_kinds:
-            raise ValueError(
-                f"unsupported target answer for variable secant secant theorem: {target_answer}"
-            )
-        explicit_target_kind = params.get("secant_secant_variable_target_kind")
-        if explicit_target_kind is not None:
-            if str(explicit_target_kind) not in feasible_target_kinds:
-                raise ValueError(
-                    f"unsupported variable secant secant target kind {explicit_target_kind!r} "
-                    f"for target answer {target_answer}"
-                )
-            secant_secant_variable_target_kind = str(explicit_target_kind)
-        else:
-            secant_secant_variable_target_kind = str(rng.choice(feasible_target_kinds))
-        probability = 1.0 / float(len(feasible_target_kinds))
-        secant_secant_variable_target_kind_probabilities = {
-            str(kind): float(probability) for kind in feasible_target_kinds
-        }
-    return _ResolvedQuery(
-        query_id=str(query_id),
-        target_answer=int(target_answer),
-        query_id_probabilities=dict(query_id_probabilities),
-        target_answer_probabilities=dict(target_answer_probabilities),
-        tangent_secant_target_kind=tangent_secant_target_kind,
-        tangent_secant_target_kind_probabilities=dict(
-            tangent_secant_target_kind_probabilities
-        ),
-        secant_secant_variable_target_kind=secant_secant_variable_target_kind,
-        secant_secant_variable_target_kind_probabilities=dict(
-            secant_secant_variable_target_kind_probabilities
-        ),
+        kind for kind in VARIABLE_SECANT_TARGET_KINDS if kind in set(kinds)
     )
 
 __all__ = [
@@ -329,5 +227,4 @@ __all__ = [
     '_candidate_secant_secant_values',
     '_candidate_secant_secant_variable_values',
     '_feasible_secant_secant_variable_target_kinds',
-    '_resolve_query',
 ]

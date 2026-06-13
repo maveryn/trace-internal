@@ -7,12 +7,23 @@ import math
 import pytest
 
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.geometry.circle_theorem.shared.circle import theorem_builders
 from trace.tasks.geometry.circle_theorem.cyclic_quadrilateral_angle_value import GeometryCircleCyclicQuadrilateralAngleValueTask
-from trace.tasks.geometry.circle_theorem.diameter_perpendicular_chord_length_value import GeometryCircleTheoremValueTask
+from trace.tasks.geometry.circle_theorem.diameter_perpendicular_chord_length_value import GeometryCircleDiameterPerpendicularChordLengthValueTask
 from trace.tasks.geometry.circle_theorem.external_secant_angle_value import GeometryCircleExternalSecantAngleValueTask
 from trace.tasks.geometry.circle_theorem.chord_length_from_radius_angle_value import GeometryCircleChordLengthFromRadiusAngleValueTask
-from trace.tasks.geometry.circle_theorem.tangent_radius_right_triangle_length_value import GeometryCircleTangentRadiusRightTriangleLengthValueTask
+from trace.tasks.geometry.circle_theorem.inscribed_angle_value_central_angle_from_inscribed import GeometryCircleCentralAngleFromInscribedTask
+from trace.tasks.geometry.circle_theorem.inscribed_angle_value_inscribed_angle_from_arc import GeometryCircleInscribedAngleFromArcTask
+from trace.tasks.geometry.circle_theorem.inscribed_angle_value_inscribed_angle_from_central import GeometryCircleInscribedAngleFromCentralTask
+from trace.tasks.geometry.circle_theorem.intersecting_chords_arc_measure_value import GeometryCircleIntersectingChordsArcMeasureValueTask
+from trace.tasks.geometry.circle_theorem.multi_step_angle_value import GeometryCircleMultiStepAngleValueTask
+from trace.tasks.geometry.circle_theorem.secant_secant_length_value import GeometryCircleSecantSecantLengthValueTask
+from trace.tasks.geometry.circle_theorem.tangent_chord_angle_value_tangent_chord_angle_from_arc import GeometryCircleTangentChordAngleFromArcTask
+from trace.tasks.geometry.circle_theorem.tangent_chord_angle_value_tangent_chord_angle_from_inscribed import GeometryCircleTangentChordAngleFromInscribedTask
+from trace.tasks.geometry.circle_theorem.tangent_radius_right_triangle_length_value import (
+    GeometryCircleTangentRadiusRightTriangleLengthValueTask,
+    _DEFAULT_TRIPLES,
+)
+from trace.tasks.geometry.circle_theorem.tangent_secant_length_value import GeometryCircleTangentSecantLengthValueTask
 from trace.tasks.shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
@@ -67,26 +78,40 @@ def _circle_crosses_bbox(center: list[float], radius: float, bbox: list[float]) 
     return bool(float(nearest) <= float(radius) <= float(farthest))
 
 
-def test_circle_theorem_builder_facade_exports_private_compatibility_surface() -> None:
-    expected_names = {
-        "_resolve_query",
-        "_build_scene_payload",
-        "_build_diameter_perpendicular_chord_scene",
-        "_build_tangent_secant_scene",
-        "_build_secant_secant_scene",
-        "_build_secant_secant_variable_scene",
-        "_build_intersecting_chords_arc_scene",
-        "_build_multi_step_angle_scene",
-        "_build_inscribed_angle_scene",
-        "_build_tangent_chord_angle_scene",
-        "_build_external_secant_angle_scene",
-        "_build_cyclic_quadrilateral_angle_scene",
-        "_circle_point",
-    }
+QUERY_TASK_CLASSES = {
+    "diameter_perpendicular_chord_length": GeometryCircleDiameterPerpendicularChordLengthValueTask,
+    "secant_secant_variable_segment_length": GeometryCircleSecantSecantLengthValueTask,
+    "tangent_secant_length": GeometryCircleTangentSecantLengthValueTask,
+    "secant_secant_length": GeometryCircleSecantSecantLengthValueTask,
+    "intersecting_chords_arc_measure": GeometryCircleIntersectingChordsArcMeasureValueTask,
+    "multi_step_angle_value": GeometryCircleMultiStepAngleValueTask,
+    "inscribed_angle_from_central": GeometryCircleInscribedAngleFromCentralTask,
+    "central_angle_from_inscribed": GeometryCircleCentralAngleFromInscribedTask,
+    "inscribed_angle_from_arc": GeometryCircleInscribedAngleFromArcTask,
+    "tangent_chord_angle_from_arc": GeometryCircleTangentChordAngleFromArcTask,
+    "tangent_chord_angle_from_inscribed": GeometryCircleTangentChordAngleFromInscribedTask,
+    "external_two_secants_angle_from_arcs": GeometryCircleExternalSecantAngleValueTask,
+    "opposite_angle_supplement": GeometryCircleCyclicQuadrilateralAngleValueTask,
+    "exterior_angle_from_opposite_interior": GeometryCircleCyclicQuadrilateralAngleValueTask,
+}
 
-    assert expected_names <= set(theorem_builders.__all__)
-    for name in expected_names:
-        assert callable(getattr(theorem_builders, name))
+
+def _task_for_query(query_id: str):
+    return QUERY_TASK_CLASSES[str(query_id)]()
+
+
+def test_circle_theorem_tangent_radius_default_pool_has_broad_support() -> None:
+    assert len(_DEFAULT_TRIPLES) >= 12
+
+    radii = [radius for radius, _tangent, _external in _DEFAULT_TRIPLES]
+    tangent_lengths = [tangent for _radius, tangent, _external in _DEFAULT_TRIPLES]
+    external_distances = [external for _radius, _tangent, external in _DEFAULT_TRIPLES]
+
+    assert len(set(radii)) == len(radii)
+    assert len(set(tangent_lengths)) == len(tangent_lengths)
+    assert len(set(external_distances)) == len(external_distances)
+    for radius, tangent, external in _DEFAULT_TRIPLES:
+        assert int(radius) ** 2 + int(tangent) ** 2 == int(external) ** 2
 
 
 @pytest.mark.parametrize(
@@ -323,13 +348,13 @@ def test_circle_tangent_radius_right_triangle_length_contract(
             {"query_id": "opposite_angle_supplement", "target_answer": 75},
             75,
             4,
-            "angleABC",
+            "angleCDA",
         ),
         (
             {"query_id": "exterior_angle_from_opposite_interior", "target_answer": 75},
             75,
             5,
-            "angleEBC",
+            "angleADE",
         ),
     ),
 )
@@ -339,7 +364,7 @@ def test_geometry_circle_theorem_value_emits_expected_contract(
     expected_annotation_count: int,
     expected_canonical_segment: str,
 ) -> None:
-    out = GeometryCircleTheoremValueTask().generate(
+    out = _task_for_query(str(params["query_id"])).generate(
         23401, params=params, max_attempts=40
     )
 
@@ -399,7 +424,7 @@ def test_geometry_circle_theorem_value_is_deterministic() -> None:
         "target_answer": 24,
         "secant_secant_variable_target_kind": "inside_first",
     }
-    task = GeometryCircleTheoremValueTask()
+    task = _task_for_query(str(params["query_id"]))
 
     out_a = task.generate(23411, params=params, max_attempts=40)
     out_b = task.generate(23411, params=params, max_attempts=40)
@@ -414,7 +439,6 @@ def test_geometry_circle_theorem_value_is_deterministic() -> None:
 
 
 def test_geometry_circle_theorem_reserves_visible_o_for_center() -> None:
-    task = GeometryCircleTheoremValueTask()
     variants = (
         "diameter_perpendicular_chord_length",
         "secant_secant_variable_segment_length",
@@ -434,7 +458,7 @@ def test_geometry_circle_theorem_reserves_visible_o_for_center() -> None:
 
     for seed in range(23450, 23460):
         for query_id in variants:
-            out = task.generate(
+            out = _task_for_query(query_id).generate(
                 seed, params={"query_id": query_id}, max_attempts=100
             )
             label_map = out.trace_payload["execution_trace"]["label_map"]
@@ -449,7 +473,7 @@ def test_geometry_circle_theorem_reserves_visible_o_for_center() -> None:
 
 def test_geometry_circle_theorem_value_rejects_unsupported_variant() -> None:
     with pytest.raises(ValueError):
-        GeometryCircleTheoremValueTask().generate(
+        GeometryCircleDiameterPerpendicularChordLengthValueTask().generate(
             23421,
             params={"query_id": "inscribed_angle_measure", "target_answer": 8},
             max_attempts=20,
@@ -457,7 +481,7 @@ def test_geometry_circle_theorem_value_rejects_unsupported_variant() -> None:
 
 
 def test_tangent_secant_variant_places_tangent_point_on_circle() -> None:
-    out = GeometryCircleTheoremValueTask().generate(
+    out = GeometryCircleTangentSecantLengthValueTask().generate(
         23431,
         params={
             "query_id": "tangent_secant_length",
@@ -505,7 +529,7 @@ def test_tangent_secant_variant_supports_multiple_missing_segments(
     target_answer: int,
     canonical_answer_segment: str,
 ) -> None:
-    out = GeometryCircleTheoremValueTask().generate(
+    out = GeometryCircleTangentSecantLengthValueTask().generate(
         23435,
         params={
             "query_id": "tangent_secant_length",
@@ -526,7 +550,7 @@ def test_tangent_secant_variant_supports_multiple_missing_segments(
 def test_secant_secant_variant_places_intersections_on_circle_and_preserves_power() -> (
     None
 ):
-    out = GeometryCircleTheoremValueTask().generate(
+    out = GeometryCircleSecantSecantLengthValueTask().generate(
         23441,
         params={"query_id": "secant_secant_length", "target_answer": 10},
         max_attempts=40,
@@ -560,7 +584,7 @@ def test_secant_secant_variable_variant_supports_multiple_missing_segments(
     target_answer: int,
     canonical_answer_segment: str,
 ) -> None:
-    out = GeometryCircleTheoremValueTask().generate(
+    out = GeometryCircleSecantSecantLengthValueTask().generate(
         23445,
         params={
             "query_id": "secant_secant_variable_segment_length",
@@ -592,11 +616,12 @@ def test_secant_secant_variable_variant_supports_multiple_missing_segments(
 def test_secant_theorem_variants_sample_external_point_on_both_sides(
     query_id: str,
 ) -> None:
-    task = GeometryCircleTheoremValueTask()
     observed_sides: set[str] = set()
 
     for seed in range(23480, 23490):
-        out = task.generate(seed, params={"query_id": query_id}, max_attempts=100)
+        out = _task_for_query(query_id).generate(
+            seed, params={"query_id": query_id}, max_attempts=100
+        )
         trace = out.trace_payload["execution_trace"]
         label_map = trace["label_map"]
         point_model = out.trace_payload["render_map"]["point_model"]
@@ -616,7 +641,7 @@ def test_secant_theorem_variants_sample_external_point_on_both_sides(
 
 
 def test_intersecting_chords_arc_variant_uses_angle_arc_relationship() -> None:
-    out = GeometryCircleTheoremValueTask().generate(
+    out = GeometryCircleIntersectingChordsArcMeasureValueTask().generate(
         23451,
         params={
             "query_id": "intersecting_chords_arc_measure",
@@ -635,7 +660,7 @@ def test_intersecting_chords_arc_variant_uses_angle_arc_relationship() -> None:
 
 
 def test_multi_step_angle_variant_uses_intersecting_chord_arc_sum() -> None:
-    out = GeometryCircleTheoremValueTask().generate(
+    out = GeometryCircleMultiStepAngleValueTask().generate(
         23453,
         params={"query_id": "multi_step_angle_value", "target_answer": 85},
         max_attempts=40,
@@ -728,7 +753,7 @@ def test_cyclic_quadrilateral_exterior_angle_variant_matches_opposite_angle() ->
 def test_inscribed_angle_variants_use_half_arc_relationship(
     query_id: str, target_answer: int
 ) -> None:
-    out = GeometryCircleTheoremValueTask().generate(
+    out = _task_for_query(query_id).generate(
         23455,
         params={"query_id": query_id, "target_answer": target_answer},
         max_attempts=40,
@@ -752,7 +777,7 @@ def test_inscribed_angle_variants_use_half_arc_relationship(
 def test_tangent_chord_angle_variants_use_matching_angle_or_arc(
     query_id: str,
 ) -> None:
-    out = GeometryCircleTheoremValueTask().generate(
+    out = _task_for_query(query_id).generate(
         23457,
         params={"query_id": query_id, "target_answer": 45},
         max_attempts=40,
@@ -769,7 +794,6 @@ def test_tangent_chord_angle_variants_use_matching_angle_or_arc(
 
 
 def test_circle_theorem_rendered_label_boxes_avoid_lines_and_circle() -> None:
-    task = GeometryCircleTheoremValueTask()
     variants = (
         "diameter_perpendicular_chord_length",
         "secant_secant_variable_segment_length",
@@ -789,7 +813,7 @@ def test_circle_theorem_rendered_label_boxes_avoid_lines_and_circle() -> None:
 
     for seed in (50000, 50001):
         for query_id in variants:
-            out = task.generate(
+            out = _task_for_query(query_id).generate(
                 seed, params={"query_id": query_id}, max_attempts=100
             )
             render_map = out.trace_payload["render_map"]

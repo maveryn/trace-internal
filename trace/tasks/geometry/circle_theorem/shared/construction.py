@@ -1,14 +1,16 @@
-"""Angle-theorem scene payload builders for circle-theorem value tasks."""
+"""Scene construction primitives for circle-theorem diagrams."""
 
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, Mapping, Tuple
+from typing import Any, Dict
 
-from .theorem_common import (
-    _ResolvedQuery,
-    _EXTERNAL_SECANT_ANGLE_SUPPORT,
-    _CYCLIC_QUADRILATERAL_ANGLE_SUPPORT,
+from .state import (
+    Point,
+    CircleTheoremProblem,
+    CYCLIC_QUADRILATERAL_ANGLE_SUPPORT,
+    EXTERNAL_SECANT_ANGLE_ANSWER_SUPPORT,
+    CENTER_LABEL,
     _sample_point_label_map,
     _visible_segment,
     _visible_angle,
@@ -16,8 +18,9 @@ from .theorem_common import (
     _line_intersection,
     _angle_degrees_at,
 )
-from .theorem_geometry import (
+from .spatial_primitives import (
     _add_points,
+    _apply_external_point_side,
     _circle_point,
     _extend_ray,
     _mirror_point_x,
@@ -25,14 +28,562 @@ from .theorem_geometry import (
     _sample_external_point_side,
     _split_cyclic_arc_sum,
 )
+from .sampling import (
+    _candidate_diameter_chord_values,
+    _candidate_tangent_secant_values,
+    _candidate_secant_secant_values,
+    _candidate_secant_secant_variable_values,
+)
+
+def _build_diameter_perpendicular_chord_scene(
+    rng, *, problem: CircleTheoremProblem
+) -> Dict[str, Any]:
+    """Build a perpendicular-diameter chord theorem scene with the missing chord segment fixed."""
+    candidates = _candidate_diameter_chord_values(int(problem.target_answer))
+
+    if not candidates:
+        raise ValueError(
+            f"unsupported target answer for diameter chord theorem: {problem.target_answer}"
+        )
+    spec = dict(candidates[int(rng.randrange(len(candidates)))])
+    label_map = _sample_point_label_map(rng, ("O", "B", "D", "E", "A", "C"))
+    radius = float(spec["radius"])
+    offset = float(spec["offset"])
+    half_chord = float(spec["half_chord"])
+    canonical_point_model = {
+        "O": (0.0, 0.0),
+        "B": (0.0, -radius),
+        "D": (0.0, radius),
+        "E": (0.0, -offset),
+        "A": (-half_chord, -offset),
+        "C": (half_chord, -offset),
+    }
+    point_model = {
+        label_map[key]: value for key, value in canonical_point_model.items()
+    }
+    diameter_segment = _visible_segment(label_map, "D", "B")
+    chord_segment = _visible_segment(label_map, "A", "C")
+    answer_segment = _visible_segment(label_map, "B", "E")
+    angle_token = f"{_visible_angle(label_map, 'D', 'E', 'C')}=90"
+    diameter_token = f"{diameter_segment}={int(spec['diameter'])}"
+    chord_token = f"{chord_segment}={int(spec['chord'])}"
+    theorem_trace = {
+        "theorem": "diameter_perpendicular_chord",
+        "label_map": dict(label_map),
+        "radius": int(spec["radius"]),
+        "center_to_chord_distance": int(spec["offset"]),
+        "half_chord_length": int(spec["half_chord"]),
+        "diameter_length": int(spec["diameter"]),
+        "chord_length": int(spec["chord"]),
+        "canonical_answer_segment": "BE",
+        "answer_segment": str(answer_segment),
+        "answer_value": int(spec["answer"]),
+        "distractor_tokens": [str(angle_token)],
+    }
+    return {
+        "point_model": point_model,
+        "circle_center": (0.0, 0.0),
+        "circle_radius": radius,
+        "segments": {
+            "DB": (label_map["D"], label_map["B"]),
+            "AC": (label_map["A"], label_map["C"]),
+            "BE": (label_map["B"], label_map["E"]),
+            "DE": (label_map["D"], label_map["E"]),
+        },
+        "measurement_specs": (
+            (diameter_token, "DB", -1.0),
+            (chord_token, "AC", -1.0),
+            (f"{answer_segment}=?", "BE", 1.0),
+        ),
+        "angle_marker_specs": (
+            {
+                "token": angle_token,
+                "vertex": label_map["E"],
+                "arm0": label_map["D"],
+                "arm1": label_map["C"],
+                "radius_px": 34.0,
+            },
+        ),
+        "support_measurement_tokens": (diameter_token, chord_token),
+        "annotation_point_labels": (
+            label_map["D"],
+            label_map["B"],
+            label_map["A"],
+            label_map["C"],
+            label_map["E"],
+        ),
+        "annotation_values": {
+            str(diameter_segment): int(spec["diameter"]),
+            str(chord_segment): int(spec["chord"]),
+            str(answer_segment): int(spec["answer"]),
+        },
+        "theorem_trace": theorem_trace,
+        "prompt_slots": {
+            "diameter_segment": str(diameter_segment),
+            "chord_segment": str(chord_segment),
+            "intersection_label": str(label_map["E"]),
+            "answer_segment": str(answer_segment),
+        },
+    }
+
+def _build_tangent_secant_scene(rng, *, problem: CircleTheoremProblem) -> Dict[str, Any]:
+    """Build a tangent-secant power theorem scene for the selected hidden segment."""
+    candidates = _candidate_tangent_secant_values(
+
+        int(problem.target_answer),
+        target_kind=problem.tangent_secant_target_kind,
+    )
+    if not candidates:
+        raise ValueError(
+            f"unsupported target answer for tangent secant theorem: {problem.target_answer}"
+        )
+    spec = dict(candidates[int(rng.randrange(len(candidates)))])
+    label_map = _sample_point_label_map(rng, ("P", "A", "B", "T", "O"))
+    outside = float(spec["PA"])
+    internal = float(spec["AB"])
+    tangent = float(spec["PT"])
+    target_kind = str(spec["target_kind"])
+    radius = internal / 2.0
+    center_x = outside + radius
+    center = (center_x, 0.0)
+    tangent_x = ((center_x * center_x) - (radius * radius)) / center_x
+    tangent_y = (radius * tangent) / center_x
+    if abs(math.hypot(tangent_x - center_x, tangent_y) - radius) > 1e-7:
+        raise ValueError("sampled tangent point is not on the circle")
+    if abs((tangent_x * (tangent_x - center_x)) + (tangent_y * tangent_y)) > 1e-7:
+        raise ValueError("sampled tangent point is not perpendicular to the radius")
+    canonical_point_model = {
+        "P": (0.0, 0.0),
+        "A": (outside, 0.0),
+        "B": (outside + internal, 0.0),
+        "T": (float(tangent_x), float(tangent_y)),
+        "O": center,
+    }
+    external_point_side = _sample_external_point_side(rng)
+    canonical_point_model, center = _apply_external_point_side(
+        canonical_point_model,
+        center,
+        side=external_point_side,
+    )
+    point_model = {
+        label_map[key]: value for key, value in canonical_point_model.items()
+    }
+    tangent_segment = _visible_segment(label_map, "P", "T")
+    outside_segment = _visible_segment(label_map, "P", "A")
+    inside_segment = _visible_segment(label_map, "A", "B")
+    full_secant_segment = _visible_segment(label_map, "P", "B")
+    answer_segment_by_kind = {
+        "outside": outside_segment,
+        "inside": inside_segment,
+        "tangent": tangent_segment,
+    }
+    answer_segment = str(answer_segment_by_kind[str(target_kind)])
+    canonical_answer_segment = str(spec["canonical_answer_segment"])
+    known_token_by_segment = {
+        "PT": f"{tangent_segment}={int(tangent)}",
+        "PA": f"{outside_segment}={int(outside)}",
+        "AB": f"{inside_segment}={int(internal)}",
+    }
+    known_segment_ids_by_kind = {
+        "outside": ("PT", "AB"),
+        "inside": ("PT", "PA"),
+        "tangent": ("PA", "AB"),
+    }
+    known_segment_ids = known_segment_ids_by_kind[str(target_kind)]
+    tokens = tuple(
+        str(known_token_by_segment[str(segment_id)]) for segment_id in known_segment_ids
+    )
+    measurement_specs_by_kind = {
+        "outside": (
+            (known_token_by_segment["PT"], "PT", -1.0),
+            (f"{outside_segment}=?", "PA", 1.0),
+            (known_token_by_segment["AB"], "AB", 1.0),
+        ),
+        "inside": (
+            (known_token_by_segment["PT"], "PT", -1.0),
+            (known_token_by_segment["PA"], "PA", 1.0),
+            (f"{inside_segment}=?", "AB", 1.0),
+        ),
+        "tangent": (
+            (f"{tangent_segment}=?", "PT", -1.0),
+            (known_token_by_segment["PA"], "PA", 1.0),
+            (known_token_by_segment["AB"], "AB", 1.0),
+        ),
+    }
+    distractor_angle = _visible_angle(label_map, "T", "P", "A")
+    distractor_angle_value = _angle_degrees_at(
+        canonical_point_model["P"],
+        canonical_point_model["T"],
+        canonical_point_model["A"],
+    )
+    distractor_token = f"{distractor_angle}={int(distractor_angle_value)}"
+    theorem_trace = {
+        "theorem": "tangent_secant",
+        "label_map": dict(label_map),
+        "target_kind": str(target_kind),
+        "PT": int(tangent),
+        "PA": int(outside),
+        "AB": int(internal),
+        "PB": int(outside + internal),
+        "canonical_answer_segment": str(canonical_answer_segment),
+        "answer_segment": str(answer_segment),
+        "answer_value": int(spec["answer"]),
+        "power_PT_squared": int(tangent * tangent),
+        "power_PA_times_PB": int(outside * (outside + internal)),
+        "distractor_tokens": [str(distractor_token)],
+        "external_point_side": str(external_point_side),
+    }
+    return {
+        "point_model": point_model,
+        "circle_center": center,
+        "circle_radius": float(radius),
+        "segments": {
+            "PT": (label_map["P"], label_map["T"]),
+            "PAB": (label_map["P"], label_map["B"]),
+            "PA": (label_map["P"], label_map["A"]),
+            "AB": (label_map["A"], label_map["B"]),
+            "OB": (label_map["O"], label_map["B"]),
+        },
+        "measurement_specs": measurement_specs_by_kind[str(target_kind)],
+        "angle_marker_specs": (
+            {
+                "token": distractor_token,
+                "vertex": label_map["P"],
+                "arm0": label_map["T"],
+                "arm1": label_map["A"],
+                "radius_px": 36.0,
+            },
+        ),
+        "support_measurement_tokens": tokens,
+        "annotation_point_labels": (
+            label_map["P"],
+            label_map["T"],
+            label_map["A"],
+            label_map["B"],
+        ),
+        "annotation_values": {
+            str(tangent_segment): int(tangent),
+            str(outside_segment): int(outside),
+            str(inside_segment): int(internal),
+            str(full_secant_segment): int(outside + internal),
+        },
+        "theorem_trace": theorem_trace,
+        "prompt_slots": {
+            "external_point": str(label_map["P"]),
+            "tangent_point": str(label_map["T"]),
+            "near_point": str(label_map["A"]),
+            "far_point": str(label_map["B"]),
+            "tangent_segment": str(tangent_segment),
+            "inside_segment": str(inside_segment),
+            "answer_segment": str(answer_segment),
+        },
+    }
+
+def _build_secant_secant_scene(rng, *, problem: CircleTheoremProblem) -> Dict[str, Any]:
+    """Build a two-secant power theorem scene with one outside segment hidden."""
+    candidates = _candidate_secant_secant_values(int(problem.target_answer))
+
+    if not candidates:
+        raise ValueError(
+            f"unsupported target answer for secant secant theorem: {problem.target_answer}"
+        )
+    spec = dict(candidates[int(rng.randrange(len(candidates)))])
+    label_map = _sample_point_label_map(rng, ("P", "A", "B", "C", "D", "O"))
+    pa = float(spec["PA"])
+    ab = float(spec["AB"])
+    pc = float(spec["PC"])
+    cd = float(spec["CD"])
+    pd = float(spec["PD"])
+    radius = ab / 2.0
+    center_x = pa + radius
+    center = (center_x, 0.0)
+    cos_theta = float(pc + pd) / float(2.0 * center_x)
+    sin_theta = math.sqrt(max(0.0, 1.0 - (cos_theta * cos_theta)))
+    u2 = (float(cos_theta), float(sin_theta))
+    canonical_point_model = {
+        "P": (0.0, 0.0),
+        "A": (pa, 0.0),
+        "B": (pa + ab, 0.0),
+        "C": (pc * u2[0], pc * u2[1]),
+        "D": (pd * u2[0], pd * u2[1]),
+        "O": center,
+    }
+    external_point_side = _sample_external_point_side(rng)
+    canonical_point_model, center = _apply_external_point_side(
+        canonical_point_model,
+        center,
+        side=external_point_side,
+    )
+    for label in ("A", "B", "C", "D"):
+        distance = math.hypot(
+            canonical_point_model[label][0] - center[0],
+            canonical_point_model[label][1] - center[1],
+        )
+        if abs(float(distance) - float(radius)) > 1e-6:
+            raise ValueError("sampled secant point is not on the circle")
+    point_model = {
+        label_map[key]: value for key, value in canonical_point_model.items()
+    }
+    outside_segment = _visible_segment(label_map, "P", "A")
+    inside_segment = _visible_segment(label_map, "A", "B")
+    full_first_secant = _visible_segment(label_map, "P", "B")
+    outside_second_segment = _visible_segment(label_map, "P", "C")
+    inside_second_segment = _visible_segment(label_map, "C", "D")
+    full_second_secant = _visible_segment(label_map, "P", "D")
+    distractor_angle = _visible_angle(label_map, "A", "P", "C")
+    distractor_angle_value = _angle_degrees_at(
+        canonical_point_model["P"],
+        canonical_point_model["A"],
+        canonical_point_model["C"],
+    )
+    tokens = (
+        f"{inside_segment}={int(ab)}",
+        f"{outside_second_segment}={int(pc)}",
+        f"{inside_second_segment}={int(cd)}",
+    )
+    distractor_token = f"{distractor_angle}={int(distractor_angle_value)}"
+    theorem_trace = {
+        "theorem": "secant_secant",
+        "label_map": dict(label_map),
+        "PA": int(pa),
+        "AB": int(ab),
+        "PB": int(pa + ab),
+        "PC": int(pc),
+        "CD": int(cd),
+        "PD": int(pd),
+        "canonical_answer_segment": "PA",
+        "answer_segment": str(outside_segment),
+        "answer_value": int(pa),
+        "power_PA_times_PB": int(pa * (pa + ab)),
+        "power_PC_times_PD": int(pc * pd),
+        "distractor_tokens": [str(distractor_token)],
+        "external_point_side": str(external_point_side),
+    }
+    return {
+        "point_model": point_model,
+        "circle_center": center,
+        "circle_radius": float(radius),
+        "segments": {
+            "PAB": (label_map["P"], label_map["B"]),
+            "PCD": (label_map["P"], label_map["D"]),
+            "PA": (label_map["P"], label_map["A"]),
+            "AB": (label_map["A"], label_map["B"]),
+            "PC": (label_map["P"], label_map["C"]),
+            "CD": (label_map["C"], label_map["D"]),
+        },
+        "measurement_specs": (
+            (f"{outside_segment}=?", "PA", 1.0),
+            (tokens[0], "AB", 1.0),
+            (tokens[1], "PC", -1.0),
+            (tokens[2], "CD", 1.0),
+        ),
+        "angle_marker_specs": (
+            {
+                "token": distractor_token,
+                "vertex": label_map["P"],
+                "arm0": label_map["A"],
+                "arm1": label_map["C"],
+                "radius_px": 38.0,
+            },
+        ),
+        "support_measurement_tokens": tokens,
+        "annotation_point_labels": (
+            label_map["P"],
+            label_map["A"],
+            label_map["B"],
+            label_map["C"],
+            label_map["D"],
+        ),
+        "annotation_values": {
+            str(outside_segment): int(pa),
+            str(inside_segment): int(ab),
+            str(full_first_secant): int(pa + ab),
+            str(outside_second_segment): int(pc),
+            str(inside_second_segment): int(cd),
+            str(full_second_secant): int(pd),
+        },
+        "theorem_trace": theorem_trace,
+        "prompt_slots": {
+            "external_point": str(label_map["P"]),
+            "near_point": str(label_map["A"]),
+            "far_point": str(label_map["B"]),
+            "near_point_alt": str(label_map["C"]),
+            "far_point_alt": str(label_map["D"]),
+            "inside_segment": str(inside_segment),
+            "outside_second_segment": str(outside_second_segment),
+            "inside_second_segment": str(inside_second_segment),
+            "answer_segment": str(outside_segment),
+        },
+    }
+
+def _build_secant_secant_variable_scene(
+    rng, *, problem: CircleTheoremProblem
+) -> Dict[str, Any]:
+    """Build a two-secant power theorem scene with a task-selected segment hidden."""
+    candidates = _candidate_secant_secant_variable_values(
+
+        int(problem.target_answer),
+        target_kind=problem.secant_secant_variable_target_kind,
+    )
+    if not candidates:
+        raise ValueError(
+            f"unsupported target answer for variable secant secant theorem: {problem.target_answer}"
+        )
+    spec = dict(candidates[int(rng.randrange(len(candidates)))])
+    label_map = _sample_point_label_map(rng, ("P", "A", "B", "C", "D", "O"))
+    pa = float(spec["PA"])
+    ab = float(spec["AB"])
+    pc = float(spec["PC"])
+    cd = float(spec["CD"])
+    pd = float(spec["PD"])
+    target_kind = str(spec["target_kind"])
+    canonical_answer_segment = str(spec["canonical_answer_segment"])
+    radius = ab / 2.0
+    center_x = pa + radius
+    center = (center_x, 0.0)
+    cos_theta = float(pc + pd) / float(2.0 * center_x)
+    sin_theta = math.sqrt(max(0.0, 1.0 - (cos_theta * cos_theta)))
+    u2 = (float(cos_theta), float(sin_theta))
+    canonical_point_model = {
+        "P": (0.0, 0.0),
+        "A": (pa, 0.0),
+        "B": (pa + ab, 0.0),
+        "C": (pc * u2[0], pc * u2[1]),
+        "D": (pd * u2[0], pd * u2[1]),
+        "O": center,
+    }
+    external_point_side = _sample_external_point_side(rng)
+    canonical_point_model, center = _apply_external_point_side(
+        canonical_point_model,
+        center,
+        side=external_point_side,
+    )
+    for label in ("A", "B", "C", "D"):
+        distance = math.hypot(
+            canonical_point_model[label][0] - center[0],
+            canonical_point_model[label][1] - center[1],
+        )
+        if abs(float(distance) - float(radius)) > 1e-6:
+            raise ValueError("sampled secant point is not on the circle")
+    point_model = {
+        label_map[key]: value for key, value in canonical_point_model.items()
+    }
+    visible_by_canonical = {
+        "PA": _visible_segment(label_map, "P", "A"),
+        "AB": _visible_segment(label_map, "A", "B"),
+        "PB": _visible_segment(label_map, "P", "B"),
+        "PC": _visible_segment(label_map, "P", "C"),
+        "CD": _visible_segment(label_map, "C", "D"),
+        "PD": _visible_segment(label_map, "P", "D"),
+    }
+    value_by_canonical = {
+        "PA": int(pa),
+        "AB": int(ab),
+        "PB": int(pa + ab),
+        "PC": int(pc),
+        "CD": int(cd),
+        "PD": int(pd),
+    }
+    token_by_canonical = {
+        canonical: f"{visible_by_canonical[canonical]}={value_by_canonical[canonical]}"
+        for canonical in ("PA", "AB", "PC", "CD")
+    }
+    measurement_token_by_canonical = dict(token_by_canonical)
+    measurement_token_by_canonical[str(canonical_answer_segment)] = (
+        f"{visible_by_canonical[str(canonical_answer_segment)]}=?"
+    )
+    tokens = tuple(
+        str(token_by_canonical[canonical])
+        for canonical in ("PA", "AB", "PC", "CD")
+        if str(canonical) != str(canonical_answer_segment)
+    )
+    distractor_angle = _visible_angle(label_map, "A", "P", "C")
+    distractor_angle_value = _angle_degrees_at(
+        canonical_point_model["P"],
+        canonical_point_model["A"],
+        canonical_point_model["C"],
+    )
+    distractor_token = f"{distractor_angle}={int(distractor_angle_value)}"
+    theorem_trace = {
+        "theorem": "secant_secant_variable",
+        "label_map": dict(label_map),
+        "target_kind": str(target_kind),
+        "PA": int(pa),
+        "AB": int(ab),
+        "PB": int(pa + ab),
+        "PC": int(pc),
+        "CD": int(cd),
+        "PD": int(pd),
+        "canonical_answer_segment": str(canonical_answer_segment),
+        "answer_segment": str(visible_by_canonical[str(canonical_answer_segment)]),
+        "answer_value": int(spec["answer"]),
+        "power_PA_times_PB": int(pa * (pa + ab)),
+        "power_PC_times_PD": int(pc * pd),
+        "distractor_tokens": [str(distractor_token)],
+        "external_point_side": str(external_point_side),
+    }
+    return {
+        "point_model": point_model,
+        "circle_center": center,
+        "circle_radius": float(radius),
+        "segments": {
+            "PAB": (label_map["P"], label_map["B"]),
+            "PCD": (label_map["P"], label_map["D"]),
+            "PA": (label_map["P"], label_map["A"]),
+            "AB": (label_map["A"], label_map["B"]),
+            "PC": (label_map["P"], label_map["C"]),
+            "CD": (label_map["C"], label_map["D"]),
+        },
+        "measurement_specs": (
+            (measurement_token_by_canonical["PA"], "PA", 1.0),
+            (measurement_token_by_canonical["AB"], "AB", 1.0),
+            (measurement_token_by_canonical["PC"], "PC", -1.0),
+            (measurement_token_by_canonical["CD"], "CD", 1.0),
+        ),
+        "angle_marker_specs": (
+            {
+                "token": distractor_token,
+                "vertex": label_map["P"],
+                "arm0": label_map["A"],
+                "arm1": label_map["C"],
+                "radius_px": 38.0,
+            },
+        ),
+        "support_measurement_tokens": tokens,
+        "annotation_point_labels": (
+            label_map["P"],
+            label_map["A"],
+            label_map["B"],
+            label_map["C"],
+            label_map["D"],
+        ),
+        "annotation_values": {
+            str(visible_by_canonical[key]): int(value)
+            for key, value in value_by_canonical.items()
+        },
+        "theorem_trace": theorem_trace,
+        "prompt_slots": {
+            "external_point": str(label_map["P"]),
+            "near_point": str(label_map["A"]),
+            "far_point": str(label_map["B"]),
+            "near_point_alt": str(label_map["C"]),
+            "far_point_alt": str(label_map["D"]),
+            "inside_segment": str(visible_by_canonical["AB"]),
+            "outside_second_segment": str(visible_by_canonical["PC"]),
+            "inside_second_segment": str(visible_by_canonical["CD"]),
+            "answer_segment": str(visible_by_canonical[str(canonical_answer_segment)]),
+        },
+    }
 
 def _build_intersecting_chords_arc_scene(
-    rng, *, query: _ResolvedQuery
+    rng, *, problem: CircleTheoremProblem
 ) -> Dict[str, Any]:
-    target_arc = int(query.target_answer)
+    """Build an intersecting-chords angle scene and solve the missing intercepted arc."""
+    target_arc = int(problem.target_answer)
+
     if int(target_arc) % 10 != 0 or not (40 <= int(target_arc) <= 180):
         raise ValueError(
-            f"unsupported target answer for intersecting-chords arc theorem: {query.target_answer}"
+            f"unsupported target answer for intersecting-chords arc theorem: {problem.target_answer}"
         )
     label_map = _sample_point_label_map(rng, ("O", "A", "B", "C", "D", "E"))
     known_arc_candidates = [
@@ -41,7 +592,7 @@ def _build_intersecting_chords_arc_scene(
         if 35 <= int(360 - int(target_arc) - int(value) - 55)
     ]
     if not known_arc_candidates:
-        raise ValueError(f"no feasible known arc for target arc: {query.target_answer}")
+        raise ValueError(f"no feasible known arc for target arc: {problem.target_answer}")
     known_arc = int(rng.choice(known_arc_candidates))
     gap_bc_candidates = [
         value
@@ -49,7 +600,7 @@ def _build_intersecting_chords_arc_scene(
         if int(360 - int(known_arc) - int(target_arc) - int(value)) >= 45
     ]
     if not gap_bc_candidates:
-        raise ValueError(f"no feasible arc gap for target arc: {query.target_answer}")
+        raise ValueError(f"no feasible arc gap for target arc: {problem.target_answer}")
     arc_bc = int(rng.choice(gap_bc_candidates))
     arc_da = int(360 - int(known_arc) - int(target_arc) - int(arc_bc))
     angle_value = int((int(known_arc) + int(target_arc)) // 2)
@@ -157,11 +708,13 @@ def _build_intersecting_chords_arc_scene(
         },
     }
 
-def _build_multi_step_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any]:
-    target_angle = int(query.target_answer)
+def _build_multi_step_angle_scene(rng, *, problem: CircleTheoremProblem) -> Dict[str, Any]:
+    """Build an intersecting-chords scene where arc sums determine the target angle."""
+    target_angle = int(problem.target_answer)
+
     if int(target_angle) % 5 != 0 or not (45 <= int(target_angle) <= 135):
         raise ValueError(
-            f"unsupported target answer for multi-step circle angle theorem: {query.target_answer}"
+            f"unsupported target answer for multi-step circle angle theorem: {problem.target_answer}"
         )
     label_map = _sample_point_label_map(rng, ("O", "A", "B", "C", "D", "E"))
     arc_sum = int(2 * int(target_angle))
@@ -170,14 +723,14 @@ def _build_multi_step_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, An
     ]
     if not known_arc_candidates:
         raise ValueError(
-            f"no feasible known arcs for target angle: {query.target_answer}"
+            f"no feasible known arcs for target angle: {problem.target_answer}"
         )
     first_arc = int(rng.choice(known_arc_candidates))
     opposite_arc = int(arc_sum - int(first_arc))
     remaining_arc = int(360 - int(first_arc) - int(opposite_arc))
     if int(remaining_arc) < 90:
         raise ValueError(
-            f"no feasible remaining arcs for target angle: {query.target_answer}"
+            f"no feasible remaining arcs for target angle: {problem.target_answer}"
         )
     gap_bc_candidates = [
         value
@@ -185,7 +738,7 @@ def _build_multi_step_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, An
         if int(remaining_arc - int(value)) >= 45
     ]
     if not gap_bc_candidates:
-        raise ValueError(f"no feasible arc gap for target angle: {query.target_answer}")
+        raise ValueError(f"no feasible arc gap for target angle: {problem.target_answer}")
     arc_bc = int(rng.choice(gap_bc_candidates))
     arc_da = int(remaining_arc - int(arc_bc))
     radius = float(rng.choice((10, 11, 12, 13, 14)))
@@ -297,24 +850,31 @@ def _build_multi_step_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, An
         },
     }
 
-def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any]:
-    query_id = str(query.query_id)
-    if query_id == "central_angle_from_inscribed":
-        central_angle = int(query.target_answer)
+def _build_inscribed_angle_scene(
+    rng,
+    *,
+    problem: CircleTheoremProblem,
+    source_kind: str,
+) -> Dict[str, Any]:
+    """Build an inscribed-angle theorem scene from the selected semantic source measurement."""
+    source = str(source_kind)
+
+    if source == "known_inscribed":
+        central_angle = int(problem.target_answer)
         if int(central_angle) % 10 != 0 or not (40 <= int(central_angle) <= 160):
-            raise ValueError(f"unsupported central angle answer: {query.target_answer}")
+            raise ValueError(f"unsupported central angle answer: {problem.target_answer}")
         inscribed_angle = int(central_angle // 2)
         answer_kind = "central"
-    elif query_id in {"inscribed_angle_from_central", "inscribed_angle_from_arc"}:
-        inscribed_angle = int(query.target_answer)
+    elif source in {"known_central", "known_arc"}:
+        inscribed_angle = int(problem.target_answer)
         if int(inscribed_angle) % 5 != 0 or not (20 <= int(inscribed_angle) <= 80):
             raise ValueError(
-                f"unsupported inscribed angle answer: {query.target_answer}"
+                f"unsupported inscribed angle answer: {problem.target_answer}"
             )
         central_angle = int(2 * int(inscribed_angle))
         answer_kind = "inscribed"
     else:
-        raise ValueError(f"unsupported inscribed-angle query: {query_id}")
+        raise ValueError(f"unsupported inscribed-angle source kind: {source_kind}")
 
     radius = float(rng.choice((10, 11, 12, 13, 14)))
     rotation = float(rng.choice((20, 35, 50, 65, 80, 95, 110, 125, 140)))
@@ -364,7 +924,7 @@ def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any
         "inscribed": f"{inscribed_angle_name}={int(inscribed_angle)}",
         "arc": f"{intercepted_arc_name}={int(central_angle)}",
     }
-    if query_id == "inscribed_angle_from_central":
+    if source == "known_central":
         support_measurement_tokens = (token_by_kind["central"],)
         annotation_point_labels = (
             label_map["A"],
@@ -395,7 +955,7 @@ def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any
                 "end": label_map["C"],
             },
         )
-    elif query_id == "central_angle_from_inscribed":
+    elif source == "known_inscribed":
         support_measurement_tokens = (token_by_kind["inscribed"],)
         annotation_point_labels = (
             label_map["A"],
@@ -505,18 +1065,40 @@ def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any
         },
     }
 
-def _build_tangent_chord_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any]:
-    query_id = str(query.query_id)
-    tangent_chord_angle = int(query.target_answer)
+
+def _build_inscribed_angle_from_central_scene(rng, *, problem: CircleTheoremProblem) -> Dict[str, Any]:
+    """Build the branch where a central angle determines an inscribed angle."""
+
+    return _build_inscribed_angle_scene(rng, problem=problem, source_kind="known_central")
+
+
+def _build_central_angle_from_inscribed_scene(rng, *, problem: CircleTheoremProblem) -> Dict[str, Any]:
+    """Build the branch where an inscribed angle determines a central angle."""
+
+    return _build_inscribed_angle_scene(rng, problem=problem, source_kind="known_inscribed")
+
+
+def _build_inscribed_angle_from_arc_scene(rng, *, problem: CircleTheoremProblem) -> Dict[str, Any]:
+    """Build the branch where an intercepted arc determines an inscribed angle."""
+
+    return _build_inscribed_angle_scene(rng, problem=problem, source_kind="known_arc")
+
+def _build_tangent_chord_angle_scene(
+    rng,
+    *,
+    problem: CircleTheoremProblem,
+    source_kind: str,
+) -> Dict[str, Any]:
+    """Build a tangent-chord theorem scene from the selected semantic source measurement."""
+    source = str(source_kind)
+
+    tangent_chord_angle = int(problem.target_answer)
     if int(tangent_chord_angle) % 5 != 0 or not (25 <= int(tangent_chord_angle) <= 75):
         raise ValueError(
-            f"unsupported tangent-chord angle answer: {query.target_answer}"
+            f"unsupported tangent-chord angle answer: {problem.target_answer}"
         )
-    if query_id not in {
-        "tangent_chord_angle_from_arc",
-        "tangent_chord_angle_from_inscribed",
-    }:
-        raise ValueError(f"unsupported tangent-chord query: {query_id}")
+    if source not in {"known_arc", "known_inscribed"}:
+        raise ValueError(f"unsupported tangent-chord source kind: {source_kind}")
 
     central_angle = int(2 * int(tangent_chord_angle))
     radius = float(rng.choice((10, 11, 12, 13, 14)))
@@ -563,7 +1145,7 @@ def _build_tangent_chord_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str,
     arc_token = f"{intercepted_arc_name}={int(central_angle)}"
     inscribed_token = f"{inscribed_angle_name}={int(tangent_chord_angle)}"
     distractor_token = f"{distractor_arc_name}={int(distractor_arc)}"
-    if query_id == "tangent_chord_angle_from_arc":
+    if source == "known_arc":
         support_measurement_tokens = (arc_token,)
         annotation_point_labels = (
             label_map["P"],
@@ -613,7 +1195,7 @@ def _build_tangent_chord_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str,
     circle_arc_specs = (
         {
             "token": (
-                arc_token if query_id == "tangent_chord_angle_from_arc" else None
+                arc_token if source == "known_arc" else None
             ),
             "start": label_map["T"],
             "end": label_map["A"],
@@ -664,13 +1246,27 @@ def _build_tangent_chord_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str,
         },
     }
 
+
+def _build_tangent_chord_angle_from_arc_scene(rng, *, problem: CircleTheoremProblem) -> Dict[str, Any]:
+    """Build the branch where the intercepted arc is the support value."""
+
+    return _build_tangent_chord_angle_scene(rng, problem=problem, source_kind="known_arc")
+
+
+def _build_tangent_chord_angle_from_inscribed_scene(rng, *, problem: CircleTheoremProblem) -> Dict[str, Any]:
+    """Build the branch where the inscribed angle is the support value."""
+
+    return _build_tangent_chord_angle_scene(rng, problem=problem, source_kind="known_inscribed")
+
 def _build_external_secant_angle_scene(
-    rng, *, query: _ResolvedQuery
+    rng, *, problem: CircleTheoremProblem
 ) -> Dict[str, Any]:
-    target_angle = int(query.target_answer)
-    if int(target_angle) not in _EXTERNAL_SECANT_ANGLE_SUPPORT:
+    """Build an external-secant angle scene using far and near intercepted arcs."""
+    target_angle = int(problem.target_answer)
+
+    if int(target_angle) not in EXTERNAL_SECANT_ANGLE_ANSWER_SUPPORT:
         raise ValueError(
-            f"unsupported target answer for external secant angle theorem: {query.target_answer}"
+            f"unsupported target answer for external secant angle theorem: {problem.target_answer}"
         )
     beta_candidates = [
         value
@@ -680,7 +1276,7 @@ def _build_external_secant_angle_scene(
     ]
     if not beta_candidates:
         raise ValueError(
-            f"no feasible intercepted arcs for external secant angle: {query.target_answer}"
+            f"no feasible intercepted arcs for external secant angle: {problem.target_answer}"
         )
     beta = int(rng.choice(beta_candidates))
     alpha = int(beta + target_angle)
@@ -819,22 +1415,21 @@ def _build_external_secant_angle_scene(
     }
 
 def _build_cyclic_quadrilateral_angle_scene(
-    rng, *, query: _ResolvedQuery
+    rng, *, problem: CircleTheoremProblem, target_kind: str
 ) -> Dict[str, Any]:
-    target_angle = int(query.target_answer)
-    if int(target_angle) not in _CYCLIC_QUADRILATERAL_ANGLE_SUPPORT:
+    """Build a cyclic-quadrilateral angle scene for opposite or exterior angle transfer."""
+    target_angle = int(problem.target_answer)
+
+    if int(target_angle) not in CYCLIC_QUADRILATERAL_ANGLE_SUPPORT:
         raise ValueError(
-            f"unsupported target answer for cyclic quadrilateral angle theorem: {query.target_answer}"
+            f"unsupported target answer for cyclic quadrilateral angle theorem: {problem.target_answer}"
         )
-    query_id = str(query.query_id)
-    if query_id not in {
-        "opposite_angle_supplement",
-        "exterior_angle_from_opposite_interior",
-    }:
-        raise ValueError(f"unsupported cyclic quadrilateral query: {query.query_id}")
+    kind = str(target_kind)
+    if kind not in {"opposite", "exterior"}:
+        raise ValueError(f"unsupported cyclic quadrilateral target kind: {target_kind}")
 
     target_vertex = str(rng.choice(("B", "D")))
-    if query_id == "opposite_angle_supplement":
+    if kind == "opposite":
         angle_b = int(target_angle if target_vertex == "B" else 180 - target_angle)
         known_vertex = "D" if target_vertex == "B" else "B"
         target_canonical_angle = "ABC" if target_vertex == "B" else "CDA"
@@ -915,7 +1510,7 @@ def _build_cyclic_quadrilateral_angle_scene(
             canonical_point_model["D"],
         ),
     }
-    if query_id == "exterior_angle_from_opposite_interior":
+    if kind == "exterior":
         if target_canonical_angle == "ADE":
             angle_by_canonical["ADE"] = _angle_degrees_at(
                 canonical_point_model["D"],
@@ -1040,11 +1635,31 @@ def _build_cyclic_quadrilateral_angle_scene(
         },
     }
 
+
+def _build_cyclic_opposite_angle_scene(rng, *, problem: CircleTheoremProblem) -> Dict[str, Any]:
+    """Build the branch where opposite cyclic angles are supplementary."""
+
+    return _build_cyclic_quadrilateral_angle_scene(rng, problem=problem, target_kind="opposite")
+
+
+def _build_cyclic_exterior_angle_scene(rng, *, problem: CircleTheoremProblem) -> Dict[str, Any]:
+    """Build the branch where a cyclic exterior angle is transferred."""
+
+    return _build_cyclic_quadrilateral_angle_scene(rng, problem=problem, target_kind="exterior")
+
 __all__ = [
-    '_build_intersecting_chords_arc_scene',
-    '_build_multi_step_angle_scene',
-    '_build_inscribed_angle_scene',
-    '_build_tangent_chord_angle_scene',
-    '_build_external_secant_angle_scene',
-    '_build_cyclic_quadrilateral_angle_scene',
+    "_build_central_angle_from_inscribed_scene",
+    "_build_cyclic_exterior_angle_scene",
+    "_build_cyclic_opposite_angle_scene",
+    "_build_diameter_perpendicular_chord_scene",
+    "_build_external_secant_angle_scene",
+    "_build_inscribed_angle_from_arc_scene",
+    "_build_inscribed_angle_from_central_scene",
+    "_build_intersecting_chords_arc_scene",
+    "_build_multi_step_angle_scene",
+    "_build_secant_secant_scene",
+    "_build_secant_secant_variable_scene",
+    "_build_tangent_chord_angle_from_arc_scene",
+    "_build_tangent_chord_angle_from_inscribed_scene",
+    "_build_tangent_secant_scene",
 ]

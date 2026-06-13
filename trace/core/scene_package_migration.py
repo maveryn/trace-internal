@@ -14,7 +14,7 @@ import re
 
 MIGRATED_SCENE_PACKAGE_DOMAINS: frozenset[str] = frozenset()
 MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels"}),
     "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess"}),
     "geometry": frozenset(
         {
@@ -24,12 +24,13 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
             "circle_centerline_overlap",
             "circle_pair_tangents",
             "circle_polygon_composite",
+            "circle_theorem",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels"}),
     "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess"}),
     "geometry": frozenset(
         {
@@ -39,6 +40,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
             "circle_centerline_overlap",
             "circle_pair_tangents",
             "circle_polygon_composite",
+            "circle_theorem",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),

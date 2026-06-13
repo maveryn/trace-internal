@@ -203,11 +203,12 @@ Review artifacts for these tasks use `review/task-reviews/games/<scene_id>/<task
 - Visual styles include day, night, retro, paper, and construction lane palettes,
   shared games/puzzles panel-scene treatments, sampled text fonts, and layout
   jitter for the whole playfield.
-- Reasoning coverage: moving-object intersections with a marked route, and
-  moving-object direction counting.
-- Annotation uses homogeneous `bbox_set` over the matching moving objects.
+- Reasoning coverage: identifying the labeled moving object that hits a marked route after timed motion,
+  and moving-object direction counting.
+- Annotation uses homogeneous `bbox_set` over the matching moving objects; the label task marks only the
+  colliding labeled object.
 - Active default tasks:
-  - `task_games__crossing__moving_object_count`
+  - `task_games__crossing__hit_object_label`
   - `task_games__crossing__moving_object_direction_count`
 
 ### `darts`

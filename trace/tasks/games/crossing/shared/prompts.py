@@ -30,6 +30,15 @@ def json_examples_for_integer_answer() -> tuple[str, str]:
     )
 
 
+def json_examples_for_label_answer() -> tuple[str, str]:
+    """Return generic label-answer JSON examples for Crossing option tasks."""
+
+    return (
+        json.dumps({"annotation": [[428, 342, 498, 384]], "answer": "C"}, separators=(",", ":")),
+        json.dumps({"answer": "C"}, separators=(",", ":")),
+    )
+
+
 def crossing_object_description(*, include_route: bool) -> str:
     """Return prompt object description for one crossing scene type."""
 
@@ -103,4 +112,5 @@ __all__ = [
     "crossing_object_description",
     "crossing_output_slots",
     "json_examples_for_integer_answer",
+    "json_examples_for_label_answer",
 ]

@@ -9,7 +9,7 @@ import pytest
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.crossing.moving_object_count import GamesCrossingMovingObjectCountTask
+from trace.tasks.games.crossing.hit_object_label import GamesCrossingHitObjectLabelTask
 from trace.tasks.games.crossing.moving_object_direction_count import GamesCrossingMovingObjectDirectionCountTask
 from trace.tasks.games.crossing.shared.rules import route_collision_vehicle_ids
 from trace.tasks.games.crossing.shared.state import (
@@ -27,6 +27,7 @@ def _vehicles(execution: dict) -> tuple[CrossingVehicle, ...]:
             start_col=int(row["start_col"]),
             direction=int(row["direction"]),
             color_index=int(row["color_index"]),
+            option_label=None if row.get("option_label") is None else str(row["option_label"]),
         )
         for row in execution["vehicles"]
     )
@@ -48,13 +49,13 @@ def _routes(execution: dict) -> tuple[CrossingRouteOption, ...]:
     ("task_cls", "params", "expected_query", "expected_answer", "expected_answer_type", "expected_annotation_type", "annotation_count"),
     (
         (
-            GamesCrossingMovingObjectCountTask,
-            {"target_answer": 3, "lane_count": 6, "row_count": 6, "style_variant": "retro"},
-            "moving_object_count",
-            3,
-            "integer",
+            GamesCrossingHitObjectLabelTask,
+            {"target_label": "C", "lane_count": 6, "row_count": 6, "style_variant": "retro"},
+            "hit_object_label",
+            "C",
+            "string",
             "bbox_set",
-            3,
+            1,
         ),
         (
             GamesCrossingMovingObjectDirectionCountTask,
@@ -94,20 +95,28 @@ def test_games_crossing_public_tasks_emit_expected_contract(
     assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
 
 
-def test_games_crossing_moving_object_count_matches_trace() -> None:
-    out = GamesCrossingMovingObjectCountTask().generate(
+def test_games_crossing_hit_object_label_matches_trace() -> None:
+    out = GamesCrossingHitObjectLabelTask().generate(
         77130,
-        params={"target_answer": 5, "lane_count": 8, "row_count": 7},
+        params={"target_label": "D", "lane_count": 8, "row_count": 7},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
     route = _routes(execution)[0]
     vehicles = _vehicles(execution)
     hit_ids = route_collision_vehicle_ids(route, vehicles, lane_count=int(execution["lane_count"]))
+    labeled = {str(vehicle.option_label): str(vehicle.vehicle_id) for vehicle in vehicles if vehicle.option_label is not None}
 
-    assert int(out.answer_gt.value) == len(hit_ids) == 5
+    assert out.answer_gt.value == "D"
+    assert set(labeled) == {"A", "B", "C", "D"}
+    assert len(hit_ids) == 1
+    assert labeled["D"] == hit_ids[0]
     assert tuple(execution["intersecting_vehicle_ids"]) == hit_ids
     assert tuple(execution["annotation_entity_ids"]) == hit_ids
+    assert execution["target_object_label"] == "D"
+    assert execution["target_label"] == "D"
+    assert all(label.isdigit() for label in execution["start_labels"])
+    assert len(set(route.path_cols)) == 1
 
 
 @pytest.mark.parametrize(
@@ -140,6 +149,7 @@ def test_games_crossing_direction_count_matches_trace(query_id: str, target_answ
 
 
 def test_games_crossing_direction_count_taxonomy() -> None:
+    assert resolve_task_taxonomy("task_games__crossing__hit_object_label").scene_id == "crossing"
     assert resolve_task_taxonomy("task_games__crossing__moving_object_direction_count").scene_id == "crossing"
 
 
@@ -151,7 +161,7 @@ def test_games_crossing_lane_build_smoke(tmp_path: Path) -> None:
         instance_version="v0",
         image_format="png",
         tasks=[
-            BuildTaskConfig(task_id="task_games__crossing__moving_object_count", count=1, params={"target_answer": 2}),
+            BuildTaskConfig(task_id="task_games__crossing__hit_object_label", count=1, params={"target_label": "B"}),
             BuildTaskConfig(
                 task_id="task_games__crossing__moving_object_direction_count",
                 count=1,

@@ -107,6 +107,8 @@ def validate_crossing_sample(sample: CrossingSample) -> None:
         expected_hit_ids = route_collision_vehicle_ids(marked, sample.vehicles, lane_count=lane_count)
         expected_answer = len(expected_hit_ids)
         expected_annotation = set(expected_hit_ids)
+        if int(sample.answer) != int(expected_answer):
+            raise ValueError("crossing answer does not match active query")
     elif count_mode in {"left_movers", "right_movers"}:
         target_direction = -1 if count_mode == "left_movers" else 1
         expected_annotation = {
@@ -115,11 +117,26 @@ def validate_crossing_sample(sample: CrossingSample) -> None:
             if int(vehicle.direction) == int(target_direction)
         }
         expected_answer = len(expected_annotation)
+        if int(sample.answer) != int(expected_answer):
+            raise ValueError("crossing answer does not match active query")
+    elif count_mode == "labeled_route_collision":
+        marked = next((route for route in sample.route_options if route.label == sample.marked_route_label), None)
+        if marked is None:
+            raise ValueError("hit-object label task requires marked route")
+        expected_hit_ids = route_collision_vehicle_ids(marked, sample.vehicles, lane_count=lane_count)
+        if len(expected_hit_ids) != 1:
+            raise ValueError("hit-object label task requires exactly one collision")
+        vehicle_by_id = {str(vehicle.vehicle_id): vehicle for vehicle in sample.vehicles}
+        target_vehicle = vehicle_by_id.get(str(expected_hit_ids[0]))
+        if target_vehicle is None or target_vehicle.option_label is None:
+            raise ValueError("hit-object label task collision target must have an option label")
+        expected_answer = str(target_vehicle.option_label)
+        expected_annotation = {str(target_vehicle.vehicle_id)}
+        if str(sample.answer) != str(expected_answer):
+            raise ValueError("crossing answer does not match active query")
     else:
         raise ValueError(f"unsupported crossing count mode: {count_mode}")
 
-    if int(sample.answer) != int(expected_answer):
-        raise ValueError("crossing answer does not match active query")
     if set(sample.annotation_entity_ids) != set(expected_annotation):
         raise ValueError("crossing annotation ids do not match active query")
 

@@ -23,14 +23,13 @@ generation:
     - 6
     - 7
   task_overrides:
-    task_games__crossing__moving_object_count:
-      moving_object_count_support:
+    task_games__crossing__hit_object_label:
+      hit_object_label_index_support:
+      - 0
       - 1
       - 2
       - 3
-      - 4
-      - 5
-      moving_object_max_extra_per_row: 1
+      hit_object_max_extra_per_row: 1
     task_games__crossing__moving_object_direction_count:
       left_moving_object_count_support:
       - 1

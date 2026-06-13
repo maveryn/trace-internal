@@ -20,6 +20,7 @@ def vehicle_trace(vehicles: tuple[CrossingVehicle, ...]) -> list[dict[str, Any]]
             "start_col": int(vehicle.start_col),
             "direction": int(vehicle.direction),
             "color_index": int(vehicle.color_index),
+            "option_label": None if vehicle.option_label is None else str(vehicle.option_label),
         }
         for vehicle in vehicles
     ]
@@ -111,6 +112,7 @@ def common_trace_sections(
             "marked_route_label": sample.marked_route_label,
             "target_start_label": sample.target_start_label,
             "target_route_label": sample.target_route_label,
+            "target_object_label": sample.target_object_label,
             "first_collision_tick": sample.first_collision_tick,
             "intersecting_vehicle_ids": [str(value) for value in sample.intersecting_vehicle_ids],
             "annotation_entity_ids": list(annotation_entity_ids),

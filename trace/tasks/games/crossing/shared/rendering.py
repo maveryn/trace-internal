@@ -543,13 +543,46 @@ def render_crossing_scene(
         wheel_r = max(3.0, min(w, h) * 0.10)
         for wx in (bbox[0] + 0.24 * w, bbox[2] - 0.24 * w):
             draw.ellipse((wx - wheel_r, bbox[3] - wheel_r, wx + wheel_r, bbox[3] + wheel_r), fill=(24, 24, 24, 255))
-        _draw_arrow(
-            draw,
-            center=(cx, cy),
-            direction=int(vehicle.direction),
-            color=theme.vehicle_outline_rgb,
-            size=min(w, h) * 0.22,
-        )
+        if vehicle.option_label is not None:
+            label_w = max(22.0, w * 0.36)
+            label_h = max(20.0, h * 0.58)
+            label_bbox = (
+                round(cx - (label_w / 2.0), 3),
+                round(cy - (label_h / 2.0), 3),
+                round(cx + (label_w / 2.0), 3),
+                round(cy + (label_h / 2.0), 3),
+            )
+            draw.rounded_rectangle(
+                label_bbox,
+                radius=max(5, int(round(label_h * 0.22))),
+                fill=(255, 255, 246, 226),
+                outline=tuple(int(v) for v in theme.vehicle_outline_rgb) + (235,),
+                width=2,
+            )
+            _fit_text(
+                draw,
+                bbox=label_bbox,
+                text=str(vehicle.option_label),
+                fill=(22, 28, 32),
+                max_size_px=max(14, int(params.label_font_size_px)),
+                font_family=str(params.font_family),
+            )
+            arrow_x = float(cx + (int(vehicle.direction) * w * 0.30))
+            _draw_arrow(
+                draw,
+                center=(arrow_x, cy - (h * 0.25)),
+                direction=int(vehicle.direction),
+                color=theme.vehicle_outline_rgb,
+                size=min(w, h) * 0.13,
+            )
+        else:
+            _draw_arrow(
+                draw,
+                center=(cx, cy),
+                direction=int(vehicle.direction),
+                color=theme.vehicle_outline_rgb,
+                size=min(w, h) * 0.22,
+            )
         vehicle_bboxes[str(vehicle.vehicle_id)] = bbox
         entity_bboxes[str(vehicle.vehicle_id)] = bbox
         scene_entities.append(
@@ -559,6 +592,7 @@ def render_crossing_scene(
                 "row": int(vehicle.row),
                 "start_col": int(vehicle.start_col),
                 "direction": int(vehicle.direction),
+                "option_label": None if vehicle.option_label is None else str(vehicle.option_label),
                 "bbox_px": list(bbox),
             }
         )
@@ -579,6 +613,11 @@ def render_crossing_scene(
         "cell_bboxes_px": {str(key): list(value) for key, value in cell_bboxes.items()},
         "start_bboxes_px": {str(key): list(value) for key, value in start_bboxes.items()},
         "vehicle_bboxes_px": {str(key): list(value) for key, value in vehicle_bboxes.items()},
+        "vehicle_option_labels": {
+            str(vehicle.vehicle_id): str(vehicle.option_label)
+            for vehicle in vehicles
+            if vehicle.option_label is not None
+        },
         "route_bboxes_px": {str(key): list(value) for key, value in route_bboxes.items()},
         "route_cell_bboxes_px": {str(key): list(value) for key, value in route_cell_bboxes.items()},
         "entity_bboxes_px": {str(key): list(value) for key, value in entity_bboxes.items()},

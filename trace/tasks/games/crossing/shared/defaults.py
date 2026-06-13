@@ -14,7 +14,8 @@ SUPPORTED_CROSSING_STYLE_VARIANTS: tuple[str, ...] = (
     "paper",
     "construction",
 )
-START_LABELS: tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(8))
+START_LABELS: tuple[str, ...] = tuple(str(index + 1) for index in range(8))
+VEHICLE_OPTION_LABELS: tuple[str, ...] = ("A", "B", "C", "D")
 
 FALLBACK_GENERATION_DEFAULTS: dict[str, Any] = {
     "scene_variant_weights": {"traffic_crossing": 1.0},
@@ -52,4 +53,5 @@ __all__ = [
     "START_LABELS",
     "SUPPORTED_CROSSING_SCENE_VARIANTS",
     "SUPPORTED_CROSSING_STYLE_VARIANTS",
+    "VEHICLE_OPTION_LABELS",
 ]

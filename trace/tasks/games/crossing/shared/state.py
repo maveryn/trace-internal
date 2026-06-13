@@ -17,6 +17,7 @@ class CrossingVehicle:
     direction: int
     color_index: int
     vehicle_kind: str = "car"
+    option_label: str | None = None
 
 
 @dataclass(frozen=True)
@@ -38,7 +39,7 @@ class CrossingSample:
     count_mode: str
     scene_variant: str
     style_variant: str
-    answer: int
+    answer: int | str
     row_directions: tuple[int, ...]
     vehicles: tuple[CrossingVehicle, ...]
     start_labels: tuple[str, ...]
@@ -46,6 +47,7 @@ class CrossingSample:
     marked_route_label: str | None
     target_start_label: str | None
     target_route_label: str | None
+    target_object_label: str | None
     first_collision_tick: int | None
     intersecting_vehicle_ids: tuple[str, ...]
     annotation_entity_ids: tuple[str, ...]

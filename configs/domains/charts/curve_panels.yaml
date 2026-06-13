@@ -22,12 +22,6 @@ generation:
       condition_labels: 0.5
       named_compact: 0.5
       temporal_sequence: 0.25
-    point_threshold_direction_weights:
-      above: 1.0
-      below: 1.0
-    threshold_crossing_direction_weights:
-      upward: 1.0
-      downward: 1.0
 rendering:
   shared:
     canvas_width: 1384

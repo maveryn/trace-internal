@@ -12,19 +12,21 @@ from .....core.visual.noise import apply_post_image_noise
 from ....shared.render_variation import apply_layout_jitter_to_margins
 from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import load_font
-from .multipanel_common import (
+from .defaults import (
     POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     SCENE_NAMESPACE,
+    RENDER_DEFAULTS,
+    resolve_int,
+    resolve_rgb,
+)
+from .sampling import point_id
+from .state import (
     BBox,
     RGB,
-    _Dataset,
-    _Panel,
-    _RENDER_DEFAULTS,
-    _Rendered,
-    _point_id,
-    _resolve_int,
-    _resolve_rgb,
+    CurvePanelDataset,
+    Panel,
+    RenderedCurvePanels,
 )
 
 
@@ -41,11 +43,23 @@ def _text_bbox(
     stroke_width: int = 0,
 ) -> List[float]:
     try:
-        box = draw.textbbox((float(xy[0]), float(xy[1])), str(text), font=font, stroke_width=max(0, int(stroke_width)))
+        box = draw.textbbox(
+            (float(xy[0]), float(xy[1])),
+            str(text),
+            font=font,
+            stroke_width=max(0, int(stroke_width)),
+        )
         return _bbox(box)
     except Exception:
         width, height = draw.textsize(str(text), font=font)
-        return _bbox([float(xy[0]), float(xy[1]), float(xy[0]) + float(width), float(xy[1]) + float(height)])
+        return _bbox(
+            [
+                float(xy[0]),
+                float(xy[1]),
+                float(xy[0]) + float(width),
+                float(xy[1]) + float(height),
+            ]
+        )
 
 
 def _center_text(
@@ -58,8 +72,12 @@ def _center_text(
     stroke_fill: RGB = (255, 255, 255),
     stroke_width: int = 0,
 ) -> List[float]:
+    """Draw centered text and return the actual bbox used by trace metadata."""
+
     try:
-        box = draw.textbbox((0, 0), str(text), font=font, stroke_width=max(0, int(stroke_width)))
+        box = draw.textbbox(
+            (0, 0), str(text), font=font, stroke_width=max(0, int(stroke_width))
+        )
         width = float(box[2] - box[0])
         height = float(box[3] - box[1])
         x = float(center[0]) - (0.5 * width) - float(box[0])
@@ -68,15 +86,25 @@ def _center_text(
         width, height = draw.textsize(str(text), font=font)
         x = float(center[0]) - (0.5 * float(width))
         y = float(center[1]) - (0.5 * float(height))
-    draw_text_traced(draw,
+    draw_text_traced(
+        draw,
         (float(x), float(y)),
         str(text),
         font=font,
         fill=fill,
         stroke_fill=stroke_fill,
         stroke_width=max(0, int(stroke_width)),
-     role="readout", required=False,)
-    return _text_bbox(draw, (float(x), float(y)), str(text), font, stroke_width=max(0, int(stroke_width)))
+        role="readout",
+        required=False,
+    )
+    return _text_bbox(
+        draw,
+        (float(x), float(y)),
+        str(text),
+        font,
+        stroke_width=max(0, int(stroke_width)),
+    )
+
 
 def _panel_layout(plot_bbox: BBox, panel_count: int, gap: float) -> List[BBox]:
     x1, y1, x2, y2 = (float(value) for value in plot_bbox)
@@ -107,7 +135,11 @@ def _scale_point(
     x_min = float(min(x_values))
     x_max = float(max(x_values))
     x_fraction = 0.0 if x_max == x_min else (float(x_value) - x_min) / (x_max - x_min)
-    y_fraction = 0.0 if int(y_max) == int(y_min) else (float(y_value) - float(y_min)) / (float(y_max) - float(y_min))
+    y_fraction = (
+        0.0
+        if int(y_max) == int(y_min)
+        else (float(y_value) - float(y_min)) / (float(y_max) - float(y_min))
+    )
     return (
         float(x1) + (x_fraction * (float(x2) - float(x1))),
         float(y2) - (y_fraction * (float(y2) - float(y1))),
@@ -150,17 +182,27 @@ def _draw_legend(
     params: Mapping[str, Any],
     origin: Tuple[float, float],
 ) -> Dict[str, List[float]]:
-    font = load_font(_resolve_int(params, "legend_font_size_px", 17), bold=True)
-    text_rgb = _resolve_rgb(params, "text_color_rgb", (36, 42, 54))
+    font = load_font(resolve_int(params, "legend_font_size_px", 17), bold=True)
+    text_rgb = resolve_rgb(params, "text_color_rgb", (36, 42, 54))
     bboxes: Dict[str, List[float]] = {}
     x = float(origin[0])
     y = float(origin[1])
     for index, method in enumerate(method_labels):
         color = tuple(colors[int(index) % len(colors)])
         swatch = [x, y + 5.0, x + 24.0, y + 18.0]
-        draw.rounded_rectangle(swatch, radius=3, fill=color, outline=(255, 255, 255), width=1)
+        draw.rounded_rectangle(
+            swatch, radius=3, fill=color, outline=(255, 255, 255), width=1
+        )
         text_xy = (x + 31.0, y)
-        draw_text_traced(draw,text_xy, str(method), font=font, fill=text_rgb, role="readout", required=False)
+        draw_text_traced(
+            draw,
+            text_xy,
+            str(method),
+            font=font,
+            fill=text_rgb,
+            role="readout",
+            required=False,
+        )
         text_box = _text_bbox(draw, text_xy, str(method), font)
         bboxes[str(method)] = _bbox([swatch[0], swatch[1], text_box[2], text_box[3]])
         x = float(text_box[2]) + 28.0
@@ -170,33 +212,47 @@ def _draw_legend(
 def _draw_panel(
     draw: ImageDraw.ImageDraw,
     *,
-    panel: _Panel,
+    panel: Panel,
     panel_bbox: BBox,
-    dataset: _Dataset,
+    dataset: CurvePanelDataset,
     params: Mapping[str, Any],
-) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]], Dict[str, List[float]], List[float]]:
+) -> Tuple[
+    List[Dict[str, Any]], Dict[str, List[float]], Dict[str, List[float]], List[float]
+]:
+    """Render one subplot and register every curve mark in shared pixel space."""
+
     x1, y1, x2, y2 = (float(value) for value in panel_bbox)
-    panel_fill = _resolve_rgb(params, "panel_fill_rgb", (255, 255, 255))
-    panel_border = _resolve_rgb(params, "panel_border_rgb", (190, 199, 212))
-    axis_rgb = _resolve_rgb(params, "axis_color_rgb", (68, 72, 82))
-    grid_rgb = _resolve_rgb(params, "grid_color_rgb", (225, 229, 235))
-    text_rgb = _resolve_rgb(params, "text_color_rgb", (36, 42, 54))
-    muted_rgb = _resolve_rgb(params, "muted_text_rgb", (91, 102, 120))
-    text_stroke = _resolve_rgb(params, "text_stroke_rgb", (255, 255, 255))
-    threshold_rgb = _resolve_rgb(params, "threshold_rgb", (178, 74, 74))
-    panel_title_font = load_font(_resolve_int(params, "panel_title_font_size_px", 18), bold=True)
-    tick_font = load_font(_resolve_int(params, "tick_font_size_px", 12), bold=False)
+    panel_fill = resolve_rgb(params, "panel_fill_rgb", (255, 255, 255))
+    panel_border = resolve_rgb(params, "panel_border_rgb", (190, 199, 212))
+    axis_rgb = resolve_rgb(params, "axis_color_rgb", (68, 72, 82))
+    grid_rgb = resolve_rgb(params, "grid_color_rgb", (225, 229, 235))
+    text_rgb = resolve_rgb(params, "text_color_rgb", (36, 42, 54))
+    muted_rgb = resolve_rgb(params, "muted_text_rgb", (91, 102, 120))
+    text_stroke = resolve_rgb(params, "text_stroke_rgb", (255, 255, 255))
+    threshold_rgb = resolve_rgb(params, "threshold_rgb", (178, 74, 74))
+    panel_title_font = load_font(
+        resolve_int(params, "panel_title_font_size_px", 18), bold=True
+    )
+    tick_font = load_font(resolve_int(params, "tick_font_size_px", 12), bold=False)
 
     draw.rounded_rectangle(
         [x1, y1, x2, y2],
-        radius=_resolve_int(params, "panel_corner_radius_px", 6),
+        radius=resolve_int(params, "panel_corner_radius_px", 6),
         fill=panel_fill,
         outline=panel_border,
-        width=_resolve_int(params, "panel_border_width_px", 2),
+        width=resolve_int(params, "panel_border_width_px", 2),
     )
     title_text = f"Panel {str(panel.panel_label)}"
     title_xy = (x1 + 12.0, y1 + 7.0)
-    draw_text_traced(draw,title_xy, title_text, font=panel_title_font, fill=text_rgb, role="readout", required=False)
+    draw_text_traced(
+        draw,
+        title_xy,
+        title_text,
+        font=panel_title_font,
+        fill=text_rgb,
+        role="readout",
+        required=False,
+    )
 
     left_pad = 48.0
     right_pad = 18.0
@@ -204,7 +260,9 @@ def _draw_panel(
     bottom_pad = 42.0
     plot_bbox = (x1 + left_pad, y1 + top_pad, x2 - right_pad, y2 - bottom_pad)
     px1, py1, px2, py2 = plot_bbox
-    draw.rectangle([px1, py1, px2, py2], fill=(255, 255, 255), outline=grid_rgb, width=1)
+    draw.rectangle(
+        [px1, py1, px2, py2], fill=(255, 255, 255), outline=grid_rgb, width=1
+    )
 
     y_ticks = [0, 25, 50, 75, 100]
     for tick in y_ticks:
@@ -216,8 +274,20 @@ def _draw_panel(
             y_max=dataset.y_max,
             plot_bbox=plot_bbox,
         )
-        draw.line([px1, sy, px2, sy], fill=grid_rgb, width=_resolve_int(params, "grid_line_width_px", 1))
-        draw_text_traced(draw,(px1 - 34.0, sy - 7.0), str(tick), font=tick_font, fill=muted_rgb, role="readout", required=False)
+        draw.line(
+            [px1, sy, px2, sy],
+            fill=grid_rgb,
+            width=resolve_int(params, "grid_line_width_px", 1),
+        )
+        draw_text_traced(
+            draw,
+            (px1 - 34.0, sy - 7.0),
+            str(tick),
+            font=tick_font,
+            fill=muted_rgb,
+            role="readout",
+            required=False,
+        )
 
     tick_stride = max(1, int(math.ceil(float(len(dataset.x_values)) / 6.0)))
     x_ticks_to_draw = list(dataset.x_values[::tick_stride])
@@ -232,7 +302,11 @@ def _draw_panel(
             y_max=dataset.y_max,
             plot_bbox=plot_bbox,
         )
-        draw.line([sx, py1, sx, py2], fill=grid_rgb, width=_resolve_int(params, "grid_line_width_px", 1))
+        draw.line(
+            [sx, py1, sx, py2],
+            fill=grid_rgb,
+            width=resolve_int(params, "grid_line_width_px", 1),
+        )
         _center_text(
             draw,
             center=(sx, py2 + 15.0),
@@ -243,14 +317,20 @@ def _draw_panel(
             stroke_width=1,
         )
 
-    draw.line([px1, py2, px2, py2], fill=axis_rgb, width=_resolve_int(params, "axis_line_width_px", 2))
-    draw.line([px1, py1, px1, py2], fill=axis_rgb, width=_resolve_int(params, "axis_line_width_px", 2))
+    draw.line(
+        [px1, py2, px2, py2],
+        fill=axis_rgb,
+        width=resolve_int(params, "axis_line_width_px", 2),
+    )
+    draw.line(
+        [px1, py1, px1, py2],
+        fill=axis_rgb,
+        width=resolve_int(params, "axis_line_width_px", 2),
+    )
 
-    draw_threshold_line = (
-        str(dataset.query.prompt_key)
-        in {"threshold_series_count", "panel_point_threshold_count", "panel_curve_threshold_crossing_count"}
-        and str(dataset.query.panel_label) == str(panel.panel_label)
-    ) or str(dataset.query.prompt_key) == "cross_panel_threshold_earliest_label"
+    draw_threshold_line = str(panel.panel_label) in {
+        str(label) for label in dataset.query.threshold_panel_labels
+    }
     if draw_threshold_line:
         _, threshold_y = _scale_point(
             x_value=float(dataset.x_values[0]),
@@ -267,9 +347,17 @@ def _draw_panel(
             fill=threshold_rgb,
             width=2,
         )
-        draw_text_traced(draw,(px2 - 44.0, threshold_y - 18.0), f"y={dataset.query.threshold_value}", font=tick_font, fill=threshold_rgb, role="readout", required=False)
+        draw_text_traced(
+            draw,
+            (px2 - 44.0, threshold_y - 18.0),
+            f"y={dataset.query.threshold_value}",
+            font=tick_font,
+            fill=threshold_rgb,
+            role="readout",
+            required=False,
+        )
 
-    point_radius = float(_resolve_int(params, "point_radius_px", 5))
+    point_radius = float(resolve_int(params, "point_radius_px", 5))
     point_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
     for curve in panel.curves:
@@ -286,7 +374,12 @@ def _draw_panel(
                 )
             )
         if len(points) >= 2:
-            draw.line(points, fill=curve.color_rgb, width=_resolve_int(params, "line_width_px", 3), joint="curve")
+            draw.line(
+                points,
+                fill=curve.color_rgb,
+                width=resolve_int(params, "line_width_px", 3),
+                joint="curve",
+            )
         for x_value, y_value, (cx, cy) in zip(dataset.x_values, curve.values, points):
             marker = [
                 float(cx) - float(point_radius),
@@ -295,11 +388,13 @@ def _draw_panel(
                 float(cy) + float(point_radius),
             ]
             draw.ellipse(marker, fill=curve.color_rgb, outline=(255, 255, 255), width=1)
-            point_id = _point_id(str(panel.panel_label), str(curve.method_label), int(x_value))
-            point_bboxes[str(point_id)] = _bbox(marker)
+            marker_id = point_id(
+                str(panel.panel_label), str(curve.method_label), int(x_value)
+            )
+            point_bboxes[str(marker_id)] = _bbox(marker)
             entities.append(
                 {
-                    "entity_id": str(point_id),
+                    "entity_id": str(marker_id),
                     "entity_type": "scientific_curve_marker",
                     "bbox_px": _bbox(marker),
                     "attrs": {
@@ -315,10 +410,14 @@ def _draw_panel(
     return entities, point_bboxes, {}, _bbox(plot_bbox)
 
 
-def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_seed: int) -> _Rendered:
+def _render_dataset(
+    dataset: CurvePanelDataset, *, params: Mapping[str, Any], instance_seed: int
+) -> RenderedCurvePanels:
+    """Render the full small-multiple chart without adding objective semantics."""
+
     params = {**dict(params), "_render_style_seed": int(instance_seed)}
-    canvas_width = _resolve_int(params, "canvas_width", 1600)
-    canvas_height = _resolve_int(params, "canvas_height", 1000)
+    canvas_width = resolve_int(params, "canvas_width", 1600)
+    canvas_height = resolve_int(params, "canvas_height", 1000)
     background, background_meta = make_background_canvas(
         canvas_width=int(canvas_width),
         canvas_height=int(canvas_height),
@@ -328,26 +427,46 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
     )
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
-    outer = _resolve_int(params, "outer_margin_px", 42)
-    margin_left, margin_right, margin_top, margin_bottom, layout_jitter_meta = apply_layout_jitter_to_margins(
-        left_px=int(outer),
-        right_px=int(outer),
-        top_px=int(outer),
-        bottom_px=int(outer),
-        params=params,
-        defaults=_RENDER_DEFAULTS,
-        instance_seed=int(instance_seed),
-        namespace=f"{SCENE_NAMESPACE}.layout",
+    outer = resolve_int(params, "outer_margin_px", 42)
+    margin_left, margin_right, margin_top, margin_bottom, layout_jitter_meta = (
+        apply_layout_jitter_to_margins(
+            left_px=int(outer),
+            right_px=int(outer),
+            top_px=int(outer),
+            bottom_px=int(outer),
+            params=params,
+            defaults=RENDER_DEFAULTS,
+            instance_seed=int(instance_seed),
+            namespace=f"{SCENE_NAMESPACE}.layout",
+        )
     )
-    title_band = _resolve_int(params, "title_band_height_px", 92)
-    panel_gap = _resolve_int(params, "panel_gap_px", 24)
-    text_rgb = _resolve_rgb(params, "text_color_rgb", (36, 42, 54))
-    muted_rgb = _resolve_rgb(params, "muted_text_rgb", (91, 102, 120))
-    title_font = load_font(_resolve_int(params, "title_font_size_px", 30), bold=True)
-    subtitle_font = load_font(_resolve_int(params, "subtitle_font_size_px", 18), bold=False)
+    title_band = resolve_int(params, "title_band_height_px", 92)
+    panel_gap = resolve_int(params, "panel_gap_px", 24)
+    text_rgb = resolve_rgb(params, "text_color_rgb", (36, 42, 54))
+    muted_rgb = resolve_rgb(params, "muted_text_rgb", (91, 102, 120))
+    title_font = load_font(resolve_int(params, "title_font_size_px", 30), bold=True)
+    subtitle_font = load_font(
+        resolve_int(params, "subtitle_font_size_px", 18), bold=False
+    )
 
-    draw_text_traced(draw,(float(margin_left), 22.0 + float(layout_jitter_meta.get("dy_px", 0))), "Scientific Multi-Panel Figure", font=title_font, fill=text_rgb, role="readout", required=False)
-    draw_text_traced(draw,(float(margin_left), 58.0 + float(layout_jitter_meta.get("dy_px", 0))), "Synthetic method curves arranged as labeled scientific subplots.", font=subtitle_font, fill=muted_rgb, role="readout", required=False)
+    draw_text_traced(
+        draw,
+        (float(margin_left), 22.0 + float(layout_jitter_meta.get("dy_px", 0))),
+        "Scientific Multi-Panel Figure",
+        font=title_font,
+        fill=text_rgb,
+        role="readout",
+        required=False,
+    )
+    draw_text_traced(
+        draw,
+        (float(margin_left), 58.0 + float(layout_jitter_meta.get("dy_px", 0))),
+        "Synthetic method curves arranged as labeled scientific subplots.",
+        font=subtitle_font,
+        fill=muted_rgb,
+        role="readout",
+        required=False,
+    )
     method_labels = tuple(curve.method_label for curve in dataset.panels[0].curves)
     legend_bboxes = _draw_legend(
         draw,
@@ -363,19 +482,23 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
         float(canvas_width - margin_right),
         float(canvas_height - margin_bottom),
     ]
-    panel_boxes = _panel_layout(tuple(plot_bbox), len(dataset.panels), gap=float(panel_gap))
+    panel_boxes = _panel_layout(
+        tuple(plot_bbox), len(dataset.panels), gap=float(panel_gap)
+    )
 
     entities: List[Dict[str, Any]] = []
     panel_bboxes: Dict[str, List[float]] = {}
     panel_plot_bboxes: Dict[str, List[float]] = {}
     point_bboxes: Dict[str, List[float]] = {}
     for panel, panel_bbox in zip(dataset.panels, panel_boxes):
-        rendered_entities, rendered_points, _extra_bboxes, panel_plot_bbox = _draw_panel(
-            draw,
-            panel=panel,
-            panel_bbox=panel_bbox,
-            dataset=dataset,
-            params=params,
+        rendered_entities, rendered_points, _extra_bboxes, panel_plot_bbox = (
+            _draw_panel(
+                draw,
+                panel=panel,
+                panel_bbox=panel_bbox,
+                dataset=dataset,
+                params=params,
+            )
         )
         panel_bboxes[str(panel.panel_label)] = _bbox(panel_bbox)
         panel_plot_bboxes[str(panel.panel_label)] = list(panel_plot_bbox)
@@ -408,7 +531,14 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
             plot_bbox=tuple(float(value) for value in panel_plot_bbox),
         )
         radius = 7.0
-        box = _bbox([float(cx) - radius, float(cy) - radius, float(cx) + radius, float(cy) + radius])
+        box = _bbox(
+            [
+                float(cx) - radius,
+                float(cy) - radius,
+                float(cx) + radius,
+                float(cy) + radius,
+            ]
+        )
         intersection_bboxes[str(intersection.intersection_id)] = list(box)
         entities.append(
             {
@@ -440,7 +570,14 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
             plot_bbox=tuple(float(value) for value in panel_plot_bbox),
         )
         radius = 7.0
-        box = _bbox([float(cx) - radius, float(cy) - radius, float(cx) + radius, float(cy) + radius])
+        box = _bbox(
+            [
+                float(cx) - radius,
+                float(cy) - radius,
+                float(cx) + radius,
+                float(cy) + radius,
+            ]
+        )
         threshold_crossing_bboxes[str(crossing.crossing_id)] = list(box)
         entities.append(
             {
@@ -464,7 +601,7 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
         params=params,
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
-    return _Rendered(
+    return RenderedCurvePanels(
         image=image,
         entities=tuple(entities),
         plot_bbox_px=_bbox(plot_bbox),

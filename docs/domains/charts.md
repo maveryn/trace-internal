@@ -90,12 +90,12 @@ Query IDs are internal replay/review metadata. They are not public sampling unit
 | `contour_density` | `task_charts__contour_density__reference_distance_extremum_label` | `reference_distance_extremum_label` |
 | `contour_density` | `task_charts__contour_density__spread_extremum_region_label` | `spread_extremum_region_label` |
 | `curve_panels` | `task_charts__curve_panels__cross_panel_delta_extremum_label` | `cross_panel_delta_extremum_label` |
-| `curve_panels` | `task_charts__curve_panels__cross_panel_threshold_earliest_label` | `cross_panel_threshold_earliest_label` |
+| `curve_panels` | `task_charts__curve_panels__cross_panel_threshold_earliest_label` | `cross_panel_upward_threshold_earliest_label`, `cross_panel_downward_threshold_earliest_label` |
 | `curve_panels` | `task_charts__curve_panels__curve_at_x_extremum_label` | `curve_at_x_extremum_label` |
 | `curve_panels` | `task_charts__curve_panels__curve_intersection_count` | `curve_intersection_count` |
 | `curve_panels` | `task_charts__curve_panels__earliest_maximum_panel_label` | `earliest_maximum_panel_label` |
-| `curve_panels` | `task_charts__curve_panels__panel_curve_threshold_crossing_count` | `panel_curve_threshold_crossing_count` |
-| `curve_panels` | `task_charts__curve_panels__panel_point_threshold_count` | `panel_point_threshold_count` |
+| `curve_panels` | `task_charts__curve_panels__panel_curve_threshold_crossing_count` | `panel_curve_upward_threshold_crossing_count`, `panel_curve_downward_threshold_crossing_count` |
+| `curve_panels` | `task_charts__curve_panels__panel_point_threshold_count` | `panel_point_above_threshold_count`, `panel_point_below_threshold_count` |
 | `curve_panels` | `task_charts__curve_panels__threshold_series_count` | `threshold_series_count` |
 | `density_curve` | `task_charts__density_curve__interval_mass_extremum_label` | `greatest_interval_mass_label`, `least_interval_mass_label` |
 | `density_curve` | `task_charts__density_curve__density_at_x_extremum_label` | `highest_density_at_x_label`, `lowest_density_at_x_label` |

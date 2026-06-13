@@ -2,24 +2,29 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Mapping
 
-from trace.core.seed import hash64
-from trace.core.types import TypedValue
+from trace.core.seed import spawn_rng
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.curve_panels.shared.multipanel_common import SCENE_ID
-from trace.tasks.charts.curve_panels.shared.multipanel_datasets import build_intersection_count_dataset
-from trace.tasks.charts.curve_panels.shared.prompts import build_prompt_artifacts
-from trace.tasks.charts.curve_panels.shared.runtime import (
-    annotation_payload,
-    build_trace_scaffold,
-    render_dataset,
+from trace.tasks.charts.curve_panels._lifecycle import (
+    CurvePanelTaskPlan,
+    build_curve_panel_plan_from_query,
+    build_curve_panel_query_record,
+    run_curve_panel_task_lifecycle,
+)
+from trace.tasks.charts.curve_panels.shared.defaults import (
+    SCENE_NAMESPACE,
 )
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.prompt_variants import build_prompt_query_spec
-
+from trace.tasks.charts.curve_panels.shared.sampling import (
+    balanced_choice,
+    build_intersection_curves,
+    common_axes,
+    intersection_points,
+    make_random_panels,
+    palette,
+    without_sample_cursor,
+)
 
 QUERY_ID = "curve_intersection_count"
 TASK_PARAM_DEFAULTS: dict[str, Any] = {}
@@ -27,84 +32,137 @@ TASK_PARAM_DEFAULTS: dict[str, Any] = {}
 
 @register_task
 class ChartsScientificCurveIntersectionCountTask:
-    """Count intersections between two method curves in one subplot."""
+    """Count intersections between two methods in one subplot."""
 
     task_id = "task_charts__curve_panels__curve_intersection_count"
     domain = "charts"
-    scene_id = SCENE_ID
     objective_contract = "curve_intersection_count"
     supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True
 
-    def _generate_once(self, instance_seed: int, *, params: dict[str, Any], selected_query_id: str) -> TaskOutput:
+    def _build_curve_intersection_count_plan(
+        self, instance_seed: int, params: Mapping[str, Any], selected_query_id: str
+    ) -> CurvePanelTaskPlan:
+        """Build the task-owned semantic sample before shared rendering."""
+
         effective_params = {**TASK_PARAM_DEFAULTS, **dict(params)}
-        dataset = build_intersection_count_dataset(effective_params, instance_seed=int(instance_seed))
-        rendered, chart_font_family = render_dataset(dataset, params=effective_params, instance_seed=int(instance_seed))
-        annotation_type, annotation = annotation_payload(dataset, rendered)
-        prompt_artifacts = build_prompt_artifacts(
-            prompt_query_key=QUERY_ID,
+        (
+            sampled_x_values,
+            y_min,
+            y_max,
+            _panel_total,
+            panel_labels,
+            method_labels,
+            panel_label_meta,
+        ) = common_axes(
+            effective_params, instance_seed=int(instance_seed), min_x_tick_count=5
+        )
+        colors = palette(effective_params)
+        rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.intersection_count")
+        query_panel = str(
+            balanced_choice(
+                panel_labels,
+                without_sample_cursor(effective_params),
+                instance_seed=int(instance_seed),
+                namespace=f"{SCENE_NAMESPACE}.intersection_count.panel",
+            )
+        )
+        method_a_label = str(method_labels[0])
+        method_b_label = str(method_labels[1])
+        target_count = int(
+            balanced_choice(
+                list(range(0, 5)),
+                effective_params,
+                instance_seed=int(instance_seed),
+                namespace=f"{SCENE_NAMESPACE}.intersection_count.answer",
+            )
+        )
+        values = make_random_panels(
+            panel_labels=panel_labels,
+            method_labels=method_labels,
+            x_count=len(sampled_x_values),
+            instance_seed=int(instance_seed),
+            namespace=f"{SCENE_NAMESPACE}.intersection_count.values",
+            value_min=y_min,
+            value_max=y_max,
+        )
+        method_a_values, method_b_values, _ = build_intersection_curves(
+            x_axis_values=sampled_x_values,
+            target_count=int(target_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{SCENE_NAMESPACE}.intersection_count.curves",
+        )
+        values[str(query_panel)][str(method_a_label)] = list(method_a_values)
+        values[str(query_panel)][str(method_b_label)] = list(method_b_values)
+        intersections = intersection_points(
+            panel_label=str(query_panel),
+            method_a_label=str(method_a_label),
+            method_b_label=str(method_b_label),
+            x_axis_values=sampled_x_values,
+            values_a=method_a_values,
+            values_b=method_b_values,
+        )
+        if len(intersections) != int(target_count):
+            raise RuntimeError("intersection construction drifted from target count")
+        query = build_curve_panel_query_record(
+            prompt_key=selected_query_id,
+            answer=target_count,
+            answer_type="integer",
+            panel_label=query_panel,
+            method_a_label=method_a_label,
+            method_b_label=method_b_label,
+            annotation_panel_labels=(query_panel,),
+            annotation_intersection_ids=tuple(
+                str(item.intersection_id) for item in intersections
+            ),
+            trace={
+                "query_panel_label": str(query_panel),
+                "method_a_label": str(method_a_label),
+                "method_b_label": str(method_b_label),
+                "intersection_count": int(target_count),
+                "intersection_points": [
+                    {
+                        "x_value": round(float(item.x_value), 3),
+                        "y_value": round(float(item.y_value), 3),
+                    }
+                    for item in intersections
+                ],
+                **dict(panel_label_meta),
+            },
+        )
+        return build_curve_panel_plan_from_query(
+            x_values=tuple(sampled_x_values),
+            y_min=int(y_min),
+            y_max=int(y_max),
+            panel_labels=tuple(panel_labels),
+            method_labels=tuple(method_labels),
+            colors=tuple(colors),
+            values_by_panel_method=values,
+            query=query,
             dynamic_slots={
-                "panel_label": f'"{dataset.query.panel_label}"',
-                "method_a_label": f'"{dataset.query.method_a_label}"',
-                "method_b_label": f'"{dataset.query.method_b_label}"',
+                "panel_label": f'"{query.panel_label}"',
+                "method_a_label": f'"{query.method_a_label}"',
+                "method_b_label": f'"{query.method_b_label}"',
             },
             instance_seed=int(instance_seed),
-        )
-        trace_payload = build_trace_scaffold(
-            dataset=dataset,
-            rendered=rendered,
-            annotation_type=str(annotation_type),
-            annotation=annotation,
-            chart_font_family=str(chart_font_family),
-            params=effective_params,
-        )
-        relation_params = {
-            "query_id": str(selected_query_id),
-            "scene_id": SCENE_ID,
-            "scene_variant": str(dataset.scene_variant),
-            "panel_count": int(len(dataset.panels)),
-            "method_count": int(len(dataset.panels[0].curves)),
-            "x_tick_count": int(len(dataset.x_values)),
-            "threshold_direction": str(dataset.query.threshold_direction),
-            "question_format": "curve_panels_subplot_query",
-            **dict(dataset.query.trace),
-        }
-        trace_payload["scene_ir"]["relations"]["query_id"] = str(selected_query_id)
-        trace_payload["query_spec"] = build_prompt_query_spec(
-            prompt_artifacts=prompt_artifacts,
-            query_id=str(selected_query_id),
-            params=relation_params,
-        )
-        trace_payload["execution_trace"]["query_id"] = str(selected_query_id)
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=TypedValue(type=str(dataset.query.answer_type), value=dataset.query.answer),
-            annotation_gt=TypedValue(type=str(annotation_type), value=annotation),
-            image=rendered.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(selected_query_id),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
+            intersections=tuple(intersections),
+            allow_empty_annotation=True,
         )
 
-    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, _probabilities, task_params = select_task_query_id(
+    def generate(
+        self, instance_seed: int, *, params: dict[str, Any], max_attempts: int
+    ) -> TaskOutput:
+        """Select the local query, then run neutral curve-panel lifecycle."""
+
+        return run_curve_panel_task_lifecycle(
             instance_seed=int(instance_seed),
             params=params,
+            max_attempts=int(max_attempts),
             supported_query_ids=self.supported_query_ids,
             default_query_id=QUERY_ID,
-            task_id=self.task_id,
+            failure_label=self.task_id,
+            build_plan=self._build_curve_intersection_count_plan,
         )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), "charts.curve_panels.retry", int(attempt_index)))
-            try:
-                return self._generate_once(int(attempt_seed), params=task_params, selected_query_id=str(selected_query_id))
-            except Exception as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
 
 
 __all__ = ["ChartsScientificCurveIntersectionCountTask"]

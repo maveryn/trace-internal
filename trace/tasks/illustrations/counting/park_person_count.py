@@ -72,6 +72,7 @@ class IllustrationsCountingParkActivityPersonCountTask:
     task_id = ACTIVITY_TASK_ID
     domain = "illustrations"
     scene_id = "counting"
+    supported_queries = ACTIVITY_QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -92,6 +93,7 @@ class IllustrationsCountingParkAreaPersonCountTask:
     task_id = AREA_TASK_ID
     domain = "illustrations"
     scene_id = "counting"
+    supported_queries = ZONE_QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -112,6 +114,7 @@ class IllustrationsCountingParkEquipmentUsePersonCountTask:
     task_id = EQUIPMENT_USE_TASK_ID
     domain = "illustrations"
     scene_id = "counting"
+    supported_queries = EQUIPMENT_USAGE_QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:

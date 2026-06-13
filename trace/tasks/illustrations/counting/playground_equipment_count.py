@@ -212,6 +212,7 @@ class IllustrationsCountingPlaygroundEquipmentCountTask:
     task_id = TASK_ID
     domain = "illustrations"
     scene_id = "counting"
+    supported_queries = QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:

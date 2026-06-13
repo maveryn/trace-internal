@@ -1,10 +1,10 @@
 # illustrations Contract-v0 Taxonomy Reanalysis
 
-- Current tasks: 26
-- Proposed task units: 26
+- Current tasks: 23
+- Proposed task units: 23
 - Split tasks: 0
 - Rename-only tasks: 0
-- Canonical program signatures used: 9
+- Canonical program signatures used: 6
 
 | Current task | Decision | Proposed task ids | Program signatures | Rationale |
 | --- | --- | --- | --- | --- |
@@ -14,13 +14,10 @@
 | `task_illustrations__environment__feature_side_object_count` | keep | `task_illustrations__environment__feature_side_object_count` | `count.relation_attribute` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.relation_attribute. Answer/annotation schemas: integer_count / bbox_set. |
 | `task_illustrations__environment__lit_window_count` | keep | `task_illustrations__environment__lit_window_count` | `count.single_attribute_membership` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.single_attribute_membership. Answer/annotation schemas: integer_count / bbox_set. |
 | `task_illustrations__environment__on_feature_object_count` | keep | `task_illustrations__environment__on_feature_object_count` | `count.relation_attribute` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.relation_attribute. Answer/annotation schemas: integer_count / bbox_set. |
-| `task_illustrations__image_cutout_board__jigsaw_piece_order` | keep | `task_illustrations__image_cutout_board__jigsaw_piece_order` | `sequence.reconstruction_order` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: sequence.reconstruction_order. Answer/annotation schemas: string_label / bbox_sequence. |
-| `task_illustrations__image_cutout_board__rotated_tile_label` | keep | `task_illustrations__image_cutout_board__rotated_tile_label` | `selection.direct_label` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: selection.direct_label. Answer/annotation schemas: option_letter / bbox_set. |
 | `task_illustrations__indoor_room__furniture_side_count` | keep | `task_illustrations__indoor_room__furniture_side_count` | `count.relation_attribute` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.relation_attribute. Answer/annotation schemas: integer_count / bbox_set. |
 | `task_illustrations__indoor_room__surface_object_count` | keep | `task_illustrations__indoor_room__surface_object_count` | `count.scoped_attribute` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.scoped_attribute. Answer/annotation schemas: integer_count / bbox_set. |
 | `task_illustrations__library__books_in_section_count` | keep | `task_illustrations__library__books_in_section_count` | `count.scoped_attribute` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.scoped_attribute. Answer/annotation schemas: integer_count / bbox_set. |
 | `task_illustrations__library__filtered_book_in_section_count` | keep | `task_illustrations__library__filtered_book_in_section_count` | `count.scoped_attribute` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.scoped_attribute. Answer/annotation schemas: integer_count / bbox_set. |
-| `task_illustrations__missing_patch__missing_patch_label` | keep | `task_illustrations__missing_patch__missing_patch_label` | `selection.option_match` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: selection.option_match. Answer/annotation schemas: option_letter / keyed_bbox_map. |
 | `task_illustrations__park_playground__activity_person_count` | keep | `task_illustrations__park_playground__activity_person_count` | `count.single_attribute_membership` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.single_attribute_membership. Answer/annotation schemas: integer_count / bbox_set. |
 | `task_illustrations__park_playground__area_person_count` | keep | `task_illustrations__park_playground__area_person_count` | `count.scoped_attribute` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.scoped_attribute. Answer/annotation schemas: integer_count / bbox_set. |
 | `task_illustrations__park_playground__equipment_use_person_count` | keep | `task_illustrations__park_playground__equipment_use_person_count` | `count.relation_attribute` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.relation_attribute. Answer/annotation schemas: integer_count / bbox_set. |

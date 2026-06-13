@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from ...shared.config_defaults import group_default
-from .construction_site_scene import (
+from ....shared.config_defaults import group_default
+from .state import (
     CONSTRUCTION_COLOR_NAMES,
     CONSTRUCTION_EQUIPMENT_TYPES,
     CONSTRUCTION_MATERIAL_TYPES,
@@ -13,8 +13,8 @@ from .construction_site_scene import (
     CONSTRUCTION_TOOL_TYPES,
     CONSTRUCTION_ZONE_TYPES,
 )
-from .object_library import STYLE_IDS
-from .task_support import (
+from ...shared.object_library import STYLE_IDS
+from ...shared.task_support import (
     bounds as _shared_bounds,
     query_support,
     render_params as _shared_render_params,

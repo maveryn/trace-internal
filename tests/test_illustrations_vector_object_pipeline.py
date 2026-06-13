@@ -16,7 +16,9 @@ from trace.tasks.illustrations.indoor_room.shared.rendering import (
     indoor_scene_entities,
     render_indoor_room_scene,
 )
-from trace.tasks.illustrations.shared.construction_site_rendering import (
+from trace.tasks.illustrations.construction_site.shared.output import construction_scene_entities
+from trace.tasks.illustrations.construction_site.shared.rendering import render_construction_site_scene
+from trace.tasks.illustrations.construction_site.shared.state import (
     CONSTRUCTION_EQUIPMENT_TYPES,
     CONSTRUCTION_MATERIAL_TYPES,
     CONSTRUCTION_SETTING_IDS,
@@ -24,8 +26,6 @@ from trace.tasks.illustrations.shared.construction_site_rendering import (
     ConstructionEquipmentSpec,
     ConstructionMaterialSpec,
     ConstructionWorkerSpec,
-    construction_scene_entities,
-    render_construction_site_scene,
 )
 from trace.tasks.illustrations.shared.library_rendering import (
     LibraryBookSpec,
@@ -329,7 +329,7 @@ def test_migrated_scene_person_renderers_do_not_keep_local_duplicate_drawers() -
             "def _draw_bench(",
             "def _draw_luggage_item(",
         ),
-        "trace/tasks/illustrations/shared/construction_site_rendering.py": (
+        "trace/tasks/illustrations/construction_site/shared/rendering.py": (
             "_draw_worker",
             "def _draw_material(",
             "def _draw_equipment(",

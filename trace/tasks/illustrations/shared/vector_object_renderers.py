@@ -329,10 +329,16 @@ def _render_construction_equipment(spec: Any, context: Any, renderer_id: str) ->
         for cx in (x0 + width * 0.28, x0 + width * 0.74):
             _ellipse(draw, (cx - width * 0.07, y0 + height * 0.66, cx + width * 0.07, y0 + height * 0.84), fill=tire, outline=outline, width=int(outline_w), scale=scale)
     else:
-        _rect(draw, _rel(box, 0.18, 0.46, 0.62, 0.72), fill=yellow, outline=outline, width=int(outline_w), scale=scale, radius=6)
-        _rect(draw, _rel(box, 0.32, 0.22, 0.58, 0.50), fill=(111, 152, 170), outline=outline, width=int(outline_w), scale=scale, radius=4)
-        _line(draw, [(x0 + width * 0.72, y0 + height * 0.18), (x0 + width * 0.72, y0 + height * 0.80)], fill=(59, 63, 68), width=5, scale=scale)
-        _line(draw, [(x0 + width * 0.72, y0 + height * 0.78), (x0 + width * 0.98, y0 + height * 0.78)], fill=(59, 63, 68), width=4, scale=scale)
+        mast = (59, 63, 68)
+        _rect(draw, _rel(box, 0.14, 0.48, 0.68, 0.74), fill=yellow, outline=outline, width=int(outline_w), scale=scale, radius=6)
+        _rect(draw, _rel(box, 0.26, 0.24, 0.56, 0.52), fill=(111, 152, 170), outline=outline, width=int(outline_w), scale=scale, radius=4)
+        _rect(draw, _rel(box, 0.58, 0.52, 0.74, 0.72), fill=yellow, outline=outline, width=int(outline_w), scale=scale, radius=3)
+        _line(draw, [(x0 + width * 0.70, y0 + height * 0.20), (x0 + width * 0.70, y0 + height * 0.80)], fill=mast, width=4, scale=scale)
+        _line(draw, [(x0 + width * 0.77, y0 + height * 0.20), (x0 + width * 0.77, y0 + height * 0.80)], fill=mast, width=4, scale=scale)
+        _line(draw, [(x0 + width * 0.70, y0 + height * 0.40), (x0 + width * 0.77, y0 + height * 0.40)], fill=mast, width=3, scale=scale)
+        _line(draw, [(x0 + width * 0.70, y0 + height * 0.62), (x0 + width * 0.77, y0 + height * 0.62)], fill=mast, width=3, scale=scale)
+        _line(draw, [(x0 + width * 0.70, y0 + height * 0.74), (x0 + width * 0.98, y0 + height * 0.74)], fill=mast, width=3, scale=scale)
+        _line(draw, [(x0 + width * 0.70, y0 + height * 0.81), (x0 + width * 0.96, y0 + height * 0.81)], fill=mast, width=3, scale=scale)
         for cx in (x0 + width * 0.28, x0 + width * 0.56):
             _ellipse(draw, (cx - width * 0.06, y0 + height * 0.67, cx + width * 0.06, y0 + height * 0.83), fill=tire, outline=outline, width=int(outline_w), scale=scale)
     return _result(

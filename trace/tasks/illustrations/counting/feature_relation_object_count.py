@@ -16,7 +16,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ..shared.task_support import uniform_string_probability_map as _uniform_string_probability_map
 from ..shared.task_support import query_support as _shared_query_support
-from ..shared.environment_object_scene import ENVIRONMENT_THEME_IDS, render_environment_object_scene
+from ..shared.environment_object_scene import ENVIRONMENT_THEME_IDS, effective_environment_object_count, render_environment_object_scene
 from ..shared.environment_task_common import (
     FEATURE_TYPES_BY_THEME,
     capped_object_count_probabilities,
@@ -376,7 +376,15 @@ class _FeatureRelationCountImpl:
             try:
                 scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:scene:{choice.query_id}", int(attempt))
                 overrides: Dict[str, Any] = {}
-                if choice.query_id == "on_feature_object_count":
+                if choice.query_id == "feature_side_object_count":
+                    effective_count = effective_environment_object_count(str(choice.theme_id), int(requested_object_count))
+                    if int(target_count) > int(effective_count):
+                        raise ValueError(f"feature-side target_count {target_count} exceeds effective object count {effective_count}")
+                    target_zone = "land_above" if str(choice.relation) == "above" else "land_below"
+                    forced_cap = 2 if str(choice.theme_id) in {"canal_city", "skyline_street"} else 5
+                    forced_side_count = max(1, min(int(target_count), int(effective_count), int(forced_cap)))
+                    overrides["zone_count_overrides"] = {target_zone: int(forced_side_count)}
+                elif choice.query_id == "on_feature_object_count":
                     overrides["bridge_count_override"] = 0
                     overrides["crosswalk_count_override"] = 0
                     overrides["zone_count_overrides"] = {str(choice.feature_type): int(target_count)}
@@ -417,17 +425,17 @@ class _FeatureRelationCountImpl:
                     if len(counted_object_ids) == int(target_count):
                         break
                     raise ValueError(f"on-feature count {len(counted_object_ids)} did not match target {target_count}")
+                counted_object_ids = _counted_side_object_ids(
+                    scene=scene,
+                    feature_id=str(feature.feature_id),
+                    relation=str(choice.relation),
+                )
                 side_min, side_max = _int_bounds(
                     params,
                     "feature_side_target_count_min",
                     "feature_side_target_count_max",
                     _DEFAULTS.feature_side_target_count_min,
                     _DEFAULTS.feature_side_target_count_max,
-                )
-                counted_object_ids = _counted_side_object_ids(
-                    scene=scene,
-                    feature_id=str(feature.feature_id),
-                    relation=str(choice.relation),
                 )
                 if int(side_min) <= len(counted_object_ids) <= int(side_max):
                     break

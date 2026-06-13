@@ -167,6 +167,7 @@ class IllustrationsCountingBuildingWindowCountTask:
     task_id = TASK_ID
     domain = "illustrations"
     scene_id = "counting"
+    supported_queries = (QUERY_ID,)
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:

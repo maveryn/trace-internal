@@ -46,21 +46,12 @@ note says otherwise. The current domain inventory is generated in
    site layouts/styles. Construction zone labels sample one font from the
    role-appropriate shared font pool per scene and use it consistently across all zone
    labels; the resolved font trace is recorded in render metadata.
-7. Shared visual task scenes render derived canvases from illustration sources:
-   `image_cutout_board` supports jigsaw-style image reconstruction layouts
-   including 1x3 and 2x2 anchored-piece boards and a 3x3 rotated-tile grid, and
-   `missing_patch` shows a source image with a missing
-   region plus labeled patch options. These tasks may draw their source image
-   from current illustration scene renderers but ask scene-agnostic visual
-   comparison or reconstruction questions.
-   For `image_cutout_board` and `missing_patch`, the sampled source scene is
-   `content_source` metadata rather than the public scene identity. This is
-   allowed only because the task programs are visual reconstruction or patch
-   matching over the derived scaffold; they do not ask for source-scene
-   semantic counts or source-specific verifier logic. Current source support is
-   restricted to retained richer scenes (`library`, `park_playground`, and
-   `construction_site`) until additional scenes are reviewed for source-image
-   quality and semantic independence.
+7. Derived visual-reconstruction mechanics, such as jigsaw-style piece ordering,
+   rotated-tile grids, and missing-patch option layouts, are reusable
+   illustration helpers rather than standalone public scenes. Future tasks that
+   use these mechanics should live under the source scene that provides the
+   rendered image, such as `library` or `construction_site`, and should call the
+   scene-neutral helpers in `trace/tasks/illustrations/shared/`.
 8. Public object taxonomy is global across illustration scenes. Scene
    interfaces should request object/background types plus attributes; scenes
    own grammar, placement constraints, and allowed object subsets, not drawing
@@ -522,41 +513,38 @@ note says otherwise. The current domain inventory is generated in
 ### Construction-site tasks
 1. `task_illustrations__construction_site__worker_attribute_count` counts workers with a
    queried hard-hat color, safety-vest color, or visible hand tool. Annotation is
-   one worker bbox per counted worker. Color-query prompts include color names
+   one worker bbox per counted worker and is empty when the answer is `0`.
+   Configured answer support is `0..5`. Color-query prompts include color names
    with hex codes.
 2. `task_illustrations__construction_site__equipment_zone_count` counts construction
    vehicles or equipment items in one labeled site zone. Annotation is one
-   equipment bbox per counted item.
-3. Construction-site tasks construct target and distractor records explicitly;
+   equipment bbox per counted item and is empty when the answer is `0`.
+3. `task_illustrations__construction_site__missing_patch_label` renders a
+   construction-site source panel with one missing region and four or six
+   same-size lettered patch options. Source-zone text labels are suppressed for
+   this reconstruction view. Annotation is a keyed bbox map with
+   `missing_region` and `selected_option`.
+4. Construction-site tasks live in the scene package
+   `trace/tasks/illustrations/construction_site/`; renderer and sampling helpers
+   are scene-local under `shared/`.
+5. Construction-site count tasks construct target and distractor records explicitly;
    answers are checked against rendered worker/material/equipment records after
    rendering. Zone bbox jitter, object placement, and counted annotation are all
    resolved before projected annotation is emitted.
 
-### Shared visual tasks
-1. `task_illustrations__image_cutout_board__jigsaw_piece_order` shows either a 1x3 board
-   with the left source piece anchored or a 2x2 board with the top-left source
-   piece anchored. The remaining labeled pieces are shuffled below the board.
-   The answer is a space-separated label string in the prompted empty-cell
-   order. Annotation is a `bbox_sequence` over the displayed piece options in
-   answer order. Default sampling gives the two board shapes equal weight.
-   The 2x2 option row avoids the already-correct display order, and board
-   style plus option-label font are recorded in render metadata.
-2. `task_illustrations__image_cutout_board__rotated_tile_label` shows a full illustration cut
-   into a labeled 3x3 grid, with exactly one tile rotated in place. The answer
-   is the rotated tile label, and annotation is the full rotated tile bbox.
-   Grid style and tile-label font are recorded in render metadata.
-3. `task_illustrations__missing_patch__missing_patch_label` shows a source image with a
-   blacked-out missing region and labeled patch options. Query ids
-   use plain rectangular patches, rotation/reflection-allowed patches, and an
-   axis-aligned rectangular cutout. Annotation is a `keyed_bbox_map` with
-   `missing_region` and `selected_option` boxes. The default option count is
-   six so option-letter answer support clears review diversity gates, while
-   explicit four-option renders remain supported. Frame style and label font
-   are recorded in render metadata.
-4. These tasks intentionally test image comparison/reconstruction rather than
-   scene-specific world knowledge. Source images for jigsaw and missing-patch
-   tasks are sampled from current illustration renderers to keep
-   visual variety high while preserving a synthetic-only pipeline.
+### Reusable visual reconstruction helpers
+1. `trace/tasks/illustrations/shared/cutouts.py` contains scene-neutral
+   mechanics for jigsaw-style board composition, rotated-tile grid composition,
+   and missing-patch option composition. The helpers take an already-rendered
+   source image and return rendered-image, option-bbox, answer-label, and
+   annotation-bbox artifacts.
+2. `trace/tasks/illustrations/shared/option_rendering.py` contains neutral
+   option-label, panel-label, bbox, font-trace, image-fit, and crop-detail
+   helpers used by visual reconstruction mechanics.
+3. These helpers do not choose source scenes, sample public task ids, render
+   prompts, or construct `TaskOutput`. Scene-owned public tasks must render the
+   source scene first, then call these helpers and bind their own answer,
+   annotation, prompt slots, and trace metadata.
 
 ### Counterfactual object tasks
 1. `task_illustrations__single_object_figure__visible_part_count` renders one large

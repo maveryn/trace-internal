@@ -75,6 +75,7 @@ class IllustrationsCountingTransitPersonInBoardingAreaCountTask:
     task_id = PERSON_BOARDING_AREA_TASK_ID
     domain = "illustrations"
     scene_id = "counting"
+    supported_queries = BOARDING_AREA_QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -95,6 +96,7 @@ class IllustrationsCountingTransitLuggageInBoardingAreaCountTask:
     task_id = LUGGAGE_BOARDING_AREA_TASK_ID
     domain = "illustrations"
     scene_id = "counting"
+    supported_queries = LUGGAGE_QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -115,6 +117,7 @@ class IllustrationsCountingTransitPersonInQueueCountTask:
     task_id = PERSON_QUEUE_TASK_ID
     domain = "illustrations"
     scene_id = "counting"
+    supported_queries = QUEUE_QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:

@@ -7,28 +7,27 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults, required_group_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ..shared.construction_site_scene import (
+from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
+from .shared.annotations import (
+    construction_equipment_bbox_map,
+    construction_worker_bbox_map,
+    sort_construction_bboxes,
+)
+from .shared.labels import construction_color_display_name, construction_zone_display_name
+from .shared.output import construction_scene_entities, serialize_construction_scene
+from .shared.rendering import render_construction_site_scene
+from .shared.state import (
     ConstructionEquipmentSpec,
     ConstructionMaterialSpec,
     ConstructionWorkerSpec,
-    construction_color_display_name,
-    construction_equipment_bbox_map,
-    construction_scene_entities,
-    construction_worker_bbox_map,
-    construction_zone_display_name,
-    render_construction_site_scene,
-    serialize_construction_scene,
-    sort_construction_bboxes,
 )
-from ..shared.construction_task_common import (
+from .shared.sampling import (
     bounds,
     color_support,
     equipment_support,
@@ -63,10 +62,10 @@ _QUERY_TO_ZONE: Dict[str, str] = {
 class _Defaults:
     equipment_count_min: int = 5
     equipment_count_max: int = 9
-    target_count_min: int = 1
-    target_count_max: int = 5
-    worker_count_min: int = 5
-    worker_count_max: int = 9
+    target_count_min: int = 0
+    target_count_max: int = 4
+    worker_count_min: int = 3
+    worker_count_max: int = 6
     material_count_min: int = 5
     material_count_max: int = 8
     canvas_width: int = 1280
@@ -93,14 +92,16 @@ class _SampleSpec:
 
 
 _DEFAULTS = _Defaults()
-_TASK_GROUP_DEFAULTS = get_scene_defaults("illustrations", "counting")
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    "illustrations",
+    SCENE_ID,
     task_id=TASK_ID,
 )
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
+    """Build equipment specs with a unique target-zone count answer."""
+
     rng = spawned_task_rng(int(instance_seed), TASK_ID, int(attempt_index))
     base_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:cycle")
     query_values = query_support(params, _GEN_DEFAULTS, QUERY_IDS)
@@ -229,10 +230,12 @@ class IllustrationsCountingEquipmentInZoneCountTask:
 
     task_id = TASK_ID
     domain = "illustrations"
-    scene_id = "counting"
+    supported_queries = QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Render one scene and bind target-zone equipment to evidence."""
+
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
         scene = None
@@ -286,6 +289,10 @@ class IllustrationsCountingEquipmentInZoneCountTask:
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
+                "object_description",
+                "question_text_vehicle_in_excavation_zone_count",
+                "question_text_vehicle_in_loading_zone_count",
+                "question_text_vehicle_in_roadwork_zone_count",
                 "answer_hint_equipment_in_zone",
                 "annotation_hint_equipment_in_zone",
                 "json_example_equipment_in_zone",
@@ -293,9 +300,9 @@ class IllustrationsCountingEquipmentInZoneCountTask:
             ],
             context=f"prompt defaults for {TASK_ID}",
         )
-        slots = {
-            "worker_count": int(sample.worker_count),
-            "zone_name": str(sample.zone_name),
+        dynamic_slots = {
+            "object_description": str(prompt_defaults["object_description"]).format(worker_count=int(sample.worker_count)),
+            "question_text": str(prompt_defaults[f"question_text_{sample.query_id}"]).format(zone_name=str(sample.zone_name)),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults["answer_hint_equipment_in_zone"]).format(zone_name=str(sample.zone_name)),
@@ -303,14 +310,13 @@ class IllustrationsCountingEquipmentInZoneCountTask:
             "json_example": str(prompt_defaults["json_example_equipment_in_zone"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only_equipment_in_zone"]),
         }
-        prompt_selection = render_task_prompt_variants(
+        prompt_selection = render_scene_prompt_variants(
             domain=self.domain,
-            scene_id=self.scene_id,
+            scene_id=SCENE_ID,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(sample.query_id),
-            slots=slots,
+            dynamic_slots=dynamic_slots,
             instance_seed=int(instance_seed),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             preferred_mode="answer_and_annotation",

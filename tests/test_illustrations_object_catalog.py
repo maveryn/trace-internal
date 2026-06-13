@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from trace.tasks.illustrations.construction_site.shared import labels as construction_labels
+from trace.tasks.illustrations.construction_site.shared import state as construction_state
 from trace.tasks.illustrations.shared import (
-    construction_site_rendering as construction,
     environment_object_rendering as environment,
     library_rendering as library,
     mixed_object_rendering as mixed,
@@ -63,9 +64,9 @@ def test_scene_variant_maps_are_catalog_derived() -> None:
     assert park.PARK_ZONE_LABELS == label_map_for_tag("park_zone")
     assert transit.TRANSIT_LUGGAGE_TYPES == variant_ids_with_tag("transit_luggage")
     assert transit.TRANSIT_LUGGAGE_LABELS == plural_name_map_for_tag("transit_luggage")
-    assert construction.CONSTRUCTION_MATERIAL_TYPES == variant_ids_with_tag("construction_material")
-    assert construction.CONSTRUCTION_MATERIAL_LABELS == plural_name_map_for_tag("construction_material")
-    assert construction.CONSTRUCTION_EQUIPMENT_LABELS == plural_name_map_for_tag("construction_equipment")
+    assert construction_state.CONSTRUCTION_MATERIAL_TYPES == variant_ids_with_tag("construction_material")
+    assert construction_labels.CONSTRUCTION_MATERIAL_LABELS == plural_name_map_for_tag("construction_material")
+    assert construction_labels.CONSTRUCTION_EQUIPMENT_LABELS == plural_name_map_for_tag("construction_equipment")
 
 
 def test_registry_exposes_catalog_categories_for_object_types() -> None:

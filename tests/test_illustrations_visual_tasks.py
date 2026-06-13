@@ -1,216 +1,184 @@
-"""Contract tests for shared illustration visual tasks."""
+"""Tests for reusable illustration visual reconstruction mechanics."""
 
 from __future__ import annotations
 
-from collections import Counter
-from inspect import getsourcefile
+import random
 from pathlib import Path
 
-from trace.core.scene_config import get_scene_defaults
-from trace.core.seed import hash64
-from trace.tasks import create_task
-from trace.tasks.illustrations.missing_patch.missing_patch_label import _GEN_DEFAULTS as _MISSING_PATCH_GEN_DEFAULTS
-from trace.tasks.illustrations.image_cutout_board.jigsaw_piece_order import _sample_spec as _sample_jigsaw_spec
+from PIL import Image, ImageDraw
+import pytest
+
+from trace.tasks.autoload import task_module_exists
+from trace.tasks.illustrations.shared.cutouts import (
+    JIGSAW_BOARD_STYLES,
+    PATCH_FRAME_STYLES,
+    PATCH_MODE_PLAIN,
+    PATCH_MODE_TRANSFORMED,
+    ROTATED_GRID_STYLES,
+    compose_jigsaw_board,
+    compose_patch_options,
+    compose_rotated_tile_grid,
+    option_content_order,
+    sample_style,
+    tile_is_usable,
+)
 
 
-def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
-    assert sorted(counts) == sorted(expected_keys)
-    expected = sum(counts.values()) / max(1, len(counts))
-    assert min(counts.values()) >= max(1, int(expected * 0.4))
-    assert max(counts.values()) <= int(expected * 1.85) + 1
+RETIRED_TASK_ID_PARTS = (
+    ("illustrations", "image_cutout_board", "jigsaw_piece_order"),
+    ("illustrations", "image_cutout_board", "rotated_tile_label"),
+    ("illustrations", "missing_patch", "missing_patch_label"),
+)
 
 
-def test_jigsaw_piece_order_contract() -> None:
-    task = create_task("task_illustrations__image_cutout_board__jigsaw_piece_order")
-    assert not hasattr(task, "scene_id")
-    assert Path(getsourcefile(task.__class__) or "").as_posix().endswith(
-        "trace/tasks/illustrations/image_cutout_board/jigsaw_piece_order.py"
+def _source_image(width: int = 640, height: int = 420) -> Image.Image:
+    image = Image.new("RGB", (int(width), int(height)), (238, 242, 246))
+    draw = ImageDraw.Draw(image)
+    colors = [(210, 58, 70), (40, 120, 210), (54, 160, 98), (230, 174, 42)]
+    for index, color in enumerate(colors):
+        x0 = 24 + index * (width // 5)
+        y0 = 36 + (index % 2) * 110
+        draw.rounded_rectangle((x0, y0, x0 + 110, y0 + 86), radius=14, fill=color, outline=(35, 39, 46), width=4)
+        draw.line((x0 + 12, y0 + 14, x0 + 96, y0 + 70), fill=(255, 255, 255), width=5)
+    for x in range(0, width, 40):
+        draw.line((x, 0, width - x // 2, height), fill=(90, 100, 120), width=1)
+    return image
+
+
+def test_retired_visual_public_tasks_are_not_registered() -> None:
+    for domain, scene_id, objective in RETIRED_TASK_ID_PARTS:
+        task_id = f"task_{domain}__{scene_id}__{objective}"
+        assert not task_module_exists(task_id)
+
+
+def test_jigsaw_artifacts_bind_answer_order_and_bbox_sequence() -> None:
+    rng = random.Random(17)
+    style = sample_style(rng, JIGSAW_BOARD_STYLES)
+    display_order = option_content_order(
+        option_permutation_index=3,
+        rng=rng,
+        remaining_content_indices=(1, 2, 3),
     )
-    out = task.generate(
-        hash64(2026052502, "jigsaw-piece-order", 0),
-        params={"board_shape": "board_2x2", "source_task_id": "task_illustrations__library__books_in_section_count"},
-        max_attempts=300,
-    )
-    trace = out.trace_payload
-    labels = str(out.answer_gt.value).split()
-    assert out.scene_id == "image_cutout_board"
-    assert out.query_id == "jigsaw_piece_order"
-    assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "bbox_sequence"
-    assert len(labels) == 3
-    assert set(labels) == {"1", "2", "3"}
-    assert len(out.annotation_gt.value) == 3
-    assert trace["projected_annotation"]["bbox_sequence"] == out.annotation_gt.value
-    assert trace["scene_ir"]["entities"]["source_image_shown"] is False
-    assert trace["scene_ir"]["entities"]["anchored_piece"] == {"position": "top_left", "content_index": 0}
-    assert trace["render_map"]["display_grid_shape"] == [2, 2]
-    assert trace["render_map"]["anchored_content_index"] == 0
-    assert trace["render_map"]["answer_positions"] == ["top_right", "bottom_left", "bottom_right"]
-    assert sorted(trace["render_map"]["display_order_content_indices"]) == [1, 2, 3]
-    assert trace["query_spec"]["params"]["board_shape"] == "board_2x2"
-    assert trace["query_spec"]["params"]["option_piece_count"] == 3
-    assert trace["render_spec"]["style"]["option_label_font"]["pool"] == "global_approved_font_pool"
-    assert trace["render_spec"]["style"]["board_style"]["style_id"] in {"pale_cross", "warm_corner", "cool_dots"}
-    prompt_variant = trace["query_spec"]["prompt_variant"]
-    assert prompt_variant["prompt_bundle_id"] == "illustrations_image_cutout_board_v0"
-    assert prompt_variant["prompt_scene_id"] == "image_cutout_board"
-    assert "prompt_scene_id" not in prompt_variant
-    assert "3 remaining piece labels" in out.prompt
-
-
-def test_jigsaw_piece_order_one_by_three_contract() -> None:
-    out = create_task("task_illustrations__image_cutout_board__jigsaw_piece_order").generate(
-        hash64(2026052502, "jigsaw-piece-order-1x3", 0),
-        params={"board_shape": "board_1x3", "source_task_id": "task_illustrations__library__books_in_section_count"},
-        max_attempts=300,
-    )
-    trace = out.trace_payload
-    labels = str(out.answer_gt.value).split()
-    assert out.scene_id == "image_cutout_board"
-    assert out.query_id == "jigsaw_piece_order"
-    assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "bbox_sequence"
-    assert len(labels) == 2
-    assert set(labels) == {"1", "2"}
-    assert len(out.annotation_gt.value) == 2
-    assert trace["scene_ir"]["entities"]["anchored_piece"] == {"position": "left", "content_index": 0}
-    assert trace["render_map"]["display_grid_shape"] == [1, 3]
-    assert trace["render_map"]["answer_positions"] == ["middle", "right"]
-    assert trace["query_spec"]["params"]["board_shape"] == "board_1x3"
-    assert trace["query_spec"]["params"]["option_piece_count"] == 2
-    assert "2 remaining piece labels" in out.prompt
-
-
-def test_jigsaw_piece_orderseeded_sampler_decouples_shape_and_answer_order() -> None:
-    counts: Counter[str] = Counter()
-    for index in range(48):
-        sample = _sample_jigsaw_spec(
-            instance_seed=hash64(2026052502, "jigsaw-piece-order-sampling", index),
-            params={},
-        )
-        shape = str(sample.board_shape)
-        counts[shape] += 1
-        assert sample.source_sample_index is None
-        assert sample.option_permutation_index is None
-    _assert_hash_balanced_counts(counts, {"board_1x3", "board_2x2"})
-
-
-def test_rotated_tile_label_contract() -> None:
-    task = create_task("task_illustrations__image_cutout_board__rotated_tile_label")
-    assert not hasattr(task, "scene_id")
-    assert Path(getsourcefile(task.__class__) or "").as_posix().endswith(
-        "trace/tasks/illustrations/image_cutout_board/rotated_tile_label.py"
-    )
-    out = task.generate(
-        hash64(2026053001, "rotated-tile-label", 0),
-        params={
-            "correct_tile_index": 4,
-            "rotation_degrees": 90,
-            "source_task_id": "task_illustrations__library__books_in_section_count",
-        },
-        max_attempts=300,
-    )
-    trace = out.trace_payload
-    assert out.scene_id == "image_cutout_board"
-    assert out.query_id == "rotated_tile_label"
-    assert out.answer_gt.type == "option_letter"
-    assert out.answer_gt.value == "E"
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 1
-    assert trace["render_map"]["correct_option_label"] == "E"
-    assert trace["render_map"]["correct_tile_index"] == 4
-    assert trace["render_map"]["rotation_degrees"] == 90
-    assert trace["render_map"]["grid_shape"] == [3, 3]
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert trace["render_spec"]["style"]["tile_label_font"]["pool"] == "global_approved_font_pool"
-    assert trace["render_spec"]["style"]["grid_style"]["style_id"] in {"slate_badges", "ink_badges", "blueprint_badges"}
-    assert trace["scene_ir"]["entities"]["source_image_shown"] is True
-    assert trace["scene_ir"]["entities"]["rotated_tile"]["label"] == "E"
-    assert trace["scene_ir"]["entities"]["rotated_tile"]["bbox"] == out.annotation_gt.value[0]
-    prompt_variant = trace["query_spec"]["prompt_variant"]
-    assert prompt_variant["prompt_bundle_id"] == "illustrations_image_cutout_board_v0"
-    assert prompt_variant["prompt_scene_id"] == "image_cutout_board"
-    assert "prompt_scene_id" not in prompt_variant
-
-
-def test_rotated_tile_label_sampling_balances_labels_and_rotations() -> None:
-    task = create_task("task_illustrations__image_cutout_board__rotated_tile_label")
-    labels: Counter[str] = Counter()
-    rotations: Counter[int] = Counter()
-    for index in range(108):
-        out = task.generate(
-            hash64(2026053001, "rotated-tile-label-sampling", index),
-            params={},
-            max_attempts=300,
-        )
-        labels[str(out.answer_gt.value)] += 1
-        rotations[int(out.trace_payload["render_map"]["rotation_degrees"])] += 1
-    _assert_hash_balanced_counts(labels, tuple("ABCDEFGHI"))
-    _assert_hash_balanced_counts(rotations, (90, 180, 270))
-
-
-def test_missing_patch_label_variants_contract() -> None:
-    task = create_task("task_illustrations__missing_patch__missing_patch_label")
-    assert not hasattr(task, "scene_id")
-    assert Path(getsourcefile(task.__class__) or "").as_posix().endswith(
-        "trace/tasks/illustrations/missing_patch/missing_patch_label.py"
+    artifacts = compose_jigsaw_board(
+        source_image=_source_image(),
+        rows=2,
+        cols=2,
+        display_order=display_order,
+        board_style=style,
+        label_font_family=None,  # type: ignore[arg-type]
     )
 
-    expected_labels = ("C", "C", "C")
-    for index, (mode, expected_label) in enumerate(
-        zip(["plain_patch_label", "transformed_patch_label", "irregular_cutout_patch_label"], expected_labels)
+    assert artifacts.display_grid_shape == (2, 2)
+    assert artifacts.anchored_content_index == 0
+    assert artifacts.display_order_content_indices == display_order
+    assert set(artifacts.option_bboxes) == {"1", "2", "3"}
+    assert len(artifacts.answer_labels) == 3
+    assert set(artifacts.answer_labels) == {"1", "2", "3"}
+    assert [artifacts.option_bboxes[label] for label in artifacts.answer_labels]
+    assert artifacts.image.width > 0 and artifacts.image.height > 0
+
+
+def test_rotated_tile_artifacts_select_one_labeled_tile() -> None:
+    source = _source_image(600, 600)
+    rng = random.Random(23)
+    style = sample_style(rng, ROTATED_GRID_STYLES)
+    artifacts = compose_rotated_tile_grid(
+        source_image=source,
+        correct_index=4,
+        rotation_degrees=90,
+        grid_style=style,
+        label_font_family=None,  # type: ignore[arg-type]
+    )
+    pieces = source.crop((200, 200, 400, 400))
+    rotated = pieces.rotate(-90, expand=False)
+
+    assert artifacts.grid_shape == (3, 3)
+    assert artifacts.selected_label == "E"
+    assert artifacts.selected_index == 4
+    assert artifacts.rotation_degrees == 90
+    assert artifacts.selected_bbox == artifacts.tile_bboxes["E"]
+    assert len(artifacts.tile_bboxes) == 9
+    assert tile_is_usable(pieces, rotated, min_detail_score=1.0, min_rotation_delta=1.0)
+
+
+def test_patch_option_artifacts_use_keyed_visual_witnesses() -> None:
+    rng = random.Random(31)
+    style = sample_style(rng, PATCH_FRAME_STYLES)
+    artifacts = compose_patch_options(
+        source_image=_source_image(),
+        rng=rng,
+        patch_mode=PATCH_MODE_PLAIN,
+        correct_index=2,
+        option_count=4,
+        patch_size=(128, 100),
+        crop_margin_px=32,
+        frame_style=style,
+        label_font_family=None,  # type: ignore[arg-type]
+    )
+
+    assert artifacts.option_grid_shape == (2, 2)
+    assert artifacts.selected_label == "C"
+    assert artifacts.selected_index == 2
+    assert set(artifacts.option_bboxes) == {"A", "B", "C", "D"}
+    assert artifacts.selected_option_bbox == artifacts.option_bboxes["C"]
+    assert len(artifacts.missing_region_bbox) == 4
+    assert len(artifacts.selected_option_bbox) == 4
+    assert artifacts.selected_transform == "none"
+    missing_w = artifacts.missing_region_bbox[2] - artifacts.missing_region_bbox[0]
+    missing_h = artifacts.missing_region_bbox[3] - artifacts.missing_region_bbox[1]
+    for bbox in artifacts.option_bboxes.values():
+        assert bbox[2] - bbox[0] == missing_w
+        assert bbox[3] - bbox[1] == missing_h
+
+
+def test_transformed_patch_records_selected_transform() -> None:
+    artifacts = compose_patch_options(
+        source_image=_source_image(),
+        rng=random.Random(41),
+        patch_mode=PATCH_MODE_TRANSFORMED,
+        correct_index=1,
+        option_count=6,
+        patch_size=(128, 100),
+        crop_margin_px=32,
+        frame_style=PATCH_FRAME_STYLES["slate_cards"],
+        label_font_family=None,  # type: ignore[arg-type]
+    )
+
+    assert artifacts.selected_label == "B"
+    assert artifacts.selected_transform in {"rotate_180", "flip_horizontal", "flip_vertical"}
+    assert artifacts.option_grid_shape == (2, 3)
+    for bbox in artifacts.option_bboxes.values():
+        assert bbox[2] - bbox[0] == 128
+        assert bbox[3] - bbox[1] == 100
+
+
+def test_visual_shared_helpers_do_not_reference_public_task_plumbing() -> None:
+    forbidden = {
+        "TaskOutput",
+        "create_task",
+        "register_task",
+        "source_task_id",
+        "SOURCE_TASK_IDS",
+    }
+    for path in (
+        Path("trace/tasks/illustrations/shared/cutouts.py"),
+        Path("trace/tasks/illustrations/shared/option_rendering.py"),
     ):
-        out = task.generate(
-            hash64(2026052503, "missing-patch", index),
-            params={
-                "patch_mode": mode,
-                "correct_option_index": 2,
-                "source_task_id": "task_illustrations__library__books_in_section_count",
-            },
-            max_attempts=300,
+        text = path.read_text(encoding="utf-8")
+        present = sorted(value for value in forbidden if value in text)
+        assert not present, f"{path} contains forbidden public plumbing: {present}"
+
+
+def test_patch_mode_validation_rejects_legacy_query_names() -> None:
+    with pytest.raises(ValueError):
+        compose_patch_options(
+            source_image=_source_image(),
+            rng=random.Random(47),
+            patch_mode="plain_patch_label",
+            correct_index=0,
+            option_count=4,
+            patch_size=(128, 100),
+            crop_margin_px=32,
+            frame_style=PATCH_FRAME_STYLES["slate_cards"],
+            label_font_family=None,  # type: ignore[arg-type]
         )
-        trace = out.trace_payload
-        assert out.scene_id == "missing_patch"
-        assert out.query_id == mode
-        assert out.answer_gt.type == "option_letter"
-        assert out.answer_gt.value == expected_label
-        assert out.annotation_gt.type == "keyed_bbox_map"
-        assert set(out.annotation_gt.value) == {"missing_region", "selected_option"}
-        assert trace["render_map"]["correct_option_label"] == expected_label
-        assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-        assert trace["render_map"]["annotation_bboxes_px"] == out.annotation_gt.value
-        assert trace["render_spec"]["style"]["label_font"]["pool"] == "global_approved_font_pool"
-        assert trace["render_spec"]["style"]["frame_style"]["style_id"] in {"slate_cards", "warm_cards", "cool_cards"}
-        prompt_variant = trace["query_spec"]["prompt_variant"]
-        assert prompt_variant["prompt_bundle_id"] == "illustrations_missing_patch_missing_patch_label_v0"
-        assert prompt_variant["prompt_scene_id"] == "missing_patch"
-        assert "prompt_scene_id" not in prompt_variant
-
-
-def test_missing_patch_four_options_use_two_by_two_grid() -> None:
-    out = create_task("task_illustrations__missing_patch__missing_patch_label").generate(
-        hash64(2026052503, "missing-patch-grid", 0),
-        params={
-            "option_count": 4,
-            "correct_option_index": 2,
-            "source_task_id": "task_illustrations__library__books_in_section_count",
-        },
-        max_attempts=300,
-    )
-    trace = out.trace_payload
-    assert trace["query_spec"]["params"]["option_count"] == 4
-    assert trace["render_spec"]["style"]["panel_grid"] == [2, 2]
-    assert set(trace["render_map"]["option_bboxes_px"]) == {"A", "B", "C", "D"}
-
-
-def test_missing_patch_source_support_excludes_mixed_sources() -> None:
-    scene_defaults = get_scene_defaults("illustrations", "missing_patch")
-    assert "generation" in scene_defaults
-    support = tuple(_MISSING_PATCH_GEN_DEFAULTS["source_task_id_support"])
-    assert support == (
-        "task_illustrations__environment__on_feature_object_count",
-        "task_illustrations__library__books_in_section_count",
-        "task_illustrations__park_playground__activity_person_count",
-        "task_illustrations__transit_terminal__person_in_boarding_area_count",
-        "task_illustrations__construction_site__worker_attribute_count",
-    )

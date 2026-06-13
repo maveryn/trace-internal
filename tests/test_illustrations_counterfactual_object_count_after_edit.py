@@ -2,8 +2,8 @@
 from __future__ import annotations
 from collections import Counter
 from trace.tasks import TASK_REGISTRY, create_task
+from trace.tasks.illustrations.construction_site import worker_attribute_count as _worker_safety_gear_count_tasks
 from trace.tasks.illustrations.counting import park_person_count as _park_person_count_tasks
-from trace.tasks.illustrations.counting import worker_safety_gear_count as _worker_safety_gear_count_tasks
 from trace.tasks.illustrations.source_scene_edit.object_count_after_edit import ADDED_VARIANT, REMOVED_VARIANT, SUPPORTED_QUERY_IDS, TASK_ID
 
 def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:

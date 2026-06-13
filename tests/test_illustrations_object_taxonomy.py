@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from PIL import Image
 
-from trace.tasks.illustrations.shared.construction_site_scene import (
+from trace.tasks.illustrations.construction_site.shared.output import construction_scene_entities
+from trace.tasks.illustrations.construction_site.shared.state import (
     ConstructionDecor,
     ConstructionEquipment,
     ConstructionMaterial,
     ConstructionWorker,
     ConstructionZone,
     RenderedConstructionSiteScene,
-    construction_scene_entities,
 )
 from trace.tasks.illustrations.shared.library_scene import (
     LibraryDecor,

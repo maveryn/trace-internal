@@ -7,32 +7,28 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults, required_group_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ..shared.task_support import query_support as _shared_query_support
-from ..shared.construction_site_scene import (
+from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
+from .shared.annotations import construction_worker_bbox_map, sort_construction_bboxes
+from .shared.labels import construction_color_display_name, construction_color_hex
+from .shared.output import construction_scene_entities, serialize_construction_scene
+from .shared.rendering import render_construction_site_scene
+from .shared.state import (
     ConstructionEquipmentSpec,
     ConstructionMaterialSpec,
     ConstructionWorkerSpec,
-    construction_color_display_name,
-    construction_color_hex,
-    construction_scene_entities,
-    construction_worker_bbox_map,
-    render_construction_site_scene,
-    serialize_construction_scene,
-    sort_construction_bboxes,
 )
-from ..shared.construction_task_common import (
+from .shared.sampling import (
     bounds,
     color_support,
     equipment_support,
     material_support,
+    query_support as _shared_query_support,
     render_params,
     sample_count,
     setting_weights,
@@ -56,8 +52,8 @@ QUERY_IDS: Tuple[str, ...] = (
 class _Defaults:
     worker_count_min: int = 9
     worker_count_max: int = 15
-    target_count_min: int = 2
-    target_count_max: int = 7
+    target_count_min: int = 0
+    target_count_max: int = 5
     material_count_min: int = 5
     material_count_max: int = 8
     equipment_count_min: int = 3
@@ -84,9 +80,9 @@ class _SampleSpec:
 
 
 _DEFAULTS = _Defaults()
-_TASK_GROUP_DEFAULTS = get_scene_defaults("illustrations", "counting")
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    "illustrations",
+    SCENE_ID,
     task_id=TASK_ID,
 )
 
@@ -94,6 +90,8 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
+    """Build worker specs with exactly one visible attribute count answer."""
+
     rng = spawned_task_rng(int(instance_seed), TASK_ID, int(attempt_index))
     base_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:cycle")
     query_values = _shared_query_support(params, _GEN_DEFAULTS, QUERY_IDS)
@@ -243,10 +241,12 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
 
     task_id = TASK_ID
     domain = "illustrations"
-    scene_id = "counting"
+    supported_queries = QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Render one scene and bind counted workers to prompt and evidence."""
+
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
         scene = None
@@ -295,6 +295,10 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
+                "object_description",
+                "question_text_hard_hat_color_worker_count",
+                "question_text_vest_color_worker_count",
+                "question_text_tool_holding_worker_count",
                 "answer_hint_worker_safety_gear",
                 "annotation_hint_worker_safety_gear",
                 "json_example_worker_safety_gear",
@@ -302,10 +306,12 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
             ],
             context=f"prompt defaults for {TASK_ID}",
         )
-        slots = {
-            "worker_count": int(sample.worker_count),
-            "color_label": construction_color_display_name(str(sample.target_color or "")),
-            "match_phrase": str(sample.match_phrase),
+        dynamic_slots = {
+            "object_description": str(prompt_defaults["object_description"]).format(worker_count=int(sample.worker_count)),
+            "question_text": str(prompt_defaults[f"question_text_{sample.query_id}"]).format(
+                color_label=construction_color_display_name(str(sample.target_color or "")),
+                match_phrase=str(sample.match_phrase),
+            ),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults["answer_hint_worker_safety_gear"]).format(match_phrase=str(sample.match_phrase)),
@@ -313,14 +319,13 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
             "json_example": str(prompt_defaults["json_example_worker_safety_gear"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only_worker_safety_gear"]),
         }
-        prompt_selection = render_task_prompt_variants(
+        prompt_selection = render_scene_prompt_variants(
             domain=self.domain,
-            scene_id=self.scene_id,
+            scene_id=SCENE_ID,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(sample.query_id),
-            slots=slots,
+            dynamic_slots=dynamic_slots,
             instance_seed=int(instance_seed),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             preferred_mode="answer_and_annotation",

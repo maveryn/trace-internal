@@ -663,6 +663,7 @@ class IllustrationsCountingBooksInSectionCountTask:
     task_id = BOOKS_IN_SECTION_TASK_ID
     domain = "illustrations"
     scene_id = "counting"
+    supported_queries = ("books_in_section_count",)
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -686,6 +687,7 @@ class IllustrationsCountingFilteredBookInSectionCountTask:
     task_id = FILTERED_BOOK_TASK_ID
     domain = "illustrations"
     scene_id = "counting"
+    supported_queries = FILTERED_QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:

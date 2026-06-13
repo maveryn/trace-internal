@@ -209,68 +209,6 @@ generation:
     task_illustrations__transit_terminal__person_in_queue_count:
       query_id_support:
         - person_in_queue_count
-    task_illustrations__construction_site__worker_attribute_count:
-      worker_count_min: 9
-      worker_count_max: 15
-      target_count_min: 2
-      target_count_max: 7
-      material_count_min: 5
-      material_count_max: 8
-      equipment_count_min: 3
-      equipment_count_max: 5
-      query_id_support:
-        - hard_hat_color_worker_count
-        - vest_color_worker_count
-        - tool_holding_worker_count
-      color_name_support:
-        - yellow
-        - orange
-        - red
-        - blue
-        - green
-        - purple
-      tool_type_support:
-        - hammer
-        - shovel
-        - wrench
-      material_type_support:
-        - brick_stack
-        - pipe_bundle
-        - lumber_stack
-        - cement_bag_stack
-      equipment_type_support:
-        - excavator
-        - dump_truck
-        - cement_mixer
-        - forklift
-    task_illustrations__construction_site__equipment_zone_count:
-      equipment_count_min: 5
-      equipment_count_max: 9
-      target_count_min: 1
-      target_count_max: 5
-      worker_count_min: 5
-      worker_count_max: 9
-      material_count_min: 5
-      material_count_max: 8
-      query_id_support:
-        - vehicle_in_excavation_zone_count
-        - vehicle_in_loading_zone_count
-        - vehicle_in_roadwork_zone_count
-      zone_support:
-        - excavation_zone
-        - loading_zone
-        - roadwork_zone
-      equipment_type_support:
-        - excavator
-        - dump_truck
-        - cement_mixer
-        - forklift
-      material_type_support:
-        - brick_stack
-        - pipe_bundle
-        - lumber_stack
-        - cement_bag_stack
-
 rendering:
   shared:
     canvas_width: 1280
@@ -533,19 +471,3 @@ prompt:
       annotation_hint_queue_person: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person in the {service_point_name}
       json_example_queue_person: '{"annotation":[[184,704,228,776],[238,706,282,778],[292,700,336,774]],"answer":3}'
       json_example_answer_only_queue_person: '{"answer":3}'
-    task_illustrations__construction_site__worker_attribute_count:
-      bundle_id: illustrations_counting_v0
-      scene_key: construction_site_canvas
-      task_key: worker_safety_gear_count_task
-      answer_hint_worker_safety_gear: set "answer" to the count of {match_phrase} as an integer
-      annotation_hint_worker_safety_gear: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted worker
-      json_example_worker_safety_gear: '{"annotation":[[182,498,238,612],[414,426,470,540],[786,566,842,680]],"answer":3}'
-      json_example_answer_only_worker_safety_gear: '{"answer":3}'
-    task_illustrations__construction_site__equipment_zone_count:
-      bundle_id: illustrations_counting_v0
-      scene_key: construction_site_canvas
-      task_key: equipment_in_zone_count_task
-      answer_hint_equipment_in_zone: set "answer" to the count of construction vehicles or equipment items in the {zone_name} as an integer
-      annotation_hint_equipment_in_zone: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted construction vehicle or equipment item in the {zone_name}
-      json_example_equipment_in_zone: '{"annotation":[[148,454,312,572],[654,420,826,548]],"answer":2}'
-      json_example_answer_only_equipment_in_zone: '{"answer":2}'

@@ -1,4 +1,4 @@
-"""Identity-free Chess mechanics and construction primitives."""
+"""Identity-free Chess rules and construction primitives."""
 
 from __future__ import annotations
 

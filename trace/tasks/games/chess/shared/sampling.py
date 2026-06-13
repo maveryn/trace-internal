@@ -33,7 +33,7 @@ from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
 from .defaults import FALLBACK_GENERATION_DEFAULTS
-from .mechanics import (
+from .rules import (
     add_material_fillers_preserving,
     attacker_slots_for_square,
     coords_between,

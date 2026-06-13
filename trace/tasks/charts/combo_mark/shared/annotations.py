@@ -2,39 +2,57 @@
 
 from __future__ import annotations
 
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Iterable, Mapping, Sequence
 
 from trace.core.types import TypedValue
 from trace.tasks.charts.combo_mark.shared.state import ComboScene
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_pair_set_annotation_artifacts
 
 
-def points_for_indices(
-    indices: Iterable[int],
+def combo_annotation_artifacts(
     scene: ComboScene,
     *,
-    include_primary: bool,
-    include_line: bool,
-) -> tuple[dict[str, list[float]], list[str]]:
-    """Return keyed mark-center points for task-selected category indices."""
+    indices: Iterable[int],
+    mode: str,
+    mark_role: str = "",
+) -> tuple[AnnotationArtifacts, list[str]]:
+    """Project task-selected combo marks using the scene-level annotation contract."""
 
-    points: dict[str, list[float]] = {}
-    labels: list[str] = []
-    for idx in indices:
-        category_label = str(scene.labels[int(idx)])
-        if include_primary:
-            points[f"{category_label}.primary"] = [
-                float(scene.primary_points[int(idx)][0]),
-                float(scene.primary_points[int(idx)][1]),
+    selected_indices = tuple(int(idx) for idx in indices)
+    if str(mode) == "paired_mark_map":
+        if len(selected_indices) != 1:
+            raise ValueError("paired_mark_map expects exactly one selected category")
+        idx = int(selected_indices[0])
+        points = {
+            "primary_mark": [float(scene.primary_points[idx][0]), float(scene.primary_points[idx][1])],
+            "line_mark": [float(scene.line_points[idx][0]), float(scene.line_points[idx][1])],
+        }
+        labels = [f"{scene.primary_name}:{scene.labels[idx]}", f"{scene.line_name}:{scene.labels[idx]}"]
+        return keyed_point_artifacts(points), labels
+    if str(mode) == "single_mark_map":
+        if len(selected_indices) != 1:
+            raise ValueError("single_mark_map expects exactly one selected category")
+        idx = int(selected_indices[0])
+        if str(mark_role) == "primary":
+            point = scene.primary_points[idx]
+            labels = [f"{scene.primary_name}:{scene.labels[idx]}"]
+        elif str(mark_role) == "line":
+            point = scene.line_points[idx]
+            labels = [f"{scene.line_name}:{scene.labels[idx]}"]
+        else:
+            raise ValueError(f"unsupported single mark role: {mark_role}")
+        return keyed_point_artifacts({"answer_mark": [float(point[0]), float(point[1])]}), labels
+    if str(mode) == "mark_pair_set":
+        pairs = [
+            [
+                [float(scene.primary_points[int(idx)][0]), float(scene.primary_points[int(idx)][1])],
+                [float(scene.line_points[int(idx)][0]), float(scene.line_points[int(idx)][1])],
             ]
-            labels.append(f"{scene.primary_name}:{scene.labels[int(idx)]}")
-        if include_line:
-            points[f"{category_label}.line"] = [
-                float(scene.line_points[int(idx)][0]),
-                float(scene.line_points[int(idx)][1]),
-            ]
-            labels.append(f"{scene.line_name}:{scene.labels[int(idx)]}")
-    return points, labels
+            for idx in selected_indices
+        ]
+        labels = [f"{scene.primary_name}+{scene.line_name}:{scene.labels[int(idx)]}" for idx in selected_indices]
+        return point_pair_set_annotation_artifacts(pairs), labels
+    raise ValueError(f"unsupported combo annotation mode: {mode}")
 
 
 def keyed_point_artifacts(points: Mapping[str, Sequence[float]]) -> AnnotationArtifacts:
@@ -55,4 +73,4 @@ def keyed_point_artifacts(points: Mapping[str, Sequence[float]]) -> AnnotationAr
     )
 
 
-__all__ = ["keyed_point_artifacts", "points_for_indices"]
+__all__ = ["combo_annotation_artifacts", "keyed_point_artifacts"]

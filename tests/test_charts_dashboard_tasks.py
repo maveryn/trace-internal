@@ -22,18 +22,42 @@ from trace.tasks.charts.dashboard.statement_option_selection_label import Charts
 from trace.tasks.charts.dashboard.top_k_overlap_count import ChartsDashboardTopKOverlapCountTask
 
 TASK_CASES = (
-    ("task_charts__dashboard__category_panel_condition_count", ChartsDashboardCategoryPanelConditionCountTask, "category_panel_condition_count", "integer", "point_set"),
-    ("task_charts__dashboard__dual_condition_count", ChartsDashboardDualConditionCountTask, "dual_condition_count", "integer", "point_set"),
-    ("task_charts__dashboard__dual_source_target_sum_value", ChartsDashboardDualSourceTargetSumValueTask, "dual_source_target_sum_value", "integer", "keyed_point_map"),
-    ("task_charts__dashboard__panel_gap_extremum_category_label", ChartsDashboardPanelGapExtremumCategoryLabelTask, "panel_gap_extremum_category_label", "string", "keyed_point_map"),
-    ("task_charts__dashboard__shared_label_rank_gap_extremum", ChartsDashboardSharedLabelRankGapExtremumTask, "shared_label_rank_gap_extremum", "string", "keyed_point_map"),
-    ("task_charts__dashboard__source_rank_difference_value", ChartsDashboardSourceRankDifferenceValueTask, "source_rank_difference_value", "integer", "keyed_point_map"),
-    ("task_charts__dashboard__source_rank_target_value", ChartsDashboardSourceRankTargetValueTask, "source_rank_target_value", "integer", "keyed_point_map"),
+    ("task_charts__dashboard__category_panel_condition_count", ChartsDashboardCategoryPanelConditionCountTask, "category_panel_greater_than_threshold_count", "integer", "point_set"),
+    ("task_charts__dashboard__dual_condition_count", ChartsDashboardDualConditionCountTask, "first_greater_second_greater_condition_count", "integer", "point_set"),
+    ("task_charts__dashboard__dual_source_target_sum_value", ChartsDashboardDualSourceTargetSumValueTask, "first_largest_second_smallest_target_sum_value", "integer", "keyed_point_map"),
+    ("task_charts__dashboard__panel_gap_extremum_category_label", ChartsDashboardPanelGapExtremumCategoryLabelTask, "largest_panel_gap_category_label", "string", "keyed_point_map"),
+    ("task_charts__dashboard__shared_label_rank_gap_extremum", ChartsDashboardSharedLabelRankGapExtremumTask, "high_to_low_largest_rank_gap_label", "string", "keyed_point_map"),
+    ("task_charts__dashboard__source_rank_difference_value", ChartsDashboardSourceRankDifferenceValueTask, "largest_source_rank_difference_value", "integer", "keyed_point_map"),
+    ("task_charts__dashboard__source_rank_target_value", ChartsDashboardSourceRankTargetValueTask, "largest_source_rank_target_value", "integer", "keyed_point_map"),
     ("task_charts__dashboard__statement_option_selection_label", ChartsDashboardStatementOptionSelectionLabelTask, "statement_option_selection_label", "option_letter", "keyed_point_map"),
-    ("task_charts__dashboard__top_k_overlap_count", ChartsDashboardTopKOverlapCountTask, "top_k_overlap_count", "integer", "point_set"),
+    ("task_charts__dashboard__top_k_overlap_count", ChartsDashboardTopKOverlapCountTask, "highest_top_k_overlap_count", "integer", "point_set"),
 )
 TASK_IDS = tuple(case[0] for case in TASK_CASES)
 QUERY_IDS = tuple(case[2] for case in TASK_CASES)
+SOURCE_RANK_TARGET_QUERY_IDS = {"largest_source_rank_target_value", "smallest_source_rank_target_value"}
+SOURCE_RANK_DIFFERENCE_QUERY_IDS = {"largest_source_rank_difference_value", "smallest_source_rank_difference_value"}
+DUAL_SOURCE_TARGET_QUERY_IDS = {
+    "first_largest_second_smallest_target_sum_value",
+    "first_smallest_second_largest_target_sum_value",
+}
+DUAL_CONDITION_QUERY_IDS = {
+    "first_greater_second_greater_condition_count",
+    "first_greater_second_less_condition_count",
+    "first_less_second_greater_condition_count",
+    "first_less_second_less_condition_count",
+}
+PANEL_GAP_QUERY_IDS = {"largest_panel_gap_category_label", "smallest_panel_gap_category_label"}
+SHARED_RANK_GAP_QUERY_IDS = {
+    "high_to_low_largest_rank_gap_label",
+    "high_to_low_smallest_rank_gap_label",
+    "low_to_high_largest_rank_gap_label",
+    "low_to_high_smallest_rank_gap_label",
+}
+CATEGORY_PANEL_CONDITION_QUERY_IDS = {
+    "category_panel_greater_than_threshold_count",
+    "category_panel_less_than_threshold_count",
+}
+TOP_K_OVERLAP_QUERY_IDS = {"highest_top_k_overlap_count", "lowest_top_k_overlap_count"}
 
 
 def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) -> None:
@@ -55,14 +79,14 @@ def _rank_positions(execution: dict[str, Any], panel_id: str, direction: str) ->
 
 def _expected_answer(execution: dict[str, Any]) -> int | str:
     variant = str(execution["query_id"])
-    if variant == "source_rank_target_value":
+    if variant in SOURCE_RANK_TARGET_QUERY_IDS:
         return _value(execution, execution["target_panel_id"], execution["selected_category_id"])
-    if variant == "source_rank_difference_value":
+    if variant in SOURCE_RANK_DIFFERENCE_QUERY_IDS:
         category_id = str(execution["selected_category_id"])
         return abs(_value(execution, execution["source_panel_id"], category_id) - _value(execution, execution["target_panel_id"], category_id))
-    if variant == "dual_source_target_sum_value":
+    if variant in DUAL_SOURCE_TARGET_QUERY_IDS:
         return _value(execution, execution["target_panel_id"], execution["first_category_id"]) + _value(execution, execution["target_panel_id"], execution["second_category_id"])
-    if variant == "dual_condition_count":
+    if variant in DUAL_CONDITION_QUERY_IDS:
         first_panel_id = str(execution["first_condition_panel_id"])
         second_panel_id = str(execution["second_condition_panel_id"])
         first_threshold = int(execution["first_threshold"])
@@ -78,7 +102,7 @@ def _expected_answer(execution: dict[str, Any]) -> int | str:
             second_match = second_value > second_threshold if second_comparison == "greater_than" else second_value < second_threshold
             total += int(bool(first_match and second_match))
         return int(total)
-    if variant == "panel_gap_extremum_category_label":
+    if variant in PANEL_GAP_QUERY_IDS:
         if str(execution.get("answerability", "answerable")) == "unanswerable":
             return "unanswerable"
         first_panel_id = str(execution["first_gap_panel_id"])
@@ -88,7 +112,7 @@ def _expected_answer(execution: dict[str, Any]) -> int | str:
         answer_category_id = sorted(gaps, key=lambda category_id: gaps[category_id], reverse=reverse)[0]
         labels = {str(category["category_id"]): str(category["label"]) for category in execution["categories"]}
         return labels[answer_category_id]
-    if variant == "shared_label_rank_gap_extremum":
+    if variant in SHARED_RANK_GAP_QUERY_IDS:
         first_panel_id = str(execution["first_rank_gap_panel_id"])
         second_panel_id = str(execution["second_rank_gap_panel_id"])
         first_ranks = _rank_positions(execution, first_panel_id, str(execution["rank_direction"]))
@@ -123,9 +147,9 @@ def _expected_answer(execution: dict[str, Any]) -> int | str:
         assert selected == execution["selected_statement"]
         assert str(selected["option_label"]) == str(execution["answer_option_label"])
         return str(selected["option_label"])
-    if variant == "top_k_overlap_count":
+    if variant in TOP_K_OVERLAP_QUERY_IDS:
         return len(execution["overlap_category_ids"])
-    if variant == "category_panel_condition_count":
+    if variant in CATEGORY_PANEL_CONDITION_QUERY_IDS:
         category_id = str(execution["condition_category_id"])
         threshold = int(execution["panel_threshold"])
         comparison = str(execution["panel_condition_comparison"])
@@ -176,21 +200,21 @@ def test_chart_dashboard_tasks_match_contract(case_index: int, case: tuple[str, 
         assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
         for point in out.annotation_gt.value.values():
             _assert_point_inside_canvas([float(value) for value in point], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
-        if query_id in {"source_rank_target_value", "source_rank_difference_value"}:
+        if query_id in SOURCE_RANK_TARGET_QUERY_IDS | SOURCE_RANK_DIFFERENCE_QUERY_IDS:
             assert out.annotation_gt.value == {"source_panel": expected_points[0], "target_panel": expected_points[1]}
-        if query_id == "dual_source_target_sum_value":
+        if query_id in DUAL_SOURCE_TARGET_QUERY_IDS:
             assert out.annotation_gt.value == {"first_source_panel": expected_points[0], "second_source_panel": expected_points[1], "target_first_category": expected_points[2], "target_second_category": expected_points[3]}
-        if query_id in {"panel_gap_extremum_category_label", "shared_label_rank_gap_extremum"} and expected_points:
+        if query_id in PANEL_GAP_QUERY_IDS | SHARED_RANK_GAP_QUERY_IDS and expected_points:
             assert out.annotation_gt.value == {"first_panel": expected_points[0], "second_panel": expected_points[1]}
         if query_id == "statement_option_selection_label":
             assert out.annotation_gt.value == {"first_mark": expected_points[0], "second_mark": expected_points[1]}
-    if query_id == "dual_condition_count":
+    if query_id in DUAL_CONDITION_QUERY_IDS:
         assert len(out.annotation_gt.value) == int(out.answer_gt.value) * 2
-    if query_id == "top_k_overlap_count":
+    if query_id in TOP_K_OVERLAP_QUERY_IDS:
         assert len(out.annotation_gt.value) == int(out.answer_gt.value) * 2
-    if query_id == "category_panel_condition_count":
+    if query_id in CATEGORY_PANEL_CONDITION_QUERY_IDS:
         assert len(out.annotation_gt.value) == int(out.answer_gt.value)
-    if query_id == "panel_gap_extremum_category_label" and str(execution.get("answerability")) == "unanswerable":
+    if query_id in PANEL_GAP_QUERY_IDS and str(execution.get("answerability")) == "unanswerable":
         assert out.annotation_gt.value == {}
     if query_id == "statement_option_selection_label":
         assert int(execution["option_count"]) in {4, 6}
@@ -245,14 +269,27 @@ def test_chart_dashboard_statement_option_selection_contract(option_count: int, 
 def test_chart_dashboard_all_tasks_are_deterministic() -> None:
     for task_index, (_task_id, task_cls, query_id, _answer_type, _annotation_type) in enumerate(TASK_CASES):
         params = {"query_id": query_id}
-        if query_id == "dual_condition_count":
-            params["first_condition_comparison"] = "greater_than"
         out_a = task_cls().generate(hash64(93300, task_index), params=params, max_attempts=120)
         out_b = task_cls().generate(hash64(93300, task_index), params=params, max_attempts=120)
         assert out_a.prompt == out_b.prompt
         assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
         assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
         assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+
+
+@pytest.mark.parametrize("case_index, case", tuple(enumerate(TASK_CASES)))
+def test_chart_dashboard_tasks_generate_every_query_branch(case_index: int, case: tuple[str, type, str, str, str]) -> None:
+    task_id, task_cls, _default_query_id, answer_type, _annotation_type = case
+    task = task_cls()
+    assert create_task(task_id).task_id == task_id
+    for query_index, query_id in enumerate(task.supported_query_ids):
+        out = task.generate(hash64(20260613, "charts_dashboard_query_branch", case_index, query_index), params={"query_id": query_id}, max_attempts=180)
+        execution = out.trace_payload["execution_trace"]
+        assert out.query_id == query_id
+        assert str(execution["query_id"]) == str(query_id)
+        assert str(out.trace_payload["query_spec"]["params"]["query_id"]) == str(query_id)
+        assert out.answer_gt.type == answer_type
+        assert out.answer_gt.value == _expected_answer(execution)
 
 
 def test_chart_dashboard_registered_and_scene_config_loaded() -> None:
@@ -264,6 +301,9 @@ def test_chart_dashboard_registered_and_scene_config_loaded() -> None:
     assert isinstance(cfg.get("prompt"), dict)
     generation = cfg["generation"]["shared"]
     assert "query_id_weights" not in generation
+    assert "rank_direction_weights" not in generation
+    assert "gap_extremum_weights" not in generation
+    assert "condition_comparison_weights" not in generation
     assert int(generation["panel_count_min"]) == 4
     assert int(generation["panel_count_max"]) == 9
     assert int(generation["category_count_min"]) == 4

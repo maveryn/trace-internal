@@ -73,6 +73,7 @@ def build_trace_scaffold(
         "answer": dataset.query.answer,
         "annotation_panel_labels": list(dataset.query.annotation_panel_labels),
         "annotation_point_ids": list(dataset.query.annotation_point_ids),
+        "annotation_keyed_point_ids": dict(dataset.query.annotation_keyed_point_ids),
         "annotation_intersection_ids": list(dataset.query.annotation_intersection_ids),
         "annotation_threshold_crossing_ids": list(
             dataset.query.annotation_threshold_crossing_ids
@@ -118,6 +119,9 @@ def build_trace_scaffold(
             "values_by_panel_method": values_by_panel_method(dataset),
             "annotation_panel_labels": list(dataset.query.annotation_panel_labels),
             "annotation_point_ids": list(dataset.query.annotation_point_ids),
+            "annotation_keyed_point_ids": dict(
+                dataset.query.annotation_keyed_point_ids
+            ),
             "annotation_intersection_ids": list(
                 dataset.query.annotation_intersection_ids
             ),
@@ -132,6 +136,7 @@ def build_trace_scaffold(
             "type": "curve_panels_subplot",
             "panel_labels": list(dataset.query.annotation_panel_labels),
             "point_ids": list(dataset.query.annotation_point_ids),
+            "keyed_point_ids": dict(dataset.query.annotation_keyed_point_ids),
             "intersection_ids": list(dataset.query.annotation_intersection_ids),
             "threshold_crossing_ids": list(
                 dataset.query.annotation_threshold_crossing_ids

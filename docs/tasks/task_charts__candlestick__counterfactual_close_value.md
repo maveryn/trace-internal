@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `candlestick`
 3. Source implementation scene package: `charts/candlestick`
-4. Query id: `close_after_body_change_value`
+4. Query id: sampled from `close_after_body_increase_value`, `close_after_body_decrease_value`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -23,7 +23,8 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `close_after_body_change_value` | `counterfactual.transform_then_answer` | `integer_value` | `bbox_set` |
+| `close_after_body_increase_value` | `counterfactual.transform_then_answer` | `integer_value` | `bbox_set` |
+| `close_after_body_decrease_value` | `counterfactual.transform_then_answer` | `integer_value` | `bbox_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

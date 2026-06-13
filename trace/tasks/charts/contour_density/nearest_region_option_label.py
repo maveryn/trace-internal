@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any, Mapping
 
 from trace.tasks.base import TaskOutput
@@ -22,10 +23,79 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 
 
 QUERY_ID = "nearest_region_option_label"
+REFERENCE_CENTER_CLEARANCE = 8.0
+REFERENCE_UNIQUENESS_MARGIN = 4.0
 
 
 def _build_task_output(materialized):
     return TaskOutput(**contour_task_output_fields(materialized))
+
+
+def _unit_vector(dx: float, dy: float) -> tuple[float, float]:
+    length = math.hypot(float(dx), float(dy))
+    if length <= 1e-6:
+        return (1.0, -1.0)
+    return (float(dx) / length, float(dy) / length)
+
+
+def _candidate_reference_offsets(answer_region, regions) -> tuple[tuple[float, float], ...]:
+    other_regions = [region for region in regions if str(region.region_id) != str(answer_region.region_id)]
+    if other_regions:
+        closest_other = min(
+            other_regions,
+            key=lambda region: math.hypot(
+                float(region.center_x) - float(answer_region.center_x),
+                float(region.center_y) - float(answer_region.center_y),
+            ),
+        )
+        away_x, away_y = _unit_vector(
+            float(answer_region.center_x) - float(closest_other.center_x),
+            float(answer_region.center_y) - float(closest_other.center_y),
+        )
+    else:
+        away_x, away_y = _unit_vector(1.0, -1.0)
+
+    base = (
+        (away_x, away_y),
+        (-away_y, away_x),
+        (away_y, -away_x),
+        (1.0, -1.0),
+        (-1.0, -1.0),
+        (1.0, 1.0),
+        (-1.0, 1.0),
+        (1.0, 0.0),
+        (-1.0, 0.0),
+        (0.0, 1.0),
+        (0.0, -1.0),
+    )
+    distances = (9.5, 11.0, 8.0)
+    offsets = []
+    for distance in distances:
+        for dx, dy in base:
+            unit_x, unit_y = _unit_vector(float(dx), float(dy))
+            offsets.append((unit_x * float(distance), unit_y * float(distance)))
+    return tuple(offsets)
+
+
+def _reference_near_answer_option(answer_region, regions, *, answer_option: str) -> Reference:
+    for dx, dy in _candidate_reference_offsets(answer_region, regions):
+        reference = Reference(
+            kind="point",
+            x_value=float(answer_region.center_x) + float(dx),
+            y_value=float(answer_region.center_y) + float(dy),
+        )
+        if not (5.0 <= float(reference.x_value) <= 95.0 and 5.0 <= float(reference.y_value) <= 95.0):
+            continue
+        distances = {str(region.option_label): distance_to_reference(region, reference) for region in regions}
+        ordered = sorted(distances.items(), key=lambda item: (float(item[1]), str(item[0])))
+        if not ordered or str(ordered[0][0]) != str(answer_option):
+            continue
+        if float(ordered[0][1]) < REFERENCE_CENTER_CLEARANCE:
+            continue
+        if len(ordered) > 1 and (float(ordered[1][1]) - float(ordered[0][1])) < REFERENCE_UNIQUENESS_MARGIN:
+            continue
+        return reference
+    raise RuntimeError("failed to place nearest-option reference with clear label spacing")
 
 
 @register_task
@@ -73,11 +143,7 @@ class ChartsContourDensityNearestRegionOptionLabelTask:
             )
         )
         answer_region = regions[int(answer_index)]
-        reference = Reference(
-            kind="point",
-            x_value=max(5.0, min(95.0, float(answer_region.center_x) + 2.0)),
-            y_value=max(5.0, min(95.0, float(answer_region.center_y) - 2.0)),
-        )
+        reference = _reference_near_answer_option(answer_region, regions, answer_option=str(answer_option))
         distances = {str(region.option_label): distance_to_reference(region, reference) for region in regions}
         if min(distances, key=lambda label: (distances[label], label)) != str(answer_option):
             raise RuntimeError("nearest-option construction lost unique answer")

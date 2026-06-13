@@ -62,6 +62,7 @@ class QuerySelection:
     threshold_panel_labels: Tuple[str, ...]
     annotation_panel_labels: Tuple[str, ...]
     annotation_point_ids: Tuple[str, ...]
+    annotation_keyed_point_ids: Dict[str, str]
     annotation_intersection_ids: Tuple[str, ...]
     annotation_threshold_crossing_ids: Tuple[str, ...]
     trace: Dict[str, Any]

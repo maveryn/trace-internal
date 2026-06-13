@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `dashboard`
 3. Source implementation domain/group: `charts/dashboard`
-4. Query id: `source_rank_target_value`
+4. Query id: sampled from `largest_source_rank_target_value`, `smallest_source_rank_target_value`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -23,7 +23,8 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `source_rank_target_value` | `numeric.direct_or_derived_value` | `integer_value` | `keyed_point_map` |
+| `largest_source_rank_target_value` | `numeric.direct_or_derived_value` | `integer_value` | `keyed_point_map` |
+| `smallest_source_rank_target_value` | `numeric.direct_or_derived_value` | `integer_value` | `keyed_point_map` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

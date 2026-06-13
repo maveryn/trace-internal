@@ -221,11 +221,22 @@ def draw_reference(
     x0, y0, x1, y1 = (float(value) for value in plot_box)
     if str(reference.kind) == "point":
         cx, cy = scale_point(reference.x_value, reference.y_value, plot_box=plot_box)
-        radius = float(rp.marker_radius)
+        radius = max(12.0, float(rp.marker_radius) * 1.35)
         ref_bbox = bbox([cx - radius, cy - radius, cx + radius, cy + radius])
         draw.ellipse(ref_bbox, fill=rp.reference_rgb, outline=(255, 255, 255), width=2)
-        draw.line([cx - radius * 1.6, cy, cx + radius * 1.6, cy], fill=(255, 255, 255), width=1)
-        draw.line([cx, cy - radius * 1.6, cx, cy + radius * 1.6], fill=(255, 255, 255), width=1)
+        ref_font = load_font(max(12, int(round(radius * 1.15))), bold=True)
+        text_bbox = draw.textbbox((0, 0), "R", font=ref_font)
+        text_w = float(text_bbox[2] - text_bbox[0])
+        text_h = float(text_bbox[3] - text_bbox[1])
+        draw_text_traced(
+            draw,
+            (cx - (text_w / 2.0), cy - (text_h / 2.0) - 1.0),
+            "R",
+            font=ref_font,
+            fill=(255, 255, 255),
+            role="readout",
+            required=False,
+        )
         return {"reference": list(ref_bbox)}
     if str(reference.kind) == "vertical_line":
         sx, _ = scale_point(reference.x_value, 0.0, plot_box=plot_box)

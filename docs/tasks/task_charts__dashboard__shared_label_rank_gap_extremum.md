@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `dashboard`
 3. Source implementation domain/group: `charts/dashboard`
-4. Query id: `shared_label_rank_gap_extremum`
+4. Query id: sampled from `high_to_low_largest_rank_gap_label`, `high_to_low_smallest_rank_gap_label`, `low_to_high_largest_rank_gap_label`, `low_to_high_smallest_rank_gap_label`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -23,7 +23,10 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `shared_label_rank_gap_extremum` | `selection.rank_gap_extremum_label` | `string_label` | `keyed_point_map` |
+| `high_to_low_largest_rank_gap_label` | `selection.rank_gap_extremum_label` | `string_label` | `keyed_point_map` |
+| `high_to_low_smallest_rank_gap_label` | `selection.rank_gap_extremum_label` | `string_label` | `keyed_point_map` |
+| `low_to_high_largest_rank_gap_label` | `selection.rank_gap_extremum_label` | `string_label` | `keyed_point_map` |
+| `low_to_high_smallest_rank_gap_label` | `selection.rank_gap_extremum_label` | `string_label` | `keyed_point_map` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

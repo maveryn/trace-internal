@@ -6,19 +6,6 @@ generation:
       contour_rings: 1.0
       filled_density: 1.0
       scatter_contour: 1.0
-    density_extremum_weights:
-      highest: 1.0
-      lowest: 1.0
-    distance_extremum_weights:
-      nearest: 1.0
-      farthest: 1.0
-    reference_kind_weights:
-      point: 1.0
-      vertical_line: 1.0
-      horizontal_line: 1.0
-    density_threshold_direction_weights:
-      at_least: 1.0
-      below: 1.0
     density_threshold_level_min: 2
     density_threshold_level_max: 5
     threshold_count_answer_support:
@@ -30,9 +17,6 @@ generation:
     option_count_support:
     - 4
     - 6
-    spread_extremum_weights:
-      widest: 1.0
-      narrowest: 1.0
 rendering:
   shared:
     canvas_width: 1280

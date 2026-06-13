@@ -18,10 +18,15 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 
 def _build_task_output(materialized: MaterializedDashboardTask) -> TaskOutput:
     return TaskOutput(**dashboard_task_output_fields(materialized))
-from trace.tasks.charts.dashboard.shared.metrics import category_by_id, choose_rank_params, panel_by_id, rank_phrase, ranked_category_id
+from trace.tasks.charts.dashboard.shared.metrics import category_by_id, panel_by_id, rank_phrase, rank_support, ranked_category_id
 
 
-QUERY_ID = "source_rank_difference_value"
+LARGEST_SOURCE_QUERY_ID = "largest_source_rank_difference_value"
+SMALLEST_SOURCE_QUERY_ID = "smallest_source_rank_difference_value"
+RANK_DIRECTION_BY_QUERY_ID = {
+    LARGEST_SOURCE_QUERY_ID: "largest",
+    SMALLEST_SOURCE_QUERY_ID: "smallest",
+}
 
 
 @dataclass(frozen=True)
@@ -43,18 +48,21 @@ class ChartsDashboardSourceRankDifferenceValueTask:
     task_id = "task_charts__dashboard__source_rank_difference_value"
     domain = DOMAIN
     objective_contract = "source_rank_difference_value"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = (LARGEST_SOURCE_QUERY_ID, SMALLEST_SOURCE_QUERY_ID)
     default_dataset_enabled = True
 
     def _bind_source_rank_difference_plan(self, instance_seed: int, params: dict[str, Any], selected_query_id: str) -> DashboardTaskPlan:
         """Bind the rank-difference objective and keep both compared marks keyed."""
-        del selected_query_id
         rng = spawn_rng(int(instance_seed), f"{SCENE_ID}.{self.objective_contract}.selection")
         base_sample = build_dashboard_base_sample(params, instance_seed=int(instance_seed))
         source_id, target_id = rng.sample([str(panel.panel_id) for panel in base_sample.panels], 2)
         source_panel = panel_by_id(base_sample.panels, source_id)
         target_panel = panel_by_id(base_sample.panels, target_id)
-        direction, rank_n = choose_rank_params(rng, params=params, category_count=len(base_sample.categories))
+        direction = RANK_DIRECTION_BY_QUERY_ID[str(selected_query_id)]
+        feasible_ranks = tuple(value for value in rank_support(params) if int(value) <= len(base_sample.categories))
+        if not feasible_ranks:
+            raise ValueError("rank support has no feasible values for category count")
+        rank_n = int(feasible_ranks[int(rng.randrange(len(feasible_ranks)))])
         category_id = ranked_category_id(categories=base_sample.categories, panel=source_panel, direction=direction, rank_n=rank_n)
         selected_category = category_by_id(base_sample.categories, category_id)
         source_value = int(source_panel.values_by_category_id[str(category_id)])
@@ -89,11 +97,11 @@ class ChartsDashboardSourceRankDifferenceValueTask:
         }
         refs = ((str(operands.source_panel_id), str(operands.category_id)), (str(operands.target_panel_id), str(operands.category_id)))
         dataset = DashboardDataset(scene_variant=SCENE_VARIANT, categories=base_sample.categories, panels=base_sample.panels, query=DashboardQuery(answer=int(operands.absolute_delta), answer_type="integer", annotation_refs=refs, params=dict(relations)))
-        prompt_artifacts = build_prompt_artifacts(prompt_query_key=QUERY_ID, dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
+        prompt_artifacts = build_prompt_artifacts(prompt_query_key=str(selected_query_id), dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
         return DashboardTaskPlan(dataset=dataset, prompt_artifacts=prompt_artifacts, relations=relations, answer_gt=TypedValue(type="integer", value=int(operands.absolute_delta)), annotation_refs=refs, annotation_roles={"source_panel": refs[0], "target_panel": refs[1]})
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params=params, supported_query_ids=self.supported_query_ids, default_query_id=QUERY_ID, task_id=self.task_id)
+        selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params=params, supported_query_ids=self.supported_query_ids, default_query_id=LARGEST_SOURCE_QUERY_ID, task_id=self.task_id)
         return run_dashboard_public_task(instance_seed=int(instance_seed), params=task_params, max_attempts=int(max_attempts), selected_query_id=str(selected_query_id), build_plan=self._bind_source_rank_difference_plan, build_output=_build_task_output)
 
 

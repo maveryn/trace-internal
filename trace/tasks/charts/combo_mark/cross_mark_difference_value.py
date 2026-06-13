@@ -93,8 +93,7 @@ class ChartsComboCrossMarkDifferenceValueTask:
             answer_value=int(answer),
             question_format="cross_mark_difference_query",
             annotation_indices=(int(difference_index),),
-            annotation_include_primary=True,
-            annotation_include_line=True,
+            annotation_mode="paired_mark_map",
             relations={
                 "difference_label": str(difference_label),
                 "difference_index": int(difference_index),

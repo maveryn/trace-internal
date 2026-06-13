@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `dashboard`
 3. Source implementation domain/group: `charts/dashboard`
-4. Query id: `dual_condition_count`
+4. Query id: sampled from `first_greater_second_greater_condition_count`, `first_greater_second_less_condition_count`, `first_less_second_greater_condition_count`, `first_less_second_less_condition_count`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -23,7 +23,10 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `dual_condition_count` | `count.group_predicate` | `integer_count` | `point_set` |
+| `first_greater_second_greater_condition_count` | `count.group_predicate` | `integer_count` | `point_set` |
+| `first_greater_second_less_condition_count` | `count.group_predicate` | `integer_count` | `point_set` |
+| `first_less_second_greater_condition_count` | `count.group_predicate` | `integer_count` | `point_set` |
+| `first_less_second_less_condition_count` | `count.group_predicate` | `integer_count` | `point_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

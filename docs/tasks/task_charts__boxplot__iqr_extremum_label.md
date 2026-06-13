@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `boxplot`
 3. Source implementation scene package: `charts/boxplot`
-4. Query id: `default`
+4. Query id: sampled from `largest_iqr_label`, `smallest_iqr_label`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -23,7 +23,8 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `default` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
+| `largest_iqr_label` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
+| `smallest_iqr_label` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

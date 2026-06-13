@@ -48,15 +48,6 @@ generation:
       technical_topics: 1.0
       condition_labels: 0.75
       temporal_sequence: 0.25
-    rank_direction_weights:
-      largest: 1.0
-      smallest: 1.0
-    gap_extremum_weights:
-      largest: 1.0
-      smallest: 1.0
-    condition_comparison_weights:
-      greater_than: 1.0
-      less_than: 1.0
     statement_requested_truth_weights:
       true: 1.0
       false: 1.0

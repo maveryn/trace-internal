@@ -19,11 +19,19 @@ def _build_task_output(materialized: MaterializedDashboardTask) -> TaskOutput:
     return TaskOutput(**dashboard_task_output_fields(materialized))
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.charts.dashboard.shared.defaults import generation_default
-from trace.tasks.charts.dashboard.shared.metrics import category_by_id, choose_threshold_pair_for_count, condition_count_support, condition_phrase, weighted_choice_from_defaults
-from trace.tasks.charts.dashboard.shared.state import SUPPORTED_CONDITION_COMPARISONS
+from trace.tasks.charts.dashboard.shared.metrics import category_by_id, choose_threshold_pair_for_count, condition_count_support, condition_phrase
 
 
-QUERY_ID = "dual_condition_count"
+FIRST_GREATER_SECOND_GREATER_QUERY_ID = "first_greater_second_greater_condition_count"
+FIRST_GREATER_SECOND_LESS_QUERY_ID = "first_greater_second_less_condition_count"
+FIRST_LESS_SECOND_GREATER_QUERY_ID = "first_less_second_greater_condition_count"
+FIRST_LESS_SECOND_LESS_QUERY_ID = "first_less_second_less_condition_count"
+COMPARISONS_BY_QUERY_ID = {
+    FIRST_GREATER_SECOND_GREATER_QUERY_ID: ("greater_than", "greater_than"),
+    FIRST_GREATER_SECOND_LESS_QUERY_ID: ("greater_than", "less_than"),
+    FIRST_LESS_SECOND_GREATER_QUERY_ID: ("less_than", "greater_than"),
+    FIRST_LESS_SECOND_LESS_QUERY_ID: ("less_than", "less_than"),
+}
 
 
 @register_task
@@ -33,19 +41,22 @@ class ChartsDashboardDualConditionCountTask:
     task_id = "task_charts__dashboard__dual_condition_count"
     domain = DOMAIN
     objective_contract = "dual_condition_count"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = (
+        FIRST_GREATER_SECOND_GREATER_QUERY_ID,
+        FIRST_GREATER_SECOND_LESS_QUERY_ID,
+        FIRST_LESS_SECOND_GREATER_QUERY_ID,
+        FIRST_LESS_SECOND_LESS_QUERY_ID,
+    )
     default_dataset_enabled = True
 
     def _bind_dual_threshold_category_count_plan(self, instance_seed: int, params: dict[str, Any], selected_query_id: str) -> DashboardTaskPlan:
         """Bind two panel thresholds and count categories satisfying both predicates."""
-        del selected_query_id
         rng = spawn_rng(int(instance_seed), f"{SCENE_ID}.{self.objective_contract}.selection")
         base_sample = build_dashboard_base_sample(params, instance_seed=int(instance_seed))
         first_panel_id, second_panel_id = rng.sample([str(panel.panel_id) for panel in base_sample.panels], 2)
         first_panel = next(panel for panel in base_sample.panels if str(panel.panel_id) == first_panel_id)
         second_panel = next(panel for panel in base_sample.panels if str(panel.panel_id) == second_panel_id)
-        first_comparison = weighted_choice_from_defaults(rng, params=params, key="first_condition_comparison", supported=SUPPORTED_CONDITION_COMPARISONS, fallback_weights_key="condition_comparison_weights")
-        second_comparison = weighted_choice_from_defaults(rng, params=params, key="second_condition_comparison", supported=SUPPORTED_CONDITION_COMPARISONS, fallback_weights_key="condition_comparison_weights")
+        first_comparison, second_comparison = COMPARISONS_BY_QUERY_ID[str(selected_query_id)]
         support = condition_count_support(params, len(base_sample.categories))
         support_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{SCENE_ID}.dual_condition_count.answer")
         target_count = int(support[abs(int(support_index)) % len(support)])
@@ -73,11 +84,11 @@ class ChartsDashboardDualConditionCountTask:
             "count_value": int(len(sorted_matches)),
         }
         dataset = DashboardDataset(scene_variant=SCENE_VARIANT, categories=base_sample.categories, panels=base_sample.panels, query=DashboardQuery(answer=int(len(sorted_matches)), answer_type="integer", annotation_refs=refs, params=dict(relations)))
-        prompt_artifacts = build_prompt_artifacts(prompt_query_key=QUERY_ID, dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
+        prompt_artifacts = build_prompt_artifacts(prompt_query_key=str(selected_query_id), dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
         return DashboardTaskPlan(dataset=dataset, prompt_artifacts=prompt_artifacts, relations=relations, answer_gt=TypedValue(type="integer", value=int(len(sorted_matches))), annotation_refs=refs)
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params=params, supported_query_ids=self.supported_query_ids, default_query_id=QUERY_ID, task_id=self.task_id)
+        selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params=params, supported_query_ids=self.supported_query_ids, default_query_id=FIRST_GREATER_SECOND_GREATER_QUERY_ID, task_id=self.task_id)
         return run_dashboard_public_task(instance_seed=int(instance_seed), params=task_params, max_attempts=int(max_attempts), selected_query_id=str(selected_query_id), build_plan=self._bind_dual_threshold_category_count_plan, build_output=_build_task_output)
 
 

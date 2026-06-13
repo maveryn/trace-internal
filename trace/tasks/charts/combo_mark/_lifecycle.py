@@ -10,7 +10,7 @@ from PIL import Image
 from trace.core.seed import hash64
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.combo_mark.shared.annotations import keyed_point_artifacts, points_for_indices
+from trace.tasks.charts.combo_mark.shared.annotations import combo_annotation_artifacts
 from trace.tasks.charts.combo_mark.shared.defaults import SCENE_ID
 from trace.tasks.charts.combo_mark.shared.output import build_trace_scaffold
 from trace.tasks.charts.combo_mark.shared.rendering import render_dataset
@@ -30,8 +30,8 @@ class ComboTaskPlan:
     answer_type: str
     question_format: str
     annotation_indices: tuple[int, ...]
-    annotation_include_primary: bool
-    annotation_include_line: bool
+    annotation_mode: str
+    annotation_mark_role: str
     relations: Mapping[str, Any]
     prompt_artifacts: PromptTraceArtifacts
 
@@ -60,8 +60,8 @@ def make_combo_plan(
     answer_value: Any,
     question_format: str,
     annotation_indices: tuple[int, ...],
-    annotation_include_primary: bool,
-    annotation_include_line: bool,
+    annotation_mode: str,
+    annotation_mark_role: str = "",
     relations: Mapping[str, Any],
     prompt_artifacts: PromptTraceArtifacts,
 ) -> ComboTaskPlan:
@@ -75,8 +75,8 @@ def make_combo_plan(
         answer_type=str(answer_type),
         question_format=str(question_format),
         annotation_indices=tuple(int(idx) for idx in annotation_indices),
-        annotation_include_primary=bool(annotation_include_primary),
-        annotation_include_line=bool(annotation_include_line),
+        annotation_mode=str(annotation_mode),
+        annotation_mark_role=str(annotation_mark_role),
         relations=dict(relations),
         prompt_artifacts=prompt_artifacts,
     )
@@ -101,8 +101,7 @@ def make_combo_label_plan(
         answer_value=str(answer_label),
         question_format=str(question_format),
         annotation_indices=(int(annotation_index),),
-        annotation_include_primary=True,
-        annotation_include_line=True,
+        annotation_mode="paired_mark_map",
         relations=relations,
         prompt_artifacts=prompt_artifacts,
     )
@@ -186,13 +185,12 @@ def materialize_combo_plan(
     """
 
     artifacts = render_dataset(dataset=plan.dataset, params=params, instance_seed=int(instance_seed))
-    annotation_points, annotation_labels = points_for_indices(
-        plan.annotation_indices,
+    annotation, annotation_labels = combo_annotation_artifacts(
         artifacts.scene,
-        include_primary=bool(plan.annotation_include_primary),
-        include_line=bool(plan.annotation_include_line),
+        indices=plan.annotation_indices,
+        mode=str(plan.annotation_mode),
+        mark_role=str(plan.annotation_mark_role),
     )
-    annotation = keyed_point_artifacts(annotation_points)
     relations = {
         **dict(plan.dataset_trace),
         **dict(plan.relations),

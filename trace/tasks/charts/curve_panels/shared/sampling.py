@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from .....core.seed import spawn_rng
@@ -24,6 +25,23 @@ from .defaults import (
     without_sample_cursor,
 )
 from .state import Curve, Intersection, Panel, RGB, ThresholdCrossing
+
+
+@dataclass(frozen=True)
+class CurvePanelBaseSample:
+    """Neutral shared axes, labels, colors, and baseline values for one objective."""
+
+    x_values: Tuple[int, ...]
+    y_min: int
+    y_max: int
+    panel_labels: Tuple[str, ...]
+    method_labels: Tuple[str, ...]
+    panel_label_meta: Dict[str, Any]
+    colors: Tuple[RGB, ...]
+    values: Dict[str, Dict[str, List[int]]]
+    answer_panel_index: int
+    answer_panel: str
+    non_answer_params: Mapping[str, Any]
 
 
 def point_id(panel_label: str, method_label: str, x_value: int) -> str:
@@ -71,6 +89,12 @@ def _resolved_label_metadata(resolved: Any) -> Dict[str, Any]:
     }
 
 
+def _has_panel_prefix_label(labels: Sequence[str]) -> bool:
+    """Return whether any visible subplot label reads like a panel prefix."""
+
+    return any(str(label).strip().lower().startswith("panel") for label in labels)
+
+
 def panel_labels_for_seed(
     *,
     count: int,
@@ -80,28 +104,49 @@ def panel_labels_for_seed(
 ) -> Tuple[Tuple[str, ...], Dict[str, Any]]:
     """Sample visible panel labels without colliding with method labels."""
 
-    resolved = resolve_chart_panel_labels(
-        spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.panel_labels"),
-        count=int(count),
-        min_chars=1,
-        max_chars=10,
-        allow_spaces=False,
-        variant_weights=params.get(
+    variant_weights = params.get(
+        "panel_label_variant_weights",
+        group_default(
+            GENERATION_DEFAULTS,
             "panel_label_variant_weights",
-            group_default(
-                GENERATION_DEFAULTS,
-                "panel_label_variant_weights",
-                {
-                    "subplot_letters": 1.0,
-                    "technical_topics": 0.75,
-                    "condition_labels": 0.5,
-                    "named_compact": 0.5,
-                    "temporal_sequence": 0.25,
-                },
-            ),
+            {
+                "subplot_letters": 1.0,
+                "technical_topics": 0.75,
+                "condition_labels": 0.5,
+                "named_compact": 0.5,
+                "temporal_sequence": 0.25,
+            },
         ),
-        reserved_labels=tuple(str(label) for label in reserved_labels),
     )
+    resolved = None
+    for attempt in range(12):
+        rng_namespace = (
+            f"{SCENE_NAMESPACE}.panel_labels"
+            if int(attempt) == 0
+            else f"{SCENE_NAMESPACE}.panel_labels.retry.{int(attempt)}"
+        )
+        candidate = resolve_chart_panel_labels(
+            spawn_rng(int(instance_seed), rng_namespace),
+            count=int(count),
+            min_chars=1,
+            max_chars=10,
+            allow_spaces=False,
+            variant_weights=variant_weights,
+            reserved_labels=tuple(str(label) for label in reserved_labels),
+        )
+        if not _has_panel_prefix_label(candidate.labels):
+            resolved = candidate
+            break
+    if resolved is None:
+        resolved = resolve_chart_panel_labels(
+            spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.panel_labels.fallback"),
+            count=int(count),
+            min_chars=1,
+            max_chars=10,
+            allow_spaces=False,
+            variant_weights={"subplot_letters": 1.0},
+            reserved_labels=tuple(str(label) for label in reserved_labels),
+        )
     collision_check = validate_chart_label_namespaces(
         panel_labels=resolved.labels,
         other_label_groups={
@@ -228,6 +273,84 @@ def make_random_panels(
                 value_max=int(value_max),
             )
     return values
+
+
+def choose_method_label(
+    *,
+    method_labels: Sequence[str],
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> str:
+    """Sample one method label without advancing task-level answer balancing."""
+
+    return str(
+        balanced_choice(
+            tuple(str(label) for label in method_labels),
+            without_sample_cursor(params),
+            instance_seed=int(instance_seed),
+            namespace=str(namespace),
+        )
+    )
+
+
+def base_curve_panel_sample(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+    min_x_tick_count: int = 4,
+    min_panel_count: int = 1,
+    min_method_count: int = 1,
+) -> CurvePanelBaseSample:
+    """Sample neutral curve-panel state before an objective imposes constraints."""
+
+    answer_panel_index = int(
+        balanced_choice(
+            panel_answer_index_support(params),
+            params,
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.answer",
+        )
+    )
+    non_answer_params = without_sample_cursor(params)
+    (
+        sampled_x_values,
+        y_min,
+        y_max,
+        _panel_total,
+        panel_labels,
+        method_labels,
+        panel_label_meta,
+    ) = common_axes(
+        params,
+        instance_seed=int(instance_seed),
+        min_x_tick_count=int(min_x_tick_count),
+        min_panel_count=max(int(min_panel_count), int(answer_panel_index) + 1),
+        min_method_count=int(min_method_count),
+    )
+    values = make_random_panels(
+        panel_labels=panel_labels,
+        method_labels=method_labels,
+        x_count=len(sampled_x_values),
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.values",
+        value_min=int(y_min),
+        value_max=int(y_max),
+    )
+    return CurvePanelBaseSample(
+        x_values=tuple(sampled_x_values),
+        y_min=int(y_min),
+        y_max=int(y_max),
+        panel_labels=tuple(panel_labels),
+        method_labels=tuple(method_labels),
+        panel_label_meta=dict(panel_label_meta),
+        colors=tuple(palette(params)),
+        values=values,
+        answer_panel_index=int(answer_panel_index),
+        answer_panel=str(panel_labels[int(answer_panel_index)]),
+        non_answer_params=non_answer_params,
+    )
 
 
 def panels_from_values(
@@ -575,8 +698,11 @@ def intersection_points(
 
 __all__ = [
     "balanced_choice",
+    "base_curve_panel_sample",
     "build_intersection_curves",
+    "choose_method_label",
     "common_axes",
+    "CurvePanelBaseSample",
     "generation_int",
     "intersection_points",
     "make_random_panels",

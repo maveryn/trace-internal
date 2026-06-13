@@ -23,17 +23,22 @@ from trace.tasks.charts.boxplot.shared.sampling import (
     sample_clustered_unique,
     sample_clustered_unique_low,
     sample_labels,
-    select_semantic_branch,
 )
 from trace.tasks.charts.shared.chart_scene import BoxPlotSpec
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID, select_task_query_id
+from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 
 
 TASK_ID = "task_charts__boxplot__iqr_extremum_label"
 OBJECTIVE_CONTRACT = "iqr_extremum_label"
 EXTREMUM_BRANCHES = ("largest", "smallest")
+LARGEST_IQR_QUERY_ID = "largest_iqr_label"
+SMALLEST_IQR_QUERY_ID = "smallest_iqr_label"
+EXTREMUM_BY_QUERY_ID = {
+    LARGEST_IQR_QUERY_ID: "largest",
+    SMALLEST_IQR_QUERY_ID: "smallest",
+}
 TASK_PARAM_DEFAULTS = {
     "iqr_winner_gap_min": 1,
     "iqr_winner_gap_max": 1,
@@ -132,14 +137,9 @@ def _boxplot_for_iqr(
 def _build_iqr_plan(params: dict[str, Any], instance_seed: int, selected_query_id: str) -> SingleBoxplotTaskPlan:
     """Bind the IQR-extremum objective before neutral scene rendering."""
 
-    direction, direction_probabilities, branch_params = select_semantic_branch(
-        params=params,
-        branch_key="extremum_direction",
-        support=EXTREMUM_BRANCHES,
-        instance_seed=int(instance_seed),
-        namespace=f"{SCENE_NAMESPACE}.iqr.direction",
-    )
-    effective_params = merge_task_defaults(branch_params, TASK_PARAM_DEFAULTS)
+    direction = EXTREMUM_BY_QUERY_ID[str(selected_query_id)]
+    direction_probabilities = {value: 1.0 if value == direction else 0.0 for value in EXTREMUM_BRANCHES}
+    effective_params = merge_task_defaults(params, TASK_PARAM_DEFAULTS)
     mark_style = resolve_mark_style(effective_params, instance_seed=int(instance_seed), mark_count=1)
     category_count, category_range = choose_category_count(
         params=effective_params,
@@ -181,7 +181,7 @@ def _build_iqr_plan(params: dict[str, Any], instance_seed: int, selected_query_i
     answer_value = int(answer_box.q3) - int(answer_box.q1)
     prompt_artifacts = build_prompt_artifacts(
         scene_key=SINGLE_SCENE_PROMPT_KEY,
-        prompt_query_key=OBJECTIVE_CONTRACT,
+        prompt_query_key=str(selected_query_id),
         dynamic_slots=_prompt_slots(str(direction)),
         instance_seed=int(instance_seed),
     )
@@ -218,7 +218,7 @@ class ChartsDistributionBoxplotIqrExtremumLabelTask:
     task_id = TASK_ID
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
-    supported_query_ids = (DEFAULT_QUERY_ID,)
+    supported_query_ids = (LARGEST_IQR_QUERY_ID, SMALLEST_IQR_QUERY_ID)
     default_dataset_enabled = True
 
     def _prepare_iqr_plan(
@@ -241,7 +241,7 @@ class ChartsDistributionBoxplotIqrExtremumLabelTask:
             instance_seed=int(instance_seed),
             params=params,
             supported_query_ids=self.supported_query_ids,
-            default_query_id=DEFAULT_QUERY_ID,
+            default_query_id=LARGEST_IQR_QUERY_ID,
             task_id=self.task_id,
         )
         last_error: Exception | None = None

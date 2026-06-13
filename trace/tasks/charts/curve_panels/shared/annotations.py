@@ -41,28 +41,34 @@ def point_set_from_ids(
     return points
 
 
-def keyed_start_end_points(
+def keyed_point_map_from_ids(
     *,
-    dataset: CurvePanelDataset,
     rendered: RenderedCurvePanels,
+    keyed_point_ids: Mapping[str, str],
 ) -> Dict[str, List[float]]:
-    """Project each panel's start/end marker into a keyed point map."""
+    """Project rendered marker ids to a role-keyed point map."""
 
-    annotation: Dict[str, List[float]] = {}
-    for point_id in dataset.query.annotation_point_ids:
+    points: Dict[str, List[float]] = {}
+    for role, point_id in keyed_point_ids.items():
         point_box = rendered.point_bboxes.get(str(point_id))
-        if point_box is None:
-            continue
-        parts = str(point_id).split("|")
-        if len(parts) != 3:
-            continue
-        panel_label, _method_label, x_value = parts
-        role = "start" if int(x_value) == int(dataset.query.start_x_value) else "end"
-        annotation[f"{str(panel_label)}_{role}"] = bbox_center(point_box)
-    expected_key_count = int(len(dataset.panels)) * 2
-    if len(annotation) != int(expected_key_count):
-        raise RuntimeError("start/end annotation map is incomplete")
-    return annotation
+        if point_box is not None:
+            points[str(role)] = bbox_center(point_box)
+    return points
+
+
+def bbox_set_from_panel_labels(
+    *,
+    rendered: RenderedCurvePanels,
+    panel_labels: Sequence[str],
+) -> List[List[float]]:
+    """Project panel labels to whole-panel bbox annotation."""
+
+    boxes: List[List[float]] = []
+    for panel_label in panel_labels:
+        panel_box = rendered.panel_bboxes.get(str(panel_label))
+        if panel_box is not None:
+            boxes.append([round(float(value), 3) for value in panel_box])
+    return boxes
 
 
 def projected_annotation_payload(
@@ -73,6 +79,14 @@ def projected_annotation_payload(
 ) -> Dict[str, Any]:
     """Build the projected annotation trace payload for one public task."""
 
+    if str(annotation_type) == "bbox_set":
+        bbox_set = [list(box) for box in list(annotation)]
+        return {
+            "type": "bbox_set",
+            "bbox_set": list(bbox_set),
+            "pixel_bbox_set": list(bbox_set),
+            "panel_labels": list(dataset.query.annotation_panel_labels),
+        }
     if str(annotation_type) == "keyed_point_map":
         keyed_point_map = {
             str(key): list(point) for key, point in dict(annotation).items()
@@ -82,11 +96,10 @@ def projected_annotation_payload(
             "keyed_point_map": dict(keyed_point_map),
             "pixel_keyed_point_map": dict(keyed_point_map),
             "panel_labels": list(dataset.query.annotation_panel_labels),
-            "point_ids": list(dataset.query.annotation_point_ids),
-            "intersection_ids": list(dataset.query.annotation_intersection_ids),
-            "threshold_crossing_ids": list(
-                dataset.query.annotation_threshold_crossing_ids
-            ),
+            "keyed_point_ids": dict(dataset.query.annotation_keyed_point_ids),
+            "point_ids": list(dataset.query.annotation_keyed_point_ids.values()),
+            "intersection_ids": [],
+            "threshold_crossing_ids": [],
         }
     point_set = [list(point) for point in list(annotation)]
     return {
@@ -102,7 +115,8 @@ def projected_annotation_payload(
 
 __all__ = [
     "bbox_center",
-    "keyed_start_end_points",
+    "bbox_set_from_panel_labels",
+    "keyed_point_map_from_ids",
     "point_set_from_ids",
     "projected_annotation_payload",
 ]

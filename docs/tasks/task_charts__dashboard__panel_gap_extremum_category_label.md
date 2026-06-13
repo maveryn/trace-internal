@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `dashboard`
 3. Source implementation domain/group: `charts/dashboard`
-4. Query id: `panel_gap_extremum_category_label`
+4. Query id: sampled from `largest_panel_gap_category_label`, `smallest_panel_gap_category_label`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -23,7 +23,8 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `panel_gap_extremum_category_label` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
+| `largest_panel_gap_category_label` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
+| `smallest_panel_gap_category_label` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

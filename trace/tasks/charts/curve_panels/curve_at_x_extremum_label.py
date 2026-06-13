@@ -130,9 +130,8 @@ class ChartsScientificCurveAtXExtremumLabelTask:
                 values[str(query_panel)][str(method)][int(x_index)] = max(
                     int(y_min) + 5, min(int(y_max) - 5, int(winning_value) - int(gap))
                 )
-        annotation_ids = tuple(
-            point_id(str(query_panel), str(method), int(x_value))
-            for method in method_labels
+        annotation_ids = (
+            point_id(str(query_panel), str(answer_method), int(x_value)),
         )
         query = build_curve_panel_query_record(
             prompt_key=selected_query_id,

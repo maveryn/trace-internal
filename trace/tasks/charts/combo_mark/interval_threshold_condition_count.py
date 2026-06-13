@@ -178,8 +178,7 @@ class ChartsComboIntervalThresholdConditionCountTask:
             answer_value=int(len(interval_matches)),
             question_format="dual_condition_count_query",
             annotation_indices=tuple(int(idx) for idx in interval_matches),
-            annotation_include_primary=True,
-            annotation_include_line=True,
+            annotation_mode="mark_pair_set",
             relations={
                 **interval_thresholds,
                 "interval_target_count": int(interval_target_count),

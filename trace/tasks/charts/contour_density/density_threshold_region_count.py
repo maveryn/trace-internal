@@ -7,16 +7,21 @@ from typing import Any, List, Mapping, Sequence, Tuple
 from trace.core.seed import spawn_rng
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.contour_density._lifecycle import ContourTaskPlan, contour_task_output_fields, run_contour_public_task
-from trace.tasks.charts.contour_density.shared.defaults import DOMAIN, GENERATION_DEFAULTS, SCENE_NAMESPACE, SUPPORTED_DENSITY_THRESHOLD_DIRECTIONS
+from trace.tasks.charts.contour_density.shared.defaults import DOMAIN, GENERATION_DEFAULTS, SCENE_NAMESPACE
 from trace.tasks.charts.contour_density.shared.prompts import build_prompt_artifacts
-from trace.tasks.charts.contour_density.shared.sampling import balanced_choice, build_regions, density_from_level, region_count, region_labels, resolve_semantic_axis, scene_variant
+from trace.tasks.charts.contour_density.shared.sampling import balanced_choice, build_regions, density_from_level, region_count, region_labels, scene_variant
 from trace.tasks.charts.contour_density.shared.state import ContourDataset, DensityThresholdGuide, QuerySelection
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import group_default, resolve_required_int_bounds
 from trace.tasks.shared.fixed_query import select_task_query_id
 
 
-QUERY_ID = "density_threshold_region_count"
+AT_LEAST_QUERY_ID = "density_at_least_threshold_region_count"
+BELOW_QUERY_ID = "density_below_threshold_region_count"
+QUERY_DIRECTIONS = {
+    AT_LEAST_QUERY_ID: "at_least",
+    BELOW_QUERY_ID: "below",
+}
 
 
 def _build_task_output(materialized):
@@ -50,22 +55,17 @@ class ChartsContourDensityDensityThresholdRegionCountTask:
     task_id = "task_charts__contour_density__density_threshold_region_count"
     domain = DOMAIN
     objective_contract = "density_threshold_region_count"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = (AT_LEAST_QUERY_ID, BELOW_QUERY_ID)
     default_dataset_enabled = True
 
     def _build_density_threshold_plan(self, instance_seed: int, params: Mapping[str, Any], selected_query_id: str) -> ContourTaskPlan:
         """Construct density levels to hit the requested count before binding region annotations."""
 
         scene_name, scene_probabilities = scene_variant(params, instance_seed=int(instance_seed))
-        direction, direction_probabilities = resolve_semantic_axis(
-            params,
-            instance_seed=int(instance_seed),
-            supported=SUPPORTED_DENSITY_THRESHOLD_DIRECTIONS,
-            explicit_key="density_threshold_direction",
-            weights_key="density_threshold_direction_weights",
-            balance_key="balanced_density_threshold_direction_sampling",
-            namespace="density_threshold_direction",
-        )
+        try:
+            direction = QUERY_DIRECTIONS[str(selected_query_id)]
+        except KeyError as exc:
+            raise ValueError(f"unsupported contour-density threshold query: {selected_query_id}") from exc
         threshold_min, threshold_max = resolve_required_int_bounds(
             params,
             GENERATION_DEFAULTS,
@@ -143,7 +143,6 @@ class ChartsContourDensityDensityThresholdRegionCountTask:
                 "density_threshold_level": int(threshold_level),
                 "density_level_by_region_label": {str(region.label): int(region.density_level) for region in regions},
                 "matching_region_labels": [str(region.label) for region in annotation_regions],
-                "density_threshold_direction_probabilities": dict(direction_probabilities),
                 "scene_variant_probabilities": dict(scene_probabilities),
             },
         )
@@ -167,7 +166,7 @@ class ChartsContourDensityDensityThresholdRegionCountTask:
             instance_seed=int(instance_seed),
             params=params,
             supported_query_ids=self.supported_query_ids,
-            default_query_id=QUERY_ID,
+            default_query_id=AT_LEAST_QUERY_ID,
             task_id=self.task_id,
         )
         return run_contour_public_task(

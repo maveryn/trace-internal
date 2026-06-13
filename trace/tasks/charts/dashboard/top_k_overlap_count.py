@@ -18,11 +18,15 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 def _build_task_output(materialized: MaterializedDashboardTask) -> TaskOutput:
     return TaskOutput(**dashboard_task_output_fields(materialized))
 from trace.tasks.charts.dashboard.shared.defaults import generation_default
-from trace.tasks.charts.dashboard.shared.metrics import balanced_support_choice, category_by_id, panel_by_id, top_k_category_ids, top_k_overlap_count_support, top_k_support, weighted_choice_from_defaults
-from trace.tasks.charts.dashboard.shared.state import SUPPORTED_RANK_DIRECTIONS
+from trace.tasks.charts.dashboard.shared.metrics import balanced_support_choice, category_by_id, panel_by_id, top_k_category_ids, top_k_overlap_count_support, top_k_support
 
 
-QUERY_ID = "top_k_overlap_count"
+HIGHEST_TOP_K_QUERY_ID = "highest_top_k_overlap_count"
+LOWEST_TOP_K_QUERY_ID = "lowest_top_k_overlap_count"
+RANK_DIRECTION_BY_QUERY_ID = {
+    HIGHEST_TOP_K_QUERY_ID: "largest",
+    LOWEST_TOP_K_QUERY_ID: "smallest",
+}
 TASK_PARAM_DEFAULTS: dict[str, Any] = {"category_count_min": 6}
 
 
@@ -43,16 +47,15 @@ class ChartsDashboardTopKOverlapCountTask:
     task_id = "task_charts__dashboard__top_k_overlap_count"
     domain = DOMAIN
     objective_contract = "top_k_overlap_count"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = (HIGHEST_TOP_K_QUERY_ID, LOWEST_TOP_K_QUERY_ID)
     default_dataset_enabled = True
 
     def _resolve_top_k_overlap_plan(self, instance_seed: int, params: dict[str, Any], selected_query_id: str) -> DashboardTaskPlan:
         """Construct the second panel so the top-k overlap count is realized exactly."""
-        del selected_query_id
         effective_params = {**TASK_PARAM_DEFAULTS, **dict(params)}
         rng = spawn_rng(int(instance_seed), f"{SCENE_ID}.{self.objective_contract}.selection")
         base_sample = build_dashboard_base_sample(effective_params, instance_seed=int(instance_seed))
-        direction = weighted_choice_from_defaults(rng, params=effective_params, key="top_k_rank_direction", supported=SUPPORTED_RANK_DIRECTIONS, fallback_weights_key="rank_direction_weights")
+        direction = RANK_DIRECTION_BY_QUERY_ID[str(selected_query_id)]
         top_k_values = top_k_support(effective_params, len(base_sample.categories))
         feasible_targets = _feasible_overlap_targets(effective_params, category_count=len(base_sample.categories), possible_top_k=top_k_values)
         target_count = balanced_support_choice(params=effective_params, instance_seed=int(instance_seed), namespace=f"{SCENE_ID}.top_k_overlap_count.answer", support=feasible_targets)
@@ -111,11 +114,11 @@ class ChartsDashboardTopKOverlapCountTask:
             "count_value": int(len(overlap_sorted)),
         }
         dataset = DashboardDataset(scene_variant=SCENE_VARIANT, categories=base_sample.categories, panels=base_sample.panels, query=DashboardQuery(answer=int(len(overlap_sorted)), answer_type="integer", annotation_refs=refs, params=dict(relations)))
-        prompt_artifacts = build_prompt_artifacts(prompt_query_key=QUERY_ID, dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
+        prompt_artifacts = build_prompt_artifacts(prompt_query_key=str(selected_query_id), dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
         return DashboardTaskPlan(dataset=dataset, prompt_artifacts=prompt_artifacts, relations=relations, answer_gt=TypedValue(type="integer", value=int(len(overlap_sorted))), annotation_refs=refs)
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params={**TASK_PARAM_DEFAULTS, **dict(params)}, supported_query_ids=self.supported_query_ids, default_query_id=QUERY_ID, task_id=self.task_id)
+        selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params={**TASK_PARAM_DEFAULTS, **dict(params)}, supported_query_ids=self.supported_query_ids, default_query_id=HIGHEST_TOP_K_QUERY_ID, task_id=self.task_id)
         return run_dashboard_public_task(instance_seed=int(instance_seed), params=task_params, max_attempts=int(max_attempts), selected_query_id=str(selected_query_id), build_plan=self._resolve_top_k_overlap_plan, build_output=_build_task_output)
 
 

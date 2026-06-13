@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `contour_density`
 3. Source implementation scene package: `charts/contour_density`
-4. Query id: `spread_extremum_region_label`
+4. Query ids: `widest_spread_region_label`, `narrowest_spread_region_label`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -23,7 +23,8 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `spread_extremum_region_label` | `select.visible_footprint_extremum_label` | `string_label` | `keyed_bbox_map` |
+| `widest_spread_region_label` | `select.visible_footprint_extremum_label(direction=widest)` | `string_label` | `keyed_bbox_map` |
+| `narrowest_spread_region_label` | `select.visible_footprint_extremum_label(direction=narrowest)` | `string_label` | `keyed_bbox_map` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

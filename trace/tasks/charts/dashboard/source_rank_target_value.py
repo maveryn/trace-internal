@@ -8,7 +8,7 @@ from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.dashboard._lifecycle import DashboardTaskPlan, MaterializedDashboardTask, dashboard_task_output_fields, run_dashboard_public_task
-from trace.tasks.charts.dashboard.shared.metrics import category_by_id, choose_rank_params, panel_by_id, rank_phrase, ranked_category_id
+from trace.tasks.charts.dashboard.shared.metrics import category_by_id, panel_by_id, rank_phrase, rank_support, ranked_category_id
 from trace.tasks.charts.dashboard.shared.prompts import build_prompt_artifacts, build_prompt_slots
 from trace.tasks.charts.dashboard.shared.sampling import build_dashboard_base_sample
 from trace.tasks.charts.dashboard.shared.state import DOMAIN, SCENE_ID, SCENE_VARIANT, DashboardDataset, DashboardQuery
@@ -16,7 +16,12 @@ from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
 
 
-QUERY_ID = "source_rank_target_value"
+LARGEST_SOURCE_QUERY_ID = "largest_source_rank_target_value"
+SMALLEST_SOURCE_QUERY_ID = "smallest_source_rank_target_value"
+RANK_DIRECTION_BY_QUERY_ID = {
+    LARGEST_SOURCE_QUERY_ID: "largest",
+    SMALLEST_SOURCE_QUERY_ID: "smallest",
+}
 
 
 def _build_task_output(materialized: MaterializedDashboardTask) -> TaskOutput:
@@ -48,7 +53,6 @@ def _build_rank_transfer_trace(*, source_id: str, target_id: str, category_id: s
 
 def _build_source_target_transfer_plan(instance_seed: int, params: dict[str, Any], selected_query_id: str) -> DashboardTaskPlan:
     """Bind the rank-transfer objective: choose by source rank, answer from target value."""
-    del selected_query_id
     rng = spawn_rng(int(instance_seed), f"{SCENE_ID}.source_rank_target.transfer")
     base_sample = build_dashboard_base_sample(params, instance_seed=int(instance_seed))
     source_id, target_id = rng.sample([str(panel.panel_id) for panel in base_sample.panels], 2)
@@ -56,7 +60,11 @@ def _build_source_target_transfer_plan(instance_seed: int, params: dict[str, Any
         "source": panel_by_id(base_sample.panels, source_id),
         "target": panel_by_id(base_sample.panels, target_id),
     }
-    direction, rank_n = choose_rank_params(rng, params=params, category_count=len(base_sample.categories))
+    direction = RANK_DIRECTION_BY_QUERY_ID[str(selected_query_id)]
+    feasible_ranks = tuple(value for value in rank_support(params) if int(value) <= len(base_sample.categories))
+    if not feasible_ranks:
+        raise ValueError("rank support has no feasible values for category count")
+    rank_n = int(feasible_ranks[int(rng.randrange(len(feasible_ranks)))])
     chosen_category_id = ranked_category_id(categories=base_sample.categories, panel=panels["source"], direction=direction, rank_n=rank_n)
     chosen_category = category_by_id(base_sample.categories, chosen_category_id)
     mark_values = {role: int(panel.values_by_category_id[str(chosen_category_id)]) for role, panel in panels.items()}
@@ -89,7 +97,7 @@ def _build_source_target_transfer_plan(instance_seed: int, params: dict[str, Any
         panels=base_sample.panels,
         query=DashboardQuery(answer=int(transfer_value), answer_type="integer", annotation_refs=refs, params=dict(relations)),
     )
-    prompt_artifacts = build_prompt_artifacts(prompt_query_key=QUERY_ID, dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
+    prompt_artifacts = build_prompt_artifacts(prompt_query_key=str(selected_query_id), dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
     return DashboardTaskPlan(
         dataset=dataset,
         prompt_artifacts=prompt_artifacts,
@@ -107,11 +115,11 @@ class ChartsDashboardSourceRankTargetValueTask:
     task_id = "task_charts__dashboard__source_rank_target_value"
     domain = DOMAIN
     objective_contract = "source_rank_target_value"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = (LARGEST_SOURCE_QUERY_ID, SMALLEST_SOURCE_QUERY_ID)
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params=params, supported_query_ids=self.supported_query_ids, default_query_id=QUERY_ID, task_id=self.task_id)
+        selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params=params, supported_query_ids=self.supported_query_ids, default_query_id=LARGEST_SOURCE_QUERY_ID, task_id=self.task_id)
         return run_dashboard_public_task(instance_seed=int(instance_seed), params=task_params, max_attempts=int(max_attempts), selected_query_id=str(selected_query_id), build_plan=_build_source_target_transfer_plan, build_output=_build_task_output)
 
 

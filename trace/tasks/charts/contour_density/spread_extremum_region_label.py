@@ -8,15 +8,20 @@ from typing import Any, List, Mapping, Sequence, Tuple
 from trace.core.seed import spawn_rng
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.contour_density._lifecycle import ContourTaskPlan, contour_task_output_fields, run_contour_public_task
-from trace.tasks.charts.contour_density.shared.defaults import DOMAIN, SCENE_NAMESPACE, SUPPORTED_SPREAD_EXTREMA
+from trace.tasks.charts.contour_density.shared.defaults import DOMAIN, SCENE_NAMESPACE
 from trace.tasks.charts.contour_density.shared.prompts import build_prompt_artifacts
-from trace.tasks.charts.contour_density.shared.sampling import balanced_choice, build_regions, density_from_level, region_count, region_labels, resolve_semantic_axis, scene_variant
+from trace.tasks.charts.contour_density.shared.sampling import balanced_choice, build_regions, density_from_level, fit_regions_within_unit_bounds, region_count, region_labels, scene_variant
 from trace.tasks.charts.contour_density.shared.state import ContourDataset, QuerySelection, Region
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
 
 
-QUERY_ID = "spread_extremum_region_label"
+WIDEST_QUERY_ID = "widest_spread_region_label"
+NARROWEST_QUERY_ID = "narrowest_spread_region_label"
+QUERY_SPREAD_EXTREMA = {
+    WIDEST_QUERY_ID: "widest",
+    NARROWEST_QUERY_ID: "narrowest",
+}
 
 
 def _build_task_output(materialized):
@@ -68,7 +73,7 @@ def _construct_spread_regions(
             spread_extremum=str(spread_extremum),
         )
         regions.append(replace(region, radius_x=float(radius_x), radius_y=float(radius_y)))
-    return tuple(regions)
+    return fit_regions_within_unit_bounds(regions)
 
 
 def _footprint_area_by_label(regions: Sequence[Region]) -> Mapping[str, float]:
@@ -88,22 +93,17 @@ class ChartsContourDensitySpreadExtremumRegionLabelTask:
     task_id = "task_charts__contour_density__spread_extremum_region_label"
     domain = DOMAIN
     objective_contract = "spread_extremum_region_label"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = (WIDEST_QUERY_ID, NARROWEST_QUERY_ID)
     default_dataset_enabled = True
 
     def _build_spread_extremum_plan(self, instance_seed: int, params: Mapping[str, Any], selected_query_id: str) -> ContourTaskPlan:
         """Resize the sampled answer region to create a unique visible-footprint extremum."""
 
         scene_name, scene_probabilities = scene_variant(params, instance_seed=int(instance_seed))
-        spread_extremum, spread_probabilities = resolve_semantic_axis(
-            params,
-            instance_seed=int(instance_seed),
-            supported=SUPPORTED_SPREAD_EXTREMA,
-            explicit_key="spread_extremum",
-            weights_key="spread_extremum_weights",
-            balance_key="balanced_spread_extremum_sampling",
-            namespace="spread_extremum",
-        )
+        try:
+            spread_extremum = QUERY_SPREAD_EXTREMA[str(selected_query_id)]
+        except KeyError as exc:
+            raise ValueError(f"unsupported contour-density spread query: {selected_query_id}") from exc
         count = region_count(params, instance_seed=int(instance_seed))
         labels = region_labels(int(count), instance_seed=int(instance_seed))
         answer_index = int(
@@ -138,7 +138,6 @@ class ChartsContourDensitySpreadExtremumRegionLabelTask:
                 "spread_extremum": str(spread_extremum),
                 "spread_extremum_phrase": str(phrase),
                 "footprint_area_by_region_label": {key: round(float(value), 3) for key, value in spread_by_label.items()},
-                "spread_extremum_probabilities": dict(spread_probabilities),
                 "scene_variant_probabilities": dict(scene_probabilities),
             },
         )
@@ -159,7 +158,7 @@ class ChartsContourDensitySpreadExtremumRegionLabelTask:
             instance_seed=int(instance_seed),
             params=params,
             supported_query_ids=self.supported_query_ids,
-            default_query_id=QUERY_ID,
+            default_query_id=WIDEST_QUERY_ID,
             task_id=self.task_id,
         )
         return run_contour_public_task(

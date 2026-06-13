@@ -17,7 +17,7 @@ from trace.tasks.charts.candlestick.shared.defaults import (
 from trace.tasks.charts.candlestick.shared.output import build_trace_scaffold
 from trace.tasks.charts.candlestick.shared.prompts import build_prompt_artifacts
 from trace.tasks.charts.candlestick.shared.rendering import render_dataset
-from trace.tasks.charts.candlestick.shared.sampling import sample_candles, select_semantic_branch
+from trace.tasks.charts.candlestick.shared.sampling import sample_candles
 from trace.tasks.charts.candlestick.shared.state import Dataset, Selection
 from trace.tasks.registry import register_task
 from trace.tasks.shared.annotation_artifacts import bbox_set_annotation_artifacts
@@ -28,7 +28,12 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
 
-COUNTERFACTUAL_QUERY_ID = "close_after_body_change_value"
+INCREASE_BODY_QUERY_ID = "close_after_body_increase_value"
+DECREASE_BODY_QUERY_ID = "close_after_body_decrease_value"
+CHANGE_DIRECTION_BY_QUERY_ID = {
+    INCREASE_BODY_QUERY_ID: "increase",
+    DECREASE_BODY_QUERY_ID: "decrease",
+}
 
 
 def _build_counterfactual_close_dataset(
@@ -111,19 +116,15 @@ class ChartsCandlestickCounterfactualCloseValueTask:
     task_id = "task_charts__candlestick__counterfactual_close_value"
     domain = DOMAIN
     objective_contract = "counterfactual_close_value"
-    supported_query_ids = (COUNTERFACTUAL_QUERY_ID,)
+    supported_query_ids = (INCREASE_BODY_QUERY_ID, DECREASE_BODY_QUERY_ID)
     default_dataset_enabled = True
 
     def _generate_once(self, instance_seed: int, *, params: dict[str, Any], selected_query_id: str) -> TaskOutput:
         """Generate one counterfactual-close instance with task-owned answer binding."""
 
-        change_direction, direction_probabilities, branch_params = select_semantic_branch(
-            params,
-            branch_key="change_direction",
-            support=("increase", "decrease"),
-            instance_seed=int(instance_seed),
-            namespace="charts.candlestick.change_direction",
-        )
+        change_direction = CHANGE_DIRECTION_BY_QUERY_ID[str(selected_query_id)]
+        direction_probabilities = {value: 1.0 if value == change_direction else 0.0 for value in ("increase", "decrease")}
+        branch_params = dict(params)
         dataset = _build_counterfactual_close_dataset(
             params=branch_params,
             instance_seed=int(instance_seed),
@@ -196,7 +197,7 @@ class ChartsCandlestickCounterfactualCloseValueTask:
             instance_seed=int(instance_seed),
             params=params,
             supported_query_ids=self.supported_query_ids,
-            default_query_id=COUNTERFACTUAL_QUERY_ID,
+            default_query_id=INCREASE_BODY_QUERY_ID,
             task_id=self.task_id,
         )
         last_error: Exception | None = None

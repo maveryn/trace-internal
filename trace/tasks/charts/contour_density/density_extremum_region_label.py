@@ -6,15 +6,20 @@ from typing import Any, Mapping
 
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.contour_density._lifecycle import ContourTaskPlan, contour_task_output_fields, run_contour_public_task
-from trace.tasks.charts.contour_density.shared.defaults import DOMAIN, SCENE_NAMESPACE, SUPPORTED_DENSITY_EXTREMA
+from trace.tasks.charts.contour_density.shared.defaults import DOMAIN, SCENE_NAMESPACE
 from trace.tasks.charts.contour_density.shared.prompts import build_prompt_artifacts
-from trace.tasks.charts.contour_density.shared.sampling import balanced_choice, build_regions, region_count, region_labels, resolve_semantic_axis, scene_variant
+from trace.tasks.charts.contour_density.shared.sampling import balanced_choice, build_regions, region_count, region_labels, scene_variant
 from trace.tasks.charts.contour_density.shared.state import ContourDataset, QuerySelection
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
 
 
-QUERY_ID = "density_extremum_region_label"
+HIGHEST_QUERY_ID = "highest_density_region_label"
+LOWEST_QUERY_ID = "lowest_density_region_label"
+QUERY_DENSITY_EXTREMA = {
+    HIGHEST_QUERY_ID: "highest",
+    LOWEST_QUERY_ID: "lowest",
+}
 
 
 def _build_task_output(materialized):
@@ -28,22 +33,17 @@ class ChartsContourDensityDensityExtremumRegionLabelTask:
     task_id = "task_charts__contour_density__density_extremum_region_label"
     domain = DOMAIN
     objective_contract = "density_extremum_region_label"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = (HIGHEST_QUERY_ID, LOWEST_QUERY_ID)
     default_dataset_enabled = True
 
     def _build_density_extremum_plan(self, instance_seed: int, params: Mapping[str, Any], selected_query_id: str) -> ContourTaskPlan:
         """Bind the unique density extremum before neutral rendering projects the selected region."""
 
         scene_name, scene_probabilities = scene_variant(params, instance_seed=int(instance_seed))
-        extremum, extremum_probabilities = resolve_semantic_axis(
-            params,
-            instance_seed=int(instance_seed),
-            supported=SUPPORTED_DENSITY_EXTREMA,
-            explicit_key="density_extremum",
-            weights_key="density_extremum_weights",
-            balance_key="balanced_density_extremum_sampling",
-            namespace="density_extremum",
-        )
+        try:
+            extremum = QUERY_DENSITY_EXTREMA[str(selected_query_id)]
+        except KeyError as exc:
+            raise ValueError(f"unsupported contour-density extremum query: {selected_query_id}") from exc
         count = region_count(params, instance_seed=int(instance_seed))
         labels = region_labels(int(count), instance_seed=int(instance_seed))
         answer_index = int(
@@ -88,7 +88,6 @@ class ChartsContourDensityDensityExtremumRegionLabelTask:
                 "density_extremum": str(extremum),
                 "density_extremum_phrase": "highest" if str(extremum) == "highest" else "lowest",
                 "density_by_region_label": {key: round(float(value), 3) for key, value in density_by_label.items()},
-                "density_extremum_probabilities": dict(extremum_probabilities),
                 "scene_variant_probabilities": dict(scene_probabilities),
             },
         )
@@ -109,7 +108,7 @@ class ChartsContourDensityDensityExtremumRegionLabelTask:
             instance_seed=int(instance_seed),
             params=params,
             supported_query_ids=self.supported_query_ids,
-            default_query_id=QUERY_ID,
+            default_query_id=HIGHEST_QUERY_ID,
             task_id=self.task_id,
         )
         return run_contour_public_task(

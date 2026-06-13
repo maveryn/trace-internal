@@ -54,11 +54,23 @@ def test_annotated_series_callout_box_does_not_cover_critical_endpoint_marks() -
     cases = (
         (
             347784840739934,
-            {"scene_variant": "lollipop", "endpoint_side": "last", "mark_count_min": 12, "mark_count_max": 12},
+            {
+                "scene_variant": "lollipop",
+                "query_id": "callout_endpoint_change_value",
+                "endpoint_side": "last",
+                "mark_count_min": 12,
+                "mark_count_max": 12,
+            },
         ),
         (
             762788342831494,
-            {"scene_variant": "line", "endpoint_side": "first", "mark_count_min": 13, "mark_count_max": 13},
+            {
+                "scene_variant": "line",
+                "query_id": "callout_endpoint_change_value",
+                "endpoint_side": "first",
+                "mark_count_min": 13,
+                "mark_count_max": 13,
+            },
         ),
     )
     for instance_seed, params in cases:

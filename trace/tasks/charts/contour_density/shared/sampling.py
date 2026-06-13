@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
@@ -174,6 +175,19 @@ def base_centers(count: int, *, rng: Any) -> List[Tuple[float, float]]:
     return centers
 
 
+def fit_regions_within_unit_bounds(regions: Sequence[Region], *, draw_scale: float = 1.9) -> Tuple[Region, ...]:
+    """Shift region centers so the rendered contour footprint stays in the plot."""
+
+    fitted: List[Region] = []
+    for region in regions:
+        margin_x = min(49.0, max(0.0, float(region.radius_x) * float(draw_scale)))
+        margin_y = min(49.0, max(0.0, float(region.radius_y) * float(draw_scale)))
+        center_x = min(100.0 - margin_x, max(margin_x, float(region.center_x)))
+        center_y = min(100.0 - margin_y, max(margin_y, float(region.center_y)))
+        fitted.append(replace(region, center_x=float(center_x), center_y=float(center_y)))
+    return tuple(fitted)
+
+
 def build_regions(
     *,
     count: int,
@@ -210,7 +224,7 @@ def build_regions(
                 color_rgb=tuple(colors[int(index) % len(colors)]),
             )
         )
-    return tuple(regions)
+    return fit_regions_within_unit_bounds(regions)
 
 
 def distance_to_reference(region: Region, reference: Reference) -> float:
@@ -231,6 +245,7 @@ __all__ = [
     "density_from_level",
     "density_level_from_density",
     "distance_to_reference",
+    "fit_regions_within_unit_bounds",
     "option_count_support",
     "option_labels_for_count",
     "region_count",

@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `dashboard`
 3. Source implementation domain/group: `charts/dashboard`
-4. Query id: `top_k_overlap_count`
+4. Query id: sampled from `highest_top_k_overlap_count`, `lowest_top_k_overlap_count`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -23,7 +23,8 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `top_k_overlap_count` | `count.set_overlap_cardinality` | `integer_count` | `point_set` |
+| `highest_top_k_overlap_count` | `count.set_overlap_cardinality` | `integer_count` | `point_set` |
+| `lowest_top_k_overlap_count` | `count.set_overlap_cardinality` | `integer_count` | `point_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

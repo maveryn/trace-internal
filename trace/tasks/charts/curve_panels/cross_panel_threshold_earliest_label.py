@@ -116,6 +116,7 @@ class ChartsScientificCrossPanelThresholdEarliestLabelTask:
         )
         crossings = []
         crossing_x_by_panel: Dict[str, float] = {}
+        answer_crossing_id = ""
         for panel_index, panel in enumerate(panel_labels):
             pivot = (
                 1
@@ -151,13 +152,14 @@ class ChartsScientificCrossPanelThresholdEarliestLabelTask:
             crossing = panel_crossings[0]
             crossings.append(crossing)
             crossing_x_by_panel[str(panel)] = round(float(crossing.x_value), 3)
+            if str(panel) == str(answer_panel):
+                answer_crossing_id = str(crossing.crossing_id)
         if min(
             crossing_x_by_panel, key=lambda label: (crossing_x_by_panel[label], label)
         ) != str(answer_panel):
             raise RuntimeError(
                 "cross-panel threshold earliest construction lost unique target"
             )
-        annotation_crossing_ids = tuple(str(item.crossing_id) for item in crossings)
         phrase = "upward through" if str(direction) == "upward" else "downward through"
         query = build_curve_panel_query_record(
             prompt_key=selected_query_id,
@@ -168,8 +170,8 @@ class ChartsScientificCrossPanelThresholdEarliestLabelTask:
             threshold_value=threshold,
             threshold_direction=direction,
             threshold_panel_labels=tuple(str(panel) for panel in panel_labels),
-            annotation_panel_labels=tuple(str(panel) for panel in panel_labels),
-            annotation_threshold_crossing_ids=annotation_crossing_ids,
+            annotation_panel_labels=(answer_panel,),
+            annotation_threshold_crossing_ids=(answer_crossing_id,),
             trace={
                 "method_label": str(method_label),
                 "threshold_value": int(threshold),

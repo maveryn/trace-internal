@@ -16,7 +16,6 @@ Public task identity uses `domain -> scene_id -> task_id`. Generated outputs rec
 1. [task_charts__bar_3d__series_total_gap_value.md](task_charts__bar_3d__series_total_gap_value.md)
 1. [task_charts__boxplot__iqr_extremum_label.md](task_charts__boxplot__iqr_extremum_label.md)
 1. [task_charts__boxplot__median_rank_difference_value.md](task_charts__boxplot__median_rank_difference_value.md)
-1. [task_charts__boxplot__median_reference_label.md](task_charts__boxplot__median_reference_label.md)
 1. [task_charts__boxplot__paired_median_shift_label.md](task_charts__boxplot__paired_median_shift_label.md)
 1. [task_charts__candlestick__counterfactual_close_value.md](task_charts__candlestick__counterfactual_close_value.md)
 1. [task_charts__candlestick__range_extremum_label.md](task_charts__candlestick__range_extremum_label.md)

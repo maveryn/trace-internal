@@ -112,14 +112,6 @@ class ChartsScientificEarliestMaximumPanelLabelTask:
                 curve.append(max(int(y_min) + 5, min(int(y_max) - 5, int(value))))
             curve[int(peak_index)] = int(peak_value)
             values[str(panel)][str(method_label)] = list(curve)
-        annotation_ids = tuple(
-            point_id(
-                str(panel),
-                str(method_label),
-                int(sampled_x_values[int(peak_indices[str(panel)])]),
-            )
-            for panel in panel_labels
-        )
         peak_x_by_panel = {
             str(panel): int(sampled_x_values[int(peak_indices[str(panel)])])
             for panel in panel_labels
@@ -134,8 +126,14 @@ class ChartsScientificEarliestMaximumPanelLabelTask:
             answer_type="string",
             panel_label=answer_panel,
             method_label=method_label,
-            annotation_panel_labels=tuple(str(panel) for panel in panel_labels),
-            annotation_point_ids=annotation_ids,
+            annotation_panel_labels=(answer_panel,),
+            annotation_point_ids=(
+                point_id(
+                    answer_panel,
+                    method_label,
+                    int(peak_x_by_panel[str(answer_panel)]),
+                ),
+            ),
             trace={
                 "method_label": str(method_label),
                 "peak_x_by_panel": dict(peak_x_by_panel),

@@ -17,10 +17,15 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 
 def _build_task_output(materialized: MaterializedDashboardTask) -> TaskOutput:
     return TaskOutput(**dashboard_task_output_fields(materialized))
-from trace.tasks.charts.dashboard.shared.metrics import category_by_id, choose_distinct_rank_params, choose_rank_params, panel_by_id, rank_phrase, ranked_category_id
+from trace.tasks.charts.dashboard.shared.metrics import category_by_id, panel_by_id, rank_phrase, rank_support, ranked_category_id
 
 
-QUERY_ID = "dual_source_target_sum_value"
+FIRST_LARGEST_SECOND_SMALLEST_QUERY_ID = "first_largest_second_smallest_target_sum_value"
+FIRST_SMALLEST_SECOND_LARGEST_QUERY_ID = "first_smallest_second_largest_target_sum_value"
+RANK_DIRECTIONS_BY_QUERY_ID = {
+    FIRST_LARGEST_SECOND_SMALLEST_QUERY_ID: ("largest", "smallest"),
+    FIRST_SMALLEST_SECOND_LARGEST_QUERY_ID: ("smallest", "largest"),
+}
 TASK_PARAM_DEFAULTS: dict[str, Any] = {"panel_count_max": 5, "category_count_max": 10, "rank_n_support": [1], "panel_kind_weights": {"bar": 1.0, "line": 0.0, "donut": 0.0, "radar": 0.0}}
 
 
@@ -31,12 +36,11 @@ class ChartsDashboardDualSourceTargetSumValueTask:
     task_id = "task_charts__dashboard__dual_source_target_sum_value"
     domain = DOMAIN
     objective_contract = "dual_source_target_sum_value"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = (FIRST_LARGEST_SECOND_SMALLEST_QUERY_ID, FIRST_SMALLEST_SECOND_LARGEST_QUERY_ID)
     default_dataset_enabled = True
 
     def _prepare_dual_source_target_sum_plan(self, instance_seed: int, params: dict[str, Any], selected_query_id: str) -> DashboardTaskPlan:
         """Bind two source-ranked categories and the two target-panel addends."""
-        del selected_query_id
         effective_params = {**TASK_PARAM_DEFAULTS, **dict(params)}
         rng = spawn_rng(int(instance_seed), f"{SCENE_ID}.{self.objective_contract}.selection")
         base_sample = build_dashboard_base_sample(effective_params, instance_seed=int(instance_seed))
@@ -44,8 +48,12 @@ class ChartsDashboardDualSourceTargetSumValueTask:
         first_source = panel_by_id(base_sample.panels, first_source_id)
         second_source = panel_by_id(base_sample.panels, second_source_id)
         target_panel = panel_by_id(base_sample.panels, target_id)
-        first_direction, first_rank_n = choose_rank_params(rng, params=effective_params, category_count=len(base_sample.categories))
-        second_direction, second_rank_n = choose_distinct_rank_params(rng, params=effective_params, category_count=len(base_sample.categories), avoid_phrase=rank_phrase(first_direction, first_rank_n))
+        first_direction, second_direction = RANK_DIRECTIONS_BY_QUERY_ID[str(selected_query_id)]
+        feasible_ranks = tuple(value for value in rank_support(effective_params) if int(value) <= len(base_sample.categories))
+        if not feasible_ranks:
+            raise ValueError("rank support has no feasible values for category count")
+        first_rank_n = int(feasible_ranks[int(rng.randrange(len(feasible_ranks)))])
+        second_rank_n = int(feasible_ranks[int(rng.randrange(len(feasible_ranks)))])
         first_category_id = ranked_category_id(categories=base_sample.categories, panel=first_source, direction=first_direction, rank_n=first_rank_n)
         second_category_id = ranked_category_id(categories=base_sample.categories, panel=second_source, direction=second_direction, rank_n=second_rank_n)
         if str(first_category_id) == str(second_category_id):
@@ -77,12 +85,12 @@ class ChartsDashboardDualSourceTargetSumValueTask:
         }
         refs = ((str(first_source_id), str(first_category_id)), (str(second_source_id), str(second_category_id)), (str(target_id), str(first_category_id)), (str(target_id), str(second_category_id)))
         dataset = DashboardDataset(scene_variant=SCENE_VARIANT, categories=base_sample.categories, panels=base_sample.panels, query=DashboardQuery(answer=int(answer), answer_type="integer", annotation_refs=refs, params=dict(relations)))
-        prompt_artifacts = build_prompt_artifacts(prompt_query_key=QUERY_ID, dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
+        prompt_artifacts = build_prompt_artifacts(prompt_query_key=str(selected_query_id), dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
         roles = {"first_source_panel": refs[0], "second_source_panel": refs[1], "target_first_category": refs[2], "target_second_category": refs[3]}
         return DashboardTaskPlan(dataset=dataset, prompt_artifacts=prompt_artifacts, relations=relations, answer_gt=TypedValue(type="integer", value=int(answer)), annotation_refs=refs, annotation_roles=roles)
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params={**TASK_PARAM_DEFAULTS, **dict(params)}, supported_query_ids=self.supported_query_ids, default_query_id=QUERY_ID, task_id=self.task_id)
+        selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params={**TASK_PARAM_DEFAULTS, **dict(params)}, supported_query_ids=self.supported_query_ids, default_query_id=FIRST_LARGEST_SECOND_SMALLEST_QUERY_ID, task_id=self.task_id)
         return run_dashboard_public_task(instance_seed=int(instance_seed), params=task_params, max_attempts=int(max_attempts), selected_query_id=str(selected_query_id), build_plan=self._prepare_dual_source_target_sum_plan, build_output=_build_task_output)
 
 

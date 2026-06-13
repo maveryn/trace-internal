@@ -11,7 +11,8 @@ from trace.core.seed import hash64
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.curve_panels.shared.annotations import (
-    keyed_start_end_points,
+    bbox_set_from_panel_labels,
+    keyed_point_map_from_ids,
     point_set_from_ids,
 )
 from trace.tasks.charts.curve_panels.shared.defaults import SCENE_ID, SCENE_VARIANT
@@ -77,6 +78,7 @@ def build_curve_panel_query_record(
     threshold_panel_labels: tuple[str, ...] = (),
     annotation_panel_labels: tuple[str, ...] = (),
     annotation_point_ids: tuple[str, ...] = (),
+    annotation_keyed_point_ids: Mapping[str, str] | None = None,
     annotation_intersection_ids: tuple[str, ...] = (),
     annotation_threshold_crossing_ids: tuple[str, ...] = (),
     trace: Mapping[str, Any] | None = None,
@@ -100,6 +102,10 @@ def build_curve_panel_query_record(
         threshold_panel_labels=tuple(str(label) for label in threshold_panel_labels),
         annotation_panel_labels=tuple(str(label) for label in annotation_panel_labels),
         annotation_point_ids=tuple(str(item) for item in annotation_point_ids),
+        annotation_keyed_point_ids={
+            str(key): str(value)
+            for key, value in dict(annotation_keyed_point_ids or {}).items()
+        },
         annotation_intersection_ids=tuple(
             str(item) for item in annotation_intersection_ids
         ),
@@ -122,12 +128,22 @@ def curve_panel_attempt_seed(instance_seed: int, attempt: int) -> int:
 
 def _annotation_for_plan(plan: CurvePanelTaskPlan, rendered) -> TypedValue:
     annotation_type = str(plan.annotation_type)
-    if annotation_type == "keyed_point_map":
-        annotation = keyed_start_end_points(dataset=plan.dataset, rendered=rendered)
-        return TypedValue(
-            type=annotation_type,
-            value={key: list(point) for key, point in annotation.items()},
+    if annotation_type == "bbox_set":
+        boxes = bbox_set_from_panel_labels(
+            rendered=rendered,
+            panel_labels=plan.dataset.query.annotation_panel_labels,
         )
+        if not boxes and not bool(plan.allow_empty_annotation):
+            raise RuntimeError("curve-panel task produced empty bbox annotation")
+        return TypedValue(type=annotation_type, value=[list(box) for box in boxes])
+    if annotation_type == "keyed_point_map":
+        points = keyed_point_map_from_ids(
+            rendered=rendered,
+            keyed_point_ids=plan.dataset.query.annotation_keyed_point_ids,
+        )
+        if not points and not bool(plan.allow_empty_annotation):
+            raise RuntimeError("curve-panel task produced empty keyed annotation")
+        return TypedValue(type=annotation_type, value=dict(points))
     if annotation_type != "point_set":
         raise ValueError(f"unsupported annotation type: {annotation_type}")
     points = point_set_from_ids(

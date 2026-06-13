@@ -6,15 +6,28 @@ from typing import Any, Mapping
 
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.contour_density._lifecycle import ContourTaskPlan, contour_task_output_fields, run_contour_public_task
-from trace.tasks.charts.contour_density.shared.defaults import DOMAIN, SCENE_NAMESPACE, SUPPORTED_DISTANCE_EXTREMA, SUPPORTED_REFERENCE_KINDS
+from trace.tasks.charts.contour_density.shared.defaults import DOMAIN, SCENE_NAMESPACE
 from trace.tasks.charts.contour_density.shared.prompts import build_prompt_artifacts
-from trace.tasks.charts.contour_density.shared.sampling import balanced_choice, build_regions, distance_to_reference, density_from_level, region_count, region_labels, resolve_semantic_axis, scene_variant
+from trace.tasks.charts.contour_density.shared.sampling import balanced_choice, build_regions, distance_to_reference, density_from_level, region_count, region_labels, scene_variant
 from trace.tasks.charts.contour_density.shared.state import ContourDataset, QuerySelection, Reference, Region
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
 
 
-QUERY_ID = "reference_distance_extremum_label"
+POINT_NEAREST_QUERY_ID = "point_nearest_region_label"
+POINT_FARTHEST_QUERY_ID = "point_farthest_region_label"
+VERTICAL_NEAREST_QUERY_ID = "vertical_line_nearest_region_label"
+VERTICAL_FARTHEST_QUERY_ID = "vertical_line_farthest_region_label"
+HORIZONTAL_NEAREST_QUERY_ID = "horizontal_line_nearest_region_label"
+HORIZONTAL_FARTHEST_QUERY_ID = "horizontal_line_farthest_region_label"
+QUERY_REFERENCE_DISTANCE = {
+    POINT_NEAREST_QUERY_ID: ("point", "nearest"),
+    POINT_FARTHEST_QUERY_ID: ("point", "farthest"),
+    VERTICAL_NEAREST_QUERY_ID: ("vertical_line", "nearest"),
+    VERTICAL_FARTHEST_QUERY_ID: ("vertical_line", "farthest"),
+    HORIZONTAL_NEAREST_QUERY_ID: ("horizontal_line", "nearest"),
+    HORIZONTAL_FARTHEST_QUERY_ID: ("horizontal_line", "farthest"),
+}
 
 
 def _build_task_output(materialized):
@@ -44,31 +57,24 @@ class ChartsContourDensityReferenceDistanceExtremumLabelTask:
     task_id = "task_charts__contour_density__reference_distance_extremum_label"
     domain = DOMAIN
     objective_contract = "reference_distance_extremum_label"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = (
+        POINT_NEAREST_QUERY_ID,
+        POINT_FARTHEST_QUERY_ID,
+        VERTICAL_NEAREST_QUERY_ID,
+        VERTICAL_FARTHEST_QUERY_ID,
+        HORIZONTAL_NEAREST_QUERY_ID,
+        HORIZONTAL_FARTHEST_QUERY_ID,
+    )
     default_dataset_enabled = True
 
     def _build_reference_distance_plan(self, instance_seed: int, params: Mapping[str, Any], selected_query_id: str) -> ContourTaskPlan:
         """Choose a reference mark from the answer region so nearest/farthest ranking is unique."""
 
         scene_name, scene_probabilities = scene_variant(params, instance_seed=int(instance_seed))
-        distance_extremum, distance_probabilities = resolve_semantic_axis(
-            params,
-            instance_seed=int(instance_seed),
-            supported=SUPPORTED_DISTANCE_EXTREMA,
-            explicit_key="distance_extremum",
-            weights_key="distance_extremum_weights",
-            balance_key="balanced_distance_extremum_sampling",
-            namespace="distance_extremum",
-        )
-        reference_kind, reference_kind_probabilities = resolve_semantic_axis(
-            params,
-            instance_seed=int(instance_seed),
-            supported=SUPPORTED_REFERENCE_KINDS,
-            explicit_key="reference_kind",
-            weights_key="reference_kind_weights",
-            balance_key="balanced_reference_kind_sampling",
-            namespace="reference_kind",
-        )
+        try:
+            reference_kind, distance_extremum = QUERY_REFERENCE_DISTANCE[str(selected_query_id)]
+        except KeyError as exc:
+            raise ValueError(f"unsupported contour-density reference-distance query: {selected_query_id}") from exc
         count = region_count(params, instance_seed=int(instance_seed))
         labels = region_labels(int(count), instance_seed=int(instance_seed))
         answer_index = int(
@@ -103,22 +109,20 @@ class ChartsContourDensityReferenceDistanceExtremumLabelTask:
             prompt_key=str(selected_query_id),
             answer=str(answer_label),
             answer_type="string",
-            annotation_type="keyed_bbox_map",
-            annotation_roles={"reference_mark": "reference", "answer_region": str(answer_region.region_id)},
-            annotation_region_ids=(),
+            annotation_type="bbox_set",
+            annotation_roles={},
+            annotation_region_ids=(str(answer_region.region_id),),
             trace={
                 "distance_extremum": str(distance_extremum),
                 "distance_extremum_phrase": "nearest to" if str(distance_extremum) == "nearest" else "farthest from",
                 "reference_kind": str(reference_kind),
                 "reference_kind_phrase": {
-                    "point": "reference point",
+                    "point": "reference point labeled \"R\"",
                     "vertical_line": "vertical reference line",
                     "horizontal_line": "horizontal reference line",
                 }[str(reference_kind)],
                 "reference_value": {"x": round(float(reference.x_value), 3), "y": round(float(reference.y_value), 3)},
                 "distances_by_region_label": {key: round(float(value), 3) for key, value in distances.items()},
-                "distance_extremum_probabilities": dict(distance_probabilities),
-                "reference_kind_probabilities": dict(reference_kind_probabilities),
                 "scene_variant_probabilities": dict(scene_probabilities),
             },
         )
@@ -142,7 +146,7 @@ class ChartsContourDensityReferenceDistanceExtremumLabelTask:
             instance_seed=int(instance_seed),
             params=params,
             supported_query_ids=self.supported_query_ids,
-            default_query_id=QUERY_ID,
+            default_query_id=POINT_NEAREST_QUERY_ID,
             task_id=self.task_id,
         )
         return run_contour_public_task(

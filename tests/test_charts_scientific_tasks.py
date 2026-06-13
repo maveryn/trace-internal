@@ -19,15 +19,26 @@ CURVE_PANEL_QUERY_TO_TASK_ID = {
     "cross_panel_downward_threshold_earliest_label": "task_charts__curve_panels__cross_panel_threshold_earliest_label",
     "curve_at_x_extremum_label": "task_charts__curve_panels__curve_at_x_extremum_label",
     "curve_intersection_count": "task_charts__curve_panels__curve_intersection_count",
+    "end_highest_panel_label": "task_charts__curve_panels__endpoint_rank_panel_label",
+    "end_lowest_panel_label": "task_charts__curve_panels__endpoint_rank_panel_label",
     "earliest_maximum_panel_label": "task_charts__curve_panels__earliest_maximum_panel_label",
+    "largest_panel_spread_label": "task_charts__curve_panels__panel_spread_extremum_label",
+    "overall_maximum_value_panel_label": "task_charts__curve_panels__global_value_extremum_panel_label",
+    "overall_minimum_value_panel_label": "task_charts__curve_panels__global_value_extremum_panel_label",
     "panel_curve_upward_threshold_crossing_count": "task_charts__curve_panels__panel_curve_threshold_crossing_count",
     "panel_curve_downward_threshold_crossing_count": "task_charts__curve_panels__panel_curve_threshold_crossing_count",
-    "panel_point_above_threshold_count": "task_charts__curve_panels__panel_point_threshold_count",
-    "panel_point_below_threshold_count": "task_charts__curve_panels__panel_point_threshold_count",
+    "smallest_panel_spread_label": "task_charts__curve_panels__panel_spread_extremum_label",
+    "start_highest_panel_label": "task_charts__curve_panels__endpoint_rank_panel_label",
+    "start_lowest_panel_label": "task_charts__curve_panels__endpoint_rank_panel_label",
     "threshold_series_count": "task_charts__curve_panels__threshold_series_count",
 }
 SUPPORTED_QUERY_IDS = tuple(CURVE_PANEL_QUERY_TO_TASK_ID)
 AXIS_FRAME_QUERY_IDS = tuple(TICK_SPACING_QUERY_IDS) + tuple(AXIS_SPAN_QUERY_IDS)
+KEYED_POINT_QUERIES = {
+    "cross_panel_delta_extremum_label",
+    "largest_panel_spread_label",
+    "smallest_panel_spread_label",
+}
 
 
 def _curve_panel_task_for_query(query_id: str):
@@ -95,35 +106,6 @@ def _expected_answer(execution: dict) -> str | int:
         }
         return sum((1 for value in values.values() if int(value) > int(threshold)))
     if variant in {
-        "panel_point_above_threshold_count",
-        "panel_point_below_threshold_count",
-    }:
-        threshold = int(execution["threshold_value"])
-        direction = str(execution["threshold_direction"])
-        values_by_method = {
-            str(method): [int(value) for value in values]
-            for method, values in execution["values_in_query_panel"].items()
-        }
-        if direction == "above":
-            return sum(
-                (
-                    1
-                    for values in values_by_method.values()
-                    for value in values
-                    if int(value) > int(threshold)
-                )
-            )
-        if direction == "below":
-            return sum(
-                (
-                    1
-                    for values in values_by_method.values()
-                    for value in values
-                    if int(value) < int(threshold)
-                )
-            )
-        raise AssertionError(f"unsupported point threshold direction: {direction}")
-    if variant in {
         "panel_curve_upward_threshold_crossing_count",
         "panel_curve_downward_threshold_crossing_count",
     }:
@@ -149,6 +131,44 @@ def _expected_answer(execution: dict) -> str | int:
             str(key): int(value) for key, value in execution["peak_x_by_panel"].items()
         }
         return min(peak_x, key=lambda label: (peak_x[label], label))
+    if variant == "overall_maximum_value_panel_label":
+        extrema = {
+            str(key): int(value) for key, value in execution["panel_extrema"].items()
+        }
+        return max(extrema, key=lambda label: (extrema[label], label))
+    if variant == "overall_minimum_value_panel_label":
+        extrema = {
+            str(key): int(value) for key, value in execution["panel_extrema"].items()
+        }
+        return min(extrema, key=lambda label: (extrema[label], label))
+    if variant in {
+        "start_highest_panel_label",
+        "end_highest_panel_label",
+    }:
+        values = {
+            str(key): int(value)
+            for key, value in execution["endpoint_values_by_panel"].items()
+        }
+        return max(values, key=lambda label: (values[label], label))
+    if variant in {
+        "start_lowest_panel_label",
+        "end_lowest_panel_label",
+    }:
+        values = {
+            str(key): int(value)
+            for key, value in execution["endpoint_values_by_panel"].items()
+        }
+        return min(values, key=lambda label: (values[label], label))
+    if variant == "largest_panel_spread_label":
+        spreads = {
+            str(key): int(value) for key, value in execution["panel_spreads"].items()
+        }
+        return max(spreads, key=lambda label: (spreads[label], label))
+    if variant == "smallest_panel_spread_label":
+        spreads = {
+            str(key): int(value) for key, value in execution["panel_spreads"].items()
+        }
+        return min(spreads, key=lambda label: (spreads[label], label))
     raise AssertionError(f"unsupported variant: {variant}")
 
 
@@ -190,7 +210,7 @@ def test_charts_scientific_variants_match_contract(query_id: str) -> None:
     expected_answer = _expected_answer(execution)
     assert out.answer_gt.value == expected_answer
     assert execution["answer"] == expected_answer
-    if query_id == "cross_panel_delta_extremum_label":
+    if query_id in KEYED_POINT_QUERIES:
         assert out.annotation_gt.type == "keyed_point_map"
         assert trace["projected_annotation"]["type"] == "keyed_point_map"
         assert (
@@ -208,7 +228,7 @@ def test_charts_scientific_variants_match_contract(query_id: str) -> None:
             trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
         )
     assert trace["render_spec"]["font_assets"]["chart_font_family"]
-    if query_id == "cross_panel_delta_extremum_label":
+    if query_id in KEYED_POINT_QUERIES:
         _assert_keyed_point_map_inside_canvas(
             out.annotation_gt.value,
             width=int(render["canvas_width"]),
@@ -227,34 +247,33 @@ def test_charts_scientific_variants_match_contract(query_id: str) -> None:
             width=int(render["canvas_width"]),
             height=int(render["canvas_height"]),
         )
-    expected_points = []
-    for point_id in trace["projected_annotation"]["point_ids"]:
-        expected_points.append(
-            _bbox_center(render_map["point_bboxes_px"][str(point_id)])
-        )
-    for intersection_id in trace["projected_annotation"]["intersection_ids"]:
-        expected_points.append(
-            _bbox_center(render_map["intersection_bboxes_px"][str(intersection_id)])
-        )
-    for crossing_id in trace["projected_annotation"]["threshold_crossing_ids"]:
-        expected_points.append(
-            _bbox_center(render_map["threshold_crossing_bboxes_px"][str(crossing_id)])
-        )
-    if query_id == "cross_panel_delta_extremum_label":
-        expected_keyed_points = {}
-        for point_id in trace["projected_annotation"]["point_ids"]:
-            panel_label, _method_label, x_value = str(point_id).split("|")
-            role = "start" if int(x_value) == int(execution["start_x_value"]) else "end"
-            expected_keyed_points[f"{str(panel_label)}_{role}"] = _bbox_center(
-                render_map["point_bboxes_px"][str(point_id)]
-            )
+    if query_id in KEYED_POINT_QUERIES:
+        expected_keyed_points = {
+            str(role): _bbox_center(render_map["point_bboxes_px"][str(point_id)])
+            for role, point_id in trace["projected_annotation"][
+                "keyed_point_ids"
+            ].items()
+        }
         assert out.annotation_gt.value == expected_keyed_points
     else:
+        expected_points = []
+        for point_id in trace["projected_annotation"]["point_ids"]:
+            expected_points.append(
+                _bbox_center(render_map["point_bboxes_px"][str(point_id)])
+            )
+        for intersection_id in trace["projected_annotation"]["intersection_ids"]:
+            expected_points.append(
+                _bbox_center(render_map["intersection_bboxes_px"][str(intersection_id)])
+            )
+        for crossing_id in trace["projected_annotation"]["threshold_crossing_ids"]:
+            expected_points.append(
+                _bbox_center(
+                    render_map["threshold_crossing_bboxes_px"][str(crossing_id)]
+                )
+            )
         assert out.annotation_gt.value == expected_points
     if query_id in {
         "threshold_series_count",
-        "panel_point_above_threshold_count",
-        "panel_point_below_threshold_count",
     }:
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == len(
@@ -285,14 +304,15 @@ def test_charts_scientific_prompt_examples_match_contract() -> None:
             out.prompt_variants["answer_and_annotation"]
         )
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        if query_id == "cross_panel_delta_extremum_label":
+        if query_id in KEYED_POINT_QUERIES:
             assert isinstance(answer_and_annotation["annotation"], dict)
             annotation_keys = set(
                 (str(key) for key in answer_and_annotation["annotation"])
             )
-            assert len(annotation_keys) == 4
-            assert sum((key.endswith("_start") for key in annotation_keys)) == 2
-            assert sum((key.endswith("_end") for key in annotation_keys)) == 2
+            if query_id == "cross_panel_delta_extremum_label":
+                assert annotation_keys == {"start_point", "end_point"}
+            else:
+                assert annotation_keys == {"min_point", "max_point"}
         else:
             assert isinstance(answer_and_annotation["annotation"], list)
         if out.answer_gt.type == "integer":
@@ -392,12 +412,14 @@ def test_charts_scientific_balanced_sampling_covers_axes() -> None:
     variants: Counter[str] = Counter()
     curve_answers: Counter[str] = Counter()
     threshold_answers: Counter[int] = Counter()
-    panel_point_answers: Counter[int] = Counter()
     panel_crossing_answers: Counter[int] = Counter()
     delta_answers: Counter[str] = Counter()
     threshold_earliest_answers: Counter[str] = Counter()
     intersection_answers: Counter[int] = Counter()
     earliest_answers: Counter[str] = Counter()
+    global_extremum_answers: Counter[str] = Counter()
+    endpoint_rank_answers: Counter[str] = Counter()
+    spread_answers: Counter[str] = Counter()
     for index, query_id in enumerate(SUPPORTED_QUERY_IDS):
         task = _curve_panel_task_for_query(query_id)
         for sample_index in range(24):
@@ -414,11 +436,6 @@ def test_charts_scientific_balanced_sampling_covers_axes() -> None:
             elif variant == "threshold_series_count":
                 threshold_answers[int(execution["answer"])] += 1
             elif variant in {
-                "panel_point_above_threshold_count",
-                "panel_point_below_threshold_count",
-            }:
-                panel_point_answers[int(execution["answer"])] += 1
-            elif variant in {
                 "panel_curve_upward_threshold_crossing_count",
                 "panel_curve_downward_threshold_crossing_count",
             }:
@@ -434,18 +451,36 @@ def test_charts_scientific_balanced_sampling_covers_axes() -> None:
                 intersection_answers[int(execution["answer"])] += 1
             elif variant == "earliest_maximum_panel_label":
                 earliest_answers[str(execution["answer"])] += 1
+            elif variant in {
+                "overall_maximum_value_panel_label",
+                "overall_minimum_value_panel_label",
+            }:
+                global_extremum_answers[str(execution["answer"])] += 1
+            elif variant in {
+                "start_highest_panel_label",
+                "start_lowest_panel_label",
+                "end_highest_panel_label",
+                "end_lowest_panel_label",
+            }:
+                endpoint_rank_answers[str(execution["answer"])] += 1
+            elif variant in {
+                "largest_panel_spread_label",
+                "smallest_panel_spread_label",
+            }:
+                spread_answers[str(execution["answer"])] += 1
     assert set(variants) == set(SUPPORTED_QUERY_IDS)
     assert len(curve_answers) >= 20
     assert set(threshold_answers).issubset({1, 2, 3, 4, 5, 6})
     assert {1, 2, 3, 4}.issubset(set(threshold_answers))
-    assert set(panel_point_answers).issubset(set(range(3, 13)))
-    assert {3, 4, 5, 6}.issubset(set(panel_point_answers))
     assert set(panel_crossing_answers).issubset({1, 2, 3, 4, 5})
     assert {1, 2, 3, 4}.issubset(set(panel_crossing_answers))
     assert len(delta_answers) >= 4
     assert len(threshold_earliest_answers) >= 4
     assert set(intersection_answers) == {0, 1, 2, 3, 4}
     assert len(earliest_answers) >= 4
+    assert len(global_extremum_answers) >= 4
+    assert len(endpoint_rank_answers) >= 4
+    assert len(spread_answers) >= 4
 
 
 def test_charts_scientific_intersection_count_review_distribution() -> None:

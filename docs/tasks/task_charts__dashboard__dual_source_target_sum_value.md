@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `dashboard`
 3. Source implementation domain/group: `charts/dashboard`
-4. Query id: `dual_source_target_sum_value`
+4. Query id: sampled from `first_largest_second_smallest_target_sum_value`, `first_smallest_second_largest_target_sum_value`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -23,7 +23,8 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `dual_source_target_sum_value` | `numeric.aggregate_sum` | `integer_value` | `keyed_point_map` |
+| `first_largest_second_smallest_target_sum_value` | `numeric.aggregate_sum` | `integer_value` | `keyed_point_map` |
+| `first_smallest_second_largest_target_sum_value` | `numeric.aggregate_sum` | `integer_value` | `keyed_point_map` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

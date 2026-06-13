@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping
+from typing import Any, Dict, Mapping
 
 from trace.core.seed import spawn_rng
 from trace.tasks.base import TaskOutput
@@ -133,10 +133,6 @@ class ChartsScientificCrossPanelDeltaExtremumLabelTask:
             )
         if max(deltas, key=lambda label: (deltas[label], label)) != str(answer_panel):
             raise RuntimeError("cross-panel delta construction lost unique target")
-        annotation_ids: List[str] = []
-        for panel in panel_labels:
-            annotation_ids.append(point_id(str(panel), str(method_label), int(start_x)))
-            annotation_ids.append(point_id(str(panel), str(method_label), int(end_x)))
         query = build_curve_panel_query_record(
             prompt_key=selected_query_id,
             answer=answer_panel,
@@ -145,8 +141,11 @@ class ChartsScientificCrossPanelDeltaExtremumLabelTask:
             method_label=method_label,
             start_x_value=start_x,
             end_x_value=end_x,
-            annotation_panel_labels=tuple(str(panel) for panel in panel_labels),
-            annotation_point_ids=tuple(annotation_ids),
+            annotation_panel_labels=(answer_panel,),
+            annotation_keyed_point_ids={
+                "start_point": point_id(answer_panel, method_label, int(start_x)),
+                "end_point": point_id(answer_panel, method_label, int(end_x)),
+            },
             trace={
                 "method_label": str(method_label),
                 "start_x_value": int(start_x),

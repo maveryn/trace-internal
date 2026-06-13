@@ -15,7 +15,7 @@ from trace.tasks.charts.candlestick.shared.defaults import (
 from trace.tasks.charts.candlestick.shared.output import build_trace_scaffold
 from trace.tasks.charts.candlestick.shared.prompts import build_prompt_artifacts
 from trace.tasks.charts.candlestick.shared.rendering import render_dataset
-from trace.tasks.charts.candlestick.shared.sampling import sample_candles, select_semantic_branch
+from trace.tasks.charts.candlestick.shared.sampling import sample_candles
 from trace.tasks.charts.candlestick.shared.state import Dataset, Selection
 from trace.tasks.registry import register_task
 from trace.tasks.shared.annotation_artifacts import point_set_annotation_artifacts
@@ -24,16 +24,24 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
 
-WICK_QUERY_ID = "wick_range_extremum_label"
-BODY_QUERY_ID = "body_range_extremum_label"
+LARGEST_WICK_QUERY_ID = "largest_wick_range_label"
+SMALLEST_WICK_QUERY_ID = "smallest_wick_range_label"
+LARGEST_BODY_QUERY_ID = "largest_body_range_label"
+SMALLEST_BODY_QUERY_ID = "smallest_body_range_label"
+RANGE_QUERY_PARAMS = {
+    LARGEST_WICK_QUERY_ID: ("wick", "largest"),
+    SMALLEST_WICK_QUERY_ID: ("wick", "smallest"),
+    LARGEST_BODY_QUERY_ID: ("body", "largest"),
+    SMALLEST_BODY_QUERY_ID: ("body", "smallest"),
+}
 
 
 def _range_kind(selected_query_id: str) -> str:
-    if str(selected_query_id) == WICK_QUERY_ID:
-        return "wick"
-    if str(selected_query_id) == BODY_QUERY_ID:
-        return "body"
-    raise ValueError(f"unsupported candlestick range query: {selected_query_id}")
+    return RANGE_QUERY_PARAMS[str(selected_query_id)][0]
+
+
+def _extremum(selected_query_id: str) -> str:
+    return RANGE_QUERY_PARAMS[str(selected_query_id)][1]
 
 
 def _build_range_extremum_dataset(
@@ -96,19 +104,20 @@ class ChartsCandlestickRangeExtremumLabelTask:
     task_id = "task_charts__candlestick__range_extremum_label"
     domain = DOMAIN
     objective_contract = "range_extremum_label"
-    supported_query_ids = (WICK_QUERY_ID, BODY_QUERY_ID)
+    supported_query_ids = (
+        LARGEST_WICK_QUERY_ID,
+        SMALLEST_WICK_QUERY_ID,
+        LARGEST_BODY_QUERY_ID,
+        SMALLEST_BODY_QUERY_ID,
+    )
     default_dataset_enabled = True
 
     def _generate_once(self, instance_seed: int, *, params: dict[str, Any], selected_query_id: str) -> TaskOutput:
         """Generate one range-extremum instance with task-owned answer binding."""
 
-        extremum, extremum_probabilities, branch_params = select_semantic_branch(
-            params,
-            branch_key="extremum",
-            support=("largest", "smallest"),
-            instance_seed=int(instance_seed),
-            namespace="charts.candlestick.extremum",
-        )
+        extremum = _extremum(str(selected_query_id))
+        extremum_probabilities = {value: 1.0 if value == extremum else 0.0 for value in ("largest", "smallest")}
+        branch_params = dict(params)
         dataset = _build_range_extremum_dataset(
             params=branch_params,
             instance_seed=int(instance_seed),
@@ -180,7 +189,7 @@ class ChartsCandlestickRangeExtremumLabelTask:
             instance_seed=int(instance_seed),
             params=params,
             supported_query_ids=self.supported_query_ids,
-            default_query_id=WICK_QUERY_ID,
+            default_query_id=LARGEST_WICK_QUERY_ID,
             task_id=self.task_id,
         )
         last_error: Exception | None = None

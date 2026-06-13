@@ -7,11 +7,19 @@ from trace.tasks import TASK_REGISTRY
 
 CANDLESTICK_TASKS = {
     "task_charts__candlestick__range_extremum_label": {
-        "body_range_extremum_label",
-        "wick_range_extremum_label",
+        "largest_body_range_label",
+        "largest_wick_range_label",
+        "smallest_body_range_label",
+        "smallest_wick_range_label",
     },
-    "task_charts__candlestick__counterfactual_close_value": {"close_after_body_change_value"},
+    "task_charts__candlestick__counterfactual_close_value": {
+        "close_after_body_decrease_value",
+        "close_after_body_increase_value",
+    },
 }
+WICK_RANGE_QUERY_IDS = {"largest_wick_range_label", "smallest_wick_range_label"}
+BODY_RANGE_QUERY_IDS = {"largest_body_range_label", "smallest_body_range_label"}
+COUNTERFACTUAL_QUERY_IDS = {"close_after_body_decrease_value", "close_after_body_increase_value"}
 
 
 def _candles_by_id(output):
@@ -44,7 +52,7 @@ def test_candlestick_tasks_generate_default_query_outputs() -> None:
         assert output.query_id in allowed_query_ids
         assert output.trace_payload["query_spec"]["params"]["query_id"] == output.query_id
         assert len(output.annotation_gt.value) == 1
-        if output.query_id in {"body_range_extremum_label", "wick_range_extremum_label"}:
+        if output.query_id in BODY_RANGE_QUERY_IDS | WICK_RANGE_QUERY_IDS:
             assert output.annotation_gt.type == "point_set"
             assert output.trace_payload["projected_annotation"]["type"] == "point_set"
             assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
@@ -72,7 +80,7 @@ def test_candlestick_tasks_generate_each_query_branch_and_answer_contract() -> N
             candles = _candles_by_id(output)
             assert len(output.annotation_gt.value) == 1
 
-            if query_id == "wick_range_extremum_label":
+            if query_id in WICK_RANGE_QUERY_IDS:
                 extremum = str(execution["extremum"])
                 ranked = sorted(candles.values(), key=lambda candle: int(candle["wick_range"]))
                 target = ranked[-1] if extremum == "largest" else ranked[0]
@@ -85,7 +93,7 @@ def test_candlestick_tasks_generate_each_query_branch_and_answer_contract() -> N
                 ]
                 assert output.trace_payload["projected_annotation"]["type"] == "point_set"
                 assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
-            elif query_id == "body_range_extremum_label":
+            elif query_id in BODY_RANGE_QUERY_IDS:
                 extremum = str(execution["extremum"])
                 ranked = sorted(candles.values(), key=lambda candle: int(candle["body_size"]))
                 target = ranked[-1] if extremum == "largest" else ranked[0]
@@ -98,7 +106,7 @@ def test_candlestick_tasks_generate_each_query_branch_and_answer_contract() -> N
                 ]
                 assert output.trace_payload["projected_annotation"]["type"] == "point_set"
                 assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
-            elif query_id == "close_after_body_change_value":
+            elif query_id in COUNTERFACTUAL_QUERY_IDS:
                 target = candles[str(execution["target_candle_id"])]
                 new_body = int(execution["new_body_size"])
                 if str(target["direction"]) == "up":
@@ -112,5 +120,7 @@ def test_candlestick_tasks_generate_each_query_branch_and_answer_contract() -> N
                 assert output.annotation_gt.value == [
                     output.trace_payload["render_map"]["body_bboxes_px"][str(target["candle_id"])]
                 ]
+            else:
+                raise AssertionError(f"unsupported candlestick query id: {query_id}")
 
             seed_index += 1

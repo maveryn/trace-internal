@@ -137,7 +137,7 @@ class ChartsComboSeriesThresholdCrossingLabelTask:
         params: dict[str, Any],
         selected_query_id: str,
     ) -> ComboTaskPlan:
-        """Bind the first threshold-crossing label and prefix witnesses."""
+        """Bind the first threshold-crossing label and answer-mark witness."""
 
         effective_params = {**TASK_PARAM_DEFAULTS, **dict(params)}
         target_role, above = _target_role_and_direction(str(selected_query_id))
@@ -191,9 +191,9 @@ class ChartsComboSeriesThresholdCrossingLabelTask:
             answer_type="string",
             answer_value=str(crossing_answer_label),
             question_format="series_threshold_crossing_label_query",
-            annotation_indices=tuple(range(0, int(crossing_answer_index) + 1)),
-            annotation_include_primary=(str(target_role) == "primary"),
-            annotation_include_line=(str(target_role) == "line"),
+            annotation_indices=(int(crossing_answer_index),),
+            annotation_mode="single_mark_map",
+            annotation_mark_role=str(target_role),
             relations={
                 **dict(controlled_trace),
                 "target_series_name": str(target_series_name),

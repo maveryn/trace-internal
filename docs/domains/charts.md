@@ -10,11 +10,11 @@ Charts covers numeric, tabular, map, and information-display reasoning tasks whe
 | `annotated_series` | 1 |
 | `area` | 3 |
 | `bar_3d` | 8 |
-| `boxplot` | 4 |
+| `boxplot` | 3 |
 | `candlestick` | 2 |
 | `combo_mark` | 8 |
 | `contour_density` | 5 |
-| `curve_panels` | 8 |
+| `curve_panels` | 10 |
 | `density_curve` | 4 |
 | `dashboard` | 9 |
 | `dumbbell` | 3 |
@@ -58,7 +58,7 @@ Query IDs are internal replay/review metadata. They are not public sampling unit
 
 | Scene | Task ID | Query IDs |
 | --- | --- | --- |
-| `annotated_series` | `task_charts__annotated_series__callout_endpoint_change_value` | `default` |
+| `annotated_series` | `task_charts__annotated_series__callout_endpoint_change_value` | `callout_endpoint_change_value` |
 | `area` | `task_charts__area__interval_area_value` | `default` |
 | `area` | `task_charts__area__stacked_band_dominance_label` | `default` |
 | `area` | `task_charts__area__stacked_band_interval_sum_value` | `default` |
@@ -70,12 +70,11 @@ Query IDs are internal replay/review metadata. They are not public sampling unit
 | `bar_3d` | `task_charts__bar_3d__series_category_scope_total_value` | `series_total_value`, `series_interval_total_value` |
 | `bar_3d` | `task_charts__bar_3d__series_threshold_count` | `series_threshold_count` |
 | `bar_3d` | `task_charts__bar_3d__series_total_gap_value` | `series_total_gap_value` |
-| `boxplot` | `task_charts__boxplot__iqr_extremum_label` | `default` |
+| `boxplot` | `task_charts__boxplot__iqr_extremum_label` | `largest_iqr_label`, `smallest_iqr_label` |
 | `boxplot` | `task_charts__boxplot__median_rank_difference_value` | `median_top_bottom_difference_value`, `median_top_second_difference_value`, `median_top_third_difference_value` |
-| `boxplot` | `task_charts__boxplot__median_reference_label` | `default` |
 | `boxplot` | `task_charts__boxplot__paired_median_shift_label` | `paired_median_greatest_absolute_change_label`, `paired_median_greatest_decrease_label`, `paired_median_greatest_increase_label` |
-| `candlestick` | `task_charts__candlestick__counterfactual_close_value` | `close_after_body_change_value` |
-| `candlestick` | `task_charts__candlestick__range_extremum_label` | `wick_range_extremum_label`, `body_range_extremum_label` |
+| `candlestick` | `task_charts__candlestick__counterfactual_close_value` | `close_after_body_increase_value`, `close_after_body_decrease_value` |
+| `candlestick` | `task_charts__candlestick__range_extremum_label` | `largest_wick_range_label`, `smallest_wick_range_label`, `largest_body_range_label`, `smallest_body_range_label` |
 | `combo_mark` | `task_charts__combo_mark__absolute_gap_extremum_label` | `largest_absolute_gap_label`, `smallest_nonzero_absolute_gap_label` |
 | `combo_mark` | `task_charts__combo_mark__conditioned_line_extremum_label` | `max_line_where_primary_above_threshold`, `min_line_where_primary_above_threshold` |
 | `combo_mark` | `task_charts__combo_mark__conditioned_primary_extremum_label` | `max_primary_where_line_below_threshold`, `min_primary_where_line_below_threshold` |
@@ -85,7 +84,7 @@ Query IDs are internal replay/review metadata. They are not public sampling unit
 | `combo_mark` | `task_charts__combo_mark__interval_threshold_condition_count` | `primary_between_and_line_above`, `line_between_and_primary_above` |
 | `combo_mark` | `task_charts__combo_mark__series_threshold_crossing_label` | `primary_first_above_threshold_label`, `primary_first_below_threshold_label`, `line_first_above_threshold_label`, `line_first_below_threshold_label` |
 | `contour_density` | `task_charts__contour_density__density_extremum_region_label` | `density_extremum_region_label` |
-| `contour_density` | `task_charts__contour_density__density_threshold_region_count` | `density_threshold_region_count` |
+| `contour_density` | `task_charts__contour_density__density_threshold_region_count` | `density_at_least_threshold_region_count`, `density_below_threshold_region_count` |
 | `contour_density` | `task_charts__contour_density__nearest_region_option_label` | `nearest_region_option_label` |
 | `contour_density` | `task_charts__contour_density__reference_distance_extremum_label` | `reference_distance_extremum_label` |
 | `contour_density` | `task_charts__contour_density__spread_extremum_region_label` | `spread_extremum_region_label` |
@@ -93,23 +92,25 @@ Query IDs are internal replay/review metadata. They are not public sampling unit
 | `curve_panels` | `task_charts__curve_panels__cross_panel_threshold_earliest_label` | `cross_panel_upward_threshold_earliest_label`, `cross_panel_downward_threshold_earliest_label` |
 | `curve_panels` | `task_charts__curve_panels__curve_at_x_extremum_label` | `curve_at_x_extremum_label` |
 | `curve_panels` | `task_charts__curve_panels__curve_intersection_count` | `curve_intersection_count` |
+| `curve_panels` | `task_charts__curve_panels__endpoint_rank_panel_label` | `start_highest_panel_label`, `start_lowest_panel_label`, `end_highest_panel_label`, `end_lowest_panel_label` |
 | `curve_panels` | `task_charts__curve_panels__earliest_maximum_panel_label` | `earliest_maximum_panel_label` |
+| `curve_panels` | `task_charts__curve_panels__global_value_extremum_panel_label` | `overall_maximum_value_panel_label`, `overall_minimum_value_panel_label` |
 | `curve_panels` | `task_charts__curve_panels__panel_curve_threshold_crossing_count` | `panel_curve_upward_threshold_crossing_count`, `panel_curve_downward_threshold_crossing_count` |
-| `curve_panels` | `task_charts__curve_panels__panel_point_threshold_count` | `panel_point_above_threshold_count`, `panel_point_below_threshold_count` |
+| `curve_panels` | `task_charts__curve_panels__panel_spread_extremum_label` | `largest_panel_spread_label`, `smallest_panel_spread_label` |
 | `curve_panels` | `task_charts__curve_panels__threshold_series_count` | `threshold_series_count` |
 | `density_curve` | `task_charts__density_curve__interval_mass_extremum_label` | `greatest_interval_mass_label`, `least_interval_mass_label` |
 | `density_curve` | `task_charts__density_curve__density_at_x_extremum_label` | `highest_density_at_x_label`, `lowest_density_at_x_label` |
 | `density_curve` | `task_charts__density_curve__mean_extremum_label` | `highest_mean_label`, `lowest_mean_label` |
 | `density_curve` | `task_charts__density_curve__mode_location_extremum_label` | `leftmost_mode_label`, `rightmost_mode_label` |
-| `dashboard` | `task_charts__dashboard__category_panel_condition_count` | `category_panel_condition_count` |
-| `dashboard` | `task_charts__dashboard__dual_condition_count` | `dual_condition_count` |
-| `dashboard` | `task_charts__dashboard__dual_source_target_sum_value` | `dual_source_target_sum_value` |
-| `dashboard` | `task_charts__dashboard__panel_gap_extremum_category_label` | `panel_gap_extremum_category_label` |
-| `dashboard` | `task_charts__dashboard__shared_label_rank_gap_extremum` | `shared_label_rank_gap_extremum` |
-| `dashboard` | `task_charts__dashboard__source_rank_difference_value` | `source_rank_difference_value` |
-| `dashboard` | `task_charts__dashboard__source_rank_target_value` | `source_rank_target_value` |
+| `dashboard` | `task_charts__dashboard__category_panel_condition_count` | `category_panel_greater_than_threshold_count`, `category_panel_less_than_threshold_count` |
+| `dashboard` | `task_charts__dashboard__dual_condition_count` | `first_greater_second_greater_condition_count`, `first_greater_second_less_condition_count`, `first_less_second_greater_condition_count`, `first_less_second_less_condition_count` |
+| `dashboard` | `task_charts__dashboard__dual_source_target_sum_value` | `first_largest_second_smallest_target_sum_value`, `first_smallest_second_largest_target_sum_value` |
+| `dashboard` | `task_charts__dashboard__panel_gap_extremum_category_label` | `largest_panel_gap_category_label`, `smallest_panel_gap_category_label` |
+| `dashboard` | `task_charts__dashboard__shared_label_rank_gap_extremum` | `high_to_low_largest_rank_gap_label`, `high_to_low_smallest_rank_gap_label`, `low_to_high_largest_rank_gap_label`, `low_to_high_smallest_rank_gap_label` |
+| `dashboard` | `task_charts__dashboard__source_rank_difference_value` | `largest_source_rank_difference_value`, `smallest_source_rank_difference_value` |
+| `dashboard` | `task_charts__dashboard__source_rank_target_value` | `largest_source_rank_target_value`, `smallest_source_rank_target_value` |
 | `dashboard` | `task_charts__dashboard__statement_option_selection_label` | `statement_option_selection_label` |
-| `dashboard` | `task_charts__dashboard__top_k_overlap_count` | `top_k_overlap_count` |
+| `dashboard` | `task_charts__dashboard__top_k_overlap_count` | `highest_top_k_overlap_count`, `lowest_top_k_overlap_count` |
 | `dumbbell` | `task_charts__dumbbell__absolute_gap_threshold_count` | `absolute_gap_threshold_count` |
 | `dumbbell` | `task_charts__dumbbell__gap_rank_row_label` | `gap_rank_row_label` |
 | `dumbbell` | `task_charts__dumbbell__side_winner_count` | `side_winner_count` |

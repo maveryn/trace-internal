@@ -242,7 +242,7 @@ def _draw_panel(
         outline=panel_border,
         width=resolve_int(params, "panel_border_width_px", 2),
     )
-    title_text = f"Panel {str(panel.panel_label)}"
+    title_text = str(panel.panel_label)
     title_xy = (x1 + 12.0, y1 + 7.0)
     draw_text_traced(
         draw,
@@ -346,15 +346,6 @@ def _draw_panel(
             xy1=(px2, threshold_y),
             fill=threshold_rgb,
             width=2,
-        )
-        draw_text_traced(
-            draw,
-            (px2 - 44.0, threshold_y - 18.0),
-            f"y={dataset.query.threshold_value}",
-            font=tick_font,
-            fill=threshold_rgb,
-            role="readout",
-            required=False,
         )
 
     point_radius = float(resolve_int(params, "point_radius_px", 5))

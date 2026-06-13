@@ -84,7 +84,9 @@
     }
   },
   "dynamic_slots": {
-    "endpoint_label": {"type": "string"}
+    "endpoint_label": {
+      "type": "string"
+    }
   },
   "required_slots_by_key": {
     "query:callout_endpoint_change_value": [

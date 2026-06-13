@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `dashboard`
 3. Source implementation domain/group: `charts/dashboard`
-4. Query id: `category_panel_condition_count`
+4. Query id: sampled from `category_panel_greater_than_threshold_count`, `category_panel_less_than_threshold_count`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -23,7 +23,8 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `category_panel_condition_count` | `count.group_predicate` | `integer_count` | `point_set` |
+| `category_panel_greater_than_threshold_count` | `count.group_predicate` | `integer_count` | `point_set` |
+| `category_panel_less_than_threshold_count` | `count.group_predicate` | `integer_count` | `point_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

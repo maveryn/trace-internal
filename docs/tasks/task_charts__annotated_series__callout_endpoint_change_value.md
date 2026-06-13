@@ -4,8 +4,11 @@
 1. Domain: `charts`
 2. Scene id: `annotated_series`
 3. Source package: `charts/annotated_series`
-4. Query id: `default`
-5. Semantic branch details are recorded in trace params.
+4. Query id: `callout_endpoint_change_value`
+5. Semantic query details are recorded in `query_id` and trace params.
+6. Answer schema: `integer_value`
+7. Annotation schema: `keyed_point_map`
+8. Endpoint side is an internal generation axis recorded as `endpoint_side=first|last`, not a query id.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.annotated_series.callout_endpoint_change_value.ChartsAnnotatedSeriesCalloutEndpointChangeValueTask`
@@ -23,7 +26,10 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `default` | `numeric.difference_or_change` | `integer_value` | `keyed_point_map` |
+| `callout_endpoint_change_value` | `absolute_difference(value(callout_mark), value(endpoint_mark))` | `integer_value` | `keyed_point_map(callout_mark, endpoint_mark)` |
+
+## Program Contract
+- `absolute_difference(value(mark(role=callout_mark)), value(mark(role=endpoint_mark))); output=integer_value; annotation=keyed_point_map(callout_mark, endpoint_mark); generation_metadata=endpoint_side:{first,last}`
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

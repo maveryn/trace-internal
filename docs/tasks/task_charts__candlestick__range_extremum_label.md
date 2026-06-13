@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `candlestick`
 3. Source implementation scene package: `charts/candlestick`
-4. Query id: sampled from `body_range_extremum_label`, `wick_range_extremum_label`
+4. Query id: sampled from `largest_wick_range_label`, `smallest_wick_range_label`, `largest_body_range_label`, `smallest_body_range_label`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -23,8 +23,10 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `body_range_extremum_label` | `selection.extreme_metric_label` | `string_label` | `point_set` |
-| `wick_range_extremum_label` | `selection.extreme_metric_label` | `string_label` | `point_set` |
+| `largest_wick_range_label` | `selection.extreme_metric_label` | `string_label` | `point_set` |
+| `smallest_wick_range_label` | `selection.extreme_metric_label` | `string_label` | `point_set` |
+| `largest_body_range_label` | `selection.extreme_metric_label` | `string_label` | `point_set` |
+| `smallest_body_range_label` | `selection.extreme_metric_label` | `string_label` | `point_set` |
 
 ## Review
 - Current solve-rate acceptance must be read from `review/calibration_sweep_status.json` or `.md`.

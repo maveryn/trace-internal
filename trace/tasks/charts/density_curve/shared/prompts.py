@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.charts.density_curve.shared.density_curve import SCENE_ID, _Dataset
+from trace.tasks.charts.density_curve.shared.defaults import SCENE_ID
+from trace.tasks.charts.density_curve.shared.state import DensityCurveDataset
 from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.prompt_variants import (
     PromptTraceArtifacts,
@@ -19,11 +20,10 @@ PROMPT_BUNDLE_ID = "charts_density_curve_v1"
 _DEFAULTS = get_scene_defaults(DOMAIN, SCENE_ID)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
     _DEFAULTS if isinstance(_DEFAULTS, Mapping) else {},
-    **{"task" "_id": "charts_density_curve_prompt"},
 )
 
 
-def dynamic_slots(dataset: _Dataset) -> dict[str, str]:
+def dynamic_slots(dataset: DensityCurveDataset) -> dict[str, str]:
     return {
         "object_description": "several smooth labeled density curves with a legend and exact x-axis reference marks when needed",
         "interval_label": str(dataset.query.trace["interval_label"]),

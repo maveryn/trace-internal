@@ -1,35 +1,33 @@
-"""Runtime helpers for density-curve chart tasks."""
+"""Output helpers for density-curve chart scenes."""
 
 from __future__ import annotations
 
 from dataclasses import replace
 from typing import Any, Dict, Mapping
 
-from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
-from trace.tasks.charts.density_curve.shared.density_curve import (
+from trace.tasks.charts.density_curve.shared.defaults import (
     POST_IMAGE_NOISE_DEFAULTS,
     SCENE_ID,
     SCENE_NAMESPACE,
     SCENE_VARIANT,
-    _Dataset,
-    _REASONING_LOAD_BY_QUERY,
-    _Rendered,
-    density_curve_count_bounds,
-    render_density_curve_scene,
     resolve_density_curve_render_params,
 )
+from trace.tasks.charts.density_curve.shared.rendering import render_density_curve_scene
+from trace.tasks.charts.density_curve.shared.state import DensityCurveDataset, DensityCurveRendered
 from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.tasks.shared.font_assets import font_asset_version, sample_font_family
 from trace.tasks.shared.text_rendering import temporary_default_font_family
 
 
 def render_dataset(
-    dataset: _Dataset,
+    dataset: DensityCurveDataset,
     *,
     params: Mapping[str, Any],
     instance_seed: int,
-) -> tuple[_Rendered, Dict[str, Any]]:
+) -> tuple[DensityCurveRendered, Dict[str, Any]]:
+    """Render a dataset with chart background/font/noise context."""
+
     render_params = resolve_density_curve_render_params(params, instance_seed=int(instance_seed))
     render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
@@ -92,39 +90,9 @@ def render_dataset(
     return rendered, dict(render_meta)
 
 
-def answer_typed_value(dataset: _Dataset) -> TypedValue:
-    return TypedValue(type="string", value=str(dataset.query.answer_label))
+def curve_records(dataset: DensityCurveDataset) -> list[dict[str, Any]]:
+    """Return trace-friendly curve records."""
 
-
-def annotation_payload(
-    *,
-    dataset: _Dataset,
-    rendered: _Rendered,
-) -> tuple[str, Dict[str, list[float]], Dict[str, Any]]:
-    answer_label = str(dataset.query.answer_label)
-    annotation_map_source = {
-        "answer_mean_marker": rendered.mean_marker_bboxes_px,
-        "answer_mode_marker": rendered.mode_marker_bboxes_px,
-        "answer_interval_mass": rendered.interval_mass_bboxes_px,
-        "answer_density_at_x": rendered.density_at_x_points_px,
-    }[str(dataset.query.annotation_key)]
-    annotation_value = list(annotation_map_source[str(answer_label)])
-    annotation_type = "keyed_point_map" if str(dataset.query.annotation_key) == "answer_density_at_x" else "keyed_bbox_map"
-    annotation = {str(dataset.query.annotation_key): list(annotation_value)}
-    projected = {
-        "type": str(annotation_type),
-        "answer_label": str(answer_label),
-    }
-    if str(annotation_type) == "keyed_point_map":
-        projected["keyed_point_map"] = dict(annotation)
-        projected["pixel_keyed_point_map"] = dict(annotation)
-    else:
-        projected["keyed_bbox_map"] = dict(annotation)
-        projected["pixel_keyed_bbox_map"] = dict(annotation)
-    return str(annotation_type), dict(annotation), dict(projected)
-
-
-def curve_records(dataset: _Dataset) -> list[dict[str, Any]]:
     return [
         {
             "label": str(curve.label),
@@ -144,12 +112,14 @@ def curve_records(dataset: _Dataset) -> list[dict[str, Any]]:
 
 def build_trace_scaffold(
     *,
-    dataset: _Dataset,
-    rendered: _Rendered,
+    dataset: DensityCurveDataset,
+    rendered: DensityCurveRendered,
     render_meta: Mapping[str, Any],
     projected_annotation: Mapping[str, Any],
     answer_label: str,
 ) -> Dict[str, Any]:
+    """Build common trace sections for a density-curve task."""
+
     return {
         "scene_ir": {
             "scene_kind": "chart_density_curve",
@@ -158,6 +128,7 @@ def build_trace_scaffold(
                 "scene_variant": SCENE_VARIANT,
                 "answer_label": str(answer_label),
                 "annotation_key": str(dataset.query.annotation_key),
+                "visible_role": str(dataset.query.visible_role),
             },
         },
         "render_spec": dict(render_meta),
@@ -185,7 +156,4 @@ def build_trace_scaffold(
         },
         "projected_annotation": dict(projected_annotation),
     }
-
-
-
 

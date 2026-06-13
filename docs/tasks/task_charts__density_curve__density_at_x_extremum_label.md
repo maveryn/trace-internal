@@ -3,13 +3,13 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `density_curve`
-3. Source implementation domain/group: `charts/distribution`
+3. Source implementation domain/scene: `charts/density_curve`
 4. Query ids: `highest_density_at_x_label`, `lowest_density_at_x_label`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.distribution.density_curve.ChartsDistributionDensityCurveDensityAtXExtremumLabelTask`
-2. Prompt lookup domain/group: `charts/distribution`
+1. Registered class: `trace.tasks.charts.density_curve.density_at_x_extremum_label.ChartsDistributionDensityCurveDensityAtXExtremumLabelTask`
+2. Prompt lookup domain/scene: `charts/density_curve`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 

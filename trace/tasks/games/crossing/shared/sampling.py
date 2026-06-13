@@ -276,17 +276,22 @@ def _add_clutter(
     row_directions: Sequence[int],
     avoid_cols_by_row: Mapping[int, set[int]],
     max_extra_per_row: int,
+    avoid_start_cols_by_row: Mapping[int, set[int]] | None = None,
 ) -> None:
+    """Add unlabeled moving objects while preserving route-collision invariants."""
+
     occupied = {(int(vehicle.row), int(vehicle.start_col)) for vehicle in vehicles}
     for row in range(int(row_count)):
         extra_count = int(rng.randint(0, int(max_extra_per_row)))
         direction = int(row_directions[int(row)])
         tick = int(row + 1)
         avoid_cols = set(int(value) for value in avoid_cols_by_row.get(int(row), set()))
+        avoid_start_cols = set(int(value) for value in (avoid_start_cols_by_row or {}).get(int(row), set()))
         candidates = [
             col
             for col in range(int(lane_count))
             if (int(row), int(col)) not in occupied
+            and int(col) not in avoid_start_cols
             and (
                 vehicle_col_at_tick(
                     CrossingVehicle("_tmp", int(row), int(col), int(direction), 0),
@@ -400,6 +405,8 @@ def _non_colliding_slots_for_route(
         for start_col in range(int(lane_count)):
             if (int(row), int(start_col)) in occupied:
                 continue
+            if int(start_col) == int(route_col):
+                continue
             vehicle_col = vehicle_col_at_tick(
                 CrossingVehicle("_tmp", int(row), int(start_col), int(direction), 0),
                 tick=tick,
@@ -500,6 +507,7 @@ def sample_labeled_route_collision_scene(
             row_directions=row_directions,
             avoid_cols_by_row={row: {int(route_path[row])} for row in range(row_count)},
             max_extra_per_row=int(max_extra_per_row),
+            avoid_start_cols_by_row={row: {int(route_path[row])} for row in range(row_count)},
         )
         route = CrossingRouteOption(route_id=route_entity_id("M"), label="M", path_cols=tuple(route_path), color_index=0)
         hit_ids = route_collision_vehicle_ids(route, tuple(vehicles), lane_count=lane_count)

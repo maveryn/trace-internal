@@ -117,6 +117,7 @@ def test_games_crossing_hit_object_label_matches_trace() -> None:
     assert execution["target_label"] == "D"
     assert all(label.isdigit() for label in execution["start_labels"])
     assert len(set(route.path_cols)) == 1
+    assert all(int(vehicle.start_col) != int(route.path_cols[int(vehicle.row)]) for vehicle in vehicles)
 
 
 @pytest.mark.parametrize(

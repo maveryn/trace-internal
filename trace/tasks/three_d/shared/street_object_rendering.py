@@ -37,7 +37,7 @@ from .object_scene_rendering import (
     _sub_box_spec,
     _tint,
 )
-from .object_scene import _object_screen_bbox
+from .projected_object_geometry import _object_screen_bbox
 
 from .street_object_rendering_common import *  # noqa: F403
 from .street_fixture_object_rendering import (

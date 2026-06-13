@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
-from .object_scene import CONTEXT_OBJECT_COLORS, object_screen_bbox
+from .object_scene import CONTEXT_OBJECT_COLORS
 from .object_scene_primitives import (
     bbox_union,
     draw_box_object,
@@ -20,6 +20,7 @@ from .object_scene_primitives import (
     tint_rgb,
 )
 from .object_scene_rendering import draw_open_box_object, draw_table_object
+from .projected_object_geometry import object_screen_bbox
 from .room_wall_rendering_geometry import _draw_screen_scenery, _inset_bbox, _points_bbox, _project_points
 
 

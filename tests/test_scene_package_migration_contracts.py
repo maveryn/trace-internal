@@ -54,6 +54,11 @@ def test_scene_package_domain_file_policies_are_registered() -> None:
     assert symbolic_policy.allowed_private_scene_files == frozenset({'_lifecycle.py'})
     assert symbolic_policy.role_shared_files == frozenset({'state.py', 'sampling.py', 'rules.py', 'layout.py', 'rendering.py', 'annotations.py', 'prompts.py', 'output.py', 'defaults.py', 'styles.py', 'assets.py', 'components.py', 'relations.py', 'metrics.py', 'transforms.py', 'spatial_primitives.py', 'option_rendering.py'})
     assert not symbolic_policy.allow_shared_subdirectories
+    three_d_policy = scene_package_file_policy('three_d')
+    assert three_d_policy is not None
+    assert three_d_policy.allowed_private_scene_files == frozenset({'_lifecycle.py'})
+    assert three_d_policy.role_shared_files == frozenset({'state.py', 'defaults.py', 'sampling.py', 'layout.py', 'projection.py', 'rendering.py', 'annotations.py', 'prompts.py', 'output.py', 'objects.py', 'relations.py', 'metrics.py', 'components.py', 'labels.py', 'styles.py', 'option_rendering.py', 'spatial_primitives.py'})
+    assert not three_d_policy.allow_shared_subdirectories
 
 def _task_registry() -> dict[str, type[Any]]:
     from trace.tasks.registry import TASK_REGISTRY, ensure_all_tasks_registered, ensure_scene_tasks_registered
@@ -518,6 +523,84 @@ def test_games_domain_shared_modules_do_not_import_scene_packages() -> None:
                 if route != 'shared':
                     failures.append(f'{source_path.relative_to(REPO_ROOT)} imports games scene package {module_name}; domain-shared helpers must be scene-neutral')
     assert not failures, '\n'.join(failures[:80])
+
+def test_three_d_object_resource_registry_does_not_import_scene_packages() -> None:
+    """The 3D object registry is domain-owned data, not a scene-shared adapter."""
+    failures: list[str] = []
+    source_path = REPO_ROOT / 'trace' / 'tasks' / 'three_d' / 'shared' / 'object_resources.py'
+    tree = ast.parse(source_path.read_text(encoding='utf-8'))
+    for node in ast.walk(tree):
+        for module_name in _resolve_import_modules(source_path, node):
+            if not module_name.startswith('trace.tasks.three_d.'):
+                continue
+            parts = module_name.split('.')
+            route = parts[3] if len(parts) > 3 else ''
+            if route != 'shared':
+                failures.append(f'{source_path.relative_to(REPO_ROOT)} imports three_d scene package {module_name}; domain-owned resource registries must not depend on scene shared code')
+    assert not failures, '\n'.join(failures[:80])
+
+def test_three_d_task_support_exposes_identity_free_namespace_helpers() -> None:
+    """New three_d migration code should use namespace helpers, not public task ids."""
+    from trace.tasks.three_d.shared import task_support
+    axis_signature = inspect.signature(task_support.resolve_axis_variant_for_namespace)
+    count_signature = inspect.signature(task_support.resolve_count_for_namespace)
+    assert 'namespace' in axis_signature.parameters
+    assert 'task_id' not in axis_signature.parameters
+    assert 'namespace' in count_signature.parameters
+    assert 'task_id' not in count_signature.parameters
+    axis_kwargs = {
+        'gen_defaults': {},
+        'instance_seed': 90210,
+        'supported_variants': ('front', 'back'),
+        'explicit_key': 'query_id',
+        'weights_key': 'query_id_weights',
+        'balance_flag_key': 'balanced_query_id_sampling',
+        'allow_locked': True,
+    }
+    new_axis = task_support.resolve_axis_variant_for_namespace(
+        {'query_id': 'back'},
+        namespace='three_d.test.axis',
+        **axis_kwargs,
+    )
+    legacy_axis = task_support.resolve_axis_variant(
+        {'query_id': 'back'},
+        task_id='three_d.test',
+        axis_namespace='axis',
+        **axis_kwargs,
+    )
+    assert new_axis == legacy_axis == ('back', {'back': 1.0, 'front': 0.0})
+    count_kwargs = {
+        'gen_defaults': {},
+        'instance_seed': 90211,
+        'key': 'target_count',
+        'default_min': 2,
+        'default_max': 4,
+        'lower': 1,
+        'upper': 5,
+    }
+    new_count = task_support.resolve_count_for_namespace(
+        {'target_count': 3},
+        namespace='three_d.test.target_count',
+        **count_kwargs,
+    )
+    legacy_count = task_support.resolve_count(
+        {'target_count': 3},
+        task_id='three_d.test',
+        **count_kwargs,
+    )
+    assert new_count == legacy_count == (3, {'3': 1.0})
+
+def test_three_d_projected_object_geometry_is_not_owned_by_object_scene() -> None:
+    """Generic projected-object geometry should live outside object-scene grammar."""
+    from trace.tasks.three_d.shared import object_scene
+    from trace.tasks.three_d.shared import projected_object_geometry
+    assert object_scene.object_reference_points is projected_object_geometry.object_reference_points
+    assert object_scene.object_screen_bbox is projected_object_geometry.object_screen_bbox
+    assert object_scene.bbox_intersection_area is projected_object_geometry.bbox_intersection_area
+    assert object_scene._object_reference_points is projected_object_geometry.object_reference_points
+    assert object_scene._object_screen_bbox is projected_object_geometry.object_screen_bbox
+    assert object_scene._bbox_intersection_area is projected_object_geometry.bbox_intersection_area
+    assert projected_object_geometry.bbox_intersection_area([0, 0, 10, 10], [4, 5, 12, 14]) == 30.0
 
 def test_review_candidate_games_scenes_do_not_import_retired_domain_shared_helpers() -> None:
     """Migrated games scenes must not keep legacy query-selection helpers."""

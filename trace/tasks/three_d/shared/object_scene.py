@@ -39,6 +39,14 @@ from .object_rendering import ThreeDObjectSpec, ThreeDRenderContext, render_thre
 from .scene_schema import ThreeDPlacementSpec
 from .object_scene_rendering import _bbox_union, _draw_line, _draw_option_label, _draw_room
 from .option_panel import append_text_option_panel, empty_option_panel_metadata
+from .projected_object_geometry import (
+    _bbox_intersection_area,
+    _object_reference_points,
+    _object_screen_bbox,
+    bbox_intersection_area,
+    object_reference_points,
+    object_screen_bbox,
+)
 from .object_resources import (
     OBJECT_SCENE_ID,
     OBJECT_SCENE_CONTEXT_DIMENSIONS,
@@ -233,59 +241,6 @@ def _sample_shape_dimensions(
         ),
         round(float(scale), 4),
     )
-
-
-def _object_reference_points(spec: Mapping[str, Any]) -> List[Tuple[float, float, float]]:
-    x, y, _z = (float(value) for value in spec["world_xyz"])
-    raw_base = spec.get("base_xyz", (x, y, 0.0))
-    base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
-    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    return [
-        (x + dx * width * 0.5, y + dy * depth * 0.5, base_z + z)
-        for dx in (-1.0, 1.0)
-        for dy in (-1.0, 1.0)
-        for z in (0.0, height)
-    ] + [(x, y, base_z + height * 0.5)]
-
-
-def object_reference_points(spec: Mapping[str, Any]) -> List[Tuple[float, float, float]]:
-    """Return object bounding reference points in world coordinates."""
-
-    return _object_reference_points(spec)
-
-
-def _object_screen_bbox(spec: Mapping[str, Any], camera: _CameraSpec, frame: _ProjectionFrame, *, pad_px: float = 0.0) -> List[float]:
-    points = [_project_xy(point, camera, frame) for point in _object_reference_points(spec)]
-    return [
-        round(float(min(point[0] for point in points) - pad_px), 3),
-        round(float(min(point[1] for point in points) - pad_px), 3),
-        round(float(max(point[0] for point in points) + pad_px), 3),
-        round(float(max(point[1] for point in points) + pad_px), 3),
-    ]
-
-
-def object_screen_bbox(
-    spec: Mapping[str, Any],
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    *,
-    pad_px: float = 0.0,
-) -> List[float]:
-    """Project one object spec to a padded screen-space bounding box."""
-
-    return _object_screen_bbox(spec, camera, frame, pad_px=float(pad_px))
-
-
-def _bbox_intersection_area(a: Sequence[float], b: Sequence[float]) -> float:
-    width = max(0.0, min(float(a[2]), float(b[2])) - max(float(a[0]), float(b[0])))
-    height = max(0.0, min(float(a[3]), float(b[3])) - max(float(a[1]), float(b[1])))
-    return float(width * height)
-
-
-def bbox_intersection_area(a: Sequence[float], b: Sequence[float]) -> float:
-    """Return the pixel-space intersection area for two bboxes."""
-
-    return _bbox_intersection_area(a, b)
 
 
 def _make_object_spec(

@@ -36,6 +36,9 @@ proceed. Current companion docs:
 - `CHARTS_SHARED_BOUNDARY.md`: charts-domain ownership plan for implementation-
   only renderer families, chart-domain shared helpers, and scene-local shared
   packages.
+- `THREE_D_SHARED_BOUNDARY.md`: three_d-domain ownership plan for reusable 3D
+  object resources/renderers, scene-local spatial grammars, and legacy
+  objective-base surfaces to decompose during scene migration.
 
 Even with a companion doc, migrate one scene correctly before broad domain work.
 

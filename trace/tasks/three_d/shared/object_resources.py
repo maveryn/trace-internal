@@ -12,18 +12,49 @@ from dataclasses import dataclass
 import re
 from typing import Dict, Mapping, Sequence, Tuple
 
-from ..surface_fixture.shared.common import (
-    SURFACE_FIXTURE_DISPLAY_NAME,
-    SURFACE_FIXTURE_OBJECT_TYPES,
-    SCENE_ID as SURFACE_FIXTURE_SCENE_ID,
-)
-
 
 OBJECT_SCENE_ID = "object_scene"
 OBJECT_CLUSTER_SCENE_ID = "object_cluster"
 ROOM_SCENE_ID = "room"
 STREET_SCENE_ID = "street"
 WAREHOUSE_SCENE_ID = "warehouse"
+SURFACE_FIXTURE_SCENE_ID = "surface_fixture"
+
+SURFACE_FIXTURE_OBJECT_TYPES: Tuple[str, ...] = (
+    "wall_tile_panel",
+    "perforated_panel",
+    "slot_board",
+    "compartment_tray",
+    "vent_panel",
+    "window_grid",
+    "door_bank",
+    "drawer_pull_panel",
+    "brick_wall",
+    "paver_floor",
+    "locker_bank",
+    "mailbox_bank",
+    "server_rack",
+    "control_panel",
+    "solar_panel_array",
+)
+
+SURFACE_FIXTURE_DISPLAY_NAME: Mapping[str, str] = {
+    "wall_tile_panel": "tiled wall panel",
+    "perforated_panel": "perforated metal panel",
+    "slot_board": "slotted board",
+    "compartment_tray": "compartment tray",
+    "vent_panel": "vent panel",
+    "window_grid": "window grid",
+    "door_bank": "bank of small doors",
+    "drawer_pull_panel": "drawer front panel",
+    "brick_wall": "brick wall",
+    "paver_floor": "paver floor",
+    "locker_bank": "locker bank",
+    "mailbox_bank": "mailbox bank",
+    "server_rack": "server rack",
+    "control_panel": "control panel",
+    "solar_panel_array": "solar panel array",
+}
 
 
 @dataclass(frozen=True)

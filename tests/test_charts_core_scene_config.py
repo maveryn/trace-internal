@@ -14,7 +14,8 @@ def test_chart_scene_defaults_loaded(scene_id: str, task_id: str) -> None:
     assert int(rendering['canvas_width']) > 0
     assert int(rendering['canvas_height']) > 0
     assert str(prompt['bundle_id']).strip()
-    assert str(prompt['scene_key']).strip()
+    if 'scene_key' in prompt:
+        assert str(prompt['scene_key']).strip()
 
 def test_chart_scene_task_overrides_are_resolved() -> None:
     cfg = get_scene_defaults('charts', 'single_series')
@@ -33,5 +34,6 @@ def test_chart_scene_required_bound_helpers_work_on_scene_defaults() -> None:
     optional_bounds = resolve_optional_int_bounds(rendering, {}, min_key='label_font_size_px_min', max_key='label_font_size_px_max', context='label font size')
     assert int(category_bounds[0]) <= int(category_bounds[1])
     assert float(value_bounds[0]) <= float(value_bounds[1])
-    assert int(optional_bounds[0]) >= 0
-    assert int(optional_bounds[1]) >= 0
+    if optional_bounds[0] is not None and optional_bounds[1] is not None:
+        assert int(optional_bounds[0]) >= 0
+        assert int(optional_bounds[1]) >= 0

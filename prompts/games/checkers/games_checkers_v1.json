@@ -105,24 +105,24 @@
   },
   "static_slots_by_key": {
     "query:legal_move_count": {
-      "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty dark square beyond.",
+      "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty square beyond.",
       "single_jump_rule_text": "Count only one jump per move; ignore follow-up jumps.",
       "legal_move_rule_text": "Include simple diagonal steps and capture jumps.",
-      "annotation_hint": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every legal landing square; use an empty array if none are available",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every legal landing square; use an empty array if none are available",
       "answer_hint": "set \"answer\" to the count of legal landing squares",
-      "json_example": "{\"annotation\":[[132,188,196,252],[204,188,268,252],[276,188,340,252]],\"answer\":3}",
+      "json_example": "{\"annotation\":[[164,220],[236,220],[308,220]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:capture_move_count": {
-      "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty dark square beyond.",
+      "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty square beyond.",
       "single_jump_rule_text": "Count only one jump per move; ignore follow-up jumps.",
-      "annotation_hint": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every capture landing square; use an empty array if none are available",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every capture landing square; use an empty array if none are available",
       "answer_hint": "set \"answer\" to the count of capture landing squares",
-      "json_example": "{\"annotation\":[[132,188,196,252],[204,188,268,252]],\"answer\":2}",
+      "json_example": "{\"annotation\":[[164,220],[236,220]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:piece_with_legal_move_count": {
-      "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty dark square beyond.",
+      "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty square beyond.",
       "single_jump_rule_text": "Count only one jump per move; ignore follow-up jumps.",
       "legal_move_rule_text": "Include simple diagonal steps and capture jumps.",
       "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every current-player piece with at least one legal move; use an empty array if none are available",
@@ -131,7 +131,7 @@
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:piece_with_capture_move_count": {
-      "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty dark square beyond.",
+      "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty square beyond.",
       "single_jump_rule_text": "Count only one jump per move; ignore follow-up jumps.",
       "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every current-player piece with at least one capture jump; use an empty array if none are available",
       "answer_hint": "set \"answer\" to the number of current-player pieces with at least one capture jump",
@@ -139,11 +139,11 @@
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:max_capture_chain_length": {
-      "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty dark square beyond.",
+      "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty square beyond.",
       "king_chain_rule_text": "The outlined checker is a king; it may capture diagonally in any direction, remove the jumped piece, and continue jumping from each landing square while another capture is available.",
-      "annotation_hint": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] around the opponent pieces captured along the longest chain",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of the opponent pieces captured along the longest chain",
       "answer_hint": "set \"answer\" to the maximum number of opponent pieces the marked king can capture in one continuous jump chain",
-      "json_example": "{\"annotation\":[[132,188,196,252],[204,260,268,324],[276,332,340,396],[348,404,412,468]],\"answer\":4}",
+      "json_example": "{\"annotation\":[[164,220],[236,292],[308,364],[380,436]],\"answer\":4}",
       "json_example_answer_only": "{\"answer\":4}"
     },
     "query:red_piece_count": {

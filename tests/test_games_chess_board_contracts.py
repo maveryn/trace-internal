@@ -517,6 +517,22 @@ def test_games_chess_board_prompt_bundle_requires_rule_texts() -> None:
     assert "red outlined square" in static["query:marked_piece_move_count"]["marked_piece_rule_text"].lower()
     assert "blue outlined square" in static["query:rook_line_blocker_count"]["blocker_rule_text"].lower()
     assert "from" in static["query:checkmate_move_label"]["annotation_hint"]
+    for slots in static.values():
+        annotation_hint = str(slots.get("annotation_hint", ""))
+        if annotation_hint:
+            assert "bounding" not in annotation_hint.lower()
+            assert "bbox" not in annotation_hint.lower()
+            assert "[x0" not in annotation_hint.lower()
+            assert "pixel-space point" in annotation_hint
+        json_example = str(slots.get("json_example", ""))
+        if json_example:
+            example = json.loads(json_example)
+            annotation = example["annotation"]
+            if isinstance(annotation, list):
+                assert all(len(point) == 2 for point in annotation)
+            else:
+                assert set(annotation) == {"from", "to", "king"}
+                assert all(len(point) == 2 for point in annotation.values())
     dynamic = bundle["dynamic_slots"]
     assert set(dynamic) >= {
         "player_color_name",

@@ -116,6 +116,7 @@ def test_games_checkers_move_count_emits_expected_contract(
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.annotation_gt.type == "point_set"
+    assert "dark square" not in out.prompt.lower()
     assert len(out.annotation_gt.value) == int(expected_annotation_count)
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
@@ -396,6 +397,19 @@ def test_games_checkers_move_count_prompt_bundle_requires_rule_text_for_query_sp
     assert "king_chain_rule_text" in static_slots["query:max_capture_chain_length"]
     assert "answer_hint" in static_slots["query:red_piece_count"]
     assert "annotation_hint" in static_slots["query:black_edge_piece_count"]
+    for slots in static_slots.values():
+        capture_rule_text = str(slots.get("capture_rule_text", ""))
+        assert "dark square" not in capture_rule_text.lower()
+        annotation_hint = str(slots.get("annotation_hint", ""))
+        if annotation_hint:
+            assert "bounding" not in annotation_hint.lower()
+            assert "bbox" not in annotation_hint.lower()
+            assert "[x0" not in annotation_hint.lower()
+            assert "pixel-space point" in annotation_hint
+        json_example = str(slots.get("json_example", ""))
+        if json_example:
+            example = json.loads(json_example)
+            assert all(len(point) == 2 for point in example["annotation"])
 
 
 def test_games_checkers_move_count_build_smoke(tmp_path: Path) -> None:

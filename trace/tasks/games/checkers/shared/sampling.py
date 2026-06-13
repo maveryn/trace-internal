@@ -170,8 +170,8 @@ def movement_rule_text(current_player: int) -> str:
     """Return the prompt-facing forward-movement rule text."""
 
     if int(current_player) == int(RED):
-        return "Only dark squares are playable; Red moves upward and Black moves downward."
-    return "Only dark squares are playable; Black moves downward and Red moves upward."
+        return "Red moves upward and Black moves downward."
+    return "Black moves downward and Red moves upward."
 
 
 def scene_occupied_range(scene_variant: str) -> Tuple[int, int]:

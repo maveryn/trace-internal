@@ -7,7 +7,7 @@ from typing import Any
 from trace.tasks.games.shared.piece_board_rules import color_name
 
 from .defaults import RING_COUNT, SECTOR_COUNT
-from .mechanics import serialize_board
+from .rules import serialize_board
 from .state import CircularChessSample
 
 

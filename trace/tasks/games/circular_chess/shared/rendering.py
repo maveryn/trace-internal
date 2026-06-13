@@ -28,7 +28,7 @@ from trace.tasks.shared.config_defaults import group_default, load_scene_generat
 from trace.tasks.shared.font_assets import get_font_family_record, sample_font_family
 
 from .defaults import FALLBACK_RENDERING_DEFAULTS, RING_COUNT, SCENE_ID, SECTOR_COUNT
-from .mechanics import circular_coord_to_cell_id, circular_piece_to_entity_id, occupied_coords
+from .rules import circular_coord_to_cell_id, circular_piece_to_entity_id, occupied_coords
 from .state import Board, CircularChessRenderParams, Coord
 
 
@@ -239,7 +239,7 @@ def render_circular_chess_scene(
     target_coord: Coord | None,
     panel_style: GamePanelSceneStyle | None,
 ) -> RenderedCircularChessScene:
-    """Render one circular-chess board."""
+    """Render the circular board and record every cell/piece projection."""
 
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image)

@@ -1,10 +1,10 @@
-"""Pure movement-rule mechanics for circular-chess games tasks."""
+"""Pure movement rules for circular-chess games tasks."""
 
 from __future__ import annotations
 
 from typing import Sequence
 
-from trace.tasks.games.shared.piece_board_rules import ChessPiece, color_name, occupied_coords as _unused_square_occupied
+from trace.tasks.games.shared.piece_board_rules import ChessPiece
 
 from .defaults import RING_COUNT, SECTOR_COUNT
 from .state import Board, CircularChessEvaluation, Coord

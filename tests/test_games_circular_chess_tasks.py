@@ -9,7 +9,7 @@ import trace.tasks  # noqa: F401
 from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.games.circular_chess.marked_piece_destination_count import MARKED_CAPTURE_QUERY_ID, MARKED_MOVE_QUERY_ID
-from trace.tasks.games.circular_chess.shared.mechanics import (
+from trace.tasks.games.circular_chess.shared.rules import (
     capture_destinations,
     circular_coord_to_cell_id,
     circular_piece_to_entity_id,

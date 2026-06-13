@@ -27,7 +27,7 @@ from .defaults import (
     SUPPORTED_SCENE_VARIANTS,
     SUPPORTED_STYLE_VARIANTS,
 )
-from .mechanics import (
+from .rules import (
     all_coords,
     empty_board,
     evaluate_marked_destinations,

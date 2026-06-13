@@ -326,7 +326,8 @@ def render_crossing_scene(
     width = float(right - left)
     height = float(bottom - top)
     safe_h = float(params.safe_band_height_px)
-    road_top = float(top + safe_h)
+    goal_h = max(26.0, float(safe_h) * 0.45)
+    road_top = float(top + goal_h)
     road_bottom = float(bottom - safe_h)
     row_h = float((road_bottom - road_top) / max(1, int(row_count)))
     lane_w = float(width / max(1, int(lane_count)))
@@ -354,6 +355,11 @@ def render_crossing_scene(
     )
     draw.rectangle((left, top, right, road_top), fill=tuple(int(v) for v in theme.safe_alt_rgb) + (246,))
     draw.rectangle((left, road_bottom, right, bottom), fill=tuple(int(v) for v in theme.safe_rgb) + (246,))
+    draw.line(
+        (left + 10.0, road_top - 2.0, right - 10.0, road_top - 2.0),
+        fill=tuple(int(v) for v in theme.grid_rgb) + (150,),
+        width=max(2, int(params.border_width_px) - 2),
+    )
 
     cell_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     entity_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
@@ -460,7 +466,7 @@ def render_crossing_scene(
             )
             cell_boxes.append(bbox)
         goal_col = int(route.path_cols[-1]) if route.path_cols else start_col
-        points.append((left + ((goal_col + 0.5) * lane_w), road_top - (0.08 * safe_h)))
+        points.append((left + ((goal_col + 0.5) * lane_w), road_top - max(4.0, 0.12 * goal_h)))
         if len(points) >= 2:
             line_width = max(3, int(params.path_width_px) + (5 if route.label == marked_route_label else 0))
             draw.line(points, fill=tuple(int(v) for v in color) + (220,), width=line_width, joint="curve")
@@ -596,15 +602,6 @@ def render_crossing_scene(
                 "bbox_px": list(bbox),
             }
         )
-
-    _fit_text(
-        draw,
-        bbox=(left + 12.0, top + 10.0, right - 12.0, road_top - 8.0),
-        text="GOAL",
-        fill=theme.text_rgb,
-        max_size_px=max(12, int(params.label_font_size_px)),
-        font_family=str(params.font_family),
-    )
 
     render_map = {
         "scene_panel_bbox_px": [round(float(v), 3) for v in panel_bbox],

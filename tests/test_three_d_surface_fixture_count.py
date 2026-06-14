@@ -20,7 +20,7 @@ from trace.tasks.three_d.surface_fixture.scoped_colored_element_count import TAS
 from trace.tasks.three_d.surface_fixture.shared.state import (
     ELEMENT_TYPE_BY_SCENE_VARIANT,
 )
-from trace.tasks.three_d.surface_fixture.shared.layout import VALID_LAYOUT_STYLES
+from trace.tasks.three_d.surface_fixture.shared.layout import VALID_LAYOUT_FAMILIES, VALID_LAYOUT_STYLES
 from trace.tasks.three_d.surface_fixture.state_element_count import TASK_ID as STATE_TASK_ID
 
 
@@ -62,7 +62,11 @@ def test_surface_fixture_repeated_element_count_variants() -> None:
         assert len(output.annotation_gt.value) == count
         assert trace["scene_variant"] == scene_variant
         assert trace["target_element_type"] == element_type
+        assert trace["layout_family"] in set(VALID_LAYOUT_FAMILIES)
         assert trace["layout_style"] in set(VALID_LAYOUT_STYLES)
+        if scene_variant == "perforated_panel":
+            assert trace["layout_family"] == "tiled_staggered"
+            assert trace["layout_style"] != "panel_scatter"
         assert output.annotation_gt.value == [render_map["element_bboxes_px"][element_id] for element_id in target_element_ids]
         assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
         assert output.trace_payload["query_spec"]["params"]["target_element_type"] == element_type

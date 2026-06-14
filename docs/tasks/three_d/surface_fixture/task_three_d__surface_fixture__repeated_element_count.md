@@ -49,10 +49,26 @@ The answer is the integer count of finalized elements whose `element_type`
 matches the sampled `target_element_type`. Pixels are render output, not
 verifier source of truth.
 
-The placement style is sampled by scene variant and recorded as `layout_style`.
-Grid-like fixtures can use `uniform_grid`, `variable_grid`, or `brick_grid`.
-Mounted hardware and panel controls can use `jittered_grid`, `loose_rows`, or
-`panel_scatter` so the task is not always a regular rectangular array.
+The placement family is sampled by scene variant and recorded as
+`layout_family`; the concrete placement style is recorded as `layout_style`.
+The shared scene layout families are:
+
+- `strict_grid`: manufactured grid surfaces such as windows, lockers, server
+  racks, solar panels, compartments, doors, and mailboxes. Styles:
+  `uniform_grid`, `variable_grid`.
+- `tiled_staggered`: surface patterns such as bricks, pavers, wall tiles, and
+  perforated panels. Styles: `uniform_grid`, `variable_grid`, `brick_grid`.
+- `loose_mounted_rows`: rails or boards with mounted hardware such as slots,
+  vents, drawer pulls, sockets, hooks, brackets, U-bolts, pipes, and some
+  control/light panels. Styles: `jittered_grid`, `loose_rows`, `uniform_grid`.
+- `panel_scatter`: individually mounted pieces such as screws, washers,
+  hex nuts, control buttons, and some indicator lights. Styles:
+  `panel_scatter`, `jittered_grid`.
+
+One scene variant may allow multiple layout families when both are plausible.
+For example, `indicator_light_panel` can be loose rows or scatter, while
+`perforated_panel` is restricted to `tiled_staggered` and does not use random
+scatter.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one whole-element bounding box for each
@@ -62,8 +78,8 @@ are not annotation.
 ## Prompt And Trace
 The prompt bundle is `three_d_surface_fixture_v1` under `prompts/three_d/surface_fixture/`.
 The trace records scene variant, target element type, target element ids,
-surface projection metadata, layout style, projected element boxes, and the
-solver count predicate.
+surface projection metadata, layout family, layout style, projected element
+boxes, and the solver count predicate.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config

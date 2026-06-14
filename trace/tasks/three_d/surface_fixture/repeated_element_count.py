@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping
+from typing import Any, Dict
 
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
@@ -26,12 +26,12 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation
 
 
 def _prepare_repeated_objective(
-    instance_seed: int,
-    params: Mapping[str, Any],
+    instance_seed,
+    params,
     axes: ResolvedSurfaceFixtureAxes,
-    _branch_probabilities: Mapping[str, float],
-    _selected_branch: str,
-) -> SurfaceFixturePlan:
+    _branch_probabilities,
+    _selected_branch,
+):
     """Bind the all-visible-elements count objective."""
 
     dataset, answer_probabilities = build_repeated_surface_data(
@@ -50,6 +50,7 @@ def _prepare_repeated_objective(
         object_description=f"a {dataset['fixture_display_name']} with visible {dataset['target_element_plural']}",
         objective_params={
             "target_count": int(dataset["answer_value"]),
+            "layout_family": str(dataset["layout_family"]),
             "layout_style": str(dataset["layout_style"]),
         },
     )

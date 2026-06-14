@@ -18,42 +18,83 @@ VALID_LAYOUT_STYLES: Tuple[str, ...] = (
     "panel_scatter",
 )
 
-REPEATED_LAYOUT_STYLE_WEIGHTS_BY_SCENE_VARIANT: Mapping[str, Mapping[str, float]] = {
-    "wall_tile_panel": {"uniform_grid": 0.70, "variable_grid": 0.30},
-    "perforated_panel": {"uniform_grid": 0.45, "jittered_grid": 0.35, "panel_scatter": 0.20},
-    "slot_board": {"uniform_grid": 0.35, "loose_rows": 0.65},
-    "compartment_tray": {"uniform_grid": 0.60, "variable_grid": 0.40},
-    "vent_panel": {"uniform_grid": 0.35, "loose_rows": 0.65},
-    "window_grid": {"uniform_grid": 0.85, "variable_grid": 0.15},
-    "door_bank": {"uniform_grid": 0.75, "variable_grid": 0.25},
-    "drawer_pull_panel": {"jittered_grid": 0.45, "loose_rows": 0.55},
-    "brick_wall": {"brick_grid": 1.0},
-    "paver_floor": {"brick_grid": 0.55, "variable_grid": 0.45},
-    "locker_bank": {"uniform_grid": 0.80, "variable_grid": 0.20},
-    "mailbox_bank": {"uniform_grid": 0.70, "variable_grid": 0.30},
-    "server_rack": {"uniform_grid": 0.85, "variable_grid": 0.15},
-    "control_panel": {"loose_rows": 0.35, "panel_scatter": 0.65},
-    "solar_panel_array": {"uniform_grid": 0.85, "variable_grid": 0.15},
-    "screw_plate": {"panel_scatter": 0.80, "jittered_grid": 0.20},
-    "hex_nut_plate": {"panel_scatter": 0.75, "jittered_grid": 0.25},
-    "washer_plate": {"panel_scatter": 0.75, "jittered_grid": 0.25},
-    "socket_bank": {"jittered_grid": 0.45, "loose_rows": 0.55},
-    "hook_board": {"jittered_grid": 0.35, "loose_rows": 0.65},
-    "indicator_light_panel": {"panel_scatter": 0.55, "loose_rows": 0.45},
-    "bracket_panel": {"jittered_grid": 0.35, "loose_rows": 0.65},
-    "u_bolt_plate": {"jittered_grid": 0.45, "loose_rows": 0.55},
-    "pipe_rack": {"uniform_grid": 0.35, "loose_rows": 0.65},
+VALID_LAYOUT_FAMILIES: Tuple[str, ...] = (
+    "strict_grid",
+    "tiled_staggered",
+    "loose_mounted_rows",
+    "panel_scatter",
+)
+
+SURFACE_LAYOUT_STYLE_WEIGHTS_BY_FAMILY: Mapping[str, Mapping[str, float]] = {
+    "strict_grid": {"uniform_grid": 0.80, "variable_grid": 0.20},
+    "tiled_staggered": {"uniform_grid": 0.40, "variable_grid": 0.25, "brick_grid": 0.35},
+    "loose_mounted_rows": {"jittered_grid": 0.35, "loose_rows": 0.55, "uniform_grid": 0.10},
+    "panel_scatter": {"panel_scatter": 0.75, "jittered_grid": 0.25},
+}
+
+SURFACE_LAYOUT_FAMILY_WEIGHTS_BY_VARIANT: Mapping[str, Mapping[str, float]] = {
+    "wall_tile_panel": {"strict_grid": 0.35, "tiled_staggered": 0.65},
+    "perforated_panel": {"tiled_staggered": 1.0},
+    "slot_board": {"loose_mounted_rows": 1.0},
+    "compartment_tray": {"strict_grid": 1.0},
+    "vent_panel": {"loose_mounted_rows": 1.0},
+    "window_grid": {"strict_grid": 1.0},
+    "door_bank": {"strict_grid": 1.0},
+    "drawer_pull_panel": {"loose_mounted_rows": 1.0},
+    "brick_wall": {"tiled_staggered": 1.0},
+    "paver_floor": {"tiled_staggered": 1.0},
+    "locker_bank": {"strict_grid": 1.0},
+    "mailbox_bank": {"strict_grid": 1.0},
+    "server_rack": {"strict_grid": 1.0},
+    "control_panel": {"loose_mounted_rows": 0.45, "panel_scatter": 0.55},
+    "solar_panel_array": {"strict_grid": 1.0},
+    "screw_plate": {"panel_scatter": 1.0},
+    "hex_nut_plate": {"panel_scatter": 1.0},
+    "washer_plate": {"panel_scatter": 1.0},
+    "socket_bank": {"loose_mounted_rows": 1.0},
+    "hook_board": {"loose_mounted_rows": 1.0},
+    "indicator_light_panel": {"loose_mounted_rows": 0.55, "panel_scatter": 0.45},
+    "bracket_panel": {"loose_mounted_rows": 1.0},
+    "u_bolt_plate": {"loose_mounted_rows": 1.0},
+    "pipe_rack": {"strict_grid": 0.30, "loose_mounted_rows": 0.70},
 }
 
 
-def _normalized_weights(weights: Mapping[str, float]) -> Dict[str, float]:
+def _normalized_weights(weights: Mapping[str, float], *, fallback: str = "uniform_grid") -> Dict[str, float]:
     total = float(sum(max(0.0, float(value)) for value in weights.values()))
     if total <= 0.0:
-        return {"uniform_grid": 1.0}
+        return {str(fallback): 1.0}
     return {
         str(style): float(value) / total
         for style, value in weights.items()
         if float(value) > 0.0
+    }
+
+
+def _choose_weighted(weights: Mapping[str, float], *, rng: Any) -> str:
+    threshold = float(rng.random())
+    cumulative = 0.0
+    selected = next(iter(weights))
+    for key, probability in weights.items():
+        cumulative += float(probability)
+        selected = str(key)
+        if threshold <= cumulative:
+            break
+    return selected
+
+
+def _aggregate_style_probabilities(family_probabilities: Mapping[str, float]) -> Dict[str, float]:
+    style_probabilities: Dict[str, float] = {}
+    for family, family_probability in family_probabilities.items():
+        style_weights = _normalized_weights(SURFACE_LAYOUT_STYLE_WEIGHTS_BY_FAMILY[str(family)])
+        for style, style_probability in style_weights.items():
+            style_probabilities[str(style)] = style_probabilities.get(str(style), 0.0) + (
+                float(family_probability) * float(style_probability)
+            )
+    return {
+        style: probability
+        for style, probability in style_probabilities.items()
+        if probability > 0.0
     }
 
 
@@ -62,31 +103,43 @@ def resolve_repeated_layout_style(
     scene_variant: str,
     rng: Any,
     params: Mapping[str, Any],
-) -> Tuple[str, Dict[str, float]]:
-    """Select a controlled placement style for repeated-element counting."""
+) -> Tuple[str, str, Dict[str, float], Dict[str, float]]:
+    """Select a controlled placement family and style for repeated-element counting."""
 
+    valid_families = set(VALID_LAYOUT_FAMILIES)
+    family_probabilities = _normalized_weights(
+        SURFACE_LAYOUT_FAMILY_WEIGHTS_BY_VARIANT.get(
+            str(scene_variant),
+            {"strict_grid": 1.0},
+        ),
+        fallback="strict_grid",
+    )
+    if not set(family_probabilities).issubset(valid_families):
+        invalid = sorted(set(family_probabilities) - valid_families)
+        raise ValueError(f"unsupported layout family for {scene_variant}: {invalid}")
+
+    explicit_family = params.get("layout_family")
+    if explicit_family is not None:
+        family = str(explicit_family)
+        if family not in family_probabilities:
+            raise ValueError(f"layout_family {family} is not allowed for {scene_variant}")
+        family_probabilities = {family: 1.0}
+    else:
+        family = _choose_weighted(family_probabilities, rng=rng)
+
+    style_weights = _normalized_weights(SURFACE_LAYOUT_STYLE_WEIGHTS_BY_FAMILY[str(family)])
     explicit_style = params.get("layout_style")
     if explicit_style is not None:
         style = str(explicit_style)
         if style not in set(VALID_LAYOUT_STYLES):
             raise ValueError(f"unsupported surface fixture layout_style: {style}")
-        return style, {style: 1.0}
-
-    weights = _normalized_weights(
-        REPEATED_LAYOUT_STYLE_WEIGHTS_BY_SCENE_VARIANT.get(
-            str(scene_variant),
-            {"uniform_grid": 1.0},
-        )
-    )
-    threshold = float(rng.random())
-    cumulative = 0.0
-    selected = next(iter(weights))
-    for style, probability in weights.items():
-        cumulative += float(probability)
-        selected = str(style)
-        if threshold <= cumulative:
-            break
-    return selected, dict(weights)
+        if style not in style_weights:
+            raise ValueError(f"layout_style {style} is not allowed for layout_family {family}")
+        style_probabilities = {style: 1.0}
+    else:
+        style = _choose_weighted(style_weights, rng=rng)
+        style_probabilities = _aggregate_style_probabilities(family_probabilities)
+    return str(family), str(style), dict(family_probabilities), dict(style_probabilities)
 
 
 def _clamp_interval(center: float, span: float, lower: float, upper: float) -> Tuple[float, float]:
@@ -279,7 +332,9 @@ def edge_neighbors(index: int, rows: int, cols: int) -> List[int]:
 
 
 __all__ = [
-    "REPEATED_LAYOUT_STYLE_WEIGHTS_BY_SCENE_VARIANT",
+    "SURFACE_LAYOUT_FAMILY_WEIGHTS_BY_VARIANT",
+    "SURFACE_LAYOUT_STYLE_WEIGHTS_BY_FAMILY",
+    "VALID_LAYOUT_FAMILIES",
     "VALID_LAYOUT_STYLES",
     "edge_neighbors",
     "grid_for_total",

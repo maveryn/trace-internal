@@ -131,24 +131,31 @@ def _build_surface_trace_payload(
         "question_format": str(selected_branch),
         "solver_trace": dict(solver_trace),
     }
+    if "layout_family" in dataset:
+        execution_trace["layout_family"] = str(dataset["layout_family"])
+        execution_trace["layout_family_probabilities"] = dict(dataset.get("layout_family_probabilities", {}))
+        execution_trace["layout_style_probabilities"] = dict(dataset.get("layout_style_probabilities", {}))
     if plan.execution_extra:
         execution_trace.update(dict(plan.execution_extra))
+    scene_relations = {
+        "scene_variant": str(axes.scene_variant),
+        "fixture_display_name": str(dataset["fixture_display_name"]),
+        "target_element_type": str(dataset["target_element_type"]),
+        "target_element_name": str(dataset["target_element_name"]),
+        "target_element_plural": str(dataset["target_element_plural"]),
+        "answer_value": int(dataset["answer_value"]),
+        "target_element_ids": list(target_ids),
+        "layout_rows": int(dataset["layout_rows"]),
+        "layout_columns": int(dataset["layout_columns"]),
+        "layout_style": str(dataset["layout_style"]),
+    }
+    if "layout_family" in dataset:
+        scene_relations["layout_family"] = str(dataset["layout_family"])
     return {
         "scene_ir": {
             "scene_kind": f"three_d_surface_fixture_{public_name.rsplit('__', 1)[-1]}",
             "entities": [dict(entity) for entity in rendered.entities],
-            "relations": {
-                "scene_variant": str(axes.scene_variant),
-                "fixture_display_name": str(dataset["fixture_display_name"]),
-                "target_element_type": str(dataset["target_element_type"]),
-                "target_element_name": str(dataset["target_element_name"]),
-                "target_element_plural": str(dataset["target_element_plural"]),
-                "answer_value": int(dataset["answer_value"]),
-                "target_element_ids": list(target_ids),
-                "layout_rows": int(dataset["layout_rows"]),
-                "layout_columns": int(dataset["layout_columns"]),
-                "layout_style": str(dataset["layout_style"]),
-            },
+            "relations": dict(scene_relations),
         },
         "query_spec": dict(query_spec),
         "render_spec": {

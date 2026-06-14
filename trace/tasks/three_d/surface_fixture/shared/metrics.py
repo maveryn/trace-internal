@@ -85,7 +85,7 @@ def build_repeated_surface_data(
         upper_bound=32,
     )
     rows, cols = layout_surface_element_grid(int(count))
-    layout_style, layout_probabilities = resolve_repeated_layout_style(
+    layout_family, layout_style, layout_family_probabilities, layout_style_probabilities = resolve_repeated_layout_style(
         scene_variant=str(scene_variant),
         rng=spawn_rng(int(instance_seed), f"{namespace}.layout_style"),
         params=params,
@@ -117,11 +117,17 @@ def build_repeated_surface_data(
             "target_element_plural": str(ELEMENT_PLURAL[str(element_type)]),
             "target_count": int(count),
             "element_count": int(count),
+            "layout_family": str(layout_family),
+            "layout_family_probabilities": dict(layout_family_probabilities),
             "layout_style": str(layout_style),
-            "layout_style_probabilities": dict(layout_probabilities),
+            "layout_style_probabilities": dict(layout_style_probabilities),
             "unique_integer_answer": True,
         },
-        extra={"layout_style_probabilities": dict(layout_probabilities)},
+        extra={
+            "layout_family": str(layout_family),
+            "layout_family_probabilities": dict(layout_family_probabilities),
+            "layout_style_probabilities": dict(layout_style_probabilities),
+        },
     )
     return dataset, dict(probabilities)
 

@@ -4,7 +4,7 @@
 1. Domain: `games`
 2. Scene id: `chess`
 3. Public task id: `task_games__chess__checkmate_move_label`
-4. Supported `query_id` values: `checkmate_move_label`
+4. Supported `query_id` values: `single`
 5. Answer schema: `option_letter`
 6. Annotation schema: `keyed_bbox_map`
 7. Program schema: `select(option where move_checkmates(opponent_king)); scene=chess; scope=checkmate_move_label`

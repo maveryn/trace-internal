@@ -4,7 +4,7 @@
 1. Domain: `games`
 2. Scene id: `cards`
 3. Public task id: `task_games__cards__longest_run_length`
-4. Supported `query_id` values: `default`
+4. Supported `query_id` values: `single`
 5. Answer schema: `integer_value`
 6. Annotation schema: `bbox_set`
 7. Program schema: `max(lengths(consecutive_rank_runs(cards_in_display_order))); scene=cards; scope=longest_run_length`

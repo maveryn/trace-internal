@@ -5,7 +5,7 @@
 2. Scene package: `trace/tasks/games/2048/`
 3. Scene id: `2048`
 4. Public task id: `task_games__2048__merge_count`
-5. Supported public `query_id` values: `default`
+5. Supported `query_id` values: `single`
 6. Prompt query key: `merge_count`
 7. Answer schema: `integer_count`
 8. Annotation schema: `point_pair_set`

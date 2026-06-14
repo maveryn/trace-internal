@@ -5,7 +5,7 @@
 2. Scene: `dominoes`
 3. Scene id: `dominoes`
 4. Public task id: `task_games__dominoes__sum_to_target_count`
-5. Supported `query_id` values: `sum_to_target_count`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
 8. Program schema: `count(filter(domino_tiles, sum(pips(tile)) = target_sum)); scene=dominoes; scope=sum_to_target_count`

@@ -4,7 +4,7 @@
 1. Domain: `games`
 2. Scene id: `battleship`
 3. Public task id: `task_games__battleship__last_ship_cell_label`
-4. Supported `query_id` values: `last_ship_cell_label`
+4. Supported `query_id` values: `single`
 5. Answer schema: `option_label`
 6. Annotation schema: `point_set`
 7. Program schema: `label(select(candidate_cells, completes_only_not_sunk_ship)); scene=battleship; scope=last_ship_cell_label`

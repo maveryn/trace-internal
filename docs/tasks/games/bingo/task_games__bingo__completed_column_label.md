@@ -4,7 +4,7 @@
 1. Domain: `games`
 2. Scene id: `bingo`
 3. Public task id: `task_games__bingo__completed_column_label`
-4. Supported `query_id` values: `completed_column_label`
+4. Supported `query_id` values: `single`
 5. Answer schema: `string_label`
 6. Annotation schema: `point_pair_set`
 7. Program schema: `label(unique_completed_column(board)); scene=bingo; scope=completed_column_label`

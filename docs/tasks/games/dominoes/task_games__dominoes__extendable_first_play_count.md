@@ -5,7 +5,7 @@
 2. Scene: `dominoes`
 3. Scene id: `dominoes`
 4. Public task id: `task_games__dominoes__extendable_first_play_count`
-5. Supported `query_id` values: `extendable_first_play_count`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
 8. Program schema: `count(filter(domino_tiles, can_extend_chain_after_first_play(tile)=True)); scene=dominoes; scope=extendable_first_play_count`

@@ -4,7 +4,7 @@
 1. Domain: `games`
 2. Scene id: `chess`
 3. Public task id: `task_games__chess__colored_piece_kind_count`
-4. Supported `query_id` values: `colored_piece_kind_count`
+4. Supported `query_id` values: `single`
 5. Answer schema: `integer_count`
 6. Annotation schema: `bbox_set`
 7. Program schema: `count(filter(pieces, piece_kind=target_kind and piece_color=target_color)); scene=chess; scope=colored_piece_kind_count`

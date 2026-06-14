@@ -5,7 +5,7 @@
 2. Scene package: `checkers`
 3. Scene id: `checkers`
 4. Public task id: `task_games__checkers__max_capture_chain_length`
-5. Supported `query_id` values: `default`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer_value`
 7. Annotation schema: `bbox_set`
 8. Program schema: `longest_path(capture_state_graph(marked_king, board_state), source=marked_king, target=terminal_no_capture_state); scene=checkers; scope=max_capture_chain_length`

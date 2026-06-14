@@ -5,7 +5,7 @@
 2. Scene: `dominoes`
 3. Scene id: `dominoes`
 4. Public task id: `task_games__dominoes__higher_sum_than_reference_count`
-5. Supported `query_id` values: `higher_sum_than_reference_count`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
 8. Program schema: `count(filter(domino_tiles, compare(sum(pips(tile)), sum(pips(reference_tile)), direction=greater_than))); scene=dominoes; scope=higher_sum_than_reference_count`

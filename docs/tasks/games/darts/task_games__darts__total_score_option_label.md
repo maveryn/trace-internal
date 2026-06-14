@@ -5,7 +5,7 @@
 2. Scene: `darts`
 3. Scene id: `darts`
 4. Public task id: `task_games__darts__total_score_option_label`
-5. Supported `query_id` values: `total_score`
+5. Supported `query_id` values: `single`
 6. Answer schema: `string_label`
 7. Annotation schema: `point_set`
 8. Program schema: `label(select_option(score_options, option_score = score(marked_dart))); scene=darts; scope=total_score_option_label; query_branch=total_score`

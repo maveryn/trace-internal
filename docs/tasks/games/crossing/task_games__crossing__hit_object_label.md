@@ -4,7 +4,7 @@
 1. Domain: `games`
 2. Scene id: `crossing`
 3. Public task id: `task_games__crossing__hit_object_label`
-4. Supported `query_id` values: `hit_object_label`
+4. Supported `query_id` values: `single`
 5. Answer schema: `label_string`
 6. Annotation schema: `bbox_set`
 7. Program schema: `label(collision(marked_route, labeled_moving_objects)); scene=crossing; scope=hit_object_label`

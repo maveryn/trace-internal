@@ -4,7 +4,7 @@
 1. Domain: `games`
 2. Scene id: `cards`
 3. Public task id: `task_games__cards__blackjack_best_hand_label`
-4. Supported `query_id` values: `default`
+4. Supported `query_id` values: `single`
 5. Answer schema: `string_label`
 6. Annotation schema: `bbox_set`
 7. Program schema: `label(arg_extreme(hands, metric=blackjack_score(hand), direction=highest_valid)); scene=cards; scope=blackjack_best_hand_label`

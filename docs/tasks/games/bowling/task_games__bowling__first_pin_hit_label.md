@@ -5,7 +5,7 @@
 2. Scene package: `trace/tasks/games/bowling/`
 3. Scene id: `bowling`
 4. Public task id: `task_games__bowling__first_pin_hit_label`
-5. Supported `query_id` values: `first_pin_hit_label`
+5. Supported `query_id` values: `single`
 6. Answer schema: `string_label`
 7. Annotation schema: `bbox_set`
 8. Program schema: `label(first_collision(ball_path, pins)); scene=bowling; scope=first_pin_hit_label`

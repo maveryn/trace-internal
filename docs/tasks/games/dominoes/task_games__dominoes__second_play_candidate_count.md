@@ -5,7 +5,7 @@
 2. Scene: `dominoes`
 3. Scene id: `dominoes`
 4. Public task id: `task_games__dominoes__second_play_candidate_count`
-5. Supported `query_id` values: `second_play_candidate_count`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
 8. Program schema: `count(filter(domino_tiles, can_play_second_after_marked_first(tile)=True)); scene=dominoes; scope=second_play_candidate_count`

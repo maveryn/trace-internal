@@ -5,7 +5,7 @@
 2. Scene: `dominoes`
 3. Scene id: `dominoes`
 4. Public task id: `task_games__dominoes__double_count`
-5. Supported `query_id` values: `double_count`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
 8. Program schema: `count(filter(domino_tiles, left_pips(tile) = right_pips(tile))); scene=dominoes; scope=double_count`

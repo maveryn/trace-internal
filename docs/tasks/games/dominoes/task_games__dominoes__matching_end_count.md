@@ -5,7 +5,7 @@
 2. Scene: `dominoes`
 3. Scene id: `dominoes`
 4. Public task id: `task_games__dominoes__matching_end_count`
-5. Supported `query_id` values: `matching_end_count`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
 8. Program schema: `count(filter(domino_tiles, matches_open_chain_end(tile)=True)); scene=dominoes; scope=matching_end_count`

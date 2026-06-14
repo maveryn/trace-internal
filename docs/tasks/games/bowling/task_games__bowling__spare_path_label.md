@@ -5,7 +5,7 @@
 2. Scene package: `trace/tasks/games/bowling/`
 3. Scene id: `bowling`
 4. Public task id: `task_games__bowling__spare_path_label`
-5. Supported `query_id` values: `spare_path_label`
+5. Supported `query_id` values: `single`
 6. Answer schema: `string_label`
 7. Annotation schema: `point_pair_set`
 8. Program schema: `label(select_option(shot_paths, option_rule=clears_remaining_pins)); scene=bowling; scope=spare_path_label`

@@ -5,7 +5,7 @@
 2. Scene: `darts`
 3. Scene id: `darts`
 4. Public task id: `task_games__darts__threshold_score_count`
-5. Supported `query_id` values: `threshold_score_count`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `point_set`
 8. Program schema: `count(filter(darts, compare(score(dart), threshold, direction))); scene=darts; scope=threshold_score_count`

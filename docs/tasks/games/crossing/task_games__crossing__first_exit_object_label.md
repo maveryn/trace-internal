@@ -4,7 +4,7 @@
 1. Domain: `games`
 2. Scene id: `crossing`
 3. Public task id: `task_games__crossing__first_exit_object_label`
-4. Supported `query_id` values: `first_exit_object_label`
+4. Supported `query_id` values: `single`
 5. Answer schema: `label_string`
 6. Annotation schema: `bbox_set`
 7. Program schema: `label(argmin(labeled_moving_objects, exit_tick(object, lane_count, direction))); scene=crossing; scope=first_exit_object_label`

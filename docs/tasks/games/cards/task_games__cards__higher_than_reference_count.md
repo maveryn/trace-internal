@@ -4,7 +4,7 @@
 1. Domain: `games`
 2. Scene id: `cards`
 3. Public task id: `task_games__cards__higher_than_reference_count`
-4. Supported `query_id` values: `default`
+4. Supported `query_id` values: `single`
 5. Answer schema: `integer_count`
 6. Annotation schema: `bbox_set`
 7. Program schema: `count(filter(cards, compare(rank(card), rank(reference_card), direction=greater_than))); scene=cards; scope=higher_than_reference_count`

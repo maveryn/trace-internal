@@ -15,11 +15,11 @@ from trace.tasks.three_d.object_cluster.multi_attribute_exclusion_count import (
     TASK_ID as MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
 )
 from trace.tasks.three_d.object_cluster.multi_attribute_or_count import TASK_ID as MULTI_ATTRIBUTE_OR_COUNT_TASK_ID
-from trace.tasks.three_d.object_cluster._attribute_count_impl import (
+from trace.tasks.three_d.object_cluster.shared.defaults import (
     COLOR_SAFE_CLUSTER_SHAPE_TYPES,
+    COUNTABLE_SHAPE_TYPES,
     PROMPT_COLOR_RGB,
 )
-from trace.tasks.three_d.object_cluster._instance_count_impl import COUNTABLE_SHAPE_TYPES
 from trace.tasks.three_d.object_cluster.single_attribute_membership_count import TASK_ID
 from trace.tasks.three_d.object_cluster.total_object_count import TASK_ID as TOTAL_OBJECT_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.type_frequency_count import TASK_ID as TYPE_FREQUENCY_COUNT_TASK_ID

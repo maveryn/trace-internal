@@ -19,9 +19,12 @@
 3. Annotation should mark every visible hex bin matching the discrete density-level threshold.
 4. Renderer context such as axes, legends, titles, and background treatments is metadata unless the task explicitly asks for it as annotation.
 
+## Program Contract
+- `count(hex_bin where compare(density_level(hex_bin), threshold_level, relation={at_least,below})); output=integer_count; annotation=bbox_set(matching_bins); scene=hexbin_density; scope=threshold_bin_count`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `above_threshold_bin_count` | `count.hexbin_density_threshold` | `integer_count` | `bbox_set` |
-| `below_threshold_bin_count` | `count.hexbin_density_threshold` | `integer_count` | `bbox_set` |
+| `above_threshold_bin_count` | `count.one_bound_threshold` | `integer_count` | `bbox_set` |
+| `below_threshold_bin_count` | `count.one_bound_threshold` | `integer_count` | `bbox_set` |

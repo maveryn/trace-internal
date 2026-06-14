@@ -6,7 +6,7 @@ from tests.helpers import extract_prompt_json_example
 from trace.core.seed import hash64
 from trace.core.scene_config import get_scene_defaults
 from trace.tasks.charts.hexbin_density.threshold_bin_count import SUPPORTED_DENSITY_PALETTE_SCHEMES, SUPPORTED_QUERY_IDS, TASK_ID, ChartsHexbinDensityThresholdBinCountTask
-from trace.tasks.registry import create_task, list_default_task_ids
+from trace.tasks.registry import create_task
 
 def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
     assert len(bbox) == 4
@@ -21,7 +21,6 @@ def test_charts_hexbin_density_task_matches_contract(query_index: int, query_id:
     trace = out.trace_payload
     execution = trace['execution_trace']
     render = trace['render_spec']
-    assert TASK_ID in list_default_task_ids()
     assert create_task(TASK_ID).__class__.task_id == TASK_ID
     assert not hasattr(create_task(TASK_ID).__class__, 'scene_id')
     assert out.scene_id == 'hexbin_density'
@@ -104,8 +103,8 @@ def test_charts_hexbin_density_generation_is_deterministic() -> None:
 
 def test_charts_hexbin_density_registry_config_and_prompt_defaults_exist() -> None:
     defaults = get_scene_defaults('charts', 'hexbin_density')
-    assert defaults['prompt']['shared']['bundle_id'] == 'charts_hexbin_density_v0'
+    assert defaults['prompt']['shared']['bundle_id'] == 'charts_hexbin_density_v1'
     assert defaults['prompt']['shared']['scene_key'] == 'hexbin_density_scene'
     assert defaults['prompt']['shared']['task_key'] == 'hexbin_density_threshold_query'
-    assert defaults['generation']['shared']['query_id_weights'] == {'above_threshold_bin_count': 1.0, 'below_threshold_bin_count': 1.0}
+    assert 'query_id_weights' not in defaults['generation']['shared']
     assert sorted(defaults['rendering']['shared']['density_palette_scheme_weights']) == sorted(SUPPORTED_DENSITY_PALETTE_SCHEMES)

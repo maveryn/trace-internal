@@ -11,6 +11,9 @@
 8. Annotation schema: `bbox_set`
 9. Program schema: `label(select_option(candidate_result_boards, option_board = simulate(board, rules=slide_merge_2048, action=move_direction).final_board)); scene=2048; scope=move_result_board_label`
 
+## Program Contract
+- `label(select_option(candidate_result_boards, option_board = simulate(board, rules=slide_merge_2048, action=move_direction).final_board)); scene=2048; scope=move_result_board_label`
+
 ## Generation Notes
 1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
 2. Query ids are internal replay/sampling keys and do not define public task units.

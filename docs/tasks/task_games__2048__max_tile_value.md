@@ -11,6 +11,9 @@
 8. Annotation schema: `bbox_set`
 9. Program schema: `value(simulate(board, rules=slide_merge_2048, action=move_direction).final_board, property=max_tile_value); scene=2048; scope=max_tile_value`
 
+## Program Contract
+- `value(simulate(board, rules=slide_merge_2048, action=move_direction).final_board, property=max_tile_value); scene=2048; scope=max_tile_value`
+
 ## Generation Notes
 1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
 2. Query ids are internal replay/sampling keys and do not define public task units.

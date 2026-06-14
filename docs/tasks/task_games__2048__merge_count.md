@@ -11,6 +11,9 @@
 8. Annotation schema: `point_pair_set`
 9. Program schema: `count(simulate(board, rules=slide_merge_2048, action=move_direction).merge_events); scene=2048; scope=merge_count`
 
+## Program Contract
+- `count(simulate(board, rules=slide_merge_2048, action=move_direction).merge_events); scene=2048; scope=merge_count`
+
 ## Generation Notes
 1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
 2. Query ids are internal replay/sampling keys and do not define public task units.

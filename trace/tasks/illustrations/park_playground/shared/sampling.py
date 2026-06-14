@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from ...shared.config_defaults import group_default
-from .object_library import STYLE_IDS
-from .park_playground_scene import PARK_EQUIPMENT_TYPES, PARK_PERSON_ACTIVITIES, PARK_SETTING_IDS, PARK_ZONE_TYPES
-from .task_support import (
+from ....shared.config_defaults import group_default
+from ....shared.deterministic_sampling import resolve_selection_index
+from ...shared.object_library import STYLE_IDS
+from ...shared.task_support import (
     bounds,
     render_params as _shared_render_params,
     sample_count,
@@ -15,6 +15,7 @@ from .task_support import (
     style_weights as _shared_style_weights,
     uniform_string_probability_map,
 )
+from .state import PARK_EQUIPMENT_TYPES, PARK_PERSON_ACTIVITIES, PARK_SETTING_IDS, PARK_ZONE_TYPES
 
 
 def activity_support(params: Mapping[str, Any], defaults: Mapping[str, Any], *, fallback: Sequence[str]) -> Tuple[str, ...]:
@@ -51,6 +52,29 @@ def zone_support(params: Mapping[str, Any], defaults: Mapping[str, Any], *, fall
     if len(support) < 2:
         raise ValueError("zone_support must contain at least two park zones")
     return tuple(dict.fromkeys(support))
+
+
+def support_choice(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+    support: Sequence[str],
+    explicit_key: str,
+) -> Tuple[str, Dict[str, float]]:
+    """Choose one supported semantic operand with an explicit override or seed."""
+
+    values = tuple(str(value) for value in support if str(value))
+    if not values:
+        raise ValueError(f"{explicit_key} support must not be empty")
+    explicit = params.get(str(explicit_key))
+    if explicit is not None:
+        selected = str(explicit)
+        if selected not in set(values):
+            raise ValueError(f"{explicit_key} is outside configured support")
+        return selected, uniform_string_probability_map(values, selected=selected)
+    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
+    return str(values[int(index) % len(values)]), uniform_string_probability_map(values)
 
 
 def render_params(params: Mapping[str, Any], render_defaults: Mapping[str, Any], *, fallback_width: int, fallback_height: int, fallback_scale: int) -> Dict[str, int]:
@@ -90,6 +114,7 @@ __all__ = [
     "setting_weights",
     "spawned_task_rng",
     "style_weights",
+    "support_choice",
     "uniform_string_probability_map",
     "zone_support",
 ]

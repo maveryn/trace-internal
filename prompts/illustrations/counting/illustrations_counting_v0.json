@@ -30,34 +30,6 @@
       "",
       ""
     ],
-    "person_activity_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "playground_equipment_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "person_using_equipment_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "person_in_park_zone_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "person_at_boarding_area_count_task": [
       "",
       "",
@@ -101,9 +73,6 @@
     "scene:environment_object_canvas": [
       "environment_setting"
     ],
-    "scene:park_playground_canvas": [
-      "person_count"
-    ],
     "scene:transit_terminal_canvas": [
       "person_count"
     ],
@@ -129,45 +98,6 @@
     ],
     "query:building_window_count": [
       "window_phrase"
-    ],
-    "query:sitting_person_count": [
-      "activity_phrase"
-    ],
-    "query:walking_person_count": [
-      "activity_phrase"
-    ],
-    "query:standing_person_count": [
-      "activity_phrase"
-    ],
-    "query:playing_ball_person_count": [
-      "activity_phrase"
-    ],
-    "query:slide_count": [
-      "equipment_name"
-    ],
-    "query:swing_set_count": [
-      "equipment_name"
-    ],
-    "query:seesaw_count": [
-      "equipment_name"
-    ],
-    "query:climbing_frame_count": [
-      "equipment_name"
-    ],
-    "query:person_using_slide_count": [
-      "equipment_name"
-    ],
-    "query:person_using_swing_set_count": [
-      "equipment_name"
-    ],
-    "query:person_using_seesaw_count": [
-      "equipment_name"
-    ],
-    "query:playground_area_person_count": [
-      "zone_name"
-    ],
-    "query:garden_area_person_count": [
-      "zone_name"
     ],
     "query:person_in_boarding_area_count": [
       "area_name"
@@ -238,13 +168,6 @@
       "The canvas shows {environment_setting}.",
       "This outdoor illustration shows {environment_setting}."
     ],
-    "park_playground_canvas": [
-      "The image shows an illustrated park playground with {person_count} people.",
-      "The scene shows {person_count} people in a park playground.",
-      "The picture shows a synthetic park scene with {person_count} people.",
-      "The canvas contains an illustrated playground park with {person_count} people.",
-      "This park playground scene contains {person_count} people."
-    ],
     "transit_terminal_canvas": [
       "The image shows an illustrated transit terminal with {person_count} people and labeled boarding areas.",
       "The scene shows {person_count} people in a transit terminal with labeled boarding areas.",
@@ -302,97 +225,6 @@
       "What is the total number of lit building windows?",
       "How many lit windows can be seen across the buildings?",
       "Find every lit building window. What is the count?"
-    ],
-    "sitting_person_count": [
-      "How many people are sitting?",
-      "Count the people shown sitting.",
-      "What is the number of sitting people?",
-      "How many people are seated in the park?",
-      "Find every sitting person. What is the count?"
-    ],
-    "walking_person_count": [
-      "How many people are walking?",
-      "Count the people shown walking.",
-      "What is the number of walking people?",
-      "How many people are walking through the park?",
-      "Find every walking person. What is the count?"
-    ],
-    "standing_person_count": [
-      "How many people are standing?",
-      "Count the people shown standing.",
-      "What is the number of standing people?",
-      "How many people are standing in the park?",
-      "Find every standing person. What is the count?"
-    ],
-    "playing_ball_person_count": [
-      "How many people are playing with a ball?",
-      "Count the people shown playing with a ball.",
-      "What is the number of people playing with a ball?",
-      "How many people are playing ball in the park?",
-      "Find every person playing with a ball. What is the count?"
-    ],
-    "slide_count": [
-      "How many slides are shown?",
-      "Count the slides in the playground.",
-      "What is the number of slides?",
-      "How many playground slides can be seen?",
-      "Find every slide. What is the count?"
-    ],
-    "swing_set_count": [
-      "How many swing sets are shown?",
-      "Count the swing sets in the playground.",
-      "What is the number of swing sets?",
-      "How many playground swing sets can be seen?",
-      "Find every swing set. What is the count?"
-    ],
-    "seesaw_count": [
-      "How many seesaws are shown?",
-      "Count the seesaws in the playground.",
-      "What is the number of seesaws?",
-      "How many playground seesaws can be seen?",
-      "Find every seesaw. What is the count?"
-    ],
-    "climbing_frame_count": [
-      "How many climbing frames are shown?",
-      "Count the climbing frames in the playground.",
-      "What is the number of climbing frames?",
-      "How many playground climbing frames can be seen?",
-      "Find every climbing frame. What is the count?"
-    ],
-    "person_using_slide_count": [
-      "How many people are using the slides?",
-      "Count the people using the slides.",
-      "What is the number of people using the slides?",
-      "How many people are shown on the slides?",
-      "Find every person using a slide. What is the count?"
-    ],
-    "person_using_swing_set_count": [
-      "How many people are using the swings?",
-      "Count the people using the swings.",
-      "What is the number of people using the swings?",
-      "How many people are shown on the swings?",
-      "Find every person using a swing. What is the count?"
-    ],
-    "person_using_seesaw_count": [
-      "How many people are using the seesaws?",
-      "Count the people using the seesaws.",
-      "What is the number of people using the seesaws?",
-      "How many people are shown on the seesaws?",
-      "Find every person using a seesaw. What is the count?"
-    ],
-    "playground_area_person_count": [
-      "How many people are in the playground area?",
-      "Count the people inside the playground area.",
-      "What is the number of people in the playground area?",
-      "How many people are shown within the playground area?",
-      "Find every person in the playground area. What is the count?"
-    ],
-    "garden_area_person_count": [
-      "How many people are in the garden area?",
-      "Count the people inside the garden area.",
-      "What is the number of people in the garden area?",
-      "How many people are shown within the garden area?",
-      "Find every person in the garden area. What is the count?"
     ],
     "person_in_boarding_area_count": [
       "How many people are in {area_name}?",

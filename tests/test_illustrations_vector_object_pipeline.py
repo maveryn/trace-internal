@@ -43,11 +43,11 @@ from trace.tasks.illustrations.shared.object_rendering import (
 )
 from trace.tasks.illustrations.shared.object_library import draw_illustration_object, serialize_object
 from trace.tasks.illustrations.shared.object_variants import RENDERER_STYLE_VECTOR
-from trace.tasks.illustrations.shared.park_playground_rendering import (
+from trace.tasks.illustrations.park_playground.shared.annotations import park_scene_entities
+from trace.tasks.illustrations.park_playground.shared.rendering import (
     PARK_EQUIPMENT_TYPES,
     ParkEquipmentSpec,
     ParkPersonSpec,
-    park_scene_entities,
     render_park_playground_scene,
 )
 from trace.tasks.illustrations.shared.transit_terminal_rendering import (
@@ -312,7 +312,7 @@ def test_reviewed_vector_library_objects_emit_stable_parts() -> None:
 def test_migrated_scene_person_renderers_do_not_keep_local_duplicate_drawers() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     banned = {
-        "trace/tasks/illustrations/shared/park_playground_rendering.py": (
+        "trace/tasks/illustrations/park_playground/shared/rendering.py": (
             "_draw_activity_person",
             "def _draw_bench(",
             "def _draw_climber(",

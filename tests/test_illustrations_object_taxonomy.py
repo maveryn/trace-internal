@@ -17,11 +17,11 @@ from trace.tasks.illustrations.library.shared.annotations import library_scene_e
 from trace.tasks.illustrations.library.shared.state import LibraryDecor, RenderedLibraryScene
 from trace.tasks.illustrations.shared.object_library import IllustrationObject, IllustrationPart, serialize_object
 from trace.tasks.illustrations.shared.object_registry import object_type_definition, registered_object_types
-from trace.tasks.illustrations.shared.park_playground_scene import (
+from trace.tasks.illustrations.park_playground.shared.annotations import park_scene_entities
+from trace.tasks.illustrations.park_playground.shared.rendering import (
     ParkDecor,
     ParkPerson,
     RenderedParkPlaygroundScene,
-    park_scene_entities,
 )
 from trace.tasks.illustrations.shared.scene_objects import extract_scene_object_records, normalized_object_record
 

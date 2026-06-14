@@ -2,80 +2,6 @@ generation:
   shared:
     balanced_sampling: true
   task_overrides:
-    task_illustrations__park_playground__activity_person_count:
-      query_id_support:
-        - sitting_person_count
-        - walking_person_count
-        - standing_person_count
-        - playing_ball_person_count
-    task_illustrations__park_playground__area_person_count:
-      query_id_support:
-        - playground_area_person_count
-        - garden_area_person_count
-    task_illustrations__park_playground__equipment_use_person_count:
-      query_id_support:
-        - person_using_slide_count
-        - person_using_swing_set_count
-        - person_using_seesaw_count
-    private_park_person_activity:
-      person_count_min: 7
-      person_count_max: 12
-      target_count_min: 1
-      target_count_max: 6
-      query_id_support:
-        - sitting_person_count
-        - walking_person_count
-        - standing_person_count
-        - playing_ball_person_count
-      activity_support:
-        - sitting
-        - walking
-        - standing
-        - playing_ball
-    task_illustrations__park_playground__playground_equipment_count:
-      equipment_count_min: 4
-      equipment_count_max: 7
-      target_count_min: 1
-      target_count_max: 5
-      person_count_min: 5
-      person_count_max: 9
-      query_id_support:
-        - slide_count
-        - swing_set_count
-        - seesaw_count
-        - climbing_frame_count
-      equipment_type_support:
-        - slide
-        - swing_set
-        - seesaw
-        - climbing_frame
-    private_park_person_equipment_use:
-      equipment_count_min: 4
-      equipment_count_max: 7
-      person_count_min: 8
-      person_count_max: 14
-      target_count_min: 1
-      target_count_max: 5
-      query_id_support:
-        - person_using_slide_count
-        - person_using_swing_set_count
-        - person_using_seesaw_count
-      equipment_type_support:
-        - slide
-        - swing_set
-        - seesaw
-        - climbing_frame
-    private_park_person_zone:
-      person_count_min: 7
-      person_count_max: 12
-      target_count_min: 1
-      target_count_max: 6
-      query_id_support:
-        - playground_area_person_count
-        - garden_area_person_count
-      zone_support:
-        - playground
-        - garden
     private_terminal_boarding_area_person:
       person_count_min: 14
       person_count_max: 22
@@ -149,14 +75,6 @@ rendering:
     indoor_object_size_min_px: 52
     indoor_object_size_max_px: 86
     indoor_render_scale: 2
-    park_canvas_width: 1280
-    park_canvas_height: 900
-    park_render_scale: 2
-    park_setting_weights:
-      playground_lawn: 1.0
-      picnic_park: 1.0
-      pond_playground: 1.0
-      flower_garden: 1.0
     transit_canvas_width: 1280
     transit_canvas_height: 900
     transit_render_scale: 2
@@ -196,102 +114,8 @@ rendering:
       tabletop: 1.0
       paper: 1.0
       shelf: 1.0
-  task_overrides:
-    task_illustrations__park_playground__playground_equipment_count:
-      art_style_support:
-        - flat_vector
-        - outlined_cartoon
-        - paper_cutout
-        - soft_shadow
-        - ink_sketch
-        - watercolor_wash
-      art_style_weights:
-        flat_vector: 1.0
-        outlined_cartoon: 1.0
-        paper_cutout: 1.0
-        soft_shadow: 1.0
-        ink_sketch: 1.0
-        watercolor_wash: 1.0
-    private_park_person_activity:
-      art_style_support:
-        - flat_vector
-        - outlined_cartoon
-        - paper_cutout
-        - soft_shadow
-        - ink_sketch
-        - watercolor_wash
-      art_style_weights:
-        flat_vector: 1.0
-        outlined_cartoon: 1.0
-        paper_cutout: 1.0
-        soft_shadow: 1.0
-        ink_sketch: 1.0
-        watercolor_wash: 1.0
-    private_park_person_zone:
-      art_style_support:
-        - flat_vector
-        - outlined_cartoon
-        - paper_cutout
-        - soft_shadow
-        - ink_sketch
-        - watercolor_wash
-      art_style_weights:
-        flat_vector: 1.0
-        outlined_cartoon: 1.0
-        paper_cutout: 1.0
-        soft_shadow: 1.0
-        ink_sketch: 1.0
-        watercolor_wash: 1.0
-    private_park_person_equipment_use:
-      art_style_support:
-        - flat_vector
-        - outlined_cartoon
-        - paper_cutout
-        - soft_shadow
-        - ink_sketch
-        - watercolor_wash
-      art_style_weights:
-        flat_vector: 1.0
-        outlined_cartoon: 1.0
-        paper_cutout: 1.0
-        soft_shadow: 1.0
-        ink_sketch: 1.0
-        watercolor_wash: 1.0
-
 prompt:
   task_overrides:
-    private_park_person_activity:
-      bundle_id: illustrations_counting_v0
-      scene_key: park_playground_canvas
-      task_key: person_activity_count_task
-      answer_hint_person_activity: set "answer" to the count of people shown {activity_phrase} as an integer
-      annotation_hint_person_activity: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person shown {activity_phrase}
-      json_example_person_activity: '{"annotation":[[178,512,234,610],[486,594,546,692],[824,456,884,554]],"answer":3}'
-      json_example_answer_only_person_activity: '{"answer":3}'
-    task_illustrations__park_playground__playground_equipment_count:
-      bundle_id: illustrations_counting_v0
-      scene_key: park_playground_canvas
-      task_key: playground_equipment_count_task
-      answer_hint_playground_equipment: set "answer" to the count of {equipment_name} as an integer
-      annotation_hint_playground_equipment: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {equipment_name}
-      json_example_playground_equipment: '{"annotation":[[158,326,286,424],[430,344,558,446],[704,318,832,420]],"answer":3}'
-      json_example_answer_only_playground_equipment: '{"answer":3}'
-    private_park_person_equipment_use:
-      bundle_id: illustrations_counting_v0
-      scene_key: park_playground_canvas
-      task_key: person_using_equipment_count_task
-      answer_hint_person_using_equipment: set "answer" to the count of people using the {equipment_name} as an integer
-      annotation_hint_person_using_equipment: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person using the {equipment_name}
-      json_example_person_using_equipment: '{"annotation":[[194,356,246,440],[492,382,542,462],[742,344,792,426]],"answer":3}'
-      json_example_answer_only_person_using_equipment: '{"answer":3}'
-    private_park_person_zone:
-      bundle_id: illustrations_counting_v0
-      scene_key: park_playground_canvas
-      task_key: person_in_park_zone_count_task
-      answer_hint_person_in_park_zone: set "answer" to the count of people in the {zone_name} as an integer
-      annotation_hint_person_in_park_zone: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person in the {zone_name}
-      json_example_person_in_park_zone: '{"annotation":[[192,398,248,496],[376,430,432,530],[528,390,586,490]],"answer":3}'
-      json_example_answer_only_person_in_park_zone: '{"answer":3}'
     private_terminal_boarding_area_person:
       bundle_id: illustrations_counting_v0
       scene_key: transit_terminal_canvas

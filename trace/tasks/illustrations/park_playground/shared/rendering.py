@@ -8,12 +8,12 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from .render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
-from .object_catalog import label_map_for_tag, plural_name_map_for_tag, variant_ids_with_tag
-from .object_library import BBox, RGB, STYLE_IDS
-from .object_rendering import IllustrationObjectSpec, RenderContext, make_vector_scene_object_record, render_illustration_object, render_vector_scene_object
-from .object_variants import RENDERER_STYLE_VECTOR
-from .person_rendering import sample_person_gender
+from ...shared.render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
+from ...shared.object_catalog import label_map_for_tag, plural_name_map_for_tag, variant_ids_with_tag
+from ...shared.object_library import BBox, RGB, STYLE_IDS
+from ...shared.object_rendering import IllustrationObjectSpec, RenderContext, make_vector_scene_object_record, render_illustration_object, render_vector_scene_object
+from ...shared.object_variants import RENDERER_STYLE_VECTOR
+from ...shared.person_rendering import sample_person_gender
 
 
 PARK_SETTING_IDS: Tuple[str, ...] = variant_ids_with_tag("park_setting")
@@ -232,6 +232,8 @@ def _safe_json(value: Any) -> Any:
 
 
 def _sample_layout(rng, *, width: int, height: int, setting_id: str, required_zones: Sequence[str] = ()) -> Dict[str, Any]:
+    """Choose scene regions while preserving required semantic zone visibility."""
+
     layout_id = str(rng.choice(("curved_walk", "diagonal_walk", "playground_left", "pond_corner")))
     if str(setting_id) == "pond_playground":
         layout_id = str(rng.choice(("pond_corner", "curved_walk", "diagonal_walk")))
@@ -285,6 +287,8 @@ def _sample_layout(rng, *, width: int, height: int, setting_id: str, required_zo
 
 
 def _draw_background(draw: ImageDraw.ImageDraw, *, rng, setting_id: str, layout: Mapping[str, Any], width: int, height: int, scale: int) -> List[ParkDecor]:
+    """Draw stable named park areas before foreground objects are placed."""
+
     decor: List[ParkDecor] = []
     sky = _jitter_rgb(rng, (206, 229, 239), amount=10)
     grass = _jitter_rgb(rng, (128, 179, 113), amount=12)
@@ -374,6 +378,8 @@ def _draw_equipment_and_fixtures(
     style_id: str,
     equipment_specs: Sequence[ParkEquipmentSpec] | None = None,
 ) -> List[ParkDecor]:
+    """Draw playground equipment first so people can attach to it."""
+
     decor: List[ParkDecor] = []
     playground = tuple(float(v) for v in layout["playground_bbox"])
     if equipment_specs is None:
@@ -506,6 +512,8 @@ def _equipment_user_box(
     width: int,
     height: int,
 ) -> BBox | None:
+    """Return a person box aligned to an existing equipment item."""
+
     matches = tuple(
         item
         for item in equipment_decor
@@ -555,6 +563,8 @@ def _candidate_person_box(
     equipment_decor: Sequence[ParkDecor] = (),
     equipment_type: str | None = None,
 ) -> BBox:
+    """Sample one activity-aware person box from zones or equipment."""
+
     if equipment_type is not None:
         equipment_box = _equipment_user_box(
             rng,
@@ -623,6 +633,8 @@ def _place_persons(
     height: int,
     equipment_decor: Sequence[ParkDecor] = (),
 ) -> Tuple[Tuple[ParkPersonSpec, BBox, str], ...]:
+    """Place all requested people while avoiding severe visual overlap."""
+
     placed: List[Tuple[ParkPersonSpec, BBox, str]] = []
     existing: List[BBox] = []
     ordered = list(specs)

@@ -1,0 +1,118 @@
+{
+  "bundle_id": "illustrations_park_playground_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "person_activity_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "person_in_park_zone_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "person_using_equipment_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "playground_equipment_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:park_playground_canvas": [
+      "person_count"
+    ],
+    "query:activity_person_count": [
+      "activity_phrase"
+    ],
+    "query:area_person_count": [
+      "zone_name"
+    ],
+    "query:equipment_use_person_count": [
+      "equipment_name"
+    ],
+    "query:playground_equipment_count": [
+      "equipment_name"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "park_playground_canvas": [
+      "The image shows an illustrated park playground with {person_count} people.",
+      "The scene shows {person_count} people in a park playground.",
+      "The picture shows a synthetic park scene with {person_count} people.",
+      "The canvas contains an illustrated playground park with {person_count} people.",
+      "This park playground scene contains {person_count} people."
+    ]
+  },
+  "query_templates": {
+    "activity_person_count": [
+      "How many people are {activity_phrase}?",
+      "Count the people shown {activity_phrase}.",
+      "What is the number of people {activity_phrase}?",
+      "How many people in the park are {activity_phrase}?",
+      "Find every person {activity_phrase}. What is the count?"
+    ],
+    "area_person_count": [
+      "How many people are in the {zone_name}?",
+      "Count the people inside the {zone_name}.",
+      "What is the number of people in the {zone_name}?",
+      "How many people are shown within the {zone_name}?",
+      "Find every person in the {zone_name}. What is the count?"
+    ],
+    "equipment_use_person_count": [
+      "How many people are using the {equipment_name}?",
+      "Count the people using the {equipment_name}.",
+      "What is the number of people using the {equipment_name}?",
+      "How many people are shown on or at the {equipment_name}?",
+      "Find every person using the {equipment_name}. What is the count?"
+    ],
+    "playground_equipment_count": [
+      "How many {equipment_name} are shown?",
+      "Count the {equipment_name} in the playground.",
+      "What is the number of {equipment_name}?",
+      "How many playground {equipment_name} can be seen?",
+      "Find every {equipment_name}. What is the count?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

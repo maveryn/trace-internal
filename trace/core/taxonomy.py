@@ -846,16 +846,16 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "illustrations", "indoor_room", "illustrations", "indoor_room"
     ),
     "task_illustrations__park_playground__activity_person_count": _entry(
-        "illustrations", "park_playground", "illustrations", "counting"
+        "illustrations", "park_playground", "illustrations", "park_playground"
     ),
     "task_illustrations__park_playground__area_person_count": _entry(
-        "illustrations", "park_playground", "illustrations", "counting"
+        "illustrations", "park_playground", "illustrations", "park_playground"
     ),
     "task_illustrations__park_playground__equipment_use_person_count": _entry(
-        "illustrations", "park_playground", "illustrations", "counting"
+        "illustrations", "park_playground", "illustrations", "park_playground"
     ),
     "task_illustrations__park_playground__playground_equipment_count": _entry(
-        "illustrations", "park_playground", "illustrations", "counting"
+        "illustrations", "park_playground", "illustrations", "park_playground"
     ),
     "task_illustrations__pixel_village__object_type_count": _entry(
         "illustrations", "pixel_village", "illustrations", "pixel_village"

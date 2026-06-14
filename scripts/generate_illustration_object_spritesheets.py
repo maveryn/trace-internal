@@ -35,7 +35,7 @@ from trace.tasks.illustrations.shared import library_rendering as library
 from trace.tasks.illustrations.shared import object_library
 from trace.tasks.illustrations.shared.object_catalog import CatalogEntry, catalog_entries
 from trace.tasks.illustrations.shared.object_rendering import render_vector_scene_object
-from trace.tasks.illustrations.shared import park_playground_rendering as park
+from trace.tasks.illustrations.park_playground.shared import rendering as park
 from trace.tasks.illustrations.shared.person_rendering import PERSON_GENDER_IDS, sample_person_gender
 from trace.tasks.illustrations.shared import transit_terminal_rendering as transit
 

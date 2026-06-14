@@ -27,14 +27,14 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (ADDED_VARIANT, REMOVED_VARIANT)
 DEFAULT_SOURCE_QUERIES: Mapping[str, Mapping[str, Any]] = {
     "park_sitting": {
         "source_task_id": "task_illustrations__park_playground__activity_person_count",
-        "source_params": {"query_id": "sitting_person_count"},
+        "source_params": {"target_activity": "sitting"},
         "singular_phrase": "sitting person",
         "plural_phrase": "sitting people",
         "scene_id": "park_playground",
     },
     "park_walking": {
         "source_task_id": "task_illustrations__park_playground__activity_person_count",
-        "source_params": {"query_id": "walking_person_count"},
+        "source_params": {"target_activity": "walking"},
         "singular_phrase": "walking person",
         "plural_phrase": "walking people",
         "scene_id": "park_playground",
@@ -278,6 +278,7 @@ class IllustrationsCounterfactualObjectCountAfterEditTask:
 
     task_id = TASK_ID
     domain = "illustrations"
+    supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:

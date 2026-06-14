@@ -3,43 +3,31 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `park_playground`
-- Implementation scene: `counting`
-- Implementation source: `trace/tasks/illustrations/counting/park_person_count.py`
+- Implementation source: `trace/tasks/illustrations/park_playground/equipment_use_person_count.py`
 
 ## Task Contract
-Counts visible people using or positioned at one playground-equipment type.
+Count visible people using one sampled playground equipment type.
 
-## Query Branches
-
-| Query id | Program schema |
-| --- | --- |
-| `person_using_seesaw_count` | `count(filter(people, uses_equipment(person, target_equipment))); scene=park_playground; scope=equipment_use_person_count; query_branch=person_using_seesaw_count` |
-| `person_using_slide_count` | `count(filter(people, uses_equipment(person, target_equipment))); scene=park_playground; scope=equipment_use_person_count; query_branch=person_using_slide_count` |
-| `person_using_swing_set_count` | `count(filter(people, uses_equipment(person, target_equipment))); scene=park_playground; scope=equipment_use_person_count; query_branch=person_using_swing_set_count` |
-
-## Program Metadata
-- Program signatures: `count.relation_attribute`
-- Base program contract: `count(filter(people, uses_equipment(person, target_equipment))); scene=park_playground; scope=equipment_use_person_count`
-- Parameter axes: `fixed_query`
+## Program Contract
+- Program code: `count(filter(people, uses_equipment(person, target_equipment_type))); scene=park_playground; scope=equipment_use_person_count`
+- Program signature: `count.relation_attribute`
+- Query ids: `single`
 - Arguments:
-  - `people`: semantic_role; allowed `visible_people`; source `program_schema_concrete`
-  - `person`: semantic_role; allowed `person_instance`; source `program_schema_concrete`
-  - `target_equipment`: semantic_role; allowed `seesaw`, `slide`, `swing_set`; source `program_schema_concrete`
-- Argument metadata status: `curated`
-- Supported query ids: `person_using_seesaw_count`, `person_using_slide_count`, `person_using_swing_set_count`
+  - `people`: semantic role; allowed `visible_people`
+  - `person`: semantic role; allowed `park_person_instance`
+  - `target_equipment_type`: semantic operand; allowed `slide`, `swing_set`, `seesaw`; source `query_spec.params.target_equipment_type`
 
 ## Answer Contract
 - Answer schema: `integer_count`
 - Generator `answer_gt.type`: `integer`
-- The answer value is a non-negative integer derived from the same execution trace as the annotation.
+- The answer is the count of people whose rendered equipment-use attribute equals `target_equipment_type`.
 
 ## Annotation Contract
 - Annotation schema: `bbox_set`
 - Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel boxes, one per counted/selected visual witness. Do not include labels, numeric annotations, or context-only regions.
-- Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
+- Annotation is an unordered set of final-image pixel boxes, one per counted person.
+- Annotation and answer are projected from the same generated scene trace.
 
 ## Prompt And Trace Requirements
-- Prompt text must come from the illustrations prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
-- Render randomness, sampled fonts/styles, query operands, and verifier payloads must be explicit in the instance trace.
-- Distractor/context text may be rendered only when it is part of the scene grammar and must not be treated as annotation unless it is the queried visual witness.
+- Prompt text comes from `prompts/illustrations/park_playground/illustrations_park_playground_v0.json`.
+- Render randomness, sampled style, `target_equipment_type`, and verifier payloads are recorded in trace metadata.

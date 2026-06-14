@@ -487,9 +487,11 @@ def render_dots_and_boxes_scene(
             text_bbox = draw.textbbox((0, 0), str(label), font=option_font, stroke_width=1)
             text_width = float(text_bbox[2] - text_bbox[0])
             text_height = float(text_bbox[3] - text_bbox[1])
+            text_left = float(text_bbox[0])
+            text_top = float(text_bbox[1])
             text_xy = (
-                float(cx - (text_width / 2.0)),
-                float(cy - (text_height / 2.0)),
+                float(cx - (text_width / 2.0) - text_left),
+                float(cy - (text_height / 2.0) - text_top),
             )
             draw_text_traced(
                 draw,

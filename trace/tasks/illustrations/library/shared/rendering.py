@@ -2,128 +2,40 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from .render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
-from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
-from ...shared.color_format import format_named_color_with_hex
-from ...shared.named_colors import named_color
-from ...shared.text_rendering import fit_font_to_box
-from ...shared.text_legibility import draw_text_traced
-from .object_library import (
+from ....shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
+from ....shared.color_format import format_named_color_with_hex
+from ....shared.named_colors import named_color
+from ....shared.text_rendering import fit_font_to_box
+from ....shared.text_legibility import draw_text_traced
+from ...shared.object_library import (
     BBox,
     RGB,
     STYLE_IDS,
     choose_object_colors,
 )
-from .object_catalog import label_map_for_tag, public_name_map_for_tag, variant_ids_with_tag
-from .object_rendering import (
+from ...shared.object_rendering import (
     IllustrationObjectSpec,
     RenderContext,
-    make_vector_scene_object_record,
     render_illustration_object,
 )
-from .object_variants import RENDERER_STYLE_VECTOR
-from .person_rendering import sample_person_gender
-
-
-LIBRARY_SETTING_IDS: Tuple[str, ...] = variant_ids_with_tag("library_setting")
-LIBRARY_SECTION_TYPES: Tuple[str, ...] = variant_ids_with_tag("library_section")
-LIBRARY_SECTION_LABELS: Dict[str, str] = label_map_for_tag("library_section")
-LIBRARY_SECTION_DISPLAY_NAMES: Dict[str, str] = public_name_map_for_tag("library_section")
-BOOK_ORIENTATIONS: Tuple[str, ...] = variant_ids_with_tag("library_book_orientation")
-
-
-@dataclass(frozen=True)
-class LibraryBookSpec:
-    """Requested semantic properties for one rendered book."""
-
-    section_key: str
-    color_name: str
-    orientation: str = "upright"
-    role: str = "distractor"
-    attributes: Mapping[str, Any] = field(default_factory=dict)
-
-
-@dataclass(frozen=True)
-class LibrarySectionSpec:
-    """Requested books for one labeled library section."""
-
-    section_key: str
-    book_specs: Tuple[LibraryBookSpec, ...]
-    role: str = "distractor"
-    attributes: Mapping[str, Any] = field(default_factory=dict)
-
-
-@dataclass(frozen=True)
-class LibraryBook:
-    """One rendered book with trace-ready metadata."""
-
-    book_id: str
-    section_id: str
-    section_key: str
-    section_name: str
-    color_name: str
-    color_rgb: RGB
-    color_label: str
-    orientation: str
-    bbox_xyxy: BBox
-    row_index: int
-    slot_index: int
-    role: str
-    attributes: Mapping[str, Any]
-
-
-@dataclass(frozen=True)
-class LibrarySection:
-    """One labeled shelf section."""
-
-    section_id: str
-    section_key: str
-    section_name: str
-    label: str
-    bbox_xyxy: BBox
-    label_bbox_xyxy: BBox
-    shelf_bboxes_xyxy: Tuple[BBox, ...]
-    book_ids: Tuple[str, ...]
-    role: str
-    attributes: Mapping[str, Any]
-
-
-@dataclass(frozen=True)
-class LibraryDecor:
-    """Non-query visual decor drawn in the library."""
-
-    decor_id: str
-    decor_type: str
-    bbox_xyxy: BBox
-    attributes: Mapping[str, Any]
-    object_record: Mapping[str, Any] | None = None
-
-
-@dataclass(frozen=True)
-class RenderedLibraryScene:
-    """Rendered library scene plus metadata for verifier-side projection."""
-
-    image: Image.Image
-    setting_id: str
-    sections: Tuple[LibrarySection, ...]
-    books: Tuple[LibraryBook, ...]
-    decor: Tuple[LibraryDecor, ...]
-    canvas_width: int
-    canvas_height: int
-    render_scale: int
-    style_id: str
-    layout: Mapping[str, Any]
-
-
-def library_section_display_name(section_key: str) -> str:
-    """Return prompt-facing library section text."""
-
-    return LIBRARY_SECTION_DISPLAY_NAMES.get(str(section_key), str(section_key).replace("_", " ").title())
+from ...shared.object_variants import RENDERER_STYLE_VECTOR
+from ...shared.person_rendering import sample_person_gender
+from ...shared.render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
+from .state import (
+    LIBRARY_SECTION_LABELS,
+    LIBRARY_SETTING_IDS,
+    LibraryBook,
+    LibraryBookSpec,
+    LibraryDecor,
+    LibrarySection,
+    LibrarySectionSpec,
+    RenderedLibraryScene,
+    library_section_display_name,
+)
 
 
 
@@ -159,6 +71,8 @@ def _draw_fit_text(
     max_size_px: int = 30,
     stroke_fill: RGB | None = None,
 ) -> None:
+    """Draw a section label centered inside a fixed box while preserving legibility."""
+
     x0, y0, x1, y1 = [float(value) * int(scale) for value in bbox]
     font = fit_font_to_box(
         draw,
@@ -211,16 +125,6 @@ def _sample_section_label_font_trace(*, instance_seed: int | None, params: Mappi
         "role": "library_section_label",
         "consistent_scope": "library_section_labels",
     }
-
-
-def _json_safe(value: Any) -> Any:
-    if isinstance(value, Mapping):
-        return {str(key): _json_safe(item) for key, item in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_json_safe(item) for item in value]
-    if isinstance(value, float):
-        return round(float(value), 3)
-    return value
 
 
 def _draw_background(draw: ImageDraw.ImageDraw, *, rng, setting_id: str, width: int, height: int, scale: int) -> None:
@@ -294,6 +198,8 @@ def _draw_section_shell(
     scale: int,
     section_label_font_family: str,
 ) -> Tuple[BBox, Tuple[BBox, ...], RGB, RGB]:
+    """Draw one labeled shelf section and return its label box plus book shelf rows."""
+
     x0, y0, x1, y1 = [float(v) for v in bbox]
     wood = _jitter_rgb(rng, rng.choice(((139, 91, 58), (151, 103, 70), (121, 92, 70), (162, 118, 78))), amount=14)
     wood_dark = _jitter_rgb(rng, (82, 61, 44), amount=8)
@@ -372,6 +278,8 @@ def _draw_section_books(
     shelf_rows: Sequence[BBox],
     scale: int,
 ) -> Tuple[Tuple[LibraryBook, ...], Tuple[str, ...]]:
+    """Draw all books assigned to one section and preserve exact semantic ids."""
+
     rows = _book_row_groups(rng, section.book_specs, len(shelf_rows))
     rendered: List[LibraryBook] = []
     book_ids: List[str] = []
@@ -421,6 +329,8 @@ def _draw_section_books(
 
 
 def _draw_foreground_decor(draw: ImageDraw.ImageDraw, *, rng, width: int, height: int, scale: int, style_id: str) -> Tuple[LibraryDecor, ...]:
+    """Draw non-query foreground decor below shelves without creating book witnesses."""
+
     decor: List[LibraryDecor] = []
     s = int(scale)
     table_count = int(rng.randint(1, 3))
@@ -582,206 +492,6 @@ def render_library_scene(
     )
 
 
-def book_bbox_map(scene: RenderedLibraryScene) -> Dict[str, List[float]]:
-    """Return book bboxes keyed by book id."""
-
-    return {str(book.book_id): [round(float(v), 3) for v in book.bbox_xyxy] for book in scene.books}
-
-
-def section_bbox_map(scene: RenderedLibraryScene) -> Dict[str, List[float]]:
-    """Return section bboxes keyed by section id."""
-
-    return {str(section.section_id): [round(float(v), 3) for v in section.bbox_xyxy] for section in scene.sections}
-
-
-def sort_library_bboxes(bbox_map: Mapping[str, Sequence[float]], ids: Iterable[str]) -> List[List[float]]:
-    """Return bboxes sorted top-to-bottom then left-to-right for stable annotation."""
-
-    boxes = [list(float(v) for v in bbox_map[str(item_id)]) for item_id in ids]
-    boxes.sort(key=lambda box: (round(float(box[1]), 3), round(float(box[0]), 3), round(float(box[3]), 3), round(float(box[2]), 3)))
-    return [[round(float(v), 3) for v in box] for box in boxes]
-
-
-def library_scene_entities(scene: RenderedLibraryScene) -> List[Dict[str, Any]]:
-    """Return generic entity records for the scene trace."""
-
-    entities: List[Dict[str, Any]] = []
-    for section in scene.sections:
-        object_record = make_vector_scene_object_record(
-            object_id=str(section.section_id),
-            object_type="library_section",
-            bbox_xyxy=section.bbox_xyxy,
-            semantic_attributes={
-                "section_key": str(section.section_key),
-                "section_name": str(section.section_name),
-                "label": str(section.label),
-                "book_ids": list(section.book_ids),
-                **dict(section.attributes),
-            },
-            role=str(section.role),
-            source_entity_type="library_section",
-            render_scale=int(scene.render_scale),
-            style_id=str(scene.style_id),
-        )
-        entities.append(
-            {
-                "entity_id": str(section.section_id),
-                "entity_type": "library_section",
-                "section_key": str(section.section_key),
-                "section_name": str(section.section_name),
-                "label": str(section.label),
-                "bbox": [round(float(v), 3) for v in section.bbox_xyxy],
-                "label_bbox": [round(float(v), 3) for v in section.label_bbox_xyxy],
-                "book_ids": list(section.book_ids),
-                "attributes": _json_safe(section.attributes),
-                "object_record": object_record,
-            }
-        )
-    for book in scene.books:
-        object_record = make_vector_scene_object_record(
-            object_id=str(book.book_id),
-            object_type="book",
-            bbox_xyxy=book.bbox_xyxy,
-            semantic_attributes={
-                "section_id": str(book.section_id),
-                "section_key": str(book.section_key),
-                "section_name": str(book.section_name),
-                "color_name": str(book.color_name),
-                "color_label": str(book.color_label),
-                "orientation": str(book.orientation),
-                **dict(book.attributes),
-            },
-            visual_attributes={"color_rgb": [int(v) for v in book.color_rgb]},
-            role=str(book.role),
-            source_entity_type="library_book",
-            render_scale=int(scene.render_scale),
-            style_id=str(scene.style_id),
-        )
-        entities.append(
-            {
-                "entity_id": str(book.book_id),
-                "entity_type": "library_book",
-                "section_id": str(book.section_id),
-                "section_key": str(book.section_key),
-                "section_name": str(book.section_name),
-                "color_name": str(book.color_name),
-                "color_rgb": [int(v) for v in book.color_rgb],
-                "color_label": str(book.color_label),
-                "orientation": str(book.orientation),
-                "bbox": [round(float(v), 3) for v in book.bbox_xyxy],
-                "role": str(book.role),
-                "attributes": _json_safe(book.attributes),
-                "object_record": object_record,
-            }
-        )
-    for item in scene.decor:
-        decor_attributes = dict(item.attributes)
-        object_record = (
-            dict(item.object_record)
-            if item.object_record is not None
-            else make_vector_scene_object_record(
-                object_id=str(item.decor_id),
-                object_type=str(item.decor_type),
-                bbox_xyxy=item.bbox_xyxy,
-                semantic_attributes={
-                    "decor_type": str(item.decor_type),
-                    **{key: value for key, value in decor_attributes.items() if key != "gender_id"},
-                },
-                visual_attributes={
-                    key: decor_attributes[key]
-                    for key in ("gender_id",)
-                    if key in decor_attributes
-                },
-                role=str(decor_attributes.get("role", "distractor")),
-                source_entity_type="library_decor",
-                render_scale=int(scene.render_scale),
-                style_id=str(scene.style_id),
-            )
-        )
-        entities.append(
-            {
-                "entity_id": str(item.decor_id),
-                "entity_type": "library_decor",
-                "decor_type": str(item.decor_type),
-                "bbox": [round(float(v), 3) for v in item.bbox_xyxy],
-                "attributes": _json_safe(item.attributes),
-                "object_record": object_record,
-            }
-        )
-    return entities
-
-
-def serialize_library_scene(scene: RenderedLibraryScene) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]], Dict[str, List[float]]]:
-    """Serialize scene records and bbox maps for trace payloads."""
-
-    section_records = [
-        {
-            "section_id": str(section.section_id),
-            "section_key": str(section.section_key),
-            "section_name": str(section.section_name),
-            "label": str(section.label),
-            "bbox": [round(float(v), 3) for v in section.bbox_xyxy],
-            "label_bbox": [round(float(v), 3) for v in section.label_bbox_xyxy],
-            "shelf_bboxes": [[round(float(v), 3) for v in shelf] for shelf in section.shelf_bboxes_xyxy],
-            "book_ids": list(section.book_ids),
-            "role": str(section.role),
-            "attributes": _json_safe(section.attributes),
-        }
-        for section in scene.sections
-    ]
-    book_records = [
-        {
-            "book_id": str(book.book_id),
-            "section_id": str(book.section_id),
-            "section_key": str(book.section_key),
-            "section_name": str(book.section_name),
-            "color_name": str(book.color_name),
-            "color_rgb": [int(v) for v in book.color_rgb],
-            "color_label": str(book.color_label),
-            "orientation": str(book.orientation),
-            "bbox": [round(float(v), 3) for v in book.bbox_xyxy],
-            "row_index": int(book.row_index),
-            "slot_index": int(book.slot_index),
-            "role": str(book.role),
-            "attributes": _json_safe(book.attributes),
-        }
-        for book in scene.books
-    ]
-    decor_records = [
-        {
-            "decor_id": str(item.decor_id),
-            "decor_type": str(item.decor_type),
-            "bbox": [round(float(v), 3) for v in item.bbox_xyxy],
-            "attributes": _json_safe(item.attributes),
-        }
-        for item in scene.decor
-    ]
-    return (
-        [
-            {
-                "setting_id": str(scene.setting_id),
-                "sections": section_records,
-                "books": book_records,
-                "decor": decor_records,
-            }
-        ],
-        book_bbox_map(scene),
-        section_bbox_map(scene),
-    )
-
-
 __all__ = [
-    "BOOK_ORIENTATIONS",
-    "LIBRARY_SECTION_TYPES",
-    "LIBRARY_SETTING_IDS",
-    "LibraryBookSpec",
-    "LibrarySectionSpec",
-    "RenderedLibraryScene",
-    "book_bbox_map",
-    "library_scene_entities",
-    "library_section_display_name",
     "render_library_scene",
-    "section_bbox_map",
-    "serialize_library_scene",
-    "sort_library_bboxes",
 ]

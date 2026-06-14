@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from collections import Counter
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.seed import hash64
 from trace.tasks import create_task
-from trace.tasks.illustrations.counting.library_book_count import _sample_spec as _sample_library_book_spec
+from trace.tasks.illustrations.library.books_in_section_count import _sample_spec as _sample_books_in_section_spec
+from trace.tasks.illustrations.library.filtered_book_in_section_count import _sample_spec as _sample_filtered_book_spec
 
 
 def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
@@ -19,7 +21,7 @@ def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
 def test_books_in_section_count_contract() -> None:
     out = create_task("task_illustrations__library__books_in_section_count").generate(
         hash64(2026052404, "library-books-section", 0),
-        params={"query_id": "books_in_section_count", "section_key": "science", "target_count": 7, "section_count": 4},
+        params={"query_id": SINGLE_QUERY_ID, "section_key": "science", "target_count": 7, "section_count": 4},
         max_attempts=100,
     )
     trace = out.trace_payload
@@ -28,7 +30,9 @@ def test_books_in_section_count_contract() -> None:
     book_bboxes = trace["render_map"]["book_bboxes_px"]
 
     assert out.scene_id == "library"
-    assert out.query_id == "books_in_section_count"
+    assert out.query_id == SINGLE_QUERY_ID
+    assert trace["query_spec"]["query_id"] == SINGLE_QUERY_ID
+    assert trace["query_spec"]["params"]["prompt_query_key"] == "books_in_section_count"
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == 7
@@ -45,9 +49,9 @@ def test_books_in_section_count_contract() -> None:
 
 def test_books_in_section_countseeded_sampler_covers_answer_counts() -> None:
     answers = [
-        _sample_library_book_spec(
+        _sample_books_in_section_spec(
             instance_seed=hash64(2026052404, "library-books-section-sampling", index),
-            params={"query_id": "books_in_section_count"},
+            params={},
             attempt_index=0,
         ).target_count
         for index in range(100)
@@ -89,7 +93,7 @@ def test_book_color_count_contract() -> None:
 
 def test_book_color_countseeded_sampler_covers_answer_counts() -> None:
     samples = [
-        _sample_library_book_spec(
+        _sample_filtered_book_spec(
             instance_seed=hash64(2026052405, "library-book-color-sampling", index),
             params={"query_id": "book_color_in_section_count"},
             attempt_index=0,
@@ -128,9 +132,9 @@ def test_book_orientation_count_contract() -> None:
 
 def test_book_orientation_countseeded_sampler_covers_answer_counts_and_variants() -> None:
     samples = [
-        _sample_library_book_spec(
+        _sample_filtered_book_spec(
             instance_seed=hash64(2026052406, "library-book-orientation-sampling", index),
-            params={"query_id_support": ["upright_book_in_section_count", "horizontal_book_in_section_count"]},
+            params={"query_id": "upright_book_in_section_count" if index % 2 == 0 else "horizontal_book_in_section_count"},
             attempt_index=0,
         )
         for index in range(100)

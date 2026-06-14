@@ -840,8 +840,8 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__environment__crossing_feature_count": _entry(
         "illustrations", "environment", "illustrations", "environment"
     ),
-    "task_illustrations__library__books_in_section_count": _entry("illustrations", "library", "illustrations", "counting"),
-    "task_illustrations__library__filtered_book_in_section_count": _entry("illustrations", "library", "illustrations", "counting"),
+    "task_illustrations__library__books_in_section_count": _entry("illustrations", "library", "illustrations", "library"),
+    "task_illustrations__library__filtered_book_in_section_count": _entry("illustrations", "library", "illustrations", "library"),
     "task_illustrations__indoor_room__surface_object_count": _entry(
         "illustrations", "indoor_room", "illustrations", "indoor_room"
     ),

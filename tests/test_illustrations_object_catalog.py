@@ -5,7 +5,7 @@ from __future__ import annotations
 from trace.tasks.illustrations.construction_site.shared import labels as construction_labels
 from trace.tasks.illustrations.construction_site.shared import state as construction_state
 from trace.tasks.illustrations.environment.shared import rendering as environment
-from trace.tasks.illustrations.shared import library_rendering as library
+from trace.tasks.illustrations.library.shared import state as library
 from trace.tasks.illustrations.shared import mixed_object_rendering as mixed
 from trace.tasks.illustrations.shared import park_playground_rendering as park
 from trace.tasks.illustrations.shared import transit_terminal_rendering as transit

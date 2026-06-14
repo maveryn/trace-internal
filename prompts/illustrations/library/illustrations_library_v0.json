@@ -1,0 +1,107 @@
+{
+  "bundle_id": "illustrations_library_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "books_in_section_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "filtered_book_in_section_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:library_canvas": [
+      "section_count"
+    ],
+    "query:books_in_section_count": [
+      "section_name"
+    ],
+    "query:book_color_in_section_count": [
+      "color_label",
+      "section_name"
+    ],
+    "query:upright_book_in_section_count": [
+      "orientation_name",
+      "section_name"
+    ],
+    "query:horizontal_book_in_section_count": [
+      "orientation_name",
+      "section_name"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "library_canvas": [
+      "The image shows an illustrated library with {section_count} labeled shelf sections.",
+      "The scene shows a library room containing {section_count} labeled book sections.",
+      "The picture shows {section_count} labeled library shelf sections.",
+      "The canvas contains a library with {section_count} labeled shelf sections.",
+      "This library scene contains {section_count} labeled book sections."
+    ]
+  },
+  "query_templates": {
+    "books_in_section_count": [
+      "How many books are in the {section_name} section?",
+      "Count the books in the {section_name} section.",
+      "What is the number of books in the {section_name} section?",
+      "How many visible books are shelved under {section_name}?",
+      "Find every book in the {section_name} section. What is the count?"
+    ],
+    "book_color_in_section_count": [
+      "How many {color_label} books are in the {section_name} section?",
+      "Count the {color_label} books in the {section_name} section.",
+      "What is the number of {color_label} books in the {section_name} section?",
+      "How many books colored {color_label} are shelved under {section_name}?",
+      "Find every {color_label} book in the {section_name} section. What is the count?"
+    ],
+    "upright_book_in_section_count": [
+      "How many upright books are in the {section_name} section?",
+      "Count the upright books in the {section_name} section.",
+      "What is the number of upright books in the {section_name} section?",
+      "How many books standing upright are shelved under {section_name}?",
+      "Find every upright book in the {section_name} section. What is the count?"
+    ],
+    "horizontal_book_in_section_count": [
+      "How many horizontal books are in the {section_name} section?",
+      "Count the horizontal books in the {section_name} section.",
+      "What is the number of horizontal books in the {section_name} section?",
+      "How many books lying horizontally are shelved under {section_name}?",
+      "Find every horizontal book in the {section_name} section. What is the count?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

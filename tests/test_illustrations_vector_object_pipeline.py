@@ -27,12 +27,9 @@ from trace.tasks.illustrations.construction_site.shared.state import (
     ConstructionMaterialSpec,
     ConstructionWorkerSpec,
 )
-from trace.tasks.illustrations.shared.library_rendering import (
-    LibraryBookSpec,
-    LibrarySectionSpec,
-    library_scene_entities,
-    render_library_scene,
-)
+from trace.tasks.illustrations.library.shared.annotations import library_scene_entities
+from trace.tasks.illustrations.library.shared.rendering import render_library_scene
+from trace.tasks.illustrations.library.shared.state import LibraryBookSpec, LibrarySectionSpec
 from trace.tasks.illustrations.shared.mixed_object_rendering import (
     ObjectPlacementSpec,
     render_mixed_object_scene,
@@ -283,7 +280,7 @@ def test_reviewed_vector_library_objects_emit_stable_parts() -> None:
         "lily_pad": {"leaf": 1, "flower": 1},
         "tree": {"leaf": 6},
         "bicycle": {"wheel": 2, "handle": 1, "light": 1},
-        "canoe": {},
+        "boat": {"window": 2},
     }
 
     for index, (object_type, expected_parts) in enumerate(cases.items()):

@@ -4,18 +4,12 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from ...shared.color_format import format_named_color_with_hex
-from ...shared.config_defaults import group_default
-from ...shared.named_colors import available_named_colors, named_color
-from .library_scene import (
-    BOOK_ORIENTATIONS,
-    LIBRARY_SECTION_TYPES,
-    LIBRARY_SETTING_IDS,
-    LibraryBookSpec,
-    LibrarySectionSpec,
-)
-from .object_library import STYLE_IDS
-from .task_support import (
+from ....shared.color_format import format_named_color_with_hex
+from ....shared.config_defaults import group_default
+from ....shared.deterministic_sampling import resolve_selection_index
+from ....shared.named_colors import available_named_colors, named_color
+from ...shared.object_library import STYLE_IDS
+from ...shared.task_support import (
     bounds,
     render_params as _shared_render_params,
     sample_count,
@@ -23,9 +17,39 @@ from .task_support import (
     style_weights as _shared_style_weights,
     uniform_string_probability_map,
 )
+from .state import (
+    BOOK_ORIENTATIONS,
+    LIBRARY_SECTION_TYPES,
+    LIBRARY_SETTING_IDS,
+    LibraryBookSpec,
+    LibrarySectionSpec,
+)
 
 
 DEFAULT_BOOK_COLOR_SUPPORT: Tuple[str, ...] = ("red", "blue", "green", "orange", "purple", "cyan", "magenta")
+
+
+def support_choice(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+    support: Sequence[str],
+    explicit_key: str,
+) -> Tuple[str, Dict[str, float]]:
+    """Choose one string support value with explicit override or seeded cycling."""
+
+    values = tuple(str(value) for value in support if str(value))
+    if not values:
+        raise ValueError(f"{explicit_key} support must not be empty")
+    explicit = params.get(str(explicit_key))
+    if explicit is not None:
+        selected = str(explicit)
+        if selected not in set(values):
+            raise ValueError(f"{explicit_key} is outside configured support")
+        return selected, uniform_string_probability_map(values, selected=selected)
+    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
+    return str(values[int(index) % len(values)]), uniform_string_probability_map(values)
 
 
 def section_support(params: Mapping[str, Any], defaults: Mapping[str, Any]) -> Tuple[str, ...]:
@@ -178,5 +202,6 @@ __all__ = [
     "setting_weights",
     "spawned_task_rng",
     "style_weights",
+    "support_choice",
     "uniform_string_probability_map",
 ]

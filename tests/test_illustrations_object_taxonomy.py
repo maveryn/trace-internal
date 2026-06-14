@@ -13,11 +13,8 @@ from trace.tasks.illustrations.construction_site.shared.state import (
     ConstructionZone,
     RenderedConstructionSiteScene,
 )
-from trace.tasks.illustrations.shared.library_scene import (
-    LibraryDecor,
-    RenderedLibraryScene,
-    library_scene_entities,
-)
+from trace.tasks.illustrations.library.shared.annotations import library_scene_entities
+from trace.tasks.illustrations.library.shared.state import LibraryDecor, RenderedLibraryScene
 from trace.tasks.illustrations.shared.object_library import IllustrationObject, IllustrationPart, serialize_object
 from trace.tasks.illustrations.shared.object_registry import object_type_definition, registered_object_types
 from trace.tasks.illustrations.shared.park_playground_scene import (

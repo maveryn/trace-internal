@@ -1,0 +1,114 @@
+generation:
+  shared:
+    balanced_sampling: true
+    section_count_min: 4
+    section_count_max: 6
+    section_key_support:
+      - history
+      - science
+      - art
+      - travel
+      - fiction
+      - nature
+      - music
+      - math
+    color_name_support:
+      - red
+      - blue
+      - green
+      - orange
+      - purple
+      - cyan
+      - magenta
+  task_overrides:
+    task_illustrations__library__books_in_section_count:
+      target_count_min: 3
+      target_count_max: 8
+      section_book_count_min: 5
+      section_book_count_max: 12
+    task_illustrations__library__filtered_book_in_section_count:
+      target_count_min: 1
+      target_count_max: 6
+      section_book_count_min: 7
+      section_book_count_max: 14
+
+rendering:
+  shared:
+    library_canvas_width: 1280
+    library_canvas_height: 900
+    library_render_scale: 2
+    library_setting_weights:
+      reading_room: 1.0
+      archive_room: 1.0
+      childrens_corner: 1.0
+    style_weights:
+      flat_vector: 1.0
+      outlined_cartoon: 1.0
+      paper_cutout: 1.0
+      soft_shadow: 1.0
+    art_style_support:
+      - flat_vector
+      - outlined_cartoon
+      - paper_cutout
+      - soft_shadow
+      - watercolor_wash
+    art_style_weights:
+      flat_vector: 1.0
+      outlined_cartoon: 1.0
+      paper_cutout: 1.0
+      soft_shadow: 1.0
+      watercolor_wash: 1.0
+  task_overrides:
+    task_illustrations__library__books_in_section_count:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
+    task_illustrations__library__filtered_book_in_section_count:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
+
+prompt:
+  task_overrides:
+    task_illustrations__library__books_in_section_count:
+      bundle_id: illustrations_library_v0
+      scene_key: library_canvas
+      task_key: books_in_section_count_task
+      answer_hint_books_in_section: set "answer" to the count of books in the {section_name} section as an integer
+      annotation_hint_books_in_section: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted book in the {section_name} section
+      json_example_books_in_section: '{"annotation":[[92,186,110,258],[116,192,132,258],[139,176,156,258],[162,204,214,220]],"answer":4}'
+      json_example_answer_only_books_in_section: '{"answer":4}'
+    task_illustrations__library__filtered_book_in_section_count:
+      bundle_id: illustrations_library_v0
+      scene_key: library_canvas
+      task_key: filtered_book_in_section_count_task
+      answer_hint_book_color: set "answer" to the count of {color_label} books in the {section_name} section as an integer
+      annotation_hint_book_color: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {color_label} book in the {section_name} section
+      json_example_book_color: '{"annotation":[[244,184,262,256],[288,188,306,256],[336,208,386,224]],"answer":3}'
+      json_example_answer_only_book_color: '{"answer":3}'
+      answer_hint_book_orientation: set "answer" to the count of {orientation_name} books in the {section_name} section as an integer
+      annotation_hint_book_orientation: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {orientation_name} book in the {section_name} section
+      json_example_book_orientation: '{"annotation":[[482,190,500,258],[526,178,544,258],[612,206,662,222]],"answer":3}'
+      json_example_answer_only_book_orientation: '{"answer":3}'

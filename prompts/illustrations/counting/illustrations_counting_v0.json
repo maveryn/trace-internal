@@ -30,13 +30,6 @@
       "",
       ""
     ],
-    "library_book_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "person_activity_count_task": [
       "",
       "",
@@ -108,9 +101,6 @@
     "scene:environment_object_canvas": [
       "environment_setting"
     ],
-    "scene:library_canvas": [
-      "section_count"
-    ],
     "scene:park_playground_canvas": [
       "person_count"
     ],
@@ -139,21 +129,6 @@
     ],
     "query:building_window_count": [
       "window_phrase"
-    ],
-    "query:books_in_section_count": [
-      "section_name"
-    ],
-    "query:book_color_in_section_count": [
-      "color_label",
-      "section_name"
-    ],
-    "query:upright_book_in_section_count": [
-      "orientation_name",
-      "section_name"
-    ],
-    "query:horizontal_book_in_section_count": [
-      "orientation_name",
-      "section_name"
     ],
     "query:sitting_person_count": [
       "activity_phrase"
@@ -263,13 +238,6 @@
       "The canvas shows {environment_setting}.",
       "This outdoor illustration shows {environment_setting}."
     ],
-    "library_canvas": [
-      "The image shows an illustrated library with {section_count} labeled shelf sections.",
-      "The scene shows a library room containing {section_count} labeled book sections.",
-      "The picture shows {section_count} labeled library shelf sections.",
-      "The canvas contains a library with {section_count} labeled shelf sections.",
-      "This library scene contains {section_count} labeled book sections."
-    ],
     "park_playground_canvas": [
       "The image shows an illustrated park playground with {person_count} people.",
       "The scene shows {person_count} people in a park playground.",
@@ -334,34 +302,6 @@
       "What is the total number of lit building windows?",
       "How many lit windows can be seen across the buildings?",
       "Find every lit building window. What is the count?"
-    ],
-    "books_in_section_count": [
-      "How many books are in the {section_name} section?",
-      "Count the books in the {section_name} section.",
-      "What is the number of books in the {section_name} section?",
-      "How many visible books are shelved under {section_name}?",
-      "Find every book in the {section_name} section. What is the count?"
-    ],
-    "book_color_in_section_count": [
-      "How many {color_label} books are in the {section_name} section?",
-      "Count the {color_label} books in the {section_name} section.",
-      "What is the number of {color_label} books in the {section_name} section?",
-      "How many books colored {color_label} are shelved under {section_name}?",
-      "Find every {color_label} book in the {section_name} section. What is the count?"
-    ],
-    "upright_book_in_section_count": [
-      "How many upright books are in the {section_name} section?",
-      "Count the upright books in the {section_name} section.",
-      "What is the number of upright books in the {section_name} section?",
-      "How many books standing upright are shelved under {section_name}?",
-      "Find every upright book in the {section_name} section. What is the count?"
-    ],
-    "horizontal_book_in_section_count": [
-      "How many horizontal books are in the {section_name} section?",
-      "Count the horizontal books in the {section_name} section.",
-      "What is the number of horizontal books in the {section_name} section?",
-      "How many books lying horizontally are shelved under {section_name}?",
-      "Find every horizontal book in the {section_name} section. What is the count?"
     ],
     "sitting_person_count": [
       "How many people are sitting?",

@@ -34,7 +34,7 @@ generation:
       object_count_min: 8
       object_count_max: 14
       target_count_min: 1
-      target_count_max: 10
+      target_count_max: 6
       theme_support:
         - canal_city
         - skyline_street

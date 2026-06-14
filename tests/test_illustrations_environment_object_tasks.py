@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
+from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from trace.tasks.illustrations.environment.shared.rendering import (
     BRIDGE_STYLE_IDS,
     BUILDING_STYLE_IDS,
@@ -112,6 +113,23 @@ def test_building_window_count_contract() -> None:
     assert all(building["attributes"]["building_style_id"] in BUILDING_STYLE_IDS for building in buildings)
     expected = [render_map["window_bboxes_px"][window_id] for window_id in execution["counted_window_ids"]]
     assert sorted(out.annotation_gt.value) == sorted(expected)
+
+
+def test_building_window_default_answer_range_is_capped_at_six() -> None:
+    generation_defaults, _rendering_defaults, _prompt_defaults = load_scene_generation_rendering_prompt_defaults(
+        "illustrations",
+        "environment",
+        task_id="task_illustrations__environment__lit_window_count",
+    )
+    assert int(generation_defaults["target_count_min"]) == 1
+    assert int(generation_defaults["target_count_max"]) == 6
+    for index in range(12):
+        out = create_task("task_illustrations__environment__lit_window_count").generate(
+            hash64(2026061404, "building-window-range", index),
+            params={},
+            max_attempts=300,
+        )
+        assert 1 <= int(out.answer_gt.value) <= 6
 
 
 def test_missing_patch_label_contract() -> None:

@@ -31,7 +31,7 @@ Counts lit windows in rendered environment buildings.
 ## Answer Contract
 - Answer schema: `integer_count`
 - Generator `answer_gt.type`: `integer`
-- The answer value is a non-negative integer derived from the same execution trace as the annotation.
+- The answer value is an integer in the default range `1..6`, derived from the same execution trace as the annotation.
 
 ## Annotation Contract
 - Annotation schema: `bbox_set`

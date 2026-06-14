@@ -6,6 +6,8 @@
 - module: `trace/tasks/icons/named_grid/group_predicate_count.py`
 
 ## Program Contract
+`count.group_predicate(scene=named_grid, scope=numbered_rows_or_columns, groups=grid_lines, predicates=at_least|exactly|none, output=count)`
+
 1. The image shows one visible grid with numbered rows and numbered columns.
 2. Each grid cell contains one procedural named icon.
 3. The prompt names one target icon shape in quotes and asks how many rows or

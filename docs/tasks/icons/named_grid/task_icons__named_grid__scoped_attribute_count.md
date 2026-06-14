@@ -6,6 +6,8 @@
 - module: `trace/tasks/icons/named_grid/scoped_attribute_count.py`
 
 ## Program Contract
+`count.scoped_attribute(scene=named_grid, scope=numbered_row_or_column, attribute=shape, output=count)`
+
 1. The image shows one visible grid with numbered rows and numbered columns.
 2. Each grid cell contains one procedural named icon.
 3. The prompt names one target icon shape in quotes and addresses one row or

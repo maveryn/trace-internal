@@ -8,6 +8,9 @@
 - module: `trace/tasks/icons/named_field/reference_distance_rank_label.py`
 - prompt bundle: `prompts/icons/relation/icons_relation_v0.json`
 
+## Program Contract
+`selection.ranked_item(scene=named_field, scope=labeled_option_icons, metric=center_distance_to_reference, ranks=closest|second_closest|farthest, output=option_letter)`
+
 ## Scene And Query
 The task renders one panel labeled `Scene` with exactly one unique named
 reference icon, six option icons labeled `A`..`F`, and `4..8` other icons.

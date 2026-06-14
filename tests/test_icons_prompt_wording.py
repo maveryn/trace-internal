@@ -68,7 +68,6 @@ def test_icons_named_feedback_tasks_render_natural_prompt_text() -> None:
         (
             "task_icons__named_field__closer_to_reference_count",
             {
-                "query_id": "closer_to_reference_count",
                 "queried_reference_label": "A",
                 "target_shape_id": "star",
                 "reference_a_shape_id": "circle",

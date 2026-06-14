@@ -25,7 +25,8 @@ def test_icons_relation_partial_match_contract_matches_scene() -> None:
     assert out.annotation_gt.type == 'keyed_bbox_map'
     assert sorted(out.annotation_gt.value.keys()) == ['selected_option', 'source_fragment']
     assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
-    assert out.query_id == 'partial_icon_match_label'
+    assert out.query_id == 'single'
+    assert trace['query_spec']['params']['internal_query_id'] == 'partial_icon_match_label'
     assert out.scene_id == 'icon_cutout'
     assert trace['scene_ir']['scene_kind'] == 'icons_icon_cutout_partial_match_label'
     assert execution['question_format'] == 'select_full_icon_option_matching_partial_source_fragment'
@@ -67,7 +68,8 @@ def test_icons_relation_partial_match_default_sampling() -> None:
     for index in range(18):
         out = task.generate(hash64(2026052803, 'icons_relation_partial_match', index), params={}, max_attempts=120)
         execution = out.trace_payload['execution_trace']
-        assert str(out.query_id) == 'partial_icon_match_label'
+        assert str(out.query_id) == 'single'
+        assert str(out.trace_payload['query_spec']['params']['internal_query_id']) == 'partial_icon_match_label'
         assert int(execution['object_count']) == 6
         answer_counts[str(out.answer_gt.value)] += 1
         styles[str(execution['fragment_window_style'])] += 1

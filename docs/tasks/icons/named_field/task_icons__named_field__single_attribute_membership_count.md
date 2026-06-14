@@ -8,6 +8,9 @@
 - module: `trace/tasks/icons/named_field/single_attribute_membership_count.py`
 - prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
 
+## Program Contract
+`count.single_attribute_membership(scene=named_field, scope=all_icons, attribute=shape, output=count)`
+
 ## Scene And Query
 The task renders one panel labeled `Scene` containing procedurally generated
 named shape icons. The prompt names one shape, such as `star`, `crescent`,

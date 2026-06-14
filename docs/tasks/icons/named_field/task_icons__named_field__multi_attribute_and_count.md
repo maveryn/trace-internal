@@ -8,6 +8,9 @@
 - module: `trace/tasks/icons/named_field/multi_attribute_and_count.py`
 - prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
 
+## Program Contract
+`count.multi_attribute_and(scene=named_field, scope=all_icons, predicates=shape_and_secondary_attribute, secondary_attribute=color|fill_style, output=count)`
+
 ## Scene And Query
 The task renders one panel labeled `Scene` containing procedurally generated
 named shape icons. Each icon has a semantic procedural `shape_id`, a semantic

@@ -6,6 +6,8 @@
 - module: `trace/tasks/icons/named_grid/row_column_shape_extreme_number.py`
 
 ## Program Contract
+`selection.extreme_metric_label(scene=named_grid, scope=numbered_rows_or_columns, metric=target_shape_count, extrema=most|fewest, output=one_based_line_number)`
+
 1. The image shows one visible grid with numbered rows and numbered columns.
 2. Each grid cell contains one procedural named icon.
 3. The prompt names one target icon shape in quotes and asks which row or

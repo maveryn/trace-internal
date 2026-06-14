@@ -8,6 +8,9 @@
 - module: `trace/tasks/icons/named_field/scoped_attribute_count.py`
 - prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
 
+## Program Contract
+`count.scoped_attribute(scene=named_field, scope=marked_region_or_band_or_quadrant_or_shelf, attribute=shape, output=count)`
+
 ## Scene And Query
 The task renders one panel labeled `Scene` containing procedurally generated
 named shape icons plus a visible marked region. The prompt names one procedural

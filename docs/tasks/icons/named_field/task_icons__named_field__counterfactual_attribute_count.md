@@ -8,6 +8,9 @@
 - module: `trace/tasks/icons/named_field/counterfactual_attribute_count.py`
 - prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
 
+## Program Contract
+`count.counterfactual(scene=named_field, scope=visible_icons, edit=shape_replacement|remove_and_replace, target=shape_count, output=count)`
+
 ## Scene And Query
 The task renders one panel labeled `Scene` containing procedurally generated
 named shape icons. The prompt describes a hypothetical edit and asks for the

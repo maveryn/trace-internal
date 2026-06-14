@@ -26,7 +26,8 @@ def test_icons_counting_named_shape_count_contract() -> None:
     )
     trace = out.trace_payload
     assert out.scene_id == "named_field"
-    assert out.query_id == "named_shape_count"
+    assert out.query_id == "single"
+    assert trace["query_spec"]["internal_query_id"] == "named_shape_count"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 3
     assert out.annotation_gt.type == "bbox_set"

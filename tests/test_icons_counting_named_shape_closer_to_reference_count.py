@@ -24,7 +24,6 @@ def test_icons_counting_named_shape_closer_to_reference_contract_all_queries() -
         out = task.generate(
             hash64(20260524, "named-shape-closer-reference-contract", index),
             params={
-                "query_id": QUERY_ID,
                 "queried_reference_label": reference_label,
                 "target_shape_id": "star",
                 "reference_a_shape_id": "circle",
@@ -51,7 +50,8 @@ def test_icons_counting_named_shape_closer_to_reference_contract_all_queries() -
         ]
 
         assert out.scene_id == "named_field"
-        assert out.query_id == QUERY_ID
+        assert out.query_id == "single"
+        assert trace["query_spec"]["internal_query_id"] == QUERY_ID
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == 3
         assert out.annotation_gt.type == "bbox_set"
@@ -83,7 +83,6 @@ def test_icons_counting_named_shape_closer_to_reference_supports_zero_answer() -
     out = task.generate(
         hash64(20260524, "named-shape-closer-reference-zero", 0),
         params={
-            "query_id": QUERY_ID,
             "queried_reference_label": "A",
             "target_shape_id": "triangle",
             "target_answer": 0,
@@ -112,7 +111,7 @@ def test_icons_counting_named_shape_closer_to_reference_sampling_distribution() 
             max_attempts=300,
         )
         execution = out.trace_payload["execution_trace"]
-        query_counts[str(out.query_id)] += 1
+        query_counts[str(out.trace_payload["query_spec"]["internal_query_id"])] += 1
         reference_label_counts[str(execution["queried_reference_label"])] += 1
         answer_counts[int(out.answer_gt.value)] += 1
         axes.add(int(execution["reference_axis_degrees"]))

@@ -7,9 +7,12 @@
 4. Task id: `task_icons__icon_cutout__partial_match_label`
 5. Objective: select the labeled full-icon option that generated the partial icon fragment.
 
+## Program Contract
+`selection.option_match(scene=icon_cutout, scope=partial_fragment_options, rule=source_fragment_shape_match, output=option_letter)`
+
 ## 2) Scene + task contract
 1. Entities/relations: one two-panel image with a partial icon fragment on the left and six labeled full-icon options on the right.
-2. Supported `query_id` value: `partial_icon_match_label`.
+2. Supported `query_id` value: `single`
 3. Answer type: `answer_gt.type = option_letter`.
 4. Annotation type: `annotation_gt.type = keyed_bbox_map` with `source_fragment` and `selected_option`.
 5. Option policy: the Scene grid uses labels `A..F`; exactly one full-icon option shares the hidden curated `icon_id` that produced the fragment.

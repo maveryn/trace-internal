@@ -7,6 +7,9 @@
 4. Task id: `task_icons__mirror_grid__mirror_symmetry_match_label`
 5. Objective: select the labeled option cell with the same mirror symmetry as the Reference cell.
 
+## Program Contract
+`selection.option_match(scene=mirror_grid, scope=reference_and_option_cells, rule=mirror_symmetry_signature_match, output=option_letter)`
+
 ## 2) Scene + task contract
 1. Entities/relations: one two-panel image with a `Reference` cell on the left and labeled option cells on the right.
 2. Query ids: `mirror_vertical`, `mirror_horizontal`, `mirror_diagonal_main`, `mirror_diagonal_anti`, `mirror_both_axes`.

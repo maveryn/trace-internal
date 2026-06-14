@@ -7,6 +7,9 @@
 - module: `trace/tasks/icons/named_field/closer_to_reference_count.py`
 - prompt bundle: `prompts/icons/named_field/icons_named_field_v1.json`
 
+## Program Contract
+`count.reference_metric_relation(scene=named_field, scope=target_shape_icons, metric=center_distance_to_two_references, relation=closer_to_queried_reference, output=count)`
+
 ## Scene And Query
 The task renders one panel labeled `Scene` containing two larger reference
 icons plus several icons of one prompt-named target shape. The references are

@@ -35,17 +35,20 @@ def _predicate(query_id: str, *, is_shape: bool, is_attribute: bool) -> bool:
 def test_icons_counting_named_shape_color_boolean_contract_all_queries() -> None:
     for index, query_id in enumerate(QUERY_IDS):
         task = create_task(TASK_ID_BY_QUERY_ID[str(query_id)])
+        public_query_ids = tuple(getattr(task, "supported_query_ids", ()))
+        params = {
+            "attribute_axis": "color",
+            "target_shape_id": "star",
+            "target_color_name": "red",
+            "target_count": 4,
+            "object_count": 7,
+            "arrangement_mode": "ordered_grid",
+        }
+        if public_query_ids != ("single",):
+            params["query_id"] = query_id
         out = task.generate(
             hash64(20260523, "named-shape-color-boolean-contract", index),
-            params={
-                "query_id": query_id,
-                "attribute_axis": "color",
-                "target_shape_id": "star",
-                "target_color_name": "red",
-                "target_count": 4,
-                "object_count": 7,
-                "arrangement_mode": "ordered_grid",
-            },
+            params=params,
             max_attempts=200,
         )
         trace = out.trace_payload
@@ -63,7 +66,8 @@ def test_icons_counting_named_shape_color_boolean_contract_all_queries() -> None
         ]
 
         assert out.scene_id == "named_field"
-        assert out.query_id == query_id
+        assert out.query_id == ("single" if public_query_ids == ("single",) else query_id)
+        assert trace["query_spec"]["internal_query_id"] == query_id
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == 4
         assert out.annotation_gt.type == "bbox_set"
@@ -82,17 +86,19 @@ def test_icons_counting_named_shape_color_boolean_contract_all_queries() -> None
 def test_icons_counting_named_shape_color_boolean_fill_style_axis_contract() -> None:
     query_id = "shape_and_color_count"
     task = create_task(TASK_ID_BY_QUERY_ID[str(query_id)])
+    params = {
+        "attribute_axis": "fill_style",
+        "target_shape_id": "star",
+        "target_fill_style": "striped",
+        "target_count": 3,
+        "object_count": 6,
+        "arrangement_mode": "ordered_grid",
+    }
+    if tuple(getattr(task, "supported_query_ids", ())) != ("single",):
+        params["query_id"] = query_id
     out = task.generate(
         hash64(20260523, "named-shape-fill-style-boolean-contract", 0),
-        params={
-            "query_id": query_id,
-            "attribute_axis": "fill_style",
-            "target_shape_id": "star",
-            "target_fill_style": "striped",
-            "target_count": 3,
-            "object_count": 6,
-            "arrangement_mode": "ordered_grid",
-        },
+        params=params,
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -133,7 +139,7 @@ def test_icons_counting_named_shape_color_boolean_sampling_distribution() -> Non
                 max_attempts=200,
             )
             execution = out.trace_payload["execution_trace"]
-            query_id = str(execution["query_id"])
+            query_id = str(execution.get("internal_query_id") or execution.get("source_query_id") or execution["query_id"])
             task_query_counts[query_id] += 1
             query_counts[query_id] += 1
             answer_counts[int(out.answer_gt.value)] += 1

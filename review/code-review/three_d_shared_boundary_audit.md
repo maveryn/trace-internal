@@ -39,7 +39,7 @@ The detailed file-by-file audit is maintained in
 | Projected glyphs and primitives | Keep, then rename later. | `object_scene_primitives.py` and `object_scene_glyphs_*.py` are reusable but misnamed. Rename only after import churn is controlled. |
 | Projected object geometry | Keep domain-shared. | `projected_object_geometry.py` now owns scene-neutral reference-point, projected-bbox, and bbox-overlap helpers extracted from `object_scene.py`. |
 | Object-scene assembly | Split. | `object_scene.py` still mixes object-scene grammar with compatibility re-exports. Move scene constants/render params/sample construction/shell orchestration into `object_scene/shared/`. |
-| Object-scene rendering | Split. | Keep generic draw dispatch, bbox/line/label helpers. Move `_draw_room` and platform/shell drawing into `object_scene/shared/rendering.py`. |
+| Object-scene rendering | Narrowed. | Keep generic draw dispatch, bbox/line/label helpers. Room/platform shell drawing now lives in `object_scene/shared/rendering.py`. |
 | Landmark correspondence | Move scene-local unless reused. | `object_landmarks.py` is currently used only by `object_scene/landmark_correspondence_label.py`; move to `object_scene/shared/landmarks.py` unless a second scene adopts the contract. |
 | Task support helpers | Partially narrowed; legacy wrappers remain. | `task_support.py` now exposes identity-free namespace helpers for axis/count sampling. Existing `task_id` wrappers remain only for unmigrated code and must not be used by review-candidate scenes. |
 | Room object renderers | Keep domain-shared. | `room_wall_rendering_geometry.py`, `room_wall_object_rendering.py`, and `room_floor_object_rendering.py` are reusable object renderers. |
@@ -101,8 +101,8 @@ scene's migration.
    public-`task_id` wrappers in review-candidate scenes.
 4. Keep the scene-shared import out of `object_resources.py`; this is now
    guarded by a scoped migration contract test.
-5. Split `object_scene.py` and `object_scene_rendering.py` before registering
-   `object_scene` as a review candidate.
+5. Continue splitting `object_scene.py` before registering `object_scene` as a
+   review candidate; room/platform shell rendering has already moved scene-local.
 6. Rename `object_scene_primitives.py` and `object_scene_glyphs_*.py` only in a
    controlled mechanical pass after the first small scene validates the policy.
 

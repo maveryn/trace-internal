@@ -58,7 +58,7 @@ The current source tree is scene-shaped but not migration-clean.
 
 | Scene | Current source shape | Boundary notes |
 |---|---|---|
-| `object_scene` | Public task files plus `object_scene/shared/`, with large scene grammar still in `three_d/shared/object_scene.py` | Scene grammar, render params, object-scene layout, room/platform drawing, and object-scene sample construction belong in `object_scene/shared/`. Reusable projected object glyphs and object-resource metadata remain domain-shared. |
+| `object_scene` | Public task files plus `object_scene/shared/`, with large scene grammar still in `three_d/shared/object_scene.py` | Scene grammar, render params, object-scene layout, and object-scene sample construction belong in `object_scene/shared/`; room/platform shell drawing is now scene-local in `object_scene/shared/rendering.py`. Reusable projected object glyphs and object-resource metadata remain domain-shared. |
 | `object_cluster` | Public task wrappers plus `object_cluster/shared/{attribute_count,instance_count,predicate_counts}.py` | Dense-cluster placement, composition modes, and predicate construction are scene-local. Shared bases that construct `TaskOutput` or route by public task/query id must be decomposed. |
 | `surface_fixture` | Thin public task files plus `surface_fixture/shared/task_base.py` and renderer helpers | Fixture-panel layout/rendering is scene-local. `task_base.py` currently routes by public task id and builds final output; migrated public files must own objective behavior. |
 | `room` | Scene-named package with `wall_mounted_common.py`, `wall_mounted_dataset.py`, and renderer modules at scene root | Room shell/walls/furniture grammar is scene-local and should move into role files under `room/shared/`. Reusable wall/floor object renderers stay domain-shared. |
@@ -128,7 +128,7 @@ Current modules that should generally remain domain-shared after cleanup:
 | `option_panel.py` | Scene-neutral visual option panel layout and prompt-color assignment. |
 | `object_scene_primitives.py` | Low-level projected-object drawing primitives, after renaming/review if needed. |
 | `object_scene_glyphs_*.py` | Reusable projected loose-object glyphs, after renaming/review if needed. |
-| `object_scene_rendering.py` | Reusable projected-object draw dispatch only; object-scene room/platform shell drawing should move scene-local. |
+| `object_scene_rendering.py` | Reusable projected-object draw dispatch only; object-scene room/platform shell drawing is scene-local. |
 | `room_wall_rendering_geometry.py` | Shared wall projection/drawing geometry. |
 | `room_wall_object_rendering.py`, `room_floor_object_rendering.py` | Reusable room object renderers. |
 | `street_*_object_rendering*.py` | Reusable street object renderers and object geometry helpers. |
@@ -159,7 +159,7 @@ Generated caches such as `__pycache__/` are ignored.
 | `object_landmarks.py` | `move_scene_local_unless_reused` | Currently used only by `object_scene/landmark_correspondence_label.py`. Move into `object_scene/shared/landmarks.py` unless another scene adopts the same landmark contract. |
 | `task_support.py` | `partially_narrowed_legacy_wrappers` | Namespace-based helpers now exist for axis/count sampling. Legacy `task_id` wrappers remain for unmigrated code only and should not be used by review-candidate scenes. |
 | `object_scene.py` | `split_legacy_mixed_shared` | Generic projected-object geometry has been extracted to `projected_object_geometry.py` and re-exported for compatibility. Move object-scene constants, render params, sample construction, room/platform rendering orchestration, prompt-name safety, and answer-candidate semantics into `object_scene/shared/`. |
-| `object_scene_rendering.py` | `split_legacy_mixed_shared` | Keep projected-object draw dispatch and low-level label/line/bbox helpers under scene-neutral names. Move `_draw_room` and object-scene shell/platform behavior into `object_scene/shared/rendering.py`. |
+| `object_scene_rendering.py` | `keep_shared_after_room_split` | Keep projected-object draw dispatch and low-level label/line/bbox helpers under scene-neutral names. Object-scene room/platform behavior now lives in `object_scene/shared/rendering.py`. |
 | `object_scene_primitives.py` | `keep_shared_rename_later` | Keep low-level projected-object drawing primitives. Rename to a scene-neutral name such as `projected_object_primitives.py` after import churn is controlled. |
 | `object_scene_glyphs_household.py` | `keep_shared_rename_later` | Keep reusable projected loose-object glyphs; rename away from `object_scene_` prefix later. |
 | `object_scene_glyphs_large.py` | `keep_shared_rename_later` | Keep reusable large-object glyph re-exports; rename away from `object_scene_` prefix later. |
@@ -194,10 +194,9 @@ review-candidate scenes:
   orchestration. Generic projected-object geometry has been moved to
   `projected_object_geometry.py`; the remaining object-scene pieces belong in
   `trace/tasks/three_d/object_scene/shared/`.
-- `object_scene_rendering.py` includes reusable object draw dispatch but also
-  object-scene room/platform shell behavior. During `object_scene` migration,
-  split shell behavior into scene-local `shared/rendering.py` and keep reusable
-  loose-object glyph dispatch domain-shared.
+- `object_scene_rendering.py` has been narrowed to projected-object draw
+  dispatch plus low-level label/line/bbox helpers. Object-scene room/platform
+  shell behavior now lives in `object_scene/shared/rendering.py`.
 
 ## Scene Shared
 
@@ -292,7 +291,8 @@ Move object-scene grammar out of `three_d/shared/object_scene.py` into
 - scene constants, dataclasses, supported scene variants -> `state.py`;
 - render defaults and render-param resolution -> `defaults.py`;
 - camera/sample/placement helpers -> `sampling.py`, `layout.py`, `projection.py`;
-- floor/table/platform shell drawing and final scene rendering -> `rendering.py`;
+- floor/table/platform shell drawing now starts in `rendering.py`; final scene
+  rendering orchestration should move there during full scene migration;
 - trace scaffolding and render maps -> `output.py`;
 - object-scene-specific object filters and prompt-name safety -> `objects.py`;
 - relation/count helpers -> `relations.py`, `metrics.py`.

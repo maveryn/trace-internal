@@ -37,7 +37,8 @@ from .camera_projection import (
 )
 from .object_rendering import ThreeDObjectSpec, ThreeDRenderContext, render_three_d_object
 from .scene_schema import ThreeDPlacementSpec
-from .object_scene_rendering import _bbox_union, _draw_line, _draw_option_label, _draw_room
+from .object_scene_rendering import _bbox_union, _draw_line, _draw_option_label
+from ..object_scene.shared.rendering import draw_object_scene_room
 from .option_panel import append_text_option_panel, empty_option_panel_metadata
 from .projected_object_geometry import (
     _bbox_intersection_area,
@@ -445,7 +446,13 @@ def render_object_scene_3d(
     frame = _frame_from_dataset(dataset)
     scene_variant = str(dataset.get("scene_variant", "floor_grid_room"))
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
-    room_bbox, entities = _draw_room(draw, camera=camera, frame=frame, render_params=render_params, scene_variant=scene_variant)
+    room_bbox, entities = draw_object_scene_room(
+        draw,
+        camera=camera,
+        frame=frame,
+        render_params=render_params,
+        scene_variant=scene_variant,
+    )
 
     point_specs = [dict(spec) for spec in dataset["point_specs"]]
     context_object_specs = [dict(spec) for spec in dataset.get("context_object_specs", [])]

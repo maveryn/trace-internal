@@ -5,10 +5,10 @@ from __future__ import annotations
 import pytest
 
 from trace.tasks.geometry.concentric_chord.chord_length_from_radii import (
-    SCENE_ID,
     GeometryConcentricChordLengthFromRadiiTask,
 )
 from trace.tasks.geometry.concentric_chord.inner_radius_from_chord import GeometryConcentricInnerRadiusFromChordTask
+from trace.tasks.geometry.concentric_chord.shared.defaults import SCENE_ID
 
 TASK_CLASSES = (
     GeometryConcentricChordLengthFromRadiiTask,
@@ -16,8 +16,13 @@ TASK_CLASSES = (
 )
 
 QUERY_IDS_BY_TASK = {
-    GeometryConcentricChordLengthFromRadiiTask: ("chord_length_from_radii",),
-    GeometryConcentricInnerRadiusFromChordTask: ("inner_radius_from_chord",),
+    GeometryConcentricChordLengthFromRadiiTask: ("single",),
+    GeometryConcentricInnerRadiusFromChordTask: ("single",),
+}
+
+INTERNAL_QUERY_ID_BY_TASK = {
+    GeometryConcentricChordLengthFromRadiiTask: "chord_length_from_radii",
+    GeometryConcentricInnerRadiusFromChordTask: "inner_radius_from_chord",
 }
 
 
@@ -37,7 +42,9 @@ def test_concentric_circle_chord_task_emits_public_contract(task_cls) -> None:
     trace = out.trace_payload
     assert trace["query_spec"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == out.query_id
+    assert trace["query_spec"]["params"]["internal_query_id"] == INTERNAL_QUERY_ID_BY_TASK[task_cls]
     assert trace["execution_trace"]["query_id"] == out.query_id
+    assert trace["execution_trace"]["internal_query_id"] == INTERNAL_QUERY_ID_BY_TASK[task_cls]
     assert trace["projected_annotation"]["type"] == "keyed_point_map"
     assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
     assert trace["execution_trace"]["outer_radius"] ** 2 == (
@@ -73,6 +80,7 @@ def test_concentric_circle_chord_task_supports_every_explicit_query(task_cls) ->
         )
         assert out.query_id == query_id
         assert out.answer_gt.type == "number"
+        assert out.trace_payload["query_spec"]["params"]["internal_query_id"] == INTERNAL_QUERY_ID_BY_TASK[task_cls]
         assert out.trace_payload["query_spec"]["params"][
             "query_id_probabilities"
         ] == {query_id: 1.0}

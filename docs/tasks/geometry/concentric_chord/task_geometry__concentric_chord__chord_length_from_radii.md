@@ -3,9 +3,10 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `concentric_chord`
-5. Query id: `chord_length_from_radii`
-6. Answer schema: `decimal_value_1dp`
-7. Annotation schema: `keyed_point_map`
+3. Query id: `single`
+4. Internal query id: `chord_length_from_radii`
+5. Answer schema: `decimal_value_1dp`
+6. Annotation schema: `keyed_point_map` with keys `O`, `A`, `B`, `T`
 
 ## Program Contract
 - `solve_formula(visible_concentric_chord_measurements, unknown_role=length_measure, formula_schema=chord_length_from_radii); scene=concentric_chord; scope=chord_length_from_radii`

@@ -26,6 +26,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
             "circle_polygon_composite",
             "circle_theorem",
             "composite_shape",
+            "concentric_chord",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
@@ -46,6 +47,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
             "circle_polygon_composite",
             "circle_theorem",
             "composite_shape",
+            "concentric_chord",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),

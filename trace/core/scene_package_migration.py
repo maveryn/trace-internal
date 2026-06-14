@@ -14,8 +14,8 @@ import re
 
 MIGRATED_SCENE_PACKAGE_DOMAINS: frozenset[str] = frozenset()
 MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap"}),
-    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes", "go"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap", "hexbin_density"}),
+    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes", "go", "hex"}),
     "geometry": frozenset(
         {
             "angle_relations",
@@ -31,12 +31,12 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
     "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path", "named_ring"}),
-    "illustrations": frozenset({"construction_site", "environment", "indoor_room", "library"}),
+    "illustrations": frozenset({"construction_site", "environment", "indoor_room", "library", "park_playground"}),
     "three_d": frozenset({"object_cluster", "surface_fixture"}),
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap"}),
-    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes", "go"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap", "hexbin_density"}),
+    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes", "go", "hex"}),
     "geometry": frozenset(
         {
             "angle_relations",
@@ -52,7 +52,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
     "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path", "named_ring"}),
-    "illustrations": frozenset({"construction_site", "environment", "indoor_room", "library"}),
+    "illustrations": frozenset({"construction_site", "environment", "indoor_room", "library", "park_playground"}),
     "three_d": frozenset({"object_cluster", "surface_fixture"}),
 }
 SCENE_PACKAGE_PILOT_TASK_IDS: frozenset[str] = frozenset()

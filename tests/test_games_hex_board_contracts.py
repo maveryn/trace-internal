@@ -4,13 +4,9 @@ from __future__ import annotations
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.hex.connection_gap_count import (
-    GamesHexBoardTask,
-    GamesHexCandidateNeighborCountTask,
-    GamesHexConnectionGapCountTask,
-    GamesHexWinningMoveCellLabelTask,
-)
-from trace.tasks.games.hex.shared.common import (
+from trace.tasks.games.hex.candidate_neighbor_count import GamesHexCandidateNeighborCountTask
+from trace.tasks.games.hex.connection_gap_count import GamesHexConnectionGapCountTask
+from trace.tasks.games.hex.shared.rules import (
     BLUE,
     EMPTY,
     RED,
@@ -22,6 +18,7 @@ from trace.tasks.games.hex.shared.common import (
     sorted_coords,
     winning_path_after_move,
 )
+from trace.tasks.games.hex.winning_move_cell_label import GamesHexWinningMoveCellLabelTask
 from trace.tasks.games.shared.style import SUPPORTED_HEX_STYLE_VARIANTS
 from tests.helpers import read_jsonl
 
@@ -44,10 +41,10 @@ def test_games_hex_winning_move_cell_label_emits_expected_contract() -> None:
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "D"
     assert out.annotation_gt.type == "point_set"
-    assert out.query_id == "winning_move_cell_label"
+    assert out.query_id == "single"
     assert out.scene_id == "hex"
-    assert trace["query_spec"]["params"]["query_id"] == "winning_move_cell_label"
-    assert execution["query_id"] == "winning_move_cell_label"
+    assert trace["query_spec"]["params"]["query_id"] == "single"
+    assert execution["query_id"] == "single"
     assert trace["projected_annotation"]["type"] == "point_set"
     assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
@@ -97,10 +94,10 @@ def test_games_hex_connection_gap_count_emits_expected_contract() -> None:
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 4
     assert out.annotation_gt.type == "point_set"
-    assert out.query_id == "connection_gap_count"
+    assert out.query_id == "single"
     assert out.scene_id == "hex"
-    assert trace["query_spec"]["params"]["query_id"] == "connection_gap_count"
-    assert execution["query_id"] == "connection_gap_count"
+    assert trace["query_spec"]["params"]["query_id"] == "single"
+    assert execution["query_id"] == "single"
     assert trace["projected_annotation"]["type"] == "point_set"
     assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
@@ -189,70 +186,101 @@ def test_games_hex_candidate_neighbor_count_matches_adjacent_cell_states() -> No
         assert len(out.annotation_gt.value) == int(target_answer)
 
 
-def test_games_hex_candidate_neighbor_count_samples_only_neighbor_queries() -> None:
+def test_games_hex_candidate_neighbor_count_query_cycle_covers_support() -> None:
     task = GamesHexCandidateNeighborCountTask()
-    queries = {
-        task.generate(51281 + index, params={}, max_attempts=128).query_id
-        for index in range(18)
-    }
-
-    assert queries == {"red_neighbor_count", "blue_neighbor_count", "empty_neighbor_count"}
-
-
-def test_games_hex_board_query_cycle_covers_answer_board_player_and_style_support() -> None:
-    task = GamesHexBoardTask()
     queries: set[str] = set()
+    counts: set[int] = set()
     boards: set[int] = set()
-    players: set[str] = set()
     styles: set[str] = set()
-    labels: set[str] = set()
-    gap_counts: set[int] = set()
-    neighbor_counts: set[int] = set()
-
-    for sampling_index in range(160):
+    for sampling_index in range(96):
         out = task.generate(
-            51301 + int(sampling_index),
-            params={},
+            51281 + int(sampling_index),
+            params={"_sample_cursor": sampling_index},
             max_attempts=128,
         )
         execution = out.trace_payload["execution_trace"]
         queries.add(str(out.query_id))
+        counts.add(int(out.answer_gt.value))
+        boards.add(int(execution["board_size"]))
+        styles.add(str(execution["style_variant"]))
+
+    assert queries == {"red_neighbor_count", "blue_neighbor_count", "empty_neighbor_count"}
+    assert counts == {0, 1, 2, 3, 4, 5, 6}
+    assert boards == {5, 6, 7, 8}
+    assert styles == set(SUPPORTED_HEX_STYLE_VARIANTS)
+
+
+def test_games_hex_connection_gap_count_cycle_covers_support() -> None:
+    task = GamesHexConnectionGapCountTask()
+    gap_counts: set[int] = set()
+    players: set[str] = set()
+    styles: set[str] = set()
+    for sampling_index in range(80):
+        out = task.generate(
+            51301 + int(sampling_index),
+            params={"_sample_cursor": sampling_index},
+            max_attempts=128,
+        )
+        execution = out.trace_payload["execution_trace"]
+        assert out.query_id == "single"
+        gap_counts.add(int(out.answer_gt.value))
+        players.add(str(execution["player_color"]))
+        styles.add(str(execution["style_variant"]))
+
+    assert gap_counts == {1, 2, 3, 4, 5}
+    assert players == {"red", "blue"}
+    assert styles == set(SUPPORTED_HEX_STYLE_VARIANTS)
+
+
+def test_games_hex_winning_move_cell_label_cycle_covers_support() -> None:
+    task = GamesHexWinningMoveCellLabelTask()
+    labels: set[str] = set()
+    boards: set[int] = set()
+    players: set[str] = set()
+    styles: set[str] = set()
+    for sampling_index in range(96):
+        out = task.generate(
+            51391 + int(sampling_index),
+            params={"_sample_cursor": sampling_index},
+            max_attempts=128,
+        )
+        execution = out.trace_payload["execution_trace"]
+        assert out.query_id == "single"
+        labels.add(str(out.answer_gt.value))
         boards.add(int(execution["board_size"]))
         players.add(str(execution["player_color"]))
         styles.add(str(execution["style_variant"]))
-        if str(out.query_id) == "winning_move_cell_label":
-            labels.add(str(out.answer_gt.value))
-        elif str(out.query_id) == "connection_gap_count":
-            gap_counts.add(int(out.answer_gt.value))
-        else:
-            neighbor_counts.add(int(out.answer_gt.value))
 
-    assert queries == {
-        "winning_move_cell_label",
-        "connection_gap_count",
-        "red_neighbor_count",
-        "blue_neighbor_count",
-        "empty_neighbor_count",
-    }
+    assert labels == set("ABCDEF")
     assert boards == {5, 6, 7, 8}
     assert players == {"red", "blue"}
     assert styles == set(SUPPORTED_HEX_STYLE_VARIANTS)
-    assert labels == set("ABCDEF")
-    assert gap_counts == {1, 2, 3, 4, 5}
-    assert neighbor_counts == {0, 1, 2, 3, 4, 5, 6}
 
 
-def test_games_hex_board_is_deterministic() -> None:
-    params = {"query_id": "winning_move_cell_label", "target_label": "C", "board_size": 6}
-    task = GamesHexBoardTask()
-    out_a = task.generate(51241, params=params, max_attempts=128)
-    out_b = task.generate(51241, params=params, max_attempts=128)
-    assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
-    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
-    assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
-    assert out_a.prompt == out_b.prompt
-    assert out_a.image.tobytes() == out_b.image.tobytes()
+def test_games_hex_tasks_are_deterministic() -> None:
+    cases = (
+        (
+            GamesHexWinningMoveCellLabelTask(),
+            {"query_id": "single", "target_label": "C", "board_size": 6},
+        ),
+        (
+            GamesHexConnectionGapCountTask(),
+            {"query_id": "single", "target_answer": 3, "board_size": 6},
+        ),
+        (
+            GamesHexCandidateNeighborCountTask(),
+            {"query_id": "empty_neighbor_count", "target_answer": 2, "board_size": 6},
+        ),
+    )
+    for task, params in cases:
+        out_a = task.generate(51241, params=params, max_attempts=128)
+        out_b = task.generate(51241, params=params, max_attempts=128)
+        assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
+        assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
+        assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+        assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
+        assert out_a.prompt == out_b.prompt
+        assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
 def test_games_hex_board_build_smoke(tmp_path) -> None:
@@ -266,12 +294,12 @@ def test_games_hex_board_build_smoke(tmp_path) -> None:
             BuildTaskConfig(
                 task_id="task_games__hex__winning_move_cell_label",
                 count=1,
-                params={"target_label": "B", "board_size": 6},
+                params={"query_id": "single", "target_label": "B", "board_size": 6},
             ),
             BuildTaskConfig(
                 task_id="task_games__hex__connection_gap_count",
                 count=1,
-                params={"target_answer": 3, "board_size": 6},
+                params={"query_id": "single", "target_answer": 3, "board_size": 6},
             ),
             BuildTaskConfig(
                 task_id="task_games__hex__candidate_neighbor_count",

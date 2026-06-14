@@ -8,7 +8,10 @@
 5. Supported `query_id` values: `red_neighbor_count`, `blue_neighbor_count`, `empty_neighbor_count`
 6. Answer schema: `integer_count`
 7. Annotation schema: `point_set`
-8. Program schema: `count(adjacent_cells(reference_cell, requested_state)); scene=hex; scope=candidate_neighbor_count`
+8. Program schema: `count(filter(adjacent_cells(reference_cell), state=query_state)); scene=hex; scope=candidate_neighbor_count; query_state=red|blue|empty`
+
+## Program Contract
+- `count(filter(adjacent_cells(reference_cell), state=query_state)); scene=hex; scope=candidate_neighbor_count; query_state=red|blue|empty`
 
 ## Generation Notes
 1. The reference cell is labeled in the rendered board and is not counted.

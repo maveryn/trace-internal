@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Tuple
+from typing import Dict, Tuple
 
-from PIL import Image
-
-from .mechanics import HEX_CANDIDATE_LABELS
+from .rules import HEX_CANDIDATE_LABELS
 
 
 SCENE_ID = "hex"
@@ -77,27 +75,11 @@ class HexSceneAxes:
     board_size_probabilities: Dict[str, float]
 
 
-@dataclass(frozen=True)
-class HexGeneratedComponents:
-    """Rendered/prompted components assembled before TaskOutput creation."""
-
-    prompt: str
-    prompt_variants: Dict[str, str]
-    answer_type: str
-    answer_value: str | int
-    annotation_type: str
-    annotation_value: Any
-    image: Image.Image
-    trace_payload: Dict[str, Any]
-    query_id: str
-
-
 __all__ = [
     "DEFAULTS",
     "HEX_NAMESPACE",
     "SCENE_ID",
     "HexDefaults",
-    "HexGeneratedComponents",
     "HexIntegerAxis",
     "HexSceneAxes",
     "HexStringAxis",

@@ -17,7 +17,7 @@ from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.font_assets import sample_font_family
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 
-from .mechanics import (
+from .rules import (
     BLUE,
     EMPTY,
     HEX_CANDIDATE_LABELS,

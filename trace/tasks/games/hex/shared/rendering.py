@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw
 
 from ....shared.text_rendering import fit_font_to_box
 from ...shared.text import draw_game_text_traced as draw_text_traced
-from .mechanics import BLUE, EMPTY, RED, Board, Coord, color_name, coord_to_cell_id
+from .rules import BLUE, EMPTY, RED, Board, Coord, color_name, coord_to_cell_id
 from ...shared.layout import apply_games_layout_jitter_to_bbox
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from ...shared.style import HexTheme, build_games_hex_theme

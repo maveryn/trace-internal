@@ -402,11 +402,19 @@ def _draw_element(
         return [round(float(value), 3) for value in bbox], [round(float(center[0]), 3), round(float(center[1]), 3)]
 
     if element_type in {"tile", "brick", "paver"}:
-        shade = fill if cell_record.get("fill_rgb") is not None else _mix(fill, (245, 245, 238), 0.12 + (index % 3) * 0.05)
-        grout = (235, 238, 232) if element_type != "brick" else (218, 197, 184)
-        outline = (108, 116, 119) if element_type != "brick" else (107, 70, 59)
+        if element_type == "tile" and cell_record.get("fill_rgb") is None:
+            shade = _mix(_panel_fill(str(scene_variant)), (255, 255, 248), 0.52 + (index % 3) * 0.04)
+            grout = (118, 132, 124)
+            outline = (62, 74, 70)
+        else:
+            shade = fill if cell_record.get("fill_rgb") is not None else _mix(fill, (245, 245, 238), 0.12 + (index % 3) * 0.05)
+            grout = (235, 238, 232) if element_type != "brick" else (218, 197, 184)
+            outline = (108, 116, 119) if element_type != "brick" else (107, 70, 59)
         draw.polygon(cell, fill=shade, outline=outline)
         draw.line([(float(x), float(y)) for x, y in [*cell, cell[0]]], fill=grout, width=3 if element_type != "paver" else 2)
+        if element_type == "tile":
+            inner = shrink_polygon(cell, 0.84)
+            draw.line(inner + [inner[0]], fill=_mix(shade, (255, 255, 255), 0.24), width=1)
         if element_type == "brick":
             top = quad_point(cell, 0.18, 0.18)
             bot = quad_point(cell, 0.82, 0.78)

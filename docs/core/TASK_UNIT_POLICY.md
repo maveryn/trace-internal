@@ -23,6 +23,10 @@ The objective contract has three required parts:
    name the candidate set, operand roles, intermediate computation, final
    operator, output binding, and annotation witness roles.
 
+Use `docs/core/PROGRAM_SCHEMA_CATALOG.md` for reusable program-schema names and
+do-not-merge boundaries. The catalog normalizes terminology; it does not merge
+public tasks by itself.
+
 Same scene, answer type, or annotation type is not enough to merge tasks. Merge
 only when all three objective-contract fields and the query-facing visual
 scaffold remain stable.

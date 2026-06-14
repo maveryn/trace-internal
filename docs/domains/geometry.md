@@ -4,8 +4,6 @@ Geometry is migrated to scene-package layout: each public task id maps to `trace
 
 Geometry follows the public taxonomy `domain -> scene_id -> task_id`. Most active geometry code still uses legacy scene-package implementation routing while the scene-package migration is in progress; `angle_relations`, `area_partition`, `bearing_route`, `circle_centerline_overlap`, `circle_pair_tangents`, `circle_polygon_composite`, and `circle_theorem` are review-candidate scenes under the current scene-package gate, and human acceptance is still required after each scene passes source audit, tests, fresh review artifacts, and browser review. Sampling is over public task ids, with narrow `query_id` branches kept inside a task only when they preserve the same program contract.
 
-This file is synchronized with the contract-v0 geometry migration source in `review/taxonomy-audit/contract_v0_reanalysis/`.
-
 Scene-package migration tracking lives in `review/taxonomy-audit/scene_package_migration/geometry.md`. Do not add `geometry` to the migrated-domain enforcement allowlist until all geometry scenes, configs, prompts, tests, and review artifacts have moved off legacy scene-package routing.
 
 ## Public Surface

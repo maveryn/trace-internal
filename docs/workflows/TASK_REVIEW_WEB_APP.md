@@ -191,35 +191,29 @@ feedback that applies across the scene family rather than to one task or one
 exact generated sample.
 
 The separate **Taxonomy** link opens `/taxonomy`, which browses the current
-taxonomy audit artifacts under `review/taxonomy-audit`. The taxonomy browser is
-for task-boundary review, not generated task completion. It shows current task
-and query ids mapped to proposed task ids, attaches available current review
-samples for each query, and links back to the normal task/sample pages for
-image, prompt, answer, and annotation inspection. The taxonomy overview shows
-global decision-review progress as approved decisions over total current tasks,
-plus the number of current tasks with open taxonomy issues. Each taxonomy task
-detail page has an **Approve Decision** control for accepting the proposed
-keep/split/rename mapping. If the decision is not acceptable, file a taxonomy
-issue from that page; filing a taxonomy issue automatically clears approval for
-that taxonomy task. Use **Next Pending**, **Approve and Next**, or **Save Issue
-and Next** to advance through the remaining pending taxonomy items in the same
-domain queue. Taxonomy decision approvals are stored in the same review
-SQLite database in `taxonomy_decision_review`; taxonomy issues remain in the
-normal feedback tables with the `[taxonomy:<round>]` prefix. Taxonomy task
-pages also show **Arguments / Variant Axes** from `program_arguments_json`.
-These rows explain allowed in-task argument values for review; `needs_review`
-means the builder could only infer a weak/default argument description and a
-manual override may be useful.
-`/taxonomy/contract-v0/tree` shows the proposed units as a
-contract-v0 program tree:
+taxonomy audit artifacts when a taxonomy-review package is present. The
+taxonomy browser is a review surface, not the migration source of truth. Current
+task-boundary rules live in `docs/core/` and current scene status lives under
+`review/task-reviews/<domain>/<scene_id>/`; see
+`docs/SCENE_PACKAGE_MIGRATION/TAXONOMY_BOOKKEEPING.md`.
+
+The taxonomy overview shows decision-review progress and open taxonomy issues.
+Each taxonomy task detail page has an **Approve Decision** control for accepting
+the proposed keep/split/rename mapping for that review package. If the decision
+is not acceptable, file a taxonomy issue from that page; filing a taxonomy issue
+automatically clears approval for that taxonomy task. Taxonomy decision
+approvals are stored in the same review SQLite database in
+`taxonomy_decision_review`; taxonomy issues remain in the normal feedback tables
+with the `[taxonomy:<round>]` prefix. Taxonomy task pages may also show
+**Arguments / Variant Axes** from `program_arguments_json`.
+
+`/taxonomy/contract-v0/tree` shows proposed units as a contract-v0 program tree:
 `domain -> program root -> program signature -> proposed task unit`, with each
 unit also showing its base program contract when the exact task-level contract
 is narrower than the signature family. Taxonomy comments are stored in the
 normal issue database as task-level issues with a
 `[taxonomy:<round>]` prefix, so they remain visible in task issue history and
-the `/issues` work queue while also appearing on the taxonomy detail page. The
-current review round is `contract_v0_reanalysis`; no other taxonomy package is
-part of the active review surface.
+the `/issues` work queue while also appearing on the taxonomy detail page.
 
 Current resource-sheet generators:
 

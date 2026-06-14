@@ -26,11 +26,13 @@ Read these before changing a domain:
 1. `docs/README.md`
 2. `docs/core/TAXONOMY.md`
 3. `docs/core/TASK_UNIT_POLICY.md`
-4. `docs/workflows/DOMAIN_AUDIT_REVIEW.md`
-5. `docs/workflows/TASK_REVIEW_WEB_APP.md`
-6. the domain setup doc in `docs/domains/`
-7. the relevant task docs in `docs/tasks/`
-8. the approved rows in `review/taxonomy-audit/contract_v0_reanalysis/`
+4. `docs/core/PROGRAM_SCHEMA_CATALOG.md`
+5. `docs/SCENE_PACKAGE_MIGRATION/TAXONOMY_REVIEW_CHECKLIST.md`
+6. `docs/SCENE_PACKAGE_MIGRATION/TAXONOMY_BOOKKEEPING.md`
+7. `docs/workflows/DOMAIN_AUDIT_REVIEW.md`
+8. `docs/workflows/TASK_REVIEW_WEB_APP.md`
+9. the domain setup doc in `docs/domains/`
+10. the relevant task docs in `docs/tasks/`
 
 Repo-local skills may be read for operational hints, but they are not authority
 for task-boundary decisions. If skills conflict with the core taxonomy docs,
@@ -38,14 +40,25 @@ use the core docs and update the stale reference in the same change.
 
 ## Source Of Truth
 
-The domain migration source is:
+Use the current code, docs, and scene-local review status as the migration
+source of truth:
 
 ```text
-review/taxonomy-audit/contract_v0_reanalysis/proposed_task_summary.csv
-review/taxonomy-audit/contract_v0_reanalysis/task_query_analysis.csv
+trace/core/taxonomy.py
+trace/tasks/<domain>/<scene_id>/
+configs/domains/<domain>/<scene_id>.yaml
+prompts/<domain>/<scene_id>/
+docs/domains/<domain>.md
+docs/tasks/task_<domain>__<scene_id>__*.md
+review/task-reviews/<domain>/<scene_id>/taxonomy_review_status.json
 ```
 
-Use the proposed mapping only after the relevant taxonomy decision has been
+Older generated taxonomy-audit packages are not migration authority. If a
+legacy audit row contains a useful manual rationale, port the durable rule into
+`docs/core/PROGRAM_SCHEMA_CATALOG.md`, `docs/core/TASK_UNIT_POLICY.md`, or the
+scene-package migration docs before relying on it.
+
+Use an existing mapping only after the relevant taxonomy decision has been
 approved or explicitly cleared by the reviewer. If a mapping is questionable,
 stop and discuss it; do not invent a new split/merge during the migration pass.
 
@@ -168,7 +181,7 @@ For every changed task id, update all applicable surfaces:
 9. pytest files for that domain/task;
 10. review artifacts under
     `review/task-reviews/<domain>/<scene_id>/<task_id>/`;
-11. taxonomy audit source/output if the implementation exposes a needed
+11. scene-local taxonomy review status if the implementation exposes a needed
     correction to the approved mapping;
 12. reviewer issue threads: add repair notes for fixed issues.
 
@@ -220,7 +233,6 @@ Run focused checks for the domain before handoff:
 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest <domain/task tests> -q
 PYTHONPATH=. python scripts/check_active_inventory_integrity.py
 PYTHONPATH=. python scripts/generate_active_task_inventory.py --check
-PYTHONPATH=. python review/taxonomy-audit/contract_v0_reanalysis/build_contract_v0_reanalysis.py
 git diff --check
 ```
 

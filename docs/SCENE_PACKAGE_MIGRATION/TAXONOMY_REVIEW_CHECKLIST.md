@@ -28,6 +28,10 @@ parameter explicitly allowed below.
 Program code must describe the actual reasoning skeleton over the scene state.
 It is not a task name, a prose summary, or a generic placeholder.
 
+Use `docs/core/PROGRAM_SCHEMA_CATALOG.md` for the shared program-schema
+vocabulary. Reuse the closest existing schema unless the task genuinely needs a
+new reasoning skeleton.
+
 Good program code names:
 
 - the candidate set
@@ -161,6 +165,10 @@ Use this minimal shape:
 ```
 
 Do not write a passing status file unless the checklist actually passed.
+
+Use `docs/SCENE_PACKAGE_MIGRATION/TAXONOMY_BOOKKEEPING.md` for where current
+taxonomy review status should live. Do not use stale generated taxonomy audit
+packages as migration source of truth.
 
 ## Human Reviewer Gate
 

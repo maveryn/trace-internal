@@ -23,8 +23,10 @@ artifacts, forged status files, or compatibility aliases.
 
 1. `SCENE_MIGRATION_GUIDE.md`
 2. `TAXONOMY_REVIEW_CHECKLIST.md`
-3. `ENFORCEMENT_TESTS.md`
-4. `RECEIPT_SCHEMA.md`
+3. `TAXONOMY_BOOKKEEPING.md`
+4. `../core/PROGRAM_SCHEMA_CATALOG.md`
+5. `ENFORCEMENT_TESTS.md`
+6. `RECEIPT_SCHEMA.md`
 
 Domain-level companion docs may be added here only when a domain has shared
 scene infrastructure that needs explicit ownership rules before scene work can

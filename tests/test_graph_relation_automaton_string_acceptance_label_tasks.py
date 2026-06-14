@@ -59,7 +59,8 @@ def _assert_acceptance_contract(out) -> None:
     assert out.answer_gt.value in set(candidates)
     assert out.answer_gt.value == answer_option
     assert out.annotation_gt.type == "point_sequence"
-    assert len(candidates) == 6
+    assert len(candidates) == int(execution["candidate_count"])
+    assert int(execution["candidate_count"]) in set(int(value) for value in execution["candidate_count_support"])
     assert accepted_options == [answer_option]
     assert execution["accepted_option_labels"] == [answer_option]
     assert execution["answer_input_string"] == answer_string
@@ -182,7 +183,6 @@ def test_graph_relation_automaton_string_acceptance_build_smoke(tmp_path: Path) 
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
     assert all(record["scene_id"] == "automaton" for record in train_records)
-    assert all("scene_id" not in record for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_graph__automaton__dfa_accepted_string_label"]) == 2

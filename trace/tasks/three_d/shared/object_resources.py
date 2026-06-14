@@ -42,6 +42,9 @@ SURFACE_FIXTURE_OBJECT_TYPES: Tuple[str, ...] = (
     "socket_bank",
     "hook_board",
     "indicator_light_panel",
+    "bracket_panel",
+    "u_bolt_plate",
+    "pipe_rack",
 )
 
 SURFACE_FIXTURE_DISPLAY_NAME: Mapping[str, str] = {
@@ -66,6 +69,9 @@ SURFACE_FIXTURE_DISPLAY_NAME: Mapping[str, str] = {
     "socket_bank": "socket bank",
     "hook_board": "hook board",
     "indicator_light_panel": "indicator light panel",
+    "bracket_panel": "bracket panel",
+    "u_bolt_plate": "U-bolt plate",
+    "pipe_rack": "pipe rack",
 }
 
 

@@ -29,6 +29,9 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "socket_bank",
     "hook_board",
     "indicator_light_panel",
+    "bracket_panel",
+    "u_bolt_plate",
+    "pipe_rack",
 )
 
 ELEMENT_TYPE_BY_SCENE_VARIANT: Mapping[str, str] = {
@@ -53,6 +56,9 @@ ELEMENT_TYPE_BY_SCENE_VARIANT: Mapping[str, str] = {
     "socket_bank": "socket",
     "hook_board": "hook",
     "indicator_light_panel": "light",
+    "bracket_panel": "bracket",
+    "u_bolt_plate": "u_bolt",
+    "pipe_rack": "pipe",
 }
 
 SCENE_VARIANT_BY_ELEMENT_TYPE: Mapping[str, str] = {
@@ -82,6 +88,9 @@ SURFACE_FIXTURE_DISPLAY_NAME: Mapping[str, str] = {
     "socket_bank": "socket bank",
     "hook_board": "hook board",
     "indicator_light_panel": "indicator light panel",
+    "bracket_panel": "bracket panel",
+    "u_bolt_plate": "U-bolt plate",
+    "pipe_rack": "pipe rack",
 }
 
 ELEMENT_DISPLAY_NAME: Mapping[str, str] = {
@@ -106,6 +115,9 @@ ELEMENT_DISPLAY_NAME: Mapping[str, str] = {
     "socket": "socket",
     "hook": "hook",
     "light": "light",
+    "bracket": "bracket",
+    "u_bolt": "U-bolt",
+    "pipe": "pipe",
 }
 
 ELEMENT_PLURAL: Mapping[str, str] = {
@@ -130,6 +142,9 @@ ELEMENT_PLURAL: Mapping[str, str] = {
     "socket": "sockets",
     "hook": "hooks",
     "light": "lights",
+    "bracket": "brackets",
+    "u_bolt": "U-bolts",
+    "pipe": "pipes",
 }
 
 SEMANTIC_COLOR_RGB: Mapping[str, Tuple[int, int, int]] = {
@@ -185,6 +200,9 @@ COLORABLE_SCENE_VARIANTS: Tuple[str, ...] = (
     "socket_bank",
     "hook_board",
     "indicator_light_panel",
+    "bracket_panel",
+    "u_bolt_plate",
+    "pipe_rack",
 )
 
 MISSING_SCENE_VARIANTS: Tuple[str, ...] = (
@@ -205,6 +223,9 @@ MISSING_SCENE_VARIANTS: Tuple[str, ...] = (
     "socket_bank",
     "hook_board",
     "indicator_light_panel",
+    "bracket_panel",
+    "u_bolt_plate",
+    "pipe_rack",
 )
 
 ADJACENCY_SCENE_VARIANTS: Tuple[str, ...] = (
@@ -226,6 +247,9 @@ ADJACENCY_SCENE_VARIANTS: Tuple[str, ...] = (
     "socket_bank",
     "hook_board",
     "indicator_light_panel",
+    "bracket_panel",
+    "u_bolt_plate",
+    "pipe_rack",
 )
 
 SURFACE_FIXTURE_OBJECT_TYPES: Tuple[str, ...] = SUPPORTED_SCENE_VARIANTS

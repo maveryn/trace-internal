@@ -15,8 +15,9 @@
 The image shows one projected fixture surface with a repeated element family:
 tiles, holes, slots, compartments, vents, windows, doors, drawer pulls, bricks,
 pavers, lockers, mailboxes, drive bays, buttons, solar panels, screws, hex
-nuts, washers, sockets, hooks, or indicator lights. The prompt asks for the
-number of visible repeated surface elements of that family.
+nuts, washers, sockets, hooks, indicator lights, brackets, U-bolts, or pipes.
+The prompt asks for the number of visible repeated surface elements of that
+family.
 
 The scene variant determines the counted element type:
 
@@ -41,6 +42,9 @@ The scene variant determines the counted element type:
 - `socket_bank` counts `socket`
 - `hook_board` counts `hook`
 - `indicator_light_panel` counts `light`
+- `bracket_panel` counts `bracket`
+- `u_bolt_plate` counts `u_bolt`
+- `pipe_rack` counts `pipe`
 
 The answer is the integer count of finalized elements whose `element_type`
 matches the sampled `target_element_type`. Pixels are render output, not

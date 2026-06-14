@@ -108,6 +108,9 @@ def fixture_quad(render_params: Any, scene_variant: str) -> List[Tuple[float, fl
         "socket_bank",
         "hook_board",
         "indicator_light_panel",
+        "bracket_panel",
+        "u_bolt_plate",
+        "pipe_rack",
     }
     if str(scene_variant) in wall_like:
         return [
@@ -196,6 +199,9 @@ def _panel_fill(scene_variant: str) -> Tuple[int, int, int]:
         "socket_bank": (206, 210, 203),
         "hook_board": (185, 164, 128),
         "indicator_light_panel": (68, 78, 86),
+        "bracket_panel": (179, 185, 184),
+        "u_bolt_plate": (158, 166, 171),
+        "pipe_rack": (151, 165, 169),
     }.get(str(scene_variant), (218, 224, 226))
 
 
@@ -215,7 +221,18 @@ def _draw_fixture_context(draw: ImageDraw.ImageDraw, render_params: Any, quad: S
     outline = (
         (43, 50, 58)
         if str(scene_variant)
-        in {"server_rack", "control_panel", "solar_panel_array", "screw_plate", "hex_nut_plate", "washer_plate", "indicator_light_panel"}
+        in {
+            "server_rack",
+            "control_panel",
+            "solar_panel_array",
+            "screw_plate",
+            "hex_nut_plate",
+            "washer_plate",
+            "indicator_light_panel",
+            "bracket_panel",
+            "u_bolt_plate",
+            "pipe_rack",
+        }
         else (65, 75, 84)
     )
     draw.line([(float(x), float(y)) for x, y in [*quad, quad[0]]], fill=outline, width=3)
@@ -258,6 +275,18 @@ def _draw_fixture_context(draw: ImageDraw.ImageDraw, render_params: Any, quad: S
         for u in (0.04, 0.96):
             rail = [quad_point(quad, u, 0.05), quad_point(quad, u, 0.95)]
             draw.line(rail, fill=(32, 38, 44), width=4)
+    elif str(scene_variant) == "bracket_panel":
+        for v in (0.12, 0.34, 0.56, 0.78):
+            rail = [quad_point(quad, 0.06, v), quad_point(quad, 0.94, v)]
+            draw.line(rail, fill=(112, 122, 123), width=2)
+    elif str(scene_variant) == "u_bolt_plate":
+        for v in (0.08, 0.92):
+            rail = [quad_point(quad, 0.05, v), quad_point(quad, 0.95, v)]
+            draw.line(rail, fill=(111, 122, 130), width=2)
+    elif str(scene_variant) == "pipe_rack":
+        for v in (0.20, 0.40, 0.60, 0.80):
+            rail = [quad_point(quad, 0.07, v), quad_point(quad, 0.93, v)]
+            draw.line(rail, fill=(96, 113, 119), width=3)
 
     for u, v in ((0.04, 0.05), (0.96, 0.05), (0.96, 0.95), (0.04, 0.95)):
         cx, cy = quad_point(quad, u, v)
@@ -575,6 +604,75 @@ def _draw_element(
         tip = (center[0] + hw * 0.18, hook_bbox[1] + hh * 0.65)
         draw.line([(center[0] + hw * 0.22, hook_bbox[1] + hh * 0.72), tip], fill=hook_fill, width=4)
         bbox = list(hook_bbox)
+    elif element_type == "bracket":
+        bracket_bbox = _mounted_bbox(bbox, center, 0.78, 0.76, min_width=22.0, min_height=22.0)
+        bw = bracket_bbox[2] - bracket_bbox[0]
+        bh = bracket_bbox[3] - bracket_bbox[1]
+        metal = _mix(fill, (85, 92, 96), 0.25)
+        back = [
+            bracket_bbox[0] + bw * 0.18,
+            bracket_bbox[1] + bh * 0.14,
+            bracket_bbox[0] + bw * 0.34,
+            bracket_bbox[3] - bh * 0.12,
+        ]
+        shelf = [
+            bracket_bbox[0] + bw * 0.18,
+            bracket_bbox[1] + bh * 0.14,
+            bracket_bbox[2] - bw * 0.10,
+            bracket_bbox[1] + bh * 0.30,
+        ]
+        draw.rounded_rectangle(back, radius=2, fill=metal, outline=(47, 54, 58), width=1)
+        draw.rounded_rectangle(shelf, radius=2, fill=_mix(metal, (235, 239, 240), 0.14), outline=(47, 54, 58), width=1)
+        brace = [
+            (bracket_bbox[0] + bw * 0.34, bracket_bbox[1] + bh * 0.32),
+            (bracket_bbox[2] - bw * 0.14, bracket_bbox[1] + bh * 0.34),
+            (bracket_bbox[0] + bw * 0.34, bracket_bbox[3] - bh * 0.16),
+        ]
+        draw.polygon(brace, fill=_mix(metal, (212, 218, 219), 0.18), outline=(48, 54, 58))
+        for sx, sy in ((0.26, 0.24), (0.26, 0.72)):
+            screw_c = (bracket_bbox[0] + bw * sx, bracket_bbox[1] + bh * sy)
+            screw_r = max(1.8, min(bw, bh) * 0.045)
+            draw.ellipse([screw_c[0] - screw_r, screw_c[1] - screw_r, screw_c[0] + screw_r, screw_c[1] + screw_r], fill=(224, 229, 230), outline=(48, 54, 58))
+        bbox = list(bracket_bbox)
+    elif element_type == "u_bolt":
+        u_bbox = _mounted_bbox(bbox, center, 0.72, 0.78, min_width=20.0, min_height=24.0)
+        uw = u_bbox[2] - u_bbox[0]
+        uh = u_bbox[3] - u_bbox[1]
+        metal = _mix(fill, (214, 220, 222), 0.52)
+        stroke = max(3, int(min(uw, uh) * 0.11))
+        left_leg_x = u_bbox[0] + uw * 0.32
+        right_leg_x = u_bbox[0] + uw * 0.68
+        top_y = u_bbox[1] + uh * 0.18
+        bottom_y = u_bbox[1] + uh * 0.76
+        arc_box = [left_leg_x, top_y - uh * 0.05, right_leg_x, top_y + uh * 0.42]
+        draw.arc(arc_box, start=180, end=360, fill=metal, width=stroke)
+        draw.line([(left_leg_x, top_y + uh * 0.18), (left_leg_x, bottom_y)], fill=metal, width=stroke)
+        draw.line([(right_leg_x, top_y + uh * 0.18), (right_leg_x, bottom_y)], fill=metal, width=stroke)
+        for leg_x in (left_leg_x, right_leg_x):
+            foot = [leg_x - uw * 0.13, bottom_y - uh * 0.05, leg_x + uw * 0.13, bottom_y + uh * 0.11]
+            draw.rounded_rectangle(foot, radius=2, fill=_mix(metal, (80, 88, 94), 0.20), outline=(44, 51, 57), width=1)
+        bbox = list(u_bbox)
+    elif element_type == "pipe":
+        pipe_bbox = _mounted_bbox(bbox, center, 0.86, 0.50, min_width=24.0, min_height=14.0)
+        pw = pipe_bbox[2] - pipe_bbox[0]
+        ph = pipe_bbox[3] - pipe_bbox[1]
+        pipe_fill = _mix(fill, (118, 134, 140), 0.18)
+        body = [
+            pipe_bbox[0] + pw * 0.06,
+            center[1] - ph * 0.18,
+            pipe_bbox[2] - pw * 0.06,
+            center[1] + ph * 0.18,
+        ]
+        draw.rounded_rectangle(body, radius=max(3, int(ph * 0.22)), fill=pipe_fill, outline=(50, 64, 70), width=2)
+        draw.line([(body[0] + pw * 0.06, body[1] + ph * 0.07), (body[2] - pw * 0.06, body[1] + ph * 0.04)], fill=_mix(pipe_fill, (255, 255, 255), 0.36), width=1)
+        for offset in (0.22, 0.78):
+            clamp_x = pipe_bbox[0] + pw * offset
+            clamp = [clamp_x - pw * 0.045, center[1] - ph * 0.29, clamp_x + pw * 0.045, center[1] + ph * 0.29]
+            draw.rounded_rectangle(clamp, radius=2, fill=(76, 88, 94), outline=(34, 42, 47), width=1)
+            screw_c = (clamp_x, center[1] - ph * 0.38)
+            screw_r = max(1.5, ph * 0.06)
+            draw.ellipse([screw_c[0] - screw_r, screw_c[1] - screw_r, screw_c[0] + screw_r, screw_c[1] + screw_r], fill=(215, 221, 223), outline=(52, 60, 65))
+        bbox = list(pipe_bbox)
     elif element_type == "light":
         glow_bbox = _mounted_bbox(bbox, center, 0.78, 0.78, min_width=18.0, min_height=18.0)
         light_bbox = _mounted_bbox(bbox, center, 0.56, 0.56, min_width=13.0, min_height=13.0)

@@ -23,6 +23,9 @@ generation:
         socket_bank: 1.0
         hook_board: 1.0
         indicator_light_panel: 1.0
+        bracket_panel: 1.0
+        u_bolt_plate: 1.0
+        pipe_rack: 1.0
       target_count_min: 8
       target_count_max: 24
       balanced_scene_variant_sampling: true
@@ -47,6 +50,9 @@ generation:
         socket_bank: 1.0
         hook_board: 1.0
         indicator_light_panel: 1.0
+        bracket_panel: 1.0
+        u_bolt_plate: 1.0
+        pipe_rack: 1.0
       target_count_min: 3
       target_count_max: 10
       distractor_count_min: 5
@@ -88,6 +94,9 @@ generation:
         socket_bank: 1.0
         hook_board: 1.0
         indicator_light_panel: 1.0
+        bracket_panel: 1.0
+        u_bolt_plate: 1.0
+        pipe_rack: 1.0
       target_count_min: 1
       target_count_max: 6
       balanced_scene_variant_sampling: true
@@ -110,6 +119,9 @@ generation:
         socket_bank: 1.0
         hook_board: 1.0
         indicator_light_panel: 1.0
+        bracket_panel: 1.0
+        u_bolt_plate: 1.0
+        pipe_rack: 1.0
       missing_count_min: 2
       missing_count_max: 8
       total_slot_count_min: 12
@@ -135,6 +147,9 @@ generation:
         socket_bank: 1.0
         hook_board: 1.0
         indicator_light_panel: 1.0
+        bracket_panel: 1.0
+        u_bolt_plate: 1.0
+        pipe_rack: 1.0
       target_count_min: 1
       target_count_max: 4
       balanced_scene_variant_sampling: true

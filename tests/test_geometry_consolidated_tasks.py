@@ -35,9 +35,8 @@ REQUIRED_GEOMETRY_SPLIT_TASKS = {
     "task_geometry__function_panels__range_match_label",
     "task_geometry__function_panels__sign_interval_label",
     "task_geometry__function_panels__x_axis_symmetry_label",
-    "task_geometry__circle_theorem__inscribed_angle_value_central_angle_from_inscribed",
+    "task_geometry__circle_theorem__inscribed_central_angle_value",
     "task_geometry__circle_theorem__inscribed_angle_value_inscribed_angle_from_arc",
-    "task_geometry__circle_theorem__inscribed_angle_value_inscribed_angle_from_central",
     "task_geometry__circle_theorem__tangent_chord_angle_value_tangent_chord_angle_from_arc",
     "task_geometry__circle_theorem__tangent_chord_angle_value_tangent_chord_angle_from_inscribed",
     "task_geometry__coordinate_plane__reflected_point_label",
@@ -63,7 +62,7 @@ def test_geometry_registry_includes_consolidated_value_tasks_plus_new_visual_fam
         and getattr(task_cls, "default_dataset_enabled", False)
     }
 
-    assert len(geometry_tasks) == 191
+    assert len(geometry_tasks) == 190
     assert REQUIRED_GEOMETRY_SPLIT_TASKS <= geometry_tasks
 
 

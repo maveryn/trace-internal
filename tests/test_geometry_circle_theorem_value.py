@@ -19,9 +19,8 @@ from trace.tasks.geometry.circle_theorem.diameter_perpendicular_chord_length_val
 from trace.tasks.geometry.circle_theorem.external_secant_angle_value import GeometryCircleExternalSecantAngleValueTask
 from trace.tasks.geometry.circle_theorem.chord_length_from_radius_central_angle_value import GeometryCircleChordLengthFromRadiusCentralAngleValueTask
 from trace.tasks.geometry.circle_theorem.chord_length_from_radius_inscribed_angle_value import GeometryCircleChordLengthFromRadiusInscribedAngleValueTask
-from trace.tasks.geometry.circle_theorem.inscribed_angle_value_central_angle_from_inscribed import GeometryCircleCentralAngleFromInscribedTask
+from trace.tasks.geometry.circle_theorem.inscribed_central_angle_value import GeometryCircleInscribedCentralAngleValueTask
 from trace.tasks.geometry.circle_theorem.inscribed_angle_value_inscribed_angle_from_arc import GeometryCircleInscribedAngleFromArcTask
-from trace.tasks.geometry.circle_theorem.inscribed_angle_value_inscribed_angle_from_central import GeometryCircleInscribedAngleFromCentralTask
 from trace.tasks.geometry.circle_theorem.intersecting_chords_arc_measure_value import GeometryCircleIntersectingChordsArcMeasureValueTask
 from trace.tasks.geometry.circle_theorem.multi_step_angle_value import GeometryCircleMultiStepAngleValueTask
 from trace.tasks.geometry.circle_theorem.secant_secant_length_value import GeometryCircleSecantSecantLengthValueTask
@@ -128,8 +127,8 @@ QUERY_TASK_CLASSES = {
     "secant_secant_length": GeometryCircleSecantSecantLengthValueTask,
     "intersecting_chords_arc_measure": GeometryCircleIntersectingChordsArcMeasureValueTask,
     "multi_step_angle_value": GeometryCircleMultiStepAngleValueTask,
-    "inscribed_angle_from_central": GeometryCircleInscribedAngleFromCentralTask,
-    "central_angle_from_inscribed": GeometryCircleCentralAngleFromInscribedTask,
+    "inscribed_angle_from_central": GeometryCircleInscribedCentralAngleValueTask,
+    "central_angle_from_inscribed": GeometryCircleInscribedCentralAngleValueTask,
     "inscribed_angle_from_arc": GeometryCircleInscribedAngleFromArcTask,
     "tangent_chord_angle_from_arc": GeometryCircleTangentChordAngleFromArcTask,
     "tangent_chord_angle_from_inscribed": GeometryCircleTangentChordAngleFromInscribedTask,

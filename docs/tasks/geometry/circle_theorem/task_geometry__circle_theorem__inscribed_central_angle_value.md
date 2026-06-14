@@ -1,14 +1,18 @@
-# `task_geometry__circle_theorem__inscribed_angle_value_central_angle_from_inscribed`
+# `task_geometry__circle_theorem__inscribed_central_angle_value`
 
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `circle_theorem`
-5. Query id: `single`
+5. Query id: `inscribed_angle_from_central`, `central_angle_from_inscribed`
 6. Answer schema: `integer_value`
 7. Annotation schema: `keyed_point_map`
 
 ## Program Contract
-- `derive_geometry_metric(visible_circle_theorem_measurements, derivation_rule=central_angle_from_inscribed, output_role=angle_measure); scene=circle_theorem; scope=inscribed_angle_value_central_angle_from_inscribed`
+- `derive_geometry_metric(visible_circle_theorem_measurements, derivation_rule=central_inscribed_angle_relation, output_role=angle_measure); scene=circle_theorem; scope=inscribed_central_angle_value`
+
+## Query Branches
+- `inscribed_angle_from_central`: given the central angle over an arc, solve the inscribed angle over the same arc.
+- `central_angle_from_inscribed`: given the inscribed angle over an arc, solve the central angle over the same arc.
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `circle_theorem`.
@@ -22,4 +26,4 @@ Generation is deterministic for a fixed seed, params, config, and prompt bundle 
 
 ## Source
 - Config: `configs/domains/geometry/circle_theorem.yaml`
-- Task module: `trace/tasks/geometry/circle_theorem/inscribed_angle_value_central_angle_from_inscribed.py`
+- Task module: `trace/tasks/geometry/circle_theorem/inscribed_central_angle_value.py`

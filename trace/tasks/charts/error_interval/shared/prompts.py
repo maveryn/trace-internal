@@ -5,11 +5,8 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.charts.error_interval.shared.interval_chart import (
-    SCENE_ID,
-    _Dataset,
-    error_interval_query_phrase,
-)
+from trace.tasks.charts.error_interval.shared.defaults import DOMAIN, SCENE_ID
+from trace.tasks.charts.error_interval.shared.state import _Dataset
 from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.prompt_variants import (
     PromptTraceArtifacts,
@@ -18,12 +15,11 @@ from trace.tasks.shared.prompt_variants import (
 )
 
 
-DOMAIN = "charts"
 PROMPT_BUNDLE_ID = "charts_error_interval_v1"
 _DEFAULTS = get_scene_defaults(DOMAIN, SCENE_ID)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
     _DEFAULTS if isinstance(_DEFAULTS, Mapping) else {},
-    **{"task" "_id": "charts_error_interval_prompt"},
+    task_id="charts_error_interval_prompt",
 )
 
 
@@ -39,7 +35,7 @@ def dynamic_slots(dataset: _Dataset) -> dict[str, Any]:
     return {
         "object_description": _object_description(str(dataset.scene_variant)),
         "reference_value": int(dataset.reference_value or 0),
-        "relation_phrase": error_interval_query_phrase(str(dataset.query.prompt_key)),
+        "relation_phrase": str(dataset.query.params.get("relation_phrase", "interval width requested in the question")),
     }
 
 

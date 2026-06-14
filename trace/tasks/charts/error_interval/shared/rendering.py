@@ -1,500 +1,23 @@
-"""Error-bar and confidence-interval chart tasks."""
+"""Rendering primitives for error-interval charts."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from .....core.seed import spawn_rng
-from .....core.scene_config import get_scene_defaults
-from ....shared.config_defaults import (
-    group_default,
-    resolve_required_int_bounds,
-    split_scene_generation_rendering_prompt_defaults,
-)
-from ....shared.deterministic_sampling import resolve_selection_index
-from ....shared.drawing import draw_centered_text, draw_dashed_line, draw_rounded_rect
-from ....shared.font_assets import font_asset_version, sample_font_family
-from ....shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
-from ....shared.text_rendering import load_font
-from ....shared.text_legibility import draw_text_traced
-from ...shared.label_assets import resolve_chart_entity_labels
-from ...shared.labeled_chart_common import resolve_chart_axis_variant
-from ...shared.visual_defaults import load_chart_scene_background_defaults, load_chart_scene_noise_defaults
-
-
-SCENE_NAMESPACE = "charts_error_interval_base"
-SCENE_ID = "error_interval"
-
-REFERENCE_COUNT_PROMPT_KEYS: Tuple[str, ...] = (
-    "contains_reference_count",
-    "entirely_above_reference_count",
-    "entirely_below_reference_count",
-)
-RELATION_LABEL_PROMPT_KEYS: Tuple[str, ...] = (
-    "widest_interval_label",
-    "narrowest_interval_label",
-    "second_widest_interval_label",
-    "second_narrowest_interval_label",
-)
-SUPPORTED_PROMPT_KEYS: Tuple[str, ...] = REFERENCE_COUNT_PROMPT_KEYS + RELATION_LABEL_PROMPT_KEYS
-SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
-    "horizontal_forest",
-    "vertical_dot_whisker",
-    "bar_with_error",
-)
-
-_TASK_GROUP_DEFAULTS = get_scene_defaults("charts", "error_interval")
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    **{"task" "_id": SCENE_NAMESPACE},
-)
-POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_scene_background_defaults(scene_id="error_interval")
-POST_IMAGE_NOISE_DEFAULTS = load_chart_scene_noise_defaults(scene_id="error_interval", apply_prob=0.5)
-
-_QUERY_LOADS: Dict[str, float] = {
-    "contains_reference_count": 0.54,
-    "entirely_above_reference_count": 0.58,
-    "entirely_below_reference_count": 0.58,
-    "widest_interval_label": 0.56,
-    "narrowest_interval_label": 0.56,
-    "second_widest_interval_label": 0.70,
-    "second_narrowest_interval_label": 0.70,
-}
-_SCENE_LOADS: Dict[str, float] = {
-    "horizontal_forest": 0.44,
-    "vertical_dot_whisker": 0.56,
-    "bar_with_error": 0.62,
-}
-
-RGB = Tuple[int, int, int]
-BBox = List[float]
-
-
-@dataclass(frozen=True)
-class _IntervalItem:
-    item_id: str
-    label: str
-    lower: int
-    midpoint: int
-    upper: int
-    color_rgb: RGB
-
-
-@dataclass(frozen=True)
-class _Query:
-    prompt_key: str
-    answer: int | str
-    answer_type: str
-    annotation_item_ids: Tuple[str, ...]
-    params: Dict[str, Any]
-
-
-@dataclass(frozen=True)
-class _Dataset:
-    items: Tuple[_IntervalItem, ...]
-    prompt_key: str
-    query_probabilities: Dict[str, float]
-    scene_variant: str
-    scene_variant_probabilities: Dict[str, float]
-    reference_value: int | None
-    title: str
-    query: _Query
-
-
-@dataclass(frozen=True)
-class _RenderParams:
-    canvas_width: int
-    canvas_height: int
-    outer_margin_px: int
-    outer_margin_left_px: int
-    outer_margin_right_px: int
-    outer_margin_top_px: int
-    outer_margin_bottom_px: int
-    title_band_height_px: int
-    label_band_px: int
-    plot_padding_px: int
-    panel_corner_radius_px: int
-    panel_outline_width_px: int
-    axis_line_width_px: int
-    grid_line_width_px: int
-    interval_line_width_px: int
-    cap_length_px: int
-    point_radius_px: int
-    bar_width_fraction: float
-    title_font_size_px: int
-    label_font_size_px: int
-    tick_font_size_px: int
-    value_font_size_px: int
-    axis_min: int
-    axis_max: int
-    tick_step: int
-    text_rgb: RGB
-    muted_text_rgb: RGB
-    text_stroke_rgb: RGB
-    panel_fill_rgb: RGB
-    panel_outline_rgb: RGB
-    axis_rgb: RGB
-    grid_rgb: RGB
-    reference_rgb: RGB
-    interval_outline_rgb: RGB
-    font_family: str
-    layout_jitter_meta: Dict[str, Any]
-
-
-@dataclass(frozen=True)
-class _Rendered:
-    image: Image.Image
-    entities: Tuple[Dict[str, Any], ...]
-    plot_bbox_px: BBox
-    item_bboxes_px: Dict[str, BBox]
-    interval_bboxes_px: Dict[str, BBox]
-    render_meta: Dict[str, Any]
+from trace.tasks.charts.error_interval.shared.defaults import SCENE_NAMESPACE, _RENDER_DEFAULTS
+from trace.tasks.charts.error_interval.shared.state import BBox, RGB, _Dataset, _IntervalItem, _Rendered, _RenderParams
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.drawing import draw_centered_text, draw_dashed_line, draw_rounded_rect
+from trace.tasks.shared.font_assets import font_asset_version, sample_font_family
+from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
+from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_rendering import load_font
 
 
 def _bbox(values: Sequence[float]) -> BBox:
     return [round(float(value), 3) for value in values]
-
-
-def _support_probability_map(values: Sequence[int | str]) -> Dict[str, float]:
-    support = [str(value) for value in values]
-    if not support:
-        return {}
-    weight = 1.0 / float(len(support))
-    return {str(value): float(weight) for value in support}
-
-
-def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    return resolve_chart_axis_variant(
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_SCENE_VARIANTS,
-        **{"task" "_id": SCENE_NAMESPACE},
-        explicit_key="scene_variant",
-        weights_key="scene_variant_weights",
-        balance_flag_key="balanced_scene_variant_sampling",
-        axis_namespace="scene_variant",
-    )
-
-
-def _sample_int_range(
-    params: Mapping[str, Any],
-    *,
-    min_key: str,
-    max_key: str,
-    fallback_min: int,
-    fallback_max: int,
-    instance_seed: int,
-    namespace: str,
-) -> Tuple[int, Dict[str, float]]:
-    low, high = resolve_required_int_bounds(
-        params,
-        _GEN_DEFAULTS,
-        min_key=str(min_key),
-        max_key=str(max_key),
-        fallback_min=int(fallback_min),
-        fallback_max=int(fallback_max),
-        context=f"generation defaults for {SCENE_NAMESPACE}",
-    )
-    support = list(range(int(low), int(high) + 1))
-    index = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
-    return int(support[int(index % len(support))]), _support_probability_map(support)
-
-
-def _choose_labels(*, count: int, instance_seed: int) -> List[str]:
-    rng = spawn_rng(int(instance_seed), "charts.error_interval.labels")
-    labels = resolve_chart_entity_labels(
-        rng,
-        count=int(count),
-        min_chars=2,
-        max_chars=7,
-        allow_spaces=False,
-    ).labels
-    return [str(label) for label in labels]
-
-
-def _palette(params: Mapping[str, Any], *, count: int, instance_seed: int) -> List[RGB]:
-    raw_palette = params.get("interval_palette_rgb", group_default(_RENDER_DEFAULTS, "interval_palette_rgb", []))
-    palette: List[RGB] = []
-    if isinstance(raw_palette, Sequence):
-        for raw in raw_palette:
-            if isinstance(raw, Sequence) and len(raw) == 3:
-                palette.append(tuple(int(channel) for channel in raw))
-    if not palette:
-        palette = [
-            (37, 99, 235),
-            (220, 84, 45),
-            (16, 132, 96),
-            (139, 92, 246),
-            (202, 138, 4),
-            (14, 116, 144),
-            (190, 58, 90),
-        ]
-    offset = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace="charts.error_interval.palette")) % len(palette)
-    return [palette[(index + int(offset)) % len(palette)] for index in range(int(count))]
-
-
-def _clamp_interval(lower: int, midpoint: int, upper: int) -> Tuple[int, int, int]:
-    lower = max(0, min(100, int(lower)))
-    upper = max(0, min(100, int(upper)))
-    if int(lower) > int(upper):
-        lower, upper = upper, lower
-    midpoint = max(int(lower), min(int(upper), int(midpoint)))
-    return int(lower), int(midpoint), int(upper)
-
-
-def _interval_around(midpoint: int, width: int) -> Tuple[int, int, int]:
-    width = max(2, int(width))
-    half_low = int(width // 2)
-    lower = int(midpoint) - int(half_low)
-    upper = int(lower) + int(width)
-    if lower < 0:
-        upper -= lower
-        lower = 0
-    if upper > 100:
-        lower -= int(upper) - 100
-        upper = 100
-    midpoint = int(round((int(lower) + int(upper)) / 2.0))
-    return _clamp_interval(int(lower), int(midpoint), int(upper))
-
-
-def _construct_reference_intervals(
-    *,
-    prompt_key: str,
-    category_count: int,
-    answer_count: int,
-    labels: Sequence[str],
-    colors: Sequence[RGB],
-    params: Mapping[str, Any],
-    instance_seed: int,
-) -> Tuple[Tuple[_IntervalItem, ...], int, Tuple[str, ...], Dict[str, Any]]:
-    rng = spawn_rng(int(instance_seed), f"charts.error_interval.reference.{prompt_key}")
-    ref_min, ref_max = resolve_required_int_bounds(
-        params,
-        _GEN_DEFAULTS,
-        min_key="reference_value_min",
-        max_key="reference_value_max",
-        fallback_min=38,
-        fallback_max=62,
-        context=f"generation defaults for {SCENE_NAMESPACE}",
-    )
-    reference_value = int(ref_min) + int(abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"charts.error_interval.reference_value.{prompt_key}")) % (int(ref_max) - int(ref_min) + 1))
-    target_indices = set(rng.sample(range(int(category_count)), k=int(answer_count)))
-
-    items: List[_IntervalItem] = []
-    annotation_ids: List[str] = []
-    for index in range(int(category_count)):
-        item_id = f"i{index}"
-        is_target = int(index) in target_indices
-        if prompt_key == "contains_reference_count":
-            if is_target:
-                half_width = int(rng.randint(6, 15))
-                mid = int(reference_value + rng.randint(-3, 3))
-                lower = min(int(reference_value), int(mid - half_width))
-                upper = max(int(reference_value), int(mid + half_width))
-                annotation_ids.append(item_id)
-            elif (index + int(reference_value)) % 2 == 0:
-                upper = int(reference_value) - int(rng.randint(3, 13))
-                width = int(rng.randint(8, 18))
-                lower = int(upper) - int(width)
-                mid = int(round((int(lower) + int(upper)) / 2.0))
-            else:
-                lower = int(reference_value) + int(rng.randint(3, 13))
-                width = int(rng.randint(8, 18))
-                upper = int(lower) + int(width)
-                mid = int(round((int(lower) + int(upper)) / 2.0))
-        elif prompt_key == "entirely_above_reference_count":
-            if is_target:
-                lower = int(reference_value) + int(rng.randint(3, 13))
-                width = int(rng.randint(8, 18))
-                upper = int(lower) + int(width)
-                mid = int(round((int(lower) + int(upper)) / 2.0))
-                annotation_ids.append(item_id)
-            elif (index + int(reference_value)) % 2 == 0:
-                half_width = int(rng.randint(6, 14))
-                mid = int(reference_value + rng.randint(-2, 2))
-                lower = min(int(reference_value), int(mid - half_width))
-                upper = max(int(reference_value), int(mid + half_width))
-            else:
-                upper = int(reference_value) - int(rng.randint(3, 11))
-                width = int(rng.randint(8, 16))
-                lower = int(upper) - int(width)
-                mid = int(round((int(lower) + int(upper)) / 2.0))
-        elif prompt_key == "entirely_below_reference_count":
-            if is_target:
-                upper = int(reference_value) - int(rng.randint(3, 13))
-                width = int(rng.randint(8, 18))
-                lower = int(upper) - int(width)
-                mid = int(round((int(lower) + int(upper)) / 2.0))
-                annotation_ids.append(item_id)
-            elif (index + int(reference_value)) % 2 == 0:
-                half_width = int(rng.randint(6, 14))
-                mid = int(reference_value + rng.randint(-2, 2))
-                lower = min(int(reference_value), int(mid - half_width))
-                upper = max(int(reference_value), int(mid + half_width))
-            else:
-                lower = int(reference_value) + int(rng.randint(3, 11))
-                width = int(rng.randint(8, 16))
-                upper = int(lower) + int(width)
-                mid = int(round((int(lower) + int(upper)) / 2.0))
-        else:
-            raise ValueError(f"unsupported reference query: {prompt_key}")
-
-        lower, mid, upper = _clamp_interval(int(lower), int(mid), int(upper))
-        items.append(
-            _IntervalItem(
-                item_id=item_id,
-                label=str(labels[index]),
-                lower=int(lower),
-                midpoint=int(mid),
-                upper=int(upper),
-                color_rgb=tuple(int(v) for v in colors[index]),
-            )
-        )
-    return tuple(items), int(reference_value), tuple(annotation_ids), {
-        "answer_count": int(answer_count),
-        "answer_count_probabilities": _support_probability_map(range(1, 6)),
-    }
-
-
-def _construct_relation_intervals(
-    *,
-    prompt_key: str,
-    category_count: int,
-    labels: Sequence[str],
-    colors: Sequence[RGB],
-    params: Mapping[str, Any],
-    instance_seed: int,
-) -> Tuple[Tuple[_IntervalItem, ...], Tuple[str, ...], str, Dict[str, Any]]:
-    rng = spawn_rng(int(instance_seed), f"charts.error_interval.relation.{prompt_key}")
-    winner_index = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"charts.error_interval.winner.{prompt_key}")) % int(category_count)
-    width_low = int(rng.randint(6, 13))
-    width_high = min(34, int(width_low) + int(rng.randint(int(category_count) + 5, int(category_count) + 10)))
-    width_pool = list(range(int(width_low), int(width_high) + 1))
-    rng.shuffle(width_pool)
-    widths_sorted = sorted(width_pool[: int(category_count)])
-    if prompt_key == "widest_interval_label":
-        winner_width = int(widths_sorted[-1])
-    elif prompt_key == "narrowest_interval_label":
-        winner_width = int(widths_sorted[0])
-    elif prompt_key == "second_widest_interval_label":
-        winner_width = int(widths_sorted[-2])
-    elif prompt_key == "second_narrowest_interval_label":
-        winner_width = int(widths_sorted[1])
-    else:
-        raise ValueError(f"unsupported relation query: {prompt_key}")
-    remaining_widths = [int(width) for width in widths_sorted if int(width) != int(winner_width)]
-    rng.shuffle(remaining_widths)
-    items: List[_IntervalItem] = []
-
-    for index in range(int(category_count)):
-        width = int(winner_width) if int(index) == int(winner_index) else int(remaining_widths.pop())
-        midpoint = int(rng.randint(25, 75))
-        lower, mid, upper = _interval_around(int(midpoint), int(width))
-        items.append(
-            _IntervalItem(
-                item_id=f"i{index}",
-                label=str(labels[index]),
-                lower=int(lower),
-                midpoint=int(mid),
-                upper=int(upper),
-                color_rgb=tuple(int(v) for v in colors[index]),
-            )
-        )
-    winner_id = f"i{winner_index}"
-    return tuple(items), (winner_id,), str(labels[int(winner_index)]), {
-        "winner_index": int(winner_index),
-        "winner_label": str(labels[int(winner_index)]),
-        "winner_width": int(winner_width),
-        "width_support": [int(width) for width in widths_sorted],
-    }
-
-
-def _construct_dataset(
-    *,
-    prompt_key: str,
-    query_probabilities: Dict[str, float],
-    scene_variant: str,
-    scene_variant_probabilities: Dict[str, float],
-    params: Mapping[str, Any],
-    instance_seed: int,
-) -> _Dataset:
-    category_count, category_count_probabilities = _sample_int_range(
-        params,
-        min_key="category_count_min",
-        max_key="category_count_max",
-        fallback_min=6,
-        fallback_max=10,
-        instance_seed=int(instance_seed),
-        namespace="charts.error_interval.category_count",
-    )
-    labels = _choose_labels(count=int(category_count), instance_seed=int(instance_seed))
-    colors = _palette(params, count=int(category_count), instance_seed=int(instance_seed))
-    title_options = [str(value) for value in params.get("title_options", group_default(_RENDER_DEFAULTS, "title_options", ["Estimate Intervals"]))] or ["Estimate Intervals"]
-    title_index = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace="charts.error_interval.title")) % len(title_options)
-
-    if str(prompt_key) in REFERENCE_COUNT_PROMPT_KEYS:
-        answer_count, answer_count_probs = _sample_int_range(
-            params,
-            min_key="reference_answer_count_min",
-            max_key="reference_answer_count_max",
-            fallback_min=1,
-            fallback_max=5,
-            instance_seed=int(instance_seed),
-            namespace=f"charts.error_interval.answer_count.{prompt_key}",
-        )
-        items, reference_value, annotation_item_ids, extra = _construct_reference_intervals(
-            prompt_key=str(prompt_key),
-            category_count=int(category_count),
-            answer_count=int(answer_count),
-            labels=labels,
-            colors=colors,
-            params=params,
-            instance_seed=int(instance_seed),
-        )
-        query = _Query(
-            prompt_key=str(prompt_key),
-            answer=int(answer_count),
-            answer_type="integer",
-            annotation_item_ids=tuple(annotation_item_ids),
-            params={
-                "reference_value": int(reference_value),
-                "answer_count_probabilities": dict(answer_count_probs),
-                **dict(extra),
-            },
-        )
-    else:
-        items, annotation_item_ids, answer_label, extra = _construct_relation_intervals(
-            prompt_key=str(prompt_key),
-            category_count=int(category_count),
-            labels=labels,
-            colors=colors,
-            params=params,
-            instance_seed=int(instance_seed),
-        )
-        query = _Query(
-            prompt_key=str(prompt_key),
-            answer=str(answer_label),
-            answer_type="string",
-            annotation_item_ids=tuple(annotation_item_ids),
-            params=dict(extra),
-        )
-        reference_value = None
-
-    return _Dataset(
-        items=tuple(items),
-        prompt_key=str(prompt_key),
-        query_probabilities=dict(query_probabilities),
-        scene_variant=str(scene_variant),
-        scene_variant_probabilities=dict(scene_variant_probabilities),
-        reference_value=reference_value,
-        title=str(title_options[int(title_index)]),
-        query=query,
-    )
-
 
 def _render_int(params: Mapping[str, Any], key: str, fallback: int, *, instance_seed: int | None = None) -> int:
     return int(
@@ -514,6 +37,8 @@ def _render_float(params: Mapping[str, Any], key: str, fallback: float) -> float
 
 
 def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderParams:
+    """Resolve all style, margin, font, and axis parameters for one render."""
+
     def rint(key: str, fallback: int) -> int:
         return _render_int(params, str(key), int(fallback), instance_seed=int(instance_seed))
 
@@ -587,6 +112,8 @@ def _draw_text(
     stroke_width: int = 1,
     anchor: str = "la",
 ) -> BBox:
+    """Draw readable chart text and return its pixel bbox for render metadata."""
+
     try:
         draw_text_traced(draw,
             (float(xy[0]), float(xy[1])),
@@ -667,6 +194,8 @@ def _render_horizontal_forest(
     p: _RenderParams,
     panel_bbox: Sequence[float],
 ) -> Tuple[BBox, Dict[str, BBox], Dict[str, BBox], List[Dict[str, Any]]]:
+    """Render the forest-plot variant and project category interval bboxes."""
+
     left, top, right, bottom = [float(value) for value in panel_bbox]
     plot_left = left + p.label_band_px
     plot_right = right - p.plot_padding_px
@@ -756,6 +285,8 @@ def _render_vertical_dot_whisker(
     p: _RenderParams,
     panel_bbox: Sequence[float],
 ) -> Tuple[BBox, Dict[str, BBox], Dict[str, BBox], List[Dict[str, Any]]]:
+    """Render the vertical dot-whisker variant and project interval bboxes."""
+
     del image
     left, top, right, bottom = [float(value) for value in panel_bbox]
     plot_left = left + 82
@@ -818,6 +349,8 @@ def _render_bar_with_error(
     p: _RenderParams,
     panel_bbox: Sequence[float],
 ) -> Tuple[BBox, Dict[str, BBox], Dict[str, BBox], List[Dict[str, Any]]]:
+    """Render the bar-with-error variant and project interval bboxes."""
+
     del image
     left, top, right, bottom = [float(value) for value in panel_bbox]
     plot_left = left + 82
@@ -895,6 +428,8 @@ def _render_chart(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> _Rendered:
+    """Render the selected scene variant and return projected interval geometry."""
+
     p = _resolve_render_params(params, instance_seed=int(instance_seed))
     image = background.convert("RGB")
     if image.size != (int(p.canvas_width), int(p.canvas_height)):
@@ -981,31 +516,6 @@ def _render_chart(
         render_meta=render_meta,
     )
 
-
-def _query_phrase(prompt_key: str) -> str:
-    return {
-        "contains_reference_count": "include the reference value",
-        "entirely_above_reference_count": "are entirely above the reference value",
-        "entirely_below_reference_count": "are entirely below the reference value",
-        "widest_interval_label": "widest interval",
-        "narrowest_interval_label": "narrowest interval",
-        "second_widest_interval_label": "second widest interval",
-        "second_narrowest_interval_label": "second narrowest interval",
-    }[str(prompt_key)]
-
-
-def build_error_interval_dataset(params: Mapping[str, Any], *, instance_seed: int, prompt_key: str) -> _Dataset:
-    scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-    return _construct_dataset(
-        prompt_key=str(prompt_key),
-        query_probabilities={},
-        scene_variant=str(scene_variant),
-        scene_variant_probabilities=dict(scene_variant_probabilities),
-        params=params,
-        instance_seed=int(instance_seed),
-    )
-
-
 def render_error_interval_chart(
     background: Image.Image,
     *,
@@ -1013,6 +523,8 @@ def render_error_interval_chart(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> _Rendered:
+    """Render an already sampled error-interval dataset."""
+
     return _render_chart(
         background=background,
         dataset=dataset,
@@ -1022,10 +534,12 @@ def render_error_interval_chart(
 
 
 def resolve_error_interval_render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderParams:
+    """Resolve render parameters for callers that need canvas-level metadata."""
+
     return _resolve_render_params(params, instance_seed=int(instance_seed))
 
 
-def error_interval_query_phrase(prompt_key: str) -> str:
-    return _query_phrase(str(prompt_key))
-
-
+__all__ = [
+    "render_error_interval_chart",
+    "resolve_error_interval_render_params",
+]

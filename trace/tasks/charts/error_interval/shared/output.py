@@ -1,24 +1,22 @@
-"""Runtime helpers for error-interval chart tasks."""
+"""Neutral render and trace assembly helpers for error-interval charts."""
 
 from __future__ import annotations
 
 from dataclasses import replace
 from typing import Any, Dict, Mapping
 
-from trace.core.types import TypedValue
 from trace.core.visual.background import make_background_canvas
 from trace.core.visual.noise import apply_post_image_noise
-from trace.tasks.charts.error_interval.shared.interval_chart import (
+from trace.tasks.charts.error_interval.shared.defaults import (
     POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     SCENE_ID,
-    _Dataset,
-    _QUERY_LOADS,
-    _Rendered,
-    _SCENE_LOADS,
+)
+from trace.tasks.charts.error_interval.shared.rendering import (
     render_error_interval_chart,
     resolve_error_interval_render_params,
 )
+from trace.tasks.charts.error_interval.shared.state import _Dataset, _Rendered
 from trace.tasks.shared.font_assets import font_asset_version
 
 
@@ -28,6 +26,8 @@ def render_dataset(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> tuple[_Rendered, Dict[str, Any], Dict[str, Any]]:
+    """Render one sampled dataset and return render/sidecar metadata."""
+
     render_params = resolve_error_interval_render_params(params, instance_seed=int(instance_seed))
     background, background_meta = make_background_canvas(
         canvas_width=int(render_params.canvas_width),
@@ -64,44 +64,9 @@ def render_dataset(
     return rendered, dict(render_meta), {"background": dict(background_meta), "post_image_noise": dict(post_noise_meta)}
 
 
-def answer_typed_value(dataset: _Dataset) -> TypedValue:
-    answer_value: int | str = int(dataset.query.answer) if str(dataset.query.answer_type) == "integer" else str(dataset.query.answer)
-    return TypedValue(type=str(dataset.query.answer_type), value=answer_value)
-
-
-def annotation_payload(
-    *,
-    dataset: _Dataset,
-    rendered: _Rendered,
-) -> tuple[str, list[list[float]], Dict[str, Any], list[dict[str, Any]]]:
-    item_by_id = {str(item.item_id): item for item in dataset.items}
-    annotation_item_ids = [str(value) for value in dataset.query.annotation_item_ids]
-    annotation = [list(rendered.interval_bboxes_px[str(item_id)]) for item_id in annotation_item_ids]
-    records = [
-        {
-            "item_id": str(item_id),
-            "item_label": str(item_by_id[str(item_id)].label),
-            "lower": int(item_by_id[str(item_id)].lower),
-            "midpoint": int(item_by_id[str(item_id)].midpoint),
-            "upper": int(item_by_id[str(item_id)].upper),
-            "interval_width": int(item_by_id[str(item_id)].upper) - int(item_by_id[str(item_id)].lower),
-            "interval_bbox_px": list(rendered.interval_bboxes_px[str(item_id)]),
-        }
-        for item_id in annotation_item_ids
-    ]
-    projected = {
-        "type": "bbox_set",
-        "bbox_set": list(annotation),
-        "pixel_bbox_set": list(annotation),
-        "bbox_map": {str(item_id): list(rendered.interval_bboxes_px[str(item_id)]) for item_id in annotation_item_ids},
-        "item_ids": list(annotation_item_ids),
-        "item_labels": [str(record["item_label"]) for record in records],
-        "annotation_refs": [dict(record) for record in records],
-    }
-    return "bbox_set", list(annotation), dict(projected), [dict(record) for record in records]
-
-
 def interval_records(dataset: _Dataset) -> list[dict[str, Any]]:
+    """Return symbolic interval rows for trace/audit payloads."""
+
     return [
         {
             "item_id": str(item.item_id),
@@ -125,6 +90,8 @@ def build_trace_scaffold(
     annotation_refs: list[dict[str, Any]],
     answer_value: int | str,
 ) -> Dict[str, Any]:
+    """Build the scene trace around already-bound answer and annotation rows."""
+
     label_to_interval = {
         item.label: {"lower": int(item.lower), "midpoint": int(item.midpoint), "upper": int(item.upper)}
         for item in dataset.items
@@ -171,5 +138,4 @@ def build_trace_scaffold(
     }
 
 
-
-
+__all__ = ["build_trace_scaffold", "interval_records", "render_dataset"]

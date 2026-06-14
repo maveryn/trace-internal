@@ -327,11 +327,11 @@
       "How many labeled nodes belong to the largest connected component?"
     ],
     "reachable_count": [
-      "How many nodes, excluding node {query_label} itself, are reachable from {query_label} by following the direction of the arrows?",
-      "Following arrow directions from node {query_label}, how many other nodes can be reached?",
+      "How many nodes, excluding node {query_label} itself, are reachable from {query_label} in the directed graph?",
+      "From node {query_label}, how many other nodes are reachable in the directed graph?",
       "What is the number of nodes reachable from {query_label} along directed edges, excluding {query_label} itself?",
-      "Start at node {query_label} and follow arrows only. How many other nodes are reachable?",
-      "How many labeled nodes besides {query_label} can be reached from {query_label} when edge directions are respected?"
+      "Starting at node {query_label}, how many other nodes are reachable?",
+      "How many labeled nodes besides {query_label} can be reached from {query_label}?"
     ],
     "reachable_count_after_edge_removal": [
       "If the arrow from node {edit_label_a} to node {edit_label_b} were removed, how many nodes, including node {query_label} itself, would be reachable from {query_label} by following arrows?",

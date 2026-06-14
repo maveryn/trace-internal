@@ -7,36 +7,35 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults, required_group_defaults
 from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.variant_sampling import resolve_variant
 from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_scene import sort_bboxes_reading_order
-from ..shared.icon_task_rendering import icon_render_style_trace
-from ..shared.procedural_named_icons import (
-    PROCEDURAL_NAMED_ICON_FILL_STYLES,
-    PROCEDURAL_NAMED_ICON_SHAPES,
-    procedural_named_icon_display_name,
-    validate_procedural_named_icon_fill_style_support,
+from ..shared.procedural_named_icons import PROCEDURAL_NAMED_ICON_SHAPES, procedural_named_icon_display_name
+from .shared.defaults import DEFAULT_GRID_SIZE_SUPPORT, SCENE_ID, NamedGridDefaults
+from .shared.output import render_map_fragment, render_spec_fragment, scene_ir_fragment
+from .shared.rendering import render_named_grid_scene, serialize_named_grid_icon
+from .shared.sampling import (
+    fill_style_probability_map as resolve_fill_style_probability_map,
+    fill_style_support as resolve_fill_style_support,
+    grid_size_label,
+    grid_size_support,
+    int_bounds,
+    resolve_target_shape,
+    shape_support as resolve_shape_support,
+    string_probability_map,
 )
-from .named_grid_row_column_shape_count import (
-    DEFAULT_GRID_SIZE_SUPPORT,
-    SCENE_ID,
-    _DEFAULTS as _GRID_DEFAULTS,
-    _ScenePayload,
-    _grid_size_label,
-    _named_grid_style_trace,
-    _render_scene,
-    _resolve_named_grid_render_params,
-    _serialize_icon,
-)
+from .shared.state import NamedGridScenePayload
+from .shared.styles import resolve_named_grid_render_params
 
+
+DOMAIN = "icons"
 
 TASK_ID = "task_icons__named_grid__row_column_shape_extreme_number"
 QUERY_IDS: Tuple[str, ...] = (
@@ -73,96 +72,17 @@ class _SampleSpec:
     fill_style_support: Tuple[str, ...]
     fill_style_probabilities: Dict[str, float]
 
-
-_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "counting")
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+_DEFAULTS = NamedGridDefaults()
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    DOMAIN,
+    SCENE_ID,
     task_id=TASK_ID,
 )
 
 
-def _string_probability_map(values: Sequence[str], *, selected: str | None = None) -> Dict[str, float]:
-    support = tuple(str(value) for value in values)
-    if not support:
-        return {}
-    if selected is not None:
-        return {str(value): (1.0 if str(value) == str(selected) else 0.0) for value in support}
-    probability = 1.0 / float(len(support))
-    return {str(value): float(probability) for value in support}
-
-
-def _int_bounds(params: Mapping[str, Any], low_key: str, high_key: str, fallback_low: int, fallback_high: int) -> Tuple[int, int]:
-    low = int(params.get(low_key, group_default(_GEN_DEFAULTS, low_key, fallback_low)))
-    high = int(params.get(high_key, group_default(_GEN_DEFAULTS, high_key, fallback_high)))
-    if low < 0 or high < low:
-        raise ValueError(f"invalid {low_key}/{high_key} bounds")
-    return int(low), int(high)
-
-
-def _shape_support(params: Mapping[str, Any]) -> Tuple[str, ...]:
-    raw = params.get("shape_id_support", group_default(_GEN_DEFAULTS, "shape_id_support", PROCEDURAL_NAMED_ICON_SHAPES))
-    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
-        raise ValueError("shape_id_support must be a sequence")
-    values = tuple(dict.fromkeys(str(value).strip() for value in raw if str(value).strip()))
-    unsupported = sorted(set(values) - set(PROCEDURAL_NAMED_ICON_SHAPES))
-    if unsupported:
-        raise ValueError(f"unsupported procedural named icon shapes: {unsupported}")
-    if len(values) < 8:
-        raise ValueError("named-grid extreme task needs at least eight supported named shapes")
-    return values
-
-
-def _fill_style_support(params: Mapping[str, Any]) -> Tuple[str, ...]:
-    raw = params.get(
-        "named_icon_fill_style_support",
-        group_default(_GEN_DEFAULTS, "named_icon_fill_style_support", PROCEDURAL_NAMED_ICON_FILL_STYLES),
-    )
-    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
-        raw = PROCEDURAL_NAMED_ICON_FILL_STYLES
-    return validate_procedural_named_icon_fill_style_support(tuple(str(value) for value in raw))
-
-
-def _fill_style_probability_map(params: Mapping[str, Any], support: Sequence[str]) -> Dict[str, float]:
-    raw = params.get(
-        "named_icon_fill_style_weights",
-        group_default(_GEN_DEFAULTS, "named_icon_fill_style_weights", None),
-    )
-    if not isinstance(raw, Mapping):
-        probability = 1.0 / float(len(tuple(support)))
-        return {str(value): float(probability) for value in support}
-    weights = {str(value): max(0.0, float(raw.get(str(value), 0.0))) for value in support}
-    total = sum(float(value) for value in weights.values())
-    if total <= 0.0:
-        probability = 1.0 / float(len(tuple(support)))
-        return {str(value): float(probability) for value in support}
-    return {str(value): float(weights[str(value)]) / float(total) for value in support}
-
-
-def _grid_size_support(params: Mapping[str, Any]) -> Tuple[Tuple[int, int], ...]:
-    raw = params.get("grid_size_support", group_default(_GEN_DEFAULTS, "grid_size_support", DEFAULT_GRID_SIZE_SUPPORT))
-    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
-        raise ValueError("grid_size_support must be a sequence")
-    values: List[Tuple[int, int]] = []
-    for item in raw:
-        if isinstance(item, str):
-            parts = str(item).lower().split("x")
-            if len(parts) != 2:
-                raise ValueError(f"unsupported grid size string: {item}")
-            rows, cols = int(parts[0]), int(parts[1])
-        elif isinstance(item, Sequence) and not isinstance(item, (str, bytes)) and len(item) >= 2:
-            rows, cols = int(item[0]), int(item[1])
-        else:
-            raise ValueError(f"unsupported grid size entry: {item}")
-        if rows < 2 or cols < 2:
-            raise ValueError("named-grid sizes must be at least 2x2")
-        values.append((int(rows), int(cols)))
-    support = tuple(dict.fromkeys(values))
-    if not support:
-        raise ValueError("grid_size_support resolved no grid sizes")
-    return support
-
-
 def _query_axis_extremum(query_id: str) -> Tuple[str, str]:
+    """Resolve the row/column axis and most/fewest operator from the public query."""
+
     query = str(query_id)
     if query.startswith("row_"):
         axis = "row"
@@ -174,17 +94,6 @@ def _query_axis_extremum(query_id: str) -> Tuple[str, str]:
     return str(axis), str(extremum)
 
 
-def _resolve_target_shape(rng, *, params: Mapping[str, Any], support: Sequence[str]) -> Tuple[str, Dict[str, float]]:
-    explicit_shape = params.get("shape_id", params.get("target_shape_id"))
-    if explicit_shape is not None:
-        target_shape_id = str(explicit_shape)
-        if target_shape_id not in set(support):
-            raise ValueError(f"target shape must be one of {support}")
-        return str(target_shape_id), _string_probability_map(tuple(str(value) for value in support), selected=str(target_shape_id))
-    target_shape_id = str(rng.choice(tuple(str(value) for value in support)))
-    return str(target_shape_id), _string_probability_map(tuple(str(value) for value in support))
-
-
 def _choose_answer_line_number(
     rng,
     *,
@@ -192,7 +101,7 @@ def _choose_answer_line_number(
     axis: str,
     grid_size_support: Sequence[Tuple[int, int]],
 ) -> Tuple[int, Dict[str, float]]:
-    low, high = _int_bounds(params, "answer_line_number_min", "answer_line_number_max", 1, 6)
+    low, high = int_bounds(params, _GEN_DEFAULTS, "answer_line_number_min", "answer_line_number_max", 1, 6)
     explicit_rows = params.get("grid_rows")
     explicit_cols = params.get("grid_cols")
     max_line_number = max(int(size[0]) if str(axis) == "row" else int(size[1]) for size in grid_size_support)
@@ -219,7 +128,7 @@ def _choose_grid_size(
     axis: str,
     answer_line_number: int,
 ) -> Tuple[int, int, Dict[str, float]]:
-    support = _grid_size_support(params)
+    support = grid_size_support(params, _GEN_DEFAULTS)
     explicit_rows = params.get("grid_rows")
     explicit_cols = params.get("grid_cols")
     if explicit_rows is not None or explicit_cols is not None:
@@ -231,8 +140,8 @@ def _choose_grid_size(
         axis_count = int(size[0]) if str(axis) == "row" else int(size[1])
         if int(answer_line_number) > int(axis_count):
             raise ValueError("explicit grid size cannot support answer_line_number")
-        labels = tuple(_grid_size_label(value) for value in support)
-        return int(size[0]), int(size[1]), _string_probability_map(labels, selected=_grid_size_label(size))
+        labels = tuple(grid_size_label(value) for value in support)
+        return int(size[0]), int(size[1]), string_probability_map(labels, selected=grid_size_label(size))
 
     feasible = tuple(
         size
@@ -242,8 +151,8 @@ def _choose_grid_size(
     if not feasible:
         raise ValueError("grid_size_support cannot support answer_line_number")
     selected = tuple(int(value) for value in rng.choice(feasible))
-    labels = tuple(_grid_size_label(value) for value in feasible)
-    return int(selected[0]), int(selected[1]), _string_probability_map(labels)
+    labels = tuple(grid_size_label(value) for value in feasible)
+    return int(selected[0]), int(selected[1]), string_probability_map(labels)
 
 
 def _choose_winning_count(
@@ -255,10 +164,10 @@ def _choose_winning_count(
 ) -> Tuple[int, Dict[str, float]]:
     explicit = params.get("winning_target_count", params.get("target_count"))
     if str(extremum) == "most":
-        low, high = _int_bounds(params, "most_winning_count_min", "most_winning_count_max", 2, 5)
+        low, high = int_bounds(params, _GEN_DEFAULTS, "most_winning_count_min", "most_winning_count_max", 2, 5)
         high = min(int(high), int(line_capacity))
     else:
-        low, high = _int_bounds(params, "fewest_winning_count_min", "fewest_winning_count_max", 1, 3)
+        low, high = int_bounds(params, _GEN_DEFAULTS, "fewest_winning_count_min", "fewest_winning_count_max", 1, 3)
         high = min(int(high), max(0, int(line_capacity) - 1))
     if high < low:
         raise ValueError("winning target-count support is empty")
@@ -290,6 +199,13 @@ def _construct_grid_shapes(
     grid_rows: int,
     grid_cols: int,
 ) -> Tuple[Tuple[Tuple[str, ...], ...], Tuple[Tuple[int, int], ...], Tuple[Tuple[int, int], ...], Tuple[int, ...], Tuple[int, ...]]:
+    """Construct a grid with one unique extreme line for the queried axis.
+
+    The selected row or column realizes the target extreme count, and every
+    competing line is adjusted away from that count to preserve answer
+    uniqueness.
+    """
+
     axis_count = int(grid_rows) if str(axis) == "row" else int(grid_cols)
     line_capacity = int(grid_cols) if str(axis) == "row" else int(grid_rows)
     winning_index = int(answer_line_number) - 1
@@ -354,6 +270,8 @@ def _construct_grid_shapes(
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpec:
+    """Sample one complete symbolic extreme-line contract before rendering."""
+
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}:sample")
     query_id, query_probabilities = resolve_variant(
         rng,
@@ -364,7 +282,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         weights_key="query_id_weights",
     )
     axis, extremum = _query_axis_extremum(str(query_id))
-    grid_support = _grid_size_support(params)
+    grid_support = grid_size_support(params, _GEN_DEFAULTS)
     answer_line_number, answer_probabilities = _choose_answer_line_number(
         rng,
         params=params,
@@ -384,8 +302,8 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         extremum=str(extremum),
         line_capacity=int(line_capacity),
     )
-    shape_support = _shape_support(params)
-    target_shape_id, shape_probabilities = _resolve_target_shape(rng, params=params, support=shape_support)
+    shape_support = resolve_shape_support(params, _GEN_DEFAULTS)
+    target_shape_id, shape_probabilities = resolve_target_shape(rng, params=params, defaults=_GEN_DEFAULTS, support=shape_support)
     shape_ids_by_cell, counted_cells, off_line_target_cells, row_counts, column_counts = _construct_grid_shapes(
         rng,
         support=shape_support,
@@ -397,8 +315,8 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         grid_rows=int(grid_rows),
         grid_cols=int(grid_cols),
     )
-    fill_style_support = _fill_style_support(params)
-    fill_style_probabilities = _fill_style_probability_map(params, fill_style_support)
+    fill_style_support = resolve_fill_style_support(params, _GEN_DEFAULTS)
+    fill_style_probabilities = resolve_fill_style_probability_map(params, _GEN_DEFAULTS, fill_style_support)
     return _SampleSpec(
         query_id=str(query_id),
         target_shape_id=str(target_shape_id),
@@ -424,37 +342,37 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
     )
 
 
-
-
 @register_task
 class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
     """Return the numbered grid line with a unique extreme named-icon count."""
 
     task_id = TASK_ID
-    domain = "icons"
-    scene_id = "counting"
+    domain = DOMAIN
+    supported_query_ids = QUERY_IDS
+    default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        render_params = _resolve_named_grid_render_params(
+        """Generate one named-grid row/column extreme-number instance."""
+
+        render_params = resolve_named_grid_render_params(
             params=params,
             render_defaults=_RENDER_DEFAULTS,
-            fallback_defaults=_GRID_DEFAULTS,
+            fallback_defaults=_DEFAULTS,
             instance_seed=int(instance_seed),
         )
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
-        scene: _ScenePayload | None = None
+        scene: NamedGridScenePayload | None = None
         for attempt in range(max(1, int(max_attempts))):
             try:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params)
                 scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:scene", int(attempt))
-                scene = _render_scene(
+                scene = render_named_grid_scene(
                     sample=sample,  # type: ignore[arg-type]
                     instance_seed=int(instance_seed),
                     render_params=render_params,
                     params=params,
                     rng=scene_rng,
-                    task_id=TASK_ID,
                 )
                 break
             except Exception as exc:  # pragma: no cover - covered by smoke tests.
@@ -492,8 +410,8 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
         )
         question_key = f"question_text_{sample.query_id}"
         prompt_selection = render_task_prompt_variants(
-            domain=self.domain,
-            scene_id=self.scene_id,
+            domain=DOMAIN,
+            scene_id=SCENE_ID,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
@@ -519,16 +437,16 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        serialized_icons = [_serialize_icon(icon) for icon in scene.icons]
+        serialized_icons = [serialize_named_grid_icon(icon) for icon in scene.icons]
         counted_instance_ids = tuple(str(icon.instance_id) for icon in counted_icons)
         shape_counts = dict(Counter(str(icon.shape_id) for icon in scene.icons))
         active_counts = sample.row_target_counts if str(sample.queried_axis) == "row" else sample.column_target_counts
         trace_payload = {
-            "scene_ir": {
-                "scene_kind": "icons_named_grid_row_column_shape_extreme_number",
-                "scene_id": SCENE_ID,
-                "entities": list(serialized_icons),
-                "relations": {
+            "scene_ir": scene_ir_fragment(
+                scene,
+                scene_kind="icons_named_grid_row_column_shape_extreme_number",
+                entities=list(serialized_icons),
+                relations={
                     "counting_rule": "unique_extreme_shape_count_over_grid_lines",
                     "target_shape_id": str(sample.target_shape_id),
                     "target_shape_name": str(sample.target_shape_name),
@@ -546,11 +464,7 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
                     "selected_line_target_cells": [[int(row), int(col)] for row, col in sample.counted_cells],
                     "off_line_target_cells": [[int(row), int(col)] for row, col in sample.off_line_target_cells],
                 },
-                "frames": {
-                    "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
-                    "panels": dict(scene.panel_geometry),
-                },
-            },
+            ),
             "query_spec": {
                 "query_id": str(sample.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
@@ -560,6 +474,7 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
                 "params": {
                     "target_shape_id": str(sample.target_shape_id),
                     "target_shape_name": str(sample.target_shape_name),
+                    "query_id": str(sample.query_id),
                     "answer_line_number": int(sample.answer_line_number),
                     "winning_target_count": int(sample.winning_target_count),
                     "grid_rows": int(sample.grid_rows),
@@ -570,37 +485,19 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
                     "answer_probabilities": dict(sample.answer_probabilities),
                     "grid_size_probabilities": dict(sample.grid_size_probabilities),
                     "winning_count_probabilities": dict(sample.winning_count_probabilities),
-                    "shape_id_support": list(_shape_support(params)),
+                    "shape_id_support": list(resolve_shape_support(params, _GEN_DEFAULTS)),
                     "shape_probabilities": dict(sample.shape_probabilities),
                     "named_icon_fill_style_support": list(sample.fill_style_support),
                     "fill_style_probabilities": dict(sample.fill_style_probabilities),
                 },
             },
-            "render_spec": {
-                "canvas_size": list(scene.panel_geometry["canvas_size"]),
-                "coord_space": "pixel",
-                "scene_id": SCENE_ID,
-                "panel_geometry": dict(scene.panel_geometry),
-                "grid_bbox_xyxy": [int(value) for value in scene.grid_bbox_xyxy],
-                "cell_size_px": int(scene.cell_size_px),
-                "style": {
-                    **icon_render_style_trace(render_params=render_params, sampled_palette_rgb=scene.sampled_palette_rgb),
-                    **_named_grid_style_trace(render_params),
-                },
-            },
-            "render_map": {
-                "image_id": "img0",
-                "object_bboxes_px": {
-                    str(icon.instance_id): [int(value) for value in icon.bbox_xyxy]
-                    for icon in scene.icons
-                },
-                "cell_bboxes_px": {
-                    f"r{int(row) + 1}c{int(col) + 1}": [int(value) for value in scene.cell_bboxes_xyxy[int(row)][int(col)]]
-                    for row in range(int(sample.grid_rows))
-                    for col in range(int(sample.grid_cols))
-                },
-                "selected_line_target_instance_ids": list(counted_instance_ids),
-            },
+            "render_spec": render_spec_fragment(scene, render_params=render_params),
+            "render_map": render_map_fragment(
+                scene,
+                rows=int(sample.grid_rows),
+                cols=int(sample.grid_cols),
+                extra_fields={"selected_line_target_instance_ids": list(counted_instance_ids)},
+            ),
             "execution_trace": {
                 "scene_variant": "single_panel_named_grid",
                 "query_id": str(sample.query_id),

@@ -28,8 +28,9 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
-    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field"}),
+    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid"}),
     "illustrations": frozenset({"construction_site"}),
+    "three_d": frozenset({"surface_fixture"}),
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
     "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell"}),
@@ -46,8 +47,9 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
-    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field"}),
+    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid"}),
     "illustrations": frozenset({"construction_site"}),
+    "three_d": frozenset({"surface_fixture"}),
 }
 SCENE_PACKAGE_PILOT_TASK_IDS: frozenset[str] = frozenset()
 

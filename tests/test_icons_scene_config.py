@@ -121,14 +121,18 @@ def test_icons_counting_defaults_loaded() -> None:
     assert bool(generation_shared['balanced_sampling']) is True
     assert 'task_icons__named_field__count_arithmetic' not in cfg['generation']['task_overrides']
     assert 'task_icons__named_field__closer_to_reference_count' not in cfg['generation']['task_overrides']
-    assert 'task_icons__named_grid__scoped_attribute_count' in cfg['generation']['task_overrides']
-    assert 'task_icons__named_grid__row_column_shape_extreme_number' in cfg['generation']['task_overrides']
-    assert 'task_icons__named_grid__group_predicate_count' in cfg['generation']['task_overrides']
+    assert 'task_icons__named_grid__scoped_attribute_count' not in cfg['generation'].get('task_overrides', {})
+    assert 'task_icons__named_grid__row_column_shape_extreme_number' not in cfg['generation'].get('task_overrides', {})
+    assert 'task_icons__named_grid__group_predicate_count' not in cfg['generation'].get('task_overrides', {})
     assert 'task_icons__named_ring__scoped_attribute_count' in cfg['generation']['task_overrides']
     assert 'task_icons__venn_field__scoped_attribute_count' in cfg['generation']['task_overrides']
     named_cfg = get_scene_defaults('icons', 'named_field')
+    named_grid_cfg = get_scene_defaults('icons', 'named_grid')
     assert 'task_icons__named_field__count_arithmetic' in named_cfg['generation']['task_overrides']
     assert 'task_icons__named_field__closer_to_reference_count' in named_cfg['generation']['task_overrides']
+    assert 'task_icons__named_grid__scoped_attribute_count' in named_grid_cfg['generation']['task_overrides']
+    assert 'task_icons__named_grid__row_column_shape_extreme_number' in named_grid_cfg['generation']['task_overrides']
+    assert 'task_icons__named_grid__group_predicate_count' in named_grid_cfg['generation']['task_overrides']
     render_shared = cfg['rendering']['shared']
     assert int(render_shared['canvas_width']) > 0
     assert int(render_shared['canvas_height']) > 0
@@ -169,7 +173,7 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(pair_prompt['answer_hint']).strip()
     assert str(pair_prompt['json_example']).strip()
     assert str(pair_prompt['json_example_answer_only']).strip()
-    grid_generation, grid_rendering, grid_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__named_grid__scoped_attribute_count')
+    grid_generation, grid_rendering, grid_prompt = split_generation_rendering_prompt_defaults(named_grid_cfg, task_id='task_icons__named_grid__scoped_attribute_count')
     assert int(grid_generation['target_count_min']) == 1
     assert int(grid_generation['target_count_max']) == 5
     assert sorted(grid_generation['query_id_weights'].keys()) == ['column_shape_count', 'row_shape_count']
@@ -185,7 +189,7 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(grid_prompt['answer_hint']).strip()
     assert str(grid_prompt['json_example']).strip()
     assert str(grid_prompt['json_example_answer_only']).strip()
-    grid_extreme_generation, grid_extreme_rendering, grid_extreme_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__named_grid__row_column_shape_extreme_number')
+    grid_extreme_generation, grid_extreme_rendering, grid_extreme_prompt = split_generation_rendering_prompt_defaults(named_grid_cfg, task_id='task_icons__named_grid__row_column_shape_extreme_number')
     assert int(grid_extreme_generation['answer_line_number_min']) == 1
     assert int(grid_extreme_generation['answer_line_number_max']) == 6
     assert sorted(grid_extreme_generation['query_id_weights'].keys()) == ['column_fewest_shape_number', 'column_most_shape_number', 'row_fewest_shape_number', 'row_most_shape_number']
@@ -201,7 +205,7 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(grid_extreme_prompt['answer_hint']).strip()
     assert str(grid_extreme_prompt['json_example']).strip()
     assert str(grid_extreme_prompt['json_example_answer_only']).strip()
-    grid_line_generation, grid_line_rendering, grid_line_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__named_grid__group_predicate_count')
+    grid_line_generation, grid_line_rendering, grid_line_prompt = split_generation_rendering_prompt_defaults(named_grid_cfg, task_id='task_icons__named_grid__group_predicate_count')
     assert int(grid_line_generation['answer_count_min']) == 0
     assert int(grid_line_generation['answer_count_max']) == 5
     assert int(grid_line_generation['at_least_threshold_min']) == 2

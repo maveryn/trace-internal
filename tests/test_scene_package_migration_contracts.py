@@ -635,7 +635,7 @@ def test_three_d_is_not_allowlisted_before_full_scene_package_migration() -> Non
 
 def test_scene_package_migration_registries_only_track_review_candidate_scenes() -> None:
     assert not MIGRATED_SCENE_PACKAGE_DOMAINS
-    expected_candidate_scenes = {'charts': frozenset({'annotated_series', 'area', 'bar_3d', 'boxplot', 'candlestick', 'combo_mark', 'contour_density', 'curve_panels', 'dashboard', 'density_curve', 'dumbbell'}), 'games': frozenset({'2048', 'backgammon', 'battleship', 'bingo', 'bowling', 'brick_breaker', 'bubble_shooter', 'cards', 'checkers', 'chess', 'chess_variant', 'circular_chess', 'connect_four', 'crossing', 'darts', 'dominoes'}), 'geometry': frozenset({'angle_relations', 'area_partition', 'bearing_route', 'circle_centerline_overlap', 'circle_pair_tangents', 'circle_polygon_composite', 'circle_theorem'}), 'graph': frozenset({'adjacency', 'automaton', 'binary_tree', 'node_link'}), 'icons': frozenset({'icon_cutout', 'icon_field', 'mirror_grid', 'named_field'}), 'illustrations': frozenset({'construction_site'})}
+    expected_candidate_scenes = {'charts': frozenset({'annotated_series', 'area', 'bar_3d', 'boxplot', 'candlestick', 'combo_mark', 'contour_density', 'curve_panels', 'dashboard', 'density_curve', 'dumbbell'}), 'games': frozenset({'2048', 'backgammon', 'battleship', 'bingo', 'bowling', 'brick_breaker', 'bubble_shooter', 'cards', 'checkers', 'chess', 'chess_variant', 'circular_chess', 'connect_four', 'crossing', 'darts', 'dominoes'}), 'geometry': frozenset({'angle_relations', 'area_partition', 'bearing_route', 'circle_centerline_overlap', 'circle_pair_tangents', 'circle_polygon_composite', 'circle_theorem'}), 'graph': frozenset({'adjacency', 'automaton', 'binary_tree', 'node_link'}), 'icons': frozenset({'icon_cutout', 'icon_field', 'mirror_grid', 'named_field', 'named_grid'}), 'illustrations': frozenset({'construction_site'}), 'three_d': frozenset({'surface_fixture'})}
     assert MIGRATED_SCENE_PACKAGE_SCENES == expected_candidate_scenes
     assert SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES == expected_candidate_scenes
     assert not SCENE_PACKAGE_PILOT_TASK_IDS
@@ -652,6 +652,8 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     assert scene_package_migration.is_scene_package_task('task_icons__icon_cutout__partial_match_label', domain='icons')
     assert scene_package_migration.is_scene_package_task('task_icons__icon_field__type_frequency_count', domain='icons')
     assert scene_package_migration.is_scene_package_task('task_icons__mirror_grid__mirror_symmetry_match_label', domain='icons')
+    assert scene_package_migration.is_scene_package_task('task_icons__named_grid__scoped_attribute_count', domain='icons')
+    assert scene_package_migration.is_scene_package_task('task_three_d__surface_fixture__repeated_element_count', domain='three_d')
 
 def test_task_classes_do_not_claim_scene_package_migration_independently() -> None:
     """Migration state must come only from central scene registries."""

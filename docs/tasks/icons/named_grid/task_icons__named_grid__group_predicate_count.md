@@ -2,11 +2,10 @@
 
 - domain: `icons`
 - scene_id: `named_grid`
-- scene_id: `counting`
-- task: `line_condition_count`
-- module: `trace/tasks/icons/counting/named_grid_line_condition_count.py`
+- task: `group_predicate_count`
+- module: `trace/tasks/icons/named_grid/group_predicate_count.py`
 
-## Contract
+## Program Contract
 1. The image shows one visible grid with numbered rows and numbered columns.
 2. Each grid cell contains one procedural named icon.
 3. The prompt names one target icon shape in quotes and asks how many rows or

@@ -1,0 +1,387 @@
+generation:
+  shared:
+    object_count_min: 1
+    object_count_max: 20
+    target_count_min: 0
+    target_count_max: 10
+    distractor_count_min: 1
+    distractor_count_max: 10
+    balanced_sampling: true
+  task_overrides:
+    task_icons__named_grid__scoped_attribute_count:
+      target_count_min: 1
+      target_count_max: 5
+      off_line_target_count_min: 1
+      off_line_target_count_max: 4
+      query_id_weights:
+        row_shape_count: 1.0
+        column_shape_count: 1.0
+      grid_size_support:
+      - - 4
+        - 4
+      - - 4
+        - 5
+      - - 4
+        - 6
+      - - 5
+        - 4
+      - - 5
+        - 5
+      - - 5
+        - 6
+      - - 6
+        - 4
+      - - 6
+        - 5
+      - - 6
+        - 6
+      named_icon_fill_style_support:
+      - solid
+      - striped
+      - dotted
+      - half_filled
+      named_icon_fill_style_weights:
+        solid: 0.75
+        striped: 0.0834
+        dotted: 0.0833
+        half_filled: 0.0833
+    task_icons__named_grid__row_column_shape_extreme_number:
+      answer_line_number_min: 1
+      answer_line_number_max: 6
+      most_winning_count_min: 2
+      most_winning_count_max: 5
+      fewest_winning_count_min: 1
+      fewest_winning_count_max: 3
+      query_id_weights:
+        row_most_shape_number: 1.0
+        row_fewest_shape_number: 1.0
+        column_most_shape_number: 1.0
+        column_fewest_shape_number: 1.0
+      grid_size_support:
+      - - 4
+        - 4
+      - - 4
+        - 5
+      - - 4
+        - 6
+      - - 5
+        - 4
+      - - 5
+        - 5
+      - - 5
+        - 6
+      - - 6
+        - 4
+      - - 6
+        - 5
+      - - 6
+        - 6
+      named_icon_fill_style_support:
+      - solid
+      - striped
+      - dotted
+      - half_filled
+      named_icon_fill_style_weights:
+        solid: 0.75
+        striped: 0.0834
+        dotted: 0.0833
+        half_filled: 0.0833
+    task_icons__named_grid__group_predicate_count:
+      answer_count_min: 0
+      answer_count_max: 5
+      at_least_threshold_min: 2
+      at_least_threshold_max: 3
+      exactly_threshold_min: 1
+      exactly_threshold_max: 3
+      query_id_weights:
+        row_at_least_shape_count: 1.0
+        column_at_least_shape_count: 1.0
+        row_exactly_shape_count: 1.0
+        column_exactly_shape_count: 1.0
+        row_no_shape_count: 1.0
+        column_no_shape_count: 1.0
+      grid_size_support:
+      - - 4
+        - 4
+      - - 4
+        - 5
+      - - 4
+        - 6
+      - - 5
+        - 4
+      - - 5
+        - 5
+      - - 5
+        - 6
+      - - 6
+        - 4
+      - - 6
+        - 5
+      - - 6
+        - 6
+      named_icon_fill_style_support:
+      - solid
+      - striped
+      - dotted
+      - half_filled
+      named_icon_fill_style_weights:
+        solid: 0.75
+        striped: 0.0834
+        dotted: 0.0833
+        half_filled: 0.0833
+rendering:
+  shared:
+    canvas_width: 960
+    canvas_height: 544
+    reference_panel_width_px: 248
+    panel_gap_px: 24
+    outer_margin_px: 24
+    panel_padding_px: 20
+    panel_corner_radius_px: 18
+    scene_icon_size_min_px: 40
+    scene_icon_size_max_px: 96
+    reference_icon_size_px: 136
+    scene_max_overlap_fraction: 0.1
+    scene_placement_max_attempts: 120
+    scene_size_shrink_rounds: 6
+    scene_size_shrink_factor: 0.9
+    palette_size_min: 8
+    palette_size_max: 12
+    color_channel_min: 24
+    color_channel_max: 220
+    min_color_distance: 40.0
+    color_distance_space: lab
+    panel_title_font_size_px: 24
+    background_color_rgb:
+    - 247
+    - 248
+    - 251
+    background_color_rgb_options:
+    - - 247
+      - 248
+      - 251
+    - - 243
+      - 246
+      - 252
+    - - 250
+      - 247
+      - 242
+    - - 244
+      - 249
+      - 246
+    - - 248
+      - 246
+      - 253
+    panel_fill_rgb:
+    - 255
+    - 255
+    - 255
+    panel_fill_rgb_options:
+    - - 255
+      - 255
+      - 255
+    - - 253
+      - 254
+      - 255
+    - - 255
+      - 254
+      - 250
+    - - 250
+      - 253
+      - 250
+    panel_border_rgb:
+    - 205
+    - 212
+    - 224
+    panel_border_rgb_options:
+    - - 205
+      - 212
+      - 224
+    - - 198
+      - 209
+      - 222
+    - - 218
+      - 208
+      - 197
+    - - 198
+      - 218
+      - 211
+    header_text_rgb:
+    - 70
+    - 78
+    - 96
+    header_text_rgb_options:
+    - - 70
+      - 78
+      - 96
+    - - 63
+      - 84
+      - 112
+    - - 86
+      - 73
+      - 94
+    - - 68
+      - 91
+      - 79
+    icon_noise_edit_types:
+    - blur
+    - downsample
+    - jpeg
+    - noise
+    icon_noise_edit_count_range:
+    - 0
+    - 2
+    icon_noise_value_ranges:
+      blur:
+        radius:
+        - 0.2
+        - 0.6
+      downsample:
+        scale:
+        - 0.85
+        - 0.95
+      jpeg:
+        quality:
+        - 70
+        - 90
+      noise:
+        alpha:
+        - 0.03
+        - 0.08
+  task_overrides:
+    task_icons__named_grid__scoped_attribute_count:
+      canvas_width: 880
+      canvas_height: 680
+      scene_icon_size_min_px: 48
+      scene_icon_size_max_px: 76
+      scene_max_overlap_fraction: 0.0
+      row_label_band_width_px: 48
+      column_label_band_height_px: 42
+      grid_label_gap_px: 10
+      grid_cell_max_size_px: 104
+      grid_cell_padding_px: 12
+      grid_line_width_px: 2
+      grid_border_width_px: 3
+      axis_label_font_size_px: 24
+      grid_line_rgb:
+      - 176
+      - 187
+      - 205
+      cell_fill_rgb:
+      - 255
+      - 255
+      - 255
+      alternate_cell_fill_rgb:
+      - 248
+      - 250
+      - 253
+      axis_label_rgb:
+      - 50
+      - 60
+      - 78
+    task_icons__named_grid__row_column_shape_extreme_number:
+      canvas_width: 880
+      canvas_height: 680
+      scene_icon_size_min_px: 48
+      scene_icon_size_max_px: 76
+      scene_max_overlap_fraction: 0.0
+      row_label_band_width_px: 48
+      column_label_band_height_px: 42
+      grid_label_gap_px: 10
+      grid_cell_max_size_px: 104
+      grid_cell_padding_px: 12
+      grid_line_width_px: 2
+      grid_border_width_px: 3
+      axis_label_font_size_px: 24
+      grid_line_rgb:
+      - 176
+      - 187
+      - 205
+      cell_fill_rgb:
+      - 255
+      - 255
+      - 255
+      alternate_cell_fill_rgb:
+      - 248
+      - 250
+      - 253
+      axis_label_rgb:
+      - 50
+      - 60
+      - 78
+    task_icons__named_grid__group_predicate_count:
+      canvas_width: 880
+      canvas_height: 680
+      scene_icon_size_min_px: 48
+      scene_icon_size_max_px: 76
+      scene_max_overlap_fraction: 0.0
+      row_label_band_width_px: 48
+      column_label_band_height_px: 42
+      grid_label_gap_px: 10
+      grid_cell_max_size_px: 104
+      grid_cell_padding_px: 12
+      grid_line_width_px: 2
+      grid_border_width_px: 3
+      axis_label_font_size_px: 24
+      grid_line_rgb:
+      - 176
+      - 187
+      - 205
+      cell_fill_rgb:
+      - 255
+      - 255
+      - 255
+      alternate_cell_fill_rgb:
+      - 248
+      - 250
+      - 253
+      axis_label_rgb:
+      - 50
+      - 60
+      - 78
+prompt:
+  shared:
+    bundle_id: icons_named_grid_v1
+    scene_key: single_scene_counting
+    task_key: counting_query
+  task_overrides:
+    task_icons__named_grid__scoped_attribute_count:
+      scene_key: single_scene_counting
+      object_description: a numbered grid with one icon in each cell
+      question_text_row_shape_count: How many "{target_shape_name}" icons are in row {line_number}?
+      question_text_column_shape_count: How many "{target_shape_name}" icons are in column {line_number}?
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates
+        for every counted "{target_shape_name}" icon in {line_kind} {line_number}
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"annotation":[[180,172,232,224],[388,172,440,224],[596,172,648,224]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+    task_icons__named_grid__row_column_shape_extreme_number:
+      scene_key: single_scene_counting
+      object_description: a numbered grid with one icon in each cell
+      question_text_row_most_shape_number: Which row has the most "{target_shape_name}" icons?
+      question_text_row_fewest_shape_number: Which row has the fewest "{target_shape_name}" icons?
+      question_text_column_most_shape_number: Which column has the most "{target_shape_name}" icons?
+      question_text_column_fewest_shape_number: Which column has the fewest "{target_shape_name}" icons?
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates
+        for the "{target_shape_name}" icons in the selected {line_kind}
+      answer_hint: set "answer" to the selected {line_kind} number as an integer
+      json_example: '{"annotation":[[180,172,232,224],[388,172,440,224],[596,172,648,224]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+    task_icons__named_grid__group_predicate_count:
+      scene_key: single_scene_counting
+      object_description: a numbered grid with one icon in each cell
+      question_text_row_at_least_shape_count: How many rows contain at least {threshold} "{target_shape_name}"
+        icons?
+      question_text_column_at_least_shape_count: How many columns contain at least {threshold} "{target_shape_name}"
+        icons?
+      question_text_row_exactly_shape_count: How many rows contain exactly {threshold} "{target_shape_name}"
+        icons?
+      question_text_column_exactly_shape_count: How many columns contain exactly {threshold} "{target_shape_name}"
+        icons?
+      question_text_row_no_shape_count: How many rows contain no "{target_shape_name}" icons?
+      question_text_column_no_shape_count: How many columns contain no "{target_shape_name}" icons?
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates
+        around every qualifying {line_kind} region
+      answer_hint: set "answer" to the number of qualifying {line_kind_plural} as an integer
+      json_example: '{"annotation":[[150,176,566,260],[150,344,566,428]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'

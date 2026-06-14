@@ -11,7 +11,9 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.dots_and_boxes.capture_move_count import GamesDotsAndBoxesCaptureMoveCountTask
+from trace.tasks.games.dots_and_boxes.box_completion_edge_label import (
+    GamesDotsAndBoxesBoxCompletionEdgeLabelTask,
+)
 from trace.tasks.games.dots_and_boxes.owned_box_count import GamesDotsAndBoxesOwnedBoxCountTask
 from trace.tasks.games.dots_and_boxes.three_sided_box_count import GamesDotsAndBoxesThreeSidedBoxCountTask
 from tests.helpers import read_jsonl
@@ -21,13 +23,11 @@ from tests.helpers import read_jsonl
     ("task_cls", "query_id", "target_answer", "prompt_query_key"),
     (
         (GamesDotsAndBoxesThreeSidedBoxCountTask, "single", 4, "three_sided_box_count"),
-        (GamesDotsAndBoxesCaptureMoveCountTask, "capture_move_count", 4, "capture_move_count"),
-        (GamesDotsAndBoxesCaptureMoveCountTask, "highlighted_candidate_capture_count", 4, "highlighted_candidate_capture_count"),
         (GamesDotsAndBoxesOwnedBoxCountTask, "player_a_owned_box_count", 4, "player_a_owned_box_count"),
         (GamesDotsAndBoxesOwnedBoxCountTask, "player_b_owned_box_count", 4, "player_b_owned_box_count"),
     ),
 )
-def test_games_dots_and_boxes_tasks_emit_expected_contract(
+def test_games_dots_and_boxes_count_tasks_emit_expected_contract(
     task_cls: type[Any],
     query_id: str,
     target_answer: int,
@@ -68,7 +68,7 @@ def test_games_dots_and_boxes_tasks_emit_expected_contract(
         assert all(execution["box_drawn_side_counts"][box_id] == 3 for box_id in execution["counted_box_ids"])
         for box_id, bbox in zip(execution["counted_box_ids"], out.annotation_gt.value):
             assert trace["render_map"]["box_bboxes_px"][str(box_id)] == pytest.approx(bbox)
-    elif str(query_id) in {"player_a_owned_box_count", "player_b_owned_box_count"}:
+    else:
         owner = "A" if str(query_id) == "player_a_owned_box_count" else "B"
         assert out.annotation_gt.type == "bbox_set"
         assert trace["projected_annotation"]["type"] == "bbox_set"
@@ -79,60 +79,65 @@ def test_games_dots_and_boxes_tasks_emit_expected_contract(
         assert all(execution["box_drawn_side_counts"][box_id] == 4 for box_id in execution["counted_box_ids"])
         for box_id, bbox in zip(execution["counted_box_ids"], out.annotation_gt.value):
             assert trace["render_map"]["box_bboxes_px"][str(box_id)] == pytest.approx(bbox)
-    elif str(query_id) == "capture_move_count":
-        assert out.annotation_gt.type == "point_pair_set"
-        assert trace["projected_annotation"]["type"] == "point_pair_set"
-        assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
-        assert len(execution["counted_edge_ids"]) == int(target_answer)
-        assert execution["counted_edge_ids"] == execution["immediate_capture_edge_ids"]
-        for edge_id, point_pair in zip(execution["counted_edge_ids"], out.annotation_gt.value):
-            assert point_pair == trace["render_map"]["edge_point_pairs_px"][str(edge_id)]
-            assert len(point_pair) == 2
-            assert all(len(point) == 2 for point in point_pair)
-    else:
-        assert out.annotation_gt.type == "point_pair_set"
-        assert trace["projected_annotation"]["type"] == "point_pair_set"
-        assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
-        assert 5 <= int(execution["candidate_edge_count"]) <= 8
-        assert len(execution["candidate_edge_ids"]) == int(execution["candidate_edge_count"])
-        assert execution["highlighted_edge_ids"] == execution["candidate_edge_ids"]
-        assert len(execution["counted_edge_ids"]) == int(target_answer)
-        assert set(execution["counted_edge_ids"]).issubset(set(execution["candidate_edge_ids"]))
-        for edge_id, point_pair in zip(execution["counted_edge_ids"], out.annotation_gt.value):
-            assert point_pair == trace["render_map"]["edge_point_pairs_px"][str(edge_id)]
-            assert len(point_pair) == 2
-            assert all(len(point) == 2 for point in point_pair)
 
 
-def test_games_dots_and_boxes_capture_move_task_samples_query_ids() -> None:
-    task = GamesDotsAndBoxesCaptureMoveCountTask()
-    query_ids: Counter[str] = Counter()
-    answers_by_query: dict[str, set[int]] = {}
+def test_games_dots_and_boxes_box_completion_edge_label_contract() -> None:
+    out = GamesDotsAndBoxesBoxCompletionEdgeLabelTask().generate(
+        28121,
+        params={"target_label": "C"},
+        max_attempts=64,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
 
-    for index in range(36):
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "C"
+    assert out.annotation_gt.type == "point_pair_set"
+    assert len(out.annotation_gt.value) == 1
+    assert trace["projected_annotation"]["type"] == "point_pair_set"
+    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    assert trace["query_spec"]["params"]["prompt_query_key"] == "box_completion_edge_label"
+    assert execution["answer_label"] == "C"
+    assert execution["answer"] == "C"
+    assert execution["answer_edge_id"] in execution["candidate_edge_ids"]
+    assert execution["answer_edge_id"] == execution["option_edge_id_by_label"]["C"]
+    assert execution["counted_edge_ids"] == [execution["answer_edge_id"]]
+    assert out.annotation_gt.value[0] == render_map["edge_point_pairs_px"][execution["answer_edge_id"]]
+    assert execution["candidate_edge_count"] == 6
+    assert len(execution["candidate_edge_ids"]) == 6
+    assert execution["highlighted_edge_ids"] == execution["candidate_edge_ids"]
+    assert sorted(execution["option_edge_id_by_label"]) == ["A", "B", "C", "D", "E", "F"]
+    assert sorted(render_map["option_edge_id_by_label"]) == ["A", "B", "C", "D", "E", "F"]
+    assert set(render_map["option_label_bboxes_px"]) == {"A", "B", "C", "D", "E", "F"}
+    assert set(execution["candidate_edge_ids"]).isdisjoint(set(execution["drawn_edge_ids"]))
+
+
+def test_games_dots_and_boxes_box_completion_edge_label_samples_all_answers() -> None:
+    task = GamesDotsAndBoxesBoxCompletionEdgeLabelTask()
+    answer_labels: Counter[str] = Counter()
+    board_shapes: Counter[tuple[int, int]] = Counter()
+
+    for index in range(48):
         out = task.generate(
             28125 + index,
-            params={},
+            params={"_sample_cursor": index},
             max_attempts=64,
         )
         execution = out.trace_payload["execution_trace"]
-        query_ids[str(out.query_id)] += 1
-        answers_by_query.setdefault(str(out.query_id), set()).add(int(out.answer_gt.value))
+        answer_labels[str(out.answer_gt.value)] += 1
+        board_shapes[(int(execution["box_rows"]), int(execution["box_cols"]))] += 1
 
-        assert str(out.query_id) in {"capture_move_count", "highlighted_candidate_capture_count"}
-        assert execution["query_id"] == out.query_id
-        assert out.annotation_gt.type == "point_pair_set"
-        assert out.trace_payload["projected_annotation"]["type"] == "point_pair_set"
-        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
-        if str(out.query_id) == "capture_move_count":
-            assert execution["highlighted_edge_ids"] == []
-        else:
-            assert execution["highlighted_edge_ids"] == execution["candidate_edge_ids"]
+        assert str(out.answer_gt.value) in {"A", "B", "C", "D", "E", "F"}
+        assert execution["candidate_edge_count"] == 6
+        assert len(execution["candidate_edge_ids"]) == 6
+        assert sorted(execution["option_edge_id_by_label"]) == ["A", "B", "C", "D", "E", "F"]
+        assert execution["answer_edge_id"] == execution["option_edge_id_by_label"][str(out.answer_gt.value)]
 
-    assert set(query_ids) == {"capture_move_count", "highlighted_candidate_capture_count"}
-    assert all(count > 0 for count in query_ids.values())
-    assert answers_by_query["capture_move_count"] == {0, 1, 2, 3, 4, 5}
-    assert answers_by_query["highlighted_candidate_capture_count"] == {0, 1, 2, 3, 4, 5}
+    assert set(answer_labels) == {"A", "B", "C", "D", "E", "F"}
+    assert all(count > 0 for count in answer_labels.values())
+    assert set(board_shapes.keys()) == {(3, 3), (3, 4), (4, 3), (4, 4)}
 
 
 def test_games_dots_and_boxes_owned_box_task_samples_players() -> None:
@@ -176,39 +181,6 @@ def test_games_dots_and_boxes_owned_box_task_samples_players() -> None:
     assert answers_by_query["player_b_owned_box_count"] == set(range(9))
 
 
-def test_games_dots_and_boxes_balanced_board_shapes_and_candidate_counts() -> None:
-    task = GamesDotsAndBoxesCaptureMoveCountTask()
-    board_shapes: Counter[tuple[int, int]] = Counter()
-    candidate_counts: Counter[int] = Counter()
-
-    for index in range(80):
-        out = task.generate(
-            28200 + index,
-            params={"query_id": "highlighted_candidate_capture_count"},
-            max_attempts=64,
-        )
-        execution = out.trace_payload["execution_trace"]
-        board_shapes[(int(execution["box_rows"]), int(execution["box_cols"]))] += 1
-        candidate_counts[int(execution["candidate_edge_count"])] += 1
-
-    assert set(board_shapes.keys()) == {(3, 3), (3, 4), (4, 3), (4, 4)}
-    assert set(candidate_counts.keys()) == {5, 6, 7, 8}
-
-
-def test_games_dots_and_boxes_highlighted_candidate_edges_are_not_drawn() -> None:
-    out = GamesDotsAndBoxesCaptureMoveCountTask().generate(
-        28121,
-        params={
-            "query_id": "highlighted_candidate_capture_count",
-            "target_answer": 3,
-        },
-        max_attempts=64,
-    )
-    execution = out.trace_payload["execution_trace"]
-    assert execution["highlighted_edge_ids"]
-    assert set(execution["highlighted_edge_ids"]).isdisjoint(set(execution["drawn_edge_ids"]))
-
-
 def test_games_dots_and_boxes_three_sided_task_uses_single_query_id() -> None:
     out = GamesDotsAndBoxesThreeSidedBoxCountTask().generate(
         28123,
@@ -221,10 +193,9 @@ def test_games_dots_and_boxes_three_sided_task_uses_single_query_id() -> None:
 
 def test_games_dots_and_boxes_tasks_are_deterministic() -> None:
     params = {
-        "query_id": "capture_move_count",
-        "target_answer": 5,
+        "target_label": "E",
     }
-    task = GamesDotsAndBoxesCaptureMoveCountTask()
+    task = GamesDotsAndBoxesBoxCompletionEdgeLabelTask()
     out_a = task.generate(28131, params=params, max_attempts=64)
     out_b = task.generate(28131, params=params, max_attempts=64)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -239,22 +210,21 @@ def test_games_dots_and_boxes_prompt_bundle_declares_variants() -> None:
     bundle = json.loads(Path("prompts/games/dots_and_boxes/games_dots_and_boxes_v1.json").read_text(encoding="utf-8"))
     required = bundle["required_slots_by_key"]
     assert required["query:three_sided_box_count"] == []
-    assert required["query:capture_move_count"] == []
-    assert required["query:highlighted_candidate_capture_count"] == []
+    assert required["query:box_completion_edge_label"] == []
     assert required["query:player_a_owned_box_count"] == []
     assert required["query:player_b_owned_box_count"] == []
 
 
-def test_games_dots_and_boxes_capture_move_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_games__dots_and_boxes__capture_move_count"
+def test_games_dots_and_boxes_box_completion_edge_label_build_smoke(tmp_path: Path) -> None:
+    output_root = tmp_path / "task_games__dots_and_boxes__box_completion_edge_label"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_games__dots_and_boxes__capture_move_count",
+        dataset_name="build_smoke_task_games__dots_and_boxes__box_completion_edge_label",
         instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_games__dots_and_boxes__capture_move_count",
+                task_id="task_games__dots_and_boxes__box_completion_edge_label",
                 count=4,
                 params={},
             )
@@ -263,7 +233,7 @@ def test_games_dots_and_boxes_capture_move_build_smoke(tmp_path: Path) -> None:
         max_attempts_per_instance=64,
         sampling_seed=71,
     )
-    final_path = build_dataset(config, code_hash="games-dots-and-boxes-capture-move-smoke")
+    final_path = build_dataset(config, code_hash="games-dots-and-boxes-box-completion-smoke")
     assert final_path.exists()
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
@@ -271,7 +241,7 @@ def test_games_dots_and_boxes_capture_move_build_smoke(tmp_path: Path) -> None:
     assert all(record.get("scene_id") == "dots_and_boxes" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_games__dots_and_boxes__capture_move_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_games__dots_and_boxes__box_completion_edge_label"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

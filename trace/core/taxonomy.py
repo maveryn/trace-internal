@@ -422,7 +422,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__dominoes__double_count": _entry("games", "dominoes", "games", "dominoes"),
     "task_games__dominoes__higher_sum_than_reference_count": _entry("games", "dominoes", "games", "dominoes"),
     "task_games__dominoes__sum_to_target_count": _entry("games", "dominoes", "games", "dominoes"),
-    "task_games__dots_and_boxes__capture_move_count": _entry("games", "dots_and_boxes", "games", "dots_and_boxes"),
+    "task_games__dots_and_boxes__box_completion_edge_label": _entry("games", "dots_and_boxes", "games", "dots_and_boxes"),
     "task_games__dots_and_boxes__owned_box_count": _entry("games", "dots_and_boxes", "games", "dots_and_boxes"),
     "task_games__dots_and_boxes__three_sided_box_count": _entry("games", "dots_and_boxes", "games", "dots_and_boxes"),
     "task_games__go__group_adjacent_enemy_count": _entry("games", "go", "games", "go"),

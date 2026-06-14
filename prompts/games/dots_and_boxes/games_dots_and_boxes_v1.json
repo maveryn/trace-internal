@@ -29,19 +29,12 @@
         "Find the number of boxes with exactly three visible sides drawn.",
         "How many boxes on the board have three drawn boundary edges?"
       ],
-      "capture_move_count": [
-        "How many missing edges would complete at least one box if drawn?",
-        "Count the undrawn edge positions that would finish a box immediately.",
-        "How many possible next edge draws would capture a box right away?",
-        "Find the number of missing edges that complete one or more boxes.",
-        "How many gaps on the board are immediate box-completing moves?"
-      ],
-      "highlighted_candidate_capture_count": [
-        "Among the highlighted missing edges, how many would complete at least one box if drawn?",
-        "Count the highlighted gaps that would finish a box immediately.",
-        "How many highlighted candidate edges are box-completing moves?",
-        "Find the number of highlighted missing edges that complete one or more boxes.",
-        "Of the highlighted edge positions, how many would capture a box right away?"
+      "box_completion_edge_label": [
+        "Which dashed option line would complete a box if drawn?",
+        "Choose the dashed option that would finish a box immediately.",
+        "Which labeled dashed line would capture a box right away?",
+        "Find the option line that completes one box if added.",
+        "Which dashed edge option makes a complete box?"
       ],
       "player_a_owned_box_count": [
         "How many boxes are marked with player A?",
@@ -80,8 +73,7 @@
       "object_description"
     ],
     "query:three_sided_box_count": [],
-    "query:capture_move_count": [],
-    "query:highlighted_candidate_capture_count": [],
+    "query:box_completion_edge_label": [],
     "query:player_a_owned_box_count": [],
     "query:player_b_owned_box_count": [],
     "answer_or_annotation:answer_only": [
@@ -123,10 +115,8 @@
     "object_description_single_board": "a dots-and-boxes grid with some edges already drawn",
     "annotation_hint_three_sided_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box with exactly three drawn sides",
     "answer_hint_three_sided_box_count": "set \"answer\" to the number of boxes with exactly three drawn sides",
-    "annotation_hint_capture_move_count": "set \"annotation\" to a JSON array of endpoint point-pairs, with each endpoint as a pixel-space point [x, y], for every missing edge that would complete at least one box if drawn",
-    "answer_hint_capture_move_count": "set \"answer\" to the number of missing edges that would complete at least one box if drawn",
-    "annotation_hint_highlighted_candidate_capture_count": "set \"annotation\" to a JSON array of endpoint point-pairs, with each endpoint as a pixel-space point [x, y], for every highlighted missing edge that would complete at least one box if drawn",
-    "answer_hint_highlighted_candidate_capture_count": "set \"answer\" to the number of highlighted missing edges that would complete at least one box if drawn",
+    "annotation_hint_box_completion_edge_label": "set \"annotation\" to a JSON array containing the two endpoint pixel points [x, y] of the selected dashed option line",
+    "answer_hint_box_completion_edge_label": "set \"answer\" to the option letter, one of A, B, C, D, E, or F",
     "annotation_hint_player_a_owned_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box marked with player A",
     "answer_hint_player_a_owned_box_count": "set \"answer\" to the number of boxes marked with player A",
     "annotation_hint_player_b_owned_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box marked with player B",

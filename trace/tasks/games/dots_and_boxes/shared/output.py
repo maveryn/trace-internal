@@ -81,7 +81,7 @@ def build_dots_and_boxes_trace_payload(
     rendered_context: RenderedDotsAndBoxesTaskContext,
     prompt_defaults: Mapping[str, Any],
     prompt_query_spec: Mapping[str, Any],
-    answer_value: int,
+    answer_value: Any,
     candidate_edge_count_axis: DotsAndBoxesIntegerAxis | None = None,
     execution_extra: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
@@ -99,10 +99,21 @@ def build_dots_and_boxes_trace_payload(
         box_edges=box_edge_map,
     )
     candidate_edge_count = None if candidate_edge_count_axis is None else int(candidate_edge_count_axis.value)
+    if candidate_edge_count is None and board_state.candidate_edge_ids:
+        candidate_edge_count = int(len(board_state.candidate_edge_ids))
+    option_label_by_edge_id = {str(edge_id): str(label) for edge_id, label in board_state.option_label_by_edge_id}
+    option_box_by_edge_id = {str(edge_id): str(box_id) for edge_id, box_id in board_state.option_box_by_edge_id}
+    option_edge_id_by_label = {str(label): str(edge_id) for edge_id, label in board_state.option_label_by_edge_id}
+    option_box_id_by_label = {
+        str(option_label_by_edge_id[str(edge_id)]): str(box_id)
+        for edge_id, box_id in option_box_by_edge_id.items()
+        if str(edge_id) in option_label_by_edge_id
+    }
     execution_trace = {
         "scene_variant": str(scene_axes.scene_variant),
         "style_variant": str(scene_axes.style_variant),
-        "target_answer": int(answer_value),
+        "target_answer": answer_value,
+        "answer": answer_value,
         "box_rows": int(board_state.box_rows),
         "box_cols": int(board_state.box_cols),
         "candidate_edge_count": candidate_edge_count,
@@ -113,6 +124,12 @@ def build_dots_and_boxes_trace_payload(
         "counted_box_ids": [str(box_id) for box_id in board_state.counted_box_ids],
         "counted_edge_ids": [str(edge_id) for edge_id in board_state.counted_edge_ids],
         "candidate_edge_ids": [str(edge_id) for edge_id in board_state.candidate_edge_ids],
+        "answer_edge_id": str(board_state.answer_edge_id),
+        "answer_label": str(board_state.answer_label),
+        "option_edge_id_by_label": dict(sorted(option_edge_id_by_label.items())),
+        "option_box_id_by_label": dict(sorted(option_box_id_by_label.items())),
+        "option_label_by_edge_id": dict(sorted(option_label_by_edge_id.items())),
+        "option_box_by_edge_id": dict(sorted(option_box_by_edge_id.items())),
         "box_owner_by_id": dict(rendered_scene.render_map.get("box_owner_by_id", {})),
         "immediate_capture_edge_ids": [str(edge_id) for edge_id in immediate_edges],
         "box_drawn_side_counts": {str(box_id): int(count) for box_id, count in sorted(side_counts.items())},
@@ -132,13 +149,16 @@ def build_dots_and_boxes_trace_payload(
             "relations": {
                 "scene_variant": str(scene_axes.scene_variant),
                 "style_variant": str(scene_axes.style_variant),
-                "target_answer": int(answer_value),
+                "target_answer": answer_value,
+                "answer": answer_value,
                 "annotation_entity_ids": [str(entity_id) for entity_id in annotation_ids],
                 "box_rows": int(board_shape.box_rows),
                 "box_cols": int(board_shape.box_cols),
                 "candidate_edge_count": candidate_edge_count,
                 "highlighted_edge_id": str(board_state.highlighted_edge_id),
                 "highlighted_edge_ids": [str(edge_id) for edge_id in board_state.highlighted_edge_ids],
+                "answer_edge_id": str(board_state.answer_edge_id),
+                "answer_label": str(board_state.answer_label),
             },
         },
         "query_spec": dict(prompt_query_spec),

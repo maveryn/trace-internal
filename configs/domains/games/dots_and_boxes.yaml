@@ -19,28 +19,17 @@ generation:
     balanced_style_variant_sampling: true
     balanced_board_shape_sampling: true
   task_overrides:
-    task_games__dots_and_boxes__capture_move_count:
+    task_games__dots_and_boxes__box_completion_edge_label:
       balanced_target_answer_sampling: true
-      balanced_candidate_edge_count_sampling: true
-      capture_move_count_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      highlighted_candidate_capture_count_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
+      option_label_support:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
       candidate_edge_count_support:
-      - 5
       - 6
-      - 7
-      - 8
     task_games__dots_and_boxes__owned_box_count:
       balanced_target_answer_sampling: true
       owned_box_count_support:

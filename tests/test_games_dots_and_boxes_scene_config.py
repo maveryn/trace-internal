@@ -1,4 +1,4 @@
-"""Scene config tests for the games dots-and-boxes capture-count task."""
+"""Scene config tests for the games dots-and-boxes scene."""
 
 from __future__ import annotations
 
@@ -6,11 +6,11 @@ from trace.core.scene_config import get_scene_defaults
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
-def test_games_dots_and_boxes_capture_count_scene_id_defaults_present() -> None:
+def test_games_dots_and_boxes_scene_id_defaults_present() -> None:
     defaults = get_scene_defaults("games", "dots_and_boxes")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         defaults,
-        task_id="task_games__dots_and_boxes__capture_move_count",
+        task_id="task_games__dots_and_boxes__box_completion_edge_label",
     )
     assert generation["scene_variant_weights"] == {"single_board": 1.0}
     assert "query_id_weights" not in generation
@@ -23,14 +23,12 @@ def test_games_dots_and_boxes_capture_count_scene_id_defaults_present() -> None:
         "slate",
         "wood_panel",
     }
-    assert generation["capture_move_count_support"] == [0, 1, 2, 3, 4, 5]
-    assert generation["highlighted_candidate_capture_count_support"] == [0, 1, 2, 3, 4, 5]
+    assert generation["option_label_support"] == ["A", "B", "C", "D", "E", "F"]
     assert generation["box_rows_support"] == [3, 4]
     assert generation["box_cols_support"] == [3, 4]
-    assert generation["candidate_edge_count_support"] == [5, 6, 7, 8]
+    assert generation["candidate_edge_count_support"] == [6]
     assert generation["balanced_target_answer_sampling"] is True
     assert generation["balanced_board_shape_sampling"] is True
-    assert generation["balanced_candidate_edge_count_sampling"] is True
     assert "balanced_capture_move_query_id_sampling" not in generation
 
     owned_generation, _owned_rendering, _owned_prompt = split_generation_rendering_prompt_defaults(

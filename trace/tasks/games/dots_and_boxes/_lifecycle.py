@@ -178,6 +178,7 @@ def run_dots_and_boxes_lifecycle(
             scene_variant=str(scene_axes.scene_variant),
             prompt_query_key=str(objective.prompt_query_key),
             annotation_example_shape=str(objective.annotation_example_shape),
+            answer_example=objective.answer_gt.value,
             instance_seed=int(instance_seed),
         )
         common_query_params = build_dots_and_boxes_common_trace_params(
@@ -203,10 +204,11 @@ def run_dots_and_boxes_lifecycle(
             rendered_context=rendered_context,
             prompt_defaults=prompt_defaults,
             prompt_query_spec=prompt_query_spec,
-            answer_value=int(objective.answer_gt.value),
+            answer_value=objective.answer_gt.value,
             candidate_edge_count_axis=objective.candidate_edge_count_axis,
             execution_extra={
                 "query_id": str(selected_query_id),
+                "answer": objective.answer_gt.value,
                 **dict(objective.query_params),
                 **dict(attempt.execution_extra or {}),
             },

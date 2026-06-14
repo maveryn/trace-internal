@@ -51,6 +51,24 @@ from ..shared.procedural_named_icons import (
     sample_procedural_named_icon_fill_style,
     validate_procedural_named_icon_fill_style_support,
 )
+from .shared.spatial_primitives import (
+    draw_region_outline as _draw_region_outline,
+    draw_region_underlay as _draw_region_underlay,
+    point_inside_region as _point_inside_region,
+    region_to_trace as _region_to_trace,
+    sample_band_region as _sample_band_region,
+    sample_box_region as _sample_box_region,
+    sample_quadrant_region as _sample_quadrant_region,
+    sample_region_icon_center as _sample_center,
+    sample_shelf_region as _sample_shelf_region,
+    serialize_region_icon as _serialize_icon,
+)
+from .shared.state import (
+    RegionIconPlan as _IconPlan,
+    RegionSpec as _RegionSpec,
+    RenderedRegionIcon as _RenderedRegionIcon,
+    ScopedRegionScenePayload as _ScenePayload,
+)
 
 
 TASK_ID = "task_icons__named_field__scoped_attribute_count"
@@ -117,68 +135,6 @@ class _TaskDefaults:
     region_fill_alpha: int = 54
     region_outline_width_px: int = 3
     named_icon_fill_style_support: Tuple[str, ...] = PROCEDURAL_NAMED_ICON_FILL_STYLES
-
-
-@dataclass(frozen=True)
-class _RegionSpec:
-    query_id: str
-    region_kind: str
-    counts_inside: bool
-    shape_kind: str = ""
-    band_kind: str = ""
-    quadrant_id: str = ""
-    shelf_index: int = -1
-    shelf_count: int = 0
-    bbox_xyxy: Tuple[int, int, int, int] | None = None
-    ellipse_center_xy: Tuple[float, float] | None = None
-    ellipse_radii_xy: Tuple[float, float] | None = None
-    band_normal_xy: Tuple[float, float] | None = None
-    band_center_distance: float | None = None
-    band_half_width_px: float | None = None
-    band_polygon_xy: Tuple[Tuple[float, float], ...] = ()
-
-
-@dataclass(frozen=True)
-class _IconPlan:
-    shape_id: str
-    desired_inside_region: bool
-    is_target_shape: bool
-
-
-@dataclass(frozen=True)
-class _RenderedRegionIcon:
-    instance_id: str
-    shape_id: str
-    shape_name: str
-    bbox_xyxy: Tuple[int, int, int, int]
-    center_xy: Tuple[float, float]
-    nominal_size_px: int
-    rotation_degrees: int
-    tint_rgb: Tuple[int, int, int]
-    fill_style: str
-    inside_region: bool
-    counted: bool
-    noise_edits: Tuple[Dict[str, Any], ...]
-    noise_seed: int | None
-
-
-@dataclass(frozen=True)
-class _ScenePayload:
-    image: Image.Image
-    panel_geometry: Dict[str, Any]
-    region: _RegionSpec
-    target_shape_id: str
-    target_shape_name: str
-    target_count: int
-    object_count: int
-    instances: Tuple[_RenderedRegionIcon, ...]
-    sampled_palette_rgb: Tuple[Tuple[int, int, int], ...]
-    query_probabilities: Dict[str, float]
-    shape_probabilities: Dict[str, float]
-    target_count_probabilities: Dict[str, float]
-    object_count_probabilities: Dict[str, float]
-    fill_style_support: Tuple[str, ...]
-    fill_style_probabilities: Dict[str, float]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -253,259 +209,6 @@ def _string_support(
 
 
 
-def _region_to_trace(region: _RegionSpec) -> Dict[str, Any]:
-    payload: Dict[str, Any] = {
-        "query_id": str(region.query_id),
-        "region_kind": str(region.region_kind),
-        "counts_inside": bool(region.counts_inside),
-        "shape_kind": str(region.shape_kind),
-        "band_kind": str(region.band_kind),
-        "quadrant_id": str(region.quadrant_id),
-        "shelf_index": int(region.shelf_index),
-        "shelf_count": int(region.shelf_count),
-    }
-    if region.bbox_xyxy is not None:
-        payload["bbox_xyxy"] = [int(value) for value in region.bbox_xyxy]
-    if region.ellipse_center_xy is not None:
-        payload["ellipse_center_xy"] = [float(value) for value in region.ellipse_center_xy]
-    if region.ellipse_radii_xy is not None:
-        payload["ellipse_radii_xy"] = [float(value) for value in region.ellipse_radii_xy]
-    if region.band_normal_xy is not None:
-        payload["band_normal_xy"] = [float(value) for value in region.band_normal_xy]
-    if region.band_center_distance is not None:
-        payload["band_center_distance"] = float(region.band_center_distance)
-    if region.band_half_width_px is not None:
-        payload["band_half_width_px"] = float(region.band_half_width_px)
-    if region.band_polygon_xy:
-        payload["band_polygon_xy"] = [[float(x), float(y)] for x, y in region.band_polygon_xy]
-    return payload
-
-
-def _point_inside_region(region: _RegionSpec, center_xy: Sequence[float]) -> bool:
-    cx, cy = float(center_xy[0]), float(center_xy[1])
-    if region.region_kind in {"shape", "quadrant", "shelf"}:
-        if region.shape_kind == "ellipse":
-            if region.ellipse_center_xy is None or region.ellipse_radii_xy is None:
-                raise ValueError("ellipse region is missing center/radii")
-            ex, ey = region.ellipse_center_xy
-            rx, ry = region.ellipse_radii_xy
-            return ((cx - float(ex)) / max(1e-6, float(rx))) ** 2 + ((cy - float(ey)) / max(1e-6, float(ry))) ** 2 <= 1.0
-        if region.bbox_xyxy is None:
-            raise ValueError("box-like region is missing bbox")
-        x0, y0, x1, y1 = [float(value) for value in region.bbox_xyxy]
-        return x0 <= cx <= x1 and y0 <= cy <= y1
-    if region.region_kind == "band":
-        if region.band_normal_xy is None or region.band_center_distance is None or region.band_half_width_px is None:
-            raise ValueError("band region is missing normal/center/width")
-        nx, ny = region.band_normal_xy
-        distance = abs((float(cx) * float(nx)) + (float(cy) * float(ny)) - float(region.band_center_distance))
-        return distance <= float(region.band_half_width_px)
-    raise ValueError(f"unsupported region kind: {region.region_kind}")
-
-
-def _point_safely_matches_region(
-    region: _RegionSpec,
-    center_xy: Sequence[float],
-    *,
-    desired_inside: bool,
-    margin_px: int,
-) -> bool:
-    cx, cy = float(center_xy[0]), float(center_xy[1])
-    margin = float(max(0, int(margin_px)))
-    if region.region_kind in {"shape", "quadrant", "shelf"}:
-        if region.shape_kind == "ellipse":
-            if region.ellipse_center_xy is None or region.ellipse_radii_xy is None:
-                raise ValueError("ellipse region is missing center/radii")
-            ex, ey = region.ellipse_center_xy
-            rx, ry = region.ellipse_radii_xy
-            scale_margin = margin / max(1.0, min(float(rx), float(ry)))
-            value = ((cx - float(ex)) / max(1e-6, float(rx))) ** 2 + ((cy - float(ey)) / max(1e-6, float(ry))) ** 2
-            if bool(desired_inside):
-                return value <= max(0.0, (1.0 - scale_margin) ** 2)
-            return value >= (1.0 + scale_margin) ** 2
-        if region.bbox_xyxy is None:
-            raise ValueError("box-like region is missing bbox")
-        x0, y0, x1, y1 = [float(value) for value in region.bbox_xyxy]
-        if bool(desired_inside):
-            return x0 + margin <= cx <= x1 - margin and y0 + margin <= cy <= y1 - margin
-        return cx <= x0 - margin or cx >= x1 + margin or cy <= y0 - margin or cy >= y1 + margin
-    if region.region_kind == "band":
-        if region.band_normal_xy is None or region.band_center_distance is None or region.band_half_width_px is None:
-            raise ValueError("band region is missing normal/center/width")
-        nx, ny = region.band_normal_xy
-        distance = abs((float(cx) * float(nx)) + (float(cy) * float(ny)) - float(region.band_center_distance))
-        if bool(desired_inside):
-            return distance <= max(0.0, float(region.band_half_width_px) - margin)
-        return distance >= float(region.band_half_width_px) + margin
-    raise ValueError(f"unsupported region kind: {region.region_kind}")
-
-
-def _bbox_corners(box: Sequence[int | float]) -> Tuple[Tuple[float, float], ...]:
-    x0, y0, x1, y1 = [float(value) for value in box]
-    return ((x0, y0), (x1, y0), (x1, y1), (x0, y1))
-
-
-def _bbox_safely_matches_region(
-    region: _RegionSpec,
-    bbox_xyxy: Sequence[int | float],
-    *,
-    desired_inside: bool,
-    margin_px: int,
-) -> bool:
-    """Evaluate region membership with boundary clearance for stable annotations."""
-    x0, y0, x1, y1 = [float(value) for value in bbox_xyxy]
-    margin = float(max(0, int(margin_px)))
-    if region.region_kind in {"shape", "quadrant", "shelf"}:
-        if region.shape_kind == "ellipse":
-            if region.ellipse_center_xy is None or region.ellipse_radii_xy is None:
-                raise ValueError("ellipse region is missing center/radii")
-            ex, ey = region.ellipse_center_xy
-            rx, ry = region.ellipse_radii_xy
-            scale_margin = margin / max(1.0, min(float(rx), float(ry)))
-            if bool(desired_inside):
-                threshold = max(0.0, (1.0 - scale_margin) ** 2)
-                return all(
-                    ((float(cx) - float(ex)) / max(1e-6, float(rx))) ** 2
-                    + ((float(cy) - float(ey)) / max(1e-6, float(ry))) ** 2
-                    <= threshold
-                    for cx, cy in _bbox_corners(bbox_xyxy)
-                )
-            nearest_x = min(max(float(ex), float(x0)), float(x1))
-            nearest_y = min(max(float(ey), float(y0)), float(y1))
-            value = ((float(nearest_x) - float(ex)) / max(1e-6, float(rx))) ** 2 + (
-                (float(nearest_y) - float(ey)) / max(1e-6, float(ry))
-            ) ** 2
-            return value >= (1.0 + scale_margin) ** 2
-        if region.bbox_xyxy is None:
-            raise ValueError("box-like region is missing bbox")
-        rx0, ry0, rx1, ry1 = [float(value) for value in region.bbox_xyxy]
-        if bool(desired_inside):
-            return rx0 + margin <= x0 and x1 <= rx1 - margin and ry0 + margin <= y0 and y1 <= ry1 - margin
-        return x1 <= rx0 - margin or x0 >= rx1 + margin or y1 <= ry0 - margin or y0 >= ry1 + margin
-    if region.region_kind == "band":
-        if region.band_normal_xy is None or region.band_center_distance is None or region.band_half_width_px is None:
-            raise ValueError("band region is missing normal/center/width")
-        nx, ny = region.band_normal_xy
-        signed_distances = [
-            (float(cx) * float(nx)) + (float(cy) * float(ny)) - float(region.band_center_distance)
-            for cx, cy in _bbox_corners(bbox_xyxy)
-        ]
-        lower = min(float(value) for value in signed_distances)
-        upper = max(float(value) for value in signed_distances)
-        half_width = float(region.band_half_width_px)
-        if bool(desired_inside):
-            return lower >= -half_width + margin and upper <= half_width - margin
-        return lower >= half_width + margin or upper <= -half_width - margin
-    raise ValueError(f"unsupported region kind: {region.region_kind}")
-
-
-def _sample_box_region(rng, *, query_id: str, content_bbox: BBox, shape_kind: str) -> _RegionSpec:
-    x0, y0, x1, y1 = [int(value) for value in content_bbox]
-    width = int(x1 - x0)
-    height = int(y1 - y0)
-    box_w = int(round(float(width) * float(rng.uniform(0.36, 0.56))))
-    box_h = int(round(float(height) * float(rng.uniform(0.38, 0.62))))
-    box_x0 = int(rng.randint(int(x0 + 18), int(max(x0 + 18, x1 - box_w - 18))))
-    box_y0 = int(rng.randint(int(y0 + 16), int(max(y0 + 16, y1 - box_h - 16))))
-    bbox = (int(box_x0), int(box_y0), int(box_x0 + box_w), int(box_y0 + box_h))
-    center = bbox_center_float(bbox)
-    return _RegionSpec(
-        query_id=str(query_id),
-        region_kind="shape",
-        counts_inside=str(query_id) in _INSIDE_QUERY_IDS,
-        shape_kind=str(shape_kind),
-        bbox_xyxy=bbox,
-        ellipse_center_xy=center if str(shape_kind) == "ellipse" else None,
-        ellipse_radii_xy=(0.5 * float(box_w), 0.5 * float(box_h)) if str(shape_kind) == "ellipse" else None,
-    )
-
-
-def _band_normal(kind: str) -> Tuple[float, float]:
-    if str(kind) == "vertical":
-        return (1.0, 0.0)
-    if str(kind) == "horizontal":
-        return (0.0, 1.0)
-    if str(kind) == "slanted_positive":
-        return (math.sqrt(0.5), -math.sqrt(0.5))
-    if str(kind) == "slanted_negative":
-        return (math.sqrt(0.5), math.sqrt(0.5))
-    raise ValueError(f"unsupported band kind: {kind}")
-
-
-def _sample_band_region(rng, *, query_id: str, content_bbox: BBox, band_kind: str) -> _RegionSpec:
-    x0, y0, x1, y1 = [float(value) for value in content_bbox]
-    width = float(x1 - x0)
-    height = float(y1 - y0)
-    nx, ny = _band_normal(str(band_kind))
-    corners = ((x0, y0), (x1, y0), (x1, y1), (x0, y1))
-    values = [(float(x) * float(nx)) + (float(y) * float(ny)) for x, y in corners]
-    min_value = min(values)
-    max_value = max(values)
-    span = max(1.0, float(max_value - min_value))
-    half_width = float(rng.uniform(0.13, 0.20)) * min(width, height)
-    center_min = min_value + (0.32 * span)
-    center_max = max_value - (0.32 * span)
-    center_distance = float(rng.uniform(center_min, center_max)) if center_min < center_max else 0.5 * (min_value + max_value)
-    tx, ty = -float(ny), float(nx)
-    base_x = float(nx) * float(center_distance)
-    base_y = float(ny) * float(center_distance)
-    line_half_len = 2.0 * math.hypot(width, height)
-    polygon = (
-        (base_x - float(nx) * half_width - tx * line_half_len, base_y - float(ny) * half_width - ty * line_half_len),
-        (base_x - float(nx) * half_width + tx * line_half_len, base_y - float(ny) * half_width + ty * line_half_len),
-        (base_x + float(nx) * half_width + tx * line_half_len, base_y + float(ny) * half_width + ty * line_half_len),
-        (base_x + float(nx) * half_width - tx * line_half_len, base_y + float(ny) * half_width - ty * line_half_len),
-    )
-    return _RegionSpec(
-        query_id=str(query_id),
-        region_kind="band",
-        counts_inside=str(query_id) in _INSIDE_QUERY_IDS,
-        band_kind=str(band_kind),
-        band_normal_xy=(float(nx), float(ny)),
-        band_center_distance=float(center_distance),
-        band_half_width_px=float(half_width),
-        band_polygon_xy=tuple((float(x), float(y)) for x, y in polygon),
-    )
-
-
-def _sample_quadrant_region(rng, *, query_id: str, content_bbox: BBox, quadrant_id: str) -> _RegionSpec:
-    x0, y0, x1, y1 = [int(value) for value in content_bbox]
-    xm = int(round(0.5 * float(x0 + x1)))
-    ym = int(round(0.5 * float(y0 + y1)))
-    quadrant_to_bbox = {
-        "top_left": (x0, y0, xm, ym),
-        "top_right": (xm, y0, x1, ym),
-        "bottom_left": (x0, ym, xm, y1),
-        "bottom_right": (xm, ym, x1, y1),
-    }
-    bbox = quadrant_to_bbox[str(quadrant_id)]
-    return _RegionSpec(
-        query_id=str(query_id),
-        region_kind="quadrant",
-        counts_inside=True,
-        shape_kind="rectangle",
-        quadrant_id=str(quadrant_id),
-        bbox_xyxy=tuple(int(value) for value in bbox),
-    )
-
-
-def _sample_shelf_region(rng, *, query_id: str, content_bbox: BBox, shelf_count_min: int, shelf_count_max: int) -> _RegionSpec:
-    x0, y0, x1, y1 = [int(value) for value in content_bbox]
-    shelf_count = int(rng.randint(int(shelf_count_min), int(shelf_count_max)))
-    shelf_index = int(rng.randrange(0, int(shelf_count)))
-    shelf_h = float(y1 - y0) / float(max(1, int(shelf_count)))
-    sy0 = int(round(float(y0) + float(shelf_index) * shelf_h))
-    sy1 = int(round(float(y0) + float(shelf_index + 1) * shelf_h))
-    return _RegionSpec(
-        query_id=str(query_id),
-        region_kind="shelf",
-        counts_inside=True,
-        shape_kind="rectangle",
-        shelf_index=int(shelf_index),
-        shelf_count=int(shelf_count),
-        bbox_xyxy=(int(x0), int(sy0), int(x1), int(sy1)),
-    )
-
 
 def _sample_region(
     *,
@@ -526,7 +229,13 @@ def _sample_region(
         shape_kind = str(explicit) if explicit is not None else str(rng.choice(shape_support))
         if shape_kind not in set(shape_support):
             raise ValueError(f"region_shape_kind must be one of {shape_support}")
-        return _sample_box_region(rng, query_id=str(query_id), content_bbox=content_bbox, shape_kind=str(shape_kind))
+        return _sample_box_region(
+            rng,
+            query_key=str(query_id),
+            counts_inside=str(query_id) in _INSIDE_QUERY_IDS,
+            content_bbox=content_bbox,
+            shape_kind=str(shape_kind),
+        )
     if str(query_id) in {"inside_band_count", "outside_band_count"}:
         band_support = _string_support(
             params,
@@ -538,7 +247,13 @@ def _sample_region(
         band_kind = str(explicit) if explicit is not None else str(rng.choice(band_support))
         if band_kind not in set(band_support):
             raise ValueError(f"band_kind must be one of {band_support}")
-        return _sample_band_region(rng, query_id=str(query_id), content_bbox=content_bbox, band_kind=str(band_kind))
+        return _sample_band_region(
+            rng,
+            query_key=str(query_id),
+            counts_inside=str(query_id) in _INSIDE_QUERY_IDS,
+            content_bbox=content_bbox,
+            band_kind=str(band_kind),
+        )
     if str(query_id) == "inside_quadrant_count":
         quadrant_support = _string_support(
             params,
@@ -550,7 +265,7 @@ def _sample_region(
         quadrant_id = str(explicit) if explicit is not None else str(rng.choice(quadrant_support))
         if quadrant_id not in set(quadrant_support):
             raise ValueError(f"quadrant_id must be one of {quadrant_support}")
-        return _sample_quadrant_region(rng, query_id=str(query_id), content_bbox=content_bbox, quadrant_id=str(quadrant_id))
+        return _sample_quadrant_region(rng, query_key=str(query_id), content_bbox=content_bbox, quadrant_id=str(quadrant_id))
     if str(query_id) == "inside_shelf_count":
         shelf_min = _int_default(params, _GEN_DEFAULTS, "shelf_count_min", _DEFAULTS.shelf_count_min)
         shelf_max = _int_default(params, _GEN_DEFAULTS, "shelf_count_max", _DEFAULTS.shelf_count_max)
@@ -558,162 +273,13 @@ def _sample_region(
             raise ValueError("invalid shelf_count_min/shelf_count_max")
         return _sample_shelf_region(
             rng,
-            query_id=str(query_id),
+            query_key=str(query_id),
             content_bbox=content_bbox,
             shelf_count_min=int(shelf_min),
             shelf_count_max=int(shelf_max),
         )
     raise ValueError(f"unsupported query_id: {query_id}")
 
-
-def _sample_center(
-    rng,
-    *,
-    content_bbox: BBox,
-    sprite_size: Tuple[int, int],
-    region: _RegionSpec,
-    desired_inside: bool,
-    margin_px: int,
-    require_bbox_clearance: bool,
-) -> Tuple[float, float]:
-    x0, y0, x1, y1 = [int(value) for value in content_bbox]
-    half_w = 0.5 * float(sprite_size[0])
-    half_h = 0.5 * float(sprite_size[1])
-    min_x = float(x0) + half_w
-    max_x = float(x1) - half_w
-    min_y = float(y0) + half_h
-    max_y = float(y1) - half_h
-    if min_x >= max_x or min_y >= max_y:
-        raise ValueError("sprite does not fit content bbox")
-    for _ in range(900):
-        cx = float(rng.uniform(min_x, max_x))
-        cy = float(rng.uniform(min_y, max_y))
-        if bool(require_bbox_clearance):
-            bbox = bbox_from_center_and_size((cx, cy), sprite_size)
-            if _bbox_safely_matches_region(region, bbox, desired_inside=bool(desired_inside), margin_px=int(margin_px)):
-                return (float(cx), float(cy))
-            continue
-        if _point_safely_matches_region(region, (cx, cy), desired_inside=bool(desired_inside), margin_px=int(margin_px)):
-            return (float(cx), float(cy))
-    raise ValueError("could not sample center with requested region membership")
-
-
-def _draw_clipped_polygon(
-    image: Image.Image,
-    *,
-    content_bbox: BBox,
-    polygon: Sequence[Sequence[float]],
-    fill_rgba: Tuple[int, int, int, int],
-    outline_rgba: Tuple[int, int, int, int] | None,
-    width: int,
-) -> None:
-    overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
-    points = [(float(x), float(y)) for x, y in polygon]
-    draw.polygon(points, fill=tuple(int(value) for value in fill_rgba))
-    if outline_rgba is not None:
-        draw.line(points + [points[0]], fill=tuple(int(value) for value in outline_rgba), width=max(1, int(width)))
-    mask = Image.new("L", image.size, 0)
-    ImageDraw.Draw(mask).rectangle(tuple(int(value) for value in content_bbox), fill=255)
-    alpha = ImageChops.multiply(overlay.getchannel("A"), mask)
-    overlay.putalpha(alpha)
-    image.alpha_composite(overlay)
-
-
-def _draw_region_underlay(image: Image.Image, *, region: _RegionSpec, content_bbox: BBox, render_params: Mapping[str, Any]) -> None:
-    fill = tuple(int(value) for value in render_params["region_fill_rgb"]) + (int(render_params["region_fill_alpha"]),)
-    guide = tuple(int(value) for value in render_params["region_guide_rgb"]) + (150,)
-    overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
-    if region.region_kind in {"shape", "quadrant", "shelf"}:
-        if region.bbox_xyxy is None:
-            raise ValueError("box-like region is missing bbox")
-        if region.shape_kind == "ellipse":
-            draw.ellipse(tuple(int(value) for value in region.bbox_xyxy), fill=fill)
-        else:
-            draw.rectangle(tuple(int(value) for value in region.bbox_xyxy), fill=fill)
-        if region.region_kind == "quadrant":
-            x0, y0, x1, y1 = [int(value) for value in content_bbox]
-            xm = int(round(0.5 * float(x0 + x1)))
-            ym = int(round(0.5 * float(y0 + y1)))
-            draw.line((xm, y0, xm, y1), fill=guide, width=2)
-            draw.line((x0, ym, x1, ym), fill=guide, width=2)
-        if region.region_kind == "shelf":
-            x0, y0, x1, y1 = [int(value) for value in content_bbox]
-            for row in range(1, int(region.shelf_count)):
-                y = int(round(float(y0) + (float(row) * float(y1 - y0) / float(max(1, int(region.shelf_count))))))
-                draw.line((x0, y, x1, y), fill=guide, width=2)
-        image.alpha_composite(overlay)
-        return
-    if region.region_kind == "band":
-        _draw_clipped_polygon(
-            image,
-            content_bbox=content_bbox,
-            polygon=region.band_polygon_xy,
-            fill_rgba=fill,
-            outline_rgba=None,
-            width=int(render_params["region_outline_width_px"]),
-        )
-        return
-    raise ValueError(f"unsupported region kind: {region.region_kind}")
-
-
-def _draw_region_outline(image: Image.Image, *, region: _RegionSpec, content_bbox: BBox, render_params: Mapping[str, Any]) -> None:
-    outline = tuple(int(value) for value in render_params["region_outline_rgb"]) + (230,)
-    guide = tuple(int(value) for value in render_params["region_guide_rgb"]) + (170,)
-    width = max(1, int(render_params["region_outline_width_px"]))
-    overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
-    if region.region_kind in {"shape", "quadrant", "shelf"}:
-        if region.bbox_xyxy is None:
-            raise ValueError("box-like region is missing bbox")
-        if region.region_kind == "quadrant":
-            x0, y0, x1, y1 = [int(value) for value in content_bbox]
-            xm = int(round(0.5 * float(x0 + x1)))
-            ym = int(round(0.5 * float(y0 + y1)))
-            draw.line((xm, y0, xm, y1), fill=guide, width=2)
-            draw.line((x0, ym, x1, ym), fill=guide, width=2)
-        if region.region_kind == "shelf":
-            x0, y0, x1, y1 = [int(value) for value in content_bbox]
-            for row in range(1, int(region.shelf_count)):
-                y = int(round(float(y0) + (float(row) * float(y1 - y0) / float(max(1, int(region.shelf_count))))))
-                draw.line((x0, y, x1, y), fill=guide, width=2)
-        if region.shape_kind == "ellipse":
-            draw.ellipse(tuple(int(value) for value in region.bbox_xyxy), outline=outline, width=width)
-        else:
-            draw.rectangle(tuple(int(value) for value in region.bbox_xyxy), outline=outline, width=width)
-        image.alpha_composite(overlay)
-        return
-    if region.region_kind == "band":
-        _draw_clipped_polygon(
-            image,
-            content_bbox=content_bbox,
-            polygon=region.band_polygon_xy,
-            fill_rgba=(0, 0, 0, 0),
-            outline_rgba=outline,
-            width=width,
-        )
-        return
-    raise ValueError(f"unsupported region kind: {region.region_kind}")
-
-
-def _serialize_icon(instance: _RenderedRegionIcon) -> Dict[str, Any]:
-    return {
-        "entity_kind": "procedural_named_icon",
-        "instance_id": str(instance.instance_id),
-        "shape_id": str(instance.shape_id),
-        "shape_name": str(instance.shape_name),
-        "bbox_xyxy": [int(value) for value in instance.bbox_xyxy],
-        "center_xy": [float(value) for value in instance.center_xy],
-        "nominal_size_px": int(instance.nominal_size_px),
-        "rotation_degrees": int(instance.rotation_degrees),
-        "tint_rgb": [int(value) for value in instance.tint_rgb],
-        "fill_style": str(instance.fill_style),
-        "inside_region": bool(instance.inside_region),
-        "counted": bool(instance.counted),
-        "noise_edits": [dict(edit) for edit in instance.noise_edits],
-        "noise_seed": None if instance.noise_seed is None else int(instance.noise_seed),
-    }
 
 
 def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params: Mapping[str, Any], attempt: int) -> _ScenePayload:
@@ -874,7 +440,6 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
                     region=region,
                     desired_inside=bool(plan.desired_inside_region),
                     margin_px=int(margin_px),
-                    require_bbox_clearance=bool(plan.is_target_shape),
                 )
                 bbox = bbox_from_center_and_size(center, sprite.size)
                 if max_overlap_with_existing(bbox, existing_bboxes) > float(render_params["scene_max_overlap_fraction"]):
@@ -1006,7 +571,7 @@ class IconsCountingNamedShapeRegionCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                f"question_text_{scene.region.query_id}",
+                f"question_text_{scene.region.query_key}",
                 "annotation_hint",
                 "answer_hint",
                 "json_example",
@@ -1014,7 +579,7 @@ class IconsCountingNamedShapeRegionCountTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        question_key = f"question_text_{scene.region.query_id}"
+        question_key = f"question_text_{scene.region.query_key}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             scene_id=SCENE_ID,
@@ -1062,7 +627,7 @@ class IconsCountingNamedShapeRegionCountTask:
                 },
             },
             "query_spec": {
-                "query_id": str(scene.region.query_id),
+                "query_id": str(scene.region.query_key),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1072,7 +637,7 @@ class IconsCountingNamedShapeRegionCountTask:
                     "target_shape_name": str(scene.target_shape_name),
                     "target_count": int(scene.target_count),
                     "object_count": int(scene.object_count),
-                    "query_id": str(scene.region.query_id),
+                    "query_id": str(scene.region.query_key),
                     "region": dict(region_payload),
                     "shape_id_support": list(_shape_support(params)),
                     "query_probabilities": dict(scene.query_probabilities),
@@ -1114,7 +679,7 @@ class IconsCountingNamedShapeRegionCountTask:
             },
             "execution_trace": {
                 "scene_variant": "single_panel_named_shape_region_field",
-                "query_id": str(scene.region.query_id),
+                "query_id": str(scene.region.query_key),
                 "question_format": "count_named_shape_icons_by_visible_region_membership",
                 "target_shape_id": str(scene.target_shape_id),
                 "target_shape_name": str(scene.target_shape_name),
@@ -1150,7 +715,7 @@ class IconsCountingNamedShapeRegionCountTask:
             trace_payload=trace_payload,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
-            query_id=str(scene.region.query_id),
+            query_id=str(scene.region.query_key),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
         )
 

@@ -49,6 +49,15 @@ from ..shared.procedural_named_icons import (
     sample_procedural_named_icon_fill_style,
     validate_procedural_named_icon_fill_style_support,
 )
+from .shared.spatial_primitives import (
+    render_closer_reference_scene as _render_scene,
+    serialize_closer_reference_icon as _serialize_icon,
+)
+from .shared.state import (
+    CloserReferenceIconPlan as _IconPlan,
+    CloserReferenceSampleSpec as _SampleSpec,
+    CloserReferenceScenePayload as _ScenePayload,
+)
 
 
 TASK_ID = "task_icons__named_field__closer_to_reference_count"
@@ -105,76 +114,6 @@ class _TaskDefaults:
     reference_axis_degrees: Tuple[int, ...] = (0, 35, 90, 145)
     distance_margin_px: int = 42
     icon_collision_gap_px: int = 8
-
-
-@dataclass(frozen=True)
-class _IconPlan:
-    role: str
-    label: str
-    shape_id: str
-    color_name: str
-    tint_rgb: Tuple[int, int, int]
-    fill_style: str
-    nominal_size_px: int
-    rotation_degrees: int
-    desired_closer_label: str
-    noise_edits: Tuple[Any, ...]
-    noise_seed: int | None
-
-
-@dataclass(frozen=True)
-class _RenderedIcon:
-    instance_id: str
-    role: str
-    label: str
-    shape_id: str
-    shape_name: str
-    color_name: str
-    tint_rgb: Tuple[int, int, int]
-    fill_style: str
-    bbox_xyxy: Tuple[int, int, int, int]
-    center_xy: Tuple[float, float]
-    nominal_size_px: int
-    rotation_degrees: int
-    distance_to_reference_a_px: float | None
-    distance_to_reference_b_px: float | None
-    closer_reference_label: str
-    counted: bool
-    label_bbox_xyxy: Tuple[int, int, int, int] | None
-    noise_edits: Tuple[Dict[str, Any], ...]
-    noise_seed: int | None
-
-
-@dataclass(frozen=True)
-class _SampleSpec:
-    query_id: str
-    queried_reference_label: str
-    target_shape_id: str
-    target_shape_name: str
-    reference_a_shape_name: str
-    reference_b_shape_name: str
-    target_answer: int
-    target_icon_count: int
-    closer_count_by_reference: Dict[str, int]
-    plans: Tuple[_IconPlan, ...]
-    sampled_palette_rgb: Tuple[Tuple[int, int, int], ...]
-    query_probabilities: Dict[str, float]
-    shape_probabilities: Dict[str, float]
-    color_probabilities: Dict[str, float]
-    target_answer_probabilities: Dict[str, float]
-    target_icon_count_probabilities: Dict[str, float]
-    fill_style_support: Tuple[str, ...]
-    fill_style_probabilities: Dict[str, float]
-    reference_axis_probabilities: Dict[str, float]
-    queried_reference_label_probabilities: Dict[str, float]
-
-
-@dataclass(frozen=True)
-class _ScenePayload:
-    image: Image.Image
-    icons: Tuple[_RenderedIcon, ...]
-    panel_geometry: Dict[str, Any]
-    reference_axis_degrees: int
 
 
 _DEFAULTS = _TaskDefaults()
@@ -409,7 +348,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         )
 
     return _SampleSpec(
-        query_id=str(query_id),
+        query_key=str(query_id),
         queried_reference_label=str(queried_reference_label),
         target_shape_id=str(target_shape_id),
         target_shape_name=procedural_named_icon_display_name(str(target_shape_id)),
@@ -451,221 +390,6 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
     return render_params
 
 
-
-
-
-
-
-
-
-def _axis_radius(center: Tuple[float, float], axis: Tuple[float, float], content_bbox: BBox) -> float:
-    cx, cy = float(center[0]), float(center[1])
-    dx, dy = float(axis[0]), float(axis[1])
-    x0, y0, x1, y1 = tuple(float(value) for value in content_bbox)
-
-    def forward_limit(sign: float) -> float:
-        limits = []
-        if abs(dx) > 1e-9:
-            limits.append(((x1 if sign * dx > 0 else x0) - cx) / (sign * dx))
-        if abs(dy) > 1e-9:
-            limits.append(((y1 if sign * dy > 0 else y0) - cy) / (sign * dy))
-        positives = [float(value) for value in limits if float(value) > 0.0]
-        return min(positives) if positives else 0.0
-
-    return float(min(forward_limit(1.0), forward_limit(-1.0)))
-
-
-def _serialize_icon(icon: _RenderedIcon) -> Dict[str, Any]:
-    return {
-        "entity_kind": "procedural_named_icon",
-        "instance_id": str(icon.instance_id),
-        "role": str(icon.role),
-        "label": str(icon.label),
-        "shape_id": str(icon.shape_id),
-        "shape_name": str(icon.shape_name),
-        "color_name": str(icon.color_name),
-        "tint_rgb": [int(value) for value in icon.tint_rgb],
-        "fill_style": str(icon.fill_style),
-        "bbox_xyxy": [int(value) for value in icon.bbox_xyxy],
-        "center_xy": [float(icon.center_xy[0]), float(icon.center_xy[1])],
-        "nominal_size_px": int(icon.nominal_size_px),
-        "rotation_degrees": int(icon.rotation_degrees),
-        "distance_to_reference_a_px": None if icon.distance_to_reference_a_px is None else float(icon.distance_to_reference_a_px),
-        "distance_to_reference_b_px": None if icon.distance_to_reference_b_px is None else float(icon.distance_to_reference_b_px),
-        "closer_reference_label": str(icon.closer_reference_label),
-        "counted": bool(icon.counted),
-        "label_bbox_xyxy": None if icon.label_bbox_xyxy is None else [int(value) for value in icon.label_bbox_xyxy],
-        "noise_edits": [dict(edit) for edit in icon.noise_edits],
-        "noise_seed": None if icon.noise_seed is None else int(icon.noise_seed),
-    }
-
-
-def _render_scene(
-    *,
-    rng,
-    instance_seed: int,
-    sample: _SampleSpec,
-    render_params: Mapping[str, Any],
-) -> _ScenePayload:
-    """Render the named-field references and targets while preserving distance margins."""
-    layout = resolve_single_panel_layout(
-        canvas_width=int(render_params["canvas_width"]),
-        canvas_height=int(render_params["canvas_height"]),
-        outer_margin_px=int(render_params["outer_margin_px"]),
-        panel_padding_px=int(render_params["panel_padding_px"]),
-        title_font_size_px=int(render_params["panel_title_font_size_px"]),
-    )
-    content_bbox = tuple(int(value) for value in layout.scene_content_xyxy)
-    plans = tuple(sample.plans)
-    sprites = [render_planned_named_icon_sprite(plan) for plan in plans]
-    axes = tuple(int(value) for value in sample.reference_axis_probabilities)
-    axis_degrees = int(rng.choice(axes)) if axes else 0
-    if any(abs(float(value) - 1.0) < 1e-9 for value in sample.reference_axis_probabilities.values()):
-        axis_degrees = int(next(int(key) for key, value in sample.reference_axis_probabilities.items() if abs(float(value) - 1.0) < 1e-9))
-
-    angle = math.radians(float(axis_degrees))
-    axis = (float(math.cos(angle)), float(math.sin(angle)))
-    perp = (-float(axis[1]), float(axis[0]))
-    center = (
-        0.5 * float(content_bbox[0] + content_bbox[2]),
-        0.5 * float(content_bbox[1] + content_bbox[3]),
-    )
-    radius = _axis_radius(center, axis, content_bbox)
-    max_ref_size = max(int(sprites[0].size[0]), int(sprites[0].size[1]), int(sprites[1].size[0]), int(sprites[1].size[1]))
-    half_sep = max(96.0, min(190.0, float(radius) - 0.85 * float(max_ref_size)))
-    if half_sep < 90.0:
-        raise ValueError("content bbox too small for reference placement")
-    ref_centers = {
-        "A": (float(center[0]) - float(axis[0]) * half_sep, float(center[1]) - float(axis[1]) * half_sep),
-        "B": (float(center[0]) + float(axis[0]) * half_sep, float(center[1]) + float(axis[1]) * half_sep),
-    }
-    max_proj = max(float(render_params["distance_margin_px"]) + 8.0, float(radius) - 42.0)
-    perp_span = max(38.0, min(132.0, 0.42 * float(radius)))
-    collision_gap = int(render_params["icon_collision_gap_px"])
-
-    max_attempts = max(1, int(render_params["scene_placement_max_attempts"]))
-    last_error: Exception | None = None
-    for _attempt in range(max_attempts):
-        try:
-            occupancy: list[BBox] = []
-            rendered: list[_RenderedIcon] = []
-            reference_centers_actual: Dict[str, Tuple[float, float]] = {}
-
-            for index, label in enumerate(("A", "B")):
-                plan = plans[int(index)]
-                sprite = sprites[int(index)]
-                bbox = bbox_from_center_dimensions(ref_centers[str(label)], width=int(sprite.size[0]), height=int(sprite.size[1]))
-                if not bbox_inside(bbox, content_bbox):
-                    raise ValueError("reference outside content")
-                if any(boxes_overlap(bbox, other, gap_px=collision_gap) for other in occupancy):
-                    raise ValueError("reference overlap")
-                occupancy.append(bbox)
-                reference_centers_actual[str(label)] = bbox_center_float(bbox)
-                rendered.append(
-                    _RenderedIcon(
-                        instance_id=f"reference_{str(label).lower()}",
-                        role="reference",
-                        label=str(label),
-                        shape_id=str(plan.shape_id),
-                        shape_name=procedural_named_icon_display_name(str(plan.shape_id)),
-                        color_name=str(plan.color_name),
-                        tint_rgb=tuple(int(value) for value in plan.tint_rgb),
-                        fill_style=str(plan.fill_style),
-                        bbox_xyxy=tuple(int(value) for value in bbox),
-                        center_xy=bbox_center_float(bbox),
-                        nominal_size_px=int(plan.nominal_size_px),
-                        rotation_degrees=int(plan.rotation_degrees),
-                        distance_to_reference_a_px=None,
-                        distance_to_reference_b_px=None,
-                        closer_reference_label="",
-                        counted=False,
-                        label_bbox_xyxy=None,
-                        noise_edits=tuple(serialize_icon_noise_edits(plan.noise_edits)),
-                        noise_seed=plan.noise_seed,
-                    )
-                )
-
-            for target_index, (plan, sprite) in enumerate(zip(plans[2:], sprites[2:])):
-                desired_label = str(plan.desired_closer_label)
-                sign = -1.0 if desired_label == "A" else 1.0
-                placed = False
-                for _placement_attempt in range(180):
-                    projection = sign * float(rng.uniform(float(render_params["distance_margin_px"]), max_proj))
-                    offset = float(rng.uniform(-perp_span, perp_span))
-                    candidate_center = (
-                        float(center[0]) + float(axis[0]) * projection + float(perp[0]) * offset,
-                        float(center[1]) + float(axis[1]) * projection + float(perp[1]) * offset,
-                    )
-                    bbox = bbox_from_center_dimensions(candidate_center, width=int(sprite.size[0]), height=int(sprite.size[1]))
-                    if not bbox_inside(bbox, content_bbox):
-                        continue
-                    if any(boxes_overlap(bbox, other, gap_px=collision_gap) for other in occupancy):
-                        continue
-                    distance_a = math.hypot(candidate_center[0] - reference_centers_actual["A"][0], candidate_center[1] - reference_centers_actual["A"][1])
-                    distance_b = math.hypot(candidate_center[0] - reference_centers_actual["B"][0], candidate_center[1] - reference_centers_actual["B"][1])
-                    closer = "A" if float(distance_a) < float(distance_b) else "B"
-                    if str(closer) != desired_label:
-                        continue
-                    if abs(float(distance_a) - float(distance_b)) < float(render_params["distance_margin_px"]):
-                        continue
-                    occupancy.append(bbox)
-                    rendered.append(
-                        _RenderedIcon(
-                            instance_id=f"target_{int(target_index):02d}",
-                            role="target",
-                            label="",
-                            shape_id=str(plan.shape_id),
-                            shape_name=procedural_named_icon_display_name(str(plan.shape_id)),
-                            color_name=str(plan.color_name),
-                            tint_rgb=tuple(int(value) for value in plan.tint_rgb),
-                            fill_style=str(plan.fill_style),
-                            bbox_xyxy=tuple(int(value) for value in bbox),
-                            center_xy=bbox_center_float(bbox),
-                            nominal_size_px=int(plan.nominal_size_px),
-                            rotation_degrees=int(plan.rotation_degrees),
-                            distance_to_reference_a_px=float(distance_a),
-                            distance_to_reference_b_px=float(distance_b),
-                            closer_reference_label=str(closer),
-                            counted=str(closer) == str(sample.queried_reference_label),
-                            label_bbox_xyxy=None,
-                            noise_edits=tuple(serialize_icon_noise_edits(plan.noise_edits)),
-                            noise_seed=plan.noise_seed,
-                        )
-                    )
-                    placed = True
-                    break
-                if not placed:
-                    raise ValueError("failed to place target icon with requested closer reference")
-
-            image = Image.new("RGBA", (int(layout.canvas_width), int(layout.canvas_height)))
-            draw_single_panel(
-                image=image,
-                layout=layout,
-                background_rgb=tuple(int(value) for value in render_params["background_color_rgb"]),
-                panel_fill_rgb=tuple(int(value) for value in render_params["panel_fill_rgb"]),
-                panel_border_rgb=tuple(int(value) for value in render_params["panel_border_rgb"]),
-                title_color_rgb=tuple(int(value) for value in render_params["header_text_rgb"]),
-                corner_radius_px=int(render_params["panel_corner_radius_px"]),
-                title_font_size_px=int(render_params["panel_title_font_size_px"]),
-                scene_title="Scene",
-                icon_canvas_style=render_params.get("_icon_canvas_style_object"),
-            )
-            for record, sprite in zip(rendered, sprites):
-                image.alpha_composite(sprite, (int(record.bbox_xyxy[0]), int(record.bbox_xyxy[1])))
-            return _ScenePayload(
-                image=image.convert("RGB"),
-                icons=tuple(rendered),
-                panel_geometry=single_panel_geometry_to_trace(layout),
-                reference_axis_degrees=int(axis_degrees),
-            )
-        except Exception as exc:
-            last_error = exc
-            continue
-    raise RuntimeError("failed to render closer-reference icon scene") from last_error
-
-
-
-
 @register_task
 class IconsCountingNamedShapeCloserToReferenceCountTask:
     """Count target-shape icons closer to one of two prompt-named references."""
@@ -686,7 +410,6 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
                 scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:scene", int(attempt))
                 scene = _render_scene(
                     rng=scene_rng,
-                    instance_seed=int(instance_seed),
                     sample=sample,
                     render_params=render_params,
                 )
@@ -706,7 +429,7 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
         if len(counted_icons) != int(sample.target_answer):
             raise RuntimeError("closer-reference rendered answer does not match sampled answer")
 
-        question_key = f"question_text_{sample.query_id}"
+        question_key = f"question_text_{sample.query_key}"
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
@@ -796,13 +519,13 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
                 },
             },
             "query_spec": {
-                "query_id": str(sample.query_id),
+                "query_id": str(sample.query_key),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_id": str(sample.query_id),
+                    "query_id": str(sample.query_key),
                     "target_shape_id": str(sample.target_shape_id),
                     "target_shape_name": str(sample.target_shape_name),
                     "target_answer": int(sample.target_answer),
@@ -854,7 +577,7 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
             },
             "execution_trace": {
                 "scene_variant": "single_panel_named_shape_closer_to_reference_field",
-                "query_id": str(sample.query_id),
+                "query_id": str(sample.query_key),
                 "question_format": "count_named_shape_icons_closer_to_named_reference",
                 "target_shape_id": str(sample.target_shape_id),
                 "target_shape_name": str(sample.target_shape_name),
@@ -895,7 +618,7 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
             trace_payload=trace_payload,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
-            query_id=str(sample.query_id),
+            query_id=str(sample.query_key),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
         )
 

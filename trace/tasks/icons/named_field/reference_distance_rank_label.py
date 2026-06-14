@@ -47,6 +47,14 @@ from ..shared.procedural_named_icons import (
     sample_procedural_named_icon_fill_style,
     validate_procedural_named_icon_fill_style_support,
 )
+from .shared.spatial_primitives import (
+    render_distance_rank_scene as _render_placed_scene,
+    serialize_distance_rank_icon as _serialize_distance_icon,
+)
+from .shared.state import (
+    DistanceRankIconPlan as _IconPlan,
+    DistanceRankScenePayload as _ScenePayload,
+)
 
 
 TASK_ID = "task_icons__named_field__reference_distance_rank_label"
@@ -138,62 +146,6 @@ class _TaskDefaults:
     candidate_label_color_rgb: Tuple[int, int, int] = (52, 60, 77)
     candidate_label_background_rgb: Tuple[int, int, int] = (255, 255, 255)
     candidate_label_border_rgb: Tuple[int, int, int] = (172, 183, 204)
-
-
-@dataclass(frozen=True)
-class _IconPlan:
-    """Semantic plan for one rendered icon."""
-
-    role: str
-    label: str
-    shape_id: str
-    color_name: str
-    tint_rgb: Tuple[int, int, int]
-    fill_style: str
-    nominal_size_px: int
-    rotation_degrees: int
-    noise_edits: Tuple[Any, ...]
-    noise_seed: int | None
-
-
-@dataclass(frozen=True)
-class _RenderedDistanceIcon:
-    """Rendered icon metadata for the distance-rank scene."""
-
-    instance_id: str
-    role: str
-    label: str
-    shape_id: str
-    shape_name: str
-    color_name: str
-    tint_rgb: Tuple[int, int, int]
-    fill_style: str
-    bbox_xyxy: Tuple[int, int, int, int]
-    center_xy: Tuple[float, float]
-    nominal_size_px: int
-    rotation_degrees: int
-    distance_to_reference_px: float | None
-    distance_rank: int | None
-    noise_edits: Tuple[Dict[str, Any], ...]
-    noise_seed: int | None
-
-
-@dataclass(frozen=True)
-class _ScenePayload:
-    """Trace-ready payload for one named-reference distance-rank scene."""
-
-    query_id: str
-    answer_label: str
-    answer_rank: int
-    reference_description: str
-    reference_icon: _RenderedDistanceIcon
-    candidate_icons: Tuple[_RenderedDistanceIcon, ...]
-    distractor_icons: Tuple[_RenderedDistanceIcon, ...]
-    distance_by_label: Dict[str, float]
-    sorted_candidate_labels_by_distance: Tuple[str, ...]
-    panel_geometry: Dict[str, Any]
-    sampled_palette_rgb: Tuple[Tuple[int, int, int], ...]
-    distractor_count: int
 
 
 _DEFAULTS = _TaskDefaults()
@@ -532,341 +484,6 @@ def _sample_icon_plans(
 
 
 
-def _occupancy_bbox_for_icon(
-    *,
-    icon_bbox: BBox,
-    label: str,
-    content_bbox: BBox,
-    label_font,
-    render_params: Mapping[str, Any],
-) -> BBox:
-    if not str(label):
-        return tuple(int(value) for value in icon_bbox)
-    label_bbox = label_bbox_for_icon(
-        icon_bbox=tuple(int(value) for value in icon_bbox),
-        label=str(label),
-        content_bbox=tuple(int(value) for value in content_bbox),
-        font=label_font,
-        padding_px=int(render_params["candidate_label_padding_px"]),
-        gap_px=int(render_params["candidate_label_gap_px"]),
-    )
-    return union_bbox(tuple(int(value) for value in icon_bbox), label_bbox)
-
-
-
-def _candidate_distances(rng, *, render_params: Mapping[str, Any]) -> Tuple[float, ...]:
-    margin = max(10, int(render_params["distance_rank_margin_px"]))
-    min_distance = max(74, int(render_params["center_distance_min_px"]))
-    jitter = max(0, int(render_params["center_distance_gap_jitter_px"]))
-    values: List[float] = [float(min_distance + int(rng.randint(0, max(1, margin // 2))))]
-    for _ in range(1, len(OPTION_LABELS)):
-        values.append(float(values[-1] + margin + (int(rng.randint(0, jitter)) if jitter > 0 else 0)))
-    return tuple(float(value) for value in values)
-
-
-def _draw_candidate_label(
-    *,
-    image: Image.Image,
-    icon_bbox: BBox,
-    label: str,
-    content_bbox: BBox,
-    label_font,
-    render_params: Mapping[str, Any],
-) -> BBox:
-    label_bbox = label_bbox_for_icon(
-        icon_bbox=tuple(int(value) for value in icon_bbox),
-        label=str(label),
-        content_bbox=tuple(int(value) for value in content_bbox),
-        font=label_font,
-        padding_px=int(render_params["candidate_label_padding_px"]),
-        gap_px=int(render_params["candidate_label_gap_px"]),
-    )
-    draw = ImageDraw.Draw(image)
-    draw.rounded_rectangle(
-        label_bbox,
-        radius=max(4, int(round(0.28 * float(label_bbox[3] - label_bbox[1])))),
-        fill=tuple(int(value) for value in render_params["candidate_label_background_rgb"]) + (238,),
-        outline=tuple(int(value) for value in render_params["candidate_label_border_rgb"]) + (255,),
-        width=1,
-    )
-    draw_text_centered(
-        draw,
-        text=str(label),
-        center=bbox_center_float(label_bbox),
-        font=label_font,
-        fill=tuple(int(value) for value in render_params["candidate_label_color_rgb"]),
-        stroke_fill=tuple(
-            int(value)
-            for value in render_params.get("candidate_label_stroke_rgb", render_params["candidate_label_background_rgb"])
-        ),
-        stroke_width=1,
-    )
-    return tuple(int(value) for value in label_bbox)
-
-
-def _render_placed_scene(
-    *,
-    rng,
-    instance_seed: int,
-    query_id: str,
-    answer_label: str,
-    answer_rank: int,
-    plans: Sequence[_IconPlan],
-    reference_description: str,
-    sampled_palette_rgb: Tuple[Tuple[int, int, int], ...],
-    distractor_count: int,
-    render_params: Mapping[str, Any],
-) -> Tuple[_ScenePayload, Image.Image]:
-    """Place and render the distance-rank icons, labels, and annotation geometry."""
-    layout = resolve_single_panel_layout(
-        canvas_width=int(render_params["canvas_width"]),
-        canvas_height=int(render_params["canvas_height"]),
-        outer_margin_px=int(render_params["outer_margin_px"]),
-        panel_padding_px=int(render_params["panel_padding_px"]),
-        title_font_size_px=int(render_params["panel_title_font_size_px"]),
-    )
-    content_bbox = tuple(int(value) for value in layout.scene_content_xyxy)
-    label_font = load_font(int(render_params["candidate_label_font_size_px"]), bold=True)
-    sprites = [render_planned_named_icon_sprite(plan) for plan in plans]
-    reference_plan = plans[0]
-    reference_sprite = sprites[0]
-    candidate_plans = [plan for plan in plans if str(plan.role) == "candidate"]
-    candidate_sprites = [sprites[index] for index, plan in enumerate(plans) if str(plan.role) == "candidate"]
-    distractor_pairs = [(plan, sprites[index]) for index, plan in enumerate(plans) if str(plan.role) == "distractor"]
-
-    collision_gap = int(render_params["icon_collision_gap_px"])
-    max_attempts = max(1, int(render_params["scene_placement_max_attempts"]))
-    last_error: Exception | None = None
-    for _ in range(max_attempts):
-        try:
-            occupancy: List[BBox] = []
-            placed_bboxes: Dict[str, BBox] = {}
-
-            rx0 = int(content_bbox[0] + int(max(reference_sprite.size)) + 36)
-            rx1 = int(content_bbox[2] - int(max(reference_sprite.size)) - 36)
-            ry0 = int(content_bbox[1] + int(max(reference_sprite.size)) + 40)
-            ry1 = int(content_bbox[3] - int(max(reference_sprite.size)) - 40)
-            if rx1 <= rx0 or ry1 <= ry0:
-                raise ValueError("content bbox too small for reference icon")
-            reference_center = (float(rng.randint(rx0, rx1)), float(rng.randint(ry0, ry1)))
-            reference_bbox = bbox_from_center_dimensions(
-                reference_center,
-                width=int(reference_sprite.size[0]),
-                height=int(reference_sprite.size[1]),
-            )
-            if not bbox_inside(reference_bbox, content_bbox):
-                raise ValueError("reference icon outside content")
-            occupancy.append(reference_bbox)
-            placed_bboxes["reference"] = reference_bbox
-
-            labels_by_rank = [str(plan.label) for plan in candidate_plans]
-            plans_by_label = {str(plan.label): plan for plan in candidate_plans}
-            sprites_by_label = {str(plan.label): sprite for plan, sprite in zip(candidate_plans, candidate_sprites)}
-            distances = _candidate_distances(rng, render_params=render_params)
-            angle_values = list(_ANGLE_POOL_DEGREES)
-            rng.shuffle(angle_values)
-            candidate_records: List[_RenderedDistanceIcon] = []
-            for rank, label in enumerate(labels_by_rank):
-                plan = plans_by_label[str(label)]
-                sprite = sprites_by_label[str(label)]
-                distance = float(distances[int(rank)])
-                placed = False
-                for angle_attempt in range(len(angle_values)):
-                    angle_degrees = float(angle_values[(int(rank) + int(angle_attempt)) % len(angle_values)])
-                    angle = math.radians(angle_degrees)
-                    center = (
-                        float(reference_center[0]) + distance * math.cos(angle),
-                        float(reference_center[1]) + distance * math.sin(angle),
-                    )
-                    bbox = bbox_from_center_dimensions(center, width=int(sprite.size[0]), height=int(sprite.size[1]))
-                    occupancy_bbox = _occupancy_bbox_for_icon(
-                        icon_bbox=bbox,
-                        label=str(label),
-                        content_bbox=content_bbox,
-                        label_font=label_font,
-                        render_params=render_params,
-                    )
-                    if not bbox_inside(occupancy_bbox, content_bbox):
-                        continue
-                    if any(boxes_overlap(occupancy_bbox, other, gap_px=collision_gap) for other in occupancy):
-                        continue
-                    occupancy.append(occupancy_bbox)
-                    placed_bboxes[str(label)] = bbox
-                    candidate_records.append(
-                        _RenderedDistanceIcon(
-                            instance_id=f"candidate_{str(label)}",
-                            role="candidate",
-                            label=str(label),
-                            shape_id=str(plan.shape_id),
-                            shape_name=procedural_named_icon_display_name(str(plan.shape_id)),
-                            color_name=str(plan.color_name),
-                            tint_rgb=tuple(int(value) for value in plan.tint_rgb),
-                            fill_style=str(plan.fill_style),
-                            bbox_xyxy=tuple(int(value) for value in bbox),
-                            center_xy=bbox_center_float(bbox),
-                            nominal_size_px=int(plan.nominal_size_px),
-                            rotation_degrees=int(plan.rotation_degrees),
-                            distance_to_reference_px=float(distance),
-                            distance_rank=int(rank),
-                            noise_edits=tuple(serialize_icon_noise_edits(plan.noise_edits)),
-                            noise_seed=plan.noise_seed,
-                        )
-                    )
-                    placed = True
-                    break
-                if not placed:
-                    raise ValueError("failed to place distance-ranked candidate")
-
-            distractor_records: List[_RenderedDistanceIcon] = []
-            for index, (plan, sprite) in enumerate(distractor_pairs):
-                placed = False
-                for _placement_attempt in range(80):
-                    cx = float(rng.randint(int(content_bbox[0] + sprite.size[0] // 2), int(content_bbox[2] - sprite.size[0] // 2)))
-                    cy = float(rng.randint(int(content_bbox[1] + sprite.size[1] // 2), int(content_bbox[3] - sprite.size[1] // 2)))
-                    bbox = bbox_from_center_dimensions((cx, cy), width=int(sprite.size[0]), height=int(sprite.size[1]))
-                    if not bbox_inside(bbox, content_bbox):
-                        continue
-                    if any(boxes_overlap(bbox, other, gap_px=collision_gap) for other in occupancy):
-                        continue
-                    occupancy.append(bbox)
-                    distance = math.hypot(float(cx) - float(reference_center[0]), float(cy) - float(reference_center[1]))
-                    distractor_records.append(
-                        _RenderedDistanceIcon(
-                            instance_id=f"distractor_{int(index):02d}",
-                            role="distractor",
-                            label="",
-                            shape_id=str(plan.shape_id),
-                            shape_name=procedural_named_icon_display_name(str(plan.shape_id)),
-                            color_name=str(plan.color_name),
-                            tint_rgb=tuple(int(value) for value in plan.tint_rgb),
-                            fill_style=str(plan.fill_style),
-                            bbox_xyxy=tuple(int(value) for value in bbox),
-                            center_xy=(float(cx), float(cy)),
-                            nominal_size_px=int(plan.nominal_size_px),
-                            rotation_degrees=int(plan.rotation_degrees),
-                            distance_to_reference_px=float(distance),
-                            distance_rank=None,
-                            noise_edits=tuple(serialize_icon_noise_edits(plan.noise_edits)),
-                            noise_seed=plan.noise_seed,
-                        )
-                    )
-                    placed = True
-                    break
-                if not placed:
-                    raise ValueError("failed to place distractor icon")
-
-            sorted_candidates = tuple(
-                sorted(candidate_records, key=lambda item: (float(item.distance_to_reference_px or 0.0), str(item.label)))
-            )
-            sorted_labels = tuple(str(item.label) for item in sorted_candidates)
-            if sorted_labels[int(answer_rank)] != str(answer_label):
-                raise ValueError("constructed candidate distances did not preserve answer rank")
-            adjacent_gaps = [
-                float(sorted_candidates[index + 1].distance_to_reference_px or 0.0)
-                - float(sorted_candidates[index].distance_to_reference_px or 0.0)
-                for index in range(len(sorted_candidates) - 1)
-            ]
-            if int(answer_rank) > 0 and adjacent_gaps[int(answer_rank) - 1] < float(render_params["distance_rank_margin_px"]):
-                raise ValueError("distance gap before answer is too small")
-            if int(answer_rank) < len(sorted_candidates) - 1 and adjacent_gaps[int(answer_rank)] < float(render_params["distance_rank_margin_px"]):
-                raise ValueError("distance gap after answer is too small")
-
-            image = Image.new("RGBA", (int(layout.canvas_width), int(layout.canvas_height)))
-            draw_single_panel(
-                image=image,
-                layout=layout,
-                background_rgb=tuple(int(value) for value in render_params["background_color_rgb"]),
-                panel_fill_rgb=tuple(int(value) for value in render_params["panel_fill_rgb"]),
-                panel_border_rgb=tuple(int(value) for value in render_params["panel_border_rgb"]),
-                title_color_rgb=tuple(int(value) for value in render_params["header_text_rgb"]),
-                corner_radius_px=int(render_params["panel_corner_radius_px"]),
-                title_font_size_px=int(render_params["panel_title_font_size_px"]),
-                scene_title="Scene",
-                icon_canvas_style=render_params.get("_icon_canvas_style_object"),
-            )
-            image.alpha_composite(reference_sprite, (int(reference_bbox[0]), int(reference_bbox[1])))
-            for record in candidate_records:
-                sprite = sprites_by_label[str(record.label)]
-                image.alpha_composite(sprite, (int(record.bbox_xyxy[0]), int(record.bbox_xyxy[1])))
-            for record, (_plan, sprite) in zip(distractor_records, distractor_pairs):
-                image.alpha_composite(sprite, (int(record.bbox_xyxy[0]), int(record.bbox_xyxy[1])))
-            for record in candidate_records:
-                _draw_candidate_label(
-                    image=image,
-                    icon_bbox=tuple(int(value) for value in record.bbox_xyxy),
-                    label=str(record.label),
-                    content_bbox=content_bbox,
-                    label_font=label_font,
-                    render_params=render_params,
-                )
-
-            reference_record = _RenderedDistanceIcon(
-                instance_id="reference",
-                role="reference",
-                label="",
-                shape_id=str(reference_plan.shape_id),
-                shape_name=procedural_named_icon_display_name(str(reference_plan.shape_id)),
-                color_name=str(reference_plan.color_name),
-                tint_rgb=tuple(int(value) for value in reference_plan.tint_rgb),
-                fill_style=str(reference_plan.fill_style),
-                bbox_xyxy=tuple(int(value) for value in reference_bbox),
-                center_xy=bbox_center_float(reference_bbox),
-                nominal_size_px=int(reference_plan.nominal_size_px),
-                rotation_degrees=int(reference_plan.rotation_degrees),
-                distance_to_reference_px=None,
-                distance_rank=None,
-                noise_edits=tuple(serialize_icon_noise_edits(reference_plan.noise_edits)),
-                noise_seed=reference_plan.noise_seed,
-            )
-            distance_by_label = {
-                str(record.label): float(record.distance_to_reference_px or 0.0)
-                for record in candidate_records
-            }
-            return (
-                _ScenePayload(
-                    query_id=str(query_id),
-                    answer_label=str(answer_label),
-                    answer_rank=int(answer_rank),
-                    reference_description=str(reference_description),
-                    reference_icon=reference_record,
-                    candidate_icons=tuple(sorted(candidate_records, key=lambda item: str(item.label))),
-                    distractor_icons=tuple(distractor_records),
-                    distance_by_label=distance_by_label,
-                    sorted_candidate_labels_by_distance=tuple(sorted_labels),
-                    panel_geometry=single_panel_geometry_to_trace(layout),
-                    sampled_palette_rgb=tuple(sampled_palette_rgb),
-                    distractor_count=int(distractor_count),
-                ),
-                image.convert("RGB"),
-            )
-        except Exception as exc:
-            last_error = exc
-            continue
-    raise RuntimeError("failed to render named-reference distance-rank scene") from last_error
-
-
-def _serialize_distance_icon(icon: _RenderedDistanceIcon) -> Dict[str, Any]:
-    return {
-        "entity_kind": "procedural_named_icon",
-        "instance_id": str(icon.instance_id),
-        "role": str(icon.role),
-        "label": str(icon.label),
-        "shape_id": str(icon.shape_id),
-        "shape_name": str(icon.shape_name),
-        "color_name": str(icon.color_name),
-        "tint_rgb": [int(value) for value in icon.tint_rgb],
-        "fill_style": str(icon.fill_style),
-        "bbox_xyxy": [int(value) for value in icon.bbox_xyxy],
-        "center_xy": [float(icon.center_xy[0]), float(icon.center_xy[1])],
-        "nominal_size_px": int(icon.nominal_size_px),
-        "rotation_degrees": int(icon.rotation_degrees),
-        "distance_to_reference_px": None if icon.distance_to_reference_px is None else float(icon.distance_to_reference_px),
-        "distance_rank": None if icon.distance_rank is None else int(icon.distance_rank),
-        "noise_edits": [dict(edit) for edit in icon.noise_edits],
-        "noise_seed": None if icon.noise_seed is None else int(icon.noise_seed),
-    }
-
-
 
 
 @register_task
@@ -906,8 +523,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
                 )
                 scene_payload, image = _render_placed_scene(
                     rng=sample_rng,
-                    instance_seed=int(instance_seed),
-                    query_id=str(query_id),
+                    query_name=str(query_id),
                     answer_label=str(answer_label),
                     answer_rank=int(answer_rank),
                     plans=plans,
@@ -915,6 +531,8 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
                     sampled_palette_rgb=tuple(sampled_palette_rgb),
                     distractor_count=int(distractor_count),
                     render_params=render_params,
+                    option_labels=OPTION_LABELS,
+                    angle_pool_degrees=_ANGLE_POOL_DEGREES,
                 )
                 break
             except Exception as exc:
@@ -932,7 +550,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                f"question_text_{scene_payload.query_id}",
+                f"question_text_{scene_payload.query_key}",
                 "annotation_hint",
                 "answer_hint",
                 "json_example",
@@ -940,7 +558,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        question_text = str(prompt_defaults[f"question_text_{scene_payload.query_id}"]).format(
+        question_text = str(prompt_defaults[f"question_text_{scene_payload.query_key}"]).format(
             reference_description=str(scene_payload.reference_description)
         )
         prompt_selection = render_task_prompt_variants(
@@ -988,7 +606,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
                 "entities": [dict(serialized_reference), *serialized_candidates, *serialized_distractors],
                 "relations": {
                     "target": "labeled_candidate_distance_rank_from_named_reference",
-                    "query_id": str(scene_payload.query_id),
+                    "query_id": str(scene_payload.query_key),
                     "reference_instance_id": str(scene_payload.reference_icon.instance_id),
                     "reference_description": str(scene_payload.reference_description),
                     "candidate_labels": [str(label) for label in OPTION_LABELS],
@@ -1002,15 +620,15 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
                 },
             },
             "query_spec": {
-                "query_id": str(scene_payload.query_id),
+                "query_id": str(scene_payload.query_key),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_id": str(scene_payload.query_id),
+                    "query_id": str(scene_payload.query_key),
                     "query_id_probabilities": dict(query_probabilities),
-                    "distance_rank_query": str(scene_payload.query_id),
+                    "distance_rank_query": str(scene_payload.query_key),
                     "distance_rank_query_probabilities": dict(query_probabilities),
                     "answer_label": str(scene_payload.answer_label),
                     "answer_label_probabilities": dict(answer_label_probabilities),
@@ -1052,8 +670,8 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
             },
             "execution_trace": {
                 "scene_variant": "single_panel_named_field_distance_rank",
-                "query_id": str(scene_payload.query_id),
-                "distance_rank_query": str(scene_payload.query_id),
+                "query_id": str(scene_payload.query_key),
+                "distance_rank_query": str(scene_payload.query_key),
                 "distance_rank_query_probabilities": dict(query_probabilities),
                 "answer_label": str(scene_payload.answer_label),
                 "answer_label_probabilities": dict(answer_label_probabilities),
@@ -1069,7 +687,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
                 "question_format": "select_labeled_named_icon_by_distance_rank_from_unique_named_reference",
             },
             "witness_symbolic": {
-                "query_id": str(scene_payload.query_id),
+                "query_id": str(scene_payload.query_key),
                 "reference_instance_id": str(scene_payload.reference_icon.instance_id),
                 "reference_description": str(scene_payload.reference_description),
                 "answer_label": str(scene_payload.answer_label),
@@ -1106,6 +724,6 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
             trace_payload=trace_payload,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
-            query_id=str(scene_payload.query_id),
+            query_id=str(scene_payload.query_key),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

@@ -8,13 +8,9 @@ from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
 
-from .shared.output import (
-    BOOLEAN_PREDICATE_ATTRIBUTE_WITHOUT_SHAPE,
-    BOOLEAN_PREDICATE_SHAPE_WITHOUT_ATTRIBUTE,
-    materialize_boolean_count_plan,
-)
+from ._lifecycle import run_boolean_named_field_task
+from .shared.metrics import BOOLEAN_PREDICATE_ATTRIBUTE_WITHOUT_SHAPE, BOOLEAN_PREDICATE_SHAPE_WITHOUT_ATTRIBUTE
 
 
 TASK_ID = "task_icons__named_field__multi_attribute_exclusion_count"
@@ -54,33 +50,22 @@ class IconsNamedFieldMultiAttributeExclusionCountTask:
             default_query_id=SHAPE_WITHOUT_ATTRIBUTE_QUERY_ID,
             task_id=TASK_ID,
         )
-        materialized = materialize_boolean_count_plan(
-            seed_namespace=TASK_ID,
+        prompt_query_key = str(selected_query_id)
+        predicate_kind = str(PREDICATE_KIND_BY_QUERY_ID[prompt_query_key])
+        return run_boolean_named_field_task(
+            task_id=TASK_ID,
             domain=self.domain,
+            scene_id=SCENE_ID,
+            selected_query_key=prompt_query_key,
+            query_probabilities=query_probabilities,
+            prompt_query_key=prompt_query_key,
+            predicate_kind=predicate_kind,
             generation_defaults=_GEN_DEFAULTS,
             rendering_defaults=_RENDER_DEFAULTS,
             prompt_defaults_map=_PROMPT_DEFAULTS,
-            selected_query_id=str(selected_query_id),
-            internal_query_id=str(selected_query_id),
-            predicate_kind=str(PREDICATE_KIND_BY_QUERY_ID[str(selected_query_id)]),
-            query_probabilities=query_probabilities,
             instance_seed=int(instance_seed),
             params=task_params,
             max_attempts=int(max_attempts),
-        )
-        trace_payload = dict(materialized.trace_payload)
-        prompt_variants = dict(materialized.prompt_variants)
-        return TaskOutput(
-            prompt=materialized.prompt,
-            answer_gt=materialized.answer_gt,
-            annotation_gt=materialized.annotation_gt,
-            image=materialized.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=materialized.selected_public_query,
-            prompt_variants=prompt_variants,
         )
 
 

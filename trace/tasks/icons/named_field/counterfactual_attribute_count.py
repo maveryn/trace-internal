@@ -8,16 +8,17 @@ from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID, select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
 
-from .shared.output import COUNTERFACTUAL_SHAPE_REPLACEMENT, materialize_counterfactual_count_plan
+from ._lifecycle import run_counterfactual_named_field_task
+from .shared.metrics import COUNTERFACTUAL_SHAPE_REPLACEMENT
 
 
 TASK_ID = "task_icons__named_field__counterfactual_attribute_count"
 SCENE_ID = "named_field"
 QUERY_ID = DEFAULT_QUERY_ID
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
-INTERNAL_QUERY_ID = "target_count_after_shape_replacement"
+PROMPT_QUERY_KEY = "target_count_after_shape_replacement"
+INTERNAL_QUERY_ID = PROMPT_QUERY_KEY
 EDIT_KIND = COUNTERFACTUAL_SHAPE_REPLACEMENT
 
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
@@ -32,8 +33,8 @@ def _strip_validated_legacy_query_param(params: Dict[str, Any]) -> Dict[str, Any
 
     resolved = dict(params)
     requested = resolved.pop("counterfactual_query_id", None)
-    if requested is not None and str(requested) != INTERNAL_QUERY_ID:
-        raise ValueError(f"{TASK_ID} only supports query_id values {(INTERNAL_QUERY_ID,)}")
+    if requested is not None and str(requested) != PROMPT_QUERY_KEY:
+        raise ValueError(f"{TASK_ID} only supports query_id values {(PROMPT_QUERY_KEY,)}")
     return resolved
 
 
@@ -55,29 +56,29 @@ class IconsNamedFieldCounterfactualAttributeCountTask:
             default_query_id=QUERY_ID,
             task_id=TASK_ID,
         )
-        materialized = materialize_counterfactual_count_plan(
-            seed_namespace=TASK_ID,
+        return run_counterfactual_named_field_task(
+            task_id=TASK_ID,
             domain=self.domain,
+            scene_id=SCENE_ID,
+            selected_query_key=str(selected_query_id),
+            query_probabilities=query_probabilities,
+            prompt_query_key=PROMPT_QUERY_KEY,
+            edit_kind=EDIT_KIND,
             generation_defaults=_GEN_DEFAULTS,
             rendering_defaults=_RENDER_DEFAULTS,
             prompt_defaults_map=_PROMPT_DEFAULTS,
-            selected_query_id=str(selected_query_id),
-            internal_query_id=INTERNAL_QUERY_ID,
-            edit_kind=EDIT_KIND,
-            query_probabilities=query_probabilities,
             instance_seed=int(instance_seed),
             params=task_params,
             max_attempts=int(max_attempts),
         )
-        return TaskOutput(
-            prompt=materialized.prompt,
-            answer_gt=materialized.answer_gt,
-            annotation_gt=materialized.annotation_gt,
-            image=materialized.image,
-            image_id="img0",
-            trace_payload=materialized.trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=materialized.selected_public_query,
-            prompt_variants=materialized.prompt_variants,
-        )
+
+
+__all__ = [
+    "EDIT_KIND",
+    "IconsNamedFieldCounterfactualAttributeCountTask",
+    "INTERNAL_QUERY_ID",
+    "PROMPT_QUERY_KEY",
+    "QUERY_ID",
+    "SUPPORTED_QUERY_IDS",
+    "TASK_ID",
+]

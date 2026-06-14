@@ -52,4 +52,4 @@ def test_games_dots_and_boxes_capture_count_scene_id_defaults_present() -> None:
     assert int(rendering["canvas_min_height_px"]) >= 520
     assert str(prompt["bundle_id"]) == "games_dots_and_boxes_v1"
     assert str(prompt["scene_key"]) == "visible_dots_and_boxes_board"
-    assert str(prompt["task_key"]) == "dots_and_boxes_capture_query"
+    assert str(prompt["task_key"]) == "dots_and_boxes_query"

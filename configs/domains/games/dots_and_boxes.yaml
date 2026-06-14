@@ -87,4 +87,4 @@ prompt:
   shared:
     bundle_id: games_dots_and_boxes_v1
     scene_key: visible_dots_and_boxes_board
-    task_key: dots_and_boxes_capture_query
+    task_key: dots_and_boxes_query

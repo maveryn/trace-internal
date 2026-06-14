@@ -16,8 +16,8 @@
 
 ## Answer And Annotation
 1. Answer type: `integer`.
-2. Annotation type: `point_sequence`.
-3. Annotation is an ordered sequence of node-center pixel points around one largest chordless cycle.
+2. Annotation type: `point_set`.
+3. Annotation is an unordered set of node-center pixel points for all nodes in one largest chordless cycle.
 4. `answer_gt.value == len(annotation_gt.value)` by construction.
 
 ## Rendering Contract
@@ -35,7 +35,7 @@
 ## Prompt Contract
 1. Prompt text comes from `graph_relation_v0`, not hardcoded task text.
 2. Answer-only mode emits `{"answer": ...}`.
-3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with ordered point-sequence annotation.
+3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with point-set annotation.
 
 ## Tests
 1. Behavior tests: `tests/test_graph_relation_largest_chordless_cycle_size_tasks.py`

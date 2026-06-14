@@ -15,7 +15,7 @@
 2. `query_id`: `single`
 3. Supported `graph_directionality` values: `undirected`
 4. `answer_gt.type`: `integer`
-5. `annotation_gt.type`: `bbox_set`
+5. `annotation_gt.type`: `point_set`
 6. Scene contract:
    - one single-panel labeled node-link graph,
    - every edge or arrow has a visible boxed text label,
@@ -36,17 +36,17 @@
 3. `task_key`: `edge_text_label_count_query`
 4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":2}`
-6. Answer+annotation JSON shape: `{"annotation":[[240,190,308,214],[412,238,480,262]],"answer":2}`
-7. Prompt-facing annotation uses pixel-space boxes around every matching visible edge-label text box.
+6. Answer+annotation JSON shape: `{"annotation":[[274,202],[446,250]],"answer":2}`
+7. Prompt-facing annotation uses pixel-space points at the centers of every matching visible edge-label text box.
 
 ## 4) Annotation + trace contract
-1. Prompt-facing annotation is the `bbox_set` of all visible edge-label boxes whose text equals the queried label.
+1. Prompt-facing annotation is the `point_set` of all visible edge-label box centers whose text equals the queried label.
 2. `answer_gt.value == len(annotation_gt.value)` by construction.
 3. `execution_trace.target_edge_label` records the queried visible label.
 4. `execution_trace.edge_attribute_labels_by_label_pair` records every rendered edge label.
 5. `execution_trace.matching_edges` records the symbolic witness edge-label pairs in deterministic order.
 6. `scene_ir.entities` stores node geometry, edge geometry, edge-label bboxes, and edge-label values.
-7. `projected_annotation` includes `bbox_set` and `pixel_bbox_set`.
+7. `projected_annotation` includes `point_set` and edge-label bbox projections used to derive those center points.
 
 ## 5) Visual policy
 1. Rendering uses the shared graph light-panel style from `configs/domains/graph/base.yaml`.

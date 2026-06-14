@@ -57,7 +57,7 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
     assert out.scene_id == "node_link"
     assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 3
     assert len(out.annotation_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_edge_text_counting"
@@ -88,8 +88,23 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
     assert all(edge["label_bbox_xyxy"] is not None for edge in edge_entities)
     assert len(edge_entities) == int(execution["edge_count"])
     assert not any(bool(edge["directed"]) for edge in edge_entities)
-    assert trace["projected_annotation"]["type"] == "bbox_set"
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    centers_by_edge = {}
+    for edge in edge_entities:
+        bbox = edge["label_bbox_xyxy"]
+        if bbox is None:
+            continue
+        endpoint_pair = (str(edge["node_u_label"]), str(edge["node_v_label"]))
+        center = [
+            (float(bbox[0]) + float(bbox[2])) / 2.0,
+            (float(bbox[1]) + float(bbox[3])) / 2.0,
+        ]
+        centers_by_edge[endpoint_pair] = list(center)
+        centers_by_edge[(endpoint_pair[1], endpoint_pair[0])] = list(center)
+    assert sorted(out.annotation_gt.value) == sorted(
+        centers_by_edge[tuple(edge)] for edge in matching_edges
+    )
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
@@ -117,10 +132,7 @@ def test_graph_counting_edge_text_label_prompt_examples_match_contract() -> None
     )
     assert answer_only == {"answer": 2}
     assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
-    assert answer_and_annotation["annotation"] == [
-        [240, 190, 308, 214],
-        [412, 238, 480, 262],
-    ]
+    assert answer_and_annotation["annotation"] == [[274, 202], [446, 250]]
     assert answer_and_annotation["answer"] == 2
 
 

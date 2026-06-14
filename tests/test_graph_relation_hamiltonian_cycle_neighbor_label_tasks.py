@@ -51,7 +51,7 @@ def _assert_task_contract(seed: int, *, query_id: str) -> None:
     assert 'task_graph__node_link__hamiltonian_cycle_neighbor_label' in TASK_REGISTRY
     assert out.scene_id == 'node_link'
     assert out.answer_gt.type == 'string'
-    assert out.annotation_gt.type == 'point_sequence'
+    assert out.annotation_gt.type == 'point_set'
     assert trace['scene_ir']['scene_kind'] == 'graph_hamiltonian_cycle_neighbor'
     assert execution['question_format'] == query_id
     assert execution['graph_directionality'] == 'undirected'
@@ -68,7 +68,7 @@ def _assert_task_contract(seed: int, *, query_id: str) -> None:
     assert len(cycles) == 1
     assert len(matching_labels) == 6
     assert len(set(matching_labels)) == 6
-    assert len(annotation_points) == 6
+    assert len(annotation_points) == 1
     assert all((graph.has_edge(matching_labels[index], matching_labels[(index + 1) % len(matching_labels)]) for index in range(len(matching_labels))))
     assert int(execution["edge_count"]) <= int(execution["node_count"]) + 2
     query_label = str(execution['query_label'])
@@ -81,10 +81,12 @@ def _assert_task_contract(seed: int, *, query_id: str) -> None:
         assert str(execution['orientation_start_label']) == matching_labels[0]
         expected_answer = matching_labels[-2]
     assert str(out.answer_gt.value) == expected_answer == str(execution['answer_label'])
-    assert trace['witness_symbolic']['labels'] == matching_labels
-    assert trace['projected_annotation']['type'] == 'point_sequence'
-    assert trace['projected_annotation']['point_sequence'] == annotation_points
-    assert trace['projected_annotation']['pixel_point_sequence'] == annotation_points
+    assert trace['witness_symbolic']['labels'] == [expected_answer]
+    answer_entity = [entity for entity in node_entities if str(entity["label"]) == expected_answer][0]
+    assert annotation_points == [[float(answer_entity["center_px"][0]), float(answer_entity["center_px"][1])]]
+    assert trace['projected_annotation']['type'] == 'point_set'
+    assert trace['projected_annotation']['point_set'] == annotation_points
+    assert trace['projected_annotation']['pixel_point_set'] == annotation_points
     width, height = trace['render_spec']['canvas_size']
     assert all((0 <= float(point[0]) <= float(width) and 0 <= float(point[1]) <= float(height) for point in annotation_points))
 

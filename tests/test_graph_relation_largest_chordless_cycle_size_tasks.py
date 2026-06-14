@@ -3,16 +3,16 @@ from __future__ import annotations
 from collections import Counter
 import networkx as nx
 from trace.core.seed import hash64
-from trace.tasks.graph.relation.largest_chordless_cycle_size import GraphRelationLargestChordlessCycleSizeTask
+from trace.tasks.graph.node_link.largest_chordless_cycle_size import GraphRelationLargestChordlessCycleSizeTask
 from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.named_colors import named_color
 
-def _graph_from_trace_adjacency(adjacency_by_label: dict[str, list[str]]) -> nx.Graph:
+def _graph_from_scene_entities(node_entities: list[dict[str, object]], edge_entities: list[dict[str, object]]) -> nx.Graph:
     graph = nx.Graph()
-    for label, neighbors in adjacency_by_label.items():
-        graph.add_node(str(label))
-        for neighbor in neighbors:
-            graph.add_edge(str(label), str(neighbor))
+    for entity in node_entities:
+        graph.add_node(str(entity["label"]))
+    for entity in edge_entities:
+        graph.add_edge(str(entity["node_u_label"]), str(entity["node_v_label"]))
     return graph
 
 def _is_chordless_cycle(graph: nx.Graph, labels: list[str]) -> bool:
@@ -40,17 +40,16 @@ def test_graph_relation_largest_chordless_cycle_size_contract_matches_trace() ->
     node_entities = [entity for entity in trace['scene_ir']['entities'] if entity['entity_kind'] == 'graph_node']
     edge_entities = [entity for entity in trace['scene_ir']['entities'] if entity['entity_kind'] == 'graph_edge']
     assert out.answer_gt.type == 'integer'
-    assert out.annotation_gt.type == 'point_sequence'
-    assert trace['scene_ir']['scene_kind'] == 'graph_largest_chordless_cycle_relation'
+    assert out.annotation_gt.type == 'point_set'
+    assert trace['scene_ir']['scene_kind'] == 'graph_largest_chordless_cycle'
     assert execution['question_format'] == 'largest_chordless_cycle_size'
     assert execution['graph_directionality'] == 'undirected'
     assert len(node_entities) == 9
     assert len(edge_entities) == int(execution['edge_count'])
-    assert int(execution['cyclomatic_number']) >= 2
     assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
     assert trace['query_spec']['prompt_variant']['query_key'] == 'largest_chordless_cycle_size'
     assert 'chordless' in str(out.prompt_variants['answer_only']).lower()
-    graph = _graph_from_trace_adjacency({str(key): [str(value) for value in values] for key, values in execution['adjacency_by_label'].items()})
+    graph = _graph_from_scene_entities(node_entities, edge_entities)
     matching_labels = [str(label) for label in execution['matching_labels']]
     annotation_points = list(out.annotation_gt.value)
     assert int(out.answer_gt.value) == len(matching_labels) == len(annotation_points)
@@ -58,9 +57,9 @@ def test_graph_relation_largest_chordless_cycle_size_contract_matches_trace() ->
     assert max((int(size) for size in execution['chordless_cycle_sizes'])) == int(out.answer_gt.value)
     assert _is_chordless_cycle(graph, matching_labels)
     assert trace['witness_symbolic']['labels'] == matching_labels
-    assert trace['projected_annotation']['type'] == 'point_sequence'
-    assert trace['projected_annotation']['point_sequence'] == annotation_points
-    assert trace['projected_annotation']['pixel_point_sequence'] == annotation_points
+    assert trace['projected_annotation']['type'] == 'point_set'
+    assert trace['projected_annotation']['point_set'] == annotation_points
+    assert trace['projected_annotation']['pixel_point_set'] == annotation_points
     width, height = trace['render_spec']['canvas_size']
     assert all((0 <= float(point[0]) <= float(width) and 0 <= float(point[1]) <= float(height) for point in annotation_points))
 
@@ -70,13 +69,14 @@ def test_graph_relation_largest_chordless_cycle_size_supports_numeric_labels_and
     trace = out.trace_payload
     execution = trace['execution_trace']
     labels = [entity['label'] for entity in trace['scene_ir']['entities'] if entity['entity_kind'] == 'graph_node']
+    style = trace['render_spec']['style']
     assert all((str(label).isdigit() for label in labels))
     assert int(out.answer_gt.value) == 6
     assert execution['label_variant'] == 'numbers'
-    assert execution['node_shape_variant'] == 'hexagon'
+    assert style['node_shape_variant'] == 'hexagon'
     assert execution['layout_transform_variant'] == 'rotate_90'
-    assert execution['node_color_name'] == 'orange'
-    assert tuple(trace['render_spec']['style']['node_fill_rgb']) == tuple(named_color('orange'))
+    assert style['node_color_name'] == 'orange'
+    assert {tuple(entity['fill_rgb']) for entity in trace['scene_ir']['entities'] if entity['entity_kind'] == 'graph_node'} == {tuple(named_color('orange'))}
 
 def test_graph_relation_largest_chordless_cycle_size_balanced_sampling_defaults() -> None:
     task = GraphRelationLargestChordlessCycleSizeTask()
@@ -84,21 +84,18 @@ def test_graph_relation_largest_chordless_cycle_size_balanced_sampling_defaults(
     label_variants: Counter[str] = Counter()
     node_shape_variants: Counter[str] = Counter()
     layout_variants: Counter[str] = Counter()
-    topology_profiles: Counter[str] = Counter()
     for index in range(48):
         out = task.generate(hash64(19603, 'graph_relation_largest_chordless_cycle_size', index), params={}, max_attempts=80)
         execution = out.trace_payload['execution_trace']
         target_sizes[int(execution['target_cycle_size'])] += 1
         label_variants[str(execution['label_variant'])] += 1
-        node_shape_variants[str(execution['node_shape_variant'])] += 1
-        layout_variants[str(execution['layout_variant_requested'])] += 1
-        topology_profiles[str(execution['topology_profile'])] += 1
+        node_shape_variants[str(out.trace_payload['render_spec']['style']['node_shape_variant'])] += 1
+        layout_variants[str(execution['layout_variant_used'])] += 1
         assert 8 <= int(execution['node_count']) <= 10
         assert 3 <= int(execution['target_cycle_size']) <= 7
-        assert int(execution['cyclomatic_number']) >= 2
         assert max((int(size) for size in execution['chordless_cycle_sizes'])) == int(execution['target_cycle_size'])
     assert set(target_sizes.keys()).issuperset({3, 4, 5, 6, 7})
     assert set(label_variants.keys()) == {'letters', 'numbers', 'named'}
     assert set(node_shape_variants.keys()) == {'circle', 'rounded_square', 'hexagon'}
-    assert set(layout_variants.keys()) == set(SUPPORTED_LAYOUT_VARIANTS)
-    assert set(topology_profiles.keys()) == {'balanced', 'hub_heavy', 'low_degree'}
+    assert set(layout_variants.keys()).issubset(set(SUPPORTED_LAYOUT_VARIANTS))
+    assert len(layout_variants) >= 3

@@ -87,6 +87,21 @@ def annotation_value(
             {"type": "bbox_set", "bbox_set": list(boxes), "edge_label_projections": projections},
             {"type": "edge_label_set", "edge_labels": [list(edge) for edge in edges]},
         )
+    if kind == "edge_label_point_set":
+        edges = edges_from_sample(sample, str(annotation_field))
+        points: list[list[float]] = []
+        projections: list[dict[str, Any]] = []
+        for edge in edges:
+            projection = projected_edge_label_bbox_annotation(rendered_scene, edge)
+            projections.append(dict(projection))
+            for box in projection["pixel_bbox_set"]:
+                x0, y0, x1, y1 = [float(value) for value in box]
+                points.append([(x0 + x1) / 2.0, (y0 + y1) / 2.0])
+        return (
+            TypedValue(type="point_set", value=list(points)),
+            {"type": "point_set", "point_set": list(points), "edge_label_projections": projections},
+            {"type": "edge_label_set", "edge_labels": [list(edge) for edge in edges]},
+        )
     raise ValueError(f"unsupported node-link annotation kind: {kind}")
 
 

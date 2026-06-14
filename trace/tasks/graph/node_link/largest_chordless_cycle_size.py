@@ -15,7 +15,7 @@ def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
 
 def _build_objective_plan() -> NodeLinkObjectivePlan:
     """Bind query ids, sampler, answer, and annotation for this objective."""
-    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphRelationLargestChordlessCycleSizeTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='integer', answer_field='target_cycle_size', annotation_type='point_sequence', annotation_kind='node_point_sequence', annotation_field='target_labels', prompt_query_key='largest_chordless_cycle_size', scene_kind='graph_largest_chordless_cycle', question_format='largest_chordless_cycle_size', value_ranges={'target_cycle_size': (3, 6)})
+    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphRelationLargestChordlessCycleSizeTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='integer', answer_field='target_cycle_size', annotation_type='point_set', annotation_kind='node_point_set', annotation_field='target_labels', prompt_query_key='largest_chordless_cycle_size', scene_kind='graph_largest_chordless_cycle', question_format='largest_chordless_cycle_size', value_ranges={'target_cycle_size': (3, 7)})
 
 @register_task
 class GraphRelationLargestChordlessCycleSizeTask:

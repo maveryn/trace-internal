@@ -51,7 +51,7 @@ def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -
     assert out.query_id == "directed_edge_between_nodes_label"
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "feeds"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == 1
     assert trace["scene_ir"]["scene_kind"] == "graph_edge_label_lookup"
     assert execution["query_id"] == "directed_edge_between_nodes_label"
@@ -69,15 +69,20 @@ def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -
     }
     assert labels_by_edge[query_edge] == "feeds"
     assert trace["witness_symbolic"]["edge_labels"] == [list(query_edge)]
-    assert trace["projected_annotation"]["type"] == "bbox_set"
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     query_entity = [
         edge
         for edge in edge_entities
         if (str(edge["node_u_label"]), str(edge["node_v_label"])) == tuple(query_edge)
     ][0]
     assert query_entity["edge_text_label"] == "feeds"
-    assert query_entity["label_bbox_xyxy"] == out.annotation_gt.value[0]
+    bbox = query_entity["label_bbox_xyxy"]
+    assert bbox is not None
+    assert out.annotation_gt.value[0] == [
+        (float(bbox[0]) + float(bbox[2])) / 2.0,
+        (float(bbox[1]) + float(bbox[3])) / 2.0,
+    ]
     assert all(edge["label_bbox_xyxy"] is not None for edge in edge_entities)
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
@@ -103,7 +108,7 @@ def test_graph_relation_edge_attribute_label_undirected_prompt_and_example_contr
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": "alpha"}
     assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
-    assert answer_and_annotation["annotation"] == [[180, 220, 230, 245]]
+    assert answer_and_annotation["annotation"] == [[205, 232]]
     assert answer_and_annotation["answer"] == "alpha"
 
 

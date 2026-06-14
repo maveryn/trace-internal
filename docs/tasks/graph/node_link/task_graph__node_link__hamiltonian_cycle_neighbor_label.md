@@ -17,8 +17,8 @@
 
 ## Answer And Annotation
 1. Answer type: `string`.
-2. Annotation type: `point_sequence`.
-3. Annotation is an ordered sequence of node-center pixel points around the Hamiltonian cycle in the traversal direction named in the prompt.
+2. Annotation type: `point_set`.
+3. Annotation is a single node-center pixel point for the answer node.
 4. The answer is the visible label of the requested previous or next node in that traversal.
 
 ## Rendering Contract
@@ -37,7 +37,7 @@
 ## Prompt Contract
 1. Prompt text comes from `graph_relation_v0`, not hardcoded task text.
 2. Answer-only mode emits `{"answer": ...}`.
-3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with ordered point-sequence annotation.
+3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with single-point annotation.
 
 ## Tests
 1. Behavior tests: `tests/test_graph_relation_hamiltonian_cycle_neighbor_label_tasks.py`

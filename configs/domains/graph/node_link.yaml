@@ -4845,15 +4845,15 @@ prompt:
         of all nodes in the connected component containing the asked node, including
         the asked node itself
       answer_hint: set "answer" to that edge label as a lowercase string
-      json_example: '{"annotation":[[240,190,308,214]],"answer":"feeds"}'
+      json_example: '{"annotation":[[274,202]],"answer":"feeds"}'
       json_example_answer_only: '{"answer":"feeds"}'
       object_description_undirected: a graph with text labels on its edges
       annotation_hint_edge_between_nodes_label: set "annotation" to an array containing
-        one [x0,y0,x1,y1] box around the visible text label on the edge between {source_label}
-        and {target_label}
+        one [x,y] pixel point at the center of the visible text label on the edge
+        between {source_label} and {target_label}
       annotation_hint_directed_edge_between_nodes_label: set "annotation" to an array
-        containing one [x0,y0,x1,y1] box around the visible text label on the arrow
-        from {source_label} to {target_label}
+        containing one [x,y] pixel point at the center of the visible text label
+        on the arrow from {source_label} to {target_label}
       annotation_hint_shortest_path_first_edge_label: set "annotation" to an array
         containing one [x0,y0,x1,y1] box around the visible text label on the first
         {path_edge_term} along the unique shortest path from {source_label} to {target_label}{path_follow_clause}
@@ -5580,15 +5580,15 @@ prompt:
         of all nodes in the connected component containing the asked node, including
         the asked node itself
       answer_hint: set "answer" to that edge label as a lowercase string
-      json_example: '{"annotation":[[240,190,308,214]],"answer":"feeds"}'
+      json_example: '{"annotation":[[274,202]],"answer":"feeds"}'
       json_example_answer_only: '{"answer":"feeds"}'
       object_description_undirected: a graph with text labels on its edges
       annotation_hint_edge_between_nodes_label: set "annotation" to an array containing
-        one [x0,y0,x1,y1] box around the visible text label on the edge between {source_label}
-        and {target_label}
+        one [x,y] pixel point at the center of the visible text label on the edge
+        between {source_label} and {target_label}
       annotation_hint_directed_edge_between_nodes_label: set "annotation" to an array
-        containing one [x0,y0,x1,y1] box around the visible text label on the arrow
-        from {source_label} to {target_label}
+        containing one [x,y] pixel point at the center of the visible text label
+        on the arrow from {source_label} to {target_label}
       annotation_hint_shortest_path_first_edge_label: set "annotation" to an array
         containing one [x0,y0,x1,y1] box around the visible text label on the first
         {path_edge_term} along the unique shortest path from {source_label} to {target_label}{path_follow_clause}
@@ -5645,11 +5645,11 @@ prompt:
       annotation_hint_out_degree_count: set "annotation" to an array of [x,y] pixel
         points at the centers of all nodes with out-degree {query_degree}; use an
         empty array when the answer is zero
-      answer_hint: set "answer" to the count of matching edge-label boxes as an integer
-      json_example: '{"annotation":[[240,190,308,214],[412,238,480,262]],"answer":2}'
+      answer_hint: set "answer" to the count of matching edge labels as an integer
+      json_example: '{"annotation":[[274,202],[446,250]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      annotation_hint: set "annotation" to an array of [x0,y0,x1,y1] boxes around
-        every visible edge-label text box that reads "{target_edge_label}"
+      annotation_hint: set "annotation" to an array of [x,y] pixel points at the
+        centers of every visible edge-label text box that reads "{target_edge_label}"
     task_graph__node_link__hamiltonian_cycle_neighbor_label:
       bundle_id: graph_relation_v0
       scene_key: single_graph_relation
@@ -5663,11 +5663,10 @@ prompt:
       object_description_directed: a labeled directed graph
       question_text_same_component_count: How many nodes, including node {query_label}
         itself, are in the same connected component as {query_label}?
-      annotation_hint: set "annotation" to an ordered array of [x,y] pixel points
-        at the centers of all nodes around the Hamiltonian cycle in the stated traversal
-        direction
+      annotation_hint: set "annotation" to an array containing one [x,y] pixel point
+        at the center of the answer node
       answer_hint: set "answer" to the label of the requested node as a string
-      json_example: '{"annotation":[[180,220],[310,180],[430,260],[520,340]],"answer":"C"}'
+      json_example: '{"annotation":[[310,180]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
       question_text_next_in_hamiltonian_cycle_label: Use the Hamiltonian-cycle direction
         that starts at node {orientation_start_label} and returns to it from node {orientation_final_label}.
@@ -5718,8 +5717,8 @@ prompt:
       object_description_directed: a labeled directed graph
       question_text_same_component_count: How many nodes, including node {query_label}
         itself, are in the same connected component as {query_label}?
-      annotation_hint: set "annotation" to an ordered array of [x,y] pixel points
-        at the centers of the nodes around one largest chordless cycle
+      annotation_hint: set "annotation" to an array of [x,y] pixel points at the
+        centers of all nodes in one largest chordless cycle; order does not matter
       answer_hint: set "answer" to the number of nodes in that largest chordless cycle
         as an integer
       json_example: '{"annotation":[[180,220],[310,180],[430,260],[520,340]],"answer":4}'
@@ -5890,15 +5889,15 @@ prompt:
         of all nodes in the connected component containing the asked node, including
         the asked node itself
       answer_hint: set "answer" to that edge label as a lowercase string
-      json_example: '{"annotation":[[240,190,308,214]],"answer":"feeds"}'
+      json_example: '{"annotation":[[274,202]],"answer":"feeds"}'
       json_example_answer_only: '{"answer":"feeds"}'
       object_description_undirected: a graph with text labels on its edges
       annotation_hint_edge_between_nodes_label: set "annotation" to an array containing
-        one [x0,y0,x1,y1] box around the visible text label on the edge between {source_label}
-        and {target_label}
+        one [x,y] pixel point at the center of the visible text label on the edge
+        between {source_label} and {target_label}
       annotation_hint_directed_edge_between_nodes_label: set "annotation" to an array
-        containing one [x0,y0,x1,y1] box around the visible text label on the arrow
-        from {source_label} to {target_label}
+        containing one [x,y] pixel point at the center of the visible text label
+        on the arrow from {source_label} to {target_label}
       annotation_hint_shortest_path_first_edge_label: set "annotation" to an array
         containing one [x0,y0,x1,y1] box around the visible text label on the first
         {path_edge_term} along the unique shortest path from {source_label} to {target_label}{path_follow_clause}

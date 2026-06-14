@@ -7,7 +7,7 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.graph.relation.largest_chordless_cycle_size import GraphRelationLargestChordlessCycleSizeTask
+from trace.tasks.graph.node_link.largest_chordless_cycle_size import GraphRelationLargestChordlessCycleSizeTask
 from tests.helpers import read_jsonl
 
 
@@ -22,7 +22,7 @@ def test_graph_relation_largest_chordless_cycle_size_deterministic() -> None:
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.answer_gt.type == "integer"
-    assert out_a.annotation_gt.type == "point_sequence"
+    assert out_a.annotation_gt.type == "point_set"
 
 
 def test_graph_relation_largest_chordless_cycle_size_build_smoke(tmp_path: Path) -> None:
@@ -48,7 +48,7 @@ def test_graph_relation_largest_chordless_cycle_size_build_smoke(tmp_path: Path)
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
-    assert all(record["scene_id"] == "relation" for record in train_records)
+    assert all(record["scene_id"] == "node_link" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__largest_chordless_cycle_size"]) == 4

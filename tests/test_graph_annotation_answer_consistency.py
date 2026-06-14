@@ -117,8 +117,8 @@ GRAPH_QUERY_IDS = {
         "metro_transfer_station_count",
     ),
     "task_graph__metro__transfer_count": ("metro_transfer_count",),
-    "task_graph__node_link__articulation_point_count": ("articulation_point_count",),
-    "task_graph__node_link__bridge_count": ("bridge_count",),
+    "task_graph__node_link__articulation_point_count": ("single",),
+    "task_graph__node_link__bridge_count": ("single",),
     "task_graph__node_link__common_related_node_count": (
         "directed_common_predecessor_count",
         "directed_common_successor_count",
@@ -152,33 +152,31 @@ GRAPH_QUERY_IDS = {
         "directed_edge_between_nodes_label",
         "edge_between_nodes_label",
     ),
-    "task_graph__node_link__edge_color_count": ("edge_color_count",),
-    "task_graph__node_link__edge_text_count": ("edge_text_label_count",),
+    "task_graph__node_link__edge_color_count": ("single",),
+    "task_graph__node_link__edge_text_count": ("single",),
     "task_graph__node_link__hamiltonian_cycle_neighbor_label": (
         "next_in_hamiltonian_cycle_label",
         "previous_in_hamiltonian_cycle_label",
     ),
-    "task_graph__node_link__isolated_after_removal_count": (
-        "isolated_node_count_after_node_removal",
-    ),
-    "task_graph__node_link__largest_chordless_cycle_size": ("largest_chordless_cycle_size",),
-    "task_graph__node_link__largest_component_size": ("largest_component_size",),
-    "task_graph__node_link__longest_path_length": ("directed_longest_path_length",),
-    "task_graph__node_link__mst_weight": ("minimum_spanning_tree_weight",),
+    "task_graph__node_link__isolated_after_removal_count": ("single",),
+    "task_graph__node_link__largest_chordless_cycle_size": ("single",),
+    "task_graph__node_link__largest_component_size": ("single",),
+    "task_graph__node_link__longest_path_length": ("single",),
+    "task_graph__node_link__mst_weight": ("single",),
     "task_graph__node_link__named_node_degree_value": (
         "directed_named_node_in_degree_value",
         "directed_named_node_out_degree_value",
         "directed_named_node_total_degree_value",
         "undirected_named_node_degree_value",
     ),
-    "task_graph__node_link__node_color_count": ("node_color_count",),
-    "task_graph__node_link__reachable_count": ("reachable_count",),
+    "task_graph__node_link__node_color_count": ("single",),
+    "task_graph__node_link__reachable_count": ("single",),
     "task_graph__node_link__reachable_count_after_edge_edit": (
         "reachable_count_after_edge_addition",
         "reachable_count_after_edge_removal",
     ),
-    "task_graph__node_link__same_component_count": ("same_component_count",),
-    "task_graph__node_link__shortest_path_first_edge_label": ("shortest_path_first_edge_label",),
+    "task_graph__node_link__same_component_count": ("single",),
+    "task_graph__node_link__shortest_path_first_edge_label": ("single",),
     "task_graph__node_link__shortest_path_length": (
         "directed_shortest_path_length",
         "undirected_shortest_path_length",
@@ -187,7 +185,7 @@ GRAPH_QUERY_IDS = {
         "first_in_topological_order_label",
         "last_in_topological_order_label",
     ),
-    "task_graph__node_link__unique_cycle_size": ("unique_cycle_size",),
+    "task_graph__node_link__unique_cycle_size": ("single",),
     "task_graph__node_link__unique_related_node_label": (
         "unique_neighbor_label",
         "unique_predecessor_label",
@@ -419,12 +417,16 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
     if task_id in SINGLE_ANNOTATION_LABEL_TASKS and annotation_len != 1:
         errors.append(f"single-label annotation length {annotation_len} != 1")
 
-    if execution_trace.get("matching_labels") and annotation_type in {
+    if (
+        task_id != "task_graph__node_link__hamiltonian_cycle_neighbor_label"
+        and execution_trace.get("matching_labels")
+        and annotation_type in {
         "point_set",
         "point_sequence",
         "bbox_set",
         "bbox_sequence",
-    }:
+        }
+    ):
         _check_len(
             errors,
             name="matching_labels",

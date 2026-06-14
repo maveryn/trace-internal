@@ -3,13 +3,13 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `bar_3d`
-3. Source implementation domain/group: `charts/three_d_bar`
-4. Query id: `series_category_scope_total_value`
+3. Source implementation scene package: `charts/bar_3d`
+4. Query id: `series_total_value` or `series_interval_total_value`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.three_d_bar.grid_query.ChartsThreeDBarSeriesCategoryScopeTotalValueTask`
-2. Prompt lookup domain/group: `charts/three_d_bar`
+1. Registered class: `trace.tasks.charts.bar_3d.series_category_scope_total_value.ChartsThreeDBarSeriesCategoryScopeTotalValueTask`
+2. Prompt lookup scene: `charts/bar_3d`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
@@ -23,4 +23,5 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `series_category_scope_total_value` | `numeric.aggregate_sum` | `integer_value` | `point_set` |
+| `series_total_value` | `numeric.aggregate_sum` | `integer_value` | `point_set` |
+| `series_interval_total_value` | `numeric.aggregate_sum` | `integer_value` | `point_set` |

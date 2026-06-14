@@ -206,6 +206,7 @@ def build_tile_instance(
     is_reference: bool = False,
     highlight_right_half: bool = False,
     option_label: str | None = None,
+    right_join_label: str | None = None,
 ) -> DominoTileInstance:
     """Build one rendered domino tile payload from oriented half values."""
 
@@ -217,6 +218,7 @@ def build_tile_instance(
         is_reference=bool(is_reference),
         highlight_right_half=bool(highlight_right_half),
         option_label=None if option_label is None else str(option_label),
+        right_join_label=None if right_join_label is None else str(right_join_label),
     )
 
 
@@ -474,6 +476,7 @@ def build_sampled_scene(
                 "role": str(tile.role),
                 "is_reference": bool(tile.is_reference),
                 "option_label": None if tile.option_label is None else str(tile.option_label),
+                "right_join_label": None if tile.right_join_label is None else str(tile.right_join_label),
             }
             for tile in chain_instances
         ),
@@ -485,6 +488,7 @@ def build_sampled_scene(
                 "role": str(tile.role),
                 "is_reference": bool(tile.is_reference),
                 "option_label": None if tile.option_label is None else str(tile.option_label),
+                "right_join_label": None if tile.right_join_label is None else str(tile.right_join_label),
                 **extra_flags.get(str(tile.tile_id), {}),
             }
             for tile in candidate_instances

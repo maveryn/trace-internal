@@ -24,6 +24,7 @@ class DominoSceneDefaults:
 
     matching_end_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     longest_chain_length_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
+    invalid_join_label_support: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
     higher_sum_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     sum_to_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     double_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)

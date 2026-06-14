@@ -37,6 +37,9 @@ generation:
       longest_chain_length_answer_support: [1, 2, 3, 4, 5]
       single_row_candidate_count_support: [7]
       two_row_candidate_count_support: [7]
+    task_games__dominoes__invalid_join_label:
+      balanced_target_answer_sampling: true
+      invalid_join_label_support: [A, B, C, D, E, F]
     task_games__dominoes__sum_to_target_count:
       balanced_target_answer_sampling: true
       balanced_candidate_count_sampling: true

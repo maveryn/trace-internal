@@ -46,6 +46,7 @@ def test_games_dominoes_task_overrides_remain_task_owned() -> None:
     expected = {
         "task_games__dominoes__matching_end_count": ("matching_end_target_answer_support", [0, 1, 2, 3, 4, 5]),
         "task_games__dominoes__longest_chain_length_value": ("longest_chain_length_answer_support", [1, 2, 3, 4, 5]),
+        "task_games__dominoes__invalid_join_label": ("invalid_join_label_support", ["A", "B", "C", "D", "E", "F"]),
         "task_games__dominoes__higher_sum_than_reference_count": ("higher_sum_target_answer_support", [0, 1, 2, 3, 4, 5]),
         "task_games__dominoes__sum_to_target_count": ("sum_to_target_answer_support", [0, 1, 2, 3, 4]),
         "task_games__dominoes__double_count": ("double_target_answer_support", [0, 1, 2, 3, 4, 5]),

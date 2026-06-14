@@ -36,6 +36,13 @@
         "From the `REF` tile's open right end. {longest_chain_rule_text} Give the maximum number of loose dominoes that can be played in sequence.",
         "Build one chain outward from `REF`. {longest_chain_rule_text} What is the greatest number of loose dominoes that can be used?"
       ],
+      "invalid_join_label": [
+        "{invalid_join_rule_text} Which labeled join breaks the chain rule?",
+        "The joins between neighboring dominoes are labeled `A` through `F`. {invalid_join_rule_text} Which join label is invalid?",
+        "{invalid_join_rule_text} Find the one labeled join where the touching halves do not match.",
+        "Look at the six labeled joins in the chain. {invalid_join_rule_text} Which label marks the broken join?",
+        "Each label marks a join between two neighboring dominoes. {invalid_join_rule_text} What is the invalid join label?"
+      ],
       "higher_sum_than_reference_count": [
         "The tile marked `REF` is the reference tile. {pip_sum_rule_text} How many other face-up dominoes have a larger pip sum than `REF`?",
         "{pip_sum_rule_text} Count the face-up dominoes, excluding `REF`, whose pip sum is greater than the `REF` tile.",
@@ -85,6 +92,9 @@
     "query:longest_chain_length_value": [
       "longest_chain_rule_text"
     ],
+    "query:invalid_join_label": [
+      "invalid_join_rule_text"
+    ],
     "query:higher_sum_than_reference_count": [
       "pip_sum_rule_text"
     ],
@@ -114,6 +124,9 @@
     },
     "query:longest_chain_length_value": {
       "longest_chain_rule_text": "Each loose domino may be used at most once. A domino can be added when either half matches the current open end. Do not count `REF`."
+    },
+    "query:invalid_join_label": {
+      "invalid_join_rule_text": "A valid domino chain has matching pip numbers on the two halves that touch at each join."
     },
     "query:higher_sum_than_reference_count": {
       "pip_sum_rule_text": "The pip sum of a domino is the total number of pips across its two halves."
@@ -154,21 +167,25 @@
   "code_prompt_defaults": {
     "object_description_chain_single_row": "a short face-up domino chain across the top with one row of face-up candidate dominoes below",
     "object_description_chain_two_row": "a short face-up domino chain across the top with two rows of face-up candidate dominoes below",
+    "object_description_chain_only": "one face-up domino chain with six labeled joins",
     "object_description_tableau_single_row": "one row of face-up dominoes",
     "object_description_tableau_two_row": "two rows of face-up dominoes",
     "object_description_tableau_reference_single_row": "one row of face-up dominoes with one tile marked `REF`",
     "object_description_tableau_reference_two_row": "two rows of face-up dominoes with one tile marked `REF`",
     "connection_rule_text": "A loose domino can connect to the open right end if either half has the same number of pips as that open end.",
     "longest_chain_rule_text": "Each loose domino may be used at most once. A domino can be added when either half matches the current open end. Do not count `REF`.",
+    "invalid_join_rule_text": "A valid domino chain has matching pip numbers on the two halves that touch at each join.",
     "pip_sum_rule_text": "The pip sum of a domino is the total number of pips across its two halves.",
     "double_rule_text": "A double has the same number of pips on both halves.",
     "annotation_hint_matching_end_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every loose domino that matches the `REF` tile's open right end",
     "annotation_hint_longest_chain_length_value": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for the loose dominoes in the unique longest chain from `REF`",
+    "annotation_hint_invalid_join_label": "set \"annotation\" to a JSON array containing one point pair [[x1, y1], [x2, y2]] for the two touching halves at the invalid join",
     "annotation_hint_higher_sum_than_reference_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every non-reference domino with a larger pip sum than `REF`",
     "annotation_hint_sum_to_target_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every shown domino with the target pip sum",
     "annotation_hint_double_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every shown domino that is a double",
     "answer_hint_matching_end_count": "set \"answer\" to the count of loose dominoes that match the `REF` tile's open right end",
     "answer_hint_longest_chain_length_value": "set \"answer\" to the maximum number of loose dominoes that can be added after `REF`",
+    "answer_hint_invalid_join_label": "set \"answer\" to the label of the invalid join, one of `A`, `B`, `C`, `D`, `E`, or `F`",
     "answer_hint_higher_sum_than_reference_count": "set \"answer\" to the count of loose dominoes with a larger pip sum than `REF`",
     "answer_hint_sum_to_target_count": "set \"answer\" to the count of shown dominoes with the target pip sum",
     "answer_hint_double_count": "set \"answer\" to the count of shown doubles"

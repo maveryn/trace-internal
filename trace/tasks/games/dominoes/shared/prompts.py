@@ -41,6 +41,15 @@ def domino_integer_json_examples(answer_value: int = 2) -> tuple[str, str]:
     )
 
 
+def domino_option_label_point_pair_json_examples(answer_value: str = "C") -> tuple[str, str]:
+    """Return generic option-label JSON examples for point-pair annotation tasks."""
+
+    return (
+        json.dumps({"annotation": [[[312, 142], [326, 142]]], "answer": str(answer_value)}, separators=(",", ":")),
+        json.dumps({"answer": str(answer_value)}, separators=(",", ":")),
+    )
+
+
 def domino_output_slots(
     *,
     prompt_query_key: str,
@@ -67,10 +76,12 @@ def domino_output_slots(
     }
 
 
-def domino_object_description(*, has_chain: bool, has_reference: bool, scene_variant: str) -> str:
+def domino_object_description(*, has_chain: bool, has_reference: bool, has_candidates: bool, scene_variant: str) -> str:
     """Return prompt object text for the sampled domino layout."""
 
-    if bool(has_chain):
+    if bool(has_chain) and not bool(has_candidates):
+        key = "object_description_chain_only"
+    elif bool(has_chain):
         key = f"object_description_chain_{str(scene_variant)}"
     elif bool(has_reference):
         key = f"object_description_tableau_reference_{str(scene_variant)}"
@@ -116,6 +127,7 @@ def build_domino_prompt_artifacts(
 __all__ = [
     "build_domino_prompt_artifacts",
     "domino_integer_json_examples",
+    "domino_option_label_point_pair_json_examples",
     "domino_object_description",
     "domino_output_slots",
 ]

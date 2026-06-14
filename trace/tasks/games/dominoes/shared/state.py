@@ -17,6 +17,7 @@ class DominoTileInstance:
     is_reference: bool = False
     highlight_right_half: bool = False
     option_label: str | None = None
+    right_join_label: str | None = None
 
 
 @dataclass(frozen=True)

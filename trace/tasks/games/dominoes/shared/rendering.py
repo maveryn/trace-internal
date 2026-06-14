@@ -55,6 +55,7 @@ class RenderedDominoSpec:
     role: str
     is_reference: bool
     option_label: str | None
+    right_join_label: str | None
     bbox_px: Tuple[float, float, float, float]
     row_index: int
     order_index: int
@@ -318,6 +319,80 @@ def _draw_option_label(
         stroke_fill=(0, 0, 0),
      role="readout", required=False,)
     return label_bbox
+
+
+def _draw_join_label(
+    draw: ImageDraw.ImageDraw,
+    *,
+    left_tile_bbox_px: Tuple[float, float, float, float],
+    right_tile_bbox_px: Tuple[float, float, float, float],
+    label: str,
+    params: DominoRenderParams,
+    theme: DominoTheme,
+) -> Tuple[float, float, float, float]:
+    """Draw one option label centered over a chain join."""
+
+    font = load_font(
+        max(16, int(params.reference_tag_font_size_px) + 1),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
+    text = str(label)
+    text_bbox = draw.textbbox((0, 0), text, font=font, stroke_width=1)
+    text_width = float(text_bbox[2] - text_bbox[0])
+    text_height = float(text_bbox[3] - text_bbox[1])
+    pad_x = 9.0
+    pad_y = 4.0
+    width = max(28.0, text_width + (2.0 * pad_x))
+    height = text_height + (2.0 * pad_y)
+    join_center_x = 0.5 * (float(left_tile_bbox_px[2]) + float(right_tile_bbox_px[0]))
+    top = max(4.0, min(float(left_tile_bbox_px[1]), float(right_tile_bbox_px[1])) - height - 7.0)
+    left = float(join_center_x - (0.5 * width))
+    label_bbox = (
+        round(float(left), 3),
+        round(float(top), 3),
+        round(float(left + width), 3),
+        round(float(top + height), 3),
+    )
+    draw.rounded_rectangle(
+        label_bbox,
+        radius=int(0.5 * height),
+        fill=tuple(int(value) for value in theme.reference_tag_fill_rgb),
+        outline=tuple(int(value) for value in theme.reference_outline_rgb),
+        width=2,
+    )
+    draw_text_traced(draw,
+        (
+            float(left + (0.5 * (width - text_width)) - text_bbox[0]),
+            float(top + pad_y - text_bbox[1]),
+        ),
+        text,
+        font=font,
+        fill=tuple(int(value) for value in theme.reference_tag_text_rgb),
+        stroke_width=1,
+        stroke_fill=(0, 0, 0),
+     role="option_label", required=False,)
+    return label_bbox
+
+
+def _join_endpoint_points(
+    *,
+    left_tile_bbox_px: Tuple[float, float, float, float],
+    right_tile_bbox_px: Tuple[float, float, float, float],
+) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    """Return right-half and left-half centers for one adjacent domino join."""
+
+    left_width = float(left_tile_bbox_px[2] - left_tile_bbox_px[0])
+    right_width = float(right_tile_bbox_px[2] - right_tile_bbox_px[0])
+    left_center = (
+        round(float(left_tile_bbox_px[0] + (0.75 * left_width)), 3),
+        round(float(0.5 * (left_tile_bbox_px[1] + left_tile_bbox_px[3])), 3),
+    )
+    right_center = (
+        round(float(right_tile_bbox_px[0] + (0.25 * right_width)), 3),
+        round(float(0.5 * (right_tile_bbox_px[1] + right_tile_bbox_px[3])), 3),
+    )
+    return left_center, right_center
 
 
 def _draw_domino_tile(
@@ -612,6 +687,9 @@ def render_domino_chain_scene(
     domino_specs: List[RenderedDominoSpec] = []
     reference_tag_bboxes: Dict[str, List[float]] = {}
     option_label_bboxes: Dict[str, List[float]] = {}
+    chain_join_label_bboxes: Dict[str, List[float]] = {}
+    chain_join_endpoint_points: Dict[str, List[List[float]]] = {}
+    chain_join_specs: List[Dict[str, Any]] = []
 
     for row_index, row_tiles in enumerate(candidate_row_groups):
         row_y = float(candidate_top + (row_index * (params.tile_height_px + params.row_gap_px)))
@@ -712,6 +790,7 @@ def render_domino_chain_scene(
                 role=str(tile.role),
                 is_reference=bool(tile.is_reference),
                 option_label=None if tile.option_label is None else str(tile.option_label),
+                right_join_label=None if tile.right_join_label is None else str(tile.right_join_label),
                 bbox_px=bbox_px,
                 row_index=int(row_index),
                 order_index=int(order_index),
@@ -728,12 +807,66 @@ def render_domino_chain_scene(
                     "role": str(tile.role),
                     "is_reference": bool(tile.is_reference),
                     "option_label": None if tile.option_label is None else str(tile.option_label),
+                    "right_join_label": None if tile.right_join_label is None else str(tile.right_join_label),
                     "row_index": int(row_index),
                     "order_index": int(order_index),
                 },
             }
         )
         order_index += 1
+
+    chain_spec_by_id = {str(spec.tile_id): spec for spec in domino_specs[: len(chain_tiles)]}
+    chain_bbox_by_id = {str(spec.tile_id): spec.bbox_px for spec in domino_specs[: len(chain_tiles)]}
+    for left_tile, right_tile in zip(chain_tiles, chain_tiles[1:]):
+        label = left_tile.right_join_label
+        if not label:
+            continue
+        left_bbox = chain_bbox_by_id[str(left_tile.tile_id)]
+        right_bbox = chain_bbox_by_id[str(right_tile.tile_id)]
+        label_bbox = _draw_join_label(
+            ImageDraw.Draw(image),
+            left_tile_bbox_px=left_bbox,
+            right_tile_bbox_px=right_bbox,
+            label=str(label),
+            params=params,
+            theme=theme,
+        )
+        endpoint_points = _join_endpoint_points(
+            left_tile_bbox_px=left_bbox,
+            right_tile_bbox_px=right_bbox,
+        )
+        left_spec = chain_spec_by_id[str(left_tile.tile_id)]
+        right_spec = chain_spec_by_id[str(right_tile.tile_id)]
+        is_valid = int(left_spec.right_value) == int(right_spec.left_value)
+        chain_join_label_bboxes[str(label)] = [float(value) for value in label_bbox]
+        chain_join_endpoint_points[str(label)] = [
+            [float(value) for value in endpoint_points[0]],
+            [float(value) for value in endpoint_points[1]],
+        ]
+        chain_join_specs.append(
+            {
+                "entity_id": f"join_{str(label)}",
+                "option_label": str(label),
+                "left_tile_id": str(left_tile.tile_id),
+                "right_tile_id": str(right_tile.tile_id),
+                "left_touch_value": int(left_spec.right_value),
+                "right_touch_value": int(right_spec.left_value),
+                "is_valid": bool(is_valid),
+                "label_bbox_px": [float(value) for value in label_bbox],
+                "endpoint_points_px": [
+                    [float(value) for value in endpoint_points[0]],
+                    [float(value) for value in endpoint_points[1]],
+                ],
+            }
+        )
+        scene_entities.append(
+            {
+                "entity_id": f"join_{str(label)}",
+                "entity_type": "domino_join",
+                "bbox_px": [float(value) for value in label_bbox],
+                "meta": dict(chain_join_specs[-1]),
+            }
+        )
 
     render_map = {
         "scene_variant": str(scene_variant),
@@ -745,6 +878,9 @@ def render_domino_chain_scene(
         "candidate_row_ids": candidate_row_ids,
         "reference_tag_bboxes_px": reference_tag_bboxes,
         "option_label_bboxes_px": option_label_bboxes,
+        "chain_join_label_bboxes_px": chain_join_label_bboxes,
+        "chain_join_endpoint_points_px": chain_join_endpoint_points,
+        "chain_join_specs": chain_join_specs,
         "layout_jitter": dict(layout_jitter),
         "scene_panel_bbox_px": [int(value) for value in panel_bbox],
         "panel_scene_style": {}

@@ -322,6 +322,7 @@ def run_domino_lifecycle(
                 "object_description": domino_object_description(
                     has_chain=bool(sample.chain_tiles),
                     has_reference=sample.reference_tile_id is not None,
+                    has_candidates=bool(sample.candidate_tiles),
                     scene_variant=str(axes.scene_variant),
                 ),
             },

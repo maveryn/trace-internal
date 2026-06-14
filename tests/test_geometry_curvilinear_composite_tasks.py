@@ -6,10 +6,8 @@ import pytest
 
 from trace.tasks.geometry.composite_shape.missing_width_from_semicircle_cap_area import GeometryMissingWidthFromSemicircleCapAreaTask
 from trace.tasks.geometry.composite_shape.missing_width_from_semicircle_cutout_area import GeometryMissingWidthFromSemicircleCutoutAreaTask
-from trace.tasks.geometry.composite_shape.rectangle_quarter_sector_cutout_area import (
-    SCENE_ID,
-    GeometryRectangleQuarterSectorCutoutAreaTask,
-)
+from trace.tasks.geometry.composite_shape.rectangle_quarter_sector_cutout_area import GeometryRectangleQuarterSectorCutoutAreaTask
+from trace.tasks.geometry.composite_shape.shared.defaults import SCENE_ID
 from trace.tasks.geometry.composite_shape.rectangle_quarter_sector_cutout_perimeter import GeometryRectangleQuarterSectorCutoutPerimeterTask
 from trace.tasks.geometry.composite_shape.rectangle_semicircle_cap_area import GeometryRectangleSemicircleCapAreaTask
 from trace.tasks.geometry.composite_shape.rectangle_semicircle_cap_perimeter import GeometryRectangleSemicircleCapPerimeterTask
@@ -33,16 +31,29 @@ TASK_CLASSES = (
 )
 
 QUERY_IDS_BY_TASK = {
-    GeometryRectangleSemicircleCapAreaTask: ("rectangle_semicircle_cap_area",),
-    GeometryRectangleSemicircleCutoutAreaTask: ("rectangle_semicircle_cutout_area",),
-    GeometryRectangleQuarterSectorCutoutAreaTask: ("rectangle_quarter_sector_cutout_area",),
-    GeometryRectangleSemicircleCapPerimeterTask: ("rectangle_semicircle_cap_perimeter",),
-    GeometryRectangleSemicircleCutoutPerimeterTask: ("rectangle_semicircle_cutout_perimeter",),
-    GeometryRectangleQuarterSectorCutoutPerimeterTask: ("rectangle_quarter_sector_cutout_perimeter",),
-    GeometryMissingWidthFromSemicircleCapAreaTask: ("missing_width_from_semicircle_cap_area",),
-    GeometryMissingWidthFromSemicircleCutoutAreaTask: ("missing_width_from_semicircle_cutout_area",),
-    GeometrySectorAngleFromArcLengthTask: ("sector_angle_from_arc_length",),
-    GeometrySectorAngleFromAreaTask: ("sector_angle_from_area",),
+    GeometryRectangleSemicircleCapAreaTask: ("single",),
+    GeometryRectangleSemicircleCutoutAreaTask: ("single",),
+    GeometryRectangleQuarterSectorCutoutAreaTask: ("single",),
+    GeometryRectangleSemicircleCapPerimeterTask: ("single",),
+    GeometryRectangleSemicircleCutoutPerimeterTask: ("single",),
+    GeometryRectangleQuarterSectorCutoutPerimeterTask: ("single",),
+    GeometryMissingWidthFromSemicircleCapAreaTask: ("single",),
+    GeometryMissingWidthFromSemicircleCutoutAreaTask: ("single",),
+    GeometrySectorAngleFromArcLengthTask: ("single",),
+    GeometrySectorAngleFromAreaTask: ("single",),
+}
+
+INTERNAL_QUERY_ID_BY_TASK = {
+    GeometryRectangleSemicircleCapAreaTask: "rectangle_semicircle_cap_area",
+    GeometryRectangleSemicircleCutoutAreaTask: "rectangle_semicircle_cutout_area",
+    GeometryRectangleQuarterSectorCutoutAreaTask: "rectangle_quarter_sector_cutout_area",
+    GeometryRectangleSemicircleCapPerimeterTask: "rectangle_semicircle_cap_perimeter",
+    GeometryRectangleSemicircleCutoutPerimeterTask: "rectangle_semicircle_cutout_perimeter",
+    GeometryRectangleQuarterSectorCutoutPerimeterTask: "rectangle_quarter_sector_cutout_perimeter",
+    GeometryMissingWidthFromSemicircleCapAreaTask: "missing_width_from_semicircle_cap_area",
+    GeometryMissingWidthFromSemicircleCutoutAreaTask: "missing_width_from_semicircle_cutout_area",
+    GeometrySectorAngleFromArcLengthTask: "sector_angle_from_arc_length",
+    GeometrySectorAngleFromAreaTask: "sector_angle_from_area",
 }
 
 
@@ -90,6 +101,7 @@ def test_curvilinear_tasks_support_every_explicit_query(task_cls) -> None:
             max_attempts=20,
         )
         assert out.query_id == query_id
+        assert out.trace_payload["query_spec"]["params"]["internal_query_id"] == INTERNAL_QUERY_ID_BY_TASK[task_cls]
         assert out.answer_gt.type == "number"
         assert out.trace_payload["query_spec"]["params"]["query_id_probabilities"] == {
             query_id: 1.0
@@ -140,7 +152,7 @@ def test_quarter_sector_area_omits_obvious_right_angle_label() -> None:
     task = GeometryRectangleQuarterSectorCutoutAreaTask()
     out = task.generate(
         54091,
-        params={"query_id": "rectangle_quarter_sector_cutout_area"},
+        params={"query_id": "single"},
         max_attempts=20,
     )
 

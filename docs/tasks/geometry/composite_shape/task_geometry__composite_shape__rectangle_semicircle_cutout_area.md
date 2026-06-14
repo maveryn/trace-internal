@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `composite_shape`
-5. Query id: `rectangle_semicircle_cutout_area`
+5. Query id: `single`
 6. Answer schema: `decimal_value_1dp`
 7. Annotation schema: `keyed_bbox_map`
 

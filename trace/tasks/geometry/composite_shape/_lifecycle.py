@@ -1,0 +1,230 @@
+"""Neutral output assembly for composite-shape scene-package tasks."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Dict, Mapping
+
+from trace.core.scene_config import get_scene_defaults
+from trace.core.types import TypedValue
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.base import TaskOutput
+from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.prompt_variants import build_prompt_query_spec
+from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
+
+from .shared.annotations import composite_shape_annotation
+from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS, SCENE_ID
+from .shared.prompts import composite_shape_prompt_artifacts
+from .shared.rendering import create_composite_render_context, render_composite_shape
+from .shared.state import CompositeShapeProblem, RenderedCompositeShape
+
+
+@dataclass(frozen=True)
+class PreparedCompositeShapeScene:
+    """Rendered image plus prompt and annotation artifacts."""
+
+    rendered: RenderedCompositeShape
+    image: Any
+    noise_meta: Dict[str, Any]
+    render_meta: Dict[str, Any]
+    prompt_artifacts: Any
+    annotation_artifacts: Any
+
+
+def prepare_composite_shape_scene(
+    *,
+    problem: CompositeShapeProblem,
+    prompt_defaults: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+    render_namespace: str,
+) -> PreparedCompositeShapeScene:
+    """Render and bind prompt/annotation artifacts for an objective-owned problem."""
+
+    rendered: RenderedCompositeShape | None = None
+    render_meta: Dict[str, Any] | None = None
+    last_error: Exception | None = None
+    for attempt in range(max(1, int(max_attempts))):
+        attempt_params = dict(params)
+        attempt_params["_render_attempt"] = int(attempt)
+        try:
+            ctx, attempt_meta = create_composite_render_context(
+                instance_seed=int(instance_seed) + int(attempt),
+                params=attempt_params,
+                render_defaults=render_defaults,
+                render_namespace=str(render_namespace),
+            )
+            rendered = render_composite_shape(ctx, problem)
+            render_meta = dict(attempt_meta)
+            break
+        except Exception as exc:
+            last_error = exc
+            continue
+    if rendered is None or render_meta is None:
+        raise RuntimeError("failed to render composite shape scene") from last_error
+
+    image, noise_meta = apply_post_image_noise(
+        rendered.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    annotation_artifacts = composite_shape_annotation(rendered)
+    _prompt_defaults, prompt_artifacts = composite_shape_prompt_artifacts(
+        prompt_defaults=prompt_defaults,
+        prompt_query_key=str(problem.prompt_key),
+        annotation_type=str(annotation_artifacts.annotation_type),
+        annotation_keys=tuple(rendered.annotation_roles),
+        answer_value=problem.answer_value,
+        prompt_slots=problem.prompt_slots,
+        instance_seed=int(instance_seed),
+    )
+    return PreparedCompositeShapeScene(
+        rendered=rendered,
+        image=image,
+        noise_meta=dict(noise_meta),
+        render_meta=dict(render_meta),
+        prompt_artifacts=prompt_artifacts,
+        annotation_artifacts=annotation_artifacts,
+    )
+
+
+def composite_shape_trace_payload(
+    *,
+    task_id: str,
+    branch_name: str,
+    branch_probabilities: Mapping[str, float],
+    problem: CompositeShapeProblem,
+    prepared: PreparedCompositeShapeScene,
+) -> Dict[str, Any]:
+    """Assemble trace metadata from task-owned answer and annotation facts."""
+
+    rendered = prepared.rendered
+    prompt_metadata_fields: Dict[str, Any] = {
+        "scene_id": SCENE_ID,
+        "query_id": str(branch_name),
+        "query_id_probabilities": dict(branch_probabilities),
+        "answer_value": problem.answer_value,
+        **dict(problem.metadata_fields),
+    }
+    prompt_query_spec = build_prompt_query_spec(
+        prompt_artifacts=prepared.prompt_artifacts,
+        query_id=str(branch_name),
+        params=prompt_metadata_fields,
+    )
+    prompt_query_spec["scene_id"] = SCENE_ID
+    prompt_query_spec["task_id"] = str(task_id)
+    return {
+        "scene_ir": {
+            "scene_id": SCENE_ID,
+            "task_id": str(task_id),
+            "query_id": str(branch_name),
+            "scene_kind": str(problem.scene_kind),
+            "entities": [dict(entity) for entity in rendered.scene_entities],
+            "relations": {
+                "shape_family": str(problem.shape_family),
+                "metric_kind": str(problem.metric_kind),
+                "answer_value": problem.answer_value,
+                "annotation_roles": list(rendered.annotation_roles),
+            },
+        },
+        "query_spec": prompt_query_spec,
+        "render_spec": {
+            "scene_id": SCENE_ID,
+            "task_id": str(task_id),
+            "query_id": str(branch_name),
+            "canvas_size": [int(prepared.image.size[0]), int(prepared.image.size[1])],
+            "coord_space": "pixel",
+            "post_image_noise": dict(prepared.noise_meta),
+            **dict(prepared.render_meta),
+            "prompt": {
+                "prompt_variant": dict(prepared.prompt_artifacts.prompt_variant),
+                "prompt_variant_active_key": str(prepared.prompt_artifacts.prompt_variant_active_key),
+                "prompt_variants": dict(prepared.prompt_artifacts.prompt_variants_for_trace),
+            },
+        },
+        "render_map": dict(rendered.render_map),
+        "execution_trace": {
+            "scene_id": SCENE_ID,
+            "task_id": str(task_id),
+            "query_id": str(branch_name),
+            "query_id_probabilities": dict(branch_probabilities),
+            "answer_type": str(problem.answer_type),
+            "answer_value": problem.answer_value,
+            "reasoning_kind": str(problem.reasoning_kind),
+            "reasoning_steps": int(problem.reasoning_steps),
+            "annotation_roles": list(rendered.annotation_roles),
+            **dict(problem.execution_fields),
+            **dict(rendered.witness),
+        },
+        "witness_symbolic": {
+            "type": str(problem.witness_type),
+            "scene_id": SCENE_ID,
+            "task_id": str(task_id),
+            "query_id": str(branch_name),
+            "answer_value": problem.answer_value,
+            "source_witness_type": str(prepared.annotation_artifacts.annotation_type),
+            "original_annotation_value": list(rendered.annotation_roles),
+            **dict(rendered.witness),
+        },
+        "projected_annotation": dict(prepared.annotation_artifacts.projected_annotation),
+    }
+
+
+def complete_composite_shape_task(
+    *,
+    task_id: str,
+    branch_name: str,
+    branch_probabilities: Mapping[str, float],
+    problem: CompositeShapeProblem,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+    render_namespace: str,
+):
+    """Complete rendering, prompt construction, trace binding, and TaskOutput."""
+
+    scene_defaults = get_scene_defaults("geometry", SCENE_ID)
+    _gen_defaults, render_defaults, prompt_defaults = split_scene_generation_rendering_prompt_defaults(
+        scene_defaults,
+        task_id=str(task_id),
+    )
+    prepared = prepare_composite_shape_scene(
+        problem=problem,
+        prompt_defaults=prompt_defaults,
+        render_defaults=render_defaults,
+        instance_seed=int(instance_seed),
+        params=params,
+        max_attempts=int(max_attempts),
+        render_namespace=str(render_namespace),
+    )
+    trace_payload = composite_shape_trace_payload(
+        task_id=str(task_id),
+        branch_name=str(branch_name),
+        branch_probabilities=branch_probabilities,
+        problem=problem,
+        prepared=prepared,
+    )
+    answer_value = problem.answer_value
+    if str(problem.answer_type) == "integer":
+        answer_gt = TypedValue(type="integer", value=int(answer_value))
+    else:
+        answer_gt = TypedValue(type="number", value=float(answer_value))
+    return TaskOutput(
+        prompt=str(prepared.prompt_artifacts.prompt),
+        answer_gt=answer_gt,
+        annotation_gt=TypedValue(
+            type=str(prepared.annotation_artifacts.annotation_type),
+            value=prepared.annotation_artifacts.value,
+        ),
+        image=prepared.image,
+        image_id="img0",
+        trace_payload=trace_payload,
+        task_versions=default_task_versions(),
+        scene_id=SCENE_ID,
+        query_id=str(branch_name),
+        prompt_variants=dict(prepared.prompt_artifacts.prompt_variants),
+    )

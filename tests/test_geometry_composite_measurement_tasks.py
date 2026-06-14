@@ -58,14 +58,14 @@ def _scene_point_lookup(trace_payload) -> dict[str, list[float]]:
 def test_composite_measurement_tasks_emit_public_contract(task_cls) -> None:
     task = task_cls()
     out = task.generate(44001, params={}, max_attempts=20)
+    scene_id = str(out.scene_id)
 
-    assert out.scene_id == task.scene_id
     assert out.query_id
     assert out.answer_gt.type == "integer"
-    if task.scene_id == "angle_relations":
+    if scene_id == "angle_relations":
         assert out.annotation_gt.type == "keyed_point_map"
         assert 2 <= len(out.annotation_gt.value) <= 4
-    elif task.scene_id == "composite_shape":
+    elif scene_id == "composite_shape":
         assert out.annotation_gt.type == "keyed_bbox_map"
         assert 1 <= len(out.annotation_gt.value) <= 2
     else:
@@ -75,9 +75,9 @@ def test_composite_measurement_tasks_emit_public_contract(task_cls) -> None:
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
-    assert trace["query_spec"]["scene_id"] == task.scene_id
-    assert trace["scene_ir"]["scene_id"] == task.scene_id
-    assert trace["witness_symbolic"]["scene_id"] == task.scene_id
+    assert trace["query_spec"]["scene_id"] == scene_id
+    assert trace["scene_ir"]["scene_id"] == scene_id
+    assert trace["witness_symbolic"]["scene_id"] == scene_id
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
     assert trace["projected_annotation"]["type"] == out.annotation_gt.type
@@ -100,14 +100,15 @@ def test_composite_measurement_tasks_support_explicit_query_selection() -> None:
     task = GeometryPythagoreanLengthRectangleTriangleSharedHeightTask()
     out = task.generate(
         44021,
-        params={"query_id": "rectangle_triangle_shared_height_length", "case_index": 0},
+        params={"query_id": "single", "case_index": 0},
         max_attempts=20,
     )
 
-    assert out.query_id == "rectangle_triangle_shared_height_length"
+    assert out.query_id == "single"
+    assert out.trace_payload["query_spec"]["params"]["internal_query_id"] == "rectangle_triangle_shared_height_length"
     assert out.answer_gt.value == 15
     assert out.trace_payload["query_spec"]["params"]["query_id_probabilities"] == {
-        "rectangle_triangle_shared_height_length": 1.0
+        "single": 1.0
     }
 
 
@@ -117,10 +118,11 @@ def test_parallel_section_scale_task_supports_every_query() -> None:
         (GeometryTriangleRelationsParallelSectionBaseLengthTask(), "parallel_section_base_length"),
         (GeometryTriangleRelationsParallelSectionCrossLengthTask(), "parallel_section_cross_length"),
     )
-    for task, query_id in tasks:
-        out = task.generate(44025, params={"query_id": query_id, "case_index": 0}, max_attempts=20)
+    for task, internal_query_id in tasks:
+        out = task.generate(44025, params={"query_id": "single", "case_index": 0}, max_attempts=20)
         assert out.scene_id == "triangle_relations"
-        assert out.query_id == query_id
+        assert out.query_id == "single"
+        assert out.trace_payload["query_spec"]["params"]["internal_query_id"] == internal_query_id
         assert out.answer_gt.type == "integer"
         assert out.annotation_gt.type == "bbox_set"
 
@@ -214,7 +216,7 @@ def test_composite_measurement_tasks_reject_unknown_query_id() -> None:
 )
 def test_rectilinear_composite_public_annotation_uses_shape_primitives(task_cls, expected_keys) -> None:
     task = task_cls()
-    for query_id in sorted({case.query_id for case in task.cases}):
+    for query_id in tuple(task.supported_query_ids):
         out = task.generate(44121, params={"query_id": query_id, "case_index": 0}, max_attempts=20)
         assert out.annotation_gt.type == "keyed_bbox_map"
         assert expected_keys.issubset(set(out.annotation_gt.value))

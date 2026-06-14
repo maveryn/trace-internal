@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `composite_shape`
-5. Query id: `l_shape_area`, `rectangle_minus_triangle_area`
+5. Query id: `rectangle_minus_triangle_area`, `l_shape_area`
 6. Answer schema: `integer_value`
 7. Annotation schema: `keyed_bbox_map`
 

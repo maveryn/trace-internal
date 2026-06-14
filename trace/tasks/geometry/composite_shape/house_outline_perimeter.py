@@ -1,52 +1,73 @@
-"""Public objective for the composite-shape rectilinear scene."""
+"""House-outline perimeter objective."""
 
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from trace.tasks.registry import register_task
+from trace.tasks.shared.fixed_query import select_task_query_id
 
-from trace.core.scene_config import get_scene_defaults
+from ._lifecycle import complete_composite_shape_task
+from .shared.sampling import select_case_value
+from .shared.state import CompositeShapeProblem
 
-from ...base import TaskOutput
-from ...registry import register_task
-from ..shared.composite_measurement_cases import (
-    _COMPOSITE_AREA_CASES,
-    _COMPOSITE_PERIMETER_CASES,
-    _cases_for_query,
-)
-from ..shared.composite_measurement_task import _CompositeMeasurementBaseTask
-
-
-SCENE_ID = "composite_shape"
 TASK_ID = "task_geometry__composite_shape__house_outline_perimeter"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = ('house_outline_perimeter',)
+QUERY_ID = "house_outline_perimeter"
+SUPPORTED_QUERY_IDS = (QUERY_ID,)
+
+_CASES = ((8, 6, 5), (10, 7, 6), (12, 8, 7), (14, 9, 8), (16, 10, 9))
+
+
+def _resolve_problem(*, instance_seed, params):
+    """Bind the pentagonal outline perimeter from wall and roof dimensions."""
+
+    width, wall_height, roof_side = select_case_value(
+        _CASES,
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=f"{TASK_ID}.{QUERY_ID}.case",
+    )
+    answer = int(width) + (2 * int(wall_height)) + (2 * int(roof_side))
+    return CompositeShapeProblem(
+        prompt_key=QUERY_ID,
+        shape_family="house",
+        metric_kind="perimeter",
+        answer_value=int(answer),
+        answer_type="integer",
+        reasoning_kind="composite_perimeter",
+        scene_kind="geometry_rectilinear_composite_shape",
+        witness_type="rectilinear_composite_perimeter_formula",
+        dimensions={"width": width, "wall_height": wall_height, "roof_side": roof_side},
+        formula_family="house_outline",
+        reasoning_steps=2,
+        execution_fields={"perimeter_formula": "base + 2*wall_height + 2*roof_side"},
+    )
 
 
 @register_task
-class GeometryMeasurementCompositePerimeterValueTask(_CompositeMeasurementBaseTask):
+class GeometryMeasurementCompositePerimeterValueTask:
     """Compute the outer perimeter of a house-outline composite shape."""
 
     task_id = TASK_ID
     domain = "geometry"
-    public_scene_id = SCENE_ID
-    scene_id = SCENE_ID
-    default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
-    scene_kind = "geometry_rectilinear_composite_shape"
-    reasoning_kind = "composite_perimeter"
-    cases = _cases_for_query(_COMPOSITE_PERIMETER_CASES, "house_outline_perimeter")
-    defaults_map = get_scene_defaults("geometry", SCENE_ID)
-    defaults_are_scene_aligned = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        if self.task_id != TASK_ID:
-            raise ValueError(f"unexpected task id: {self.task_id}")
-        task_params = dict(params)
-        output = super().generate(
-            int(instance_seed),
+    def generate(self, instance_seed, *, params, max_attempts):
+        """Bind a house-outline case and construct the perimeter output."""
+
+        selected_query, query_probabilities, task_params = select_task_query_id(
+            instance_seed=int(instance_seed),
+            params=params,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
+            default_query_id=QUERY_ID,
+            task_id=TASK_ID,
+        )
+        problem = _resolve_problem(instance_seed=int(instance_seed), params=task_params)
+        return complete_composite_shape_task(
+            task_id=TASK_ID,
+            branch_name=str(selected_query),
+            branch_probabilities=query_probabilities,
+            problem=problem,
+            instance_seed=int(instance_seed),
             params=task_params,
             max_attempts=int(max_attempts),
+            render_namespace=f"{TASK_ID}.{selected_query}",
         )
-        return output
-
-
-__all__ = ["GeometryMeasurementCompositePerimeterValueTask", "SUPPORTED_QUERY_IDS", "TASK_ID"]

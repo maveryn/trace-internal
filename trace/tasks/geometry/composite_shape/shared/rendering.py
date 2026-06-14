@@ -1,0 +1,676 @@
+"""Rendering primitives for composite-shape geometry scenes."""
+
+from __future__ import annotations
+
+import math
+from typing import Any, Dict, Mapping, Sequence
+
+from PIL import ImageDraw
+
+from trace.core.seed import spawn_rng
+from trace.core.visual.background import make_background_canvas
+from trace.tasks.geometry.shared.measurement_rendering import (
+    bbox_from_points,
+    bbox_to_list,
+    draw_label,
+    fmt_measure,
+    pad_bbox,
+)
+from trace.tasks.geometry.shared.shape_style import (
+    extract_background_anchor_colors,
+    sample_geometry_shape_style,
+)
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_rendering import load_font
+
+from .defaults import BACKGROUND_DEFAULTS
+from .state import BBox, Color, CompositeRenderContext, CompositeShapeProblem, Point, RenderedCompositeShape
+
+
+def create_composite_render_context(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    render_namespace: str,
+) -> tuple[CompositeRenderContext, Dict[str, Any]]:
+    """Resolve canvas, background, palette, and readout font choices."""
+
+    rng = spawn_rng(int(instance_seed), f"{render_namespace}.render")
+    width = int(params.get("canvas_width", group_default(render_defaults, "canvas_width", 760)))
+    height = int(params.get("canvas_height", group_default(render_defaults, "canvas_height", 560)))
+    image, background_meta = make_background_canvas(
+        canvas_width=int(width),
+        canvas_height=int(height),
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=BACKGROUND_DEFAULTS,
+        fallback_color=(255, 255, 252),
+    )
+    background_color = tuple(int(value) for value in background_meta.get("color", [255, 255, 252])[:3])
+    shape_style = sample_geometry_shape_style(
+        rng,
+        params=params,
+        render_defaults=render_defaults,
+        anchor_colors=extract_background_anchor_colors(background_meta),
+    )
+    fill_palette: tuple[tuple[Color, Color, Color], ...] = (
+        ((109, 164, 255), (118, 221, 151), (31, 91, 168)),
+        ((246, 156, 86), (237, 101, 131), (154, 74, 28)),
+        ((146, 116, 218), (96, 204, 210), (96, 69, 160)),
+        ((229, 108, 164), (206, 235, 85), (144, 72, 120)),
+    )
+    palette_index = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{render_namespace}.fill",
+        )
+    ) % len(fill_palette)
+    fill_color, secondary_fill_color, accent_color = fill_palette[palette_index]
+    font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
+    small_font_size = int(params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18)))
+    line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 4)))
+    label_stroke_width = int(params.get("label_stroke_width", group_default(render_defaults, "label_stroke_width", 1)))
+    ctx = CompositeRenderContext(
+        rng=rng,
+        image=image,
+        draw=ImageDraw.Draw(image),
+        width=int(width),
+        height=int(height),
+        background_color=(int(background_color[0]), int(background_color[1]), int(background_color[2])),
+        line_color=shape_style.line_color,
+        label_color=shape_style.label_color,
+        label_stroke_color=shape_style.label_stroke_color,
+        accent_color=accent_color,
+        fill_color=fill_color,
+        secondary_fill_color=secondary_fill_color,
+        line_width=max(2, int(line_width)),
+        label_stroke_width=max(0, int(label_stroke_width)),
+        font=load_font(max(12, int(font_size)), bold=True),
+        small_font=load_font(max(10, int(small_font_size)), bold=True),
+    )
+    render_meta = {
+        "background_style": dict(background_meta),
+        "shape_style": shape_style.to_trace_dict(),
+        "line_width": int(ctx.line_width),
+        "label_font_size": int(font_size),
+        "small_label_font_size": int(small_font_size),
+        "label_stroke_width": int(ctx.label_stroke_width),
+        "fill_color": list(fill_color),
+        "secondary_fill_color": list(secondary_fill_color),
+        "accent_color": list(accent_color),
+    }
+    return ctx, render_meta
+
+
+def _draw_text(
+    ctx: CompositeRenderContext,
+    text: str,
+    center: Point,
+    *,
+    font: Any | None = None,
+    fill: Color | None = None,
+    stroke_width: int | None = None,
+) -> BBox:
+    active_font = font if font is not None else ctx.font
+    active_fill = fill if fill is not None else ctx.label_color
+    active_stroke_width = int(ctx.label_stroke_width if stroke_width is None else stroke_width)
+    x, y = float(center[0]), float(center[1])
+    draw_text_traced(
+        ctx.draw,
+        (x, y),
+        str(text),
+        anchor="mm",
+        font=active_font,
+        fill=active_fill,
+        stroke_width=max(0, int(active_stroke_width)),
+        stroke_fill=ctx.label_stroke_color,
+        role="readout",
+        required=False,
+    )
+    bbox = ctx.draw.textbbox(
+        (x, y),
+        str(text),
+        anchor="mm",
+        font=active_font,
+        stroke_width=max(0, int(active_stroke_width)),
+    )
+    return pad_bbox(bbox, 2.0, width=ctx.width, height=ctx.height)
+
+
+def _draw_segment_label(ctx: CompositeRenderContext, text: str, a: Point, b: Point, *, offset: float = 24.0) -> BBox:
+    dx = float(b[0]) - float(a[0])
+    dy = float(b[1]) - float(a[1])
+    length = max(1.0, math.hypot(dx, dy))
+    nx = -dy / length
+    ny = dx / length
+    center = (
+        (float(a[0]) + float(b[0])) / 2.0 + nx * float(offset),
+        (float(a[1]) + float(b[1])) / 2.0 + ny * float(offset),
+    )
+    return _draw_text(ctx, str(text), center)
+
+
+def _draw_polygon(
+    ctx: CompositeRenderContext,
+    points: Sequence[Point],
+    *,
+    fill: Color | None = None,
+    outline: Color | None = None,
+    width: int | None = None,
+) -> BBox:
+    if fill is not None:
+        ctx.draw.polygon([(float(x), float(y)) for x, y in points], fill=fill)
+    line_fill = outline if outline is not None else ctx.line_color
+    line_width = int(width if width is not None else ctx.line_width)
+    closed = list(points) + [points[0]]
+    ctx.draw.line([(float(x), float(y)) for x, y in closed], fill=line_fill, width=line_width, joint="curve")
+    return bbox_from_points(points, width=ctx.width, height=ctx.height, pad=line_width + 2)
+
+
+def _draw_dimension(
+    ctx: CompositeRenderContext,
+    start: Point,
+    end: Point,
+    label: str,
+    *,
+    label_offset: Point = (0.0, 0.0),
+) -> BBox:
+    ctx.draw.line([start, end], fill=ctx.label_color, width=max(2, ctx.line_width - 1))
+    tick = 7.0
+    dx = float(end[0]) - float(start[0])
+    dy = float(end[1]) - float(start[1])
+    length = math.hypot(dx, dy)
+    if length > 1e-9:
+        nx = -dy / length
+        ny = dx / length
+        for point in (start, end):
+            ctx.draw.line(
+                [
+                    (float(point[0]) - tick * nx, float(point[1]) - tick * ny),
+                    (float(point[0]) + tick * nx, float(point[1]) + tick * ny),
+                ],
+                fill=ctx.label_color,
+                width=max(2, ctx.line_width - 1),
+            )
+    center = (
+        (float(start[0]) + float(end[0])) / 2.0 + float(label_offset[0]),
+        (float(start[1]) + float(end[1])) / 2.0 + float(label_offset[1]),
+    )
+    return draw_label(ctx, label, center, small=True)
+
+
+def _render_rect_cut(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -> RenderedCompositeShape:
+    """Draw a rectangle with a visible triangular cutout for area subtraction."""
+
+    values = dict(problem.dimensions)
+    width_value = int(values["width"])
+    height_value = int(values["height"])
+    cut_base = int(values["cut_base"])
+    cut_height = int(values["cut_height"])
+    left, top = 150.0, 135.0
+    w_px = 390.0
+    h_px = 270.0
+    rect = [(left, top), (left + w_px, top), (left + w_px, top + h_px), (left, top + h_px)]
+    tri = [
+        (left + w_px, top + h_px),
+        (left + w_px - (w_px * cut_base / width_value), top + h_px),
+        (left + w_px, top + h_px - (h_px * cut_height / height_value)),
+    ]
+    _draw_polygon(ctx, rect, fill=ctx.fill_color)
+    ctx.draw.polygon([(float(x), float(y)) for x, y in tri], fill=ctx.background_color)
+    _draw_polygon(ctx, rect)
+    _draw_polygon(ctx, tri, outline=ctx.accent_color, width=max(2, ctx.line_width - 1))
+    region_bbox = bbox_from_points(rect, width=ctx.width, height=ctx.height, pad=2.0)
+    cutout_bbox = bbox_from_points(tri, width=ctx.width, height=ctx.height, pad=4.0)
+    label_bboxes = {
+        "outer_width": _draw_segment_label(ctx, str(width_value), rect[3], rect[2], offset=26.0),
+        "outer_height": _draw_segment_label(ctx, str(height_value), rect[0], rect[3], offset=-26.0),
+        "cutout_base": _draw_segment_label(ctx, str(cut_base), tri[1], tri[0], offset=24.0),
+        "cutout_height": _draw_segment_label(ctx, str(cut_height), tri[0], tri[2], offset=25.0),
+    }
+    _draw_text(ctx, "shaded", (left + 175.0, top + 130.0), font=ctx.small_font, fill=ctx.accent_color, stroke_width=1)
+    return RenderedCompositeShape(
+        image=ctx.image,
+        answer_value=problem.answer_value,
+        annotation_roles=("outer_region", "removed_triangle"),
+        annotation_keyed_bboxes={"outer_region": region_bbox, "removed_triangle": cutout_bbox},
+        scene_entities=({"type": "rectangle_with_triangular_cutout", "outer": rect, "cutout": tri},),
+        render_map={
+            "outer_region_bbox": bbox_to_list(region_bbox),
+            "cutout_region_bbox": bbox_to_list(cutout_bbox),
+            "measurement_label_bboxes": {key: bbox_to_list(bbox) for key, bbox in label_bboxes.items()},
+            "coord_space": "pixel",
+        },
+        witness={
+            "outer_width": width_value,
+            "outer_height": height_value,
+            "cutout_base": cut_base,
+            "cutout_height": cut_height,
+            "answer_area": int(problem.answer_value),
+        },
+    )
+
+
+def _render_l_profile(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -> RenderedCompositeShape:
+    """Draw an L-shaped region with a missing-corner witness bbox."""
+
+    values = dict(problem.dimensions)
+    width_value = int(values["width"])
+    height_value = int(values["height"])
+    cut_width = int(values["cut_width"])
+    cut_height = int(values["cut_height"])
+    left, top = 145.0, 125.0
+    w_px, h_px = 420.0, 300.0
+    cut_w_px = w_px * cut_width / width_value
+    cut_h_px = h_px * cut_height / height_value
+    pts = [
+        (left, top),
+        (left + w_px, top),
+        (left + w_px, top + h_px - cut_h_px),
+        (left + w_px - cut_w_px, top + h_px - cut_h_px),
+        (left + w_px - cut_w_px, top + h_px),
+        (left, top + h_px),
+    ]
+    _draw_polygon(ctx, pts, fill=ctx.fill_color)
+    _draw_polygon(ctx, pts)
+    cutout_rect = [pts[3], pts[2], (pts[2][0], pts[4][1]), pts[4]]
+    region_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=2.0)
+    cutout_bbox = bbox_from_points(cutout_rect, width=ctx.width, height=ctx.height, pad=4.0)
+    label_bboxes = {
+        "outer_width": _draw_segment_label(ctx, str(width_value), pts[5], pts[4], offset=26.0),
+        "outer_height": _draw_segment_label(ctx, str(height_value), pts[0], pts[5], offset=-26.0),
+        "missing_width": _draw_segment_label(ctx, str(cut_width), pts[3], pts[2], offset=-24.0),
+        "missing_height": _draw_segment_label(ctx, str(cut_height), pts[3], pts[4], offset=25.0),
+    }
+    _draw_text(ctx, "shaded", (left + 170.0, top + 130.0), font=ctx.small_font, fill=ctx.accent_color, stroke_width=1)
+    return RenderedCompositeShape(
+        image=ctx.image,
+        answer_value=problem.answer_value,
+        annotation_roles=("outer_region", "missing_corner"),
+        annotation_keyed_bboxes={"outer_region": region_bbox, "missing_corner": cutout_bbox},
+        scene_entities=({"type": "rectilinear_corner_cutout", "outline": pts},),
+        render_map={
+            "outer_region_bbox": bbox_to_list(region_bbox),
+            "missing_corner_bbox": bbox_to_list(cutout_bbox),
+            "measurement_label_bboxes": {key: bbox_to_list(bbox) for key, bbox in label_bboxes.items()},
+            "coord_space": "pixel",
+        },
+        witness={
+            "outer_width": width_value,
+            "outer_height": height_value,
+            "missing_width": cut_width,
+            "missing_height": cut_height,
+            "answer_area": int(problem.answer_value),
+        },
+    )
+
+
+def _render_house(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -> RenderedCompositeShape:
+    """Draw a pentagonal house outline for boundary-perimeter reasoning."""
+
+    values = dict(problem.dimensions)
+    width_value = int(values["width"])
+    wall_height = int(values["wall_height"])
+    roof_side = int(values["roof_side"])
+    scale = 26.0
+    w_px = float(width_value) * scale
+    half_w = w_px / 2.0
+    roof_h = math.sqrt(max(1.0, (float(roof_side) * scale) ** 2 - (half_w**2)))
+    left, base_y = 165.0, 415.0
+    a = (left, base_y)
+    b = (left + w_px, base_y)
+    c = (left + w_px, base_y - (float(wall_height) * scale))
+    d = (left + w_px / 2.0, c[1] - roof_h)
+    e = (left, c[1])
+    pts = [a, b, c, d, e]
+    _draw_polygon(ctx, pts, fill=ctx.fill_color)
+    _draw_polygon(ctx, pts)
+    target_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=4.0)
+    label_bboxes = {
+        "base_length_AB": _draw_segment_label(ctx, str(width_value), a, b, offset=25.0),
+        "wall_height_AE": _draw_segment_label(ctx, str(wall_height), a, e, offset=-25.0),
+        "roof_side_CD": _draw_segment_label(ctx, str(roof_side), d, c, offset=28.0),
+    }
+    for label, point in {"A": a, "B": b, "C": c, "D": d, "E": e}.items():
+        _draw_text(ctx, label, (point[0], point[1] + (22.0 if label in {"A", "B"} else -22.0)), font=ctx.small_font)
+    return RenderedCompositeShape(
+        image=ctx.image,
+        answer_value=problem.answer_value,
+        annotation_roles=("target_boundary",),
+        annotation_keyed_bboxes={"target_boundary": target_bbox},
+        scene_entities=({"type": "pentagonal_house_outline", "points": {"A": a, "B": b, "C": c, "D": d, "E": e}},),
+        render_map={
+            "target_boundary_bbox": bbox_to_list(target_bbox),
+            "measurement_label_bboxes": {key: bbox_to_list(bbox) for key, bbox in label_bboxes.items()},
+            "coord_space": "pixel",
+        },
+        witness={
+            "AB": width_value,
+            "AE": wall_height,
+            "CD_equals_DE": roof_side,
+            "BC_equals_AE": True,
+            "answer_perimeter": int(problem.answer_value),
+        },
+    )
+
+
+def _render_tabbed(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -> RenderedCompositeShape:
+    """Draw a rectilinear tabbed outline for perimeter reasoning."""
+
+    values = dict(problem.dimensions)
+    width_value = int(values["width"])
+    height_value = int(values["height"])
+    tab_height = int(values["tab_height"])
+    scale = 25.0
+    w_px, h_px, tab_h_px = float(width_value) * scale, float(height_value) * scale, float(tab_height) * scale
+    tab_w_px = w_px * 0.42
+    left, bottom = 145.0, 420.0
+    x0 = left + (w_px - tab_w_px) / 2.0
+    x1 = x0 + tab_w_px
+    pts = [
+        (left, bottom),
+        (left + w_px, bottom),
+        (left + w_px, bottom - h_px),
+        (x1, bottom - h_px),
+        (x1, bottom - h_px - tab_h_px),
+        (x0, bottom - h_px - tab_h_px),
+        (x0, bottom - h_px),
+        (left, bottom - h_px),
+    ]
+    _draw_polygon(ctx, pts, fill=ctx.fill_color)
+    _draw_polygon(ctx, pts)
+    target_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=4.0)
+    label_bboxes = {
+        "overall_width": _draw_segment_label(ctx, str(width_value), pts[0], pts[1], offset=25.0),
+        "main_height": _draw_segment_label(ctx, str(height_value), pts[0], pts[7], offset=-25.0),
+        "tab_height": _draw_segment_label(ctx, str(tab_height), pts[3], pts[4], offset=26.0),
+    }
+    return RenderedCompositeShape(
+        image=ctx.image,
+        answer_value=problem.answer_value,
+        annotation_roles=("target_boundary",),
+        annotation_keyed_bboxes={"target_boundary": target_bbox},
+        scene_entities=({"type": "tabbed_rectilinear_polygon", "outline": pts},),
+        render_map={
+            "target_boundary_bbox": bbox_to_list(target_bbox),
+            "measurement_label_bboxes": {key: bbox_to_list(bbox) for key, bbox in label_bboxes.items()},
+            "coord_space": "pixel",
+        },
+        witness={
+            "overall_width": width_value,
+            "main_height": height_value,
+            "tab_height": tab_height,
+            "answer_perimeter": int(problem.answer_value),
+        },
+    )
+
+
+def _boundary_width(ctx: CompositeRenderContext) -> int:
+    return max(int(ctx.line_width) + 2, 6)
+
+
+def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProblem, *, cutout: bool) -> RenderedCompositeShape:
+    """Draw a rectangle combined with one semicircular add/remove component."""
+
+    values = dict(problem.dimensions)
+    width_units = int(values["width_units"])
+    height_units = int(values["height_units"])
+    radius_units = int(values["radius_units"])
+    scale = 22.0
+    rect_w = float(width_units) * scale
+    rect_h = float(height_units) * scale
+    radius_px = float(radius_units) * scale
+    left = 130.0
+    top = 150.0
+    right = left + rect_w
+    bottom = top + rect_h
+    mid_y = (top + bottom) / 2.0
+    arc_box = (right - radius_px, mid_y - radius_px, right + radius_px, mid_y + radius_px)
+    target_right = right if cutout else right + radius_px
+    target_bbox = pad_bbox((left, top, target_right, bottom), 8.0, width=ctx.width, height=ctx.height)
+    ctx.draw.rectangle((left, top, right, bottom), fill=ctx.fill_color)
+    if cutout:
+        ctx.draw.pieslice(arc_box, start=90, end=270, fill=ctx.background_color)
+        ctx.draw.line([(left, top), (right, top)], fill=ctx.line_color, width=ctx.line_width)
+        ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
+        ctx.draw.line([(left, top), (left, bottom)], fill=ctx.line_color, width=ctx.line_width)
+        ctx.draw.line([(right, top), (right, mid_y - radius_px)], fill=ctx.line_color, width=ctx.line_width)
+        ctx.draw.line([(right, mid_y + radius_px), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
+        ctx.draw.arc(arc_box, start=90, end=270, fill=ctx.line_color, width=ctx.line_width)
+    else:
+        ctx.draw.rectangle((left, top, right, bottom), outline=ctx.line_color, width=ctx.line_width)
+        ctx.draw.pieslice(arc_box, start=-90, end=90, fill=ctx.fill_color, outline=ctx.line_color, width=ctx.line_width)
+        ctx.draw.line([(right, top + 2), (right, bottom - 2)], fill=ctx.fill_color, width=ctx.line_width + 2)
+    if problem.metric_kind == "perimeter":
+        highlight_width = _boundary_width(ctx)
+        ctx.draw.line([(left, top), (right, top)], fill=ctx.accent_color, width=highlight_width)
+        ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
+        ctx.draw.line([(left, top), (left, bottom)], fill=ctx.accent_color, width=highlight_width)
+        if cutout:
+            ctx.draw.line([(right, top), (right, mid_y - radius_px)], fill=ctx.accent_color, width=highlight_width)
+            ctx.draw.line([(right, mid_y + radius_px), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
+            ctx.draw.arc(arc_box, start=90, end=270, fill=ctx.accent_color, width=highlight_width)
+        else:
+            ctx.draw.arc(arc_box, start=-90, end=90, fill=ctx.accent_color, width=highlight_width)
+    width_dim_y = min(bottom + 34.0, float(ctx.height) - 46.0)
+    width_label_offset_y = -22.0 if width_dim_y >= float(ctx.height) - 54.0 else 20.0
+    width_label = "?" if problem.metric_kind == "missing_width" else fmt_measure(width_units)
+    width_bbox = _draw_dimension(ctx, (left, width_dim_y), (right, width_dim_y), width_label, label_offset=(0.0, width_label_offset_y))
+    height_bbox = _draw_dimension(ctx, (left - 34.0, top), (left - 34.0, bottom), fmt_measure(height_units), label_offset=(-26.0, 0.0))
+    radius_bbox = _draw_dimension(ctx, (right, mid_y), (right, mid_y - radius_px), f"r={fmt_measure(radius_units)}", label_offset=(44.0 if cutout else 54.0, 0.0))
+    support_roles = ["width_label", "height_label", "radius_label"]
+    support_bboxes = [width_bbox, height_bbox, radius_bbox]
+    curved_component_bbox = pad_bbox(
+        (right - radius_px, mid_y - radius_px, right, mid_y + radius_px)
+        if cutout
+        else (right, mid_y - radius_px, right + radius_px, mid_y + radius_px),
+        6.0,
+        width=ctx.width,
+        height=ctx.height,
+    )
+    annotation_roles = ("target_shape", "curved_component")
+    annotation_keyed_bboxes: Mapping[str, BBox] | None = {
+        "target_shape": target_bbox,
+        "curved_component": curved_component_bbox,
+    }
+    annotation_keyed_points: Mapping[str, Point] | None = None
+    if problem.metric_kind == "perimeter":
+        annotation_roles = ("target_boundary", "curved_boundary")
+        annotation_keyed_bboxes = {
+            "target_boundary": target_bbox,
+            "curved_boundary": curved_component_bbox,
+        }
+    elif problem.metric_kind == "missing_width":
+        total_bbox = draw_label(ctx, f"Area={float(values['total_area']):.1f}", ((left + target_right) / 2.0, top - 42.0), small=True)
+        support_bboxes.append(total_bbox)
+        support_roles.append("total_area_label")
+        annotation_roles = ("unknown_side_start", "unknown_side_end")
+        annotation_keyed_bboxes = None
+        annotation_keyed_points = {
+            "unknown_side_start": (left, width_dim_y),
+            "unknown_side_end": (right, width_dim_y),
+        }
+    return RenderedCompositeShape(
+        image=ctx.image,
+        answer_value=problem.answer_value,
+        annotation_roles=tuple(annotation_roles),
+        annotation_keyed_bboxes=annotation_keyed_bboxes,
+        annotation_keyed_points=annotation_keyed_points,
+        scene_entities=(
+            {
+                "entity_id": "target_shape",
+                "entity_type": "curvilinear_composite",
+                "bbox": bbox_to_list(target_bbox),
+                "components": [
+                    {"kind": "rectangle", "width": width_units, "height": height_units},
+                    {"kind": "semicircle", "radius": radius_units, "operation": "subtract" if cutout else "add"},
+                ],
+            },
+        ),
+        render_map={
+            "target_bbox": bbox_to_list(target_bbox),
+            "curved_component_bbox": bbox_to_list(curved_component_bbox),
+            "support_bboxes": [bbox_to_list(bbox) for bbox in support_bboxes],
+            "support_roles": list(support_roles),
+            "coord_space": "pixel",
+        },
+        witness={
+            "formula_family": problem.formula_family,
+            "operation": "subtract" if cutout else "add",
+            **dict(values),
+        },
+    )
+
+
+def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -> RenderedCompositeShape:
+    """Draw a rectangle whose top-right corner has a quarter-sector cutout."""
+
+    values = dict(problem.dimensions)
+    width_units = int(values["width_units"])
+    height_units = int(values["height_units"])
+    radius_units = int(values["radius_units"])
+    scale = 23.0
+    rect_w = float(width_units) * scale
+    rect_h = float(height_units) * scale
+    radius_px = float(radius_units) * scale
+    left = 130.0
+    top = 120.0
+    right = left + rect_w
+    bottom = top + rect_h
+    center = (right, top)
+    arc_box = (right - radius_px, top - radius_px, right + radius_px, top + radius_px)
+    target_bbox = pad_bbox((left, top, right, bottom), 8.0, width=ctx.width, height=ctx.height)
+    ctx.draw.rectangle((left, top, right, bottom), fill=ctx.secondary_fill_color)
+    ctx.draw.pieslice(arc_box, start=90, end=180, fill=ctx.background_color)
+    ctx.draw.line([(left, top), (right, top)], fill=ctx.line_color, width=ctx.line_width)
+    ctx.draw.line([(left, top), (left, bottom)], fill=ctx.line_color, width=ctx.line_width)
+    ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
+    ctx.draw.line([(right, top + radius_px), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
+    ctx.draw.line([(right - radius_px, top), (left, top)], fill=ctx.line_color, width=ctx.line_width)
+    ctx.draw.arc(arc_box, start=90, end=180, fill=ctx.line_color, width=ctx.line_width)
+    if problem.metric_kind == "perimeter":
+        highlight_width = _boundary_width(ctx)
+        ctx.draw.line([(left, top), (right - radius_px, top)], fill=ctx.accent_color, width=highlight_width)
+        ctx.draw.line([(left, top), (left, bottom)], fill=ctx.accent_color, width=highlight_width)
+        ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
+        ctx.draw.line([(right, top + radius_px), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
+        ctx.draw.arc(arc_box, start=90, end=180, fill=ctx.accent_color, width=highlight_width)
+    width_dim_y = min(bottom + 34.0, float(ctx.height) - 46.0)
+    width_bbox = _draw_dimension(ctx, (left, width_dim_y), (right, width_dim_y), fmt_measure(width_units), label_offset=(0.0, 20.0))
+    height_bbox = _draw_dimension(ctx, (left - 34.0, top), (left - 34.0, bottom), fmt_measure(height_units), label_offset=(-26.0, 0.0))
+    radius_bbox = _draw_dimension(ctx, center, (right - radius_px, top), f"r={fmt_measure(radius_units)}", label_offset=(0.0, -26.0))
+    curved_component_bbox = pad_bbox((right - radius_px, top, right, top + radius_px), 6.0, width=ctx.width, height=ctx.height)
+    roles = ("target_shape", "curved_cutout")
+    keyed = {"target_shape": target_bbox, "curved_cutout": curved_component_bbox}
+    if problem.metric_kind == "perimeter":
+        roles = ("target_boundary", "curved_boundary")
+        keyed = {"target_boundary": target_bbox, "curved_boundary": curved_component_bbox}
+    return RenderedCompositeShape(
+        image=ctx.image,
+        answer_value=problem.answer_value,
+        annotation_roles=roles,
+        annotation_keyed_bboxes=keyed,
+        scene_entities=(
+            {
+                "entity_id": "target_shape",
+                "entity_type": "curvilinear_composite",
+                "bbox": bbox_to_list(target_bbox),
+                "components": [
+                    {"kind": "rectangle", "width": width_units, "height": height_units},
+                    {"kind": "sector", "radius": radius_units, "theta_degrees": 90, "operation": "subtract"},
+                ],
+            },
+        ),
+        render_map={
+            "target_bbox": bbox_to_list(target_bbox),
+            "curved_component_bbox": bbox_to_list(curved_component_bbox),
+            "support_bboxes": [bbox_to_list(width_bbox), bbox_to_list(height_bbox), bbox_to_list(radius_bbox)],
+            "support_roles": ["width_label", "height_label", "radius_label"],
+            "coord_space": "pixel",
+        },
+        witness={"formula_family": problem.formula_family, **dict(values)},
+    )
+
+
+def _render_sector(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -> RenderedCompositeShape:
+    """Draw a circular sector with a missing central angle value."""
+
+    values = dict(problem.dimensions)
+    theta = int(values["theta_degrees"])
+    radius_units = int(values["radius_units"])
+    radius_px = 180.0
+    center = (310.0, 310.0)
+    start_deg = -135.0
+    end_deg = start_deg + float(theta)
+    arc_box = (center[0] - radius_px, center[1] - radius_px, center[0] + radius_px, center[1] + radius_px)
+    ctx.draw.pieslice(arc_box, start=start_deg, end=end_deg, fill=ctx.fill_color, outline=ctx.line_color, width=ctx.line_width)
+    start_rad = math.radians(start_deg)
+    end_rad = math.radians(end_deg)
+    p0 = (center[0] + radius_px * math.cos(start_rad), center[1] + radius_px * math.sin(start_rad))
+    p1 = (center[0] + radius_px * math.cos(end_rad), center[1] + radius_px * math.sin(end_rad))
+    ctx.draw.line([center, p0], fill=ctx.line_color, width=ctx.line_width)
+    ctx.draw.line([center, p1], fill=ctx.line_color, width=ctx.line_width)
+    ctx.draw.ellipse((center[0] - 4, center[1] - 4, center[0] + 4, center[1] + 4), fill=ctx.line_color)
+    mid_rad = math.radians((start_deg + end_deg) / 2.0)
+    target_bbox = draw_label(ctx, "?", (center[0] + 54.0 * math.cos(mid_rad), center[1] + 54.0 * math.sin(mid_rad)), small=False)
+    radius_bbox = _draw_dimension(ctx, center, p0, f"r={fmt_measure(radius_units)}", label_offset=(-18.0, 22.0))
+    if problem.metric_kind == "sector_from_arc":
+        measure_text = f"arc={float(values['arc_length']):.1f}"
+        measure_role = "arc_length_label"
+    else:
+        measure_text = f"Area={float(values['sector_area']):.1f}"
+        measure_role = "sector_area_label"
+    measure_bbox = draw_label(ctx, measure_text, (560.0, 210.0), small=True)
+    sector_bbox = pad_bbox(arc_box, 8.0, width=ctx.width, height=ctx.height)
+    return RenderedCompositeShape(
+        image=ctx.image,
+        answer_value=problem.answer_value,
+        annotation_roles=("center", "ray_start", "ray_end"),
+        annotation_keyed_points={"center": center, "ray_start": p0, "ray_end": p1},
+        scene_entities=(
+            {
+                "entity_id": "target_sector",
+                "entity_type": "sector",
+                "bbox": bbox_to_list(sector_bbox),
+                "radius": radius_units,
+                "theta_degrees": theta,
+                "arc_length": float(values["arc_length"]),
+                "sector_area": float(values["sector_area"]),
+            },
+        ),
+        render_map={
+            "target_bbox": bbox_to_list(target_bbox),
+            "sector_bbox": bbox_to_list(sector_bbox),
+            "support_bboxes": [bbox_to_list(radius_bbox), bbox_to_list(measure_bbox)],
+            "support_roles": ["radius_label", measure_role],
+            "coord_space": "pixel",
+        },
+        witness={"formula_family": problem.formula_family, **dict(values)},
+    )
+
+
+def render_composite_shape(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -> RenderedCompositeShape:
+    """Dispatch from semantic shape family to the corresponding renderer primitive."""
+
+    family = str(problem.shape_family)
+    if family == "rect_cut":
+        return _render_rect_cut(ctx, problem)
+    if family == "l_profile":
+        return _render_l_profile(ctx, problem)
+    if family == "house":
+        return _render_house(ctx, problem)
+    if family == "tabbed":
+        return _render_tabbed(ctx, problem)
+    if family == "semi_cap":
+        return _render_semicircle(ctx, problem, cutout=False)
+    if family == "semi_cut":
+        return _render_semicircle(ctx, problem, cutout=True)
+    if family == "quarter_cut":
+        return _render_quarter_sector(ctx, problem)
+    if family == "sector":
+        return _render_sector(ctx, problem)
+    raise ValueError(f"unsupported composite shape family: {family}")

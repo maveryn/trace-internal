@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `composite_shape`
-5. Query id: `house_outline_perimeter`
+5. Query id: `single`
 6. Answer schema: `integer_value`
 7. Annotation schema: `keyed_bbox_map`
 

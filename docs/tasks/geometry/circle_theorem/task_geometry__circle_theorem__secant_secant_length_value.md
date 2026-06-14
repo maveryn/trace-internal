@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `circle_theorem`
-5. Query id: `single`, `secant_secant_variable_segment_length`
+5. Query id: `secant_secant_length`, `secant_secant_variable_segment_length`
 6. Answer schema: `integer_value`
 7. Annotation schema: `keyed_point_map`
 
@@ -16,6 +16,8 @@
 
 ## Annotation
 Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+
+Both query branches use the same keyed point witnesses: `P`, `A`, `B`, `C`, and `D`.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

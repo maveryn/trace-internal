@@ -6,7 +6,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
 
-from .layout import edge_neighbors, grid_for_total, layout_cells, target_ids_from_indices
+from .layout import edge_neighbors, grid_for_total, layout_cells, resolve_repeated_layout_style, target_ids_from_indices
 from .rendering import layout_surface_element_grid
 from .sampling import resolve_color, resolve_int_support, sample_indices
 from .state import (
@@ -85,7 +85,11 @@ def build_repeated_surface_data(
         upper_bound=32,
     )
     rows, cols = layout_surface_element_grid(int(count))
-    layout_style = "brick_grid" if str(scene_variant) == "brick_wall" else "uniform_grid"
+    layout_style, layout_probabilities = resolve_repeated_layout_style(
+        scene_variant=str(scene_variant),
+        rng=spawn_rng(int(instance_seed), f"{namespace}.layout_style"),
+        params=params,
+    )
     rng = spawn_rng(int(instance_seed), f"{namespace}.cells")
     indices = list(range(int(count)))
     cells = layout_cells(
@@ -113,8 +117,11 @@ def build_repeated_surface_data(
             "target_element_plural": str(ELEMENT_PLURAL[str(element_type)]),
             "target_count": int(count),
             "element_count": int(count),
+            "layout_style": str(layout_style),
+            "layout_style_probabilities": dict(layout_probabilities),
             "unique_integer_answer": True,
         },
+        extra={"layout_style_probabilities": dict(layout_probabilities)},
     )
     return dataset, dict(probabilities)
 

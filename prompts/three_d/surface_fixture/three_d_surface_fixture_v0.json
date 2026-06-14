@@ -88,11 +88,11 @@
   },
   "query_templates": {
     "element_type_count": [
-      "How many {target_element_plural} are in the fixture?",
-      "Count the {target_element_plural} on the fixture. How many are there?",
-      "What is the total number of visible {target_element_plural}?",
-      "How many {target_element_plural} are present on the surface?",
-      "How many of the repeated surface elements are {target_element_plural}?"
+      "How many {target_element_plural} are visible?",
+      "Count the visible {target_element_plural}. How many are there?",
+      "What is the total number of {target_element_plural}?",
+      "How many {target_element_plural} are on the fixture?",
+      "How many {target_element_plural} can be seen?"
     ],
     "element_color_count": [
       "How many {target_color_name} {target_element_plural} are on the fixture?",

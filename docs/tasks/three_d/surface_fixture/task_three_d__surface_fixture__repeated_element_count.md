@@ -12,12 +12,11 @@
 - `count(filter(surface_fixture_elements, present=true, element_type=target_element_type)); scene=surface_fixture; scope=repeated_element_count`
 
 ## Contract
-The image shows one projected fixture surface with a repeated element family:
+The image shows one projected fixture surface with one visible element family:
 tiles, holes, slots, compartments, vents, windows, doors, drawer pulls, bricks,
 pavers, lockers, mailboxes, drive bays, buttons, solar panels, screws, hex
 nuts, washers, sockets, hooks, indicator lights, brackets, U-bolts, or pipes.
-The prompt asks for the number of visible repeated surface elements of that
-family.
+The prompt asks directly for the number of visible elements of that family.
 
 The scene variant determines the counted element type:
 
@@ -50,16 +49,21 @@ The answer is the integer count of finalized elements whose `element_type`
 matches the sampled `target_element_type`. Pixels are render output, not
 verifier source of truth.
 
+The placement style is sampled by scene variant and recorded as `layout_style`.
+Grid-like fixtures can use `uniform_grid`, `variable_grid`, or `brick_grid`.
+Mounted hardware and panel controls can use `jittered_grid`, `loose_rows`, or
+`panel_scatter` so the task is not always a regular rectangular array.
+
 ## Annotation Contract
 Annotation is a `bbox_set` containing one whole-element bounding box for each
-counted repeated surface element. The fixture panel, screw heads, and
-background context are not annotation.
+counted surface element. The fixture panel, screw heads, and background context
+are not annotation.
 
 ## Prompt And Trace
 The prompt bundle is `three_d_surface_fixture_v1` under `prompts/three_d/surface_fixture/`.
 The trace records scene variant, target element type, target element ids,
-surface projection metadata, projected element boxes, and the solver count
-predicate.
+surface projection metadata, layout style, projected element boxes, and the
+solver count predicate.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config

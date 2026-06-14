@@ -23,11 +23,11 @@
     },
     "query": {
       "element_type_count": [
-        "How many {target_element_plural} are in the fixture?",
-        "Count the {target_element_plural} on the fixture. How many are there?",
-        "What is the total number of visible {target_element_plural}?",
-        "How many {target_element_plural} are present on the surface?",
-        "How many repeated surface elements are {target_element_plural}?"
+        "How many {target_element_plural} are visible?",
+        "Count the visible {target_element_plural}. How many are there?",
+        "What is the total number of {target_element_plural}?",
+        "How many {target_element_plural} are on the {fixture_display_name}?",
+        "How many {target_element_plural} can be seen?"
       ],
       "element_color_count": [
         "How many {target_color_label} {target_element_plural} are on the fixture?",
@@ -132,7 +132,7 @@
   },
   "required_slots_by_key": {
     "scene:surface_fixture": ["object_description"],
-    "query:element_type_count": ["target_element_plural", "target_element_name"],
+    "query:element_type_count": ["target_element_plural", "target_element_name", "fixture_display_name"],
     "query:element_color_count": ["target_color_label", "target_element_plural"],
     "query:element_state_count": ["target_state_label", "target_element_plural"],
     "query:scoped_element_color_count": ["target_color_label", "target_element_plural", "scope_phrase"],

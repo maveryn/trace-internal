@@ -2,10 +2,138 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from .state import SEMANTIC_COLOR_RGB
 from .rendering import layout_surface_element_grid
+
+
+VALID_LAYOUT_STYLES: Tuple[str, ...] = (
+    "uniform_grid",
+    "variable_grid",
+    "brick_grid",
+    "jittered_grid",
+    "loose_rows",
+    "panel_scatter",
+)
+
+REPEATED_LAYOUT_STYLE_WEIGHTS_BY_SCENE_VARIANT: Mapping[str, Mapping[str, float]] = {
+    "wall_tile_panel": {"uniform_grid": 0.70, "variable_grid": 0.30},
+    "perforated_panel": {"uniform_grid": 0.45, "jittered_grid": 0.35, "panel_scatter": 0.20},
+    "slot_board": {"uniform_grid": 0.35, "loose_rows": 0.65},
+    "compartment_tray": {"uniform_grid": 0.60, "variable_grid": 0.40},
+    "vent_panel": {"uniform_grid": 0.35, "loose_rows": 0.65},
+    "window_grid": {"uniform_grid": 0.85, "variable_grid": 0.15},
+    "door_bank": {"uniform_grid": 0.75, "variable_grid": 0.25},
+    "drawer_pull_panel": {"jittered_grid": 0.45, "loose_rows": 0.55},
+    "brick_wall": {"brick_grid": 1.0},
+    "paver_floor": {"brick_grid": 0.55, "variable_grid": 0.45},
+    "locker_bank": {"uniform_grid": 0.80, "variable_grid": 0.20},
+    "mailbox_bank": {"uniform_grid": 0.70, "variable_grid": 0.30},
+    "server_rack": {"uniform_grid": 0.85, "variable_grid": 0.15},
+    "control_panel": {"loose_rows": 0.35, "panel_scatter": 0.65},
+    "solar_panel_array": {"uniform_grid": 0.85, "variable_grid": 0.15},
+    "screw_plate": {"panel_scatter": 0.80, "jittered_grid": 0.20},
+    "hex_nut_plate": {"panel_scatter": 0.75, "jittered_grid": 0.25},
+    "washer_plate": {"panel_scatter": 0.75, "jittered_grid": 0.25},
+    "socket_bank": {"jittered_grid": 0.45, "loose_rows": 0.55},
+    "hook_board": {"jittered_grid": 0.35, "loose_rows": 0.65},
+    "indicator_light_panel": {"panel_scatter": 0.55, "loose_rows": 0.45},
+    "bracket_panel": {"jittered_grid": 0.35, "loose_rows": 0.65},
+    "u_bolt_plate": {"jittered_grid": 0.45, "loose_rows": 0.55},
+    "pipe_rack": {"uniform_grid": 0.35, "loose_rows": 0.65},
+}
+
+
+def _normalized_weights(weights: Mapping[str, float]) -> Dict[str, float]:
+    total = float(sum(max(0.0, float(value)) for value in weights.values()))
+    if total <= 0.0:
+        return {"uniform_grid": 1.0}
+    return {
+        str(style): float(value) / total
+        for style, value in weights.items()
+        if float(value) > 0.0
+    }
+
+
+def resolve_repeated_layout_style(
+    *,
+    scene_variant: str,
+    rng: Any,
+    params: Mapping[str, Any],
+) -> Tuple[str, Dict[str, float]]:
+    """Select a controlled placement style for repeated-element counting."""
+
+    explicit_style = params.get("layout_style")
+    if explicit_style is not None:
+        style = str(explicit_style)
+        if style not in set(VALID_LAYOUT_STYLES):
+            raise ValueError(f"unsupported surface fixture layout_style: {style}")
+        return style, {style: 1.0}
+
+    weights = _normalized_weights(
+        REPEATED_LAYOUT_STYLE_WEIGHTS_BY_SCENE_VARIANT.get(
+            str(scene_variant),
+            {"uniform_grid": 1.0},
+        )
+    )
+    threshold = float(rng.random())
+    cumulative = 0.0
+    selected = next(iter(weights))
+    for style, probability in weights.items():
+        cumulative += float(probability)
+        selected = str(style)
+        if threshold <= cumulative:
+            break
+    return selected, dict(weights)
+
+
+def _clamp_interval(center: float, span: float, lower: float, upper: float) -> Tuple[float, float]:
+    half = float(span) * 0.5
+    center = min(float(upper) - half, max(float(lower) + half, float(center)))
+    return float(center - half), float(center + half)
+
+
+def _scatter_bounds(
+    *,
+    rows: int,
+    cols: int,
+    present_indices: Sequence[int],
+    rng: Any,
+    u_pad: float,
+    v_pad: float,
+) -> Dict[int, Tuple[float, float, float, float]]:
+    indices = [int(index) for index in present_indices]
+    count = max(1, len(indices))
+    base_w = min(0.145, max(0.075, 0.62 / max(3.0, math.sqrt(float(count)) * 1.45)))
+    base_h = min(0.145, max(0.075, 0.58 / max(3.0, math.sqrt(float(count)) * 1.40)))
+    min_sep = min(0.13, max(0.068, 0.43 / math.sqrt(float(count))))
+    centers: List[Tuple[float, float]] = []
+    bounds: Dict[int, Tuple[float, float, float, float]] = {}
+
+    for rank, index in enumerate(indices):
+        width = base_w * float(rng.uniform(0.84, 1.16))
+        height = base_h * float(rng.uniform(0.84, 1.16))
+        center_u = 0.5
+        center_v = 0.5
+        for _attempt in range(180):
+            center_u = float(rng.uniform(float(u_pad) + width * 0.5, 1.0 - float(u_pad) - width * 0.5))
+            center_v = float(rng.uniform(float(v_pad) + height * 0.5, 1.0 - float(v_pad) - height * 0.5))
+            if all((center_u - u) ** 2 + ((center_v - v) * 1.12) ** 2 >= min_sep**2 for u, v in centers):
+                break
+        else:
+            row = int(rank // max(1, int(cols)))
+            col = int(rank % max(1, int(cols)))
+            cell_w = (1.0 - 2.0 * float(u_pad)) / float(max(1, int(cols)))
+            cell_h = (1.0 - 2.0 * float(v_pad)) / float(max(1, int(rows)))
+            center_u = float(u_pad) + (float(col) + 0.5) * cell_w + float(rng.uniform(-0.16, 0.16)) * cell_w
+            center_v = float(v_pad) + (float(row) + 0.5) * cell_h + float(rng.uniform(-0.14, 0.14)) * cell_h
+        centers.append((float(center_u), float(center_v)))
+        u0, u1 = _clamp_interval(center_u, width, u_pad, 1.0 - u_pad)
+        v0, v1 = _clamp_interval(center_v, height, v_pad, 1.0 - v_pad)
+        bounds[int(index)] = (u0, u1, v0, v1)
+    return bounds
 
 
 def layout_cells(
@@ -32,7 +160,7 @@ def layout_cells(
     u_pad = 0.065
     v_pad = 0.075
     gap = 0.016
-    if str(layout_style) == "variable_grid":
+    if str(layout_style) in {"variable_grid", "loose_rows"}:
         col_weights = [float(rng.uniform(0.78, 1.22)) for _ in range(int(cols))]
         row_weights = [float(rng.uniform(0.82, 1.18)) for _ in range(int(rows))]
     else:
@@ -47,6 +175,12 @@ def layout_cells(
     for weight in row_weights:
         row_edges.append(float(row_edges[-1]) + (1.0 - 2.0 * v_pad) * float(weight) / float(row_total))
 
+    scatter_bounds = (
+        _scatter_bounds(rows=int(rows), cols=int(cols), present_indices=present_indices, rng=rng, u_pad=u_pad, v_pad=v_pad)
+        if str(layout_style) == "panel_scatter"
+        else {}
+    )
+
     cells: List[Dict[str, Any]] = []
     for flat_index in range(int(rows) * int(cols)):
         row = int(flat_index // int(cols))
@@ -59,6 +193,26 @@ def layout_cells(
             shift = ((u1 - u0) * 0.22)
             u0 = max(u_pad, u0 + shift)
             u1 = min(1.0 - u_pad, u1 + shift)
+        elif str(layout_style) == "jittered_grid":
+            width = float(u1 - u0)
+            height = float(v1 - v0)
+            scale_u = float(rng.uniform(0.72, 0.92))
+            scale_v = float(rng.uniform(0.72, 0.92))
+            center_u = (u0 + u1) * 0.5 + float(rng.uniform(-0.13, 0.13)) * width
+            center_v = (v0 + v1) * 0.5 + float(rng.uniform(-0.10, 0.10)) * height
+            u0, u1 = _clamp_interval(center_u, width * scale_u, u0, u1)
+            v0, v1 = _clamp_interval(center_v, height * scale_v, v0, v1)
+        elif str(layout_style) == "loose_rows":
+            width = float(u1 - u0)
+            height = float(v1 - v0)
+            scale_u = float(rng.uniform(0.62, 0.88))
+            scale_v = float(rng.uniform(0.62, 0.88))
+            center_u = (u0 + u1) * 0.5 + float(rng.uniform(-0.20, 0.20)) * width
+            center_v = (v0 + v1) * 0.5 + float(rng.uniform(-0.08, 0.08)) * height
+            u0, u1 = _clamp_interval(center_u, width * scale_u, u0, u1)
+            v0, v1 = _clamp_interval(center_v, height * scale_v, v0, v1)
+        elif str(layout_style) == "panel_scatter" and int(flat_index) in scatter_bounds:
+            u0, u1, v0, v1 = scatter_bounds[int(flat_index)]
         is_present = int(flat_index) in present_set
         if not is_present and not bool(include_absent):
             continue
@@ -85,6 +239,7 @@ def layout_cells(
                 "fill_rgb": list(SEMANTIC_COLOR_RGB[color_name]) if color_name else None,
                 "state": str(state),
                 "count_role": str(count_role),
+                "layout_style": str(layout_style),
             }
         )
     return cells
@@ -124,8 +279,11 @@ def edge_neighbors(index: int, rows: int, cols: int) -> List[int]:
 
 
 __all__ = [
+    "REPEATED_LAYOUT_STYLE_WEIGHTS_BY_SCENE_VARIANT",
+    "VALID_LAYOUT_STYLES",
     "edge_neighbors",
     "grid_for_total",
     "layout_cells",
+    "resolve_repeated_layout_style",
     "target_ids_from_indices",
 ]

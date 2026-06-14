@@ -47,9 +47,10 @@ def _prepare_repeated_objective(
         answer_gt=TypedValue(type="integer", value=int(dataset["answer_value"])),
         target_element_ids=tuple(str(element_id) for element_id in dataset["target_element_ids"]),
         answer_value_probabilities=dict(answer_probabilities),
-        object_description="a fixture surface with repeated surface elements",
+        object_description=f"a {dataset['fixture_display_name']} with visible {dataset['target_element_plural']}",
         objective_params={
             "target_count": int(dataset["answer_value"]),
+            "layout_style": str(dataset["layout_style"]),
         },
     )
 

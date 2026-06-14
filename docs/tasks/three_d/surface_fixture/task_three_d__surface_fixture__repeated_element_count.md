@@ -6,7 +6,7 @@
 - Scene package: `surface_fixture`
 - Query id: `single`
 - Answer type: `integer`
-- Annotation type: unordered `bbox_set`
+- Annotation type: unordered `point_set`
 
 ## Program Contract
 - `count(filter(surface_fixture_elements, present=true, element_type=target_element_type)); scene=surface_fixture; scope=repeated_element_count`
@@ -71,15 +71,15 @@ For example, `indicator_light_panel` can be loose rows or scatter, while
 scatter.
 
 ## Annotation Contract
-Annotation is a `bbox_set` containing one whole-element bounding box for each
-counted surface element. The fixture panel, screw heads, and background context
-are not annotation.
+Annotation is a `point_set` containing one center point for each counted
+surface element. The fixture panel, screw heads, and background context are not
+annotation.
 
 ## Prompt And Trace
 The prompt bundle is `three_d_surface_fixture_v1` under `prompts/three_d/surface_fixture/`.
 The trace records scene variant, target element type, target element ids,
 surface projection metadata, layout family, layout style, projected element
-boxes, and the solver count predicate.
+centers, and the solver count predicate.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config

@@ -58,7 +58,7 @@ def test_surface_fixture_repeated_element_count_variants() -> None:
         assert output.query_id == "single"
         assert output.answer_gt.type == "integer"
         assert output.answer_gt.value == count
-        assert output.annotation_gt.type == "bbox_set"
+        assert output.annotation_gt.type == "point_set"
         assert len(output.annotation_gt.value) == count
         assert trace["scene_variant"] == scene_variant
         assert trace["target_element_type"] == element_type
@@ -67,8 +67,9 @@ def test_surface_fixture_repeated_element_count_variants() -> None:
         if scene_variant == "perforated_panel":
             assert trace["layout_family"] == "tiled_staggered"
             assert trace["layout_style"] != "panel_scatter"
-        assert output.annotation_gt.value == [render_map["element_bboxes_px"][element_id] for element_id in target_element_ids]
-        assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
+        assert output.annotation_gt.value == [render_map["element_centers_px"][element_id] for element_id in target_element_ids]
+        assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
+        assert output.trace_payload["projected_annotation"]["pixel_point_set"] == output.annotation_gt.value
         assert output.trace_payload["query_spec"]["params"]["target_element_type"] == element_type
         assert output.trace_payload["query_spec"]["prompt_variant"]["scene_key"] == "surface_fixture"
         assert any(entity["entity_id"] == "surface_fixture_panel" for entity in output.trace_payload["scene_ir"]["entities"])
@@ -148,10 +149,10 @@ def test_surface_fixture_predicate_count_tasks() -> None:
         assert output.scene_id == "surface_fixture"
         assert output.answer_gt.type == "integer"
         assert output.answer_gt.value == len(target_element_ids)
-        assert output.annotation_gt.type == "bbox_set"
+        assert output.annotation_gt.type == "point_set"
         assert len(output.annotation_gt.value) == output.answer_gt.value
         assert output.annotation_gt.value == [
-            output.trace_payload["render_map"]["element_bboxes_px"][element_id] for element_id in target_element_ids
+            output.trace_payload["render_map"]["element_centers_px"][element_id] for element_id in target_element_ids
         ]
         assert "{target_" not in output.prompt
         assert "{scope_" not in output.prompt

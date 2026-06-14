@@ -206,6 +206,13 @@ def _panel_fill(scene_variant: str) -> Tuple[int, int, int]:
 
 
 def _draw_fixture_context(draw: ImageDraw.ImageDraw, render_params: Any, quad: Sequence[Sequence[float]], scene_variant: str) -> List[float]:
+    """Draw the shared mounted-surface context without changing element layout.
+
+    The panel quad is the stable coordinate frame for all fixture elements; this
+    function may vary contextual rails, seams, and outlines by scene variant, but
+    it must not move or resize element cells.
+    """
+
     width = int(render_params.canvas_width)
     height = int(render_params.canvas_height)
     floor_y = int(height * 0.83)
@@ -380,9 +387,8 @@ def _draw_element(
     """Draw one element from a normalized cell record and return its witness box.
 
     Each branch draws only the element visible inside the already projected
-    fixture cell. The returned bbox is the verifier witness for the element,
-    so state/color decoration may change the drawing but must remain inside the
-    element-level visual support.
+    fixture cell. The returned bbox and center describe the element-level visual
+    support used by trace/debug metadata.
     """
 
     element_type = str(cell_record["element_type"])

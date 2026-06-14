@@ -6,7 +6,7 @@
 - Scene package: `surface_fixture`
 - Query id: `single`
 - Answer type: `integer`
-- Annotation type: unordered `bbox_set`
+- Annotation type: unordered `point_set`
 
 ## Program Contract
 - `count(filter(surface_fixture_cells, present=false)); scene=surface_fixture; scope=empty_or_missing_cell_count`
@@ -19,14 +19,15 @@ missing positions.
 The answer is the integer count of finalized cells whose `present == false`.
 
 ## Annotation Contract
-Annotation is a `bbox_set` containing one bounding box around each counted
-missing fixture position. Present elements, the fixture panel, and decorative
-context are not annotation.
+Annotation is a `point_set` containing one center point for each counted missing
+fixture position. Present elements, the fixture panel, and decorative context
+are not annotation.
 
 ## Prompt And Trace
 The prompt bundle is `three_d_surface_fixture_v1` under `prompts/three_d/surface_fixture/`.
 The trace records scene variant, target element type, explicit present/missing
-cell metadata, projected missing-position boxes, and the solver count predicate.
+cell metadata, projected missing-position centers, and the solver count
+predicate.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config

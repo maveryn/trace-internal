@@ -85,38 +85,38 @@
   "static_slots_by_key": {
     "query:element_type_count": {
       "answer_hint": "set \"answer\" to the number of counted surface elements",
-      "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around each counted surface element",
-      "json_example": "{\"annotation\":[[118,442,176,503],[391,316,448,374],[702,521,758,579]],\"answer\":3}",
+      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted surface element",
+      "json_example": "{\"annotation\":[[147,472],[420,345],[730,550]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:element_color_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around each counted colored surface element",
-      "json_example": "{\"annotation\":[[118,442,176,503],[391,316,448,374]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted colored surface element",
+      "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:element_state_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around each counted surface element in the requested state",
-      "json_example": "{\"annotation\":[[118,442,176,503],[391,316,448,374]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted surface element in the requested state",
+      "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:scoped_element_color_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around each counted colored surface element in the requested row or column",
-      "json_example": "{\"annotation\":[[118,442,176,503],[391,316,448,374]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted colored surface element in the requested row or column",
+      "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:empty_or_missing_cell_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around each missing fixture position",
-      "json_example": "{\"annotation\":[[118,442,176,503],[391,316,448,374]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each missing fixture position",
+      "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:adjacent_to_reference_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around each counted element that shares an edge with the reference element",
-      "json_example": "{\"annotation\":[[118,442,176,503],[391,316,448,374]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted element that shares an edge with the reference element",
+      "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     }
   },

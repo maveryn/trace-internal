@@ -17,7 +17,7 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.three_d.shared.object_scene import _resolve_render_params
 
-from .shared.annotations import bbox_annotation_for_elements
+from .shared.annotations import point_annotation_for_elements
 from .shared.prompts import build_prompt_artifacts, dynamic_slots_for_surface
 from .shared.rendering import render_surface_fixture
 from .shared.sampling import ResolvedSurfaceFixtureAxes, resolve_scene_and_element
@@ -113,6 +113,7 @@ def _build_surface_trace_payload(
             "answer_value": int(dataset["answer_value"]),
             "target_element_ids": list(target_ids),
             "target_element_bboxes_px": dict(target_bboxes),
+            "target_element_centers_px": dict(target_centers),
         }
     )
     execution_trace = {
@@ -124,6 +125,7 @@ def _build_surface_trace_payload(
         "target_element_plural": str(dataset["target_element_plural"]),
         "target_element_ids": list(target_ids),
         "target_element_bboxes_px": dict(target_bboxes),
+        "target_element_centers_px": dict(target_centers),
         "layout_rows": int(dataset["layout_rows"]),
         "layout_columns": int(dataset["layout_columns"]),
         "layout_style": str(dataset["layout_style"]),
@@ -241,7 +243,7 @@ def run_surface_fixture_lifecycle(
                 params=clean_params,
                 default_config=_NOISE_DEFAULTS,
             )
-            annotation_artifacts = bbox_annotation_for_elements(rendered, plan.target_element_ids)
+            annotation_artifacts = point_annotation_for_elements(rendered, plan.target_element_ids)
             _prompt_defaults, prompt_artifacts = build_prompt_artifacts(
                 prompt_query_key=str(prompt_query_key),
                 dynamic_slot_values=dynamic_slots_for_surface(

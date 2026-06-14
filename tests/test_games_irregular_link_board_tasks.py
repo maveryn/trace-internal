@@ -8,22 +8,32 @@ import json
 import trace.tasks  # noqa: F401
 from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
+from trace.tasks.games.irregular_link_board.capture_move_count import TASK_ID as CAPTURE_MOVE_TASK_ID
 from trace.tasks.games.irregular_link_board.marked_piece_destination_count import (
-    CAPTURE_MOVE_TASK_ID,
-    MARKED_DESTINATION_TASK_ID,
-    _all_possible_edges,
-    _capture_destinations,
-    _edge,
-    _legal_destinations,
-    _neighbors,
+    TASK_ID as MARKED_DESTINATION_TASK_ID,
 )
-from trace.tasks.registry import create_task, list_default_task_ids
+from trace.tasks.games.irregular_link_board.shared.rules import (
+    all_possible_edges,
+    capture_destinations,
+    edge,
+    legal_destinations,
+    neighbors,
+)
+from trace.tasks.registry import create_task
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
 def test_games_irregular_link_board_defaults_and_prompt_bundle() -> None:
     cfg = get_scene_defaults("games", "irregular_link_board")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg)
+    destination_generation, _destination_rendering, _destination_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id=MARKED_DESTINATION_TASK_ID,
+    )
+    capture_generation, _capture_rendering, _capture_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id=CAPTURE_MOVE_TASK_ID,
+    )
 
     assert set(generation["scene_variant_weights"].keys()) == {
         "sparse_links",
@@ -38,17 +48,18 @@ def test_games_irregular_link_board_defaults_and_prompt_bundle() -> None:
         "parchment",
     }
     assert list(generation["board_size_support"]) == [4, 5, 6]
-    assert list(generation["capture_board_size_support"]) == [5, 6]
-    assert list(generation["target_answer_support"]) == list(range(9))
+    assert list(capture_generation["capture_board_size_support"]) == [5, 6]
+    assert list(destination_generation["target_answer_support"]) == list(range(9))
+    assert list(capture_generation["target_answer_support"]) == list(range(9))
     assert int(rendering["max_board_size_px"]) == 560
-    assert str(prompt["bundle_id"]) == "games_irregular_link_board_v0"
+    assert str(prompt["bundle_id"]) == "games_irregular_link_board_v1"
 
 
 def test_games_irregular_link_board_prompt_bundle_has_query() -> None:
     bundle = json.loads(
-        Path("prompts/games/irregular_link_board/games_irregular_link_board_v0.json").read_text(encoding="utf-8")
+        Path("prompts/games/irregular_link_board/games_irregular_link_board_v1.json").read_text(encoding="utf-8")
     )
-    assert set(bundle["query_templates"].keys()) == {
+    assert set(bundle["templates"]["query"].keys()) == {
         "marked_piece_destination_count",
         "capture_move_count",
     }
@@ -56,14 +67,13 @@ def test_games_irregular_link_board_prompt_bundle_has_query() -> None:
 
 
 def test_games_irregular_link_board_registry_and_taxonomy() -> None:
-    default_ids = set(list_default_task_ids())
-    assert MARKED_DESTINATION_TASK_ID in default_ids
-    assert CAPTURE_MOVE_TASK_ID in default_ids
     for task_id in (MARKED_DESTINATION_TASK_ID, CAPTURE_MOVE_TASK_ID):
+        task = create_task(task_id)
+        assert task.task_id == task_id
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "irregular_link_board"
-        assert taxonomy.source_scene_id == "irregular_link_board"
+        assert taxonomy.source_scene_id == ""
 
 
 def test_games_irregular_link_board_answer_matches_trace() -> None:
@@ -75,8 +85,8 @@ def test_games_irregular_link_board_answer_matches_trace() -> None:
     trace = out.trace_payload["execution_trace"]
     marked = tuple(trace["marked_coord"])
     occupied = tuple(tuple(coord) for coord in trace["occupied_coords"])
-    edges = tuple(_edge(tuple(edge[0]), tuple(edge[1])) for edge in trace["edge_coords"])
-    expected = _legal_destinations(
+    edges = tuple(edge(tuple(link[0]), tuple(link[1])) for link in trace["edge_coords"])
+    expected = legal_destinations(
         marked_coord=marked,  # type: ignore[arg-type]
         occupied_coords=occupied,  # type: ignore[arg-type]
         edges=edges,
@@ -84,11 +94,13 @@ def test_games_irregular_link_board_answer_matches_trace() -> None:
     )
 
     assert out.scene_id == "irregular_link_board"
-    assert out.query_id == "marked_piece_destination_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 5
     assert len(out.annotation_gt.value) == 5
     assert tuple(tuple(coord) for coord in trace["annotation_coords"]) == expected
+    assert tuple(tuple(coord) for coord in trace["legal_destinations"]) == expected
+    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "marked_piece_destination_count"
     assert out.trace_payload["projected_annotation"]["type"] == "point_set"
 
 
@@ -101,8 +113,8 @@ def test_games_irregular_link_board_capture_answer_matches_trace() -> None:
     trace = out.trace_payload["execution_trace"]
     marked = tuple(trace["marked_coord"])
     occupied = tuple(tuple(coord) for coord in trace["occupied_coords"])
-    edges = tuple(_edge(tuple(edge[0]), tuple(edge[1])) for edge in trace["edge_coords"])
-    expected = _capture_destinations(
+    edges = tuple(edge(tuple(link[0]), tuple(link[1])) for link in trace["edge_coords"])
+    expected = capture_destinations(
         marked_coord=marked,  # type: ignore[arg-type]
         occupied_coords=occupied,  # type: ignore[arg-type]
         edges=edges,
@@ -110,12 +122,13 @@ def test_games_irregular_link_board_capture_answer_matches_trace() -> None:
     )
 
     assert out.scene_id == "irregular_link_board"
-    assert out.query_id == "capture_move_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 5
     assert len(out.annotation_gt.value) == 5
     assert tuple(tuple(coord) for coord in trace["annotation_coords"]) == expected
     assert tuple(tuple(coord) for coord in trace["capture_destinations"]) == expected
+    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "capture_move_count"
     assert out.trace_payload["projected_annotation"]["type"] == "point_set"
 
     occupied_set = {tuple(coord) for coord in occupied}
@@ -132,8 +145,8 @@ def test_games_irregular_link_board_capture_answer_matches_trace() -> None:
         )
         assert captured in occupied_set
         assert destination not in occupied_set
-        assert _edge(marked, captured) in edge_set  # type: ignore[arg-type]
-        assert _edge(captured, destination) in edge_set
+        assert edge(marked, captured) in edge_set  # type: ignore[arg-type]
+        assert edge(captured, destination) in edge_set
 
 
 def test_games_irregular_link_board_support_endpoints_are_constructible() -> None:
@@ -162,12 +175,12 @@ def test_games_irregular_link_board_capture_support_endpoints_are_constructible(
 
 def test_games_irregular_link_board_lattice_has_no_non_node_diagonal_crossings() -> None:
     for board_size in (4, 5, 6):
-        edges = set(_all_possible_edges(board_size))
+        edges = set(all_possible_edges(board_size))
         for row in range(board_size - 1):
             for col in range(board_size - 1):
-                down_right = _edge((row, col), (row + 1, col + 1))
-                up_right = _edge((row + 1, col), (row, col + 1))
+                down_right = edge((row, col), (row + 1, col + 1))
+                up_right = edge((row + 1, col), (row, col + 1))
                 assert not (down_right in edges and up_right in edges)
 
-    assert len(_neighbors((1, 1), 4)) == 8
-    assert len(_neighbors((1, 2), 4)) == 4
+    assert len(neighbors((1, 1), 4)) == 8
+    assert len(neighbors((1, 2), 4)) == 4

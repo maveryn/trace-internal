@@ -34,6 +34,22 @@ from .sampling import (
     _candidate_secant_secant_variable_values,
 )
 
+
+_DEGREE_SIGN = "\N{DEGREE SIGN}"
+
+
+def _arc_measure_token(arc_name: str, value: int) -> str:
+    """Format a circle-arc measure label as degrees, not arc length."""
+
+    return f"{arc_name}={int(value)}{_DEGREE_SIGN}"
+
+
+def _unknown_arc_measure_token(arc_name: str) -> str:
+    """Format an unknown circle-arc measure label with an explicit degree unit."""
+
+    return f"{arc_name}=?{_DEGREE_SIGN}"
+
+
 def _build_diameter_perpendicular_chord_scene(
     rng, *, problem: CircleTheoremProblem
 ) -> Dict[str, Any]:
@@ -643,9 +659,9 @@ def _build_intersecting_chords_arc_scene(
     answer_arc_name = _visible_arc(label_map, "C", "D")
     distractor_arc_name = _visible_arc(label_map, "B", "C")
     angle_token = f"{angle_name}={int(angle_value)}"
-    known_arc_token = f"{known_arc_name}={int(known_arc)}"
-    distractor_token = f"{distractor_arc_name}={int(arc_bc)}"
-    query_arc_token = f"{answer_arc_name}=?"
+    known_arc_token = _arc_measure_token(known_arc_name, known_arc)
+    distractor_token = _arc_measure_token(distractor_arc_name, arc_bc)
+    query_arc_token = _unknown_arc_measure_token(answer_arc_name)
     theorem_trace = {
         "theorem": "intersecting_chords_angle",
         "label_map": dict(label_map),
@@ -782,9 +798,9 @@ def _build_multi_step_angle_scene(rng, *, problem: CircleTheoremProblem) -> Dict
     opposite_arc_name = _visible_arc(label_map, "C", "D")
     distractor_arc_name = _visible_arc(label_map, "B", "C")
     answer_angle_token = f"{angle_name}=?"
-    first_arc_token = f"{first_arc_name}={int(first_arc)}"
-    opposite_arc_token = f"{opposite_arc_name}={int(opposite_arc)}"
-    distractor_token = f"{distractor_arc_name}={int(arc_bc)}"
+    first_arc_token = _arc_measure_token(first_arc_name, first_arc)
+    opposite_arc_token = _arc_measure_token(opposite_arc_name, opposite_arc)
+    distractor_token = _arc_measure_token(distractor_arc_name, arc_bc)
     theorem_trace = {
         "theorem": "intersecting_chords_angle_from_arcs",
         "label_map": dict(label_map),
@@ -922,7 +938,7 @@ def _build_inscribed_angle_scene(
     token_by_kind = {
         "central": f"{central_angle_name}={int(central_angle)}",
         "inscribed": f"{inscribed_angle_name}={int(inscribed_angle)}",
-        "arc": f"{intercepted_arc_name}={int(central_angle)}",
+        "arc": _arc_measure_token(intercepted_arc_name, central_angle),
     }
     if source == "known_central":
         support_measurement_tokens = (token_by_kind["central"],)
@@ -950,7 +966,7 @@ def _build_inscribed_angle_scene(
         )
         circle_arc_specs = (
             {
-                "token": f"{distractor_arc_name}={int(distractor_arc)}",
+                "token": _arc_measure_token(distractor_arc_name, distractor_arc),
                 "start": label_map["B"],
                 "end": label_map["C"],
             },
@@ -981,7 +997,7 @@ def _build_inscribed_angle_scene(
         )
         circle_arc_specs = (
             {
-                "token": f"{distractor_arc_name}={int(distractor_arc)}",
+                "token": _arc_measure_token(distractor_arc_name, distractor_arc),
                 "start": label_map["B"],
                 "end": label_map["C"],
             },
@@ -1009,7 +1025,7 @@ def _build_inscribed_angle_scene(
                 "end": label_map["B"],
             },
             {
-                "token": f"{distractor_arc_name}={int(distractor_arc)}",
+                "token": _arc_measure_token(distractor_arc_name, distractor_arc),
                 "start": label_map["B"],
                 "end": label_map["C"],
             },
@@ -1019,7 +1035,7 @@ def _build_inscribed_angle_scene(
         central_angle_name if answer_kind == "central" else inscribed_angle_name
     )
     answer_value = int(central_angle if answer_kind == "central" else inscribed_angle)
-    distractor_token = f"{distractor_arc_name}={int(distractor_arc)}"
+    distractor_token = _arc_measure_token(distractor_arc_name, distractor_arc)
     theorem_trace = {
         "theorem": "inscribed_angle",
         "label_map": dict(label_map),
@@ -1142,9 +1158,9 @@ def _build_tangent_chord_angle_scene(
     distractor_arc_name = _visible_arc(label_map, "A", "B")
     distractor_arc = int(arc_ab)
     answer_token = f"{tangent_chord_angle_name}=?"
-    arc_token = f"{intercepted_arc_name}={int(central_angle)}"
+    arc_token = _arc_measure_token(intercepted_arc_name, central_angle)
     inscribed_token = f"{inscribed_angle_name}={int(tangent_chord_angle)}"
-    distractor_token = f"{distractor_arc_name}={int(distractor_arc)}"
+    distractor_token = _arc_measure_token(distractor_arc_name, distractor_arc)
     if source == "known_arc":
         support_measurement_tokens = (arc_token,)
         annotation_point_labels = (
@@ -1340,9 +1356,9 @@ def _build_external_secant_angle_scene(
     near_arc_name = _visible_arc(label_map, "B", "D")
     distractor_arc_name = _visible_arc(label_map, "A", "B")
     answer_token = f"{answer_angle_name}=?"
-    far_arc_token = f"{far_arc_name}={int(far_arc)}"
-    near_arc_token = f"{near_arc_name}={int(near_arc)}"
-    distractor_token = f"{distractor_arc_name}={int(distractor_arc)}"
+    far_arc_token = _arc_measure_token(far_arc_name, far_arc)
+    near_arc_token = _arc_measure_token(near_arc_name, near_arc)
+    distractor_token = _arc_measure_token(distractor_arc_name, distractor_arc)
     theorem_trace = {
         "theorem": "external_secant_angle_from_arcs",
         "label_map": dict(label_map),

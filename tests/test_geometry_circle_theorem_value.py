@@ -97,6 +97,28 @@ def _circle_crosses_bbox(center: list[float], radius: float, bbox: list[float]) 
     return bool(float(nearest) <= float(radius) <= float(farthest))
 
 
+def _assert_arc_measure_tokens_use_degrees(out) -> None:
+    render_tokens = [
+        str(token)
+        for token in out.trace_payload["render_map"]["measurement_token_bboxes"]
+        if str(token).startswith("arc ")
+    ]
+    trace = out.trace_payload["execution_trace"]
+    trace_tokens = [
+        str(token)
+        for token in [
+            *trace.get("support_measurement_tokens", []),
+            *trace.get("distractor_tokens", []),
+        ]
+        if str(token).startswith("arc ")
+    ]
+    arc_tokens = render_tokens + trace_tokens
+
+    assert arc_tokens
+    assert all(token.endswith("°") for token in arc_tokens)
+    assert not any(token.endswith("=?") for token in arc_tokens)
+
+
 QUERY_TASK_CLASSES = {
     "chord_length_from_radius_and_central_angle": GeometryCircleChordLengthFromRadiusCentralAngleValueTask,
     "chord_length_from_radius_and_inscribed_angle": GeometryCircleChordLengthFromRadiusInscribedAngleValueTask,
@@ -715,6 +737,7 @@ def test_intersecting_chords_arc_variant_uses_angle_arc_relationship() -> None:
     assert "arcCD" not in out.prompt
     assert len(out.annotation_gt.value) == 5
     assert len(out.trace_payload["projected_annotation"]["pixel_keyed_point_map"]) == 5
+    _assert_arc_measure_tokens_use_degrees(out)
 
 
 def test_multi_step_angle_variant_uses_intersecting_chord_arc_sum() -> None:
@@ -732,6 +755,7 @@ def test_multi_step_angle_variant_uses_intersecting_chord_arc_sum() -> None:
     assert "angleAEB" not in out.prompt
     assert len(out.annotation_gt.value) == 5
     assert len(out.trace_payload["projected_annotation"]["pixel_keyed_point_map"]) == 5
+    _assert_arc_measure_tokens_use_degrees(out)
 
 
 def test_external_secant_angle_variant_uses_arc_difference() -> None:
@@ -755,6 +779,7 @@ def test_external_secant_angle_variant_uses_arc_difference() -> None:
     assert set(out.annotation_gt.value) == set(
         out.trace_payload["witness_symbolic"]["annotation_point_labels"]
     )
+    _assert_arc_measure_tokens_use_degrees(out)
 
 
 def test_cyclic_quadrilateral_opposite_angle_variant_uses_supplement() -> None:
@@ -825,6 +850,7 @@ def test_inscribed_angle_variants_use_half_arc_relationship(
     assert "angleACB" not in out.prompt
     expected_count = 3 if query_id == "inscribed_angle_from_arc" else 4
     assert len(out.annotation_gt.value) == expected_count
+    _assert_arc_measure_tokens_use_degrees(out)
 
 
 @pytest.mark.parametrize(
@@ -849,6 +875,7 @@ def test_tangent_chord_angle_variants_use_matching_angle_or_arc(
     assert "anglePTA" not in out.prompt
     expected_count = 3 if query_id == "tangent_chord_angle_from_arc" else 4
     assert len(out.annotation_gt.value) == expected_count
+    _assert_arc_measure_tokens_use_degrees(out)
 
 
 def test_circle_theorem_rendered_label_boxes_avoid_lines_and_circle() -> None:

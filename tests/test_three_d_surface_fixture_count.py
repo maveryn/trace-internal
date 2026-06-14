@@ -10,6 +10,7 @@ from trace.core.scene_package_migration import parse_public_task_id
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
+from trace.tasks.three_d.shared.object_resources import object_profiles
 from trace.tasks.three_d.surface_fixture.adjacent_to_reference_count import TASK_ID as ADJACENT_TASK_ID
 from trace.tasks.three_d.surface_fixture.colored_element_count import TASK_ID as COLORED_TASK_ID
 from trace.tasks.three_d.surface_fixture.empty_or_missing_cell_count import TASK_ID as EMPTY_MISSING_TASK_ID
@@ -172,3 +173,9 @@ def test_surface_fixture_task_registered_in_three_d_taxonomy() -> None:
         assert taxonomy.domain == "three_d"
         assert taxonomy.scene_id == "surface_fixture"
         assert not taxonomy.source_scene_id
+
+
+def test_surface_fixture_resource_profiles_match_scene_variants() -> None:
+    profile_variants = {profile.object_type for profile in object_profiles(source_scene="surface_fixture")}
+
+    assert profile_variants == set(ELEMENT_TYPE_BY_SCENE_VARIANT)

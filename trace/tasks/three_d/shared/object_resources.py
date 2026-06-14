@@ -36,6 +36,12 @@ SURFACE_FIXTURE_OBJECT_TYPES: Tuple[str, ...] = (
     "server_rack",
     "control_panel",
     "solar_panel_array",
+    "screw_plate",
+    "hex_nut_plate",
+    "washer_plate",
+    "socket_bank",
+    "hook_board",
+    "indicator_light_panel",
 )
 
 SURFACE_FIXTURE_DISPLAY_NAME: Mapping[str, str] = {
@@ -54,6 +60,12 @@ SURFACE_FIXTURE_DISPLAY_NAME: Mapping[str, str] = {
     "server_rack": "server rack",
     "control_panel": "control panel",
     "solar_panel_array": "solar panel array",
+    "screw_plate": "screw plate",
+    "hex_nut_plate": "hex-nut plate",
+    "washer_plate": "washer plate",
+    "socket_bank": "socket bank",
+    "hook_board": "hook board",
+    "indicator_light_panel": "indicator light panel",
 }
 
 

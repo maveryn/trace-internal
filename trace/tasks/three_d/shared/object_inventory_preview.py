@@ -691,8 +691,10 @@ def _render_surface_fixture_profile(
         state = "normal"
         if scene_variant in {"locker_bank", "mailbox_bank", "door_bank"} and index % 5 == 0:
             state = "open"
-        elif scene_variant in {"server_rack", "control_panel", "window_grid"} and index % 4 == 1:
+        elif scene_variant in {"server_rack", "control_panel", "window_grid", "indicator_light_panel"} and index % 4 == 1:
             state = "lit"
+        elif scene_variant == "indicator_light_panel" and index % 4 == 3:
+            state = "unlit"
         elif scene_variant == "control_panel" and index % 5 == 2:
             state = "pressed"
         elif scene_variant == "solar_panel_array" and index % 6 == 3:

@@ -102,6 +102,12 @@ def fixture_quad(render_params: Any, scene_variant: str) -> List[Tuple[float, fl
         "server_rack",
         "control_panel",
         "solar_panel_array",
+        "screw_plate",
+        "hex_nut_plate",
+        "washer_plate",
+        "socket_bank",
+        "hook_board",
+        "indicator_light_panel",
     }
     if str(scene_variant) in wall_like:
         return [
@@ -184,6 +190,12 @@ def _panel_fill(scene_variant: str) -> Tuple[int, int, int]:
         "server_rack": (62, 70, 81),
         "control_panel": (86, 96, 105),
         "solar_panel_array": (37, 64, 92),
+        "screw_plate": (168, 176, 181),
+        "hex_nut_plate": (154, 161, 166),
+        "washer_plate": (174, 181, 184),
+        "socket_bank": (206, 210, 203),
+        "hook_board": (185, 164, 128),
+        "indicator_light_panel": (68, 78, 86),
     }.get(str(scene_variant), (218, 224, 226))
 
 
@@ -200,7 +212,12 @@ def _draw_fixture_context(draw: ImageDraw.ImageDraw, render_params: Any, quad: S
     draw.polygon(shadow, fill=(171, 178, 181))
     panel_fill = _panel_fill(str(scene_variant))
     draw.polygon([(float(x), float(y)) for x, y in quad], fill=panel_fill)
-    outline = (43, 50, 58) if str(scene_variant) in {"server_rack", "control_panel", "solar_panel_array"} else (65, 75, 84)
+    outline = (
+        (43, 50, 58)
+        if str(scene_variant)
+        in {"server_rack", "control_panel", "solar_panel_array", "screw_plate", "hex_nut_plate", "washer_plate", "indicator_light_panel"}
+        else (65, 75, 84)
+    )
     draw.line([(float(x), float(y)) for x, y in [*quad, quad[0]]], fill=outline, width=3)
 
     if str(scene_variant) in {"compartment_tray", "mailbox_bank"}:
@@ -222,6 +239,25 @@ def _draw_fixture_context(draw: ImageDraw.ImageDraw, render_params: Any, quad: S
         for u in (0.035, 0.965):
             rail = [quad_point(quad, u, 0.04), quad_point(quad, u, 0.96)]
             draw.line(rail, fill=(27, 32, 39), width=4)
+    elif str(scene_variant) in {"screw_plate", "hex_nut_plate", "washer_plate"}:
+        for v in (0.08, 0.92):
+            rail = [quad_point(quad, 0.05, v), quad_point(quad, 0.95, v)]
+            draw.line(rail, fill=(116, 126, 132), width=2)
+        for u in (0.05, 0.95):
+            rail = [quad_point(quad, u, 0.08), quad_point(quad, u, 0.92)]
+            draw.line(rail, fill=(218, 224, 226), width=1)
+    elif str(scene_variant) == "socket_bank":
+        inner_frame = shrink_polygon(quad, 0.94)
+        draw.line(inner_frame + [inner_frame[0]], fill=(239, 242, 235), width=3)
+        draw.line(inner_frame + [inner_frame[0]], fill=(113, 119, 116), width=1)
+    elif str(scene_variant) == "hook_board":
+        for v in (0.18, 0.38, 0.58, 0.78):
+            rail = [quad_point(quad, 0.06, v), quad_point(quad, 0.94, v)]
+            draw.line(rail, fill=(154, 126, 87), width=2)
+    elif str(scene_variant) == "indicator_light_panel":
+        for u in (0.04, 0.96):
+            rail = [quad_point(quad, u, 0.05), quad_point(quad, u, 0.95)]
+            draw.line(rail, fill=(32, 38, 44), width=4)
 
     for u, v in ((0.04, 0.05), (0.96, 0.05), (0.96, 0.95), (0.04, 0.95)):
         cx, cy = quad_point(quad, u, v)
@@ -273,6 +309,36 @@ def _draw_missing_cell(draw: ImageDraw.ImageDraw, cell_polygon: Sequence[Sequenc
     d = gap[3]
     draw.line([(a[0], a[1]), (c[0], c[1])], fill=(72, 76, 82), width=2)
     draw.line([(b[0], b[1]), (d[0], d[1])], fill=(72, 76, 82), width=2)
+
+
+def _centered_bbox(center: Sequence[float], width: float, height: float) -> List[float]:
+    cx = float(center[0])
+    cy = float(center[1])
+    half_w = float(width) * 0.5
+    half_h = float(height) * 0.5
+    return [cx - half_w, cy - half_h, cx + half_w, cy + half_h]
+
+
+def _regular_polygon_points(center: Sequence[float], radius_x: float, radius_y: float, sides: int, rotation: float = 0.0) -> List[Tuple[float, float]]:
+    cx = float(center[0])
+    cy = float(center[1])
+    return [
+        (
+            cx + math.cos(float(rotation) + 2.0 * math.pi * float(index) / float(sides)) * float(radius_x),
+            cy + math.sin(float(rotation) + 2.0 * math.pi * float(index) / float(sides)) * float(radius_y),
+        )
+        for index in range(int(sides))
+    ]
+
+
+def _mounted_bbox(bbox: Sequence[float], center: Sequence[float], width_frac: float, height_frac: float, *, min_width: float = 8.0, min_height: float = 8.0) -> List[float]:
+    cell_w = float(bbox[2]) - float(bbox[0])
+    cell_h = float(bbox[3]) - float(bbox[1])
+    return _centered_bbox(
+        center,
+        max(float(min_width), cell_w * float(width_frac)),
+        max(float(min_height), cell_h * float(height_frac)),
+    )
 
 
 def _draw_element(
@@ -428,6 +494,106 @@ def _draw_element(
         highlight = [button_bbox[0] + 4, button_bbox[1] + 3, button_bbox[0] + (button_bbox[2] - button_bbox[0]) * 0.52, button_bbox[1] + (button_bbox[3] - button_bbox[1]) * 0.34]
         draw.ellipse(highlight, fill=_mix(button_fill, (255, 255, 255), 0.34))
         bbox = list(button_bbox)
+    elif element_type == "screw":
+        screw_bbox = _mounted_bbox(bbox, center, 0.56, 0.56, min_width=13.0, min_height=13.0)
+        head_fill = _mix(fill, (207, 213, 216), 0.55)
+        draw.ellipse(screw_bbox, fill=head_fill, outline=(61, 70, 78), width=2)
+        inner = [
+            screw_bbox[0] + (screw_bbox[2] - screw_bbox[0]) * 0.16,
+            screw_bbox[1] + (screw_bbox[3] - screw_bbox[1]) * 0.16,
+            screw_bbox[2] - (screw_bbox[2] - screw_bbox[0]) * 0.16,
+            screw_bbox[3] - (screw_bbox[3] - screw_bbox[1]) * 0.16,
+        ]
+        draw.ellipse(inner, outline=_mix(head_fill, (76, 83, 89), 0.24), width=1)
+        slot_len = (screw_bbox[2] - screw_bbox[0]) * 0.58
+        slot_ang = -0.55 if index % 2 == 0 else 0.55
+        dx = math.cos(slot_ang) * slot_len * 0.5
+        dy = math.sin(slot_ang) * slot_len * 0.5
+        draw.line([(center[0] - dx, center[1] - dy), (center[0] + dx, center[1] + dy)], fill=(44, 50, 56), width=3)
+        bbox = list(screw_bbox)
+    elif element_type == "hex_nut":
+        nut_bbox = _mounted_bbox(bbox, center, 0.68, 0.62, min_width=15.0, min_height=14.0)
+        rx = (nut_bbox[2] - nut_bbox[0]) * 0.50
+        ry = (nut_bbox[3] - nut_bbox[1]) * 0.50
+        hex_points = _regular_polygon_points(center, rx, ry, 6, rotation=math.pi / 6.0)
+        nut_fill = _mix(fill, (199, 204, 206), 0.48)
+        draw.polygon(hex_points, fill=nut_fill, outline=(56, 63, 70))
+        hole = _centered_bbox(center, max(6.0, rx * 0.78), max(5.0, ry * 0.70))
+        draw.ellipse(hole, fill=_mix(_panel_fill(str(scene_variant)), (28, 32, 36), 0.72), outline=(222, 226, 227), width=1)
+        shine = _regular_polygon_points((center[0] - rx * 0.12, center[1] - ry * 0.18), rx * 0.38, ry * 0.20, 6, rotation=math.pi / 6.0)
+        draw.line(shine[:3], fill=_mix(nut_fill, (255, 255, 255), 0.35), width=1)
+        bbox = list(nut_bbox)
+    elif element_type == "washer":
+        washer_bbox = _mounted_bbox(bbox, center, 0.70, 0.66, min_width=16.0, min_height=15.0)
+        washer_fill = _mix(fill, (202, 208, 210), 0.50)
+        draw.ellipse(washer_bbox, fill=washer_fill, outline=(60, 68, 76), width=2)
+        outer_w = washer_bbox[2] - washer_bbox[0]
+        outer_h = washer_bbox[3] - washer_bbox[1]
+        hole = _centered_bbox(center, max(7.0, outer_w * 0.42), max(6.0, outer_h * 0.40))
+        draw.ellipse(hole, fill=_mix(_panel_fill(str(scene_variant)), (31, 35, 38), 0.64), outline=(238, 241, 241), width=1)
+        highlight = [
+            washer_bbox[0] + outer_w * 0.16,
+            washer_bbox[1] + outer_h * 0.13,
+            washer_bbox[0] + outer_w * 0.52,
+            washer_bbox[1] + outer_h * 0.35,
+        ]
+        draw.arc(highlight, start=195, end=330, fill=_mix(washer_fill, (255, 255, 255), 0.45), width=2)
+        bbox = list(washer_bbox)
+    elif element_type == "socket":
+        socket_bbox = _mounted_bbox(bbox, center, 0.78, 0.68, min_width=22.0, min_height=18.0)
+        socket_fill = _mix(fill, (243, 243, 236), 0.48)
+        draw.rounded_rectangle(socket_bbox, radius=max(3, int((socket_bbox[3] - socket_bbox[1]) * 0.16)), fill=socket_fill, outline=(91, 96, 94), width=2)
+        sw = socket_bbox[2] - socket_bbox[0]
+        sh = socket_bbox[3] - socket_bbox[1]
+        for offset in (0.38, 0.62):
+            slot_x = socket_bbox[0] + sw * offset
+            draw.rounded_rectangle(
+                [slot_x - sw * 0.035, socket_bbox[1] + sh * 0.25, slot_x + sw * 0.035, socket_bbox[1] + sh * 0.56],
+                radius=2,
+                fill=(41, 45, 47),
+            )
+        ground = _centered_bbox((center[0], socket_bbox[1] + sh * 0.72), sw * 0.12, sh * 0.10)
+        draw.ellipse(ground, fill=(41, 45, 47))
+        bbox = list(socket_bbox)
+    elif element_type == "hook":
+        hook_bbox = _mounted_bbox(bbox, center, 0.70, 0.76, min_width=18.0, min_height=22.0)
+        hw = hook_bbox[2] - hook_bbox[0]
+        hh = hook_bbox[3] - hook_bbox[1]
+        plate_bbox = _centered_bbox((center[0], hook_bbox[1] + hh * 0.24), hw * 0.38, hh * 0.24)
+        hook_fill = _mix(fill, (58, 61, 63), 0.25)
+        draw.ellipse(plate_bbox, fill=_mix(hook_fill, (210, 215, 216), 0.35), outline=(50, 54, 57), width=1)
+        stem_top = (center[0], hook_bbox[1] + hh * 0.34)
+        stem_bottom = (center[0], hook_bbox[1] + hh * 0.64)
+        draw.line([stem_top, stem_bottom], fill=hook_fill, width=4)
+        arc_box = [
+            center[0] - hw * 0.22,
+            hook_bbox[1] + hh * 0.50,
+            center[0] + hw * 0.24,
+            hook_bbox[1] + hh * 0.92,
+        ]
+        draw.arc(arc_box, start=270, end=88, fill=hook_fill, width=4)
+        tip = (center[0] + hw * 0.18, hook_bbox[1] + hh * 0.65)
+        draw.line([(center[0] + hw * 0.22, hook_bbox[1] + hh * 0.72), tip], fill=hook_fill, width=4)
+        bbox = list(hook_bbox)
+    elif element_type == "light":
+        glow_bbox = _mounted_bbox(bbox, center, 0.78, 0.78, min_width=18.0, min_height=18.0)
+        light_bbox = _mounted_bbox(bbox, center, 0.56, 0.56, min_width=13.0, min_height=13.0)
+        if state == "lit":
+            draw.ellipse(glow_bbox, fill=_mix(fill, (255, 241, 122), 0.42))
+            lens_fill = _mix(fill, (255, 246, 168), 0.38)
+        elif state == "unlit":
+            lens_fill = _mix(fill, (26, 31, 35), 0.58)
+        else:
+            lens_fill = fill
+        draw.ellipse(light_bbox, fill=lens_fill, outline=(24, 29, 34), width=2)
+        highlight = [
+            light_bbox[0] + (light_bbox[2] - light_bbox[0]) * 0.18,
+            light_bbox[1] + (light_bbox[3] - light_bbox[1]) * 0.16,
+            light_bbox[0] + (light_bbox[2] - light_bbox[0]) * 0.52,
+            light_bbox[1] + (light_bbox[3] - light_bbox[1]) * 0.42,
+        ]
+        draw.ellipse(highlight, fill=_mix(lens_fill, (255, 255, 255), 0.46))
+        bbox = list(glow_bbox if state == "lit" else light_bbox)
     elif element_type == "solar_panel":
         panel = shrink_polygon(cell, 0.88)
         panel_fill = fill if cell_record.get("fill_rgb") is not None else (35, 76, 126)

@@ -14,8 +14,9 @@
 ## Contract
 The image shows one projected fixture surface with a repeated element family:
 tiles, holes, slots, compartments, vents, windows, doors, drawer pulls, bricks,
-pavers, lockers, mailboxes, drive bays, buttons, or solar panels. The prompt
-asks for the number of visible repeated surface elements of that family.
+pavers, lockers, mailboxes, drive bays, buttons, solar panels, screws, hex
+nuts, washers, sockets, hooks, or indicator lights. The prompt asks for the
+number of visible repeated surface elements of that family.
 
 The scene variant determines the counted element type:
 
@@ -34,6 +35,12 @@ The scene variant determines the counted element type:
 - `server_rack` counts `drive_bay`
 - `control_panel` counts `button`
 - `solar_panel_array` counts `solar_panel`
+- `screw_plate` counts `screw`
+- `hex_nut_plate` counts `hex_nut`
+- `washer_plate` counts `washer`
+- `socket_bank` counts `socket`
+- `hook_board` counts `hook`
+- `indicator_light_panel` counts `light`
 
 The answer is the integer count of finalized elements whose `element_type`
 matches the sampled `target_element_type`. Pixels are render output, not

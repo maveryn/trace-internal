@@ -23,6 +23,12 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "server_rack",
     "control_panel",
     "solar_panel_array",
+    "screw_plate",
+    "hex_nut_plate",
+    "washer_plate",
+    "socket_bank",
+    "hook_board",
+    "indicator_light_panel",
 )
 
 ELEMENT_TYPE_BY_SCENE_VARIANT: Mapping[str, str] = {
@@ -41,6 +47,12 @@ ELEMENT_TYPE_BY_SCENE_VARIANT: Mapping[str, str] = {
     "server_rack": "drive_bay",
     "control_panel": "button",
     "solar_panel_array": "solar_panel",
+    "screw_plate": "screw",
+    "hex_nut_plate": "hex_nut",
+    "washer_plate": "washer",
+    "socket_bank": "socket",
+    "hook_board": "hook",
+    "indicator_light_panel": "light",
 }
 
 SCENE_VARIANT_BY_ELEMENT_TYPE: Mapping[str, str] = {
@@ -64,6 +76,12 @@ SURFACE_FIXTURE_DISPLAY_NAME: Mapping[str, str] = {
     "server_rack": "server rack",
     "control_panel": "control panel",
     "solar_panel_array": "solar panel array",
+    "screw_plate": "screw plate",
+    "hex_nut_plate": "hex-nut plate",
+    "washer_plate": "washer plate",
+    "socket_bank": "socket bank",
+    "hook_board": "hook board",
+    "indicator_light_panel": "indicator light panel",
 }
 
 ELEMENT_DISPLAY_NAME: Mapping[str, str] = {
@@ -82,6 +100,12 @@ ELEMENT_DISPLAY_NAME: Mapping[str, str] = {
     "drive_bay": "drive bay",
     "button": "button",
     "solar_panel": "solar panel",
+    "screw": "screw",
+    "hex_nut": "hex nut",
+    "washer": "washer",
+    "socket": "socket",
+    "hook": "hook",
+    "light": "light",
 }
 
 ELEMENT_PLURAL: Mapping[str, str] = {
@@ -100,6 +124,12 @@ ELEMENT_PLURAL: Mapping[str, str] = {
     "drive_bay": "drive bays",
     "button": "buttons",
     "solar_panel": "solar panels",
+    "screw": "screws",
+    "hex_nut": "hex nuts",
+    "washer": "washers",
+    "socket": "sockets",
+    "hook": "hooks",
+    "light": "lights",
 }
 
 SEMANTIC_COLOR_RGB: Mapping[str, Tuple[int, int, int]] = {
@@ -122,6 +152,7 @@ STATE_SUPPORT_BY_SCENE_VARIANT: Mapping[str, Tuple[str, ...]] = {
     "solar_panel_array": ("intact", "cracked"),
     "door_bank": ("open", "closed"),
     "window_grid": ("lit", "unlit"),
+    "indicator_light_panel": ("lit", "unlit"),
 }
 
 STATE_DISPLAY_NAME: Mapping[str, str] = {
@@ -148,6 +179,12 @@ COLORABLE_SCENE_VARIANTS: Tuple[str, ...] = (
     "server_rack",
     "control_panel",
     "solar_panel_array",
+    "screw_plate",
+    "hex_nut_plate",
+    "washer_plate",
+    "socket_bank",
+    "hook_board",
+    "indicator_light_panel",
 )
 
 MISSING_SCENE_VARIANTS: Tuple[str, ...] = (
@@ -162,6 +199,12 @@ MISSING_SCENE_VARIANTS: Tuple[str, ...] = (
     "server_rack",
     "control_panel",
     "solar_panel_array",
+    "screw_plate",
+    "hex_nut_plate",
+    "washer_plate",
+    "socket_bank",
+    "hook_board",
+    "indicator_light_panel",
 )
 
 ADJACENCY_SCENE_VARIANTS: Tuple[str, ...] = (
@@ -177,6 +220,12 @@ ADJACENCY_SCENE_VARIANTS: Tuple[str, ...] = (
     "server_rack",
     "control_panel",
     "solar_panel_array",
+    "screw_plate",
+    "hex_nut_plate",
+    "washer_plate",
+    "socket_bank",
+    "hook_board",
+    "indicator_light_panel",
 )
 
 SURFACE_FIXTURE_OBJECT_TYPES: Tuple[str, ...] = SUPPORTED_SCENE_VARIANTS

@@ -5,9 +5,14 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import sys
 from typing import Any, Dict, List, Mapping, Sequence
 
 from PIL import Image, ImageDraw
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.three_d.shared.object_inventory_preview import (
@@ -234,6 +239,7 @@ def _build_sheet_specs() -> List[Dict[str, Any]]:
     street_profiles = _scene_profiles("street")
     street_candidates = tuple(profile for profile in street_profiles if profile.role == "street_candidate")
     street_context = tuple(profile for profile in street_profiles if profile.role == "street_context")
+    surface_fixture_profiles = _scene_profiles("surface_fixture")
     warehouse_profiles = _scene_profiles("warehouse")
     start_index = 0
     specs: List[Dict[str, Any]] = [
@@ -318,6 +324,13 @@ def _build_sheet_specs() -> List[Dict[str, Any]]:
             "Robots, racks, reference objects, and warehouse equipment.",
             warehouse_profiles,
             4,
+        ),
+        (
+            "11_surface_fixture_variants.png",
+            "Surface Fixture Variant Pool",
+            "Repeated mounted surface elements and panel variants used by surface_fixture tasks.",
+            surface_fixture_profiles,
+            5,
         ),
     ]
     for filename, title, subtitle, selected, cols in grouped_specs:

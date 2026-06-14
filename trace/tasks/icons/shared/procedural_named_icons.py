@@ -935,8 +935,8 @@ def _apply_fill_style(image: Image.Image, *, fill_style: str, tint_rgb: RGB) -> 
     if style == "striped":
         overlay = Image.new("RGBA", rgba.size, (0, 0, 0, 0))
         draw = ImageDraw.Draw(overlay)
-        spacing = max(8, int(round(min(width, height) * 0.18)))
-        stripe_width = max(3, int(round(min(width, height) * 0.055)))
+        spacing = max(12, int(round(min(width, height) * 0.28)))
+        stripe_width = max(2, int(round(min(width, height) * 0.035)))
         for offset in range(-height, width + height + spacing, spacing):
             draw.line(
                 (int(offset), int(height), int(offset + height), 0),
@@ -949,8 +949,8 @@ def _apply_fill_style(image: Image.Image, *, fill_style: str, tint_rgb: RGB) -> 
     if style == "dotted":
         overlay = Image.new("RGBA", rgba.size, (0, 0, 0, 0))
         draw = ImageDraw.Draw(overlay)
-        spacing = max(10, int(round(min(width, height) * 0.23)))
-        radius = max(2, int(round(min(width, height) * 0.05)))
+        spacing = max(14, int(round(min(width, height) * 0.34)))
+        radius = max(2, int(round(min(width, height) * 0.032)))
         for y in range(spacing // 2, height, spacing):
             for x in range(spacing // 2, width, spacing):
                 draw.ellipse(

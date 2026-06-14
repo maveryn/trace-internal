@@ -1,4 +1,4 @@
-"""Shared constants for synthetic 3D surface-fixture scenes."""
+"""Scene state catalogs for synthetic 3D surface-fixture panels."""
 
 from __future__ import annotations
 
@@ -6,22 +6,6 @@ from typing import Mapping, Tuple
 
 
 SCENE_ID = "surface_fixture"
-
-REPEATED_TASK_ID = "task_three_d__surface_fixture__repeated_element_count"
-COLORED_TASK_ID = "task_three_d__surface_fixture__colored_element_count"
-STATE_TASK_ID = "task_three_d__surface_fixture__state_element_count"
-SCOPED_COLORED_TASK_ID = "task_three_d__surface_fixture__scoped_colored_element_count"
-EMPTY_MISSING_TASK_ID = "task_three_d__surface_fixture__empty_or_missing_cell_count"
-ADJACENT_TASK_ID = "task_three_d__surface_fixture__adjacent_to_reference_count"
-
-SURFACE_FIXTURE_TASK_IDS: Tuple[str, ...] = (
-    REPEATED_TASK_ID,
-    COLORED_TASK_ID,
-    STATE_TASK_ID,
-    SCOPED_COLORED_TASK_ID,
-    EMPTY_MISSING_TASK_ID,
-    ADJACENT_TASK_ID,
-)
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "wall_tile_panel",
@@ -197,3 +181,29 @@ ADJACENCY_SCENE_VARIANTS: Tuple[str, ...] = (
 
 SURFACE_FIXTURE_OBJECT_TYPES: Tuple[str, ...] = SUPPORTED_SCENE_VARIANTS
 
+
+def semantic_color_label(color_name: str) -> str:
+    """Return the visible prompt label for one semantic color."""
+
+    rgb = SEMANTIC_COLOR_RGB[str(color_name)]
+    return f"{color_name} [#{rgb[0]:02X}{rgb[1]:02X}{rgb[2]:02X}]"
+
+
+__all__ = [
+    "ADJACENCY_SCENE_VARIANTS",
+    "COLORABLE_SCENE_VARIANTS",
+    "ELEMENT_DISPLAY_NAME",
+    "ELEMENT_PLURAL",
+    "ELEMENT_TYPE_BY_SCENE_VARIANT",
+    "MISSING_SCENE_VARIANTS",
+    "SCENE_ID",
+    "SCENE_VARIANT_BY_ELEMENT_TYPE",
+    "SEMANTIC_COLOR_RGB",
+    "SEMANTIC_COLOR_SUPPORT",
+    "STATE_DISPLAY_NAME",
+    "STATE_SUPPORT_BY_SCENE_VARIANT",
+    "SUPPORTED_SCENE_VARIANTS",
+    "SURFACE_FIXTURE_DISPLAY_NAME",
+    "SURFACE_FIXTURE_OBJECT_TYPES",
+    "semantic_color_label",
+]

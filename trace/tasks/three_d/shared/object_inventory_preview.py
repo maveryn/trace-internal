@@ -23,7 +23,7 @@ from .object_resources import (
     WAREHOUSE_NEAREST_REFERENCE_OBJECT_TYPE,
 )
 from .object_scene import resolve_object_scene_render_params
-from ..surface_fixture.shared.common import ELEMENT_TYPE_BY_SCENE_VARIANT, SEMANTIC_COLOR_RGB, SEMANTIC_COLOR_SUPPORT
+from ..surface_fixture.shared.state import ELEMENT_TYPE_BY_SCENE_VARIANT, SEMANTIC_COLOR_RGB, SEMANTIC_COLOR_SUPPORT
 from ..surface_fixture.shared.rendering import render_surface_fixture
 from .warehouse_object_rendering import _draw_ground_shadow as _draw_warehouse_ground_shadow
 from .warehouse_object_rendering import _fill_for_object as _warehouse_fill_for_object

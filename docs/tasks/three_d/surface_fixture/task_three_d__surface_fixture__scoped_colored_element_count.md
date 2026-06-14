@@ -23,7 +23,7 @@ outside the scope, other colors, the fixture panel, and decorative context are
 not annotation.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_surface_fixture_v0` under `prompts/three_d/surface_fixture/`.
+The prompt bundle is `three_d_surface_fixture_v1` under `prompts/three_d/surface_fixture/`.
 The trace records scene variant, target element type, target color, scope axis,
 scope index, explicit cell metadata, projected element boxes, and the solver
 count predicate.

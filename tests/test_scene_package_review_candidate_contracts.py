@@ -7,7 +7,7 @@ import re
 from typing import Any, Iterable, Mapping
 import pytest
 import yaml
-from trace.core.scene_package_migration import SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES, parse_public_task_id
+from trace.core.scene_package_migration import parse_public_task_id, scene_package_review_target_scenes
 from trace.core.prompts import load_scene_prompt_bundle
 _FORBIDDEN_SHARED_IDENTIFIER_NAMES = {'task_id', 'query_id', 'supported_query_ids', 'objective_contract', 'namespace_prefix', 'runtime_key', 'selected_query', 'query_params'}
 _FORBIDDEN_SHARED_STRING_CONSTANTS = {'query_id', 'task_id', 'supported_query_ids', 'objective_contract'}
@@ -26,7 +26,7 @@ _PROMPT_RENDER_FUNCTIONS = {'render_prompt', 'render_prompt_variants', 'render_t
 _PUBLIC_TASK_ID_RE = re.compile('^task_[a-z0-9_]+__[a-z0-9_]+__[a-z0-9_]+$')
 
 def _review_candidate_scene_pairs() -> list[tuple[str, str]]:
-    return [(str(domain), str(scene_id)) for domain, scene_ids in sorted(SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES.items()) for scene_id in sorted(scene_ids)]
+    return [(str(domain), str(scene_id)) for domain, scene_ids in sorted(scene_package_review_target_scenes().items()) for scene_id in sorted(scene_ids)]
 
 def _active_task_ids_for_review_candidate_scenes() -> dict[tuple[str, str], list[str]]:
     scene_pairs = _review_candidate_scene_pairs()

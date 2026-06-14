@@ -84,6 +84,14 @@ def layout_surface_element_grid(count: int) -> Tuple[int, int]:
 
 
 def fixture_quad(render_params: Any, scene_variant: str) -> List[Tuple[float, float]]:
+    """Return the projected panel quadrilateral for one fixture family.
+
+    The panel shape is the scene grammar anchor: wall-like fixtures use a
+    mostly upright projection, floor pavers use a lower perspective slab, and
+    specialty panels use mild offsets while preserving a single convex support
+    surface for all element bboxes.
+    """
+
     width = float(render_params.canvas_width)
     height = float(render_params.canvas_height)
     wall_like = {
@@ -274,6 +282,14 @@ def _draw_element(
     scene_variant: str,
     cell_record: Mapping[str, Any],
 ) -> Tuple[List[float], List[float]]:
+    """Draw one element from a normalized cell record and return its witness box.
+
+    Each branch draws only the element visible inside the already projected
+    fixture cell. The returned bbox is the verifier witness for the element,
+    so state/color decoration may change the drawing but must remain inside the
+    element-level visual support.
+    """
+
     element_type = str(cell_record["element_type"])
     u0 = float(cell_record["u0"])
     u1 = float(cell_record["u1"])
@@ -476,6 +492,13 @@ def render_surface_fixture(
     dataset: Mapping[str, Any],
     render_params: Any,
 ) -> RenderedSurfaceFixture:
+    """Render a complete fixture panel from scene metadata.
+
+    The renderer consumes finalized cell records from task-owned construction,
+    projects them onto one panel, and records entity bboxes/centers from the
+    same draw pass used to make the image.
+    """
+
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     scene_variant = str(dataset["scene_variant"])
@@ -524,4 +547,3 @@ __all__ = [
     "render_surface_fixture",
     "shrink_polygon",
 ]
-

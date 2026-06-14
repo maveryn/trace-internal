@@ -9,16 +9,26 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.scene_package_migration import parse_public_task_id
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
-from trace.tasks.registry import list_default_task_ids
+from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
+from trace.tasks.three_d.surface_fixture.adjacent_to_reference_count import TASK_ID as ADJACENT_TASK_ID
+from trace.tasks.three_d.surface_fixture.colored_element_count import TASK_ID as COLORED_TASK_ID
+from trace.tasks.three_d.surface_fixture.empty_or_missing_cell_count import TASK_ID as EMPTY_MISSING_TASK_ID
 from trace.tasks.three_d.surface_fixture.repeated_element_count import TASK_ID
-from trace.tasks.three_d.surface_fixture.shared.common import (
-    ADJACENT_TASK_ID,
-    COLORED_TASK_ID,
+from trace.tasks.three_d.surface_fixture.repeated_element_count import TASK_ID as REPEATED_TASK_ID
+from trace.tasks.three_d.surface_fixture.scoped_colored_element_count import TASK_ID as SCOPED_COLORED_TASK_ID
+from trace.tasks.three_d.surface_fixture.shared.state import (
     ELEMENT_TYPE_BY_SCENE_VARIANT,
-    EMPTY_MISSING_TASK_ID,
-    SCOPED_COLORED_TASK_ID,
+)
+from trace.tasks.three_d.surface_fixture.state_element_count import TASK_ID as STATE_TASK_ID
+
+
+SURFACE_FIXTURE_TASK_IDS = (
+    REPEATED_TASK_ID,
+    COLORED_TASK_ID,
     STATE_TASK_ID,
-    SURFACE_FIXTURE_TASK_IDS,
+    SCOPED_COLORED_TASK_ID,
+    EMPTY_MISSING_TASK_ID,
+    ADJACENT_TASK_ID,
 )
 
 
@@ -141,7 +151,8 @@ def test_surface_fixture_predicate_count_tasks() -> None:
 
 
 def test_surface_fixture_task_registered_in_three_d_taxonomy() -> None:
-    default_task_ids = set(list_default_task_ids())
+    ensure_scene_tasks_registered("three_d", "surface_fixture")
+    default_task_ids = set(TASK_REGISTRY)
 
     for task_id in SURFACE_FIXTURE_TASK_IDS:
         task = create_task(task_id)
@@ -161,4 +172,4 @@ def test_surface_fixture_task_registered_in_three_d_taxonomy() -> None:
         assert Path(inspect.getsourcefile(task.__class__) or "").resolve() == expected_source
         assert taxonomy.domain == "three_d"
         assert taxonomy.scene_id == "surface_fixture"
-        assert taxonomy.source_scene_id == "surface_fixture"
+        assert not taxonomy.source_scene_id

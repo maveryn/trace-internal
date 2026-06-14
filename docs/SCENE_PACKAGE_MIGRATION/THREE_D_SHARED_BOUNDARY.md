@@ -289,18 +289,20 @@ routes by task id/query id and constructs `TaskOutput`.
 
 ### `surface_fixture`
 
-Keep fixture-panel drawing in scene shared, but decompose `shared/task_base.py`:
+Migration status: review-candidate scene package. Fixture-panel drawing remains
+scene shared; the legacy `shared/task_base.py` has been decomposed into:
 
 - fixture scene state and element catalogs -> `state.py`;
 - grid/layout/cell helpers -> `layout.py`;
 - panel rendering -> `rendering.py`;
 - objective-neutral sampling helpers -> `sampling.py`;
-- adjacency/state/color/missing-cell metrics -> `metrics.py`, `relations.py`;
+- adjacency/state/color/missing-cell metrics -> `metrics.py`;
 - annotation helpers -> `annotations.py`;
-- common trace scaffolding -> `output.py`.
+- prompt assembly -> `prompts.py`.
 
-Public task files must own each objective's query ids, target element/state/color
-selection, answer binding, annotation binding, prompt slots, and final output.
+Public task files own each objective's query ids, target element/state/color
+selection, and answer binding. Scene-private lifecycle code owns common
+render/prompt/trace plumbing and does not route by public task identity.
 
 ### `room`
 

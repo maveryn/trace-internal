@@ -167,8 +167,8 @@
       "The diameter {diameter_segment} meets chord {chord_segment} at {intersection_label}. What is the length of {answer_segment}?",
       "{diameter_segment} is a diameter and crosses chord {chord_segment} at {intersection_label}. Find the length of {answer_segment}.",
       "Using the shown diameter {diameter_segment} and chord {chord_segment}, determine the length of {answer_segment}.",
-      "In the diagram, {diameter_segment} and {chord_segment} meet at {intersection_label}. What is the length of {answer_segment}?",
-      "Find the segment length {answer_segment} from the visible diameter and chord measurements."
+      "In the diagram, diameter {diameter_segment} and chord {chord_segment} meet at {intersection_label}. What is the length of {answer_segment}?",
+      "Find the segment length {answer_segment} using diameter {diameter_segment} and chord {chord_segment}."
     ],
     "secant_secant_variable_segment_length": [
       "From exterior point {external_point}, two lines cross the circle at {near_point},{far_point} and {near_point_alt},{far_point_alt}. What is the length of {answer_segment}?",

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import math
+from pathlib import Path
 
 import pytest
 
@@ -928,3 +930,27 @@ def test_geometry_circle_scene_config_keeps_render_and_prompt_defaults_only() ->
     assert tangent_radius_generation == {}
     assert str(tangent_radius_prompt["answer_hint_tangent_radius_number"]).strip()
     assert str(tangent_radius_prompt["annotation_hint_tangent_radius_points"]).strip()
+
+
+def test_diameter_chord_prompt_names_roles_without_readout_phrase() -> None:
+    prompt_asset = Path("prompts/geometry/circle_theorem/geometry_circle_theorem_v0.json")
+    bundle = json.loads(prompt_asset.read_text(encoding="utf-8"))
+    templates = bundle["query_templates"]["diameter_perpendicular_chord_length"]
+
+    assert templates
+    for template in templates:
+        normalized = str(template).lower()
+        assert "measurement readout" not in normalized
+        assert "diameter" in normalized and "{diameter_segment}" in template
+        assert "chord" in normalized and "{chord_segment}" in template
+
+    task = GeometryCircleDiameterPerpendicularChordLengthValueTask()
+    out = task.generate(
+        54001,
+        params={"query_id": "single", "target_answer": 8},
+        max_attempts=64,
+    )
+    prompt = str(out.prompt).lower()
+    assert "measurement readout" not in prompt
+    assert ("db is a diameter" in prompt) or ("diameter db" in prompt) or ("shown diameter db" in prompt)
+    assert "chord ac" in prompt

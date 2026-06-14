@@ -69,11 +69,11 @@ prompt:
     bundle_id: geometry_circle_theorem_v0
     scene_key: circle_theorem_scene
     task_key: circle_theorem_query
-    object_description: labeled points and measurement readouts
+    object_description: labeled points and shown measurements
     object_description_chord_length: labeled points, a radius label, a chord, and
       an angle mark
     object_description_tangent_radius: labeled center, tangent point, exterior point,
-      a right-angle marker, and measurement readouts
+      a right-angle marker, and shown measurements
     answer_hint_integer: set "answer" to the requested value as an integer
     answer_hint_number: set "answer" to the requested chord length as a number rounded
       to one decimal place

@@ -14,22 +14,22 @@ from trace.tasks.illustrations.environment.shared.rendering import (
 
 def test_feature_relation_object_count_contracts() -> None:
     scenarios = (
-        ("park_road", "road", "above"),
-        ("river_meadow", "river", "below"),
-        ("road_and_river", "road", "below"),
-        ("road_and_river", "river", "above"),
-        ("canal_city", "river", "below"),
-        ("skyline_street", "road", "above"),
-        ("road_and_river", "road", "on"),
-        ("road_and_river", "river", "on"),
+        ("park_road", "road", "above_feature", "above"),
+        ("river_meadow", "river", "below_feature", "below"),
+        ("road_and_river", "road", "below_feature", "below"),
+        ("road_and_river", "river", "above_feature", "above"),
+        ("canal_city", "river", "below_feature", "below"),
+        ("skyline_street", "road", "above_feature", "above"),
+        ("road_and_river", "road", "on_feature", "on"),
+        ("road_and_river", "river", "on_feature", "on"),
     )
-    for index, (theme_id, feature_type, relation) in enumerate(scenarios):
+    for index, (theme_id, feature_type, query_id, relation) in enumerate(scenarios):
         out = create_task("task_illustrations__environment__feature_relation_object_count").generate(
-            hash64(2026052101, f"{theme_id}:{feature_type}:{relation}", index),
+            hash64(2026052101, f"{theme_id}:{feature_type}:{query_id}", index),
             params={
+                "query_id": query_id,
                 "theme_id": theme_id,
                 "feature_type": feature_type,
-                "relation": relation,
                 "object_count": 14,
                 "target_count_min": 1,
             },
@@ -39,7 +39,8 @@ def test_feature_relation_object_count_contracts() -> None:
         execution = trace["execution_trace"]
         render_map = trace["render_map"]
         assert out.scene_id == "environment"
-        assert out.query_id == "single"
+        assert out.query_id == query_id
+        assert trace["query_spec"]["query_id"] == query_id
         assert execution["theme_id"] == theme_id
         assert execution["feature_type"] == feature_type
         assert execution["relation"] == relation

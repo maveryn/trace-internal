@@ -16,7 +16,9 @@ Counts foreground objects in a queried relation to a road or river feature.
 
 | Query id | Program schema |
 | --- | --- |
-| `single` | `count(filter(scene_objects, relation_to_feature(object, target_linear_feature)=target_relation)); scene=environment; scope=feature_relation_object_count` |
+| `above_feature` | `count(filter(scene_objects, relation_to_feature(object, target_linear_feature)=above)); scene=environment; scope=feature_relation_object_count` |
+| `below_feature` | `count(filter(scene_objects, relation_to_feature(object, target_linear_feature)=below)); scene=environment; scope=feature_relation_object_count` |
+| `on_feature` | `count(filter(scene_objects, relation_to_feature(object, target_linear_feature)=on)); scene=environment; scope=feature_relation_object_count` |
 
 ## Program Metadata
 - Program signatures: `count.relation_attribute`
@@ -28,7 +30,7 @@ Counts foreground objects in a queried relation to a road or river feature.
   - `target_linear_feature`: semantic_role; allowed `visible_linear_feature`; source `program_schema_concrete`
   - `target_relation`: semantic_role; allowed `above`, `below`, `on`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `single`
+- Supported query ids: `above_feature`, `below_feature`, `on_feature`
 
 ## Answer Contract
 - Answer schema: `integer_count`
@@ -44,4 +46,4 @@ Counts foreground objects in a queried relation to a road or river feature.
 ## Prompt And Trace Requirements
 - Prompt text must come from the illustrations prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
 - Render randomness, sampled fonts/styles, query operands, and verifier payloads must be explicit in the instance trace.
-- The relation operand is trace metadata, not a public query branch. For river `on`, prompt text uses `in or on the river`.
+- The relation predicate is selected by `query_id`. For river `on`, prompt text uses `in or on the river`.

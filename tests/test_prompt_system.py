@@ -276,9 +276,9 @@ def test_geometry_analytical_measurement_bundle_owns_query_text() -> None:
 def test_geometry_angle_relations_bundle_owns_query_text() -> None:
     expected_query_text = {
         "triangle_exterior_angle": 'What is the measure of angle "ABC"?',
-        "parallel_supplement_angle": 'Lines "AB" and "CD" are parallel. What is the measure of angle "CFE"?',
-        "triangle_single_extension_expression": 'Use angle "BAC" and exterior angle "BCD". Solve for x, then substitute it into the expression at angle "ABC". What is the measure of angle "ABC"?',
-        "triangle_double_extension_expression": 'Use interior angle "BAC" and exterior angle "BCD" in the triangle whose base is extended through "A" and "C". Solve for x, then substitute it into the expression at angle "ABC". What is the measure of angle "ABC"?',
+        "parallel_supplement_angle": 'What is the measure of angle "CFE"?',
+        "target_angle_value": 'Use the displayed angle expressions to solve for x. What is the measure of angle "ABC"?',
+        "variable_x_value": "Use the displayed angle expressions. What is the value of x?",
     }
     _assert_geometry_analytical_measurement_query_text(
         domain="geometry",

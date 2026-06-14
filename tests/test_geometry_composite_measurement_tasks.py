@@ -158,7 +158,10 @@ def test_angle_relations_public_annotation_uses_angle_primitives_not_label_boxes
         assert set(out.annotation_gt.value) == set(out.trace_payload["execution_trace"]["annotation_roles"])
         roles = out.trace_payload["execution_trace"]["annotation_roles"]
         assert all("label" not in str(role) for role in roles)
-        assert all(str(role).isupper() and len(str(role)) == 3 for role in roles)
+        if task_cls is GeometryAngleRelationsAlgebraicAngleValueTask:
+            assert set(roles) == {"A", "B", "C", "D"}
+        else:
+            assert all(str(role).isupper() and len(str(role)) == 3 for role in roles)
         assert "angle_label_bboxes" in out.trace_payload["render_map"]
         width, height = out.image.size
         scene_points = _scene_point_lookup(out.trace_payload)
@@ -170,6 +173,9 @@ def test_angle_relations_public_annotation_uses_angle_primitives_not_label_boxes
             if str(key).isupper() and len(str(key)) == 3:
                 expected_vertex = scene_points[str(key)[1]]
                 assert [float(point[0]), float(point[1])] == pytest.approx(expected_vertex, abs=1e-3)
+            elif task_cls is GeometryAngleRelationsAlgebraicAngleValueTask:
+                expected_point = scene_points[str(key)]
+                assert [float(point[0]), float(point[1])] == pytest.approx(expected_point, abs=1e-3)
 
 
 def test_algebraic_angle_uses_varied_expression_forms() -> None:

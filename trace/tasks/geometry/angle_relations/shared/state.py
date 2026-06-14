@@ -45,6 +45,10 @@ ANGLE_BAC = "BAC"
 ANGLE_BCD = "BCD"
 ANGLE_AEF = "AEF"
 ANGLE_CFE = "CFE"
+POINT_A = "A"
+POINT_B = "B"
+POINT_C = "C"
+POINT_D = "D"
 
 __all__ = [
     "ANGLE_AEF",
@@ -56,6 +60,10 @@ __all__ = [
     "BBox",
     "DOMAIN",
     "Point",
+    "POINT_A",
+    "POINT_B",
+    "POINT_C",
+    "POINT_D",
     "RenderedAngleRelationScene",
     "SCENE_ID",
 ]

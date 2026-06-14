@@ -23,7 +23,19 @@ from .relations import (
     linear_expression_value,
     supplement_angle_value,
 )
-from .state import ANGLE_ABC, ANGLE_AEF, ANGLE_BAC, ANGLE_BCD, ANGLE_CFE, AngleRelationCase, RenderedAngleRelationScene
+from .state import (
+    ANGLE_ABC,
+    ANGLE_AEF,
+    ANGLE_BAC,
+    ANGLE_BCD,
+    ANGLE_CFE,
+    POINT_A,
+    POINT_B,
+    POINT_C,
+    POINT_D,
+    AngleRelationCase,
+    RenderedAngleRelationScene,
+)
 
 
 def _draw_parallel_arrow_marks(ctx: _RenderContext, segments: tuple[tuple[tuple[float, float], tuple[float, float]], ...]) -> tuple[float, float, float, float]:
@@ -202,16 +214,12 @@ def make_algebraic_single_extension_case(
         target_arc, target_bbox = _draw_angle_label(ctx, target_expr, b, a, c, radius=66.0)
         given_arc, given_bbox = _draw_angle_label(ctx, format_degrees(given_angle_a), a, c, b, radius=64.0)
         exterior_arc, exterior_bbox = _draw_angle_label(ctx, exterior_expr, c, b, d, radius=76.0)
-        annotation_points = {
-            ANGLE_ABC: _angle_annotation_point(b, a, c, label_radius=66.0),
-            ANGLE_BAC: _angle_annotation_point(a, c, b, label_radius=64.0),
-            ANGLE_BCD: _angle_annotation_point(c, b, d, label_radius=76.0),
-        }
+        annotation_points = {POINT_A: a, POINT_B: b, POINT_C: c, POINT_D: d}
         return RenderedAngleRelationScene(
             image=ctx.image,
             answer=int(answer_angle_b),
             annotation_bboxes=(target_arc, given_arc, exterior_arc),
-            annotation_roles=(ANGLE_ABC, ANGLE_BAC, ANGLE_BCD),
+            annotation_roles=(POINT_A, POINT_B, POINT_C, POINT_D),
             scene_entities=(
                 {"type": "triangle", "points": {"A": a, "B": b, "C": c}},
                 {"type": "extension_ray", "points": {"C": c, "D": d}},
@@ -272,16 +280,12 @@ def make_algebraic_double_extension_case(
         target_arc, target_bbox = _draw_angle_label(ctx, target_expr, b, a, c, radius=66.0)
         given_arc, given_bbox = _draw_angle_label(ctx, format_degrees(given_angle_a), a, c, b, radius=64.0)
         exterior_c_arc, exterior_c_bbox = _draw_angle_label(ctx, exterior_expr, c, b, d, radius=76.0)
-        annotation_points = {
-            ANGLE_ABC: _angle_annotation_point(b, a, c, label_radius=66.0),
-            ANGLE_BAC: _angle_annotation_point(a, c, b, label_radius=64.0),
-            ANGLE_BCD: _angle_annotation_point(c, b, d, label_radius=76.0),
-        }
+        annotation_points = {POINT_A: a, POINT_B: b, POINT_C: c, POINT_D: d}
         return RenderedAngleRelationScene(
             image=ctx.image,
             answer=int(answer_angle_b),
             annotation_bboxes=(target_arc, given_arc, exterior_c_arc),
-            annotation_roles=(ANGLE_ABC, ANGLE_BAC, ANGLE_BCD),
+            annotation_roles=(POINT_A, POINT_B, POINT_C, POINT_D),
             scene_entities=(
                 {"type": "triangle", "points": {"A": a, "B": b, "C": c}},
                 {"type": "extension_ray", "points": {"A": a, "E": e}},

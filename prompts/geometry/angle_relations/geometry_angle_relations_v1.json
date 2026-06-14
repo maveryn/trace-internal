@@ -36,19 +36,19 @@
         "What is the measure of angle \"CFE\"?",
         "What is the measure of angle \"CFE\"?"
       ],
-      "triangle_single_extension_expression": [
-        "What is the measure of angle \"ABC\"?",
-        "What is the measure of angle \"ABC\"?",
-        "What is the measure of angle \"ABC\"?",
-        "What is the measure of angle \"ABC\"?",
-        "What is the measure of angle \"ABC\"?"
+      "target_angle_value": [
+        "Use the displayed angle expressions to solve for x. What is the measure of angle \"ABC\"?",
+        "Use the displayed angle expressions to solve for x. What is the measure of angle \"ABC\"?",
+        "Use the displayed angle expressions to solve for x. What is the measure of angle \"ABC\"?",
+        "Use the displayed angle expressions to solve for x. What is the measure of angle \"ABC\"?",
+        "Use the displayed angle expressions to solve for x. What is the measure of angle \"ABC\"?"
       ],
-      "triangle_double_extension_expression": [
-        "What is the measure of angle \"ABC\"?",
-        "What is the measure of angle \"ABC\"?",
-        "What is the measure of angle \"ABC\"?",
-        "What is the measure of angle \"ABC\"?",
-        "What is the measure of angle \"ABC\"?"
+      "variable_x_value": [
+        "Use the displayed angle expressions. What is the value of x?",
+        "Use the displayed angle expressions. What is the value of x?",
+        "Use the displayed angle expressions. What is the value of x?",
+        "Use the displayed angle expressions. What is the value of x?",
+        "Use the displayed angle expressions. What is the value of x?"
       ]
     },
     "output": {
@@ -86,13 +86,13 @@
       "annotation_hint": "set \"annotation\" to a JSON object with exactly the keys \"CFE\" and \"AEF\"; each value is the pixel point [x,y] at that angle's vertex",
       "json_example": "{\"annotation\":{\"CFE\":[236,228],\"AEF\":[120,180]},\"answer\":48}"
     },
-    "query:triangle_single_extension_expression": {
-      "annotation_hint": "set \"annotation\" to a JSON object with exactly the keys \"ABC\", \"BAC\", and \"BCD\"; each value is the pixel point [x,y] at that angle's vertex",
-      "json_example": "{\"annotation\":{\"ABC\":[120,180],\"BAC\":[178,204],\"BCD\":[236,228]},\"answer\":42}"
+    "query:target_angle_value": {
+      "annotation_hint": "set \"annotation\" to a JSON object with exactly the keys \"A\", \"B\", \"C\", and \"D\"; each value is the pixel point [x,y] at that labeled point",
+      "json_example": "{\"annotation\":{\"A\":[120,180],\"B\":[178,204],\"C\":[236,228],\"D\":[300,228]},\"answer\":42}"
     },
-    "query:triangle_double_extension_expression": {
-      "annotation_hint": "set \"annotation\" to a JSON object with exactly the keys \"ABC\", \"BAC\", and \"BCD\"; each value is the pixel point [x,y] at that angle's vertex",
-      "json_example": "{\"annotation\":{\"ABC\":[120,180],\"BAC\":[178,204],\"BCD\":[236,228]},\"answer\":42}"
+    "query:variable_x_value": {
+      "annotation_hint": "set \"annotation\" to a JSON object with exactly the keys \"A\", \"B\", \"C\", and \"D\"; each value is the pixel point [x,y] at that labeled point",
+      "json_example": "{\"annotation\":{\"A\":[120,180],\"B\":[178,204],\"C\":[236,228],\"D\":[300,228]},\"answer\":12}"
     }
   },
   "dynamic_slots": {},

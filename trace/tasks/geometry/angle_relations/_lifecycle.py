@@ -88,6 +88,10 @@ def build_integer_angle_relation_trace(
     branch_name: str,
     branch_probabilities: Mapping[str, float],
     answer_value: int,
+    query_params: Mapping[str, Any] | None = None,
+    scene_relation_fields: Mapping[str, Any] | None = None,
+    execution_fields_extra: Mapping[str, Any] | None = None,
+    witness_fields_extra: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Merge common render trace sections with public task-bound integer fields."""
 
@@ -102,6 +106,7 @@ def build_integer_angle_relation_trace(
             "query_id_probabilities": dict(branch_probabilities),
             "case_index": int(runtime.case_index),
             "case_answer": int(answer_value),
+            **dict(query_params or {}),
         },
     )
     query_spec["scene_id"] = SCENE_ID
@@ -114,6 +119,7 @@ def build_integer_angle_relation_trace(
             "query_id": str(branch_name),
             "answer_value": int(answer_value),
             "annotation_roles": list(annotation_roles),
+            **dict(scene_relation_fields or {}),
         },
         execution_fields={
             "scene_id": SCENE_ID,
@@ -122,6 +128,7 @@ def build_integer_angle_relation_trace(
             "answer_type": "integer",
             "answer_value": int(answer_value),
             "annotation_roles": list(annotation_roles),
+            **dict(execution_fields_extra or {}),
         },
         witness_fields={
             "type": "analytical_measurement_geometry_value",
@@ -129,6 +136,7 @@ def build_integer_angle_relation_trace(
             "query_id": str(branch_name),
             "answer_value": int(answer_value),
             "annotation_roles": list(annotation_roles),
+            **dict(witness_fields_extra or {}),
         },
     )
 

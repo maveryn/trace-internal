@@ -40,7 +40,7 @@ def test_surface_fixture_repeated_element_count_variants() -> None:
         output = task.generate(
             20260604 + index,
             params={
-                "query_id": "element_type_count",
+                "query_id": "single",
                 "scene_variant": scene_variant,
                 "target_count": count,
                 "post_image_noise_apply_prob": 0.0,
@@ -53,7 +53,7 @@ def test_surface_fixture_repeated_element_count_variants() -> None:
         target_element_ids = [str(element_id) for element_id in trace["target_element_ids"]]
 
         assert output.scene_id == "surface_fixture"
-        assert output.query_id == "element_type_count"
+        assert output.query_id == "single"
         assert output.answer_gt.type == "integer"
         assert output.answer_gt.value == count
         assert output.annotation_gt.type == "bbox_set"
@@ -74,7 +74,7 @@ def test_surface_fixture_predicate_count_tasks() -> None:
         (
             COLORED_TASK_ID,
             {
-                "query_id": "element_color_count",
+                "query_id": "single",
                 "scene_variant": "locker_bank",
                 "target_count": 4,
                 "distractor_count": 6,
@@ -85,7 +85,7 @@ def test_surface_fixture_predicate_count_tasks() -> None:
         (
             STATE_TASK_ID,
             {
-                "query_id": "element_state_count",
+                "query_id": "single",
                 "scene_variant": "server_rack",
                 "target_count": 3,
                 "distractor_count": 7,
@@ -96,7 +96,7 @@ def test_surface_fixture_predicate_count_tasks() -> None:
         (
             SCOPED_COLORED_TASK_ID,
             {
-                "query_id": "scoped_element_color_count",
+                "query_id": "single",
                 "scene_variant": "solar_panel_array",
                 "target_count": 3,
                 "target_color_name": "blue",
@@ -110,7 +110,7 @@ def test_surface_fixture_predicate_count_tasks() -> None:
         (
             EMPTY_MISSING_TASK_ID,
             {
-                "query_id": "empty_or_missing_cell_count",
+                "query_id": "single",
                 "scene_variant": "brick_wall",
                 "missing_count": 5,
                 "total_slots": 16,
@@ -120,7 +120,7 @@ def test_surface_fixture_predicate_count_tasks() -> None:
         (
             ADJACENT_TASK_ID,
             {
-                "query_id": "adjacent_to_reference_count",
+                "query_id": "single",
                 "scene_variant": "control_panel",
                 "target_count": 4,
                 "reference_color_name": "purple",
@@ -152,7 +152,6 @@ def test_surface_fixture_predicate_count_tasks() -> None:
 
 def test_surface_fixture_task_registered_in_three_d_taxonomy() -> None:
     ensure_scene_tasks_registered("three_d", "surface_fixture")
-    default_task_ids = set(TASK_REGISTRY)
 
     for task_id in SURFACE_FIXTURE_TASK_IDS:
         task = create_task(task_id)
@@ -167,7 +166,7 @@ def test_surface_fixture_task_registered_in_three_d_taxonomy() -> None:
             / f"{parts.objective_contract}.py"
         ).resolve()
 
-        assert task_id in default_task_ids
+        assert task_id in TASK_REGISTRY
         assert not hasattr(task, "scene_id")
         assert Path(inspect.getsourcefile(task.__class__) or "").resolve() == expected_source
         assert taxonomy.domain == "three_d"

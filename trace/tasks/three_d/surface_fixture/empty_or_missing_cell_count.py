@@ -15,8 +15,8 @@ from .shared.state import MISSING_SCENE_VARIANTS, SCENE_ID
 
 
 TASK_ID = "task_three_d__surface_fixture__empty_or_missing_cell_count"
-QUERY_ID = "empty_or_missing_cell_count"
-PROMPT_QUERY_KEY = QUERY_ID
+QUERY_ID = "single"
+PROMPT_QUERY_KEY = "empty_or_missing_cell_count"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
     "three_d",

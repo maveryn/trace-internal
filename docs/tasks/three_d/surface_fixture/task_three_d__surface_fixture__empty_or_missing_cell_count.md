@@ -4,9 +4,12 @@
 - Domain: `three_d`
 - Scene id: `surface_fixture`
 - Scene package: `surface_fixture`
-- Query id: `empty_or_missing_cell_count`
+- Query id: `single`
 - Answer type: `integer`
 - Annotation type: unordered `bbox_set`
+
+## Program Contract
+- `count(filter(surface_fixture_cells, present=false)); scene=surface_fixture; scope=empty_or_missing_cell_count`
 
 ## Contract
 The image shows one projected fixture surface arranged as a visible grid, with

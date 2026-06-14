@@ -4,9 +4,12 @@
 - Domain: `three_d`
 - Scene id: `surface_fixture`
 - Scene package: `surface_fixture`
-- Query id: `adjacent_to_reference_count`
+- Query id: `single`
 - Answer type: `integer`
 - Annotation type: unordered `bbox_set`
+
+## Program Contract
+- `count(filter(surface_fixture_elements, present=true, edge_adjacent_to=reference_element_id)); scene=surface_fixture; scope=adjacent_to_reference_count`
 
 ## Contract
 The image shows one projected fixture surface arranged in rows and columns with

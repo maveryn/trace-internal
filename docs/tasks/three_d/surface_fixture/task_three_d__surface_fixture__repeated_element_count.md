@@ -4,9 +4,12 @@
 - Domain: `three_d`
 - Scene id: `surface_fixture`
 - Scene package: `surface_fixture`
-- Query id: `element_type_count`
+- Query id: `single`
 - Answer type: `integer`
 - Annotation type: unordered `bbox_set`
+
+## Program Contract
+- `count(filter(surface_fixture_elements, present=true, element_type=target_element_type)); scene=surface_fixture; scope=repeated_element_count`
 
 ## Contract
 The image shows one projected fixture surface with a repeated element family:

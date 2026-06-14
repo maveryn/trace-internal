@@ -4,9 +4,12 @@
 - Domain: `three_d`
 - Scene id: `surface_fixture`
 - Scene package: `surface_fixture`
-- Query id: `scoped_element_color_count`
+- Query id: `single`
 - Answer type: `integer`
 - Annotation type: unordered `bbox_set`
+
+## Program Contract
+- `count(filter(surface_fixture_elements, present=true, scope_axis=scope_axis, scope_index=scope_index, color_name=target_color_name)); scene=surface_fixture; scope=scoped_colored_element_count`
 
 ## Contract
 The image shows one projected fixture surface arranged in rows and columns with

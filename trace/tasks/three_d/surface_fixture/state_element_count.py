@@ -15,8 +15,8 @@ from .shared.state import SCENE_ID, STATE_SUPPORT_BY_SCENE_VARIANT
 
 
 TASK_ID = "task_three_d__surface_fixture__state_element_count"
-QUERY_ID = "element_state_count"
-PROMPT_QUERY_KEY = QUERY_ID
+QUERY_ID = "single"
+PROMPT_QUERY_KEY = "element_state_count"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
     "three_d",

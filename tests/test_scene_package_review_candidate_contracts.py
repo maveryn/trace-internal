@@ -32,14 +32,19 @@ def _active_task_ids_for_review_candidate_scenes() -> dict[tuple[str, str], list
     scene_pairs = _review_candidate_scene_pairs()
     if not scene_pairs:
         return {}
-    import trace.tasks
-    from trace.tasks.registry import list_default_task_ids
     active_by_scene = {pair: [] for pair in scene_pairs}
-    for task_id in list_default_task_ids():
-        parts = parse_public_task_id(str(task_id))
-        key = (parts.domain, parts.scene_id)
-        if key in active_by_scene:
-            active_by_scene[key].append(str(task_id))
+    from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
+
+    for domain, scene_id in scene_pairs:
+        ensure_scene_tasks_registered(domain, scene_id)
+        for task_id, task_cls in dict.items(TASK_REGISTRY):
+            try:
+                parts = parse_public_task_id(str(task_id))
+            except ValueError:
+                continue
+            key = (parts.domain, parts.scene_id)
+            if key == (domain, scene_id) and bool(getattr(task_cls, "default_dataset_enabled", False)):
+                active_by_scene[key].append(str(task_id))
     return {key: sorted(value) for key, value in active_by_scene.items()}
 
 def _read_yaml(path: Path) -> Any:
@@ -137,6 +142,23 @@ def _declared_supported_query_ids(task_cls: type) -> tuple[str, ...]:
         values = tuple(raw)
     return tuple((str(value) for value in values if str(value)))
 
+
+def _doc_supported_query_ids(path: Path) -> tuple[str, ...]:
+    """Extract the supported query ids listed in one task contract doc."""
+
+    if not path.exists():
+        return tuple()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if "Supported" not in line or "`query_id`" not in line:
+            continue
+        values = tuple(
+            value
+            for value in re.findall(r"`([^`]+)`", line)
+            if value != "query_id"
+        )
+        return values
+    return tuple()
+
 def test_review_candidate_scenes_have_scene_package_source_layout() -> None:
     active_by_scene = _active_task_ids_for_review_candidate_scenes()
     if not active_by_scene:
@@ -233,12 +255,28 @@ def test_review_candidate_tasks_validate_supported_query_id_params() -> None:
             task_cls = TASK_REGISTRY[task_id]
             supported_query_ids = _declared_supported_query_ids(task_cls)
             assert supported_query_ids, f'{task_id} must declare supported_query_ids'
+            if len(supported_query_ids) == 1:
+                assert supported_query_ids == ('single',), f'{task_id} single-query tasks must use query_id=\"single\"'
             task = task_cls()
             default_output = task.generate(instance_seed=29, params={}, max_attempts=100)
-            assert str(getattr(default_output, 'query_id', '') or 'default') in supported_query_ids
+            assert str(getattr(default_output, 'query_id', '') or 'single') in supported_query_ids
             for param_key in ('query_id', 'query_variant'):
                 for query_index, query_id in enumerate(supported_query_ids):
                     output = task.generate(instance_seed=29 + int(query_index), params={param_key: query_id}, max_attempts=100)
-                    assert str(getattr(output, 'query_id', '') or 'default') == query_id
+                    assert str(getattr(output, 'query_id', '') or 'single') == query_id
                 with pytest.raises(ValueError, match='query_id'):
                     task.generate(instance_seed=29, params={param_key: '__unsupported_query_id__'}, max_attempts=100)
+
+
+def test_review_candidate_single_query_task_docs_use_single_sentinel() -> None:
+    active_by_scene = _active_task_ids_for_review_candidate_scenes()
+    offenders: list[str] = []
+    for (domain, scene_id), task_ids in active_by_scene.items():
+        for task_id in task_ids:
+            doc_path = Path('docs') / 'tasks' / domain / scene_id / f'{task_id}.md'
+            supported_query_ids = _doc_supported_query_ids(doc_path)
+            if len(supported_query_ids) != 1:
+                continue
+            if supported_query_ids != ('single',):
+                offenders.append(f'{doc_path}: {supported_query_ids[0]}')
+    assert offenders == []

@@ -47,12 +47,10 @@ from ..shared.procedural_named_icons import (
     sample_procedural_named_icon_fill_style,
     validate_procedural_named_icon_fill_style_support,
 )
-from ..shared.public_query_task import rewrite_icons_query_output
 
 
 TASK_ID = "task_icons__named_field__reference_distance_rank_label"
 SCENE_ID = "named_field"
-PUBLIC_QUERY_ID = "named_reference_distance_rank_label"
 
 QUERY_IDS: Tuple[str, ...] = (
     "closest_to_named_reference_label",
@@ -283,8 +281,6 @@ def _resolve_query(rng, *, params: Mapping[str, Any]) -> Tuple[str, Dict[str, fl
     explicit_variant = str(query_params.get("query_id", "") or "").strip()
     if query_params.get("distance_rank_query") is None and explicit_variant in set(QUERY_IDS):
         query_params["distance_rank_query"] = explicit_variant
-    if explicit_variant == PUBLIC_QUERY_ID:
-        query_params.pop("query_id", None)
     query_id, probabilities = resolve_variant(
         rng,
         params=query_params,
@@ -988,6 +984,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "icons_named_field_distance_rank",
+                "scene_id": SCENE_ID,
                 "entities": [dict(serialized_reference), *serialized_candidates, *serialized_distractors],
                 "relations": {
                     "target": "labeled_candidate_distance_rank_from_named_reference",
@@ -1005,12 +1002,14 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
                 },
             },
             "query_spec": {
-                "query_id": str(PUBLIC_QUERY_ID),
+                "query_id": str(scene_payload.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
+                    "query_id": str(scene_payload.query_id),
+                    "query_id_probabilities": dict(query_probabilities),
                     "distance_rank_query": str(scene_payload.query_id),
                     "distance_rank_query_probabilities": dict(query_probabilities),
                     "answer_label": str(scene_payload.answer_label),
@@ -1098,7 +1097,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
                 ],
             },
         }
-        output = TaskOutput(
+        return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
             annotation_gt=annotation_gt,
@@ -1106,12 +1105,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
             image_id="img0",
             trace_payload=trace_payload,
             task_versions=default_task_versions(),
-            query_id=str(PUBLIC_QUERY_ID),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-        )
-        return rewrite_icons_query_output(
-            output,
-            query_id=str(scene_payload.query_id),
             scene_id=SCENE_ID,
-            query_probabilities=query_probabilities,
+            query_id=str(scene_payload.query_id),
+            prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

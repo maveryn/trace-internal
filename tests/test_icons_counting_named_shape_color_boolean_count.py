@@ -6,13 +6,50 @@ from collections import Counter
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
-from trace.tasks.icons.named_field.multi_attribute_and_count import QUERY_IDS, QUERY_IDS_BY_TASK_ID
+from trace.tasks.icons.named_field.multi_attribute_and_count import (
+    INTERNAL_QUERY_ID as AND_INTERNAL_QUERY_ID,
+    SUPPORTED_QUERY_IDS as AND_SUPPORTED_QUERY_IDS,
+    TASK_ID as AND_TASK_ID,
+)
+from trace.tasks.icons.named_field.multi_attribute_complement_count import (
+    INTERNAL_QUERY_ID as COMPLEMENT_INTERNAL_QUERY_ID,
+    SUPPORTED_QUERY_IDS as COMPLEMENT_SUPPORTED_QUERY_IDS,
+    TASK_ID as COMPLEMENT_TASK_ID,
+)
+from trace.tasks.icons.named_field.multi_attribute_exclusion_count import (
+    ATTRIBUTE_WITHOUT_SHAPE_QUERY_ID,
+    SHAPE_WITHOUT_ATTRIBUTE_QUERY_ID,
+    SUPPORTED_QUERY_IDS as EXCLUSION_SUPPORTED_QUERY_IDS,
+    TASK_ID as EXCLUSION_TASK_ID,
+)
+from trace.tasks.icons.named_field.multi_attribute_or_count import (
+    INTERNAL_QUERY_ID as OR_INTERNAL_QUERY_ID,
+    SUPPORTED_QUERY_IDS as OR_SUPPORTED_QUERY_IDS,
+    TASK_ID as OR_TASK_ID,
+)
+from trace.tasks.icons.named_field.multi_attribute_xor_count import (
+    INTERNAL_QUERY_ID as XOR_INTERNAL_QUERY_ID,
+    SUPPORTED_QUERY_IDS as XOR_SUPPORTED_QUERY_IDS,
+    TASK_ID as XOR_TASK_ID,
+)
 
 
-TASK_ID_BY_QUERY_ID = {
-    query_id: task_id
-    for task_id, query_ids in QUERY_IDS_BY_TASK_ID.items()
-    for query_id in query_ids
+TASK_CASES = (
+    (AND_TASK_ID, AND_INTERNAL_QUERY_ID, AND_SUPPORTED_QUERY_IDS),
+    (OR_TASK_ID, OR_INTERNAL_QUERY_ID, OR_SUPPORTED_QUERY_IDS),
+    (EXCLUSION_TASK_ID, SHAPE_WITHOUT_ATTRIBUTE_QUERY_ID, EXCLUSION_SUPPORTED_QUERY_IDS),
+    (EXCLUSION_TASK_ID, ATTRIBUTE_WITHOUT_SHAPE_QUERY_ID, EXCLUSION_SUPPORTED_QUERY_IDS),
+    (COMPLEMENT_TASK_ID, COMPLEMENT_INTERNAL_QUERY_ID, COMPLEMENT_SUPPORTED_QUERY_IDS),
+    (XOR_TASK_ID, XOR_INTERNAL_QUERY_ID, XOR_SUPPORTED_QUERY_IDS),
+)
+QUERY_IDS = tuple(internal_query_id for _task_id, internal_query_id, _supported in TASK_CASES)
+TASK_ID_BY_QUERY_ID = {internal_query_id: task_id for task_id, internal_query_id, _supported in TASK_CASES}
+SUPPORTED_QUERY_IDS_BY_TASK_ID = {
+    AND_TASK_ID: AND_SUPPORTED_QUERY_IDS,
+    OR_TASK_ID: OR_SUPPORTED_QUERY_IDS,
+    EXCLUSION_TASK_ID: EXCLUSION_SUPPORTED_QUERY_IDS,
+    COMPLEMENT_TASK_ID: COMPLEMENT_SUPPORTED_QUERY_IDS,
+    XOR_TASK_ID: XOR_SUPPORTED_QUERY_IDS,
 }
 
 
@@ -33,9 +70,8 @@ def _predicate(query_id: str, *, is_shape: bool, is_attribute: bool) -> bool:
 
 
 def test_icons_counting_named_shape_color_boolean_contract_all_queries() -> None:
-    for index, query_id in enumerate(QUERY_IDS):
+    for index, (task_id, query_id, public_query_ids) in enumerate(TASK_CASES):
         task = create_task(TASK_ID_BY_QUERY_ID[str(query_id)])
-        public_query_ids = tuple(getattr(task, "supported_query_ids", ()))
         params = {
             "attribute_axis": "color",
             "target_shape_id": "star",
@@ -129,7 +165,7 @@ def test_icons_counting_named_shape_color_boolean_sampling_distribution() -> Non
     answer_counts: Counter[int] = Counter()
     attribute_axes: Counter[str] = Counter()
     layouts: set[str] = set()
-    for task_id, supported_queries in QUERY_IDS_BY_TASK_ID.items():
+    for task_id, supported_queries in SUPPORTED_QUERY_IDS_BY_TASK_ID.items():
         task = create_task(str(task_id))
         task_query_counts: Counter[str] = Counter()
         for index in range(24):
@@ -139,13 +175,14 @@ def test_icons_counting_named_shape_color_boolean_sampling_distribution() -> Non
                 max_attempts=200,
             )
             execution = out.trace_payload["execution_trace"]
-            query_id = str(execution.get("internal_query_id") or execution.get("source_query_id") or execution["query_id"])
-            task_query_counts[query_id] += 1
-            query_counts[query_id] += 1
+            public_query_id = str(execution["query_id"])
+            internal_query_id = str(execution.get("internal_query_id") or public_query_id)
+            task_query_counts[public_query_id] += 1
+            query_counts[internal_query_id] += 1
             answer_counts[int(out.answer_gt.value)] += 1
             attribute_axes[str(execution["target_attribute_axis"])] += 1
             layouts.add(str(execution["arrangement_mode"]))
-            assert query_id in set(supported_queries)
+            assert public_query_id in set(supported_queries)
             assert 4 <= int(execution["object_count"]) <= 10
             assert 1 <= int(out.answer_gt.value) <= 5
             assert len(out.annotation_gt.value) == int(out.answer_gt.value)

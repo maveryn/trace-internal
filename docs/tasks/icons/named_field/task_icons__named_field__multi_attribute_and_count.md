@@ -3,10 +3,9 @@
 ## Identity
 - domain: `icons`
 - scene_id: `named_field`
-- scene_id: `counting`
-- task: `named_shape_color_boolean_count`
+- task: `multi_attribute_and`
 - module: `trace/tasks/icons/named_field/multi_attribute_and_count.py`
-- prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
+- prompt bundle: `prompts/icons/named_field/icons_named_field_v1.json`
 
 ## Program Contract
 `count.multi_attribute_and(scene=named_field, scope=all_icons, predicates=shape_and_secondary_attribute, secondary_attribute=color|fill_style, output=count)`
@@ -23,13 +22,12 @@ satisfying one Boolean predicate. The secondary attribute axis is sampled with
 styles are `striped`, `dotted`, and `half_filled`; `solid` remains a rendered
 baseline/distractor style.
 
-Supported Boolean query ids:
-- `shape_and_color_count`
-- `shape_or_color_count` (inclusive OR: shape, color, or both)
-- `shape_and_not_color_count`
-- `color_and_not_shape_count`
-- `neither_shape_nor_color_count`
-- `exactly_one_shape_or_color_count`
+Supported public query ids:
+- `single`
+
+The fixed internal predicate key is `shape_and_color_count`; trace metadata records it
+as `query_spec.internal_query_id` and `query_spec.params.internal_query_id`. It
+selects the shape AND secondary-attribute predicate.
 
 The target shape support is the full procedural named-icon vocabulary in
 `trace/tasks/icons/shared/procedural_named_icons.py`. Color prompts use the
@@ -45,9 +43,9 @@ answered by attribute filtering rather than row/column stack arithmetic.
 
 ## Answer Contract
 - `answer_gt.type = integer`
-- value is the count of icons satisfying the active Boolean predicate
-- default answer support is `1..5` for every query id, with lower counts
-  sampled more often to keep the generated answer distribution stable
+- value is the count of icons satisfying the shape AND secondary-attribute predicate
+- default answer support is `1..5`, with lower counts sampled more often to
+  keep the generated answer distribution stable
 
 ## Annotation Contract
 - `annotation_gt.type = bbox_set`
@@ -59,7 +57,8 @@ answered by attribute filtering rather than row/column stack arithmetic.
 - Each entity records `shape_id`, prompt-facing `shape_name`, `color_name`,
   `fill_style`, RGB tint, bbox, size, rotation, placement group, row/column layout
   coordinates, and icon-noise metadata.
-- `query_spec.params.query_id` records the sampled Boolean predicate.
+- `query_spec.params.query_id` is `single`.
+- `query_spec.params.internal_query_id` records the fixed Boolean predicate key.
 - `query_spec.params.target_attribute_axis` records whether the secondary
   attribute is `color` or `fill_style`.
 - `query_spec.params.partition_counts` records the four target-relative

@@ -7,12 +7,13 @@ import pytest
 from trace.core.seed import hash64
 from trace.tasks import create_task
 from trace.tasks.icons.named_field.counterfactual_attribute_count import (
+    INTERNAL_QUERY_ID as ATTRIBUTE_INTERNAL_QUERY_ID,
     SUPPORTED_QUERY_IDS as ATTRIBUTE_SUPPORTED_QUERY_IDS,
 )
 from trace.tasks.icons.named_field.counterfactual_total_count import (
+    INTERNAL_QUERY_ID as TOTAL_INTERNAL_QUERY_ID,
     SUPPORTED_QUERY_IDS as TOTAL_SUPPORTED_QUERY_IDS,
 )
-from trace.tasks.icons.named_field._lifecycle import COUNTERFACTUAL_QUERY_IDS
 
 
 ATTRIBUTE_TASK_ID = "task_icons__named_field__counterfactual_attribute_count"
@@ -23,9 +24,11 @@ REMOVED_QUERY_ID = "target_count_after_remove_and_replace"
 def test_named_field_counterfactual_public_query_support() -> None:
     """Counterfactual tasks expose only their current public query contracts."""
 
-    assert ATTRIBUTE_SUPPORTED_QUERY_IDS == ("target_count_after_shape_replacement",)
-    assert TOTAL_SUPPORTED_QUERY_IDS == ("total_count_after_shape_removal",)
-    assert REMOVED_QUERY_ID not in COUNTERFACTUAL_QUERY_IDS
+    assert ATTRIBUTE_SUPPORTED_QUERY_IDS == ("single",)
+    assert TOTAL_SUPPORTED_QUERY_IDS == ("single",)
+    assert ATTRIBUTE_INTERNAL_QUERY_ID == "target_count_after_shape_replacement"
+    assert TOTAL_INTERNAL_QUERY_ID == "total_count_after_shape_removal"
+    assert REMOVED_QUERY_ID not in {ATTRIBUTE_INTERNAL_QUERY_ID, TOTAL_INTERNAL_QUERY_ID}
 
 
 def test_named_field_counterfactual_attribute_rejects_removed_query() -> None:

@@ -80,8 +80,6 @@ generation:
         3: 0.2
         4: 0.2
         5: 0.2
-      boolean_query_ids:
-      - shape_and_color_count
       named_color_support:
       - red
       - blue
@@ -122,8 +120,6 @@ generation:
         3: 0.2
         4: 0.2
         5: 0.2
-      boolean_query_ids:
-      - shape_or_color_count
       named_color_support:
       - red
       - blue
@@ -164,9 +160,6 @@ generation:
         3: 0.2
         4: 0.2
         5: 0.2
-      boolean_query_ids:
-      - shape_and_not_color_count
-      - color_and_not_shape_count
       named_color_support:
       - red
       - blue
@@ -207,8 +200,6 @@ generation:
         3: 0.2
         4: 0.2
         5: 0.2
-      boolean_query_ids:
-      - neither_shape_nor_color_count
       named_color_support:
       - red
       - blue
@@ -249,8 +240,6 @@ generation:
         3: 0.2
         4: 0.2
         5: 0.2
-      boolean_query_ids:
-      - exactly_one_shape_or_color_count
       named_color_support:
       - red
       - blue
@@ -293,11 +282,6 @@ generation:
         two_bound_color_total_count: 1.0
         two_shape_difference_count: 1.0
         two_bound_color_difference_count: 1.0
-      pair_arithmetic_query_ids:
-      - two_shape_total_count
-      - two_bound_color_total_count
-      - two_shape_difference_count
-      - two_bound_color_difference_count
       named_color_support:
       - red
       - blue
@@ -360,8 +344,6 @@ generation:
       removal_count_max: 4
       distractor_count_min: 2
       distractor_count_max: 8
-      counterfactual_query_ids:
-      - target_count_after_shape_replacement
       named_icon_fill_style_support:
       - solid
       - striped
@@ -379,8 +361,6 @@ generation:
       removal_count_max: 4
       distractor_count_min: 2
       distractor_count_max: 8
-      counterfactual_query_ids:
-      - total_count_after_shape_removal
       named_icon_fill_style_support:
       - solid
       - striped
@@ -404,13 +384,6 @@ generation:
         5: 0.2
       target_opposite_count_min: 1
       target_opposite_count_max: 1
-      named_region_query_ids:
-      - inside_shape_count
-      - outside_shape_count
-      - inside_band_count
-      - outside_band_count
-      - inside_quadrant_count
-      - inside_shelf_count
       region_shape_kinds:
       - rectangle
       - ellipse
@@ -614,8 +587,6 @@ rendering:
       named_icon_slot_padding_px: 6
       named_icon_slot_jitter_px: 8
       named_icon_stack_gap_px: 1
-      boolean_query_ids:
-      - shape_and_color_count
     task_icons__named_field__multi_attribute_or_count:
       canvas_width: 800
       canvas_height: 480
@@ -630,8 +601,6 @@ rendering:
       named_icon_slot_padding_px: 6
       named_icon_slot_jitter_px: 8
       named_icon_stack_gap_px: 1
-      boolean_query_ids:
-      - shape_or_color_count
     task_icons__named_field__multi_attribute_exclusion_count:
       canvas_width: 800
       canvas_height: 480
@@ -646,9 +615,6 @@ rendering:
       named_icon_slot_padding_px: 6
       named_icon_slot_jitter_px: 8
       named_icon_stack_gap_px: 1
-      boolean_query_ids:
-      - shape_and_not_color_count
-      - color_and_not_shape_count
     task_icons__named_field__multi_attribute_complement_count:
       canvas_width: 800
       canvas_height: 480
@@ -663,8 +629,6 @@ rendering:
       named_icon_slot_padding_px: 6
       named_icon_slot_jitter_px: 8
       named_icon_stack_gap_px: 1
-      boolean_query_ids:
-      - neither_shape_nor_color_count
     task_icons__named_field__multi_attribute_xor_count:
       canvas_width: 800
       canvas_height: 480
@@ -679,8 +643,6 @@ rendering:
       named_icon_slot_padding_px: 6
       named_icon_slot_jitter_px: 8
       named_icon_stack_gap_px: 1
-      boolean_query_ids:
-      - exactly_one_shape_or_color_count
     task_icons__named_field__count_arithmetic:
       canvas_width: 800
       canvas_height: 480
@@ -720,8 +682,6 @@ rendering:
       named_icon_slot_padding_px: 6
       named_icon_slot_jitter_px: 8
       named_icon_stack_gap_px: 1
-      counterfactual_query_ids:
-      - target_count_after_shape_replacement
     task_icons__named_field__counterfactual_total_count:
       canvas_width: 800
       canvas_height: 480
@@ -736,8 +696,6 @@ rendering:
       named_icon_slot_padding_px: 6
       named_icon_slot_jitter_px: 8
       named_icon_stack_gap_px: 1
-      counterfactual_query_ids:
-      - total_count_after_shape_removal
     task_icons__named_field__scoped_attribute_count:
       canvas_width: 800
       canvas_height: 480
@@ -820,8 +778,6 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"annotation":[[116,128,168,180],[634,302,686,354]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      boolean_query_ids:
-      - shape_and_color_count
       bundle_id: icons_named_field_v1
       task_key: counting_query
     task_icons__named_field__multi_attribute_or_count:
@@ -839,8 +795,6 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"annotation":[[116,128,168,180],[634,302,686,354]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      boolean_query_ids:
-      - shape_or_color_count
       bundle_id: icons_named_field_v1
       task_key: counting_query
     task_icons__named_field__multi_attribute_exclusion_count:
@@ -858,9 +812,6 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"annotation":[[116,128,168,180],[634,302,686,354]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      boolean_query_ids:
-      - shape_and_not_color_count
-      - color_and_not_shape_count
       bundle_id: icons_named_field_v1
       task_key: counting_query
     task_icons__named_field__multi_attribute_complement_count:
@@ -878,8 +829,6 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"annotation":[[116,128,168,180],[634,302,686,354]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      boolean_query_ids:
-      - neither_shape_nor_color_count
       bundle_id: icons_named_field_v1
       task_key: counting_query
     task_icons__named_field__multi_attribute_xor_count:
@@ -897,8 +846,6 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"annotation":[[116,128,168,180],[634,302,686,354]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      boolean_query_ids:
-      - exactly_one_shape_or_color_count
       bundle_id: icons_named_field_v1
       task_key: counting_query
     task_icons__named_field__count_arithmetic:
@@ -943,8 +890,6 @@ prompt:
       answer_hint: set "answer" to the resulting count as an integer
       json_example: '{"annotation":[[116,128,168,180],[634,302,686,354]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      counterfactual_query_ids:
-      - target_count_after_shape_replacement
       bundle_id: icons_named_field_v1
       task_key: counting_query
     task_icons__named_field__counterfactual_total_count:
@@ -959,8 +904,6 @@ prompt:
       answer_hint: set "answer" to the resulting count as an integer
       json_example: '{"annotation":[[116,128,168,180],[634,302,686,354]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      counterfactual_query_ids:
-      - total_count_after_shape_removal
       bundle_id: icons_named_field_v1
       task_key: counting_query
     task_icons__named_field__scoped_attribute_count:

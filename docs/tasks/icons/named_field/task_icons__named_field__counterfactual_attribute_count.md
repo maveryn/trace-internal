@@ -15,10 +15,12 @@ The task renders one panel labeled `Scene` containing procedurally generated
 named shape icons. The prompt describes a hypothetical edit and asks for the
 integer count after applying that edit mentally.
 
-Supported query ids:
-- `target_count_after_shape_replacement`: every source-shape icon changes into
-  the target shape; answer is existing target-shape icons plus source-shape
-  icons.
+Supported public query ids:
+- `single`
+
+The fixed internal hypothetical branch is `target_count_after_shape_replacement`. Trace metadata
+records it as `query_spec.internal_query_id` and
+`query_spec.params.internal_query_id`; it selects the shape-replacement edit.
 
 The target shape support is the full procedural named-icon vocabulary in
 `trace/tasks/icons/shared/procedural_named_icons.py`. Icons also sample a
@@ -44,7 +46,8 @@ the hypothetical edit semantics.
   including its `fill_style`.
 - `scene_ir.relations.role_by_instance_id` records each icon's
   counterfactual role and whether it is counted after the edit.
-- `query_spec.params.query_id` records the selected hypothetical branch.
+- `query_spec.params.query_id` is `single`.
+- `query_spec.params.internal_query_id` records the fixed hypothetical branch.
 - `execution_trace.target_answer` equals the integer answer.
 - `render_map.counted_instance_ids`, `witness_symbolic.counted_instance_ids`,
   and `projected_annotation.bbox_set` are derived from the same rendered

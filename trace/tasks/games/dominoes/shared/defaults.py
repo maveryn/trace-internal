@@ -23,10 +23,10 @@ class DominoSceneDefaults:
     """Stable fallback defaults for visible domino-chain scenes."""
 
     matching_end_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
+    longest_chain_length_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     higher_sum_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     sum_to_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     double_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-    second_play_candidate_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     single_row_candidate_count_support: Tuple[int, ...] = (7, 8, 9)
     two_row_candidate_count_support: Tuple[int, ...] = (10, 11, 12)
     sum_target_total_support: Tuple[int, ...] = (2, 3, 4, 5, 6, 7, 8, 9, 10)
@@ -37,7 +37,7 @@ class DominoSceneDefaults:
     chain_top_px: int = 104
     tile_width_px: int = 138
     tile_height_px: int = 76
-    chain_gap_px: int = 18
+    chain_gap_px: int = 6
     candidate_gap_px: int = 18
     row_gap_px: int = 34
     tile_corner_radius_px: int = 12

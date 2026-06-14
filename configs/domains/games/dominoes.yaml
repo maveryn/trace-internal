@@ -31,12 +31,12 @@ generation:
       matching_end_target_answer_support: [0, 1, 2, 3, 4, 5]
       single_row_candidate_count_support: [7, 8, 9]
       two_row_candidate_count_support: [10, 11, 12]
-    task_games__dominoes__second_play_candidate_count:
+    task_games__dominoes__longest_chain_length_value:
       balanced_target_answer_sampling: true
       balanced_candidate_count_sampling: true
-      second_play_candidate_target_answer_support: [0, 1, 2, 3, 4, 5]
-      single_row_candidate_count_support: [7, 8, 9]
-      two_row_candidate_count_support: [10, 11, 12]
+      longest_chain_length_answer_support: [1, 2, 3, 4, 5]
+      single_row_candidate_count_support: [7]
+      two_row_candidate_count_support: [7]
     task_games__dominoes__sum_to_target_count:
       balanced_target_answer_sampling: true
       balanced_candidate_count_sampling: true
@@ -52,7 +52,7 @@ rendering:
     chain_top_px: 104
     tile_width_px: 138
     tile_height_px: 76
-    chain_gap_px: 18
+    chain_gap_px: 6
     candidate_gap_px: 18
     row_gap_px: 34
     tile_corner_radius_px: 12

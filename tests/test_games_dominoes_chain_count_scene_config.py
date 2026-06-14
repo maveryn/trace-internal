@@ -30,6 +30,7 @@ def test_games_dominoes_defaults_expose_scene_and_candidate_axes() -> None:
     assert list(generation["double_target_answer_support"]) == [0, 1, 2, 3, 4, 5]
     assert list(generation["single_row_candidate_count_support"]) == [7, 8, 9]
     assert list(generation["two_row_candidate_count_support"]) == [10, 11, 12]
+    assert int(rendering["chain_gap_px"]) < int(rendering["candidate_gap_px"])
     assert int(rendering["tile_width_px"]) > 0
     assert int(rendering["tile_height_px"]) > 0
     assert int(rendering["reference_tag_font_size_px"]) > 0
@@ -44,14 +45,20 @@ def test_games_dominoes_task_overrides_remain_task_owned() -> None:
     cfg = get_scene_defaults("games", "dominoes")
     expected = {
         "task_games__dominoes__matching_end_count": ("matching_end_target_answer_support", [0, 1, 2, 3, 4, 5]),
+        "task_games__dominoes__longest_chain_length_value": ("longest_chain_length_answer_support", [1, 2, 3, 4, 5]),
         "task_games__dominoes__higher_sum_than_reference_count": ("higher_sum_target_answer_support", [0, 1, 2, 3, 4, 5]),
         "task_games__dominoes__sum_to_target_count": ("sum_to_target_answer_support", [0, 1, 2, 3, 4]),
         "task_games__dominoes__double_count": ("double_target_answer_support", [0, 1, 2, 3, 4, 5]),
-        "task_games__dominoes__second_play_candidate_count": ("second_play_candidate_target_answer_support", [0, 1, 2, 3, 4, 5]),
     }
     for task_id, (support_key, support) in expected.items():
         generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(cfg, task_id=task_id)
         assert list(generation[support_key]) == support
+    generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_games__dominoes__longest_chain_length_value",
+    )
+    assert list(generation["single_row_candidate_count_support"]) == [7]
+    assert list(generation["two_row_candidate_count_support"]) == [7]
     generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="task_games__dominoes__sum_to_target_count",

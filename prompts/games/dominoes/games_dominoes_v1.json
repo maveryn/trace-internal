@@ -29,6 +29,13 @@
         "Use the `REF` tile at the end of the chain. {connection_rule_text} How many loose dominoes below could be attached to the open right end?",
         "The right end of the `REF` tile is open. {connection_rule_text} How many loose dominoes below could legally connect there?"
       ],
+      "longest_chain_length_value": [
+        "Starting from the open right end of `REF`. {longest_chain_rule_text} What is the maximum number of loose dominoes that can be added?",
+        "{longest_chain_rule_text} Beginning at `REF`'s open right end, what is the longest chain length using the loose dominoes?",
+        "Use the open right end of the tile marked `REF`. {longest_chain_rule_text} How many loose dominoes can the longest possible added chain contain?",
+        "From the `REF` tile's open right end. {longest_chain_rule_text} Give the maximum number of loose dominoes that can be played in sequence.",
+        "Build one chain outward from `REF`. {longest_chain_rule_text} What is the greatest number of loose dominoes that can be used?"
+      ],
       "higher_sum_than_reference_count": [
         "The tile marked `REF` is the reference tile. {pip_sum_rule_text} How many other face-up dominoes have a larger pip sum than `REF`?",
         "{pip_sum_rule_text} Count the face-up dominoes, excluding `REF`, whose pip sum is greater than the `REF` tile.",
@@ -49,13 +56,6 @@
         "Looking at the visible dominoes, how many are doubles? {double_rule_text}",
         "{double_rule_text} What is the number of face-up dominoes whose two halves match?",
         "Among the shown dominoes, how many are doubles? {double_rule_text}"
-      ],
-      "second_play_candidate_count": [
-        "The top chain ends with a tile marked `REF`. {connection_rule_text} {second_play_rule_text}",
-        "Use the open right end of the `REF` tile. {connection_rule_text} {second_play_rule_text}",
-        "{connection_rule_text} {second_play_rule_text}",
-        "Start from the `REF` tile's open right end. {connection_rule_text} {second_play_rule_text}",
-        "First make the only legal direct play on `REF`. {connection_rule_text} {second_play_rule_text}"
       ]
     },
     "output": {
@@ -82,6 +82,9 @@
     "query:matching_end_count": [
       "connection_rule_text"
     ],
+    "query:longest_chain_length_value": [
+      "longest_chain_rule_text"
+    ],
     "query:higher_sum_than_reference_count": [
       "pip_sum_rule_text"
     ],
@@ -91,10 +94,6 @@
     ],
     "query:double_count": [
       "double_rule_text"
-    ],
-    "query:second_play_candidate_count": [
-      "connection_rule_text",
-      "second_play_rule_text"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -113,6 +112,9 @@
     "query:matching_end_count": {
       "connection_rule_text": "A loose domino can connect to the open right end if either half has the same number of pips as that open end."
     },
+    "query:longest_chain_length_value": {
+      "longest_chain_rule_text": "Each loose domino may be used at most once. A domino can be added when either half matches the current open end. Do not count `REF`."
+    },
     "query:higher_sum_than_reference_count": {
       "pip_sum_rule_text": "The pip sum of a domino is the total number of pips across its two halves."
     },
@@ -121,10 +123,6 @@
     },
     "query:double_count": {
       "double_rule_text": "A double has the same number of pips on both halves."
-    },
-    "query:second_play_candidate_count": {
-      "connection_rule_text": "A loose domino can connect to the open right end if either half has the same number of pips as that open end.",
-      "second_play_rule_text": "Exactly one loose domino can connect directly to `REF`; after playing it, count the remaining loose dominoes that could connect to the new open end."
     }
   },
   "dynamic_slots": {
@@ -161,18 +159,18 @@
     "object_description_tableau_reference_single_row": "one row of face-up dominoes with one tile marked `REF`",
     "object_description_tableau_reference_two_row": "two rows of face-up dominoes with one tile marked `REF`",
     "connection_rule_text": "A loose domino can connect to the open right end if either half has the same number of pips as that open end.",
+    "longest_chain_rule_text": "Each loose domino may be used at most once. A domino can be added when either half matches the current open end. Do not count `REF`.",
     "pip_sum_rule_text": "The pip sum of a domino is the total number of pips across its two halves.",
     "double_rule_text": "A double has the same number of pips on both halves.",
-    "second_play_rule_text": "Exactly one loose domino can connect directly to `REF`; after playing it, count the remaining loose dominoes that could connect to the new open end.",
     "annotation_hint_matching_end_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every loose domino that matches the `REF` tile's open right end",
+    "annotation_hint_longest_chain_length_value": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for the loose dominoes in the unique longest chain from `REF`",
     "annotation_hint_higher_sum_than_reference_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every non-reference domino with a larger pip sum than `REF`",
     "annotation_hint_sum_to_target_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every shown domino with the target pip sum",
     "annotation_hint_double_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every shown domino that is a double",
-    "annotation_hint_second_play_candidate_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every remaining loose domino that could be played second on the new open end",
     "answer_hint_matching_end_count": "set \"answer\" to the count of loose dominoes that match the `REF` tile's open right end",
+    "answer_hint_longest_chain_length_value": "set \"answer\" to the maximum number of loose dominoes that can be added after `REF`",
     "answer_hint_higher_sum_than_reference_count": "set \"answer\" to the count of loose dominoes with a larger pip sum than `REF`",
     "answer_hint_sum_to_target_count": "set \"answer\" to the count of shown dominoes with the target pip sum",
-    "answer_hint_double_count": "set \"answer\" to the count of shown doubles",
-    "answer_hint_second_play_candidate_count": "set \"answer\" to the count of remaining loose dominoes that could be played second"
+    "answer_hint_double_count": "set \"answer\" to the count of shown doubles"
   }
 }

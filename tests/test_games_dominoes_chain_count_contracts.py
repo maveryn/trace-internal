@@ -11,8 +11,9 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.dominoes.double_count import GamesDominoesDoubleCountTask
 from trace.tasks.games.dominoes.higher_sum_than_reference_count import GamesDominoesHigherSumThanReferenceCountTask
+from trace.tasks.games.dominoes.longest_chain_length_value import GamesDominoesLongestChainLengthValueTask
 from trace.tasks.games.dominoes.matching_end_count import GamesDominoesMatchingEndCountTask
-from trace.tasks.games.dominoes.second_play_candidate_count import GamesDominoesSecondPlayCandidateCountTask
+from trace.tasks.games.dominoes.shared.rules import can_connect, chain_open_end_after_play
 from trace.tasks.games.dominoes.sum_to_target_count import GamesDominoesSumToTargetCountTask
 from tests.helpers import read_jsonl
 
@@ -20,14 +21,14 @@ from tests.helpers import read_jsonl
 TASK_CASES = (
     (GamesDominoesDoubleCountTask, "double_count", {"target_answer": 3, "candidate_count": 8}),
     (GamesDominoesHigherSumThanReferenceCountTask, "higher_sum_than_reference_count", {"target_answer": 4, "candidate_count": 9}),
+    (GamesDominoesLongestChainLengthValueTask, "longest_chain_length_value", {"target_answer": 3, "candidate_count": 7}),
     (GamesDominoesMatchingEndCountTask, "matching_end_count", {"target_answer": 2, "candidate_count": 8}),
-    (GamesDominoesSecondPlayCandidateCountTask, "second_play_candidate_count", {"target_answer": 2, "candidate_count": 8}),
     (GamesDominoesSumToTargetCountTask, "sum_to_target_count", {"target_answer": 2, "candidate_count": 8, "target_total": 6}),
 )
 CHAIN_QUERY_IDS = frozenset(
     {
+        "longest_chain_length_value",
         "matching_end_count",
-        "second_play_candidate_count",
     }
 )
 TABLEAU_QUERY_IDS = frozenset(
@@ -131,31 +132,48 @@ def test_games_dominoes_higher_sum_reference_lives_in_tableau() -> None:
     assert "below" not in out.prompt
 
 
-def test_games_dominoes_second_play_candidate_count_matches_unique_first_play() -> None:
-    out = GamesDominoesSecondPlayCandidateCountTask().generate(
+def test_games_dominoes_longest_chain_length_matches_unique_annotation_set() -> None:
+    out = GamesDominoesLongestChainLengthValueTask().generate(
         26041,
-        params={"scene_variant": "single_row", "target_answer": 3, "candidate_count": 8},
+        params={"scene_variant": "single_row", "target_answer": 4, "candidate_count": 7},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
-    candidates = {str(spec["tile_id"]): spec for spec in execution["candidate_tile_specs"]}
-    first_id = str(execution["first_step_tile_id"])
+    candidate_specs = [dict(spec) for spec in execution["candidate_tile_specs"]]
     open_end = int(execution["open_end_value"])
-    bridge = int(execution["bridge_value"])
+    longest_length, longest_sets = _longest_chain_id_sets(candidate_specs, open_end)
 
-    valid_first_ids = []
-    valid_second_ids = []
-    for candidate_id, candidate in candidates.items():
-        tile = (int(candidate["left_value"]), int(candidate["right_value"]))
-        if _can_connect(tile, open_end):
-            valid_first_ids.append(str(candidate_id))
-            continue
-        if _can_connect(tile, bridge):
-            valid_second_ids.append(str(candidate_id))
-    assert valid_first_ids == [first_id]
-    assert set(valid_second_ids) == set(execution["annotation_entity_ids"])
-    assert "second" in out.prompt.lower()
-    assert "new open end" in out.prompt.lower()
+    assert int(out.answer_gt.value) == 4
+    assert 1 <= int(out.answer_gt.value) <= 5
+    assert int(longest_length) == int(out.answer_gt.value)
+    assert longest_sets == {frozenset(str(tile_id) for tile_id in execution["annotation_entity_ids"])}
+    assert set(execution["longest_chain_tile_ids"]) == set(execution["annotation_entity_ids"])
+    assert "longest" in out.prompt.lower() or "maximum" in out.prompt.lower()
+    assert "do not count `ref`" in out.prompt.lower()
+
+
+def test_games_dominoes_chain_tiles_are_closer_than_loose_dominoes() -> None:
+    out = GamesDominoesMatchingEndCountTask().generate(
+        26051,
+        params={"scene_variant": "single_row", "target_answer": 2, "candidate_count": 8},
+        max_attempts=256,
+    )
+    render_map = out.trace_payload["render_map"]
+    domino_bboxes = render_map["domino_bboxes_px"]
+    chain_ids = list(render_map["chain_tile_ids"])
+    row_ids = list(render_map["candidate_row_ids"][0])
+
+    chain_gaps = [
+        float(domino_bboxes[right_id][0]) - float(domino_bboxes[left_id][2])
+        for left_id, right_id in zip(chain_ids, chain_ids[1:])
+    ]
+    loose_gaps = [
+        float(domino_bboxes[right_id][0]) - float(domino_bboxes[left_id][2])
+        for left_id, right_id in zip(row_ids, row_ids[1:])
+    ]
+
+    assert min(chain_gaps) > 0.0
+    assert max(chain_gaps) < min(loose_gaps)
 
 
 def test_games_dominoes_each_public_task_varies_scene_and_style_axes() -> None:
@@ -197,9 +215,10 @@ def test_games_dominoes_prompt_bundle_declares_static_rule_slots() -> None:
     static = bundle["static_slots_by_key"]
     dynamic = bundle["dynamic_slots"]
     assert required["query:matching_end_count"] == ["connection_rule_text"]
+    assert required["query:longest_chain_length_value"] == ["longest_chain_rule_text"]
     assert required["query:sum_to_target_count"] == ["pip_sum_rule_text", "target_total_text"]
     assert "connection_rule_text" in static["query:matching_end_count"]
-    assert "second_play_rule_text" in static["query:second_play_candidate_count"]
+    assert "longest_chain_rule_text" in static["query:longest_chain_length_value"]
     assert "object_description" not in static["scene:visible_domino_chain"]
     assert "connection_rule_text" not in dynamic
     assert "object_description" in dynamic
@@ -216,8 +235,35 @@ def test_games_dominoes_prompt_avoids_table_color_and_sentence_splice() -> None:
     assert "Using the `REF` tile at the end of the chain, A loose" not in out.prompt
 
 
-def _can_connect(tile: tuple[int, int], open_end: int) -> bool:
-    return int(open_end) in {int(tile[0]), int(tile[1])}
+def _longest_chain_id_sets(candidate_specs: list[dict], open_end_value: int) -> tuple[int, set[frozenset[str]]]:
+    tiles = tuple(
+        (
+            str(spec["tile_id"]),
+            (int(spec["left_value"]), int(spec["right_value"])),
+        )
+        for spec in candidate_specs
+    )
+
+    def search(current_open_end: int, remaining_indices: tuple[int, ...]) -> tuple[int, set[frozenset[str]]]:
+        best_length = 0
+        best_sets: set[frozenset[str]] = {frozenset()}
+        for index in remaining_indices:
+            tile_id, tile = tiles[int(index)]
+            if not can_connect(tile, int(current_open_end)):
+                continue
+            next_open_end = chain_open_end_after_play(tile, int(current_open_end))
+            next_remaining = tuple(other for other in remaining_indices if int(other) != int(index))
+            child_length, child_sets = search(int(next_open_end), next_remaining)
+            total_length = int(child_length) + 1
+            total_sets = {frozenset({str(tile_id), *child_set}) for child_set in child_sets}
+            if int(total_length) > int(best_length):
+                best_length = int(total_length)
+                best_sets = total_sets
+            elif int(total_length) == int(best_length):
+                best_sets.update(total_sets)
+        return int(best_length), best_sets
+
+    return search(int(open_end_value), tuple(range(len(tiles))))
 
 
 def test_games_dominoes_build_smoke(tmp_path: Path) -> None:

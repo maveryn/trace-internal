@@ -87,7 +87,7 @@ class GraphOptimizationAdjacencyMatrixMSTWeightTask:
         rendered = render_artifacts.rendered
         annotation_artifacts, annotation_cell_edges = mst_cell_bbox_artifacts(sample, rendered)
         answer_gt = TypedValue(type='integer', value=int(sample.mst_weight))
-        prompt_artifacts = build_adjacency_prompt_artifacts(domain=self.domain, bundle_id=PROMPT_BUNDLE_ID, prompt_key=str(query.query_id), dynamic_slots={'object_description': 'a connected undirected weighted graph shown as a weighted adjacency matrix'}, instance_seed=int(instance_seed))
+        prompt_artifacts = build_adjacency_prompt_artifacts(domain=self.domain, bundle_id=PROMPT_BUNDLE_ID, prompt_key=str(query.query_id), dynamic_slots={'object_description': 'a connected undirected weighted graph as a weighted adjacency matrix'}, instance_seed=int(instance_seed))
         mst_edge_set = {tuple(edge) for edge in sample.mst_edges}
         node_entities = [{'entity_id': f'node_{label}', 'entity_kind': 'adjacency_matrix_label', 'label': str(label), 'row_bbox_xyxy': list(rendered.row_label_bboxes[str(label)]), 'column_bbox_xyxy': list(rendered.column_label_bboxes[str(label)])} for label in sample.labels]
         edge_entities = [{'entity_id': f'edge_{left}_{right}', 'entity_kind': 'weighted_adjacency_matrix_edge', 'node_u_label': str(left), 'node_v_label': str(right), 'weight': int(sample.weights[str(left), str(right)]), 'is_in_minimum_spanning_tree': bool((str(left), str(right)) in mst_edge_set)} for left, right in sample.edges]

@@ -137,7 +137,7 @@ For cross-domain rollups, use `docs/ACTIVE_TASK_INVENTORY.md`. This file is the 
 8. Phylogeny clade count uses `point_set` over descendant taxon terminals; phylogeny sister/MRCA role relations use `keyed_bbox_map`; phylogeny option topology uses one selected option-panel `bbox_set`.
 9. Pedigree relationship and relatedness tasks use role-bound `keyed_bbox_map` over the queried people and any needed family-path witnesses; rendered relationship/fraction options are answer choices, not prompt-facing annotation.
 10. Automaton state simulation and string acceptance use `point_sequence` for the visited state centers in transition order.
-11. Directed adjacency reciprocal-pair counts use `bbox_set` around both mirrored off-diagonal matrix cells for every counted unordered pair; zero-answer cases use an empty `bbox_set`.
+11. Directed adjacency reciprocal-pair counts use `point_pair_set` with one point pair at the two mirrored off-diagonal matrix-cell centers for every counted unordered pair; zero-answer cases use an empty `point_pair_set`.
 12. Annotation and answers must come from the same execution trace; verifiers rely on metadata/projections, not pixels as source of truth.
 
 ## Implementation Notes

@@ -20,7 +20,7 @@ POST_IMAGE_NOISE_DEFAULTS = load_graph_scene_noise_defaults(scene_id=SCENE_ID, a
 
 def _prepare_directed_component_count_objective(axes: Any) -> ComponentCountPlan:
     """Return directed component semantics for the public task."""
-    return ComponentCountPlan(directed=True, object_description=f"a directed graph shown as an adjacency {('matrix' if axes.scene_variant == 'adjacency_matrix_panel' else 'list')}")
+    return ComponentCountPlan(directed=True, object_description=f"a directed graph as an adjacency {('matrix' if axes.scene_variant == 'adjacency_matrix_panel' else 'list')}")
 
 @register_task
 class GraphCountingAdjacencyDirectedStrongComponentCountTask:

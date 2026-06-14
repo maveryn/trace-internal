@@ -11,6 +11,11 @@
 1. `bfs_kth_visit_label`: breadth-first search from a named source row, using each row's neighbor order left to right; the source node counts as visit position 1.
 2. `dfs_kth_visit_label`: recursive depth-first search from a named source row, using each row's neighbor order left to right; the source node counts as visit position 1.
 
+## Taxonomy Contract
+1. Program contract: traverse the directed adjacency-list graph from the sampled source using the query-selected traversal operator, return the label at the requested one-indexed visit position, and annotate the ordered row-label prefix from source through answer.
+2. Stable schemas: answer is `string`; annotation is `bbox_sequence`.
+3. The BFS versus DFS operator is a semantic query branch. Source label, visit position, node labels, node count, extra edge count, font, style, and layout are generation/render metadata.
+
 ## Annotation
 1. Answer type: `string`.
 2. Annotation type: `bbox_sequence`.

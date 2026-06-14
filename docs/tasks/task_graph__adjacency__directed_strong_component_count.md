@@ -11,6 +11,11 @@
 1. `directed_strong_component_count`
 2. Query ids are internal replay metadata; public sampling is at the task-id level.
 
+## Taxonomy Contract
+1. Program contract: compute strongly connected components of the directed adjacency graph, count the components, and annotate the topmost displayed row label for each component.
+2. Stable schemas: answer is `integer`; annotation is `bbox_set`.
+3. Adjacency list versus matrix display, component count target, node labels, node count, font, style, and layout are generation/render metadata, not public query branches.
+
 ## Answer And Annotation
 1. Answer type: `integer`.
 2. Annotation type: `bbox_set`.

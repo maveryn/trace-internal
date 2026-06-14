@@ -738,7 +738,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_graph__flow_network__max_flow_value": _entry("graph", "flow_network", "graph", "flow_network"),
     "task_graph__flow_network__min_cut_edge_count": _entry("graph", "flow_network", "graph", "flow_network"),
     "task_graph__adjacency__mst_weight": _entry(
-        "graph", "adjacency", "graph", "optimization"
+        "graph", "adjacency", "graph", "adjacency"
     ),
     "task_graph__node_link__mst_weight": _entry("graph", "node_link", "graph", "node_link"),
     "task_graph__adjacency__traversal_kth_label": _entry("graph", "adjacency", "graph", "adjacency"),

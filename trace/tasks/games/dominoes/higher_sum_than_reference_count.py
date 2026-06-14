@@ -1,14 +1,17 @@
-"""Count loose dominoes above a reference pip sum."""
+"""Count face-up dominoes above a marked reference pip sum."""
 
 from __future__ import annotations
 
+from trace.core.types import TypedValue
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 
-from ._lifecycle import prepare_domino_recipe_count_objective, run_domino_lifecycle
+from ._lifecycle import DominoObjectivePlan, domino_bbox_set_attempt, resolve_domino_count_axes, run_domino_lifecycle
 from .shared.defaults import DEFAULTS, SCENE_ID
+from .shared.prompts import domino_integer_json_examples, domino_output_slots
 from .shared.rules import CANONICAL_DOMINOES, tile_sum
-from .shared.sampling import CountedCandidateRecipe, random_orientation, sample_chain_with_end
+from .shared.sampling import build_sampled_scene, build_tableau_instances
+from .shared.state import DominoSceneAxes
 
 
 TASK_ID = "task_games__dominoes__higher_sum_than_reference_count"
@@ -21,24 +24,39 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation
 )
 
 
-def _build_higher_sum_recipe(recipe_rng):
-    """Choose a reference tile and predicate for larger candidate pip sums."""
+def _sample_higher_sum_scene(rng, *, candidate_count: int, target_answer: int):
+    """Construct a tableau with one marked reference and larger-sum witnesses."""
 
-    feasible_end_tiles = [tile for tile in CANONICAL_DOMINOES if 6 <= tile_sum(tile) <= 8]
-    end_tile = feasible_end_tiles[int(recipe_rng.randrange(len(feasible_end_tiles)))]
-    oriented_end = random_orientation(recipe_rng, tile=end_tile)
-    oriented_chain = sample_chain_with_end(
-        recipe_rng,
-        end_tile=(int(oriented_end[0]), int(oriented_end[1])),
-    )
-    reference_sum = int(oriented_chain[-1][0] + oriented_chain[-1][1])
-    return CountedCandidateRecipe(
-        oriented_chain=oriented_chain,
-        is_annotation_tile=lambda tile: tile_sum(tile) > int(reference_sum),
-        reference_role="reference_sum",
-        highlight_open_end=False,
-        reference_sum=int(reference_sum),
-    )
+    feasible_references = [tile for tile in CANONICAL_DOMINOES if 6 <= tile_sum(tile) <= 8]
+    for _ in range(320):
+        reference_tile = feasible_references[int(rng.randrange(len(feasible_references)))]
+        reference_sum = int(tile_sum(reference_tile))
+        candidate_pool = [tile for tile in CANONICAL_DOMINOES if tile != reference_tile]
+        annotation_pool = [tile for tile in candidate_pool if int(tile_sum(tile)) > int(reference_sum)]
+        filler_pool = [tile for tile in candidate_pool if int(tile_sum(tile)) <= int(reference_sum)]
+        if int(len(annotation_pool)) < int(target_answer):
+            continue
+        if int(len(filler_pool)) < int(candidate_count - target_answer):
+            continue
+
+        annotation_tiles = [] if int(target_answer) == 0 else list(rng.sample(annotation_pool, int(target_answer)))
+        selected_candidates = annotation_tiles + list(rng.sample(filler_pool, int(candidate_count - target_answer)))
+        candidate_instances, annotation_tile_ids, reference_tile_id = build_tableau_instances(
+            rng=rng,
+            reference_tile=reference_tile,
+            reference_role="reference_sum",
+            candidate_tiles=selected_candidates,
+            annotation_tiles=annotation_tiles,
+        )
+        return build_sampled_scene(
+            chain_instances=(),
+            candidate_instances=candidate_instances,
+            annotation_tile_ids=annotation_tile_ids,
+            answer_value=int(target_answer),
+            reference_tile_id=reference_tile_id,
+            reference_sum=int(reference_sum),
+        )
+    raise ValueError("unable to sample higher-sum domino tableau")
 
 
 def _prepare_higher_sum_objective(
@@ -46,31 +64,52 @@ def _prepare_higher_sum_objective(
     task_params,
     _query_id,
     _query_probabilities,
-    axes,
+    axes: DominoSceneAxes,
 ):
-    """Resolve count axes and bind reference-sum comparison semantics."""
+    """Resolve count axes and bind larger-than-reference semantics."""
 
-    return prepare_domino_recipe_count_objective(
+    count_axes = resolve_domino_count_axes(
         instance_seed=int(instance_seed),
         task_params=task_params,
         gen_defaults=_GEN_DEFAULTS,
         axes=axes,
-        prompt_query_key=QUERY_ID,
-        attempt_namespace="games.dominoes.higher_sum",
         target_support_key="higher_sum_target_answer_support",
         target_fallback_support=DEFAULTS.higher_sum_target_answer_support,
         target_namespace="higher_sum.target_answer",
         minimum_candidate_count=lambda target: max(7, int(target)),
         candidate_namespace="higher_sum",
-        build_recipe=_build_higher_sum_recipe,
-        recipe_attempts=320,
-        example_answer=3,
+    )
+    json_example, json_example_answer_only = domino_integer_json_examples(answer_value=3)
+    prompt_dynamic_slots = domino_output_slots(
+        prompt_query_key=QUERY_ID,
+        json_example=json_example,
+        json_example_answer_only=json_example_answer_only,
+    )
+
+    def construct_attempt(rng, _axes: DominoSceneAxes):
+        sample = _sample_higher_sum_scene(
+            rng,
+            candidate_count=int(count_axes.candidate_axis.value),
+            target_answer=int(count_axes.target_axis.value),
+        )
+        return domino_bbox_set_attempt(
+            sample=sample,
+            answer_gt=TypedValue(type="integer", value=int(sample.answer_value)),
+            execution_extra={"target_answer": int(sample.answer_value)},
+        )
+
+    return DominoObjectivePlan(
+        attempt_namespace="games.dominoes.higher_sum",
+        prompt_query_key=QUERY_ID,
+        query_params=dict(count_axes.query_params),
+        prompt_dynamic_slots=prompt_dynamic_slots,
+        construct_attempt=construct_attempt,
     )
 
 
 @register_task
 class GamesDominoesHigherSumThanReferenceCountTask:
-    """Count loose dominoes with a larger pip sum than the reference tile."""
+    """Count face-up dominoes with a larger pip sum than the reference tile."""
 
     task_id = TASK_ID
     domain = "games"

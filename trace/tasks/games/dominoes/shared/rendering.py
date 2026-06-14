@@ -561,31 +561,33 @@ def render_domino_chain_scene(
     params: DominoRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedDominoScene:
-    """Render one domino chain with candidate tableau and return trace metadata."""
+    """Render one domino chain/tableau scene and return trace metadata."""
 
-    if not chain_tiles:
-        raise ValueError("domino scene requires at least one chain tile")
+    if not chain_tiles and not candidate_tiles:
+        raise ValueError("domino scene requires at least one visible tile")
     image = background.convert("RGBA")
     theme = build_games_domino_theme(style_variant=str(style_variant))
+    has_chain = bool(chain_tiles)
 
-    chain_lefts, chain_tile_width = _centered_row_layout(
-        item_count=len(chain_tiles),
-        item_width_px=int(params.tile_width_px),
-        gap_px=int(params.chain_gap_px),
-        canvas_width=int(params.canvas_width),
-        panel_margin_px=int(params.panel_margin_px),
-    )
-    chain_top = float(params.chain_top_px)
     chain_bboxes: List[Tuple[float, float, float, float]] = []
-    for left in chain_lefts:
-        chain_bboxes.append(
-            (
-                round(float(left), 3),
-                round(float(chain_top), 3),
-                round(float(left + chain_tile_width), 3),
-                round(float(chain_top + params.tile_height_px), 3),
-            )
+    chain_top = float(params.chain_top_px)
+    if has_chain:
+        chain_lefts, chain_tile_width = _centered_row_layout(
+            item_count=len(chain_tiles),
+            item_width_px=int(params.tile_width_px),
+            gap_px=int(params.chain_gap_px),
+            canvas_width=int(params.canvas_width),
+            panel_margin_px=int(params.panel_margin_px),
         )
+        for left in chain_lefts:
+            chain_bboxes.append(
+                (
+                    round(float(left), 3),
+                    round(float(chain_top), 3),
+                    round(float(left + chain_tile_width), 3),
+                    round(float(chain_top + params.tile_height_px), 3),
+                )
+            )
 
     candidate_row_groups: List[Sequence[DominoTileInstance]]
     if str(scene_variant) == "two_row":
@@ -593,7 +595,15 @@ def render_domino_chain_scene(
         candidate_row_groups = [candidate_tiles[:top_count], candidate_tiles[top_count:]]
     else:
         candidate_row_groups = [candidate_tiles]
-    candidate_top = float(chain_top + params.tile_height_px + params.reference_tag_gap_px + 122)
+    if has_chain:
+        candidate_top = float(chain_top + params.tile_height_px + params.reference_tag_gap_px + 122)
+    else:
+        row_count = len([row for row in candidate_row_groups if row])
+        tableau_height = (
+            (float(row_count) * float(params.tile_height_px))
+            + (float(max(0, row_count - 1)) * float(params.row_gap_px))
+        )
+        candidate_top = max(28.0, 0.5 * (float(params.canvas_height) - tableau_height))
 
     candidate_bboxes: List[Tuple[float, float, float, float]] = []
     candidate_row_ids: List[List[str]] = []
@@ -626,8 +636,9 @@ def render_domino_chain_scene(
 
     all_tiles = list(chain_tiles) + list(candidate_tiles)
     all_bboxes = chain_bboxes + candidate_bboxes
+    candidate_row_offset = 1 if has_chain else 0
     row_indices = ([0] * len(chain_tiles)) + [
-        int(1 + row_index)
+        int(candidate_row_offset + row_index)
         for row_index, row_tiles in enumerate(candidate_row_groups)
         for _ in row_tiles
     ]
@@ -727,6 +738,7 @@ def render_domino_chain_scene(
     render_map = {
         "scene_variant": str(scene_variant),
         "style_variant": str(style_variant),
+        "layout_kind": "chain_tableau" if has_chain else "tableau",
         "domino_bboxes_px": {str(spec.tile_id): [float(value) for value in spec.bbox_px] for spec in domino_specs},
         "chain_tile_ids": [str(tile.tile_id) for tile in chain_tiles],
         "candidate_tile_ids": [str(tile.tile_id) for tile in candidate_tiles],

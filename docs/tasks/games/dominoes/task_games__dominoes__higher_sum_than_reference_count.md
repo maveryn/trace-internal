@@ -14,5 +14,6 @@
 - `count(filter(domino_tiles, compare(sum(pips(tile)), sum(pips(reference_tile)), direction=greater_than))); scene=dominoes; scope=higher_sum_than_reference_count`
 
 ## Generation Notes
+1. Renders a face-up domino tableau with one tile marked `REF`; countable tiles are the other visible dominoes.
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.

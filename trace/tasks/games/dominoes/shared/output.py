@@ -41,13 +41,15 @@ def build_domino_trace_payload(
     """Assemble dominoes trace sections after task-specific answer binding."""
 
     rendered_scene = rendered_context.rendered_scene
+    layout_kind = str(rendered_scene.render_map.get("layout_kind") or ("chain_tableau" if sample.chain_tiles else "tableau"))
     return {
         "scene_ir": {
-            "scene_kind": f"games_dominoes_chain_{str(axes.scene_variant)}",
+            "scene_kind": f"games_dominoes_{layout_kind}_{str(axes.scene_variant)}",
             "entities": [dict(entity) for entity in rendered_scene.scene_entities],
             "relations": {
                 "scene_variant": str(axes.scene_variant),
                 "style_variant": str(axes.style_variant),
+                "layout_kind": layout_kind,
                 "reference_tile_id": None if sample.reference_tile_id is None else str(sample.reference_tile_id),
                 "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
             },
@@ -66,6 +68,7 @@ def build_domino_trace_payload(
         "execution_trace": {
             "scene_variant": str(axes.scene_variant),
             "style_variant": str(axes.style_variant),
+            "layout_kind": layout_kind,
             "answer": answer_value,
             "reference_tile_id": None if sample.reference_tile_id is None else str(sample.reference_tile_id),
             "open_end_value": None if sample.open_end_value is None else int(sample.open_end_value),

@@ -67,6 +67,24 @@ def domino_output_slots(
     }
 
 
+def domino_object_description(*, has_chain: bool, has_reference: bool, scene_variant: str) -> str:
+    """Return prompt object text for the sampled domino layout."""
+
+    if bool(has_chain):
+        key = f"object_description_chain_{str(scene_variant)}"
+    elif bool(has_reference):
+        key = f"object_description_tableau_reference_{str(scene_variant)}"
+    else:
+        key = f"object_description_tableau_{str(scene_variant)}"
+    return str(
+        required_group_default(
+            _PROMPT_DEFAULTS,
+            key,
+            context="dominoes prompt object-description defaults",
+        )
+    )
+
+
 def build_domino_prompt_artifacts(
     *,
     domain: str,
@@ -98,5 +116,6 @@ def build_domino_prompt_artifacts(
 __all__ = [
     "build_domino_prompt_artifacts",
     "domino_integer_json_examples",
+    "domino_object_description",
     "domino_output_slots",
 ]

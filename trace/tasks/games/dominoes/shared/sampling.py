@@ -366,6 +366,63 @@ def build_scene_instances(
     )
 
 
+def build_tableau_instances(
+    *,
+    rng,
+    candidate_tiles: Sequence[Tuple[int, int]],
+    annotation_tiles: Sequence[Tuple[int, int]],
+    reference_tile: Tuple[int, int] | None = None,
+    reference_role: str | None = None,
+    shuffle_tiles: bool = True,
+    label_candidates: bool = False,
+) -> Tuple[Tuple[DominoTileInstance, ...], Tuple[str, ...], str | None]:
+    """Build a face-up domino tableau with an optional in-table reference tile."""
+
+    annotation_canonicals = {canonical_tile(int(tile[0]), int(tile[1])) for tile in annotation_tiles}
+    visible_entries: List[Tuple[str, Tuple[int, int]]] = [("candidate", tile) for tile in candidate_tiles]
+    if reference_tile is not None:
+        visible_entries.append(("reference", canonical_tile(int(reference_tile[0]), int(reference_tile[1]))))
+    if bool(shuffle_tiles):
+        rng.shuffle(visible_entries)
+
+    instances: List[DominoTileInstance] = []
+    annotation_tile_ids: List[str] = []
+    reference_tile_id: str | None = None
+    candidate_index = 0
+    for _display_index, (entry_kind, canonical) in enumerate(visible_entries, start=1):
+        if str(entry_kind) == "reference":
+            tile_id = "reference_01"
+            reference_tile_id = str(tile_id)
+            instances.append(
+                build_tile_instance(
+                    tile_id=str(tile_id),
+                    oriented_tile=random_orientation(rng, tile=canonical),
+                    role=str(reference_role or "reference"),
+                    is_reference=True,
+                )
+            )
+            continue
+
+        candidate_index += 1
+        tile_id = f"candidate_{candidate_index:02d}"
+        instances.append(
+            build_tile_instance(
+                tile_id=str(tile_id),
+                oriented_tile=random_orientation(rng, tile=canonical),
+                role="candidate",
+                option_label=OPTION_LABELS[candidate_index - 1] if bool(label_candidates) else None,
+            )
+        )
+        if canonical_tile(int(canonical[0]), int(canonical[1])) in annotation_canonicals:
+            annotation_tile_ids.append(str(tile_id))
+
+    return (
+        tuple(instances),
+        tuple(annotation_tile_ids),
+        None if reference_tile_id is None else str(reference_tile_id),
+    )
+
+
 def tile_id_for_canonical(
     candidate_instances: Sequence[DominoTileInstance],
     canonical: Tuple[int, int],
@@ -426,6 +483,7 @@ def build_sampled_scene(
                 "left_value": int(tile.left_value),
                 "right_value": int(tile.right_value),
                 "role": str(tile.role),
+                "is_reference": bool(tile.is_reference),
                 "option_label": None if tile.option_label is None else str(tile.option_label),
                 **extra_flags.get(str(tile.tile_id), {}),
             }
@@ -554,6 +612,7 @@ def resolve_domino_render_params(params: Mapping[str, Any], *, render_defaults: 
 __all__ = [
     "build_sampled_scene",
     "build_scene_instances",
+    "build_tableau_instances",
     "build_tile_instance",
     "candidate_pool_for_chain",
     "CountedCandidateRecipe",

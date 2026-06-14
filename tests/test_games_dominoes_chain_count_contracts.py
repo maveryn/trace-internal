@@ -26,32 +26,60 @@ TASK_CASES = (
     (GamesDominoesSecondPlayCandidateCountTask, "second_play_candidate_count", {"target_answer": 2, "candidate_count": 8}),
     (GamesDominoesSumToTargetCountTask, "sum_to_target_count", {"target_answer": 2, "candidate_count": 8, "target_total": 6}),
 )
+CHAIN_QUERY_IDS = frozenset(
+    {
+        "extendable_first_play_count",
+        "matching_end_count",
+        "second_play_candidate_count",
+    }
+)
+TABLEAU_QUERY_IDS = frozenset(
+    {
+        "double_count",
+        "higher_sum_than_reference_count",
+        "sum_to_target_count",
+    }
+)
 
 
 @pytest.mark.parametrize(("task_cls", "query_id", "params"), TASK_CASES)
 def test_games_dominoes_tasks_emit_expected_count_contract(task_cls, query_id: str, params: dict[str, int]) -> None:
     out = task_cls().generate(
         26001,
-        params={"query_id": query_id, "scene_variant": "single_row", **params},
+        params={"scene_variant": "single_row", **params},
         max_attempts=256,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
-    assert out.query_id == query_id
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(params["target_answer"])
     assert out.annotation_gt.type == "bbox_set"
     assert len(out.annotation_gt.value) == int(params["target_answer"])
-    assert trace["query_spec"]["query_id"] == query_id
-    assert trace["query_spec"]["params"]["query_id"] == query_id
+    assert trace["query_spec"]["query_id"] == "single"
+    assert trace["query_spec"]["params"]["query_id"] == "single"
+    assert trace["query_spec"]["prompt_variant"]["query_key"] == query_id
     assert int(execution["target_answer"]) == int(params["target_answer"])
     assert trace["projected_annotation"]["type"] == "bbox_set"
     assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert trace["witness_symbolic"] == {"type": "object_set", "ids": list(execution["annotation_entity_ids"])}
     assert all(str(tile_id).startswith("candidate_") for tile_id in execution["annotation_entity_ids"])
-    assert set(trace["render_map"]["section_label_bboxes_px"].keys()) == {"chain", "candidates"}
-    assert len(trace["render_map"]["section_separator_bbox_px"]) == 4
+    if query_id in CHAIN_QUERY_IDS:
+        assert execution["layout_kind"] == "chain_tableau"
+        assert trace["render_map"]["layout_kind"] == "chain_tableau"
+        assert execution["chain_tile_specs"]
+        assert trace["render_map"]["chain_tile_ids"]
+        assert set(trace["render_map"]["section_label_bboxes_px"].keys()) == {"chain", "candidates"}
+        assert len(trace["render_map"]["section_separator_bbox_px"]) == 4
+    else:
+        assert query_id in TABLEAU_QUERY_IDS
+        assert execution["layout_kind"] == "tableau"
+        assert trace["render_map"]["layout_kind"] == "tableau"
+        assert execution["chain_tile_specs"] == []
+        assert trace["render_map"]["chain_tile_ids"] == []
+        assert "section_label_bboxes_px" not in trace["render_map"]
+        assert "section_separator_bbox_px" not in trace["render_map"]
     width, height = out.image.size
     for bbox in trace["render_map"]["domino_bboxes_px"].values():
         x0, y0, x1, y1 = [float(value) for value in bbox]
@@ -62,7 +90,7 @@ def test_games_dominoes_tasks_emit_expected_count_contract(task_cls, query_id: s
 def test_games_dominoes_matching_end_marks_reference_and_open_half() -> None:
     out = GamesDominoesMatchingEndCountTask().generate(
         26011,
-        params={"scene_variant": "single_row", "query_id": "matching_end_count", "target_answer": 2, "candidate_count": 8},
+        params={"scene_variant": "single_row", "target_answer": 2, "candidate_count": 8},
         max_attempts=256,
     )
     trace = out.trace_payload
@@ -77,7 +105,7 @@ def test_games_dominoes_matching_end_marks_reference_and_open_half() -> None:
 def test_games_dominoes_sum_to_target_records_sampled_target_total() -> None:
     out = GamesDominoesSumToTargetCountTask().generate(
         26021,
-        params={"scene_variant": "single_row", "query_id": "sum_to_target_count", "target_answer": 2, "candidate_count": 8, "target_total": 6},
+        params={"scene_variant": "single_row", "target_answer": 2, "candidate_count": 8, "target_total": 6},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
@@ -85,10 +113,31 @@ def test_games_dominoes_sum_to_target_records_sampled_target_total() -> None:
     assert "6" in out.prompt
 
 
+def test_games_dominoes_higher_sum_reference_lives_in_tableau() -> None:
+    out = GamesDominoesHigherSumThanReferenceCountTask().generate(
+        26031,
+        params={"scene_variant": "two_row", "target_answer": 4, "candidate_count": 10},
+        max_attempts=256,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    reference_id = str(execution["reference_tile_id"])
+    reference_specs = [spec for spec in execution["candidate_tile_specs"] if str(spec["tile_id"]) == reference_id]
+
+    assert execution["layout_kind"] == "tableau"
+    assert execution["chain_tile_specs"] == []
+    assert len(reference_specs) == 1
+    assert bool(reference_specs[0]["is_reference"]) is True
+    assert reference_specs[0]["role"] == "reference_sum"
+    assert str(reference_id) in trace["render_map"]["reference_tag_bboxes_px"]
+    assert "top chain" not in out.prompt
+    assert "below" not in out.prompt
+
+
 def test_games_dominoes_second_play_candidate_count_matches_unique_first_play() -> None:
     out = GamesDominoesSecondPlayCandidateCountTask().generate(
         26041,
-        params={"scene_variant": "single_row", "query_id": "second_play_candidate_count", "target_answer": 3, "candidate_count": 8},
+        params={"scene_variant": "single_row", "target_answer": 3, "candidate_count": 8},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
@@ -115,7 +164,7 @@ def test_games_dominoes_second_play_candidate_count_matches_unique_first_play() 
 def test_games_dominoes_extendable_first_play_count_matches_followup_rule() -> None:
     out = GamesDominoesExtendableFirstPlayCountTask().generate(
         26043,
-        params={"scene_variant": "two_row", "query_id": "extendable_first_play_count", "target_answer": 4, "candidate_count": 10},
+        params={"scene_variant": "two_row", "target_answer": 4, "candidate_count": 10},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
@@ -146,7 +195,7 @@ def test_games_dominoes_each_public_task_varies_scene_and_style_axes() -> None:
         for sampling_index in range(64):
             out = task_cls().generate(
                 26101 + int(sampling_index),
-                params={"query_id": query_id},
+                params={},
                 max_attempts=512,
             )
             execution = out.trace_payload["execution_trace"]
@@ -159,7 +208,7 @@ def test_games_dominoes_each_public_task_varies_scene_and_style_axes() -> None:
 
 
 def test_games_dominoes_tasks_are_deterministic() -> None:
-    params = {"scene_variant": "two_row", "query_id": "higher_sum_than_reference_count", "target_answer": 5, "candidate_count": 12}
+    params = {"scene_variant": "two_row", "target_answer": 5, "candidate_count": 12}
     task = GamesDominoesHigherSumThanReferenceCountTask()
     out_a = task.generate(26031, params=params, max_attempts=256)
     out_b = task.generate(26031, params=params, max_attempts=256)
@@ -180,15 +229,15 @@ def test_games_dominoes_prompt_bundle_declares_static_rule_slots() -> None:
     assert required["query:sum_to_target_count"] == ["pip_sum_rule_text", "target_total_text"]
     assert "connection_rule_text" in static["query:matching_end_count"]
     assert "second_play_rule_text" in static["query:second_play_candidate_count"]
-    assert "object_description" in static["scene:visible_domino_chain"]
+    assert "object_description" not in static["scene:visible_domino_chain"]
     assert "connection_rule_text" not in dynamic
-    assert "object_description" not in dynamic
+    assert "object_description" in dynamic
 
 
 def test_games_dominoes_prompt_avoids_table_color_and_sentence_splice() -> None:
     out = GamesDominoesMatchingEndCountTask().generate(
         20260509,
-        params={"scene_variant": "two_row", "query_id": "matching_end_count", "target_answer": 3, "candidate_count": 12},
+        params={"scene_variant": "two_row", "target_answer": 3, "candidate_count": 12},
         max_attempts=256,
     )
 

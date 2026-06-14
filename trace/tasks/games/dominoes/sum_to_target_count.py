@@ -1,4 +1,4 @@
-"""Count loose dominoes with a target pip sum."""
+"""Count face-up dominoes with a target pip sum."""
 
 from __future__ import annotations
 
@@ -12,8 +12,8 @@ from trace.tasks.shared.support_sampling import resolve_integer_support
 from ._lifecycle import DominoObjectivePlan, domino_bbox_set_attempt, resolve_domino_count_axes, run_domino_lifecycle
 from .shared.defaults import DEFAULTS, SCENE_ID
 from .shared.prompts import domino_integer_json_examples, domino_output_slots
-from .shared.rules import tile_sum
-from .shared.sampling import build_sampled_scene, build_scene_instances, candidate_pool_for_chain, sample_generic_chain
+from .shared.rules import CANONICAL_DOMINOES, tile_sum
+from .shared.sampling import build_sampled_scene, build_tableau_instances
 from .shared.state import DominoSceneAxes
 
 
@@ -38,11 +38,7 @@ def _sample_sum_to_target_scene(
     """Construct a scene where exactly the target candidates match a pip total."""
 
     for _ in range(320):
-        try:
-            oriented_chain = sample_generic_chain(rng, avoid_doubles=False)
-        except ValueError:
-            continue
-        candidate_pool = candidate_pool_for_chain(oriented_chain)
+        candidate_pool = tuple(CANONICAL_DOMINOES)
         feasible_totals: List[int] = []
         for total in target_total_support:
             exact_pool = [tile for tile in candidate_pool if tile_sum(tile) == int(total)]
@@ -65,16 +61,13 @@ def _sample_sum_to_target_scene(
         filler_pool = [tile for tile in candidate_pool if tile_sum(tile) != int(target_total)]
         annotation_tiles = [] if int(target_answer) == 0 else list(rng.sample(exact_pool, int(target_answer)))
         selected_candidates = list(annotation_tiles) + list(rng.sample(filler_pool, int(candidate_count - target_answer)))
-        chain_instances, candidate_instances, annotation_tile_ids, reference_tile_id = build_scene_instances(
+        candidate_instances, annotation_tile_ids, reference_tile_id = build_tableau_instances(
             rng=rng,
-            oriented_chain=oriented_chain,
             candidate_tiles=selected_candidates,
             annotation_tiles=annotation_tiles,
-            reference_role=None,
-            highlight_open_end=False,
         )
         return build_sampled_scene(
-            chain_instances=chain_instances,
+            chain_instances=(),
             candidate_instances=candidate_instances,
             annotation_tile_ids=annotation_tile_ids,
             answer_value=int(target_answer),
@@ -152,7 +145,7 @@ def _prepare_sum_to_target_objective(
 
 @register_task
 class GamesDominoesSumToTargetCountTask:
-    """Count loose dominoes whose pip sum equals the sampled target total."""
+    """Count face-up dominoes whose pip sum equals the sampled target total."""
 
     task_id = TASK_ID
     domain = "games"

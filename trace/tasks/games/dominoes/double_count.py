@@ -1,4 +1,4 @@
-"""Count loose dominoes that are doubles."""
+"""Count face-up dominoes that are doubles."""
 
 from __future__ import annotations
 
@@ -7,7 +7,8 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 
 from ._lifecycle import prepare_domino_count_objective, run_domino_lifecycle
 from .shared.defaults import DEFAULTS, SCENE_ID
-from .shared.sampling import sample_counted_candidate_scene, sample_generic_chain
+from .shared.rules import CANONICAL_DOMINOES, canonical_tile
+from .shared.sampling import build_sampled_scene, build_tableau_instances
 from .shared.state import DominoSceneAxes
 
 
@@ -22,26 +23,28 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation
 
 
 def _sample_double_scene(rng, *, candidate_count: int, target_answer: int):
-    """Construct a scene with exactly the target number of loose doubles."""
+    """Construct a tableau with exactly the target number of doubles."""
 
-    for _ in range(256):
-        try:
-            oriented_chain = sample_generic_chain(rng, avoid_doubles=True)
-        except ValueError:
-            continue
-        try:
-            return sample_counted_candidate_scene(
-                rng,
-                oriented_chain=oriented_chain,
-                candidate_count=int(candidate_count),
-                target_answer=int(target_answer),
-                is_annotation_tile=lambda tile: int(tile[0]) == int(tile[1]),
-                reference_role=None,
-                highlight_open_end=False,
-            )
-        except ValueError:
-            continue
-    raise ValueError("unable to sample double-count domino scene")
+    double_pool = [tile for tile in CANONICAL_DOMINOES if int(tile[0]) == int(tile[1])]
+    filler_pool = [tile for tile in CANONICAL_DOMINOES if int(tile[0]) != int(tile[1])]
+    if int(len(double_pool)) < int(target_answer):
+        raise ValueError("insufficient double dominoes")
+    if int(len(filler_pool)) < int(candidate_count - target_answer):
+        raise ValueError("insufficient non-double dominoes")
+    annotation_tiles = list(rng.sample(double_pool, int(target_answer)))
+    selected_candidates = annotation_tiles + list(rng.sample(filler_pool, int(candidate_count - target_answer)))
+    candidate_instances, annotation_tile_ids, reference_tile_id = build_tableau_instances(
+        rng=rng,
+        candidate_tiles=[canonical_tile(int(tile[0]), int(tile[1])) for tile in selected_candidates],
+        annotation_tiles=annotation_tiles,
+    )
+    return build_sampled_scene(
+        chain_instances=(),
+        candidate_instances=candidate_instances,
+        annotation_tile_ids=annotation_tile_ids,
+        answer_value=int(target_answer),
+        reference_tile_id=reference_tile_id,
+    )
 
 
 def _prepare_double_objective(
@@ -72,7 +75,7 @@ def _prepare_double_objective(
 
 @register_task
 class GamesDominoesDoubleCountTask:
-    """Count loose dominoes whose two halves match."""
+    """Count face-up dominoes whose two halves match."""
 
     task_id = TASK_ID
     domain = "games"

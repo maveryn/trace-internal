@@ -16,7 +16,12 @@ from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from .shared.annotations import domino_bbox_set_annotation
 from .shared.defaults import SCENE_ID
 from .shared.output import build_domino_common_trace_params, build_domino_trace_payload
-from .shared.prompts import build_domino_prompt_artifacts, domino_integer_json_examples, domino_output_slots
+from .shared.prompts import (
+    build_domino_prompt_artifacts,
+    domino_integer_json_examples,
+    domino_object_description,
+    domino_output_slots,
+)
 from .shared.rendering import RenderedDominoTaskContext, render_domino_task_scene
 from .shared.sampling import (
     CountedCandidateRecipe,
@@ -314,6 +319,11 @@ def run_domino_lifecycle(
             dynamic_slots={
                 **dict(objective.prompt_dynamic_slots),
                 **dict(attempt.prompt_dynamic_slots),
+                "object_description": domino_object_description(
+                    has_chain=bool(sample.chain_tiles),
+                    has_reference=sample.reference_tile_id is not None,
+                    scene_variant=str(axes.scene_variant),
+                ),
             },
             instance_seed=int(instance_seed),
         )

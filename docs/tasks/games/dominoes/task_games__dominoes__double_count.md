@@ -14,5 +14,6 @@
 - `count(filter(domino_tiles, left_pips(tile) = right_pips(tile))); scene=dominoes; scope=double_count`
 
 ## Generation Notes
+1. Renders a simple face-up domino tableau with no reference chain; all visible tiles are countable.
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.

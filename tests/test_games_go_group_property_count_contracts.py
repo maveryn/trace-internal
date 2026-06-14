@@ -12,9 +12,9 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.games.go.group_adjacent_enemy_count import GamesGoGroupAdjacentEnemyCountTask
 from trace.tasks.games.go.group_liberty_count import GamesGoGroupLibertyCountTask
+from trace.tasks.games.go.marked_group_stone_count import GamesGoMarkedGroupStoneCountTask
 from trace.tasks.games.go.shared.rendering import GO_MARKED_GROUP_RED_RGB
-from trace.tasks.games.go.shared.rules import BLACK, WHITE, stone_groups
-from trace.tasks.games.go.stone_group_count import GamesGoStoneGroupCountTask
+from trace.tasks.games.go.shared.rules import connected_group
 from trace.tasks.games.shared.style import SUPPORTED_GO_STYLE_VARIANTS
 from tests.helpers import read_jsonl
 
@@ -177,26 +177,21 @@ def test_games_go_prompt_bundle_requires_current_rule_texts() -> None:
         "shared_liberty_rule_text",
         "player_color",
     ]
-    assert required["query:black_stone_group_count"] == ["group_rule_text"]
-    assert required["query:white_stone_group_count"] == ["group_rule_text"]
+    assert required["query:marked_group_stone_count"] == [
+        "marked_stone_rule_text",
+        "group_rule_text",
+        "player_color",
+    ]
 
 
-@pytest.mark.parametrize(
-    ("query_id", "target_answer", "target_color"),
-    (
-        ("black_stone_group_count", 1, BLACK),
-        ("black_stone_group_count", 8, BLACK),
-        ("white_stone_group_count", 5, WHITE),
-    ),
-)
-def test_games_go_stone_group_count_emits_expected_contract(
-    query_id: str,
+@pytest.mark.parametrize(("player_color", "target_answer"), (("black", 2), ("white", 4), ("black", 6)))
+def test_games_go_marked_group_stone_count_emits_expected_contract(
+    player_color: str,
     target_answer: int,
-    target_color: int,
 ) -> None:
-    out = GamesGoStoneGroupCountTask().generate(
+    out = GamesGoMarkedGroupStoneCountTask().generate(
         34301,
-        params={"query_id": query_id, "target_answer": target_answer},
+        params={"query_id": "single", "player_color": player_color, "target_answer": target_answer},
         max_attempts=192,
     )
     trace = out.trace_payload
@@ -211,25 +206,37 @@ def test_games_go_stone_group_count_emits_expected_contract(
     assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == int(target_answer)
     assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert trace["render_map"]["marked_group_marker_style"] is None
-    assert trace["query_spec"]["params"]["query_id"] == query_id
-    assert execution["query_id"] == query_id
-    assert str(execution["target_group_color"]) == ("black" if int(target_color) == BLACK else "white")
-    assert len(stone_groups(rows, color=int(target_color))) == int(target_answer)
-    assert len(execution["target_group_coords"]) == int(target_answer)
-    assert len(execution["representative_coords"]) == int(target_answer)
+    marker_style = trace["render_map"]["marked_group_marker_style"]
+    assert marker_style["role"] == "go_marked_stone_group"
+    assert marker_style["inner_rgb"] == list(GO_MARKED_GROUP_RED_RGB)
+    assert trace["query_spec"]["params"]["query_id"] == "single"
+    assert trace["query_spec"]["params"]["prompt_query_key"] == "marked_group_stone_count"
+    assert execution["query_id"] == "single"
+    assert str(execution["marked_group_color"]) == str(player_color)
+    assert len(execution["marked_group_coords"]) == int(target_answer)
     assert len(execution["annotation_entity_ids"]) == int(target_answer)
-    assert "stone groups" in out.prompt.lower()
-
-
-def test_games_go_stone_group_count_query_cycle_covers_answer_and_scene_support() -> None:
-    task = GamesGoStoneGroupCountTask()
-    answers_by_query: dict[str, set[int]] = {
-        "black_stone_group_count": set(),
-        "white_stone_group_count": set(),
+    marked_entities = [spec for spec in trace["scene_ir"]["entities"] if spec.get("is_marked_group")]
+    assert len(marked_entities) == 1
+    assert str(execution["marked_reference_point_id"]) in {
+        str(spec["entity_id"]) for spec in marked_entities
     }
-    scenes_by_query: dict[str, set[str]] = {key: set() for key in answers_by_query}
-    styles_by_query: dict[str, set[str]] = {key: set() for key in answers_by_query}
+    marked_reference = tuple(
+        (int(spec["row"]), int(spec["col"]))
+        for spec in execution["stone_specs"]
+        if str(spec["point_id"]) == str(execution["marked_reference_point_id"])
+    )[0]
+    assert connected_group(rows, marked_reference) == tuple(tuple(coord) for coord in execution["marked_group_coords"])
+    assert set(execution["annotation_entity_ids"]) == set(execution["marked_group_point_ids"])
+    assert "marked" in out.prompt.lower()
+    assert "stones are in" in out.prompt.lower() or "count the stones" in out.prompt.lower()
+
+
+def test_games_go_marked_group_stone_count_query_cycle_covers_answer_and_scene_support() -> None:
+    task = GamesGoMarkedGroupStoneCountTask()
+    answers: set[int] = set()
+    colors: set[str] = set()
+    scenes: set[str] = set()
+    styles: set[str] = set()
     for sampling_index in range(96):
         out = task.generate(
             34321 + int(sampling_index),
@@ -237,24 +244,23 @@ def test_games_go_stone_group_count_query_cycle_covers_answer_and_scene_support(
             max_attempts=192,
         )
         execution = out.trace_payload["execution_trace"]
-        query_id = str(out.query_id)
-        answers_by_query[query_id].add(int(out.answer_gt.value))
-        scenes_by_query[query_id].add(str(execution["scene_variant"]))
-        styles_by_query[query_id].add(str(execution["style_variant"]))
+        assert out.query_id == "single"
+        answers.add(int(out.answer_gt.value))
+        colors.add(str(execution["player_color"]))
+        scenes.add(str(execution["scene_variant"]))
+        styles.add(str(execution["style_variant"]))
 
-    assert answers_by_query == {
-        "black_stone_group_count": {1, 2, 3, 4, 5, 6, 7, 8},
-        "white_stone_group_count": {1, 2, 3, 4, 5, 6, 7, 8},
-    }
-    assert all(values == {"crowded_board", "open_board"} for values in scenes_by_query.values())
-    assert all(values == set(SUPPORTED_GO_STYLE_VARIANTS) for values in styles_by_query.values())
+    assert answers == {2, 3, 4, 5, 6}
+    assert colors == {"black", "white"}
+    assert scenes == {"crowded_board", "open_board"}
+    assert styles == set(SUPPORTED_GO_STYLE_VARIANTS)
 
 
 def test_games_go_public_taxonomy() -> None:
     for task_id in (
         "task_games__go__group_liberty_count",
         "task_games__go__group_adjacent_enemy_count",
-        "task_games__go__stone_group_count",
+        "task_games__go__marked_group_stone_count",
     ):
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
@@ -271,7 +277,7 @@ def test_games_go_build_smoke(tmp_path: Path) -> None:
         tasks=[
             BuildTaskConfig(task_id="task_games__go__group_liberty_count", count=2, params={}),
             BuildTaskConfig(task_id="task_games__go__group_adjacent_enemy_count", count=2, params={}),
-            BuildTaskConfig(task_id="task_games__go__stone_group_count", count=2, params={}),
+            BuildTaskConfig(task_id="task_games__go__marked_group_stone_count", count=2, params={}),
         ],
         strict_repro=False,
         max_attempts_per_instance=192,
@@ -287,7 +293,7 @@ def test_games_go_build_smoke(tmp_path: Path) -> None:
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_games__go__group_liberty_count"]) == 2
     assert int(build_report["accepted_counts_by_task"]["task_games__go__group_adjacent_enemy_count"]) == 2
-    assert int(build_report["accepted_counts_by_task"]["task_games__go__stone_group_count"]) == 2
+    assert int(build_report["accepted_counts_by_task"]["task_games__go__marked_group_stone_count"]) == 2
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

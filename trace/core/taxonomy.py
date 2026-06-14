@@ -427,7 +427,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__dots_and_boxes__three_sided_box_count": _entry("games", "dots_and_boxes", "games", "dots_and_boxes"),
     "task_games__go__group_adjacent_enemy_count": _entry("games", "go", "games", "go"),
     "task_games__go__group_liberty_count": _entry("games", "go", "games", "go"),
-    "task_games__go__stone_group_count": _entry("games", "go", "games", "go"),
+    "task_games__go__marked_group_stone_count": _entry("games", "go", "games", "go"),
     "task_games__hex__candidate_neighbor_count": _entry("games", "hex", "games", "hex"),
     "task_games__hex__connection_gap_count": _entry("games", "hex", "games", "hex"),
     "task_games__hex__winning_move_cell_label": _entry("games", "hex", "games", "hex"),

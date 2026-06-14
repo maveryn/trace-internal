@@ -19,7 +19,7 @@ def test_games_go_group_property_count_defaults_present() -> None:
     )
     stone_generation, _stone_rendering, _stone_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_games__go__stone_group_count",
+        task_id="task_games__go__marked_group_stone_count",
     )
 
     shared_generation = cfg["generation"]["shared"]
@@ -37,7 +37,8 @@ def test_games_go_group_property_count_defaults_present() -> None:
     assert list(adjacent_generation["adjacent_enemy_count_support"]) == [1, 2, 3, 4, 5, 6]
     assert bool(adjacent_generation["balanced_player_color_sampling"]) is True
     assert bool(adjacent_generation["balanced_target_answer_sampling"]) is True
-    assert list(stone_generation["stone_group_count_support"]) == [1, 2, 3, 4, 5, 6, 7, 8]
+    assert list(stone_generation["marked_group_stone_count_support"]) == [2, 3, 4, 5, 6]
+    assert bool(stone_generation["balanced_player_color_sampling"]) is True
     assert bool(stone_generation["balanced_target_answer_sampling"]) is True
     assert list(generation["board_size_support"]) == [6, 7, 8]
     assert int(rendering["max_board_size_px"]) > 0

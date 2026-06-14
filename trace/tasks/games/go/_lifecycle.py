@@ -25,7 +25,6 @@ from .shared.rules import (
     Coord,
     GoStoneSpec,
     build_go_board_state,
-    build_go_stone_group_count_state,
     color_name,
     coord_to_point_id,
 )
@@ -54,6 +53,7 @@ class GoAttemptResult:
     marked_group_coords: Sequence[Coord]
     liberty_coords: Sequence[Coord]
     annotation_point_ids: Sequence[str]
+    visual_marked_coords: Sequence[Coord] = field(default_factory=tuple)
     execution_extra: Mapping[str, Any] = field(default_factory=dict)
 
 
@@ -66,7 +66,8 @@ class GoObjectivePlan:
     target_axis: GoIntegerAxis
     player_color: str
     player_color_axis: GoPlayerColorAxis | None
-    stone_group_query: bool
+    prompt_example_annotation_points: Sequence[Sequence[int]]
+    prompt_example_answer: int
     query_params: Mapping[str, Any]
     attempt_namespace: str
     construct_attempt: AttemptBuilder
@@ -82,6 +83,9 @@ def make_go_marked_group_objective(
     scene_axes: GoSceneAxes,
     annotation_coord_attr: str,
     attempt_namespace: str,
+    mark_reference_stone_only: bool = False,
+    prompt_example_annotation_points: Sequence[Sequence[int]] = ((343, 315), (417, 389), (491, 389), (565, 463)),
+    prompt_example_answer: int = 4,
 ) -> GoObjectivePlan:
     """Prepare a marked-group count objective from task-owned semantic arguments."""
 
@@ -95,15 +99,25 @@ def make_go_marked_group_objective(
             board_size=int(board_size_axis.value),
         )
         annotation_coords = tuple(getattr(board_state, str(annotation_coord_attr)))
+        reference_coord = tuple()
+        visual_marked_coords = tuple(board_state.marked_group_coords)
+        if bool(mark_reference_stone_only):
+            marked_coords = tuple(board_state.marked_group_coords)
+            if not marked_coords:
+                raise ValueError("cannot mark one reference stone without a marked group")
+            reference_coord = marked_coords[int(rng.randrange(len(marked_coords)))]
+            visual_marked_coords = (reference_coord,)
         return GoAttemptResult(
             board=board_state.board,
             stone_specs=board_state.stone_specs,
             marked_group_coords=board_state.marked_group_coords,
             liberty_coords=board_state.liberty_coords,
             annotation_point_ids=tuple(coord_to_point_id(coord) for coord in annotation_coords),
+            visual_marked_coords=visual_marked_coords,
             execution_extra={
                 "marked_group_color": str(color_name(board_state.marked_group_color).lower()),
                 "marked_group_point_ids": [coord_to_point_id(coord) for coord in board_state.marked_group_coords],
+                "marked_reference_point_id": "" if not reference_coord else coord_to_point_id(reference_coord),
                 "adjacent_enemy_coords": [[int(row), int(col)] for row, col in board_state.adjacent_enemy_coords],
                 "shared_liberty_coords": [[int(row), int(col)] for row, col in board_state.shared_liberty_coords],
             },
@@ -115,64 +129,10 @@ def make_go_marked_group_objective(
         target_axis=target_axis,
         player_color=str(player_color_axis.player_color),
         player_color_axis=player_color_axis,
-        stone_group_query=False,
+        prompt_example_annotation_points=tuple(tuple(int(value) for value in point) for point in prompt_example_annotation_points),
+        prompt_example_answer=int(prompt_example_answer),
         query_params={
-            "target_answer": int(target_axis.value),
-            "target_answer_support": [int(value) for value in target_axis.support],
-            "target_answer_probabilities": dict(target_axis.probabilities),
-        },
-        attempt_namespace=str(attempt_namespace),
-        construct_attempt=construct_attempt,
-    )
-
-
-def make_go_stone_group_objective(
-    *,
-    prompt_query_key: str,
-    rule_mode: str,
-    target_axis: GoIntegerAxis,
-    player_color_axis: GoPlayerColorAxis,
-    board_size_axis: GoIntegerAxis,
-    scene_axes: GoSceneAxes,
-    attempt_namespace: str,
-) -> GoObjectivePlan:
-    """Prepare a whole-board same-color group count objective."""
-
-    def construct_attempt(rng, _axes: GoSceneAxes) -> GoAttemptResult:
-        board_state = build_go_stone_group_count_state(
-            rng=rng,
-            count_mode=str(rule_mode),
-            scene_variant=str(scene_axes.scene_variant),
-            target_answer=int(target_axis.value),
-            board_size=int(board_size_axis.value),
-        )
-        annotation_ids = tuple(coord_to_point_id(coord) for coord in board_state.representative_coords)
-        return GoAttemptResult(
-            board=board_state.board,
-            stone_specs=board_state.stone_specs,
-            marked_group_coords=(),
-            liberty_coords=(),
-            annotation_point_ids=annotation_ids,
-            execution_extra={
-                "target_group_color": str(color_name(board_state.target_color).lower()),
-                "target_group_coords": [
-                    [[int(row), int(col)] for row, col in group]
-                    for group in board_state.target_group_coords
-                ],
-                "representative_coords": [[int(row), int(col)] for row, col in board_state.representative_coords],
-                "representative_point_ids": [str(value) for value in annotation_ids],
-            },
-        )
-
-    return GoObjectivePlan(
-        prompt_query_key=str(prompt_query_key),
-        answer_gt=TypedValue(type="integer", value=int(target_axis.value)),
-        target_axis=target_axis,
-        player_color=str(player_color_axis.player_color),
-        player_color_axis=player_color_axis,
-        stone_group_query=True,
-        query_params={
-            "player_color": str(player_color_axis.player_color),
+            "prompt_query_key": str(prompt_query_key),
             "target_answer": int(target_axis.value),
             "target_answer_support": [int(value) for value in target_axis.support],
             "target_answer_probabilities": dict(target_axis.probabilities),
@@ -268,7 +228,7 @@ def run_go_lifecycle(
             background=background,
             scene_variant=str(scene_axes.scene_variant),
             style_variant=str(scene_axes.style_variant),
-            marked_group_coords=tuple(attempt.marked_group_coords),
+            marked_group_coords=tuple(attempt.visual_marked_coords) or tuple(attempt.marked_group_coords),
             liberty_coords=tuple(attempt.liberty_coords),
             params=render_params,
             panel_style=panel_style,
@@ -288,7 +248,8 @@ def run_go_lifecycle(
             scene_variant=str(scene_axes.scene_variant),
             prompt_query_key=str(objective.prompt_query_key),
             player_color=str(objective.player_color),
-            stone_group_query=bool(objective.stone_group_query),
+            example_annotation_points=tuple(objective.prompt_example_annotation_points),
+            example_answer=int(objective.prompt_example_answer),
             instance_seed=int(instance_seed),
         )
         common_query_params = build_go_common_trace_params(
@@ -351,6 +312,5 @@ __all__ = [
     "GoAttemptResult",
     "GoObjectivePlan",
     "make_go_marked_group_objective",
-    "make_go_stone_group_objective",
     "run_go_lifecycle",
 ]

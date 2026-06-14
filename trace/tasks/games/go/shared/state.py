@@ -20,7 +20,7 @@ class GoSceneDefaults:
     liberty_count_support: Tuple[int, ...] = (1, 2, 3, 4, 6)
     adjacent_enemy_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
     shared_liberty_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
-    stone_group_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6, 7, 8)
+    marked_group_stone_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
     board_size_support: Tuple[int, ...] = (6, 7, 8)
     canvas_width: int = 920
     canvas_height: int = 920

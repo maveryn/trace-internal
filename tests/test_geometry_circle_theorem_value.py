@@ -7,7 +7,12 @@ import math
 import pytest
 
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.geometry.circle_theorem.cyclic_quadrilateral_angle_value import GeometryCircleCyclicQuadrilateralAngleValueTask
+from trace.tasks.geometry.circle_theorem.cyclic_quadrilateral_exterior_angle_value import (
+    GeometryCircleCyclicQuadrilateralExteriorAngleValueTask,
+)
+from trace.tasks.geometry.circle_theorem.cyclic_quadrilateral_opposite_angle_value import (
+    GeometryCircleCyclicQuadrilateralOppositeAngleValueTask,
+)
 from trace.tasks.geometry.circle_theorem.diameter_perpendicular_chord_length_value import GeometryCircleDiameterPerpendicularChordLengthValueTask
 from trace.tasks.geometry.circle_theorem.external_secant_angle_value import GeometryCircleExternalSecantAngleValueTask
 from trace.tasks.geometry.circle_theorem.chord_length_from_radius_central_angle_value import GeometryCircleChordLengthFromRadiusCentralAngleValueTask
@@ -91,6 +96,8 @@ def _circle_crosses_bbox(center: list[float], radius: float, bbox: list[float]) 
 
 
 QUERY_TASK_CLASSES = {
+    "chord_length_from_radius_and_central_angle": GeometryCircleChordLengthFromRadiusCentralAngleValueTask,
+    "chord_length_from_radius_and_inscribed_angle": GeometryCircleChordLengthFromRadiusInscribedAngleValueTask,
     "diameter_perpendicular_chord_length": GeometryCircleDiameterPerpendicularChordLengthValueTask,
     "secant_secant_variable_segment_length": GeometryCircleSecantSecantLengthValueTask,
     "tangent_secant_length": GeometryCircleTangentSecantLengthValueTask,
@@ -103,13 +110,45 @@ QUERY_TASK_CLASSES = {
     "tangent_chord_angle_from_arc": GeometryCircleTangentChordAngleFromArcTask,
     "tangent_chord_angle_from_inscribed": GeometryCircleTangentChordAngleFromInscribedTask,
     "external_two_secants_angle_from_arcs": GeometryCircleExternalSecantAngleValueTask,
-    "opposite_angle_supplement": GeometryCircleCyclicQuadrilateralAngleValueTask,
-    "exterior_angle_from_opposite_interior": GeometryCircleCyclicQuadrilateralAngleValueTask,
+    "opposite_angle_supplement": GeometryCircleCyclicQuadrilateralOppositeAngleValueTask,
+    "exterior_angle_from_opposite_interior": GeometryCircleCyclicQuadrilateralExteriorAngleValueTask,
 }
 
 
 def _task_for_query(query_id: str):
     return QUERY_TASK_CLASSES[str(query_id)]()
+
+
+def _public_query_id_for_query(query_id: str) -> str:
+    task_cls = QUERY_TASK_CLASSES[str(query_id)]
+    if tuple(getattr(task_cls, "supported_query_ids", ())) == ("single",):
+        return "single"
+    return str(query_id)
+
+
+def _public_params_for_query(query_id: str, params: dict[str, object]) -> dict[str, object]:
+    resolved = dict(params)
+    if _public_query_id_for_query(str(query_id)) == "single":
+        resolved.pop("query_id", None)
+        resolved.pop("query_variant", None)
+    else:
+        resolved["query_id"] = str(query_id)
+    return resolved
+
+
+def _generate_for_query(
+    query_id: str,
+    seed: int,
+    *,
+    params: dict[str, object] | None = None,
+    max_attempts: int = 40,
+):
+    task = _task_for_query(str(query_id))
+    task_params = _public_params_for_query(
+        str(query_id),
+        {"query_id": str(query_id), **dict(params or {})},
+    )
+    return task.generate(int(seed), params=task_params, max_attempts=int(max_attempts))
 
 
 def test_circle_theorem_tangent_radius_default_pool_has_broad_support() -> None:
@@ -141,24 +180,23 @@ def test_circle_theorem_answer_supports_are_broad() -> None:
 
 
 @pytest.mark.parametrize(
-    "task_cls,query_id,expected_keys",
+    "query_id,expected_keys",
     (
         (
-            GeometryCircleChordLengthFromRadiusCentralAngleValueTask,
             "chord_length_from_radius_and_central_angle",
             ("O", "A", "B"),
         ),
         (
-            GeometryCircleChordLengthFromRadiusInscribedAngleValueTask,
             "chord_length_from_radius_and_inscribed_angle",
             ("O", "A", "B", "C"),
         ),
     ),
 )
 def test_circle_chord_length_from_radius_angle_contract(
-    task_cls, query_id: str, expected_keys: tuple[str, ...]
+    query_id: str, expected_keys: tuple[str, ...]
 ) -> None:
-    out = task_cls().generate(
+    out = _generate_for_query(
+        query_id,
         29031,
         params={"query_id": query_id, "radius_value": 10, "angle_degrees": 60},
         max_attempts=40,
@@ -383,8 +421,12 @@ def test_geometry_circle_theorem_value_emits_expected_contract(
     expected_annotation_count: int,
     expected_canonical_segment: str,
 ) -> None:
-    out = _task_for_query(str(params["query_id"])).generate(
-        23401, params=params, max_attempts=40
+    requested_query_id = str(params["query_id"])
+    out = _generate_for_query(
+        requested_query_id,
+        23401,
+        params=params,
+        max_attempts=40,
     )
 
     assert out.answer_gt.type == "integer"
@@ -396,10 +438,11 @@ def test_geometry_circle_theorem_value_emits_expected_contract(
         == expected_canonical_segment
     )
     assert out.trace_payload["execution_trace"]["target_answer"] == int(expected_answer)
-    assert (
-        out.trace_payload["query_spec"]["params"]["query_id"]
-        == params["query_id"]
-    )
+    expected_public_query_id = _public_query_id_for_query(requested_query_id)
+    query_params = out.trace_payload["query_spec"]["params"]
+    assert query_params["query_id"] == expected_public_query_id
+    if expected_public_query_id == "single":
+        assert query_params["internal_query_id"] == requested_query_id
     assert len(out.trace_payload["execution_trace"]["distractor_tokens"]) >= 1
     support_measurement_tokens = set(
         out.trace_payload["witness_symbolic"]["support_measurement_tokens"]
@@ -477,9 +520,7 @@ def test_geometry_circle_theorem_uses_fixed_visible_point_labels() -> None:
 
     for seed in range(23450, 23460):
         for query_id in variants:
-            out = _task_for_query(query_id).generate(
-                seed, params={"query_id": query_id}, max_attempts=100
-            )
+            out = _generate_for_query(query_id, seed, max_attempts=100)
             label_map = out.trace_payload["execution_trace"]["label_map"]
 
             assert label_map == {label: label for label in label_map}
@@ -495,7 +536,8 @@ def test_geometry_circle_theorem_value_rejects_unsupported_variant() -> None:
 
 
 def test_tangent_secant_variant_places_tangent_point_on_circle() -> None:
-    out = GeometryCircleTangentSecantLengthValueTask().generate(
+    out = _generate_for_query(
+        "tangent_secant_length",
         23431,
         params={
             "query_id": "tangent_secant_length",
@@ -543,7 +585,8 @@ def test_tangent_secant_variant_supports_multiple_missing_segments(
     target_answer: int,
     canonical_answer_segment: str,
 ) -> None:
-    out = GeometryCircleTangentSecantLengthValueTask().generate(
+    out = _generate_for_query(
+        "tangent_secant_length",
         23435,
         params={
             "query_id": "tangent_secant_length",
@@ -633,9 +676,7 @@ def test_secant_theorem_variants_sample_external_point_on_both_sides(
     observed_sides: set[str] = set()
 
     for seed in range(23480, 23490):
-        out = _task_for_query(query_id).generate(
-            seed, params={"query_id": query_id}, max_attempts=100
-        )
+        out = _generate_for_query(query_id, seed, max_attempts=100)
         trace = out.trace_payload["execution_trace"]
         label_map = trace["label_map"]
         point_model = out.trace_payload["render_map"]["point_model"]
@@ -655,7 +696,8 @@ def test_secant_theorem_variants_sample_external_point_on_both_sides(
 
 
 def test_intersecting_chords_arc_variant_uses_angle_arc_relationship() -> None:
-    out = GeometryCircleIntersectingChordsArcMeasureValueTask().generate(
+    out = _generate_for_query(
+        "intersecting_chords_arc_measure",
         23451,
         params={
             "query_id": "intersecting_chords_arc_measure",
@@ -674,7 +716,8 @@ def test_intersecting_chords_arc_variant_uses_angle_arc_relationship() -> None:
 
 
 def test_multi_step_angle_variant_uses_intersecting_chord_arc_sum() -> None:
-    out = GeometryCircleMultiStepAngleValueTask().generate(
+    out = _generate_for_query(
+        "multi_step_angle_value",
         23453,
         params={"query_id": "multi_step_angle_value", "target_answer": 85},
         max_attempts=40,
@@ -713,9 +756,9 @@ def test_external_secant_angle_variant_uses_arc_difference() -> None:
 
 
 def test_cyclic_quadrilateral_opposite_angle_variant_uses_supplement() -> None:
-    out = GeometryCircleCyclicQuadrilateralAngleValueTask().generate(
+    out = GeometryCircleCyclicQuadrilateralOppositeAngleValueTask().generate(
         23458,
-        params={"query_id": "opposite_angle_supplement", "target_answer": 75},
+        params={"target_answer": 75},
         max_attempts=60,
     )
     trace = out.trace_payload["execution_trace"]
@@ -734,12 +777,9 @@ def test_cyclic_quadrilateral_opposite_angle_variant_uses_supplement() -> None:
 
 
 def test_cyclic_quadrilateral_exterior_angle_variant_matches_opposite_angle() -> None:
-    out = GeometryCircleCyclicQuadrilateralAngleValueTask().generate(
+    out = GeometryCircleCyclicQuadrilateralExteriorAngleValueTask().generate(
         23459,
-        params={
-            "query_id": "exterior_angle_from_opposite_interior",
-            "target_answer": 75,
-        },
+        params={"target_answer": 75},
         max_attempts=60,
     )
     trace = out.trace_payload["execution_trace"]
@@ -767,7 +807,8 @@ def test_cyclic_quadrilateral_exterior_angle_variant_matches_opposite_angle() ->
 def test_inscribed_angle_variants_use_half_arc_relationship(
     query_id: str, target_answer: int
 ) -> None:
-    out = _task_for_query(query_id).generate(
+    out = _generate_for_query(
+        query_id,
         23455,
         params={"query_id": query_id, "target_answer": target_answer},
         max_attempts=40,
@@ -791,7 +832,8 @@ def test_inscribed_angle_variants_use_half_arc_relationship(
 def test_tangent_chord_angle_variants_use_matching_angle_or_arc(
     query_id: str,
 ) -> None:
-    out = _task_for_query(query_id).generate(
+    out = _generate_for_query(
+        query_id,
         23457,
         params={"query_id": query_id, "target_answer": 45},
         max_attempts=40,
@@ -827,9 +869,7 @@ def test_circle_theorem_rendered_label_boxes_avoid_lines_and_circle() -> None:
 
     for seed in (50000, 50001):
         for query_id in variants:
-            out = _task_for_query(query_id).generate(
-                seed, params={"query_id": query_id}, max_attempts=100
-            )
+            out = _generate_for_query(query_id, seed, max_attempts=100)
             render_map = out.trace_payload["render_map"]
             segments = [
                 (

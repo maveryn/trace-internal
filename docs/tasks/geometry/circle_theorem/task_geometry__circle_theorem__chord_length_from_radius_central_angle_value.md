@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `circle_theorem`
-4. Query id: `chord_length_from_radius_and_central_angle`
+4. Query id: `single`
 5. Answer schema: `decimal_value_1dp`
 6. Annotation schema: `keyed_point_map`
 

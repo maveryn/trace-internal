@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `circle_theorem`
-5. Query id: `radius_from_external_distance_and_angle`, `tangent_length_from_radius_and_external_distance`
+5. Query id: `single`, `tangent_length_from_radius_and_external_distance`
 6. Answer schema: `decimal_value_1dp`
 7. Annotation schema: `keyed_point_map`
 

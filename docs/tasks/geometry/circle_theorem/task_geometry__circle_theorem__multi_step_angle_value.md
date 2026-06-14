@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `circle_theorem`
-5. Query id: `multi_step_angle_value`
+5. Query id: `single`
 6. Answer schema: `integer_value`
 7. Annotation schema: `keyed_point_map`
 

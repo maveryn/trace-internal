@@ -13,31 +13,37 @@ def test_games_go_group_property_count_defaults_present() -> None:
         cfg,
         task_id="task_games__go__group_liberty_count",
     )
+    adjacent_generation, _adjacent_rendering, _adjacent_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_games__go__group_adjacent_enemy_count",
+    )
+    stone_generation, _stone_rendering, _stone_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_games__go__stone_group_count",
+    )
 
+    shared_generation = cfg["generation"]["shared"]
+    assert "query_id_weights" not in shared_generation
+    assert "balanced_query_id_sampling" not in shared_generation
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_player_color_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"open_board", "crowded_board"}
-    assert set(generation["query_id_weights"].keys()) == {
-        "marked_group_liberty_count",
-        "marked_group_adjacent_enemy_count",
-        "marked_group_shared_liberty_count",
-        "black_stone_group_count",
-        "white_stone_group_count",
-    }
     assert set(generation["player_color_weights"].keys()) == {"black", "white"}
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_GO_STYLE_VARIANTS)
     assert list(generation["liberty_count_support"]) == [1, 2, 3, 4, 6]
-    assert list(generation["adjacent_enemy_count_support"]) == [1, 2, 3, 4, 5, 6]
     assert list(generation["shared_liberty_count_support"]) == [1, 2, 3, 4, 5]
-    assert list(generation["stone_group_count_support"]) == [1, 2, 3, 4, 5, 6, 7, 8]
+    assert list(adjacent_generation["adjacent_enemy_count_support"]) == [1, 2, 3, 4, 5, 6]
+    assert bool(adjacent_generation["balanced_player_color_sampling"]) is True
+    assert bool(adjacent_generation["balanced_target_answer_sampling"]) is True
+    assert list(stone_generation["stone_group_count_support"]) == [1, 2, 3, 4, 5, 6, 7, 8]
+    assert bool(stone_generation["balanced_target_answer_sampling"]) is True
     assert list(generation["board_size_support"]) == [6, 7, 8]
     assert int(rendering["max_board_size_px"]) > 0
     assert float(rendering["stone_radius_fraction"]) > 0.0
     assert rendering["dynamic_canvas_size_enabled"] is True
     assert int(rendering["canvas_min_width_px"]) >= 560
     assert int(rendering["canvas_min_height_px"]) >= 560
-    assert str(prompt["bundle_id"]) == "games_go_v0"
-    assert "liberty" in str(prompt["liberty_rule_text"]).lower()
+    assert str(prompt["bundle_id"]) == "games_go_v1"
+    assert str(prompt["task_key"]) == "go_group_property_query"

@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Tuple
+from typing import Dict, Tuple
 
-from .mechanics import SUPPORTED_GO_PLAYER_COLORS
+from .rules import SUPPORTED_GO_PLAYER_COLORS
 
 
 SCENE_ID = "go"
@@ -68,21 +68,6 @@ class GoPlayerColorAxis:
     probabilities: Dict[str, float]
 
 
-@dataclass(frozen=True)
-class GoGeneratedComponents:
-    """Generated scene components for public task files to wrap in TaskOutput."""
-
-    prompt: str
-    prompt_variants: Dict[str, Any]
-    answer_type: str
-    answer_value: int | str
-    annotation_type: str
-    annotation_value: Any
-    image: Any
-    trace_payload: Dict[str, Any]
-    query_id: str
-
-
 DEFAULTS = GoSceneDefaults()
 
 
@@ -92,7 +77,6 @@ __all__ = [
     "SCENE_ID",
     "SUPPORTED_GO_PLAYER_COLORS",
     "SUPPORTED_GO_SCENE_VARIANTS",
-    "GoGeneratedComponents",
     "GoIntegerAxis",
     "GoPlayerColorAxis",
     "GoSceneAxes",

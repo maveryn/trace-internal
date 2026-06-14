@@ -2,30 +2,24 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Mapping
 
-from trace.core.seed import spawn_rng
-from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
 
-from .shared.assembly import build_go_components
-from .shared.mechanics import build_go_board_state, color_name, coord_to_point_id
+from ._lifecycle import GoObjectivePlan, make_go_marked_group_objective, run_go_lifecycle
+from .shared.rules import GO_RULE_ADJACENT_ENEMY_STONES
 from .shared.sampling import (
-    resolve_go_board_size_axis,
     resolve_go_player_color_axis,
-    resolve_go_scene_axes,
     resolve_go_target_axis,
 )
-from .shared.state import DEFAULTS, SCENE_ID
+from .shared.state import DEFAULTS, GoIntegerAxis, GoSceneAxes, SCENE_ID
 
 
 TASK_ID = "task_games__go__group_adjacent_enemy_count"
-QUERY_ID = "marked_group_adjacent_enemy_count"
-PROMPT_QUERY_KEY = QUERY_ID
+QUERY_ID = "single"
+PROMPT_QUERY_KEY = "marked_group_adjacent_enemy_count"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
     "games",
@@ -34,111 +28,63 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation
 )
 
 
+def _prepare_adjacent_enemy_objective(
+    instance_seed: int,
+    task_params: Mapping[str, Any],
+    _query_id: str,
+    _query_probabilities: Mapping[str, float],
+    scene_axes: GoSceneAxes,
+    board_size_axis: GoIntegerAxis,
+) -> GoObjectivePlan:
+    """Bind the adjacent-enemy count to a marked Go group construction."""
+
+    player_color_axis = resolve_go_player_color_axis(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        gen_defaults=_GEN_DEFAULTS,
+    )
+    target_axis = resolve_go_target_axis(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        gen_defaults=_GEN_DEFAULTS,
+        support_key="adjacent_enemy_count_support",
+        fallback_support=DEFAULTS.adjacent_enemy_count_support,
+        namespace=f"{PROMPT_QUERY_KEY}.target_answer",
+    )
+
+    return make_go_marked_group_objective(
+        prompt_query_key=PROMPT_QUERY_KEY,
+        rule_mode=GO_RULE_ADJACENT_ENEMY_STONES,
+        target_axis=target_axis,
+        player_color_axis=player_color_axis,
+        board_size_axis=board_size_axis,
+        scene_axes=scene_axes,
+        annotation_coord_attr="adjacent_enemy_coords",
+        attempt_namespace=f"games.go.{PROMPT_QUERY_KEY}",
+    )
+
+
 @register_task
 class GamesGoGroupAdjacentEnemyCountTask:
     """Count opponent stones touching the marked group orthogonally."""
 
     task_id = TASK_ID
     domain = "games"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_id_probabilities, task_params = select_task_query_id(
+        return run_go_lifecycle(
+            task_id=TASK_ID,
+            domain=self.domain,
             instance_seed=int(instance_seed),
             params=params,
             supported_query_ids=SUPPORTED_QUERY_IDS,
             default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        player_color_axis = resolve_go_player_color_axis(
-            instance_seed=int(instance_seed),
-            params=task_params,
             gen_defaults=_GEN_DEFAULTS,
-        )
-        scene_axes = resolve_go_scene_axes(
-            instance_seed=int(instance_seed),
-            params=task_params,
-            gen_defaults=_GEN_DEFAULTS,
-        )
-        board_size_axis = resolve_go_board_size_axis(
-            instance_seed=int(instance_seed),
-            params=task_params,
-            gen_defaults=_GEN_DEFAULTS,
-        )
-        target_axis = resolve_go_target_axis(
-            instance_seed=int(instance_seed),
-            params=task_params,
-            gen_defaults=_GEN_DEFAULTS,
-            support_key="adjacent_enemy_count_support",
-            fallback_support=DEFAULTS.adjacent_enemy_count_support,
-            namespace=f"{QUERY_ID}.target_answer",
-        )
-
-        board_state = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            rng = spawn_rng(int(instance_seed), f"games.go.{QUERY_ID}.attempt.{int(attempt_index)}")
-            try:
-                board_state = build_go_board_state(
-                    rng=rng,
-                    count_mode=str(query_id),
-                    player_color=str(player_color_axis.player_color),
-                    scene_variant=str(scene_axes.scene_variant),
-                    target_answer=int(target_axis.value),
-                    board_size=int(board_size_axis.value),
-                )
-            except (RuntimeError, ValueError):
-                continue
-            break
-        if board_state is None:
-            raise RuntimeError(f"{TASK_ID} failed to generate a valid Go board after {max_attempts} attempts")
-
-        annotation_ids = tuple(coord_to_point_id(coord) for coord in board_state.adjacent_enemy_coords)
-        query_params = {
-            "target_answer": int(target_axis.value),
-            "target_answer_support": [int(value) for value in target_axis.support],
-            "target_answer_probabilities": dict(target_axis.probabilities),
-        }
-        execution_extra = {
-            "marked_group_color": str(color_name(board_state.marked_group_color).lower()),
-            "marked_group_point_ids": [coord_to_point_id(coord) for coord in board_state.marked_group_coords],
-            "adjacent_enemy_coords": [[int(row), int(col)] for row, col in board_state.adjacent_enemy_coords],
-            "shared_liberty_coords": [[int(row), int(col)] for row, col in board_state.shared_liberty_coords],
-        }
-        components = build_go_components(
-            domain=self.domain,
-            instance_seed=int(instance_seed),
-            params=task_params,
             render_defaults=_RENDER_DEFAULTS,
-            query_id=str(query_id),
-            query_id_probabilities=query_id_probabilities,
-            scene_axes=scene_axes,
-            player_color_axis=player_color_axis,
-            board_size_axis=board_size_axis,
-            target_axis=target_axis,
-            board=board_state.board,
-            stone_specs=board_state.stone_specs,
-            marked_group_coords=board_state.marked_group_coords,
-            liberty_coords=board_state.liberty_coords,
-            annotation_point_ids=annotation_ids,
-            prompt_query_key=PROMPT_QUERY_KEY,
-            stone_group_query=False,
-            query_params=query_params,
-            execution_extra=execution_extra,
-        )
-        return TaskOutput(
-            prompt=str(components.prompt),
-            prompt_variants=dict(components.prompt_variants),
-            answer_gt=TypedValue(type=str(components.answer_type), value=components.answer_value),
-            annotation_gt=TypedValue(type=str(components.annotation_type), value=components.annotation_value),
-            image=components.image,
-            image_id="img0",
-            trace_payload=dict(components.trace_payload),
-            task_versions=default_task_versions(),
-            query_id=str(components.query_id),
-            scene_id=SCENE_ID,
+            max_attempts=int(max_attempts),
+            prepare_objective=_prepare_adjacent_enemy_objective,
         )
 
 

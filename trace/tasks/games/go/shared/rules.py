@@ -12,6 +12,11 @@ BLACK = 1
 WHITE = -1
 BOARD_SIZE = 7
 SUPPORTED_GO_PLAYER_COLORS: Tuple[str, ...] = ("black", "white")
+GO_RULE_GROUP_LIBERTIES = "group_liberties"
+GO_RULE_ADJACENT_ENEMY_STONES = "adjacent_enemy_stones"
+GO_RULE_SHARED_LIBERTIES = "shared_liberties"
+GO_RULE_BLACK_GROUPS = "black_groups"
+GO_RULE_WHITE_GROUPS = "white_groups"
 
 Coord = Tuple[int, int]
 Board = Tuple[Tuple[int, ...], ...]
@@ -234,19 +239,17 @@ def shared_liberty_coords(board: Sequence[Sequence[int]], group: Iterable[Coord]
     return tuple(sorted(shared))
 
 
-def supported_targets_for_mode(count_mode: str = "marked_group_liberty_count") -> Tuple[int, ...]:
+def supported_targets_for_mode(count_mode: str = GO_RULE_GROUP_LIBERTIES) -> Tuple[int, ...]:
     """Return supported count targets for one Go group-property query."""
 
     variant = str(count_mode)
-    if variant in {"marked_black_group_liberty_count", "marked_white_group_liberty_count"}:
-        variant = "marked_group_liberty_count"
-    if variant == "marked_group_liberty_count":
+    if variant == GO_RULE_GROUP_LIBERTIES:
         return (1, 2, 3, 4, 6)
-    if variant == "marked_group_adjacent_enemy_count":
+    if variant == GO_RULE_ADJACENT_ENEMY_STONES:
         return (1, 2, 3, 4, 5, 6)
-    if variant == "marked_group_shared_liberty_count":
+    if variant == GO_RULE_SHARED_LIBERTIES:
         return (1, 2, 3, 4, 5)
-    if variant in {"black_stone_group_count", "white_stone_group_count"}:
+    if variant in {GO_RULE_BLACK_GROUPS, GO_RULE_WHITE_GROUPS}:
         return tuple(range(1, 9))
     raise ValueError(f"unsupported Go count mode: {count_mode}")
 
@@ -382,9 +385,9 @@ def build_go_stone_group_count_state(
     if int(board_size) < 5:
         raise ValueError("Go group-count boards require board_size >= 5")
     variant = str(count_mode)
-    if variant == "black_stone_group_count":
+    if variant == GO_RULE_BLACK_GROUPS:
         target_color = int(BLACK)
-    elif variant == "white_stone_group_count":
+    elif variant == GO_RULE_WHITE_GROUPS:
         target_color = int(WHITE)
     else:
         raise ValueError(f"unsupported Go group-count count mode: {count_mode}")
@@ -498,16 +501,10 @@ def build_go_board_state(
     if int(board_size) < 5:
         raise ValueError("Go liberty boards require board_size >= 5")
     variant = str(count_mode)
-    if variant == "marked_black_group_liberty_count":
-        variant = "marked_group_liberty_count"
-        player_color = "black"
-    elif variant == "marked_white_group_liberty_count":
-        variant = "marked_group_liberty_count"
-        player_color = "white"
     if variant not in {
-        "marked_group_liberty_count",
-        "marked_group_adjacent_enemy_count",
-        "marked_group_shared_liberty_count",
+        GO_RULE_GROUP_LIBERTIES,
+        GO_RULE_ADJACENT_ENEMY_STONES,
+        GO_RULE_SHARED_LIBERTIES,
     }:
         raise ValueError(f"unsupported Go count mode: {count_mode}")
     if target not in supported_targets_for_mode(variant):
@@ -523,12 +520,12 @@ def build_go_board_state(
     extras_min, extras_max = (4, 10) if str(scene_variant) == "open_board" else (12, 20)
 
     for _ in range(max(1, int(max_internal_attempts))):
-        if variant == "marked_group_adjacent_enemy_count":
+        if variant == GO_RULE_ADJACENT_ENEMY_STONES:
             group_size_min = _minimum_group_size_for_adjacent_enemies(int(target))
             group_size_max = min(8, int(group_size_min) + 3)
             group_size = int(rng.randint(int(group_size_min), int(group_size_max)))
             favor_center = bool(int(target) >= 6)
-        elif variant == "marked_group_shared_liberty_count":
+        elif variant == GO_RULE_SHARED_LIBERTIES:
             group_size_min = _minimum_group_size_for_shared_liberties(int(target))
             group_size_max = min(8, int(group_size_min) + 3)
             group_size = int(rng.randint(int(group_size_min), int(group_size_max)))
@@ -547,12 +544,12 @@ def build_go_board_state(
         if not group:
             continue
         boundary = _boundary_neighbors(group, board_size=int(board_size))
-        if variant == "marked_group_liberty_count":
+        if variant == GO_RULE_GROUP_LIBERTIES:
             if len(boundary) < int(target):
                 continue
             liberties = tuple(sorted(boundary[index] for index in rng.sample(range(len(boundary)), int(target))))
             enemy_boundary = tuple(sorted(coord for coord in boundary if coord not in set(liberties)))
-        elif variant == "marked_group_adjacent_enemy_count":
+        elif variant == GO_RULE_ADJACENT_ENEMY_STONES:
             if len(boundary) <= int(target):
                 continue
             enemy_boundary = tuple(sorted(boundary[index] for index in rng.sample(range(len(boundary)), int(target))))
@@ -573,7 +570,7 @@ def build_go_board_state(
         for row, col in boundary:
             if (int(row), int(col)) in enemy_boundary_set:
                 rows[int(row)][int(col)] = int(opponent_color)
-        if variant == "marked_group_shared_liberty_count":
+        if variant == GO_RULE_SHARED_LIBERTIES:
             used_marker_cells: Set[Coord] = set()
             for liberty in shared_targets:
                 marker_candidates = [
@@ -617,7 +614,7 @@ def build_go_board_state(
             if set(candidate_group) != set(group):
                 mutable_rows[int(row)][int(col)] = int(EMPTY)
                 continue
-            if variant == "marked_group_shared_liberty_count":
+            if variant == GO_RULE_SHARED_LIBERTIES:
                 if tuple(sorted(group_liberties(candidate_board, candidate_group))) != tuple(sorted(liberties)):
                     mutable_rows[int(row)][int(col)] = int(EMPTY)
                     continue
@@ -632,13 +629,13 @@ def build_go_board_state(
         shared_liberties_now = shared_liberty_coords(board, marked_group)
         if set(marked_group) != set(group):
             continue
-        if variant == "marked_group_liberty_count" and len(liberties_now) != int(target):
+        if variant == GO_RULE_GROUP_LIBERTIES and len(liberties_now) != int(target):
             continue
-        if variant == "marked_group_adjacent_enemy_count" and len(adjacent_enemies_now) != int(target):
+        if variant == GO_RULE_ADJACENT_ENEMY_STONES and len(adjacent_enemies_now) != int(target):
             continue
-        if variant == "marked_group_shared_liberty_count" and len(shared_liberties_now) != int(target):
+        if variant == GO_RULE_SHARED_LIBERTIES and len(shared_liberties_now) != int(target):
             continue
-        if variant != "marked_group_adjacent_enemy_count" and tuple(sorted(liberties_now)) != tuple(sorted(liberties)):
+        if variant != GO_RULE_ADJACENT_ENEMY_STONES and tuple(sorted(liberties_now)) != tuple(sorted(liberties)):
             continue
 
         return GoBoardState(
@@ -663,6 +660,11 @@ __all__ = [
     "Board",
     "Coord",
     "EMPTY",
+    "GO_RULE_ADJACENT_ENEMY_STONES",
+    "GO_RULE_BLACK_GROUPS",
+    "GO_RULE_GROUP_LIBERTIES",
+    "GO_RULE_SHARED_LIBERTIES",
+    "GO_RULE_WHITE_GROUPS",
     "GoBoardState",
     "GoStoneGroupCountState",
     "GoStoneSpec",

@@ -70,12 +70,12 @@ def build_go_prompt_artifacts(
             "annotation_hint_marked_group_adjacent_enemy_count",
             "answer_hint_marked_group_shared_liberty_count",
             "annotation_hint_marked_group_shared_liberty_count",
-            "answer_hint_stone_group_count",
-            "annotation_hint_stone_group_count",
+            "answer_hint_connected_color_groups",
+            "annotation_hint_connected_color_groups",
         ),
         context="go prompt wiring defaults",
     )
-    hint_key = "stone_group_count" if bool(stone_group_query) else str(prompt_query_key)
+    hint_key = "connected_color_groups" if bool(stone_group_query) else str(prompt_query_key)
     object_description_key = (
         f"object_description_stone_group_{str(scene_variant)}"
         if bool(stone_group_query)

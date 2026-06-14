@@ -173,7 +173,7 @@
     "answer_hint_marked_group_adjacent_enemy_count": "set \"answer\" to the number of opponent stones directly adjacent to the marked {player_color} group",
     "annotation_hint_marked_group_shared_liberty_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at every shared liberty of the marked {player_color} group",
     "answer_hint_marked_group_shared_liberty_count": "set \"answer\" to the number of shared liberties of the marked {player_color} group",
-    "annotation_hint_stone_group_count": "set \"annotation\" to a JSON array of pixel-space points [x, y], one at the center of one representative stone from each counted {player_color} group",
-    "answer_hint_stone_group_count": "set \"answer\" to the number of connected {player_color} stone groups"
+    "annotation_hint_connected_color_groups": "set \"annotation\" to a JSON array of pixel-space points [x, y], one at the center of one representative stone from each counted {player_color} group",
+    "answer_hint_connected_color_groups": "set \"answer\" to the number of connected {player_color} stone groups"
   }
 }

@@ -1,15 +1,10 @@
-"""Prompt assembly for heatmap chart tasks."""
+"""Prompt assembly for heatmap chart scenes."""
 
 from __future__ import annotations
 
 from typing import Any, Mapping
 
-from trace.core.scene_config import get_scene_defaults
-from trace.tasks.charts.heatmap.shared.grid_common import (
-    _COLORBAR_THRESHOLD_PROMPT_KEYS,
-    _is_continuous_colorbar_prompt_key,
-)
-from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
+from trace.tasks.charts.heatmap.shared.defaults import PROMPT_DEFAULTS
 from trace.tasks.shared.prompt_variants import (
     PromptTraceArtifacts,
     build_prompt_trace_artifacts,
@@ -20,17 +15,6 @@ from trace.tasks.shared.prompt_variants import (
 DOMAIN = "charts"
 SCENE_ID = "heatmap"
 PROMPT_BUNDLE_ID = "charts_heatmap_v1"
-_DEFAULTS = get_scene_defaults(DOMAIN, SCENE_ID)
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
-    _DEFAULTS if isinstance(_DEFAULTS, Mapping) else {},
-    **{"task" "_id": "charts_heatmap_prompt"},
-)
-
-
-def prompt_profile(prompt_key: str) -> str:
-    if str(prompt_key) in set(_COLORBAR_THRESHOLD_PROMPT_KEYS):
-        return "colorbar_threshold_cell_count"
-    return str(prompt_key)
 
 
 def dynamic_slots(dataset: Mapping[str, Any], *, supports_unanswerable: bool) -> dict[str, Any]:
@@ -61,12 +45,6 @@ def dynamic_slots(dataset: Mapping[str, Any], *, supports_unanswerable: bool) ->
     }
 
 
-def answer_hint(prompt_key: str) -> str:
-    if _is_continuous_colorbar_prompt_key(str(prompt_key)):
-        return 'set "answer" to the requested cell count as an integer'
-    return 'set "answer" to the exact visible row or column label as a string'
-
-
 def build_prompt_artifacts(
     *,
     prompt_query_key: str,
@@ -76,7 +54,7 @@ def build_prompt_artifacts(
     rendered_prompt = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
-        bundle_id=str(_PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
+        bundle_id=str(PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
         scene_key="heatmap_scene",
         task_key="heatmap_query",
         query_key=str(prompt_query_key),
@@ -87,8 +65,6 @@ def build_prompt_artifacts(
 
 
 __all__ = [
-    "answer_hint",
     "build_prompt_artifacts",
     "dynamic_slots",
-    "prompt_profile",
 ]

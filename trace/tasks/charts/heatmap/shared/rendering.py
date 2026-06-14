@@ -13,11 +13,11 @@ from ....shared.font_assets import sample_font_family
 from ....shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
 from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import fit_font_to_box, load_font
-from .grid_common import (
+from .defaults import (
     BBox,
     _CALENDAR_PALETTE,
     _INTENSITY_PALETTE,
-    _RENDER_DEFAULTS,
+    RENDER_DEFAULTS,
     SCENE_NAMESPACE,
     _SIGNED_PALETTE,
 )
@@ -74,7 +74,7 @@ def _render_style_seed(params: Mapping[str, Any]) -> int:
 def _rgb_param(params: Mapping[str, Any], key: str, fallback: Tuple[int, int, int]) -> Tuple[int, int, int]:
     return resolve_render_rgb(
         params,
-        _RENDER_DEFAULTS,
+        RENDER_DEFAULTS,
         str(key),
         fallback,
         instance_seed=_render_style_seed(params),
@@ -83,10 +83,12 @@ def _rgb_param(params: Mapping[str, Any], key: str, fallback: Tuple[int, int, in
 
 
 def _int_param(params: Mapping[str, Any], key: str, fallback: int) -> int:
-    return int(params.get(str(key), _RENDER_DEFAULTS.get(str(key), int(fallback))))
+    return int(params.get(str(key), RENDER_DEFAULTS.get(str(key), int(fallback))))
 
 
 def _resolve_render_params(params: Mapping[str, Any]) -> _HeatmapRenderParams:
+    """Resolve canvas, spacing, color, jitter, and font choices for one render."""
+
     outer = _int_param(params, "outer_margin_px", 42)
     jitter_left, _jitter_right, jitter_top, _jitter_bottom, layout_jitter_meta = apply_layout_jitter_to_margins(
         left_px=int(outer),
@@ -94,7 +96,7 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _HeatmapRenderParams:
         top_px=int(outer),
         bottom_px=int(outer),
         params=params,
-        defaults=_RENDER_DEFAULTS,
+        defaults=RENDER_DEFAULTS,
         instance_seed=_render_style_seed(params),
         namespace=f"{SCENE_NAMESPACE}.layout",
     )
@@ -218,6 +220,8 @@ def _render_legend(
     palette: Sequence[Tuple[int, int, int]],
     ticks: Sequence[int] = (),
 ) -> None:
+    """Draw the discrete legend or continuous colorbar that defines color semantics."""
+
     x0, y0, x1, y1 = [float(value) for value in legend_bbox]
     font = load_font(max(8, int(render_params.legend_font_size_px)), font_family=render_params.font_family)
     if str(scene_variant) == "continuous_colorbar_heatmap":
@@ -273,6 +277,8 @@ def _render_heatmap(
     render_params: _HeatmapRenderParams,
     colorbar_ticks: Sequence[int] = (),
 ) -> _RenderedHeatmap:
+    """Draw the full heatmap panel and return projected cell and label geometry."""
+
     draw = ImageDraw.Draw(image)
     width, height = image.size
     offset_x = float(render_params.layout_offset_x_px)

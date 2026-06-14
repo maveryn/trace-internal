@@ -1,20 +1,20 @@
-"""Runtime helpers for heatmap chart tasks."""
+"""Rendering and trace helpers for heatmap chart scenes."""
 
 from __future__ import annotations
 
 from dataclasses import replace
 from typing import Any, Dict, Mapping
 
-from trace.core.types import TypedValue
 from trace.core.visual.background import make_background_canvas
 from trace.core.visual.noise import apply_post_image_noise
-from trace.tasks.charts.heatmap.shared.grid_common import (
-    _REASONING_LOAD_BY_VARIANT,
-    _SCENE_LOAD_BY_VARIANT,
+from trace.tasks.charts.heatmap.shared.annotations import annotation_refs
+from trace.tasks.charts.heatmap.shared.defaults import (
     POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
+    SCENE_ID,
+    _condition_support,
 )
-from trace.tasks.charts.heatmap.shared.grid_rendering import _render_heatmap, _resolve_render_params
+from trace.tasks.charts.heatmap.shared.rendering import _render_heatmap, _resolve_render_params
 from trace.tasks.shared.font_assets import font_asset_version
 
 
@@ -24,6 +24,8 @@ def render_dataset(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> tuple[Any, Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+    """Render one already-constructed heatmap dataset and record style metadata."""
+
     render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
     render_params = _resolve_render_params(render_style_params)
     background, background_meta = make_background_canvas(
@@ -71,29 +73,6 @@ def render_dataset(
     return rendered_scene, dict(render_meta), dict(background_meta), dict(post_noise_meta)
 
 
-def answer_typed_value(dataset: Mapping[str, Any]) -> TypedValue:
-    answer_type = str(dataset["answer_type"])
-    value: int | str = int(dataset["answer_value"]) if answer_type == "integer" else str(dataset["answer_value"])
-    return TypedValue(type=answer_type, value=value)
-
-
-def annotation_payload(
-    *,
-    dataset: Mapping[str, Any],
-    rendered: Any,
-) -> tuple[str, list[list[float]], Dict[str, Any]]:
-    annotation_cell_ids = [str(cell_id) for cell_id in dataset["annotation_cell_ids"]]
-    annotation_bboxes = [list(rendered.cell_bbox_map[str(cell_id)]) for cell_id in annotation_cell_ids]
-    projected_annotation = {
-        "type": "bbox_set",
-        "bbox_set": list(annotation_bboxes),
-        "pixel_bbox_set": list(annotation_bboxes),
-        "bbox_map": {str(cell_id): list(rendered.cell_bbox_map[str(cell_id)]) for cell_id in annotation_cell_ids},
-        "cell_ids": list(annotation_cell_ids),
-    }
-    return "bbox_set", list(annotation_bboxes), dict(projected_annotation)
-
-
 def build_trace_scaffold(
     *,
     dataset: Mapping[str, Any],
@@ -105,6 +84,8 @@ def build_trace_scaffold(
     annotation_value: list[list[float]],
     answer_value: int | str,
 ) -> Dict[str, Any]:
+    """Assemble scene-neutral trace sections before task relation params are added."""
+
     annotation_cell_ids = [str(cell_id) for cell_id in dataset["annotation_cell_ids"]]
     prompt_key = str(dataset["prompt_key"])
     question_params = dict(dataset["question_params"])
@@ -173,11 +154,107 @@ def build_trace_scaffold(
             **({"absence_proof": dict(dataset["absence_proof"])} if bool(dataset["is_unanswerable"]) else {}),
         },
         "projected_annotation": dict(projected_annotation),
-        "annotation_refs": [{"cell_id": str(cell_id), "bbox_px": list(box)} for cell_id, box in zip(annotation_cell_ids, annotation_value)],
+        "annotation_refs": annotation_refs(
+            annotation_cell_ids=list(annotation_cell_ids),
+            annotation_value=list(annotation_value),
+        ),
         "background": dict(background_meta),
         "post_image_noise": dict(post_noise_meta),
     }
 
 
+def discrete_relation_params(
+    *,
+    dataset: Mapping[str, Any],
+    scene_variant_probabilities: Mapping[str, float],
+    objective_params: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Build scene-level relation metadata shared by discrete heatmap objectives."""
+
+    return {
+        "scene_id": SCENE_ID,
+        "scene_variant": str(dataset["scene_variant"]),
+        "scene_variant_probabilities": dict(scene_variant_probabilities),
+        "row_count": int(dataset["row_count"]),
+        "column_count": int(dataset["column_count"]),
+        "row_count_probabilities": dict(dataset["row_count_probabilities"]),
+        "column_count_probabilities": dict(dataset["column_count_probabilities"]),
+        "heat_bin_count": int(dataset["heat_bin_count"]),
+        "query_axis": str(dataset["query_axis"]),
+        **dict(objective_params),
+        **dict(dataset["question_params"]),
+    }
 
 
+def continuous_colorbar_relation_params(
+    *,
+    dataset: Mapping[str, Any],
+    objective_params: Mapping[str, Any] | None = None,
+) -> Dict[str, Any]:
+    """Build scene-level relation metadata shared by continuous-colorbar objectives."""
+
+    return {
+        "scene_id": SCENE_ID,
+        "scene_variant": str(dataset["scene_variant"]),
+        "scene_variant_probabilities": {"continuous_colorbar_heatmap": 1.0},
+        "row_count": int(dataset["row_count"]),
+        "column_count": int(dataset["column_count"]),
+        "row_count_probabilities": dict(dataset["row_count_probabilities"]),
+        "column_count_probabilities": dict(dataset["column_count_probabilities"]),
+        "heat_bin_count": int(dataset["heat_bin_count"]),
+        "colorbar_value_min": dataset.get("colorbar_value_min"),
+        "colorbar_value_max": dataset.get("colorbar_value_max"),
+        "colorbar_ticks": list(dataset.get("colorbar_ticks", [])),
+        **dict(objective_params or {}),
+        **dict(dataset["question_params"]),
+    }
+
+
+def condition_relation_params(
+    *,
+    dataset: Mapping[str, Any],
+    scene_variant_probabilities: Mapping[str, float],
+    condition_kind_probabilities: Mapping[str, float],
+    query_axis_probabilities: Mapping[str, float] | None = None,
+) -> Dict[str, Any]:
+    """Build relation metadata for heatmap objectives based on cell conditions."""
+
+    return discrete_relation_params(
+        dataset=dataset,
+        scene_variant_probabilities=scene_variant_probabilities,
+        objective_params={
+            **({"query_axis_probabilities": dict(query_axis_probabilities)} if query_axis_probabilities else {}),
+            "condition_kind_probabilities": dict(condition_kind_probabilities),
+            "condition_support": list(_condition_support(str(dataset["scene_variant"]))),
+        },
+    )
+
+
+def axis_cell_relation_params(
+    *,
+    dataset: Mapping[str, Any],
+    scene_variant_probabilities: Mapping[str, float],
+    query_axis: str,
+    extremum_direction: str,
+) -> Dict[str, Any]:
+    """Build relation metadata for a named-axis cell-extremum lookup."""
+
+    return discrete_relation_params(
+        dataset=dataset,
+        scene_variant_probabilities=scene_variant_probabilities,
+        objective_params={
+            "query_axis_probabilities": {str(query_axis): 1.0},
+            "extremum_direction_probabilities": {str(extremum_direction): 1.0},
+            "condition_support": list(_condition_support(str(dataset["scene_variant"]))),
+        },
+    )
+
+
+__all__ = [
+    "build_trace_scaffold",
+    "axis_cell_relation_params",
+    "condition_relation_params",
+    "continuous_colorbar_relation_params",
+    "discrete_relation_params",
+    "render_dataset",
+]

@@ -14,7 +14,7 @@ import re
 
 MIGRATED_SCENE_PACKAGE_DOMAINS: frozenset[str] = frozenset()
 MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap"}),
     "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes", "go"}),
     "geometry": frozenset(
         {
@@ -35,7 +35,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
     "three_d": frozenset({"object_cluster", "surface_fixture"}),
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap"}),
     "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes", "go"}),
     "geometry": frozenset(
         {

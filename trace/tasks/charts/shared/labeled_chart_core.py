@@ -489,7 +489,33 @@ def resolve_chart_axis_variant(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve one balanced chart task/scene variant axis."""
 
-    variant_rng = spawn_rng(int(instance_seed), f"{task_id}.{axis_namespace}")
+    return resolve_chart_axis_variant_for_namespace(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        supported_variants=supported_variants,
+        namespace=f"{task_id}.{axis_namespace}",
+        explicit_key=explicit_key,
+        weights_key=weights_key,
+        balance_flag_key=balance_flag_key,
+    )
+
+
+def resolve_chart_axis_variant_for_namespace(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    supported_variants: Sequence[str],
+    namespace: str,
+    explicit_key: str,
+    weights_key: str,
+    balance_flag_key: str,
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve one balanced chart variant axis using a neutral sampling namespace."""
+
+    sampling_namespace = str(namespace)
+    variant_rng = spawn_rng(int(instance_seed), sampling_namespace)
     selected_variant, probabilities = resolve_variant(
         variant_rng,
         params=params,
@@ -515,7 +541,7 @@ def resolve_chart_axis_variant(
         }
         values = [str(item) for item in supported_variants if str(item) in positive_variants]
         if values:
-            offset = abs(int(hash64(0, f"{task_id}:{axis_namespace}", 27183)))
+            offset = abs(int(hash64(0, sampling_namespace, 27183)))
             variant = str(values[(abs(int(params["_sample_cursor"])) + int(offset)) % len(values)])
         else:
             variant = str(selected_variant)
@@ -530,7 +556,7 @@ def resolve_chart_axis_variant(
             balance_flag_key=balance_flag_key,
             explicit_key=explicit_key,
             weights_key=weights_key,
-            sampling_namespace=f"{task_id}:{axis_namespace}",
+            sampling_namespace=sampling_namespace,
         )
     return str(variant), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -557,4 +583,5 @@ __all__ = [
     'max_symmetric_delta',
     'cyclic_pair_deltas',
     'resolve_chart_axis_variant',
+    'resolve_chart_axis_variant_for_namespace',
 ]

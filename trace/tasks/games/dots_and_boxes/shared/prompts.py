@@ -12,7 +12,7 @@ from trace.tasks.shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 
-from .state import SCENE_ID
+from .defaults import SCENE_ID
 
 
 _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
@@ -21,10 +21,10 @@ _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS = load_scene_gen
 )
 
 
-def build_dots_and_boxes_prompt_json_examples(*, prompt_query_key: str) -> Tuple[str, str]:
+def build_dots_and_boxes_prompt_json_examples(*, annotation_example_shape: str) -> Tuple[str, str]:
     """Return JSON examples matching the active dots-and-boxes annotation shape."""
 
-    if str(prompt_query_key) in {"capture_move_count", "highlighted_candidate_capture_count"}:
+    if str(annotation_example_shape) == "point_pair_set":
         annotation_value = [
             [[180, 220], [300, 220]],
             [[310, 340], [430, 340]],
@@ -45,6 +45,7 @@ def build_dots_and_boxes_prompt_artifacts(
     domain: str,
     scene_variant: str,
     prompt_query_key: str,
+    annotation_example_shape: str,
     instance_seed: int,
 ) -> tuple[Dict[str, Any], Any]:
     """Build prompt artifacts for one objective-owned dots-and-boxes task file."""
@@ -64,7 +65,7 @@ def build_dots_and_boxes_prompt_artifacts(
         context="dots-and-boxes prompt wiring defaults",
     )
     json_example, json_example_answer_only = build_dots_and_boxes_prompt_json_examples(
-        prompt_query_key=str(prompt_query_key)
+        annotation_example_shape=str(annotation_example_shape)
     )
     prompt_slots = {
         "object_description": str(prompt_defaults[f"object_description_{str(scene_variant)}"]),

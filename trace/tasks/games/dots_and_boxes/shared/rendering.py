@@ -9,11 +9,21 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....shared.text_rendering import load_font
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.games.shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from trace.tasks.games.shared.visual_defaults import load_games_scene_noise_defaults
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.font_assets import get_font_family_record
+
 from ...shared.text import draw_game_text_traced as draw_text_traced
-from .mechanics import DotsAndBoxesBoardState, DotsAndBoxesBoxInstance, DotsAndBoxesEdgeInstance
 from ...shared.layout import apply_games_layout_jitter_to_bbox
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from ...shared.style import DotsAndBoxesTheme, build_games_dots_and_boxes_theme
+from .defaults import DOTS_AND_BOXES_NAMESPACE, SCENE_ID
+from .state import DotsAndBoxesBoardState, DotsAndBoxesBoxInstance, DotsAndBoxesEdgeInstance
+
+
+POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.0)
 
 
 @dataclass(frozen=True)
@@ -54,6 +64,29 @@ class RenderedDotsAndBoxesScene:
     box_specs: Tuple[RenderedDotsAndBoxesBoxSpec, ...]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
+
+
+@dataclass(frozen=True)
+class RenderedDotsAndBoxesTaskContext:
+    """Rendered dots-and-boxes image plus common style/noise metadata."""
+
+    image: Image.Image
+    rendered_scene: RenderedDotsAndBoxesScene
+    panel_style_meta: Dict[str, Any]
+    text_style_meta: Dict[str, Any]
+    background_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+
+
+def _allowed_panel_treatments(params: Mapping[str, Any], render_defaults: Mapping[str, Any]) -> tuple[str, ...] | None:
+    """Resolve optional panel-scene treatment restrictions for this render pass."""
+
+    raw = params.get("panel_scene_treatments", group_default(render_defaults, "panel_scene_treatments", None))
+    if isinstance(raw, str):
+        return (str(raw),)
+    if raw is None:
+        return None
+    return tuple(str(item) for item in raw)
 
 
 def _draw_shadow(
@@ -474,9 +507,63 @@ def render_dots_and_boxes_scene(
     )
 
 
+def render_dots_and_boxes_task_context(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    board_state: DotsAndBoxesBoardState,
+    scene_variant: str,
+    style_variant: str,
+    render_params: DotsAndBoxesRenderParams,
+) -> RenderedDotsAndBoxesTaskContext:
+    """Render one dots-and-boxes board with shared games canvas styling."""
+
+    panel_style, panel_style_meta = resolve_game_panel_scene_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{DOTS_AND_BOXES_NAMESPACE}.panel_scene_style",
+        treatments=_allowed_panel_treatments(params, render_defaults),
+        treatment_weights=params.get("panel_scene_treatment_weights", group_default(render_defaults, "panel_scene_treatment_weights", None)),
+        palette_weights=params.get("panel_scene_palette_weights", group_default(render_defaults, "panel_scene_palette_weights", None)),
+    )
+    background, background_meta = make_panel_scene_background(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        style=panel_style,
+    )
+    rendered_scene = render_dots_and_boxes_scene(
+        board_state=board_state,
+        background=background,
+        scene_variant=str(scene_variant),
+        style_variant=str(style_variant),
+        params=render_params,
+        panel_style=panel_style,
+    )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    text_style_meta = {
+        "font_family": str(render_params.font_family),
+        "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+    }
+    return RenderedDotsAndBoxesTaskContext(
+        image=image,
+        rendered_scene=rendered_scene,
+        panel_style_meta=dict(panel_style_meta),
+        text_style_meta=dict(text_style_meta),
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
+    )
+
+
 __all__ = [
     "DotsAndBoxesRenderParams",
     "RenderedDotsAndBoxesBoxSpec",
     "RenderedDotsAndBoxesScene",
+    "RenderedDotsAndBoxesTaskContext",
     "render_dots_and_boxes_scene",
+    "render_dots_and_boxes_task_context",
 ]

@@ -9,6 +9,9 @@
 6. Annotation schema: `bbox_set`
 7. Program schema: `count(filter(completed_boxes, owner_mark(box)=queried_player)); scene=dots_and_boxes; scope=owned_box_count`
 
+## Program Contract
+`count(filter(completed_boxes, owner_mark(box)=queried_player)); scene=dots_and_boxes; scope=owned_box_count`
+
 ## Generation Notes
 1. The scene renders a visible dots-and-boxes board with completed boxes marked by player `A` or player `B`.
 2. Query ids are internal replay/sampling keys and do not define public task units.

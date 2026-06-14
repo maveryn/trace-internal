@@ -13,17 +13,8 @@ def test_games_dots_and_boxes_capture_count_scene_id_defaults_present() -> None:
         task_id="task_games__dots_and_boxes__capture_move_count",
     )
     assert generation["scene_variant_weights"] == {"single_board": 1.0}
-    assert generation["query_id_weights"] == {
-        "three_sided_box_count": 1.0,
-        "capture_move_count": 1.0,
-        "highlighted_candidate_capture_count": 1.0,
-        "player_a_owned_box_count": 1.0,
-        "player_b_owned_box_count": 1.0,
-    }
-    assert generation["capture_move_query_id_weights"] == {
-        "capture_move_count": 1.0,
-        "highlighted_candidate_capture_count": 1.0,
-    }
+    assert "query_id_weights" not in generation
+    assert "capture_move_query_id_weights" not in generation
     assert set(generation["style_variant_weights"].keys()) == {
         "classic",
         "soft",
@@ -32,28 +23,33 @@ def test_games_dots_and_boxes_capture_count_scene_id_defaults_present() -> None:
         "slate",
         "wood_panel",
     }
-    assert generation["three_sided_box_count_support"] == [0, 1, 2, 3, 4, 5]
     assert generation["capture_move_count_support"] == [0, 1, 2, 3, 4, 5]
     assert generation["highlighted_candidate_capture_count_support"] == [0, 1, 2, 3, 4, 5]
-    assert generation["owned_box_count_support"] == [0, 1, 2, 3, 4, 5, 6, 7, 8]
     assert generation["box_rows_support"] == [3, 4]
     assert generation["box_cols_support"] == [3, 4]
     assert generation["candidate_edge_count_support"] == [5, 6, 7, 8]
     assert generation["balanced_target_answer_sampling"] is True
     assert generation["balanced_board_shape_sampling"] is True
     assert generation["balanced_candidate_edge_count_sampling"] is True
-    assert generation["balanced_capture_move_query_id_sampling"] is True
+    assert "balanced_capture_move_query_id_sampling" not in generation
+
+    owned_generation, _owned_rendering, _owned_prompt = split_generation_rendering_prompt_defaults(
+        defaults,
+        task_id="task_games__dots_and_boxes__owned_box_count",
+    )
+    assert owned_generation["owned_box_count_support"] == [0, 1, 2, 3, 4, 5, 6, 7, 8]
+
+    three_generation, _three_rendering, _three_prompt = split_generation_rendering_prompt_defaults(
+        defaults,
+        task_id="task_games__dots_and_boxes__three_sided_box_count",
+    )
+    assert three_generation["three_sided_box_count_support"] == [0, 1, 2, 3, 4, 5]
+
     assert int(rendering["board_width_px"]) > 0
     assert int(rendering["board_height_px"]) > 0
     assert rendering["dynamic_canvas_size_enabled"] is True
     assert int(rendering["canvas_min_width_px"]) >= 620
     assert int(rendering["canvas_min_height_px"]) >= 520
-    assert str(prompt["bundle_id"]) == "games_dots_and_boxes_v0"
+    assert str(prompt["bundle_id"]) == "games_dots_and_boxes_v1"
     assert str(prompt["scene_key"]) == "visible_dots_and_boxes_board"
     assert str(prompt["task_key"]) == "dots_and_boxes_capture_query"
-    assert str(prompt["object_description_single_board"]) == "a dots-and-boxes grid with some edges already drawn"
-    assert "answer_hint_capture_move_count" in prompt
-    assert "annotation_hint_highlighted_candidate_capture_count" in prompt
-    assert "answer_hint_player_a_owned_box_count" in prompt
-    assert "annotation_hint_player_b_owned_box_count" in prompt
-    assert "some questions" not in str(prompt["object_description_single_board"])

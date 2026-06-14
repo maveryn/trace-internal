@@ -15,7 +15,7 @@ import re
 MIGRATED_SCENE_PACKAGE_DOMAINS: frozenset[str] = frozenset()
 MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
     "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval"}),
-    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes"}),
+    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes"}),
     "geometry": frozenset(
         {
             "angle_relations",
@@ -25,6 +25,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
             "circle_pair_tangents",
             "circle_polygon_composite",
             "circle_theorem",
+            "composite_shape",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
@@ -34,7 +35,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
     "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval"}),
-    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes"}),
+    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes"}),
     "geometry": frozenset(
         {
             "angle_relations",
@@ -44,6 +45,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
             "circle_pair_tangents",
             "circle_polygon_composite",
             "circle_theorem",
+            "composite_shape",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),

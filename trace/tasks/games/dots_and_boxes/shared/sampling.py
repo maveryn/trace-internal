@@ -18,11 +18,13 @@ from trace.tasks.shared.font_assets import sample_font_family
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
-from .rendering import DotsAndBoxesRenderParams
-from .state import (
+from .defaults import (
     DEFAULTS,
     DOTS_AND_BOXES_NAMESPACE,
     SUPPORTED_DOTS_AND_BOXES_SCENE_VARIANTS,
+)
+from .rendering import DotsAndBoxesRenderParams
+from .state import (
     DotsAndBoxesBoardShapeAxis,
     DotsAndBoxesIntegerAxis,
     DotsAndBoxesSceneAxes,

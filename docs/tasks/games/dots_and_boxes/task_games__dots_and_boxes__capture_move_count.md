@@ -9,6 +9,9 @@
 6. Annotation schema: `point_pair_set`
 7. Program schema: `count(filter(select(candidate_edges, edge_scope), completes_at_least_one_box(edge)=True)); scene=dots_and_boxes; scope=capture_move_count`
 
+## Program Contract
+`count(filter(select(candidate_edges, edge_scope), completes_at_least_one_box(edge)=True)); scene=dots_and_boxes; scope=capture_move_count`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.

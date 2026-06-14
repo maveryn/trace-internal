@@ -1,45 +1,66 @@
-"""Identity-free dots-and-boxes scene state for games-domain tasks."""
+"""Passive dots-and-boxes scene state for games-domain tasks."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Tuple
-
-from .mechanics import SUPPORTED_DOTS_AND_BOXES_SCENE_VARIANTS
-
-
-SCENE_ID = "dots_and_boxes"
-DOTS_AND_BOXES_NAMESPACE = "games.dots_and_boxes"
+from typing import Dict, Tuple
 
 
 @dataclass(frozen=True)
-class DotsAndBoxesSceneDefaults:
-    """Stable scene fallback defaults for visible dots-and-boxes boards."""
+class DotsAndBoxesEdgeInstance:
+    """One edge in a visible dots-and-boxes board."""
 
-    three_sided_box_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-    capture_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-    highlighted_candidate_capture_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-    owned_box_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8)
-    candidate_edge_count_support: Tuple[int, ...] = (5, 6, 7, 8)
-    box_rows_support: Tuple[int, ...] = (3, 4)
-    box_cols_support: Tuple[int, ...] = (3, 4)
-    canvas_width: int = 1180
-    canvas_height: int = 820
-    board_width_px: int = 880
-    board_height_px: int = 640
-    board_corner_radius_px: int = 24
-    panel_margin_px: int = 56
-    title_font_size_px: int = 34
-    title_band_height_px: int = 62
-    board_padding_px: int = 62
-    dot_radius_px: int = 7
-    dash_length_px: int = 30
-    dash_gap_px: int = 18
-    dynamic_canvas_size_enabled: bool = True
-    canvas_min_width_px: int = 620
-    canvas_min_height_px: int = 520
-    canvas_side_padding_px: int = 150
-    canvas_vertical_padding_px: int = 110
+    edge_id: str
+    orientation: str
+    dot_start: Tuple[int, int]
+    dot_end: Tuple[int, int]
+    is_drawn: bool
+    is_highlighted: bool
+
+
+@dataclass(frozen=True)
+class DotsAndBoxesBoxInstance:
+    """One box region in a dots-and-boxes board."""
+
+    box_id: str
+    row_index: int
+    column_index: int
+    edge_ids: Tuple[str, str, str, str]
+    owner: str = ""
+
+
+@dataclass(frozen=True)
+class DotsAndBoxesSimulationResult:
+    """One forced-turn simulation result from a highlighted starting edge."""
+
+    is_forced: bool
+    capture_count: int
+    captured_box_ids: Tuple[str, ...]
+    move_edge_sequence: Tuple[str, ...]
+    branching_edge_ids: Tuple[str, ...]
+    initial_completed_box_ids: Tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class DotsAndBoxesBoardState:
+    """One generated dots-and-boxes board plus its task trace state."""
+
+    box_rows: int
+    box_cols: int
+    edges: Tuple[DotsAndBoxesEdgeInstance, ...]
+    boxes: Tuple[DotsAndBoxesBoxInstance, ...]
+    highlighted_edge_id: str
+    drawn_edge_ids: Tuple[str, ...]
+    captured_box_ids: Tuple[str, ...]
+    move_edge_sequence: Tuple[str, ...]
+    branching_edge_ids: Tuple[str, ...]
+    path_box_ids: Tuple[str, ...]
+    path_turn_count: int
+    target_answer: int
+    highlighted_edge_ids: Tuple[str, ...] = ()
+    counted_box_ids: Tuple[str, ...] = ()
+    counted_edge_ids: Tuple[str, ...] = ()
+    candidate_edge_ids: Tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -70,32 +91,12 @@ class DotsAndBoxesBoardShapeAxis:
     probabilities: Dict[str, float]
 
 
-@dataclass(frozen=True)
-class DotsAndBoxesGeneratedComponents:
-    """Generated scene components for public task files to wrap in TaskOutput."""
-
-    prompt: str
-    prompt_variants: Dict[str, Any]
-    answer_type: str
-    answer_value: int | str
-    annotation_type: str
-    annotation_value: Any
-    image: Any
-    trace_payload: Dict[str, Any]
-    query_id: str
-
-
-DEFAULTS = DotsAndBoxesSceneDefaults()
-
-
 __all__ = [
-    "DEFAULTS",
-    "DOTS_AND_BOXES_NAMESPACE",
-    "SCENE_ID",
-    "SUPPORTED_DOTS_AND_BOXES_SCENE_VARIANTS",
+    "DotsAndBoxesBoardState",
     "DotsAndBoxesBoardShapeAxis",
-    "DotsAndBoxesGeneratedComponents",
+    "DotsAndBoxesBoxInstance",
+    "DotsAndBoxesEdgeInstance",
     "DotsAndBoxesIntegerAxis",
     "DotsAndBoxesSceneAxes",
-    "DotsAndBoxesSceneDefaults",
+    "DotsAndBoxesSimulationResult",
 ]

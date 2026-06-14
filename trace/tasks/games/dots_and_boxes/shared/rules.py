@@ -1,69 +1,15 @@
-"""Shared dots-and-boxes board construction for games-domain tasks."""
+"""Shared dots-and-boxes board rules for games-domain tasks."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Dict, List, Mapping, MutableMapping, Sequence, Tuple
 
-
-SUPPORTED_DOTS_AND_BOXES_SCENE_VARIANTS: Tuple[str, ...] = ("single_board",)
-
-
-@dataclass(frozen=True)
-class DotsAndBoxesEdgeInstance:
-    """One edge in a visible dots-and-boxes board."""
-
-    edge_id: str
-    orientation: str
-    dot_start: Tuple[int, int]
-    dot_end: Tuple[int, int]
-    is_drawn: bool
-    is_highlighted: bool
-
-
-@dataclass(frozen=True)
-class DotsAndBoxesBoxInstance:
-    """One box region in a dots-and-boxes board."""
-
-    box_id: str
-    row_index: int
-    column_index: int
-    edge_ids: Tuple[str, str, str, str]
-    owner: str = ""
-
-
-@dataclass(frozen=True)
-class DotsAndBoxesSimulationResult:
-    """One forced-turn simulation result from a highlighted starting edge."""
-
-    is_forced: bool
-    capture_count: int
-    captured_box_ids: Tuple[str, ...]
-    move_edge_sequence: Tuple[str, ...]
-    branching_edge_ids: Tuple[str, ...]
-    initial_completed_box_ids: Tuple[str, ...]
-
-
-@dataclass(frozen=True)
-class DotsAndBoxesBoardState:
-    """One generated dots-and-boxes board plus its forced capture trace."""
-
-    box_rows: int
-    box_cols: int
-    edges: Tuple[DotsAndBoxesEdgeInstance, ...]
-    boxes: Tuple[DotsAndBoxesBoxInstance, ...]
-    highlighted_edge_id: str
-    drawn_edge_ids: Tuple[str, ...]
-    captured_box_ids: Tuple[str, ...]
-    move_edge_sequence: Tuple[str, ...]
-    branching_edge_ids: Tuple[str, ...]
-    path_box_ids: Tuple[str, ...]
-    path_turn_count: int
-    target_answer: int
-    highlighted_edge_ids: Tuple[str, ...] = ()
-    counted_box_ids: Tuple[str, ...] = ()
-    counted_edge_ids: Tuple[str, ...] = ()
-    candidate_edge_ids: Tuple[str, ...] = ()
+from .state import (
+    DotsAndBoxesBoardState,
+    DotsAndBoxesBoxInstance,
+    DotsAndBoxesEdgeInstance,
+    DotsAndBoxesSimulationResult,
+)
 
 
 _BoxCoord = Tuple[int, int]
@@ -609,6 +555,7 @@ def build_dots_and_boxes_count_board_state(
     *,
     rng,
     count_mode: str,
+    owner: str = "",
     target_answer: int,
     box_rows: int,
     box_cols: int,
@@ -623,8 +570,10 @@ def build_dots_and_boxes_count_board_state(
     if target < 0:
         raise ValueError("dots-and-boxes count targets must be non-negative")
 
-    if query in {"player_a_owned_box_count", "player_b_owned_box_count"}:
-        target_owner = "A" if query == "player_a_owned_box_count" else "B"
+    if query == "owned_box":
+        target_owner = str(owner).upper()
+        if target_owner not in {"A", "B"}:
+            raise ValueError("owned_box count mode requires owner A or B")
         other_owner = "B" if target_owner == "A" else "A"
         box_ids = tuple(sorted(box_edges))
         if target > len(box_ids):
@@ -692,7 +641,7 @@ def build_dots_and_boxes_count_board_state(
                 target_answer=int(target),
                 box_owner_by_id=owner_by_id,
             )
-        raise RuntimeError(f"failed to build a dots-and-boxes owned-box board for {query} target {target}")
+        raise RuntimeError(f"failed to build a dots-and-boxes owned-box board for owner {target_owner} target {target}")
 
     for _ in range(8192):
         drawn_edge_ids = _sample_open_drawn_edges(rng=rng, all_edge_ids=all_edge_ids, box_edges=box_edges)
@@ -700,7 +649,7 @@ def build_dots_and_boxes_count_board_state(
         if any(int(count) >= 4 for count in side_counts.values()):
             continue
 
-        if query == "three_sided_box_count":
+        if query == "three_sided_box":
             counted_box_ids = tuple(str(box_id) for box_id, count in sorted(side_counts.items()) if int(count) == 3)
             if len(counted_box_ids) != target:
                 continue
@@ -718,7 +667,7 @@ def build_dots_and_boxes_count_board_state(
             )
 
         capture_edges = immediate_capture_edge_ids(drawn_edge_ids=tuple(sorted(drawn_edge_ids)), box_edges=box_edges)
-        if query == "capture_move_count":
+        if query == "capture_move":
             if len(capture_edges) != target:
                 continue
             return _make_board_state_from_drawn_edges(
@@ -734,7 +683,7 @@ def build_dots_and_boxes_count_board_state(
                 target_answer=int(target),
             )
 
-        if query == "highlighted_candidate_capture_count":
+        if query == "highlighted_candidate_capture":
             candidate_count = max(1, int(candidate_edge_count))
             if target > candidate_count:
                 raise ValueError("target_answer cannot exceed candidate_edge_count")
@@ -783,7 +732,6 @@ __all__ = [
     "DotsAndBoxesBoxInstance",
     "DotsAndBoxesEdgeInstance",
     "DotsAndBoxesSimulationResult",
-    "SUPPORTED_DOTS_AND_BOXES_SCENE_VARIANTS",
     "box_drawn_side_counts",
     "build_dots_and_boxes_board_state",
     "build_dots_and_boxes_count_board_state",

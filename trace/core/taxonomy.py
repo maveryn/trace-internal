@@ -801,7 +801,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_icons__named_grid__group_predicate_count": _entry("icons", "named_grid", "icons", "named_grid"),
     "task_icons__named_grid__scoped_attribute_count": _entry("icons", "named_grid", "icons", "named_grid"),
     "task_icons__named_grid__row_column_shape_extreme_number": _entry("icons", "named_grid", "icons", "named_grid"),
-    "task_icons__named_ring__scoped_attribute_count": _entry("icons", "named_ring", "icons", "counting"),
+    "task_icons__named_ring__scoped_attribute_count": _entry("icons", "named_ring", "icons", "named_ring"),
     "task_icons__named_path__path_neighbor_label": _entry("icons", "named_path", "icons", "named_path"),
     "task_icons__venn_field__scoped_attribute_count": _entry("icons", "venn_field", "icons", "counting"),
     "task_icons__paired_canvas__panel_set_relation_count": _entry("icons", "paired_canvas", "icons", "paired_canvas"),

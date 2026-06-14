@@ -8,28 +8,6 @@ generation:
     distractor_count_max: 10
     balanced_sampling: true
   task_overrides:
-    task_icons__named_ring__scoped_attribute_count:
-      ring_icon_count_min: 12
-      ring_icon_count_max: 22
-      answer_count_min: 0
-      answer_count_max: 6
-      arc_span_min: 3
-      arc_span_max: 12
-      off_arc_target_count_min: 1
-      off_arc_target_count_max: 4
-      query_id_weights:
-        clockwise_arc_shape_count: 1.0
-        counterclockwise_arc_shape_count: 1.0
-      named_icon_fill_style_support:
-      - solid
-      - striped
-      - dotted
-      - half_filled
-      named_icon_fill_style_weights:
-        solid: 0.75
-        striped: 0.0834
-        dotted: 0.0833
-        half_filled: 0.0833
     task_icons__venn_field__scoped_attribute_count:
       object_count_min: 8
       object_count_max: 16
@@ -197,42 +175,6 @@ rendering:
         - 0.03
         - 0.08
   task_overrides:
-    task_icons__named_ring__scoped_attribute_count:
-      canvas_width: 880
-      canvas_height: 680
-      scene_icon_size_min_px: 44
-      scene_icon_size_max_px: 62
-      scene_max_overlap_fraction: 0.0
-      ring_margin_px: 86
-      ring_stroke_width_px: 4
-      ring_outline_rgb:
-      - 142
-      - 154
-      - 178
-      ring_stop_radius_px: 4
-      ring_stop_fill_rgb:
-      - 255
-      - 255
-      - 255
-      ring_stop_outline_rgb:
-      - 122
-      - 136
-      - 164
-      marker_label_font_size_px: 24
-      marker_label_radius_px: 18
-      marker_label_gap_px: 8
-      marker_label_background_rgb:
-      - 255
-      - 255
-      - 255
-      marker_label_border_rgb:
-      - 56
-      - 70
-      - 98
-      marker_label_color_rgb:
-      - 39
-      - 50
-      - 72
     task_icons__venn_field__scoped_attribute_count:
       canvas_width: 800
       canvas_height: 480
@@ -265,18 +207,6 @@ prompt:
     scene_key: reference_scene_counting
     task_key: counting_query
   task_overrides:
-    task_icons__named_ring__scoped_attribute_count:
-      scene_key: single_scene_counting
-      object_description: a ring of icons with endpoint markers A and B
-      question_text_clockwise_arc_shape_count: Starting at marker A and moving clockwise to marker B,
-        how many "{target_shape_name}" icons are strictly between A and B?
-      question_text_counterclockwise_arc_shape_count: Starting at marker A and moving counterclockwise
-        to marker B, how many "{target_shape_name}" icons are strictly between A and B?
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates
-        for every counted "{target_shape_name}" icon strictly between A and B along the {direction} arc
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[180,172,232,224],[388,302,440,354]],"answer":2}'
-      json_example_answer_only: '{"answer":2}'
     task_icons__venn_field__scoped_attribute_count:
       scene_key: single_scene_counting
       object_description: a panel of icons and two overlapping marked circles

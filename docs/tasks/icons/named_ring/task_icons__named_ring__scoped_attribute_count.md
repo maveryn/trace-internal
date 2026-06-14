@@ -2,9 +2,18 @@
 
 - domain: `icons`
 - scene_id: `named_ring`
-- scene_id: `counting`
-- task: `arc_shape_count`
-- module: `trace/tasks/icons/counting/named_ring_arc_shape_count.py`
+- task: `scoped_attribute_count`
+- module: `trace/tasks/icons/named_ring/scoped_attribute_count.py`
+
+## Program Contract
+`count.filtered_on_directed_ring_arc(scene=named_ring, scope=icons_strictly_between_markers, traversal=clockwise|counterclockwise, predicate=shape_equals_target, output=integer)`
+
+Supported `query_id` values: `clockwise_arc_shape_count`, `counterclockwise_arc_shape_count`.
+
+Allowed program arguments:
+- `traversal`: `clockwise`, `counterclockwise`
+- `predicate`: `shape_equals_target`
+- `output`: `integer`
 
 ## Contract
 1. The image shows one visible ring of procedural named icons.

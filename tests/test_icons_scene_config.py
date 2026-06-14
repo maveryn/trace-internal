@@ -124,10 +124,11 @@ def test_icons_counting_defaults_loaded() -> None:
     assert 'task_icons__named_grid__scoped_attribute_count' not in cfg['generation'].get('task_overrides', {})
     assert 'task_icons__named_grid__row_column_shape_extreme_number' not in cfg['generation'].get('task_overrides', {})
     assert 'task_icons__named_grid__group_predicate_count' not in cfg['generation'].get('task_overrides', {})
-    assert 'task_icons__named_ring__scoped_attribute_count' in cfg['generation']['task_overrides']
+    assert 'task_icons__named_ring__scoped_attribute_count' not in cfg['generation']['task_overrides']
     assert 'task_icons__venn_field__scoped_attribute_count' in cfg['generation']['task_overrides']
     named_cfg = get_scene_defaults('icons', 'named_field')
     named_grid_cfg = get_scene_defaults('icons', 'named_grid')
+    named_ring_cfg = get_scene_defaults('icons', 'named_ring')
     assert 'task_icons__named_field__count_arithmetic' in named_cfg['generation']['task_overrides']
     assert 'task_icons__named_field__closer_to_reference_count' in named_cfg['generation']['task_overrides']
     assert 'task_icons__named_grid__scoped_attribute_count' in named_grid_cfg['generation']['task_overrides']
@@ -227,25 +228,42 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(grid_line_prompt['answer_hint']).strip()
     assert str(grid_line_prompt['json_example']).strip()
     assert str(grid_line_prompt['json_example_answer_only']).strip()
-    ring_generation, ring_rendering, ring_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__named_ring__scoped_attribute_count')
+    ring_generation, ring_rendering, ring_prompt = split_generation_rendering_prompt_defaults(
+        named_ring_cfg,
+        task_id='task_icons__named_ring__scoped_attribute_count',
+    )
     assert int(ring_generation['ring_icon_count_min']) == 12
     assert int(ring_generation['ring_icon_count_max']) == 22
     assert int(ring_generation['answer_count_min']) == 0
     assert int(ring_generation['answer_count_max']) == 6
     assert int(ring_generation['arc_span_min']) == 3
     assert int(ring_generation['arc_span_max']) == 12
-    assert sorted(ring_generation['query_id_weights'].keys()) == ['clockwise_arc_shape_count', 'counterclockwise_arc_shape_count']
     assert int(ring_rendering['canvas_width']) == 880
     assert int(ring_rendering['canvas_height']) == 680
     assert int(ring_rendering['ring_margin_px']) == 86
     assert int(ring_rendering['marker_label_radius_px']) == 18
+    assert str(ring_prompt['bundle_id']).strip() == 'icons_named_ring_v1'
     assert str(ring_prompt['scene_key']).strip() == 'single_scene_counting'
-    assert str(ring_prompt['question_text_clockwise_arc_shape_count']).strip()
-    assert str(ring_prompt['question_text_counterclockwise_arc_shape_count']).strip()
-    assert str(ring_prompt['annotation_hint']).strip()
-    assert str(ring_prompt['answer_hint']).strip()
-    assert str(ring_prompt['json_example']).strip()
-    assert str(ring_prompt['json_example_answer_only']).strip()
+    assert str(ring_prompt['task_key']).strip() == 'counting_query'
+    ring_prompt_defaults = required_group_defaults(
+        ring_prompt,
+        (
+            'object_description',
+            'question_text_clockwise_arc_shape_count',
+            'question_text_counterclockwise_arc_shape_count',
+            'annotation_hint',
+            'answer_hint',
+            'json_example',
+            'json_example_answer_only',
+        ),
+        context='named_ring prompt defaults',
+    )
+    assert str(ring_prompt_defaults['question_text_clockwise_arc_shape_count']).strip()
+    assert str(ring_prompt_defaults['question_text_counterclockwise_arc_shape_count']).strip()
+    assert str(ring_prompt_defaults['annotation_hint']).strip()
+    assert str(ring_prompt_defaults['answer_hint']).strip()
+    assert str(ring_prompt_defaults['json_example']).strip()
+    assert str(ring_prompt_defaults['json_example_answer_only']).strip()
     closer_generation, closer_rendering, closer_prompt = split_generation_rendering_prompt_defaults(named_cfg, task_id='task_icons__named_field__closer_to_reference_count')
     assert int(closer_generation['target_icon_count_min']) == 4
     assert int(closer_generation['target_icon_count_max']) == 8

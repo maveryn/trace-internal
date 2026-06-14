@@ -41,7 +41,7 @@ def test_icons_counting_named_ring_clockwise_contract_matches_scene() -> None:
     assert out.answer_gt.value == 3
     assert out.annotation_gt.type == 'bbox_set'
     assert len(out.annotation_gt.value) == 3
-    assert trace['scene_ir']['scene_kind'] == 'icons_named_ring_arc_shape_count'
+    assert trace['scene_ir']['scene_kind'] == 'icons_named_ring'
     assert execution['question_format'] == 'count_named_shape_icons_strictly_between_ring_markers'
     assert execution['direction'] == 'clockwise'
     assert execution['arc_indices'] == expected_arc

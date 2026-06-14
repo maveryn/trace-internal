@@ -1,4 +1,4 @@
-"""Count construction equipment items in a requested site zone."""
+"""Count construction vehicles in a requested site zone."""
 
 from __future__ import annotations
 
@@ -251,7 +251,7 @@ def _equipment_dynamic_slots(prompt_defaults: Mapping[str, Any], sample: _Sample
 
 @register_task
 class IllustrationsCountingEquipmentInZoneCountTask:
-    """Count construction vehicles or equipment items placed in one zone."""
+    """Count construction vehicles placed in one zone."""
 
     task_id = TASK_ID
     domain = "illustrations"

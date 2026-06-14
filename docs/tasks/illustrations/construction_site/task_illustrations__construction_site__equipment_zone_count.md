@@ -20,7 +20,7 @@
 - `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count`
 
 ## Task Contract
-Counts visible construction vehicles/equipment assigned to one named construction-zone scope.
+Counts visible construction vehicles assigned to one named construction-zone scope.
 
 ## Query Branches
 

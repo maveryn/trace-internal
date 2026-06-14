@@ -497,25 +497,25 @@
       "Find every worker holding a tool. What is the count?"
     ],
     "vehicle_in_excavation_zone_count": [
-      "How many construction vehicles or equipment items are in the {zone_name}?",
-      "Count the construction vehicles or equipment items inside the {zone_name}.",
-      "What is the number of construction vehicles or equipment items in the {zone_name}?",
-      "How many visible construction vehicles or equipment items are within the {zone_name}?",
-      "Find every construction vehicle or equipment item in the {zone_name}. What is the count?"
+      "How many construction vehicles are in the {zone_name}?",
+      "Count the construction vehicles inside the {zone_name}.",
+      "What is the number of construction vehicles in the {zone_name}?",
+      "How many visible construction vehicles are within the {zone_name}?",
+      "Find every construction vehicle in the {zone_name}. What is the count?"
     ],
     "vehicle_in_loading_zone_count": [
-      "How many construction vehicles or equipment items are in the {zone_name}?",
-      "Count the construction vehicles or equipment items inside the {zone_name}.",
-      "What is the number of construction vehicles or equipment items in the {zone_name}?",
-      "How many visible construction vehicles or equipment items are within the {zone_name}?",
-      "Find every construction vehicle or equipment item in the {zone_name}. What is the count?"
+      "How many construction vehicles are in the {zone_name}?",
+      "Count the construction vehicles inside the {zone_name}.",
+      "What is the number of construction vehicles in the {zone_name}?",
+      "How many visible construction vehicles are within the {zone_name}?",
+      "Find every construction vehicle in the {zone_name}. What is the count?"
     ],
     "vehicle_in_roadwork_zone_count": [
-      "How many construction vehicles or equipment items are in the {zone_name}?",
-      "Count the construction vehicles or equipment items inside the {zone_name}.",
-      "What is the number of construction vehicles or equipment items in the {zone_name}?",
-      "How many visible construction vehicles or equipment items are within the {zone_name}?",
-      "Find every construction vehicle or equipment item in the {zone_name}. What is the count?"
+      "How many construction vehicles are in the {zone_name}?",
+      "Count the construction vehicles inside the {zone_name}.",
+      "What is the number of construction vehicles in the {zone_name}?",
+      "How many visible construction vehicles are within the {zone_name}?",
+      "Find every construction vehicle in the {zone_name}. What is the count?"
     ]
   },
   "allow_empty_task_templates": true

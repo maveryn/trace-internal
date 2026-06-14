@@ -92,7 +92,7 @@ class ConstructionMaterial:
 
 @dataclass(frozen=True)
 class ConstructionEquipment:
-    """One rendered construction vehicle or equipment item."""
+    """One rendered construction vehicle."""
 
     equipment_id: str
     equipment_type: str

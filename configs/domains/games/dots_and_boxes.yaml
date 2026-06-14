@@ -19,7 +19,7 @@ generation:
     balanced_style_variant_sampling: true
     balanced_board_shape_sampling: true
   task_overrides:
-    task_games__dots_and_boxes__box_completion_edge_label:
+    task_games__dots_and_boxes__completable_box_label:
       balanced_target_answer_sampling: true
       option_label_support:
       - A
@@ -28,8 +28,6 @@ generation:
       - D
       - E
       - F
-      candidate_edge_count_support:
-      - 6
     task_games__dots_and_boxes__owned_box_count:
       balanced_target_answer_sampling: true
       owned_box_count_support:

@@ -1,4 +1,4 @@
-"""Choose which dashed missing edge would complete a dots-and-boxes box."""
+"""Choose which labeled box can be completed in one dots-and-boxes move."""
 
 from __future__ import annotations
 
@@ -14,12 +14,12 @@ from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling,
 
 from ._lifecycle import DotsAndBoxesAttemptResult, DotsAndBoxesObjectivePlan, run_dots_and_boxes_lifecycle
 from .shared.defaults import DEFAULTS, DOTS_AND_BOXES_NAMESPACE, SCENE_ID
-from .shared.rules import build_dots_and_boxes_completion_option_board_state
+from .shared.rules import build_dots_and_boxes_completable_box_option_board_state
 from .shared.state import DotsAndBoxesBoardShapeAxis
 
 
-TASK_ID = "task_games__dots_and_boxes__box_completion_edge_label"
-QUERY_ID = "box_completion_edge_label"
+TASK_ID = "task_games__dots_and_boxes__completable_box_label"
+QUERY_ID = "completable_box_label"
 PROMPT_QUERY_KEY = QUERY_ID
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 OPTION_LABELS = tuple(option_label_for_index(index) for index in range(6))
@@ -43,7 +43,7 @@ def _resolve_answer_label(
     if support != OPTION_LABELS:
         raise ValueError("dots-and-boxes option_label_support must be exactly A..F")
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{DOTS_AND_BOXES_NAMESPACE}.box_completion_edge_label.answer"),
+        spawn_rng(int(instance_seed), f"{DOTS_AND_BOXES_NAMESPACE}.completable_box_label.answer"),
         params=params,
         gen_defaults=gen_defaults,
         supported_variants=support,
@@ -60,19 +60,19 @@ def _resolve_answer_label(
         balance_flag_key="balanced_target_answer_sampling",
         explicit_key="target_label",
         weights_key="option_label_weights",
-        sampling_namespace=f"{DOTS_AND_BOXES_NAMESPACE}.box_completion_edge_label.answer",
+        sampling_namespace=f"{DOTS_AND_BOXES_NAMESPACE}.completable_box_label.answer",
     )
     return str(selected), dict(probabilities)
 
 
-def _prepare_box_completion_edge_objective(
+def _prepare_completable_box_objective(
     instance_seed: int,
     params: Mapping[str, Any],
     query_probabilities: Mapping[str, float],
     query_id: str,
     board_shape: DotsAndBoxesBoardShapeAxis,
 ) -> DotsAndBoxesObjectivePlan:
-    """Bind the six-option box-completion move objective."""
+    """Bind the six-option completable-box label objective."""
 
     del query_probabilities, query_id
     answer_label, answer_label_probabilities = _resolve_answer_label(
@@ -82,7 +82,7 @@ def _prepare_box_completion_edge_objective(
     )
 
     def construct_attempt(rng: Any) -> DotsAndBoxesAttemptResult:
-        board_state = build_dots_and_boxes_completion_option_board_state(
+        board_state = build_dots_and_boxes_completable_box_option_board_state(
             rng=rng,
             answer_label=str(answer_label),
             box_rows=int(board_shape.box_rows),
@@ -91,18 +91,18 @@ def _prepare_box_completion_edge_objective(
         )
         return DotsAndBoxesAttemptResult(
             board_state=board_state,
-            annotation_kind="edge_point_pair",
-            annotation_entity_ids=(str(board_state.answer_edge_id),),
+            annotation_kind="box",
+            annotation_entity_ids=(str(board_state.answer_box_id),),
             execution_extra={
                 "answer_label": str(answer_label),
-                "answer_edge_id": str(board_state.answer_edge_id),
+                "answer_box_id": str(board_state.answer_box_id),
                 "option_labels": list(OPTION_LABELS),
             },
         )
 
     return DotsAndBoxesObjectivePlan(
         prompt_query_key=PROMPT_QUERY_KEY,
-        annotation_example_shape="point_pair_set",
+        annotation_example_shape="single_bbox_set",
         answer_gt=TypedValue(type="option_letter", value=str(answer_label)),
         query_params={
             "answer_label": str(answer_label),
@@ -117,8 +117,8 @@ def _prepare_box_completion_edge_objective(
 
 
 @register_task
-class GamesDotsAndBoxesBoxCompletionEdgeLabelTask:
-    """Choose the dashed candidate edge that immediately completes one box."""
+class GamesDotsAndBoxesCompletableBoxLabelTask:
+    """Choose the labeled box that is missing exactly one side."""
 
     task_id = TASK_ID
     domain = "games"
@@ -136,8 +136,8 @@ class GamesDotsAndBoxesBoxCompletionEdgeLabelTask:
             instance_seed=int(instance_seed),
             params=params,
             max_attempts=int(max_attempts),
-            prepare_objective=_prepare_box_completion_edge_objective,
+            prepare_objective=_prepare_completable_box_objective,
         )
 
 
-__all__ = ["GamesDotsAndBoxesBoxCompletionEdgeLabelTask"]
+__all__ = ["GamesDotsAndBoxesCompletableBoxLabelTask"]

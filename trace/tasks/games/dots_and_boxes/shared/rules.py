@@ -334,7 +334,7 @@ def build_dots_and_boxes_board_state(
 ) -> DotsAndBoxesBoardState:
     """Build one dots-and-boxes board with a forced capture chain of the requested length."""
 
-    edge_specs, box_edges, edge_boxes = _build_geometry(int(box_rows), int(box_cols))
+    edge_specs, box_edges, _edge_boxes = _build_geometry(int(box_rows), int(box_cols))
     target = int(target_answer)
     if target < 1:
         raise ValueError("dots-and-boxes capture task requires target_answer >= 1")
@@ -497,9 +497,8 @@ def _make_board_state_from_drawn_edges(
     candidate_edge_ids: Sequence[str],
     target_answer: int,
     box_owner_by_id: Mapping[str, str] | None = None,
-    option_label_by_edge_id: Sequence[Tuple[str, str]] = (),
-    option_box_by_edge_id: Sequence[Tuple[str, str]] = (),
-    answer_edge_id: str = "",
+    option_label_by_box_id: Sequence[Tuple[str, str]] = (),
+    answer_box_id: str = "",
     answer_label: str = "",
 ) -> DotsAndBoxesBoardState:
     """Build a board state from a sampled static edge set."""
@@ -552,9 +551,8 @@ def _make_board_state_from_drawn_edges(
         counted_box_ids=tuple(str(box_id) for box_id in counted_box_ids),
         counted_edge_ids=tuple(str(edge_id) for edge_id in counted_edge_ids),
         candidate_edge_ids=tuple(str(edge_id) for edge_id in candidate_edge_ids),
-        option_label_by_edge_id=tuple((str(edge_id), str(label)) for edge_id, label in option_label_by_edge_id),
-        option_box_by_edge_id=tuple((str(edge_id), str(box_id)) for edge_id, box_id in option_box_by_edge_id),
-        answer_edge_id=str(answer_edge_id),
+        option_label_by_box_id=tuple((str(box_id), str(label)) for box_id, label in option_label_by_box_id),
+        answer_box_id=str(answer_box_id),
         answer_label=str(answer_label),
     )
 
@@ -729,28 +727,7 @@ def build_dots_and_boxes_count_board_state(
     raise RuntimeError(f"failed to build a dots-and-boxes board for {query} target {target}")
 
 
-def _completed_boxes_after_edge(
-    *,
-    drawn_edge_ids: Sequence[str],
-    box_edges: Mapping[str, Tuple[str, str, str, str]],
-    edge_id: str,
-) -> Tuple[str, ...]:
-    """Return boxes newly completed by adding one missing edge."""
-
-    drawn = set(str(item) for item in drawn_edge_ids)
-    if str(edge_id) in drawn:
-        return ()
-    before = set(_completed_box_ids(drawn_edge_ids=tuple(sorted(drawn)), box_edges=box_edges))
-    after = set(
-        _completed_box_ids(
-            drawn_edge_ids=tuple(sorted(drawn | {str(edge_id)})),
-            box_edges=box_edges,
-        )
-    )
-    return tuple(sorted(str(box_id) for box_id in after - before))
-
-
-def build_dots_and_boxes_completion_option_board_state(
+def build_dots_and_boxes_completable_box_option_board_state(
     *,
     rng,
     answer_label: str,
@@ -758,7 +735,7 @@ def build_dots_and_boxes_completion_option_board_state(
     box_cols: int,
     option_count: int = 6,
 ) -> DotsAndBoxesBoardState:
-    """Build one board with exactly one labeled dashed edge completing a box."""
+    """Build one board with exactly one labeled box completable in one move."""
 
     edge_specs, box_edges, edge_boxes = _build_geometry(int(box_rows), int(box_cols))
     all_edge_ids = _all_edge_ids(box_edges)
@@ -771,69 +748,42 @@ def build_dots_and_boxes_completion_option_board_state(
         side_counts = box_drawn_side_counts(drawn_edge_ids=tuple(sorted(drawn_edge_ids)), box_edges=box_edges)
         if any(int(count) >= 4 for count in side_counts.values()):
             continue
+        completable_box_ids = [str(box_id) for box_id, count in sorted(side_counts.items()) if int(count) == 3]
+        if len(completable_box_ids) != 1:
+            continue
 
-        missing_edges = tuple(str(edge_id) for edge_id in all_edge_ids if str(edge_id) not in drawn_edge_ids)
-        capture_edges = set(immediate_capture_edge_ids(drawn_edge_ids=tuple(sorted(drawn_edge_ids)), box_edges=box_edges))
-        correct_candidates: List[Tuple[str, str]] = []
-        for edge_id in sorted(capture_edges):
-            completed_box_ids = _completed_boxes_after_edge(
-                drawn_edge_ids=tuple(sorted(drawn_edge_ids)),
-                box_edges=box_edges,
-                edge_id=str(edge_id),
-            )
-            if len(completed_box_ids) == 1:
-                correct_candidates.append((str(edge_id), str(completed_box_ids[0])))
-        rng.shuffle(correct_candidates)
+        correct_box_id = str(completable_box_ids[0])
+        distractor_box_ids = [str(box_id) for box_id, count in sorted(side_counts.items()) if int(count) < 3]
+        if len(distractor_box_ids) < int(option_count) - 1:
+            continue
+        rng.shuffle(distractor_box_ids)
 
-        for correct_edge_id, correct_box_id in correct_candidates:
-            used_box_ids = {str(correct_box_id)}
-            non_capture_edges = [str(edge_id) for edge_id in missing_edges if str(edge_id) not in capture_edges]
-            rng.shuffle(non_capture_edges)
-            distractors: List[Tuple[str, str]] = []
+        distractor_iter = iter(distractor_box_ids[: int(option_count) - 1])
+        option_box_by_label: Dict[str, str] = {}
+        for label in labels:
+            if str(label) == str(answer_label):
+                option_box_by_label[str(label)] = str(correct_box_id)
+            else:
+                option_box_by_label[str(label)] = str(next(distractor_iter))
 
-            # Each option label is drawn inside one adjacent box. Use distinct
-            # boxes so the six option letters remain spatially unambiguous.
-            for edge_id in non_capture_edges:
-                display_boxes = [str(box_id) for box_id in edge_boxes[str(edge_id)] if str(box_id) not in used_box_ids]
-                rng.shuffle(display_boxes)
-                if not display_boxes:
-                    continue
-                distractors.append((str(edge_id), str(display_boxes[0])))
-                used_box_ids.add(str(display_boxes[0]))
-                if len(distractors) >= int(option_count) - 1:
-                    break
-            if len(distractors) < int(option_count) - 1:
-                continue
+        option_label_by_box_id = tuple((str(option_box_by_label[str(label)]), str(label)) for label in labels)
+        return _make_board_state_from_drawn_edges(
+            box_rows=int(box_rows),
+            box_cols=int(box_cols),
+            edge_specs=edge_specs,
+            box_edges=box_edges,
+            drawn_edge_ids=tuple(sorted(drawn_edge_ids)),
+            highlighted_edge_ids=(),
+            counted_box_ids=(str(correct_box_id),),
+            counted_edge_ids=(),
+            candidate_edge_ids=(),
+            target_answer=0,
+            option_label_by_box_id=option_label_by_box_id,
+            answer_box_id=str(correct_box_id),
+            answer_label=str(answer_label),
+        )
 
-            distractor_iter = iter(distractors)
-            option_by_label: Dict[str, Tuple[str, str]] = {}
-            for label in labels:
-                if str(label) == str(answer_label):
-                    option_by_label[str(label)] = (str(correct_edge_id), str(correct_box_id))
-                else:
-                    option_by_label[str(label)] = next(distractor_iter)
-
-            candidate_edge_ids = tuple(str(option_by_label[str(label)][0]) for label in labels)
-            option_label_by_edge_id = tuple((str(option_by_label[str(label)][0]), str(label)) for label in labels)
-            option_box_by_edge_id = tuple((str(option_by_label[str(label)][0]), str(option_by_label[str(label)][1])) for label in labels)
-            return _make_board_state_from_drawn_edges(
-                box_rows=int(box_rows),
-                box_cols=int(box_cols),
-                edge_specs=edge_specs,
-                box_edges=box_edges,
-                drawn_edge_ids=tuple(sorted(drawn_edge_ids)),
-                highlighted_edge_ids=candidate_edge_ids,
-                counted_box_ids=(str(correct_box_id),),
-                counted_edge_ids=(str(correct_edge_id),),
-                candidate_edge_ids=candidate_edge_ids,
-                target_answer=0,
-                option_label_by_edge_id=option_label_by_edge_id,
-                option_box_by_edge_id=option_box_by_edge_id,
-                answer_edge_id=str(correct_edge_id),
-                answer_label=str(answer_label),
-            )
-
-    raise RuntimeError("failed to build a dots-and-boxes completion-option board")
+    raise RuntimeError("failed to build a dots-and-boxes completable-box option board")
 
 
 def annotation_box_ids(board_state: DotsAndBoxesBoardState) -> Tuple[str, ...]:
@@ -849,7 +799,7 @@ __all__ = [
     "DotsAndBoxesSimulationResult",
     "box_drawn_side_counts",
     "build_dots_and_boxes_board_state",
-    "build_dots_and_boxes_completion_option_board_state",
+    "build_dots_and_boxes_completable_box_option_board_state",
     "build_dots_and_boxes_count_board_state",
     "annotation_box_ids",
     "immediate_capture_edge_ids",

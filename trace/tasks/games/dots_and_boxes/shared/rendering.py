@@ -454,13 +454,11 @@ def render_dots_and_boxes_scene(
                 fill=tuple(int(value) for value in theme.dot_rgb),
             )
 
-    option_label_by_edge_id = {str(edge_id): str(label) for edge_id, label in board_state.option_label_by_edge_id}
-    option_box_by_edge_id = {str(edge_id): str(box_id) for edge_id, box_id in board_state.option_box_by_edge_id}
+    option_label_by_box_id = {str(box_id): str(label) for box_id, label in board_state.option_label_by_box_id}
     option_label_bboxes_px: Dict[str, List[float]] = {}
     option_label_centers_px: Dict[str, List[float]] = {}
-    option_edge_id_by_label: Dict[str, str] = {}
     option_box_id_by_label: Dict[str, str] = {}
-    if option_label_by_edge_id:
+    if option_label_by_box_id:
         option_font_size = max(18, int(round(float(cell_size) * 0.24)))
         option_font = load_font(
             option_font_size,
@@ -468,10 +466,8 @@ def render_dots_and_boxes_scene(
             font_family=str(params.font_family) or None,
         )
         badge_radius = max(15.0, float(option_font_size) * 0.78)
-        for edge_id in board_state.candidate_edge_ids:
-            label = option_label_by_edge_id.get(str(edge_id), "")
-            box_id = option_box_by_edge_id.get(str(edge_id), "")
-            if not label or str(box_id) not in box_bboxes_px:
+        for box_id, label in sorted(option_label_by_box_id.items(), key=lambda item: str(item[1])):
+            if not str(label) or str(box_id) not in box_bboxes_px:
                 continue
             left, top, right, bottom = [float(value) for value in box_bboxes_px[str(box_id)]]
             cx = float((left + right) / 2.0)
@@ -511,7 +507,6 @@ def render_dots_and_boxes_scene(
             label_bbox = draw.textbbox(text_xy, str(label), font=option_font, stroke_width=1)
             option_label_bboxes_px[str(label)] = [round(float(value), 3) for value in label_bbox]
             option_label_centers_px[str(label)] = [round(cx, 3), round(cy, 3)]
-            option_edge_id_by_label[str(label)] = str(edge_id)
             option_box_id_by_label[str(label)] = str(box_id)
 
     scene_entities: List[Dict[str, Any]] = []
@@ -542,15 +537,14 @@ def render_dots_and_boxes_scene(
                 "bbox": list(edge_bboxes_px[str(edge_id)]),
             }
         )
-    for label, edge_id in sorted(option_edge_id_by_label.items()):
+    for label, box_id in sorted(option_box_id_by_label.items()):
         scene_entities.append(
             {
                 "entity_id": f"option_{str(label)}",
                 "kind": "dots_and_boxes_option_label",
                 "bbox": list(option_label_bboxes_px[str(label)]),
                 "label": str(label),
-                "edge_id": str(edge_id),
-                "box_id": str(option_box_id_by_label[str(label)]),
+                "box_id": str(box_id),
             }
         )
 
@@ -572,7 +566,6 @@ def render_dots_and_boxes_scene(
             "highlighted_edge_ids": [str(edge_id) for edge_id in highlighted_edge_ids],
             "option_label_bboxes_px": dict(option_label_bboxes_px),
             "option_label_centers_px": dict(option_label_centers_px),
-            "option_edge_id_by_label": dict(option_edge_id_by_label),
             "option_box_id_by_label": dict(option_box_id_by_label),
             "layout_jitter": dict(layout_jitter),
             "scene_panel_bbox_px": None if panel_bbox is None else [int(value) for value in panel_bbox],

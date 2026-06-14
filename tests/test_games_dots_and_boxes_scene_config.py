@@ -10,7 +10,7 @@ def test_games_dots_and_boxes_scene_id_defaults_present() -> None:
     defaults = get_scene_defaults("games", "dots_and_boxes")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         defaults,
-        task_id="task_games__dots_and_boxes__box_completion_edge_label",
+        task_id="task_games__dots_and_boxes__completable_box_label",
     )
     assert generation["scene_variant_weights"] == {"single_board": 1.0}
     assert "query_id_weights" not in generation
@@ -26,7 +26,6 @@ def test_games_dots_and_boxes_scene_id_defaults_present() -> None:
     assert generation["option_label_support"] == ["A", "B", "C", "D", "E", "F"]
     assert generation["box_rows_support"] == [3, 4]
     assert generation["box_cols_support"] == [3, 4]
-    assert generation["candidate_edge_count_support"] == [6]
     assert generation["balanced_target_answer_sampling"] is True
     assert generation["balanced_board_shape_sampling"] is True
     assert "balanced_capture_move_query_id_sampling" not in generation

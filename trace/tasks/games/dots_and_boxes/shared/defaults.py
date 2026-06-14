@@ -18,7 +18,6 @@ class DotsAndBoxesSceneDefaults:
     three_sided_box_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     option_label_support: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
     owned_box_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8)
-    candidate_edge_count_support: Tuple[int, ...] = (6,)
     box_rows_support: Tuple[int, ...] = (3, 4)
     box_cols_support: Tuple[int, ...] = (3, 4)
     canvas_width: int = 1180

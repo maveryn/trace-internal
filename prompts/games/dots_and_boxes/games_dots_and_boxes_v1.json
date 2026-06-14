@@ -29,12 +29,12 @@
         "Find the number of boxes with exactly three visible sides drawn.",
         "How many boxes on the board have three drawn boundary edges?"
       ],
-      "box_completion_edge_label": [
-        "Which dashed option line would complete a box if drawn?",
-        "Choose the dashed option that would finish a box immediately.",
-        "Which labeled dashed line would capture a box right away?",
-        "Find the option line that completes one box if added.",
-        "Which dashed edge option makes a complete box?"
+      "completable_box_label": [
+        "Which labeled box can be completed by drawing one missing side?",
+        "Choose the labeled box that can be completed in one move.",
+        "Which option box can be claimed by adding one side?",
+        "Find the box that has only one side missing.",
+        "Which labeled cell can be completed next?"
       ],
       "player_a_owned_box_count": [
         "How many boxes are marked with player A?",
@@ -73,7 +73,7 @@
       "object_description"
     ],
     "query:three_sided_box_count": [],
-    "query:box_completion_edge_label": [],
+    "query:completable_box_label": [],
     "query:player_a_owned_box_count": [],
     "query:player_b_owned_box_count": [],
     "answer_or_annotation:answer_only": [
@@ -115,8 +115,8 @@
     "object_description_single_board": "a dots-and-boxes grid with some edges already drawn",
     "annotation_hint_three_sided_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box with exactly three drawn sides",
     "answer_hint_three_sided_box_count": "set \"answer\" to the number of boxes with exactly three drawn sides",
-    "annotation_hint_box_completion_edge_label": "set \"annotation\" to a JSON array containing the two endpoint pixel points [x, y] of the selected dashed option line",
-    "answer_hint_box_completion_edge_label": "set \"answer\" to the option letter, one of A, B, C, D, E, or F",
+    "annotation_hint_completable_box_label": "set \"annotation\" to a JSON array containing the full-cell bounding box [x0, y0, x1, y1] of the selected labeled box",
+    "answer_hint_completable_box_label": "set \"answer\" to the option letter, one of A, B, C, D, E, or F",
     "annotation_hint_player_a_owned_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box marked with player A",
     "answer_hint_player_a_owned_box_count": "set \"answer\" to the number of boxes marked with player A",
     "annotation_hint_player_b_owned_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box marked with player B",

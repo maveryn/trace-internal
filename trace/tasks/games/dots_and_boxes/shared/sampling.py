@@ -24,11 +24,7 @@ from .defaults import (
     SUPPORTED_DOTS_AND_BOXES_SCENE_VARIANTS,
 )
 from .rendering import DotsAndBoxesRenderParams
-from .state import (
-    DotsAndBoxesBoardShapeAxis,
-    DotsAndBoxesIntegerAxis,
-    DotsAndBoxesSceneAxes,
-)
+from .state import DotsAndBoxesBoardShapeAxis, DotsAndBoxesIntegerAxis, DotsAndBoxesSceneAxes
 
 
 def _resolve_named_axis(
@@ -161,26 +157,6 @@ def resolve_dots_and_boxes_target_axis(
         fallback_support=tuple(int(value) for value in fallback_support),
         namespace=str(namespace),
         balanced_flag_key="balanced_target_answer_sampling",
-    )
-
-
-def resolve_dots_and_boxes_candidate_edge_count_axis(
-    *,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    gen_defaults: Mapping[str, Any],
-) -> DotsAndBoxesIntegerAxis:
-    """Resolve highlighted candidate-edge count for candidate-scope capture tasks."""
-
-    return resolve_dots_and_boxes_integer_axis(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=gen_defaults,
-        support_key="candidate_edge_count_support",
-        explicit_key="candidate_edge_count",
-        fallback_support=DEFAULTS.candidate_edge_count_support,
-        namespace="candidate_edge_count",
-        balanced_flag_key="balanced_candidate_edge_count_sampling",
     )
 
 
@@ -403,7 +379,6 @@ def resolve_dots_and_boxes_render_params(
 
 __all__ = [
     "resolve_dots_and_boxes_board_shape_axis",
-    "resolve_dots_and_boxes_candidate_edge_count_axis",
     "resolve_dots_and_boxes_integer_axis",
     "resolve_dots_and_boxes_render_params",
     "resolve_dots_and_boxes_scene_axes",

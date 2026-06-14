@@ -61,9 +61,8 @@ class DotsAndBoxesBoardState:
     counted_box_ids: Tuple[str, ...] = ()
     counted_edge_ids: Tuple[str, ...] = ()
     candidate_edge_ids: Tuple[str, ...] = ()
-    option_label_by_edge_id: Tuple[Tuple[str, str], ...] = ()
-    option_box_by_edge_id: Tuple[Tuple[str, str], ...] = ()
-    answer_edge_id: str = ""
+    option_label_by_box_id: Tuple[Tuple[str, str], ...] = ()
+    answer_box_id: str = ""
     answer_label: str = ""
 
 

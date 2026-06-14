@@ -11,8 +11,8 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.dots_and_boxes.box_completion_edge_label import (
-    GamesDotsAndBoxesBoxCompletionEdgeLabelTask,
+from trace.tasks.games.dots_and_boxes.completable_box_label import (
+    GamesDotsAndBoxesCompletableBoxLabelTask,
 )
 from trace.tasks.games.dots_and_boxes.owned_box_count import GamesDotsAndBoxesOwnedBoxCountTask
 from trace.tasks.games.dots_and_boxes.three_sided_box_count import GamesDotsAndBoxesThreeSidedBoxCountTask
@@ -81,8 +81,8 @@ def test_games_dots_and_boxes_count_tasks_emit_expected_contract(
             assert trace["render_map"]["box_bboxes_px"][str(box_id)] == pytest.approx(bbox)
 
 
-def test_games_dots_and_boxes_box_completion_edge_label_contract() -> None:
-    out = GamesDotsAndBoxesBoxCompletionEdgeLabelTask().generate(
+def test_games_dots_and_boxes_completable_box_label_contract() -> None:
+    out = GamesDotsAndBoxesCompletableBoxLabelTask().generate(
         28121,
         params={"target_label": "C"},
         max_attempts=64,
@@ -94,28 +94,30 @@ def test_games_dots_and_boxes_box_completion_edge_label_contract() -> None:
     assert out.query_id == "single"
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.annotation_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert len(out.annotation_gt.value) == 1
-    assert trace["projected_annotation"]["type"] == "point_pair_set"
-    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
-    assert trace["query_spec"]["params"]["prompt_query_key"] == "box_completion_edge_label"
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["query_spec"]["params"]["prompt_query_key"] == "completable_box_label"
     assert execution["answer_label"] == "C"
     assert execution["answer"] == "C"
-    assert execution["answer_edge_id"] in execution["candidate_edge_ids"]
-    assert execution["answer_edge_id"] == execution["option_edge_id_by_label"]["C"]
-    assert execution["counted_edge_ids"] == [execution["answer_edge_id"]]
-    assert out.annotation_gt.value[0] == render_map["edge_point_pairs_px"][execution["answer_edge_id"]]
-    assert execution["candidate_edge_count"] == 6
-    assert len(execution["candidate_edge_ids"]) == 6
-    assert execution["highlighted_edge_ids"] == execution["candidate_edge_ids"]
-    assert sorted(execution["option_edge_id_by_label"]) == ["A", "B", "C", "D", "E", "F"]
-    assert sorted(render_map["option_edge_id_by_label"]) == ["A", "B", "C", "D", "E", "F"]
+    assert execution["answer_box_id"] == execution["option_box_id_by_label"]["C"]
+    assert execution["counted_box_ids"] == [execution["answer_box_id"]]
+    assert out.annotation_gt.value[0] == pytest.approx(render_map["box_bboxes_px"][execution["answer_box_id"]])
+    assert execution["option_count"] == 6
+    assert execution["candidate_edge_ids"] == []
+    assert execution["highlighted_edge_ids"] == []
+    assert sorted(execution["option_box_id_by_label"]) == ["A", "B", "C", "D", "E", "F"]
+    assert sorted(render_map["option_box_id_by_label"]) == ["A", "B", "C", "D", "E", "F"]
     assert set(render_map["option_label_bboxes_px"]) == {"A", "B", "C", "D", "E", "F"}
-    assert set(execution["candidate_edge_ids"]).isdisjoint(set(execution["drawn_edge_ids"]))
+    assert execution["box_drawn_side_counts"][execution["answer_box_id"]] == 3
+    for label, box_id in execution["option_box_id_by_label"].items():
+        if label != "C":
+            assert execution["box_drawn_side_counts"][box_id] < 3
 
 
-def test_games_dots_and_boxes_box_completion_edge_label_samples_all_answers() -> None:
-    task = GamesDotsAndBoxesBoxCompletionEdgeLabelTask()
+def test_games_dots_and_boxes_completable_box_label_samples_all_answers() -> None:
+    task = GamesDotsAndBoxesCompletableBoxLabelTask()
     answer_labels: Counter[str] = Counter()
     board_shapes: Counter[tuple[int, int]] = Counter()
 
@@ -130,10 +132,10 @@ def test_games_dots_and_boxes_box_completion_edge_label_samples_all_answers() ->
         board_shapes[(int(execution["box_rows"]), int(execution["box_cols"]))] += 1
 
         assert str(out.answer_gt.value) in {"A", "B", "C", "D", "E", "F"}
-        assert execution["candidate_edge_count"] == 6
-        assert len(execution["candidate_edge_ids"]) == 6
-        assert sorted(execution["option_edge_id_by_label"]) == ["A", "B", "C", "D", "E", "F"]
-        assert execution["answer_edge_id"] == execution["option_edge_id_by_label"][str(out.answer_gt.value)]
+        assert execution["option_count"] == 6
+        assert sorted(execution["option_box_id_by_label"]) == ["A", "B", "C", "D", "E", "F"]
+        assert execution["answer_box_id"] == execution["option_box_id_by_label"][str(out.answer_gt.value)]
+        assert execution["box_drawn_side_counts"][execution["answer_box_id"]] == 3
 
     assert set(answer_labels) == {"A", "B", "C", "D", "E", "F"}
     assert all(count > 0 for count in answer_labels.values())
@@ -195,7 +197,7 @@ def test_games_dots_and_boxes_tasks_are_deterministic() -> None:
     params = {
         "target_label": "E",
     }
-    task = GamesDotsAndBoxesBoxCompletionEdgeLabelTask()
+    task = GamesDotsAndBoxesCompletableBoxLabelTask()
     out_a = task.generate(28131, params=params, max_attempts=64)
     out_b = task.generate(28131, params=params, max_attempts=64)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -210,21 +212,21 @@ def test_games_dots_and_boxes_prompt_bundle_declares_variants() -> None:
     bundle = json.loads(Path("prompts/games/dots_and_boxes/games_dots_and_boxes_v1.json").read_text(encoding="utf-8"))
     required = bundle["required_slots_by_key"]
     assert required["query:three_sided_box_count"] == []
-    assert required["query:box_completion_edge_label"] == []
+    assert required["query:completable_box_label"] == []
     assert required["query:player_a_owned_box_count"] == []
     assert required["query:player_b_owned_box_count"] == []
 
 
-def test_games_dots_and_boxes_box_completion_edge_label_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_games__dots_and_boxes__box_completion_edge_label"
+def test_games_dots_and_boxes_completable_box_label_build_smoke(tmp_path: Path) -> None:
+    output_root = tmp_path / "task_games__dots_and_boxes__completable_box_label"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_games__dots_and_boxes__box_completion_edge_label",
+        dataset_name="build_smoke_task_games__dots_and_boxes__completable_box_label",
         instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_games__dots_and_boxes__box_completion_edge_label",
+                task_id="task_games__dots_and_boxes__completable_box_label",
                 count=4,
                 params={},
             )
@@ -233,7 +235,7 @@ def test_games_dots_and_boxes_box_completion_edge_label_build_smoke(tmp_path: Pa
         max_attempts_per_instance=64,
         sampling_seed=71,
     )
-    final_path = build_dataset(config, code_hash="games-dots-and-boxes-box-completion-smoke")
+    final_path = build_dataset(config, code_hash="games-dots-and-boxes-completable-box-smoke")
     assert final_path.exists()
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
@@ -241,7 +243,7 @@ def test_games_dots_and_boxes_box_completion_edge_label_build_smoke(tmp_path: Pa
     assert all(record.get("scene_id") == "dots_and_boxes" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_games__dots_and_boxes__box_completion_edge_label"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_games__dots_and_boxes__completable_box_label"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

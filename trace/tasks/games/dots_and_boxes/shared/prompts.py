@@ -33,6 +33,10 @@ def build_dots_and_boxes_prompt_json_examples(
             [[180, 220], [300, 220]],
             [[310, 340], [430, 340]],
         ]
+    elif str(annotation_example_shape) == "single_bbox_set":
+        annotation_value = [
+            [180, 220, 300, 340],
+        ]
     else:
         annotation_value = [
             [180, 220, 300, 340],

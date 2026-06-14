@@ -87,7 +87,7 @@ def test_icons_named_feedback_tasks_render_natural_prompt_text() -> None:
         (
             "task_icons__named_path__path_neighbor_label",
             {
-                "path_neighbor_query": "after_second_shape_label",
+                "query_id": "after_second_shape_label",
                 "answer_label": "E",
                 "distractor_count": 5,
                 "target_occurrence_count": 3,
@@ -99,7 +99,7 @@ def test_icons_named_feedback_tasks_render_natural_prompt_text() -> None:
         ),
         (
             "task_icons__mirror_grid__mirror_symmetry_match_label",
-            {"query_id": "mirror_horizontal", "option_count": 6, "answer_label": "C"},
+            {"option_count": 6, "answer_label": "C"},
         ),
         (
             "task_icons__wallpaper_panels__reference_pattern_match_count",
@@ -132,7 +132,7 @@ def test_icons_option_scene_prompts_use_positive_option_wording() -> None:
         (
             "task_icons__named_path__path_neighbor_label",
             {
-                "path_neighbor_query": "before_last_shape_label",
+                "query_id": "before_last_shape_label",
                 "answer_label": "B",
                 "distractor_count": 4,
                 "target_occurrence_count": 3,

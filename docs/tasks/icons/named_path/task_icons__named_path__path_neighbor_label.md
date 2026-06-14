@@ -2,9 +2,18 @@
 
 - domain: `icons`
 - scene_id: `named_path`
-- scene_id: `relation`
-- task: `named_path_neighbor_label`
-- module: `trace/tasks/icons/relation/named_path_neighbor_label.py`
+- task: `path_neighbor_label`
+- module: `trace/tasks/icons/named_path/path_neighbor_label.py`
+
+## Program Contract
+`selection.path_neighbor(scene=named_path, scope=ordered_path_stops, reference_occurrence=first|second|last, direction=before|after, output=option_letter)`
+
+Supported `query_id` values: `after_first_shape_label`, `before_first_shape_label`, `after_last_shape_label`, `before_last_shape_label`, `after_second_shape_label`, `before_second_shape_label`.
+
+Allowed program arguments:
+- `reference_occurrence`: `first`, `second`, `last`
+- `direction`: `before`, `after`
+- `output`: `option_letter`
 
 ## Contract
 1. The image shows a single continuous open path marked from `START` to `END`.

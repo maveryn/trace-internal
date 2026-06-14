@@ -401,7 +401,7 @@ def test_icons_relation_defaults_loaded() -> None:
     assert 'task_icons__two_anchor__between_anchors_count' in cfg['generation']['task_overrides']
     assert 'task_icons__overlap_grid__occlusion_order_count' in cfg['generation']['task_overrides']
     assert 'task_icons__named_field__reference_distance_rank_label' not in cfg['generation']['task_overrides']
-    assert 'task_icons__named_path__path_neighbor_label' in cfg['generation']['task_overrides']
+    assert 'task_icons__named_path__path_neighbor_label' not in cfg['generation']['task_overrides']
     named_cfg = get_scene_defaults('icons', 'named_field')
     assert 'task_icons__named_field__reference_distance_rank_label' in named_cfg['generation']['task_overrides']
     render_shared = cfg['rendering']['shared']
@@ -478,13 +478,17 @@ def test_icons_relation_defaults_loaded() -> None:
     assert str(distance_prompt['answer_hint']).strip()
     assert str(distance_prompt['json_example']).strip()
     assert str(distance_prompt['json_example_answer_only']).strip()
-    path_generation, path_rendering, path_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__named_path__path_neighbor_label')
+def test_icons_named_path_defaults_loaded() -> None:
+    cfg = get_scene_defaults('icons', 'named_path')
+    path_generation, path_rendering, path_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id='task_icons__named_path__path_neighbor_label',
+    )
     assert int(path_generation['candidate_count']) == 6
     assert int(path_generation['distractor_count_min']) == 4
     assert int(path_generation['distractor_count_max']) == 8
     assert int(path_generation['target_occurrence_count_min']) == 2
     assert int(path_generation['target_occurrence_count_max']) == 4
-    assert dict(path_generation['path_neighbor_query_weights']) == {'after_first_shape_label': 1.0, 'before_first_shape_label': 1.0, 'after_last_shape_label': 1.0, 'before_last_shape_label': 1.0, 'after_second_shape_label': 1.0, 'before_second_shape_label': 1.0}
     assert list(path_generation['named_icon_fill_style_support']) == ['solid', 'striped', 'dotted', 'half_filled']
     assert int(path_rendering['canvas_width']) == 1280
     assert int(path_rendering['canvas_height']) == 720
@@ -492,14 +496,33 @@ def test_icons_relation_defaults_loaded() -> None:
     assert int(path_rendering['scene_icon_size_max_px']) == 60
     assert int(path_rendering['path_stroke_width_px']) == 7
     assert int(path_rendering['candidate_label_font_size_px']) == 24
+    assert str(path_prompt['bundle_id']).strip() == 'icons_named_path_v1'
     assert str(path_prompt['scene_key']).strip() == 'named_path_relation'
-    assert str(path_prompt['object_description']).strip()
+    assert str(path_prompt['task_key']).strip() == 'path_neighbor_query'
+    prompt_defaults = required_group_defaults(
+        path_prompt,
+        (
+            'object_description',
+            'question_text_after_first_shape_label',
+            'question_text_before_first_shape_label',
+            'question_text_after_last_shape_label',
+            'question_text_before_last_shape_label',
+            'question_text_after_second_shape_label',
+            'question_text_before_second_shape_label',
+            'annotation_hint',
+            'answer_hint',
+            'json_example',
+            'json_example_answer_only',
+        ),
+        context='named_path prompt defaults',
+    )
+    assert str(prompt_defaults['object_description']).strip()
     for suffix in ('after_first_shape_label', 'before_first_shape_label', 'after_last_shape_label', 'before_last_shape_label', 'after_second_shape_label', 'before_second_shape_label'):
-        assert str(path_prompt[f'question_text_{suffix}']).strip()
-    assert str(path_prompt['annotation_hint']).strip()
-    assert str(path_prompt['answer_hint']).strip()
-    assert str(path_prompt['json_example']).strip()
-    assert str(path_prompt['json_example_answer_only']).strip()
+        assert str(prompt_defaults[f'question_text_{suffix}']).strip()
+    assert str(prompt_defaults['annotation_hint']).strip()
+    assert str(prompt_defaults['answer_hint']).strip()
+    assert str(prompt_defaults['json_example']).strip()
+    assert str(prompt_defaults['json_example_answer_only']).strip()
 
 def test_icons_sequence_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'sequence')

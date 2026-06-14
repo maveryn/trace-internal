@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections import Counter
 from trace.core.seed import hash64
-from trace.tasks.icons.relation.named_path_neighbor_label import IconsRelationNamedPathNeighborLabelTask
+from trace.tasks.icons.named_path.path_neighbor_label import IconsNamedPathPathNeighborLabelTask
 QUERY_IDS = ('after_first_shape_label', 'before_first_shape_label', 'after_last_shape_label', 'before_last_shape_label', 'after_second_shape_label', 'before_second_shape_label')
 
 def _extract_prompt_json_example(prompt: str) -> dict:
@@ -11,9 +11,9 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     assert marker in str(prompt)
     return json.loads(str(prompt).split(marker, 1)[1].strip())
 
-def test_icons_relation_named_path_neighbor_contract_matches_scene() -> None:
-    task = IconsRelationNamedPathNeighborLabelTask()
-    out = task.generate(2026052801, params={'path_neighbor_query': 'after_second_shape_label', 'answer_label': 'E', 'distractor_count': 5, 'target_occurrence_count': 3}, max_attempts=100)
+def test_icons_named_path_neighbor_contract_matches_scene() -> None:
+    task = IconsNamedPathPathNeighborLabelTask()
+    out = task.generate(2026052801, params={'query_id': 'after_second_shape_label', 'answer_label': 'E', 'distractor_count': 5, 'target_occurrence_count': 3}, max_attempts=100)
     trace = out.trace_payload
     execution = trace['execution_trace']
     entities = trace['scene_ir']['entities']
@@ -59,10 +59,10 @@ def test_icons_relation_named_path_neighbor_contract_matches_scene() -> None:
     assert style['text_legibility']['failure_count'] == 0
     assert len(trace['scene_ir']['frames']['path']['points_xy']) == int(execution['stop_count'])
 
-def test_icons_relation_named_path_neighbor_query_variants() -> None:
-    task = IconsRelationNamedPathNeighborLabelTask()
+def test_icons_named_path_neighbor_query_variants() -> None:
+    task = IconsNamedPathPathNeighborLabelTask()
     for index, query_id in enumerate(QUERY_IDS):
-        out = task.generate(2026052802 + index, params={'path_neighbor_query': query_id, 'answer_label': 'B', 'distractor_count': 4, 'target_occurrence_count': 3}, max_attempts=100)
+        out = task.generate(2026052802 + index, params={'query_id': query_id, 'answer_label': 'B', 'distractor_count': 4, 'target_occurrence_count': 3}, max_attempts=100)
         execution = out.trace_payload['execution_trace']
         target_positions = [int(value) for value in execution['target_positions']]
         query_position = int(execution['query_position_index'])
@@ -88,9 +88,9 @@ def test_icons_relation_named_path_neighbor_query_variants() -> None:
         assert out.answer_gt.value == 'B'
         assert execution['labels_by_position'][str(answer_position)] == 'B'
 
-def test_icons_relation_named_path_neighbor_prompt_example_matches_contract() -> None:
-    task = IconsRelationNamedPathNeighborLabelTask()
-    out = task.generate(2026052803, params={'path_neighbor_query': 'before_last_shape_label', 'answer_index': 4}, max_attempts=100)
+def test_icons_named_path_neighbor_prompt_example_matches_contract() -> None:
+    task = IconsNamedPathPathNeighborLabelTask()
+    out = task.generate(2026052803, params={'query_id': 'before_last_shape_label', 'answer_index': 4}, max_attempts=100)
     assert '"' in out.prompt
     answer_only = _extract_prompt_json_example(out.prompt_variants['answer_only'])
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
@@ -99,14 +99,14 @@ def test_icons_relation_named_path_neighbor_prompt_example_matches_contract() ->
     assert answer_and_annotation['annotation'] == {'queried_icon': [218, 314, 274, 370], 'selected_neighbor': [548, 248, 604, 304]}
     assert answer_and_annotation['answer'] == 'E'
 
-def test_icons_relation_named_path_neighbor_sampling_smoke() -> None:
-    task = IconsRelationNamedPathNeighborLabelTask()
+def test_icons_named_path_neighbor_sampling_smoke() -> None:
+    task = IconsNamedPathPathNeighborLabelTask()
     query_counts: Counter[str] = Counter()
     answer_counts: Counter[str] = Counter()
     distractor_counts: Counter[int] = Counter()
     occurrence_counts: Counter[int] = Counter()
     for index in range(60):
-        out = task.generate(hash64(2026052804, 'icons_relation_named_path_neighbor', index), params={}, max_attempts=100)
+        out = task.generate(hash64(2026052804, 'icons_named_path_neighbor', index), params={}, max_attempts=100)
         execution = out.trace_payload['execution_trace']
         entities = out.trace_payload['scene_ir']['entities']
         assert str(out.query_id) == str(execution['query_id'])

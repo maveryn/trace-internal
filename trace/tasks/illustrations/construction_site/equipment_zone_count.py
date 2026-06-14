@@ -10,17 +10,17 @@ from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults, required_group_defaults
+from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 from .shared.annotations import (
     construction_equipment_bbox_map,
     construction_worker_bbox_map,
     sort_construction_bboxes,
 )
-from .shared.labels import construction_color_display_name, construction_zone_display_name
-from .shared.output import construction_scene_entities, serialize_construction_scene
+from .shared.labels import construction_zone_display_name
+from .shared.output import construction_count_trace_sections, serialize_construction_scene
+from .shared.prompts import render_construction_prompt, required_construction_prompt_defaults
 from .shared.rendering import render_construction_site_scene
 from .shared.state import (
     ConstructionEquipmentSpec,
@@ -47,15 +47,8 @@ from .shared.sampling import (
 TASK_ID = "task_illustrations__construction_site__equipment_zone_count"
 SCENE_ID = "construction_site"
 QUERY_IDS: Tuple[str, ...] = (
-    "vehicle_in_excavation_zone_count",
-    "vehicle_in_loading_zone_count",
-    "vehicle_in_roadwork_zone_count",
+    "vehicle_in_zone_count",
 )
-_QUERY_TO_ZONE: Dict[str, str] = {
-    "vehicle_in_excavation_zone_count": "excavation_zone",
-    "vehicle_in_loading_zone_count": "loading_zone",
-    "vehicle_in_roadwork_zone_count": "roadwork_zone",
-}
 
 
 @dataclass(frozen=True)
@@ -122,9 +115,16 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         query_index = int(base_index) % len(query_values)
         query_id = str(query_values[query_index])
         query_probabilities = uniform_string_probability_map(query_values)
-    target_zone = str(_QUERY_TO_ZONE[str(query_id)])
+    explicit_zone = params.get("target_zone_id")
+    if explicit_zone is not None:
+        target_zone = str(explicit_zone)
+        if target_zone not in set(zones):
+            raise ValueError("target_zone_id is outside configured zone_support")
+    else:
+        zone_index = int(base_index // max(1, len(query_values))) % len(zones)
+        target_zone = str(zones[zone_index])
     if target_zone not in set(zones):
-        raise ValueError("query_id targets a zone outside configured zone_support")
+        raise ValueError("target_zone_id is outside configured zone_support")
     zone_probabilities = uniform_string_probability_map(zones, selected=target_zone)
 
     target_min, target_max = bounds(
@@ -142,7 +142,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(target_min),
         high=int(target_max),
         explicit_key="target_count",
-        cycle_index=int(base_index // max(1, len(query_values))) + int(query_index),
+        cycle_index=int(base_index // max(1, len(query_values) * len(zones))) + int(query_index),
     )
     equipment_min, equipment_max = bounds(
         params,
@@ -222,6 +222,31 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
     )
 
 
+def _equipment_ids_in_target_zone(scene: Any, sample: _SampleSpec) -> Tuple[str, ...]:
+    """Select construction equipment whose rendered zone matches the query zone."""
+
+    return tuple(
+        str(equipment.equipment_id)
+        for equipment in scene.equipment
+        if str(equipment.zone_id) == str(sample.target_zone_id)
+    )
+
+
+def _equipment_dynamic_slots(prompt_defaults: Mapping[str, Any], sample: _SampleSpec) -> Dict[str, str]:
+    """Format the prompt slots for the selected construction zone."""
+
+    return {
+        "object_description": str(prompt_defaults["object_description"]).format(worker_count=int(sample.worker_count)),
+        "question_text": str(prompt_defaults["question_text_vehicle_in_zone_count"]).format(zone_name=str(sample.zone_name)),
+        "json_output_contract": str(prompt_defaults["json_output_contract"]),
+        "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
+        "answer_hint": str(prompt_defaults["answer_hint_equipment_in_zone"]).format(zone_name=str(sample.zone_name)),
+        "annotation_hint": str(prompt_defaults["annotation_hint_equipment_in_zone"]).format(zone_name=str(sample.zone_name)),
+        "json_example": str(prompt_defaults["json_example_equipment_in_zone"]),
+        "json_example_answer_only": str(prompt_defaults["json_example_answer_only_equipment_in_zone"]),
+    }
+
+
 
 
 @register_task
@@ -271,17 +296,13 @@ class IllustrationsCountingEquipmentInZoneCountTask:
         if scene is None or sample is None:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
-        counted_equipment_ids = tuple(
-            str(equipment.equipment_id)
-            for equipment in scene.equipment
-            if str(equipment.zone_id) == str(sample.target_zone_id)
-        )
+        counted_equipment_ids = _equipment_ids_in_target_zone(scene, sample)
         if len(counted_equipment_ids) != int(sample.target_count):
             raise RuntimeError("rendered equipment count did not match sample target")
         annotation_value = sort_construction_bboxes(construction_equipment_bbox_map(scene), counted_equipment_ids)
         serialized_scene, bbox_map = serialize_construction_scene(scene)
 
-        prompt_defaults = required_group_defaults(
+        prompt_defaults = required_construction_prompt_defaults(
             _PROMPT_DEFAULTS,
             [
                 "bundle_id",
@@ -290,9 +311,7 @@ class IllustrationsCountingEquipmentInZoneCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "question_text_vehicle_in_excavation_zone_count",
-                "question_text_vehicle_in_loading_zone_count",
-                "question_text_vehicle_in_roadwork_zone_count",
+                "question_text_vehicle_in_zone_count",
                 "answer_hint_equipment_in_zone",
                 "annotation_hint_equipment_in_zone",
                 "json_example_equipment_in_zone",
@@ -300,86 +319,63 @@ class IllustrationsCountingEquipmentInZoneCountTask:
             ],
             context=f"prompt defaults for {TASK_ID}",
         )
-        dynamic_slots = {
-            "object_description": str(prompt_defaults["object_description"]).format(worker_count=int(sample.worker_count)),
-            "question_text": str(prompt_defaults[f"question_text_{sample.query_id}"]).format(zone_name=str(sample.zone_name)),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "answer_hint": str(prompt_defaults["answer_hint_equipment_in_zone"]).format(zone_name=str(sample.zone_name)),
-            "annotation_hint": str(prompt_defaults["annotation_hint_equipment_in_zone"]).format(zone_name=str(sample.zone_name)),
-            "json_example": str(prompt_defaults["json_example_equipment_in_zone"]),
-            "json_example_answer_only": str(prompt_defaults["json_example_answer_only_equipment_in_zone"]),
-        }
-        prompt_selection = render_scene_prompt_variants(
+        dynamic_slots = _equipment_dynamic_slots(prompt_defaults, sample)
+        prompt_artifacts = render_construction_prompt(
             domain=self.domain,
             scene_id=SCENE_ID,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
+            prompt_defaults=prompt_defaults,
             dynamic_slots=dynamic_slots,
             instance_seed=int(instance_seed),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_annotation",
         )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         zone_counts = dict(Counter(str(equipment.zone_id) for equipment in scene.equipment))
+        query_params = {
+            "query_id": str(sample.query_id),
+            "target_zone_id": str(sample.target_zone_id),
+            "target_count": int(sample.target_count),
+            "equipment_count": int(sample.equipment_count),
+            "query_id_probabilities": dict(sample.query_probabilities),
+            "query_probabilities": dict(sample.query_probabilities),
+            "zone_probabilities": dict(sample.zone_probabilities),
+            "target_count_probabilities": dict(sample.target_count_probabilities),
+            "equipment_count_probabilities": dict(sample.equipment_count_probabilities),
+        }
         trace_payload = {
-            "scene_ir": {
-                "domain": self.domain,
-                "scene_id": SCENE_ID,
-                "entities": construction_scene_entities(scene),
-                "relations": {
+            **construction_count_trace_sections(
+                domain=self.domain,
+                scene_id=SCENE_ID,
+                scene=scene,
+                relations={
                     "query_id": str(sample.query_id),
                     "target_zone_id": str(sample.target_zone_id),
                 },
-            },
+                render_map={
+                    "bboxes_px": bbox_map,
+                    "equipment_bboxes_px": construction_equipment_bbox_map(scene),
+                    "worker_bboxes_px": construction_worker_bbox_map(scene),
+                    "counted_equipment_ids": list(counted_equipment_ids),
+                },
+                execution_trace={
+                    "query_id": str(sample.query_id),
+                    "scene_id": SCENE_ID,
+                    "query_id_probabilities": dict(sample.query_probabilities),
+                    "target_count": int(sample.target_count),
+                    "equipment_count": int(sample.equipment_count),
+                    "target_zone_id": str(sample.target_zone_id),
+                    "equipment_zone_counts": zone_counts,
+                    "counted_equipment_ids": list(counted_equipment_ids),
+                    "scene": serialized_scene[0],
+                },
+                witness_symbolic={"counted_equipment_ids": list(counted_equipment_ids), "answer": int(sample.target_count)},
+                annotation_value=annotation_value,
+            ),
             "query_spec": {
                 "task_id": self.task_id,
                 "query_id": str(sample.query_id),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "target_zone_id": str(sample.target_zone_id),
-                    "target_count": int(sample.target_count),
-                    "equipment_count": int(sample.equipment_count),
-                    "query_id_probabilities": dict(sample.query_probabilities),
-                    "query_probabilities": dict(sample.query_probabilities),
-                    "zone_probabilities": dict(sample.zone_probabilities),
-                    "target_count_probabilities": dict(sample.target_count_probabilities),
-                    "equipment_count_probabilities": dict(sample.equipment_count_probabilities),
-                },
+                "params": query_params,
             },
-            "render_spec": {
-                "canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
-                "coord_space": "pixel",
-                "scene_id": SCENE_ID,
-                "style": {
-                    "setting_id": str(scene.setting_id),
-                    "style_id": str(scene.style_id),
-                    "render_scale": int(scene.render_scale),
-                    "layout": dict(scene.layout),
-                },
-            },
-            "render_map": {
-                "bboxes_px": bbox_map,
-                "equipment_bboxes_px": construction_equipment_bbox_map(scene),
-                "worker_bboxes_px": construction_worker_bbox_map(scene),
-                "counted_equipment_ids": list(counted_equipment_ids),
-            },
-            "execution_trace": {
-                "query_id": str(sample.query_id),
-                "scene_id": SCENE_ID,
-                "query_id_probabilities": dict(sample.query_probabilities),
-                "target_count": int(sample.target_count),
-                "equipment_count": int(sample.equipment_count),
-                "target_zone_id": str(sample.target_zone_id),
-                "equipment_zone_counts": zone_counts,
-                "counted_equipment_ids": list(counted_equipment_ids),
-                "scene": serialized_scene[0],
-            },
-            "witness_symbolic": {"counted_equipment_ids": list(counted_equipment_ids), "answer": int(sample.target_count)},
-            "projected_annotation": {"bbox_set": list(annotation_value)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),

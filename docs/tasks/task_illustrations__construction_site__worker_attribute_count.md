@@ -9,6 +9,19 @@
 - Public mapping: `task_illustrations__construction_site__worker_attribute_count` -> `task_illustrations__construction_site__worker_attribute_count`
 - Status: `pending_v0_manual_review_and_solve_rate`
 
+## Contract
+1. Domain: `illustrations`
+2. Scene id: `construction_site`
+3. Public task id: `task_illustrations__construction_site__worker_attribute_count`
+4. Supported `query_id` values: `hard_hat_color_worker_count`, `tool_holding_worker_count`, `vest_color_worker_count`
+5. Query ids: `hard_hat_color_worker_count`, `tool_holding_worker_count`, `vest_color_worker_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `bbox_set`
+8. Program schema: `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count`
+
+## Program Contract
+- `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count`
+
 ## Task Contract
 Counts visible workers matching one sampled safety-gear or held-tool attribute.
 

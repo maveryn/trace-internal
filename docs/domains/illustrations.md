@@ -518,7 +518,9 @@ note says otherwise. The current domain inventory is generated in
    with hex codes.
 2. `task_illustrations__construction_site__equipment_zone_count` counts construction
    vehicles or equipment items in one labeled site zone. Annotation is one
-   equipment bbox per counted item and is empty when the answer is `0`.
+   equipment bbox per counted item and is empty when the answer is `0`. The
+   queried zone is a sampled `target_zone_id` argument recorded in trace
+   metadata, not a separate query id per zone.
 3. `task_illustrations__construction_site__missing_patch_label` renders a
    construction-site source panel with one missing region and four or six
    same-size lettered patch options. Source-zone text labels are suppressed for

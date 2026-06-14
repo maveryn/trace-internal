@@ -10,13 +10,13 @@ from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults, required_group_defaults
+from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 from .shared.annotations import construction_worker_bbox_map, sort_construction_bboxes
 from .shared.labels import construction_color_display_name, construction_color_hex
-from .shared.output import construction_scene_entities, serialize_construction_scene
+from .shared.output import construction_count_trace_sections, serialize_construction_scene
+from .shared.prompts import render_construction_prompt, required_construction_prompt_defaults
 from .shared.rendering import render_construction_site_scene
 from .shared.state import (
     ConstructionEquipmentSpec,
@@ -233,6 +233,53 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
     )
 
 
+def _counted_worker_ids(scene: Any, sample: _SampleSpec) -> Tuple[str, ...]:
+    """Select workers that satisfy the active worker-attribute predicate."""
+
+    if sample.query_id == "hard_hat_color_worker_count":
+        return tuple(str(worker.worker_id) for worker in scene.workers if str(worker.hard_hat_color) == str(sample.target_color))
+    if sample.query_id == "vest_color_worker_count":
+        return tuple(str(worker.worker_id) for worker in scene.workers if str(worker.vest_color) == str(sample.target_color))
+    return tuple(str(worker.worker_id) for worker in scene.workers if worker.tool_type)
+
+
+def _worker_dynamic_slots(prompt_defaults: Mapping[str, Any], sample: _SampleSpec) -> Dict[str, str]:
+    """Format the prompt slots for the selected worker predicate."""
+
+    return {
+        "object_description": str(prompt_defaults["object_description"]).format(worker_count=int(sample.worker_count)),
+        "question_text": str(prompt_defaults[f"question_text_{sample.query_id}"]).format(
+            color_label=construction_color_display_name(str(sample.target_color or "")),
+            match_phrase=str(sample.match_phrase),
+        ),
+        "json_output_contract": str(prompt_defaults["json_output_contract"]),
+        "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
+        "answer_hint": str(prompt_defaults["answer_hint_worker_safety_gear"]).format(match_phrase=str(sample.match_phrase)),
+        "annotation_hint": str(prompt_defaults["annotation_hint_worker_safety_gear"]).format(match_phrase=str(sample.match_phrase)),
+        "json_example": str(prompt_defaults["json_example_worker_safety_gear"]),
+        "json_example_answer_only": str(prompt_defaults["json_example_answer_only_worker_safety_gear"]),
+    }
+
+
+def _worker_query_params(sample: _SampleSpec, *, target_color_label: str | None, target_color_hex: str | None) -> Dict[str, Any]:
+    """Return verifier-facing query parameters for the active worker predicate."""
+
+    return {
+        "query_id": str(sample.query_id),
+        "target_color": str(sample.target_color) if sample.target_color else None,
+        "target_color_label": target_color_label,
+        "target_color_hex": target_color_hex,
+        "match_phrase": str(sample.match_phrase),
+        "target_count": int(sample.target_count),
+        "worker_count": int(sample.worker_count),
+        "query_id_probabilities": dict(sample.query_probabilities),
+        "query_probabilities": dict(sample.query_probabilities),
+        "color_probabilities": dict(sample.color_probabilities),
+        "target_count_probabilities": dict(sample.target_count_probabilities),
+        "worker_count_probabilities": dict(sample.worker_count_probabilities),
+    }
+
+
 
 
 @register_task
@@ -276,18 +323,13 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
         if scene is None or sample is None:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
-        if sample.query_id == "hard_hat_color_worker_count":
-            counted_worker_ids = tuple(str(worker.worker_id) for worker in scene.workers if str(worker.hard_hat_color) == str(sample.target_color))
-        elif sample.query_id == "vest_color_worker_count":
-            counted_worker_ids = tuple(str(worker.worker_id) for worker in scene.workers if str(worker.vest_color) == str(sample.target_color))
-        else:
-            counted_worker_ids = tuple(str(worker.worker_id) for worker in scene.workers if worker.tool_type)
+        counted_worker_ids = _counted_worker_ids(scene, sample)
         if len(counted_worker_ids) != int(sample.target_count):
             raise RuntimeError("rendered worker count did not match sample target")
         annotation_value = sort_construction_bboxes(construction_worker_bbox_map(scene), counted_worker_ids)
         serialized_scene, bbox_map = serialize_construction_scene(scene)
 
-        prompt_defaults = required_group_defaults(
+        prompt_defaults = required_construction_prompt_defaults(
             _PROMPT_DEFAULTS,
             [
                 "bundle_id",
@@ -306,92 +348,58 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
             ],
             context=f"prompt defaults for {TASK_ID}",
         )
-        dynamic_slots = {
-            "object_description": str(prompt_defaults["object_description"]).format(worker_count=int(sample.worker_count)),
-            "question_text": str(prompt_defaults[f"question_text_{sample.query_id}"]).format(
-                color_label=construction_color_display_name(str(sample.target_color or "")),
-                match_phrase=str(sample.match_phrase),
-            ),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "answer_hint": str(prompt_defaults["answer_hint_worker_safety_gear"]).format(match_phrase=str(sample.match_phrase)),
-            "annotation_hint": str(prompt_defaults["annotation_hint_worker_safety_gear"]).format(match_phrase=str(sample.match_phrase)),
-            "json_example": str(prompt_defaults["json_example_worker_safety_gear"]),
-            "json_example_answer_only": str(prompt_defaults["json_example_answer_only_worker_safety_gear"]),
-        }
-        prompt_selection = render_scene_prompt_variants(
+        dynamic_slots = _worker_dynamic_slots(prompt_defaults, sample)
+        prompt_artifacts = render_construction_prompt(
             domain=self.domain,
             scene_id=SCENE_ID,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
+            prompt_defaults=prompt_defaults,
             dynamic_slots=dynamic_slots,
             instance_seed=int(instance_seed),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_annotation",
         )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
+        target_color_label = construction_color_display_name(str(sample.target_color)) if sample.target_color else None
+        target_color_hex = construction_color_hex(str(sample.target_color)) if sample.target_color else None
         trace_payload = {
-            "scene_ir": {
-                "domain": self.domain,
-                "scene_id": SCENE_ID,
-                "entities": construction_scene_entities(scene),
-                "relations": {"query_id": str(sample.query_id), "match_phrase": str(sample.match_phrase)},
-            },
+            **construction_count_trace_sections(
+                domain=self.domain,
+                scene_id=SCENE_ID,
+                scene=scene,
+                relations={"query_id": str(sample.query_id), "match_phrase": str(sample.match_phrase)},
+                render_map={
+                    "bboxes_px": bbox_map,
+                    "worker_bboxes_px": construction_worker_bbox_map(scene),
+                    "counted_worker_ids": list(counted_worker_ids),
+                },
+                execution_trace={
+                    "query_id": str(sample.query_id),
+                    "scene_id": SCENE_ID,
+                    "query_id_probabilities": dict(sample.query_probabilities),
+                    "target_count": int(sample.target_count),
+                    "worker_count": int(sample.worker_count),
+                    "target_color_label": target_color_label,
+                    "target_color_hex": target_color_hex,
+                    "worker_color_counts": {
+                        "hard_hat": dict(Counter(str(worker.hard_hat_color) for worker in scene.workers)),
+                        "vest": dict(Counter(str(worker.vest_color) for worker in scene.workers)),
+                    },
+                    "tool_holding_count": sum(1 for worker in scene.workers if worker.tool_type),
+                    "counted_worker_ids": list(counted_worker_ids),
+                    "scene": serialized_scene[0],
+                },
+                witness_symbolic={"counted_worker_ids": list(counted_worker_ids), "answer": int(sample.target_count)},
+                annotation_value=annotation_value,
+            ),
             "query_spec": {
                 "task_id": self.task_id,
                 "query_id": str(sample.query_id),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "target_color": str(sample.target_color) if sample.target_color else None,
-                    "target_color_label": construction_color_display_name(str(sample.target_color)) if sample.target_color else None,
-                    "target_color_hex": construction_color_hex(str(sample.target_color)) if sample.target_color else None,
-                    "match_phrase": str(sample.match_phrase),
-                    "target_count": int(sample.target_count),
-                    "worker_count": int(sample.worker_count),
-                    "query_id_probabilities": dict(sample.query_probabilities),
-                    "query_probabilities": dict(sample.query_probabilities),
-                    "color_probabilities": dict(sample.color_probabilities),
-                    "target_count_probabilities": dict(sample.target_count_probabilities),
-                    "worker_count_probabilities": dict(sample.worker_count_probabilities),
-                },
+                "params": _worker_query_params(
+                    sample,
+                    target_color_label=target_color_label,
+                    target_color_hex=target_color_hex,
+                ),
             },
-            "render_spec": {
-                "canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
-                "coord_space": "pixel",
-                "scene_id": SCENE_ID,
-                "style": {
-                    "setting_id": str(scene.setting_id),
-                    "style_id": str(scene.style_id),
-                    "render_scale": int(scene.render_scale),
-                    "layout": dict(scene.layout),
-                },
-            },
-            "render_map": {
-                "bboxes_px": bbox_map,
-                "worker_bboxes_px": construction_worker_bbox_map(scene),
-                "counted_worker_ids": list(counted_worker_ids),
-            },
-            "execution_trace": {
-                "query_id": str(sample.query_id),
-                "scene_id": SCENE_ID,
-                "query_id_probabilities": dict(sample.query_probabilities),
-                "target_count": int(sample.target_count),
-                "worker_count": int(sample.worker_count),
-                "target_color_label": construction_color_display_name(str(sample.target_color)) if sample.target_color else None,
-                "target_color_hex": construction_color_hex(str(sample.target_color)) if sample.target_color else None,
-                "worker_color_counts": {
-                    "hard_hat": dict(Counter(str(worker.hard_hat_color) for worker in scene.workers)),
-                    "vest": dict(Counter(str(worker.vest_color) for worker in scene.workers)),
-                },
-                "tool_holding_count": sum(1 for worker in scene.workers if worker.tool_type),
-                "counted_worker_ids": list(counted_worker_ids),
-                "scene": serialized_scene[0],
-            },
-            "witness_symbolic": {"counted_worker_ids": list(counted_worker_ids), "answer": int(sample.target_count)},
-            "projected_annotation": {"bbox_set": list(annotation_value)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),

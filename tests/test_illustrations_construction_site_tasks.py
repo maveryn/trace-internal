@@ -17,7 +17,7 @@ _CONSTRUCTION_TASK_CASES = (
     ),
     (
         "task_illustrations__construction_site__equipment_zone_count",
-        {"query_id": "vehicle_in_excavation_zone_count", "target_count": 2, "equipment_count": 5},
+        {"query_id": "vehicle_in_zone_count", "target_zone_id": "excavation_zone", "target_count": 2, "equipment_count": 5},
         2,
     ),
 )
@@ -97,7 +97,7 @@ def test_construction_site_missing_patch_uses_keyed_visual_witnesses() -> None:
 def test_construction_site_equipment_zone_count_allows_zero_with_empty_annotation() -> None:
     out = create_task("task_illustrations__construction_site__equipment_zone_count").generate(
         hash64(2026061302, "construction-site-zero-equipment-zone"),
-        params={"query_id": "vehicle_in_excavation_zone_count", "target_count": 0, "equipment_count": 5},
+        params={"query_id": "vehicle_in_zone_count", "target_zone_id": "excavation_zone", "target_count": 0, "equipment_count": 5},
         max_attempts=300,
     )
 
@@ -137,7 +137,7 @@ def test_construction_site_worker_attribute_count_supports_zero_and_max_five() -
 def test_construction_site_equipment_zone_count_target_boxes_do_not_overlap() -> None:
     out = create_task("task_illustrations__construction_site__equipment_zone_count").generate(
         7314101157250,
-        params={"query_id": "vehicle_in_excavation_zone_count", "target_count": 4, "equipment_count": 8},
+        params={"query_id": "vehicle_in_zone_count", "target_zone_id": "excavation_zone", "target_count": 4, "equipment_count": 8},
         max_attempts=300,
     )
 

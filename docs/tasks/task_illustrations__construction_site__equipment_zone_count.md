@@ -9,6 +9,19 @@
 - Public mapping: `task_illustrations__construction_site__equipment_zone_count` -> `task_illustrations__construction_site__equipment_zone_count`
 - Status: `pending_v0_manual_review_and_solve_rate`
 
+## Contract
+1. Domain: `illustrations`
+2. Scene id: `construction_site`
+3. Public task id: `task_illustrations__construction_site__equipment_zone_count`
+4. Supported `query_id` values: `vehicle_in_zone_count`
+5. Query ids: `vehicle_in_zone_count`
+6. Answer schema: `integer_count`
+7. Annotation schema: `bbox_set`
+8. Program schema: `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count`
+
+## Program Contract
+- `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count`
+
 ## Task Contract
 Counts visible construction vehicles/equipment assigned to one named construction-zone scope.
 
@@ -18,20 +31,19 @@ This public task id is a stable contract-v0 unit: one renderer scene id plus one
 
 | Query id | Program schema |
 | --- | --- |
-| `vehicle_in_excavation_zone_count` | `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count; query_branch=vehicle_in_excavation_zone_count` |
-| `vehicle_in_loading_zone_count` | `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count; query_branch=vehicle_in_loading_zone_count` |
-| `vehicle_in_roadwork_zone_count` | `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count; query_branch=vehicle_in_roadwork_zone_count` |
+| `vehicle_in_zone_count` | `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count` |
 
 ## Program Metadata
 - Program signatures: `count.scoped_attribute`
 - Base program contract: `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count`
-- Parameter axes: `fixed_query`
+- Parameter axes: `target_zone`
 - Arguments:
   - `construction_vehicles`: semantic_role; allowed `visible_construction_vehicles`; source `program_schema_concrete`
-  - `target_zone`: semantic_role; allowed `excavation_zone`, `loading_zone`, `roadwork_zone`; source `program_schema_concrete`
+  - `target_zone`: semantic_role; allowed `excavation_zone`, `loading_zone`, `roadwork_zone`; source `sampled_scene_value`
   - `vehicle`: semantic_role; allowed `construction_vehicle_instance`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `vehicle_in_excavation_zone_count`, `vehicle_in_loading_zone_count`, `vehicle_in_roadwork_zone_count`
+- Supported query ids: `vehicle_in_zone_count`
+- `target_zone` is sampled/overridden through task parameters and recorded in trace metadata; it is not a public query-id branch because the prompt resolves the concrete zone name before asking the same count operation.
 
 ## Answer Contract
 - Answer schema: `integer_count`

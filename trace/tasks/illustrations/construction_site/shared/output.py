@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from ...shared.object_rendering import make_vector_scene_object_record
 
@@ -238,6 +238,46 @@ def serialize_construction_scene(scene: RenderedConstructionSiteScene) -> Tuple[
     bbox_map.update(construction_equipment_bbox_map(scene))
     bbox_map.update(construction_zone_bbox_map(scene))
     return [payload], bbox_map
+
+
+def construction_count_trace_sections(
+    *,
+    domain: str,
+    scene_id: str,
+    scene: RenderedConstructionSiteScene,
+    relations: Mapping[str, Any],
+    render_map: Mapping[str, Any],
+    execution_trace: Mapping[str, Any],
+    witness_symbolic: Mapping[str, Any],
+    annotation_value: Iterable[Sequence[float]],
+) -> Dict[str, Any]:
+    """Assemble non-identity trace sections for construction count tasks."""
+
+    return {
+        "scene_ir": {
+            "domain": str(domain),
+            "scene_id": str(scene_id),
+            "entities": construction_scene_entities(scene),
+            "relations": safe_json_value(dict(relations)),
+        },
+        "render_spec": {
+            "canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
+            "coord_space": "pixel",
+            "scene_id": str(scene_id),
+            "style": {
+                "setting_id": str(scene.setting_id),
+                "style_id": str(scene.style_id),
+                "render_scale": int(scene.render_scale),
+                "layout": safe_json_value(dict(scene.layout)),
+            },
+        },
+        "render_map": safe_json_value(dict(render_map)),
+        "execution_trace": safe_json_value(dict(execution_trace)),
+        "witness_symbolic": safe_json_value(dict(witness_symbolic)),
+        "projected_annotation": {
+            "bbox_set": [[round(float(v), 3) for v in box] for box in annotation_value],
+        },
+    }
 
 
 __all__ = [

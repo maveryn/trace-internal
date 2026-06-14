@@ -1,14 +1,15 @@
 # illustrations Contract-v0 Taxonomy Reanalysis
 
-- Current tasks: 23
-- Proposed task units: 23
+- Current tasks: 24
+- Proposed task units: 24
 - Split tasks: 0
 - Rename-only tasks: 0
-- Canonical program signatures used: 6
+- Canonical program signatures used: 7
 
 | Current task | Decision | Proposed task ids | Program signatures | Rationale |
 | --- | --- | --- | --- | --- |
 | `task_illustrations__construction_site__equipment_zone_count` | keep | `task_illustrations__construction_site__equipment_zone_count` | `count.scoped_attribute` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.scoped_attribute. Answer/annotation schemas: integer_count / bbox_set. |
+| `task_illustrations__construction_site__missing_patch_label` | keep | `task_illustrations__construction_site__missing_patch_label` | `selection.option_match` | Scene-package taxonomy review aligned the migrated construction-site visual-option task with the construction_site scene. Query ids distinguish exact patch matching from rotation/reflection matching. Answer/annotation schemas: option_letter / keyed_bbox_map. |
 | `task_illustrations__construction_site__worker_attribute_count` | keep | `task_illustrations__construction_site__worker_attribute_count` | `count.single_attribute_membership` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.single_attribute_membership. Answer/annotation schemas: integer_count / bbox_set. |
 | `task_illustrations__environment__crossing_feature_count` | keep | `task_illustrations__environment__crossing_feature_count` | `count.relation_attribute` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.relation_attribute. Answer/annotation schemas: integer_count / bbox_set. |
 | `task_illustrations__environment__feature_side_object_count` | keep | `task_illustrations__environment__feature_side_object_count` | `count.relation_attribute` | Manual boundary seed provided the proposed task mapping. Contract-v0 program schema: count.relation_attribute. Answer/annotation schemas: integer_count / bbox_set. |

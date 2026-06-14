@@ -9,6 +9,19 @@
 - Public mapping: `task_illustrations__construction_site__missing_patch_label` -> `task_illustrations__construction_site__missing_patch_label`
 - Status: `pending_v0_manual_review_and_solve_rate`
 
+## Contract
+1. Domain: `illustrations`
+2. Scene id: `construction_site`
+3. Public task id: `task_illustrations__construction_site__missing_patch_label`
+4. Supported `query_id` values: `plain_patch_label`, `transformed_patch_label`
+5. Query ids: `plain_patch_label`, `transformed_patch_label`
+6. Answer schema: `option_letter`
+7. Annotation schema: `keyed_bbox_map`
+8. Program schema: `select_option(match_patch(source_image, missing_region, options, patch_transform_mode)); scene=construction_site; scope=missing_patch_label`
+
+## Program Contract
+- `select_option(match_patch(source_image, missing_region, options, patch_transform_mode)); scene=construction_site; scope=missing_patch_label`
+
 ## Task Contract
 Renders a construction-site source panel with one missing visual region and four or six same-size lettered patch options. The model selects the option letter that restores the missing region.
 
@@ -22,9 +35,15 @@ This public task id is a stable scene-owned visual-option contract. Query ids va
 | `transformed_patch_label` | `select_option(match_patch(source_image, missing_region, options, transform=rotation_or_reflection)); scene=construction_site; scope=missing_patch_label` |
 
 ## Program Metadata
-- Program signatures: `visual.patch_option_match`
-- Base program contract: `select_option(match_patch(source_image, missing_region, options)); scene=construction_site; scope=missing_patch_label`
+- Program signatures: `selection.option_match`
+- Base program contract: `select_option(match_patch(source_image, missing_region, options, patch_transform_mode)); scene=construction_site; scope=missing_patch_label`
 - Parameter axes: `patch_transform_mode`
+- Arguments:
+  - `source_image`: semantic_role; allowed `construction_site_source_panel`; source `program_schema_concrete`
+  - `missing_region`: semantic_role; allowed `masked_source_region`; source `program_schema_concrete`
+  - `options`: semantic_role; allowed `lettered_patch_options`; source `program_schema_concrete`
+  - `patch_transform_mode`: operation_parameter; allowed `none`, `rotation_or_reflection`; source `query_id|parameter_axes`
+- Argument metadata status: `curated`
 - Supported query ids: `plain_patch_label`, `transformed_patch_label`
 
 ## Answer Contract

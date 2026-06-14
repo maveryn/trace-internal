@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from ....core.query_ids import SINGLE_QUERY_ID
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
@@ -13,7 +14,7 @@ from ...shared.config_defaults import (
     load_scene_generation_rendering_prompt_defaults,
     required_group_defaults,
 )
-from ...shared.fixed_query import select_task_query_id
+from ...shared.fixed_query import resolve_task_query_id_param, strip_query_id_params
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -33,30 +34,33 @@ from .shared.styles import mirror_grid_style_trace, resolve_mirror_grid_render_p
 TASK_ID = "task_icons__mirror_grid__mirror_symmetry_match_label"
 DOMAIN = "icons"
 SCENE_ID = "mirror_grid"
-QUERY_ID = "mirror_symmetry_match_label"
-MIRROR_VERTICAL_QUERY_ID = "mirror_vertical"
-MIRROR_HORIZONTAL_QUERY_ID = "mirror_horizontal"
-MIRROR_DIAGONAL_MAIN_QUERY_ID = "mirror_diagonal_main"
-MIRROR_DIAGONAL_ANTI_QUERY_ID = "mirror_diagonal_anti"
-MIRROR_BOTH_AXES_QUERY_ID = "mirror_both_axes"
+QUERY_ID = SINGLE_QUERY_ID
+MIRROR_VERTICAL_SIGNATURE = "mirror_vertical"
+MIRROR_HORIZONTAL_SIGNATURE = "mirror_horizontal"
+MIRROR_DIAGONAL_MAIN_SIGNATURE = "mirror_diagonal_main"
+MIRROR_DIAGONAL_ANTI_SIGNATURE = "mirror_diagonal_anti"
+MIRROR_BOTH_AXES_SIGNATURE = "mirror_both_axes"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
-    MIRROR_VERTICAL_QUERY_ID,
-    MIRROR_HORIZONTAL_QUERY_ID,
-    MIRROR_DIAGONAL_MAIN_QUERY_ID,
-    MIRROR_DIAGONAL_ANTI_QUERY_ID,
-    MIRROR_BOTH_AXES_QUERY_ID,
+    QUERY_ID,
+)
+MIRROR_SIGNATURES: Tuple[str, ...] = (
+    MIRROR_VERTICAL_SIGNATURE,
+    MIRROR_HORIZONTAL_SIGNATURE,
+    MIRROR_DIAGONAL_MAIN_SIGNATURE,
+    MIRROR_DIAGONAL_ANTI_SIGNATURE,
+    MIRROR_BOTH_AXES_SIGNATURE,
 )
 NOISE_NAMESPACE = "mirror_grid_symmetry_match_label"
 
-_QUERY_TO_SYMMETRY_KIND: Dict[str, str] = {
-    MIRROR_VERTICAL_QUERY_ID: "vertical",
-    MIRROR_HORIZONTAL_QUERY_ID: "horizontal",
-    MIRROR_DIAGONAL_MAIN_QUERY_ID: "diagonal_main",
-    MIRROR_DIAGONAL_ANTI_QUERY_ID: "diagonal_anti",
-    MIRROR_BOTH_AXES_QUERY_ID: "both_axes",
+_SIGNATURE_TO_SYMMETRY_KIND: Dict[str, str] = {
+    MIRROR_VERTICAL_SIGNATURE: "vertical",
+    MIRROR_HORIZONTAL_SIGNATURE: "horizontal",
+    MIRROR_DIAGONAL_MAIN_SIGNATURE: "diagonal_main",
+    MIRROR_DIAGONAL_ANTI_SIGNATURE: "diagonal_anti",
+    MIRROR_BOTH_AXES_SIGNATURE: "both_axes",
 }
-_SYMMETRY_KIND_TO_QUERY: Dict[str, str] = {
-    str(kind): str(query) for query, kind in _QUERY_TO_SYMMETRY_KIND.items()
+_SYMMETRY_KIND_TO_SIGNATURE: Dict[str, str] = {
+    str(kind): str(query) for query, kind in _SIGNATURE_TO_SYMMETRY_KIND.items()
 }
 
 
@@ -98,30 +102,65 @@ def _option_count_choices(params: Mapping[str, Any]) -> Tuple[int, ...]:
     return choices
 
 
-def _select_mirror_query(
+def _normalize_public_query(
+    *,
+    params: Mapping[str, Any],
+) -> Tuple[Dict[str, float], Dict[str, Any]]:
+    """Validate the single public query id and remove query selector aliases."""
+
+    resolve_task_query_id_param(
+        params=params,
+        supported_query_ids=SUPPORTED_QUERY_IDS,
+        default_query_id=QUERY_ID,
+        task_id=TASK_ID,
+    )
+    return {QUERY_ID: 1.0}, strip_query_id_params(params)
+
+
+def _select_mirror_signature(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float], Dict[str, Any]]:
-    """Select the public mirror-symmetry branch using the shared task policy."""
+    """Select the internal mirror-signature axis for this single public query."""
 
-    return select_task_query_id(
-        instance_seed=int(instance_seed),
-        params=params,
-        supported_query_ids=SUPPORTED_QUERY_IDS,
-        default_query_id=MIRROR_VERTICAL_QUERY_ID,
-        task_id=TASK_ID,
-        namespace=f"{TASK_ID}.public_query",
-    )
+    task_params = dict(params)
+    requested_signature: str | None = None
+    requested_key: str | None = None
+    for key in ("mirror_signature", "target_mirror_signature", "reference_symmetry_id"):
+        raw_value = task_params.pop(str(key), None)
+        if raw_value is None:
+            continue
+        value = str(raw_value)
+        if requested_signature is not None and value != requested_signature:
+            raise ValueError(f"{requested_key} conflicts with {key}")
+        requested_signature = value
+        requested_key = str(key)
+
+    if requested_signature is not None:
+        if requested_signature not in MIRROR_SIGNATURES:
+            raise ValueError(
+                f"unsupported mirror_signature for {TASK_ID}: {requested_signature}; "
+                f"supported: {MIRROR_SIGNATURES}"
+            )
+        return (
+            str(requested_signature),
+            _probability_map(MIRROR_SIGNATURES, selected=str(requested_signature)),
+            task_params,
+        )
+
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.mirror_signature")
+    selected = str(rng.choice(MIRROR_SIGNATURES))
+    return str(selected), _probability_map(MIRROR_SIGNATURES), task_params
 
 
-def _symmetry_kind_for_query(public_query_id: str) -> str:
-    """Translate a public query branch into the neutral scene symmetry kind."""
+def _symmetry_kind_for_signature(mirror_signature: str) -> str:
+    """Translate an internal mirror signature into the neutral scene symmetry kind."""
 
     try:
-        return str(_QUERY_TO_SYMMETRY_KIND[str(public_query_id)])
+        return str(_SIGNATURE_TO_SYMMETRY_KIND[str(mirror_signature)])
     except KeyError as exc:
-        raise ValueError(f"unsupported query_id for {TASK_ID}: {public_query_id}") from exc
+        raise ValueError(f"unsupported mirror_signature for {TASK_ID}: {mirror_signature}") from exc
 
 
 def _public_symmetry_id(symmetry_kind: str) -> str:
@@ -130,7 +169,7 @@ def _public_symmetry_id(symmetry_kind: str) -> str:
     if str(symmetry_kind) == "none":
         return "none"
     try:
-        return str(_SYMMETRY_KIND_TO_QUERY[str(symmetry_kind)])
+        return str(_SYMMETRY_KIND_TO_SIGNATURE[str(symmetry_kind)])
     except KeyError as exc:
         raise ValueError(f"unsupported symmetry kind in {TASK_ID}: {symmetry_kind}") from exc
 
@@ -250,11 +289,14 @@ class IconsMirrorGridMirrorSymmetryMatchLabelTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic mirror-grid option-match instance."""
 
-        selected_query_id, query_probabilities, task_params = _select_mirror_query(
-            instance_seed=int(instance_seed),
+        query_probabilities, normalized_params = _normalize_public_query(
             params=params,
         )
-        reference_symmetry_kind = _symmetry_kind_for_query(str(selected_query_id))
+        mirror_signature, mirror_signature_probabilities, task_params = _select_mirror_signature(
+            instance_seed=int(instance_seed),
+            params=normalized_params,
+        )
+        reference_symmetry_kind = _symmetry_kind_for_signature(str(mirror_signature))
         scene_rng = spawn_rng(int(instance_seed), "scene")
         explicit_answer_label = str(
             task_params.get("answer_label", "") or task_params.get("correct_option_label", "")
@@ -299,7 +341,7 @@ class IconsMirrorGridMirrorSymmetryMatchLabelTask:
                     matching_indices=(int(answer_index),),
                     render_params=render_params,
                     pool_manifest=str(pool_manifest),
-                    noise_namespace=f"{NOISE_NAMESPACE}:{selected_query_id}:{answer_label}",
+                    noise_namespace=f"{NOISE_NAMESPACE}:{mirror_signature}:{answer_label}",
                 )
                 break
             except Exception as exc:  # pragma: no cover - exercised through retry loop
@@ -351,11 +393,12 @@ class IconsMirrorGridMirrorSymmetryMatchLabelTask:
         scene_cell_symmetry_ids = _scene_cell_public_symmetry_ids(scene_payload)
         query_spec = build_prompt_query_spec(
             prompt_artifacts=prompt_artifacts,
-            query_id=str(selected_query_id),
+            query_id=QUERY_ID,
             params={
                 "task_id": str(self.task_id),
                 "scene_id": SCENE_ID,
                 "query_id_probabilities": dict(query_probabilities),
+                "internal_query_id": str(mirror_signature),
                 "option_count": int(option_count),
                 "option_count_probabilities": dict(option_count_probabilities),
                 "option_labels": list(option_labels),
@@ -364,14 +407,15 @@ class IconsMirrorGridMirrorSymmetryMatchLabelTask:
                 "distractor_count": int(distractor_count),
                 "distractor_count_probabilities": dict(distractor_count_probabilities),
                 "pool_manifest": str(pool_manifest),
-                "mirror_signature": str(selected_query_id),
+                "mirror_signature": str(mirror_signature),
+                "mirror_signature_probabilities": dict(mirror_signature_probabilities),
                 "reference_symmetry_kind": str(scene_payload.reference_symmetry_kind),
             },
         )
         common_ids = {
             "task_id": str(self.task_id),
             "scene_id": SCENE_ID,
-            "query_id": str(selected_query_id),
+            "query_id": QUERY_ID,
         }
         trace_payload = {
             "scene_ir": {
@@ -380,9 +424,9 @@ class IconsMirrorGridMirrorSymmetryMatchLabelTask:
                 "entities": [dict(reference_cell), *[dict(item) for item in scene_cells]],
                 "relations": {
                     "target": "option_cell_matching_reference_mirror_symmetry",
-                    "reference_symmetry_id": str(selected_query_id),
+                    "reference_symmetry_id": str(mirror_signature),
                     "reference_symmetry_kind": str(scene_payload.reference_symmetry_kind),
-                    "mirror_signature": str(selected_query_id),
+                    "mirror_signature": str(mirror_signature),
                     "matching_cell_label": str(answer_label),
                     "answer_label": str(answer_label),
                 },
@@ -415,7 +459,9 @@ class IconsMirrorGridMirrorSymmetryMatchLabelTask:
                 **common_ids,
                 "scene_variant": "reference_with_labeled_option_cells",
                 "query_id_probabilities": dict(query_probabilities),
-                "mirror_signature": str(selected_query_id),
+                "internal_query_id": str(mirror_signature),
+                "mirror_signature": str(mirror_signature),
+                "mirror_signature_probabilities": dict(mirror_signature_probabilities),
                 "reference_symmetry_kind": str(scene_payload.reference_symmetry_kind),
                 "option_count": int(scene_payload.object_count),
                 "option_count_probabilities": dict(option_count_probabilities),
@@ -431,9 +477,9 @@ class IconsMirrorGridMirrorSymmetryMatchLabelTask:
             },
             "witness_symbolic": {
                 "answer_label": str(answer_label),
-                "reference_symmetry_id": str(selected_query_id),
+                "reference_symmetry_id": str(mirror_signature),
                 "reference_symmetry_kind": str(scene_payload.reference_symmetry_kind),
-                "mirror_signature": str(selected_query_id),
+                "mirror_signature": str(mirror_signature),
                 "reference_cell_bbox": list(reference_cell["cell_bbox_xyxy"]),
                 "matching_option_cell_bbox": list(matching_cell["cell_bbox_xyxy"]),
             },
@@ -448,7 +494,7 @@ class IconsMirrorGridMirrorSymmetryMatchLabelTask:
             trace_payload=trace_payload,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
-            query_id=str(selected_query_id),
+            query_id=QUERY_ID,
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

@@ -12,8 +12,8 @@
 
 ## 2) Scene + task contract
 1. Entities/relations: one two-panel image with a `Reference` cell on the left and labeled option cells on the right.
-2. Query ids: `mirror_vertical`, `mirror_horizontal`, `mirror_diagonal_main`, `mirror_diagonal_anti`, `mirror_both_axes`.
-3. Supported `mirror_signature` values: `mirror_vertical`, `mirror_horizontal`, `mirror_diagonal_main`, `mirror_diagonal_anti`, `mirror_both_axes`.
+2. Query ids: `single`.
+3. Internal `mirror_signature` values: `mirror_vertical`, `mirror_horizontal`, `mirror_diagonal_main`, `mirror_diagonal_anti`, `mirror_both_axes`.
 4. Answer type: `answer_gt.type = option_letter`.
 5. Annotation type: `annotation_gt.type = keyed_bbox_map` with keys `reference_cell` and `matching_option_cell`.
 6. Option policy: option count is sampled from `4` or `6`; labels are fixed row-major as `A..D` or `A..F`.
@@ -37,7 +37,7 @@
 4. Semantic-unit rule: annotation boxes surround the whole Reference cell and whole matching option cell because the task asks about cell-level mirror symmetry.
 
 ## 5) Complexity + tests
-1. Complexity definition/components: option count + query branch.
+1. Complexity definition/components: option count + internal mirror signature.
 2. Determinism/build tests: `tests/test_icons_relation_mirror_symmetry_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_relation_mirror_symmetry_tasks.py`
 4. Prompt bundle/config tests: `tests/test_icons_prompt_wording.py`, `tests/test_icons_scene_config.py`

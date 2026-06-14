@@ -21,7 +21,7 @@ def test_icons_relation_mirror_symmetry_match_contract_matches_scene() -> None:
     task = IconsMirrorGridMirrorSymmetryMatchLabelTask()
     out = task.generate(
         15110,
-        params={"query_id": "mirror_diagonal_main", "option_count": 6, "answer_label": "C"},
+        params={"mirror_signature": "mirror_diagonal_main", "option_count": 6, "answer_label": "C"},
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -41,8 +41,10 @@ def test_icons_relation_mirror_symmetry_match_contract_matches_scene() -> None:
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_annotation"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_grid_mirror_symmetry_match_label"
     assert execution["question_format"] == "select_option_cell_matching_reference_mirror_symmetry"
-    assert out.query_id == "mirror_diagonal_main"
-    assert execution["query_id"] == "mirror_diagonal_main"
+    assert out.query_id == "single"
+    assert trace["query_spec"]["query_id"] == "single"
+    assert execution["query_id"] == "single"
+    assert execution["internal_query_id"] == "mirror_diagonal_main"
     assert execution["mirror_signature"] == "mirror_diagonal_main"
     assert int(execution["option_count"]) == 6
     assert int(execution["distractor_count"]) == 5
@@ -81,7 +83,7 @@ def test_icons_relation_mirror_symmetry_match_supports_four_options() -> None:
     task = IconsMirrorGridMirrorSymmetryMatchLabelTask()
     out = task.generate(
         15111,
-        params={"query_id": "mirror_horizontal", "option_count": 4, "answer_label": "D"},
+        params={"mirror_signature": "mirror_horizontal", "option_count": 4, "answer_label": "D"},
         max_attempts=200,
     )
     execution = out.trace_payload["execution_trace"]
@@ -96,7 +98,7 @@ def test_icons_relation_mirror_symmetry_match_prompt_example_matches_contract() 
     task = IconsMirrorGridMirrorSymmetryMatchLabelTask()
     out = task.generate(
         15112,
-        params={"query_id": "mirror_horizontal", "option_count": 6, "answer_label": "B"},
+        params={"mirror_signature": "mirror_horizontal", "option_count": 6, "answer_label": "B"},
         max_attempts=200,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
@@ -111,7 +113,7 @@ def test_icons_relation_mirror_symmetry_match_supports_both_axes_reference() -> 
     task = IconsMirrorGridMirrorSymmetryMatchLabelTask()
     out = task.generate(
         15114,
-        params={"query_id": "mirror_both_axes", "option_count": 6, "answer_label": "E"},
+        params={"mirror_signature": "mirror_both_axes", "option_count": 6, "answer_label": "E"},
         max_attempts=200,
     )
     reference_cell = next(
@@ -142,6 +144,9 @@ def test_icons_relation_mirror_symmetry_match_sampling_defaults() -> None:
         option_counts[option_count] += 1
         signature_counts[str(execution["mirror_signature"])] += 1
         answer_labels[str(execution["answer_label"])] += 1
+        assert out.query_id == "single"
+        assert str(execution["query_id"]) == "single"
+        assert str(execution["internal_query_id"]) == str(execution["mirror_signature"])
         assert option_count in {4, 6}
         assert str(out.answer_gt.value) in set(execution["option_labels"])
         assert str(out.answer_gt.value) == str(execution["matching_cell_label"])

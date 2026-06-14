@@ -362,7 +362,6 @@ generation:
       distractor_count_max: 8
       counterfactual_query_ids:
       - target_count_after_shape_replacement
-      - target_count_after_remove_and_replace
       named_icon_fill_style_support:
       - solid
       - striped
@@ -723,7 +722,6 @@ rendering:
       named_icon_stack_gap_px: 1
       counterfactual_query_ids:
       - target_count_after_shape_replacement
-      - target_count_after_remove_and_replace
     task_icons__named_field__counterfactual_total_count:
       canvas_width: 800
       canvas_height: 480
@@ -940,8 +938,6 @@ prompt:
         icons. How many "{target_shape_name}" icons would be in the Scene?
       question_text_total_count_after_shape_removal: Suppose all "{remove_shape_name}" icons were removed from the Scene.
         How many icons would remain?
-      question_text_target_count_after_remove_and_replace: Suppose all "{remove_shape_name}" icons were removed and all "{source_shape_name}"
-        icons changed into "{target_shape_name}" icons. How many "{target_shape_name}" icons would remain in the Scene?
       annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every visible
         icon that would be counted after the hypothetical edit
       answer_hint: set "answer" to the resulting count as an integer
@@ -949,7 +945,6 @@ prompt:
       json_example_answer_only: '{"answer":2}'
       counterfactual_query_ids:
       - target_count_after_shape_replacement
-      - target_count_after_remove_and_replace
       bundle_id: icons_named_field_v1
       task_key: counting_query
     task_icons__named_field__counterfactual_total_count:
@@ -959,8 +954,6 @@ prompt:
         icons. How many "{target_shape_name}" icons would be in the Scene?
       question_text_total_count_after_shape_removal: Suppose all "{remove_shape_name}" icons were removed from the Scene.
         How many icons would remain?
-      question_text_target_count_after_remove_and_replace: Suppose all "{remove_shape_name}" icons were removed and all "{source_shape_name}"
-        icons changed into "{target_shape_name}" icons. How many "{target_shape_name}" icons would remain in the Scene?
       annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every visible
         icon that would be counted after the hypothetical edit
       answer_hint: set "answer" to the resulting count as an integer

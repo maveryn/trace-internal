@@ -1048,13 +1048,11 @@ COUNTERFACTUAL_DEFAULT_TASK_ID =COUNTERFACTUAL_ATTRIBUTE_TASK_ID
 COUNTERFACTUAL_QUERY_IDS :Tuple [str ,...]=(
 _qid("target", "count", "after", "shape", "replacement"),
 _qid("total", "count", "after", "shape", "removal"),
-_qid("target", "count", "after", "remove", "and", "replace"),
 )
 
 COUNTERFACTUAL_QUERY_IDS_BY_TASK_ID :Dict [str ,Tuple [str ,...]]={
 COUNTERFACTUAL_ATTRIBUTE_TASK_ID :(
 _qid("target", "count", "after", "shape", "replacement"),
-_qid("target", "count", "after", "remove", "and", "replace"),
 ),
 COUNTERFACTUAL_TOTAL_TASK_ID :(_qid("total", "count", "after", "shape", "removal"),),
 }
@@ -1324,46 +1322,6 @@ def _counterfactual_sample_spec (*,instance_seed :int ,params :Mapping [str ,Any
             _CounterfactualIconSemanticSpec (
             shape_id =str (remove_shape_id ),
             counterfactual_role ="removed_shape",
-            counted_after_edit =False ,
-            )
-            )
-    elif query_key ==_qid("target", "count", "after", "remove", "and", "replace"):
-        remove_shape_id ,source_shape_id ,target_shape_id =_counterfactual_other_shapes (rng ,shape_support ,(),count =3 )
-        source_count ,existing_target_count =_counterfactual_split_answer_into_source_and_target (rng ,int (target_answer ))
-        removal_count =int (rng .choice (removal_support ))
-        distractor_count =int (rng .choice (distractor_support ))
-        for _ in range (int (removal_count )):
-            semantic_specs .append (
-            _CounterfactualIconSemanticSpec (
-            shape_id =str (remove_shape_id ),
-            counterfactual_role ="removed_shape",
-            counted_after_edit =False ,
-            )
-            )
-        for _ in range (int (source_count )):
-            semantic_specs .append (
-            _CounterfactualIconSemanticSpec (
-            shape_id =str (source_shape_id ),
-            counterfactual_role ="source_shape_changed_to_target",
-            counted_after_edit =True ,
-            )
-            )
-        for _ in range (int (existing_target_count )):
-            semantic_specs .append (
-            _CounterfactualIconSemanticSpec (
-            shape_id =str (target_shape_id ),
-            counterfactual_role ="existing_target_shape",
-            counted_after_edit =True ,
-            )
-            )
-        for shape_id in rng .choices (
-        _counterfactual_other_shapes (rng ,shape_support ,(remove_shape_id ,source_shape_id ,target_shape_id ),count =min (4 ,len (shape_support )-3 )),
-        k =int (distractor_count ),
-        ):
-            semantic_specs .append (
-            _CounterfactualIconSemanticSpec (
-            shape_id =str (shape_id ),
-            counterfactual_role ="unaffected_distractor",
             counted_after_edit =False ,
             )
             )

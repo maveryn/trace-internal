@@ -3,13 +3,12 @@
 ## Identity
 - domain: `icons`
 - scene_id: `named_field`
-- scene_id: `counting`
 - task: `named_shape_counterfactual_count`
 - module: `trace/tasks/icons/named_field/counterfactual_attribute_count.py`
-- prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
+- prompt bundle: `prompts/icons/named_field/icons_named_field_v1.json`
 
 ## Program Contract
-`count.counterfactual(scene=named_field, scope=visible_icons, edit=shape_replacement|remove_and_replace, target=shape_count, output=count)`
+`count.counterfactual(scene=named_field, scope=visible_icons, edit=shape_replacement, target=shape_count, output=count)`
 
 ## Scene And Query
 The task renders one panel labeled `Scene` containing procedurally generated
@@ -20,11 +19,6 @@ Supported query ids:
 - `target_count_after_shape_replacement`: every source-shape icon changes into
   the target shape; answer is existing target-shape icons plus source-shape
   icons.
-- `total_count_after_shape_removal`: every remove-shape icon is removed; answer
-  is the number of visible icons that would remain.
-- `target_count_after_remove_and_replace`: remove-shape icons are removed and
-  source-shape icons change into the target shape; answer is the final target
-  shape count.
 
 The target shape support is the full procedural named-icon vocabulary in
 `trace/tasks/icons/shared/procedural_named_icons.py`. Icons also sample a
@@ -59,6 +53,6 @@ the hypothetical edit semantics.
 ## Prompt Contract
 - `scene_key = single_scene_counting`
 - `task_key = counting_query`
-- prompts ask for the resulting count after a removal or replacement edit
+- prompts ask for the resulting target-shape count after a replacement edit
 - answer-only and answer+annotation modes both include contract-valid JSON
   examples

@@ -14,7 +14,7 @@ import re
 
 MIGRATED_SCENE_PACKAGE_DOMAINS: frozenset[str] = frozenset()
 MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series"}),
     "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes"}),
     "geometry": frozenset(
         {
@@ -34,7 +34,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
     "three_d": frozenset({"object_cluster", "surface_fixture"}),
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series"}),
     "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes"}),
     "geometry": frozenset(
         {
@@ -51,7 +51,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
     "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path"}),
     "illustrations": frozenset({"construction_site", "environment", "indoor_room"}),
-    "three_d": frozenset({"surface_fixture"}),
+    "three_d": frozenset({"object_cluster", "surface_fixture"}),
 }
 SCENE_PACKAGE_PILOT_TASK_IDS: frozenset[str] = frozenset()
 

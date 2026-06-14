@@ -256,6 +256,7 @@ class IllustrationsCountingEquipmentInZoneCountTask:
     task_id = TASK_ID
     domain = "illustrations"
     supported_queries = QUERY_IDS
+    supported_query_ids = QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:

@@ -44,7 +44,6 @@ SCENE_ID = "construction_site"
 QUERY_IDS: Tuple[str, ...] = (
     "hard_hat_color_worker_count",
     "vest_color_worker_count",
-    "tool_holding_worker_count",
 )
 
 
@@ -187,25 +186,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
                 )
             )
     else:
-        match_phrase = "workers holding a tool"
-        for _ in range(int(target_count)):
-            worker_specs.append(
-                ConstructionWorkerSpec(
-                    hard_hat_color=str(rng.choice(colors)),
-                    vest_color=str(rng.choice(colors)),
-                    tool_type=str(rng.choice(tools)),
-                    role="target",
-                )
-            )
-        for _ in range(int(worker_count) - int(target_count)):
-            worker_specs.append(
-                ConstructionWorkerSpec(
-                    hard_hat_color=str(rng.choice(colors)),
-                    vest_color=str(rng.choice(colors)),
-                    tool_type=None,
-                    role="distractor",
-                )
-            )
+        raise ValueError(f"unsupported worker attribute query_id: {query_id}")
     rng.shuffle(worker_specs)
 
     material_min, material_max = bounds(params, _GEN_DEFAULTS, "material_count_min", "material_count_max", _DEFAULTS.material_count_min, _DEFAULTS.material_count_max)
@@ -240,7 +221,7 @@ def _counted_worker_ids(scene: Any, sample: _SampleSpec) -> Tuple[str, ...]:
         return tuple(str(worker.worker_id) for worker in scene.workers if str(worker.hard_hat_color) == str(sample.target_color))
     if sample.query_id == "vest_color_worker_count":
         return tuple(str(worker.worker_id) for worker in scene.workers if str(worker.vest_color) == str(sample.target_color))
-    return tuple(str(worker.worker_id) for worker in scene.workers if worker.tool_type)
+    raise ValueError(f"unsupported worker attribute query_id: {sample.query_id}")
 
 
 def _worker_dynamic_slots(prompt_defaults: Mapping[str, Any], sample: _SampleSpec) -> Dict[str, str]:
@@ -284,11 +265,12 @@ def _worker_query_params(sample: _SampleSpec, *, target_color_label: str | None,
 
 @register_task
 class IllustrationsCountingWorkerSafetyGearCountTask:
-    """Count workers matching a visible hard-hat, vest, or tool condition."""
+    """Count workers matching a visible hard-hat or vest color condition."""
 
     task_id = TASK_ID
     domain = "illustrations"
     supported_queries = QUERY_IDS
+    supported_query_ids = QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -340,7 +322,6 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                 "object_description",
                 "question_text_hard_hat_color_worker_count",
                 "question_text_vest_color_worker_count",
-                "question_text_tool_holding_worker_count",
                 "answer_hint_worker_safety_gear",
                 "annotation_hint_worker_safety_gear",
                 "json_example_worker_safety_gear",
@@ -381,7 +362,6 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                         "hard_hat": dict(Counter(str(worker.hard_hat_color) for worker in scene.workers)),
                         "vest": dict(Counter(str(worker.vest_color) for worker in scene.workers)),
                     },
-                    "tool_holding_count": sum(1 for worker in scene.workers if worker.tool_type),
                     "counted_worker_ids": list(counted_worker_ids),
                     "scene": serialized_scene[0],
                 },

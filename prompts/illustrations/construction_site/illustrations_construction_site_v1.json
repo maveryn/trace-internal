@@ -73,7 +73,6 @@
     "object_description_missing_patch": "a construction-site source panel with one missing region and lettered patch options",
     "question_text_hard_hat_color_worker_count": "How many workers are wearing {color_label} hard hats? If none are there, answer 0.",
     "question_text_vest_color_worker_count": "How many workers are wearing {color_label} safety vests? If none are there, answer 0.",
-    "question_text_tool_holding_worker_count": "How many workers are holding a tool? If none are there, answer 0.",
     "question_text_vehicle_in_zone_count": "How many construction vehicles are in the {zone_name}? If none are there, answer 0.",
     "question_text_plain_patch_label": "Which option exactly fills the missing region?",
     "question_text_transformed_patch_label": "Which option matches the missing region if rotation or reflection is allowed?",

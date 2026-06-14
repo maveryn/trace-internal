@@ -10,8 +10,8 @@
 1. Domain: `illustrations`
 2. Scene id: `construction_site`
 3. Public task id: `task_illustrations__construction_site__worker_attribute_count`
-4. Supported `query_id` values: `hard_hat_color_worker_count`, `tool_holding_worker_count`, `vest_color_worker_count`
-5. Query ids: `hard_hat_color_worker_count`, `tool_holding_worker_count`, `vest_color_worker_count`
+4. Supported `query_id` values: `hard_hat_color_worker_count`, `vest_color_worker_count`
+5. Query ids: `hard_hat_color_worker_count`, `vest_color_worker_count`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
 8. Program schema: `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count`
@@ -20,14 +20,13 @@
 - `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count`
 
 ## Task Contract
-Counts visible workers matching one sampled safety-gear or held-tool attribute.
+Counts visible workers matching one sampled safety-gear color attribute.
 
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
 | `hard_hat_color_worker_count` | `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count; query_branch=hard_hat_color_worker_count` |
-| `tool_holding_worker_count` | `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count; query_branch=tool_holding_worker_count` |
 | `vest_color_worker_count` | `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count; query_branch=vest_color_worker_count` |
 
 ## Program Metadata
@@ -35,12 +34,12 @@ Counts visible workers matching one sampled safety-gear or held-tool attribute.
 - Base program contract: `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count`
 - Parameter axes: `target_attribute`
 - Arguments:
-  - `target_attribute`: object_attribute; allowed `hard_hat_color`, `held_tool`, `vest_color`; source `program_schema_concrete|query_id|parameter_axes`
-  - `target_attribute_value`: object_attribute; allowed `sampled_color`, `sampled_tool_type`; source `program_schema_concrete`
+  - `target_attribute`: object_attribute; allowed `hard_hat_color`, `vest_color`; source `program_schema_concrete|query_id|parameter_axes`
+  - `target_attribute_value`: object_attribute; allowed `sampled_color`; source `program_schema_concrete`
   - `worker`: semantic_role; allowed `worker_instance`; source `program_schema_concrete`
   - `workers`: semantic_role; allowed `visible_workers`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `hard_hat_color_worker_count`, `tool_holding_worker_count`, `vest_color_worker_count`
+- Supported query ids: `hard_hat_color_worker_count`, `vest_color_worker_count`
 
 ## Answer Contract
 - Answer schema: `integer_count`

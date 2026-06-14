@@ -39,11 +39,11 @@ DEFAULT_SOURCE_QUERIES: Mapping[str, Mapping[str, Any]] = {
         "plural_phrase": "walking people",
         "scene_id": "park_playground",
     },
-    "construction_tools": {
+    "construction_yellow_hard_hats": {
         "source_task_id": "task_illustrations__construction_site__worker_attribute_count",
-        "source_params": {"query_id": "tool_holding_worker_count"},
-        "singular_phrase": "tool-holding worker",
-        "plural_phrase": "tool-holding workers",
+        "source_params": {"query_id": "hard_hat_color_worker_count", "target_color": "yellow"},
+        "singular_phrase": "yellow-hard-hat worker",
+        "plural_phrase": "yellow-hard-hat workers",
         "scene_id": "construction_site",
     },
 }

@@ -115,7 +115,6 @@
     "query:vest_color_worker_count": [
       "color_label"
     ],
-    "query:tool_holding_worker_count": [],
     "query:vehicle_in_excavation_zone_count": [
       "zone_name"
     ],
@@ -260,13 +259,6 @@
       "What is the number of workers wearing {color_label} safety vests?",
       "How many visible workers have {color_label} safety vests?",
       "Find every worker wearing {color_label} safety vests. What is the count?"
-    ],
-    "tool_holding_worker_count": [
-      "How many workers are holding a tool?",
-      "Count the workers holding tools.",
-      "What is the number of workers shown with a tool in hand?",
-      "How many visible workers are carrying a tool?",
-      "Find every worker holding a tool. What is the count?"
     ],
     "vehicle_in_excavation_zone_count": [
       "How many construction vehicles are in the {zone_name}?",

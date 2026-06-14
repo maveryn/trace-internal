@@ -10,7 +10,7 @@ generation:
       source_query_support:
         - park_sitting
         - park_walking
-        - construction_tools
+        - construction_yellow_hard_hats
 
 rendering:
   shared:
@@ -34,4 +34,3 @@ prompt:
       annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for all currently visible {object_plural} before the hypothetical edit
       json_example: '{"annotation":[[120,220,188,292],[310,204,382,286],[602,336,672,418]],"answer":5}'
       json_example_answer_only: '{"answer":5}'
-

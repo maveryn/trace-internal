@@ -39,7 +39,6 @@ generation:
       query_id_support:
         - hard_hat_color_worker_count
         - vest_color_worker_count
-        - tool_holding_worker_count
     task_illustrations__construction_site__equipment_zone_count:
       equipment_count_min: 5
       equipment_count_max: 9

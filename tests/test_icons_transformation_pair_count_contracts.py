@@ -37,7 +37,7 @@ def test_icons_transformation_pair_count_build_smoke(tmp_path: Path) -> None:
             BuildTaskConfig(
                 task_id=task_id,
                 count=4,
-                params={"query_id": "same_pair_transform"},
+                params={"query_id": "single"},
             )
         ],
         strict_repro=False,
@@ -49,7 +49,7 @@ def test_icons_transformation_pair_count_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "icons" for record in train_records)
-    assert all("scene_id" not in record for record in train_records)
+    assert all(record["scene_id"] == "pair_grid" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"][task_id]) == 4

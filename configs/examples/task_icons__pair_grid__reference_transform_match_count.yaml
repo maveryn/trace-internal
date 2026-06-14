@@ -1,6 +1,6 @@
 task_id: task_icons__pair_grid__reference_transform_match_count
 params:
-  query_id: same_pair_transform
+  query_id: single
   object_count: 8
   target_count: 3
   pool_manifest: non_symmetry.txt

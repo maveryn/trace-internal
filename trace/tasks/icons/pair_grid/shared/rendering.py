@@ -1,89 +1,20 @@
-"""Reusable reference-pair plus labeled scene-grid rendering for icon tasks."""
+"""Rendering primitives for the pair-grid icons scene."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import List, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_rendering import load_font
-from ...shared.text_legibility import draw_text_traced
-from .icon_assets import render_icon_transformed_rgba
-from .icon_grid_scene import resolve_grid_cell_slots
-from .icon_noise import NoiseEdit, serialize_icon_noise_edits
-from .icon_scene import IconPanelLayout, draw_two_panel_panels, panel_geometry_to_trace, resolve_two_panel_layout
-from .scene_style import IconCanvasStyle
+from ....shared.text_rendering import load_font
+from ....shared.text_legibility import draw_text_traced
+from ...shared.icon_assets import render_icon_transformed_rgba
+from ...shared.icon_grid_scene import resolve_grid_cell_slots
+from ...shared.icon_noise import serialize_icon_noise_edits
+from ...shared.icon_scene import draw_two_panel_panels, panel_geometry_to_trace, resolve_two_panel_layout
+from ...shared.scene_style import IconCanvasStyle
 
-
-BBox = Tuple[int, int, int, int]
-
-
-@dataclass(frozen=True)
-class IconPairSpec:
-    """One before/after icon pair to render in a labeled scene cell."""
-
-    icon_id: str
-    transform_id: str
-    tint_rgb: Tuple[int, int, int]
-    left_tint_rgb: Tuple[int, int, int] | None = None
-    right_tint_rgb: Tuple[int, int, int] | None = None
-    left_size_scale: float = 1.0
-    right_size_scale: float = 1.0
-    left_noise_edits: Tuple[NoiseEdit, ...] = ()
-    left_noise_seed: int | None = None
-    right_noise_edits: Tuple[NoiseEdit, ...] = ()
-    right_noise_seed: int | None = None
-
-
-@dataclass(frozen=True)
-class RenderedReferencePair:
-    """Rendered metadata for the left-panel reference pair."""
-
-    icon_id: str
-    transform_id: str
-    tint_rgb: Tuple[int, int, int]
-    left_tint_rgb: Tuple[int, int, int]
-    right_tint_rgb: Tuple[int, int, int]
-    left_size_scale: float
-    right_size_scale: float
-    left_bbox_xyxy: BBox
-    right_bbox_xyxy: BBox
-    left_noise_edits: Tuple[Dict[str, Any], ...]
-    left_noise_seed: int | None
-    right_noise_edits: Tuple[Dict[str, Any], ...]
-    right_noise_seed: int | None
-
-
-@dataclass(frozen=True)
-class RenderedScenePairCell:
-    """Rendered metadata for one labeled scene cell."""
-
-    label: str
-    icon_id: str
-    transform_id: str
-    tint_rgb: Tuple[int, int, int]
-    left_tint_rgb: Tuple[int, int, int]
-    right_tint_rgb: Tuple[int, int, int]
-    left_size_scale: float
-    right_size_scale: float
-    cell_bbox_xyxy: BBox
-    left_bbox_xyxy: BBox
-    right_bbox_xyxy: BBox
-    left_noise_edits: Tuple[Dict[str, Any], ...]
-    left_noise_seed: int | None
-    right_noise_edits: Tuple[Dict[str, Any], ...]
-    right_noise_seed: int | None
-
-
-@dataclass(frozen=True)
-class RenderedIconPairGridScene:
-    """Complete rendered output for one reference-pair transformation scene."""
-
-    image: Image.Image
-    layout: IconPanelLayout
-    reference_pair: RenderedReferencePair
-    scene_cells: Tuple[RenderedScenePairCell, ...]
+from .state import BBox, IconPairSpec, RenderedIconPairGridScene, RenderedReferencePair, RenderedScenePairCell
 
 
 def _draw_arrow(draw: ImageDraw.ImageDraw, *, left_x: float, right_x: float, center_y: float, color_rgb: Tuple[int, int, int], stroke_px: int) -> None:

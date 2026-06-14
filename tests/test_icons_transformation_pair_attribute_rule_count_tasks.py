@@ -24,8 +24,12 @@ def test_icons_transformation_pair_attribute_rule_count_contract_matches_scene()
     assert int(out.answer_gt.value) == 3
     assert out.annotation_gt.type == 'bbox_set'
     assert len(out.annotation_gt.value) == 3
-    assert out.query_id == 'color_and_size_change'
-    assert execution['query_id'] == 'color_and_size_change'
+    assert out.query_id == 'single'
+    assert execution['query_id'] == 'single'
+    assert trace['query_spec']['query_id'] == 'single'
+    assert trace['query_spec']['params']['query_id_probabilities'] == {'single': 1.0}
+    assert trace['query_spec']['params']['attribute_rule'] == 'color_and_size_change'
+    assert execution['attribute_rule'] == 'color_and_size_change'
     assert execution['question_format'] == 'count_scene_cells_matching_reference_attribute_rule'
     assert execution['changed_attributes'] == ['color', 'size']
     assert int(execution['object_count']) == 6
@@ -88,7 +92,7 @@ def test_icons_transformation_pair_attribute_rule_count_balanced_sampling_defaul
     for index in range(60):
         out = task.generate(hash64(51203, 'icons_pair_attribute_rule', index), params={}, max_attempts=200)
         execution = out.trace_payload['execution_trace']
-        rules[str(execution['query_id'])] += 1
+        rules[str(execution['attribute_rule'])] += 1
         target_counts[int(execution['target_count'])] += 1
         assert 0 <= int(execution['target_count']) <= 4
         assert int(execution['object_count']) == 6
@@ -99,13 +103,13 @@ def test_icons_transformation_pair_attribute_rule_count_balanced_sampling_defaul
 def test_icons_transformation_pair_attribute_rule_count_build_smoke(tmp_path: Path) -> None:
     task_id = 'task_icons__pair_grid__attribute_delta_pair_count'
     output_root = tmp_path / task_id
-    config = BuildConfig(output_root=str(output_root), dataset_name=f'build_smoke_{task_id}', instance_version='v0', image_format='png', tasks=[BuildTaskConfig(task_id=task_id, count=4, params={'query_id': 'color_only_change'})], strict_repro=False, max_attempts_per_instance=200, sampling_seed=37)
+    config = BuildConfig(output_root=str(output_root), dataset_name=f'build_smoke_{task_id}', instance_version='v0', image_format='png', tasks=[BuildTaskConfig(task_id=task_id, count=4, params={'query_id': 'single', 'attribute_rule': 'color_only_change'})], strict_repro=False, max_attempts_per_instance=200, sampling_seed=37)
     final_path = build_dataset(config, code_hash='icons-transformation-attribute-rule-count-smoke')
     assert final_path.exists()
     train_records = read_jsonl(final_path / 'train_instances.jsonl')
     assert len(train_records) == 4
     assert all((record['domain'] == 'icons' for record in train_records))
-    assert all(('scene_id' not in record for record in train_records))
+    assert all((record['scene_id'] == 'pair_grid' for record in train_records))
     build_report = json.loads((final_path / 'build_report.json').read_text(encoding='utf-8'))
     assert int(build_report['accepted_counts_by_task'][task_id]) == 4
     validation = json.loads((final_path / 'validation_report.json').read_text(encoding='utf-8'))

@@ -27,9 +27,12 @@ def test_icons_transformation_pair_count_contract_matches_scene() -> None:
     assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
     assert trace['query_spec']['prompt_variant_active_key'] == 'answer_and_annotation'
     assert trace['scene_ir']['scene_kind'] == 'icons_reference_pair_transformation_count'
+    assert trace['scene_ir']['query_id'] == 'single'
+    assert trace['query_spec']['query_id'] == 'single'
+    assert trace['query_spec']['params']['query_id_probabilities'] == {'single': 1.0}
     assert execution['question_format'] == 'count_scene_cells_matching_reference_transform'
-    assert out.query_id == 'same_pair_transform'
-    assert execution['query_id'] == 'same_pair_transform'
+    assert out.query_id == 'single'
+    assert execution['query_id'] == 'single'
     assert int(execution['object_count']) == 6
     assert int(execution['target_count']) == 3
     assert int(execution['distractor_count']) == 3

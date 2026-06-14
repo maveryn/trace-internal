@@ -30,7 +30,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
-    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path", "named_ring"}),
+    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path", "named_ring", "pair_grid"}),
     "illustrations": frozenset({"construction_site", "environment", "indoor_room", "library", "park_playground"}),
     "three_d": frozenset({"object_cluster", "surface_fixture"}),
 }
@@ -51,7 +51,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
-    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path", "named_ring"}),
+    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path", "named_ring", "pair_grid"}),
     "illustrations": frozenset({"construction_site", "environment", "indoor_room", "library", "park_playground"}),
     "three_d": frozenset({"object_cluster", "surface_fixture"}),
 }

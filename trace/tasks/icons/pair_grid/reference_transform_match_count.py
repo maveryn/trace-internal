@@ -7,32 +7,34 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
+    load_scene_generation_rendering_prompt_defaults,
     required_group_defaults,
-    split_generation_rendering_prompt_defaults,
 )
 from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
+from ...shared.fixed_query import select_task_query_id
 from ...shared.labeling import LABEL_POOL_A_L
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
+    build_prompt_query_spec,
     build_prompt_trace_artifacts,
-    render_task_prompt_variants,
+    render_scene_prompt_variants,
 )
-from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
 from ..shared.icon_assets import icon_transform_signature, resolve_icon_pool
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.icon_pair_grid_scene import IconPairSpec, panel_geometry_to_trace, render_two_panel_icon_pair_grid_scene
 from ..shared.icon_style import sample_single_icon_tint
-from ..shared.icon_task_rendering import resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
+from ..shared.icon_task_rendering import sample_icon_instance_noise
 from ..shared.icon_transform import IDENTITY_TRANSFORM_ID, NON_IDENTITY_TRANSFORM_IDS
 from ..shared.annotation import matching_scene_cell_bbox_annotation
-from ..shared.public_query_task import rewrite_icons_query_output
+
+from .shared.rendering import panel_geometry_to_trace, render_two_panel_icon_pair_grid_scene
+from .shared.state import IconPairSpec
+from .shared.styles import pair_grid_style_trace, resolve_pair_grid_render_params
 
 
 @dataclass(frozen=True)
@@ -103,90 +105,27 @@ class _ScenePayload:
 
 _DEFAULTS = _TaskDefaults()
 TASK_ID = "task_icons__pair_grid__reference_transform_match_count"
+DOMAIN = "icons"
 SCENE_ID = "pair_grid"
-_SCENE_DEFAULTS = get_scene_defaults("icons", SCENE_ID)
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _SCENE_DEFAULTS if isinstance(_SCENE_DEFAULTS, Mapping) else {},
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("single",)
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    DOMAIN,
+    SCENE_ID,
     task_id=TASK_ID,
 )
-_GEN_DEFAULTS = {
-    **_GEN_DEFAULTS,
-    **dict(_GEN_DEFAULTS.get("variant_generation_params", {}).get("same_pair_transform", {})),
-}
-_RENDER_DEFAULTS = {
-    **_RENDER_DEFAULTS,
-    **dict(_RENDER_DEFAULTS.get("variant_render_params", {}).get("same_pair_transform", {})),
-}
 
 
-def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> Dict[str, Any]:
-    """Resolve render params, including transformation-grid-specific extras."""
+def _select_query(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float], Dict[str, Any]]:
+    """Select and validate the single public query contract."""
 
-    render_params = resolve_icon_render_params(
+    return select_task_query_id(
+        instance_seed=int(instance_seed),
         params=params,
-        render_defaults=_RENDER_DEFAULTS,
-        fallback_defaults=_DEFAULTS,
-        instance_seed=int(instance_seed),
+        supported_query_ids=SUPPORTED_QUERY_IDS,
+        default_query_id="single",
+        task_id=TASK_ID,
+        namespace=f"{TASK_ID}.query",
     )
-    render_params["cell_padding_px"] = int(
-        params.get("cell_padding_px", group_default(_RENDER_DEFAULTS, "cell_padding_px", _DEFAULTS.cell_padding_px))
-    )
-    render_params["pair_arrow_stroke_px"] = int(
-        params.get(
-            "pair_arrow_stroke_px",
-            group_default(_RENDER_DEFAULTS, "pair_arrow_stroke_px", _DEFAULTS.pair_arrow_stroke_px),
-        )
-    )
-    render_params["cell_label_font_size_px"] = int(
-        params.get(
-            "cell_label_font_size_px",
-            group_default(_RENDER_DEFAULTS, "cell_label_font_size_px", _DEFAULTS.cell_label_font_size_px),
-        )
-    )
-    render_params["cell_border_rgb"] = resolve_icon_rgb_param(
-        params=params,
-        render_defaults=_RENDER_DEFAULTS,
-        key="cell_border_rgb",
-        fallback=_DEFAULTS.cell_border_rgb,
-        instance_seed=int(instance_seed),
-    )
-    render_params["cell_label_color_rgb"] = resolve_icon_rgb_param(
-        params=params,
-        render_defaults=_RENDER_DEFAULTS,
-        key="cell_label_color_rgb",
-        fallback=_DEFAULTS.cell_label_color_rgb,
-        instance_seed=int(instance_seed),
-    )
-    cell_label_style = resolve_readable_text_style(
-        instance_seed=int(instance_seed),
-        namespace="icons.pair_grid.cell_label_text",
-        role="icon_cell_label_text",
-        surface_rgbs=(
-            tuple(int(value) for value in render_params["panel_fill_rgb"]),
-            tuple(int(value) for value in render_params["background_color_rgb"]),
-        ),
-        preferred_rgbs=(tuple(int(value) for value in render_params["cell_label_color_rgb"]),),
-        required=False,
-    )
-    render_params["cell_label_color_rgb"] = tuple(int(value) for value in cell_label_style.fill_rgb)
-    render_params["cell_label_stroke_rgb"] = tuple(int(value) for value in render_params["panel_fill_rgb"])
-    cell_label_record = cell_label_style.metadata()
-    cell_label_record["stroke_rgb"] = list(render_params["cell_label_stroke_rgb"])
-    previous_legibility = render_params.get("text_legibility")
-    previous_records = []
-    if isinstance(previous_legibility, Mapping) and isinstance(previous_legibility.get("records"), list):
-        previous_records = [dict(record) for record in previous_legibility["records"] if isinstance(record, Mapping)]
-    render_params["text_legibility"] = text_legibility_summary_from_records(
-        [*previous_records, cell_label_record]
-    )
-    render_params["arrow_color_rgb"] = resolve_icon_rgb_param(
-        params=params,
-        render_defaults=_RENDER_DEFAULTS,
-        key="arrow_color_rgb",
-        fallback=_DEFAULTS.arrow_color_rgb,
-        instance_seed=int(instance_seed),
-    )
-    return render_params
 
 
 def _resolve_transform_ids(params: Mapping[str, Any]) -> Tuple[str, ...]:
@@ -219,51 +158,6 @@ def _distinct_distractor_transforms(icon_id: str, *, reference_transform_id: str
         and icon_transform_signature(str(icon_id), int(check_size_px), str(transform_id)) != reference_signature
     ]
     return tuple(str(value) for value in distractors)
-
-
-def _transformation_style_trace(
-    *,
-    render_params: Mapping[str, Any],
-    sampled_palette_rgb: Tuple[Tuple[int, int, int], ...],
-) -> Dict[str, Any]:
-    """Return the canonical render-style trace block for transformation grids."""
-
-    return {
-        "background_color_rgb": list(render_params["background_color_rgb"]),
-        "panel_fill_rgb": list(render_params["panel_fill_rgb"]),
-        "panel_border_rgb": list(render_params["panel_border_rgb"]),
-        "header_text_rgb": list(render_params["header_text_rgb"]),
-        "header_text_stroke_rgb": list(render_params.get("header_text_stroke_rgb", render_params["panel_fill_rgb"])),
-        "text_color_policy": str(
-            render_params.get("text_color_policy", "read_required_text_uses_random_nonsemantic_readable_ink")
-        ),
-        "text_legibility": dict(render_params.get("text_legibility", {})),
-        "icon_canvas_style": dict(render_params.get("icon_canvas_style", {"enabled": False})),
-        "sampled_palette_rgb": [list(color) for color in sampled_palette_rgb],
-        "color_channel_min": int(render_params["color_channel_min"]),
-        "color_channel_max": int(render_params["color_channel_max"]),
-        "min_color_distance": float(render_params["min_color_distance"]),
-        "color_distance_space": str(render_params["color_distance_space"]),
-        "icon_noise_edit_types": [str(value) for value in render_params["icon_noise_edit_types"]],
-        "icon_noise_edit_count_range": [
-            int(render_params["icon_noise_edit_count_range"][0]),
-            int(render_params["icon_noise_edit_count_range"][1]),
-        ],
-        "icon_noise_value_ranges": {
-            str(edit_type): {
-                str(param): [float(bounds[0]), float(bounds[1])]
-                for param, bounds in params.items()
-            }
-            for edit_type, params in render_params["icon_noise_value_ranges"].items()
-        },
-        "cell_padding_px": int(render_params["cell_padding_px"]),
-        "pair_arrow_stroke_px": int(render_params["pair_arrow_stroke_px"]),
-        "cell_label_font_size_px": int(render_params["cell_label_font_size_px"]),
-        "cell_border_rgb": list(render_params["cell_border_rgb"]),
-        "cell_label_color_rgb": list(render_params["cell_label_color_rgb"]),
-        "cell_label_stroke_rgb": list(render_params.get("cell_label_stroke_rgb", render_params["panel_fill_rgb"])),
-        "arrow_color_rgb": list(render_params["arrow_color_rgb"]),
-    }
 
 
 def _sample_scene(
@@ -356,12 +250,12 @@ def _sample_scene(
         scene_transform_ids.append(str(transform_id))
         left_noise_edits, left_noise_seed = sample_icon_instance_noise(
             instance_seed=int(instance_seed),
-                namespace=f"{TASK_ID}:scene_{int(index)}_left",
+            namespace=f"{TASK_ID}:scene_{int(index)}_left",
             render_params=render_params,
         )
         right_noise_edits, right_noise_seed = sample_icon_instance_noise(
             instance_seed=int(instance_seed),
-                namespace=f"{TASK_ID}:scene_{int(index)}_right",
+            namespace=f"{TASK_ID}:scene_{int(index)}_right",
             render_params=render_params,
         )
         scene_pairs.append(
@@ -463,11 +357,14 @@ class IconsPairGridReferenceTransformMatchCountTask:
     """Count scene grid cells that match a reference icon-pair transform."""
 
     task_id = TASK_ID
-    domain = "icons"
+    domain = DOMAIN
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic icon transformation pair-count instance."""
 
+        query_id, query_probabilities, task_params = _select_query(int(instance_seed), params)
         scene_rng = spawn_rng(int(instance_seed), "scene")
         (
             object_count,
@@ -479,7 +376,7 @@ class IconsPairGridReferenceTransformMatchCountTask:
         ) = resolve_counting_target_and_distractor_triplet(
             scene_rng,
             instance_seed=int(instance_seed),
-            params=params,
+            params=task_params,
             gen_defaults=_GEN_DEFAULTS,
             fallback_total_min=_DEFAULTS.object_count_min,
             fallback_total_max=_DEFAULTS.object_count_max,
@@ -488,11 +385,16 @@ class IconsPairGridReferenceTransformMatchCountTask:
             fallback_distractor_min=_DEFAULTS.distractor_count_min,
             fallback_distractor_max=_DEFAULTS.distractor_count_max,
         )
-        render_params = _resolve_render_params(params, instance_seed=int(instance_seed))
-        pool_manifest = str(params.get("pool_manifest", group_default(_GEN_DEFAULTS, "pool_manifest", _DEFAULTS.pool_manifest)))
-        transform_ids = _resolve_transform_ids(params)
+        render_params = resolve_pair_grid_render_params(
+            params=task_params,
+            render_defaults=_RENDER_DEFAULTS,
+            fallback_defaults=_DEFAULTS,
+            instance_seed=int(instance_seed),
+        )
+        pool_manifest = str(task_params.get("pool_manifest", group_default(_GEN_DEFAULTS, "pool_manifest", _DEFAULTS.pool_manifest)))
+        transform_ids = _resolve_transform_ids(task_params)
         transform_check_size_px = int(
-            params.get(
+            task_params.get(
                 "transform_check_size_px",
                 group_default(_GEN_DEFAULTS, "transform_check_size_px", _DEFAULTS.transform_check_size_px),
             )
@@ -537,14 +439,14 @@ class IconsPairGridReferenceTransformMatchCountTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        prompt_selection = render_task_prompt_variants(
+        prompt_selection = render_scene_prompt_variants(
             domain=self.domain,
             scene_id=SCENE_ID,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
+            dynamic_slots={
                 "object_description": str(prompt_defaults["object_description"]),
                 "question_text": str(prompt_defaults["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -568,12 +470,34 @@ class IconsPairGridReferenceTransformMatchCountTask:
             type=str(annotation_artifacts["annotation_type"]),
             value=list(annotation_artifacts["annotation_value"]),
         )
+        query_spec = build_prompt_query_spec(
+            prompt_artifacts=prompt_artifacts,
+            query_id=str(query_id),
+            params={
+                "task_id": str(self.task_id),
+                "scene_id": SCENE_ID,
+                "query_id_probabilities": dict(query_probabilities),
+                "object_count": int(object_count),
+                "object_count_probabilities": dict(object_count_probabilities),
+                "target_count": int(target_count),
+                "target_count_probabilities": dict(target_count_probabilities),
+                "distractor_count": int(distractor_count),
+                "distractor_count_probabilities": dict(distractor_count_probabilities),
+                "pool_manifest": str(pool_manifest),
+                "transform_ids": list(transform_ids),
+                "transform_check_size_px": int(transform_check_size_px),
+            },
+        )
+
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "icons_reference_pair_transformation_count",
+                "task_id": str(self.task_id),
+                "scene_id": SCENE_ID,
+                "query_id": str(query_id),
                 "entities": [dict(scene_payload.reference_pair), *[dict(item) for item in scene_payload.scene_cells]],
                 "relations": {
-                    "counting_target": "same_pair_transform_as_reference",
+                    "counting_target": "same_geometric_transform_as_reference",
                     "reference_transform_id": str(scene_payload.reference_transform_id),
                     "matching_cell_labels": list(scene_payload.matching_labels),
                 },
@@ -582,29 +506,15 @@ class IconsPairGridReferenceTransformMatchCountTask:
                     "panels": dict(scene_payload.panel_geometry),
                 },
             },
-            "query_spec": {
-                "query_id": "same_pair_transform",
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "object_count": int(object_count),
-                    "object_count_probabilities": dict(object_count_probabilities),
-                    "target_count": int(target_count),
-                    "target_count_probabilities": dict(target_count_probabilities),
-                    "distractor_count": int(distractor_count),
-                    "distractor_count_probabilities": dict(distractor_count_probabilities),
-                    "pool_manifest": str(pool_manifest),
-                    "transform_ids": list(transform_ids),
-                    "transform_check_size_px": int(transform_check_size_px),
-                },
-            },
+            "query_spec": dict(query_spec),
             "render_spec": {
+                "task_id": str(self.task_id),
+                "scene_id": SCENE_ID,
+                "query_id": str(query_id),
                 "canvas_size": [int(render_params["canvas_width"]), int(render_params["canvas_height"])],
                 "coord_space": "pixel",
                 "panel_geometry": dict(scene_payload.panel_geometry),
-                "style": _transformation_style_trace(
+                "style": pair_grid_style_trace(
                     render_params=render_params,
                     sampled_palette_rgb=scene_payload.sampled_palette_rgb,
                 ),
@@ -619,7 +529,10 @@ class IconsPairGridReferenceTransformMatchCountTask:
             },
             "execution_trace": {
                 "scene_variant": "reference_pair_grid",
-                "query_id": "same_pair_transform",
+                "task_id": str(self.task_id),
+                "scene_id": SCENE_ID,
+                "query_id": str(query_id),
+                "query_id_probabilities": dict(query_probabilities),
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(target_count),
@@ -648,16 +561,10 @@ class IconsPairGridReferenceTransformMatchCountTask:
             image_id="img0",
             trace_payload=trace_payload,
             task_versions=default_task_versions(),
-            query_id="same_pair_transform",
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
-        return rewrite_icons_query_output(
-            output,
-            query_id="same_pair_transform",
-            scene_id=SCENE_ID,
-            task_id=str(self.task_id),
-            query_probabilities={"same_pair_transform": 1.0},
-        )
+        return output
 
 
 __all__ = ["IconsPairGridReferenceTransformMatchCountTask"]

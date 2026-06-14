@@ -28,9 +28,25 @@ parameter explicitly allowed below.
 Program code must describe the actual reasoning skeleton over the scene state.
 It is not a task name, a prose summary, or a generic placeholder.
 
-Use `docs/core/PROGRAM_SCHEMA_CATALOG.md` for the shared program-schema
+Use `docs/contracts/PROGRAM_SCHEMA_CATALOG.md` for the shared program-schema
 vocabulary. Reuse the closest existing schema unless the task genuinely needs a
 new reasoning skeleton.
+
+Current taxonomy sources of truth are:
+
+- rules: `docs/contracts/TAXONOMY.md`,
+  `docs/contracts/TASK_UNIT_POLICY.md`,
+  `docs/contracts/PROGRAM_SCHEMA_CATALOG.md`, and this checklist;
+- active public mapping: `trace/core/taxonomy.py`, registered task modules,
+  current configs, prompt assets, and task docs;
+- scene review state:
+  `review/task-reviews/<domain>/<scene_id>/taxonomy_review_status.json`,
+  `review/task-reviews/<domain>/<scene_id>/migration_test_status.json`, browser
+  issue threads, and human checklist state.
+
+Historical taxonomy audit exports are not migration source of truth. Do not use
+old generated audit packages unless a durable rule has been revalidated against
+current code and moved into current docs.
 
 Good program code names:
 
@@ -166,9 +182,8 @@ Use this minimal shape:
 
 Do not write a passing status file unless the checklist actually passed.
 
-Use `docs/SCENE_PACKAGE_MIGRATION/TAXONOMY_BOOKKEEPING.md` for where current
-taxonomy review status should live. Do not use stale generated taxonomy audit
-packages as migration source of truth.
+Do not use stale generated taxonomy audit packages as migration source of
+truth.
 
 ## Human Reviewer Gate
 

@@ -370,8 +370,8 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__battleship__ship_cell_status_count": _entry("games", "battleship", "games", "battleship"),
     "task_games__battleship__ship_status_count": _entry("games", "battleship", "games", "battleship"),
     "task_games__bingo__completed_column_label": _entry("games", "bingo", "games", "bingo"),
-    "task_games__bingo__called_number_mark_count": _entry("games", "bingo", "games", "bingo"),
-    "task_games__bingo__line_sum_extremum_value": _entry("games", "bingo", "games", "bingo"),
+    "task_games__bingo__called_number_match_count": _entry("games", "bingo", "games", "bingo"),
+    "task_games__bingo__completed_line_sum_value": _entry("games", "bingo", "games", "bingo"),
     "task_games__bingo__near_complete_line_count": _entry("games", "bingo", "games", "bingo"),
     "task_games__bowling__first_pin_hit_label": _entry("games", "bowling", "games", "bowling"),
     "task_games__bowling__spare_path_label": _entry("games", "bowling", "games", "bowling"),
@@ -743,7 +743,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_graph__node_link__mst_weight": _entry("graph", "node_link", "graph", "node_link"),
     "task_graph__adjacency__traversal_kth_label": _entry("graph", "adjacency", "graph", "adjacency"),
     "task_graph__binary_tree__traversal_kth_label": _entry("graph", "binary_tree", "graph", "binary_tree"),
-    "task_graph__node_link__topological_position_value": _entry("graph", "node_link", "graph", "node_link"),
+    "task_graph__node_link__topological_endpoint_node_label": _entry("graph", "node_link", "graph", "node_link"),
     "task_graph__node_link__longest_path_length": _entry("graph", "node_link", "graph", "node_link"),
     "task_graph__metro__shortest_path_length": _entry("graph", "metro", "graph", "metro"),
     "task_graph__metro__transfer_count": _entry("graph", "metro", "graph", "metro"),
@@ -824,7 +824,10 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "illustrations", "environment", "illustrations", "counting"
     ),
     "task_illustrations__construction_site__equipment_zone_count": _entry(
-        "illustrations", "construction_site", "illustrations", "counting"
+        "illustrations", "construction_site", "illustrations", "construction_site"
+    ),
+    "task_illustrations__construction_site__missing_patch_label": _entry(
+        "illustrations", "construction_site", "illustrations", "construction_site"
     ),
     "task_illustrations__environment__feature_side_object_count": _entry(
         "illustrations", "environment", "illustrations", "counting"
@@ -874,7 +877,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "illustrations", "transit_terminal", "illustrations", "counting"
     ),
     "task_illustrations__construction_site__worker_attribute_count": _entry(
-        "illustrations", "construction_site", "illustrations", "counting"
+        "illustrations", "construction_site", "illustrations", "construction_site"
     ),
     "task_illustrations__single_object_figure__visible_part_count": _entry(
         "illustrations", "single_object_figure", "illustrations", "single_object_figure"
@@ -884,13 +887,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     ),
     "task_illustrations__indoor_room__furniture_side_count": _entry(
         "illustrations", "indoor_room", "illustrations", "indoor_room"
-    ),
-    "task_illustrations__image_cutout_board__jigsaw_piece_order": _entry(
-        "illustrations", "image_cutout_board", "illustrations", "image_cutout_board"
-    ),
-    "task_illustrations__missing_patch__missing_patch_label": _entry("illustrations", "missing_patch", "illustrations", "missing_patch"),
-    "task_illustrations__image_cutout_board__rotated_tile_label": _entry(
-        "illustrations", "image_cutout_board", "illustrations", "image_cutout_board"
     ),
     # Physics.
     "task_physics__analog_meter__meter_readout_value": _entry("physics", "analog_meter", "physics", "circuits"),

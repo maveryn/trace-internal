@@ -1,4 +1,4 @@
-"""Index taxonomy audit artifacts for browser review."""
+"""Index generated taxonomy review artifacts for browser review."""
 
 from __future__ import annotations
 
@@ -169,11 +169,11 @@ def build_taxonomy_audit_index(
     review_index: ReviewIndex,
     round_id: str = DEFAULT_TAXONOMY_ROUND,
 ) -> TaxonomyAuditIndex:
-    """Build an index from ``review/taxonomy-audit`` and attach review samples."""
+    """Build an index from generated taxonomy review artifacts and attach samples."""
 
     resolved_round = _normalize_round_id(round_id)
     repo_root = Path(repo_root).resolve()
-    root = repo_root / "review" / "taxonomy-audit"
+    root = repo_root / "review" / "task-reviews" / "taxonomy"
     round_dir = root / resolved_round
     audit = TaxonomyAuditIndex(root=root, round_id=resolved_round, round_dir=round_dir)
 

@@ -8,17 +8,21 @@ description: Use when implementing or refactoring TRACE task code, wiring config
 Use this when turning a TRACE task design into code.
 
 ## Read first
-1. `docs/core/SYSTEM_ARCHITECTURE.md`
+1. `docs/contracts/SYSTEM_ARCHITECTURE.md`
 2. `docs/workflows/TASK_AUTHORING.md`
-3. `docs/workflows/SHARED_UTILITIES.md`
-4. `docs/workflows/CODE_DOCUMENTATION.md`
+3. `docs/workflows/DOC_STRUCTURE.md`
+4. `docs/SCENE_PACKAGE_MIGRATION/SCENE_MIGRATION_GUIDE.md` when working on scene-package migration
+5. `docs/workflows/DOCS_AND_SKILLS_MAINTENANCE.md`
 
-If the task is domain-specific, also open the matching domain setup doc and `skills/domain-<domain>/SKILL.md`.
+If domain behavior matters, also open the matching `docs/domains/<domain>.md`.
 
 ## Implementation workflow
 1. Choose module placement before writing code.
-   - Default task layout: `trace/tasks/<domain>/<scene_id>/<task_name>.py`
-   - Cell-board puzzle implementations live under `trace/tasks/puzzles/cell_board/`
+   - Scene-package task layout:
+     `trace/tasks/<domain>/<scene_id>/<objective_contract>.py`
+   - Scene-local reusable code belongs under
+     `trace/tasks/<domain>/<scene_id>/shared/`.
+   - Domain shared code is only for real cross-scene reuse.
 2. Search for reusable helpers before adding new logic:
    - `trace/core/`
    - `trace/tasks/shared/`
@@ -26,7 +30,8 @@ If the task is domain-specific, also open the matching domain setup doc and `ski
    - domain-specific shared folders
 3. Put new helpers at the narrowest reusable layer that fits.
 4. Keep prompt text out of task modules and wire bundle/config keys instead.
-5. Register the task and import it from `trace/tasks/__init__.py`.
+5. Register the task through the active registration path for that package; do
+   not add compatibility aliases or broad eager imports.
 6. Keep trace, projected annotation, and public answer/annotation derived from the same execution path.
 7. Update docs in the same patch when module boundaries or helper placement change.
 
@@ -35,6 +40,14 @@ If the task is domain-specific, also open the matching domain setup doc and `ski
 - Do not add hidden randomness or silent constraint relaxation.
 - Remove stale wrappers and dead re-exports after refactors.
 - If a second task reuses task-local logic, promote it in the same patch.
+
+## Stop conditions
+- If the task boundary or query split is unclear, stop implementation and use
+  `skills/task-unit-audit/SKILL.md`.
+- If prompt wording or JSON examples change, include
+  `skills/prompt-design/SKILL.md`.
+- If validation requires review artifacts, use
+  `skills/verification-review/SKILL.md` before handing off.
 
 ## Handoff
 After code and docs are in place, move to:

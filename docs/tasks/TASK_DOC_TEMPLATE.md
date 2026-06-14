@@ -2,9 +2,9 @@
 
 ## 1) Identity
 1. Domain:
-2. Scene:
+2. Scene id:
 3. Task id:
-4. Objective:
+4. Objective contract:
 
 ## 2) Scene + task contract
 1. Entities/relations:
@@ -43,9 +43,10 @@
 3. Reject/resample conditions:
 4. No-auto-relaxation guarantee:
 
-## 5) Complexity + tests
-1. Complexity definition/components:
-2. Determinism test:
-3. Answer/annotation consistency test:
-4. Prompt metadata/placeholder test:
-5. Constraint-specific tests:
+## 5) Tests
+1. Determinism test:
+2. Answer/annotation consistency test:
+3. Prompt metadata/placeholder test:
+4. Constraint-specific tests:
+
+Do not include review status, solve-rate status, migration history, stale task ids, or stale compatibility routing unless they are part of the durable public task contract.

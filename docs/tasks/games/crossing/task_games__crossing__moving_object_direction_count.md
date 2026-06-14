@@ -10,6 +10,5 @@
 7. Program schema: `count(filter(moving_objects, direction == requested_direction)); scene=crossing; scope=moving_object_direction_count`
 
 ## Generation Notes
-1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation marks the moving objects whose visible arrows point in the requested direction.

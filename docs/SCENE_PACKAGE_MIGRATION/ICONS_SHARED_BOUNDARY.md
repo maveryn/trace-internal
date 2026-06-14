@@ -4,8 +4,8 @@ Use this with `SCENE_MIGRATION_GUIDE.md` when migrating an icons scene.
 
 ## Purpose
 
-The icons domain currently mixes three different concerns in
-`trace/tasks/icons/shared/`:
+The icons domain has three different implementation concerns that must stay
+separate:
 
 - true icon-domain primitives, such as curated SVG loading, procedural named
   icon rasterization, transform helpers, style sampling, and icon noise;
@@ -28,33 +28,9 @@ Old implementation folders such as `counting`, `relation`, `pattern`, and
 `sequence` are not public taxonomy nodes. During migration, each public scene
 gets its own package under `trace/tasks/icons/<scene_id>/`.
 
-## Current Domain Inventory
-
-The current registry has 18 active icons scenes and 40 active public tasks.
-
-| Scene | Active tasks | Current source shape | Boundary notes |
-|---|---:|---|---|
-| `icon_cutout` | 1 | migrated scene package | Scene-local shared owns defaults, passive state, sampling, styles, rendering, and annotation helpers; public task owns answer/annotation/output binding. |
-| `icon_field` | 1 | migrated scene package | Scene-local shared owns defaults, passive state, frequency sampling, styles, rendering, and annotation helpers; public task owns query selection, answer/annotation binding, and final output. |
-| `mirror_grid` | 1 | migrated scene package | Scene-local shared owns neutral symmetry rendering/sampling primitives; public task owns public query mapping, answer/annotation binding, and final output. |
-| `named_field` | 12 | implemented under `counting/` and `relation/` | Largest named-icon scene; depends on `procedural_named_icon_field_scene.py`. |
-| `named_grid` | 3 | implemented under `counting/` | Grid-addressed procedural named icons; should own grid line/region grammar. |
-| `named_path` | 1 | implemented under `relation/` | Path layout and ordered stops are scene-local. |
-| `named_ring` | 1 | implemented under `counting/` | Ring layout and arc membership are scene-local. |
-| `named_strip` | 1 | implemented under `sequence/` | Ordered run-length strip is scene-local. |
-| `overlap_grid` | 1 | implemented under `relation/` | `icon_overlap_grid_scene.py` belongs in this scene. |
-| `pair_grid` | 2 | already has scene folder but no `shared/` | `icon_pair_grid_scene.py` belongs in this scene. |
-| `paired_canvas` | 4 | has scene folder and noncompliant `shared/` | Shared code currently chooses query ids and constructs `TaskOutput`. |
-| `pattern_grid` | 1 | implemented under `pattern/` | Single-panel labeled grid helper belongs in this scene. |
-| `reference_canvas` | 3 | has scene folder and noncompliant `shared/` | Shared code currently owns task ids, query routing, and final output. |
-| `sequence_strip` | 2 | implemented under `sequence/` and `pattern/` | `icon_sequence_scene.py` belongs in this scene. |
-| `single_transform_options` | 1 | already has scene folder | Uses visual option-grid primitives also used by `icon_cutout`. |
-| `two_anchor` | 1 | implemented under `relation/` | Anchor markers can remain domain shared; strip placement is scene-local. |
-| `venn_field` | 1 | implemented under `counting/` | Venn geometry and membership logic are scene-local. |
-| `wallpaper_panels` | 3 | implemented under `pattern/` | Wallpaper panel grammar is scene-local; `wallpaper_shared.py` must be role-split. |
-
-Do not treat this table as a migration allowlist. It is an audit map for
-future one-scene-at-a-time work.
+Use `docs/ACTIVE_TASK_INVENTORY.md` for active icon scenes and task counts.
+Record scene-specific migration findings in review artifacts, not in this
+shared-boundary policy.
 
 ## Lessons From Migrated Reference Scenes
 
@@ -100,7 +76,7 @@ Approved domain-shared categories:
 - visual option-grid primitives shared by true option-image scenes such as
   `icon_cutout`, `mirror_grid`, and `single_transform_options`.
 
-Current domain-shared modules that should remain domain-shared after cleanup:
+Domain-shared modules that should remain domain-shared:
 
 | Module | Target role |
 |---|---|
@@ -113,8 +89,7 @@ Current domain-shared modules that should remain domain-shared after cleanup:
 | `annotation.py` | Reusable icon bbox/keyed-bbox annotation adapters, pending later repo-global promotion if another domain needs the same shape. |
 | `anchor_marking.py` | Neutral visible anchor marker drawing. |
 
-Current domain-shared modules that should be narrowed before or during scene
-migration:
+Domain-shared modules that should be narrowed before or during scene migration:
 
 | Module | Target |
 |---|---|
@@ -124,7 +99,8 @@ migration:
 | `icon_task_rendering.py` | Keep neutral render-param/style/noise resolution only. Remove task-group wording and any scene/task-specific fallback logic as scenes migrate. |
 | `icon_labeled_grid_scene.py` | Either rename/narrow into a domain-level visual option-grid primitive, or keep scene-local until a second migrated option scene uses it. It must not know task ids or query ids. |
 
-Current domain-shared modules that should move to scene-local shared:
+Domain-shared modules that should move to scene-local shared when their owning
+scene is migrated:
 
 | Module | Scene-local target |
 |---|---|
@@ -134,7 +110,7 @@ Current domain-shared modules that should move to scene-local shared:
 | `icon_single_panel_labeled_grid_scene.py` | `trace/tasks/icons/pattern_grid/shared/{state,layout,rendering,annotations}.py` as needed. |
 | `procedural_named_icon_field_scene.py` | Mostly `trace/tasks/icons/named_field/shared/`; extract only small bbox/fill-style helpers if multiple named scenes truly need them. |
 
-Current domain-shared modules that should be retired from migrated scenes:
+Domain-shared modules that should be retired from migrated scenes:
 
 | Module | Reason |
 |---|---|
@@ -213,9 +189,10 @@ Public task files may call scene-shared and domain-shared primitives. They must
 not delegate objective behavior to a shared base task whose subclasses differ
 only by class attributes, forced query ids, or task ids.
 
-## Current Noncompliant Shared Surfaces
+## Legacy Shared Surfaces To Audit
 
-These files must be decomposed before their scenes can become review-ready:
+During scene migration, audit legacy shared files for public task/query routing
+and decompose any that construct final public outputs:
 
 - `trace/tasks/icons/reference_canvas/shared/reference_match_count.py`
   defines public task ids, chooses query ids, branches on query ids, owns prompt

@@ -77,10 +77,8 @@ def main() -> int:
 
     skill_dirs = _dir_names(REPO_ROOT / "skills")
     domain_skill_dirs = {name for name in skill_dirs if name.startswith("domain-")}
-    allowed_domain_skill_dirs = {f"domain-{domain}" for domain in ACTIVE_DOMAINS} | {"domain-audit"}
-    unexpected_skill_dirs = sorted(domain_skill_dirs - allowed_domain_skill_dirs)
-    if unexpected_skill_dirs:
-        failures.append(f"skills: unexpected domain skill directories: {unexpected_skill_dirs}")
+    if domain_skill_dirs:
+        failures.append(f"skills: domain skill directories are retired: {sorted(domain_skill_dirs)}")
 
     if failures:
         for failure in failures:

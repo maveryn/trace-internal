@@ -31,13 +31,13 @@ Each generated instance should include:
 ## Local vLLM serving
 - This machine has one calibration GPU. The shared qwen25 vLLM endpoint is `http://127.0.0.1:8002/v1` serving `Qwen/Qwen2.5-VL-7B-Instruct`.
 - Do not start additional vLLM servers on other local ports for calibration. Use the calibration runner's server-pool lock at `logs/vllm/locks/qwen25vl7b_8002.lock`; if another agent holds it, wait for the lock instead of bypassing it.
-- Current serving/runbook details live in `review/docs/CALIBRATION_GUIDE.md`.
+- Current serving/runbook details live in `docs/workflows/CALIBRATION_GUIDE.md`.
 
 ## Core engineering rules
-- Use public taxonomy consistently: `domain -> scene_id -> task_id`; `scene_id` remains a module/config grouping layer.
-- Task ids use taxonomy-v0 public form `task_<domain>__<scene_id>__<objective_contract>` (lowercase snake_case inside each segment). Active/default public tasks must use that public id form. The source layout `trace/tasks/<domain>/<scene_id>/<task_name>.py` is implementation routing only, not a task-id format; cell-board puzzle implementations live under `trace/tasks/puzzles/cell_board/`.
-- Keep `scene_id` broad by reasoning style; for geometry value-style tasks use `scene_id=measurement` and keep intra-task query branches in `query_id`.
-- Sampling policy is task-level globally (equal task weights by default); domain/scene_id probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
+- Use public taxonomy consistently: `domain -> scene_id -> task_id`; `scene_id` is the visible rendering grammar, not a source-routing or config grouping layer.
+- Task ids use taxonomy-v0 public form `task_<domain>__<scene_id>__<objective_contract>` (lowercase snake_case inside each segment). Active/default public tasks must use that public id form. The target scene-package source layout is `trace/tasks/<domain>/<scene_id>/<objective_contract>.py`; transitional source routing is implementation metadata only, not a task-id format.
+- Keep intra-task mirrors and branch diagnostics in `query_id`; query ids are internal replay/review metadata, not public taxonomy nodes or sampling units.
+- Sampling policy is task-level globally (equal task weights by default); domain/scene_id probabilities are derived by aggregation, and query sampling happens inside each task. Query ids are uniform by default, and review-candidate migrated scenes must not use config-level query weights unless a later global policy explicitly allows them.
 - Domain/scene defaults (generation/rendering/visual variation) should follow precedence `domain -> scene_id -> task/params`: shared domain defaults under `configs/domains/<domain>/base.yaml`, group overrides under `configs/domains/<domain>/<scene_id>.yaml`, then optional task-level overrides.
 - Do not hardcode user-facing prompt text in task modules; prompts must come from external template assets.
 - Prompt composition must be reusable: one scene layer and one task layer (plus optional query layer), each with deterministic template selection.
@@ -54,9 +54,16 @@ Each generated instance should include:
 ## Reuse and code organization
 - Before adding new logic, search for reusable helpers and extend shared modules when possible.
 - Do not duplicate utilities across tasks/domains unless there is a strong reason.
-- Follow `docs/workflows/SHARED_UTILITIES.md` strictly when deciding helper placement and reuse.
-- Before introducing or moving helpers, review `docs/workflows/CODE_REVIEW_GUIDELINES.md` for prior placement mistakes (for example task-named modules containing non-task-specific helpers).
-- Keep helper placement at the narrowest reusable layer that fits; use the workflow docs/skills for the detailed placement checklist.
+- Keep helper placement at the narrowest reusable layer that fits: `trace/core`,
+  `trace/tasks/shared`, `trace/tasks/<domain>/shared`, scene-local `shared/`,
+  then task-local code.
+- For scene-package migration work, follow
+  `docs/SCENE_PACKAGE_MIGRATION/README.md` and
+  `docs/SCENE_PACKAGE_MIGRATION/SCENE_MIGRATION_GUIDE.md`; domain-specific
+  shared-boundary docs under `docs/SCENE_PACKAGE_MIGRATION/` apply when present.
+- Before introducing or moving helpers, review
+  `docs/workflows/CODE_REVIEW_GUIDELINES.md` for current source-boundary and
+  migration red flags.
 
 ## Documentation discipline
 - After any change to architecture, module boundaries, shared utilities, or helper placement, update the relevant docs above in the same change.

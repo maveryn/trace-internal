@@ -19,22 +19,11 @@ task_charts__<scene_id>__<objective_contract>
 Renderer packages are implementation details. They are not public taxonomy,
 not scene groups, not scenes, and not sampling weights.
 
-## Current Domain Snapshot
+## Boundary Context
 
-The current scene-package tree has 44 chart scenes and 186 chart public task
-files. Several scenes are already partially or fully scene-packaged, but the
-shared-code boundary is uneven:
-
-- `trace/tasks/charts/shared/` contains true domain helpers, broad legacy
-  renderers, and old task/query helpers.
-- many scene packages contain similarly named `shared/prompts.py`,
-  `shared/runtime.py`, `shared/output.py`, `shared/rendering.py`, and
-  `shared/sampling.py`.
-- some duplication is legitimate scene ownership, but repeated primitive logic
-  should move only through an approved domain-shared renderer-package boundary.
-
-Do not use this snapshot as a task-count source of truth. It is only the
-motivation for the shared-boundary cleanup.
+Charts has broad cross-scene rendering reuse. During migration, do not treat
+that reuse as public taxonomy. Use `docs/ACTIVE_TASK_INVENTORY.md` for current
+task counts and use scene review artifacts for migration status.
 
 ## Domain Shared
 
@@ -182,13 +171,13 @@ The public task file may call scene-shared and domain-shared primitives. It
 must not delegate the objective to a shared `runtime.generate(...)` that chooses
 the answer/annotation contract from public identity.
 
-## Current `charts/shared` Classification
+## `charts/shared` Guidance
 
-Use this as the starting audit map before more chart scene migrations.
+Use this as a boundary guide before chart scene migrations.
 
 ### Keep Domain-Shared
 
-These are current domain-shared helpers or strong candidates:
+These are domain-shared helpers or strong candidates:
 
 - `visual_defaults.py`
 - `information_style.py`
@@ -200,7 +189,7 @@ These are current domain-shared helpers or strong candidates:
 
 ### Review And Narrow
 
-These modules contain useful primitives but are too broad for the final shape.
+These modules contain useful primitives but are too broad for the target shape.
 During migration, either move primitives into renderer-package packages or keep
 only the pieces still needed by migrated scenes:
 
@@ -236,7 +225,7 @@ Likely final homes:
 
 ### Retire Or Avoid Expanding
 
-These modules represent old task/query infrastructure or broad compatibility
+These modules represent legacy task/query infrastructure or broad compatibility
 surfaces. Migrated scenes should not add new imports from them:
 
 - `sampling_defaults.py`
@@ -247,7 +236,7 @@ surfaces. Migrated scenes should not add new imports from them:
 Do not delete these during an unrelated scene migration. Remove them only in a
 dedicated cleanup after confirming no active migrated scene imports them.
 
-## Current Scene-Family Promotion Candidates
+## Renderer-Family Promotion Candidates
 
 Promotion candidates should be recorded during scene migration and handled in a
 separate cleanup pass unless the scene is blocked.

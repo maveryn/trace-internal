@@ -5,42 +5,54 @@ This folder is the source of truth for contracts, architecture, workflows, and a
 Repo-local skills live under `skills/`, but skills are operational overlays. Canonical policy and contracts remain in `docs/`. Skill-folder maintenance rules live in `../skills/README.md`.
 
 ## Layout
-- `docs/core/README.md` — ABI/contracts, prompt system, and runtime architecture.
-- `docs/workflows/README.md` — authoring, shared-utility, validation, review, and documentation workflows.
+- `docs/contracts/README.md` — repo-wide ABI, taxonomy, annotation/reward,
+  prompt, validation, and runtime contracts.
+- `docs/workflows/README.md` — authoring, build, review, benchmark, and
+  documentation-maintenance procedures. Documentation placement rules live in
+  `docs/workflows/DOC_STRUCTURE.md`.
+- `docs/resources/README.md` — shared fonts, labels, context text, and
+  rationale-target resources.
 - `docs/domains/README.md` — domain-specific contract docs.
 - `docs/tasks/README.md` — task-level docs and template.
 - `docs/ACTIVE_TASK_INVENTORY.md` — generated active public task inventory by domain and scene.
 
 ## Suggested read order
-1. Foundation: `docs/core/BLUEPRINT.md`, `docs/core/SYSTEM_ARCHITECTURE.md`, and `docs/workflows/TASK_AUTHORING.md`.
-2. Taxonomy: `docs/core/TAXONOMY.md` and `docs/core/TASK_UNIT_POLICY.md`, then the relevant active domain setup doc listed in `docs/domains/README.md`. For approved contract-v0 domain migrations, also use `docs/workflows/TAXONOMY_V0_DOMAIN_MIGRATION.md`. For scene-package migrations that retire legacy routing, use `docs/SCENE_PACKAGE_MIGRATION/README.md`.
-3. Contracts: `docs/core/RLVR_REWARD_CONTRACTS.md` and `docs/core/PROMPT_SYSTEM.md`.
+1. Foundation: `docs/contracts/BLUEPRINT.md`, `docs/contracts/SYSTEM_ARCHITECTURE.md`, and `docs/workflows/TASK_AUTHORING.md`.
+2. Taxonomy: `docs/contracts/TAXONOMY.md`, `docs/contracts/TASK_UNIT_POLICY.md`,
+   and `docs/contracts/PROGRAM_SCHEMA_CATALOG.md`, then the relevant active domain
+   setup doc listed in `docs/domains/README.md`. For scene-package migrations
+   that retire legacy routing, use `docs/SCENE_PACKAGE_MIGRATION/README.md`.
+3. Contracts: `docs/contracts/RLVR_REWARD_CONTRACTS.md` and `docs/contracts/PROMPT_SYSTEM.md`.
 4. Export/eval:
    - active Vero-derived RLVR port lives under `../rlvr/README.md`
-   - active task-review and calibration workspace lives under `../review/docs/README.md`
+   - generated task-review artifacts live under `../review/task-reviews/`
    - sampled external benchmark failure analysis lives in
      `docs/workflows/EXTERNAL_BENCHMARK_EVAL.md`
    - current task-calibration gates and vLLM serving commands live in
-     `../review/docs/CALIBRATION_GUIDE.md`
-5. Review workflow: `docs/workflows/SHARED_UTILITIES.md`, `docs/workflows/SHARED_LABEL_ASSETS.md`, `docs/workflows/SHARED_CONTEXT_TEXT_ASSETS.md`, `docs/workflows/SHARED_FONT_ASSETS.md`, `docs/workflows/BUILD_VALIDATION.md`, `docs/workflows/VALIDATION_ERROR_CODES.md`, `docs/workflows/DOMAIN_AUDIT_REVIEW.md`, `docs/workflows/TAXONOMY_V0_DOMAIN_MIGRATION.md`, `docs/workflows/TASK_REVIEW_WEB_APP.md`, `docs/workflows/BENCHMARK_REVIEW_WEB_APP.md`, `docs/workflows/TASK_UNIT_AUDIT.md`, and `docs/workflows/DOCS_AND_SKILLS_MAINTENANCE.md`.
-   For repo-wide breaking output-contract renames, use
-   `docs/workflows/ANNOTATION_CONTRACT_MIGRATION.md`.
-   For implementation-layout migrations from legacy packages to
-   scene packages, use `docs/SCENE_PACKAGE_MIGRATION/README.md`.
-   For optional metadata-generated rationale targets, use
-   `docs/workflows/TEMPLATED_RATIONALE_TARGETS.md`.
-   For repeated-unit puzzle/game rendering upgrades, also use
-   `docs/workflows/PUZZLE_GAME_RENDERING_UPGRADE.md`.
-   For geometry/physics technical-diagram rendering upgrades, also use
-   `docs/workflows/TECHNICAL_DIAGRAM_RENDERING_UPGRADE.md`.
-6. Quality/process: `docs/workflows/CODE_DOCUMENTATION.md` and `docs/workflows/CODE_REVIEW_GUIDELINES.md`.
-7. Project backlog and active surface: `docs/TODO.md` and `docs/ACTIVE_TASK_INVENTORY.md`.
-8. Task reviews: `../review/task-reviews/README.md`; the browser app in
-   `docs/workflows/TASK_REVIEW_WEB_APP.md` is the default task inspection
-   surface. External benchmark model-response inspection uses
-   `docs/workflows/BENCHMARK_REVIEW_WEB_APP.md`.
+     `docs/workflows/CALIBRATION_GUIDE.md`
+5. Resources: `docs/resources/SHARED_LABEL_ASSETS.md`,
+   `docs/resources/SHARED_CONTEXT_TEXT_ASSETS.md`,
+   `docs/resources/SHARED_FONT_ASSETS.md`, and
+   `docs/resources/TEMPLATED_RATIONALE_TARGETS.md`.
+6. Review workflow: `docs/workflows/BUILD_VALIDATION.md`,
+   `docs/contracts/VALIDATION_ERROR_CODES.md`,
+   `docs/workflows/TASK_REVIEW_WEB_APP.md`,
+   `docs/workflows/BENCHMARK_REVIEW_WEB_APP.md`, and
+   `docs/workflows/DOCS_AND_SKILLS_MAINTENANCE.md`.
+   For implementation-layout migrations from legacy packages to scene packages,
+   use `docs/SCENE_PACKAGE_MIGRATION/README.md`.
+   Domain-specific rendering rules live in the matching `docs/domains/*.md`
+   contract.
+7. Quality/process: `docs/workflows/DOC_STRUCTURE.md`,
+   `docs/workflows/DOCS_AND_SKILLS_MAINTENANCE.md`, and
+   `docs/workflows/CODE_REVIEW_GUIDELINES.md`.
+8. Project backlog and active surface: `docs/TODO.md` and `docs/ACTIVE_TASK_INVENTORY.md`.
+9. Task reviews: the browser app in `docs/workflows/TASK_REVIEW_WEB_APP.md`
+   is the default task inspection surface, with generated artifacts under
+   `../review/task-reviews/`. External benchmark model-response inspection
+   uses `docs/workflows/BENCHMARK_REVIEW_WEB_APP.md`.
 
 ## Task docs
 - Rules: `docs/tasks/README.md`
 - Template: `docs/tasks/TASK_DOC_TEMPLATE.md`
-- Task contracts: `docs/tasks/*.md`
+- Task contracts: `docs/tasks/<domain>/<scene_id>/<task_id>.md`

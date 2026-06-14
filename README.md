@@ -10,7 +10,8 @@ Contribution workflow/checklists are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Skills
 
-Repo-local workflow/domain skills live under `skills/`. They are thin execution guides layered on top of the canonical docs in `docs/`.
+Repo-local workflow skills live under `skills/`. They are thin execution
+guides layered on top of the canonical docs in `docs/`.
 
 ## Setup
 

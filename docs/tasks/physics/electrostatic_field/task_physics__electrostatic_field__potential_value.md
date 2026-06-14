@@ -1,0 +1,43 @@
+# `task_physics__electrostatic_field__potential_value`
+
+## Summary
+- Domain: `physics`
+- Scene id: `electrostatic_field`
+- Implementation scene: `electrostatics`
+- Implementation source: `trace/tasks/physics/electrostatics/field_map.py`
+
+## Task Contract
+Computes the signed integer electric potential at a marked point from visible point charges with k=1.
+
+## Query Branches
+
+| Query id | Program schema |
+| --- | --- |
+| `potential_value` | `sum(point_charge_potential(charges_q1_q2_q3, point_p, k=1)); scene=electrostatic_field; scope=potential_value` |
+
+## Program Metadata
+- Program signatures: `physics.electric_potential_value`
+- Base program contract: `sum(point_charge_potential(charges_q1_q2_q3, point_p, k=1)); scene=electrostatic_field; scope=potential_value`
+- Parameter axes: `fixed_query`
+- Arguments:
+  - `charges_q1_q2_q3`: semantic_role; allowed `visible_point_charges_Q1_Q2_Q3`; source `program_schema_concrete`
+  - `point_p`: semantic_role; allowed `visible_point_P`; source `program_schema_concrete`
+- Argument metadata status: `curated`
+- Supported query ids: `potential_value`
+
+## Answer Contract
+- Answer schema: `integer_value`
+- Generator `answer_gt.type`: `integer`
+- The answer value is an exact integer produced by the symbolic physics construction.
+
+## Annotation Contract
+- Annotation schema: `keyed_point_map`
+- Generator `annotation_gt.type`: `keyed_point_map`
+- Annotation is keyed because point witnesses have distinct roles; each key maps to the final-image pixel point for that role.
+- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+
+## Prompt And Trace Requirements
+- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.

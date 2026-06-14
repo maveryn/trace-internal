@@ -24,49 +24,17 @@ three_d -> scene_id -> task_id
 task_three_d__<scene_id>__<objective_contract>
 ```
 
-## Status And Precedence
+## Status And Inventory
 
-This document is the source of truth for `three_d` scene-package migration
-status and shared-code ownership. `docs/domains/three_d.md` may describe active
-task behavior, but it is not authoritative for migration status.
+Use `docs/ACTIVE_TASK_INVENTORY.md` for active `three_d` scenes and task
+counts. Use scene review artifacts and browser-app human review for migration
+status. This document defines shared-code ownership only.
 
-No `three_d` scene is currently migrated. Scene-shaped source folders such as
-`object_scene`, `object_cluster`, `surface_fixture`, `room`, `street`, and
-`warehouse` are implementation packages, not accepted migrations.
-
-Use `migrated` only after all of the following are true:
-
-- the scene has been source-audited against this document and
-  `SCENE_MIGRATION_GUIDE.md`;
-- every public task file owns its objective contract;
-- scene `shared/` code is identity-free and role-split;
-- migration tests pass for the scene;
-- manual code audit status is recorded as passing;
-- fresh review artifacts were generated under `review/task-reviews/`;
-- the review app index was reloaded;
-- a human reviewer accepted the scene in the browser app;
-- a receipt was recorded under
-  `review/taxonomy-audit/scene_package_migration/completed/three_d/<scene_id>.json`.
-
-Passing tests, manual source audit, review-candidate registration, or
-review-ready status is required before human review, but none of those states
-alone means the scene is migrated.
-
-## Current Domain Snapshot
-
-The current source tree is scene-shaped but not migration-clean.
-
-| Scene | Current source shape | Boundary notes |
-|---|---|---|
-| `object_scene` | Public task files plus `object_scene/shared/`, with large scene grammar still in `three_d/shared/object_scene.py` | Scene grammar, render params, object-scene layout, and object-scene sample construction belong in `object_scene/shared/`; room/platform shell drawing is now scene-local in `object_scene/shared/rendering.py`. Reusable projected object glyphs and object-resource metadata remain domain-shared. |
-| `object_cluster` | Public task wrappers plus `object_cluster/shared/{attribute_count,instance_count,predicate_counts}.py` | Dense-cluster placement, composition modes, and predicate construction are scene-local. Shared bases that construct `TaskOutput` or route by public task/query id must be decomposed. |
-| `surface_fixture` | Thin public task files plus `surface_fixture/shared/task_base.py` and renderer helpers | Fixture-panel layout/rendering is scene-local. `task_base.py` currently routes by public task id and builds final output; migrated public files must own objective behavior. |
-| `room` | Scene-named package with `wall_mounted_common.py`, `wall_mounted_dataset.py`, and renderer modules at scene root | Room shell/walls/furniture grammar is scene-local and should move into role files under `room/shared/`. Reusable wall/floor object renderers stay domain-shared. |
-| `street` | Scene-named package with intersection scene/rendering modules at scene root | Road/intersection layout, buildings, markings, reference arrows, and shell rendering are scene-local. Reusable street vehicles, fixtures, pedestrians, and landscape objects stay domain-shared. |
-| `warehouse` | Scene-named package with robot/path/shelf scene and rendering modules at scene root | Warehouse aisle/path/shelf grammar is scene-local. Reusable loose warehouse object renderers and canonical object resources stay domain-shared. |
-
-Do not treat this table as a migration allowlist. It is an audit map for future
-one-scene-at-a-time work.
+A scene-shaped source package, passing tests, manual source audit, review-ready
+status, or review-candidate registration is not by itself accepted. Use
+`migrated` only after the human reviewer accepts the scene in the browser app
+and a receipt exists under
+`review/task-reviews/three_d/<scene_id>/migration_receipt.json`.
 
 ## Lessons From Reference Scenes
 
@@ -112,7 +80,7 @@ Approved domain-shared categories:
 - scene-neutral option-panel layout and option-choice metadata;
 - object-inventory preview helpers for resource review.
 
-Current modules that should generally remain domain-shared after cleanup:
+Domain-shared modules that should generally remain domain-shared:
 
 | Module | Target role |
 |---|---|
@@ -134,16 +102,12 @@ Current modules that should generally remain domain-shared after cleanup:
 | `street_*_object_rendering*.py` | Reusable street object renderers and object geometry helpers. |
 | `warehouse_object_rendering.py` | Reusable loose warehouse object renderer. |
 
-## Domain Shared File Audit
+## Legacy Shared File Guidance
 
-This audit is the pre-migration ownership map for
-`trace/tasks/three_d/shared/`. It intentionally does not mark any scene as
-migrated. Use it to decide what can stay domain-shared before doing
-scene-by-scene package migration.
+Use this as a boundary guide for `trace/tasks/three_d/shared/` before
+scene-by-scene package migration. Do not treat it as migration status.
 
-Generated caches such as `__pycache__/` are ignored.
-
-| File | Current classification | Required action before or during scene migration |
+| File | Classification | Required action before or during scene migration |
 |---|---|---|
 | `__init__.py` | `keep_shared` | Empty package marker; keep. |
 | `camera_projection.py` | `keep_shared` | Keep as domain projection/vector math. |
@@ -181,7 +145,7 @@ Generated caches such as `__pycache__/` are ignored.
 | `street_landscape_object_rendering.py` | `keep_shared` | Keep reusable landscape renderers. |
 | `warehouse_object_rendering.py` | `keep_shared` | Keep reusable loose warehouse object renderer and robot/object drawing utilities. |
 
-Current domain-shared modules that require narrowing before scenes can become
+Domain-shared modules that require narrowing before scenes can become
 review-candidate scenes:
 
 - `task_support.py` now exposes identity-free namespace helpers for migrated

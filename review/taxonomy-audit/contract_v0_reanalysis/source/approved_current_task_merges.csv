@@ -1,2 +1,0 @@
-proposed_task_id,current_task_ids,reason
-task_three_d__object_scene__single_attribute_membership_count,task_three_d__object_scene__logical_predicate_count|task_three_d__object_scene__named_object_count,The named-object count and the same-axis union branches from logical-predicate count share the same object-scene single-attribute membership program; this is an intentional taxonomy merge, not a duplicate task id.

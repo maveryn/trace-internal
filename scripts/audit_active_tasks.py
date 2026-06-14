@@ -126,11 +126,6 @@ def _contains_any(texts: Mapping[str, str], needle: str) -> list[str]:
     return sorted(path for path, text in texts.items() if needle in text)
 
 
-def _domain_skill_exists(domain: str) -> bool:
-    direct = Path("skills") / f"domain-{domain}" / "SKILL.md"
-    return direct.exists()
-
-
 def _domain_doc_path(domain: str) -> Path:
     name = DOMAIN_DOCS.get(domain, f"{domain}.md")
     return Path("docs") / "domains" / name
@@ -296,6 +291,11 @@ def _status_from_checks(*, blocking: list[str], gaps: list[str]) -> str:
     return "audited"
 
 
+def _task_doc_rel_path(task_id: str) -> Path:
+    prefix, scene_id, _objective = task_id.split("__", 2)
+    return Path(prefix.removeprefix("task_")) / scene_id / f"{task_id}.md"
+
+
 def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
     active_task_ids = sorted(list_default_task_ids())
     active_set = set(active_task_ids)
@@ -304,8 +304,7 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
     invalid_default_ids = sorted(task_id for task_id in active_task_ids if task_id.startswith("task_") and "__" not in task_id)
     missing_taxonomy = sorted(missing_taxonomy_task_ids(active_task_ids))
 
-    docs_readme = _read_text(Path("docs/tasks/README.md"))
-    docs_task_files = set(path.name for path in Path("docs/tasks").glob("task_*.md"))
+    docs_task_files = {path.relative_to("docs/tasks") for path in Path("docs/tasks").rglob("task_*.md")}
     tests_texts = _load_file_texts(Path("tests").glob("test_*.py"))
     global_contract_path = Path("tests/test_active_default_task_contracts.py")
     global_contract_text = _read_text(global_contract_path)
@@ -333,8 +332,9 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
             source_scene_id=source_scene_id,
         )
         domain_doc = _domain_doc_path(taxonomy.domain)
-        task_doc_name = f"{task_id}.md"
-        task_doc_path = Path("docs/tasks") / task_doc_name
+        task_doc_rel_path = _task_doc_rel_path(task_id)
+        task_doc_name = task_doc_rel_path.name
+        task_doc_path = Path("docs/tasks") / task_doc_rel_path
         relevant_config_paths = [
             Path("configs/domains") / source_domain / "base.yaml",
             Path("configs/domains") / source_domain / f"{source_scene_id}.yaml",
@@ -392,14 +392,10 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
             if smoke.get("missing_prompt_template_paths"):
                 gaps.append("prompt_template_path_missing")
 
-        if task_doc_name not in docs_task_files:
+        if task_doc_rel_path not in docs_task_files:
             gaps.append("task_doc_missing")
-        if task_doc_name not in docs_readme and task_id not in docs_readme:
-            gaps.append("task_doc_not_indexed")
         if not domain_doc.exists():
             gaps.append("domain_doc_missing")
-        if not _domain_skill_exists(taxonomy.domain):
-            gaps.append("domain_skill_missing")
         if not config_paths:
             gaps.append("config_group_missing")
         if (not has_global_contract_test) and not test_mentions:
@@ -424,12 +420,10 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
                 "taxonomy_present": task_id not in missing_taxonomy,
                 "domain_active": taxonomy.domain in ACTIVE_DOMAINS,
                 "docs": {
-                    "task_doc_exists": task_doc_name in docs_task_files,
+                    "task_doc_exists": task_doc_rel_path in docs_task_files,
                     "task_doc_path": str(task_doc_path),
-                    "task_doc_indexed": task_doc_name in docs_readme or task_id in docs_readme,
                     "domain_doc_exists": domain_doc.exists(),
                     "domain_doc_path": str(domain_doc),
-                    "domain_skill_exists": _domain_skill_exists(taxonomy.domain),
                 },
                 "configs": {
                     "config_paths": config_paths,

@@ -4,7 +4,7 @@ import json
 import pytest
 from trace.core.scene_config import get_domain_defaults, get_scene_defaults, resolve_scene_section_defaults
 from trace.tasks.shared.config_defaults import required_group_default, required_group_defaults, resolve_optional_int_bounds, resolve_required_float_bounds, resolve_required_int_bounds, split_generation_rendering_prompt_defaults
-from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
+from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 FULL_NODE_LINK_LAYOUT_VARIANTS = set(SUPPORTED_LAYOUT_VARIANTS)
 
 def test_puzzles_logic_defaults_loaded() -> None:

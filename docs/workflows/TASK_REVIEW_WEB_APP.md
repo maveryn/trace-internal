@@ -134,7 +134,7 @@ The app scans:
 - `distribution_review.json` and `random_review_100.json` when present
 - `data/<query_id>/*.json`
 - `images/<query_id>/*.png`
-- `docs/tasks/<task_id>.md` for the condensed task-page taxonomy summary:
+- `docs/tasks/<domain>/<scene_id>/<task_id>.md` for the condensed task-page taxonomy summary:
   domain, scene id, query ids, answer schema, annotation schema, and program
   contract. If the task doc is missing, the app falls back to indexed sample
   query ids and observed answer/annotation schemas.
@@ -193,9 +193,9 @@ exact generated sample.
 The separate **Taxonomy** link opens `/taxonomy`, which browses the current
 taxonomy audit artifacts when a taxonomy-review package is present. The
 taxonomy browser is a review surface, not the migration source of truth. Current
-task-boundary rules live in `docs/core/` and current scene status lives under
-`review/task-reviews/<domain>/<scene_id>/`; see
-`docs/SCENE_PACKAGE_MIGRATION/TAXONOMY_BOOKKEEPING.md`.
+task-boundary rules live in `docs/contracts/` and current scene status lives under
+`review/task-reviews/<domain>/<scene_id>/`; migration taxonomy review rules live
+in `docs/SCENE_PACKAGE_MIGRATION/TAXONOMY_REVIEW_CHECKLIST.md`.
 
 The taxonomy overview shows decision-review progress and open taxonomy issues.
 Each taxonomy task detail page has an **Approve Decision** control for accepting

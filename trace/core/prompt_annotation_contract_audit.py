@@ -1279,7 +1279,7 @@ def _parse_args() -> argparse.Namespace:
         default=240,
         help="Per-task wall-clock timeout. Set to 0 to disable.",
     )
-    parser.add_argument("--output-dir", type=Path, default=Path("review/prompt-annotation-clarity"))
+    parser.add_argument("--output-dir", type=Path, default=Path("review/task-reviews/prompt-annotation-clarity"))
     parser.add_argument("--progress", action="store_true")
     parser.add_argument(
         "--overlay-samples",

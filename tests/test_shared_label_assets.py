@@ -87,4 +87,4 @@ def test_filter_label_values_handles_spacing_and_punctuation() -> None:
 
 def test_label_asset_docs_exist() -> None:
     assert Path("assets/labels/README.md").exists()
-    assert Path("docs/workflows/SHARED_LABEL_ASSETS.md").exists()
+    assert Path("docs/resources/SHARED_LABEL_ASSETS.md").exists()

@@ -9,10 +9,10 @@ Use this after task or infrastructure changes, especially when answer support or
 
 ## Read first
 1. `docs/workflows/BUILD_VALIDATION.md`
-2. `docs/workflows/VALIDATION_ERROR_CODES.md`
+2. `docs/contracts/VALIDATION_ERROR_CODES.md`
 3. `docs/workflows/CODE_REVIEW_GUIDELINES.md`
 4. `docs/workflows/TASK_REVIEW_WEB_APP.md`
-5. `review/task-reviews/README.md`
+5. `docs/workflows/CALIBRATION_GUIDE.md`
 
 ## Standard workflow
 1. Run focused pytest coverage for the changed area first.
@@ -46,6 +46,13 @@ Use this after task or infrastructure changes, especially when answer support or
   distribution are acceptable, and completion requires accepted solve-rate.
 - Prompt examples and emitted annotation remain contract-valid.
 - Determinism still holds for fixed seeds.
+
+## Stop conditions
+- Do not generate review artifacts when required focused tests fail.
+- Do not resolve reviewer issues unless the user explicitly asks for human
+  verification resolution.
+- Do not start or bypass calibration servers outside the current calibration
+  guide.
 
 ## Handoff
 If you are reviewing a patch rather than authoring it, also use `skills/code-review/SKILL.md`.

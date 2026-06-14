@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import csv
 from collections import Counter
-from pathlib import Path
 
 import pytest
 
@@ -57,21 +55,6 @@ REQUIRED_GEOMETRY_SPLIT_TASKS = {
     "task_geometry__shape_gallery__translation_match",
 }
 
-TAXONOMY_AUDIT_SUMMARY = (
-    Path(__file__).resolve().parents[1]
-    / "review/taxonomy-audit/contract_v0_reanalysis/proposed_task_summary.csv"
-)
-
-
-def _retired_geometry_tasks_from_audit() -> set[str]:
-    with TAXONOMY_AUDIT_SUMMARY.open(newline="", encoding="utf-8") as handle:
-        return {
-            row["current_task_id"]
-            for row in csv.DictReader(handle)
-            if row["domain"] == "geometry" and row["decision"] != "keep"
-        }
-
-
 def test_geometry_registry_includes_consolidated_value_tasks_plus_new_visual_families() -> None:
     geometry_tasks = {
         task_id
@@ -82,7 +65,6 @@ def test_geometry_registry_includes_consolidated_value_tasks_plus_new_visual_fam
 
     assert len(geometry_tasks) == 191
     assert REQUIRED_GEOMETRY_SPLIT_TASKS <= geometry_tasks
-    assert _retired_geometry_tasks_from_audit().isdisjoint(geometry_tasks)
 
 
 def test_geometry_query_selection_uses_query_id_not_legacy_query_variant() -> None:

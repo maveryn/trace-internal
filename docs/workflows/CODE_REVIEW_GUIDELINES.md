@@ -1,257 +1,84 @@
 # TRACE Code Review Guidelines
 
-Use this checklist during implementation and refactor reviews.
+Use this checklist for implementation, refactor, and pre-commit reviews. The
+goal is to verify the source design, not to chase tests while hiding stale
+contracts.
 
-## 1) Required review checklist
-1. Helper placement is correct (`core -> tasks/shared -> domain/shared -> task-local`).
-2. No duplicate deterministic utility logic was introduced.
-3. Prompt text remains externalized in bundle assets.
-4. Answer/annotation/witness are consistent from one execution trace.
-5. Determinism holds for fixed seeds and emitted ordering.
-6. Public API surfaces (`__all__`, package exports) only include active consumers.
-7. Docs were updated for changed contracts or module boundaries.
-8. Task naming contract holds for the current task surface: active/default public task ids must follow taxonomy-v0 form `task_<domain>__<scene_id>__<objective_contract>`. Module filenames should stay in the documented layout; cell-board puzzle internals live under `trace/tasks/puzzles/cell_board/`.
-9. Task docs stay in sync: each active `task_id` has `docs/tasks/<task_id>.md` and `docs/tasks/README.md` links match active tasks.
+## Read First
+1. `docs/README.md`
+2. `docs/contracts/SYSTEM_ARCHITECTURE.md`
+3. `docs/contracts/TAXONOMY.md`
+4. `docs/contracts/TASK_UNIT_POLICY.md`
+5. `docs/workflows/TASK_AUTHORING.md`
+6. Relevant domain setup doc in `docs/domains/`
+7. For scene-package migration work:
+   `docs/SCENE_PACKAGE_MIGRATION/README.md` and
+   `docs/SCENE_PACKAGE_MIGRATION/SCENE_MIGRATION_GUIDE.md`
 
-## 2) Distilled recurring findings
-1. Promote helpers only when reuse is real (second consumer), and keep representation adapters separate from representation-agnostic algorithms.
-2. Remove pass-through wrappers/migration shims after call sites migrate; keep module exports narrow and avoid dead re-exports.
-3. Keep task contracts minimal (`TaskOutput`, trace fields, public types/functions) and demote private-only symbols after refactors.
-4. Reuse canonical shared aliases/helpers instead of duplicating equivalent local utilities or normalization logic.
-5. Keep prompt text externalized; verify deterministic variant selection and complete emitted prompt metadata for all output modes.
-6. Source static prompt slot text from prompt config/templates; enforce required prompt/config keys with fail-fast shared helpers.
-7. Enforce strict config schema usage: defaults in `shared`, task-specific deltas in `task_overrides`, no flat-key reintroduction.
-8. Keep tests behavior-focused: shared-family invariant tests first, task tests for task-specific behavior, and avoid brittle literal-default assertions.
-9. For geometry feasibility, compute bounds from selected candidates (not global worst-case margins) and validate acceptance under default ranges.
-10. Require overlap-aware label placement for labeled geometry; reject fixed/radial placements that ignore line/label collisions.
-11. For task reviews, use `scripts/run_task_review.py` (`--mode full` by default); enforce distribution checks per `query_id`, fail on `no_samples_collected`, use `--mode inspection` when only visual/prompt review is intended, reload the browser review app index after `review/task-reviews` changes, restart the app after app/template/CSS/JS/indexer/feedback changes, verify the affected page shows the updated files, and inspect/save issues in the browser app rather than treating Excel as the default review surface. The reviewer-facing term is "issue" and the browser route is `/issues`; internal APIs/storage remain `feedback`.
-12. During scene-package migration in any domain, public task files must own objective-specific target construction, answer binding, prompt-facing annotation binding, prompt-slot assembly, and task-specific trace assembly. Factor reusable scene/rule/render/layout/style/data/projection primitives into the appropriate `shared/` layer, but do not replace public task files with no-op wrappers over a shared multi-task generator.
-13. Keep visual style ranges in domain/scene config rather than hardcoded task-module constants.
-14. After contract changes, remove obsolete helper paths and stale trace fields in the same patch.
-15. If sibling tasks repeat the same fallback constants, centralize them in a scene shared defaults helper instead of duplicating per-task literals.
-16. Keep docs indexes contract-driven: avoid stale links/references after renames by updating docs in the same patch as code/config changes.
-17. Remove orphaned helpers immediately when no call sites remain, and promote repeated generic transforms (for example sequence rotation) into task-shared utilities.
-18. For visual/background/noise config parsing, consolidate repeated min/max normalization into `trace/core/visual` shared helpers instead of re-implementing range parsing per module.
-19. Prompt JSON examples must be contract-valid for the active task/variant/output-mode contract (correct keys, answer type, and annotation cardinality/semantics); reject mismatched examples.
-20. If one task supports multiple annotation cardinalities across variants, require query-id-aware prompt example selection (not one static example for all variants).
-21. For domain-agnostic shared helpers (for example color sampling), keep primary behavior tests in shared test modules rather than domain-specific task tests.
-22. Keep test suites compact by merging overlapping assertions into behavior-centric tests; avoid parallel tests that validate the same contract surface.
-23. Treat prompt-slot values as punctuation-neutral fragments; keep sentence punctuation in template variants to avoid duplicated punctuation in rendered prompts.
-24. For scene visual defaults, remove zero-weight/no-op style keys and avoid fallback style merge when a family requires a strict style subset.
-25. For post-render visual noise, allow only coordinate-preserving photometric/compression/resampling edits and record the sampled edits in trace metadata; never apply crop, translation, rotation, perspective, or padding changes after annotation coordinates are computed.
-26. For new/distribution-changing tasks, run answer-distribution checks at least at 100 samples and report: `unique_answers`, `max_answer_count / sample_count`, and numeric bin summaries such as `max_five_bin_frequency`; use the first two as hard anti-degeneracy gates unless a scene explicitly adds tighter distribution rules.
-27. For numeric answer supports, keep configured supports contiguous unless a task-semantic impossibility is documented; do not remove an interior answer bucket only because calibration found it weak.
-28. Distribution-check tooling must evaluate rules per query id at fixed per-query-id sample targets, and worker parallelism must not change collected-answer outcomes for fixed seeds.
-29. Keep prompt bundles tight: use exactly 5 strong variants per required template list, and remove filler paraphrases that make prompts less natural or less precise.
-30. When prompt fragments append variant-specific label lists, route that formatting through one shared helper so punctuation and sentence boundaries stay consistent across tasks.
-31. Keep task-level `question_text` slots free of output-format duplicates when the task template already supplies that instruction (for example rounding/precision wording).
-32. When graph-paper annotation only needs coordinates (not label identity), prefer pixel-space `point_set` / `point_sequence` annotation and keep any graph-coordinate or label-to-point correspondence in private trace metadata instead of the primary task answer contract.
-33. When scene layout constrains which target answers can fit, sample the target answer from the feasible support before placement/layout so easier-to-fit values do not become overrepresented by construction.
-34. When target-conditioned feasibility logic can be reused across sibling shape variants, keep the support probe/sampler in a domain-shared geometry helper rather than embedding task-local rejection loops.
-35. When a generic procedural sampler collapses one variant to a tiny answer set, prefer a constructive variant-specific sampler that preserves the task contract while broadening feasible support.
-36. When review/sample scripts need the same annotation-projection or overlay-rendering behavior, centralize it in `trace/core/review_overlays.py` so graph-unit annotation is consistently projected into pixel space before drawing.
-37. When trace payloads store pixel-space projections of annotation, prefix those projected keys with `pixel_` (for example `pixel_point_set`, `pixel_point_map`) so they cannot be mistaken for primary annotation-type contracts.
-38. Prompt JSON examples for point-based annotation must use valid non-degenerate layouts (not placeholder collinear points) so examples match the intended task semantics.
-39. When a task ships variant-specific JSON examples in config, prefer those over generic placeholder builders whenever the answer depends on the illustrated geometry (for example area vs perimeter on the same point layout).
-40. For polygon-based tasks, reject adjacent collinear vertices in shared polygon samplers so an `n`-gon never visually collapses into fewer effective sides.
-41. When target-answer sampling uses feasible-support selection, do not key that selection directly off the same raw seed namespace used for query-id choice; derive a namespaced deterministic index so variant choice and target answer do not become accidentally coupled.
-42. When a feasibility probe selects a target answer before layout, carry forward the minimum required scene capacity from that same probe; do not assume a loose bound like `answer + margin` is enough for all constructive variants.
-43. When a second sibling task starts reusing a helper module named after the first task/objective, rename that module to the shared family concept immediately instead of keeping a misleading task-specific container.
-44. When a prompt-family stem already describes the image context, keep task-layer prompt variants focused on the question itself; do not repeat phrases like `from the image`, `from the figure`, or `from the diagram` on the next line.
-45. For graph-paper tasks that require points strictly inside the plotted grid, compute feasibility/capacity against the visible interior cell span (including padding/partial-edge effects) before selecting target answers or scene layouts.
-46. When adding constructive shape catalogs that feed a shared instance type, validate every shared invariant that instance encodes (for example integer perimeter on `PolygonInstance`), not just the task's primary target metric.
-47. When a second analytical objective needs the same prompt-slot, answer-bound, or variant-resolution helper flow, move those helpers into an analytical-family shared module instead of keeping them under an objective-only filename.
-48. In supersampled scenes, verify that geometry primitives and label/annotation placement use the same coordinate scale; mismatched scaled-vs-unscaled drawing can make text appear detached even when placement logic is correct.
-49. For analytical scenes with segment- or point-anchored text, cap scene occupancy and use collision-aware local placement so numeric annotations and labels fall beside geometry instead of crossing lines or crowding the border.
-50. When a new board/scene family needs dynamic rectangular canvases, extend shared visual/background helpers to support non-square sizes instead of adding task-local background rendering forks.
-51. When prompts query a named color, include its canonical hex code in square brackets (`name [#RRGGBB]`) and route that formatting through a shared helper rather than task-local string assembly.
-52. `puzzles/cell_board` boards should not sit on graph-paper or external grid backgrounds unless the task explicitly depends on that second coordinate scaffold; keep the board as the only grid-like structure in cell-board scenes.
-53. When another cell-board objective needs 4-neighbor grid helpers outside shortest-path logic, move those helpers into a grid-family shared module (for example `grid_graph.py`) instead of reusing or extending a path-named module.
-54. When multiple `puzzles/cell_board` implementation modules use the same background/noise fallback plumbing, promote those loaders into one shared visual-defaults module instead of cloning near-identical wrappers.
-55. For cell-board path tasks whose answer is a uniform per-step graph distance, use square cells and public tile-center `point_sequence` annotation so the image does not imply unequal horizontal vs vertical move costs.
-56. When another cell-board task needs named-color board rendering or palette/scene serialization, move that logic into a shared named-color board module instead of importing helpers from a count-task-named file.
-57. For extremum-over-components tasks, reject non-unique winning components and expose only the winning component as prompt-facing annotation; keep the full component partition in trace.
-58. For row/column run-count tasks, expose one canonical witness run per qualifying line in prompt-facing annotation instead of every overlapping or repeated run on that same line.
-59. For transition tasks with one uniquely optimal mover, keep all mover outcomes in trace but expose only the winning mover's trajectory as prompt-facing annotation.
-60. For motif-count tasks that count composite tile shapes, expose one canonical anchor tile per counted motif as prompt-facing annotation and keep the full motif cell sets in trace.
-61. Validate target-answer selectors against the actual review seed stream; if one namespace/salt creates variant-specific skew, switch to a decorrelated deterministic selector and add a regression test for the review collector pattern.
-62. When another blocked-grid cell-board task needs start/reachable/unreachable scene partitions, promote the target-agnostic board sampler into a shared reachability helper instead of duplicating task-local rejection loops.
-63. For open-grid closest-pair relation tasks, enforce uniqueness at construction time by growing each colored component away from the witness boundary; do not rely on post-hoc filtering to remove ambiguous equal-distance pairs.
-64. `puzzles/cell_board` tasks keep concrete implementation modules and reusable helpers/noise-default loaders under `trace/tasks/puzzles/cell_board/`; do not recreate separate-domain wrapper packages. New public docs and sampling should treat them as puzzle scene tasks.
-65. When a second analytical 2D objective reuses the same scene-fitting and annotation-rendering flow, promote that machinery into a shared analytical 2D scene helper instead of cloning another task-local render stack.
-66. When analytical shaded/composite tasks need persistent fills or cutouts, extend the shared analytical scene renderer with explicit fill semantics (`shaded`, `background`) instead of drawing ad-hoc overlays inside one task module.
-67. For label-answer comparison tasks, randomize visible object labels independently of layout/slot order so answer-label distributions are not biased toward fixed positions like top-left or first-drawn objects.
-68. When a second geometry comparison task needs the same query/object-count/winner-label balancing or graph-paper slot placement, promote that logic into comparison-family shared helpers instead of cloning the first task's sampler/layout code.
-69. For bulky graph-paper comparison scenes (for example area/perimeter objects), do not reuse the same dense slot bank as line-like scenes; use a roomier layout matched to the object footprint so larger outlines and labels do not crowd or overlap.
-70. When sibling comparison tasks use the same object family with only the compared metric changing (for example rectangle area vs rectangle perimeter), move the object-family scene sampler/renderer into one shared helper module instead of maintaining parallel task-local copies.
-71. When a new geometry scene needs a different background policy than measurement, do not reuse measurement-scoped background/noise constants; call the geometry scene loaders directly so solid/non-grid scenes stay consistent with their own config.
-72. When a second geometry scene reuses the same hidden graph-unit projection or object-family scene logic, promote that logic to geometry domain-shared helpers (for example `graph_units_to_pixel` or `multi_angle_scene.py`) instead of duplicating or importing another scene's private helpers.
-73. For counting/classification tasks with overlapping textbook definitions (for example isosceles vs equilateral), make the exclusivity explicit in prompt/config wording instead of leaving the task to unstated conventions.
-74. For counting tasks whose final answer is the matched-object count itself, check whether picking `object_count` first skews answers toward smaller counts; if it does, sample the target count from the global feasible support first and then choose a compatible object count.
-75. For mixed-shape classification/counting tasks, keep visually adjacent classes separated by explicit sampler margins (for example a minimum ellipse aspect ratio so circles and ellipses remain distinguishable from the rendered image alone).
-76. For polygon class-counting tasks, centralize convexity classification in a shared geometry helper and reject `degenerate` near-flat or self-intersecting outlines so convex/concave labels never depend on task-local visual guesswork.
-77. For reference-scene icon tasks, keep user-facing `bbox_set` annotation scoped to matching scene icons only and record the reference panel box separately in trace metadata; do not ask users to box the reference icon when the question is about scene matches.
-78. When curated asset manifests and on-disk filenames use different ids/prefixes, resolve them through one shared manifest-aware asset loader instead of reconstructing filenames ad hoc in each task.
-79. When a scene switches from fixed icon ink to sampled palettes, remove stale fixed-tint config keys in the same patch and record the sampled palette or final assigned tints in trace metadata so color randomness stays explicit and reviewable.
-80. For reference-scene icon color queries, derive match membership from explicit color assignments and keep stricter palette-distance thresholds in task overrides, rather than relying on random palette reuse to accidentally realize the target count.
-81. For shared-pipeline icon counting tasks, keep subtle noise per icon instance before compositing and record the sampled edits per instance; do not replace that with an untracked post-composite image corruption step that would leave bbox annotation grounded on a different render path.
-82. When one geometry task mixes relation-style label answers and count-style integer answers across query ids, keep the witness contract query-family-specific and document it explicitly: relation variants should expose the winning geometry itself (for example segment endpoints), while count variants should expose the unordered set of matching labeled objects.
-83. For coordinate-plane geometry scenes where the visible witness is an unlabeled line or point set, prefer integer count questions plus pixel `point_set` annotation over synthetic option labels; keep graph/grid coordinates out of persisted public witness fields.
-84. For centered graph-paper geometry scenes, sample object placements from the full safe interior instead of hard-coding one border-biased slot layout; keep endpoints at least one lattice step off the frame and reject segment placements that intersect or clip against the border.
-85. For labeled-point geometry scenes, treat nearby point markers as blocked geometry during label placement: labels should not cover the labeled point itself, other nearby dots/endpoints, or the supporting linework when a collision-free alternative exists.
-86. For reference-scene icon scenes that may exceed a simple slot grid, use random scene-panel placement with an explicit overlap threshold instead of implicitly relying on fixed slots; validate the rendered bbox overlap directly so independent target/distractor counts do not silently reintroduce clutter.
-87. For icon transformation tasks, validate candidate transforms against the rendered icon silhouette itself; even curated asymmetric pools can contain icons where some canonical D4 transforms collapse visually, so reject ambiguous icon/transform pairs instead of assuming transform names stay distinguishable.
-88. Keep repo-local skills thin and docs canonical: workflow/domain skills should point at source-of-truth docs instead of copying policy into parallel skill-specific prose.
-89. When docs move or the repo doc layout changes, update all repo-entry surfaces in the same patch (`docs/README.md`, `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, and any skills that point at those docs) so navigation never fragments.
-90. When a second domain needs a representation-agnostic helper that currently lives under one domain's `shared/`, promote it to `trace/tasks/shared/` in the same patch instead of adding a cross-domain import back into the original domain namespace.
-91. When trace metadata stores sampled render/style overrides (for example randomized colors), verify the renderer consumes those exact resolved values; do not treat trace-only style sampling as sufficient if the image path still falls back to a stale hardcoded default.
-92. When a second chart scene reuses a helper module named after the first chart family (for example `statistics_common.py`), rename that helper to the chart-wide concept immediately (for example `labeled_chart_common.py`) instead of importing counting/comparison code from a misleading family-specific module.
-93. For chart readout tasks whose annotation is an ordered numeric sequence, define that order explicitly from the prompt query order and record the corresponding query labels in trace metadata; do not sort or canonicalize sequence annotation when position carries semantics.
-94. When chart scene variants expand, update all active chart scenes' `scene_variant` support, `object_description_<scene_variant>` config keys, and review coverage together so scene variety does not drift across sibling chart families.
-95. Public annotation must be image-level. Represent symbolic witnesses with active homogeneous types such as `bbox_set`, `bbox_sequence`, `point_set`, `point_sequence`, `point_pair_set`, `keyed_point_map`, `keyed_point_set_map`, `keyed_bbox_map`, or `keyed_bbox_set_map`, and keep semantic labels/ids out of persisted witness fields. If role-aware annotation is needed, use only the global keyed names; do not invent domain-specific keyed annotation names.
-96. When a domain adds a second scene contract with different structural semantics (for example single-series vs multiseries charts), split the shared generation/render helpers by contract instead of overloading the first helper module with branching scene logic.
-97. When scene-variant support expands in a domain, audit setup/plan docs and task-module docstrings for stale support lists or outdated contract wording (for example single-series-only text after multiseries tasks land) in the same patch as the code change.
-98. When distribution review groups samples by the task's default-sampled `query_id`, verify that any answer-target selector is decorrelated from the `query_id` selector itself; small-support numeric variants can fail review even when the overall task distribution looks healthy if both selectors reuse correlated seed transforms.
-99. When a new domain/task bundle becomes active, regenerate `docs/ACTIVE_TASK_INVENTORY.md` and update `docs/core/PROMPT_SYSTEM.md` if prompt-bundle mappings changed; do not add active task lists to `docs/core/SYSTEM_ARCHITECTURE.md`.
-100. When sibling tasks inside one scene use different `query_id` vocabularies, keep `query_id_weights` in per-task overrides rather than `generation.shared`; otherwise merged defaults can silently leak inactive variants into another task's config view.
-101. When a variant-selection helper gains a second domain consumer, promote it to `trace/tasks/shared/variant_sampling.py` instead of leaving nearly identical samplers in domain-shared modules.
-102. For anchored icon relation tasks, do not place all positives on one side and every distractor on the other; include both same-type wrong-side distractors and different-type queried-side distractors so the task tests the intended conjunction of attribute + spatial reasoning rather than side occupancy.
-103. For anchored icon relation tasks with strict bbox-based directional predicates, reject same-type wrong-side distractors that are only a few pixels from becoming positives; follow the relaxed same-type wrong-side spatial margin rule so those distractors lie mostly outside the queried region.
-104. When an anchored relation task samples target and distractor counts independently, check whether high target counts still make the queried side visually dominant; if so, enforce a target-conditioned distractor floor in the shared counting sampler instead of papering over the issue with extra placement randomness.
-105. When icon size is the semantic predicate, drive explicit per-instance nominal sizes through the shared icon scene renderer and keep a task-level minimum size-gap contract in trace/config; do not fake size relations later with task-local bbox heuristics or post-render rescaling.
-106. For icon occlusion-order tasks, keep the Reference and Scene cells on one shared icon pair and vary only pair-level non-semantic styling (for example tint, overlap amount, subtle noise); expose cell labels as annotation because the semantic unit is the whole overlapping pair, not one icon bbox.
-107. When shared icon panel/render/noise helpers are reused outside `icons/counting`, promote them into `trace/tasks/icons/shared/` immediately instead of keeping relation/sequence/transformation tasks importing from a `counting`-named module.
-108. For cell-based icon sequence tasks where the missing slot itself is the grounding target, prefer one-box `bbox_set` annotation for the missing cell over synthetic labels; keep cell labels out of the scene unless the task semantics truly depend on them.
-109. If an icon task's reference panel does not change the semantic predicate the model must evaluate, remove it and use a single-panel layout instead of carrying decorative reference chrome that only wastes scene space.
-110. For row/cell icon tasks, sample cell geometry first and derive the canvas from that row instead of stretching boxes to fill one fixed task-wide canvas; this keeps per-cell readability stable across variable sequence lengths.
-111. For icon attribute-binding tasks, do not fill the scene mostly with all-wrong negatives; require structured partial-match distractors (for example `2-of-3` and `1-of-3` queried-attribute overlaps) so review images actually test binding rather than independent attribute filters.
-112. For icon two-anchor strip tasks, keep the anchors exactly aligned on the non-varying axis, keep candidate icon types distinct from the anchors, and evaluate strip membership from icon centers with an explicit boundary margin; do not draw the strip itself or allow near-boundary centers that make membership ambiguous.
-113. For icon mirror-symmetry tasks, verify exactness from the rendered cell image rather than from intended placement metadata alone: treat each supported symmetry type as an explicit signature, keep Reference/Scene cell boxes square when diagonal symmetry is in scope, use even icon counts so cardinality alone does not leak non-symmetry, reject cells that satisfy extra unsupported axes, and make sure distractors include both exact-other-signature and no-symmetry cells so the task is not reduced to a coarse “any symmetry at all” judgment.
-114. For fixed-cardinality tasks with a very small answer support, review the answer distribution under task-review sampling specifically; if generic hash-based balancing skews a tiny support, fix the real task sampler rather than relying on review-only balancing.
-115. For icon tasks whose answer would become ambiguous under symmetric silhouettes, require the asymmetric manifest (`non_symmetry.txt`) in task config and review that override explicitly; do not rely on the broader curated pool when orientation, mirror symmetry, transform identity, or orientation-bearing attribute binding is part of the predicate.
-116. Retired scalar difficulty scoring should not be reintroduced during
-scene-package migration.
-117. When reviewing migration work, treat remaining retired difficulty helpers,
-tests, docs, and config as cleanup debt unless the file is explicitly outside
-the migrated scope and still needs a temporary compatibility shim.
-118. If a task needs task-local diagnostics for debugging, keep them in
-task-specific trace/debug metadata; do not make them part of the training ABI,
-sampler, review acceptance gate, or solve-rate grouping contract.
-129. When a scene currently uses one stable presentation contract (for example cell-board scenes), do not add a representation-load criterion just to mirror another domain; keep only criteria with real within-task ordering signal.
-130. When a domain grows multiple scenes that share the same non-task-specific generation/rendering defaults, promote those shared defaults into `configs/domains/<domain>/base.yaml` instead of copying the same values into each scene YAML.
-131. For analytical tasks with multiple semantic variant axes (for example `shape_variant` plus `reasoning_mode`), keep one shared analytical weighting policy and fold the extra axis into the normalized `analytical_reasoning`/`ambiguity` measurements; do not reintroduce separate task-local scalar formulas just because one sibling task has an extra variant dimension.
-132. For icon sequence tasks that ask for a position/index rather than a count, label the visible cells directly in the scene and keep user-facing annotation on the violating/missing cell bbox; do not add a separate option strip when the row itself already grounds the answer.
-133. For 2D icon pattern-violation tasks, reject any instance where multiple supported rule hypotheses point to different unique violating cells; a numbered grid only gives strong `bbox_set` annotation when the violating index is unique under the whole supported rule set, not just under the intended sampled rule.
-134. For 2D icon size-pattern tasks, review the symbolic size ladder as well as the rendered pixels: the task should reason over discrete size levels in trace/uniqueness checks and only map those levels to pixel sizes after cell geometry is fixed, so raw rendered sizes never silently redefine the rule family.
-135. For scene-internal icon frequency tasks, review the grouping key explicitly: singleton/repeated counts should be computed from `icon_id` frequency only, while color and rotation may vary per icon as distractors. If the implementation groups on rendered appearance instead, the task is testing the wrong predicate.
-136. When a task contract requires one explicit grid shape (for example a true `3 x 3` icon grid), do not reuse a generic “compact grid” slot helper that may choose a different aspect such as `3 x 4`; use an explicit rows/cols grid helper and add a regression check on the realized row/column counts.
-137. For labeled node-link graph tasks, verify that graph semantics are layout-invariant: node labels and answers must come from the sampled topology/adjacency map, while layout variants only change readability and must not leak the answer or redefine the witness set.
-138. For graph tasks with non-semantic visual diversity, review whole-image style axes explicitly: label format, node glyph, named node color, and global layout transforms may vary for readability/diversity, but they must not create hidden categories or change how annotation labels are ordered or interpreted.
-139. For tasks that render text inside compact glyphs or cells, review the fitted text box rather than only the nominal font size: multi-character labels and alternate glyph shapes should still fit inside the witness object with a stroke that remains readable after rendering, not just in the default one-character case.
-140. For graph tasks that support both undirected and directed variants, review directionality as an explicit contract surface: prompt wording, trace fields, edge entities, and rendered arrowheads should all agree on whether the queried measure is `degree`, `in-degree`, or `out-degree`, and directed scenes should avoid reciprocal-edge clutter unless the task explicitly reasons about it.
-141. For graph tasks where the queried node belongs in the witness set, review that inclusion explicitly across prompt wording, answer semantics, annotation labels, and trace fields; do not rely on graph-theory convention alone to imply whether the queried node counts toward the answer.
-142. For graph tasks that expose a single “largest” connected component as annotation, review uniqueness explicitly: the sampler should reject ties for the largest component size instead of relying on label order, layout, or hidden tie-break rules to pick one witness set.
-143. For graph tasks, review node `point_set` annotation as an unordered set: implementations may canonicalize node order internally for determinism, but prompts/docs should not imply that witness order matters unless the task uses ordered `point_sequence` annotation.
-144. For graph tasks that assume exactly one cycle, review uniqueness from the finalized adjacency map, not just the intended topology recipe: the sampler should verify the graph is truly unicyclic after all attachments and any topology-profile decoration before exposing cycle-node annotation.
-145. For graph articulation-point tasks, review the final cut-vertex computation directly from the emitted adjacency map; do not assume a path/tree/blob construction preserved the requested articulation-point count without recomputing it on the final graph.
-146. For graph shortest-path tasks, review ordered `point_sequence` annotation explicitly: the emitted node-center order should match the unique shortest path between the named endpoints in the finalized adjacency map, include both endpoints when promised, and satisfy `answer == len(path) - 1` when the answer counts edges.
-147. For directed graph reachability tasks, review the witness set directly from finalized successor adjacency: traversal must follow arrow direction, the queried source node should be included only when the prompt says so, and any “unreachable” reserve nodes should still be unreachable after all extra-edge decoration.
-148. For graph edge-witness tasks, treat each `point_pair_set` item as one unordered pixel endpoint pair: canonicalize endpoint order internally for determinism, but verify the prompt/docs do not imply order, and for weighted graph tasks render edge labels from the same canonical edge-to-weight map used in trace/verifier logic.
-149. For graph ordered-but-nonpath tasks, keep the ordered-point annotation semantics distinct from path adjacency: consecutive points in the witness sequence do not need to share an edge, so review the sequence against the task’s ordering rule (for example unique topological order).
-150. When a graph task shrinks its node-label support (for example reducing a directed DAG task from `A..I` / `1..9` down to `A..G` / `1..7`), review every prompt JSON example and task doc example in the same patch; examples must remain feasible under the new support instead of referencing impossible labels.
-151. When a table readout task broadens from one exact cell to one-or-more queried cells with arithmetic, rename the task/module/docs to the broader subset concept and keep multi-cell `bbox_set` annotation ordered exactly as the prompt names the queried cells.
-152. For table pairwise comparison tasks whose answer is one visible row label, keep annotation as the ordered pair of compared value-cell bboxes rather than collapsing annotation to the winning cell; the loser cell is part of the proof.
-153. For table counting tasks that compare two columns row-by-row, order `bbox_set` annotation row-major over matching rows and keep the within-row bbox order aligned to the prompt's column order; do not sort by cell id or column index later.
-154. Keep chart-domain table column-summary tasks scoped to column summaries; row-wise or whole-table numeric summaries should use separate table-grid task ids only if calibration shows they add useful difficulty.
-155. For table tasks that first select rows and then aggregate or transfer another value, keep prompt-facing annotation as the minimal ordered cell witnesses for each selected row or winning row (for example `[filter cell, target cell]` or `[source extremum cell, target cell]`) instead of widening to whole-row boxes or inventing a new annotation type.
-156. For table ranking tasks that ask for kth order beyond plain extrema, prefer the queried-column region bbox as annotation rather than claiming one decisive cell alone proves the ranking; the witness is the ordered values across that whole column.
-157. Do not add whole-table numeric summaries back into the chart-domain table column-summary tasks; the current calibrated annotation contract is intentionally column-scoped.
-158. When a new table counting query still answers with one integer row count and uses deterministic `bbox_set` witnesses over matching rows, prefer widening the chart-domain table counting scene only when it remains the same reasoning/annotation contract; otherwise add a new `task_charts__table__*` task id.
-159. When chart-domain table-grid task refactors merge or widen existing task families, update `docs/domains/charts.md` and `skills/domain-charts/SKILL.md` in the same change; do not leave reusable guidance recommending stale task splits.
-160. Keep current task-review artifacts domain/scene-scoped under `review/task-reviews/<domain>/<scene_id>/<task_id>/`; when review tooling or docs change, do not reintroduce new flat `task-reviews/task_*`, root-level active review trees, or source `task-reviews/<domain>/<task_id>` paths once the scene-aware layout exists.
-161. When activating the first task in a new domain, update the registry, prompt-system inventory, system-architecture inventory, domain docs, and shared-utilities inventory in the same patch; do not leave the new domain discoverable only through `STATUS.md`.
-162. For early puzzle arithmetic tasks with a one-box unknown-slot witness, prefer widening structural variety inside the same task (for example operand count, operator mix, unknown side) instead of splitting that contract into multiple near-duplicate mini-puzzle variants.
-163. For balance-style puzzle arithmetic tasks, keep prompt-facing annotation on one dedicated query box rather than widening it to all supporting balance panels; the panels may be the solver witness in trace, but the prompt contract should stay local and visually obvious.
-164. When a puzzle-family refactor changes `query_id` names, remove stale keys from task docs, prompt/config examples, and behavior tests in the same patch; do not leave inactive branch vocabularies alongside the active one-box annotation contract.
-165. For clock-offset puzzle tasks, review prompt JSON examples against the active offset semantics; do not reuse the direct shown-time example answer under `minutes_after` or `minutes_before`, because that silently makes the example inconsistent with the rendered question.
-166. For time-artifact page/puzzle tasks that add non-semantic visual style axes (for example named accent colors or bezel/tick styles), keep those axes recorded in trace/render metadata and review artifacts, but do not let prompt wording or answer semantics start depending on them unless the task is explicitly about color/style.
-167. For clock-compare puzzle tasks that answer with one visible clock label, keep the visible label support broad enough to satisfy review diversity on its own (for example at least five labeled clocks or another equally broad label pool); do not ship a label-answer task with only two-to-four feasible labels and hope cross-query mixing will rescue the answer distribution.
-168. For month-view calendar tasks, review the finalized date-cell map directly: nth-weekday answers, marked-weekend counts, and marked-date gaps should all be computed from the same emitted month metadata plus the same valid date-cell bboxes used for annotation, and prompt-facing annotation should stay on date cells rather than widening to headers or full week rows.
-169. For page schedule optimization variants whose annotation is a selected event subset, enforce the optimum subset’s uniqueness by construction and re-check it from the finalized event intervals; do not rely on solver tie-breaking to make one witness set look canonical after the fact.
-170. For page milestone-timeline tasks, keep prompt-facing annotation on the event cards themselves rather than widening it to the whole axis or connector stems; the cards are the canonical witness objects even when the answer depends on left-to-right temporal order.
-171. For page milestone-timeline tasks that render filled reference cards, review text contrast on the highlighted cards explicitly: bright reference text needs a contrasting stroke/halo rather than the default light outline, otherwise the label can become harder to read after the reference fill is strengthened.
-172. For arithmetic rule-grid puzzles, require at least two fully visible example rows after hiding the query cell and verify that those complete rows support exactly one active operator family; do not accept `2`-row grids or row sets that remain consistent with multiple hidden-rule interpretations.
-173. For arithmetic equality puzzles, prefer an explicit `=` marker between the two sides when the intended semantics are exact equality; do not rely on a decorative scale glyph alone if it makes the algebraic relation less obvious.
-174. For balance-style arithmetic queries that ask for a symbol's value, prefer a final explicit query row rendered like `symbol = ?` and project the prompt-facing annotation from the `?` box; do not leave the query as an isolated symbol box if that makes the requested output feel implicit.
-175. When adding visual spacing jitter to a synthetic task, sample and record the offsets explicitly in trace or render inputs; do not hide layout randomness inside renderer-only heuristics.
-176. For single-reference cube-view puzzles, never build distractors from hidden faces the reference image does not reveal; keep option generation grounded on the visible corner only (for example cyclic-versus-mirrored permutations of the same three visible faces) unless the scene explicitly exposes more cube-face information.
-177. When benchmark inspection shows a simpler spatial puzzle layout is more common (for example one block solid above multiple 2D candidate views), prefer that direct projection grammar over adding extra hint rows or hidden-structure scaffolding that makes the task harder to parse than the source benchmark.
-178. For paper-fold puzzles, keep the fold direction explicit in the reference figure via visible fold lines and arrows; do not make the solver infer the fold direction solely from the folded result if the task is meant to test the fold transformation rather than hidden convention guessing.
-179. When a domain is over-split into many near-duplicate task ids, prefer consolidating it into fewer task ids with explicit `scene_variant` and `query_id` axes rather than keeping one task id per predicate; only keep separate task ids when the visual scaffold or answer/annotation contract materially changes.
-180. When a graph-paper task shifts the visible origin away from the canvas center to reclaim plotting space, drive both the raster background and the graph-unit projection from the same shared origin-placement parameters; do not fake the shift by moving only the drawn objects or only the trace frame.
-181. When a consolidated wrapper task remaps source query ids onto a new `query_id` surface, rewrite every task-review-facing query field to the new surface in the emitted trace (`query_id` and `query_id_probabilities`); otherwise review tooling will silently collect source branches or fail to rebuild inspection samples.
-182. When a second domain needs the same low-level drawing primitive (for example dashed lines or arrows), promote it out of a domain-local `shared/` module into `trace/tasks/shared/` in the same patch; keep domain-local wrappers as thin re-exports only when imports need them.
-183. For geometry families that share the same graph-paper `Reference` + candidate-polygon scaffold, promote graph-unit projection, polygon visibility checks, and `Reference` label drawing into `trace/tasks/geometry/shared/` instead of copying those render helpers into each task.
-184. For geometry solid-view tasks whose answer depends on an implied orthographic projection, keep a visible query-view panel in the scene and place prompt-facing `bbox_set` annotation on the query-panel cells rather than inventing synthetic labels or hiding the witness entirely off-scene.
-185. For orthographic query panels derived from a latent 3D scene, crop the panel grid to the tight occupied support of the requested projection; do not preserve decorative empty rows or columns that come only from unused latent footprint padding.
-186. For geometry solid-view count tasks, reject queried projections that completely fill their cropped orthographic grid by default; keep at least one empty cell so the task tests silhouette reasoning instead of only bounding-box size.
-187. For plotted-function geometry tasks, prefer count questions whose witnesses are visible pixel points over direct readout questions where the queried x/y value and the annotation would collapse to the same single point; if the task counts intersections or extrema, sample the graph so those witnesses land exactly on graph-paper coordinates before projecting them to pixels.
-188. When adding curved plotted-function families (for example cubic or sinusoidal graphs), constrain the function parameters so any prompt-facing intersection/extremum witnesses still land on exact graph-paper coordinates; do not rely on approximate floating-point readout for TRACE annotation.
-189. For plotted-function count prompts, be explicit about tangencies: if a graph merely touches an axis or guide line and that case should count, say so directly in every prompt variant; otherwise restrict sampling to strict crossings so the prompt semantics stay unambiguous.
-190. For fold-result paper puzzles whose options show only the visible folded sheet, prefer reflection-invariant marks and build the folded result first, then back-project it onto the reference sheet, so the task tests the fold transformation without introducing hidden mark-orientation ambiguity.
-191. For option-based puzzle tasks, do not default to boxed option cards if they make the candidate images too small; when the benchmark pattern is better read as bare image choices with labels underneath, project annotation from the option image bbox and keep the label outside the image region.
-192. For puzzle tasks that ask how many cubes were removed between two visible block structures, ground prompt-facing `bbox_set` annotation on the ordered pair of visible structures `[original, remaining]` instead of inventing image-space bboxes for the missing cubes.
-193. For topology cyclic-order loop puzzles, make the equivalence rule explicit in both prompt text and generation: if flipping/reflection is disallowed, valid options must match the reference only up to cyclic rotation, and the prompt should say so directly instead of leaving reflection ambiguous.
-194. For transparent-sheet overlay puzzles, keep the two source sheets and all option images on the same paper frame and hidden-grid alignment, and state explicitly that no rotation or flipping is allowed; do not make the answer depend on hidden rescaling, translation, or unspoken transform rules.
-195. For explicit-rule logic adjacency puzzles, make the prompt name the full touch scope (edge-only vs edge-and-corner) and verify the visible neighborhood plus option pool leave exactly one valid candidate; do not assume a local non-touch rule is unique unless the generator proves it.
-196. Whenever a task's reasoning depends on color identity, enforce or validate per-instance color separation in Lab space through the shared color-distance utilities; do not assume a hand-picked RGB palette is distinct enough by inspection.
-197. When an active task set changes inside an existing domain, regenerate `docs/ACTIVE_TASK_INVENTORY.md` in the same patch as task docs and status pages, and update `docs/core/PROMPT_SYSTEM.md` only when bundle mappings changed.
-198. For early map-region tasks, reuse one synthetic contiguous region-partition plus legend scene contract instead of tying the domain to real country outlines or visible tile grids; keep prompt-facing annotation on region bboxes and make legend order explicit when category rank matters.
-199. For gravity-based board-game tasks such as Connect Four, ground prompt-facing annotation on the landing squares or the completed board cells affected by the move; do not substitute whole columns, top-of-board arrows, or badge chrome for the actual witness cells.
-200. For map-region count tasks, order prompt-facing `bbox_set` annotation by counted region reading order rather than legend order; the annotation should enumerate the matching regions on the map, not the legend bins that justify the threshold.
-201. For paper-fold spatial puzzles, keep fold-direction arrows outside the sheet whenever interior arrows would crowd the marks or make the fold cue harder to parse.
-202. For section-local document checkbox-count tasks, keep prompt-facing annotation on the counted checkbox squares only, and treat zero-count answers as a valid empty `bbox_set` rather than widening annotation to the full section or page.
-203. When a second pages scene reuses the same section-aware page grammar, promote the shared section templates and typed scene-value builders into a neutral `trace/tasks/pages/shared/sectioned_document_common.py` layer instead of leaving those helpers inside one scene-specific module.
-204. When adding a new domain family or shared helper module, review the domain setup doc and `docs/workflows/SHARED_UTILITIES.md` together in the same patch; do not leave a new family missing from the domain-scope sentence or listed under the wrong domain helper inventory.
-205. When a second domain adopts the same `scene_variant` + `query_id` resolver pattern, promote the sampler into `trace/tasks/shared/variant_sampling.py` and keep domain-local wrappers as thin re-export layers only when imports need them.
-206. For physics force-diagram net-force queries, keep prompt-facing annotation on the already shown arrows for the queried axis; do not ground the annotation on the object body or on a hypothetical balancing arrow the image does not show.
-207. For RLVR multimodal training paths, do not serialize dense processor outputs (for example `pixel_values`) through `DataProto`/Ray just to avoid worker-side preprocessing; prefer pinned-memory dataloaders, non-blocking tensor copies, and local worker reuse so inter-process payloads stay close to the raw media size.
-208. Before calling an all-task TRACE build training-ready, run at least a one-sample-per-task canary through builder finalization; treat any task that omits mandatory sidecar keys such as `witness_symbolic` as a contract bug, not as a recoverable training-time issue.
-209. For physics balancing-force queries, place the red `?` marker on the same outer arrow-lane lattice used by the shown arrows; do not invent a new floating cue geometry that breaks the scene's force layout.
-210. When a task asks for a missing visible quantity, make the marked missing object itself the prompt-facing annotation whenever possible; the supporting givens can remain in trace, but the prompt-facing witness should be the visible `?` object the solver is meant to resolve.
-211. For lever-balance scenes, ground prompt-facing annotation on the shown weight blocks (or the marked `?` weight) rather than the beam span or decorative tick marks; the task is about the operative loads, not the whole lever drawing.
-212. For physics tasks, route non-semantic palette variation through one shared style helper and route semantic markers (for example `?` placeholders, selected arrows, or highlighted targets) through a shared marker-legibility helper so they stay contrast-safe without becoming color-coded rule hints.
-213. For equivalent-resistance scenes meant to exercise parallel reasoning, require at least one real parallel section and keep prompt-facing annotation on the resistor components between the labeled terminals rather than on wires, terminals, or the full circuit frame.
-214. For paired-circuit missing-component questions, make the missing component visually unique (for example a red `?` resistor) and use that component as the prompt-facing annotation instead of grounding on the whole left circuit.
-215. For optics ray-trace tasks, show only the initial ray direction in the prompt image and keep the solved path in trace/debug artifacts; when the answer is a count, ground prompt-facing annotation on pixel points for bounce points or hit targets rather than on graph-coordinate labels, raster ray segments, or large panel boxes.
-216. For spring-extension missing-value tasks, do not place the `?` extension marker at the true answer tick; the placeholder should indicate which quantity is unknown without turning the task into direct visual readout of the answer.
-217. When a physics task uses a tiny explicit answer support and task review samples consecutive seeds, reuse the shared support-sampling helper instead of local answer cycling so per-query-id review distributions stay stable.
-218. When retiring or simplifying a scene/query id inside an active domain, scrub the removed surface from shared docs and setup docs in the same patch; stale variant names make review/debug output harder to trust.
-219. For scene/query families with constructively limited answer supports, intersect configured answer supports with the feasible subset during sampling rather than silently falling back to impossible targets and skewing review distributions.
-220. When one task balances multiple axes, decorrelate those axes with namespace-specific selection salts so scene cycling does not alias the answer-support cycle.
-221. For card-hand tasks whose reasoning depends on display order across wrapped rows, render an explicit continuation cue in the image and state the row-reading rule in the prompt; do not assume solvers will infer whether the second row restarts or continues the first row.
-222. For game-state tasks that use one visible reference/context object plus a separate candidate pool (for example a top domino chain plus loose tiles below), keep the prompt and prompt-facing annotation explicit that only the candidate pool is counted; do not widen annotation to the contextual reference pieces when those pieces are only there to define the predicate.
-223. When consolidating several implementation branches into one active wrapper task, update the active inventories and operational metadata together in the same patch: task docs, domain status counts, current review sidecars under `review/task-reviews/`, `review/calibration_sweep_status.json` when solve-rate artifacts are regenerated, and any `configs/examples/` entries should all move to the current task ids.
-224. When a domain-wide audit reruns task reviews, refresh the affected `review/task-reviews/<domain>/<scene_id>/<task_id>/` sidecars and reload the review app index; manual audit state belongs in `review/feedback/review_feedback.sqlite`, and solve-rate state belongs in `review/calibration_sweep_status.json`.
-225. For reference-based count or comparison prompts, say explicitly whether the highlighted reference itself is excluded; when the answer counts only surrounding items, prefer wording like `other events`, `other cards`, or `other objects` instead of leaving self-inclusion ambiguous.
-226. When adding a task-local wrapper around an imported shared helper, alias the imported helper first instead of redefining the same symbol name locally; otherwise it is easy to create accidental self-recursion that only appears once the wrapped code path is exercised.
-227. When one query id reuses scene families with meaningfully different feasible answer supports, resolve the answer support at the query level first (or otherwise condition scene choice on the chosen answer) instead of always sampling `scene_variant` first; otherwise per-query-id review distributions can skew even when each scene family is individually balanced.
-228. When a merge conflicts on a review summary or manifest under `review/task-reviews/`, do not resolve it by keeping a one-task side blindly; rebuild or rewrite the summary so it reflects the active touched task surface instead of leaving the repo with a misleading partial review snapshot.
-229. When adding or refactoring task-local query support, use
-`trace/tasks/shared/fixed_query.py` instead of copying `query_id` / legacy
-`query_variant` validation logic. Migrated public task files should declare
-`supported_query_ids`, validate with `resolve_task_query_id_param(...)`, strip
-query-selector aliases before calling scene shared helpers, and emit canonical
-`query_id` metadata only. Snapshot or test the emitted `TaskOutput` metadata:
-selected `query_id`, query-spec params, execution trace, optional render spec,
-and any preserved internal query field must stay intentional.
-230. Do not draw fixed RGB semantic outlines, rings, route lines, or selected-cell marks over variable surfaces. Use `trace/tasks/shared/marker_legibility.py` or a thin domain wrapper, resolve the marker against the actual surface colors, and keep the collected marker metadata attached so validation can catch contrast regressions.
-231. When annotation witnesses have distinct semantic roles, prefer `keyed_bbox_map`, `keyed_bbox_set_map`, `keyed_point_map`, or `keyed_point_set_map` so reward checks the role binding itself. Keep unordered set annotation for counting tasks where annotation cardinality is the answer, or for homogeneous witness sets where role and order are semantically irrelevant.
-232. For paired-image difference tasks with a moved-object query, enforce a minimum post-placement displacement and record it in trace metadata; otherwise tiny jitter can create visually ambiguous "moved" witnesses while still satisfying the symbolic count.
-233. For pages role-keyed annotation, use concrete visual-role keys that name the witness and its role, such as `purchase_code`, `receiving_code`, `action_code_header`, `code_target_row`, `target_button`, or `endpoint_step`; avoid generic placeholder keys like `context`, `path_context`, `guide_card`, or `target_control` when the scene has a more specific visible unit.
-234. For games scenes, do not use fixed theme text colors directly for required board readouts, option labels, card ranks, or readable game symbols. Route them through the games shared text helper so final ink/stroke is resolved against the actual board/card/tile surface and required text-legibility metadata is recorded.
+## Core Checklist
+1. Scope is correct: changes stay in the assigned domain/scene unless shared
+   infrastructure is genuinely required.
+2. Public task ids follow `task_<domain>__<scene_id>__<objective_contract>` and
+   stale task ids, aliases, disabled tasks, redirect docs, and compatibility
+   wrappers are removed.
+3. Public task files own objective/query logic, answer binding, annotation
+   binding, task-specific prompt slots, task-specific trace fields, and final
+   `TaskOutput` construction.
+4. Scene `shared/` modules contain identity-free primitives only: state,
+   sampling primitives, layout, rendering, projection, annotation helpers,
+   validation helpers, or scene math/mechanics.
+5. Shared code does not accept or branch on public `task_id`, `query_id`,
+   objective contract, public task name, registered class name, or sibling task
+   identity.
+6. No wrapper-only public task files, copy-split legacy bodies, task-named shared
+   runtimes, or shared multi-task generators remain in migrated scenes.
+7. Helper placement is at the narrowest reusable layer that fits:
+   `core -> tasks/shared -> domain/shared -> scene/shared -> task-local`.
+   Promote only after real multi-consumer reuse or an approved domain shared
+   boundary.
+8. Prompt prose, examples, answer instructions, annotation instructions, and
+   static wording live in prompt assets, not task modules.
+9. Configs contain generation/rendering/prompt knobs only. They do not contain
+   public objective dispatch, query routing, query weights, task coverage, or
+   retired scalar difficulty gates.
+10. Answer, annotation, projected annotation, trace witnesses, and prompt slots
+    come from the same execution trace.
+11. Public annotation uses active global annotation types and marks minimal
+    visual witnesses. Use keyed annotation when role binding matters.
+12. Verifiers consume metadata contracts and projections, not pixels.
+13. Randomness is explicit, deterministic from seed/spec/version inputs, and
+    recorded when it affects prompt, layout, rendering, answer, or annotation.
+14. Semantic visual attributes do not accidentally correlate with answer value,
+    query id, correct option, or construction order unless the task explicitly
+    asks about that attribute.
+15. Rendering changes preserve annotation coordinates: sample layout/style before
+    projection and use only coordinate-preserving post-image noise.
+16. Required/readout text and semantic markers use the shared legibility and
+    contrast helpers or a documented domain wrapper.
+17. Tests cover behavior and contracts, not stale literal defaults or retired
+    task ids.
+18. Task docs, domain docs, prompt assets, configs, taxonomy metadata, tests, and
+    review artifacts are updated together for the changed surface.
+19. Review artifacts, when regenerated, live only under
+    `review/task-reviews/<domain>/<scene_id>/<task_id>/`; reload the browser
+    app index after artifact changes.
+20. Reviewer issues remain open until human verification. Agents add repair
+    notes after fixes and do not resolve issues unless explicitly instructed.
 
-## 3) Process rule
-When a new reusable issue is discovered:
-1. Add one distilled rule here.
-2. Update `docs/workflows/TASK_AUTHORING.md` if authoring behavior should change.
+## Scene-Package Migration Red Flags
+1. A public task file only sets constants and calls a shared generator.
+2. A scene shared helper receives `task_id`, `query_id`, or objective names.
+3. A shared module computes final answers or `annotation_gt` for multiple public
+   objectives.
+4. The scene is marked review-ready without manual source audit, taxonomy audit,
+   focused tests, fresh artifacts, and app reload.
+5. Tests were weakened, allowlists expanded, or status files written to make an
+   incomplete migration appear valid.
+
+## Handoff
+Report:
+1. changed files;
+2. task/scene ids affected;
+3. tests and review commands run;
+4. artifacts regenerated and app reload/restart status;
+5. remaining blockers or human-review decisions needed.

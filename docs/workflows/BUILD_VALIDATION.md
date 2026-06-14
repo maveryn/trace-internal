@@ -34,7 +34,7 @@ Operational policy for build lifecycle and pre-finalize validation.
 8. Required slot conformance and unresolved placeholder checks.
 9. Prompt variant-count/index consistency.
 10. `reward_contract` schema validity plus train/trace reward-contract consistency.
-11. Task-doc consistency: every registered task has `docs/tasks/<task_id>.md`, and `docs/tasks/README.md` links match active tasks.
+11. Task-doc consistency: every registered task has `docs/tasks/<domain>/<scene_id>/<task_id>.md`.
 12. Active inventory consistency: `docs/ACTIVE_TASK_INVENTORY.md` matches the live registry/taxonomy generator.
 
 ## 4) Task-review and distribution policy

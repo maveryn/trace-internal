@@ -14,7 +14,7 @@ from run_vero_sampled_benchmark import BENCHMARK_SPECS, DEFAULT_RUN_ROOT, REPO_R
 
 
 DEFAULT_ANALYSIS_ROOT = REPO_ROOT / "review/external_benchmark_failure_analysis/qwen25vl7b"
-TRACE_TASK_DOCS = {path.stem for path in (REPO_ROOT / "docs/tasks").glob("task_*.md")}
+TRACE_TASK_DOCS = {path.stem for path in (REPO_ROOT / "docs/tasks").rglob("task_*.md")}
 
 SAMPLE_RE = re.compile(r".*_samples_(.+)\.jsonl$")
 
@@ -363,7 +363,7 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
                 "task_games__snake__safe_direction_count",
                 "task_games__pacman__next_item_label",
                 "task_games__space_shooter__safe_lane_count",
-                "task_games__crossing__moving_object_count",
+                "task_games__crossing__moving_object_direction_count",
                 "task_puzzles__cell_board__reachable_region_size",
                 "task_puzzles__cell_board__reachable_target_count",
                 "task_puzzles__cell_board__shortest_path_length_value",

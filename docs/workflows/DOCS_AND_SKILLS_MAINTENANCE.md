@@ -5,6 +5,8 @@ skill surfaces change. The goal is to keep one current repo status instead of
 letting historical inventories or old task names become hidden policy.
 
 ## Source-Of-Truth Order
+Documentation placement rules live in `docs/workflows/DOC_STRUCTURE.md`.
+
 1. Runtime behavior lives in code, configs, prompts, and assets.
 2. Active task/domain inventory is generated in `docs/ACTIVE_TASK_INVENTORY.md`.
 3. Domain setup docs in `docs/domains/` define domain contracts, boundaries,
@@ -14,6 +16,15 @@ letting historical inventories or old task names become hidden policy.
 5. Repo-local skills under `skills/` are operational overlays. They point to
    source-of-truth docs and may add short review checklists, but they must not
    redefine taxonomy, active task lists, calibration gates, or domain policy.
+
+## Code Documentation Rules
+1. Add docstrings for new modules, classes, and non-trivial functions.
+2. Document ownership, key inputs/outputs, determinism assumptions, and
+   non-obvious rejection/failure behavior.
+3. Prefer comments that explain why a constraint or boundary exists, not
+   line-by-line restatements of code.
+4. Use repo-relative paths in docs and comments; do not write local absolute
+   filesystem paths into source-of-truth docs.
 
 ## Required Updates
 Update docs and skills in the same patch when changing any of these surfaces:
@@ -31,25 +42,42 @@ Update docs and skills in the same patch when changing any of these surfaces:
    artifact layout.
 7. Domain boundary changes, including moving a scene/task between domains.
 
+## Update Triggers
+1. ABI/contract changes -> `docs/contracts/BLUEPRINT.md`.
+2. Architecture/module flow changes -> `docs/contracts/SYSTEM_ARCHITECTURE.md`.
+3. Prompt-system changes -> `docs/contracts/PROMPT_SYSTEM.md`.
+4. Public answer/annotation reward-contract changes ->
+   `docs/contracts/RLVR_REWARD_CONTRACTS.md`.
+5. Shared-helper placement/API changes -> `docs/contracts/SYSTEM_ARCHITECTURE.md`,
+   the relevant domain setup doc, or the relevant
+   `docs/SCENE_PACKAGE_MIGRATION/*_SHARED_BOUNDARY.md` file.
+6. Validation/build behavior changes -> `docs/workflows/BUILD_VALIDATION.md`
+   and `docs/contracts/VALIDATION_ERROR_CODES.md`.
+7. Task behavior changes -> the affected
+   `docs/tasks/<domain>/<scene_id>/<task_id>.md`,
+   `docs/ACTIVE_TASK_INVENTORY.md`, and `docs/tasks/README.md` only when the
+   task-doc process itself changes.
+8. Docs/skills navigation or source-of-truth ownership changes ->
+   `docs/workflows/DOC_STRUCTURE.md`, this file, `docs/README.md`,
+   `docs/workflows/README.md`, and `skills/README.md`.
+
 ## What To Update
 For active task or taxonomy changes:
 
 1. Regenerate `docs/ACTIVE_TASK_INVENTORY.md`.
-2. Update `docs/tasks/README.md` and the affected `docs/tasks/<task_id>.md`
-   files.
+2. Update the affected `docs/tasks/<domain>/<scene_id>/<task_id>.md` files.
 3. Update the relevant domain setup doc under `docs/domains/`.
 4. Update prompt docs only when the prompt-system contract changes; do not copy
    exhaustive prompt-bundle maps by hand.
-5. Update the matching `skills/domain-<domain>/SKILL.md` only if its short
-   operational checklist or linked docs changed.
+5. Update a workflow skill only when its routing, stop conditions, or handoff
+   expectations changed. Do not add domain-skill mirrors.
 
 ## Anti-Drift Rules
 1. Do not add historical migration prose to active docs.
 2. Do not keep old task ids, old domain names, retired task inventories, or
    disabled-task notes in source-of-truth docs.
 3. Do not duplicate exhaustive active task inventories outside
-   `docs/ACTIVE_TASK_INVENTORY.md`, `docs/tasks/README.md`, and generated or
-   checked task docs.
+   `docs/ACTIVE_TASK_INVENTORY.md` and generated or checked task docs.
 4. Do not make a skill the only place where a behavior rule is written.
 5. Do not leave prompt examples, annotation hints, or task-review paths using a
    task id that is not active.

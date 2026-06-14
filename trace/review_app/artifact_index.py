@@ -343,7 +343,7 @@ def _scan_task(*, index: ReviewIndex, domain: str, scene_id: str, task_dir: Path
 def _task_taxonomy_summary(*, index: ReviewIndex, task: TaskRecord, sample_uids: list[str]) -> Dict[str, Any]:
     """Return condensed task taxonomy and schema metadata for the review UI."""
 
-    doc_path = index.repo_root / "docs" / "tasks" / f"{task.task_id}.md"
+    doc_path = index.repo_root / "docs" / "tasks" / task.domain / task.scene_id / f"{task.task_id}.md"
     doc_summary = _parse_task_doc_taxonomy(doc_path)
     answer_schemas = sorted(
         {

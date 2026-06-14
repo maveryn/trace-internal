@@ -11,26 +11,29 @@ pip install -r requirements.txt
 ```
 
 2. Implement focused changes in the correct locations:
-- task code: default `trace/tasks/<domain>/<task_group>/<task_name>.py`; tile exception `trace/tasks/tile/<task_group>_<task_name>.py`
-- prompt bundles: `prompts/<domain>/<task_group>/`
-- task-group config: `configs/domains/<domain>/<task_group>.yaml`
-- task docs: `docs/tasks/<task_id>.md`
+- task code: `trace/tasks/<domain>/...`; for migrated scenes use `trace/tasks/<domain>/<scene_id>/<objective_contract>.py`
+- prompt bundles: `prompts/<domain>/...`
+- domain config: `configs/domains/<domain>/...`
+- task docs: `docs/tasks/<domain>/<scene_id>/<task_id>.md`
 
 3. Reuse shared helpers before adding task-local utilities:
 - `trace/core/`
+- `trace/tasks/shared/`
 - `trace/tasks/<domain>/shared/`
-- `docs/workflows/SHARED_UTILITIES.md`
+- scene-local `shared/` packages
+- `docs/contracts/SYSTEM_ARCHITECTURE.md`
 
-4. Follow code documentation standards while implementing:
-- `docs/workflows/CODE_DOCUMENTATION.md`
+4. Follow current review and migration boundaries while implementing:
+- `docs/workflows/CODE_REVIEW_GUIDELINES.md`
+- `docs/SCENE_PACKAGE_MIGRATION/SCENE_MIGRATION_GUIDE.md` for scene-package migration work
 
 5. Keep prompts externalized (no hardcoded prompt strings in task modules).
 
 6. Update docs when behavior/contracts change:
-- `docs/project/STATUS.md`
-- `docs/project/TODO.md`
+- `docs/README.md`
+- relevant `docs/contracts/` or `docs/domains/` page
 - `docs/workflows/TASK_AUTHORING.md`
-- task doc under `docs/tasks/`
+- task doc at `docs/tasks/<domain>/<scene_id>/<task_id>.md`
 
 ## Testing checklist (before commit)
 1. Run test suite:
@@ -46,11 +49,14 @@ import path:
 cd rlvr && PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=..:. pytest tests/test_trace_reward.py tests/test_trace_validation.py -q
 ```
 
-2. If task logic/prompt/render changed, regenerate task samples:
+2. If task logic/prompt/render changed, regenerate task-review artifacts:
 
 ```bash
-PYTHONPATH=. python scripts/generate_task_samples.py --tasks <task_id> --count 50 --clean
+PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full --out-root review/task-reviews
 ```
+
+Use `scripts/generate_task_samples.py` only for quick local smoke/debugging;
+browser review artifacts come from `scripts/run_task_review.py`.
 
 3. If build/validation code changed, run a build smoke test:
 

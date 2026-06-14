@@ -167,7 +167,7 @@ def _make_review_fixture(tmp_path: Path, *, prompt: str = "What label is on the 
             },
         },
     )
-    task_doc = tmp_path / "docs" / "tasks" / f"{TASK_ID}.md"
+    task_doc = tmp_path / "docs" / "tasks" / "pages" / "workspace" / f"{TASK_ID}.md"
     task_doc.parent.mkdir(parents=True, exist_ok=True)
     task_doc.write_text(
         "\n".join(
@@ -225,7 +225,7 @@ def _write_accepted_solve_status(root: Path) -> None:
 
 
 def _write_taxonomy_audit_fixture(tmp_path: Path) -> None:
-    audit_dir = tmp_path / "review" / "taxonomy-audit" / "contract_v0_reanalysis"
+    audit_dir = tmp_path / "review" / "task-reviews" / "taxonomy" / "contract_v0_reanalysis"
     audit_dir.mkdir(parents=True, exist_ok=True)
     program_arguments = json.dumps(
         {

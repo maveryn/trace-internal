@@ -9,7 +9,7 @@ review, tests, task-review artifacts, and app review have already passed.
 ## Path
 
 ```text
-review/taxonomy-audit/scene_package_migration/completed/<domain>/<scene_id>.json
+review/task-reviews/<domain>/<scene_id>/migration_receipt.json
 ```
 
 ## Required Fields

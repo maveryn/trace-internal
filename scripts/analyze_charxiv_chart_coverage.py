@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Analyze CharXiv chart coverage gaps against TRACE chart tasks.
 
-The committed output is a markdown report under review/trace-extension. Raw
-CharXiv data and machine-readable summaries are written under external/, which
-is ignored by the repository.
+CharXiv data, machine-readable summaries, and local markdown reports are written
+under external/, which is ignored by the repository.
 """
 
 from __future__ import annotations
@@ -23,8 +22,8 @@ import pandas as pd
 
 DATASET_ID = "princeton-nlp/CharXiv"
 DEFAULT_CACHE_ROOT = Path("external/datasets/charxiv")
-DEFAULT_REPORT = Path("review/trace-extension/charts/charxiv/CHARXIV_EXPANSION_REPORT.md")
 DEFAULT_SUMMARY = DEFAULT_CACHE_ROOT / "analysis" / "charxiv_summary.json"
+DEFAULT_REPORT = DEFAULT_CACHE_ROOT / "analysis" / "charxiv_expansion_report.md"
 
 DESC_JUDGED = Path(
     "runs/charxivdesc/qwen3-vl-4b-instruct/"

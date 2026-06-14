@@ -24,7 +24,7 @@ from trace.tasks.shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
+from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.pages.shared.render_audit_defaults import (
     wrap_pages_generation,
     wrap_pages_scene_generation,

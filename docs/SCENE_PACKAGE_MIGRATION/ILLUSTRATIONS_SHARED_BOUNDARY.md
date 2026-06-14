@@ -28,25 +28,11 @@ During migration, each public scene gets its own package under:
 trace/tasks/illustrations/<scene_id>/
 ```
 
-## Current Domain Inventory
+## Boundary Context
 
-The current registry has 9 active illustrations scenes and 23 active public
-tasks.
-
-| Scene | Active tasks | Current source shape | Boundary notes |
-|---|---:|---|---|
-| `construction_site` | 3 | migrated scene package with role-split scene-local `shared/{state,labels,layout,rendering,annotations,output,sampling}.py` | Zone, worker, equipment, material, and site-layout grammar is scene-local. Reusable object/person drawing remains domain-shared. |
-| `environment` | 4 | implemented under `counting/` plus `shared/environment_*` | Road/river/building/window/bridge/crosswalk grammar is scene-local. Shared object drawing remains domain-shared. |
-| `indoor_room` | 2 | has scene folder and noncompliant `shared/task_common.py` | Room furniture/surface/container grammar belongs in scene shared. `task_common.py` must be role-split. |
-| `library` | 2 | implemented under `counting/` plus `shared/library_*` | Section/book/setting grammar is scene-local. Book drawing and object records may use domain-shared primitives. |
-| `park_playground` | 4 | implemented under `counting/` plus private branch modules and `shared/park_*` | Activity/area/equipment grammar is scene-local. Branch wrappers must be replaced by public objective files or a compliant `_lifecycle.py`. |
-| `pixel_village` | 4 | has scene folder and noncompliant `shared/counting.py` | Pixel map grammar belongs in scene shared. Current shared file owns task ids/query ids and generation, so it must be decomposed. |
-| `single_object_figure` | 1 | has scene folder, uses domain object rendering | Object canvas and visible-part layout are scene-local; reusable object glyphs remain domain-shared. |
-| `source_scene_edit` | 1 | has scene folder, calls source tasks directly | Derived counterfactual scene. Source-image/task selection is public-task-owned objective logic. |
-| `transit_terminal` | 3 | implemented under `counting/` plus private branch modules and `shared/transit_*` | Boarding-area, queue, luggage, service-point grammar is scene-local. Branch wrappers must be replaced by public objective files or a compliant `_lifecycle.py`. |
-
-Do not treat this table as a migration allowlist. It is an audit map for
-future one-scene-at-a-time work.
+Use `docs/ACTIVE_TASK_INVENTORY.md` for active illustration scenes and task
+counts. Record scene-specific migration findings in review artifacts, not in
+this shared-boundary policy.
 
 The retired generic visual scenes `image_cutout_board` and `missing_patch` are
 not active public scenes. Their reusable jigsaw, rotated-tile, option-label,
@@ -99,8 +85,7 @@ Approved domain-shared categories:
 - source-image acquisition helpers for derived visual scenes, provided they do
   not route public objectives by task id or query id.
 
-Current domain-shared modules that should generally remain domain-shared after
-cleanup:
+Domain-shared modules that should generally remain domain-shared:
 
 | Module | Target role |
 |---|---|
@@ -119,8 +104,8 @@ cleanup:
 | `option_rendering.py` | Scene-neutral option-label, panel-label, bbox, font-trace, image-fit, and crop-detail helpers. |
 | `cutouts.py` | Scene-neutral visual-reconstruction mechanics for jigsaw boards, rotated grids, and patch-option layouts. |
 
-Current domain-shared modules that should move to scene-local shared during
-scene migration:
+Domain-shared modules that should move to scene-local shared when their owning
+scene is migrated:
 
 | Module | Scene-local target |
 |---|---|
@@ -131,8 +116,8 @@ scene migration:
 | `mixed_object_scene.py`, `mixed_object_rendering.py`, `mixed_task_common.py` | Scene-local package for the public scene that owns the mixed-object grammar, if retained. |
 | `pixel_village_rendering.py`, `pixel_territory_rendering.py` | `trace/tasks/illustrations/pixel_village/shared/{state,layout,rendering,annotations,prompts,output,sampling,regions,objects}.py` unless another accepted pixel-map scene needs the same primitive. |
 
-Current shared surfaces that require decomposition before their scenes can
-become review-candidate scenes:
+Legacy shared surfaces that require decomposition before their owning scenes
+can become review-candidate scenes:
 
 - `trace/tasks/illustrations/shared/merged_counting_task.py` rewrites branch
   outputs to public task identities. Migrated public task files should produce

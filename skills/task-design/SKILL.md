@@ -8,17 +8,18 @@ description: Use when designing or reshaping a TRACE task contract, choosing ans
 Use this before writing code for a new task or before changing a task's contract.
 
 ## Read first
-1. `docs/core/BLUEPRINT.md`
+1. `docs/contracts/BLUEPRINT.md`
 2. `docs/workflows/TASK_AUTHORING.md`
-3. the matching domain contract doc under `docs/domains/`
+3. `docs/contracts/TASK_UNIT_POLICY.md`
 4. `docs/ACTIVE_TASK_INVENTORY.md`
 
-If the task is domain-specific, also open the matching domain doc and
-`skills/domain-<domain>/SKILL.md`.
+If domain behavior matters, also open the matching `docs/domains/<domain>.md`.
 
 ## Design workflow
 1. Confirm `domain`, `scene_id`, `task_id`, and whether the idea should be a new public task or a `query_id` inside an existing task.
-2. Check `docs/ACTIVE_TASK_INVENTORY.md` and `docs/tasks/README.md` so you do not create a near-duplicate scene.
+2. Check `docs/ACTIVE_TASK_INVENTORY.md` and nearby
+   `docs/tasks/<domain>/<scene_id>/<task_id>.md` files so you do not create a
+   near-duplicate scene or task.
 3. Freeze the public contract before coding:
    - scene and query structure,
    - answer type,
@@ -43,6 +44,14 @@ If the task is domain-specific, also open the matching domain doc and
 - Annotation should be as direct as possible; do not invent a weaker proxy if a canonical witness exists.
 - Prefer reusing an existing scene contract unless the reasoning style or visual grammar is materially different.
 - Keep prompt-facing contracts minimal; richer partitions and diagnostics can live in trace.
+
+## Stop conditions
+- If task/query boundaries are unclear, switch to
+  `skills/task-unit-audit/SKILL.md` before implementing.
+- If prompt examples or output wording change, include
+  `skills/prompt-design/SKILL.md` in the work.
+- If the design changes reusable domain policy, update
+  `docs/domains/<domain>.md` instead of adding skill-only rules.
 
 ## Handoff
 After the contract is stable, move to `skills/task-implementation/SKILL.md`.

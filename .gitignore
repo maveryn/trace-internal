@@ -217,7 +217,7 @@ external/
 logs/
 runs/
 samples/
-review/task-reviews/
+review/
 
 # Local scratch artifacts
 /*.pdf
@@ -237,24 +237,6 @@ assets/illustrations/external/kenney/top_down_shooter/*.zip
 rlvr/mydata/*.parquet
 rlvr/dataset/validation/*.parquet
 
-# Review workspace generated artifacts
-review/*
-!review/docs/
-!review/docs/**
-!review/code-review/
-!review/code-review/**
-!review/taxonomy-audit/
-!review/taxonomy-audit/**
-!review/trace-extension/
-review/trace-extension/*
-!review/trace-extension/charts/
-review/trace-extension/charts/*
-!review/trace-extension/charts/charxiv/
-review/trace-extension/charts/charxiv/*
-!review/trace-extension/charts/charxiv/CHARXIV_EXPANSION_REPORT.md
-!review/task-reviews/
-review/task-reviews/*
-!review/task-reviews/README.md
 rlvr/val_dataloaders.txt
 rlvr/outputs/
 rlvr/wandb/

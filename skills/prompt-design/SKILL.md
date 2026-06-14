@@ -8,8 +8,9 @@ description: Use when adding or updating TRACE prompt bundles, prompt slots, JSO
 Use this when creating or changing prompt bundles or prompt-facing contract wording.
 
 ## Read first
-1. `docs/core/PROMPT_SYSTEM.md`
+1. `docs/contracts/PROMPT_SYSTEM.md`
 2. `docs/workflows/TASK_AUTHORING.md`
+3. `docs/contracts/RLVR_REWARD_CONTRACTS.md` when output-mode examples include annotation
 
 ## Prompt workflow
 1. Keep bundle structure aligned to TRACE's composition layers:
@@ -28,6 +29,12 @@ Use this when creating or changing prompt bundles or prompt-facing contract word
 - If a task mentions a color, pass it as `name [#RRGGBB]` through the shared formatter.
 - If query branches change annotation structure or semantics, examples must be query-aware too.
 - Keep task-layer wording semantic; do not duplicate formatting instructions already carried by scene or mode templates.
+
+## Stop conditions
+- If prompt wording changes the task boundary or answer/annotation schema,
+  switch to `skills/task-unit-audit/SKILL.md` before editing templates.
+- If prompt changes affect generated samples, use
+  `skills/verification-review/SKILL.md` after implementation.
 
 ## Handoff
 After prompt wiring is stable, run `skills/verification-review/SKILL.md`.

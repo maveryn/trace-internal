@@ -59,6 +59,11 @@ def _file_names(path: Path) -> set[str]:
     return {child.name for child in path.iterdir() if child.is_file()}
 
 
+def _task_doc_rel_path(task_id: str) -> Path:
+    prefix, scene_id, _objective = task_id.split("__", 2)
+    return Path(prefix.removeprefix("task_")) / scene_id / f"{task_id}.md"
+
+
 def _walk_bundle_ids(value: Any) -> Iterator[str]:
     if isinstance(value, Mapping):
         for key, child in value.items():
@@ -173,12 +178,10 @@ def collect_inventory_integrity_failures(*, include_local_cache: bool = False) -
         failures.append(IntegrityFailure("active_inventory_stale", "docs/ACTIVE_TASK_INVENTORY.md is stale"))
 
     task_docs_root = REPO_ROOT / "docs" / "tasks"
-    task_doc_files = {
-        path.name for path in task_docs_root.glob("task_*.md") if path.name not in {"README.md", "TASK_DOC_TEMPLATE.md"}
-    }
-    expected_doc_files = {f"{task_id}.md" for task_id in registered_task_ids}
-    missing_docs = sorted(expected_doc_files - task_doc_files)
-    extra_docs = sorted(task_doc_files - expected_doc_files)
+    task_doc_files = {path.relative_to(task_docs_root) for path in task_docs_root.rglob("task_*.md")}
+    expected_doc_files = {_task_doc_rel_path(task_id) for task_id in registered_task_ids}
+    missing_docs = sorted(str(path) for path in expected_doc_files - task_doc_files)
+    extra_docs = sorted(str(path) for path in task_doc_files - expected_doc_files)
     if missing_docs:
         failures.append(IntegrityFailure("task_docs_missing", ", ".join(missing_docs[:20])))
     if extra_docs:

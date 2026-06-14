@@ -19,7 +19,7 @@ from trace.tasks.shared.config_defaults import (
     resolve_required_int_bounds,
     split_generation_rendering_prompt_defaults,
 )
-from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
+from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 
 
 FULL_NODE_LINK_LAYOUT_VARIANTS = set(SUPPORTED_LAYOUT_VARIANTS)

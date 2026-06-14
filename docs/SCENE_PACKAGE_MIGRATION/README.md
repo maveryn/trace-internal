@@ -23,17 +23,16 @@ artifacts, forged status files, or compatibility aliases.
 
 1. `SCENE_MIGRATION_GUIDE.md`
 2. `TAXONOMY_REVIEW_CHECKLIST.md`
-3. `TAXONOMY_BOOKKEEPING.md`
-4. `../core/PROGRAM_SCHEMA_CATALOG.md`
-5. `ENFORCEMENT_TESTS.md`
-6. `RECEIPT_SCHEMA.md`
+3. `../contracts/PROGRAM_SCHEMA_CATALOG.md`
+4. `ENFORCEMENT_TESTS.md`
+5. `RECEIPT_SCHEMA.md`
 
 Domain-level companion docs may be added here only when a domain has shared
 scene infrastructure that needs explicit ownership rules before scene work can
 proceed. Current companion docs:
 
-- `GRAPH_SHARED_STRUCTURE.md`: graph-domain ownership plan for graph algorithms,
-  renderers, scene-local shared role files, and the `graph/node_link` migration.
+- `GRAPH_SHARED_STRUCTURE.md`: graph-domain shared-boundary guidance for graph
+  algorithms, renderers, and scene-local shared role files.
 - `GAMES_SHARED_BOUNDARY.md`: games-domain ownership plan for domain-shared
   helpers versus one scene's `shared/` package.
 - `CHARTS_SHARED_BOUNDARY.md`: charts-domain ownership plan for implementation-

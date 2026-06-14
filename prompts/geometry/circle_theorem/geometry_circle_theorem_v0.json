@@ -192,11 +192,11 @@
       "Use the labeled circle to determine the length of {answer_segment}."
     ],
     "intersecting_chords_arc_measure": [
-      "Chords {first_chord_segment} and {second_chord_segment} meet at {intersection_label}. What is the measure of {answer_arc}?",
-      "Using the two chords crossing at {intersection_label}, find the measure of {answer_arc}.",
-      "Two chords cross inside the circle. Determine the measure of {answer_arc}.",
-      "Find the measure of {answer_arc} from the visible angle and arc measurements.",
-      "Use the labeled circle to determine the measure of {answer_arc}."
+      "Chords {first_chord_segment} and {second_chord_segment} meet at {intersection_label}. What is the degree measure of {answer_arc}?",
+      "Using the two chords crossing at {intersection_label}, find the degree measure of {answer_arc}.",
+      "Two chords cross inside the circle. Determine the degree measure of {answer_arc}.",
+      "Find the degree measure of {answer_arc} from the visible angle and arc measurements.",
+      "Use the labeled circle to determine the degree measure of {answer_arc}."
     ],
     "multi_step_angle_value": [
       "Chords {first_chord_segment} and {second_chord_segment} meet at {intersection_label}. What is the measure of {answer_angle}?",

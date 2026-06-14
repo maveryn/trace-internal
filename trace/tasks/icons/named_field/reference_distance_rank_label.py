@@ -47,9 +47,9 @@ from ..shared.procedural_named_icons import (
     sample_procedural_named_icon_fill_style,
     validate_procedural_named_icon_fill_style_support,
 )
-from .shared.spatial_primitives import (
+from .shared.output import serialize_distance_rank_icon as _serialize_distance_icon
+from .shared.rendering import (
     render_distance_rank_scene as _render_placed_scene,
-    serialize_distance_rank_icon as _serialize_distance_icon,
 )
 from .shared.state import (
     DistanceRankIconPlan as _IconPlan,

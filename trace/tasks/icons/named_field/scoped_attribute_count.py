@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import math
 from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
-
-from PIL import Image, ImageChops, ImageDraw
 
 from ....core.seed import spawn_rng
 from ....core.scene_config import get_scene_defaults
@@ -21,52 +18,41 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.weighted_sampling import sample_weighted_value, weighted_probability_map
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.annotation import bbox_set_annotation
-from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
     BBox,
-    draw_single_panel,
-    max_overlap_with_existing,
     resolve_single_panel_layout,
-    single_panel_geometry_to_trace,
     sort_bboxes_reading_order,
 )
 from ..shared.icon_style import sample_icon_palette
-from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
+from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params
 from ..shared.procedural_named_icon_field_scene import (
     SCENE_ID,
-    bbox_center_float,
-    bbox_from_center_and_size,
     resolve_named_icon_fill_style_probabilities,
     resolve_named_icon_fill_style_support,
     resolve_named_icon_int_bounds,
-    rotation_for_named_shape,
     uniform_string_probability_map,
 )
 from ..shared.procedural_named_icons import (
     PROCEDURAL_NAMED_ICON_FILL_STYLES,
     PROCEDURAL_NAMED_ICON_SHAPES,
     procedural_named_icon_display_name,
-    procedural_named_icon_fill_style_probability_map,
-    render_procedural_named_icon_rgba,
-    sample_procedural_named_icon_fill_style,
-    validate_procedural_named_icon_fill_style_support,
 )
-from .shared.spatial_primitives import (
-    draw_region_outline as _draw_region_outline,
-    draw_region_underlay as _draw_region_underlay,
-    point_inside_region as _point_inside_region,
-    region_to_trace as _region_to_trace,
+from .shared.layout import (
     sample_band_region as _sample_band_region,
     sample_box_region as _sample_box_region,
     sample_quadrant_region as _sample_quadrant_region,
-    sample_region_icon_center as _sample_center,
     sample_shelf_region as _sample_shelf_region,
+)
+from .shared.output import (
+    region_to_trace as _region_to_trace,
     serialize_region_icon as _serialize_icon,
+)
+from .shared.rendering import (
+    render_scoped_region_scene as _render_scoped_region_scene,
 )
 from .shared.state import (
     RegionIconPlan as _IconPlan,
     RegionSpec as _RegionSpec,
-    RenderedRegionIcon as _RenderedRegionIcon,
     ScopedRegionScenePayload as _ScenePayload,
 )
 
@@ -385,107 +371,17 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
         distance_space=str(render_params["color_distance_space"]),
     )
 
-    image = Image.new("RGBA", (int(layout.canvas_width), int(layout.canvas_height)))
-    draw_single_panel(
-        image=image,
-        layout=layout,
-        background_rgb=tuple(int(value) for value in render_params["background_color_rgb"]),
-        panel_fill_rgb=tuple(int(value) for value in render_params["panel_fill_rgb"]),
-        panel_border_rgb=tuple(int(value) for value in render_params["panel_border_rgb"]),
-        title_color_rgb=tuple(int(value) for value in render_params["header_text_rgb"]),
-        corner_radius_px=int(render_params["panel_corner_radius_px"]),
-        title_font_size_px=int(render_params["panel_title_font_size_px"]),
-        scene_title="Scene",
-        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
-    )
-    _draw_region_underlay(image, region=region, content_bbox=content_bbox, render_params=render_params)
-
-    min_size = max(12, int(render_params["scene_icon_size_min_px"]))
-    max_size = max(min_size, int(render_params["scene_icon_size_max_px"]))
-    existing_bboxes: list[BBox] = []
-    rendered: list[_RenderedRegionIcon] = []
-    margin_px = int(render_params["region_boundary_margin_px"])
-    for index, plan in enumerate(plans):
-        placed = False
-        nominal_size = int(rng.randint(int(min_size), int(max_size)))
-        rotation = rotation_for_named_shape(rng, str(plan.shape_id))
-        tint_rgb = tuple(int(value) for value in rng.choice(palette))
-        fill_style = sample_procedural_named_icon_fill_style(
-            rng,
-            support=fill_style_support,
-            probabilities=fill_style_probabilities,
-        )
-        noise_edits, noise_seed = sample_icon_instance_noise(
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:named_icon_{int(index)}",
-            render_params=render_params,
-        )
-        for shrink_round in range(8):
-            candidate_size = max(28, int(round(float(nominal_size) * (0.92 ** int(shrink_round)))))
-            sprite = render_procedural_named_icon_rgba(
-                shape_id=str(plan.shape_id),
-                size_px=int(candidate_size),
-                tint_rgb=tint_rgb,
-                fill_style=str(fill_style),
-                rotation_degrees=int(rotation),
-                mirror_x=False,
-                noise_edits=tuple(noise_edits),
-                noise_seed=int(noise_seed),
-            )
-            for _ in range(int(render_params["scene_placement_max_attempts"])):
-                center = _sample_center(
-                    rng,
-                    content_bbox=content_bbox,
-                    sprite_size=tuple(int(value) for value in sprite.size),
-                    region=region,
-                    desired_inside=bool(plan.desired_inside_region),
-                    margin_px=int(margin_px),
-                )
-                bbox = bbox_from_center_and_size(center, sprite.size)
-                if max_overlap_with_existing(bbox, existing_bboxes) > float(render_params["scene_max_overlap_fraction"]):
-                    continue
-                image.alpha_composite(sprite, (int(bbox[0]), int(bbox[1])))
-                inside_region = _point_inside_region(region, center)
-                counted = bool(plan.is_target_shape and inside_region == counts_inside)
-                rendered.append(
-                    _RenderedRegionIcon(
-                        instance_id=f"named_region_icon_{int(index):02d}",
-                        shape_id=str(plan.shape_id),
-                        shape_name=procedural_named_icon_display_name(str(plan.shape_id)),
-                        bbox_xyxy=tuple(int(value) for value in bbox),
-                        center_xy=(float(center[0]), float(center[1])),
-                        nominal_size_px=int(candidate_size),
-                        rotation_degrees=int(rotation),
-                        tint_rgb=tuple(int(value) for value in tint_rgb),
-                        fill_style=str(fill_style),
-                        inside_region=bool(inside_region),
-                        counted=bool(counted),
-                        noise_edits=serialize_icon_noise_edits(tuple(noise_edits)),
-                        noise_seed=int(noise_seed),
-                    )
-                )
-                existing_bboxes.append(tuple(int(value) for value in bbox))
-                placed = True
-                break
-            if placed:
-                break
-        if not placed:
-            raise ValueError("could not place named-region icon with requested membership")
-
-    _draw_region_outline(image, region=region, content_bbox=content_bbox, render_params=render_params)
-    counted_count = sum(1 for instance in rendered if instance.counted)
-    if int(counted_count) != int(target_count):
-        raise RuntimeError("rendered region count did not match target answer")
-
-    return _ScenePayload(
-        image=image.convert("RGB"),
-        panel_geometry=single_panel_geometry_to_trace(layout),
+    return _render_scoped_region_scene(
+        rng=rng,
+        instance_seed=int(instance_seed),
+        namespace=TASK_ID,
         region=region,
         target_shape_id=str(target_shape_id),
         target_shape_name=procedural_named_icon_display_name(str(target_shape_id)),
         target_count=int(target_count),
         object_count=int(object_count),
-        instances=tuple(rendered),
+        plans=tuple(plans),
+        render_params=render_params,
         sampled_palette_rgb=tuple(tuple(int(channel) for channel in color) for color in palette),
         query_probabilities=uniform_string_probability_map(query_support, selected=str(query_id) if explicit_query is not None else None),
         shape_probabilities=uniform_string_probability_map(shape_support, selected=str(target_shape_id) if explicit_shape is not None else None),

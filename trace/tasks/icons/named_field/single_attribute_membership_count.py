@@ -8,7 +8,11 @@ from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 
-from ._lifecycle import run_shape_count_named_field_task
+from ._lifecycle import (
+    NamedFieldObjectivePlan,
+    prepare_shape_count_objective,
+    run_named_field_lifecycle,
+)
 
 
 TASK_ID = "task_icons__named_field__single_attribute_membership_count"
@@ -23,6 +27,21 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_render
 )
 
 
+def _prepare_shape_count_objective(instance_seed: int, params: Dict[str, Any]) -> NamedFieldObjectivePlan:
+    """Bind this public direct shape-count task to the named-field lifecycle."""
+
+    return prepare_shape_count_objective(
+        run_namespace=TASK_ID,
+        domain="icons",
+        public_query_id=QUERY_ID,
+        generation_defaults=_GEN_DEFAULTS,
+        rendering_defaults=_RENDER_DEFAULTS,
+        prompt_defaults_map=_PROMPT_DEFAULTS,
+        instance_seed=int(instance_seed),
+        params=params,
+    )
+
+
 @register_task
 class IconsCountingNamedShapeCountTask:
     """Count procedural named icon shapes in a single field."""
@@ -35,19 +54,14 @@ class IconsCountingNamedShapeCountTask:
         """Generate one direct named-shape counting task."""
 
         task_params = dict(params)
-        output = run_shape_count_named_field_task(
-            task_id=TASK_ID,
-            domain=self.domain,
+        objective = _prepare_shape_count_objective(int(instance_seed), task_params)
+        return run_named_field_lifecycle(
             scene_id=SCENE_ID,
-            query_id=QUERY_ID,
-            generation_defaults=_GEN_DEFAULTS,
             rendering_defaults=_RENDER_DEFAULTS,
-            prompt_defaults_map=_PROMPT_DEFAULTS,
             instance_seed=int(instance_seed),
-            params=task_params,
             max_attempts=int(max_attempts),
+            objective=objective,
         )
-        return output
 
 
 __all__ = ["IconsCountingNamedShapeCountTask"]

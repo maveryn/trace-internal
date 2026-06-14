@@ -30,6 +30,12 @@ from .metrics import (
     counterfactual_role_by_instance_id,
     trace_key,
 )
+from .state import (
+    CloserReferenceRenderedIcon,
+    DistanceRankRenderedIcon,
+    RegionSpec,
+    RenderedRegionIcon,
+)
 
 
 def render_slot_params(params: Mapping[str, Any], render_defaults: Mapping[str, Any], fallback_defaults: Any) -> tuple[int, int, int]:
@@ -80,6 +86,108 @@ def semantic_color_palette() -> list[dict[str, Any]]:
         }
         for name, rgb in available_named_colors()
     ]
+
+
+def serialize_closer_reference_icon(icon: CloserReferenceRenderedIcon) -> Dict[str, Any]:
+    """Serialize one closer-reference icon for trace payloads."""
+
+    return {
+        "entity_kind": "procedural_named_icon",
+        "instance_id": str(icon.instance_id),
+        "role": str(icon.role),
+        "label": str(icon.label),
+        "shape_id": str(icon.shape_id),
+        "shape_name": str(icon.shape_name),
+        "color_name": str(icon.color_name),
+        "tint_rgb": [int(value) for value in icon.tint_rgb],
+        "fill_style": str(icon.fill_style),
+        "bbox_xyxy": [int(value) for value in icon.bbox_xyxy],
+        "center_xy": [float(icon.center_xy[0]), float(icon.center_xy[1])],
+        "nominal_size_px": int(icon.nominal_size_px),
+        "rotation_degrees": int(icon.rotation_degrees),
+        "distance_to_reference_a_px": None if icon.distance_to_reference_a_px is None else float(icon.distance_to_reference_a_px),
+        "distance_to_reference_b_px": None if icon.distance_to_reference_b_px is None else float(icon.distance_to_reference_b_px),
+        "closer_reference_label": str(icon.closer_reference_label),
+        "counted": bool(icon.counted),
+        "label_bbox_xyxy": None if icon.label_bbox_xyxy is None else [int(value) for value in icon.label_bbox_xyxy],
+        "noise_edits": [dict(edit) for edit in icon.noise_edits],
+        "noise_seed": None if icon.noise_seed is None else int(icon.noise_seed),
+    }
+
+
+def serialize_distance_rank_icon(icon: DistanceRankRenderedIcon) -> Dict[str, Any]:
+    """Serialize one distance-rank icon for trace payloads."""
+
+    return {
+        "entity_kind": "procedural_named_icon",
+        "instance_id": str(icon.instance_id),
+        "role": str(icon.role),
+        "label": str(icon.label),
+        "shape_id": str(icon.shape_id),
+        "shape_name": str(icon.shape_name),
+        "color_name": str(icon.color_name),
+        "tint_rgb": [int(value) for value in icon.tint_rgb],
+        "fill_style": str(icon.fill_style),
+        "bbox_xyxy": [int(value) for value in icon.bbox_xyxy],
+        "center_xy": [float(icon.center_xy[0]), float(icon.center_xy[1])],
+        "nominal_size_px": int(icon.nominal_size_px),
+        "rotation_degrees": int(icon.rotation_degrees),
+        "distance_to_reference_px": None if icon.distance_to_reference_px is None else float(icon.distance_to_reference_px),
+        "distance_rank": None if icon.distance_rank is None else int(icon.distance_rank),
+        "noise_edits": [dict(edit) for edit in icon.noise_edits],
+        "noise_seed": None if icon.noise_seed is None else int(icon.noise_seed),
+    }
+
+
+def region_to_trace(region: RegionSpec) -> Dict[str, Any]:
+    """Serialize a visible region without hardcoding public identity keys."""
+
+    payload: Dict[str, Any] = {
+        trace_key("query", "id"): str(region.query_key),
+        "region_kind": str(region.region_kind),
+        "counts_inside": bool(region.counts_inside),
+        "shape_kind": str(region.shape_kind),
+        "band_kind": str(region.band_kind),
+        "quadrant_id": str(region.quadrant_id),
+        "shelf_index": int(region.shelf_index),
+        "shelf_count": int(region.shelf_count),
+    }
+    if region.bbox_xyxy is not None:
+        payload["bbox_xyxy"] = [int(value) for value in region.bbox_xyxy]
+    if region.ellipse_center_xy is not None:
+        payload["ellipse_center_xy"] = [float(value) for value in region.ellipse_center_xy]
+    if region.ellipse_radii_xy is not None:
+        payload["ellipse_radii_xy"] = [float(value) for value in region.ellipse_radii_xy]
+    if region.band_normal_xy is not None:
+        payload["band_normal_xy"] = [float(value) for value in region.band_normal_xy]
+    if region.band_center_distance is not None:
+        payload["band_center_distance"] = float(region.band_center_distance)
+    if region.band_half_width_px is not None:
+        payload["band_half_width_px"] = float(region.band_half_width_px)
+    if region.band_polygon_xy:
+        payload["band_polygon_xy"] = [[float(x), float(y)] for x, y in region.band_polygon_xy]
+    return payload
+
+
+def serialize_region_icon(instance: RenderedRegionIcon) -> Dict[str, Any]:
+    """Serialize one scoped-region icon for trace payloads."""
+
+    return {
+        "entity_kind": "procedural_named_icon",
+        "instance_id": str(instance.instance_id),
+        "shape_id": str(instance.shape_id),
+        "shape_name": str(instance.shape_name),
+        "bbox_xyxy": [int(value) for value in instance.bbox_xyxy],
+        "center_xy": [float(value) for value in instance.center_xy],
+        "nominal_size_px": int(instance.nominal_size_px),
+        "rotation_degrees": int(instance.rotation_degrees),
+        "tint_rgb": [int(value) for value in instance.tint_rgb],
+        "fill_style": str(instance.fill_style),
+        "inside_region": bool(instance.inside_region),
+        "counted": bool(instance.counted),
+        "noise_edits": [dict(edit) for edit in instance.noise_edits],
+        "noise_seed": None if instance.noise_seed is None else int(instance.noise_seed),
+    }
 
 
 def build_shape_count_query_metadata(
@@ -551,7 +659,11 @@ __all__ = [
     "build_shape_count_query_metadata",
     "build_shape_count_trace_payload",
     "object_bboxes",
+    "region_to_trace",
     "render_slot_params",
     "semantic_color_palette",
+    "serialize_closer_reference_icon",
+    "serialize_distance_rank_icon",
+    "serialize_region_icon",
     "shape_counted_instance_ids",
 ]

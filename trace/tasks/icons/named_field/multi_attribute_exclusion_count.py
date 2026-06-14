@@ -9,7 +9,11 @@ from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.fixed_query import select_task_query_id
 
-from ._lifecycle import run_boolean_named_field_task
+from ._lifecycle import (
+    NamedFieldObjectivePlan,
+    prepare_boolean_count_objective,
+    run_named_field_lifecycle,
+)
 from .shared.metrics import BOOLEAN_PREDICATE_ATTRIBUTE_WITHOUT_SHAPE, BOOLEAN_PREDICATE_SHAPE_WITHOUT_ATTRIBUTE
 
 
@@ -33,6 +37,30 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_render
 )
 
 
+def _prepare_boolean_objective(
+    instance_seed: int,
+    params: Dict[str, Any],
+    query_probabilities: Dict[str, float],
+    selected_query_id: str,
+    predicate_kind: str,
+) -> NamedFieldObjectivePlan:
+    """Bind this public exclusion predicate branch to the named-field lifecycle."""
+
+    return prepare_boolean_count_objective(
+        run_namespace=TASK_ID,
+        domain="icons",
+        selected_query_key=str(selected_query_id),
+        query_probabilities=query_probabilities,
+        prompt_query_key=str(selected_query_id),
+        predicate_kind=str(predicate_kind),
+        generation_defaults=_GEN_DEFAULTS,
+        rendering_defaults=_RENDER_DEFAULTS,
+        prompt_defaults_map=_PROMPT_DEFAULTS,
+        instance_seed=int(instance_seed),
+        params=params,
+    )
+
+
 @register_task
 class IconsNamedFieldMultiAttributeExclusionCountTask:
     """Count icons satisfying one named predicate while excluding the other."""
@@ -52,20 +80,19 @@ class IconsNamedFieldMultiAttributeExclusionCountTask:
         )
         prompt_query_key = str(selected_query_id)
         predicate_kind = str(PREDICATE_KIND_BY_QUERY_ID[prompt_query_key])
-        return run_boolean_named_field_task(
-            task_id=TASK_ID,
-            domain=self.domain,
+        objective = _prepare_boolean_objective(
+            int(instance_seed),
+            task_params,
+            query_probabilities,
+            prompt_query_key,
+            predicate_kind,
+        )
+        return run_named_field_lifecycle(
             scene_id=SCENE_ID,
-            selected_query_key=prompt_query_key,
-            query_probabilities=query_probabilities,
-            prompt_query_key=prompt_query_key,
-            predicate_kind=predicate_kind,
-            generation_defaults=_GEN_DEFAULTS,
             rendering_defaults=_RENDER_DEFAULTS,
-            prompt_defaults_map=_PROMPT_DEFAULTS,
             instance_seed=int(instance_seed),
-            params=task_params,
             max_attempts=int(max_attempts),
+            objective=objective,
         )
 
 

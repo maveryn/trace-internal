@@ -9,7 +9,10 @@ from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID, select_task_query_id
 
-from ._lifecycle import run_counterfactual_named_field_task
+from ._lifecycle import (
+    prepare_counterfactual_count_objective,
+    run_named_field_lifecycle,
+)
 from .shared.metrics import COUNTERFACTUAL_SHAPE_REMOVAL
 
 
@@ -56,10 +59,9 @@ class IconsNamedFieldCounterfactualTotalCountTask:
             default_query_id=QUERY_ID,
             task_id=TASK_ID,
         )
-        return run_counterfactual_named_field_task(
-            task_id=TASK_ID,
+        objective = prepare_counterfactual_count_objective(
+            run_namespace=TASK_ID,
             domain=self.domain,
-            scene_id=SCENE_ID,
             selected_query_key=str(selected_query_id),
             query_probabilities=query_probabilities,
             prompt_query_key=PROMPT_QUERY_KEY,
@@ -69,7 +71,13 @@ class IconsNamedFieldCounterfactualTotalCountTask:
             prompt_defaults_map=_PROMPT_DEFAULTS,
             instance_seed=int(instance_seed),
             params=task_params,
+        )
+        return run_named_field_lifecycle(
+            scene_id=SCENE_ID,
+            rendering_defaults=_RENDER_DEFAULTS,
+            instance_seed=int(instance_seed),
             max_attempts=int(max_attempts),
+            objective=objective,
         )
 
 

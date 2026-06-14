@@ -1,4 +1,4 @@
-"""Neutral render lifecycle for the named-field icons scene."""
+"""Scene-private lifecycle orchestration for named-field icon tasks."""
 
 from __future__ import annotations
 
@@ -36,9 +36,9 @@ from .shared.output import (
     build_counterfactual_trace_payload,
     build_shape_count_query_metadata,
     build_shape_count_trace_payload,
+    render_slot_params,
     shape_counted_instance_ids,
 )
-from .shared.output import render_slot_params
 from .shared.prompts import (
     build_boolean_prompt_artifacts,
     build_counterfactual_prompt_artifacts,
@@ -71,10 +71,34 @@ class NamedFieldRenderedAttempt:
     stack_gap_px: int
 
 
+@dataclass(frozen=True)
+class NamedFieldBoundOutput:
+    """Task-owned public output fields after one rendered attempt is validated."""
+
+    prompt: str
+    answer_gt: TypedValue
+    annotation_gt: TypedValue
+    trace_payload: Mapping[str, Any]
+    query_id: str
+    prompt_variants: Mapping[str, str]
+
+
 SceneSpecBuilder = Callable[
-    [Any, Mapping[str, Any], Any],
+    [Any, Mapping[str, Any], int],
     tuple[Any, tuple[NamedIconFieldSpec, ...], Tuple[Tuple[int, int, int], ...]],
 ]
+OutputBinder = Callable[[NamedFieldRenderedAttempt], NamedFieldBoundOutput]
+
+
+@dataclass(frozen=True)
+class NamedFieldObjectivePlan:
+    """Task-owned hooks needed by the neutral named-field render lifecycle."""
+
+    run_namespace: str
+    params: Mapping[str, Any]
+    fallback_defaults: Any
+    build_scene_specs: SceneSpecBuilder
+    bind_rendered_attempt: OutputBinder
 
 
 def render_named_field_attempts(
@@ -102,7 +126,7 @@ def render_named_field_attempts(
     for attempt in range(max(1, int(max_attempts))):
         try:
             scene_rng = spawn_rng(int(instance_seed), f"{run_namespace}.scene", int(attempt))
-            sample, icon_specs, sampled_palette_rgb = build_scene_specs(scene_rng, render_params, attempt)
+            sample, icon_specs, sampled_palette_rgb = build_scene_specs(scene_rng, render_params, int(attempt))
             scene = render_procedural_named_icon_field_scene(
                 rng=scene_rng,
                 instance_seed=int(instance_seed),
@@ -128,33 +152,65 @@ def render_named_field_attempts(
     raise RuntimeError(f"could not generate {run_namespace}: {last_error}") from last_error
 
 
-def run_shape_count_named_field_task(
+def run_named_field_lifecycle(
     *,
-    task_id: str,
-    domain: str,
     scene_id: str,
-    query_id: str,
+    instance_seed: int,
+    max_attempts: int,
+    rendering_defaults: Mapping[str, Any],
+    objective: NamedFieldObjectivePlan,
+) -> TaskOutput:
+    """Run common named-field rendering and assemble the task-owned output fields."""
+
+    rendered = render_named_field_attempts(
+        run_namespace=str(objective.run_namespace),
+        instance_seed=int(instance_seed),
+        params=objective.params,
+        rendering_defaults=rendering_defaults,
+        fallback_defaults=objective.fallback_defaults,
+        max_attempts=int(max_attempts),
+        build_scene_specs=objective.build_scene_specs,
+    )
+    bound = objective.bind_rendered_attempt(rendered)
+    return TaskOutput(
+        prompt=str(bound.prompt),
+        answer_gt=bound.answer_gt,
+        annotation_gt=bound.annotation_gt,
+        image=rendered.scene.image,
+        image_id="img0",
+        trace_payload=dict(bound.trace_payload),
+        task_versions=default_task_versions(),
+        scene_id=str(scene_id),
+        query_id=str(bound.query_id),
+        prompt_variants={str(key): str(value) for key, value in bound.prompt_variants.items()},
+    )
+
+
+def prepare_shape_count_objective(
+    *,
+    run_namespace: str,
+    domain: str,
+    public_query_id: str,
     generation_defaults: Mapping[str, Any],
     rendering_defaults: Mapping[str, Any],
     prompt_defaults_map: Mapping[str, Any],
     instance_seed: int,
     params: Mapping[str, Any],
-    max_attempts: int,
-) -> TaskOutput:
-    """Run the repeated lifecycle for a public direct shape-count task."""
+) -> NamedFieldObjectivePlan:
+    """Prepare direct named-shape count hooks for the neutral lifecycle."""
 
     task_params = dict(params)
 
     def build_scene_specs(scene_rng, render_params, _attempt):
         sample = sample_shape_count_spec(
-            run_namespace=str(task_id),
+            run_namespace=str(run_namespace),
             instance_seed=int(instance_seed),
             params=task_params,
             gen_defaults=generation_defaults,
             render_defaults=rendering_defaults,
         )
         icon_specs, sampled_palette_rgb = build_shape_count_scene_specs(
-            run_namespace=str(task_id),
+            run_namespace=str(run_namespace),
             sample=sample,
             instance_seed=int(instance_seed),
             render_params=render_params,
@@ -162,69 +218,66 @@ def run_shape_count_named_field_task(
         )
         return sample, icon_specs, sampled_palette_rgb
 
-    rendered = render_named_field_attempts(
-        run_namespace=str(task_id),
-        instance_seed=int(instance_seed),
+    def bind_rendered_attempt(rendered: NamedFieldRenderedAttempt) -> NamedFieldBoundOutput:
+        """Bind direct shape-count answer, annotation, prompt, and trace from one rendered scene."""
+
+        sample = rendered.sample
+        scene = rendered.scene
+        annotation_bboxes = named_icon_bboxes_for_shape(scene.instances, shape_id=str(sample.target_shape_id))
+        if len(annotation_bboxes) != int(sample.target_count):
+            raise RuntimeError("rendered named-shape count did not match target count")
+        annotation_artifacts = bbox_set_from_bboxes(annotation_bboxes)
+        prompt_artifacts, prompt_defaults = build_shape_count_prompt_artifacts(
+            domain=str(domain),
+            run_namespace=str(run_namespace),
+            prompt_defaults_map=prompt_defaults_map,
+            sample=sample,
+            instance_seed=int(instance_seed),
+        )
+        counted_instance_ids = shape_counted_instance_ids(sample, scene.instances)
+        query_metadata = build_shape_count_query_metadata(
+            sample=sample,
+            params=task_params,
+            gen_defaults=generation_defaults,
+            shape_support=shape_support(task_params, generation_defaults),
+        )
+        trace_payload = build_shape_count_trace_payload(
+            sample=sample,
+            scene=scene,
+            render_params=rendered.render_params,
+            sampled_palette_rgb=rendered.sampled_palette_rgb,
+            prompt_defaults=prompt_defaults,
+            prompt_artifacts=prompt_artifacts,
+            annotation_artifacts=annotation_artifacts,
+            counted_instance_ids=counted_instance_ids,
+            query_metadata=query_metadata,
+            public_query_id=str(public_query_id),
+            slot_padding_px=rendered.slot_padding_px,
+            slot_jitter_px=rendered.slot_jitter_px,
+            stack_gap_px=rendered.stack_gap_px,
+        )
+        return NamedFieldBoundOutput(
+            prompt=str(prompt_artifacts.prompt),
+            answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
+            annotation_gt=TypedValue(type=str(annotation_artifacts["annotation_type"]), value=list(annotation_artifacts["annotation_value"])),
+            trace_payload=trace_payload,
+            query_id=str(public_query_id),
+            prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
+        )
+
+    return NamedFieldObjectivePlan(
+        run_namespace=str(run_namespace),
         params=task_params,
-        rendering_defaults=rendering_defaults,
         fallback_defaults=SHAPE_COUNT_DEFAULTS,
-        max_attempts=int(max_attempts),
         build_scene_specs=build_scene_specs,
-    )
-    sample = rendered.sample
-    scene = rendered.scene
-    annotation_bboxes = named_icon_bboxes_for_shape(scene.instances, shape_id=str(sample.target_shape_id))
-    if len(annotation_bboxes) != int(sample.target_count):
-        raise RuntimeError("rendered named-shape count did not match target count")
-    annotation_artifacts = bbox_set_from_bboxes(annotation_bboxes)
-    prompt_artifacts, prompt_defaults = build_shape_count_prompt_artifacts(
-        domain=str(domain),
-        run_namespace=str(task_id),
-        prompt_defaults_map=prompt_defaults_map,
-        sample=sample,
-        instance_seed=int(instance_seed),
-    )
-    counted_instance_ids = shape_counted_instance_ids(sample, scene.instances)
-    query_metadata = build_shape_count_query_metadata(
-        sample=sample,
-        params=task_params,
-        gen_defaults=generation_defaults,
-        shape_support=shape_support(task_params, generation_defaults),
-    )
-    trace_payload = build_shape_count_trace_payload(
-        sample=sample,
-        scene=scene,
-        render_params=rendered.render_params,
-        sampled_palette_rgb=rendered.sampled_palette_rgb,
-        prompt_defaults=prompt_defaults,
-        prompt_artifacts=prompt_artifacts,
-        annotation_artifacts=annotation_artifacts,
-        counted_instance_ids=counted_instance_ids,
-        query_metadata=query_metadata,
-        public_query_id=str(query_id),
-        slot_padding_px=rendered.slot_padding_px,
-        slot_jitter_px=rendered.slot_jitter_px,
-        stack_gap_px=rendered.stack_gap_px,
-    )
-    return TaskOutput(
-        prompt=str(prompt_artifacts.prompt),
-        answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-        annotation_gt=TypedValue(type=str(annotation_artifacts["annotation_type"]), value=list(annotation_artifacts["annotation_value"])),
-        image=scene.image,
-        image_id="img0",
-        trace_payload=trace_payload,
-        task_versions=default_task_versions(),
-        scene_id=str(scene_id),
-        query_id=str(query_id),
-        prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
+        bind_rendered_attempt=bind_rendered_attempt,
     )
 
 
-def run_boolean_named_field_task(
+def prepare_boolean_count_objective(
     *,
-    task_id: str,
+    run_namespace: str,
     domain: str,
-    scene_id: str,
     selected_query_key: str,
     query_probabilities: Mapping[str, float],
     prompt_query_key: str,
@@ -234,15 +287,14 @@ def run_boolean_named_field_task(
     prompt_defaults_map: Mapping[str, Any],
     instance_seed: int,
     params: Mapping[str, Any],
-    max_attempts: int,
-) -> TaskOutput:
-    """Run the repeated lifecycle for a public Boolean predicate count task."""
+) -> NamedFieldObjectivePlan:
+    """Prepare Boolean named-field count hooks for the neutral lifecycle."""
 
     task_params = dict(params)
 
     def build_scene_specs(scene_rng, render_params, _attempt):
         sample = sample_boolean_spec(
-            run_namespace=str(task_id),
+            run_namespace=str(run_namespace),
             prompt_query_key=str(prompt_query_key),
             predicate_kind=str(predicate_kind),
             instance_seed=int(instance_seed),
@@ -251,7 +303,7 @@ def run_boolean_named_field_task(
             render_defaults=rendering_defaults,
         )
         icon_specs, sampled_palette_rgb = build_boolean_scene_specs(
-            run_namespace=str(task_id),
+            run_namespace=str(run_namespace),
             sample=sample,
             instance_seed=int(instance_seed),
             render_params=render_params,
@@ -259,91 +311,88 @@ def run_boolean_named_field_task(
         )
         return sample, icon_specs, sampled_palette_rgb
 
-    rendered = render_named_field_attempts(
-        run_namespace=str(task_id),
-        instance_seed=int(instance_seed),
+    def bind_rendered_attempt(rendered: NamedFieldRenderedAttempt) -> NamedFieldBoundOutput:
+        """Bind Boolean predicate answer, annotation, prompt, and trace from one rendered scene."""
+
+        sample = rendered.sample
+        scene = rendered.scene
+        annotation_bboxes = boolean_annotation_bboxes(sample, scene.instances)
+        if len(annotation_bboxes) != int(sample.target_answer):
+            raise RuntimeError("rendered Boolean named-icon count did not match target answer")
+        annotation_artifacts = bbox_set_from_bboxes(annotation_bboxes)
+        prompt_artifacts, prompt_defaults = build_boolean_prompt_artifacts(
+            domain=str(domain),
+            run_namespace=str(run_namespace),
+            prompt_defaults_map=prompt_defaults_map,
+            sample=sample,
+            instance_seed=int(instance_seed),
+        )
+        query_expression = boolean_query_expression(sample)
+        fill_style_support = resolve_named_icon_fill_style_support(
+            task_params,
+            generation_defaults,
+            fallback_support=BOOLEAN_DEFAULTS.named_icon_fill_style_support,
+            queryable_only=False,
+            queryable_fallback_support=BOOLEAN_DEFAULTS.queryable_named_icon_fill_style_support,
+        )
+        queryable_fill_style_support = resolve_named_icon_fill_style_support(
+            task_params,
+            generation_defaults,
+            fallback_support=BOOLEAN_DEFAULTS.named_icon_fill_style_support,
+            queryable_only=True,
+            queryable_fallback_support=BOOLEAN_DEFAULTS.queryable_named_icon_fill_style_support,
+        )
+        counted_instance_ids = boolean_counted_instance_ids(sample, scene.instances)
+        query_metadata = build_boolean_query_metadata(
+            sample=sample,
+            query_expression=query_expression,
+            public_query_id=str(selected_query_key),
+            public_query_probabilities=query_probabilities,
+            shape_support=shape_support(task_params, generation_defaults),
+            color_support=color_support(task_params, generation_defaults),
+            fill_style_support=fill_style_support,
+            queryable_fill_style_support=queryable_fill_style_support,
+        )
+        trace_payload = build_boolean_trace_payload(
+            sample=sample,
+            scene=scene,
+            render_params=rendered.render_params,
+            sampled_palette_rgb=rendered.sampled_palette_rgb,
+            prompt_defaults=prompt_defaults,
+            prompt_artifacts=prompt_artifacts,
+            annotation_artifacts=annotation_artifacts,
+            counted_instance_ids=counted_instance_ids,
+            query_expression=query_expression,
+            query_metadata=query_metadata,
+            public_query_id=str(selected_query_key),
+            slot_padding_px=rendered.slot_padding_px,
+            slot_jitter_px=rendered.slot_jitter_px,
+            stack_gap_px=rendered.stack_gap_px,
+            fill_style_support=tuple(fill_style_support),
+            queryable_fill_style_support=tuple(queryable_fill_style_support),
+        )
+        return NamedFieldBoundOutput(
+            prompt=str(prompt_artifacts.prompt),
+            answer_gt=TypedValue(type="integer", value=int(sample.target_answer)),
+            annotation_gt=TypedValue(type=str(annotation_artifacts["annotation_type"]), value=list(annotation_artifacts["annotation_value"])),
+            trace_payload=trace_payload,
+            query_id=str(selected_query_key),
+            prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
+        )
+
+    return NamedFieldObjectivePlan(
+        run_namespace=str(run_namespace),
         params=task_params,
-        rendering_defaults=rendering_defaults,
         fallback_defaults=BOOLEAN_DEFAULTS,
-        max_attempts=int(max_attempts),
         build_scene_specs=build_scene_specs,
-    )
-    sample = rendered.sample
-    scene = rendered.scene
-    annotation_bboxes = boolean_annotation_bboxes(sample, scene.instances)
-    if len(annotation_bboxes) != int(sample.target_answer):
-        raise RuntimeError("rendered Boolean named-icon count did not match target answer")
-    annotation_artifacts = bbox_set_from_bboxes(annotation_bboxes)
-    prompt_artifacts, prompt_defaults = build_boolean_prompt_artifacts(
-        domain=str(domain),
-        run_namespace=str(task_id),
-        prompt_defaults_map=prompt_defaults_map,
-        sample=sample,
-        instance_seed=int(instance_seed),
-    )
-    query_expression = boolean_query_expression(sample)
-    fill_style_support = resolve_named_icon_fill_style_support(
-        task_params,
-        generation_defaults,
-        fallback_support=BOOLEAN_DEFAULTS.named_icon_fill_style_support,
-        queryable_only=False,
-        queryable_fallback_support=BOOLEAN_DEFAULTS.queryable_named_icon_fill_style_support,
-    )
-    queryable_fill_style_support = resolve_named_icon_fill_style_support(
-        task_params,
-        generation_defaults,
-        fallback_support=BOOLEAN_DEFAULTS.named_icon_fill_style_support,
-        queryable_only=True,
-        queryable_fallback_support=BOOLEAN_DEFAULTS.queryable_named_icon_fill_style_support,
-    )
-    counted_instance_ids = boolean_counted_instance_ids(sample, scene.instances)
-    query_metadata = build_boolean_query_metadata(
-        sample=sample,
-        query_expression=query_expression,
-        public_query_id=str(selected_query_key),
-        public_query_probabilities=query_probabilities,
-        shape_support=shape_support(task_params, generation_defaults),
-        color_support=color_support(task_params, generation_defaults),
-        fill_style_support=fill_style_support,
-        queryable_fill_style_support=queryable_fill_style_support,
-    )
-    trace_payload = build_boolean_trace_payload(
-        sample=sample,
-        scene=scene,
-        render_params=rendered.render_params,
-        sampled_palette_rgb=rendered.sampled_palette_rgb,
-        prompt_defaults=prompt_defaults,
-        prompt_artifacts=prompt_artifacts,
-        annotation_artifacts=annotation_artifacts,
-        counted_instance_ids=counted_instance_ids,
-        query_expression=query_expression,
-        query_metadata=query_metadata,
-        public_query_id=str(selected_query_key),
-        slot_padding_px=rendered.slot_padding_px,
-        slot_jitter_px=rendered.slot_jitter_px,
-        stack_gap_px=rendered.stack_gap_px,
-        fill_style_support=tuple(fill_style_support),
-        queryable_fill_style_support=tuple(queryable_fill_style_support),
-    )
-    return TaskOutput(
-        prompt=str(prompt_artifacts.prompt),
-        answer_gt=TypedValue(type="integer", value=int(sample.target_answer)),
-        annotation_gt=TypedValue(type=str(annotation_artifacts["annotation_type"]), value=list(annotation_artifacts["annotation_value"])),
-        image=scene.image,
-        image_id="img0",
-        trace_payload=trace_payload,
-        task_versions=default_task_versions(),
-        scene_id=str(scene_id),
-        query_id=str(selected_query_key),
-        prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
+        bind_rendered_attempt=bind_rendered_attempt,
     )
 
 
-def run_counterfactual_named_field_task(
+def prepare_counterfactual_count_objective(
     *,
-    task_id: str,
+    run_namespace: str,
     domain: str,
-    scene_id: str,
     selected_query_key: str,
     query_probabilities: Mapping[str, float],
     prompt_query_key: str,
@@ -353,15 +402,14 @@ def run_counterfactual_named_field_task(
     prompt_defaults_map: Mapping[str, Any],
     instance_seed: int,
     params: Mapping[str, Any],
-    max_attempts: int,
-) -> TaskOutput:
-    """Run the repeated lifecycle for a public counterfactual count task."""
+) -> NamedFieldObjectivePlan:
+    """Prepare counterfactual named-field count hooks for the neutral lifecycle."""
 
     task_params = dict(params)
 
     def build_scene_specs(scene_rng, render_params, _attempt):
         sample = sample_counterfactual_spec(
-            run_namespace=str(task_id),
+            run_namespace=str(run_namespace),
             prompt_query_key=str(prompt_query_key),
             edit_kind=str(edit_kind),
             instance_seed=int(instance_seed),
@@ -370,7 +418,7 @@ def run_counterfactual_named_field_task(
             render_defaults=rendering_defaults,
         )
         icon_specs, sampled_palette_rgb = build_counterfactual_scene_specs(
-            run_namespace=str(task_id),
+            run_namespace=str(run_namespace),
             sample=sample,
             instance_seed=int(instance_seed),
             render_params=render_params,
@@ -378,69 +426,71 @@ def run_counterfactual_named_field_task(
         )
         return sample, icon_specs, sampled_palette_rgb
 
-    rendered = render_named_field_attempts(
-        run_namespace=str(task_id),
-        instance_seed=int(instance_seed),
+    def bind_rendered_attempt(rendered: NamedFieldRenderedAttempt) -> NamedFieldBoundOutput:
+        """Bind counterfactual edit answer, annotation, prompt, and trace from one rendered scene."""
+
+        sample = rendered.sample
+        scene = rendered.scene
+        annotation_bboxes = counterfactual_annotation_bboxes(sample, scene.instances)
+        if len(annotation_bboxes) != int(sample.target_answer):
+            raise RuntimeError("rendered counterfactual named-icon count did not match target answer")
+        annotation_artifacts = bbox_set_from_bboxes(annotation_bboxes)
+        prompt_artifacts, prompt_defaults = build_counterfactual_prompt_artifacts(
+            domain=str(domain),
+            run_namespace=str(run_namespace),
+            prompt_defaults_map=prompt_defaults_map,
+            sample=sample,
+            instance_seed=int(instance_seed),
+        )
+        counted_instance_ids = counterfactual_counted_instance_ids(sample)
+        query_metadata = build_counterfactual_query_metadata(
+            sample=sample,
+            public_query_id=str(selected_query_key),
+            public_query_probabilities=query_probabilities,
+            shape_support=shape_support(task_params, generation_defaults, min_count=6),
+        )
+        trace_payload = build_counterfactual_trace_payload(
+            sample=sample,
+            scene=scene,
+            render_params=rendered.render_params,
+            sampled_palette_rgb=rendered.sampled_palette_rgb,
+            prompt_defaults=prompt_defaults,
+            prompt_artifacts=prompt_artifacts,
+            annotation_artifacts=annotation_artifacts,
+            counted_instance_ids=counted_instance_ids,
+            query_metadata=query_metadata,
+            public_query_id=str(selected_query_key),
+            slot_padding_px=rendered.slot_padding_px,
+            slot_jitter_px=rendered.slot_jitter_px,
+            stack_gap_px=rendered.stack_gap_px,
+        )
+        return NamedFieldBoundOutput(
+            prompt=str(prompt_artifacts.prompt),
+            answer_gt=TypedValue(type="integer", value=int(sample.target_answer)),
+            annotation_gt=TypedValue(type=str(annotation_artifacts["annotation_type"]), value=list(annotation_artifacts["annotation_value"])),
+            trace_payload=trace_payload,
+            query_id=str(selected_query_key),
+            prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
+        )
+
+    return NamedFieldObjectivePlan(
+        run_namespace=str(run_namespace),
         params=task_params,
-        rendering_defaults=rendering_defaults,
         fallback_defaults=COUNTERFACTUAL_DEFAULTS,
-        max_attempts=int(max_attempts),
         build_scene_specs=build_scene_specs,
-    )
-    sample = rendered.sample
-    scene = rendered.scene
-    annotation_bboxes = counterfactual_annotation_bboxes(sample, scene.instances)
-    if len(annotation_bboxes) != int(sample.target_answer):
-        raise RuntimeError("rendered counterfactual named-icon count did not match target answer")
-    annotation_artifacts = bbox_set_from_bboxes(annotation_bboxes)
-    prompt_artifacts, prompt_defaults = build_counterfactual_prompt_artifacts(
-        domain=str(domain),
-        run_namespace=str(task_id),
-        prompt_defaults_map=prompt_defaults_map,
-        sample=sample,
-        instance_seed=int(instance_seed),
-    )
-    counted_instance_ids = counterfactual_counted_instance_ids(sample)
-    query_metadata = build_counterfactual_query_metadata(
-        sample=sample,
-        public_query_id=str(selected_query_key),
-        public_query_probabilities=query_probabilities,
-        shape_support=shape_support(task_params, generation_defaults, min_count=6),
-    )
-    trace_payload = build_counterfactual_trace_payload(
-        sample=sample,
-        scene=scene,
-        render_params=rendered.render_params,
-        sampled_palette_rgb=rendered.sampled_palette_rgb,
-        prompt_defaults=prompt_defaults,
-        prompt_artifacts=prompt_artifacts,
-        annotation_artifacts=annotation_artifacts,
-        counted_instance_ids=counted_instance_ids,
-        query_metadata=query_metadata,
-        public_query_id=str(selected_query_key),
-        slot_padding_px=rendered.slot_padding_px,
-        slot_jitter_px=rendered.slot_jitter_px,
-        stack_gap_px=rendered.stack_gap_px,
-    )
-    return TaskOutput(
-        prompt=str(prompt_artifacts.prompt),
-        answer_gt=TypedValue(type="integer", value=int(sample.target_answer)),
-        annotation_gt=TypedValue(type=str(annotation_artifacts["annotation_type"]), value=list(annotation_artifacts["annotation_value"])),
-        image=scene.image,
-        image_id="img0",
-        trace_payload=trace_payload,
-        task_versions=default_task_versions(),
-        scene_id=str(scene_id),
-        query_id=str(selected_query_key),
-        prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
+        bind_rendered_attempt=bind_rendered_attempt,
     )
 
 
 __all__ = [
+    "NamedFieldBoundOutput",
+    "NamedFieldObjectivePlan",
     "NamedFieldRenderedAttempt",
+    "OutputBinder",
     "SceneSpecBuilder",
+    "prepare_boolean_count_objective",
+    "prepare_counterfactual_count_objective",
+    "prepare_shape_count_objective",
     "render_named_field_attempts",
-    "run_boolean_named_field_task",
-    "run_counterfactual_named_field_task",
-    "run_shape_count_named_field_task",
+    "run_named_field_lifecycle",
 ]

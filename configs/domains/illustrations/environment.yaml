@@ -14,14 +14,15 @@ generation:
       - bridge
       - crosswalk
   task_overrides:
-    task_illustrations__environment__feature_side_object_count:
+    task_illustrations__environment__feature_relation_object_count:
       object_count_min: 12
       object_count_max: 18
+      relation_support:
+        - above
+        - below
+        - "on"
       feature_side_target_count_min: 1
       feature_side_target_count_max: 18
-    task_illustrations__environment__on_feature_object_count:
-      object_count_min: 12
-      object_count_max: 18
       on_feature_target_count_min: 2
       on_feature_target_count_max: 7
     task_illustrations__environment__crossing_feature_count:
@@ -39,6 +40,19 @@ generation:
         - skyline_street
       window_mode_support:
         - lit
+    task_illustrations__environment__missing_patch_label:
+      source_object_count_min: 12
+      source_object_count_max: 18
+      option_count_support:
+        - 4
+        - 6
+      patch_width_min: 150
+      patch_width_max: 230
+      patch_height_min: 110
+      patch_height_max: 175
+      crop_margin_px: 34
+      source_width: 820
+      source_height: 560
 
 rendering:
   shared:

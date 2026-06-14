@@ -7,7 +7,7 @@ from typing import Any, Dict, Mapping, Tuple
 from ...shared.object_rendering import serialize_rendered_illustration_object
 
 from .annotations import sort_bboxes_by_ids, target_feature
-from .labels import CROSSED_FEATURE_NAMES, CROSSING_NAMES, feature_name, on_feature_phrase
+from .labels import CROSSED_FEATURE_NAMES, CROSSING_NAMES, feature_name, feature_relation_phrase
 from .rendering import RenderedEnvironmentObjectScene
 from .state import BoundCountResult, EnvironmentChoice
 
@@ -36,22 +36,32 @@ def counted_side_object_ids(*, scene: Any, feature_id: str, relation: str) -> Tu
     return tuple(ids)
 
 
-def bind_feature_side_result(
+def bind_feature_relation_result(
     scene: Any,
     choice: EnvironmentChoice,
     object_bboxes: Mapping[str, list[float]],
     _feature_bboxes: Mapping[str, list[float]],
-    _target_count: int,
+    target_count: int,
 ) -> BoundCountResult:
-    """Bind feature-side witnesses from object-feature relations in the trace."""
+    """Bind foreground-object witnesses for a sampled feature relation."""
 
     feature = target_feature(scene, str(choice.feature_type))
-    counted_object_ids = counted_side_object_ids(
-        scene=scene,
-        feature_id=str(feature.feature_id),
-        relation=str(choice.relation),
-    )
+    if str(choice.relation) == "on":
+        counted_object_ids = tuple(
+            str(placement.object_id)
+            for placement in scene.placements
+            if str(placement.zone_id) == str(choice.feature_type)
+        )
+        if len(counted_object_ids) != int(target_count):
+            raise ValueError(f"on-feature count {len(counted_object_ids)} did not match target {target_count}")
+    else:
+        counted_object_ids = counted_side_object_ids(
+            scene=scene,
+            feature_id=str(feature.feature_id),
+            relation=str(choice.relation),
+        )
     annotation_value = sort_bboxes_by_ids(object_bboxes, counted_object_ids)
+    phrase = feature_relation_phrase(choice.feature_type, choice.relation)
     return BoundCountResult(
         answer=int(len(counted_object_ids)),
         annotation_value=list(annotation_value),
@@ -71,57 +81,14 @@ def bind_feature_side_result(
             "relation": str(choice.relation),
             "answer": int(len(counted_object_ids)),
         },
-        query_params={
+        operand_params={
             "feature_type": str(choice.feature_type),
             "feature_id": str(feature.feature_id),
             "feature_name": feature_name(choice.feature_type),
             "relation": str(choice.relation),
+            "feature_relation_phrase": str(phrase),
             "feature_type_probabilities": dict(choice.feature_type_probabilities or {}),
             "relation_probabilities": dict(choice.relation_probabilities or {}),
-        },
-    )
-
-
-def bind_on_feature_result(
-    scene: Any,
-    choice: EnvironmentChoice,
-    object_bboxes: Mapping[str, list[float]],
-    _feature_bboxes: Mapping[str, list[float]],
-    target_count: int,
-) -> BoundCountResult:
-    """Bind exact foreground objects located on or in the selected feature."""
-
-    feature = target_feature(scene, str(choice.feature_type))
-    counted_object_ids = tuple(
-        str(placement.object_id)
-        for placement in scene.placements
-        if str(placement.zone_id) == str(choice.feature_type)
-    )
-    if len(counted_object_ids) != int(target_count):
-        raise ValueError(f"on-feature count {len(counted_object_ids)} did not match target {target_count}")
-    annotation_value = sort_bboxes_by_ids(object_bboxes, counted_object_ids)
-    return BoundCountResult(
-        answer=int(len(counted_object_ids)),
-        annotation_value=list(annotation_value),
-        render_map_extra={"counted_object_ids": list(counted_object_ids), "target_feature_id": str(feature.feature_id)},
-        scene_relations={"feature_type": str(choice.feature_type), "feature_id": str(feature.feature_id)},
-        execution_extra={
-            "feature_type": str(choice.feature_type),
-            "feature_id": str(feature.feature_id),
-            "counted_object_ids": list(counted_object_ids),
-            "object_zones": {placement.object_id: placement.zone_id for placement in scene.placements},
-        },
-        witness_symbolic={
-            "counted_object_ids": list(counted_object_ids),
-            "feature_id": str(feature.feature_id),
-            "feature_type": str(choice.feature_type),
-            "answer": int(len(counted_object_ids)),
-        },
-        query_params={
-            "feature_type": str(choice.feature_type),
-            "feature_id": str(feature.feature_id),
-            "feature_phrase": on_feature_phrase(choice.feature_type),
-            "feature_type_probabilities": dict(choice.feature_type_probabilities or {}),
         },
     )
 
@@ -155,7 +122,7 @@ def bind_crossing_result(
             "crossing_type": str(choice.crossing_type),
             "answer": int(len(counted_feature_ids)),
         },
-        query_params={
+        operand_params={
             "crossing_type": str(choice.crossing_type),
             "crossing_name": str(crossing_name),
             "crossed_feature_name": str(crossed_feature_name),
@@ -203,7 +170,7 @@ def bind_window_result(
             "window_mode": str(choice.window_mode),
             "answer": int(len(counted_window_ids)),
         },
-        query_params={
+        operand_params={
             "window_mode": str(choice.window_mode),
             "window_phrase": "lit windows",
             "window_mode_probabilities": dict(choice.window_mode_probabilities or {}),
@@ -213,8 +180,7 @@ def bind_window_result(
 
 __all__ = [
     "bind_crossing_result",
-    "bind_feature_side_result",
-    "bind_on_feature_result",
+    "bind_feature_relation_result",
     "bind_window_result",
     "counted_side_object_ids",
     "serialize_environment_objects",

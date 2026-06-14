@@ -379,7 +379,7 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
             [
                 "task_icons__reference_canvas__reference_attribute_match_count",
                 "task_icons__named_field__multi_attribute_and_count",
-                "task_illustrations__environment__on_feature_object_count",
+                "task_illustrations__environment__feature_relation_object_count",
             ]
         )
         return {

@@ -151,7 +151,7 @@ def run_environment_count_lifecycle(
                 "requested_object_count": int(requested_object_count),
                 "theme_probabilities": dict(choice.theme_probabilities),
                 "object_count_probabilities": dict(object_count_probabilities),
-                **dict(bound_result.query_params),
+                **dict(bound_result.operand_params),
             },
         },
         "render_spec": {

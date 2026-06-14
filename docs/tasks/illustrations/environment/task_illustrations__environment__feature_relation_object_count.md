@@ -1,32 +1,32 @@
-# `task_illustrations__environment__feature_side_object_count`
+# `task_illustrations__environment__feature_relation_object_count`
 
 ## Summary
 - Domain: `illustrations`
 - Scene id: `environment`
 - Implementation scene: `environment`
-- Implementation source: `trace/tasks/illustrations/environment/feature_side_object_count.py`
+- Implementation source: `trace/tasks/illustrations/environment/feature_relation_object_count.py`
 
 ## Task Contract
-Counts foreground objects on one side of a road or river feature.
+Counts foreground objects in a queried relation to a road or river feature.
 
 ## Program Contract
-`count(filter(scene_objects, side_of_feature(object, target_linear_feature)=target_side)); scene=environment; scope=feature_side_object_count`
+`count(filter(scene_objects, relation_to_feature(object, target_linear_feature)=target_relation)); scene=environment; scope=feature_relation_object_count`
 
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `single` | `count(filter(scene_objects, side_of_feature(object, target_linear_feature)=target_side)); scene=environment; scope=feature_side_object_count` |
+| `single` | `count(filter(scene_objects, relation_to_feature(object, target_linear_feature)=target_relation)); scene=environment; scope=feature_relation_object_count` |
 
 ## Program Metadata
 - Program signatures: `count.relation_attribute`
-- Base program contract: `count(filter(scene_objects, side_of_feature(object, target_linear_feature)=target_side)); scene=environment; scope=feature_side_object_count`
-- Parameter axes: `target_linear_feature_type`, `target_side`, `theme_id`
+- Base program contract: `count(filter(scene_objects, relation_to_feature(object, target_linear_feature)=target_relation)); scene=environment; scope=feature_relation_object_count`
+- Parameter axes: `target_linear_feature_type`, `target_relation`, `theme_id`
 - Arguments:
   - `object`: semantic_role; allowed `scene_object`; source `program_schema_concrete`
   - `scene_objects`: semantic_role; allowed `visible_scene_objects`; source `program_schema_concrete`
   - `target_linear_feature`: semantic_role; allowed `visible_linear_feature`; source `program_schema_concrete`
-  - `target_side`: semantic_role; allowed `sampled_side`; source `program_schema_concrete`
+  - `target_relation`: semantic_role; allowed `above`, `below`, `on`; source `program_schema_concrete`
 - Argument metadata status: `curated`
 - Supported query ids: `single`
 
@@ -38,10 +38,10 @@ Counts foreground objects on one side of a road or river feature.
 ## Annotation Contract
 - Annotation schema: `bbox_set`
 - Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel boxes, one per counted/selected visual witness. Do not include labels, numeric annotations, or context-only regions.
+- Annotation is an unordered set of final-image pixel boxes, one per counted foreground object. Do not include the queried road/river feature, labels, numeric annotations, or context-only regions.
 - Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
 
 ## Prompt And Trace Requirements
 - Prompt text must come from the illustrations prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
 - Render randomness, sampled fonts/styles, query operands, and verifier payloads must be explicit in the instance trace.
-- Distractor/context text may be rendered only when it is part of the scene grammar and must not be treated as annotation unless it is the queried visual witness.
+- The relation operand is trace metadata, not a public query branch. For river `on`, prompt text uses `in or on the river`.

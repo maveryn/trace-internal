@@ -69,18 +69,14 @@
   "code_prompt_defaults": {
     "json_output_contract": "Return a JSON object with \"answer\" and \"annotation\".",
     "json_output_contract_answer_only": "Return a JSON object with \"answer\" only.",
-    "question_text_feature_side_object_count": "How many foreground objects are {relation_word} the {feature_name}? If none are there, answer 0.",
-    "question_text_on_feature_object_count": "How many foreground objects are {feature_phrase}? If none are there, answer 0.",
+    "question_text_feature_relation_object_count": "How many foreground objects are {feature_relation_phrase}? If none are there, answer 0.",
     "question_text_crossing_feature_count": "How many {crossing_name} cross the {crossed_feature_name}? If none are there, answer 0.",
     "question_text_building_window_count": "How many {window_phrase} are shown on the buildings? If none are there, answer 0.",
-    "answer_hint_feature_side": "set \"answer\" to the count of foreground objects {relation_word} the {feature_name} as an integer, using 0 if none match",
-    "annotation_hint_feature_side": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted foreground object {relation_word} the {feature_name}; use [] if none match",
-    "json_example_feature_side": "{\"annotation\":[],\"answer\":0}",
-    "json_example_answer_only_feature_side": "{\"answer\":0}",
-    "answer_hint_on_feature": "set \"answer\" to the count of foreground objects {feature_phrase} as an integer, using 0 if none match",
-    "annotation_hint_on_feature": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted foreground object {feature_phrase}; use [] if none match",
-    "json_example_on_feature": "{\"annotation\":[],\"answer\":0}",
-    "json_example_answer_only_on_feature": "{\"answer\":0}",
+    "question_text_missing_patch_label": "Which option exactly fills the missing region?",
+    "answer_hint_feature_relation": "set \"answer\" to the count of foreground objects {feature_relation_phrase} as an integer, using 0 if none match",
+    "annotation_hint_feature_relation": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted foreground object {feature_relation_phrase}; use [] if none match",
+    "json_example_feature_relation": "{\"annotation\":[],\"answer\":0}",
+    "json_example_answer_only_feature_relation": "{\"answer\":0}",
     "answer_hint_crossing_feature": "set \"answer\" to the count of {crossing_name} crossing the {crossed_feature_name} as an integer, using 0 if none match",
     "annotation_hint_crossing_feature": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {crossing_name}; use [] if none match",
     "json_example_crossing_feature": "{\"annotation\":[],\"answer\":0}",
@@ -88,6 +84,10 @@
     "answer_hint_building_window": "set \"answer\" to the count of {window_phrase} on the buildings as an integer, using 0 if none match",
     "annotation_hint_building_window": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {window_phrase}; use [] if none match",
     "json_example_building_window": "{\"annotation\":[],\"answer\":0}",
-    "json_example_answer_only_building_window": "{\"answer\":0}"
+    "json_example_answer_only_building_window": "{\"answer\":0}",
+    "answer_hint_missing_patch": "set \"answer\" to the selected option letter as a string",
+    "annotation_hint_missing_patch": "set \"annotation\" to a JSON object with keys \"missing_region\" and \"selected_option\", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates",
+    "json_example_missing_patch": "{\"annotation\":{\"missing_region\":[214,128,374,252],\"selected_option\":[562,676,722,800]},\"answer\":\"C\"}",
+    "json_example_answer_only_missing_patch": "{\"answer\":\"C\"}"
   }
 }

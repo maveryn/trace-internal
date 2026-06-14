@@ -22,7 +22,7 @@ FEATURE_TYPES_BY_THEME: Dict[str, tuple[str, ...]] = {
     "canal_city": ("river",),
     "skyline_street": ("road",),
 }
-RELATION_SUPPORT: Tuple[str, ...] = ("above", "below")
+RELATION_SUPPORT: Tuple[str, ...] = ("above", "below", "on")
 CROSSING_THEME_SUPPORT: Dict[str, Tuple[str, ...]] = {
     "bridge": ("river_meadow", "road_and_river", "canal_city"),
     "crosswalk": ("park_road", "road_and_river", "skyline_street"),
@@ -246,7 +246,7 @@ def sample_target_count_by_keys(
 
 
 def relation_support(params: Mapping[str, Any], generation_defaults: Mapping[str, Any]) -> Tuple[str, ...]:
-    """Resolve the allowed side-relation operands for feature-side counts."""
+    """Resolve the allowed feature-relation operands for foreground object counts."""
 
     raw = params.get("relation_support", group_default(generation_defaults, "relation_support", RELATION_SUPPORT))
     if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):

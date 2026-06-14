@@ -33,7 +33,7 @@ class BoundCountResult:
     scene_relations: Dict[str, Any]
     execution_extra: Dict[str, Any]
     witness_symbolic: Dict[str, Any]
-    query_params: Dict[str, Any]
+    operand_params: Dict[str, Any]
 
 
 __all__ = ["BoundCountResult", "EnvironmentChoice"]

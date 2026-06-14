@@ -12,7 +12,7 @@ from trace.tasks.illustrations.environment.shared.rendering import (
 )
 
 
-def test_feature_side_object_count_contracts() -> None:
+def test_feature_relation_object_count_contracts() -> None:
     scenarios = (
         ("park_road", "road", "above"),
         ("river_meadow", "river", "below"),
@@ -20,9 +20,11 @@ def test_feature_side_object_count_contracts() -> None:
         ("road_and_river", "river", "above"),
         ("canal_city", "river", "below"),
         ("skyline_street", "road", "above"),
+        ("road_and_river", "road", "on"),
+        ("road_and_river", "river", "on"),
     )
     for index, (theme_id, feature_type, relation) in enumerate(scenarios):
-        out = create_task("task_illustrations__environment__feature_side_object_count").generate(
+        out = create_task("task_illustrations__environment__feature_relation_object_count").generate(
             hash64(2026052101, f"{theme_id}:{feature_type}:{relation}", index),
             params={
                 "theme_id": theme_id,
@@ -31,7 +33,7 @@ def test_feature_side_object_count_contracts() -> None:
                 "object_count": 14,
                 "target_count_min": 1,
             },
-            max_attempts=300,
+            max_attempts=400,
         )
         trace = out.trace_payload
         execution = trace["execution_trace"]
@@ -41,6 +43,8 @@ def test_feature_side_object_count_contracts() -> None:
         assert execution["theme_id"] == theme_id
         assert execution["feature_type"] == feature_type
         assert execution["relation"] == relation
+        if relation == "on":
+            assert all(execution["object_zones"][object_id] == feature_type for object_id in execution["counted_object_ids"])
         layout = trace["render_spec"]["style"]["layout"]
         assert layout["road_style_id"] in ROAD_STYLE_IDS
         assert layout["river_style_id"] in RIVER_STYLE_IDS
@@ -62,27 +66,6 @@ def test_feature_side_object_count_contracts() -> None:
         expected = [render_map["object_bboxes_px"][object_id] for object_id in execution["counted_object_ids"]]
         assert sorted(out.annotation_gt.value) == sorted(expected)
         assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-
-
-def test_on_feature_object_count_contract() -> None:
-    out = create_task("task_illustrations__environment__on_feature_object_count").generate(
-        hash64(2026052302, "on-feature", 0),
-        params={"theme_id": "road_and_river", "feature_type": "river", "object_count": 14},
-        max_attempts=400,
-    )
-    trace = out.trace_payload
-    execution = trace["execution_trace"]
-    render_map = trace["render_map"]
-    assert out.scene_id == "environment"
-    assert out.query_id == "single"
-    assert execution["feature_type"] == "river"
-    feature_types = {entity["feature_type"] for entity in trace["scene_ir"]["entities"] if entity["entity_type"] == "environment_feature"}
-    assert "bridge" not in feature_types
-    assert "crosswalk" not in feature_types
-    assert int(out.answer_gt.value) == len(execution["counted_object_ids"])
-    assert all(execution["object_zones"][object_id] == "river" for object_id in execution["counted_object_ids"])
-    expected = [render_map["object_bboxes_px"][object_id] for object_id in execution["counted_object_ids"]]
-    assert sorted(out.annotation_gt.value) == sorted(expected)
 
 
 def test_crossing_feature_count_contract() -> None:
@@ -128,3 +111,28 @@ def test_building_window_count_contract() -> None:
     assert all(building["attributes"]["building_style_id"] in BUILDING_STYLE_IDS for building in buildings)
     expected = [render_map["window_bboxes_px"][window_id] for window_id in execution["counted_window_ids"]]
     assert sorted(out.annotation_gt.value) == sorted(expected)
+
+
+def test_missing_patch_label_contract() -> None:
+    out = create_task("task_illustrations__environment__missing_patch_label").generate(
+        hash64(2026061401, "environment-missing-patch", 0),
+        params={"theme_id": "road_and_river", "source_object_count": 14, "option_count": 4, "correct_index": 2},
+        max_attempts=300,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
+    annotation = out.annotation_gt.value
+    assert out.scene_id == "environment"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "C"
+    assert execution["patch_mode"] == "plain"
+    assert execution["selected_transform"] == "none"
+    assert set(annotation) == {"missing_region", "selected_option"}
+    assert annotation["missing_region"] == render_map["missing_region_bbox_px"]
+    assert annotation["selected_option"] == render_map["selected_option_bbox_px"]
+    assert annotation["selected_option"] == render_map["option_bboxes_px_by_label"][out.answer_gt.value]
+    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
+    assert len(render_map["option_bboxes_px_by_label"]) == 4
+    assert trace["query_spec"]["params"]["option_labels"] == ["A", "B", "C", "D"]

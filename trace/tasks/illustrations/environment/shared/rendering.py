@@ -864,13 +864,16 @@ def effective_environment_object_count(theme_id: str, requested_object_count: in
     return max(1, min(int(requested_object_count), cap))
 
 
-def feature_side_render_overrides(
+def feature_relation_render_overrides(
     params: Mapping[str, Any],
     choice: EnvironmentChoice,
     requested_object_count: int,
     target_count: int,
 ) -> Dict[str, Any]:
-    """Force enough objects onto the requested side without guaranteeing the final count by construction."""
+    """Force objects into the queried feature relation where needed."""
+
+    if str(choice.relation) == "on":
+        return on_feature_render_overrides(params, choice, requested_object_count, target_count)
 
     effective_count = effective_environment_object_count(str(choice.theme_id), int(requested_object_count))
     explicit_replay = any(
@@ -1557,7 +1560,7 @@ __all__ = [
     "crossing_render_overrides",
     "effective_environment_object_count",
     "environment_scene_entities",
-    "feature_side_render_overrides",
+    "feature_relation_render_overrides",
     "on_feature_render_overrides",
     "render_environment_object_scene",
     "serialize_environment_scene",

@@ -85,12 +85,8 @@
     "query:visible_part_count": [
       "part_plural"
     ],
-    "query:feature_side_object_count": [
-      "relation_word",
-      "feature_name"
-    ],
-    "query:on_feature_object_count": [
-      "feature_phrase"
+    "query:feature_relation_object_count": [
+      "feature_relation_phrase"
     ],
     "query:crossing_feature_count": [
       "crossing_name",
@@ -197,19 +193,12 @@
       "How many {part_plural} can be seen?",
       "Find all visible {part_plural}. What is the count?"
     ],
-    "feature_side_object_count": [
-      "How many foreground objects are {relation_word} the {feature_name}?",
-      "Count the foreground objects {relation_word} the {feature_name}.",
-      "What is the number of foreground objects {relation_word} the {feature_name}?",
-      "How many illustrated foreground objects lie {relation_word} the {feature_name}?",
-      "Find the foreground objects {relation_word} the {feature_name}. What is the count?"
-    ],
-    "on_feature_object_count": [
-      "How many foreground objects are {feature_phrase}?",
-      "Count the foreground objects {feature_phrase}.",
-      "What is the number of foreground objects {feature_phrase}?",
-      "How many illustrated foreground objects are {feature_phrase}?",
-      "Find every foreground object {feature_phrase}. What is the count?"
+    "feature_relation_object_count": [
+      "How many foreground objects are {feature_relation_phrase}?",
+      "Count the foreground objects {feature_relation_phrase}.",
+      "What is the number of foreground objects {feature_relation_phrase}?",
+      "How many illustrated foreground objects are {feature_relation_phrase}?",
+      "Find every foreground object {feature_relation_phrase}. What is the count?"
     ],
     "crossing_feature_count": [
       "How many {crossing_name} cross the {crossed_feature_name}?",

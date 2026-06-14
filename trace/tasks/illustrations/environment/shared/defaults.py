@@ -26,13 +26,13 @@ class CountContractDefaults:
     skyline_building_max: int = 14
 
 
-FEATURE_SIDE_DEFAULTS = CountContractDefaults(
+FEATURE_RELATION_SIDE_DEFAULTS = CountContractDefaults(
     object_count_min=12,
     object_count_max=18,
     target_count_min=1,
     target_count_max=18,
 )
-ON_FEATURE_DEFAULTS = CountContractDefaults(
+FEATURE_RELATION_ON_DEFAULTS = CountContractDefaults(
     object_count_min=12,
     object_count_max=18,
     target_count_min=2,
@@ -75,9 +75,9 @@ def render_fallback(defaults: CountContractDefaults) -> Dict[str, Any]:
 
 __all__ = [
     "CROSSING_DEFAULTS",
-    "FEATURE_SIDE_DEFAULTS",
+    "FEATURE_RELATION_ON_DEFAULTS",
+    "FEATURE_RELATION_SIDE_DEFAULTS",
     "LIT_WINDOW_DEFAULTS",
-    "ON_FEATURE_DEFAULTS",
     "CountContractDefaults",
     "render_fallback",
 ]

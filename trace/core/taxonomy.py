@@ -422,7 +422,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__dominoes__double_count": _entry("games", "dominoes", "games", "dominoes"),
     "task_games__dominoes__higher_sum_than_reference_count": _entry("games", "dominoes", "games", "dominoes"),
     "task_games__dominoes__sum_to_target_count": _entry("games", "dominoes", "games", "dominoes"),
-    "task_games__dots_and_boxes__box_completion_edge_label": _entry("games", "dots_and_boxes", "games", "dots_and_boxes"),
+    "task_games__dots_and_boxes__completable_box_label": _entry("games", "dots_and_boxes", "games", "dots_and_boxes"),
     "task_games__dots_and_boxes__owned_box_count": _entry("games", "dots_and_boxes", "games", "dots_and_boxes"),
     "task_games__dots_and_boxes__three_sided_box_count": _entry("games", "dots_and_boxes", "games", "dots_and_boxes"),
     "task_games__go__group_adjacent_enemy_count": _entry("games", "go", "games", "go"),
@@ -830,10 +830,10 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__construction_site__missing_patch_label": _entry(
         "illustrations", "construction_site", "illustrations", "construction_site"
     ),
-    "task_illustrations__environment__feature_side_object_count": _entry(
+    "task_illustrations__environment__feature_relation_object_count": _entry(
         "illustrations", "environment", "illustrations", "environment"
     ),
-    "task_illustrations__environment__on_feature_object_count": _entry(
+    "task_illustrations__environment__missing_patch_label": _entry(
         "illustrations", "environment", "illustrations", "environment"
     ),
     "task_illustrations__environment__crossing_feature_count": _entry(

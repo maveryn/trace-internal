@@ -71,7 +71,29 @@ class ConnectFourLabelSample:
     winning_line_coords: tuple[Coord, ...]
 
 
+@dataclass(frozen=True)
+class ConnectFourColumnProfileSample:
+    """One sampled Connect Four column profile label scene."""
+
+    board: Board
+    current_player: int
+    evaluation: ConnectFourEvaluation
+    occupied_count: int
+    construction_mode: str
+    scene_variant: str
+    board_size_variant: str
+    board_rows: int
+    board_columns: int
+    style_variant: str
+    column_labels: tuple[str, ...]
+    answer_label: str
+    answer_column: int
+    target_red_count: int
+    target_yellow_count: int
+
+
 __all__ = [
+    "ConnectFourColumnProfileSample",
     "ConnectFourCountSample",
     "ConnectFourEvaluation",
     "ConnectFourLabelSample",

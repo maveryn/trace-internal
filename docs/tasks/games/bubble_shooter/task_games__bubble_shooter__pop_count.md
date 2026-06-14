@@ -7,10 +7,11 @@
 4. Supported `query_id` values: `single`
 5. Answer schema: `integer_count`
 6. Annotation schema: `point_set`
-7. Program schema: `count(popped_bubbles_after_marked_shot); scene=bubble_shooter; scope=pop_count`
+7. Program schema: `count(existing_same_color_component_adjacent_to(marked_landing_slot, shooter_color)) if component_size_plus_shooter >= 3 else 0; scene=bubble_shooter; scope=pop_count`
 
 ## Program Contract
-- `count(popped_bubbles_after_marked_shot); scene=bubble_shooter; scope=pop_count`
+- `count(existing_same_color_component_adjacent_to(marked_landing_slot, shooter_color)) if component_size_plus_shooter >= 3 else 0; scene=bubble_shooter; scope=pop_count`
+- The inserted shooter bubble is used only to trigger the match threshold; it is not included in the answer or annotation.
 
 ## Generation Notes
 1. This task is owned by the scene-package public file `trace/tasks/games/bubble_shooter/pop_count.py`.

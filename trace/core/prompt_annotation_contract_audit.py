@@ -16,6 +16,7 @@ from typing import Any
 from PIL import Image as PILImage
 
 from trace.core.annotation_sanitization import PUBLIC_IMAGE_ANNOTATION_TYPES, sanitize_trace_payload_for_public_annotation
+from trace.core.query_ids import LEGACY_DEFAULT_QUERY_ID, SINGLE_QUERY_ID
 from trace.core.review_overlays import render_annotation_overlay, resolve_overlay_annotation
 from trace.core.seed import hash64
 from trace.core.task_review_sampling import collect_query_id_samples
@@ -87,7 +88,9 @@ _ANSWER_ONLY_MODE = "answer_only"
 
 _EXPLICIT_VARIANT_PARAMS: dict[str, list[tuple[str, dict[str, Any]]]] = {
     "task_games__connect_four__winning_move_count": [("winning_move_count", {})],
-    "task_games__connect_four__safe_move_count": [("safe_move_count", {})],
+    "task_games__connect_four__column_disc_profile_label": [
+        ("column_disc_profile_label", {"target_red_count": 2, "target_yellow_count": 3})
+    ],
 }
 
 
@@ -748,7 +751,7 @@ def _audit_annotation_payload(output: Any) -> tuple[dict[str, Any], list[dict[st
 
 
 def _trace_question_variant(task_id: str, output: Any, fallback: str) -> str:
-    return str(fallback or getattr(output, "query_id", "") or "default")
+    return str(fallback or getattr(output, "query_id", "") or SINGLE_QUERY_ID)
 
 
 def _audit_output(task_id: str, output: Any, *, instance_seed: int, requested_variant: str = "") -> dict[str, Any]:
@@ -1246,7 +1249,7 @@ def _write_overlay_samples(
                 if str(variant) == query_id:
                     params = dict(variant_params)
                     break
-        elif query_id and query_id != "default":
+        elif query_id and query_id != LEGACY_DEFAULT_QUERY_ID:
             params["query_id"] = query_id
         output = task.generate(seed, params=params, max_attempts=int(max_attempts))
         sanitized = sanitize_trace_payload_for_public_annotation(output.trace_payload, annotation_gt=output.annotation_gt)
@@ -1260,7 +1263,7 @@ def _write_overlay_samples(
             annotation_type=str(overlay_type),
             annotation_value=overlay_value,
         )
-        safe_variant = re.sub(r"[^a-zA-Z0-9_.-]+", "_", query_id or "default")
+        safe_variant = re.sub(r"[^a-zA-Z0-9_.-]+", "_", query_id or SINGLE_QUERY_ID)
         overlay.save(overlay_root / f"{index:03d}_{task_id}_{safe_variant}.png")
 
 

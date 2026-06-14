@@ -8,13 +8,13 @@ from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts
 
 from .rules import board_dimensions, player_name
 from .rendering import RenderedConnectFourTaskContext
-from .state import ConnectFourCountSample, ConnectFourLabelSample, ConnectFourSceneAxes
+from .state import ConnectFourColumnProfileSample, ConnectFourCountSample, ConnectFourLabelSample, ConnectFourSceneAxes
 
 
 def common_trace_params(
     *,
     axes: ConnectFourSceneAxes,
-    sample: ConnectFourCountSample | ConnectFourLabelSample,
+    sample: ConnectFourCountSample | ConnectFourLabelSample | ConnectFourColumnProfileSample,
     extra_params: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return shared Connect Four query params plus task-owned fields."""
@@ -39,7 +39,7 @@ def common_trace_params(
 def common_trace_sections(
     *,
     axes: ConnectFourSceneAxes,
-    sample: ConnectFourCountSample | ConnectFourLabelSample,
+    sample: ConnectFourCountSample | ConnectFourLabelSample | ConnectFourColumnProfileSample,
     rendered_context: RenderedConnectFourTaskContext,
     annotation_artifacts: AnnotationArtifacts,
     query_spec: dict[str, Any],

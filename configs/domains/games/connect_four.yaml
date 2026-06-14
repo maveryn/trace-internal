@@ -29,22 +29,12 @@ generation:
       - 2
       - 3
       - 4
-    task_games__connect_four__safe_move_count:
-      balanced_safe_board_size_variant_sampling: true
-      safe_board_size_variant_weights:
-        square_5x5: 1.0
-        square_6x6: 1.0
-      safe_move_count_support:
-      - 1
+    task_games__connect_four__column_disc_profile_label:
+      column_disc_profile_total_support:
       - 2
       - 3
       - 4
       - 5
-      - 6
-      safe_midgame_min_occupied_count: 8
-      safe_midgame_max_occupied_count: 16
-      safe_crowded_min_occupied_count: 16
-      safe_crowded_max_occupied_count: 24
     task_games__connect_four__winning_move_column_label:
       balanced_winning_move_label_threat_kind_sampling: true
       winning_move_label_threat_kind_weights:

@@ -408,7 +408,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__chess_variant__target_square_reacher_count": _entry("games", "chess_variant", "games", "chess_variant"),
     "task_games__circular_chess__marked_piece_destination_count": _entry("games", "circular_chess", "games", "circular_chess"),
     "task_games__circular_chess__target_cell_reacher_count": _entry("games", "circular_chess", "games", "circular_chess"),
-    "task_games__connect_four__safe_move_count": _entry("games", "connect_four", "games", "connect_four"),
+    "task_games__connect_four__column_disc_profile_label": _entry("games", "connect_four", "games", "connect_four"),
     "task_games__connect_four__winning_move_column_label": _entry("games", "connect_four", "games", "connect_four"),
     "task_games__connect_four__winning_move_count": _entry("games", "connect_four", "games", "connect_four"),
     "task_games__crossing__first_exit_object_label": _entry("games", "crossing", "games", "crossing"),

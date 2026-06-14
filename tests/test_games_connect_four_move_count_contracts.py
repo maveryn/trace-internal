@@ -9,65 +9,37 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.connect_four.safe_move_count import GamesConnectFourSafeMoveCountTask
+from trace.tasks.games.connect_four.column_disc_profile_label import GamesConnectFourColumnDiscProfileLabelTask
 from trace.tasks.games.connect_four.winning_move_column_label import GamesConnectFourWinningMoveColumnLabelTask
 from trace.tasks.games.connect_four.winning_move_count import GamesConnectFourWinningMoveCountTask
 from tests.helpers import read_jsonl
 
 
-@pytest.mark.parametrize(
-    ("task_cls", "params", "expected_answer", "expected_annotation_count", "expected_rows", "expected_columns"),
-    (
-        (
-            GamesConnectFourWinningMoveCountTask,
-            {
-                "scene_variant": "midgame_board",
-                "target_answer": 3,
-                "board_size_variant": "standard_7x6",
-            },
-            3,
-            3,
-            6,
-            7,
-        ),
-        (
-            GamesConnectFourSafeMoveCountTask,
-            {
-                "scene_variant": "crowded_board",
-                "target_answer": 3,
-                "board_size_variant": "small_6x5",
-            },
-            3,
-            3,
-            5,
-            6,
-        ),
-    ),
-)
-def test_games_connect_four_move_count_emits_expected_contract(
-    task_cls,
-    params: dict[str, int | str],
-    expected_answer: int,
-    expected_annotation_count: int,
-    expected_rows: int,
-    expected_columns: int,
-) -> None:
-    out = task_cls().generate(31001, params=params, max_attempts=48)
+def test_games_connect_four_move_count_emits_expected_contract() -> None:
+    out = GamesConnectFourWinningMoveCountTask().generate(
+        31001,
+        params={
+            "scene_variant": "midgame_board",
+            "target_answer": 3,
+            "board_size_variant": "standard_7x6",
+        },
+        max_attempts=48,
+    )
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == "integer"
-    assert int(out.answer_gt.value) == int(expected_answer)
+    assert int(out.answer_gt.value) == 3
     assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == int(expected_annotation_count)
+    assert len(out.annotation_gt.value) == 3
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
-    assert int(execution["target_answer"]) == int(expected_answer)
-    assert int(execution["board_row_count"]) == int(expected_rows)
-    assert int(execution["board_column_count"]) == int(expected_columns)
-    assert int(trace["render_map"]["rows"]) == int(expected_rows)
-    assert int(trace["render_map"]["columns"]) == int(expected_columns)
+    assert int(execution["target_answer"]) == 3
+    assert int(execution["board_row_count"]) == 6
+    assert int(execution["board_column_count"]) == 7
+    assert int(trace["render_map"]["rows"]) == 6
+    assert int(trace["render_map"]["columns"]) == 7
     assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert len(execution["annotation_entity_ids"]) == int(expected_annotation_count)
+    assert len(execution["annotation_entity_ids"]) == 3
     assert all(str(entity_id).startswith("cell_r") for entity_id in execution["annotation_entity_ids"])
 
 
@@ -87,24 +59,6 @@ def test_games_connect_four_move_count_winning_annotation_stays_on_immediate_win
 
     assert annotation_coords == winning_coords
     assert len(annotation_coords) == 4
-
-
-def test_games_connect_four_move_count_safe_annotation_tracks_safe_landing_squares() -> None:
-    out = GamesConnectFourSafeMoveCountTask().generate(
-        31021,
-        params={
-            "scene_variant": "crowded_board",
-            "target_answer": 3,
-        },
-        max_attempts=48,
-    )
-    execution = out.trace_payload["execution_trace"]
-    annotation_coords = {tuple(coord) for coord in execution["annotation_coords"]}
-    safe_coords = {tuple(coord) for coord in execution["safe_move_coords"]}
-
-    assert annotation_coords == safe_coords
-    assert len(annotation_coords) == 3
-    assert len(execution["winning_move_coords"]) == 0
 
 
 @pytest.mark.parametrize(
@@ -148,7 +102,8 @@ def test_games_connect_four_winning_move_column_label_contract(
     assert str(out.answer_gt.value) == str(expected_label)
     assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == 1
-    assert str(out.query_id) == "winning_move_column_label"
+    assert str(out.query_id) == "single"
+    assert trace["query_spec"]["prompt_variant"]["selected_keys"]["query"] == "winning_move_column_label"
     assert int(execution["answer_column"]) == int(expected_column)
     assert execution["column_labels"] == list("ABCDEFG"[: int(expected_columns)])
     assert trace["render_map"]["column_label_to_col"][str(expected_label)] == int(expected_column)
@@ -156,41 +111,42 @@ def test_games_connect_four_winning_move_column_label_contract(
     assert int(execution["winning_move_coords"][0][1]) == int(expected_column)
     assert execution["annotation_coords"] == execution["winning_move_coords"]
     assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["render_map"]["marked_square_bbox_px"] is None
 
 
-def test_games_connect_four_safe_move_count_default_board_size_uses_square_range() -> None:
-    task = GamesConnectFourSafeMoveCountTask()
-    out = task.generate(
+def test_games_connect_four_column_disc_profile_label_contract() -> None:
+    out = GamesConnectFourColumnDiscProfileLabelTask().generate(
         31025,
         params={
-            "target_answer": 2,
+            "scene_variant": "midgame_board",
+            "board_size_variant": "small_6x5",
+            "target_column_label": "D",
+            "target_red_count": 2,
+            "target_yellow_count": 3,
         },
-        max_attempts=256,
+        max_attempts=48,
     )
+    trace = out.trace_payload
     execution = out.trace_payload["execution_trace"]
 
-    assert str(execution["board_size_variant"]) in {"square_5x5", "square_6x6"}
-    assert int(execution["board_row_count"]) == int(execution["board_column_count"])
-    assert int(execution["board_row_count"]) in {5, 6}
-
-    forced_six = task.generate(
-        31026,
-        params={
-            "target_answer": 6,
-        },
-        max_attempts=256,
-    )
-    forced_execution = forced_six.trace_payload["execution_trace"]
-
-    assert str(forced_execution["board_size_variant"]) == "square_6x6"
-    assert int(forced_execution["board_row_count"]) == 6
-    assert int(forced_execution["board_column_count"]) == 6
+    assert out.answer_gt.type == "string"
+    assert str(out.answer_gt.value) == "D"
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == 5
+    assert str(out.query_id) == "single"
+    assert trace["query_spec"]["prompt_variant"]["selected_keys"]["query"] == "column_disc_profile_label"
+    assert int(execution["answer_column"]) == 3
+    assert int(execution["target_red_count"]) == 2
+    assert int(execution["target_yellow_count"]) == 3
+    assert execution["column_labels"] == list("ABCDEF")
+    assert trace["render_map"]["column_label_to_col"]["D"] == 3
+    assert all(int(coord[1]) == 3 for coord in execution["annotation_coords"])
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
 
 
 def test_games_connect_four_move_count_tasks_cover_style_axis() -> None:
-    safe_answers: list[int] = []
     styles_by_variant: dict[str, set[str]] = {
-        "safe_move_count": set(),
+        "column_disc_profile_label": set(),
         "winning_move_count": set(),
     }
     cases = (
@@ -204,17 +160,19 @@ def test_games_connect_four_move_count_tasks_cover_style_axis() -> None:
             },
         ),
         (
-                "safe_move_count",
-                GamesConnectFourSafeMoveCountTask,
-                {
-                    "scene_variant": "crowded_board",
-                    "board_size_variant": "small_6x5",
-                    "target_answer": 3,
-                },
+            "column_disc_profile_label",
+            GamesConnectFourColumnDiscProfileLabelTask,
+            {
+                "scene_variant": "crowded_board",
+                "board_size_variant": "small_6x5",
+                "target_column_label": "B",
+                "target_red_count": 1,
+                "target_yellow_count": 2,
+            },
         ),
     )
     expected_styles = {"classic", "soft", "outlined", "arcade_blue", "teal_frame", "charcoal"}
-    for query_id, task_cls, base_params in cases:
+    for prompt_query_key, task_cls, base_params in cases:
         for sampling_index, style_variant in enumerate(sorted(expected_styles)):
             params = dict(base_params)
             params["style_variant"] = str(style_variant)
@@ -224,15 +182,13 @@ def test_games_connect_four_move_count_tasks_cover_style_axis() -> None:
                 params=params,
                 max_attempts=96,
             )
-            assert str(out.query_id) == str(query_id)
+            assert str(out.query_id) == "single"
+            assert out.trace_payload["query_spec"]["prompt_variant"]["selected_keys"]["query"] == str(prompt_query_key)
             execution = out.trace_payload["execution_trace"]
-            styles_by_variant[str(query_id)].add(str(execution["style_variant"]))
-            if str(query_id) == "safe_move_count":
-                safe_answers.append(int(out.answer_gt.value))
+            styles_by_variant[str(prompt_query_key)].add(str(execution["style_variant"]))
 
-    assert set(safe_answers) == {3}
     assert styles_by_variant == {
-        "safe_move_count": expected_styles,
+        "column_disc_profile_label": expected_styles,
         "winning_move_count": expected_styles,
     }
 
@@ -240,9 +196,11 @@ def test_games_connect_four_move_count_tasks_cover_style_axis() -> None:
 def test_games_connect_four_move_count_is_deterministic() -> None:
     params = {
         "scene_variant": "crowded_board",
-        "target_answer": 1,
+        "target_column_label": "A",
+        "target_red_count": 2,
+        "target_yellow_count": 1,
     }
-    task = GamesConnectFourSafeMoveCountTask()
+    task = GamesConnectFourColumnDiscProfileLabelTask()
     out_a = task.generate(31041, params=params, max_attempts=64)
     out_b = task.generate(31041, params=params, max_attempts=64)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -266,12 +224,9 @@ def test_games_connect_four_move_count_prompt_bundle_requires_rule_text_for_quer
         "legal_drop_rule_text",
         "winning_rule_text",
     ]
-    assert required["query:safe_move_count"] == [
-        "current_player_name",
-        "opponent_player_name",
-        "legal_drop_rule_text",
-        "winning_rule_text",
-        "safety_rule_text",
+    assert required["query:column_disc_profile_label"] == [
+        "target_red_count",
+        "target_yellow_count",
     ]
 
 

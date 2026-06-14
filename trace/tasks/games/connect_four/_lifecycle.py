@@ -26,10 +26,10 @@ from .shared.prompts import (
 from .shared.rendering import render_connect_four_sample
 from .shared.rules import Coord
 from .shared.sampling import resolve_connect_four_scene_axes, resolve_target_answer, sample_count_scene
-from .shared.state import ConnectFourCountSample, ConnectFourLabelSample, ConnectFourSceneAxes
+from .shared.state import ConnectFourColumnProfileSample, ConnectFourCountSample, ConnectFourLabelSample, ConnectFourSceneAxes
 
 
-ConnectFourSample = ConnectFourCountSample | ConnectFourLabelSample
+ConnectFourSample = ConnectFourCountSample | ConnectFourLabelSample | ConnectFourColumnProfileSample
 AttemptBuilder = Callable[[Any], ConnectFourSample]
 SampleAnswerBuilder = Callable[[ConnectFourSample], TypedValue]
 SampleCoordsBuilder = Callable[[ConnectFourSample], Sequence[Coord]]

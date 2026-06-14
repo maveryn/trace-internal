@@ -13,6 +13,7 @@ from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling,
 from .rules import (
     Board,
     COLUMNS,
+    EMPTY,
     RED,
     ROWS,
     YELLOW,
@@ -37,7 +38,13 @@ from .defaults import (
     SUPPORTED_SCENE_VARIANTS,
     SUPPORTED_WINNING_MOVE_LABEL_THREAT_KINDS,
 )
-from .state import ConnectFourCountSample, ConnectFourEvaluation, ConnectFourLabelSample, ConnectFourSceneAxes
+from .state import (
+    ConnectFourColumnProfileSample,
+    ConnectFourCountSample,
+    ConnectFourEvaluation,
+    ConnectFourLabelSample,
+    ConnectFourSceneAxes,
+)
 
 
 _GEN_DEFAULTS, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
@@ -696,6 +703,145 @@ def sample_winning_column_label_scene(
     )
 
 
+def _column_disc_profile(board: Board, column: int) -> tuple[int, int]:
+    """Return red and yellow disc counts for one board column."""
+
+    red_count = 0
+    yellow_count = 0
+    for row in board:
+        value = int(row[int(column)])
+        if value == int(RED):
+            red_count += 1
+        elif value == int(YELLOW):
+            yellow_count += 1
+    return int(red_count), int(yellow_count)
+
+
+def _column_disc_coords(board: Board, column: int) -> tuple[Coord, ...]:
+    """Return occupied cell coordinates in one board column."""
+
+    coords: list[Coord] = []
+    for row_index, row in enumerate(board):
+        if int(row[int(column)]) != int(EMPTY):
+            coords.append((int(row_index), int(column)))
+    return tuple(coords)
+
+
+def _mixed_column_values(*, rng, red_count: int, yellow_count: int) -> list[int]:
+    """Return one shuffled bottom-up stack with the requested color counts."""
+
+    values = [int(RED)] * int(red_count) + [int(YELLOW)] * int(yellow_count)
+    rng.shuffle(values)
+    return [int(value) for value in values]
+
+
+def _fill_column_profile(
+    board: list[list[int]],
+    *,
+    column: int,
+    rows: int,
+    values_bottom_up: Sequence[int],
+) -> None:
+    """Write a gravity-valid bottom-up column stack into one mutable board."""
+
+    if len(values_bottom_up) > int(rows):
+        raise ValueError("column profile height exceeds the board row count")
+    for offset, value in enumerate(values_bottom_up):
+        board[int(rows) - 1 - int(offset)][int(column)] = int(value)
+
+
+def _random_nonmatching_profile(
+    *,
+    rng,
+    rows: int,
+    target_red_count: int,
+    target_yellow_count: int,
+) -> tuple[int, int]:
+    """Sample one column profile that does not equal the target profile."""
+
+    max_height = min(int(rows), 5)
+    for _ in range(64):
+        height = int(rng.randint(0, int(max_height)))
+        red_count = int(rng.randint(0, int(height))) if height > 0 else 0
+        yellow_count = int(height - red_count)
+        if (int(red_count), int(yellow_count)) != (int(target_red_count), int(target_yellow_count)):
+            return int(red_count), int(yellow_count)
+    if int(target_red_count) != 0:
+        return 0, int(target_red_count + target_yellow_count)
+    return int(target_red_count + target_yellow_count), 0
+
+
+def sample_column_disc_profile_label_scene(
+    *,
+    rng,
+    axes: ConnectFourSceneAxes,
+    params: Mapping[str, Any],
+    target_red_count: int,
+    target_yellow_count: int,
+) -> ConnectFourColumnProfileSample:
+    """Construct a board with exactly one column matching a red/yellow count profile."""
+
+    rows = int(axes.board_rows)
+    columns = int(axes.board_columns)
+    total_target_height = int(target_red_count) + int(target_yellow_count)
+    if int(target_red_count) <= 0 or int(target_yellow_count) <= 0:
+        raise ValueError("Connect Four column profile labels require both colors in the target column")
+    if int(total_target_height) > int(rows):
+        raise ValueError("target column profile exceeds the board row count")
+
+    current_player = resolve_current_player(rng, params=params)
+    target_column, answer_label, column_labels = _target_column_for_label_task(rng=rng, params=params, columns=int(columns))
+    board = _mutable_board(rows=int(rows), columns=int(columns))
+    for column in range(int(columns)):
+        if int(column) == int(target_column):
+            red_count, yellow_count = int(target_red_count), int(target_yellow_count)
+        else:
+            red_count, yellow_count = _random_nonmatching_profile(
+                rng=rng,
+                rows=int(rows),
+                target_red_count=int(target_red_count),
+                target_yellow_count=int(target_yellow_count),
+            )
+        values = _mixed_column_values(rng=rng, red_count=int(red_count), yellow_count=int(yellow_count))
+        _fill_column_profile(board, column=int(column), rows=int(rows), values_bottom_up=values)
+
+    frozen = _freeze_board(board)
+    matching_columns = [
+        int(column)
+        for column in range(int(columns))
+        if _column_disc_profile(frozen, int(column)) == (int(target_red_count), int(target_yellow_count))
+    ]
+    if matching_columns != [int(target_column)]:
+        raise ValueError("failed to construct a unique matching Connect Four column profile")
+    annotation_coords = _column_disc_coords(frozen, int(target_column))
+    if not annotation_coords:
+        raise ValueError("target column profile must have visible discs for annotation")
+    evaluation = ConnectFourEvaluation(
+        answer=int(target_column),
+        annotation_coords=tuple(tuple(coord) for coord in annotation_coords),
+        annotation_entity_ids=tuple(coord_to_cell_id(coord) for coord in annotation_coords),
+        winning_move_coords=tuple(),
+        safe_move_coords=tuple(),
+    )
+    return ConnectFourColumnProfileSample(
+        board=frozen,
+        current_player=int(current_player),
+        evaluation=evaluation,
+        occupied_count=int(occupied_cell_count(frozen)),
+        construction_mode="unique_column_disc_profile",
+        scene_variant=str(axes.scene_variant),
+        board_size_variant=str(axes.board_size_variant),
+        board_rows=int(axes.board_rows),
+        board_columns=int(axes.board_columns),
+        style_variant=str(axes.style_variant),
+        column_labels=tuple(str(label) for label in column_labels),
+        answer_label=str(answer_label),
+        answer_column=int(target_column),
+        target_red_count=int(target_red_count),
+        target_yellow_count=int(target_yellow_count),
+    )
+
+
 __all__ = [
     "column_labels_for_columns",
     "evaluate_count_query",
@@ -705,6 +851,7 @@ __all__ = [
     "resolve_target_answer",
     "resolve_winning_label_threat_kind",
     "safe_move_coords",
+    "sample_column_disc_profile_label_scene",
     "sample_count_scene",
     "sample_winning_column_label_scene",
 ]

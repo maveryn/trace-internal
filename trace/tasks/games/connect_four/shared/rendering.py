@@ -31,7 +31,7 @@ from ...shared.scene_style import (
 from ...shared.style import ConnectFourTheme, build_games_connect_four_theme
 from ...shared.visual_defaults import load_games_scene_noise_defaults
 from .defaults import FALLBACK_RENDERING_DEFAULTS, SCENE_ID
-from .state import ConnectFourCountSample, ConnectFourLabelSample
+from .state import ConnectFourColumnProfileSample, ConnectFourCountSample, ConnectFourLabelSample
 
 
 @dataclass(frozen=True)
@@ -730,7 +730,7 @@ def render_connect_four_board_scene(
 
 def render_connect_four_sample(
     *,
-    sample: ConnectFourCountSample | ConnectFourLabelSample,
+    sample: ConnectFourCountSample | ConnectFourLabelSample | ConnectFourColumnProfileSample,
     params: Mapping[str, Any],
     instance_seed: int,
     marked_square: Coord | None = None,

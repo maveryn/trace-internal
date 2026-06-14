@@ -13,9 +13,9 @@ def test_games_connect_four_move_count_defaults_expose_scene_query_and_answer_ax
         cfg,
         task_id="task_games__connect_four__winning_move_count",
     )
-    safe_generation, _safe_rendering, _safe_prompt = split_scene_generation_rendering_prompt_defaults(
+    profile_generation, _profile_rendering, _profile_prompt = split_scene_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_games__connect_four__safe_move_count",
+        task_id="task_games__connect_four__column_disc_profile_label",
     )
     label_generation, _label_rendering, _label_prompt = split_scene_generation_rendering_prompt_defaults(
         cfg,
@@ -32,6 +32,7 @@ def test_games_connect_four_move_count_defaults_expose_scene_query_and_answer_ax
     assert "safe_board_size_variant_weights" not in shared_generation
     assert "winning_move_count_support" not in shared_generation
     assert "safe_move_count_support" not in shared_generation
+    assert "column_disc_profile_total_support" not in shared_generation
     assert set(shared_generation["style_variant_weights"].keys()) == {
         "classic",
         "soft",
@@ -42,13 +43,7 @@ def test_games_connect_four_move_count_defaults_expose_scene_query_and_answer_ax
     }
     assert list(winning_generation["winning_move_count_support"]) == [0, 1, 2, 3, 4]
     assert "safe_move_count_support" not in winning_generation
-    assert bool(safe_generation["balanced_safe_board_size_variant_sampling"]) is True
-    assert set(safe_generation["safe_board_size_variant_weights"].keys()) == {"square_5x5", "square_6x6"}
-    assert list(safe_generation["safe_move_count_support"]) == [1, 2, 3, 4, 5, 6]
-    assert int(safe_generation["safe_midgame_min_occupied_count"]) == 8
-    assert int(safe_generation["safe_midgame_max_occupied_count"]) == 16
-    assert int(safe_generation["safe_crowded_min_occupied_count"]) == 16
-    assert int(safe_generation["safe_crowded_max_occupied_count"]) == 24
+    assert list(profile_generation["column_disc_profile_total_support"]) == [2, 3, 4, 5]
     assert bool(label_generation["balanced_winning_move_label_threat_kind_sampling"]) is True
     assert set(label_generation["winning_move_label_threat_kind_weights"].keys()) == {
         "vertical_threat",

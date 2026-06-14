@@ -13,5 +13,6 @@
 - `select(column_label, legal_drop_result=immediate_win_for_current_player); scene=connect_four; scope=winning_move_column_label`
 
 ## Generation Notes
-2. Column labels are rendered below the board; annotation marks the center of the selected column's landing cell, not the label text.
+1. Column labels are rendered below the board; annotation marks the center of the selected column's landing cell, not the label text.
+2. The answer landing cell is not visibly highlighted in the rendered image.
 3. Annotation is projected from the same generated game state used for answer verification.

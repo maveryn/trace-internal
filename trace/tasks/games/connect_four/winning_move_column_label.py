@@ -96,7 +96,7 @@ def _prepare_winning_column_label_objective(
         prompt_dynamic_slots=prompt_slots,
         answer_gt=lambda sample: TypedValue(type="string", value=str(sample.answer_label)),
         annotation_coords=lambda sample: sample.evaluation.annotation_coords,
-        render_marked_square=lambda sample: sample.evaluation.annotation_coords[0],
+        render_marked_square=lambda _sample: None,
         render_column_labels=lambda sample: sample.column_labels,
         query_spec_params=query_spec_params,
         execution_updates=execution_updates,

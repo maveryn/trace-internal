@@ -20,9 +20,9 @@ from .defaults import (
 from .rules import (
     route_collision_vehicle_ids,
     route_first_collision_tick,
-    route_first_collision_vehicle_ids,
     validate_crossing_sample,
     vehicle_col_at_tick,
+    vehicle_exit_tick,
 )
 from .state import CrossingRouteOption, CrossingSample, CrossingSceneAxes, CrossingVehicle, route_entity_id, vehicle_entity_id
 
@@ -547,15 +547,13 @@ def sample_labeled_route_collision_scene(
     raise ValueError("could not construct crossing hit-object label scene")
 
 
-def sample_labeled_route_first_collision_scene(
+def sample_labeled_first_exit_scene(
     *,
     rng: Any,
     axes: CrossingSceneAxes,
     target_label: str,
-    min_collision_count: int,
-    max_extra_per_row: int,
 ) -> CrossingSample:
-    """Construct a straight-route scene where the target label is the earliest collision."""
+    """Construct a no-route scene where one labeled object exits first."""
 
     labels = tuple(str(label) for label in VEHICLE_OPTION_LABELS)
     target_label = str(target_label)
@@ -563,56 +561,49 @@ def sample_labeled_route_first_collision_scene(
         raise ValueError(f"unsupported crossing vehicle option label: {target_label}")
 
     lane_count = int(axes.lane_count)
-    row_count = int(axes.row_count)
-    required_collision_count = max(2, min(int(min_collision_count), len(labels), row_count))
-    for _attempt in range(1600):
-        route_col = int(rng.randrange(lane_count))
-        reachable_rows = [
-            int(row)
-            for row in range(row_count)
-            if int(route_col) in set(_collision_reachable_cols(lane_count=lane_count, tick=int(row + 1)))
-        ]
-        target_row_candidates = [
-            int(row)
-            for row in reachable_rows
-            if len([later_row for later_row in reachable_rows if int(later_row) > int(row)])
-            >= int(required_collision_count) - 1
-        ]
-        if not target_row_candidates:
-            continue
-        target_row = int(target_row_candidates[int(rng.randrange(len(target_row_candidates)))])
-        later_rows = [int(row) for row in reachable_rows if int(row) > int(target_row)]
-        rng.shuffle(later_rows)
-        max_other_hits = min(len(labels) - 1, len(later_rows))
-        if max_other_hits < int(required_collision_count) - 1:
-            continue
-        other_hit_count = int(rng.randint(int(required_collision_count) - 1, int(max_other_hits)))
-        collision_rows = [int(target_row), *sorted(int(row) for row in later_rows[:other_hit_count])]
+    row_count = max(int(axes.row_count), len(labels))
+    exit_candidates = [
+        (
+            vehicle_exit_tick(
+                CrossingVehicle("_tmp", 0, int(start_col), int(direction), 0),
+                lane_count=int(lane_count),
+            ),
+            int(direction),
+            int(start_col),
+        )
+        for direction in (-1, 1)
+        for start_col in range(int(lane_count))
+    ]
+    target_candidates = [
+        candidate
+        for candidate in exit_candidates
+        if 2 <= int(candidate[0]) <= max(2, min(3, int(lane_count) - 1))
+    ] or [candidate for candidate in exit_candidates if int(candidate[0]) == 1]
+    if not target_candidates:
+        raise ValueError("could not resolve crossing first-exit target candidates")
 
-        route_path = tuple(int(route_col) for _row in range(row_count))
+    for _attempt in range(300):
+        target_tick, target_direction, target_start_col = target_candidates[int(rng.randrange(len(target_candidates)))]
+        later_candidates = [candidate for candidate in exit_candidates if int(candidate[0]) > int(target_tick)]
+        rng.shuffle(later_candidates)
+        if len(later_candidates) < len(labels) - 1:
+            continue
+
+        rows = list(range(int(row_count)))
+        rng.shuffle(rows)
+        chosen_rows = [int(row) for row in rows[: len(labels)]]
         row_directions = _row_directions(rng, row_count)
         other_labels = [str(label) for label in labels if str(label) != str(target_label)]
         rng.shuffle(other_labels)
-        collision_labels = [str(target_label), *other_labels[:other_hit_count]]
-        vehicle_specs: list[dict[str, int | str]] = []
-        occupied: set[tuple[int, int]] = set()
-        feasible = True
-        for row, label in zip(collision_rows, collision_labels):
-            hit = _collision_start_for_col(
-                rng,
-                lane_count=lane_count,
-                col=int(route_col),
-                tick=int(row + 1),
-            )
-            if hit is None:
-                feasible = False
-                break
-            direction, start_col = hit
-            if (int(row), int(start_col)) in occupied or int(start_col) == int(route_col):
-                feasible = False
-                break
-            row_directions[int(row)] = int(direction)
-            occupied.add((int(row), int(start_col)))
+        vehicle_specs: list[dict[str, int | str]] = [
+            {
+                "row": int(chosen_rows[0]),
+                "start_col": int(target_start_col),
+                "direction": int(target_direction),
+                "option_label": str(target_label),
+            }
+        ]
+        for label, row, (_tick, direction, start_col) in zip(other_labels, chosen_rows[1:], later_candidates):
             vehicle_specs.append(
                 {
                     "row": int(row),
@@ -621,30 +612,8 @@ def sample_labeled_route_first_collision_scene(
                     "option_label": str(label),
                 }
             )
-        if not feasible:
-            continue
-
-        remaining_labels = [str(label) for label in labels if str(label) not in set(collision_labels)]
-        available_slots = _non_colliding_slots_for_route(
-            lane_count=lane_count,
-            row_count=row_count,
-            row_directions=row_directions,
-            route_path=route_path,
-            occupied=occupied,
-        )
-        rng.shuffle(available_slots)
-        if len(available_slots) < len(remaining_labels):
-            continue
-        for label, (row, start_col, direction) in zip(remaining_labels, available_slots):
-            vehicle_specs.append(
-                {
-                    "row": int(row),
-                    "start_col": int(start_col),
-                    "direction": int(direction),
-                    "option_label": str(label),
-                }
-            )
-            occupied.add((int(row), int(start_col)))
+        for spec in vehicle_specs:
+            row_directions[int(spec["row"])] = int(spec["direction"])
         rng.shuffle(vehicle_specs)
 
         vehicles: list[CrossingVehicle] = []
@@ -660,50 +629,43 @@ def sample_labeled_route_first_collision_scene(
             )
             label_to_vehicle_id[str(spec["option_label"])] = str(vehicle.vehicle_id)
 
-        _add_clutter(
-            rng,
-            vehicles=vehicles,
-            lane_count=lane_count,
-            row_count=row_count,
-            row_directions=row_directions,
-            avoid_cols_by_row={row: {int(route_path[row])} for row in range(row_count)},
-            max_extra_per_row=int(max_extra_per_row),
-            avoid_start_cols_by_row={row: {int(route_path[row])} for row in range(row_count)},
-        )
-        route = CrossingRouteOption(route_id=route_entity_id("M"), label="M", path_cols=tuple(route_path), color_index=0)
-        all_hit_ids = route_collision_vehicle_ids(route, tuple(vehicles), lane_count=lane_count)
-        first_hit_ids = route_first_collision_vehicle_ids(route, tuple(vehicles), lane_count=lane_count)
         target_vehicle_id = label_to_vehicle_id.get(str(target_label))
         if target_vehicle_id is None:
             continue
-        if len(all_hit_ids) < int(required_collision_count) or tuple(first_hit_ids) != (str(target_vehicle_id),):
+        exit_ticks = {
+            str(vehicle.vehicle_id): vehicle_exit_tick(vehicle, lane_count=lane_count)
+            for vehicle in vehicles
+        }
+        earliest_tick = min(exit_ticks.values())
+        earliest_ids = tuple(sorted(vehicle_id for vehicle_id, tick in exit_ticks.items() if int(tick) == int(earliest_tick)))
+        if tuple(earliest_ids) != (str(target_vehicle_id),):
             continue
 
         sample = CrossingSample(
             lane_count=lane_count,
             row_count=row_count,
-            count_mode="labeled_route_first_collision",
+            count_mode="labeled_first_exit",
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             answer=str(target_label),
             row_directions=tuple(int(value) for value in row_directions),
             vehicles=tuple(vehicles),
-            start_labels=tuple(START_LABELS[:lane_count]),
-            route_options=(route,),
-            marked_route_label="M",
-            target_start_label=str(START_LABELS[int(route_col)]),
+            start_labels=(),
+            route_options=(),
+            marked_route_label=None,
+            target_start_label=None,
             target_route_label=None,
             target_object_label=str(target_label),
-            first_collision_tick=route_first_collision_tick(route, tuple(vehicles), lane_count=lane_count),
-            intersecting_vehicle_ids=tuple(all_hit_ids),
+            first_collision_tick=None,
+            intersecting_vehicle_ids=tuple(),
             annotation_entity_ids=(str(target_vehicle_id),),
             target_answer=None,
             target_label_index=int(labels.index(str(target_label))),
-            construction_mode="straight_labeled_route_first_collision",
+            construction_mode="labeled_first_exit",
         )
         validate_crossing_sample(sample)
         return sample
-    raise ValueError("could not construct crossing first-hit label scene")
+    raise ValueError("could not construct crossing first-exit label scene")
 
 
 def _sample_direction_count(
@@ -825,6 +787,6 @@ __all__ = [
     "resolve_scene_axis",
     "resolve_target_answer",
     "sample_labeled_route_collision_scene",
-    "sample_labeled_route_first_collision_scene",
+    "sample_labeled_first_exit_scene",
     "sample_crossing_scene",
 ]

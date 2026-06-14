@@ -22,12 +22,12 @@
       ]
     },
     "query": {
-      "first_hit_object_label": [
-        "{crossing_motion_rule_text} Which labeled moving object hits the numbered yellow route first?",
-        "Use the numbered yellow route cells and the arrows on the moving objects. Which labeled moving object collides with the route first? {crossing_motion_rule_text}",
-        "{crossing_motion_rule_text} Identify the labeled moving object that reaches the yellow route before any other labeled object.",
-        "For the marked yellow route, which labeled moving object lands on the route earliest?",
-        "Which labeled moving object will be the first to hit the numbered yellow route? {crossing_motion_rule_text}"
+      "first_exit_object_label": [
+        "{crossing_motion_rule_text} Which labeled moving object leaves the board first?",
+        "Use the arrows on the moving objects. Which labeled moving object exits the grid first? {crossing_motion_rule_text}",
+        "{crossing_motion_rule_text} Identify the labeled moving object that reaches an outer edge before the other labeled objects.",
+        "{crossing_motion_rule_text} Which labeled moving object will leave the lane grid first?",
+        "Which labeled moving object exits the board earliest? {crossing_motion_rule_text}"
       ],
       "hit_object_label": [
         "{crossing_motion_rule_text} Which labeled moving object hits the numbered yellow route?",
@@ -75,7 +75,7 @@
     "query:hit_object_label": [
       "crossing_motion_rule_text"
     ],
-    "query:first_hit_object_label": [
+    "query:first_exit_object_label": [
       "crossing_motion_rule_text"
     ],
     "query:left_moving_object_count": [],
@@ -120,13 +120,14 @@
   },
   "code_prompt_defaults": {
     "object_description_traffic_crossing": "a lane-crossing game board with moving objects, direction arrows, start pads, and one marked route line",
-    "object_description_traffic_crossing_no_route": "a lane-crossing game board with moving objects, direction arrows, start pads, and a goal band",
+    "object_description_traffic_crossing_no_route": "a lane-crossing game board with moving objects and direction arrows",
     "crossing_motion_rule_text": "At tick 1, the runner enters the bottom traffic row; at each next tick, the runner moves one row upward. Each moving object shifts one lane cell per tick in its arrow direction. Objects that reach an edge leave the board.",
-    "annotation_hint_first_hit_object_label": "set \"annotation\" to a JSON array containing one bounding box [x0, y0, x1, y1] for the labeled moving object that hits the marked route first",
+    "crossing_exit_motion_rule_text": "At each tick, every moving object shifts one lane cell in its arrow direction. A moving object exits when it moves past the left or right edge.",
+    "annotation_hint_first_exit_object_label": "set \"annotation\" to a JSON array containing one bounding box [x0, y0, x1, y1] for the labeled moving object that leaves the board first",
     "annotation_hint_hit_object_label": "set \"annotation\" to a JSON array containing one bounding box [x0, y0, x1, y1] for the labeled moving object that hits the marked route",
     "annotation_hint_left_moving_object_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every moving object whose arrow points left",
     "annotation_hint_right_moving_object_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every moving object whose arrow points right",
-    "answer_hint_first_hit_object_label": "set \"answer\" to the visible label of the moving object that hits the marked route first; the value is one of A, B, C, or D",
+    "answer_hint_first_exit_object_label": "set \"answer\" to the visible label of the moving object that leaves the board first; the value is one of A, B, C, or D",
     "answer_hint_hit_object_label": "set \"answer\" to the visible label of the moving object that hits the marked route; the value is one of A, B, C, or D",
     "answer_hint_left_moving_object_count": "set \"answer\" to the number of moving objects whose arrow points left; the value is between 1 and 6",
     "answer_hint_right_moving_object_count": "set \"answer\" to the number of moving objects whose arrow points right; the value is between 1 and 6"

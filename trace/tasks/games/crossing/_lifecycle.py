@@ -19,6 +19,7 @@ from .shared.defaults import SCENE_ID, VEHICLE_OPTION_LABELS
 from .shared.output import common_trace_params, common_trace_sections
 from .shared.prompts import (
     build_crossing_prompt_artifacts,
+    crossing_exit_motion_rule_text,
     crossing_motion_rule_text,
     crossing_object_description,
     crossing_output_slots,
@@ -81,6 +82,8 @@ class CrossingLabelObjectiveSpec:
     construct_attempt: CrossingLabelAttemptBuilder
     min_lane_count: int = 5
     min_row_count: int = 5
+    include_route_in_description: bool = True
+    use_exit_motion_rule_text: bool = False
 
 
 def _resolve_vehicle_option_label(
@@ -243,8 +246,12 @@ def prepare_label_objective_from_spec(
     def prompt_slots(_sample) -> dict[str, Any]:
         json_example, json_example_answer_only = json_examples_for_label_answer()
         return {
-            "object_description": crossing_object_description(include_route=True),
-            "crossing_motion_rule_text": crossing_motion_rule_text(),
+            "object_description": crossing_object_description(include_route=bool(spec.include_route_in_description)),
+            "crossing_motion_rule_text": (
+                crossing_exit_motion_rule_text()
+                if bool(spec.use_exit_motion_rule_text)
+                else crossing_motion_rule_text()
+            ),
             **crossing_output_slots(
                 prompt_query_key=str(spec.prompt_query_key),
                 json_example=json_example,

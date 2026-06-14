@@ -13,9 +13,9 @@ def test_games_crossing_lane_defaults_present() -> None:
         cfg,
         task_id="task_games__crossing__hit_object_label",
     )
-    first_hit_generation, _first_hit_rendering, _first_hit_prompt = split_scene_generation_rendering_prompt_defaults(
+    first_exit_generation, _first_exit_rendering, _first_exit_prompt = split_scene_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_games__crossing__first_hit_object_label",
+        task_id="task_games__crossing__first_exit_object_label",
     )
     direction_generation, _direction_rendering, _direction_prompt = split_scene_generation_rendering_prompt_defaults(
         cfg,
@@ -39,13 +39,11 @@ def test_games_crossing_lane_defaults_present() -> None:
     assert list(shared_generation["lane_count_support"]) == [5, 6, 7, 8]
     assert list(shared_generation["row_count_support"]) == [5, 6, 7]
     assert "moving_object_count_support" not in shared_generation
-    assert "first_hit_label_index_support" not in shared_generation
+    assert "first_exit_label_index_support" not in shared_generation
     assert "hit_object_label_index_support" not in shared_generation
     assert "left_moving_object_count_support" not in shared_generation
     assert "right_moving_object_count_support" not in shared_generation
-    assert list(first_hit_generation["first_hit_label_index_support"]) == [0, 1, 2, 3]
-    assert int(first_hit_generation["first_hit_min_collision_count"]) == 2
-    assert int(first_hit_generation["first_hit_max_extra_per_row"]) == 1
+    assert list(first_exit_generation["first_exit_label_index_support"]) == [0, 1, 2, 3]
     assert list(route_generation["hit_object_label_index_support"]) == [0, 1, 2, 3]
     assert int(route_generation["hit_object_max_extra_per_row"]) == 1
     assert list(direction_generation["left_moving_object_count_support"]) == [1, 2, 3, 4, 5, 6]

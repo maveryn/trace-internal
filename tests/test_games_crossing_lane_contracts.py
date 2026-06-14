@@ -9,10 +9,10 @@ import pytest
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.crossing.first_hit_object_label import GamesCrossingFirstHitObjectLabelTask
+from trace.tasks.games.crossing.first_exit_object_label import GamesCrossingFirstExitObjectLabelTask
 from trace.tasks.games.crossing.hit_object_label import GamesCrossingHitObjectLabelTask
 from trace.tasks.games.crossing.moving_object_direction_count import GamesCrossingMovingObjectDirectionCountTask
-from trace.tasks.games.crossing.shared.rules import route_collision_vehicle_ids, route_first_collision_vehicle_ids
+from trace.tasks.games.crossing.shared.rules import route_collision_vehicle_ids, vehicle_exit_tick
 from trace.tasks.games.crossing.shared.state import (
     CrossingRouteOption,
     CrossingVehicle,
@@ -50,9 +50,9 @@ def _routes(execution: dict) -> tuple[CrossingRouteOption, ...]:
     ("task_cls", "params", "expected_query", "expected_answer", "expected_answer_type", "expected_annotation_type", "annotation_count"),
     (
         (
-            GamesCrossingFirstHitObjectLabelTask,
+            GamesCrossingFirstExitObjectLabelTask,
             {"target_label": "B", "lane_count": 7, "row_count": 7, "style_variant": "paper"},
-            "first_hit_object_label",
+            "first_exit_object_label",
             "B",
             "string",
             "bbox_set",
@@ -130,30 +130,37 @@ def test_games_crossing_hit_object_label_matches_trace() -> None:
     assert all(int(vehicle.start_col) != int(route.path_cols[int(vehicle.row)]) for vehicle in vehicles)
 
 
-def test_games_crossing_first_hit_object_label_matches_trace() -> None:
-    out = GamesCrossingFirstHitObjectLabelTask().generate(
+def test_games_crossing_first_exit_object_label_matches_trace() -> None:
+    out = GamesCrossingFirstExitObjectLabelTask().generate(
         77132,
         params={"target_label": "A", "lane_count": 8, "row_count": 7},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
-    route = _routes(execution)[0]
     vehicles = _vehicles(execution)
-    hit_ids = route_collision_vehicle_ids(route, vehicles, lane_count=int(execution["lane_count"]))
-    first_hit_ids = route_first_collision_vehicle_ids(route, vehicles, lane_count=int(execution["lane_count"]))
     labeled = {str(vehicle.option_label): str(vehicle.vehicle_id) for vehicle in vehicles if vehicle.option_label is not None}
+    exit_ticks = {
+        str(vehicle.vehicle_id): vehicle_exit_tick(vehicle, lane_count=int(execution["lane_count"]))
+        for vehicle in vehicles
+        if vehicle.option_label is not None
+    }
+    first_exit_tick = min(exit_ticks.values())
+    first_exit_ids = tuple(
+        sorted(vehicle_id for vehicle_id, tick in exit_ticks.items() if int(tick) == int(first_exit_tick))
+    )
 
     assert out.answer_gt.value == "A"
     assert set(labeled) == {"A", "B", "C", "D"}
-    assert len(hit_ids) >= 2
-    assert len(first_hit_ids) == 1
-    assert labeled["A"] == first_hit_ids[0]
-    assert tuple(execution["intersecting_vehicle_ids"]) == hit_ids
-    assert tuple(execution["annotation_entity_ids"]) == first_hit_ids
+    assert len(first_exit_ids) == 1
+    assert labeled["A"] == first_exit_ids[0]
+    assert execution["route_options"] == []
+    assert execution["start_labels"] == []
+    assert tuple(execution["intersecting_vehicle_ids"]) == ()
+    assert tuple(execution["annotation_entity_ids"]) == first_exit_ids
     assert execution["target_object_label"] == "A"
     assert execution["target_label"] == "A"
-    assert execution["first_collision_tick"] is not None
-    assert all(int(vehicle.start_col) != int(route.path_cols[int(vehicle.row)]) for vehicle in vehicles)
+    assert execution["first_collision_tick"] is None
+    assert execution["first_exit_tick"] == first_exit_tick
 
 
 @pytest.mark.parametrize(
@@ -186,7 +193,7 @@ def test_games_crossing_direction_count_matches_trace(query_id: str, target_answ
 
 
 def test_games_crossing_direction_count_taxonomy() -> None:
-    assert resolve_task_taxonomy("task_games__crossing__first_hit_object_label").scene_id == "crossing"
+    assert resolve_task_taxonomy("task_games__crossing__first_exit_object_label").scene_id == "crossing"
     assert resolve_task_taxonomy("task_games__crossing__hit_object_label").scene_id == "crossing"
     assert resolve_task_taxonomy("task_games__crossing__moving_object_direction_count").scene_id == "crossing"
 
@@ -199,7 +206,7 @@ def test_games_crossing_lane_build_smoke(tmp_path: Path) -> None:
         instance_version="v0",
         image_format="png",
         tasks=[
-            BuildTaskConfig(task_id="task_games__crossing__first_hit_object_label", count=1, params={"target_label": "A"}),
+            BuildTaskConfig(task_id="task_games__crossing__first_exit_object_label", count=1, params={"target_label": "A"}),
             BuildTaskConfig(task_id="task_games__crossing__hit_object_label", count=1, params={"target_label": "B"}),
             BuildTaskConfig(
                 task_id="task_games__crossing__moving_object_direction_count",

@@ -410,7 +410,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__connect_four__safe_move_count": _entry("games", "connect_four", "games", "connect_four"),
     "task_games__connect_four__winning_move_column_label": _entry("games", "connect_four", "games", "connect_four"),
     "task_games__connect_four__winning_move_count": _entry("games", "connect_four", "games", "connect_four"),
-    "task_games__crossing__first_hit_object_label": _entry("games", "crossing", "games", "crossing"),
+    "task_games__crossing__first_exit_object_label": _entry("games", "crossing", "games", "crossing"),
     "task_games__crossing__hit_object_label": _entry("games", "crossing", "games", "crossing"),
     "task_games__crossing__moving_object_direction_count": _entry("games", "crossing", "games", "crossing"),
     "task_games__darts__ring_count": _entry("games", "darts", "games", "darts"),

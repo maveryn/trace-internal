@@ -205,16 +205,16 @@ Review artifacts for these tasks use `review/task-reviews/games/<scene_id>/<task
   - `task_games__connect_four__winning_move_count`
 
 ### `crossing`
-- Visual grammar: lane-crossing motion board with horizontal traffic rows, direction arrows, start pads, one marked route line, and a goal band.
+- Visual grammar: lane-crossing motion board with horizontal traffic rows, direction arrows, optional start pads, optional marked route line, and safe bands.
 - Visual styles include day, night, retro, paper, and construction lane palettes,
   shared games/puzzles panel-scene treatments, sampled text fonts, and layout
   jitter for the whole playfield.
 - Reasoning coverage: identifying the labeled moving object that hits a marked route, identifying which
-  labeled moving object hits the route first among multiple collisions, and moving-object direction counting.
+  labeled moving object leaves the board first, and moving-object direction counting.
 - Annotation uses homogeneous `bbox_set` over the matching moving objects; label tasks mark only the
   selected labeled object.
 - Active default tasks:
-  - `task_games__crossing__first_hit_object_label`
+  - `task_games__crossing__first_exit_object_label`
   - `task_games__crossing__hit_object_label`
   - `task_games__crossing__moving_object_direction_count`
 

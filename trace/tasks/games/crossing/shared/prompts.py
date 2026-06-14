@@ -52,6 +52,12 @@ def crossing_motion_rule_text() -> str:
     return str(required_group_default(_PROMPT_DEFAULTS, "crossing_motion_rule_text", context="Crossing prompt defaults"))
 
 
+def crossing_exit_motion_rule_text() -> str:
+    """Return the no-route vehicle exit rule text."""
+
+    return str(required_group_default(_PROMPT_DEFAULTS, "crossing_exit_motion_rule_text", context="Crossing prompt defaults"))
+
+
 def crossing_output_slots(
     *,
     prompt_query_key: str,
@@ -108,6 +114,7 @@ def build_crossing_prompt_artifacts(
 
 __all__ = [
     "build_crossing_prompt_artifacts",
+    "crossing_exit_motion_rule_text",
     "crossing_motion_rule_text",
     "crossing_object_description",
     "crossing_output_slots",

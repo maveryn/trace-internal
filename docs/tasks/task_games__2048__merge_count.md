@@ -5,10 +5,11 @@
 2. Scene package: `trace/tasks/games/2048/`
 3. Scene id: `2048`
 4. Public task id: `task_games__2048__merge_count`
-5. Supported `query_id` values: `merge_count`
-6. Answer schema: `integer_count`
-7. Annotation schema: `point_pair_set`
-8. Program schema: `count(simulate(board, rules=slide_merge_2048, action=move_direction).merge_events); scene=2048; scope=merge_count`
+5. Supported public `query_id` values: `default`
+6. Prompt query key: `merge_count`
+7. Answer schema: `integer_count`
+8. Annotation schema: `point_pair_set`
+9. Program schema: `count(simulate(board, rules=slide_merge_2048, action=move_direction).merge_events); scene=2048; scope=merge_count`
 
 ## Generation Notes
 1. This task follows the contract-v0 public taxonomy mapping in `review/taxonomy-audit/contract_v0_reanalysis/`.

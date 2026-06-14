@@ -10,7 +10,6 @@ import pytest
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.dominoes.double_count import GamesDominoesDoubleCountTask
-from trace.tasks.games.dominoes.extendable_first_play_count import GamesDominoesExtendableFirstPlayCountTask
 from trace.tasks.games.dominoes.higher_sum_than_reference_count import GamesDominoesHigherSumThanReferenceCountTask
 from trace.tasks.games.dominoes.matching_end_count import GamesDominoesMatchingEndCountTask
 from trace.tasks.games.dominoes.second_play_candidate_count import GamesDominoesSecondPlayCandidateCountTask
@@ -20,7 +19,6 @@ from tests.helpers import read_jsonl
 
 TASK_CASES = (
     (GamesDominoesDoubleCountTask, "double_count", {"target_answer": 3, "candidate_count": 8}),
-    (GamesDominoesExtendableFirstPlayCountTask, "extendable_first_play_count", {"target_answer": 3, "candidate_count": 8}),
     (GamesDominoesHigherSumThanReferenceCountTask, "higher_sum_than_reference_count", {"target_answer": 4, "candidate_count": 9}),
     (GamesDominoesMatchingEndCountTask, "matching_end_count", {"target_answer": 2, "candidate_count": 8}),
     (GamesDominoesSecondPlayCandidateCountTask, "second_play_candidate_count", {"target_answer": 2, "candidate_count": 8}),
@@ -28,7 +26,6 @@ TASK_CASES = (
 )
 CHAIN_QUERY_IDS = frozenset(
     {
-        "extendable_first_play_count",
         "matching_end_count",
         "second_play_candidate_count",
     }
@@ -161,32 +158,6 @@ def test_games_dominoes_second_play_candidate_count_matches_unique_first_play() 
     assert "new open end" in out.prompt.lower()
 
 
-def test_games_dominoes_extendable_first_play_count_matches_followup_rule() -> None:
-    out = GamesDominoesExtendableFirstPlayCountTask().generate(
-        26043,
-        params={"scene_variant": "two_row", "target_answer": 4, "candidate_count": 10},
-        max_attempts=512,
-    )
-    execution = out.trace_payload["execution_trace"]
-    candidates = {str(spec["tile_id"]): spec for spec in execution["candidate_tile_specs"]}
-    open_end = int(execution["open_end_value"])
-    extendable_ids = []
-    for candidate_id, candidate in candidates.items():
-        tile = (int(candidate["left_value"]), int(candidate["right_value"]))
-        if not _can_connect(tile, open_end):
-            continue
-        new_open = _new_open_end(tile, open_end)
-        if any(
-            str(other_id) != str(candidate_id)
-            and _can_connect((int(other["left_value"]), int(other["right_value"])), new_open)
-            for other_id, other in candidates.items()
-        ):
-            extendable_ids.append(str(candidate_id))
-
-    assert int(out.answer_gt.value) == 4
-    assert set(extendable_ids) == set(execution["annotation_entity_ids"])
-
-
 def test_games_dominoes_each_public_task_varies_scene_and_style_axes() -> None:
     for task_cls, query_id, _params in TASK_CASES:
         scenes: set[str] = set()
@@ -247,13 +218,6 @@ def test_games_dominoes_prompt_avoids_table_color_and_sentence_splice() -> None:
 
 def _can_connect(tile: tuple[int, int], open_end: int) -> bool:
     return int(open_end) in {int(tile[0]), int(tile[1])}
-
-
-def _new_open_end(tile: tuple[int, int], open_end: int) -> int:
-    assert _can_connect(tile, open_end)
-    if int(tile[0]) == int(tile[1]):
-        return int(open_end)
-    return int(tile[1]) if int(tile[0]) == int(open_end) else int(tile[0])
 
 
 def test_games_dominoes_build_smoke(tmp_path: Path) -> None:

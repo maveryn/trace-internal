@@ -19,12 +19,6 @@ generation:
       double_target_answer_support: [0, 1, 2, 3, 4, 5]
       single_row_candidate_count_support: [7, 8, 9]
       two_row_candidate_count_support: [10, 11, 12]
-    task_games__dominoes__extendable_first_play_count:
-      balanced_target_answer_sampling: true
-      balanced_candidate_count_sampling: true
-      extendable_first_play_target_answer_support: [0, 1, 2, 3, 4]
-      single_row_candidate_count_support: [7, 8, 9]
-      two_row_candidate_count_support: [10, 11, 12]
     task_games__dominoes__higher_sum_than_reference_count:
       balanced_target_answer_sampling: true
       balanced_candidate_count_sampling: true

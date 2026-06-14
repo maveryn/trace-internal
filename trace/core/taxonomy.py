@@ -417,7 +417,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__darts__bullseye_membership_count": _entry("games", "darts", "games", "darts"),
     "task_games__darts__dart_score_value": _entry("games", "darts", "games", "darts"),
     "task_games__darts__sector_dart_count": _entry("games", "darts", "games", "darts"),
-    "task_games__dominoes__extendable_first_play_count": _entry("games", "dominoes", "games", "dominoes"),
     "task_games__dominoes__matching_end_count": _entry("games", "dominoes", "games", "dominoes"),
     "task_games__dominoes__second_play_candidate_count": _entry("games", "dominoes", "games", "dominoes"),
     "task_games__dominoes__double_count": _entry("games", "dominoes", "games", "dominoes"),

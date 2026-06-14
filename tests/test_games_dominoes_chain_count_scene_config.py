@@ -48,7 +48,6 @@ def test_games_dominoes_task_overrides_remain_task_owned() -> None:
         "task_games__dominoes__sum_to_target_count": ("sum_to_target_answer_support", [0, 1, 2, 3, 4]),
         "task_games__dominoes__double_count": ("double_target_answer_support", [0, 1, 2, 3, 4, 5]),
         "task_games__dominoes__second_play_candidate_count": ("second_play_candidate_target_answer_support", [0, 1, 2, 3, 4, 5]),
-        "task_games__dominoes__extendable_first_play_count": ("extendable_first_play_target_answer_support", [0, 1, 2, 3, 4]),
     }
     for task_id, (support_key, support) in expected.items():
         generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(cfg, task_id=task_id)

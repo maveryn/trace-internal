@@ -34,22 +34,11 @@ def can_connect(tile: Tuple[int, int], open_end: int) -> bool:
     return int(open_end) in {int(tile[0]), int(tile[1])}
 
 
-def new_open_end(tile: Tuple[int, int], open_end: int) -> int:
-    """Return the new open-end value after playing `tile` on `open_end`."""
-
-    if not can_connect(tile, int(open_end)):
-        raise ValueError("tile does not connect to open end")
-    if int(tile[0]) == int(tile[1]):
-        return int(open_end)
-    return int(tile[1]) if int(tile[0]) == int(open_end) else int(tile[0])
-
-
 __all__ = [
     "CANONICAL_DOMINOES",
     "OPTION_LABELS",
     "PIP_VALUES",
     "can_connect",
     "canonical_tile",
-    "new_open_end",
     "tile_sum",
 ]

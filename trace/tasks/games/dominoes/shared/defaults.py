@@ -27,7 +27,6 @@ class DominoSceneDefaults:
     sum_to_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     double_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     second_play_candidate_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-    extendable_first_play_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     single_row_candidate_count_support: Tuple[int, ...] = (7, 8, 9)
     two_row_candidate_count_support: Tuple[int, ...] = (10, 11, 12)
     sum_target_total_support: Tuple[int, ...] = (2, 3, 4, 5, 6, 7, 8, 9, 10)

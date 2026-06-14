@@ -14,7 +14,6 @@ generation:
   task_overrides:
     task_games__darts__dart_score_value:
       balanced_score_value_sampling: true
-      balanced_distractor_count_sampling: true
       score_value_support:
       - 1
       - 2
@@ -37,18 +36,17 @@ generation:
       - 19
       - 20
       - 50
-      score_task_distractor_count_support: [2, 3, 4, 5]
     task_games__darts__bullseye_membership_count:
       balanced_dart_count_sampling: true
       balanced_target_answer_sampling: true
       count_query_dart_count_support: [4, 5, 6, 7]
-      count_target_answer_support: [0, 1, 2, 3, 4, 5, 6]
+      count_target_answer_support: [0, 1, 2, 3, 4, 5]
     task_games__darts__sector_dart_count:
-      balanced_dart_count_sampling: true
       balanced_target_answer_sampling: true
+      balanced_distractor_count_sampling: true
       balanced_target_sector_sampling: true
-      count_query_dart_count_support: [4, 5, 6, 7]
-      count_target_answer_support: [0, 1, 2, 3, 4, 5, 6]
+      sector_target_answer_support: [0, 1, 2, 3, 4]
+      sector_distractor_count_support: [1, 2, 3, 4, 5, 6]
       target_sector_support:
       - 20
       - 1
@@ -77,7 +75,7 @@ rendering:
     board_center_x_px: 520
     board_center_y_px: 430
     board_radius_px: 330
-    marker_radius_px: 17
+    marker_radius_px: 14
     number_font_size_px: 36
 prompt:
   shared:

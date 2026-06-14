@@ -1,4 +1,4 @@
-"""Read the score of one marked dart on a simplified dartboard."""
+"""Read the score of the only visible dart on a simplified dartboard."""
 
 from __future__ import annotations
 
@@ -7,10 +7,9 @@ from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 
 from ._lifecycle import DartsObjectivePlan, dart_point_set_attempt, run_darts_lifecycle
-from .shared.defaults import DEFAULTS, SCENE_ID
+from .shared.defaults import SCENE_ID
 from .shared.prompts import darts_output_slots, darts_single_point_json_examples
 from .shared.sampling import (
-    resolve_darts_integer_axis,
     resolve_darts_score_axis,
     sample_darts_for_score_value,
 )
@@ -34,22 +33,12 @@ def _prepare_score_value_objective(
     _query_probabilities,
     render_params,
 ):
-    """Resolve the marked dart score and bind the score-value objective."""
+    """Resolve the visible dart score and bind the score-value objective."""
 
     score_axis = resolve_darts_score_axis(
         instance_seed=int(instance_seed),
         params=task_params,
         gen_defaults=_GEN_DEFAULTS,
-    )
-    distractor_axis = resolve_darts_integer_axis(
-        instance_seed=int(instance_seed),
-        params=task_params,
-        gen_defaults=_GEN_DEFAULTS,
-        support_key="score_task_distractor_count_support",
-        explicit_key="distractor_count",
-        fallback_support=DEFAULTS.score_task_distractor_count_support,
-        namespace="score_value.distractor_count",
-        balanced_flag_key="balanced_distractor_count_sampling",
     )
     json_example, json_example_answer_only = darts_single_point_json_examples()
     prompt_dynamic_slots = darts_output_slots(
@@ -61,25 +50,18 @@ def _prepare_score_value_objective(
         "target_score": int(score_axis.value),
         "score_value_support": [int(value) for value in score_axis.support],
         "score_value_probabilities": dict(score_axis.probabilities),
-        "distractor_count": int(distractor_axis.value),
-        "distractor_count_support": [int(value) for value in distractor_axis.support],
-        "distractor_count_probabilities": dict(distractor_axis.probabilities),
     }
 
     def construct_attempt(rng, _axes):
         sample = sample_darts_for_score_value(
             rng,
             target_score=int(score_axis.value),
-            distractor_count=int(distractor_axis.value),
             render_params=render_params,
         )
         return dart_point_set_attempt(
             sample=sample,
             answer_gt=TypedValue(type="integer", value=int(score_axis.value)),
-            execution_extra={
-                "target_score": int(score_axis.value),
-                "distractor_count": int(distractor_axis.value),
-            },
+            execution_extra={"target_score": int(score_axis.value)},
         )
 
     return DartsObjectivePlan(
@@ -93,7 +75,7 @@ def _prepare_score_value_objective(
 
 @register_task
 class GamesDartsDartScoreValueTask:
-    """Read the score of one marked dart."""
+    """Read the score of the only visible dart."""
 
     task_id = TASK_ID
     domain = "games"

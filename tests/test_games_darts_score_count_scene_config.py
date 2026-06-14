@@ -19,7 +19,6 @@ def test_games_darts_defaults_expose_simplified_scene_style_and_prompt_axes() ->
     assert bool(generation["balanced_scene_variant_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_score_value_sampling"]) is True
-    assert bool(generation["balanced_distractor_count_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"single_board"}
     assert set(generation["style_variant_weights"].keys()) == {
         "classic",
@@ -30,7 +29,6 @@ def test_games_darts_defaults_expose_simplified_scene_style_and_prompt_axes() ->
         "neon",
     }
     assert list(generation["score_value_support"]) == list(range(1, 21)) + [50]
-    assert list(generation["score_task_distractor_count_support"]) == [2, 3, 4, 5]
     assert int(rendering["board_radius_px"]) > 0
     assert int(rendering["marker_radius_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_darts_v1"
@@ -49,12 +47,13 @@ def test_games_darts_count_task_overrides_are_task_owned() -> None:
     )
 
     assert bool(bull_generation["balanced_target_answer_sampling"]) is True
-    assert list(bull_generation["count_target_answer_support"]) == [0, 1, 2, 3, 4, 5, 6]
+    assert list(bull_generation["count_target_answer_support"]) == [0, 1, 2, 3, 4, 5]
     assert list(bull_generation["count_query_dart_count_support"]) == [4, 5, 6, 7]
     assert bool(sector_generation["balanced_target_answer_sampling"]) is True
+    assert bool(sector_generation["balanced_distractor_count_sampling"]) is True
     assert bool(sector_generation["balanced_target_sector_sampling"]) is True
-    assert list(sector_generation["count_target_answer_support"]) == [0, 1, 2, 3, 4, 5, 6]
-    assert list(sector_generation["count_query_dart_count_support"]) == [4, 5, 6, 7]
+    assert list(sector_generation["sector_target_answer_support"]) == [0, 1, 2, 3, 4]
+    assert list(sector_generation["sector_distractor_count_support"]) == [1, 2, 3, 4, 5, 6]
     assert list(sector_generation["target_sector_support"]) == [
         20,
         1,

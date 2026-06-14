@@ -40,8 +40,7 @@ class DartsSceneDefaults:
     """Stable scene fallback defaults for simplified dartboard tasks."""
 
     score_value_support: Tuple[int, ...] = STANDARD_DART_SECTORS + (BULLSEYE_SCORE,)
-    score_task_distractor_count_support: Tuple[int, ...] = (2, 3, 4, 5)
-    count_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
+    count_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     count_query_dart_count_support: Tuple[int, ...] = (4, 5, 6, 7)
     target_sector_support: Tuple[int, ...] = STANDARD_DART_SECTORS
     canvas_width: int = 1040
@@ -49,7 +48,7 @@ class DartsSceneDefaults:
     board_center_x_px: int = 520
     board_center_y_px: int = 430
     board_radius_px: int = 330
-    marker_radius_px: int = 17
+    marker_radius_px: int = 14
     number_font_size_px: int = 36
 
 

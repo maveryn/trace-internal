@@ -268,7 +268,10 @@ def _sample_position_without_overlap(
 ) -> Tuple[float, float]:
     """Sample one marker center with a minimum distance from existing darts."""
 
-    min_distance = float(max(24, int(params.marker_radius_px) * 2 + 8))
+    if str(slot.area_kind) == "bullseye":
+        min_distance = float(max(24, int(params.marker_radius_px) * 2))
+    else:
+        min_distance = float(max(24, int(params.marker_radius_px) * 2 + 8))
     for _ in range(96):
         point = _slot_position(rng, slot=slot, params=params)
         if all(((point[0] - x) ** 2 + (point[1] - y) ** 2) ** 0.5 >= min_distance for x, y in existing_points):
@@ -312,28 +315,20 @@ def sample_darts_for_score_value(
     rng,
     *,
     target_score: int,
-    distractor_count: int,
     render_params: DartboardRenderParams,
 ) -> DartsSampledScene:
-    """Sample one marked dart with a requested score plus visual distractors."""
+    """Sample one unmarked dart with the requested score."""
 
     matching_slots = slots_for_score(int(target_score))
     if not matching_slots:
         raise ValueError(f"unsupported darts score: {target_score}")
-    marked_slot = _sample_slot(rng, matching_slots)
-    distractor_pool = [slot for slot in SCORE_SLOTS if int(slot.score) != int(target_score)]
-    distractor_slots = [_sample_slot(rng, distractor_pool) for _ in range(int(distractor_count))]
-    selected_slots = [marked_slot] + distractor_slots
-    combined = list(zip(selected_slots, [True] + [False for _ in distractor_slots]))
-    rng.shuffle(combined)
-    annotation_flags = [bool(is_marked) for _slot, is_marked in combined]
-    marked_flags = [bool(is_marked) for _slot, is_marked in combined]
+    selected_slots = [_sample_slot(rng, matching_slots)]
     return _sample_darts_from_slots(
         rng,
         render_params=render_params,
-        selected_slots=[slot for slot, _ in combined],
-        annotation_flags=annotation_flags,
-        marked_flags=marked_flags,
+        selected_slots=selected_slots,
+        annotation_flags=[True],
+        marked_flags=[False],
         target_score=int(target_score),
     )
 

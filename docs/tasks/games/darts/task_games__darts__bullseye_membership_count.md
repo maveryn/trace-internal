@@ -16,4 +16,5 @@
 ## Generation Notes
 1. The scene renders a simplified dartboard with 20 numbered sectors and one center bullseye.
 2. Query ids switch only the user-facing membership predicate: inside vs outside the bullseye.
-3. Annotation is projected from the same generated game state used for answer verification.
+3. The answer support is `0..5`.
+4. Annotation is projected from the same generated game state used for answer verification.

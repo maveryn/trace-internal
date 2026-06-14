@@ -17,23 +17,25 @@ from trace.tasks.shared.color_distance import color_distance
 from tests.helpers import read_jsonl
 
 
-def test_games_darts_score_value_uses_marked_dart_as_annotation() -> None:
+def test_games_darts_score_value_uses_only_visible_dart_as_annotation() -> None:
     out = GamesDartsDartScoreValueTask().generate(
         92011,
-        params={"scene_variant": "single_board", "target_score": 50, "distractor_count": 4},
+        params={"scene_variant": "single_board", "target_score": 50},
         max_attempts=48,
     )
     execution = out.trace_payload["execution_trace"]
     marked = [spec for spec in execution["dart_specs"] if bool(spec["is_marked"])]
+    visible_darts = list(execution["dart_specs"])
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 50
     assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == 1
-    assert len(marked) == 1
-    assert marked[0]["area_kind"] == "bullseye"
-    assert int(marked[0]["score"]) == int(out.answer_gt.value)
-    assert execution["annotation_entity_ids"] == [str(marked[0]["dart_id"])]
+    assert len(visible_darts) == 1
+    assert not marked
+    assert visible_darts[0]["area_kind"] == "bullseye"
+    assert int(visible_darts[0]["score"]) == int(out.answer_gt.value)
+    assert execution["annotation_entity_ids"] == [str(visible_darts[0]["dart_id"])]
     assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
 
 
@@ -104,6 +106,7 @@ def test_games_darts_query_cycle_covers_simplified_answers() -> None:
     score_answers: set[int] = set()
     inside_answers: set[int] = set()
     outside_answers: set[int] = set()
+    sector_answers: set[int] = set()
     target_sectors: set[int] = set()
     for sampling_index in range(80):
         score = GamesDartsDartScoreValueTask().generate(
@@ -129,11 +132,13 @@ def test_games_darts_query_cycle_covers_simplified_answers() -> None:
         score_answers.add(int(score.answer_gt.value))
         inside_answers.add(int(inside.answer_gt.value))
         outside_answers.add(int(outside.answer_gt.value))
+        sector_answers.add(int(sector.answer_gt.value))
         target_sectors.add(int(sector.trace_payload["execution_trace"]["target_sector"]))
 
     assert score_answers == set(range(1, 21)) | {50}
-    assert {0, 1, 2, 3, 4, 5, 6}.issubset(inside_answers)
-    assert {0, 1, 2, 3, 4, 5, 6}.issubset(outside_answers)
+    assert {0, 1, 2, 3, 4, 5}.issubset(inside_answers)
+    assert {0, 1, 2, 3, 4, 5}.issubset(outside_answers)
+    assert {0, 1, 2, 3, 4}.issubset(sector_answers)
     assert target_sectors == set(range(1, 21))
 
 
@@ -141,7 +146,6 @@ def test_games_darts_score_value_is_deterministic() -> None:
     params = {
         "scene_variant": "single_board",
         "target_score": 17,
-        "distractor_count": 5,
     }
     task = GamesDartsDartScoreValueTask()
     out_a = task.generate(92041, params=params, max_attempts=48)
@@ -190,7 +194,8 @@ def test_games_darts_score_prompt_asks_for_integer_score_not_option_letter() -> 
         max_attempts=48,
     )
 
-    assert "marked dart" in out.prompt
+    assert "the dart" in out.prompt
+    assert "marked dart" not in out.prompt
     assert "option letter" not in out.prompt
     assert "scores 50" in out.prompt
 

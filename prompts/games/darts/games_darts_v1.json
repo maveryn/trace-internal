@@ -23,11 +23,11 @@
     },
     "query": {
       "dart_score_value": [
-        "{scoring_rule_text} What score does the marked dart get?",
-        "Find the score of the marked dart. {scoring_rule_text}",
-        "{scoring_rule_text} Read the score for the marked dart.",
-        "Using the simplified dartboard scoring rule, what is the marked dart's score? {scoring_rule_text}",
-        "Score the marked dart. {scoring_rule_text}"
+        "{scoring_rule_text} What score does the dart get?",
+        "Find the score of the dart. {scoring_rule_text}",
+        "{scoring_rule_text} Read the score for the dart.",
+        "Using the simplified dartboard scoring rule, what is the dart's score? {scoring_rule_text}",
+        "Score the dart. {scoring_rule_text}"
       ],
       "inside_bullseye_count": [
         "How many darts are inside the center bullseye?",
@@ -126,11 +126,11 @@
   "code_prompt_defaults": {
     "object_description_single_board": "a simplified labeled dartboard with visible dart markers",
     "scoring_rule_text": "A dart in a numbered sector scores that number; a dart in the center bullseye scores 50.",
-    "annotation_hint_dart_score_value": "set \"annotation\" to a JSON array with one pixel point [x, y] at the center of the marked dart",
+    "annotation_hint_dart_score_value": "set \"annotation\" to a JSON array with one pixel point [x, y] at the center of the dart",
     "annotation_hint_inside_bullseye_count": "set \"annotation\" to a JSON array of pixel points [x, y] at the center of every dart inside the bullseye",
     "annotation_hint_outside_bullseye_count": "set \"annotation\" to a JSON array of pixel points [x, y] at the center of every dart outside the bullseye",
     "annotation_hint_sector_dart_count": "set \"annotation\" to a JSON array of pixel points [x, y] at the center of every dart in the requested sector",
-    "answer_hint_dart_score_value": "set \"answer\" to the integer score of the marked dart",
+    "answer_hint_dart_score_value": "set \"answer\" to the integer score of the dart",
     "answer_hint_inside_bullseye_count": "set \"answer\" to the number of darts inside the bullseye",
     "answer_hint_outside_bullseye_count": "set \"answer\" to the number of darts outside the bullseye",
     "answer_hint_sector_dart_count": "set \"answer\" to the number of darts in the requested sector"

@@ -30,14 +30,14 @@ from .state import DartInstance
 
 
 DARTBOARD_RADIUS_FRACTIONS: Mapping[str, float] = {
-    "bullseye": 0.145,
-    "sector_outer": 0.880,
-    "frame": 1.000,
+    "bullseye": 0.200,
+    "sector_outer": 0.840,
+    "frame": 0.840,
 }
 
 DARTBOARD_SAMPLE_RADIUS_FRACTIONS: Mapping[str, Tuple[float, float]] = {
-    "bullseye": (0.000, 0.115),
-    "sector": (0.240, 0.790),
+    "bullseye": (0.000, 0.165),
+    "sector": (0.295, 0.760),
 }
 
 
@@ -307,10 +307,8 @@ def _draw_board(
     bull_radius = float(DARTBOARD_RADIUS_FRACTIONS["bullseye"]) * radius
     sector_outer = float(DARTBOARD_RADIUS_FRACTIONS["sector_outer"]) * radius
 
-    draw.ellipse(
-        [cx - radius, cy - radius, cx + radius, cy + radius],
-        fill=tuple(int(v) for v in palette["board_frame"]),
-    )
+    # Draw only the scoring disk. The old filled outer frame looked like an extra
+    # scoring ring, which made the simplified board harder to read.
     for sector_index, _sector_value in enumerate(STANDARD_DART_SECTORS):
         start_deg = float((sector_index * 18.0) - 9.0)
         end_deg = float((sector_index * 18.0) + 9.0)
@@ -350,9 +348,10 @@ def _draw_board(
         bold=True,
         font_family=str(params.font_family) or None,
     )
+    number_radius = float(sector_outer) + float(max(62, int(params.number_font_size_px) * 1.6))
     for sector_index, sector_value in enumerate(STANDARD_DART_SECTORS):
         angle = float(sector_index * 18.0)
-        x_text, y_text = polar_to_xy(cx=cx, cy=cy, radius=radius * 1.055, angle_deg=angle)
+        x_text, y_text = polar_to_xy(cx=cx, cy=cy, radius=number_radius, angle_deg=angle)
         _draw_centered_text(
             draw,
             (x_text, y_text),
@@ -369,7 +368,8 @@ def _draw_board(
         "radii_px": {
             "bullseye": round(float(bull_radius), 3),
             "sector_outer": round(float(sector_outer), 3),
-            "frame": round(float(radius), 3),
+            "frame": round(float(sector_outer), 3),
+            "number": round(float(number_radius), 3),
         },
         "sector_order_clockwise_from_top": [int(value) for value in STANDARD_DART_SECTORS],
         "bullseye_score": 50,

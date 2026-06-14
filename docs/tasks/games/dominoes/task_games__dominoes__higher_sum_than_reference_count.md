@@ -10,6 +10,9 @@
 7. Annotation schema: `bbox_set`
 8. Program schema: `count(filter(domino_tiles, compare(sum(pips(tile)), sum(pips(reference_tile)), direction=greater_than))); scene=dominoes; scope=higher_sum_than_reference_count`
 
+## Program Contract
+- `count(filter(domino_tiles, compare(sum(pips(tile)), sum(pips(reference_tile)), direction=greater_than))); scene=dominoes; scope=higher_sum_than_reference_count`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.

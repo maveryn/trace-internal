@@ -7,57 +7,54 @@ from typing import Any
 
 import pytest
 
-from trace.tasks.graph.comparison.extreme_degree_value import (
+from trace.tasks.graph.node_link.degree_extremum_value import (
     GraphComparisonExtremeDegreeValueTask,
 )
-from trace.tasks.graph.counting.adjacency_component_count import (
-    GraphCountingAdjacencyComponentCountTask,
+from trace.tasks.graph.adjacency.directed_strong_component_count import (
+    GraphCountingAdjacencyDirectedStrongComponentCountTask,
 )
-from trace.tasks.graph.counting.binary_tree_node_count import (
+from trace.tasks.graph.binary_tree.child_structure_node_count import (
     GraphCountingBinaryTreeChildStructureNodeCountTask,
 )
-from trace.tasks.graph.counting.cross_color_edge_count import (
+from trace.tasks.graph.node_link.cross_color_edge_count import (
     GraphCountingCrossColorEdgeCountTask,
 )
-from trace.tasks.graph.counting.degree_count import GraphCountingDegreeValueFilterCountTask
-from trace.tasks.graph.counting.named_node_degree_value import (
+from trace.tasks.graph.node_link.degree_value_filter_count import GraphCountingDegreeValueFilterCountTask
+from trace.tasks.graph.node_link.named_node_degree_value import (
     GraphCountingNamedNodeDegreeValueTask,
 )
-from trace.tasks.graph.counting.node_count_after_degree_filter import (
-    GraphCountingNodeCountAfterDegreeFilterTask,
+from trace.tasks.graph.node_link.degree_after_removal_filter_count import (
+    GraphCountingDegreeAfterRemovalFilterCountTask,
 )
-from trace.tasks.graph.counting.source_sink_count import (
-    GraphCountingSourceSinkCountTask,
-)
-from trace.tasks.graph.order.adjacency_traversal_label import (
+from trace.tasks.graph.adjacency.traversal_kth_label import (
     GraphOrderAdjacencyTraversalLabelTask,
 )
-from trace.tasks.graph.order.binary_tree_traversal_label import (
+from trace.tasks.graph.binary_tree.traversal_kth_label import (
     GraphOrderBinaryTreeTraversalLabelTask,
 )
-from trace.tasks.graph.path.shortest_path_length import GraphPathShortestPathLengthTask
+from trace.tasks.graph.node_link.shortest_path_length import GraphPathShortestPathLengthTask
 from trace.tasks.graph.automaton.state_after_input_label import (
     GraphRelationAutomatonStateSimulationLabelTask,
 )
 from trace.tasks.graph.automaton.nfa_accepted_string_label import (
     GraphRelationAutomatonNfaAcceptedStringLabelTask,
 )
-from trace.tasks.graph.relation.binary_tree_node_label import (
+from trace.tasks.graph.binary_tree.lowest_common_ancestor_label import (
     GraphRelationBinaryTreeLowestCommonAncestorLabelTask,
 )
-from trace.tasks.graph.relation.component_size_after_edge_edit import (
+from trace.tasks.graph.node_link.component_size_after_edge_edit import (
     GraphRelationComponentSizeAfterEdgeEditTask,
 )
-from trace.tasks.graph.relation.edge_attribute_label import (
+from trace.tasks.graph.node_link.shortest_path_first_edge_label import (
     GraphRelationShortestPathFirstEdgeLabelTask,
 )
-from trace.tasks.graph.relation.reachable_count_after_edge_edit import (
+from trace.tasks.graph.node_link.reachable_count_after_edge_edit import (
     GraphRelationReachableCountAfterEdgeEditTask,
 )
-from trace.tasks.graph.relation.search_tree_operation_label import (
+from trace.tasks.graph.binary_tree.bst_path_operation_label import (
     GraphRelationBstPathOperationLabelTask,
 )
-from trace.tasks.graph.relation.unique_node_label import (
+from trace.tasks.graph.node_link.unique_related_node_label import (
     GraphRelationUniqueNodeLabelTask,
 )
 
@@ -87,7 +84,7 @@ def _annotation_sentence(prompt: str) -> str:
             GraphCountingDegreeValueFilterCountTask,
             30101,
             {
-                "query_id": "degree_count",
+                "query_id": "undirected_degree_count",
                 "query_degree": 2,
                 "target_count": 1,
                 "node_count": 6,
@@ -98,7 +95,7 @@ def _annotation_sentence(prompt: str) -> str:
             GraphCountingDegreeValueFilterCountTask,
             30102,
             {
-                "query_id": "directed_degree_count",
+                "query_id": "directed_in_degree_count",
                 "degree_mode": "in_degree",
                 "query_degree": 1,
                 "target_count": 1,
@@ -110,7 +107,7 @@ def _annotation_sentence(prompt: str) -> str:
             GraphCountingDegreeValueFilterCountTask,
             30103,
             {
-                "query_id": "directed_degree_count",
+                "query_id": "directed_out_degree_count",
                 "degree_mode": "out_degree",
                 "query_degree": 1,
                 "target_count": 1,
@@ -119,19 +116,7 @@ def _annotation_sentence(prompt: str) -> str:
             ("nodes with out-degree 1",),
         ),
         (
-            GraphCountingSourceSinkCountTask,
-            30104,
-            {"source_sink_mode": "source", "target_count": 1, "node_count": 6},
-            ("source nodes", "no incoming arrows"),
-        ),
-        (
-            GraphCountingSourceSinkCountTask,
-            30105,
-            {"source_sink_mode": "sink", "target_count": 1, "node_count": 6},
-            ("sink nodes", "no outgoing arrows"),
-        ),
-        (
-            GraphCountingNodeCountAfterDegreeFilterTask,
+            GraphCountingDegreeAfterRemovalFilterCountTask,
             30106,
             {
                 "graph_directionality": "directed",
@@ -142,7 +127,7 @@ def _annotation_sentence(prompt: str) -> str:
             ("removing every node with in-degree 1",),
         ),
         (
-            GraphCountingNodeCountAfterDegreeFilterTask,
+            GraphCountingDegreeAfterRemovalFilterCountTask,
             30107,
             {
                 "graph_directionality": "directed",
@@ -170,7 +155,7 @@ def _annotation_sentence(prompt: str) -> str:
             ("every arrow pointing into node",),
         ),
         (
-            GraphCountingAdjacencyComponentCountTask,
+            GraphCountingAdjacencyDirectedStrongComponentCountTask,
             30110,
             {
                 "query_id": "directed_strong_component_count",
@@ -247,7 +232,7 @@ def _annotation_sentence(prompt: str) -> str:
             GraphRelationShortestPathFirstEdgeLabelTask,
             30118,
             {
-                "query_id": "shortest_path_first_edge_label",
+                "query_id": "single",
                 "target_shortest_path_length": 2,
                 "node_count": 6,
             },

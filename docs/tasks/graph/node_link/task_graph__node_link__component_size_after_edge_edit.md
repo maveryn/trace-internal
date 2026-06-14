@@ -1,5 +1,8 @@
 # `task_graph__node_link__component_size_after_edge_edit`
 
+## Program Contract
+- `count(component_nodes(apply_edge_edit(graph, edit_edge), reference_node)); scene=node_link; scope=component_size_after_edge_edit`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`

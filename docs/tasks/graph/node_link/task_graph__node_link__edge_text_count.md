@@ -1,5 +1,8 @@
 # `task_graph__node_link__edge_text_count`
 
+## Program Contract
+- `count(filter(edge_labels(graph), text=target_edge_label)); scene=node_link; scope=edge_text_count`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `node_link`
@@ -9,7 +12,7 @@
 
 ## 2) Scene + task contract
 1. Branch metadata: `query_id`
-2. `query_id`: `edge_text_label_count`
+2. `query_id`: `single`
 3. Supported `graph_directionality` values: `undirected`
 4. `answer_gt.type`: `integer`
 5. `annotation_gt.type`: `bbox_set`

@@ -1,5 +1,8 @@
 # `task_graph__node_link__named_node_degree_value`
 
+## Program Contract
+- `value(degree_metric(query_node)); scene=node_link; scope=named_node_degree_value`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `counting`

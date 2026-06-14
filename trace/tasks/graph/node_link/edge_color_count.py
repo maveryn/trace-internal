@@ -8,7 +8,7 @@ from ._lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
 from .shared.sampling import sample_edge_color_count_graph
 TASK_ID = 'task_graph__node_link__edge_color_count'
 SCENE_ID = 'node_link'
-SUPPORTED_QUERY_IDS = ('edge_color_count',)
+SUPPORTED_QUERY_IDS = ('single',)
 _COLOR_SUPPORT = tuple(str(name) for name, _rgb in available_named_colors())
 
 

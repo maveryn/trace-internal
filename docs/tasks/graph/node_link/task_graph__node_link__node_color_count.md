@@ -1,5 +1,8 @@
 # `task_graph__node_link__node_color_count`
 
+## Program Contract
+- `count(filter(nodes(graph), node_color=target_color)); scene=node_link; scope=node_color_count`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `counting`
@@ -9,7 +12,7 @@
 
 ## 2) Scene + task contract
 1. Branch metadata: `query_id`
-2. `query_id`: `node_color_count`
+2. `query_id`: `single`
 3. Supported `graph_directionality` values: `undirected|directed`
 4. Supported target colors: shared TRACE named-color palette (`red`, `blue`, `green`, `yellow`, `orange`, `purple`, `brown`, `cyan`, `magenta`, `maroon`)
 5. `answer_gt.type`: `integer`
@@ -19,7 +22,7 @@
    - simple unweighted graph only,
    - no self-loops or multi-edges,
    - directed variants reject reciprocal edge pairs,
-   - visible node labels use one whole-image label format (`letters`, `numbers`, or `short_names`),
+   - visible node labels use one whole-image label format (`letters`, `numbers`, or `named`),
    - node count is sampled from `8..12`.
 8. Query contract:
    - prompt asks for the count of nodes colored with one shared named color plus its hex code,

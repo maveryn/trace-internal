@@ -1,5 +1,8 @@
 # `task_graph__node_link__isolated_after_removal_count`
 
+## Program Contract
+- `count(filter(nodes(remove_node(graph, reference_node)), degree=0)); scene=node_link; scope=isolated_after_removal_count`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `counting`
@@ -9,7 +12,7 @@
 
 ## 2) Scene + task contract
 1. Branch metadata: `query_id`
-2. `query_id`: `isolated_node_count_after_node_removal`
+2. `query_id`: `single`
 3. Supported `graph_directionality` values: `undirected|directed`
 4. `answer_gt.type`: `integer`
 5. `annotation_gt.type`: `point_set`
@@ -18,7 +21,7 @@
    - simple unweighted graph only,
    - no self-loops or multi-edges,
    - directed variants reject reciprocal edge pairs,
-   - visible node labels use one whole-image label format (`letters`, `numbers`, or `short_names`),
+   - visible node labels use one whole-image label format (`letters`, `numbers`, or `named`),
    - node count is sampled from `5..10`.
 7. Query contract:
    - prompt names one node to hypothetically remove,
@@ -34,7 +37,7 @@
 4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":2}`
 6. Answer+annotation JSON shape: `{"annotation":[[180,220],[310,180]],"answer":2}`
-7. Prompt references to `short_names` labels are quoted, for example node `"Abby"`.
+7. Prompt references to `named` labels are quoted, for example node `"Lima"`.
 8. Prompt-facing annotation uses pixel-space node-center points for every remaining node that would be isolated.
 
 ## 4) Annotation + trace contract

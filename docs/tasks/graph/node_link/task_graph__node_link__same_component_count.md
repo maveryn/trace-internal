@@ -1,5 +1,8 @@
 # `task_graph__node_link__same_component_count`
 
+## Program Contract
+- `count(component_nodes(graph, reference_node)); scene=node_link; scope=same_component_count`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`
@@ -8,7 +11,7 @@
 5. Objective: count nodes in the same connected component as a reference node.
 
 ## Query IDs
-1. `same_component_count`
+1. `single`
 2. Query ids are internal replay metadata; public sampling is at the task-id level.
 
 ## Answer And Annotation

@@ -1,5 +1,8 @@
 # `task_graph__node_link__degree_after_removal_filter_count`
 
+## Program Contract
+- `count(remaining_nodes(remove_nodes(filter(nodes(graph), degree_metric=1)))); scene=node_link; scope=degree_after_removal_filter_count`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`

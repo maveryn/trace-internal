@@ -7,7 +7,7 @@ from ._lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
 from .shared.sampling import sample_minimum_spanning_tree_weight_graph
 TASK_ID = 'task_graph__node_link__mst_weight'
 SCENE_ID = 'node_link'
-SUPPORTED_QUERY_IDS = ('minimum_spanning_tree_weight',)
+SUPPORTED_QUERY_IDS = ('single',)
 
 def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
     """Sample a graph satisfying this public objective contract."""

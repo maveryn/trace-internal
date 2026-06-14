@@ -10,7 +10,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.counting.node_color_count import GraphCountingNodeColorCountTask
+from trace.tasks.graph.node_link.node_color_count import GraphCountingNodeColorCountTask
 from trace.tasks.shared.color_format import format_named_color_with_hex
 from trace.tasks.shared.named_colors import named_color
 from tests.helpers import read_jsonl
@@ -50,12 +50,12 @@ def test_graph_counting_node_color_count_contract_matches_trace() -> None:
 
     assert "task_graph__node_link__node_color_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_id == "node_color_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_node_color_counting"
-    assert execution["query_id"] == "node_color_count"
+    assert execution["query_id"] == "single"
     assert execution["graph_directionality"] == "directed"
     assert execution["target_color_name"] == "green"
     assert execution["target_color_label"] == target_label
@@ -192,7 +192,6 @@ def test_graph_counting_node_color_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
-    assert all(record["scene_id"] == "counting" for record in train_records)
     assert all(record["scene_id"] == "node_link" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))

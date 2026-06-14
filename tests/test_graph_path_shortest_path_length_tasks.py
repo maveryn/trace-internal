@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections import Counter
 from trace.core.seed import hash64
-from trace.tasks.graph.path.shortest_path_length import GraphPathShortestPathLengthTask
+from trace.tasks.graph.node_link.shortest_path_length import GraphPathShortestPathLengthTask
 from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.graph_algorithms import bfs_dist_count_by_adjacency, reconstruct_unique_shortest_path_by_adjacency
 from trace.tasks.shared.named_colors import named_color
@@ -17,7 +17,7 @@ def _extract_prompt_json_example(prompt: str) -> dict:
 
 def test_graph_path_shortest_path_length_contract_matches_trace() -> None:
     task = GraphPathShortestPathLengthTask()
-    out = task.generate(19601, params={'query_id': 'shortest_path_length', 'node_count': 8, 'target_shortest_path_length': 4, 'layout_variant': 'shell', 'topology_profile': 'balanced', 'label_variant': 'letters'}, max_attempts=80)
+    out = task.generate(19601, params={'query_id': 'undirected_shortest_path_length', 'node_count': 8, 'target_shortest_path_length': 4, 'layout_variant': 'shell', 'topology_profile': 'balanced', 'label_variant': 'letters'}, max_attempts=80)
     trace = out.trace_payload
     execution = trace['execution_trace']
     scene_entities = trace['scene_ir']['entities']
@@ -32,7 +32,7 @@ def test_graph_path_shortest_path_length_contract_matches_trace() -> None:
     assert execution['internal_query_id'] == 'shortest_path_length'
     assert execution['graph_directionality'] == 'undirected'
     assert 5 <= int(execution['node_count']) <= 15
-    assert 3 <= int(execution['target_shortest_path_length']) <= 8
+    assert 2 <= int(execution['target_shortest_path_length']) <= 5
     annotation_labels = list((str(label) for label in execution['shortest_path_labels']))
     annotation_path = list(out.annotation_gt.value)
     assert int(out.answer_gt.value) == len(annotation_path) - 1
@@ -74,7 +74,7 @@ def test_graph_path_directed_shortest_path_contract_matches_trace() -> None:
     assert trace['scene_ir']['relations']['graph_directionality'] == 'directed'
     assert all((bool(edge['directed']) for edge in edge_entities))
     assert 5 <= int(execution['node_count']) <= 15
-    assert 3 <= int(execution['target_shortest_path_length']) <= 8
+    assert 2 <= int(execution['target_shortest_path_length']) <= 5
     assert int(out.answer_gt.value) == 4
     successors = {str(key): [str(value) for value in values] for key, values in trace['scene_ir']['relations']['adjacency_by_label'].items()}
     predecessors = {str(entity['label']): [str(value) for value in entity['predecessors']] for entity in scene_entities if entity['entity_kind'] == 'graph_node'}
@@ -89,8 +89,8 @@ def test_graph_path_directed_shortest_path_contract_matches_trace() -> None:
 
 def test_graph_path_shortest_path_prompt_examples_follow_label_variant() -> None:
     task = GraphPathShortestPathLengthTask()
-    letters = task.generate(19602, params={'query_id': 'shortest_path_length', 'label_variant': 'letters', 'node_count': 8, 'target_shortest_path_length': 3}, max_attempts=80)
-    numbers = task.generate(19603, params={'query_id': 'shortest_path_length', 'label_variant': 'numbers', 'node_count': 8, 'target_shortest_path_length': 3}, max_attempts=80)
+    letters = task.generate(19602, params={'query_id': 'undirected_shortest_path_length', 'label_variant': 'letters', 'node_count': 8, 'target_shortest_path_length': 3}, max_attempts=80)
+    numbers = task.generate(19603, params={'query_id': 'undirected_shortest_path_length', 'label_variant': 'numbers', 'node_count': 8, 'target_shortest_path_length': 3}, max_attempts=80)
     letters_example = _extract_prompt_json_example(letters.prompt_variants['answer_and_annotation'])
     numbers_example = _extract_prompt_json_example(numbers.prompt_variants['answer_and_annotation'])
     expected_example = {'annotation': [[180, 220], [310, 180], [430, 260]], 'answer': 2}
@@ -99,7 +99,7 @@ def test_graph_path_shortest_path_prompt_examples_follow_label_variant() -> None
 
 def test_graph_path_shortest_path_supports_numeric_labels_and_named_colors() -> None:
     task = GraphPathShortestPathLengthTask()
-    out = task.generate(19604, params={'query_id': 'shortest_path_length', 'node_count': 10, 'target_shortest_path_length': 5, 'label_variant': 'numbers', 'node_shape_variant': 'hexagon', 'layout_transform_variant': 'rotate_90', 'node_color_name': 'orange'}, max_attempts=80)
+    out = task.generate(19604, params={'query_id': 'undirected_shortest_path_length', 'node_count': 10, 'target_shortest_path_length': 5, 'label_variant': 'numbers', 'node_shape_variant': 'hexagon', 'layout_transform_variant': 'rotate_90', 'node_color_name': 'orange'}, max_attempts=80)
     trace = out.trace_payload
     execution = trace['execution_trace']
     labels = [entity['label'] for entity in trace['scene_ir']['entities'] if entity['entity_kind'] == 'graph_node']
@@ -134,12 +134,12 @@ def test_graph_path_shortest_path_balanced_sampling_defaults() -> None:
         layout_transforms[str(execution['layout_transform_variant'])] += 1
         node_colors[str(execution['node_color_name'])] += 1
         assert 5 <= int(execution['node_count']) <= 15
-        assert 3 <= int(execution['target_shortest_path_length']) <= 7
+        assert 2 <= int(execution['target_shortest_path_length']) <= 5
         assert int(execution['attachment_count']) >= 1
         assert int(out.answer_gt.value) == int(execution['target_shortest_path_length'])
     assert set(query_ids.keys()) == {'undirected_shortest_path_length', 'directed_shortest_path_length'}
-    assert set(target_lengths.keys()) == {3, 4, 5, 6, 7}
-    assert {variant: set(lengths.keys()) for variant, lengths in target_lengths_by_variant.items()} == {'undirected_shortest_path_length': {3, 4, 5, 6, 7}, 'directed_shortest_path_length': {3, 4, 5, 6, 7}}
+    assert set(target_lengths.keys()) == {2, 3, 4, 5}
+    assert {variant: set(lengths.keys()) for variant, lengths in target_lengths_by_variant.items()} == {'undirected_shortest_path_length': {2, 3, 4, 5}, 'directed_shortest_path_length': {2, 3, 4, 5}}
     assert set(layout_variants.keys()) == FULL_NODE_LINK_LAYOUT_VARIANTS
     assert set(topology_profiles.keys()) == {'balanced', 'hub_heavy', 'low_degree'}
     assert set(label_variants.keys()) == {'letters', 'numbers', 'named'}

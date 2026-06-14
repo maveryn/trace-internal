@@ -1,5 +1,8 @@
 # `task_graph__node_link__largest_component_size`
 
+## Program Contract
+- `count(nodes(argmax(connected_components(graph), metric=size))); scene=node_link; scope=largest_component_size`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`
@@ -8,7 +11,7 @@
 5. Objective: return the size of the unique largest connected component.
 
 ## Query IDs
-1. `largest_component_size`
+1. `single`
 2. Query ids are internal replay metadata; public sampling is at the task-id level.
 
 ## Answer And Annotation

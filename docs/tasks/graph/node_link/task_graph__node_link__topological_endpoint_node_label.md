@@ -1,5 +1,8 @@
 # `task_graph__node_link__topological_endpoint_node_label`
 
+## Program Contract
+- `label(endpoint(topological_order(dag), endpoint=first_or_last)); scene=node_link; scope=topological_endpoint_node_label`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`

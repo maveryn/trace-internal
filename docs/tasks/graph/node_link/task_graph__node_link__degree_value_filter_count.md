@@ -1,5 +1,8 @@
 # `task_graph__node_link__degree_value_filter_count`
 
+## Program Contract
+- `count(filter(nodes(graph), degree_metric=query_degree)); scene=node_link; scope=degree_value_filter_count`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`
@@ -8,7 +11,7 @@
 5. Objective: count nodes satisfying a direct degree/source/sink predicate.
 
 ## Query IDs
-1. `undirected_degree_count|directed_in_degree_count|directed_out_degree_count|directed_source_count|directed_sink_count`
+1. `undirected_degree_count|directed_in_degree_count|directed_out_degree_count`
 2. Query ids are internal replay metadata; public sampling is at the task-id level.
 
 ## Answer And Annotation

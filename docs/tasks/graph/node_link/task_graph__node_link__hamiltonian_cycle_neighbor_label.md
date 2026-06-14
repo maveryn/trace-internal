@@ -1,5 +1,8 @@
 # `task_graph__node_link__hamiltonian_cycle_neighbor_label`
 
+## Program Contract
+- `label(adjacent_node_on_cycle(unique_hamiltonian_cycle(graph), reference_node, direction=next_or_previous)); scene=node_link; scope=hamiltonian_cycle_neighbor_label`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`

@@ -4,7 +4,7 @@ import json
 from collections import Counter
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.path.longest_path_length import GraphPathLongestPathLengthTask
+from trace.tasks.graph.node_link.longest_path_length import GraphPathLongestPathLengthTask
 from trace.tasks.graph.shared.graph_sample_types import graph_label_sort_key
 
 def _extract_prompt_json_example(prompt: str) -> dict:
@@ -60,12 +60,12 @@ def test_graph_path_longest_path_length_contract_matches_trace() -> None:
     edge_entities = [entity for entity in scene_entities if entity['entity_kind'] == 'graph_edge']
     assert 'task_graph__node_link__longest_path_length' in TASK_REGISTRY
     assert out.scene_id == 'node_link'
-    assert out.query_id == 'directed_longest_path_length'
+    assert out.query_id == 'single'
     assert out.answer_gt.type == 'integer'
     assert out.annotation_gt.type == 'point_sequence'
     assert trace['scene_ir']['scene_kind'] == 'graph_longest_path_length'
     assert execution['question_format'] == 'directed_longest_path_length'
-    assert execution['query_id'] == 'directed_longest_path_length'
+    assert execution['query_id'] == 'single'
     assert execution['graph_directionality'] == 'directed'
     assert int(out.answer_gt.value) == 4
     assert int(execution['target_longest_path_length']) == 4
@@ -119,7 +119,7 @@ def test_graph_path_longest_path_balanced_sampling_defaults() -> None:
         assert 2 <= int(execution['target_longest_path_length']) <= 6
         assert int(execution['attachment_count']) >= 1
         assert int(out.answer_gt.value) == int(execution['target_longest_path_length'])
-    assert set(query_ids) == {'directed_longest_path_length'}
+    assert set(query_ids) == {'single'}
     assert set(target_lengths) == {2, 3, 4, 5, 6}
     assert all((count > 0 for count in target_lengths.values()))
     assert set(label_variants) == {'letters', 'numbers', 'named'}

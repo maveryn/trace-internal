@@ -1,5 +1,8 @@
 # `task_graph__node_link__unique_related_node_label`
 
+## Program Contract
+- `label(unique(related_nodes(reference_node, relation))); scene=node_link; scope=unique_related_node_label`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`

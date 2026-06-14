@@ -1,5 +1,8 @@
 # `task_graph__node_link__reachable_count`
 
+## Program Contract
+- `count(reachable_nodes(directed_graph, source_node, exclude_source=True)); scene=node_link; scope=reachable_count`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`
@@ -8,7 +11,7 @@
 5. Objective: count nodes reachable from a reference node in a directed graph, excluding the reference node itself.
 
 ## Query IDs
-1. `reachable_count`
+1. `single`
 2. Query ids are internal replay metadata; public sampling is at the task-id level.
 
 ## Answer And Annotation

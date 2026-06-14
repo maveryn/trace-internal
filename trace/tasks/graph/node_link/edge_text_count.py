@@ -4,7 +4,7 @@ from ._lifecycle import NodeLinkObjectivePlan, run_node_link_plan
 from .shared.labels import build_edge_label_support_resolver
 from .shared.sampling import sample_edge_text_label_count_graph
 TASK_ID = 'task_graph__node_link__edge_text_count'
-SUPPORTED_QUERY_IDS = ('edge_text_label_count',)
+SUPPORTED_QUERY_IDS = ('single',)
 EDGE_LABEL_SUPPORT_SIZE = 16
 EDGE_LABEL_MIN_CHARS = 3
 EDGE_LABEL_MAX_CHARS = 5

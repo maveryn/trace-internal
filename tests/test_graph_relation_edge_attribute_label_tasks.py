@@ -112,7 +112,7 @@ def test_graph_relation_edge_attribute_label_shortest_path_first_edge_contract()
     out = task.generate(
         20903,
         params={
-            "query_id": "shortest_path_first_edge_label",
+            "query_id": "single",
             "graph_directionality": "directed",
             "target_edge_label": "routes",
             "edge_label_support": ["feeds", "blocks", "joins", "routes", "checks", "updates"],
@@ -123,7 +123,7 @@ def test_graph_relation_edge_attribute_label_shortest_path_first_edge_contract()
     )
     execution = out.trace_payload["execution_trace"]
 
-    assert out.query_id == "shortest_path_first_edge_label"
+    assert out.query_id == "single"
     assert out.answer_gt.value == "routes"
     assert "unique shortest path" in str(out.prompt)
     assert "first edge" in str(out.prompt)

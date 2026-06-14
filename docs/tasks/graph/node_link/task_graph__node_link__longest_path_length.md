@@ -1,5 +1,8 @@
 # `task_graph__node_link__longest_path_length`
 
+## Program Contract
+- `length(longest_path(directed_acyclic_graph)); scene=node_link; scope=longest_path_length`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `path`
@@ -9,7 +12,7 @@
 
 ## 2) Scene + task contract
 1. Branch metadata: `query_id`
-2. `query_id`: `directed_longest_path_length`
+2. `query_id`: `single`
 3. Supported `graph_directionality`: `directed`
 4. `answer_gt.type`: `integer`
 5. `annotation_gt.type`: `point_sequence`
@@ -18,7 +21,7 @@
    - graph is a DAG,
    - simple unweighted graph only,
    - no self-loops, multi-edges, or reciprocal directed edge pairs,
-   - visible node labels use one whole-image label format (`letters`, `numbers`, or `short_names`),
+   - visible node labels use one whole-image label format (`letters`, `numbers`, or `named`),
    - node count is sampled from `5..10`.
 7. Query contract:
    - the prompt states that the directed graph has a unique longest directed path,

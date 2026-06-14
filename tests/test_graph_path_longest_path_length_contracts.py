@@ -7,7 +7,7 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.graph.path.longest_path_length import GraphPathLongestPathLengthTask
+from trace.tasks.graph.node_link.longest_path_length import GraphPathLongestPathLengthTask
 from tests.helpers import read_jsonl
 
 
@@ -24,7 +24,7 @@ def test_graph_path_longest_path_length_deterministic() -> None:
     assert out_a.answer_gt.type == "integer"
     assert out_a.annotation_gt.type == "point_sequence"
     assert out_a.scene_id == "node_link"
-    assert out_a.query_id == "directed_longest_path_length"
+    assert out_a.query_id == "single"
 
 
 def test_graph_path_longest_path_length_build_smoke(tmp_path: Path) -> None:
@@ -50,7 +50,6 @@ def test_graph_path_longest_path_length_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
-    assert all(record["scene_id"] == "path" for record in train_records)
     assert all(record["scene_id"] == "node_link" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))

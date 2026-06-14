@@ -1,5 +1,8 @@
 # `task_graph__node_link__reachable_count_after_edge_edit`
 
+## Program Contract
+- `count(reachable_nodes(apply_edge_edit(directed_graph, edit_edge), source_node, exclude_source=True)); scene=node_link; scope=reachable_count_after_edge_edit`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`

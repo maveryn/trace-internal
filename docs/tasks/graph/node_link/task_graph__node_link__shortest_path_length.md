@@ -1,5 +1,8 @@
 # `task_graph__node_link__shortest_path_length`
 
+## Program Contract
+- `length(shortest_path(graph, source_node, goal_node)); scene=node_link; scope=shortest_path_length`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `path`
@@ -19,13 +22,13 @@
    - simple unweighted graph only,
    - no self-loops or multi-edges,
    - directed branches also reject reciprocal directed edge pairs,
-   - visible node labels use one whole-image label format (`letters`, `numbers`, or `short_names`),
+   - visible node labels use one whole-image label format (`letters`, `numbers`, or `named`),
    - node count is sampled from `5..15`,
    - generation leaves at least one node outside the queried shortest path.
 8. Query contract:
    - undirected branch asks how many edges are in the unique shortest path from node X to node Y,
    - directed branch asks how many edges are in the unique path from node X to node Y when following arrow direction,
-   - `target_shortest_path_length` support is `3..7`,
+   - `target_shortest_path_length` support is `2..5`,
    - answer is the number of edges on that path,
    - annotation is the ordered node-center pixel path after the source node, ending at the goal node.
 
@@ -52,7 +55,7 @@
 2. Directed branches render arrowheads and use explicit direction-following wording.
 3. Node label format, edge routing, glyph style, named node color, layout transform, and layout are visual variation only.
 4. The task enables the full node-link layout set for generation: the three original layouts plus grid, layered, clustered, path-spine, and radial-tree layouts.
-5. When `label_variant=short_names`, prompt references to source and goal nodes are quoted, for example node `"Abby"`.
+5. When `label_variant=named`, prompt references to source and goal nodes are quoted, for example node `"Lima"`.
 6. The prompt never refers to node position, color, or shape as semantic annotation.
 
 ## 6) Determinism + constraints

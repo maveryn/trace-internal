@@ -1,5 +1,8 @@
 # `task_graph__node_link__edge_between_nodes_label`
 
+## Program Contract
+- `label(edge_text(edge_between(source_node, target_node))); scene=node_link; scope=edge_between_nodes_label`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`

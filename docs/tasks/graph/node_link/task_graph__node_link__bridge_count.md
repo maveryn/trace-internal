@@ -1,5 +1,8 @@
 # `task_graph__node_link__bridge_count`
 
+## Program Contract
+- `count(filter(edges(graph), bridge=True)); scene=node_link; scope=bridge_count`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `counting`
@@ -8,7 +11,7 @@
 
 ## 2) Scene + task contract
 1. Branch metadata: `query_id`
-2. `query_id`: `bridge_count`
+2. `query_id`: `single`
 3. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 3. `answer_gt.type`: `integer`
 4. `annotation_gt.type`: `point_pair_set`
@@ -18,7 +21,7 @@
    - no self-loops,
    - no multi-edges,
    - node count sampled from `5..10`,
-   - visible node labels use one whole-image label format (`letters`, `numbers`, or `short_names`).
+   - visible node labels use one whole-image label format (`letters`, `numbers`, or `named`).
 6. Query contract:
    - the prompt asks `How many edges are bridges?`,
    - answer is the number of edges whose removal increases the number of connected components of the graph.
@@ -37,7 +40,7 @@
 10. Visual variation:
    - one whole-image named node color is sampled from the shared TRACE named-color palette,
    - one whole-image node glyph style is sampled from `circle|rounded_square|hexagon`,
-   - one whole-image label format is sampled from `letters|numbers|short_names`,
+   - one whole-image label format is sampled from `letters|numbers|named`,
    - one whole-image edge routing style is sampled from `straight|mixed_arc`,
    - one whole-image layout transform is sampled from `identity|rotate_90|rotate_180|rotate_270|mirror_left_right|mirror_up_down`,
    - these style axes are non-semantic for this task and are recorded in trace metadata.

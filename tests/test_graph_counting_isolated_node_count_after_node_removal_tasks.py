@@ -10,7 +10,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.counting.isolated_node_count_after_node_removal import (
+from trace.tasks.graph.node_link.isolated_after_removal_count import (
     GraphCountingIsolatedNodeCountAfterNodeRemovalTask,
 )
 from tests.helpers import read_jsonl
@@ -48,12 +48,12 @@ def test_graph_counting_isolated_node_count_after_node_removal_directed_contract
 
     assert "task_graph__node_link__isolated_after_removal_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_id == "isolated_node_count_after_node_removal"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 3
-    assert trace["scene_ir"]["scene_kind"] == "graph_isolated_node_count_after_node_removal"
-    assert execution["query_id"] == "isolated_node_count_after_node_removal"
+    assert trace["scene_ir"]["scene_kind"] == "graph_isolated_after_removal_counting"
+    assert execution["query_id"] == "single"
     assert execution["graph_directionality"] == "directed"
     assert execution["layout_variant_requested"] == "shell"
     assert execution["edge_routing_variant"] == "mixed_arc"
@@ -171,7 +171,6 @@ def test_graph_counting_isolated_node_count_after_node_removal_build_smoke(tmp_p
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
-    assert all(record["scene_id"] == "counting" for record in train_records)
     assert all(record["scene_id"] == "node_link" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))

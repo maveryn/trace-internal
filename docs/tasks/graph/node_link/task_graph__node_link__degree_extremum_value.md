@@ -1,5 +1,8 @@
 # `task_graph__node_link__degree_extremum_value`
 
+## Program Contract
+- `value(extreme(metric(nodes(graph), degree_metric), direction=max_or_min)); scene=node_link; scope=degree_extremum_value`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `comparison`
@@ -20,7 +23,7 @@
    - simple unweighted graph only,
    - no self-loops or multi-edges,
    - directed branches also reject reciprocal directed edge pairs,
-   - visible node labels use one whole-image label format (`letters`, `numbers`, or `short_names`),
+   - visible node labels use one whole-image label format (`letters`, `numbers`, or `named`),
    - node count is sampled from `5..10`.
 9. Query contract:
    - undirected branches ask for the maximum or minimum node degree value,

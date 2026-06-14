@@ -54,7 +54,7 @@ def test_graph_counting_defaults_loaded() -> None:
     assert str(prompt_shared['json_example']).strip()
     assert str(prompt_shared['json_example_answer_only']).strip()
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__degree_value_filter_count')
-    assert sorted(generation_defaults['query_id_weights'].keys()) == ['directed_in_degree_count', 'directed_out_degree_count', 'directed_sink_count', 'directed_source_count', 'undirected_degree_count']
+    assert 'query_id_weights' not in generation_defaults
     assert sorted(generation_defaults['degree_mode_weights'].keys()) == ['in_degree', 'out_degree']
     assert set(generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
@@ -168,7 +168,7 @@ def test_graph_counting_defaults_loaded() -> None:
     assert str(isolated_removal_prompt_defaults['object_description_undirected']).strip()
     assert str(isolated_removal_prompt_defaults['object_description_directed']).strip()
     articulation_generation_defaults, articulation_rendering_defaults, articulation_prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__articulation_point_count')
-    assert sorted(articulation_generation_defaults['query_id_weights'].keys()) == ['articulation_point_count']
+    assert 'query_id_weights' not in articulation_generation_defaults
     assert set(articulation_generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(articulation_generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
     assert int(articulation_generation_defaults['node_count_min']) == 5
@@ -182,7 +182,7 @@ def test_graph_counting_defaults_loaded() -> None:
     assert str(articulation_prompt_defaults['task_key']).strip() == 'articulation_point_count_query'
     assert str(articulation_prompt_defaults['question_text_articulation_point_count']).strip()
     bridge_generation_defaults, bridge_rendering_defaults, bridge_prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__bridge_count')
-    assert sorted(bridge_generation_defaults['query_id_weights'].keys()) == ['bridge_count']
+    assert 'query_id_weights' not in bridge_generation_defaults
     assert set(bridge_generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(bridge_generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
     assert int(bridge_generation_defaults['node_count_min']) == 5
@@ -234,7 +234,7 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(prompt_shared['json_example']).strip()
     assert str(prompt_shared['json_example_answer_only']).strip()
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='graph_node_link_same_component_count_internal')
-    assert sorted(generation_defaults['query_id_weights'].keys()) == ['same_component_count']
+    assert 'query_id_weights' not in generation_defaults
     assert set(generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
     assert int(generation_defaults['node_count_min']) == 6
@@ -250,7 +250,7 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(prompt_defaults['task_key']).strip() == 'same_component_count_query'
     assert str(prompt_defaults['question_text_same_component_count']).strip()
     reachable_generation_defaults, reachable_rendering_defaults, reachable_prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__reachable_count')
-    assert sorted(reachable_generation_defaults['query_id_weights'].keys()) == ['reachable_count']
+    assert 'query_id_weights' not in reachable_generation_defaults
     assert set(reachable_generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(reachable_generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
     assert int(reachable_generation_defaults['node_count_min']) == 5
@@ -310,10 +310,10 @@ def test_graph_relation_defaults_loaded() -> None:
     assert int(edge_attribute_generation_defaults['edge_label_min_chars']) == 3
     assert int(edge_attribute_generation_defaults['edge_label_max_chars']) == 5
     assert int(edge_attribute_generation_defaults['max_labeled_edge_count']) == 12
-    assert set(edge_attribute_generation_defaults['query_id_weights'].keys()) == {'edge_between_nodes_label', 'directed_edge_between_nodes_label'}
+    assert 'query_id_weights' not in edge_attribute_generation_defaults
     assert set(edge_attribute_generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(edge_attribute_generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
-    assert bool(edge_attribute_generation_defaults['balanced_query_id_sampling']) is True
+    assert 'balanced_query_id_sampling' not in edge_attribute_generation_defaults
     assert bool(edge_attribute_generation_defaults['balanced_target_edge_label_sampling']) is True
     assert int(edge_attribute_generation_defaults['node_count_min']) == 5
     assert int(edge_attribute_generation_defaults['node_count_max']) == 8
@@ -329,7 +329,7 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(edge_attribute_prompt_defaults['annotation_hint_directed_edge_between_nodes_label']).strip()
     assert str(edge_attribute_prompt_defaults['annotation_hint_shortest_path_first_edge_label']).strip()
     shortest_edge_generation_defaults, _, shortest_edge_prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__shortest_path_first_edge_label')
-    assert sorted(shortest_edge_generation_defaults['query_id_weights'].keys()) == ['shortest_path_first_edge_label']
+    assert 'query_id_weights' not in shortest_edge_generation_defaults
     assert int(shortest_edge_generation_defaults['edge_label_support_size']) == 16
     assert int(shortest_edge_generation_defaults['edge_label_min_chars']) == 3
     assert int(shortest_edge_generation_defaults['edge_label_max_chars']) == 5
@@ -356,7 +356,7 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(edge_edit_prompt_defaults['annotation_hint_component_size_after_edge_removal']).strip()
     assert str(edge_edit_prompt_defaults['annotation_hint_component_size_after_edge_addition']).strip()
     cycle_generation_defaults, cycle_rendering_defaults, cycle_prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__unique_cycle_size')
-    assert sorted(cycle_generation_defaults['query_id_weights'].keys()) == ['unique_cycle_size']
+    assert 'query_id_weights' not in cycle_generation_defaults
     assert set(cycle_generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(cycle_generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
     assert int(cycle_generation_defaults['node_count_min']) == 5
@@ -370,7 +370,7 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(cycle_prompt_defaults['task_key']).strip() == 'unique_cycle_size_query'
     assert str(cycle_prompt_defaults['question_text_unique_cycle_size']).strip()
     chordless_cycle_generation_defaults, chordless_cycle_rendering_defaults, chordless_cycle_prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__largest_chordless_cycle_size')
-    assert sorted(chordless_cycle_generation_defaults['query_id_weights'].keys()) == ['largest_chordless_cycle_size']
+    assert 'query_id_weights' not in chordless_cycle_generation_defaults
     assert set(chordless_cycle_generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(chordless_cycle_generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
     assert int(chordless_cycle_generation_defaults['node_count_min']) == 8
@@ -384,7 +384,7 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(chordless_cycle_prompt_defaults['task_key']).strip() == 'largest_chordless_cycle_size_query'
     assert str(chordless_cycle_prompt_defaults['question_text_largest_chordless_cycle_size']).strip()
     hamiltonian_generation_defaults, hamiltonian_rendering_defaults, hamiltonian_prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__hamiltonian_cycle_neighbor_label')
-    assert sorted(hamiltonian_generation_defaults['query_id_weights'].keys()) == ['next_in_hamiltonian_cycle_label', 'previous_in_hamiltonian_cycle_label']
+    assert 'query_id_weights' not in hamiltonian_generation_defaults
     assert set(hamiltonian_generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(hamiltonian_generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
     assert int(hamiltonian_generation_defaults['node_count_min']) == 4
@@ -491,7 +491,7 @@ def test_graph_comparison_defaults_loaded() -> None:
     assert str(prompt_shared['json_example']).strip()
     assert str(prompt_shared['json_example_answer_only']).strip()
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='graph_node_link_largest_component_size_internal')
-    assert sorted(generation_defaults['query_id_weights'].keys()) == ['largest_component_size']
+    assert 'query_id_weights' not in generation_defaults
     assert set(generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
     assert int(generation_defaults['node_count_min']) == 6
@@ -507,12 +507,10 @@ def test_graph_comparison_defaults_loaded() -> None:
     assert str(prompt_defaults['task_key']).strip() == 'largest_component_size_query'
     assert str(prompt_defaults['question_text_largest_component_size']).strip()
     extreme_generation_defaults, extreme_rendering_defaults, extreme_prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__degree_extremum_value')
-    expected_extreme_query_ids = {'directed_max_in_degree_value', 'directed_max_out_degree_value', 'directed_max_total_degree_value', 'directed_min_in_degree_value', 'directed_min_out_degree_value', 'directed_min_total_degree_value', 'undirected_max_degree_value', 'undirected_min_degree_value'}
-    assert expected_extreme_query_ids.issubset(set(extreme_generation_defaults['query_id_weights'].keys()))
-    assert all((float(extreme_generation_defaults['query_id_weights'][key]) > 0.0 for key in expected_extreme_query_ids))
+    assert 'query_id_weights' not in extreme_generation_defaults
     assert set(extreme_generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(extreme_generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
-    assert bool(extreme_generation_defaults['balanced_query_id_sampling']) is True
+    assert 'balanced_query_id_sampling' not in extreme_generation_defaults
     assert int(extreme_generation_defaults['node_count_min']) == 5
     assert int(extreme_generation_defaults['node_count_max']) == 10
     assert int(extreme_generation_defaults['directed_node_count_max']) == 10
@@ -561,15 +559,15 @@ def test_graph_path_defaults_loaded() -> None:
     assert str(prompt_shared['json_example']).strip()
     assert str(prompt_shared['json_example_answer_only']).strip()
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__shortest_path_length')
-    assert generation_defaults['query_id_weights'] == {'shortest_path_length': 1.0, 'directed_shortest_path_length': 1.0}
+    assert 'query_id_weights' not in generation_defaults
     assert set(generation_defaults['layout_variant_weights'].keys()) == FULL_NODE_LINK_LAYOUT_VARIANTS
     assert set(generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
     assert int(generation_defaults['node_count_min']) == 5
     assert int(generation_defaults['node_count_max']) == 15
     assert int(generation_defaults['directed_node_count_max']) == 15
-    assert int(generation_defaults['target_shortest_path_length_min']) == 3
-    assert int(generation_defaults['target_shortest_path_length_max']) == 7
+    assert int(generation_defaults['target_shortest_path_length_min']) == 2
+    assert int(generation_defaults['target_shortest_path_length_max']) == 5
     assert int(rendering_defaults['canvas_width']) > 0
     assert int(rendering_defaults['node_radius_min_px']) > 0
     assert str(prompt_defaults['bundle_id']).strip() == 'graph_path_v0'
@@ -618,7 +616,7 @@ def test_graph_order_defaults_loaded() -> None:
     assert str(prompt_shared['json_example']).strip()
     assert str(prompt_shared['json_example_answer_only']).strip()
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__topological_endpoint_node_label')
-    assert sorted(generation_defaults['query_id_weights'].keys()) == ['first_in_topological_order_label', 'last_in_topological_order_label']
+    assert 'query_id_weights' not in generation_defaults
     assert set(generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}
     assert set(generation_defaults['edge_routing_variant_weights'].keys()) == {'straight', 'mixed_arc'}
     assert int(generation_defaults['node_count_min']) == 3

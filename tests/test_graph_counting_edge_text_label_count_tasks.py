@@ -55,13 +55,13 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
 
     assert "task_graph__node_link__edge_text_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_id == "edge_text_label_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == 3
     assert len(out.annotation_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_edge_text_counting"
-    assert execution["query_id"] == "edge_text_label_count"
+    assert execution["query_id"] == "single"
     assert execution["graph_directionality"] == "undirected"
     assert execution["target_edge_label"] == "feeds"
     assert execution["question_format"] == "edge_text_label_count"

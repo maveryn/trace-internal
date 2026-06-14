@@ -1,5 +1,8 @@
 # `task_graph__node_link__unique_cycle_size`
 
+## Program Contract
+- `count(nodes(unique_cycle(graph))); scene=node_link; scope=unique_cycle_size`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `relation`
@@ -8,7 +11,7 @@
 
 ## 2) Scene + task contract
 1. Branch metadata: `query_id`
-2. `query_id`: `unique_cycle_size`
+2. `query_id`: `single`
 3. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 3. `answer_gt.type`: `integer`
 4. `annotation_gt.type`: `point_set`
@@ -19,7 +22,7 @@
    - no multi-edges,
    - the graph is connected and contains exactly one cycle,
    - node count sampled from `5..10`,
-   - visible node labels use one whole-image label format (`letters`, `numbers`, or `short_names`).
+   - visible node labels use one whole-image label format (`letters`, `numbers`, or `named`).
 6. Query contract:
    - the prompt states `The graph contains exactly one cycle. How many nodes are in that cycle?`,
    - answer is the number of nodes on that unique cycle.
@@ -38,7 +41,7 @@
 10. Visual variation:
    - one whole-image named node color is sampled from the shared TRACE named-color palette,
    - one whole-image node glyph style is sampled from `circle|rounded_square|hexagon`,
-   - one whole-image label format is sampled from `letters|numbers|short_names`,
+   - one whole-image label format is sampled from `letters|numbers|named`,
    - one whole-image edge routing style is sampled from `straight|mixed_arc`,
    - one whole-image layout transform is sampled from `identity|rotate_90|rotate_180|rotate_270|mirror_left_right|mirror_up_down`,
    - these style axes are non-semantic for this task and are recorded in trace metadata.

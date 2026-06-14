@@ -1,5 +1,8 @@
 # `task_graph__node_link__mst_weight`
 
+## Program Contract
+- `sum(weights(minimum_spanning_tree(graph))); scene=node_link; scope=mst_weight`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `optimization`
@@ -9,7 +12,7 @@
 
 ## 2) Scene + task contract
 1. Branch metadata: `query_id`
-2. `query_id`: `minimum_spanning_tree_weight`
+2. `query_id`: `single`
 3. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 3. `answer_gt.type`: `integer`
 4. `annotation_gt.type`: `point_pair_set`

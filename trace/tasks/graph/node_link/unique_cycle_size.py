@@ -7,7 +7,7 @@ from ._lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
 from .shared.sampling import sample_unique_cycle_graph
 TASK_ID = 'task_graph__node_link__unique_cycle_size'
 SCENE_ID = 'node_link'
-SUPPORTED_QUERY_IDS = ('unique_cycle_size',)
+SUPPORTED_QUERY_IDS = ('single',)
 
 def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
     """Sample a graph satisfying this public objective contract."""

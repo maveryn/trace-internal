@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections import Counter, defaultdict
 from trace.core.seed import hash64
-from trace.tasks.graph.counting.degree_count import GraphCountingDegreeValueFilterCountTask
+from trace.tasks.graph.node_link.degree_value_filter_count import GraphCountingDegreeValueFilterCountTask
 from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.named_colors import named_color
 
@@ -15,7 +15,7 @@ def _extract_prompt_json_example(prompt: str) -> dict:
 
 def test_graph_counting_degree_count_contract_matches_trace() -> None:
     task = GraphCountingDegreeValueFilterCountTask()
-    out = task.generate(19101, params={'query_id': 'degree_count', 'node_count': 7, 'query_degree': 2, 'target_count': 2, 'layout_variant': 'shell', 'topology_profile': 'balanced'}, max_attempts=80)
+    out = task.generate(19101, params={'query_id': 'undirected_degree_count', 'node_count': 7, 'query_degree': 2, 'target_count': 2, 'layout_variant': 'shell', 'topology_profile': 'balanced'}, max_attempts=80)
     trace = out.trace_payload
     execution = trace['execution_trace']
     scene_entities = trace['scene_ir']['entities']
@@ -75,7 +75,7 @@ def test_graph_counting_degree_count_contract_matches_trace() -> None:
 
 def test_graph_counting_degree_count_prompt_example_matches_contract() -> None:
     task = GraphCountingDegreeValueFilterCountTask()
-    out = task.generate(19102, params={'query_id': 'degree_count', 'node_count': 8, 'query_degree': 1, 'target_count': 2, 'label_variant': 'letters'}, max_attempts=80)
+    out = task.generate(19102, params={'query_id': 'undirected_degree_count', 'node_count': 8, 'query_degree': 1, 'target_count': 2, 'label_variant': 'letters'}, max_attempts=80)
     answer_only = _extract_prompt_json_example(out.prompt_variants['answer_only'])
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
     assert answer_only == {'answer': 2}
@@ -85,7 +85,7 @@ def test_graph_counting_degree_count_prompt_example_matches_contract() -> None:
 
 def test_graph_counting_degree_count_supports_numeric_labels_and_named_colors() -> None:
     task = GraphCountingDegreeValueFilterCountTask()
-    out = task.generate(19104, params={'query_id': 'degree_count', 'node_count': 10, 'query_degree': 1, 'target_count': 3, 'label_variant': 'numbers', 'node_shape_variant': 'hexagon', 'layout_transform_variant': 'rotate_90', 'node_color_name': 'orange'}, max_attempts=80)
+    out = task.generate(19104, params={'query_id': 'undirected_degree_count', 'node_count': 10, 'query_degree': 1, 'target_count': 3, 'label_variant': 'numbers', 'node_shape_variant': 'hexagon', 'layout_transform_variant': 'rotate_90', 'node_color_name': 'orange'}, max_attempts=80)
     trace = out.trace_payload
     execution = trace['execution_trace']
     labels = [entity['label'] for entity in trace['scene_ir']['entities'] if entity['entity_kind'] == 'graph_node']
@@ -103,7 +103,7 @@ def test_graph_counting_degree_count_supports_numeric_labels_and_named_colors() 
 
 def test_graph_counting_degree_count_fits_numeric_labels_to_node_glyphs() -> None:
     task = GraphCountingDegreeValueFilterCountTask()
-    common_params = {'query_id': 'degree_count', 'node_count': 10, 'query_degree': 1, 'target_count': 3, 'node_shape_variant': 'circle', 'node_radius_px': 18}
+    common_params = {'query_id': 'undirected_degree_count', 'node_count': 10, 'query_degree': 1, 'target_count': 3, 'node_shape_variant': 'circle', 'node_radius_px': 18}
     letters = task.generate(19105, params={**common_params, 'label_variant': 'letters'}, max_attempts=80)
     numbers = task.generate(19106, params={**common_params, 'label_variant': 'numbers'}, max_attempts=80)
     letters_style = letters.trace_payload['render_spec']['style']
@@ -115,7 +115,8 @@ def test_graph_counting_degree_count_fits_numeric_labels_to_node_glyphs() -> Non
 def test_graph_counting_degree_count_directed_variants_use_in_out_degree_semantics() -> None:
     task = GraphCountingDegreeValueFilterCountTask()
     for degree_mode in ('in_degree', 'out_degree'):
-        out = task.generate(19107 if degree_mode == 'in_degree' else 19108, params={'query_id': 'directed_degree_count', 'degree_mode': degree_mode, 'node_count': 8, 'query_degree': 1, 'target_count': 2}, max_attempts=120)
+        query_id = 'directed_in_degree_count' if degree_mode == 'in_degree' else 'directed_out_degree_count'
+        out = task.generate(19107 if degree_mode == 'in_degree' else 19108, params={'query_id': query_id, 'degree_mode': degree_mode, 'node_count': 8, 'query_degree': 1, 'target_count': 2}, max_attempts=120)
         trace = out.trace_payload
         execution = trace['execution_trace']
         assert out.query_id == f'directed_{degree_mode}_count'
@@ -142,7 +143,8 @@ def test_graph_counting_degree_count_directed_variants_use_full_node_range() -> 
     node_counts: Counter[int] = Counter()
     for degree_mode in ('in_degree', 'out_degree'):
         for index in range(80):
-            out = task.generate(hash64(19109 if degree_mode == 'in_degree' else 19110, degree_mode, index), params={'query_id': 'directed_degree_count', 'degree_mode': degree_mode}, max_attempts=120)
+            query_id = 'directed_in_degree_count' if degree_mode == 'in_degree' else 'directed_out_degree_count'
+            out = task.generate(hash64(19109 if degree_mode == 'in_degree' else 19110, degree_mode, index), params={'query_id': query_id, 'degree_mode': degree_mode}, max_attempts=120)
             node_count = int(out.trace_payload['execution_trace']['node_count'])
             assert 5 <= node_count <= 10
             node_counts[node_count] += 1
@@ -180,7 +182,7 @@ def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:
         if 'query_degree' in execution:
             assert 0 <= int(execution['query_degree']) <= 4
         assert 0 <= int(execution['target_count']) <= 5
-    assert set(query_ids.keys()) == {'undirected_degree_count', 'directed_in_degree_count', 'directed_out_degree_count', 'directed_source_count', 'directed_sink_count'}
+    assert set(query_ids.keys()) == {'undirected_degree_count', 'directed_in_degree_count', 'directed_out_degree_count'}
     assert set(degree_modes.keys()) == {'degree', 'in_degree', 'out_degree'}
     assert min(target_counts.keys()) == 0
     assert max(target_counts.keys()) <= 5
@@ -199,7 +201,7 @@ def test_graph_counting_degree_count_node_support_is_not_locked_to_smallest_feas
     task = GraphCountingDegreeValueFilterCountTask()
     node_counts: Counter[int] = Counter()
     for index in range(120):
-        out = task.generate(hash64(19111, 'graph_counting_degree_count_node_balance', index), params={'query_id': 'degree_count'}, max_attempts=120)
+        out = task.generate(hash64(19111, 'graph_counting_degree_count_node_balance', index), params={'query_id': 'undirected_degree_count'}, max_attempts=120)
         node_counts[int(out.trace_payload['execution_trace']['node_count'])] += 1
     assert set(node_counts) >= {5, 6, 7, 8, 9, 10}
     assert node_counts[5] < 90

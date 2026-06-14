@@ -7,7 +7,7 @@ from ._lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
 from .shared.sampling import feasible_node_counts_for_isolated_node_count_after_node_removal, sample_isolated_node_count_after_node_removal_graph
 TASK_ID = 'task_graph__node_link__isolated_after_removal_count'
 SCENE_ID = 'node_link'
-SUPPORTED_QUERY_IDS = ('isolated_node_count_after_node_removal',)
+SUPPORTED_QUERY_IDS = ('single',)
 
 def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
     """Sample a graph satisfying this public objective contract."""

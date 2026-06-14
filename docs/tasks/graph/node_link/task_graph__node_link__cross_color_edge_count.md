@@ -1,5 +1,8 @@
 # `task_graph__node_link__cross_color_edge_count`
 
+## Program Contract
+- `count(filter(edges(graph), endpoint_colors={source_color,target_color})); scene=node_link; scope=cross_color_edge_count`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `counting`

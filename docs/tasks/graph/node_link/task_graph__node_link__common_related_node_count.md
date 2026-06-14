@@ -1,5 +1,8 @@
 # `task_graph__node_link__common_related_node_count`
 
+## Program Contract
+- `count(intersection(related_nodes(node_a, relation), related_nodes(node_b, relation))); scene=node_link; scope=common_related_node_count`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`
@@ -8,7 +11,7 @@
 5. Objective: count nodes sharing the requested neighbor, successor, or predecessor relation.
 
 ## Query IDs
-1. `common_neighbor_count|common_successor_count|common_predecessor_count`
+1. `undirected_common_neighbor_count|directed_common_successor_count|directed_common_predecessor_count`
 2. Query ids are internal replay metadata; public sampling is at the task-id level.
 
 ## Answer And Annotation

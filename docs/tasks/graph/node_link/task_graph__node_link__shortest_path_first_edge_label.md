@@ -1,5 +1,8 @@
 # `task_graph__node_link__shortest_path_first_edge_label`
 
+## Program Contract
+- `label(edge_text(first_edge(shortest_path(graph, source_node, goal_node)))); scene=node_link; scope=shortest_path_first_edge_label`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`
@@ -8,7 +11,7 @@
 5. Objective: return the visible text label on the first edge of a unique shortest path.
 
 ## Query IDs
-1. `shortest_path_first_edge_label`
+1. `single`
 2. Query ids are internal replay metadata; public sampling is at the task-id level.
 
 ## Answer And Annotation

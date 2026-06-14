@@ -13,14 +13,12 @@ def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
     """Sample a graph satisfying this public objective contract."""
     operation = 'edge_removal' if str(axes.query_id).endswith('removal') else 'edge_addition'
     target_count = int(axes.values['target_count'])
-    if operation == 'edge_addition':
-        target_count = max(2, int(target_count))
     target_count = min(int(target_count), int(axes.node_count) - (1 if operation == 'edge_removal' else 0))
     return sample_reachable_count_after_edge_edit_graph(rng, edit_operation=operation, node_count=int(axes.node_count), target_reachable_count=int(target_count), topology_profile=str(axes.topology_profile), label_variant=str(axes.label_variant))
 
 def _build_objective_plan() -> NodeLinkObjectivePlan:
     """Bind query ids, sampler, answer, and annotation for this objective."""
-    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphRelationReachableCountAfterEdgeEditTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='integer', answer_field='target_reachable_count', annotation_type='point_set', annotation_kind='node_point_set', annotation_field='target_labels', prompt_query_key=lambda axes: str(axes.query_id), annotation_hint_key=lambda axes: 'annotation_hint_' + str(axes.query_id), graph_directionality='directed', scene_kind='graph_reachable_count_after_edge_edit', question_format=lambda axes: str(axes.query_id), value_ranges={'target_count': (1, 6)})
+    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphRelationReachableCountAfterEdgeEditTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='integer', answer_field='target_reachable_count', annotation_type='point_set', annotation_kind='node_point_set', annotation_field='target_labels', prompt_query_key=lambda axes: str(axes.query_id), annotation_hint_key=lambda axes: 'annotation_hint_' + str(axes.query_id), graph_directionality='directed', scene_kind='graph_reachable_count_after_edge_edit', question_format=lambda axes: str(axes.query_id), value_ranges={'target_count': (2, 6)})
 
 @register_task
 class GraphRelationReachableCountAfterEdgeEditTask:

@@ -168,6 +168,72 @@ SYMBOLIC_SCENE_PACKAGE_FILE_POLICY = ScenePackageFilePolicy(
 )
 
 
+ICONS_SCENE_PACKAGE_FILE_POLICY = ScenePackageFilePolicy(
+    domain="icons",
+    allowed_private_scene_files=frozenset(
+        {
+            "_lifecycle.py",
+        }
+    ),
+    role_shared_files=frozenset(
+        {
+            "state.py",
+            "defaults.py",
+            "sampling.py",
+            "layout.py",
+            "rendering.py",
+            "annotations.py",
+            "prompts.py",
+            "output.py",
+            "styles.py",
+            "assets.py",
+            "transforms.py",
+            "metrics.py",
+            "spatial_primitives.py",
+            "option_rendering.py",
+            "labels.py",
+        }
+    ),
+)
+
+
+ILLUSTRATIONS_SCENE_PACKAGE_FILE_POLICY = ScenePackageFilePolicy(
+    domain="illustrations",
+    allowed_private_scene_files=frozenset(
+        {
+            "_lifecycle.py",
+        }
+    ),
+    role_shared_files=frozenset(
+        {
+            "state.py",
+            "defaults.py",
+            "sampling.py",
+            "layout.py",
+            "rendering.py",
+            "annotations.py",
+            "prompts.py",
+            "output.py",
+            "styles.py",
+            "assets.py",
+            "components.py",
+            "labels.py",
+            "objects.py",
+            "people.py",
+            "regions.py",
+            "relations.py",
+            "transforms.py",
+            "metrics.py",
+            "spatial_primitives.py",
+            "option_rendering.py",
+            "cutouts.py",
+            "edits.py",
+            "source_images.py",
+        }
+    ),
+)
+
+
 THREE_D_SCENE_PACKAGE_FILE_POLICY = ScenePackageFilePolicy(
     domain="three_d",
     allowed_private_scene_files=frozenset(
@@ -204,6 +270,8 @@ SCENE_PACKAGE_FILE_POLICIES: dict[str, ScenePackageFilePolicy] = {
     GAMES_SCENE_PACKAGE_FILE_POLICY.domain: GAMES_SCENE_PACKAGE_FILE_POLICY,
     GEOMETRY_SCENE_PACKAGE_FILE_POLICY.domain: GEOMETRY_SCENE_PACKAGE_FILE_POLICY,
     GRAPH_SCENE_PACKAGE_FILE_POLICY.domain: GRAPH_SCENE_PACKAGE_FILE_POLICY,
+    ICONS_SCENE_PACKAGE_FILE_POLICY.domain: ICONS_SCENE_PACKAGE_FILE_POLICY,
+    ILLUSTRATIONS_SCENE_PACKAGE_FILE_POLICY.domain: ILLUSTRATIONS_SCENE_PACKAGE_FILE_POLICY,
     SYMBOLIC_SCENE_PACKAGE_FILE_POLICY.domain: SYMBOLIC_SCENE_PACKAGE_FILE_POLICY,
     THREE_D_SCENE_PACKAGE_FILE_POLICY.domain: THREE_D_SCENE_PACKAGE_FILE_POLICY,
 }
@@ -220,6 +288,8 @@ __all__ = [
     "GEOMETRY_SCENE_PACKAGE_FILE_POLICY",
     "GAMES_SCENE_PACKAGE_FILE_POLICY",
     "GRAPH_SCENE_PACKAGE_FILE_POLICY",
+    "ICONS_SCENE_PACKAGE_FILE_POLICY",
+    "ILLUSTRATIONS_SCENE_PACKAGE_FILE_POLICY",
     "SCENE_PACKAGE_FILE_POLICIES",
     "ScenePackageFilePolicy",
     "SYMBOLIC_SCENE_PACKAGE_FILE_POLICY",

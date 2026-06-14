@@ -54,6 +54,16 @@ def test_scene_package_domain_file_policies_are_registered() -> None:
     assert symbolic_policy.allowed_private_scene_files == frozenset({'_lifecycle.py'})
     assert symbolic_policy.role_shared_files == frozenset({'state.py', 'sampling.py', 'rules.py', 'layout.py', 'rendering.py', 'annotations.py', 'prompts.py', 'output.py', 'defaults.py', 'styles.py', 'assets.py', 'components.py', 'relations.py', 'metrics.py', 'transforms.py', 'spatial_primitives.py', 'option_rendering.py'})
     assert not symbolic_policy.allow_shared_subdirectories
+    icons_policy = scene_package_file_policy('icons')
+    assert icons_policy is not None
+    assert icons_policy.allowed_private_scene_files == frozenset({'_lifecycle.py'})
+    assert icons_policy.role_shared_files == frozenset({'state.py', 'defaults.py', 'sampling.py', 'layout.py', 'rendering.py', 'annotations.py', 'prompts.py', 'output.py', 'styles.py', 'assets.py', 'transforms.py', 'metrics.py', 'spatial_primitives.py', 'option_rendering.py', 'labels.py'})
+    assert not icons_policy.allow_shared_subdirectories
+    illustrations_policy = scene_package_file_policy('illustrations')
+    assert illustrations_policy is not None
+    assert illustrations_policy.allowed_private_scene_files == frozenset({'_lifecycle.py'})
+    assert illustrations_policy.role_shared_files == frozenset({'state.py', 'defaults.py', 'sampling.py', 'layout.py', 'rendering.py', 'annotations.py', 'prompts.py', 'output.py', 'styles.py', 'assets.py', 'components.py', 'labels.py', 'objects.py', 'people.py', 'regions.py', 'relations.py', 'transforms.py', 'metrics.py', 'spatial_primitives.py', 'option_rendering.py', 'cutouts.py', 'edits.py', 'source_images.py'})
+    assert not illustrations_policy.allow_shared_subdirectories
     three_d_policy = scene_package_file_policy('three_d')
     assert three_d_policy is not None
     assert three_d_policy.allowed_private_scene_files == frozenset({'_lifecycle.py'})
@@ -625,7 +635,7 @@ def test_three_d_is_not_allowlisted_before_full_scene_package_migration() -> Non
 
 def test_scene_package_migration_registries_only_track_review_candidate_scenes() -> None:
     assert not MIGRATED_SCENE_PACKAGE_DOMAINS
-    expected_candidate_scenes = {'charts': frozenset({'annotated_series', 'area', 'bar_3d', 'boxplot', 'candlestick', 'combo_mark', 'contour_density', 'curve_panels', 'dashboard', 'density_curve'}), 'games': frozenset({'2048', 'backgammon', 'battleship', 'bingo', 'bowling', 'brick_breaker', 'bubble_shooter', 'cards', 'checkers', 'chess', 'chess_variant', 'circular_chess', 'connect_four', 'crossing', 'darts', 'dominoes'}), 'geometry': frozenset({'angle_relations', 'area_partition', 'bearing_route', 'circle_centerline_overlap', 'circle_pair_tangents', 'circle_polygon_composite', 'circle_theorem'}), 'graph': frozenset({'adjacency', 'automaton', 'binary_tree', 'node_link'})}
+    expected_candidate_scenes = {'charts': frozenset({'annotated_series', 'area', 'bar_3d', 'boxplot', 'candlestick', 'combo_mark', 'contour_density', 'curve_panels', 'dashboard', 'density_curve', 'dumbbell'}), 'games': frozenset({'2048', 'backgammon', 'battleship', 'bingo', 'bowling', 'brick_breaker', 'bubble_shooter', 'cards', 'checkers', 'chess', 'chess_variant', 'circular_chess', 'connect_four', 'crossing', 'darts', 'dominoes'}), 'geometry': frozenset({'angle_relations', 'area_partition', 'bearing_route', 'circle_centerline_overlap', 'circle_pair_tangents', 'circle_polygon_composite', 'circle_theorem'}), 'graph': frozenset({'adjacency', 'automaton', 'binary_tree', 'node_link'}), 'icons': frozenset({'icon_cutout', 'icon_field', 'mirror_grid', 'named_field'}), 'illustrations': frozenset({'construction_site'})}
     assert MIGRATED_SCENE_PACKAGE_SCENES == expected_candidate_scenes
     assert SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES == expected_candidate_scenes
     assert not SCENE_PACKAGE_PILOT_TASK_IDS
@@ -639,6 +649,9 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     assert scene_package_migration.is_scene_package_task('task_geometry__circle_theorem__diameter_perpendicular_chord_length_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_graph__adjacency__traversal_kth_label', domain='graph')
     assert scene_package_migration.is_scene_package_task('task_graph__automaton__state_after_input_label', domain='graph')
+    assert scene_package_migration.is_scene_package_task('task_icons__icon_cutout__partial_match_label', domain='icons')
+    assert scene_package_migration.is_scene_package_task('task_icons__icon_field__type_frequency_count', domain='icons')
+    assert scene_package_migration.is_scene_package_task('task_icons__mirror_grid__mirror_symmetry_match_label', domain='icons')
 
 def test_task_classes_do_not_claim_scene_package_migration_independently() -> None:
     """Migration state must come only from central scene registries."""

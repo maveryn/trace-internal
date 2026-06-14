@@ -605,7 +605,7 @@ Public task identity uses `domain -> scene_id -> task_id`. Generated outputs rec
 1. [task_graph__pipe_network__shortest_path_length.md](task_graph__pipe_network__shortest_path_length.md)
 1. [task_icons__icon_cutout__partial_match_label.md](task_icons__icon_cutout__partial_match_label.md)
 1. [task_icons__icon_field__type_frequency_count.md](task_icons__icon_field__type_frequency_count.md)
-1. [task_icons__mirror_grid__mirror_symmetry_count.md](task_icons__mirror_grid__mirror_symmetry_count.md)
+1. [task_icons__mirror_grid__mirror_symmetry_match_label.md](task_icons__mirror_grid__mirror_symmetry_match_label.md)
 1. [task_icons__named_field__closer_to_reference_count.md](task_icons__named_field__closer_to_reference_count.md)
 1. [task_icons__named_field__count_arithmetic.md](task_icons__named_field__count_arithmetic.md)
 1. [task_icons__named_field__counterfactual_attribute_count.md](task_icons__named_field__counterfactual_attribute_count.md)

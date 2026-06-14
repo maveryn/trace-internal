@@ -44,5 +44,6 @@ Renders an environment source panel with one missing visual region and four or s
 ## Prompt And Trace Requirements
 - Prompt text must come from the `illustrations_environment_v1` prompt bundle, with scene/task/output layers selected deterministically and recorded in metadata.
 - Render randomness, sampled fonts/styles, option order, crop box, and verifier payloads must be explicit in the instance trace.
+- Source crops are selected from a visually informative candidate crop pool to avoid flat/sky-dominant missing regions and distractor patches.
 - Option count is sampled from `4` or `6`; all option bboxes use the same pixel width and height as the missing region.
 - The selected option bbox, answer label, and missing-region bbox must all come from the same `compose_patch_options` execution trace.

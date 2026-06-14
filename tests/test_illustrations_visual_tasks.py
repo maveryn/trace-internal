@@ -131,6 +131,35 @@ def test_patch_option_artifacts_use_keyed_visual_witnesses() -> None:
         assert bbox[3] - bbox[1] == missing_h
 
 
+def test_patch_option_candidate_crop_boxes_are_honored() -> None:
+    candidates = (
+        (36, 40, 164, 140),
+        (220, 42, 348, 142),
+        (408, 48, 536, 148),
+        (52, 232, 180, 332),
+        (252, 244, 380, 344),
+        (438, 250, 566, 350),
+    )
+    artifacts = compose_patch_options(
+        source_image=_source_image(),
+        rng=random.Random(37),
+        patch_mode=PATCH_MODE_PLAIN,
+        correct_index=1,
+        option_count=4,
+        patch_size=(128, 100),
+        crop_margin_px=32,
+        frame_style=PATCH_FRAME_STYLES["slate_cards"],
+        label_font_family=None,  # type: ignore[arg-type]
+        candidate_crop_boxes=candidates,
+    )
+
+    assert artifacts.candidate_crop_count == len(candidates)
+    assert artifacts.source_crop_box in candidates
+    assert len(artifacts.option_source_crop_boxes) == 4
+    assert set(artifacts.option_source_crop_boxes).issubset(set(candidates))
+    assert artifacts.option_source_crop_boxes[1] == artifacts.source_crop_box
+
+
 def test_transformed_patch_records_selected_transform() -> None:
     artifacts = compose_patch_options(
         source_image=_source_image(),

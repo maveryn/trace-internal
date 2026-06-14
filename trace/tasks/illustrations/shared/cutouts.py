@@ -135,6 +135,8 @@ class PatchOptionArtifacts:
     source_crop_box: Tuple[int, int, int, int]
     selected_transform: str
     option_grid_shape: Tuple[int, int]
+    option_source_crop_boxes: Tuple[Tuple[int, int, int, int], ...] = ()
+    candidate_crop_count: int = 0
 
 
 def rgb(style: Mapping[str, Any], key: str) -> Tuple[int, int, int]:
@@ -434,6 +436,7 @@ def select_crop_box(
     patch_h: int,
     crop_margin_px: int,
     avoid: Sequence[float] | None = None,
+    candidate_crop_boxes: Sequence[Sequence[int]] | None = None,
 ) -> Tuple[int, int, int, int]:
     width, height = source.size
     margin = int(crop_margin_px)
@@ -447,6 +450,43 @@ def select_crop_box(
     if avoid is not None:
         avoid_cx = 0.5 * (float(avoid[0]) + float(avoid[2]))
         avoid_cy = 0.5 * (float(avoid[1]) + float(avoid[3]))
+    if candidate_crop_boxes is not None:
+        ranked_candidates: list[Tuple[float, Tuple[int, int, int, int]]] = []
+        seen: set[Tuple[int, int, int, int]] = set()
+        for raw_box in candidate_crop_boxes:
+            if len(raw_box) < 4:
+                continue
+            x0, y0, x1, y1 = [int(round(float(value))) for value in raw_box[:4]]
+            box = (x0, y0, x1, y1)
+            if box in seen:
+                continue
+            seen.add(box)
+            if x0 < 0 or y0 < 0 or x1 > int(width) or y1 > int(height):
+                continue
+            if (x1 - x0) != int(patch_w) or (y1 - y0) != int(patch_h):
+                continue
+            if avoid_cx is not None and avoid_cy is not None:
+                cx = 0.5 * (box[0] + box[2])
+                cy = 0.5 * (box[1] + box[3])
+                if abs(cx - avoid_cx) < 0.38 * width and abs(cy - avoid_cy) < 0.34 * height:
+                    continue
+            ranked_candidates.append((float(image_detail_score(source.crop(box))), box))
+        if not ranked_candidates and avoid is not None:
+            return select_crop_box(
+                source,
+                rng,
+                patch_w=int(patch_w),
+                patch_h=int(patch_h),
+                crop_margin_px=int(crop_margin_px),
+                avoid=None,
+                candidate_crop_boxes=candidate_crop_boxes,
+            )
+        if not ranked_candidates:
+            raise ValueError("candidate_crop_boxes did not contain a feasible visual crop")
+        ranked_candidates.sort(key=lambda item: item[0], reverse=True)
+        top_count = min(12, len(ranked_candidates))
+        selected_index = int(rng.randint(0, top_count - 1))
+        return tuple(int(value) for value in ranked_candidates[selected_index][1])
     for _attempt in range(220):
         x0 = int(rng.randint(margin, max_x0))
         y0 = int(rng.randint(margin, max_y0))
@@ -470,6 +510,7 @@ def select_crop_box(
             patch_h=int(patch_h),
             crop_margin_px=int(crop_margin_px),
             avoid=None,
+            candidate_crop_boxes=None,
         )
     if best_box is None:
         raise ValueError("could not select visual crop")
@@ -483,6 +524,16 @@ def transform_patch(patch: Image.Image, rng: Any) -> Tuple[Image.Image, str]:
     if transform == "flip_horizontal":
         return ImageOps.mirror(patch), transform
     return ImageOps.flip(patch), transform
+
+
+def patch_difference_score(left: Image.Image, right: Image.Image) -> float:
+    """Return a cheap mean-pixel difference between two same-size patches."""
+
+    if left.size != right.size:
+        right = ImageOps.pad(right.convert("RGB"), left.size, method=Image.Resampling.LANCZOS, color=(255, 255, 255))
+    diff = ImageChops.difference(left.convert("RGB"), right.convert("RGB"))
+    stat = ImageStat.Stat(diff)
+    return float(sum(stat.mean) / max(1, len(stat.mean))) if stat.mean else 0.0
 
 
 def draw_source_hole(source: Image.Image, *, box: Sequence[int], frame_style: Mapping[str, Any]) -> Image.Image:
@@ -519,6 +570,8 @@ def compose_patch_options(
     label_font_family: str,
     labels: Sequence[str] = DEFAULT_OPTION_LABELS,
     render_margin: int = 30,
+    candidate_crop_boxes: Sequence[Sequence[int]] | None = None,
+    min_candidate_patch_difference: float = 7.5,
 ) -> PatchOptionArtifacts:
     """Compose source-with-hole plus patch options from an already-rendered image."""
 
@@ -538,6 +591,7 @@ def compose_patch_options(
         patch_w=patch_w,
         patch_h=patch_h,
         crop_margin_px=int(crop_margin_px),
+        candidate_crop_boxes=candidate_crop_boxes,
     )
     correct_patch = source_rgb.crop(hole_box)
     correct_transform = "none"
@@ -545,22 +599,55 @@ def compose_patch_options(
         correct_patch, correct_transform = transform_patch(correct_patch, rng)
 
     options = []
+    option_source_crop_boxes: list[Tuple[int, int, int, int]] = []
+    used_crop_boxes: set[Tuple[int, int, int, int]] = {tuple(int(value) for value in hole_box)}
     for option_index in range(int(option_count)):
         if option_index == int(correct_index):
             options.append(correct_patch)
+            option_source_crop_boxes.append(tuple(int(value) for value in hole_box))
             continue
-        distractor_box = select_crop_box(
-            source_rgb,
-            rng,
-            patch_w=patch_w,
-            patch_h=patch_h,
-            crop_margin_px=int(crop_margin_px),
-            avoid=hole_box,
-        )
-        distractor = source_rgb.crop(distractor_box)
-        if mode == PATCH_MODE_PLAIN and option_index == 0:
+        if mode == PATCH_MODE_PLAIN and candidate_crop_boxes is None and option_index == 0:
             distractor, _ = transform_patch(correct_patch, rng)
+            distractor_box = tuple(int(value) for value in hole_box)
+        else:
+            best_distractor: Tuple[float, Image.Image, Tuple[int, int, int, int]] | None = None
+            for _attempt in range(28):
+                candidate_box = select_crop_box(
+                    source_rgb,
+                    rng,
+                    patch_w=patch_w,
+                    patch_h=patch_h,
+                    crop_margin_px=int(crop_margin_px),
+                    avoid=hole_box,
+                    candidate_crop_boxes=candidate_crop_boxes,
+                )
+                if tuple(candidate_box) in used_crop_boxes:
+                    continue
+                candidate_patch = source_rgb.crop(candidate_box)
+                delta = patch_difference_score(correct_patch, candidate_patch)
+                if best_distractor is None or delta > best_distractor[0]:
+                    best_distractor = (float(delta), candidate_patch, tuple(int(value) for value in candidate_box))
+                if delta >= float(min_candidate_patch_difference):
+                    break
+            if best_distractor is None:
+                candidate_box = select_crop_box(
+                    source_rgb,
+                    rng,
+                    patch_w=patch_w,
+                    patch_h=patch_h,
+                    crop_margin_px=int(crop_margin_px),
+                    avoid=None,
+                    candidate_crop_boxes=candidate_crop_boxes,
+                )
+                best_distractor = (
+                    patch_difference_score(correct_patch, source_rgb.crop(candidate_box)),
+                    source_rgb.crop(candidate_box),
+                    tuple(int(value) for value in candidate_box),
+                )
+            _delta, distractor, distractor_box = best_distractor
+            used_crop_boxes.add(tuple(distractor_box))
         options.append(distractor)
+        option_source_crop_boxes.append(tuple(int(value) for value in distractor_box))
 
     source_with_hole = draw_source_hole(source_rgb, box=hole_box, frame_style=frame_style)
     margin = int(render_margin)
@@ -635,6 +722,8 @@ def compose_patch_options(
         source_crop_box=tuple(int(value) for value in hole_box),
         selected_transform=correct_transform,
         option_grid_shape=(int(option_rows), int(row_capacity)),
+        option_source_crop_boxes=tuple(tuple(int(coord) for coord in box) for box in option_source_crop_boxes),
+        candidate_crop_count=len(tuple(candidate_crop_boxes or ())),
     )
 
 
@@ -659,6 +748,7 @@ __all__ = [
     "option_content_order",
     "option_grid_shape",
     "piece_crops",
+    "patch_difference_score",
     "rgb",
     "rotation_delta",
     "sample_style",

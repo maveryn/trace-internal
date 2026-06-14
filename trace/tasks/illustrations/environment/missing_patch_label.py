@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from PIL import Image, ImageStat
+
 from ....core.query_ids import SINGLE_QUERY_ID
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
@@ -21,7 +23,7 @@ from ..shared.cutouts import (
     sample_style,
     style_trace,
 )
-from ..shared.option_rendering import fit_source_image, sample_visual_label_font_trace
+from ..shared.option_rendering import fit_source_image, image_detail_score, sample_visual_label_font_trace
 from ..shared.task_support import uniform_string_probability_map
 from .shared.annotations import feature_bbox_map, feature_path_map
 from .shared.defaults import CountContractDefaults, render_fallback
@@ -220,6 +222,77 @@ def _keyed_bbox_map(value: Mapping[str, Sequence[float]]) -> Dict[str, list[floa
     }
 
 
+def _crop_quality_score(crop: Image.Image, *, top_band: bool) -> float | None:
+    """Score source crops and reject flat/sky-dominant regions."""
+
+    crop_rgb = crop.convert("RGB")
+    detail = float(image_detail_score(crop_rgb))
+    stat = ImageStat.Stat(crop_rgb)
+    means = [float(value) for value in stat.mean[:3]]
+    variances = [float(value) for value in stat.var[:3]]
+    mean_brightness = sum(means) / 3.0 if means else 0.0
+    color_variance = sum(variances) / 3.0 if variances else 0.0
+    blue_bias = means[2] - max(means[0], means[1]) if len(means) == 3 else 0.0
+    flat_like = detail < 245.0 or color_variance < 45.0
+    sky_like = mean_brightness > 148.0 and blue_bias > 6.0 and detail < 660.0 and color_variance < 980.0
+    weak_top_band = bool(top_band) and detail < 780.0 and color_variance < 1250.0
+    if flat_like or sky_like or weak_top_band:
+        return None
+    lower_scene_bonus = 130.0 if not bool(top_band) else 0.0
+    return float(detail + 0.18 * color_variance + lower_scene_bonus)
+
+
+def _informative_crop_boxes(
+    *,
+    source_image: Image.Image,
+    rng: Any,
+    patch_size: Tuple[int, int],
+    crop_margin_px: int,
+    min_count: int,
+    max_count: int = 72,
+) -> Tuple[Tuple[int, int, int, int], ...]:
+    """Sample visually informative crop boxes for missing-patch options."""
+
+    source_rgb = source_image.convert("RGB")
+    width, height = source_rgb.size
+    patch_w, patch_h = int(patch_size[0]), int(patch_size[1])
+    margin = int(crop_margin_px)
+    max_x0 = int(width) - patch_w - margin
+    max_y0 = int(height) - patch_h - margin
+    if max_x0 < margin or max_y0 < margin:
+        raise ValueError("crop_margin_px leaves no feasible environment patch crop area")
+
+    accepted: list[Tuple[float, Tuple[int, int, int, int]]] = []
+    relaxed: list[Tuple[float, Tuple[int, int, int, int]]] = []
+    seen: set[Tuple[int, int, int, int]] = set()
+    for _attempt in range(720):
+        x0 = int(rng.randint(margin, max_x0))
+        y0 = int(rng.randint(margin, max_y0))
+        box = (x0, y0, x0 + patch_w, y0 + patch_h)
+        if box in seen:
+            continue
+        seen.add(box)
+        crop = source_rgb.crop(box)
+        top_band = bool((box[1] + box[3]) * 0.5 < 0.43 * height)
+        detail = float(image_detail_score(crop))
+        relaxed.append((detail, box))
+        score = _crop_quality_score(crop, top_band=top_band)
+        if score is not None:
+            accepted.append((float(score), box))
+
+    if len(accepted) < int(min_count):
+        accepted_boxes = {box for _score, box in accepted}
+        accepted.extend(
+            (float(score), box)
+            for score, box in sorted(relaxed, key=lambda item: item[0], reverse=True)
+            if float(score) >= 360.0 and box not in accepted_boxes
+        )
+    if len(accepted) < int(min_count):
+        raise ValueError("could not find enough informative environment patch crops")
+    accepted.sort(key=lambda item: item[0], reverse=True)
+    return tuple(tuple(int(value) for value in box) for _score, box in accepted[: int(max_count)])
+
+
 @register_task
 class IllustrationsEnvironmentMissingPatchLabelTask:
     """Select the exact patch option that matches a missing environment region."""
@@ -237,6 +310,7 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
         source_scene = None
         artifacts = None
         frame_style = None
+        candidate_crop_boxes: Tuple[Tuple[int, int, int, int], ...] | None = None
         label_font_trace: Dict[str, Any] | None = None
         for attempt in range(max(1, int(max_attempts))):
             try:
@@ -274,6 +348,13 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
                     width=int(sample.source_size[0]),
                     height=int(sample.source_size[1]),
                 )
+                candidate_crop_boxes = _informative_crop_boxes(
+                    source_image=source_panel,
+                    rng=spawn_rng(int(instance_seed), f"{TASK_ID}:patch_candidates", int(attempt)),
+                    patch_size=sample.patch_size,
+                    crop_margin_px=int(sample.crop_margin_px),
+                    min_count=int(sample.option_count) + 4,
+                )
                 artifacts = compose_patch_options(
                     source_image=source_panel,
                     rng=option_rng,
@@ -284,6 +365,7 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
                     crop_margin_px=int(sample.crop_margin_px),
                     frame_style=frame_style,
                     label_font_family=str(label_font_trace["font_family"]),
+                    candidate_crop_boxes=candidate_crop_boxes,
                 )
                 break
             except Exception as exc:  # pragma: no cover - random crop/placement feasibility is retry based
@@ -291,6 +373,7 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
                 sample = None
                 source_scene = None
                 artifacts = None
+                candidate_crop_boxes = None
         if sample is None or source_scene is None or artifacts is None or frame_style is None or label_font_trace is None:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
@@ -373,6 +456,7 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
                     "patch_size": [int(sample.patch_size[0]), int(sample.patch_size[1])],
                     "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
                     "crop_margin_px": int(sample.crop_margin_px),
+                    "candidate_crop_count": int(artifacts.candidate_crop_count),
                     "correct_index_probabilities": dict(sample.correct_index_probabilities),
                 },
             },
@@ -399,6 +483,11 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
                 "option_bboxes_px_by_label": {str(key): list(value) for key, value in artifacts.option_bboxes.items()},
                 "selected_option_bbox_px": list(artifacts.selected_option_bbox),
                 "source_crop_box_px": [int(value) for value in artifacts.source_crop_box],
+                "option_source_crop_boxes_px": [
+                    [int(coord) for coord in box]
+                    for box in artifacts.option_source_crop_boxes
+                ],
+                "candidate_crop_count": int(artifacts.candidate_crop_count),
                 "selected_transform": str(artifacts.selected_transform),
                 "option_grid_shape": [int(artifacts.option_grid_shape[0]), int(artifacts.option_grid_shape[1])],
             },
@@ -411,6 +500,11 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
                 "correct_index": int(sample.correct_index),
                 "selected_transform": str(artifacts.selected_transform),
                 "source_crop_box_px": [int(value) for value in artifacts.source_crop_box],
+                "option_source_crop_boxes_px": [
+                    [int(coord) for coord in box]
+                    for box in artifacts.option_source_crop_boxes
+                ],
+                "candidate_crop_count": int(artifacts.candidate_crop_count),
                 "option_labels": list(DEFAULT_OPTION_LABELS[: int(sample.option_count)]),
                 "source_scene": serialize_environment_scene(source_scene),
                 "objects": serialized_objects,

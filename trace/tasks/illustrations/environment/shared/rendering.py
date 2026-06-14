@@ -28,6 +28,8 @@ from ...shared.object_rendering import (
 from ...shared.object_variants import RENDERER_STYLE_VECTOR
 from ...shared.person_rendering import sample_person_gender
 
+from .state import EnvironmentChoice
+
 
 ENVIRONMENT_THEME_IDS: Tuple[str, ...] = variant_ids_with_tag("environment_theme")
 ROAD_OBJECT_TYPES: Tuple[str, ...] = variant_ids_with_tag("env_road")
@@ -862,6 +864,65 @@ def effective_environment_object_count(theme_id: str, requested_object_count: in
     return max(1, min(int(requested_object_count), cap))
 
 
+def feature_side_render_overrides(
+    params: Mapping[str, Any],
+    choice: EnvironmentChoice,
+    requested_object_count: int,
+    target_count: int,
+) -> Dict[str, Any]:
+    """Force enough objects onto the requested side without guaranteeing the final count by construction."""
+
+    effective_count = effective_environment_object_count(str(choice.theme_id), int(requested_object_count))
+    explicit_replay = any(
+        key in params
+        for key in ("object_count", "target_count", "target_count_min", "target_count_max")
+    )
+    placement_cap = 8 if explicit_replay else int(effective_count)
+    target_zone = "land_above" if str(choice.relation) == "above" else "land_below"
+    forced_side_count = max(1, min(int(target_count), int(effective_count), int(placement_cap)))
+    return {"zone_count_overrides": {target_zone: int(forced_side_count)}}
+
+
+def on_feature_render_overrides(
+    _params: Mapping[str, Any],
+    choice: EnvironmentChoice,
+    _requested_object_count: int,
+    target_count: int,
+) -> Dict[str, Any]:
+    """Place the exact answer objects in the queried road/river zone."""
+
+    return {
+        "bridge_count_override": 0,
+        "crosswalk_count_override": 0,
+        "zone_count_overrides": {str(choice.feature_type): int(target_count)},
+    }
+
+
+def crossing_render_overrides(
+    _params: Mapping[str, Any],
+    choice: EnvironmentChoice,
+    _requested_object_count: int,
+    target_count: int,
+) -> Dict[str, Any]:
+    """Force the queried crossing type to the sampled target count."""
+
+    return {
+        "bridge_count_override": int(target_count) if choice.crossing_type == "bridge" else None,
+        "crosswalk_count_override": int(target_count) if choice.crossing_type == "crosswalk" else None,
+    }
+
+
+def window_render_overrides(
+    _params: Mapping[str, Any],
+    _choice: EnvironmentChoice,
+    _requested_object_count: int,
+    target_count: int,
+) -> Dict[str, Any]:
+    """Force the renderer to light exactly the sampled number of windows."""
+
+    return {"lit_window_count_override": int(target_count)}
+
+
 def _relation_to_feature(center: Tuple[float, float], feature: EnvironmentFeature) -> Dict[str, Any]:
     px, py = float(center[0]), float(center[1])
     if feature.path_points:
@@ -1493,8 +1554,12 @@ __all__ = [
     "ROAD_STYLE_IDS",
     "SKY_OBJECT_TYPES",
     "THEME_LAND_OBJECT_TYPES",
+    "crossing_render_overrides",
     "effective_environment_object_count",
     "environment_scene_entities",
+    "feature_side_render_overrides",
+    "on_feature_render_overrides",
     "render_environment_object_scene",
     "serialize_environment_scene",
+    "window_render_overrides",
 ]

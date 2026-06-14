@@ -14,40 +14,11 @@ from .shared.annotations import feature_bbox_map, feature_path_map
 from .shared.output import serialize_environment_objects
 from .shared.prompts import render_environment_prompt
 from .shared.rendering import ENVIRONMENT_THEME_IDS, environment_scene_entities, render_environment_object_scene
-from .shared.sampling import capped_object_count_probabilities, environment_render_params, environment_setting_name, style_weights
+from .shared.sampling import capped_object_count_probabilities, environment_render_params, style_weights
+from .shared.state import BoundCountResult, EnvironmentChoice
 
 
 SCENE_ID = "environment"
-
-
-@dataclass(frozen=True)
-class EnvironmentChoice:
-    """Resolved semantic operands for one environment objective."""
-
-    branch_index: int
-    theme_id: str
-    theme_probabilities: Dict[str, float]
-    feature_type: str | None = None
-    feature_type_probabilities: Dict[str, float] | None = None
-    relation: str | None = None
-    relation_probabilities: Dict[str, float] | None = None
-    crossing_type: str | None = None
-    crossing_type_probabilities: Dict[str, float] | None = None
-    window_mode: str | None = None
-    window_mode_probabilities: Dict[str, float] | None = None
-
-
-@dataclass(frozen=True)
-class BoundCountResult:
-    """Task-bound answer, annotation, and trace fragments."""
-
-    answer: int
-    annotation_value: list[list[float]]
-    render_map_extra: Dict[str, Any]
-    scene_relations: Dict[str, Any]
-    execution_extra: Dict[str, Any]
-    witness_symbolic: Dict[str, Any]
-    query_params: Dict[str, Any]
 
 
 @dataclass(frozen=True)

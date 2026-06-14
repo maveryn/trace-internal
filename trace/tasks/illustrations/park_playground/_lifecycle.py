@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Sequence
+from dataclasses import dataclass
+from typing import Any, Callable, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
@@ -13,7 +14,23 @@ from .shared.output import park_render_spec, park_scene_ir
 from .shared.prompts import build_park_prompt_artifacts
 from .shared.rendering import render_park_playground_scene
 from .shared.sampling import render_params, setting_weights, style_weights
-from .shared.state import ParkEquipmentSpec, ParkPersonSpec, RenderedParkPlaygroundScene
+from .shared.state import ParkCountBinding, ParkEquipmentSpec, ParkPersonSpec, RenderedParkPlaygroundScene
+
+
+@dataclass(frozen=True)
+class ParkCountPlan:
+    """Public-owned hooks for one park/playground count objective."""
+
+    public_id: str
+    prompt_query_key: str
+    sample_spec: Callable[[int, Mapping[str, Any], int], Any]
+    person_specs: Callable[[Any], Sequence[ParkPersonSpec]]
+    equipment_specs: Callable[[Any], Sequence[ParkEquipmentSpec] | None]
+    required_zones: Callable[[Any], Sequence[str]]
+    bind_result: Callable[[RenderedParkPlaygroundScene, Any, Mapping[str, Any]], ParkCountBinding]
+    fallback_width: int
+    fallback_height: int
+    fallback_scale: int
 
 
 def render_scene_with_retries(
@@ -127,4 +144,50 @@ def compose_count_result(
     )
 
 
-__all__ = ["compose_count_result", "render_scene_with_retries"]
+def run_park_count_lifecycle(
+    *,
+    task: Any,
+    plan: ParkCountPlan,
+    rendering_defaults: Mapping[str, Any],
+    prompt_defaults: Mapping[str, Any],
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+) -> TaskOutput:
+    """Run neutral render/compose plumbing around task-owned sampling and binding hooks."""
+
+    sample = plan.sample_spec(instance_seed=int(instance_seed), params=dict(params), attempt_index=0)
+    scene = render_scene_with_retries(
+        namespace=str(plan.public_id),
+        instance_seed=int(instance_seed),
+        params=params,
+        render_defaults=rendering_defaults,
+        fallback_width=int(plan.fallback_width),
+        fallback_height=int(plan.fallback_height),
+        fallback_scale=int(plan.fallback_scale),
+        max_attempts=int(max_attempts),
+        person_specs=tuple(plan.person_specs(sample)),
+        equipment_specs=plan.equipment_specs(sample),
+        required_zones=tuple(plan.required_zones(sample)),
+    )
+    bound = plan.bind_result(scene, sample, prompt_defaults)
+    return compose_count_result(
+        task=task,
+        scene=scene,
+        prompt_defaults=bound.prompt_defaults,
+        prompt_required_keys=tuple(bound.prompt_defaults.keys()),
+        prompt_query_key=str(plan.prompt_query_key),
+        slots=bound.slots,
+        instance_seed=int(instance_seed),
+        answer=int(bound.answer),
+        annotation_value=bound.annotation_value,
+        render_map=bound.render_map,
+        scene_relations=bound.scene_relations,
+        query_params=bound.query_params,
+        execution_trace=bound.execution_trace,
+        witness_symbolic=bound.witness_symbolic,
+        scene_entities=bound.scene_entities,
+    )
+
+
+__all__ = ["ParkCountPlan", "compose_count_result", "render_scene_with_retries", "run_park_count_lifecycle"]

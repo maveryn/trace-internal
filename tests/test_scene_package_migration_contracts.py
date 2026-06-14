@@ -62,7 +62,7 @@ def test_scene_package_domain_file_policies_are_registered() -> None:
     assert not icons_policy.allow_shared_subdirectories
     illustrations_policy = scene_package_file_policy('illustrations')
     assert illustrations_policy is not None
-    assert illustrations_policy.allowed_private_scene_files == frozenset({'_count_contracts.py', '_lifecycle.py'})
+    assert illustrations_policy.allowed_private_scene_files == frozenset({'_lifecycle.py'})
     assert illustrations_policy.role_shared_files == frozenset({'state.py', 'defaults.py', 'sampling.py', 'layout.py', 'rendering.py', 'annotations.py', 'prompts.py', 'output.py', 'styles.py', 'assets.py', 'components.py', 'labels.py', 'objects.py', 'people.py', 'regions.py', 'relations.py', 'transforms.py', 'metrics.py', 'spatial_primitives.py', 'option_rendering.py', 'cutouts.py', 'edits.py', 'source_images.py'})
     assert not illustrations_policy.allow_shared_subdirectories
     three_d_policy = scene_package_file_policy('three_d')

@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Sequence
+from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....shared.config_defaults import group_default
 from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.object_library import STYLE_IDS
 from ...shared.style_registry import resolve_art_style_weights
+from ...shared.task_support import uniform_string_probability_map
 
+from .defaults import CountContractDefaults
 from .rendering import ENVIRONMENT_THEME_IDS, effective_environment_object_count
+from .state import EnvironmentChoice
 
 
 FEATURE_TYPES_BY_THEME: Dict[str, tuple[str, ...]] = {
@@ -19,6 +22,13 @@ FEATURE_TYPES_BY_THEME: Dict[str, tuple[str, ...]] = {
     "canal_city": ("river",),
     "skyline_street": ("road",),
 }
+RELATION_SUPPORT: Tuple[str, ...] = ("above", "below")
+CROSSING_THEME_SUPPORT: Dict[str, Tuple[str, ...]] = {
+    "bridge": ("river_meadow", "road_and_river", "canal_city"),
+    "crosswalk": ("park_road", "road_and_river", "skyline_street"),
+}
+CITY_THEME_SUPPORT: Tuple[str, ...] = ("canal_city", "skyline_street")
+WINDOW_MODE_SUPPORT: Tuple[str, ...] = ("lit",)
 
 ENVIRONMENT_SETTING_NAMES: Dict[str, str] = {
     "park_road": "a park road setting",
@@ -186,6 +196,244 @@ def sample_object_count(
     )
 
 
+def sample_scene_object_count(
+    params: Mapping[str, Any],
+    instance_seed: int,
+    _choice: EnvironmentChoice,
+    generation_defaults: Mapping[str, Any],
+    *,
+    public_id: str,
+    defaults: CountContractDefaults,
+) -> tuple[int, Dict[str, float]]:
+    """Resolve the foreground clutter count independent of the answer count."""
+
+    return sample_object_count(
+        params,
+        generation_defaults,
+        fallback_min=int(defaults.object_count_min),
+        fallback_max=int(defaults.object_count_max),
+        instance_seed=int(instance_seed),
+        namespace=f"{public_id}:object_count",
+    )
+
+
+def sample_target_count_by_keys(
+    params: Mapping[str, Any],
+    _instance_seed: int,
+    choice: EnvironmentChoice,
+    generation_defaults: Mapping[str, Any],
+    *,
+    low_key: str,
+    high_key: str,
+    defaults: CountContractDefaults,
+) -> tuple[int, Dict[str, float]]:
+    """Sample the requested answer support from task-specific count bounds."""
+
+    low, high = int_bounds(
+        params,
+        generation_defaults,
+        low_key=str(low_key),
+        high_key=str(high_key),
+        fallback_low=int(defaults.target_count_min),
+        fallback_high=int(defaults.target_count_max),
+    )
+    return sample_count_support(
+        params=params,
+        support=tuple(range(int(low), int(high) + 1)),
+        explicit_key="target_count",
+        cycle_index=int(choice.branch_index),
+    )
+
+
+def relation_support(params: Mapping[str, Any], generation_defaults: Mapping[str, Any]) -> Tuple[str, ...]:
+    """Resolve the allowed side-relation operands for feature-side counts."""
+
+    raw = params.get("relation_support", group_default(generation_defaults, "relation_support", RELATION_SUPPORT))
+    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
+        raise ValueError("relation_support must be a sequence")
+    support = tuple(str(value) for value in raw if str(value) in set(RELATION_SUPPORT))
+    if not support:
+        raise ValueError("relation_support resolved no supported relations")
+    return tuple(dict.fromkeys(support))
+
+
+def resolve_feature_choice(
+    instance_seed: int,
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    *,
+    public_id: str,
+    include_relation: bool,
+) -> EnvironmentChoice:
+    """Resolve the sampled theme, road/river feature, and optional side relation."""
+
+    themes = theme_support(params, generation_defaults)
+    branch_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{public_id}:cycle")
+    explicit_theme = params.get("theme_id")
+    if explicit_theme is not None:
+        theme_id = str(explicit_theme)
+        if theme_id not in set(themes):
+            raise ValueError(f"theme_id must be one of {themes}")
+        theme_probabilities = uniform_string_probability_map(themes, selected=theme_id)
+    else:
+        theme_id = str(themes[int(branch_index) % len(themes)])
+        theme_probabilities = uniform_string_probability_map(themes)
+
+    feature_values = FEATURE_TYPES_BY_THEME[str(theme_id)]
+    explicit_feature = params.get("feature_type")
+    if explicit_feature is not None:
+        feature_type = str(explicit_feature)
+        if feature_type not in set(feature_values):
+            raise ValueError(f"feature_type {feature_type!r} is not available for theme {theme_id!r}")
+        feature_probabilities = global_feature_type_probabilities(themes, selected=feature_type)
+    else:
+        feature_type = str(feature_values[int(branch_index // max(1, len(themes))) % len(feature_values)])
+        feature_probabilities = global_feature_type_probabilities(themes)
+
+    relation = None
+    relation_probabilities = None
+    if include_relation:
+        relations = relation_support(params, generation_defaults)
+        explicit_relation = params.get("relation")
+        if explicit_relation is not None:
+            relation = str(explicit_relation)
+            if relation not in set(relations):
+                raise ValueError(f"relation must be one of {relations}")
+            relation_probabilities = uniform_string_probability_map(relations, selected=relation)
+        else:
+            relation = str(relations[int(branch_index // max(1, len(themes) * len(feature_values))) % len(relations)])
+            relation_probabilities = uniform_string_probability_map(relations)
+
+    return EnvironmentChoice(
+        branch_index=int(branch_index),
+        theme_id=str(theme_id),
+        theme_probabilities=dict(theme_probabilities),
+        feature_type=str(feature_type),
+        feature_type_probabilities=dict(feature_probabilities),
+        relation=relation,
+        relation_probabilities=relation_probabilities,
+    )
+
+
+def crossing_support(params: Mapping[str, Any], generation_defaults: Mapping[str, Any]) -> Tuple[str, ...]:
+    """Resolve supported bridge/crosswalk operands for crossing counts."""
+
+    raw = params.get(
+        "crossing_type_support",
+        group_default(generation_defaults, "crossing_type_support", tuple(CROSSING_THEME_SUPPORT)),
+    )
+    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
+        raise ValueError("crossing_type_support must be a sequence")
+    support = tuple(str(value) for value in raw if str(value) in set(CROSSING_THEME_SUPPORT))
+    if not support:
+        raise ValueError("crossing_type_support resolved no supported crossing types")
+    return tuple(dict.fromkeys(support))
+
+
+def resolve_crossing_choice(
+    instance_seed: int,
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    *,
+    public_id: str,
+) -> EnvironmentChoice:
+    """Resolve the crossing type and compatible environment theme."""
+
+    crossing_values = crossing_support(params, generation_defaults)
+    branch_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{public_id}:cycle")
+    explicit_crossing = params.get("crossing_type")
+    if explicit_crossing is not None:
+        crossing_type = str(explicit_crossing)
+        if crossing_type not in set(crossing_values):
+            raise ValueError(f"crossing_type must be one of {crossing_values}")
+        crossing_probabilities = uniform_string_probability_map(crossing_values, selected=crossing_type)
+    else:
+        crossing_type = str(crossing_values[int(branch_index) % len(crossing_values)])
+        crossing_probabilities = uniform_string_probability_map(crossing_values)
+
+    theme_options = CROSSING_THEME_SUPPORT[str(crossing_type)]
+    explicit_theme = params.get("theme_id")
+    if explicit_theme is not None:
+        theme_id = str(explicit_theme)
+        if theme_id not in set(theme_options):
+            raise ValueError(f"theme_id must be one of {theme_options} for crossing_type {crossing_type!r}")
+        theme_probabilities = {theme_id: 1.0}
+    else:
+        theme_id = str(theme_options[int(branch_index // max(1, len(crossing_values))) % len(theme_options)])
+        theme_probabilities: Dict[str, float] = {}
+        for crossing in crossing_values:
+            crossing_probability = 1.0 / float(len(crossing_values))
+            options = CROSSING_THEME_SUPPORT[str(crossing)]
+            theme_probability = crossing_probability / float(len(options))
+            for theme in options:
+                theme_probabilities[str(theme)] = float(theme_probabilities.get(str(theme), 0.0)) + float(theme_probability)
+
+    return EnvironmentChoice(
+        branch_index=int(branch_index),
+        theme_id=str(theme_id),
+        theme_probabilities=dict(sorted(theme_probabilities.items())),
+        crossing_type=str(crossing_type),
+        crossing_type_probabilities=dict(crossing_probabilities),
+    )
+
+
+def window_mode_support(params: Mapping[str, Any], generation_defaults: Mapping[str, Any]) -> Tuple[str, ...]:
+    """Resolve supported building-window modes for the window count contract."""
+
+    raw = params.get("window_mode_support", group_default(generation_defaults, "window_mode_support", WINDOW_MODE_SUPPORT))
+    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
+        raise ValueError("window_mode_support must be a sequence")
+    supported = tuple(str(value) for value in raw if str(value) == "lit")
+    if not supported:
+        raise ValueError("window_mode_support resolved no supported modes")
+    return tuple(dict.fromkeys(supported))
+
+
+def resolve_window_choice(
+    instance_seed: int,
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    *,
+    public_id: str,
+) -> EnvironmentChoice:
+    """Resolve a city theme and the fixed lit-window predicate."""
+
+    themes = theme_support(params, generation_defaults, fallback=CITY_THEME_SUPPORT)
+    themes = tuple(theme for theme in themes if theme in set(CITY_THEME_SUPPORT))
+    if not themes:
+        raise ValueError("lit-window count requires canal_city or skyline_street theme support")
+    modes = window_mode_support(params, generation_defaults)
+    branch_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{public_id}:cycle")
+
+    explicit_theme = params.get("theme_id")
+    if explicit_theme is not None:
+        theme_id = str(explicit_theme)
+        if theme_id not in set(themes):
+            raise ValueError(f"theme_id must be one of {themes}")
+        theme_probabilities = uniform_string_probability_map(themes, selected=theme_id)
+    else:
+        theme_id = str(themes[int(branch_index) % len(themes)])
+        theme_probabilities = uniform_string_probability_map(themes)
+
+    explicit_mode = params.get("window_mode")
+    if explicit_mode is not None:
+        window_mode = str(explicit_mode)
+        if window_mode not in set(modes):
+            raise ValueError(f"window_mode must be one of {modes}")
+        window_mode_probabilities = uniform_string_probability_map(modes, selected=window_mode)
+    else:
+        window_mode = str(modes[int(branch_index // max(1, len(themes))) % len(modes)])
+        window_mode_probabilities = uniform_string_probability_map(modes)
+
+    return EnvironmentChoice(
+        branch_index=int(branch_index),
+        theme_id=str(theme_id),
+        theme_probabilities=dict(theme_probabilities),
+        window_mode=str(window_mode),
+        window_mode_probabilities=dict(window_mode_probabilities),
+    )
+
+
 def capped_object_count_probabilities(
     requested_probabilities: Mapping[str, float],
     theme_probabilities: Mapping[str, float],
@@ -211,14 +459,26 @@ def capped_object_count_probabilities(
 
 __all__ = [
     "ENVIRONMENT_SETTING_NAMES",
+    "CITY_THEME_SUPPORT",
+    "CROSSING_THEME_SUPPORT",
     "FEATURE_TYPES_BY_THEME",
+    "RELATION_SUPPORT",
+    "WINDOW_MODE_SUPPORT",
     "capped_object_count_probabilities",
+    "crossing_support",
     "environment_render_params",
     "environment_setting_name",
     "global_feature_type_probabilities",
     "int_bounds",
+    "relation_support",
     "sample_count_support",
     "sample_object_count",
+    "sample_scene_object_count",
+    "sample_target_count_by_keys",
+    "resolve_crossing_choice",
+    "resolve_feature_choice",
+    "resolve_window_choice",
     "style_weights",
     "theme_support",
+    "window_mode_support",
 ]

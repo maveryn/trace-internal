@@ -8,7 +8,7 @@ from pathlib import Path
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
-from trace.tasks.illustrations.indoor_room.shared.scene import INDOOR_OBJECT_TYPES
+from trace.tasks.illustrations.indoor_room.shared.state import INDOOR_OBJECT_TYPES
 
 
 SURFACE_TASK_ID = "task_illustrations__indoor_room__surface_object_count"
@@ -32,7 +32,6 @@ def _assert_scene_prompt_metadata(trace: dict) -> None:
     prompt_variant = trace["query_spec"]["prompt_variant"]
     assert prompt_variant["prompt_bundle_id"] == "illustrations_indoor_room_v0"
     assert prompt_variant["prompt_scene_id"] == "indoor_room"
-    assert "prompt_scene_id" not in prompt_variant
 
 
 def _expected_bboxes(trace: dict, ids: list[str]) -> list[list[float]]:
@@ -69,7 +68,7 @@ def test_object_type_on_surface_count_contract() -> None:
     execution = trace["execution_trace"]
     placements = trace["render_map"]["placements"]
     assert out.scene_id == "indoor_room"
-    assert out.query_id == "object_type_on_surface_count"
+    assert out.query_id == "single"
     assert execution["object_type"] == "mug"
     assert execution["surface_type"] == "shelf"
     assert int(out.answer_gt.value) == 2
@@ -138,7 +137,7 @@ def test_furniture_side_count_contract() -> None:
     placements = trace["render_map"]["placements"]
     furniture_id = execution["furniture_id"]
     assert out.scene_id == "indoor_room"
-    assert out.query_id == "furniture_side_count"
+    assert out.query_id == "left_side"
     assert execution["object_type"] == "mug"
     assert execution["furniture_type"] == "table"
     assert execution["relation"] == "left"
@@ -179,3 +178,30 @@ def test_furniture_side_count_calibration_sampling_is_decoupled() -> None:
         ("cabinet", "above"),
         ("cabinet", "below"),
     }
+
+
+def test_furniture_side_count_query_id_selects_relation() -> None:
+    task = create_task(FURNITURE_TASK_ID)
+    for index, (query_id, relation) in enumerate(
+        (
+            ("left_side", "left"),
+            ("right_side", "right"),
+            ("above_side", "above"),
+            ("below_side", "below"),
+        )
+    ):
+        out = task.generate(
+            hash64(2026052401, "furniture-query", index),
+            params={
+                "query_id": query_id,
+                "object_type": "mug",
+                "target_count": 1,
+                "object_count": 8,
+                "theme_id": "living_room",
+            },
+            max_attempts=80,
+        )
+        execution = out.trace_payload["execution_trace"]
+        assert out.query_id == query_id
+        assert execution["query_id"] == query_id
+        assert execution["relation"] == relation

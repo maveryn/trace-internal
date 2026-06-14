@@ -7,26 +7,27 @@
 - Implementation source: `trace/tasks/illustrations/indoor_room/surface_object_count.py`
 
 ## Task Contract
-Counts objects of one type on a named indoor surface.
+Counts visible small indoor objects of a sampled object type that are placed on one sampled room surface.
+
+## Program Contract
+`count(filter(visible_room_objects, object_type(object)=target_object_type and on_surface(object, target_surface))); scene=indoor_room; scope=surface_object_count`
 
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `object_type_on_surface_count` | `count(filter(room_objects, object_type(object)=target_object_type and on_surface(object, target_surface))); scene=indoor_room; scope=surface_object_count; query_branch=object_type_on_surface_count` |
+| `single` | `count(filter(visible_room_objects, object_type(object)=target_object_type and on_surface(object, target_surface))); scene=indoor_room; scope=surface_object_count` |
 
 ## Program Metadata
 - Program signatures: `count.scoped_attribute`
-- Base program contract: `count(filter(room_objects, object_type(object)=target_object_type and on_surface(object, target_surface))); scene=indoor_room; scope=surface_object_count`
-- Parameter axes: `target_attribute`
+- Base program contract: `count(filter(visible_room_objects, object_type(object)=target_object_type and on_surface(object, target_surface))); scene=indoor_room; scope=surface_object_count`
+- Parameter axes: `target_object_type`, `target_surface`
 - Arguments:
-  - `object`: semantic_role; allowed `scene_object`; source `program_schema_concrete`
-  - `room_objects`: semantic_role; allowed `visible_room_objects`; source `program_schema_concrete`
-  - `target_attribute`: object_attribute; allowed `type`; source `query_id|parameter_axes`
-  - `target_object_type`: semantic_role; allowed `sampled_object_type`; source `program_schema_concrete`
-  - `target_surface`: semantic_role; allowed `sampled_surface`; source `program_schema_concrete`
+  - `visible_room_objects`: semantic_role; allowed `visible_room_objects`; source `program_schema_concrete`
+  - `target_object_type`: object_type; allowed `sampled_indoor_object_type`; source `trace_metadata`
+  - `target_surface`: surface_type; allowed `table|shelf|counter`; source `trace_metadata`
 - Argument metadata status: `curated`
-- Supported query ids: `object_type_on_surface_count`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `integer_count`
@@ -36,10 +37,10 @@ Counts objects of one type on a named indoor surface.
 ## Annotation Contract
 - Annotation schema: `bbox_set`
 - Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel boxes, one per counted/selected visual witness. Do not include labels, numeric annotations, or context-only regions.
-- Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
+- Annotation is an unordered set of final-image pixel boxes, one per counted object on the target surface.
+- Annotation excludes the surface, labels, numeric annotations, and distractor/context objects.
 
 ## Prompt And Trace Requirements
-- Prompt text must come from the illustrations prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
-- Render randomness, sampled fonts/styles, query operands, and verifier payloads must be explicit in the instance trace.
-- Distractor/context text may be rendered only when it is part of the scene grammar and must not be treated as annotation unless it is the queried visual witness.
+- Prompt text must come from the indoor-room prompt bundle, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled styles, target object type, target surface, and verifier payloads must be explicit in the instance trace.
+- Answer and annotation must be projected from the same generated scene trace, not inferred from pixels or prompt text.

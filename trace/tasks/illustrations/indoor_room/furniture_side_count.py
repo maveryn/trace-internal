@@ -10,38 +10,40 @@ from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
+from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 from ..shared.task_support import sample_count as _shared_sample_count
 from ..shared.task_support import bounds as _shared_bounds
-from .shared.task_common import (
+from .shared.annotations import serialize_indoor_scene, sort_bboxes_by_ids
+from .shared.output import (
+    indoor_base_render_map,
+    indoor_render_spec,
+    object_type_map,
+    render_fallback_from_defaults,
+)
+from .shared.prompts import build_indoor_prompt_artifacts, indoor_setting_name
+from .shared.rendering import indoor_scene_entities, render_indoor_scene_from_specs
+from .shared.sampling import display_name, support_choice, theme_support, typed_support
+from .shared.state import (
     INDOOR_FURNITURE_TYPES,
     INDOOR_OBJECT_TYPES,
     IndoorObjectSpec,
-    container_bbox_map,
-    container_interior_bbox_map,
-    display_name,
-    furniture_bbox_map,
-    indoor_scene_entities,
-    indoor_setting_name,
-    placement_map,
-    render_indoor_scene_from_specs,
-    serialize_indoor_scene,
-    sort_bboxes_by_ids,
-    support_choice,
-    surface_bbox_map,
-    surface_support_bbox_map,
-    theme_support,
-    typed_support,
 )
 
 
 TASK_ID = "task_illustrations__indoor_room__furniture_side_count"
 SCENE_ID = "indoor_room"
-QUERY_ID = "furniture_side_count"
 RELATION_SUPPORT: Tuple[str, ...] = ("left", "right", "above", "below")
+QUERY_ID_TO_RELATION: Dict[str, str] = {
+    "left_side": "left",
+    "right_side": "right",
+    "above_side": "above",
+    "below_side": "below",
+}
+RELATION_TO_QUERY_ID: Dict[str, str] = {relation: query_id for query_id, relation in QUERY_ID_TO_RELATION.items()}
+QUERY_IDS = tuple(QUERY_ID_TO_RELATION.keys())
+PROMPT_QUERY_KEY = "furniture_side_count"
 OPPOSITE_RELATION: Dict[str, str] = {"left": "right", "right": "left", "above": "below", "below": "above"}
 VALID_FURNITURE_RELATION_PAIRS: Tuple[Tuple[str, str], ...] = (
     ("table", "left"),
@@ -72,6 +74,7 @@ class _Defaults:
 class _SampleSpec:
     theme_id: str
     furniture_type: str
+    query_id: str
     relation: str
     object_type: str
     object_name: str
@@ -118,10 +121,21 @@ def _choose_furniture_relation(
     furniture_support: Sequence[str],
     relation_support: Sequence[str],
 ) -> Tuple[str, str, Dict[str, float], Dict[str, float]]:
+    """Resolve the public side query to one feasible furniture/relation pair."""
+
     explicit_furniture = params.get("furniture_type")
+    explicit_query_relation = params.get("query_id")
     explicit_relation = params.get("relation")
     furniture_values = tuple(str(value) for value in furniture_support)
     relation_values = tuple(str(value) for value in relation_support)
+    if explicit_query_relation is not None:
+        explicit_query_id = str(explicit_query_relation)
+        if explicit_query_id not in set(QUERY_IDS):
+            raise ValueError(f"query_id must be one of {QUERY_IDS}")
+        explicit_query_relation = QUERY_ID_TO_RELATION[str(explicit_query_id)]
+        if explicit_relation is not None and str(explicit_relation) != str(explicit_query_relation):
+            raise ValueError("query_id and relation must refer to the same furniture-side relation")
+        explicit_relation = str(explicit_query_relation)
     pairs = tuple(
         (furniture, relation)
         for furniture, relation in VALID_FURNITURE_RELATION_PAIRS
@@ -161,6 +175,8 @@ def _choose_furniture_relation(
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
+    """Sample one room state while keeping the queried side unique by construction."""
+
     furniture_support = typed_support(
         params,
         _GEN_DEFAULTS,
@@ -252,6 +268,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
     return _SampleSpec(
         theme_id=str(theme_id),
         furniture_type=str(furniture_type),
+        query_id=str(RELATION_TO_QUERY_ID[str(relation)]),
         relation=str(relation),
         object_type=str(object_type),
         object_name=display_name(str(object_type)),
@@ -275,24 +292,21 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
 
     task_id = TASK_ID
     domain = "illustrations"
+    supported_query_ids = QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Generate one furniture-side count instance and bind answer/annotation locally."""
+
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
         scene = None
-        fallback = {
-            "canvas_width": _DEFAULTS.canvas_width,
-            "canvas_height": _DEFAULTS.canvas_height,
-            "object_size_min_px": _DEFAULTS.object_size_min_px,
-            "object_size_max_px": _DEFAULTS.object_size_max_px,
-            "render_scale": _DEFAULTS.render_scale,
-        }
+        fallback = render_fallback_from_defaults(_DEFAULTS)
         for attempt in range(max(1, int(max_attempts))):
             try:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
                 scene = render_indoor_scene_from_specs(
-                    task_id=TASK_ID,
+                    render_namespace="furniture_side_count",
                     instance_seed=int(instance_seed),
                     attempt_index=int(attempt),
                     specs=sample.specs,
@@ -319,6 +333,7 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
         )
         if len(counted_ids) != int(sample.target_count):
             raise RuntimeError("rendered furniture-side count did not match sample target")
+        query_id = str(sample.query_id)
         annotation_value = sort_bboxes_by_ids(object_bboxes, counted_ids)
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -362,26 +377,24 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
             "json_example": str(prompt_defaults["json_example_furniture_side"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only_furniture_side"]),
         }
-        prompt_selection = render_scene_prompt_variants(
+        prompt_artifacts = build_indoor_prompt_artifacts(
             domain=self.domain,
             scene_id=SCENE_ID,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            query_key=QUERY_ID,
+            prompt_defaults=prompt_defaults,
+            prompt_query_key=PROMPT_QUERY_KEY,
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_annotation",
         )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
+        render_map = indoor_base_render_map(scene, object_bboxes=object_bboxes, part_bboxes=part_bboxes)
+        render_map["target_furniture_id"] = str(furniture_id)
+        render_map["counted_object_ids"] = list(counted_ids)
         trace_payload = {
             "scene_ir": {
                 "domain": self.domain,
                 "scene_id": SCENE_ID,
                 "entities": indoor_scene_entities(scene),
                 "relations": {
-                    "query_id": QUERY_ID,
+                    "query_id": query_id,
                     "furniture_type": str(sample.furniture_type),
                     "furniture_id": str(furniture_id),
                     "relation": str(sample.relation),
@@ -390,7 +403,7 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_id": QUERY_ID,
+                "query_id": query_id,
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
@@ -400,7 +413,9 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
                     "furniture_type": str(sample.furniture_type),
                     "furniture_name": str(sample.furniture_type),
                     "furniture_id": str(furniture_id),
+                    "query_relation": str(sample.relation),
                     "relation": str(sample.relation),
+                    "prompt_query_key": PROMPT_QUERY_KEY,
                     "object_type": str(sample.object_type),
                     "object_name": str(sample.object_name),
                     "target_count": int(sample.target_count),
@@ -413,31 +428,10 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
                     "object_count_probabilities": dict(sample.object_count_probabilities),
                 },
             },
-            "render_spec": {
-                "canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
-                "coord_space": "pixel",
-                "scene_id": SCENE_ID,
-                "style": {
-                    "theme_id": str(scene.theme_id),
-                    "style_id": str(scene.style_id),
-                    "render_scale": int(scene.render_scale),
-                },
-            },
-            "render_map": {
-                "image_id": "img0",
-                "object_bboxes_px": object_bboxes,
-                "part_bboxes_px": part_bboxes,
-                "surface_bboxes_px": surface_bbox_map(scene),
-                "surface_support_bboxes_px": surface_support_bbox_map(scene),
-                "container_bboxes_px": container_bbox_map(scene),
-                "container_interior_bboxes_px": container_interior_bbox_map(scene),
-                "furniture_bboxes_px": furniture_bbox_map(scene),
-                "placements": placement_map(scene),
-                "target_furniture_id": str(furniture_id),
-                "counted_object_ids": list(counted_ids),
-            },
+            "render_spec": indoor_render_spec(scene, scene_id=SCENE_ID),
+            "render_map": render_map,
             "execution_trace": {
-                "query_id": QUERY_ID,
+                "query_id": query_id,
                 "scene_id": SCENE_ID,
                 "theme_id": str(scene.theme_id),
                 "theme": str(scene.theme_id),
@@ -449,7 +443,7 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
                 "target_count": int(sample.target_count),
                 "object_count": int(sample.object_count),
                 "counted_object_ids": list(counted_ids),
-                "object_types": {str(obj["object_id"]): str(obj["object_type"]) for obj in serialized_objects},
+                "object_types": object_type_map(serialized_objects),
             },
             "witness_symbolic": {
                 "counted_object_ids": list(counted_ids),
@@ -470,7 +464,7 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
             trace_payload=trace_payload,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
-            query_id=QUERY_ID,
+            query_id=query_id,
         )
 
 

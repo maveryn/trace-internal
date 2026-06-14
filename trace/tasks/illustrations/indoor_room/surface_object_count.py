@@ -3,45 +3,40 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Dict, Mapping, Tuple
 
 from ....core.seed import spawn_rng
+from ....core.query_ids import SINGLE_QUERY_ID
 from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 from ..shared.task_support import sample_count as _shared_sample_count
 from ..shared.task_support import bounds as _shared_bounds
-from .shared.task_common import (
+from .shared.annotations import serialize_indoor_scene, sort_bboxes_by_ids
+from .shared.output import (
+    indoor_base_render_map,
+    indoor_render_spec,
+    object_type_map,
+    render_fallback_from_defaults,
+)
+from .shared.prompts import build_indoor_prompt_artifacts, indoor_setting_name
+from .shared.rendering import indoor_scene_entities, render_indoor_scene_from_specs
+from .shared.sampling import display_name, support_choice, theme_support, typed_support
+from .shared.state import (
     INDOOR_CONTAINER_TYPES,
     INDOOR_OBJECT_TYPES,
     INDOOR_SURFACE_TYPES,
     IndoorObjectSpec,
-    container_bbox_map,
-    container_interior_bbox_map,
-    display_name,
-    furniture_bbox_map,
-    indoor_scene_entities,
-    indoor_setting_name,
-    placement_map,
-    render_indoor_scene_from_specs,
-    serialize_indoor_scene,
-    sort_bboxes_by_ids,
-    support_choice,
-    surface_bbox_map,
-    surface_support_bbox_map,
-    theme_support,
-    typed_support,
 )
 
 
 TASK_ID = "task_illustrations__indoor_room__surface_object_count"
 SCENE_ID = "indoor_room"
-QUERY_ID = "object_type_on_surface_count"
+QUERY_ID = SINGLE_QUERY_ID
+PROMPT_QUERY_KEY = "object_type_on_surface_count"
 
 
 @dataclass(frozen=True)
@@ -86,6 +81,8 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rende
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
+    """Sample a surface-count room with exact target witnesses and distractors."""
+
     object_support = typed_support(
         params,
         _GEN_DEFAULTS,
@@ -195,24 +192,21 @@ class IllustrationsIndoorRoomSurfaceObjectCountTask:
 
     task_id = TASK_ID
     domain = "illustrations"
+    supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Generate one surface-object count instance and bind answer/annotation locally."""
+
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
         scene = None
-        fallback = {
-            "canvas_width": _DEFAULTS.canvas_width,
-            "canvas_height": _DEFAULTS.canvas_height,
-            "object_size_min_px": _DEFAULTS.object_size_min_px,
-            "object_size_max_px": _DEFAULTS.object_size_max_px,
-            "render_scale": _DEFAULTS.render_scale,
-        }
+        fallback = render_fallback_from_defaults(_DEFAULTS)
         for attempt in range(max(1, int(max_attempts))):
             try:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
                 scene = render_indoor_scene_from_specs(
-                    task_id=TASK_ID,
+                    render_namespace="surface_object_count",
                     instance_seed=int(instance_seed),
                     attempt_index=int(attempt),
                     specs=sample.specs,
@@ -272,19 +266,16 @@ class IllustrationsIndoorRoomSurfaceObjectCountTask:
             "json_example": str(prompt_defaults["json_example_object_type_on_surface"]),
             "json_example_answer_only": str(prompt_defaults["json_example_answer_only_object_type_on_surface"]),
         }
-        prompt_selection = render_scene_prompt_variants(
+        prompt_artifacts = build_indoor_prompt_artifacts(
             domain=self.domain,
             scene_id=SCENE_ID,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            query_key=QUERY_ID,
+            prompt_defaults=prompt_defaults,
+            prompt_query_key=PROMPT_QUERY_KEY,
             slots=slots,
             instance_seed=int(instance_seed),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            preferred_mode="answer_and_annotation",
         )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
+        render_map = indoor_base_render_map(scene, object_bboxes=object_bboxes, part_bboxes=part_bboxes)
+        render_map["counted_object_ids"] = list(counted_ids)
         trace_payload = {
             "scene_ir": {
                 "domain": self.domain,
@@ -318,28 +309,8 @@ class IllustrationsIndoorRoomSurfaceObjectCountTask:
                     "object_count_probabilities": dict(sample.object_count_probabilities),
                 },
             },
-            "render_spec": {
-                "canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
-                "coord_space": "pixel",
-                "scene_id": SCENE_ID,
-                "style": {
-                    "theme_id": str(scene.theme_id),
-                    "style_id": str(scene.style_id),
-                    "render_scale": int(scene.render_scale),
-                },
-            },
-            "render_map": {
-                "image_id": "img0",
-                "object_bboxes_px": object_bboxes,
-                "part_bboxes_px": part_bboxes,
-                "surface_bboxes_px": surface_bbox_map(scene),
-                "surface_support_bboxes_px": surface_support_bbox_map(scene),
-                "container_bboxes_px": container_bbox_map(scene),
-                "container_interior_bboxes_px": container_interior_bbox_map(scene),
-                "furniture_bboxes_px": furniture_bbox_map(scene),
-                "placements": placement_map(scene),
-                "counted_object_ids": list(counted_ids),
-            },
+            "render_spec": indoor_render_spec(scene, scene_id=SCENE_ID),
+            "render_map": render_map,
             "execution_trace": {
                 "query_id": QUERY_ID,
                 "scene_id": SCENE_ID,
@@ -351,7 +322,7 @@ class IllustrationsIndoorRoomSurfaceObjectCountTask:
                 "target_count": int(sample.target_count),
                 "object_count": int(sample.object_count),
                 "counted_object_ids": list(counted_ids),
-                "object_types": {str(obj["object_id"]): str(obj["object_type"]) for obj in serialized_objects},
+                "object_types": object_type_map(serialized_objects),
             },
             "witness_symbolic": {
                 "counted_object_ids": list(counted_ids),

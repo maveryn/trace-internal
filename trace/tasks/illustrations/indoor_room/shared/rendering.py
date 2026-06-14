@@ -8,6 +8,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from .....core.seed import spawn_rng
+from ....shared.config_defaults import group_default
 from ...shared.render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
 from ...shared.object_library import (
     BBox,
@@ -27,7 +29,7 @@ from ...shared.object_rendering import (
     render_vector_scene_object,
 )
 from ...shared.object_variants import RENDERER_STYLE_VECTOR
-from ...shared.style_registry import style_outline_params
+from ...shared.style_registry import resolve_art_style_weights, style_outline_params
 
 
 INDOOR_THEME_IDS: Tuple[str, ...] = variant_ids_with_tag("indoor_theme")
@@ -172,6 +174,8 @@ def _scale_plane(plane: Mapping[str, Tuple[float, float]], *, sx: float, sy: flo
 
 
 def _draw_background(draw: ImageDraw.ImageDraw, *, rng, theme_id: str, style_id: str, width: int, height: int, scale: int) -> None:
+    """Draw the room shell and decorative context without task-specific marks."""
+
     palettes = {
         "living_room": ((235, 226, 211), (196, 174, 151)),
         "kitchen": ((226, 238, 239), (199, 207, 194)),
@@ -262,6 +266,8 @@ def _draw_background(draw: ImageDraw.ImageDraw, *, rng, theme_id: str, style_id:
 
 
 def _layout(rng, *, width: int, height: int, theme_id: str, style_id: str) -> Tuple[Tuple[IndoorFurniture, ...], Tuple[IndoorSurface, ...], Tuple[IndoorContainer, ...]]:
+    """Sample furniture, surface, and container geometry for one coherent room."""
+
     sx = float(width) / 1280.0
     sy = float(height) / 840.0
     style = str(style_id)
@@ -523,6 +529,8 @@ def _render_room_fixtures(
     containers: Sequence[IndoorContainer],
     scale: int,
 ) -> Tuple[Tuple[IndoorFurniture, ...], Tuple[IndoorSurface, ...], Tuple[IndoorContainer, ...]]:
+    """Render fixed room fixtures before task objects while preserving records."""
+
     furniture_by_type = {item.furniture_type: item for item in furniture}
     surface_by_type = {item.surface_type: item for item in surfaces}
     furniture_records: Dict[str, Mapping[str, Any]] = {}
@@ -768,6 +776,8 @@ def _slot_boxes(
     size_max_px: int,
     align_bottom: bool,
 ) -> Dict[int, BBox]:
+    """Assign non-overlapping boxes inside a free region or container area."""
+
     if not specs:
         return {}
     x0, y0, x1, y1 = [float(v) for v in area]
@@ -815,6 +825,8 @@ def _surface_slot_boxes(
     size_min_px: int,
     size_max_px: int,
 ) -> Tuple[Dict[int, BBox], Dict[int, Tuple[float, float]], Dict[int, float]]:
+    """Place objects on perspective surface planes and record contact points."""
+
     if not specs:
         return {}, {}, {}
     n = len(specs)
@@ -894,6 +906,8 @@ def render_indoor_room_scene(
     object_size_max_px: int = 86,
     highlight_container_type: str | None = None,
 ) -> RenderedIndoorRoomScene:
+    """Render the full indoor-room scene from neutral object placement specs."""
+
     width = int(canvas_width)
     height = int(canvas_height)
     scale = max(1, int(render_scale))
@@ -1098,7 +1112,69 @@ def render_indoor_room_scene(
     )
 
 
+def _indoor_theme_weights(theme_id: str) -> Dict[str, float]:
+    return {theme: (1.0 if str(theme) == str(theme_id) else 0.0) for theme in INDOOR_THEME_IDS}
+
+
+def _indoor_render_params(
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    *,
+    fallback: Mapping[str, Any],
+) -> Dict[str, Any]:
+    return {
+        "canvas_width": int(
+            params.get("canvas_width", group_default(render_defaults, "indoor_canvas_width", int(fallback["canvas_width"])))
+        ),
+        "canvas_height": int(
+            params.get("canvas_height", group_default(render_defaults, "indoor_canvas_height", int(fallback["canvas_height"])))
+        ),
+        "object_size_min_px": int(
+            params.get(
+                "object_size_min_px",
+                group_default(render_defaults, "indoor_object_size_min_px", int(fallback["object_size_min_px"])),
+            )
+        ),
+        "object_size_max_px": int(
+            params.get(
+                "object_size_max_px",
+                group_default(render_defaults, "indoor_object_size_max_px", int(fallback["object_size_max_px"])),
+            )
+        ),
+        "render_scale": int(params.get("render_scale", group_default(render_defaults, "indoor_render_scale", int(fallback["render_scale"])))),
+    }
+
+
+def render_indoor_scene_from_specs(
+    *,
+    render_namespace: str,
+    instance_seed: int,
+    attempt_index: int,
+    specs: Sequence[IndoorObjectSpec],
+    theme_id: str,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    fallback: Mapping[str, Any],
+) -> RenderedIndoorRoomScene:
+    render_params = _indoor_render_params(params, render_defaults, fallback=fallback)
+    rng = spawn_rng(int(instance_seed), f"{render_namespace}:indoor-scene", int(attempt_index))
+    return render_indoor_room_scene(
+        rng=rng,
+        object_specs=tuple(specs),
+        canvas_width=int(render_params["canvas_width"]),
+        canvas_height=int(render_params["canvas_height"]),
+        render_scale=int(render_params["render_scale"]),
+        theme_weights=_indoor_theme_weights(str(theme_id)),
+        style_weights=resolve_art_style_weights(params, render_defaults, style_ids=STYLE_IDS),
+        object_size_min_px=int(render_params["object_size_min_px"]),
+        object_size_max_px=int(render_params["object_size_max_px"]),
+        highlight_container_type=str(params.get("highlight_container_type", "") or ""),
+    )
+
+
 def indoor_scene_entities(scene: RenderedIndoorRoomScene) -> List[Dict[str, Any]]:
+    """Serialize room fixtures and placed objects into trace-safe entities."""
+
     def json_safe(value: Any) -> Any:
         if isinstance(value, Mapping):
             return {str(key): json_safe(item) for key, item in value.items()}
@@ -1234,5 +1310,6 @@ __all__ = [
     "IndoorObjectSpec",
     "RenderedIndoorRoomScene",
     "indoor_scene_entities",
+    "render_indoor_scene_from_specs",
     "render_indoor_room_scene",
 ]

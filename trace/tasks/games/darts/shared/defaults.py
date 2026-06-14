@@ -10,22 +10,44 @@ SCENE_ID = "darts"
 DARTS_NAMESPACE = "games.darts"
 PROMPT_WIRING_KEYS: Tuple[str, ...] = ("bundle_id", "scene_key", "task_key")
 SUPPORTED_DARTS_SCENE_VARIANTS: Tuple[str, ...] = ("single_board",)
-SUPPORTED_DARTS_TARGET_RINGS: Tuple[str, ...] = ("single", "double", "triple", "bull")
-SUPPORTED_DARTS_THRESHOLDS: Tuple[int, ...] = (20, 25, 30, 40, 50)
+BULLSEYE_SCORE = 50
+STANDARD_DART_SECTORS: Tuple[int, ...] = (
+    20,
+    1,
+    18,
+    4,
+    13,
+    6,
+    10,
+    15,
+    2,
+    17,
+    3,
+    19,
+    7,
+    16,
+    8,
+    11,
+    14,
+    9,
+    12,
+    5,
+)
 
 
 @dataclass(frozen=True)
 class DartsSceneDefaults:
-    """Stable scene fallback defaults for visible dartboard tasks."""
+    """Stable scene fallback defaults for simplified dartboard tasks."""
 
-    count_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-    total_score_dart_count_support: Tuple[int, ...] = (1,)
-    count_query_dart_count_support: Tuple[int, ...] = (5, 6, 7, 8)
-    score_option_count_support: Tuple[int, ...] = (4, 6)
+    score_value_support: Tuple[int, ...] = STANDARD_DART_SECTORS + (BULLSEYE_SCORE,)
+    score_task_distractor_count_support: Tuple[int, ...] = (2, 3, 4, 5)
+    count_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
+    count_query_dart_count_support: Tuple[int, ...] = (4, 5, 6, 7)
+    target_sector_support: Tuple[int, ...] = STANDARD_DART_SECTORS
     canvas_width: int = 1040
-    canvas_height: int = 980
+    canvas_height: int = 900
     board_center_x_px: int = 520
-    board_center_y_px: int = 464
+    board_center_y_px: int = 430
     board_radius_px: int = 330
     marker_radius_px: int = 17
     number_font_size_px: int = 36
@@ -35,12 +57,12 @@ DEFAULTS = DartsSceneDefaults()
 
 
 __all__ = [
+    "BULLSEYE_SCORE",
     "DARTS_NAMESPACE",
     "DEFAULTS",
     "PROMPT_WIRING_KEYS",
     "SCENE_ID",
+    "STANDARD_DART_SECTORS",
     "SUPPORTED_DARTS_SCENE_VARIANTS",
-    "SUPPORTED_DARTS_TARGET_RINGS",
-    "SUPPORTED_DARTS_THRESHOLDS",
     "DartsSceneDefaults",
 ]

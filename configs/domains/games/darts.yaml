@@ -12,35 +12,70 @@ generation:
     balanced_scene_variant_sampling: true
     balanced_style_variant_sampling: true
   task_overrides:
-    task_games__darts__ring_count:
+    task_games__darts__dart_score_value:
+      balanced_score_value_sampling: true
+      balanced_distractor_count_sampling: true
+      score_value_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 16
+      - 17
+      - 18
+      - 19
+      - 20
+      - 50
+      score_task_distractor_count_support: [2, 3, 4, 5]
+    task_games__darts__bullseye_membership_count:
       balanced_dart_count_sampling: true
       balanced_target_answer_sampling: true
-      balanced_target_ring_sampling: true
-      count_query_dart_count_support: [5, 6, 7, 8]
-      count_target_answer_support: [0, 1, 2, 3, 4, 5]
-      target_ring_weights:
-        single: 1.0
-        double: 1.0
-        triple: 1.0
-        bull: 1.0
-    task_games__darts__threshold_score_count:
+      count_query_dart_count_support: [4, 5, 6, 7]
+      count_target_answer_support: [0, 1, 2, 3, 4, 5, 6]
+    task_games__darts__sector_dart_count:
       balanced_dart_count_sampling: true
       balanced_target_answer_sampling: true
-      balanced_target_threshold_sampling: true
-      count_query_dart_count_support: [5, 6, 7, 8]
-      count_target_answer_support: [0, 1, 2, 3, 4, 5]
-      target_threshold_support: [20, 25, 30, 40, 50]
-    task_games__darts__total_score_option_label:
-      balanced_dart_count_sampling: true
-      balanced_score_option_count_sampling: true
-      total_score_dart_count_support: [1]
-      score_option_count_support: [4, 6]
+      balanced_target_sector_sampling: true
+      count_query_dart_count_support: [4, 5, 6, 7]
+      count_target_answer_support: [0, 1, 2, 3, 4, 5, 6]
+      target_sector_support:
+      - 20
+      - 1
+      - 18
+      - 4
+      - 13
+      - 6
+      - 10
+      - 15
+      - 2
+      - 17
+      - 3
+      - 19
+      - 7
+      - 16
+      - 8
+      - 11
+      - 14
+      - 9
+      - 12
+      - 5
 rendering:
   shared:
     canvas_width: 1040
-    canvas_height: 980
+    canvas_height: 900
     board_center_x_px: 520
-    board_center_y_px: 464
+    board_center_y_px: 430
     board_radius_px: 330
     marker_radius_px: 17
     number_font_size_px: 36
@@ -48,4 +83,4 @@ prompt:
   shared:
     bundle_id: games_darts_v1
     scene_key: visible_dartboard
-    task_key: darts_score_query
+    task_key: darts_query

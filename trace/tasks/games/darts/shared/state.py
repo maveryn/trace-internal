@@ -5,8 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Tuple
 
-from .rendering import DartInstance, DartScoreOption
-
 
 @dataclass(frozen=True)
 class DartsSceneAxes:
@@ -29,27 +27,41 @@ class DartsIntegerAxis:
 
 @dataclass(frozen=True)
 class DartsScoreSlot:
-    """One scoring area on the board."""
+    """One simplified scoring area on the board."""
 
+    area_kind: str
     sector_value: int | None
-    ring: str
     score: int
 
 
 @dataclass(frozen=True)
+class DartInstance:
+    """One visible dart marker before rendering."""
+
+    dart_id: str
+    area_kind: str
+    sector_value: int | None
+    score: int
+    x_px: float
+    y_px: float
+    is_marked: bool
+
+
+@dataclass(frozen=True)
 class DartsSampledScene:
-    """One sampled darts scene with query-specific witness metadata."""
+    """One sampled darts scene with task-owned witness metadata."""
 
     darts: Tuple[DartInstance, ...]
     annotation_dart_ids: Tuple[str, ...]
     total_score: int
-    score_options: Tuple[DartScoreOption, ...] = ()
-    answer_label: str | None = None
+    target_sector_value: int | None = None
+    target_score: int | None = None
 
 
 __all__ = [
+    "DartInstance",
     "DartsIntegerAxis",
-    "DartsSceneAxes",
     "DartsSampledScene",
+    "DartsSceneAxes",
     "DartsScoreSlot",
 ]

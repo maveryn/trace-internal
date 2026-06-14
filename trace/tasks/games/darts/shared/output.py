@@ -1,4 +1,4 @@
-"""Objective-neutral trace assembly for darts games tasks."""
+"""Objective-neutral trace assembly for simplified darts games tasks."""
 
 from __future__ import annotations
 
@@ -14,25 +14,12 @@ def _dart_specs_for_trace(sample: DartsSampledScene) -> list[Dict[str, Any]]:
     return [
         {
             "dart_id": str(dart.dart_id),
+            "area_kind": str(dart.area_kind),
             "sector_value": None if dart.sector_value is None else int(dart.sector_value),
-            "ring": str(dart.ring),
             "score": int(dart.score),
-            "is_annotation": bool(dart.is_annotation),
+            "is_marked": bool(dart.is_marked),
         }
         for dart in sample.darts
-    ]
-
-
-def _score_options_for_trace(sample: DartsSampledScene) -> list[Dict[str, Any]]:
-    """Return JSON-friendly score options for trace payloads."""
-
-    return [
-        {
-            "label": str(option.label),
-            "score": int(option.score),
-            "is_answer": bool(option.is_answer),
-        }
-        for option in sample.score_options
     ]
 
 
@@ -62,15 +49,13 @@ def build_darts_trace_payload(
     sample: DartsSampledScene,
     rendered_context: RenderedDartsTaskContext,
     prompt_defaults: Mapping[str, Any],
-    prompt_artifacts: Any,
     query_spec: Mapping[str, Any],
-    answer_value: int | str,
+    answer_value: int,
     execution_extra: Mapping[str, Any] | None = None,
 ) -> Dict[str, Any]:
     """Assemble darts trace sections after task-specific answer binding."""
 
     rendered_scene = rendered_context.rendered_scene
-    score_options = _score_options_for_trace(sample)
     return {
         "scene_ir": {
             "scene_kind": f"games_darts_{str(axes.scene_variant)}",
@@ -78,8 +63,9 @@ def build_darts_trace_payload(
             "relations": {
                 "scene_variant": str(axes.scene_variant),
                 "style_variant": str(axes.style_variant),
-                "score_option_count": int(len(sample.score_options)),
                 "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
+                "target_sector_value": sample.target_sector_value,
+                "target_score": sample.target_score,
             },
         },
         "query_spec": dict(query_spec),
@@ -98,11 +84,12 @@ def build_darts_trace_payload(
         "execution_trace": {
             "scene_variant": str(axes.scene_variant),
             "style_variant": str(axes.style_variant),
-            "answer": answer_value,
-            "score_options": list(score_options),
-            "score_option_count": int(len(score_options)),
+            "answer": int(answer_value),
             "dart_specs": _dart_specs_for_trace(sample),
+            "dart_count": int(len(sample.darts)),
             "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
+            "target_sector_value": sample.target_sector_value,
+            "target_score": sample.target_score,
             **dict(execution_extra or {}),
         },
         "witness_symbolic": {

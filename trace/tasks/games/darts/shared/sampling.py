@@ -1,4 +1,4 @@
-"""Identity-free semantic sampling primitives for darts scene tasks."""
+"""Identity-free semantic sampling primitives for simplified darts scene tasks."""
 
 from __future__ import annotations
 
@@ -12,27 +12,25 @@ from trace.tasks.shared.font_assets import sample_font_family
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
-from .rendering import (
-    STANDARD_DART_SECTORS,
-    DartInstance,
-    DartScoreOption,
-    DartboardRenderParams,
-    polar_to_xy,
-)
 from .defaults import (
     DARTS_NAMESPACE,
     DEFAULTS,
+    STANDARD_DART_SECTORS,
     SUPPORTED_DARTS_SCENE_VARIANTS,
-    SUPPORTED_DARTS_TARGET_RINGS,
-    SUPPORTED_DARTS_THRESHOLDS,
 )
+from .rendering import (
+    DARTBOARD_SAMPLE_RADIUS_FRACTIONS,
+    DartboardRenderParams,
+    polar_to_xy,
+)
+from .rules import BULLSEYE_SLOT, SCORE_SLOTS, SECTOR_SLOTS, score_slot_in_sector, slots_for_score
 from .state import (
+    DartInstance,
     DartsIntegerAxis,
     DartsSampledScene,
     DartsSceneAxes,
     DartsScoreSlot,
 )
-from .rules import RING_RADIUS_FRACTIONS, SCORE_SLOTS, score_slot_public_ring
 
 
 _SECTOR_TO_INDEX = {int(value): int(index) for index, value in enumerate(STANDARD_DART_SECTORS)}
@@ -185,43 +183,43 @@ def resolve_darts_count_target_axis(
     )
 
 
-def resolve_darts_target_ring(
-    *,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    gen_defaults: Mapping[str, Any],
-) -> Tuple[str, Dict[str, float]]:
-    """Resolve the requested dartboard ring family."""
-
-    return _resolve_named_axis(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=gen_defaults,
-        namespace="target_ring",
-        explicit_key="target_ring",
-        weights_key="target_ring_weights",
-        balance_flag_key="balanced_target_ring_sampling",
-        supported=SUPPORTED_DARTS_TARGET_RINGS,
-    )
-
-
-def resolve_darts_target_threshold(
+def resolve_darts_score_axis(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
 ) -> DartsIntegerAxis:
-    """Resolve the requested dart score threshold."""
+    """Resolve the marked-dart target score for score-value tasks."""
 
     return resolve_darts_integer_axis(
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,
-        support_key="target_threshold_support",
-        explicit_key="target_threshold",
-        fallback_support=SUPPORTED_DARTS_THRESHOLDS,
-        namespace="target_threshold",
-        balanced_flag_key="balanced_target_threshold_sampling",
+        support_key="score_value_support",
+        explicit_key="target_score",
+        fallback_support=DEFAULTS.score_value_support,
+        namespace="score_value.target_score",
+        balanced_flag_key="balanced_score_value_sampling",
+    )
+
+
+def resolve_darts_target_sector_axis(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+) -> DartsIntegerAxis:
+    """Resolve the target sector number for sector-count tasks."""
+
+    return resolve_darts_integer_axis(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=gen_defaults,
+        support_key="target_sector_support",
+        explicit_key="target_sector",
+        fallback_support=DEFAULTS.target_sector_support,
+        namespace="sector_count.target_sector",
+        balanced_flag_key="balanced_target_sector_sampling",
     )
 
 
@@ -234,12 +232,12 @@ def _sample_slot(rng, slots: Sequence[DartsScoreSlot]) -> DartsScoreSlot:
 
 
 def _slot_position(rng, *, slot: DartsScoreSlot, params: DartboardRenderParams) -> Tuple[float, float]:
-    """Sample a visible non-overlapping point inside one scoring slot."""
+    """Sample a visible point inside one simplified scoring slot."""
 
     board_radius = float(params.board_radius_px)
-    if slot.sector_value is None:
+    if str(slot.area_kind) == "bullseye":
         angle = float(rng.uniform(-180.0, 180.0))
-        radius_min, radius_max = RING_RADIUS_FRACTIONS[str(slot.ring)]
+        radius_min, radius_max = DARTBOARD_SAMPLE_RADIUS_FRACTIONS["bullseye"]
         radius = float(rng.uniform(float(radius_min), float(radius_max)) * board_radius)
         return polar_to_xy(
             cx=float(params.board_center_x_px),
@@ -248,10 +246,10 @@ def _slot_position(rng, *, slot: DartsScoreSlot, params: DartboardRenderParams) 
             angle_deg=float(angle),
         )
 
-    sector_index = _SECTOR_TO_INDEX[int(slot.sector_value)]
+    sector_index = _SECTOR_TO_INDEX[int(slot.sector_value or 0)]
     center_angle = float(sector_index * 18.0)
     angle = float(rng.uniform(center_angle - 6.4, center_angle + 6.4))
-    radius_min, radius_max = RING_RADIUS_FRACTIONS[str(slot.ring)]
+    radius_min, radius_max = DARTBOARD_SAMPLE_RADIUS_FRACTIONS["sector"]
     radius = float(rng.uniform(float(radius_min), float(radius_max)) * board_radius)
     return polar_to_xy(
         cx=float(params.board_center_x_px),
@@ -278,41 +276,6 @@ def _sample_position_without_overlap(
     return _slot_position(rng, slot=slot, params=params)
 
 
-def build_darts_score_options(
-    rng,
-    *,
-    correct_score: int,
-    correct_label: str | None,
-    option_count: int,
-) -> Tuple[Tuple[DartScoreOption, ...], str]:
-    """Return visible unique score options and the correct option label."""
-
-    labels = ("A", "B", "C", "D", "E", "F")[: int(option_count)]
-    if len(labels) < 2:
-        raise ValueError("darts score option count must be at least 2")
-    resolved_correct_label = str(correct_label) if correct_label in labels else str(labels[0])
-    possible_scores = sorted({int(slot.score) for slot in SCORE_SLOTS})
-    distractor_pool = [int(value) for value in possible_scores if int(value) != int(correct_score)]
-    nearby_scores = sorted(distractor_pool, key=lambda value: (abs(int(value) - int(correct_score)), int(value)))
-    candidate_scores = list(nearby_scores[:14])
-    rng.shuffle(candidate_scores)
-    distractor_count = int(len(labels) - 1)
-    selected_scores = [int(value) for value in candidate_scores[:distractor_count]]
-    if len(set(selected_scores)) != distractor_count or int(correct_score) in set(selected_scores):
-        raise RuntimeError("failed to construct unique darts score options")
-    rng.shuffle(selected_scores)
-    distractor_by_label = dict(zip([label for label in labels if label != resolved_correct_label], selected_scores[:distractor_count]))
-    options = tuple(
-        DartScoreOption(
-            label=str(label),
-            score=int(correct_score) if str(label) == resolved_correct_label else int(distractor_by_label[str(label)]),
-            is_answer=bool(str(label) == resolved_correct_label),
-        )
-        for label in labels
-    )
-    return options, str(resolved_correct_label)
-
-
 def sample_darts_for_count(
     rng,
     *,
@@ -321,6 +284,7 @@ def sample_darts_for_count(
     render_params: DartboardRenderParams,
     qualifying_slots: Sequence[DartsScoreSlot],
     nonqualifying_slots: Sequence[DartsScoreSlot],
+    target_sector_value: int | None = None,
 ) -> DartsSampledScene:
     """Sample darts with an exact count of qualifying score slots."""
 
@@ -339,39 +303,51 @@ def sample_darts_for_count(
         render_params=render_params,
         selected_slots=[slot for slot, _ in combined],
         annotation_flags=[flag for _, flag in combined],
+        marked_flags=[False for _ in combined],
+        target_sector_value=None if target_sector_value is None else int(target_sector_value),
     )
 
 
-def sample_darts_for_score_options(
+def sample_darts_for_score_value(
     rng,
     *,
-    dart_count: int,
+    target_score: int,
+    distractor_count: int,
     render_params: DartboardRenderParams,
-    option_count: int,
-    correct_label: str | None,
 ) -> DartsSampledScene:
-    """Sample darts and visible total-score options."""
+    """Sample one marked dart with a requested score plus visual distractors."""
 
-    selected_slots = [_sample_slot(rng, SCORE_SLOTS) for _ in range(int(dart_count))]
-    sampled = _sample_darts_from_slots(
+    matching_slots = slots_for_score(int(target_score))
+    if not matching_slots:
+        raise ValueError(f"unsupported darts score: {target_score}")
+    marked_slot = _sample_slot(rng, matching_slots)
+    distractor_pool = [slot for slot in SCORE_SLOTS if int(slot.score) != int(target_score)]
+    distractor_slots = [_sample_slot(rng, distractor_pool) for _ in range(int(distractor_count))]
+    selected_slots = [marked_slot] + distractor_slots
+    combined = list(zip(selected_slots, [True] + [False for _ in distractor_slots]))
+    rng.shuffle(combined)
+    annotation_flags = [bool(is_marked) for _slot, is_marked in combined]
+    marked_flags = [bool(is_marked) for _slot, is_marked in combined]
+    return _sample_darts_from_slots(
         rng,
         render_params=render_params,
-        selected_slots=selected_slots,
-        annotation_flags=[True for _ in selected_slots],
+        selected_slots=[slot for slot, _ in combined],
+        annotation_flags=annotation_flags,
+        marked_flags=marked_flags,
+        target_score=int(target_score),
     )
-    score_options, answer_label = build_darts_score_options(
-        rng,
-        correct_score=int(sampled.total_score),
-        correct_label=correct_label,
-        option_count=int(option_count),
-    )
-    return DartsSampledScene(
-        darts=tuple(sampled.darts),
-        annotation_dart_ids=tuple(sampled.annotation_dart_ids),
-        total_score=int(sampled.total_score),
-        score_options=tuple(score_options),
-        answer_label=str(answer_label),
-    )
+
+
+def sector_qualifying_slots(sector_value: int) -> Tuple[DartsScoreSlot, ...]:
+    """Return score slots inside one numbered sector."""
+
+    return tuple(slot for slot in SECTOR_SLOTS if score_slot_in_sector(slot, sector_value=int(sector_value)))
+
+
+def sector_nonqualifying_slots(sector_value: int) -> Tuple[DartsScoreSlot, ...]:
+    """Return score slots outside one numbered sector, including bullseye."""
+
+    return tuple(slot for slot in SCORE_SLOTS if not score_slot_in_sector(slot, sector_value=int(sector_value)))
 
 
 def _sample_darts_from_slots(
@@ -380,6 +356,9 @@ def _sample_darts_from_slots(
     render_params: DartboardRenderParams,
     selected_slots: Sequence[DartsScoreSlot],
     annotation_flags: Sequence[bool],
+    marked_flags: Sequence[bool],
+    target_sector_value: int | None = None,
+    target_score: int | None = None,
 ) -> DartsSampledScene:
     """Project sampled score slots to visible dart markers."""
 
@@ -396,35 +375,21 @@ def _sample_darts_from_slots(
         darts.append(
             DartInstance(
                 dart_id=str(dart_id),
+                area_kind=str(slot.area_kind),
                 sector_value=None if slot.sector_value is None else int(slot.sector_value),
-                ring=str(score_slot_public_ring(slot)),
                 score=int(slot.score),
                 x_px=float(x_px),
                 y_px=float(y_px),
-                is_annotation=bool(is_annotation),
+                is_marked=bool(marked_flags[index]),
             )
         )
     return DartsSampledScene(
         darts=tuple(darts),
         annotation_dart_ids=tuple(annotation_ids),
         total_score=int(sum(int(slot.score) for slot in selected_slots)),
+        target_sector_value=None if target_sector_value is None else int(target_sector_value),
+        target_score=None if target_score is None else int(target_score),
     )
-
-
-def resolve_score_option_answer_label(
-    *,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    option_count: int,
-) -> str:
-    """Resolve the correct score-option label for a total-score task."""
-
-    labels = ("A", "B", "C", "D", "E", "F")[: int(option_count)]
-    sampling_index = params.get("_sample_cursor")
-    if sampling_index is None:
-        label_rng = spawn_rng(int(instance_seed), f"{DARTS_NAMESPACE}.score_option_answer_label")
-        return str(labels[int(label_rng.randrange(len(labels)))])
-    return str(labels[abs(int(sampling_index)) % len(labels)])
 
 
 def resolve_darts_render_params(
@@ -485,16 +450,18 @@ def resolve_darts_render_params(
 
 
 __all__ = [
+    "BULLSEYE_SLOT",
     "SCORE_SLOTS",
-    "build_darts_score_options",
+    "SECTOR_SLOTS",
     "feasible_count_support",
     "resolve_darts_count_target_axis",
     "resolve_darts_integer_axis",
     "resolve_darts_render_params",
     "resolve_darts_scene_axes",
-    "resolve_darts_target_ring",
-    "resolve_darts_target_threshold",
-    "resolve_score_option_answer_label",
+    "resolve_darts_score_axis",
+    "resolve_darts_target_sector_axis",
     "sample_darts_for_count",
-    "sample_darts_for_score_options",
+    "sample_darts_for_score_value",
+    "sector_nonqualifying_slots",
+    "sector_qualifying_slots",
 ]

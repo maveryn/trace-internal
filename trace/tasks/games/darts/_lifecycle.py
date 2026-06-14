@@ -1,9 +1,9 @@
-"""Scene-private lifecycle plumbing for darts public tasks."""
+"""Scene-private lifecycle plumbing for simplified darts public tasks."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Mapping, Sequence
 
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
@@ -61,14 +61,14 @@ class DartsObjectivePlan:
     query_params: Mapping[str, Any]
     prompt_dynamic_slots: Mapping[str, Any]
     construct_attempt: AttemptBuilder
-    target_ring_highlight: str | None = None
+    target_sector_value: int | None = None
 
 
 def dart_point_set_attempt(
     *,
     sample: DartsSampledScene,
     answer_gt: TypedValue,
-    annotation_entity_ids: tuple[str, ...] | None = None,
+    annotation_entity_ids: Sequence[str] | None = None,
     query_params: Mapping[str, Any] | None = None,
     execution_extra: Mapping[str, Any] | None = None,
 ) -> DartsAttemptResult:
@@ -90,7 +90,6 @@ def dart_point_set_attempt(
 
 def prepare_darts_exact_count_objective(
     *,
-    task_id: str,
     task_params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
     render_params: DartboardRenderParams,
@@ -103,7 +102,7 @@ def prepare_darts_exact_count_objective(
     nonqualifying_slots: tuple[DartsScoreSlot, ...],
     extra_query_params: Mapping[str, Any],
     extra_execution_params: Mapping[str, Any],
-    target_ring_highlight: str | None = None,
+    target_sector_value: int | None = None,
 ) -> DartsObjectivePlan:
     """Prepare a neutral exact-count objective after public code defines membership."""
 
@@ -142,6 +141,7 @@ def prepare_darts_exact_count_objective(
             render_params=render_params,
             qualifying_slots=qualifying_slots,
             nonqualifying_slots=nonqualifying_slots,
+            target_sector_value=target_sector_value,
         )
         return dart_point_set_attempt(
             sample=sample,
@@ -158,7 +158,7 @@ def prepare_darts_exact_count_objective(
         query_params=query_params,
         prompt_dynamic_slots=dict(prompt_dynamic_slots),
         construct_attempt=construct_attempt,
-        target_ring_highlight=target_ring_highlight,
+        target_sector_value=None if target_sector_value is None else int(target_sector_value),
     )
 
 
@@ -212,8 +212,7 @@ def run_darts_lifecycle(
         sample = attempt.sample
         rendered_context = render_darts_task_scene(
             darts=sample.darts,
-            score_options=sample.score_options,
-            target_ring=objective.target_ring_highlight,
+            target_sector_value=objective.target_sector_value,
             style_variant=str(axes.style_variant),
             render_params=render_params,
             render_defaults=render_defaults,
@@ -246,12 +245,11 @@ def run_darts_lifecycle(
             sample=sample,
             rendered_context=rendered_context,
             prompt_defaults=prompt_defaults,
-            prompt_artifacts=prompt_artifacts,
             query_spec=query_spec,
-            answer_value=attempt.answer_gt.value,
+            answer_value=int(attempt.answer_gt.value),
             execution_extra={
                 **dict(attempt.execution_extra),
-                "answer": attempt.answer_gt.value,
+                "answer": int(attempt.answer_gt.value),
             },
         )
         return TaskOutput(

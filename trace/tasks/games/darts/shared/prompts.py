@@ -1,4 +1,4 @@
-"""Prompt assembly helpers for darts scene tasks."""
+"""Prompt assembly helpers for simplified darts scene tasks."""
 
 from __future__ import annotations
 
@@ -25,21 +25,8 @@ _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS = load_scene_gen
 )
 
 
-def darts_target_ring_prompt_text(target_ring: str | None) -> str:
-    """Return natural prompt text for one target dartboard ring family."""
-
-    if target_ring is None:
-        return ""
-    return {
-        "single": "single area",
-        "double": "double ring",
-        "triple": "triple ring",
-        "bull": "bull area",
-    }.get(str(target_ring), str(target_ring).replace("_", " "))
-
-
-def darts_integer_count_json_examples() -> tuple[str, str]:
-    """Return generic JSON examples for integer-count darts tasks."""
+def darts_integer_json_examples() -> tuple[str, str]:
+    """Return generic JSON examples for integer-answer darts tasks."""
 
     return (
         json.dumps({"annotation": [[411, 219], [525, 364]], "answer": 2}, separators=(",", ":")),
@@ -47,12 +34,12 @@ def darts_integer_count_json_examples() -> tuple[str, str]:
     )
 
 
-def darts_label_json_examples() -> tuple[str, str]:
-    """Return generic JSON examples for label-answer darts tasks."""
+def darts_single_point_json_examples() -> tuple[str, str]:
+    """Return generic JSON examples for single-dart score tasks."""
 
     return (
-        json.dumps({"annotation": [[411, 219]], "answer": "C"}, separators=(",", ":")),
-        json.dumps({"answer": "C"}, separators=(",", ":")),
+        json.dumps({"annotation": [[411, 219]], "answer": 17}, separators=(",", ":")),
+        json.dumps({"answer": 17}, separators=(",", ":")),
     )
 
 
@@ -61,10 +48,11 @@ def darts_output_slots(
     prompt_query_key: str,
     json_example: str,
     json_example_answer_only: str,
+    extra_slots: Mapping[str, Any] | None = None,
 ) -> Dict[str, Any]:
     """Return answer and annotation prompt slots for one darts query key."""
 
-    return {
+    slots = {
         "annotation_hint": required_group_default(
             _PROMPT_DEFAULTS,
             f"annotation_hint_{str(prompt_query_key)}",
@@ -80,6 +68,8 @@ def darts_output_slots(
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
     }
+    slots.update(dict(extra_slots or {}))
+    return slots
 
 
 def build_darts_prompt_artifacts(
@@ -112,8 +102,7 @@ def build_darts_prompt_artifacts(
 
 __all__ = [
     "build_darts_prompt_artifacts",
-    "darts_integer_count_json_examples",
-    "darts_label_json_examples",
+    "darts_integer_json_examples",
     "darts_output_slots",
-    "darts_target_ring_prompt_text",
+    "darts_single_point_json_examples",
 ]

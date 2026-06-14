@@ -13,7 +13,7 @@
       ]
     },
     "task": {
-      "darts_score_query": [
+      "darts_query": [
         "",
         "",
         "",
@@ -22,26 +22,33 @@
       ]
     },
     "query": {
-      "total_score": [
-        "{scoring_rule_text} The image shows one marked dart and score options labeled in the image. Which option letter gives that dart's score?",
-        "Find the score of the marked dart, then choose the matching option letter from the image. {scoring_rule_text}",
-        "{scoring_rule_text} Determine the score of the single marked dart and use the matching option letter shown in the image.",
-        "Using the dartboard scoring rule, which visible option letter gives the score of the marked dart? {scoring_rule_text}",
-        "Score the marked dart and use the matching option letter shown in the image. {scoring_rule_text}"
+      "dart_score_value": [
+        "{scoring_rule_text} What score does the marked dart get?",
+        "Find the score of the marked dart. {scoring_rule_text}",
+        "{scoring_rule_text} Read the score for the marked dart.",
+        "Using the simplified dartboard scoring rule, what is the marked dart's score? {scoring_rule_text}",
+        "Score the marked dart. {scoring_rule_text}"
       ],
-      "ring_count": [
-        "{ring_rule_text} How many marked darts are in the yellow-highlighted {target_ring_text}? Use 0 if none are there.",
-        "Count the marked darts that land in the yellow-highlighted {target_ring_text}. {ring_rule_text} Use 0 if none are there.",
-        "{ring_rule_text} What is the number of marked darts in the yellow-highlighted {target_ring_text}?",
-        "Looking only at the marked darts, how many are in the yellow-highlighted {target_ring_text}? Use 0 if none are there. {ring_rule_text}",
-        "Use the yellow-highlighted region on the dartboard. {ring_rule_text} Count the marked darts in the {target_ring_text}."
+      "inside_bullseye_count": [
+        "How many darts are inside the center bullseye?",
+        "Count the darts that landed inside the bullseye.",
+        "What is the number of darts in the center bullseye?",
+        "How many visible darts are inside the bullseye circle?",
+        "Find the count of darts in the bullseye."
       ],
-      "threshold_score_count": [
-        "{scoring_rule_text} How many marked darts score at least {target_threshold_text} points?",
-        "Count the marked darts with score greater than or equal to {target_threshold_text}. {scoring_rule_text}",
-        "{scoring_rule_text} What is the number of marked darts scoring at least {target_threshold_text}?",
-        "Using the dartboard scoring rule, how many marked darts score {target_threshold_text} or more? {scoring_rule_text}",
-        "Score each marked dart. {scoring_rule_text} Count how many are at least {target_threshold_text}."
+      "outside_bullseye_count": [
+        "How many darts are outside the center bullseye?",
+        "Count the darts that did not land in the bullseye.",
+        "What is the number of darts outside the bullseye circle?",
+        "How many visible darts are not inside the bullseye?",
+        "Find the count of darts outside the center bullseye."
+      ],
+      "sector_dart_count": [
+        "How many darts landed in sector {target_sector_text}?",
+        "Count the darts inside the highlighted sector {target_sector_text}.",
+        "What is the number of darts in sector {target_sector_text}?",
+        "Looking at the highlighted numbered sector {target_sector_text}, how many darts are there?",
+        "Find the count of darts in the sector labeled {target_sector_text}."
       ]
     },
     "output": {
@@ -65,16 +72,13 @@
     "scene:visible_dartboard": [
       "object_description"
     ],
-    "query:total_score": [
+    "query:dart_score_value": [
       "scoring_rule_text"
     ],
-    "query:ring_count": [
-      "ring_rule_text",
-      "target_ring_text"
-    ],
-    "query:threshold_score_count": [
-      "scoring_rule_text",
-      "target_threshold_text"
+    "query:inside_bullseye_count": [],
+    "query:outside_bullseye_count": [],
+    "query:sector_dart_count": [
+      "target_sector_text"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -90,16 +94,10 @@
   },
   "static_slots_by_key": {
     "scene:visible_dartboard": {
-      "object_description": "a labeled dartboard with visible dart markers"
+      "object_description": "a simplified labeled dartboard with visible dart markers"
     },
-    "query:total_score": {
-      "scoring_rule_text": "A dart in a numbered single area scores that number; a dart in the double ring scores twice the number; a dart in the triple ring scores three times the number; the outer bull scores 25 and the inner bull scores 50."
-    },
-    "query:ring_count": {
-      "ring_rule_text": "The yellow highlight marks the requested scoring area. The double ring is the outer scoring band near the board edge. The triple ring is the inner scoring band between the bull and the outer edge. The bull is the center area. Single areas are the numbered wedge areas outside the bull that are not in the double or triple ring."
-    },
-    "query:threshold_score_count": {
-      "scoring_rule_text": "A dart in a numbered single area scores that number; a dart in the double ring scores twice the number; a dart in the triple ring scores three times the number; the outer bull scores 25 and the inner bull scores 50."
+    "query:dart_score_value": {
+      "scoring_rule_text": "A dart in a numbered sector scores that number; a dart in the center bullseye scores 50."
     }
   },
   "dynamic_slots": {
@@ -121,22 +119,20 @@
     "json_output_contract_answer_only": {
       "type": "string"
     },
-    "target_ring_text": {
-      "type": "string"
-    },
-    "target_threshold_text": {
+    "target_sector_text": {
       "type": "string"
     }
   },
   "code_prompt_defaults": {
-    "object_description_single_board": "a labeled dartboard with visible dart markers",
-    "scoring_rule_text": "A dart in a numbered single area scores that number; a dart in the double ring scores twice the number; a dart in the triple ring scores three times the number; the outer bull scores 25 and the inner bull scores 50.",
-    "ring_rule_text": "The yellow highlight marks the requested scoring area. The double ring is the outer scoring band near the board edge. The triple ring is the inner scoring band between the bull and the outer edge. The bull is the center area. Single areas are the numbered wedge areas outside the bull that are not in the double or triple ring.",
-    "annotation_hint_total_score": "set \"annotation\" to a JSON array with one pixel point [x, y] at the center of the marked dart",
-    "annotation_hint_ring_count": "set \"annotation\" to a JSON array of pixel points [x, y] at the center of every marked dart in the requested ring or area",
-    "annotation_hint_threshold_score_count": "set \"annotation\" to a JSON array of pixel points [x, y] at the center of every marked dart whose score is at least the requested threshold",
-    "answer_hint_total_score": "set \"answer\" to the option letter shown in the image for the total score",
-    "answer_hint_ring_count": "set \"answer\" to the number of marked darts in the requested ring or area; use 0 if none are in that area",
-    "answer_hint_threshold_score_count": "set \"answer\" to the number of marked darts whose score is at least the requested threshold"
+    "object_description_single_board": "a simplified labeled dartboard with visible dart markers",
+    "scoring_rule_text": "A dart in a numbered sector scores that number; a dart in the center bullseye scores 50.",
+    "annotation_hint_dart_score_value": "set \"annotation\" to a JSON array with one pixel point [x, y] at the center of the marked dart",
+    "annotation_hint_inside_bullseye_count": "set \"annotation\" to a JSON array of pixel points [x, y] at the center of every dart inside the bullseye",
+    "annotation_hint_outside_bullseye_count": "set \"annotation\" to a JSON array of pixel points [x, y] at the center of every dart outside the bullseye",
+    "annotation_hint_sector_dart_count": "set \"annotation\" to a JSON array of pixel points [x, y] at the center of every dart in the requested sector",
+    "answer_hint_dart_score_value": "set \"answer\" to the integer score of the marked dart",
+    "answer_hint_inside_bullseye_count": "set \"answer\" to the number of darts inside the bullseye",
+    "answer_hint_outside_bullseye_count": "set \"answer\" to the number of darts outside the bullseye",
+    "answer_hint_sector_dart_count": "set \"answer\" to the number of darts in the requested sector"
   }
 }

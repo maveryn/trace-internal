@@ -1,4 +1,4 @@
-"""Contract tests for darts games tasks."""
+"""Contract tests for simplified darts games tasks."""
 
 from __future__ import annotations
 
@@ -9,121 +9,143 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.darts.ring_count import GamesDartsRingCountTask
+from trace.tasks.games.darts.bullseye_membership_count import GamesDartsBullseyeMembershipCountTask
+from trace.tasks.games.darts.dart_score_value import GamesDartsDartScoreValueTask
+from trace.tasks.games.darts.sector_dart_count import GamesDartsSectorDartCountTask
 from trace.tasks.games.darts.shared.rendering import dartboard_anchor_colors
-from trace.tasks.games.darts.threshold_score_count import GamesDartsThresholdScoreCountTask
-from trace.tasks.games.darts.total_score_option_label import GamesDartsTotalScoreOptionLabelTask
 from trace.tasks.shared.color_distance import color_distance
 from tests.helpers import read_jsonl
 
 
-@pytest.mark.parametrize(
-    ("task_cls", "params", "expected_answer", "expected_annotation_count"),
-    (
-        (
-            GamesDartsRingCountTask,
-            {"scene_variant": "single_board", "target_ring": "double", "target_answer": 3, "dart_count": 8},
-            3,
-            3,
-        ),
-        (
-            GamesDartsThresholdScoreCountTask,
-            {"scene_variant": "single_board", "target_threshold": 40, "target_answer": 4, "dart_count": 8},
-            4,
-            4,
-        ),
-    ),
-)
-def test_games_darts_count_tasks_emit_expected_count_contract(
-    task_cls,
-    params: dict[str, int | str],
-    expected_answer: int,
-    expected_annotation_count: int,
-) -> None:
-    out = task_cls().generate(92001, params=params, max_attempts=48)
-    trace = out.trace_payload
-    execution = trace["execution_trace"]
-
-    assert out.answer_gt.type == "integer"
-    assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == int(expected_annotation_count)
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
-    assert len(execution["annotation_entity_ids"]) == int(expected_annotation_count)
-    assert trace["query_spec"]["params"]["query_id"] == out.query_id
-    assert int(execution["target_answer"]) == int(expected_answer)
-    assert all(str(dart_id).startswith("dart_") for dart_id in execution["annotation_entity_ids"])
-
-
-def test_games_darts_total_score_uses_scored_dart_as_annotation() -> None:
-    out = GamesDartsTotalScoreOptionLabelTask().generate(
+def test_games_darts_score_value_uses_marked_dart_as_annotation() -> None:
+    out = GamesDartsDartScoreValueTask().generate(
         92011,
-        params={"scene_variant": "single_board", "dart_count": 1},
+        params={"scene_variant": "single_board", "target_score": 50, "distractor_count": 4},
         max_attempts=48,
     )
     execution = out.trace_payload["execution_trace"]
-    dart_scores = [int(spec["score"]) for spec in execution["dart_specs"]]
-    answer_label = str(out.answer_gt.value)
-    answer_options = {
-        str(option["label"]): int(option["score"])
-        for option in execution["score_options"]
-    }
-    assert out.answer_gt.type == "string"
-    assert answer_label in {"A", "B", "C", "D", "E", "F"}
-    assert len(answer_options) in {4, 6}
-    assert len(set(answer_options.values())) == len(answer_options)
-    assert int(execution["total_score"]) == sum(dart_scores)
-    assert answer_options[answer_label] == int(execution["total_score"])
-    assert [option for option in execution["score_options"] if bool(option["is_answer"])] == [
-        {"label": answer_label, "score": int(execution["total_score"]), "is_answer": True}
-    ]
-    assert len(out.annotation_gt.value) == 1
+    marked = [spec for spec in execution["dart_specs"] if bool(spec["is_marked"])]
+
+    assert out.answer_gt.type == "integer"
+    assert int(out.answer_gt.value) == 50
     assert out.annotation_gt.type == "point_set"
-    assert len(execution["annotation_entity_ids"]) == 1
-    assert execution["annotation_entity_ids"][0].startswith("dart_")
+    assert len(out.annotation_gt.value) == 1
+    assert len(marked) == 1
+    assert marked[0]["area_kind"] == "bullseye"
+    assert int(marked[0]["score"]) == int(out.answer_gt.value)
+    assert execution["annotation_entity_ids"] == [str(marked[0]["dart_id"])]
+    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
 
 
-def test_games_darts_query_cycle_covers_count_answers_and_option_counts() -> None:
-    ring_answers: set[int] = set()
-    threshold_answers: set[int] = set()
-    option_counts: set[int] = set()
-    for sampling_index in range(60):
-        ring = GamesDartsRingCountTask().generate(
+@pytest.mark.parametrize(
+    ("query_id", "target_answer", "expected_membership"),
+    (
+        ("inside_bullseye_count", 3, "inside"),
+        ("outside_bullseye_count", 4, "outside"),
+    ),
+)
+def test_games_darts_bullseye_membership_count_contract(
+    query_id: str,
+    target_answer: int,
+    expected_membership: str,
+) -> None:
+    out = GamesDartsBullseyeMembershipCountTask().generate(
+        92021,
+        params={
+            "scene_variant": "single_board",
+            "query_id": query_id,
+            "target_answer": target_answer,
+            "dart_count": 7,
+        },
+        max_attempts=48,
+    )
+    execution = out.trace_payload["execution_trace"]
+    specs_by_id = {str(spec["dart_id"]): spec for spec in execution["dart_specs"]}
+    annotated_specs = [specs_by_id[str(dart_id)] for dart_id in execution["annotation_entity_ids"]]
+
+    assert out.answer_gt.type == "integer"
+    assert int(out.answer_gt.value) == int(target_answer)
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == int(target_answer)
+    assert execution["bullseye_membership"] == expected_membership
+    if expected_membership == "inside":
+        assert all(spec["area_kind"] == "bullseye" for spec in annotated_specs)
+    else:
+        assert all(spec["area_kind"] == "sector" for spec in annotated_specs)
+    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
+
+
+def test_games_darts_sector_count_contract() -> None:
+    out = GamesDartsSectorDartCountTask().generate(
+        92031,
+        params={
+            "scene_variant": "single_board",
+            "target_sector": 12,
+            "target_answer": 3,
+            "dart_count": 7,
+        },
+        max_attempts=48,
+    )
+    execution = out.trace_payload["execution_trace"]
+    specs_by_id = {str(spec["dart_id"]): spec for spec in execution["dart_specs"]}
+    annotated_specs = [specs_by_id[str(dart_id)] for dart_id in execution["annotation_entity_ids"]]
+
+    assert out.answer_gt.type == "integer"
+    assert int(out.answer_gt.value) == 3
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == 3
+    assert int(execution["target_sector"]) == 12
+    assert int(execution["target_sector_value"]) == 12
+    assert int(out.trace_payload["render_map"]["target_sector_value"]) == 12
+    assert all(spec["area_kind"] == "sector" and int(spec["sector_value"]) == 12 for spec in annotated_specs)
+
+
+def test_games_darts_query_cycle_covers_simplified_answers() -> None:
+    score_answers: set[int] = set()
+    inside_answers: set[int] = set()
+    outside_answers: set[int] = set()
+    target_sectors: set[int] = set()
+    for sampling_index in range(80):
+        score = GamesDartsDartScoreValueTask().generate(
             92101 + int(sampling_index),
             params={"_sample_cursor": int(sampling_index)},
             max_attempts=64,
         )
-        threshold = GamesDartsThresholdScoreCountTask().generate(
+        inside = GamesDartsBullseyeMembershipCountTask().generate(
             92201 + int(sampling_index),
-            params={"_sample_cursor": int(sampling_index)},
+            params={"_sample_cursor": int(sampling_index), "query_id": "inside_bullseye_count"},
             max_attempts=64,
         )
-        total = GamesDartsTotalScoreOptionLabelTask().generate(
+        outside = GamesDartsBullseyeMembershipCountTask().generate(
             92301 + int(sampling_index),
+            params={"_sample_cursor": int(sampling_index), "query_id": "outside_bullseye_count"},
+            max_attempts=64,
+        )
+        sector = GamesDartsSectorDartCountTask().generate(
+            92401 + int(sampling_index),
             params={"_sample_cursor": int(sampling_index)},
             max_attempts=64,
         )
-        ring_answers.add(int(ring.answer_gt.value))
-        threshold_answers.add(int(threshold.answer_gt.value))
-        option_counts.add(int(total.trace_payload["execution_trace"]["score_option_count"]))
+        score_answers.add(int(score.answer_gt.value))
+        inside_answers.add(int(inside.answer_gt.value))
+        outside_answers.add(int(outside.answer_gt.value))
+        target_sectors.add(int(sector.trace_payload["execution_trace"]["target_sector"]))
 
-    assert ring_answers == {0, 1, 2, 3, 4, 5}
-    assert threshold_answers == {0, 1, 2, 3, 4, 5}
-    assert option_counts == {4, 6}
+    assert score_answers == set(range(1, 21)) | {50}
+    assert {0, 1, 2, 3, 4, 5, 6}.issubset(inside_answers)
+    assert {0, 1, 2, 3, 4, 5, 6}.issubset(outside_answers)
+    assert target_sectors == set(range(1, 21))
 
 
-def test_games_darts_threshold_count_is_deterministic() -> None:
+def test_games_darts_score_value_is_deterministic() -> None:
     params = {
         "scene_variant": "single_board",
-        "target_threshold": 30,
-        "target_answer": 4,
-        "dart_count": 8,
+        "target_score": 17,
+        "distractor_count": 5,
     }
-    task = GamesDartsThresholdScoreCountTask()
-    out_a = task.generate(92031, params=params, max_attempts=48)
-    out_b = task.generate(92031, params=params, max_attempts=48)
+    task = GamesDartsDartScoreValueTask()
+    out_a = task.generate(92041, params=params, max_attempts=48)
+    out_b = task.generate(92041, params=params, max_attempts=48)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
     assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
@@ -133,9 +155,9 @@ def test_games_darts_threshold_count_is_deterministic() -> None:
 
 
 def test_games_darts_marker_color_is_lab_separated_from_board() -> None:
-    out = GamesDartsRingCountTask().generate(
-        92041,
-        params={"scene_variant": "single_board", "target_ring": "single", "target_answer": 2, "dart_count": 8},
+    out = GamesDartsSectorDartCountTask().generate(
+        92051,
+        params={"scene_variant": "single_board", "target_sector": 20, "target_answer": 2, "dart_count": 7},
         max_attempts=48,
     )
     render_spec = out.trace_payload["render_spec"]
@@ -145,82 +167,44 @@ def test_games_darts_marker_color_is_lab_separated_from_board() -> None:
     assert min(distances) >= 40.0
 
 
-def test_games_darts_prompt_bundle_requires_query_specific_slots() -> None:
-    bundle = json.loads(Path("prompts/games/darts/games_darts_v1.json").read_text(encoding="utf-8"))
+def test_games_darts_prompt_bundle_uses_simplified_terms() -> None:
+    bundle_text = Path("prompts/games/darts/games_darts_v1.json").read_text(encoding="utf-8")
+    assert "double ring" not in bundle_text
+    assert "triple ring" not in bundle_text
+    assert "outer bull" not in bundle_text
+    assert "inner bull" not in bundle_text
+
+    bundle = json.loads(bundle_text)
     required = bundle["required_slots_by_key"]
-    assert required["query:total_score"] == ["scoring_rule_text"]
-    assert required["query:ring_count"] == ["ring_rule_text", "target_ring_text"]
-    assert required["query:threshold_score_count"] == ["scoring_rule_text", "target_threshold_text"]
+    assert required["query:dart_score_value"] == ["scoring_rule_text"]
+    assert required["query:inside_bullseye_count"] == []
+    assert required["query:outside_bullseye_count"] == []
+    assert required["query:sector_dart_count"] == ["target_sector_text"]
     assert bundle["static_slots_by_key"]["scene:visible_dartboard"]["object_description"]
 
 
-def test_games_darts_total_score_prompt_asks_for_visible_option_letter() -> None:
-    out = GamesDartsTotalScoreOptionLabelTask().generate(
-        92052,
-        params={"scene_variant": "single_board", "dart_count": 1},
-        max_attempts=48,
-    )
-
-    assert "option letter" in out.prompt
-    assert "shown in the image" in out.prompt
-    assert "marked dart" in out.prompt
-    assert "marked darts" not in out.prompt
-
-
-@pytest.mark.parametrize(
-    ("target_ring", "expected_phrase"),
-    (
-        ("single", "yellow-highlighted single area"),
-        ("double", "yellow-highlighted double ring"),
-        ("triple", "yellow-highlighted triple ring"),
-        ("bull", "yellow-highlighted bull area"),
-    ),
-)
-def test_games_darts_ring_prompt_uses_natural_area_names(
-    target_ring: str,
-    expected_phrase: str,
-) -> None:
-    out = GamesDartsRingCountTask().generate(
-        92051,
-        params={
-            "scene_variant": "single_board",
-            "target_ring": target_ring,
-            "target_answer": 2,
-            "dart_count": 8,
-        },
-        max_attempts=48,
-    )
-
-    assert expected_phrase in out.prompt
-
-
-def test_games_darts_ring_prompt_describes_double_and_triple_bands() -> None:
-    out = GamesDartsRingCountTask().generate(
+def test_games_darts_score_prompt_asks_for_integer_score_not_option_letter() -> None:
+    out = GamesDartsDartScoreValueTask().generate(
         92061,
-        params={
-            "scene_variant": "single_board",
-            "target_ring": "double",
-            "target_answer": 2,
-            "dart_count": 8,
-        },
+        params={"scene_variant": "single_board", "target_score": 12},
         max_attempts=48,
     )
 
-    assert "double ring is the outer scoring band" in out.prompt
-    assert "triple ring is the inner scoring band" in out.prompt
-    assert "Single areas are the numbered wedge areas" in out.prompt
+    assert "marked dart" in out.prompt
+    assert "option letter" not in out.prompt
+    assert "scores 50" in out.prompt
 
 
-def test_games_darts_total_score_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_games__darts__total_score_option_label"
+def test_games_darts_score_value_build_smoke(tmp_path: Path) -> None:
+    output_root = tmp_path / "task_games__darts__dart_score_value"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_games__darts__total_score_option_label",
+        dataset_name="build_smoke_task_games__darts__dart_score_value",
         instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_games__darts__total_score_option_label",
+                task_id="task_games__darts__dart_score_value",
                 count=4,
                 params={},
             )
@@ -229,7 +213,7 @@ def test_games_darts_total_score_build_smoke(tmp_path: Path) -> None:
         max_attempts_per_instance=48,
         sampling_seed=71,
     )
-    final_path = build_dataset(config, code_hash="games-darts-total-score-smoke")
+    final_path = build_dataset(config, code_hash="games-darts-score-value-smoke")
     assert final_path.exists()
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
@@ -237,7 +221,7 @@ def test_games_darts_total_score_build_smoke(tmp_path: Path) -> None:
     assert all(record.get("scene_id") == "darts" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_games__darts__total_score_option_label"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_games__darts__dart_score_value"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

@@ -1,4 +1,4 @@
-"""Shared dartboard renderer for games-domain tasks."""
+"""Shared simplified dartboard renderer for games-domain tasks."""
 
 from __future__ import annotations
 
@@ -25,77 +25,25 @@ from ...shared.scene_style import (
 )
 from ...shared.visual_defaults import load_games_scene_noise_defaults
 
-from .defaults import DARTS_NAMESPACE, SCENE_ID
+from .defaults import DARTS_NAMESPACE, SCENE_ID, STANDARD_DART_SECTORS
+from .state import DartInstance
 
 
-STANDARD_DART_SECTORS: Tuple[int, ...] = (
-    20,
-    1,
-    18,
-    4,
-    13,
-    6,
-    10,
-    15,
-    2,
-    17,
-    3,
-    19,
-    7,
-    16,
-    8,
-    11,
-    14,
-    9,
-    12,
-    5,
-)
-
-DARTBOARD_BAND_RADII_FRACTIONS: Mapping[str, float] = {
-    "inner_bull": 0.100,
-    "outer_bull": 0.190,
-    "inner_single": 0.390,
-    "triple_outer": 0.570,
-    "outer_single": 0.750,
-    "double_outer": 0.940,
+DARTBOARD_RADIUS_FRACTIONS: Mapping[str, float] = {
+    "bullseye": 0.145,
+    "sector_outer": 0.880,
     "frame": 1.000,
 }
 
 DARTBOARD_SAMPLE_RADIUS_FRACTIONS: Mapping[str, Tuple[float, float]] = {
-    "inner_bull": (0.000, 0.086),
-    "outer_bull": (0.120, 0.172),
-    "inner_single": (0.225, 0.358),
-    "triple": (0.425, 0.535),
-    "outer_single": (0.612, 0.710),
-    "double": (0.810, 0.900),
+    "bullseye": (0.000, 0.115),
+    "sector": (0.240, 0.790),
 }
 
 
 @dataclass(frozen=True)
-class DartInstance:
-    """One visible dart marker before rendering."""
-
-    dart_id: str
-    sector_value: int | None
-    ring: str
-    score: int
-    x_px: float
-    y_px: float
-    is_annotation: bool
-
-
-@dataclass(frozen=True)
-class DartScoreOption:
-    """One visible score option for a score-choice query."""
-
-    label: str
-    score: int
-    is_answer: bool
-
-
-@dataclass(frozen=True)
 class DartboardRenderParams:
-    """Resolved render controls for one dartboard scene."""
+    """Resolved render controls for one simplified dartboard scene."""
 
     canvas_width: int
     canvas_height: int
@@ -113,12 +61,12 @@ class RenderedDartSpec:
     """One rendered dart marker with trace-friendly metadata."""
 
     dart_id: str
+    area_kind: str
     sector_value: int | None
-    ring: str
     score: int
     center_px: Tuple[float, float]
     bbox_px: Tuple[float, float, float, float]
-    is_annotation: bool
+    is_marked: bool
 
 
 @dataclass(frozen=True)
@@ -151,73 +99,67 @@ _STYLE_PALETTES: Mapping[str, Mapping[str, Tuple[int, int, int]]] = {
         "board_frame": (28, 31, 35),
         "light_sector": (238, 224, 194),
         "dark_sector": (33, 36, 40),
-        "red": (173, 42, 44),
-        "green": (42, 132, 82),
+        "bullseye": (196, 45, 48),
         "wire": (222, 218, 205),
         "number": (246, 246, 238),
         "dart": (244, 198, 65),
         "dart_outline": (41, 45, 52),
-        "annotation": (252, 110, 74),
+        "marked": (248, 72, 64),
     },
     "soft": {
         "board_frame": (51, 61, 68),
         "light_sector": (246, 231, 197),
         "dark_sector": (63, 69, 74),
-        "red": (198, 76, 74),
-        "green": (62, 147, 101),
+        "bullseye": (205, 70, 70),
         "wire": (238, 232, 216),
         "number": (252, 249, 239),
         "dart": (102, 180, 232),
         "dart_outline": (29, 45, 58),
-        "annotation": (242, 112, 96),
+        "marked": (238, 74, 68),
     },
     "outlined": {
         "board_frame": (31, 41, 48),
         "light_sector": (242, 236, 219),
         "dark_sector": (59, 66, 73),
-        "red": (181, 64, 67),
-        "green": (55, 137, 94),
+        "bullseye": (184, 54, 58),
         "wire": (32, 38, 44),
         "number": (248, 248, 240),
         "dart": (250, 218, 93),
         "dart_outline": (13, 22, 30),
-        "annotation": (234, 98, 76),
+        "marked": (231, 61, 54),
     },
     "league_blue": {
         "board_frame": (24, 48, 83),
         "light_sector": (239, 231, 210),
         "dark_sector": (31, 60, 96),
-        "red": (202, 58, 70),
-        "green": (38, 151, 130),
+        "bullseye": (207, 58, 76),
         "wire": (226, 233, 240),
         "number": (250, 252, 255),
         "dart": (247, 197, 72),
         "dart_outline": (9, 24, 44),
-        "annotation": (247, 126, 90),
+        "marked": (248, 76, 68),
     },
     "parchment": {
         "board_frame": (76, 55, 38),
         "light_sector": (247, 227, 184),
         "dark_sector": (78, 63, 49),
-        "red": (174, 57, 55),
-        "green": (75, 138, 85),
+        "bullseye": (174, 57, 55),
         "wire": (238, 217, 178),
         "number": (255, 244, 218),
         "dart": (73, 142, 191),
         "dart_outline": (40, 28, 21),
-        "annotation": (231, 112, 76),
+        "marked": (220, 64, 54),
     },
     "neon": {
         "board_frame": (17, 24, 39),
         "light_sector": (225, 236, 230),
         "dark_sector": (24, 34, 55),
-        "red": (224, 61, 104),
-        "green": (34, 197, 154),
+        "bullseye": (224, 61, 104),
         "wire": (178, 220, 238),
         "number": (242, 250, 255),
         "dart": (250, 204, 21),
         "dart_outline": (4, 12, 24),
-        "annotation": (255, 121, 91),
+        "marked": (255, 84, 76),
     },
 }
 
@@ -237,8 +179,7 @@ _DART_COLOR_ANCHOR_KEYS: Tuple[str, ...] = (
     "board_frame",
     "light_sector",
     "dark_sector",
-    "red",
-    "green",
+    "bullseye",
     "wire",
     "number",
 )
@@ -288,10 +229,7 @@ def sample_dart_marker_color(
 
 
 def polar_to_xy(*, cx: float, cy: float, radius: float, angle_deg: float) -> Tuple[float, float]:
-    """Convert dartboard polar coordinates to image pixel coordinates.
-
-    Angle 0 is the top of the board and positive angles move clockwise.
-    """
+    """Convert dartboard polar coordinates to image pixel coordinates."""
 
     theta = math.radians(float(angle_deg))
     return (
@@ -340,14 +278,17 @@ def _draw_centered_text(
     bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=int(stroke_width))
     width = float(bbox[2] - bbox[0])
     height = float(bbox[3] - bbox[1])
-    draw_text_traced(draw,
+    draw_text_traced(
+        draw,
         (float(xy[0]) - (0.5 * width), float(xy[1]) - (0.5 * height)),
         str(text),
         font=font,
         fill=fill,
         stroke_width=int(stroke_width),
         stroke_fill=stroke_fill,
-     role="readout", required=False,)
+        role="readout",
+        required=False,
+    )
 
 
 def _draw_board(
@@ -356,78 +297,53 @@ def _draw_board(
     params: DartboardRenderParams,
     style_variant: str,
 ) -> Dict[str, Any]:
-    """Draw the dartboard and return board geometry metadata."""
+    """Draw the simplified dartboard and return board geometry metadata."""
 
     draw = ImageDraw.Draw(image)
     palette = _palette(str(style_variant))
     cx = float(params.board_center_x_px)
     cy = float(params.board_center_y_px)
     radius = float(params.board_radius_px)
-
-    radii = {key: float(value) * radius for key, value in DARTBOARD_BAND_RADII_FRACTIONS.items()}
-    ring_bands = (
-        ("inner_single", float(radii["outer_bull"]), float(radii["inner_single"])),
-        ("triple", float(radii["inner_single"]), float(radii["triple_outer"])),
-        ("outer_single", float(radii["triple_outer"]), float(radii["outer_single"])),
-        ("double", float(radii["outer_single"]), float(radii["double_outer"])),
-    )
+    bull_radius = float(DARTBOARD_RADIUS_FRACTIONS["bullseye"]) * radius
+    sector_outer = float(DARTBOARD_RADIUS_FRACTIONS["sector_outer"]) * radius
 
     draw.ellipse(
         [cx - radius, cy - radius, cx + radius, cy + radius],
         fill=tuple(int(v) for v in palette["board_frame"]),
     )
-    for sector_index, sector_value in enumerate(STANDARD_DART_SECTORS):
+    for sector_index, _sector_value in enumerate(STANDARD_DART_SECTORS):
         start_deg = float((sector_index * 18.0) - 9.0)
         end_deg = float((sector_index * 18.0) + 9.0)
-        alternate_fill = palette["light_sector"] if sector_index % 2 == 0 else palette["dark_sector"]
-        for ring_name, inner_radius, outer_radius in ring_bands:
-            if ring_name in {"double", "triple"}:
-                fill = palette["red"] if sector_index % 2 == 0 else palette["green"]
-            else:
-                fill = alternate_fill
-            draw.polygon(
-                _ring_polygon(
-                    cx=cx,
-                    cy=cy,
-                    inner_radius=float(inner_radius),
-                    outer_radius=float(outer_radius),
-                    start_deg=float(start_deg),
-                    end_deg=float(end_deg),
-                ),
-                fill=tuple(int(v) for v in fill),
-            )
+        fill = palette["light_sector"] if sector_index % 2 == 0 else palette["dark_sector"]
+        draw.polygon(
+            _ring_polygon(
+                cx=cx,
+                cy=cy,
+                inner_radius=float(bull_radius),
+                outer_radius=float(sector_outer),
+                start_deg=float(start_deg),
+                end_deg=float(end_deg),
+            ),
+            fill=tuple(int(v) for v in fill),
+        )
 
     wire = tuple(int(v) for v in palette["wire"])
-    for ring_radius in (
-        radii["outer_bull"],
-        radii["inner_single"],
-        radii["triple_outer"],
-        radii["outer_single"],
-        radii["double_outer"],
-    ):
-        draw.ellipse(
-            [cx - ring_radius, cy - ring_radius, cx + ring_radius, cy + ring_radius],
-            outline=wire,
-            width=3,
-        )
+    draw.ellipse(
+        [cx - sector_outer, cy - sector_outer, cx + sector_outer, cy + sector_outer],
+        outline=wire,
+        width=3,
+    )
+    draw.ellipse(
+        [cx - bull_radius, cy - bull_radius, cx + bull_radius, cy + bull_radius],
+        fill=tuple(int(v) for v in palette["bullseye"]),
+        outline=wire,
+        width=3,
+    )
     for sector_index in range(len(STANDARD_DART_SECTORS)):
         angle = float((sector_index * 18.0) - 9.0)
-        x_outer, y_outer = polar_to_xy(cx=cx, cy=cy, radius=radii["double_outer"], angle_deg=angle)
-        x_inner, y_inner = polar_to_xy(cx=cx, cy=cy, radius=radii["outer_bull"], angle_deg=angle)
+        x_outer, y_outer = polar_to_xy(cx=cx, cy=cy, radius=sector_outer, angle_deg=angle)
+        x_inner, y_inner = polar_to_xy(cx=cx, cy=cy, radius=bull_radius, angle_deg=angle)
         draw.line([(x_inner, y_inner), (x_outer, y_outer)], fill=wire, width=2)
-
-    draw.ellipse(
-        [cx - radii["outer_bull"], cy - radii["outer_bull"], cx + radii["outer_bull"], cy + radii["outer_bull"]],
-        fill=tuple(int(v) for v in palette["green"]),
-        outline=wire,
-        width=3,
-    )
-    draw.ellipse(
-        [cx - radii["inner_bull"], cy - radii["inner_bull"], cx + radii["inner_bull"], cy + radii["inner_bull"]],
-        fill=tuple(int(v) for v in palette["red"]),
-        outline=wire,
-        width=3,
-    )
 
     number_font = load_font(
         int(params.number_font_size_px),
@@ -450,81 +366,49 @@ def _draw_board(
     return {
         "center_px": [round(cx, 3), round(cy, 3)],
         "radius_px": round(radius, 3),
-        "radii_px": {key: round(float(value), 3) for key, value in radii.items()},
+        "radii_px": {
+            "bullseye": round(float(bull_radius), 3),
+            "sector_outer": round(float(sector_outer), 3),
+            "frame": round(float(radius), 3),
+        },
         "sector_order_clockwise_from_top": [int(value) for value in STANDARD_DART_SECTORS],
+        "bullseye_score": 50,
     }
 
 
-def _draw_target_highlight(
+def _draw_sector_highlight(
     image: Image.Image,
     *,
     params: DartboardRenderParams,
-    target_ring: str | None,
     target_sector_value: int | None,
 ) -> None:
-    """Draw a non-answer target-region highlight for ring/sector count queries."""
+    """Draw a translucent sector highlight for sector-count queries."""
 
-    if target_ring is None and target_sector_value is None:
+    if target_sector_value is None:
+        return
+    try:
+        sector_index = STANDARD_DART_SECTORS.index(int(target_sector_value))
+    except ValueError:
         return
     cx = float(params.board_center_x_px)
     cy = float(params.board_center_y_px)
     radius = float(params.board_radius_px)
-    radii = {key: float(value) * radius for key, value in DARTBOARD_BAND_RADII_FRACTIONS.items()}
+    bull_radius = float(DARTBOARD_RADIUS_FRACTIONS["bullseye"]) * radius
+    sector_outer = float(DARTBOARD_RADIUS_FRACTIONS["sector_outer"]) * radius
     overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
-    fill = (255, 214, 72, 118)
-    outline = (255, 246, 142, 230)
-
-    def draw_band(inner_radius: float, outer_radius: float, start_deg: float, end_deg: float) -> None:
-        draw.polygon(
-            _ring_polygon(
-                cx=cx,
-                cy=cy,
-                inner_radius=float(inner_radius),
-                outer_radius=float(outer_radius),
-                start_deg=float(start_deg),
-                end_deg=float(end_deg),
-            ),
-            fill=fill,
-            outline=outline,
-        )
-
-    if target_sector_value is not None:
-        try:
-            sector_index = STANDARD_DART_SECTORS.index(int(target_sector_value))
-        except ValueError:
-            sector_index = 0
-        draw_band(
-            radii["outer_bull"],
-            radii["double_outer"],
-            float((sector_index * 18.0) - 9.0),
-            float((sector_index * 18.0) + 9.0),
-        )
-    elif str(target_ring) == "bull":
-        draw.ellipse(
-            [cx - radii["outer_bull"], cy - radii["outer_bull"], cx + radii["outer_bull"], cy + radii["outer_bull"]],
-            fill=fill,
-            outline=outline,
-            width=3,
-        )
-    else:
-        ring_bands = {
-            "single": (
-                (radii["outer_bull"], radii["inner_single"]),
-                (radii["triple_outer"], radii["outer_single"]),
-            ),
-            "triple": ((radii["inner_single"], radii["triple_outer"]),),
-            "double": ((radii["outer_single"], radii["double_outer"]),),
-        }.get(str(target_ring), ())
-        for inner_radius, outer_radius in ring_bands:
-            for sector_index in range(len(STANDARD_DART_SECTORS)):
-                draw_band(
-                    float(inner_radius),
-                    float(outer_radius),
-                    float((sector_index * 18.0) - 9.0),
-                    float((sector_index * 18.0) + 9.0),
-                )
-
+    draw.polygon(
+        _ring_polygon(
+            cx=cx,
+            cy=cy,
+            inner_radius=float(bull_radius),
+            outer_radius=float(sector_outer),
+            start_deg=float((sector_index * 18.0) - 9.0),
+            end_deg=float((sector_index * 18.0) + 9.0),
+        ),
+        fill=(255, 214, 72, 112),
+        outline=(255, 246, 142, 230),
+    )
     image.alpha_composite(overlay)
 
 
@@ -558,61 +442,17 @@ def _draw_dart(
     draw.line([(x_i - arm_radius, y_i), (x_i + arm_radius, y_i)], fill=tuple(int(v) for v in fill), width=3)
     draw.line([(x_i, y_i - arm_radius), (x_i, y_i + arm_radius)], fill=tuple(int(v) for v in fill), width=3)
     draw.ellipse(bbox, fill=tuple(int(v) for v in fill), outline=tuple(int(v) for v in outline), width=2)
+    if bool(dart.is_marked):
+        ring_radius = radius * 1.72
+        draw.ellipse(
+            [x - ring_radius, y - ring_radius, x + ring_radius, y + ring_radius],
+            outline=tuple(int(v) for v in palette["marked"]),
+            width=5,
+        )
     return bbox
 
 
-def _draw_score_options(
-    image: Image.Image,
-    *,
-    options: Sequence[DartScoreOption],
-    params: DartboardRenderParams,
-    style_variant: str,
-) -> Dict[str, Any]:
-    """Draw visible score-choice options and return option bbox metadata."""
-
-    if not options:
-        return {}
-    draw = ImageDraw.Draw(image)
-    palette = _palette(str(style_variant))
-    option_font = load_font(30, bold=True, font_family=str(params.font_family) or None)
-    panel_y0 = float(params.canvas_height - 114)
-    panel_y1 = float(params.canvas_height - 34)
-    left = 82.0
-    gap = 18.0
-    option_width = (float(params.canvas_width) - (2.0 * left) - (float(len(options) - 1) * gap)) / float(len(options))
-    option_bboxes: Dict[str, List[float]] = {}
-    option_scores: Dict[str, int] = {}
-    for index, option in enumerate(options):
-        x0 = left + float(index) * (option_width + gap)
-        x1 = x0 + option_width
-        bbox = [round(x0, 3), round(panel_y0, 3), round(x1, 3), round(panel_y1, 3)]
-        option_bboxes[str(option.label)] = [float(v) for v in bbox]
-        option_scores[str(option.label)] = int(option.score)
-        draw.rounded_rectangle(
-            bbox,
-            radius=12,
-            fill=(28, 31, 35, 235),
-            outline=tuple(int(v) for v in palette["wire"]),
-            width=3,
-        )
-        text = f"{option.label}: {int(option.score)}"
-        _draw_centered_text(
-            draw,
-            ((x0 + x1) * 0.5, (panel_y0 + panel_y1) * 0.5),
-            text,
-            font=option_font,
-            fill=tuple(int(v) for v in palette["number"]),
-            stroke_fill=(20, 24, 28),
-            stroke_width=2,
-        )
-    return {"score_option_bboxes_px": option_bboxes, "score_option_values": option_scores}
-
-
-def _panel_bbox(
-    *,
-    params: DartboardRenderParams,
-    has_score_options: bool,
-) -> Tuple[int, int, int, int]:
+def _panel_bbox(*, params: DartboardRenderParams) -> Tuple[int, int, int, int]:
     """Return a backing panel bbox that follows the jittered dartboard."""
 
     cx = float(params.board_center_x_px)
@@ -621,10 +461,7 @@ def _panel_bbox(
     x0 = max(10, int(round(cx - radius - 62.0)))
     y0 = max(10, int(round(cy - radius - 44.0)))
     x1 = min(int(params.canvas_width) - 10, int(round(cx + radius + 62.0)))
-    if has_score_options:
-        y1 = int(params.canvas_height) - 18
-    else:
-        y1 = min(int(params.canvas_height) - 10, int(round(cy + radius + 48.0)))
+    y1 = min(int(params.canvas_height) - 10, int(round(cy + radius + 56.0)))
     return (int(x0), int(y0), int(x1), int(max(y0 + 80, y1)))
 
 
@@ -634,21 +471,15 @@ def render_darts_scene(
     background: Image.Image,
     style_variant: str,
     params: DartboardRenderParams,
-    target_ring: str | None = None,
     target_sector_value: int | None = None,
     dart_fill_color: Tuple[int, int, int] | None = None,
     dart_fill_min_lab_distance: float | None = None,
-    score_options: Sequence[DartScoreOption] = (),
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedDartsScene:
-    """Render the board, optional target highlight, darts, and option strip.
-
-    The renderer only projects an already-sampled scene; scoring semantics,
-    answer binding, and annotation membership are owned outside this layer.
-    """
+    """Render the simplified board, optional sector highlight, and darts."""
 
     image = background.convert("RGBA")
-    panel_bbox = _panel_bbox(params=params, has_score_options=bool(score_options))
+    panel_bbox = _panel_bbox(params=params)
     if panel_style is not None:
         draw_panel_scene_chrome(
             ImageDraw.Draw(image),
@@ -658,12 +489,7 @@ def render_darts_scene(
             border_width=3,
         )
     board_meta = _draw_board(image, params=params, style_variant=str(style_variant))
-    _draw_target_highlight(
-        image,
-        params=params,
-        target_ring=target_ring,
-        target_sector_value=target_sector_value,
-    )
+    _draw_sector_highlight(image, params=params, target_sector_value=target_sector_value)
     draw = ImageDraw.Draw(image)
 
     dart_specs: List[RenderedDartSpec] = []
@@ -684,12 +510,12 @@ def render_darts_scene(
         dart_specs.append(
             RenderedDartSpec(
                 dart_id=str(dart.dart_id),
+                area_kind=str(dart.area_kind),
                 sector_value=None if dart.sector_value is None else int(dart.sector_value),
-                ring=str(dart.ring),
                 score=int(dart.score),
                 center_px=center,
                 bbox_px=bbox,
-                is_annotation=bool(dart.is_annotation),
+                is_marked=bool(dart.is_marked),
             )
         )
         scene_entities.append(
@@ -698,33 +524,10 @@ def render_darts_scene(
                 "entity_type": "dart",
                 "bbox_px": [float(v) for v in bbox],
                 "attrs": {
+                    "area_kind": str(dart.area_kind),
                     "sector_value": None if dart.sector_value is None else int(dart.sector_value),
-                    "ring": str(dart.ring),
                     "score": int(dart.score),
-                    "is_annotation": bool(dart.is_annotation),
-                },
-            }
-        )
-
-    option_map = _draw_score_options(
-        image,
-        options=tuple(score_options),
-        params=params,
-        style_variant=str(style_variant),
-    )
-    for option in score_options:
-        option_bbox = option_map.get("score_option_bboxes_px", {}).get(str(option.label))
-        if option_bbox is None:
-            continue
-        scene_entities.append(
-            {
-                "entity_id": f"score_option_{str(option.label)}",
-                "entity_type": "score_option",
-                "bbox_px": [float(v) for v in option_bbox],
-                "attrs": {
-                    "label": str(option.label),
-                    "score": int(option.score),
-                    "is_answer": bool(option.is_answer),
+                    "is_marked": bool(dart.is_marked),
                 },
             }
         )
@@ -747,7 +550,7 @@ def render_darts_scene(
             if panel_style is None
             else game_panel_scene_style_metadata(panel_style),
             "font_family": str(params.font_family),
-            **dict(option_map),
+            "target_sector_value": None if target_sector_value is None else int(target_sector_value),
         },
     )
 
@@ -769,8 +572,7 @@ def _allowed_panel_treatments(params: Mapping[str, Any], render_defaults: Mappin
 def render_darts_task_scene(
     *,
     darts: Sequence[DartInstance],
-    score_options: Sequence[DartScoreOption],
-    target_ring: str | None,
+    target_sector_value: int | None,
     style_variant: str,
     render_params: DartboardRenderParams,
     render_defaults: Mapping[str, Any],
@@ -808,10 +610,9 @@ def render_darts_task_scene(
         background=background,
         style_variant=str(style_variant),
         params=render_params,
-        target_ring=target_ring,
+        target_sector_value=target_sector_value,
         dart_fill_color=dart_fill_color,
         dart_fill_min_lab_distance=float(dart_fill_min_lab_distance),
-        score_options=tuple(score_options),
         panel_style=panel_style,
     )
     image, post_noise_meta = apply_post_image_noise(
@@ -834,11 +635,9 @@ def render_darts_task_scene(
 
 
 __all__ = [
-    "DartInstance",
-    "DartScoreOption",
-    "DartboardRenderParams",
-    "DARTBOARD_BAND_RADII_FRACTIONS",
+    "DARTBOARD_RADIUS_FRACTIONS",
     "DARTBOARD_SAMPLE_RADIUS_FRACTIONS",
+    "DartboardRenderParams",
     "RenderedDartsTaskContext",
     "RenderedDartsScene",
     "STANDARD_DART_SECTORS",

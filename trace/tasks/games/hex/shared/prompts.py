@@ -24,7 +24,6 @@ class HexPromptContext:
     scene_variant: str
     prompt_query_key: str
     query_player: str
-    reference_label: str = ""
     neighbor_state: str = ""
 
 
@@ -74,12 +73,10 @@ def build_hex_prompt_artifacts(
     json_example, json_example_answer_only = build_hex_prompt_json_examples(answer_type=str(answer_type))
     answer_hint = str(defaults[f"answer_hint_{str(context.prompt_query_key)}"]).format(
         query_player=str(context.query_player),
-        reference_label=str(context.reference_label),
         neighbor_state=str(context.neighbor_state),
     )
     annotation_hint = str(defaults[f"annotation_hint_{str(context.prompt_query_key)}"]).format(
         query_player=str(context.query_player),
-        reference_label=str(context.reference_label),
         neighbor_state=str(context.neighbor_state),
     )
     prompt_selection = render_scene_prompt_variants(
@@ -103,7 +100,6 @@ def build_hex_prompt_artifacts(
             "blue_goal_text": str(defaults["blue_goal_text"]),
             "query_player": str(context.query_player),
             "query_player_lower": str(context.query_player).lower(),
-            "reference_label": str(context.reference_label),
             "neighbor_state": str(context.neighbor_state),
         },
         instance_seed=int(instance_seed),

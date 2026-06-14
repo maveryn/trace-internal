@@ -12,7 +12,6 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 from ._lifecycle import HexAttemptResult, HexObjectivePlan, run_hex_lifecycle
 from .shared.sampling import (
     resolve_hex_integer_axis,
-    resolve_hex_reference_label,
     sample_neighbor_count_scene,
 )
 from .shared.state import SCENE_ID
@@ -55,15 +54,12 @@ def _prepare_neighbor_count_objective(
         namespace=f"{selected_query_id}.target_answer",
         balanced_flag_key="balanced_target_answer_sampling",
     )
-    reference_label = resolve_hex_reference_label(task_params, _GEN_DEFAULTS)
-
     def construct_attempt(rng, axes) -> HexAttemptResult:
         sample = sample_neighbor_count_scene(
             rng=rng,
             scene_axes=axes,
             target_answer=int(target_axis.value),
             target_state=target_state,
-            reference_label=reference_label,
         )
         return HexAttemptResult(
             sample=sample,

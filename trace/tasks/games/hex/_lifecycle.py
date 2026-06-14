@@ -144,11 +144,9 @@ def run_hex_lifecycle(
                 for spec in attempt.sample.candidate_specs
             },
             params=render_params,
-            reference_labels_by_coord={
-                tuple(attempt.sample.reference_coord): str(attempt.sample.reference_label)
-            }
-            if attempt.sample.reference_coord is not None and attempt.sample.reference_label
-            else {},
+            reference_coords=(tuple(attempt.sample.reference_coord),)
+            if attempt.sample.reference_coord is not None
+            else tuple(),
             panel_style=panel_style,
         )
         annotation_entity_ids, annotation_artifacts = hex_cell_point_set_annotation(
@@ -163,7 +161,6 @@ def run_hex_lifecycle(
         )
 
         query_player = color_name(attempt.sample.player_value)
-        reference_label = str(attempt.sample.reference_label or "")
         neighbor_state = str(attempt.sample.neighbor_target_state or "")
         prompt_defaults_used, prompt_artifacts = build_hex_prompt_artifacts(
             domain=str(domain),
@@ -172,7 +169,6 @@ def run_hex_lifecycle(
                 scene_variant=str(scene_axes.scene_variant),
                 prompt_query_key=str(objective.prompt_query_key),
                 query_player=str(query_player),
-                reference_label=str(reference_label),
                 neighbor_state=str(neighbor_state),
             ),
             answer_type=str(objective.answer_gt.type),
@@ -184,7 +180,6 @@ def run_hex_lifecycle(
             candidate_count_axis=objective.candidate_count_axis,
             branch_probabilities=branch_probabilities,
             sample=attempt.sample,
-            reference_label=reference_label,
             neighbor_state=neighbor_state,
             extra_params=objective.extra_query_params,
         )

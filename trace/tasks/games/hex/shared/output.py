@@ -38,7 +38,6 @@ def build_hex_common_trace_params(
     candidate_count_axis: HexIntegerAxis | None,
     branch_probabilities: Mapping[str, float],
     sample: HexSample,
-    reference_label: str,
     neighbor_state: str,
     extra_params: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
@@ -55,7 +54,6 @@ def build_hex_common_trace_params(
         "style_variant_probabilities": dict(scene_axes.style_variant_probabilities),
         "player_color_probabilities": dict(scene_axes.player_color_probabilities),
         "board_size_probabilities": dict(scene_axes.board_size_probabilities),
-        "reference_label": str(reference_label),
         "neighbor_target_state": str(neighbor_state),
         "occupied_count": sum(
             1
@@ -104,7 +102,6 @@ def build_hex_trace_payload(
     """Build the verifier payload from one rendered Hex execution trace."""
 
     annotation_ids = tuple(str(value) for value in annotation_entity_ids)
-    reference_label = str(sample.reference_label or "")
     neighbor_state = str(sample.neighbor_target_state or "")
     execution_trace = {
         "scene_variant": str(scene_axes.scene_variant),
@@ -119,7 +116,6 @@ def build_hex_trace_payload(
         if sample.reference_coord is None
         else [int(sample.reference_coord[0]), int(sample.reference_coord[1])],
         "reference_cell_id": None if sample.reference_coord is None else coord_to_cell_id(sample.reference_coord),
-        "reference_label": reference_label,
         "neighbor_target_state": neighbor_state,
         "neighbor_match_coords": hex_coord_list(sample.neighbor_match_coords),
         "winning_move_coord": None

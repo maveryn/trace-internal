@@ -142,9 +142,10 @@ def test_games_hex_candidate_neighbor_count_emits_expected_contract() -> None:
     assert out.scene_id == "hex"
     assert trace["query_spec"]["params"]["query_id"] == "red_neighbor_count"
     assert execution["query_id"] == "red_neighbor_count"
-    assert execution["reference_label"] == "C"
     assert execution["reference_cell_id"]
-    assert trace["render_map"]["reference_labels_by_cell_id"] == {execution["reference_cell_id"]: "C"}
+    assert trace["render_map"]["reference_cell_ids"] == [execution["reference_cell_id"]]
+    assert "green" in out.prompt.lower()
+    assert "cell C" not in out.prompt
     assert trace["projected_annotation"]["type"] == "point_set"
     assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
@@ -171,6 +172,7 @@ def test_games_hex_candidate_neighbor_count_matches_adjacent_cell_states() -> No
         execution = out.trace_payload["execution_trace"]
         board = tuple(tuple(int(value) for value in row) for row in execution["board_rows"])
         reference_coord = tuple(int(value) for value in execution["reference_coord"])
+        assert int(board[reference_coord[0]][reference_coord[1]]) == EMPTY
         expected = sorted_coords(
             coord
             for coord in neighbors(reference_coord, board_size=int(execution["board_size"]))

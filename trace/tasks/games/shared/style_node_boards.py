@@ -93,6 +93,8 @@ class HexTheme:
     candidate_badge_fill_rgb: Tuple[int, int, int]
     candidate_badge_outline_rgb: Tuple[int, int, int]
     candidate_badge_text_rgb: Tuple[int, int, int]
+    reference_cell_fill_rgb: Tuple[int, int, int]
+    reference_cell_outline_rgb: Tuple[int, int, int]
 
 
 def build_games_nine_mens_morris_theme(*, style_variant: str) -> NineMensMorrisTheme:
@@ -324,6 +326,8 @@ def build_games_hex_theme(*, style_variant: str) -> HexTheme:
             candidate_badge_fill_rgb=(255, 250, 236),
             candidate_badge_outline_rgb=(89, 78, 62),
             candidate_badge_text_rgb=(38, 34, 28),
+            reference_cell_fill_rgb=(105, 190, 116),
+            reference_cell_outline_rgb=(24, 104, 48),
         )
     if variant == "outlined":
         return HexTheme(
@@ -342,6 +346,8 @@ def build_games_hex_theme(*, style_variant: str) -> HexTheme:
             candidate_badge_fill_rgb=(255, 255, 255),
             candidate_badge_outline_rgb=(40, 46, 54),
             candidate_badge_text_rgb=(18, 24, 30),
+            reference_cell_fill_rgb=(92, 198, 118),
+            reference_cell_outline_rgb=(18, 112, 52),
         )
     if variant == "slate":
         return HexTheme(
@@ -360,6 +366,8 @@ def build_games_hex_theme(*, style_variant: str) -> HexTheme:
             candidate_badge_fill_rgb=(244, 248, 246),
             candidate_badge_outline_rgb=(28, 36, 40),
             candidate_badge_text_rgb=(16, 20, 22),
+            reference_cell_fill_rgb=(92, 208, 132),
+            reference_cell_outline_rgb=(210, 255, 226),
         )
     if variant == "paper":
         return HexTheme(
@@ -378,6 +386,8 @@ def build_games_hex_theme(*, style_variant: str) -> HexTheme:
             candidate_badge_fill_rgb=(255, 249, 226),
             candidate_badge_outline_rgb=(112, 82, 46),
             candidate_badge_text_rgb=(44, 30, 18),
+            reference_cell_fill_rgb=(112, 188, 104),
+            reference_cell_outline_rgb=(30, 104, 42),
         )
     return HexTheme(
         cell_fill_rgb=(232, 210, 164),
@@ -395,4 +405,6 @@ def build_games_hex_theme(*, style_variant: str) -> HexTheme:
         candidate_badge_fill_rgb=(255, 248, 224),
         candidate_badge_outline_rgb=(78, 58, 34),
         candidate_badge_text_rgb=(30, 24, 18),
+        reference_cell_fill_rgb=(105, 186, 94),
+        reference_cell_outline_rgb=(22, 92, 38),
     )

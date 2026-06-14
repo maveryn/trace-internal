@@ -242,16 +242,6 @@ def resolve_hex_candidate_count_axis(
     )
 
 
-def resolve_hex_reference_label(params: Mapping[str, Any], gen_defaults: Mapping[str, Any]) -> str:
-    value = str(
-        params.get(
-            "reference_cell_label",
-            group_default(gen_defaults, "reference_cell_label", DEFAULTS.reference_cell_label),
-        )
-    ).strip()
-    return value or str(DEFAULTS.reference_cell_label)
-
-
 def resolve_hex_render_params(
     params: Mapping[str, Any],
     *,
@@ -552,7 +542,6 @@ def sample_neighbor_count_scene(
     scene_axes: HexSceneAxes,
     target_answer: int,
     target_state: str,
-    reference_label: str,
 ) -> HexSample:
     """Sample a Hex position with an exact state count around one reference cell."""
 
@@ -577,7 +566,7 @@ def sample_neighbor_count_scene(
     matching = set(adjacent[:target])
     non_target_values = tuple(value for value in (EMPTY, RED, BLUE) if int(value) != int(target_value))
 
-    rows[reference_coord[0]][reference_coord[1]] = int(rng.choice((EMPTY, RED, BLUE)))
+    rows[reference_coord[0]][reference_coord[1]] = EMPTY
     for coord in adjacent:
         if coord in matching:
             rows[coord[0]][coord[1]] = int(target_value)
@@ -614,7 +603,6 @@ def sample_neighbor_count_scene(
         min_gap_empty_coords=tuple(),
         construction_mode="reference_cell_adjacent_state_count",
         reference_coord=tuple(reference_coord),
-        reference_label=str(reference_label),
         neighbor_target_state=str(state),
         neighbor_match_coords=tuple(annotation_coords),
     )
@@ -626,7 +614,6 @@ __all__ = [
     "HEX_NEIGHBOR_STATE_TO_VALUE",
     "resolve_hex_candidate_count_axis",
     "resolve_hex_integer_axis",
-    "resolve_hex_reference_label",
     "resolve_hex_render_params",
     "resolve_hex_scene_axes",
     "resolve_hex_string_choice",

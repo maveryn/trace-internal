@@ -25,7 +25,6 @@ generation:
     max_extra_own_stones: 7
     min_extra_opponent_stones: 5
     max_extra_opponent_stones: 14
-    reference_cell_label: C
   task_overrides:
     task_games__hex__candidate_neighbor_count:
       balanced_target_answer_sampling: true

@@ -37,25 +37,25 @@
         "{hex_rule_text} {red_goal_text} {blue_goal_text} Find the smallest number of empty cells that would complete {query_player}'s connection."
       ],
       "red_neighbor_count": [
-        "{hex_rule_text} Cell {reference_label} is the reference cell. How many adjacent cells contain red stones?",
-        "{hex_rule_text} Count the red-stone neighbors touching cell {reference_label}.",
-        "{hex_rule_text} Around cell {reference_label}, how many neighboring cells are red?",
-        "{hex_rule_text} How many cells adjacent to cell {reference_label} contain red stones?",
-        "{hex_rule_text} Use the six cells touching cell {reference_label}. How many of them are red?"
+        "{hex_rule_text} The green cell is the reference cell. How many adjacent cells contain red stones?",
+        "{hex_rule_text} Count the red-stone neighbors touching the green reference cell.",
+        "{hex_rule_text} Around the green cell, how many neighboring cells are red?",
+        "{hex_rule_text} How many cells adjacent to the green cell contain red stones?",
+        "{hex_rule_text} Use the six cells touching the green reference cell. How many of them are red?"
       ],
       "blue_neighbor_count": [
-        "{hex_rule_text} Cell {reference_label} is the reference cell. How many adjacent cells contain blue stones?",
-        "{hex_rule_text} Count the blue-stone neighbors touching cell {reference_label}.",
-        "{hex_rule_text} Around cell {reference_label}, how many neighboring cells are blue?",
-        "{hex_rule_text} How many cells adjacent to cell {reference_label} contain blue stones?",
-        "{hex_rule_text} Use the six cells touching cell {reference_label}. How many of them are blue?"
+        "{hex_rule_text} The green cell is the reference cell. How many adjacent cells contain blue stones?",
+        "{hex_rule_text} Count the blue-stone neighbors touching the green reference cell.",
+        "{hex_rule_text} Around the green cell, how many neighboring cells are blue?",
+        "{hex_rule_text} How many cells adjacent to the green cell contain blue stones?",
+        "{hex_rule_text} Use the six cells touching the green reference cell. How many of them are blue?"
       ],
       "empty_neighbor_count": [
-        "{hex_rule_text} Cell {reference_label} is the reference cell. How many adjacent cells are empty?",
-        "{hex_rule_text} Count the empty neighbors touching cell {reference_label}.",
-        "{hex_rule_text} Around cell {reference_label}, how many neighboring cells are empty?",
-        "{hex_rule_text} How many cells adjacent to cell {reference_label} have no stone?",
-        "{hex_rule_text} Use the six cells touching cell {reference_label}. How many of them are empty?"
+        "{hex_rule_text} The green cell is the reference cell. How many adjacent cells are empty?",
+        "{hex_rule_text} Count the empty neighbors touching the green reference cell.",
+        "{hex_rule_text} Around the green cell, how many neighboring cells are empty?",
+        "{hex_rule_text} How many cells adjacent to the green cell have no stone?",
+        "{hex_rule_text} Use the six cells touching the green reference cell. How many of them are empty?"
       ]
     },
     "output": {
@@ -92,16 +92,13 @@
       "query_player"
     ],
     "query:red_neighbor_count": [
-      "hex_rule_text",
-      "reference_label"
+      "hex_rule_text"
     ],
     "query:blue_neighbor_count": [
-      "hex_rule_text",
-      "reference_label"
+      "hex_rule_text"
     ],
     "query:empty_neighbor_count": [
-      "hex_rule_text",
-      "reference_label"
+      "hex_rule_text"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -149,9 +146,6 @@
     "red_goal_text": {
       "type": "string"
     },
-    "reference_label": {
-      "type": "label"
-    },
     "neighbor_state": {
       "type": "string"
     },
@@ -169,11 +163,11 @@
     "answer_hint_winning_move_cell_label": "set \"answer\" to the single candidate letter of the empty cell that lets {query_player} win immediately",
     "annotation_hint_connection_gap_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of the empty cells in the unique minimum connection gap for {query_player}",
     "answer_hint_connection_gap_count": "set \"answer\" to the minimum number of empty cells {query_player} must fill to connect the required sides",
-    "annotation_hint_red_neighbor_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of red neighboring cells adjacent to cell {reference_label}; use [] if none match",
-    "answer_hint_red_neighbor_count": "set \"answer\" to the number of red neighboring cells adjacent to cell {reference_label}",
-    "annotation_hint_blue_neighbor_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of blue neighboring cells adjacent to cell {reference_label}; use [] if none match",
-    "answer_hint_blue_neighbor_count": "set \"answer\" to the number of blue neighboring cells adjacent to cell {reference_label}",
-    "annotation_hint_empty_neighbor_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of empty neighboring cells adjacent to cell {reference_label}; use [] if none match",
-    "answer_hint_empty_neighbor_count": "set \"answer\" to the number of empty neighboring cells adjacent to cell {reference_label}"
+    "annotation_hint_red_neighbor_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of red neighboring cells adjacent to the green reference cell; use [] if none match",
+    "answer_hint_red_neighbor_count": "set \"answer\" to the number of red neighboring cells adjacent to the green reference cell",
+    "annotation_hint_blue_neighbor_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of blue neighboring cells adjacent to the green reference cell; use [] if none match",
+    "answer_hint_blue_neighbor_count": "set \"answer\" to the number of blue neighboring cells adjacent to the green reference cell",
+    "annotation_hint_empty_neighbor_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of empty neighboring cells adjacent to the green reference cell; use [] if none match",
+    "answer_hint_empty_neighbor_count": "set \"answer\" to the number of empty neighboring cells adjacent to the green reference cell"
   }
 }

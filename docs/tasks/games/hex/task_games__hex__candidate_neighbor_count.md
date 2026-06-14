@@ -14,6 +14,6 @@
 - `count(filter(adjacent_cells(reference_cell), state=query_state)); scene=hex; scope=candidate_neighbor_count; query_state=red|blue|empty`
 
 ## Generation Notes
-1. The reference cell is labeled in the rendered board and is not counted.
+1. The reference cell is filled green in the rendered board and is not counted.
 2. The generator samples an interior reference cell so each instance has exactly six adjacent cells.
 3. Annotation is the set of pixel-space centers for neighboring cells that match the requested state; an empty annotation list is valid when the answer is `0`.

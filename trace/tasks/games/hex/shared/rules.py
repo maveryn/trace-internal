@@ -52,7 +52,6 @@ class HexSample:
     min_gap_empty_coords: Tuple[Coord, ...]
     construction_mode: str
     reference_coord: Coord | None = None
-    reference_label: str | None = None
     neighbor_target_state: str | None = None
     neighbor_match_coords: Tuple[Coord, ...] = tuple()
 

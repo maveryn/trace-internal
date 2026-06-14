@@ -19,7 +19,6 @@ class HexDefaults:
     board_size_support: Tuple[int, ...] = (5, 6, 7, 8)
     candidate_count_support: Tuple[int, ...] = (4, 5, 6)
     winning_move_label_support: Tuple[str, ...] = HEX_CANDIDATE_LABELS[:6]
-    reference_cell_label: str = "C"
     min_extra_own_stones: int = 2
     max_extra_own_stones: int = 7
     min_extra_opponent_stones: int = 5

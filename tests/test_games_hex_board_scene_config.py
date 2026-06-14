@@ -23,8 +23,6 @@ def test_games_hex_board_defaults_expose_scene_target_board_and_style_axes() -> 
     assert set(generation_shared["player_color_weights"].keys()) == {"red", "blue"}
     assert set(generation_shared["style_variant_weights"].keys()) == set(SUPPORTED_HEX_STYLE_VARIANTS)
     assert list(generation_shared["board_size_support"]) == [5, 6, 7, 8]
-    assert str(generation_shared["reference_cell_label"]) == "C"
-
     neighbor = task_overrides["task_games__hex__candidate_neighbor_count"]
     assert bool(neighbor["balanced_target_answer_sampling"]) is True
     assert list(neighbor["neighbor_count_support"]) == [0, 1, 2, 3, 4, 5, 6]

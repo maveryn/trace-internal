@@ -23,7 +23,10 @@ from ..shared.task_support import graph_int_support, resolve_graph_named_variant
 from ..shared.visual_defaults import load_graph_scene_background_defaults, load_graph_scene_noise_defaults
 TASK_ID = 'task_graph__adjacency__directed_pair_reciprocity_count'
 SCENE_ID = 'adjacency'
-SUPPORTED_ADJACENCY_PAIR_RECIPROCITY_QUERY_IDS: Tuple[str, ...] = ('mutual_pair_count',)
+PUBLIC_QUERY_ID = 'single'
+PROMPT_KEY = 'mutual_pair_count'
+TARGET_PAIR_STATE = 'mutual'
+SUPPORTED_ADJACENCY_PAIR_RECIPROCITY_QUERY_IDS: Tuple[str, ...] = (PUBLIC_QUERY_ID,)
 
 @dataclass(frozen=True)
 class _TaskDefaults:
@@ -65,8 +68,8 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_graph_scene_background_defaults(scene_id=S
 POST_IMAGE_NOISE_DEFAULTS = load_graph_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.5)
 
 def _query_state(query_id: str) -> str:
-    if str(query_id) == 'mutual_pair_count':
-        return 'mutual'
+    if str(query_id) in {PUBLIC_QUERY_ID, PROMPT_KEY}:
+        return TARGET_PAIR_STATE
     raise ValueError(f'unsupported reciprocity query_id: {query_id}')
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
@@ -100,11 +103,11 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
 def _sample_reciprocity_matrix(*, instance_seed: int, labels: Tuple[str, ...], query_id: str, target_count: int) -> Tuple[AdjacencyGraphSample, Tuple[_PairState, ...], Tuple[Tuple[str, str], ...]]:
     """Build a directed matrix with an exact number of task-selected pair states."""
-    rng = spawn_rng(int(instance_seed), f'{TASK_ID}.reciprocity_matrix.{str(query_id)}.{int(target_count)}')
+    target_state = _query_state(str(query_id))
+    rng = spawn_rng(int(instance_seed), f'{TASK_ID}.reciprocity_matrix.{target_state}.{int(target_count)}')
     label_order = tuple((str(label) for label in labels))
     pairs = [(label_order[i], label_order[j]) for i in range(len(label_order)) for j in range(i + 1, len(label_order))]
     rng.shuffle(pairs)
-    target_state = _query_state(str(query_id))
     target_pairs = set((tuple(pair) for pair in pairs[:int(target_count)]))
     edges: set[Tuple[str, str]] = set()
     states: List[_PairState] = []
@@ -164,7 +167,7 @@ class GraphCountingAdjacencyDirectedPairReciprocityCountTask:
         image, post_noise_meta = apply_post_image_noise(rendered.image, instance_seed=int(instance_seed), params=params, default_config=POST_IMAGE_NOISE_DEFAULTS)
         annotation_artifacts, annotation_cell_keys = mirrored_pair_cell_point_pair_artifacts(rendered, counted_pairs)
         answer_gt = TypedValue(type='integer', value=int(len(counted_pairs)))
-        prompt_artifacts = build_adjacency_prompt_artifacts(domain=self.domain, bundle_id=PROMPT_BUNDLE_ID, prompt_key=str(query.query_id), dynamic_slots={'object_description': 'a directed graph as an adjacency matrix'}, instance_seed=int(instance_seed))
+        prompt_artifacts = build_adjacency_prompt_artifacts(domain=self.domain, bundle_id=PROMPT_BUNDLE_ID, prompt_key=PROMPT_KEY, dynamic_slots={'object_description': 'a directed graph as an adjacency matrix'}, instance_seed=int(instance_seed))
         node_entities = [{'entity_id': f'node_{label}', 'entity_kind': 'adjacency_row_label', 'label': str(label), 'neighbors': list(sample.adjacency.get(str(label), ())), 'bbox_xyxy': list(rendered.row_label_bboxes[str(label)])} for label in sample.labels]
         edge_entities = [{'entity_id': f'edge_{left}_{right}', 'entity_kind': 'adjacency_edge', 'source_label': str(left), 'target_label': str(right), 'directed': True} for left, right in sample.edges]
         pair_state_records = [{'left_label': str(state.left), 'right_label': str(state.right), 'forward_cell_key': matrix_cell_key(str(state.left), str(state.right)), 'reverse_cell_key': matrix_cell_key(str(state.right), str(state.left)), 'forward_edge_present': bool(state.forward), 'reverse_edge_present': bool(state.reverse), 'pair_state': str(state.state), 'is_counted': bool((str(state.left), str(state.right)) in set(counted_pairs))} for state in pair_states]

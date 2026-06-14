@@ -8,13 +8,17 @@
 5. Implementation: `trace/tasks/graph/adjacency/directed_pair_reciprocity_count.py`.
 
 ## Query IDs
-1. `mutual_pair_count`: count unordered pairs where both mirrored off-diagonal matrix cells are `1`.
-2. Query ids are internal replay metadata; public sampling is at the task-id level.
+1. `single`: count unordered pairs where both mirrored off-diagonal matrix cells are `1`.
+2. Internal prompt key: `mutual_pair_count`.
+3. Public sampling is at the task-id level.
 
 ## Taxonomy Contract
 1. Program contract: build the unordered off-diagonal node-pair candidate set, filter pairs whose two directed matrix cells are both present, count the filtered pairs, and annotate one mirrored-cell point pair per counted pair.
 2. Stable schemas: answer is `integer`; annotation is `point_pair_set`.
 3. `target_count`, node labels, node count, font, style, and matrix layout are generation/render metadata, not public query branches.
+
+## Program Contract
+- `count(filter(unordered_node_pairs, has_edge(source,target) and has_edge(target,source))); output=integer; annotation=point_pair_set(mutual_edge_cell_centers); scene=adjacency; scope=directed_pair_reciprocity_count`
 
 ## Answer And Annotation
 1. Answer type: `integer`.

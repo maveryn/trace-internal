@@ -10,7 +10,9 @@ from .shared.sampling import ComponentCountDefaults
 from .shared.state import SCENE_ID
 from ..shared.visual_defaults import load_graph_scene_background_defaults, load_graph_scene_noise_defaults
 TASK_ID = 'task_graph__adjacency__directed_strong_component_count'
-QUERY_ID = 'directed_strong_component_count'
+PUBLIC_QUERY_ID = 'single'
+PROMPT_KEY = 'directed_strong_component_count'
+QUERY_ID = PUBLIC_QUERY_ID
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 _DEFAULTS = ComponentCountDefaults()
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults('graph', SCENE_ID, task_id=TASK_ID)
@@ -31,5 +33,5 @@ class GraphCountingAdjacencyDirectedStrongComponentCountTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate a directed SCC count through scene-private plumbing."""
-        return run_component_count_lifecycle(task_id=TASK_ID, domain=self.domain, scene_id=SCENE_ID, supported_query_ids=SUPPORTED_QUERY_IDS, default_query_id=QUERY_ID, gen_defaults=_GEN_DEFAULTS, render_defaults=_RENDER_DEFAULTS, prompt_bundle_id=PROMPT_BUNDLE_ID, background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS, noise_defaults=POST_IMAGE_NOISE_DEFAULTS, defaults=_DEFAULTS, instance_seed=int(instance_seed), params=params, prepare_objective=_prepare_directed_component_count_objective)
+        return run_component_count_lifecycle(task_id=TASK_ID, domain=self.domain, scene_id=SCENE_ID, supported_query_ids=SUPPORTED_QUERY_IDS, default_query_id=QUERY_ID, gen_defaults=_GEN_DEFAULTS, render_defaults=_RENDER_DEFAULTS, prompt_bundle_id=PROMPT_BUNDLE_ID, prompt_key=PROMPT_KEY, background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS, noise_defaults=POST_IMAGE_NOISE_DEFAULTS, defaults=_DEFAULTS, instance_seed=int(instance_seed), params=params, prepare_objective=_prepare_directed_component_count_objective)
 __all__ = ['GraphCountingAdjacencyDirectedStrongComponentCountTask']

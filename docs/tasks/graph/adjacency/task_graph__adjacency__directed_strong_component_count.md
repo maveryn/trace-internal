@@ -8,13 +8,17 @@
 5. Implementation: `trace/tasks/graph/adjacency/directed_strong_component_count.py`.
 
 ## Query IDs
-1. `directed_strong_component_count`
-2. Query ids are internal replay metadata; public sampling is at the task-id level.
+1. `single`
+2. Internal prompt key: `directed_strong_component_count`.
+3. Public sampling is at the task-id level.
 
 ## Taxonomy Contract
 1. Program contract: compute strongly connected components of the directed adjacency graph, count the components, and annotate the topmost displayed row label for each component.
 2. Stable schemas: answer is `integer`; annotation is `bbox_set`.
 3. Adjacency list versus matrix display, component count target, node labels, node count, font, style, and layout are generation/render metadata, not public query branches.
+
+## Program Contract
+- `count(strongly_connected_components(directed_adjacency_graph)); output=integer; annotation=bbox_set(component_representative_row_labels); scene=adjacency; scope=directed_strong_component_count`
 
 ## Answer And Annotation
 1. Answer type: `integer`.

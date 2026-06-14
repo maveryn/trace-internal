@@ -8,12 +8,16 @@
 5. Implementation: `trace/tasks/graph/adjacency/mst_weight.py`.
 
 ## Query IDs
-1. `weighted_matrix_mst_weight`: find the minimum spanning tree in a connected undirected weighted graph shown as a matrix.
+1. `single`: find the minimum spanning tree in a connected undirected weighted graph shown as a matrix.
+2. Internal prompt key: `weighted_matrix_mst_weight`.
 
 ## Taxonomy Contract
 1. Program contract: read the weighted undirected adjacency matrix, find the unique minimum spanning tree, sum its edge weights, and annotate one visible matrix cell for each MST edge.
 2. Stable schemas: answer is `integer`; annotation is `bbox_set`.
 3. Node labels, node count, extra edge count, sampled edge-weight range, font, style, and layout are generation/render metadata, not public query branches.
+
+## Program Contract
+- `sum(edge_weight(edge) for edge in minimum_spanning_tree(weighted_undirected_adjacency_graph)); output=integer; annotation=bbox_set(mst_edge_matrix_cells); scene=adjacency; scope=mst_weight`
 
 ## Annotation
 1. Answer type: `integer`.

@@ -52,13 +52,13 @@ def test_graph_order_adjacency_traversal_label_contracts() -> None:
 
 def test_graph_counting_adjacency_component_count_contracts() -> None:
     cases = (
-        (GraphCountingAdjacencyUndirectedComponentCountTask(), "undirected_component_count", "adjacency_list_panel"),
-        (GraphCountingAdjacencyDirectedStrongComponentCountTask(), "directed_strong_component_count", "adjacency_matrix_panel"),
+        (GraphCountingAdjacencyUndirectedComponentCountTask(), "single", "adjacency_list_panel", "connected component"),
+        (GraphCountingAdjacencyDirectedStrongComponentCountTask(), "single", "adjacency_matrix_panel", "strongly connected component"),
     )
 
     assert "task_graph__adjacency__undirected_component_count" in TASK_REGISTRY
     assert "task_graph__adjacency__directed_strong_component_count" in TASK_REGISTRY
-    for offset, (task, query_id, scene_variant) in enumerate(cases):
+    for offset, (task, query_id, scene_variant, prompt_phrase) in enumerate(cases):
         out = task.generate(
             41200 + offset,
             params={
@@ -83,6 +83,7 @@ def test_graph_counting_adjacency_component_count_contracts() -> None:
         assert len(execution["component_topmost_row_labels"]) == 3
         assert execution["representation_variant"] == scene_variant
         assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert prompt_phrase in str(out.prompt).lower()
         prompt_line = str(out.prompt).splitlines()[0].lower()
         if scene_variant == "adjacency_matrix_panel":
             assert "adjacency matrix" in prompt_line
@@ -93,7 +94,7 @@ def test_graph_counting_adjacency_component_count_contracts() -> None:
         for bbox in out.annotation_gt.value:
             _assert_bbox_in_image(bbox, out.image.size)
         annotation_text = out.prompt_variants["answer_and_annotation"]
-        if query_id == "directed_strong_component_count":
+        if "strongly" in prompt_phrase:
             assert "topmost row label in each strongly connected component" in annotation_text
         else:
             assert "topmost row label in each connected component" in annotation_text
@@ -106,7 +107,7 @@ def test_graph_counting_adjacency_pair_reciprocity_contracts() -> None:
     out = task.generate(
         41270,
         params={
-            "query_id": "mutual_pair_count",
+            "query_id": "single",
             "node_count": 6,
             "target_count": 3,
             "label_variant": "letters",
@@ -116,9 +117,9 @@ def test_graph_counting_adjacency_pair_reciprocity_contracts() -> None:
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
-    assert task.supported_query_ids == ("mutual_pair_count",)
+    assert task.supported_query_ids == ("single",)
     assert out.scene_id == "adjacency"
-    assert out.query_id == "mutual_pair_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "point_pair_set"
     assert int(out.answer_gt.value) == 3
@@ -147,7 +148,7 @@ def test_graph_counting_adjacency_pair_reciprocity_allows_zero_answer() -> None:
         task.generate(
             41290,
             params={
-                "query_id": "one_way_pair_count",
+            "query_id": "one_way_pair_count",
                 "node_count": 5,
                 "target_count": 0,
                 "label_variant": "letters",
@@ -162,7 +163,7 @@ def test_graph_counting_adjacency_pair_reciprocity_allows_zero_answer() -> None:
     zero = task.generate(
         41291,
         params={
-            "query_id": "mutual_pair_count",
+            "query_id": "single",
             "node_count": 5,
             "target_count": 0,
             "label_variant": "letters",
@@ -181,7 +182,7 @@ def test_graph_optimization_adjacency_matrix_mst_weight_contracts() -> None:
     out = task.generate(
         41300,
         params={
-            "query_id": "weighted_matrix_mst_weight",
+            "query_id": "single",
             "node_count": 5,
             "extra_edge_count": 2,
             "edge_weight_min": 1,
@@ -199,7 +200,7 @@ def test_graph_optimization_adjacency_matrix_mst_weight_contracts() -> None:
     }
 
     assert out.scene_id == "adjacency"
-    assert out.query_id == "weighted_matrix_mst_weight"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "bbox_set"
     assert execution["representation_variant"] == "adjacency_matrix_panel"

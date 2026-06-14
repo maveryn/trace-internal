@@ -62,14 +62,14 @@ SINGLE_ANNOTATION_LABEL_TASKS = {
 }
 
 GRAPH_QUERY_IDS = {
-    "task_graph__adjacency__directed_strong_component_count": ("directed_strong_component_count",),
-    "task_graph__adjacency__directed_pair_reciprocity_count": ("mutual_pair_count",),
-    "task_graph__adjacency__mst_weight": ("weighted_matrix_mst_weight",),
+    "task_graph__adjacency__directed_strong_component_count": ("single",),
+    "task_graph__adjacency__directed_pair_reciprocity_count": ("single",),
+    "task_graph__adjacency__mst_weight": ("single",),
     "task_graph__adjacency__traversal_kth_label": (
         "bfs_kth_visit_label",
         "dfs_kth_visit_label",
     ),
-    "task_graph__adjacency__undirected_component_count": ("undirected_component_count",),
+    "task_graph__adjacency__undirected_component_count": ("single",),
     "task_graph__automaton__dfa_accepted_string_label": ("dfa_accepted_string_label",),
     "task_graph__automaton__nfa_accepted_string_label": ("nfa_accepted_string_label",),
     "task_graph__automaton__nondeterministic_state_count": (

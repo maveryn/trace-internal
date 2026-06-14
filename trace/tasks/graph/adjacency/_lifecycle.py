@@ -212,6 +212,7 @@ def prepare_component_count_artifacts(
     task_id: str,
     domain: str,
     query_id: str,
+    prompt_key: str | None = None,
     task_params: Mapping[str, Any],
     axes: ComponentCountAxes,
     gen_defaults: Mapping[str, Any],
@@ -270,7 +271,7 @@ def prepare_component_count_artifacts(
     prompt_artifacts = build_adjacency_prompt_artifacts(
         domain=str(domain),
         bundle_id=str(prompt_bundle_id),
-        prompt_key=str(query_id),
+        prompt_key=str(prompt_key or query_id),
         dynamic_slots={"object_description": str(object_description)},
         instance_seed=int(instance_seed),
     )
@@ -386,6 +387,7 @@ def run_component_count_lifecycle(
     gen_defaults: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
     prompt_bundle_id: str,
+    prompt_key: str | None = None,
     background_defaults: Mapping[str, Any],
     noise_defaults: Mapping[str, Any],
     defaults: ComponentCountDefaults,
@@ -417,6 +419,7 @@ def run_component_count_lifecycle(
         task_id=str(task_id),
         domain=str(domain),
         query_id=str(query_id),
+        prompt_key=prompt_key,
         task_params=task_params,
         axes=axes,
         gen_defaults=gen_defaults,

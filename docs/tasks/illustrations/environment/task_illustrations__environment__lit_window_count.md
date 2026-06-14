@@ -3,17 +3,20 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `environment`
-- Implementation scene: `counting`
-- Implementation source: `trace/tasks/illustrations/counting/building_window_count.py`
+- Implementation scene: `environment`
+- Implementation source: `trace/tasks/illustrations/environment/lit_window_count.py`
 
 ## Task Contract
 Counts lit windows in rendered environment buildings.
+
+## Program Contract
+`count(filter(building_windows, is_lit(window))); scene=environment; scope=lit_window_count`
 
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `building_window_count` | `count(filter(building_windows, is_lit(window))); scene=environment; scope=lit_window_count; query_branch=building_window_count` |
+| `single` | `count(filter(building_windows, is_lit(window))); scene=environment; scope=lit_window_count` |
 
 ## Program Metadata
 - Program signatures: `count.single_attribute_membership`
@@ -23,7 +26,7 @@ Counts lit windows in rendered environment buildings.
   - `building_windows`: semantic_role; allowed `visible_building_windows`; source `program_schema_concrete`
   - `window`: semantic_role; allowed `window_instance`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `building_window_count`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `integer_count`

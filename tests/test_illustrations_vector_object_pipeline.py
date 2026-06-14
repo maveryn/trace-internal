@@ -5,12 +5,12 @@ import random
 
 from PIL import Image, ImageDraw
 
-from trace.tasks.illustrations.shared.environment_object_rendering import (
+from trace.tasks.illustrations.environment.shared.rendering import (
     ENVIRONMENT_THEME_IDS,
     environment_scene_entities,
     render_environment_object_scene,
 )
-from trace.tasks.illustrations.shared.environment_task_common import serialize_environment_objects
+from trace.tasks.illustrations.environment.shared.output import serialize_environment_objects
 from trace.tasks.illustrations.indoor_room.shared.rendering import (
     IndoorObjectSpec,
     indoor_scene_entities,

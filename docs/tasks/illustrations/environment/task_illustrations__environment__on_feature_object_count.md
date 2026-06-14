@@ -3,28 +3,31 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `environment`
-- Implementation scene: `counting`
-- Implementation source: `trace/tasks/illustrations/counting/feature_relation_object_count.py`
+- Implementation scene: `environment`
+- Implementation source: `trace/tasks/illustrations/environment/on_feature_object_count.py`
 
 ## Task Contract
 Counts foreground objects placed on a queried road or river feature.
+
+## Program Contract
+`count(filter(scene_objects, on_feature(object, target_feature))); scene=environment; scope=on_feature_object_count`
 
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `on_feature_object_count` | `count(filter(scene_objects, on_feature(object, target_feature))); scene=environment; scope=on_feature_object_count` |
+| `single` | `count(filter(scene_objects, on_feature(object, target_feature))); scene=environment; scope=on_feature_object_count` |
 
 ## Program Metadata
 - Program signatures: `count.relation_attribute`
 - Base program contract: `count(filter(scene_objects, on_feature(object, target_feature))); scene=environment; scope=on_feature_object_count`
-- Parameter axes: `fixed_query`
+- Parameter axes: `target_feature_type`, `theme_id`
 - Arguments:
   - `object`: semantic_role; allowed `scene_object`; source `program_schema_concrete`
   - `scene_objects`: semantic_role; allowed `visible_scene_objects`; source `program_schema_concrete`
   - `target_feature`: semantic_role; allowed `visible_feature_named_in_prompt`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `on_feature_object_count`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `integer_count`

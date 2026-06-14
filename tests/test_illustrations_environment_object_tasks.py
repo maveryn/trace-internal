@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
-from trace.tasks.illustrations.shared.environment_object_rendering import (
+from trace.tasks.illustrations.environment.shared.rendering import (
     BRIDGE_STYLE_IDS,
     BUILDING_STYLE_IDS,
     RIVER_STYLE_IDS,
@@ -25,7 +25,6 @@ def test_feature_side_object_count_contracts() -> None:
         out = create_task("task_illustrations__environment__feature_side_object_count").generate(
             hash64(2026052101, f"{theme_id}:{feature_type}:{relation}", index),
             params={
-                "query_id": "feature_side_object_count",
                 "theme_id": theme_id,
                 "feature_type": feature_type,
                 "relation": relation,
@@ -38,7 +37,7 @@ def test_feature_side_object_count_contracts() -> None:
         execution = trace["execution_trace"]
         render_map = trace["render_map"]
         assert out.scene_id == "environment"
-        assert out.query_id == "feature_side_object_count"
+        assert out.query_id == "single"
         assert execution["theme_id"] == theme_id
         assert execution["feature_type"] == feature_type
         assert execution["relation"] == relation
@@ -68,14 +67,14 @@ def test_feature_side_object_count_contracts() -> None:
 def test_on_feature_object_count_contract() -> None:
     out = create_task("task_illustrations__environment__on_feature_object_count").generate(
         hash64(2026052302, "on-feature", 0),
-        params={"query_id": "on_feature_object_count", "theme_id": "road_and_river", "feature_type": "river", "object_count": 14},
+        params={"theme_id": "road_and_river", "feature_type": "river", "object_count": 14},
         max_attempts=400,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render_map = trace["render_map"]
     assert out.scene_id == "environment"
-    assert out.query_id == "on_feature_object_count"
+    assert out.query_id == "single"
     assert execution["feature_type"] == "river"
     feature_types = {entity["feature_type"] for entity in trace["scene_ir"]["entities"] if entity["entity_type"] == "environment_feature"}
     assert "bridge" not in feature_types
@@ -89,14 +88,14 @@ def test_on_feature_object_count_contract() -> None:
 def test_crossing_feature_count_contract() -> None:
     out = create_task("task_illustrations__environment__crossing_feature_count").generate(
         hash64(2026052302, "crossing-feature", 0),
-        params={"query_id": "crossing_feature_count", "crossing_type": "bridge", "theme_id": "canal_city", "object_count": 12},
+        params={"crossing_type": "bridge", "theme_id": "canal_city", "object_count": 12},
         max_attempts=300,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render_map = trace["render_map"]
     assert out.scene_id == "environment"
-    assert out.query_id == "crossing_feature_count"
+    assert out.query_id == "single"
     assert execution["crossing_type"] == "bridge"
     bridge_features = [
         entity
@@ -120,7 +119,7 @@ def test_building_window_count_contract() -> None:
     execution = trace["execution_trace"]
     render_map = trace["render_map"]
     assert out.scene_id == "environment"
-    assert out.query_id == "building_window_count"
+    assert out.query_id == "single"
     assert execution["window_mode"] == "lit"
     assert int(out.answer_gt.value) == 6
     assert int(out.answer_gt.value) == len(execution["counted_window_ids"])

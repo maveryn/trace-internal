@@ -201,6 +201,7 @@ ILLUSTRATIONS_SCENE_PACKAGE_FILE_POLICY = ScenePackageFilePolicy(
     domain="illustrations",
     allowed_private_scene_files=frozenset(
         {
+            "_count_contracts.py",
             "_lifecycle.py",
         }
     ),

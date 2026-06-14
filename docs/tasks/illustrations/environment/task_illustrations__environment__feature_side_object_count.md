@@ -3,29 +3,32 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `environment`
-- Implementation scene: `counting`
-- Implementation source: `trace/tasks/illustrations/counting/feature_relation_object_count.py`
+- Implementation scene: `environment`
+- Implementation source: `trace/tasks/illustrations/environment/feature_side_object_count.py`
 
 ## Task Contract
 Counts foreground objects on one side of a road or river feature.
+
+## Program Contract
+`count(filter(scene_objects, side_of_feature(object, target_linear_feature)=target_side)); scene=environment; scope=feature_side_object_count`
 
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `feature_side_object_count` | `count(filter(scene_objects, side_of_feature(object, target_linear_feature)=target_side)); scene=environment; scope=feature_side_object_count` |
+| `single` | `count(filter(scene_objects, side_of_feature(object, target_linear_feature)=target_side)); scene=environment; scope=feature_side_object_count` |
 
 ## Program Metadata
 - Program signatures: `count.relation_attribute`
 - Base program contract: `count(filter(scene_objects, side_of_feature(object, target_linear_feature)=target_side)); scene=environment; scope=feature_side_object_count`
-- Parameter axes: `fixed_query`
+- Parameter axes: `target_linear_feature_type`, `target_side`, `theme_id`
 - Arguments:
   - `object`: semantic_role; allowed `scene_object`; source `program_schema_concrete`
   - `scene_objects`: semantic_role; allowed `visible_scene_objects`; source `program_schema_concrete`
   - `target_linear_feature`: semantic_role; allowed `visible_linear_feature`; source `program_schema_concrete`
   - `target_side`: semantic_role; allowed `sampled_side`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `feature_side_object_count`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `integer_count`

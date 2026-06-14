@@ -3,28 +3,31 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `environment`
-- Implementation scene: `counting`
-- Implementation source: `trace/tasks/illustrations/counting/feature_relation_object_count.py`
+- Implementation scene: `environment`
+- Implementation source: `trace/tasks/illustrations/environment/crossing_feature_count.py`
 
 ## Task Contract
 Counts visible features that cross a queried road or river feature.
+
+## Program Contract
+`count(filter(environment_features, crosses(feature, target_linear_feature))); scene=environment; scope=crossing_feature_count`
 
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `crossing_feature_count` | `count(filter(environment_features, crosses(feature, target_linear_feature))); scene=environment; scope=crossing_feature_count` |
+| `single` | `count(filter(environment_features, crosses(feature, target_linear_feature))); scene=environment; scope=crossing_feature_count` |
 
 ## Program Metadata
 - Program signatures: `count.relation_attribute`
 - Base program contract: `count(filter(environment_features, crosses(feature, target_linear_feature))); scene=environment; scope=crossing_feature_count`
-- Parameter axes: `fixed_query`
+- Parameter axes: `crossing_type`, `theme_id`
 - Arguments:
   - `environment_features`: semantic_role; allowed `visible_environment_features`; source `program_schema_concrete`
   - `feature`: semantic_role; allowed `environment_feature_instance`; source `program_schema_concrete`
   - `target_linear_feature`: semantic_role; allowed `visible_linear_feature`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `crossing_feature_count`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `integer_count`

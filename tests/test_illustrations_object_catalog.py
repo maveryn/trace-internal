@@ -4,13 +4,11 @@ from __future__ import annotations
 
 from trace.tasks.illustrations.construction_site.shared import labels as construction_labels
 from trace.tasks.illustrations.construction_site.shared import state as construction_state
-from trace.tasks.illustrations.shared import (
-    environment_object_rendering as environment,
-    library_rendering as library,
-    mixed_object_rendering as mixed,
-    park_playground_rendering as park,
-    transit_terminal_rendering as transit,
-)
+from trace.tasks.illustrations.environment.shared import rendering as environment
+from trace.tasks.illustrations.shared import library_rendering as library
+from trace.tasks.illustrations.shared import mixed_object_rendering as mixed
+from trace.tasks.illustrations.shared import park_playground_rendering as park
+from trace.tasks.illustrations.shared import transit_terminal_rendering as transit
 from trace.tasks.illustrations.indoor_room.shared import rendering as indoor
 from trace.tasks.illustrations.shared.object_catalog import (
     catalog_entries,

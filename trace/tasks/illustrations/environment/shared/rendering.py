@@ -8,8 +8,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from .render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
-from .object_library import (
+from ...shared.render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
+from ...shared.object_library import (
     BBox,
     RGB,
     STYLE_IDS,
@@ -17,16 +17,16 @@ from .object_library import (
     choose_object_colors,
     family_for_object,
 )
-from .object_catalog import environment_theme_land_object_types, variant_ids_with_tag
-from .object_rendering import (
+from ...shared.object_catalog import environment_theme_land_object_types, variant_ids_with_tag
+from ...shared.object_rendering import (
     IllustrationObjectSpec,
     RenderContext,
     make_vector_scene_object_record,
     render_illustration_object,
     serialize_rendered_illustration_object,
 )
-from .object_variants import RENDERER_STYLE_VECTOR
-from .person_rendering import sample_person_gender
+from ...shared.object_variants import RENDERER_STYLE_VECTOR
+from ...shared.person_rendering import sample_person_gender
 
 
 ENVIRONMENT_THEME_IDS: Tuple[str, ...] = variant_ids_with_tag("environment_theme")
@@ -352,6 +352,8 @@ def _draw_sky_decor(
     scale: int,
     land_top_y: float | None = None,
 ) -> Tuple[EnvironmentFeature, ...]:
+    """Draw optional sky context objects while marking them as non-count foreground context."""
+
     features: List[EnvironmentFeature] = []
     sky_bottom = max(120.0, float(land_top_y if land_top_y is not None else _land_top_y(str(theme_id), int(height))) - 46.0)
     if bool(rng.random() < 0.55):
@@ -448,6 +450,8 @@ def _draw_river(
     river_style_id: str,
     scale: int,
 ) -> EnvironmentFeature:
+    """Draw the river feature and return its trace path/bbox for relation queries."""
+
     river_style = str(river_style_id)
     if river_style == "reed_bank":
         bank_color, water_color, highlight_color, edge_color, bank_extra = (128, 162, 116), (77, 158, 196), (157, 212, 221), (74, 136, 157), 34.0
@@ -497,6 +501,8 @@ def _draw_road(
     road_style_id: str,
     scale: int,
 ) -> EnvironmentFeature:
+    """Draw the road feature and preserve its center path for side/on-feature reasoning."""
+
     road_style = str(road_style_id)
     if road_style == "curb_edges":
         shoulder_color, road_color, lane_color, edge_extra = (178, 177, 166), (81, 88, 94), (246, 244, 229), 24.0
@@ -543,6 +549,8 @@ def _draw_bridge(
     bridge_style_id: str,
     scale: int,
 ) -> EnvironmentFeature:
+    """Draw a crossing bridge anchored to the river path without adding countable objects."""
+
     y = _interpolate_path_y(river_path, float(x))
     box = (
         float(x) - 24.0,
@@ -629,6 +637,8 @@ def _draw_buildings(
     max_buildings: int,
     lit_window_count_override: int | None = None,
 ) -> Tuple[EnvironmentBuilding, ...]:
+    """Draw city buildings and choose lit-window witnesses from explicit window metadata."""
+
     building_specs: List[Dict[str, Any]] = []
     x = float(rng.uniform(8.0, 30.0))
     index = 0
@@ -795,7 +805,7 @@ def _draw_buildings(
                 attributes={
                     "building_style_id": str(spec["building_style_id"]),
                     "window_count": len(window_bboxes),
-                    "lit_window_count": len(lit_window_bboxes),
+                    "lit_window_total": len(lit_window_bboxes),
                     "height_px": round(float(spec["bbox_xyxy"][3] - spec["bbox_xyxy"][1]), 3),
                 },
             )
@@ -946,6 +956,8 @@ def _candidate_box_for_zone(
     size_min_px: int,
     size_max_px: int,
 ) -> BBox:
+    """Sample a candidate bbox within a semantic zone while respecting feature clearance."""
+
     aspect = max(0.35, float(aspect_ratio_for_object(str(object_type))))
     h = float(rng.randint(int(size_min_px), int(size_max_px)))
     if str(zone_id) == "sky":
@@ -1053,6 +1065,8 @@ def _sample_object_placements(
     land_top_y_override: float | None = None,
     zone_bias: Mapping[str, float] | None = None,
 ) -> Tuple[EnvironmentObjectPlacement, ...]:
+    """Place foreground objects into semantic zones and record object-feature relations."""
+
     road = next((feature for feature in features if feature.feature_type == "road"), None)
     river = next((feature for feature in features if feature.feature_type == "river"), None)
     feature_types = {str(feature.feature_type) for feature in features}
@@ -1396,7 +1410,7 @@ def environment_scene_entities(scene: RenderedEnvironmentObjectScene) -> List[Di
             semantic_attributes={
                 "roof_type": str(building.roof_type),
                 "window_count": len(building.window_bboxes),
-                "lit_window_count": len(building.lit_window_bboxes),
+                "lit_window_total": len(building.lit_window_bboxes),
                 **dict(building.attributes),
             },
             source_entity_type="environment_building",

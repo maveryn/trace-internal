@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from trace.core.seed import spawn_rng
-from trace.tasks.illustrations.shared.environment_object_scene import (
+from trace.tasks.illustrations.environment.shared.rendering import (
     ENVIRONMENT_THEME_IDS,
     LAND_OBJECT_TYPES,
     RIVER_OBJECT_TYPES,

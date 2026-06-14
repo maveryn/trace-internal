@@ -1,20 +1,15 @@
-"""Shared helpers for environment-object illustration tasks."""
+"""Sampling and render-default helpers for environment illustrations."""
 
 from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence
 
-from ...shared.config_defaults import group_default
-from .environment_object_scene import (
-    ENVIRONMENT_THEME_IDS,
-    EnvironmentFeature,
-    RenderedEnvironmentObjectScene,
-    effective_environment_object_count,
-    environment_scene_entities,
-)
-from .object_library import STYLE_IDS
-from .object_rendering import serialize_rendered_illustration_object
-from .style_registry import resolve_art_style_weights
+from ....shared.config_defaults import group_default
+from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.object_library import STYLE_IDS
+from ...shared.style_registry import resolve_art_style_weights
+
+from .rendering import ENVIRONMENT_THEME_IDS, effective_environment_object_count
 
 
 FEATURE_TYPES_BY_THEME: Dict[str, tuple[str, ...]] = {
@@ -35,6 +30,8 @@ ENVIRONMENT_SETTING_NAMES: Dict[str, str] = {
 
 
 def style_weights(params: Mapping[str, Any], render_defaults: Mapping[str, Any]) -> Dict[str, float]:
+    """Resolve render-only art-style weights for the environment scene."""
+
     return resolve_art_style_weights(params, render_defaults, style_ids=STYLE_IDS)
 
 
@@ -44,6 +41,8 @@ def environment_render_params(
     *,
     fallback: Mapping[str, Any],
 ) -> Dict[str, Any]:
+    """Resolve scene-level environment rendering parameters from task and scene defaults."""
+
     return {
         "canvas_width": int(
             params.get("canvas_width", group_default(render_defaults, "environment_canvas_width", int(fallback["canvas_width"])))
@@ -83,10 +82,19 @@ def environment_render_params(
 
 
 def environment_setting_name(theme_id: str) -> str:
+    """Return prompt-facing text for one environment theme."""
+
     return ENVIRONMENT_SETTING_NAMES.get(str(theme_id), "an illustrated outdoor scene")
 
 
-def theme_support(params: Mapping[str, Any], generation_defaults: Mapping[str, Any], *, fallback: Sequence[str] = ENVIRONMENT_THEME_IDS) -> tuple[str, ...]:
+def theme_support(
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    *,
+    fallback: Sequence[str] = ENVIRONMENT_THEME_IDS,
+) -> tuple[str, ...]:
+    """Resolve supported environment themes from params/defaults."""
+
     raw = params.get("theme_support", group_default(generation_defaults, "theme_support", tuple(fallback)))
     if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
         raise ValueError("theme_support must be a sequence")
@@ -96,45 +104,94 @@ def theme_support(params: Mapping[str, Any], generation_defaults: Mapping[str, A
     return tuple(dict.fromkeys(supported))
 
 
-def target_feature(scene: RenderedEnvironmentObjectScene, feature_type: str) -> EnvironmentFeature:
-    matches = [feature for feature in scene.features if str(feature.feature_type) == str(feature_type)]
-    if not matches:
-        raise ValueError(f"rendered scene has no feature of type {feature_type}")
-    return matches[0]
+def global_feature_type_probabilities(themes: Sequence[str], *, selected: str | None = None) -> Dict[str, float]:
+    """Return road/river probabilities induced by the configured theme support."""
+
+    if selected is not None:
+        return {str(selected): 1.0}
+    weights = {"road": 0.0, "river": 0.0}
+    for theme in themes:
+        support = FEATURE_TYPES_BY_THEME[str(theme)]
+        probability = 1.0 / float(len(support))
+        for feature_type in support:
+            weights[str(feature_type)] += probability
+    total = sum(weights.values())
+    return {key: value / total for key, value in sorted(weights.items()) if value > 0.0}
 
 
-def serialize_environment_objects(scene: RenderedEnvironmentObjectScene) -> tuple[list[dict[str, Any]], Dict[str, list[float]], Dict[str, list[float]]]:
-    serialized_objects = [serialize_rendered_illustration_object(obj) for obj in scene.objects]
-    object_bboxes = {str(obj["object_id"]): list(obj["bbox"]) for obj in serialized_objects}
-    part_bboxes = {
-        str(part["part_id"]): list(part["bbox"])
-        for obj in serialized_objects
-        for part in obj["parts"]
-    }
-    return serialized_objects, object_bboxes, part_bboxes
+def int_bounds(
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    *,
+    low_key: str,
+    high_key: str,
+    fallback_low: int,
+    fallback_high: int,
+) -> tuple[int, int]:
+    """Resolve an inclusive integer range from params/defaults/fallbacks."""
+
+    if "target_count_min" in params or "target_count_max" in params:
+        low = int(params.get("target_count_min", fallback_low))
+        high = int(params.get("target_count_max", fallback_high))
+    else:
+        low = int(params.get(low_key, group_default(generation_defaults, low_key, fallback_low)))
+        high = int(params.get(high_key, group_default(generation_defaults, high_key, fallback_high)))
+    if low < 0 or high < low:
+        raise ValueError(f"invalid {low_key}/{high_key} range")
+    return int(low), int(high)
 
 
-def feature_bbox_map(scene: RenderedEnvironmentObjectScene) -> Dict[str, list[float]]:
-    return {str(feature.feature_id): [round(float(v), 3) for v in feature.bbox_xyxy] for feature in scene.features}
+def sample_count_support(
+    *,
+    params: Mapping[str, Any],
+    support: Sequence[int],
+    explicit_key: str,
+    cycle_index: int,
+) -> tuple[int, Dict[str, float]]:
+    """Sample one count from a configured support range."""
+
+    values = tuple(int(value) for value in support)
+    if not values:
+        raise ValueError(f"{explicit_key} has empty support")
+    explicit = params.get(str(explicit_key))
+    if explicit is not None:
+        value = int(explicit)
+        if value not in set(values):
+            raise ValueError(f"{explicit_key} is outside configured support")
+        return int(value), dict(uniform_probability_map(values, selected=int(value)))
+    value = int(values[int(cycle_index) % len(values)])
+    return int(value), dict(uniform_probability_map(values))
 
 
-def feature_path_map(scene: RenderedEnvironmentObjectScene) -> Dict[str, list[list[float]]]:
-    return {
-        str(feature.feature_id): [[round(float(x), 3), round(float(y), 3)] for x, y in feature.path_points]
-        for feature in scene.features
-    }
+def sample_object_count(
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    *,
+    fallback_min: int,
+    fallback_max: int,
+    instance_seed: int,
+    namespace: str,
+) -> tuple[int, Dict[str, float]]:
+    """Resolve and sample the requested environment foreground-object count."""
 
-
-def sort_bboxes_by_ids(bbox_map: Mapping[str, Sequence[float]], ids: Sequence[str]) -> list[list[float]]:
-    boxes = [(str(item_id), [round(float(v), 3) for v in bbox_map[str(item_id)]]) for item_id in ids]
-    ordered = sorted(boxes, key=lambda item: (float(item[1][1]), float(item[1][0]), str(item[0])))
-    return [box for _item_id, box in ordered]
+    low = int(params.get("object_count_min", group_default(generation_defaults, "object_count_min", int(fallback_min))))
+    high = int(params.get("object_count_max", group_default(generation_defaults, "object_count_max", int(fallback_max))))
+    if low < 0 or high < low:
+        raise ValueError("invalid object_count_min/object_count_max range")
+    return sample_count_support(
+        params=params,
+        support=tuple(range(int(low), int(high) + 1)),
+        explicit_key="object_count",
+        cycle_index=resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)),
+    )
 
 
 def capped_object_count_probabilities(
     requested_probabilities: Mapping[str, float],
     theme_probabilities: Mapping[str, float],
 ) -> Dict[str, float]:
+    """Map requested object-count probabilities through theme-specific caps."""
+
     normalized_theme_probabilities = {
         str(theme): max(0.0, float(probability))
         for theme, probability in theme_probabilities.items()
@@ -157,13 +214,11 @@ __all__ = [
     "FEATURE_TYPES_BY_THEME",
     "capped_object_count_probabilities",
     "environment_render_params",
-    "environment_scene_entities",
     "environment_setting_name",
-    "feature_bbox_map",
-    "feature_path_map",
-    "serialize_environment_objects",
-    "sort_bboxes_by_ids",
+    "global_feature_type_probabilities",
+    "int_bounds",
+    "sample_count_support",
+    "sample_object_count",
     "style_weights",
-    "target_feature",
     "theme_support",
 ]

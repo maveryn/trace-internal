@@ -2,41 +2,6 @@ generation:
   shared:
     balanced_sampling: true
   task_overrides:
-    private_environment_feature_relation_count:
-      query_id_support:
-        - feature_side_object_count
-        - on_feature_object_count
-        - crossing_feature_count
-      object_count_min: 12
-      object_count_max: 18
-      feature_side_target_count_min: 1
-      feature_side_target_count_max: 12
-      on_feature_target_count_min: 2
-      on_feature_target_count_max: 7
-      crossing_target_count_min: 1
-      crossing_target_count_max: 5
-      theme_support:
-        - park_road
-        - river_meadow
-        - road_and_river
-        - canal_city
-        - skyline_street
-      relation_support:
-        - above
-        - below
-      crossing_type_support:
-        - bridge
-        - crosswalk
-    task_illustrations__environment__lit_window_count:
-      object_count_min: 8
-      object_count_max: 14
-      target_count_min: 1
-      target_count_max: 10
-      theme_support:
-        - canal_city
-        - skyline_street
-      window_mode_support:
-        - lit
     private_library_book_count:
       query_id_support:
         - books_in_section_count
@@ -280,38 +245,6 @@ rendering:
       paper: 1.0
       shelf: 1.0
   task_overrides:
-    private_environment_feature_relation_count:
-      art_style_support:
-        - flat_vector
-        - outlined_cartoon
-        - paper_cutout
-        - soft_shadow
-        - ink_sketch
-        - watercolor_wash
-      art_style_weights:
-        flat_vector: 1.0
-        outlined_cartoon: 1.0
-        paper_cutout: 1.0
-        soft_shadow: 1.0
-        ink_sketch: 1.0
-        watercolor_wash: 1.0
-    task_illustrations__environment__lit_window_count:
-      art_style_support:
-        - flat_vector
-        - outlined_cartoon
-        - paper_cutout
-        - soft_shadow
-        - ink_sketch
-        - watercolor_wash
-      art_style_weights:
-        flat_vector: 1.0
-        outlined_cartoon: 1.0
-        paper_cutout: 1.0
-        soft_shadow: 1.0
-        ink_sketch: 1.0
-        watercolor_wash: 1.0
-      skyline_building_min: 4
-      skyline_building_max: 7
     task_illustrations__park_playground__playground_equipment_count:
       art_style_support:
         - flat_vector
@@ -375,30 +308,6 @@ rendering:
 
 prompt:
   task_overrides:
-    private_environment_feature_relation_count:
-      bundle_id: illustrations_counting_v0
-      scene_key: environment_object_canvas
-      task_key: feature_relation_object_count_task
-      answer_hint_feature_side: set "answer" to the count of foreground objects {relation_word} the {feature_name} as an integer
-      annotation_hint_feature_side: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted foreground object {relation_word} the {feature_name}
-      json_example_feature_side: '{"annotation":[[156,438,248,512],[582,286,674,360],[914,502,1006,586]],"answer":3}'
-      json_example_answer_only_feature_side: '{"answer":3}'
-      answer_hint_on_feature: set "answer" to the count of foreground objects {feature_phrase} as an integer
-      annotation_hint_on_feature: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted foreground object {feature_phrase}
-      json_example_on_feature: '{"annotation":[[118,508,232,584],[472,444,582,522],[842,536,954,620]],"answer":3}'
-      json_example_answer_only_on_feature: '{"answer":3}'
-      answer_hint_crossing_feature: set "answer" to the count of {crossing_name} crossing the {crossed_feature_name} as an integer
-      annotation_hint_crossing_feature: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {crossing_name} crossing the {crossed_feature_name}
-      json_example_crossing_feature: '{"annotation":[[310,420,358,548],[696,434,744,562]],"answer":2}'
-      json_example_answer_only_crossing_feature: '{"answer":2}'
-    task_illustrations__environment__lit_window_count:
-      bundle_id: illustrations_counting_v0
-      scene_key: environment_object_canvas
-      task_key: building_window_count_task
-      answer_hint_building_window: set "answer" to the count of lit windows shown on the buildings as an integer
-      annotation_hint_building_window: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted lit building window
-      json_example_building_window: '{"annotation":[[72,194,88,212],[112,194,128,212],[206,246,222,264],[336,178,352,196]],"answer":4}'
-      json_example_answer_only_building_window: '{"answer":4}'
     private_library_book_count:
       bundle_id: illustrations_counting_v0
       scene_key: library_canvas

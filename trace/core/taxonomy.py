@@ -13,6 +13,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
+from .query_ids import LEGACY_DEFAULT_QUERY_ID, SINGLE_QUERY_ID
 from .scene_package_migration import is_scene_package_task, parse_public_task_id
 
 
@@ -822,7 +823,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_icons__named_strip__shape_run_length": _entry("icons", "named_strip", "icons", "sequence"),
     # Illustrations.
     "task_illustrations__environment__lit_window_count": _entry(
-        "illustrations", "environment", "illustrations", "counting"
+        "illustrations", "environment", "illustrations", "environment"
     ),
     "task_illustrations__construction_site__equipment_zone_count": _entry(
         "illustrations", "construction_site", "illustrations", "construction_site"
@@ -831,13 +832,13 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "illustrations", "construction_site", "illustrations", "construction_site"
     ),
     "task_illustrations__environment__feature_side_object_count": _entry(
-        "illustrations", "environment", "illustrations", "counting"
+        "illustrations", "environment", "illustrations", "environment"
     ),
     "task_illustrations__environment__on_feature_object_count": _entry(
-        "illustrations", "environment", "illustrations", "counting"
+        "illustrations", "environment", "illustrations", "environment"
     ),
     "task_illustrations__environment__crossing_feature_count": _entry(
-        "illustrations", "environment", "illustrations", "counting"
+        "illustrations", "environment", "illustrations", "environment"
     ),
     "task_illustrations__library__books_in_section_count": _entry("illustrations", "library", "illustrations", "counting"),
     "task_illustrations__library__filtered_book_in_section_count": _entry("illustrations", "library", "illustrations", "counting"),
@@ -1227,9 +1228,9 @@ def resolve_task_query_id(
             return str(query_id)
 
     query_id_text = str(query_id or "").strip()
-    if query_id_text and query_id_text != "default":
+    if query_id_text and query_id_text != LEGACY_DEFAULT_QUERY_ID:
         return query_id_text
-    return ""
+    return SINGLE_QUERY_ID
 
 
 def _string_or_empty(value: Any) -> str:

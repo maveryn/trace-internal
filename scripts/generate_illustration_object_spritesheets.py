@@ -29,7 +29,7 @@ _install_trace_tasks_namespace()
 from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.illustrations.counterfactual import visible_part_count as cf_visible
 from trace.tasks.illustrations.shared import construction_site_rendering as construction
-from trace.tasks.illustrations.shared import environment_object_rendering as environment
+from trace.tasks.illustrations.environment.shared import rendering as environment
 from trace.tasks.illustrations.indoor_room.shared import rendering as indoor
 from trace.tasks.illustrations.shared import library_rendering as library
 from trace.tasks.illustrations.shared import object_library

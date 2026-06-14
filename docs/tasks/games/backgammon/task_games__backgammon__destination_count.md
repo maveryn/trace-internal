@@ -9,6 +9,9 @@
 6. Annotation schema: `bbox_set`
 7. Program schema: `count(filter(candidate_destinations(dice_rolls, board_state), destination_status)); scene=backgammon; scope=destination_count`
 
+## Program Contract
+- `count(filter(candidate_destinations(dice_rolls, board_state), destination_status)); scene=backgammon; scope=destination_count`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from numbered destination point bboxes, not individual checker bboxes.

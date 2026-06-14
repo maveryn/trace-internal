@@ -9,6 +9,9 @@
 6. Annotation schema: `keyed_bbox_set_map`
 7. Program schema: `count(filter(ranks, count(cards_of_rank(rank)) = 3)); scene=cards; scope=exact_triple_count`
 
+## Program Contract
+- `count(filter(ranks, count(cards_of_rank(rank)) = 3)); scene=cards; scope=exact_triple_count`
+
 ## Generation Notes
 2. Prompt wording comes from `prompts/games/cards/games_cards_v1.json`.
 3. Annotation is projected from the same generated game state used for answer verification.

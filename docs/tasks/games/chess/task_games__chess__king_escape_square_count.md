@@ -9,6 +9,9 @@
 6. Annotation schema: `bbox_set`
 7. Program schema: `count(legal_escape_squares(king)); scene=chess; scope=king_escape_square_count`
 
+## Program Contract
+- `count(legal_escape_squares(king)); scene=chess; scope=king_escape_square_count`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.

@@ -9,6 +9,9 @@
 6. Annotation schema: `point_set`
 7. Program schema: `count(filter(legal_columns, opponent_wins_next=False)); scene=connect_four; scope=safe_move_count`
 
+## Program Contract
+- `count(filter(legal_columns, opponent_wins_next=False)); scene=connect_four; scope=safe_move_count`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.

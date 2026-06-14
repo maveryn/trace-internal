@@ -9,6 +9,9 @@
 6. Annotation schema: `point_set`
 7. Program schema: `count(popped_bubbles_after_marked_shot); scene=bubble_shooter; scope=pop_count`
 
+## Program Contract
+- `count(popped_bubbles_after_marked_shot); scene=bubble_shooter; scope=pop_count`
+
 ## Generation Notes
 1. This task is owned by the scene-package public file `trace/tasks/games/bubble_shooter/pop_count.py`.
 2. The public task id selects the objective; `query_id` is `default`.

@@ -10,6 +10,9 @@
 7. Annotation schema: `point_set`
 8. Program schema: `label(select_option(score_options, option_score = score(marked_dart))); scene=darts; scope=total_score_option_label; query_branch=total_score`
 
+## Program Contract
+- `label(select_option(score_options, option_score = score(marked_dart))); scene=darts; scope=total_score_option_label; query_branch=total_score`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.

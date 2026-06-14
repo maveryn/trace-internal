@@ -9,6 +9,9 @@
 6. Annotation schema: `bbox_set`
 7. Program schema: `label(select(candidate_cards, completes_pattern(partial_hand, candidate_card, target_pattern))); scene=cards; scope=missing_card_to_complete_hand_label`
 
+## Program Contract
+- `label(select(candidate_cards, completes_pattern(partial_hand, candidate_card, target_pattern))); scene=cards; scope=missing_card_to_complete_hand_label`
+
 ## Generation Notes
 2. Query ids are internal pattern branches inside the same public task contract.
 3. Prompt wording comes from `prompts/games/cards/games_cards_v1.json`.

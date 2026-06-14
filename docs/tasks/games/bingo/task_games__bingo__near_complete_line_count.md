@@ -9,6 +9,9 @@
 6. Annotation schema: `bbox_set`
 7. Program schema: `count(filter(bingo_lines, unmarked_cell_count(line) = 1)); scene=bingo; scope=near_complete_line_count`
 
+## Program Contract
+- `count(filter(bingo_lines, unmarked_cell_count(line) = 1)); scene=bingo; scope=near_complete_line_count`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation marks the single unmarked gap cell for each qualifying near-complete row or column.

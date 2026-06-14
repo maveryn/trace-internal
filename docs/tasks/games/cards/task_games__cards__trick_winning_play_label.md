@@ -9,6 +9,9 @@
 6. Annotation schema: `bbox_set`
 7. Program schema: `label(select(candidate_cards, would_win_trick(played_cards, candidate_card, led_suit, trump_suit))); scene=cards; scope=trick_winning_play_label`
 
+## Program Contract
+- `label(select(candidate_cards, would_win_trick(played_cards, candidate_card, led_suit, trump_suit))); scene=cards; scope=trick_winning_play_label`
+
 ## Generation Notes
 2. Prompt wording comes from `prompts/games/cards/games_cards_v1.json`.
 3. Annotation is the selected candidate-card bbox projected from the same generated card state used for answer verification.

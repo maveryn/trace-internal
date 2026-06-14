@@ -9,6 +9,9 @@
 6. Annotation schema: `bbox_set`
 7. Program schema: `count(attackers(marked_target_square, queried_side)); scene=chess; scope=target_square_attacker_count`
 
+## Program Contract
+- `count(attackers(marked_target_square, queried_side)); scene=chess; scope=target_square_attacker_count`
+
 ## Generation Notes
 1. Annotation marks bounding boxes for all attacking pieces from the queried side.
 2. For `king_square_attacker_count`, the marked target square contains the king and the queried side is the opponent.

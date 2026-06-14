@@ -9,6 +9,9 @@
 6. Annotation schema: `bbox_set`
 7. Program schema: `label(collision(marked_route, labeled_moving_objects)); scene=crossing; scope=hit_object_label`
 
+## Program Contract
+- `label(collision(marked_route, labeled_moving_objects)); scene=crossing; scope=hit_object_label`
+
 ## Generation Notes
 1. Exactly four moving objects are labeled `A` through `D`; the answer is one of those labels.
 2. Start pads use numeric labels so they do not conflict with moving-object option labels.

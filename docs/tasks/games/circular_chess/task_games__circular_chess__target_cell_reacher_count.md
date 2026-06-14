@@ -9,6 +9,9 @@
 6. Annotation schema: `point_set`
 7. Program schema: `count(filter(pieces(target_color), target_cell in legal_destinations(piece))); scene=circular_chess; scope=target_cell_reacher_count`
 
+## Program Contract
+- `count(filter(pieces(target_color), target_cell in legal_destinations(piece))); scene=circular_chess; scope=target_cell_reacher_count`
+
 ## Generation Notes
 1. The blue marker identifies the target cell.
 2. Pawns, check, checkmate, castling, en passant, and promotion are intentionally out of scope.

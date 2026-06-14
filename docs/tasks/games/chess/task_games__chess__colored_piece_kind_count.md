@@ -9,6 +9,9 @@
 6. Annotation schema: `bbox_set`
 7. Program schema: `count(filter(pieces, piece_kind=target_kind and piece_color=target_color)); scene=chess; scope=colored_piece_kind_count`
 
+## Program Contract
+- `count(filter(pieces, piece_kind=target_kind and piece_color=target_color)); scene=chess; scope=colored_piece_kind_count`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.

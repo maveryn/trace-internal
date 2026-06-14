@@ -9,6 +9,9 @@
 6. Annotation schema: `keyed_bbox_map`
 7. Program schema: `select(option where move_checkmates(opponent_king)); scene=chess; scope=checkmate_move_label`
 
+## Program Contract
+- `select(option where move_checkmates(opponent_king)); scene=chess; scope=checkmate_move_label`
+
 ## Generation Notes
 1. The board shows standard chess coordinates on the margins and a visible panel of candidate moves.
 2. The visible options are encoded as piece name plus source and destination square.

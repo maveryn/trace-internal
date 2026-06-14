@@ -9,6 +9,9 @@
 6. Annotation schema: `bbox_set`
 7. Program schema: `label(argmin(labeled_moving_objects, exit_tick(object, lane_count, direction))); scene=crossing; scope=first_exit_object_label`
 
+## Program Contract
+- `label(argmin(labeled_moving_objects, exit_tick(object, lane_count, direction))); scene=crossing; scope=first_exit_object_label`
+
 ## Generation Notes
 1. Exactly four moving objects are labeled `A` through `D`; the answer is one of those labels.
 2. The scene has no runner route; each labeled object moves horizontally by one lane cell per tick.

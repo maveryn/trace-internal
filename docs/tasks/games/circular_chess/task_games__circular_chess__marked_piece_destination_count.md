@@ -9,6 +9,9 @@
 6. Annotation schema: `point_set`
 7. Program schema: `count(filter(legal_destinations(marked_piece), destination_filter)); scene=circular_chess; scope=marked_piece_destination_count`
 
+## Program Contract
+- `count(filter(legal_destinations(marked_piece), destination_filter)); scene=circular_chess; scope=marked_piece_destination_count`
+
 ## Generation Notes
 1. The scene uses a four-ring by sixteen-sector circular board with sector wraparound.
 2. Pawns, check, checkmate, castling, en passant, and promotion are intentionally out of scope.

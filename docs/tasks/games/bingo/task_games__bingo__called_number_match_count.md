@@ -9,6 +9,9 @@
 6. Annotation schema: `point_set`
 7. Program schema: `count(intersection(called_numbers, card_numbers)); scene=bingo; scope=called_number_match_count`
 
+## Program Contract
+- `count(intersection(called_numbers, card_numbers)); scene=bingo; scope=called_number_match_count`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation marks the centers of card cells whose printed numbers are present in the CALLED list.

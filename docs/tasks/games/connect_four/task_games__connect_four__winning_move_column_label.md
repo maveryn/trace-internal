@@ -9,6 +9,9 @@
 6. Annotation schema: `point_set`
 7. Program schema: `select(column_label, legal_drop_result=immediate_win_for_current_player); scene=connect_four; scope=winning_move_column_label`
 
+## Program Contract
+- `select(column_label, legal_drop_result=immediate_win_for_current_player); scene=connect_four; scope=winning_move_column_label`
+
 ## Generation Notes
 2. Column labels are rendered below the board; annotation marks the center of the selected column's landing cell, not the label text.
 3. Annotation is projected from the same generated game state used for answer verification.

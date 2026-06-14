@@ -9,6 +9,9 @@
 6. Annotation schema: `point_set`
 7. Program schema: `label(select(candidate_cells, completes_only_not_sunk_ship)); scene=battleship; scope=last_ship_cell_label`
 
+## Program Contract
+- `label(select(candidate_cells, completes_only_not_sunk_ship)); scene=battleship; scope=last_ship_cell_label`
+
 ## Generation Notes
 1. The Battleship scene uses five fleet shapes: `Line 5`, `Line 4`, `Line 3`, `Square 2x2`, and `L 3`.
 2. This task renders a hidden-ship tracking grid: red hit markers, gray miss markers, fleet-shape panel, and six labeled candidate cells `A-F`.

@@ -9,6 +9,9 @@
 6. Annotation schema: `point_set`
 7. Program schema: `count(filter(cells(target_ship), cell_status=target_status)); scene=battleship; scope=ship_cell_status_count`
 
+## Program Contract
+- `count(filter(cells(target_ship), cell_status=target_status)); scene=battleship; scope=ship_cell_status_count`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Target ships are sampled from the five active fleet shapes: `Line 5`, `Line 4`, `Line 3`, `Square 2x2`, and `L 3`.

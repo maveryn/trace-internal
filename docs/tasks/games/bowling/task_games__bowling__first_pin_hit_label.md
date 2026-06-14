@@ -10,6 +10,9 @@
 7. Annotation schema: `bbox_set`
 8. Program schema: `label(first_collision(ball_path, pins)); scene=bowling; scope=first_pin_hit_label`
 
+## Program Contract
+- `label(first_collision(ball_path, pins)); scene=bowling; scope=first_pin_hit_label`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.

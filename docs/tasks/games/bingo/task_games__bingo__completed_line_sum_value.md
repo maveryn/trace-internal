@@ -9,6 +9,9 @@
 6. Annotation schema: `bbox_set`
 7. Program schema: `sum(values(cells(completed_line))); scene=bingo; scope=completed_line_sum_value`
 
+## Program Contract
+- `sum(values(cells(completed_line))); scene=bingo; scope=completed_line_sum_value`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.

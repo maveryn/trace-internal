@@ -10,6 +10,9 @@
 7. Annotation schema: `point_set`
 8. Program schema: `count(filter(checkers_pieces(board_state), piece_color, board_edge_state)); scene=checkers; scope=piece_state_count`
 
+## Program Contract
+- `count(filter(checkers_pieces(board_state), piece_color, board_edge_state)); scene=checkers; scope=piece_state_count`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation marks the centers of visible pieces that satisfy the color and board-edge condition.

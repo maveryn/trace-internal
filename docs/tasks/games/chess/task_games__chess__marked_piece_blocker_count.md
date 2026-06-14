@@ -9,6 +9,9 @@
 6. Annotation schema: `bbox_set`
 7. Program schema: `count(pieces strictly between marked_slider and target_square); scene=chess; scope=marked_piece_blocker_count`
 
+## Program Contract
+- `count(pieces strictly between marked_slider and target_square); scene=chess; scope=marked_piece_blocker_count`
+
 ## Generation Notes
 1. The red outlined square contains the source sliding piece.
 2. The blue outlined square marks an empty target square aligned with the source piece.

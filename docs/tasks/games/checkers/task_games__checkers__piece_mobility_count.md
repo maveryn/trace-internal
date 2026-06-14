@@ -10,6 +10,9 @@
 7. Annotation schema: `point_set`
 8. Program schema: `count(unique(origins(filter(legal_moves(current_player), move_filter)))); scene=checkers; scope=piece_mobility_count`
 
+## Program Contract
+- `count(unique(origins(filter(legal_moves(current_player), move_filter)))); scene=checkers; scope=piece_mobility_count`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation marks the centers of current-player source pieces that have at least one qualifying move.

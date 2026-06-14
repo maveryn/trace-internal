@@ -13,9 +13,11 @@ from trace.tasks.illustrations.indoor_room.shared.state import INDOOR_OBJECT_TYP
 
 SURFACE_TASK_ID = "task_illustrations__indoor_room__surface_object_count"
 FURNITURE_TASK_ID = "task_illustrations__indoor_room__furniture_side_count"
+ROTATED_TILE_TASK_ID = "task_illustrations__indoor_room__rotated_tile_label"
 TASK_SOURCE_STEMS = {
     SURFACE_TASK_ID: "surface_object_count.py",
     FURNITURE_TASK_ID: "furniture_side_count.py",
+    ROTATED_TILE_TASK_ID: "rotated_tile_label.py",
 }
 
 
@@ -205,3 +207,33 @@ def test_furniture_side_count_query_id_selects_relation() -> None:
         assert out.query_id == query_id
         assert execution["query_id"] == query_id
         assert execution["relation"] == relation
+
+
+def test_rotated_tile_label_contract() -> None:
+    _assert_scene_packaged_task(ROTATED_TILE_TASK_ID)
+    out = create_task(ROTATED_TILE_TASK_ID).generate(
+        hash64(2026061407, "indoor-rotated-tile", 0),
+        params={"theme_id": "living_room", "source_object_count": 16, "rotation_degrees": 90},
+        max_attempts=120,
+    )
+    trace = out.trace_payload
+    _assert_scene_prompt_metadata(trace)
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
+    annotation = out.annotation_gt.value
+
+    assert out.scene_id == "indoor_room"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value in {"A", "B", "C", "D", "E", "F"}
+    assert execution["query_id"] == "single"
+    assert execution["answer_label"] == out.answer_gt.value
+    assert execution["rotation_degrees"] == 90
+    assert execution["grid_shape"] == [2, 3]
+    assert len(render_map["tile_bboxes_px_by_label"]) == 6
+    assert set(render_map["tile_bboxes_px_by_label"]) == {"A", "B", "C", "D", "E", "F"}
+    assert set(annotation) == {"rotated_tile"}
+    assert annotation["rotated_tile"] == render_map["rotated_tile_bbox_px"]
+    assert annotation["rotated_tile"] == render_map["tile_bboxes_px_by_label"][out.answer_gt.value]
+    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
+    assert execution["rotated_tile_index"] in execution["usable_tile_indices"]

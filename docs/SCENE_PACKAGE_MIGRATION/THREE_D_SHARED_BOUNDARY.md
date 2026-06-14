@@ -271,8 +271,15 @@ domain shared.
 
 ### `object_cluster`
 
-Keep dense-cluster scene grammar under `object_cluster/shared/`, but role-split
-the current broad helpers:
+Current status: staged source cleanup, not a review-candidate scene. Prompt
+assets, scene config, task docs, and public single-query contracts have been
+moved toward the scene-package shape, but the generator implementation still
+uses scene-private implementation bases. Do not add `object_cluster` to
+`SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES` until the lifecycle split below is
+complete and the scoped migration gates pass.
+
+Keep dense-cluster scene grammar under `object_cluster/shared/` or one approved
+scene-private `_lifecycle.py`, but role-split the current broad helpers:
 
 - cluster state and composition mode metadata -> `state.py`;
 - count/object/color support and target construction primitives -> `sampling.py`
@@ -284,8 +291,12 @@ the current broad helpers:
 - common trace scaffolding -> `output.py`;
 - annotation projection helpers -> `annotations.py`.
 
-`predicate_counts.py` must not remain a shared public-task base. It currently
-routes by task id/query id and constructs `TaskOutput`.
+`predicate_counts.py` must not remain a shared public-task base or a
+review-candidate lifecycle entry point. It currently routes by task/query
+identity and constructs `TaskOutput`. Before review-candidate registration,
+public task files must provide explicit `generate()` methods and task-owned
+objective hooks, while shared/lifecycle code receives neutral predicate,
+operand, and metric specs instead of public task or query ids.
 
 ### `surface_fixture`
 

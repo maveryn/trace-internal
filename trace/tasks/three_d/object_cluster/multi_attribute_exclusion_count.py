@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ...registry import register_task
-from .shared.predicate_counts import (
+from ._predicate_counts_impl import (
     MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
     MULTI_ATTRIBUTE_EXCLUSION_QUERY_IDS,
     ObjectClusterPredicateCountBase,
@@ -27,4 +27,3 @@ __all__ = [
     "TASK_ID",
     "ThreeDObjectClusterMultiAttributeExclusionCountTask",
 ]
-

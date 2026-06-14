@@ -5,30 +5,30 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
-from .....core.seed import spawn_rng
-from .....core.scene_config import (
+from trace.core.seed import spawn_rng
+from trace.core.scene_config import (
     get_domain_defaults,
     get_scene_defaults,
     resolve_scene_section_defaults,
 )
-from .....core.types import TypedValue
-from .....core.visual.background import make_background_canvas
-from .....core.visual.noise import apply_post_image_noise
-from ....base import TaskOutput
-from ....shared.config_defaults import (
+from trace.core.types import TypedValue
+from trace.core.visual.background import make_background_canvas
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.base import TaskOutput
+from trace.tasks.shared.config_defaults import (
     group_default,
     required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
-from ....shared.deterministic_sampling import resolve_selection_index
-from ....shared.output_metadata import default_task_versions
-from ....shared.prompt_variants import (
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
-from ...shared.object_resources import OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE
-from ...shared.object_scene import (
+from trace.tasks.three_d.shared.object_resources import OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE
+from trace.tasks.three_d.shared.object_scene import (
     _RenderParams,
     _build_projection_frame,
     _camera_yaw_band_for_instance,
@@ -38,16 +38,16 @@ from ...shared.object_scene import (
     _sample_camera,
     render_object_scene_3d,
 )
-from ...shared.task_support import normalize_unit as _normalize_unit
-from ...shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
-from ...shared.task_support import resolve_count as _shared_resolve_count
-from .attribute_count import (
+from trace.tasks.three_d.shared.task_support import normalize_unit as _normalize_unit
+from trace.tasks.three_d.shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
+from trace.tasks.three_d.shared.task_support import resolve_count as _shared_resolve_count
+from ._attribute_count_impl import (
     COLOR_SAFE_CLUSTER_SHAPE_TYPES,
     PROMPT_COLOR_RGB,
     _place_colored_cluster_objects,
     _view_is_valid,
 )
-from .instance_count import (
+from ._instance_count_impl import (
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
     _camera_record,
@@ -748,11 +748,12 @@ _BACKGROUND_DEFAULTS = _VISUAL_DEFAULTS.get("background", {}) if isinstance(_VIS
 _NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAULTS, Mapping) else {}
 
 
-def _resolve_task_defaults(task_id: str) -> Tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+def _resolve_task_defaults(task_id: str) -> Tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
     gen_defaults, render_defaults, prompt_defaults = split_scene_generation_rendering_prompt_defaults(
         _SCENE_DEFAULTS if isinstance(_SCENE_DEFAULTS, Mapping) else {},
         task_id=str(task_id),
     )
+    return dict(gen_defaults), dict(render_defaults), dict(prompt_defaults)
 
 
 class ObjectClusterPredicateCountBase:
@@ -760,6 +761,7 @@ class ObjectClusterPredicateCountBase:
 
     task_id = COLOR_MEMBERSHIP_COUNT_TASK_ID
     supported_query_ids: Tuple[str, ...] = COLOR_MEMBERSHIP_QUERY_IDS
+    prompt_query_key: str | None = None
     domain = "three_d"
     default_dataset_enabled = True
     keyed_annotation = False
@@ -781,6 +783,7 @@ class ObjectClusterPredicateCountBase:
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
         task_id = str(self.task_id)
+        gen_defaults, render_defaults, prompt_defaults_config = _resolve_task_defaults(task_id)
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=task_id,
@@ -792,6 +795,7 @@ class ObjectClusterPredicateCountBase:
             balance_flag_key="balanced_query_id_sampling",
             axis_namespace="query_id",
         )
+        prompt_query_key = str(self.prompt_query_key or query_id)
         scene_variant, scene_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=task_id,
@@ -807,7 +811,7 @@ class ObjectClusterPredicateCountBase:
 
         if task_id == COUNT_ARITHMETIC_TASK_ID:
             dataset, count_probabilities = self._build_arithmetic_dataset(
-                query_id=str(query_id),
+                query_id=str(prompt_query_key),
                 scene_variant=str(scene_variant),
                 params=params,
                 gen_defaults=gen_defaults,
@@ -817,7 +821,7 @@ class ObjectClusterPredicateCountBase:
         else:
             dataset, count_probabilities = self._build_predicate_dataset(
                 task_id=task_id,
-                query_id=str(query_id),
+                query_id=str(prompt_query_key),
                 scene_variant=str(scene_variant),
                 params=params,
                 gen_defaults=gen_defaults,
@@ -882,18 +886,10 @@ class ObjectClusterPredicateCountBase:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_slots = {
-            "object_description": str(prompt_defaults["object_description"]),
             "target_shape_type": str(dataset.get("target_shape_type") or ""),
             "target_object_name": str(dataset.get("target_object_name") or ""),
             "target_object_plural": str(dataset.get("target_object_plural") or ""),
@@ -903,12 +899,6 @@ class ObjectClusterPredicateCountBase:
             "target_property_phrase": str(dataset["target_property_phrase"]),
             "left_operand_phrase": str(dataset.get("left_operand_phrase") or ""),
             "right_operand_phrase": str(dataset.get("right_operand_phrase") or ""),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "answer_hint": str(prompt_defaults["answer_hint"]),
-            "annotation_hint": str(prompt_defaults["annotation_hint"]),
-            "json_example": str(prompt_defaults["json_example"]),
-            "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
         }
         prompt_selection = render_scene_prompt_variants(
             domain=self.domain,
@@ -916,9 +906,9 @@ class ObjectClusterPredicateCountBase:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_id),
+            query_key=str(prompt_query_key),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots=prompt_slots,
+            dynamic_slots=prompt_slots,
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
@@ -966,6 +956,7 @@ class ObjectClusterPredicateCountBase:
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "query_id": str(query_id),
+                    "internal_query_id": str(prompt_query_key),
                     "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_probabilities),
@@ -1004,6 +995,7 @@ class ObjectClusterPredicateCountBase:
             "render_map": dict(render_map),
             "execution_trace": {
                 "query_id": str(query_id),
+                "internal_query_id": str(prompt_query_key),
                 "scene_variant": str(scene_variant),
                 "object_count": int(dataset["object_count"]),
                 "countable_object_count": int(dataset["countable_object_count"]),
@@ -1032,6 +1024,7 @@ class ObjectClusterPredicateCountBase:
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
                 "question_format": str(query_id),
+                "internal_question_format": str(prompt_query_key),
                 "solver_trace": dict(dataset["solver_trace"]),
             },
             "witness_symbolic": {

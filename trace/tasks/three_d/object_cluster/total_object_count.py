@@ -25,7 +25,7 @@ from ...shared.prompt_variants import (
 )
 from ..shared.object_scene import _resolve_render_params, render_object_scene_3d
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
-from .shared.instance_count import (
+from ._instance_count_impl import (
     COUNTABLE_SHAPE_TYPES,
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
@@ -40,7 +40,9 @@ from ..shared.object_resources import OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE
 
 
 TASK_ID = "task_three_d__object_cluster__total_object_count"
-SUPPORTED_QUERY_IDS = ("total_object_count",)
+QUERY_ID = "single"
+PROMPT_QUERY_KEY = "total_object_count"
+SUPPORTED_QUERY_IDS = (QUERY_ID,)
 COMPOSITION_MODE = "single_type_cluster"
 
 
@@ -116,6 +118,8 @@ class ThreeDObjectClusterTotalObjectCountTask:
     task_id = TASK_ID
     domain = "three_d"
     default_dataset_enabled = True
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    prompt_query_key = PROMPT_QUERY_KEY
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         last_error: Exception | None = None
@@ -143,6 +147,7 @@ class ThreeDObjectClusterTotalObjectCountTask:
             balance_flag_key="balanced_query_id_sampling",
             axis_namespace="query_id",
         )
+        prompt_query_key = str(self.prompt_query_key)
         scene_variant, scene_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
@@ -166,7 +171,7 @@ class ThreeDObjectClusterTotalObjectCountTask:
 
         render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_cluster_dataset(
-            query_id=str(query_id),
+            query_id=str(prompt_query_key),
             scene_variant=str(scene_variant),
             composition_mode=COMPOSITION_MODE,
             target_shape_type=str(primary_shape_type),
@@ -208,13 +213,6 @@ class ThreeDObjectClusterTotalObjectCountTask:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -224,17 +222,9 @@ class ThreeDObjectClusterTotalObjectCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_id),
+            query_key=str(prompt_query_key),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
-            },
+            dynamic_slots={},
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
@@ -283,6 +273,7 @@ class ThreeDObjectClusterTotalObjectCountTask:
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "query_id": str(query_id),
+                    "internal_query_id": str(prompt_query_key),
                     "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_probabilities),
@@ -324,6 +315,7 @@ class ThreeDObjectClusterTotalObjectCountTask:
             },
             "execution_trace": {
                 "query_id": str(query_id),
+                "internal_query_id": str(prompt_query_key),
                 "scene_variant": str(scene_variant),
                 "cluster_composition_mode": COMPOSITION_MODE,
                 "object_count": int(object_count),
@@ -339,6 +331,7 @@ class ThreeDObjectClusterTotalObjectCountTask:
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
                 "question_format": str(query_id),
+                "internal_question_format": str(prompt_query_key),
                 "solver_trace": dict(solver_trace),
             },
             "witness_symbolic": {

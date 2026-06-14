@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ...registry import register_task
-from .shared.predicate_counts import (
+from ._predicate_counts_impl import (
     COUNT_ARITHMETIC_QUERY_IDS,
     COUNT_ARITHMETIC_TASK_ID,
     ObjectClusterPredicateCountBase,
@@ -28,4 +28,3 @@ __all__ = [
     "TASK_ID",
     "ThreeDObjectClusterCountArithmeticTask",
 ]
-

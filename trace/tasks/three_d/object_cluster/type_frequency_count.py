@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ...registry import register_task
-from .shared.predicate_counts import (
+from ._predicate_counts_impl import (
     ObjectClusterPredicateCountBase,
     TYPE_FREQUENCY_COUNT_TASK_ID,
     TYPE_FREQUENCY_QUERY_IDS,

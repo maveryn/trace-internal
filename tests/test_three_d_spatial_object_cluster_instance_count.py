@@ -5,7 +5,7 @@ from __future__ import annotations
 import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
-from trace.tasks.registry import list_default_task_ids
+from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
 from trace.tasks.three_d.shared.object_inventory_preview import render_three_d_object_profile_preview
 from trace.tasks.three_d.shared.object_resources import OBJECT_CLUSTER_EXTRA_SHAPE_TYPES, object_profiles
 from trace.tasks.three_d.object_cluster.color_membership_count import TASK_ID as COLOR_MEMBERSHIP_COUNT_TASK_ID
@@ -15,11 +15,11 @@ from trace.tasks.three_d.object_cluster.multi_attribute_exclusion_count import (
     TASK_ID as MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
 )
 from trace.tasks.three_d.object_cluster.multi_attribute_or_count import TASK_ID as MULTI_ATTRIBUTE_OR_COUNT_TASK_ID
-from trace.tasks.three_d.object_cluster.shared.attribute_count import (
+from trace.tasks.three_d.object_cluster._attribute_count_impl import (
     COLOR_SAFE_CLUSTER_SHAPE_TYPES,
     PROMPT_COLOR_RGB,
 )
-from trace.tasks.three_d.object_cluster.shared.instance_count import COUNTABLE_SHAPE_TYPES
+from trace.tasks.three_d.object_cluster._instance_count_impl import COUNTABLE_SHAPE_TYPES
 from trace.tasks.three_d.object_cluster.single_attribute_membership_count import TASK_ID
 from trace.tasks.three_d.object_cluster.total_object_count import TASK_ID as TOTAL_OBJECT_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.type_frequency_count import TASK_ID as TYPE_FREQUENCY_COUNT_TASK_ID
@@ -70,7 +70,7 @@ def test_object_cluster_total_object_count_answer_and_annotation() -> None:
     output = task.generate(
         20260606,
         params={
-            "query_id": "total_object_count",
+            "query_id": "single",
             "scene_variant": "shallow_tray",
             "object_count": 14,
             "primary_shape_type": "button",
@@ -85,7 +85,8 @@ def test_object_cluster_total_object_count_answer_and_annotation() -> None:
     object_specs = list(trace["object_specs"])
 
     assert output.scene_id == "object_cluster"
-    assert output.query_id == "total_object_count"
+    assert output.query_id == "single"
+    assert trace["internal_query_id"] == "total_object_count"
     assert trace["cluster_composition_mode"] == "single_type_cluster"
     assert trace["object_count"] == 14
     assert trace["distractor_count"] == 0
@@ -108,7 +109,7 @@ def test_object_cluster_instance_count_answer_and_annotation() -> None:
     output = task.generate(
         20260601,
         params={
-            "query_id": "type_count",
+            "query_id": "single",
             "scene_variant": "tabletop_pile",
             "object_count": 22,
             "target_count": 6,
@@ -124,7 +125,8 @@ def test_object_cluster_instance_count_answer_and_annotation() -> None:
     object_specs = list(trace["object_specs"])
 
     assert output.scene_id == "object_cluster"
-    assert output.query_id == "type_count"
+    assert output.query_id == "single"
+    assert trace["internal_query_id"] == "type_count"
     assert trace["cluster_composition_mode"] == "mixed_type_cluster"
     assert output.answer_gt.type == "integer"
     assert output.answer_gt.value == 6
@@ -145,7 +147,7 @@ def test_object_cluster_single_type_mode_counts_every_object() -> None:
     output = task.generate(
         20260602,
         params={
-            "query_id": "type_count",
+            "query_id": "single",
             "scene_variant": "cluster_mat",
             "composition_mode": "single_type_cluster",
             "target_count": 12,
@@ -169,21 +171,23 @@ def test_object_cluster_single_type_mode_counts_every_object() -> None:
 
 
 def test_object_cluster_task_registered_in_three_d_taxonomy() -> None:
+    ensure_scene_tasks_registered("three_d", "object_cluster")
     taxonomy = resolve_task_taxonomy(TASK_ID)
 
-    assert TASK_ID in list_default_task_ids()
+    assert TASK_ID in TASK_REGISTRY
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_cluster"
-    assert taxonomy.source_scene_id == "object_cluster"
+    assert not taxonomy.source_scene_id
 
 
 def test_object_cluster_total_object_count_registered_in_three_d_taxonomy() -> None:
+    ensure_scene_tasks_registered("three_d", "object_cluster")
     taxonomy = resolve_task_taxonomy(TOTAL_OBJECT_COUNT_TASK_ID)
 
-    assert TOTAL_OBJECT_COUNT_TASK_ID in list_default_task_ids()
+    assert TOTAL_OBJECT_COUNT_TASK_ID in TASK_REGISTRY
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_cluster"
-    assert taxonomy.source_scene_id == "object_cluster"
+    assert not taxonomy.source_scene_id
 
 
 def test_object_cluster_countqa_additions_have_profiles_and_render() -> None:
@@ -215,7 +219,7 @@ def test_object_cluster_multi_attribute_and_count_answer_and_annotation() -> Non
     output = task.generate(
         20260605,
         params={
-            "query_id": "type_and_color_count",
+            "query_id": "single",
             "scene_variant": "tabletop_pile",
             "object_count": 18,
             "target_count": 4,
@@ -237,7 +241,8 @@ def test_object_cluster_multi_attribute_and_count_answer_and_annotation() -> Non
     ]
 
     assert output.scene_id == "object_cluster"
-    assert output.query_id == "type_and_color_count"
+    assert output.query_id == "single"
+    assert trace["internal_query_id"] == "type_and_color_count"
     assert output.answer_gt.type == "integer"
     assert output.answer_gt.value == 4
     assert output.annotation_gt.type == "bbox_set"
@@ -256,12 +261,13 @@ def test_object_cluster_multi_attribute_and_count_answer_and_annotation() -> Non
 
 
 def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy() -> None:
+    ensure_scene_tasks_registered("three_d", "object_cluster")
     taxonomy = resolve_task_taxonomy(MULTI_ATTRIBUTE_AND_TASK_ID)
 
-    assert MULTI_ATTRIBUTE_AND_TASK_ID in list_default_task_ids()
+    assert MULTI_ATTRIBUTE_AND_TASK_ID in TASK_REGISTRY
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_cluster"
-    assert taxonomy.source_scene_id == "object_cluster"
+    assert not taxonomy.source_scene_id
     assert len(COLOR_SAFE_CLUSTER_SHAPE_TYPES) >= 12
     assert {
         "straw",
@@ -286,7 +292,7 @@ def test_object_cluster_color_membership_count_answer_and_annotation() -> None:
     output = task.generate(
         20260611,
         params={
-            "query_id": "color_count",
+            "query_id": "single",
             "scene_variant": "shallow_tray",
             "object_count": 18,
             "target_count": 5,
@@ -306,7 +312,8 @@ def test_object_cluster_color_membership_count_answer_and_annotation() -> None:
         if str(spec["color_name"]) == "blue"
     ]
 
-    assert output.query_id == "color_count"
+    assert output.query_id == "single"
+    assert trace["internal_query_id"] == "color_count"
     assert output.answer_gt.value == 5
     assert output.annotation_gt.type == "bbox_set"
     assert target_object_ids == expected_ids
@@ -319,7 +326,7 @@ def test_object_cluster_multi_attribute_or_count_counts_overlap_once() -> None:
     output = task.generate(
         20260612,
         params={
-            "query_id": "type_or_color_count",
+            "query_id": "single",
             "scene_variant": "tabletop_pile",
             "object_count": 20,
             "target_count": 6,
@@ -339,7 +346,8 @@ def test_object_cluster_multi_attribute_or_count_counts_overlap_once() -> None:
         if str(spec["shape_type"]) == "button" or str(spec["color_name"]) == "red"
     ]
 
-    assert output.query_id == "type_or_color_count"
+    assert output.query_id == "single"
+    assert trace["internal_query_id"] == "type_or_color_count"
     assert output.answer_gt.value == len(expected_ids) == 6
     assert target_object_ids == expected_ids
     assert len(target_object_ids) == len(set(target_object_ids))
@@ -383,7 +391,7 @@ def test_object_cluster_type_union_count_answer_and_annotation() -> None:
     output = task.generate(
         20260614,
         params={
-            "query_id": "two_type_union_count",
+            "query_id": "single",
             "scene_variant": "tabletop_pile",
             "object_count": 20,
             "target_count": 7,
@@ -402,7 +410,8 @@ def test_object_cluster_type_union_count_answer_and_annotation() -> None:
         if str(spec["shape_type"]) in {"button", "marble"}
     ]
 
-    assert output.query_id == "two_type_union_count"
+    assert output.query_id == "single"
+    assert trace["internal_query_id"] == "two_type_union_count"
     assert output.answer_gt.value == 7
     assert target_object_ids == expected_ids
     assert output.annotation_gt.type == "bbox_set"
@@ -476,6 +485,7 @@ def test_object_cluster_type_frequency_singleton_count_answer_and_annotation() -
 
 
 def test_object_cluster_first_wave_tasks_registered_in_three_d_taxonomy() -> None:
+    ensure_scene_tasks_registered("three_d", "object_cluster")
     for task_id in (
         COLOR_MEMBERSHIP_COUNT_TASK_ID,
         MULTI_ATTRIBUTE_OR_COUNT_TASK_ID,
@@ -486,7 +496,7 @@ def test_object_cluster_first_wave_tasks_registered_in_three_d_taxonomy() -> Non
     ):
         taxonomy = resolve_task_taxonomy(task_id)
 
-        assert task_id in list_default_task_ids()
+        assert task_id in TASK_REGISTRY
         assert taxonomy.domain == "three_d"
         assert taxonomy.scene_id == "object_cluster"
-        assert taxonomy.source_scene_id == "object_cluster"
+        assert not taxonomy.source_scene_id

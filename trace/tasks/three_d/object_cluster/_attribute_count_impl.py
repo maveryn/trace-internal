@@ -5,33 +5,33 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from .....core.seed import spawn_rng
-from .....core.scene_config import (
+from trace.core.seed import spawn_rng
+from trace.core.scene_config import (
     get_domain_defaults,
     get_scene_defaults,
     resolve_scene_section_defaults,
 )
-from .....core.types import TypedValue
-from .....core.visual.background import make_background_canvas
-from .....core.visual.noise import apply_post_image_noise
-from ....base import TaskOutput
-from ....shared.config_defaults import (
+from trace.core.types import TypedValue
+from trace.core.visual.background import make_background_canvas
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.base import TaskOutput
+from trace.tasks.shared.config_defaults import (
     group_default,
     required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
-from ....shared.deterministic_sampling import resolve_selection_index
-from ....shared.output_metadata import default_task_versions
-from ....shared.prompt_variants import (
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
-from ...shared.object_resources import (
+from trace.tasks.three_d.shared.object_resources import (
     OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE,
     OBJECT_CLUSTER_SHAPE_TYPES,
 )
-from ...shared.object_scene import (
+from trace.tasks.three_d.shared.object_scene import (
     _RenderParams,
     _bbox_intersection_area,
     _build_projection_frame,
@@ -45,10 +45,10 @@ from ...shared.object_scene import (
     _sample_camera,
     render_object_scene_3d,
 )
-from ...shared.task_support import normalize_unit as _normalize_unit
-from ...shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
-from ...shared.task_support import resolve_count as _shared_resolve_count
-from .instance_count import (
+from trace.tasks.three_d.shared.task_support import normalize_unit as _normalize_unit
+from trace.tasks.three_d.shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
+from trace.tasks.three_d.shared.task_support import resolve_count as _shared_resolve_count
+from ._instance_count_impl import (
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
     _bbox_area,
@@ -459,6 +459,8 @@ class ObjectClusterMultiAttributeAndCountBase:
     task_id = TASK_ID
     domain = "three_d"
     default_dataset_enabled = True
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    prompt_query_key = "type_and_color_count"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         last_error: Exception | None = None
@@ -484,12 +486,13 @@ class ObjectClusterMultiAttributeAndCountBase:
             task_id=TASK_ID,
             gen_defaults=gen_defaults,
             instance_seed=int(instance_seed),
-            supported_variants=SUPPORTED_QUERY_IDS,
+            supported_variants=tuple(str(value) for value in self.supported_query_ids),
             explicit_key="query_id",
             weights_key="query_id_weights",
             balance_flag_key="balanced_query_id_sampling",
             axis_namespace="query_id",
         )
+        prompt_query_key = str(self.prompt_query_key)
         scene_variant, scene_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
@@ -530,7 +533,7 @@ class ObjectClusterMultiAttributeAndCountBase:
 
         render_params = _resolve_render_params(params, render_defaults=render_defaults)
         dataset = _build_dataset(
-            query_id=str(query_id),
+            query_id=str(prompt_query_key),
             scene_variant=str(scene_variant),
             target_spec=target_spec,
             target_count=int(target_count),
@@ -567,13 +570,6 @@ class ObjectClusterMultiAttributeAndCountBase:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -585,25 +581,15 @@ class ObjectClusterMultiAttributeAndCountBase:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_id),
+            query_key=str(prompt_query_key),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
+            dynamic_slots={
                 "target_shape_type": str(dataset["target_shape_type"]),
                 "target_object_name": str(dataset["target_object_name"]),
                 "target_object_plural": str(dataset["target_object_plural"]),
                 "target_color_name": str(dataset["target_color_name"]),
                 "target_property_phrase": str(target_property_phrase),
                 "target_property_singular": str(target_property_singular),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]).format(
-                    target_property_phrase=target_property_phrase,
-                    target_property_singular=target_property_singular,
-                ),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
             instance_seed=int(instance_seed),
         )
@@ -639,6 +625,7 @@ class ObjectClusterMultiAttributeAndCountBase:
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "query_id": str(query_id),
+                    "internal_query_id": str(prompt_query_key),
                     "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_probabilities),
@@ -685,6 +672,7 @@ class ObjectClusterMultiAttributeAndCountBase:
             },
             "execution_trace": {
                 "query_id": str(query_id),
+                "internal_query_id": str(prompt_query_key),
                 "scene_variant": str(scene_variant),
                 "object_count": int(object_count),
                 "target_count": int(answer_value),
@@ -705,6 +693,7 @@ class ObjectClusterMultiAttributeAndCountBase:
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
                 "question_format": str(query_id),
+                "internal_question_format": str(prompt_query_key),
                 "solver_trace": dict(solver_trace),
             },
             "witness_symbolic": {

@@ -61,7 +61,6 @@ class DartsObjectivePlan:
     query_params: Mapping[str, Any]
     prompt_dynamic_slots: Mapping[str, Any]
     construct_attempt: AttemptBuilder
-    target_sector_value: int | None = None
 
 
 def dart_point_set_attempt(
@@ -102,7 +101,6 @@ def prepare_darts_exact_count_objective(
     nonqualifying_slots: tuple[DartsScoreSlot, ...],
     extra_query_params: Mapping[str, Any],
     extra_execution_params: Mapping[str, Any],
-    target_sector_value: int | None = None,
 ) -> DartsObjectivePlan:
     """Prepare a neutral exact-count objective after public code defines membership."""
 
@@ -141,7 +139,6 @@ def prepare_darts_exact_count_objective(
             render_params=render_params,
             qualifying_slots=qualifying_slots,
             nonqualifying_slots=nonqualifying_slots,
-            target_sector_value=target_sector_value,
         )
         return dart_point_set_attempt(
             sample=sample,
@@ -158,7 +155,6 @@ def prepare_darts_exact_count_objective(
         query_params=query_params,
         prompt_dynamic_slots=dict(prompt_dynamic_slots),
         construct_attempt=construct_attempt,
-        target_sector_value=None if target_sector_value is None else int(target_sector_value),
     )
 
 
@@ -212,7 +208,6 @@ def run_darts_lifecycle(
         sample = attempt.sample
         rendered_context = render_darts_task_scene(
             darts=sample.darts,
-            target_sector_value=objective.target_sector_value,
             style_variant=str(axes.style_variant),
             render_params=render_params,
             render_defaults=render_defaults,

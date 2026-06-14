@@ -11,7 +11,6 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.darts.bullseye_membership_count import GamesDartsBullseyeMembershipCountTask
 from trace.tasks.games.darts.dart_score_value import GamesDartsDartScoreValueTask
-from trace.tasks.games.darts.sector_dart_count import GamesDartsSectorDartCountTask
 from trace.tasks.games.darts.shared.rendering import dartboard_anchor_colors
 from trace.tasks.shared.color_distance import color_distance
 from tests.helpers import read_jsonl
@@ -77,37 +76,10 @@ def test_games_darts_bullseye_membership_count_contract(
     assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
 
 
-def test_games_darts_sector_count_contract() -> None:
-    out = GamesDartsSectorDartCountTask().generate(
-        92031,
-        params={
-            "scene_variant": "single_board",
-            "target_sector": 12,
-            "target_answer": 3,
-            "dart_count": 7,
-        },
-        max_attempts=48,
-    )
-    execution = out.trace_payload["execution_trace"]
-    specs_by_id = {str(spec["dart_id"]): spec for spec in execution["dart_specs"]}
-    annotated_specs = [specs_by_id[str(dart_id)] for dart_id in execution["annotation_entity_ids"]]
-
-    assert out.answer_gt.type == "integer"
-    assert int(out.answer_gt.value) == 3
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == 3
-    assert int(execution["target_sector"]) == 12
-    assert int(execution["target_sector_value"]) == 12
-    assert int(out.trace_payload["render_map"]["target_sector_value"]) == 12
-    assert all(spec["area_kind"] == "sector" and int(spec["sector_value"]) == 12 for spec in annotated_specs)
-
-
 def test_games_darts_query_cycle_covers_simplified_answers() -> None:
     score_answers: set[int] = set()
     inside_answers: set[int] = set()
     outside_answers: set[int] = set()
-    sector_answers: set[int] = set()
-    target_sectors: set[int] = set()
     for sampling_index in range(80):
         score = GamesDartsDartScoreValueTask().generate(
             92101 + int(sampling_index),
@@ -124,22 +96,13 @@ def test_games_darts_query_cycle_covers_simplified_answers() -> None:
             params={"_sample_cursor": int(sampling_index), "query_id": "outside_bullseye_count"},
             max_attempts=64,
         )
-        sector = GamesDartsSectorDartCountTask().generate(
-            92401 + int(sampling_index),
-            params={"_sample_cursor": int(sampling_index)},
-            max_attempts=64,
-        )
         score_answers.add(int(score.answer_gt.value))
         inside_answers.add(int(inside.answer_gt.value))
         outside_answers.add(int(outside.answer_gt.value))
-        sector_answers.add(int(sector.answer_gt.value))
-        target_sectors.add(int(sector.trace_payload["execution_trace"]["target_sector"]))
 
     assert score_answers == set(range(1, 21)) | {50}
     assert {0, 1, 2, 3, 4, 5}.issubset(inside_answers)
     assert {0, 1, 2, 3, 4, 5}.issubset(outside_answers)
-    assert {0, 1, 2, 3, 4}.issubset(sector_answers)
-    assert target_sectors == set(range(1, 21))
 
 
 def test_games_darts_score_value_is_deterministic() -> None:
@@ -159,9 +122,14 @@ def test_games_darts_score_value_is_deterministic() -> None:
 
 
 def test_games_darts_marker_color_is_lab_separated_from_board() -> None:
-    out = GamesDartsSectorDartCountTask().generate(
+    out = GamesDartsBullseyeMembershipCountTask().generate(
         92051,
-        params={"scene_variant": "single_board", "target_sector": 20, "target_answer": 2, "dart_count": 7},
+        params={
+            "scene_variant": "single_board",
+            "query_id": "outside_bullseye_count",
+            "target_answer": 3,
+            "dart_count": 7,
+        },
         max_attempts=48,
     )
     render_spec = out.trace_payload["render_spec"]
@@ -183,7 +151,6 @@ def test_games_darts_prompt_bundle_uses_simplified_terms() -> None:
     assert required["query:dart_score_value"] == ["scoring_rule_text"]
     assert required["query:inside_bullseye_count"] == []
     assert required["query:outside_bullseye_count"] == []
-    assert required["query:sector_dart_count"] == ["target_sector_text"]
     assert bundle["static_slots_by_key"]["scene:visible_dartboard"]["object_description"]
 
 

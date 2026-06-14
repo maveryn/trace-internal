@@ -22,12 +22,6 @@ def score_slot_is_bullseye(slot: DartsScoreSlot) -> bool:
     return str(slot.area_kind) == "bullseye"
 
 
-def score_slot_in_sector(slot: DartsScoreSlot, *, sector_value: int) -> bool:
-    """Return whether a score slot belongs to the requested numbered sector."""
-
-    return str(slot.area_kind) == "sector" and int(slot.sector_value or -1) == int(sector_value)
-
-
 def score_slot_matches_score(slot: DartsScoreSlot, *, score: int) -> bool:
     """Return whether a score slot has the requested simplified score."""
 
@@ -44,7 +38,6 @@ __all__ = [
     "BULLSEYE_SLOT",
     "SCORE_SLOTS",
     "SECTOR_SLOTS",
-    "score_slot_in_sector",
     "score_slot_is_bullseye",
     "score_slot_matches_score",
     "slots_for_score",

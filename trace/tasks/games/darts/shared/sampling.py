@@ -23,7 +23,7 @@ from .rendering import (
     DartboardRenderParams,
     polar_to_xy,
 )
-from .rules import BULLSEYE_SLOT, SCORE_SLOTS, SECTOR_SLOTS, score_slot_in_sector, slots_for_score
+from .rules import BULLSEYE_SLOT, SCORE_SLOTS, SECTOR_SLOTS, slots_for_score
 from .state import (
     DartInstance,
     DartsIntegerAxis,
@@ -203,26 +203,6 @@ def resolve_darts_score_axis(
     )
 
 
-def resolve_darts_target_sector_axis(
-    *,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    gen_defaults: Mapping[str, Any],
-) -> DartsIntegerAxis:
-    """Resolve the target sector number for sector-count tasks."""
-
-    return resolve_darts_integer_axis(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=gen_defaults,
-        support_key="target_sector_support",
-        explicit_key="target_sector",
-        fallback_support=DEFAULTS.target_sector_support,
-        namespace="sector_count.target_sector",
-        balanced_flag_key="balanced_target_sector_sampling",
-    )
-
-
 def _sample_slot(rng, slots: Sequence[DartsScoreSlot]) -> DartsScoreSlot:
     """Return one random score slot from a non-empty pool."""
 
@@ -287,7 +267,6 @@ def sample_darts_for_count(
     render_params: DartboardRenderParams,
     qualifying_slots: Sequence[DartsScoreSlot],
     nonqualifying_slots: Sequence[DartsScoreSlot],
-    target_sector_value: int | None = None,
 ) -> DartsSampledScene:
     """Sample darts with an exact count of qualifying score slots."""
 
@@ -307,7 +286,6 @@ def sample_darts_for_count(
         selected_slots=[slot for slot, _ in combined],
         annotation_flags=[flag for _, flag in combined],
         marked_flags=[False for _ in combined],
-        target_sector_value=None if target_sector_value is None else int(target_sector_value),
     )
 
 
@@ -333,18 +311,6 @@ def sample_darts_for_score_value(
     )
 
 
-def sector_qualifying_slots(sector_value: int) -> Tuple[DartsScoreSlot, ...]:
-    """Return score slots inside one numbered sector."""
-
-    return tuple(slot for slot in SECTOR_SLOTS if score_slot_in_sector(slot, sector_value=int(sector_value)))
-
-
-def sector_nonqualifying_slots(sector_value: int) -> Tuple[DartsScoreSlot, ...]:
-    """Return score slots outside one numbered sector, including bullseye."""
-
-    return tuple(slot for slot in SCORE_SLOTS if not score_slot_in_sector(slot, sector_value=int(sector_value)))
-
-
 def _sample_darts_from_slots(
     rng,
     *,
@@ -352,7 +318,6 @@ def _sample_darts_from_slots(
     selected_slots: Sequence[DartsScoreSlot],
     annotation_flags: Sequence[bool],
     marked_flags: Sequence[bool],
-    target_sector_value: int | None = None,
     target_score: int | None = None,
 ) -> DartsSampledScene:
     """Project sampled score slots to visible dart markers."""
@@ -382,7 +347,6 @@ def _sample_darts_from_slots(
         darts=tuple(darts),
         annotation_dart_ids=tuple(annotation_ids),
         total_score=int(sum(int(slot.score) for slot in selected_slots)),
-        target_sector_value=None if target_sector_value is None else int(target_sector_value),
         target_score=None if target_score is None else int(target_score),
     )
 
@@ -454,9 +418,6 @@ __all__ = [
     "resolve_darts_render_params",
     "resolve_darts_scene_axes",
     "resolve_darts_score_axis",
-    "resolve_darts_target_sector_axis",
     "sample_darts_for_count",
     "sample_darts_for_score_value",
-    "sector_nonqualifying_slots",
-    "sector_qualifying_slots",
 ]

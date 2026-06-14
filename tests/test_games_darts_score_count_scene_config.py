@@ -41,38 +41,7 @@ def test_games_darts_count_task_overrides_are_task_owned() -> None:
         cfg,
         task_id="task_games__darts__bullseye_membership_count",
     )
-    sector_generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_games__darts__sector_dart_count",
-    )
 
     assert bool(bull_generation["balanced_target_answer_sampling"]) is True
     assert list(bull_generation["count_target_answer_support"]) == [0, 1, 2, 3, 4, 5]
     assert list(bull_generation["count_query_dart_count_support"]) == [4, 5, 6, 7]
-    assert bool(sector_generation["balanced_target_answer_sampling"]) is True
-    assert bool(sector_generation["balanced_distractor_count_sampling"]) is True
-    assert bool(sector_generation["balanced_target_sector_sampling"]) is True
-    assert list(sector_generation["sector_target_answer_support"]) == [0, 1, 2, 3, 4]
-    assert list(sector_generation["sector_distractor_count_support"]) == [1, 2, 3, 4, 5, 6]
-    assert list(sector_generation["target_sector_support"]) == [
-        20,
-        1,
-        18,
-        4,
-        13,
-        6,
-        10,
-        15,
-        2,
-        17,
-        3,
-        19,
-        7,
-        16,
-        8,
-        11,
-        14,
-        9,
-        12,
-        5,
-    ]

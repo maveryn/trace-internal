@@ -185,8 +185,6 @@ _DART_COLOR_ANCHOR_KEYS: Tuple[str, ...] = (
 )
 _DART_COLOR_EXTRA_ANCHORS: Tuple[Tuple[int, int, int], ...] = (
     (20, 24, 28),
-    (255, 214, 72),
-    (255, 246, 142),
 )
 
 
@@ -376,42 +374,6 @@ def _draw_board(
     }
 
 
-def _draw_sector_highlight(
-    image: Image.Image,
-    *,
-    params: DartboardRenderParams,
-    target_sector_value: int | None,
-) -> None:
-    """Draw a translucent sector highlight for sector-count queries."""
-
-    if target_sector_value is None:
-        return
-    try:
-        sector_index = STANDARD_DART_SECTORS.index(int(target_sector_value))
-    except ValueError:
-        return
-    cx = float(params.board_center_x_px)
-    cy = float(params.board_center_y_px)
-    radius = float(params.board_radius_px)
-    bull_radius = float(DARTBOARD_RADIUS_FRACTIONS["bullseye"]) * radius
-    sector_outer = float(DARTBOARD_RADIUS_FRACTIONS["sector_outer"]) * radius
-    overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
-    draw.polygon(
-        _ring_polygon(
-            cx=cx,
-            cy=cy,
-            inner_radius=float(bull_radius),
-            outer_radius=float(sector_outer),
-            start_deg=float((sector_index * 18.0) - 9.0),
-            end_deg=float((sector_index * 18.0) + 9.0),
-        ),
-        fill=(255, 214, 72, 112),
-        outline=(255, 246, 142, 230),
-    )
-    image.alpha_composite(overlay)
-
-
 def _draw_dart(
     draw: ImageDraw.ImageDraw,
     *,
@@ -471,12 +433,11 @@ def render_darts_scene(
     background: Image.Image,
     style_variant: str,
     params: DartboardRenderParams,
-    target_sector_value: int | None = None,
     dart_fill_color: Tuple[int, int, int] | None = None,
     dart_fill_min_lab_distance: float | None = None,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedDartsScene:
-    """Render the simplified board, optional sector highlight, and darts."""
+    """Render the simplified board and darts."""
 
     image = background.convert("RGBA")
     panel_bbox = _panel_bbox(params=params)
@@ -489,7 +450,6 @@ def render_darts_scene(
             border_width=3,
         )
     board_meta = _draw_board(image, params=params, style_variant=str(style_variant))
-    _draw_sector_highlight(image, params=params, target_sector_value=target_sector_value)
     draw = ImageDraw.Draw(image)
 
     dart_specs: List[RenderedDartSpec] = []
@@ -550,7 +510,6 @@ def render_darts_scene(
             if panel_style is None
             else game_panel_scene_style_metadata(panel_style),
             "font_family": str(params.font_family),
-            "target_sector_value": None if target_sector_value is None else int(target_sector_value),
         },
     )
 
@@ -572,7 +531,6 @@ def _allowed_panel_treatments(params: Mapping[str, Any], render_defaults: Mappin
 def render_darts_task_scene(
     *,
     darts: Sequence[DartInstance],
-    target_sector_value: int | None,
     style_variant: str,
     render_params: DartboardRenderParams,
     render_defaults: Mapping[str, Any],
@@ -610,7 +568,6 @@ def render_darts_task_scene(
         background=background,
         style_variant=str(style_variant),
         params=render_params,
-        target_sector_value=target_sector_value,
         dart_fill_color=dart_fill_color,
         dart_fill_min_lab_distance=float(dart_fill_min_lab_distance),
         panel_style=panel_style,

@@ -42,7 +42,6 @@ class DartsSceneDefaults:
     score_value_support: Tuple[int, ...] = STANDARD_DART_SECTORS + (BULLSEYE_SCORE,)
     count_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     count_query_dart_count_support: Tuple[int, ...] = (4, 5, 6, 7)
-    target_sector_support: Tuple[int, ...] = STANDARD_DART_SECTORS
     canvas_width: int = 1040
     canvas_height: int = 900
     board_center_x_px: int = 520

@@ -416,7 +416,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__crossing__moving_object_direction_count": _entry("games", "crossing", "games", "crossing"),
     "task_games__darts__bullseye_membership_count": _entry("games", "darts", "games", "darts"),
     "task_games__darts__dart_score_value": _entry("games", "darts", "games", "darts"),
-    "task_games__darts__sector_dart_count": _entry("games", "darts", "games", "darts"),
     "task_games__dominoes__invalid_join_label": _entry("games", "dominoes", "games", "dominoes"),
     "task_games__dominoes__longest_chain_length_value": _entry("games", "dominoes", "games", "dominoes"),
     "task_games__dominoes__matching_end_count": _entry("games", "dominoes", "games", "dominoes"),

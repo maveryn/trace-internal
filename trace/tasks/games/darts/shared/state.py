@@ -54,7 +54,6 @@ class DartsSampledScene:
     darts: Tuple[DartInstance, ...]
     annotation_dart_ids: Tuple[str, ...]
     total_score: int
-    target_sector_value: int | None = None
     target_score: int | None = None
 
 

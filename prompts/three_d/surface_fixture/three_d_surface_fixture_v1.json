@@ -50,6 +50,13 @@
         "Looking across the fixture, how many {target_element_plural} are {target_color_label}?",
         "How many visible {target_element_plural} have color {target_color_label}?"
       ],
+      "color_count_after_operations": [
+        "Suppose these changes happen: {operation_phrase}. How many {target_color_label} {target_element_plural} are there after all changes?",
+        "Start with the visible fixture, then apply these changes: {operation_phrase}. What is the final number of {target_color_label} {target_element_plural}?",
+        "After the following changes, how many {target_color_label} {target_element_plural} are there: {operation_phrase}?",
+        "Using the visible fixture as the starting state, apply {operation_phrase}. What is the resulting count of {target_color_label} {target_element_plural}?",
+        "If these changes are made to the fixture, {operation_phrase}, how many {target_color_label} {target_element_plural} are there in total?"
+      ],
       "scoped_element_color_count": [
         "How many {target_color_label} {target_element_plural} are in {scope_phrase}?",
         "Count the {target_color_label} {target_element_plural} in {scope_phrase}. How many are there?",
@@ -107,6 +114,12 @@
       "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
+    "query:color_count_after_operations": {
+      "answer_hint": "set \"answer\" to the final count as an integer after applying the listed changes",
+      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each original visible target-color element used as the starting count; do not mark hypothetical added elements",
+      "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":5}",
+      "json_example_answer_only": "{\"answer\":5}"
+    },
     "query:scoped_element_color_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
       "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted colored surface element in the requested row or column",
@@ -125,6 +138,7 @@
     "target_element_name": {"type": "string"},
     "target_element_plural": {"type": "string"},
     "target_color_label": {"type": "string"},
+    "operation_phrase": {"type": "string"},
     "scope_phrase": {"type": "string"},
     "fixture_display_name": {"type": "string"}
   },
@@ -134,6 +148,7 @@
     "query:highest_element_count_panel": ["target_element_plural"],
     "query:lowest_element_count_panel": ["target_element_plural"],
     "query:element_color_count": ["target_color_label", "target_element_plural"],
+    "query:color_count_after_operations": ["operation_phrase", "target_color_label", "target_element_plural"],
     "query:scoped_element_color_count": ["target_color_label", "target_element_plural", "scope_phrase"],
     "query:empty_or_missing_cell_count": ["target_element_plural", "target_element_name"]
   }

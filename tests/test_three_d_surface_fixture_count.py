@@ -12,6 +12,7 @@ from trace.tasks import create_task
 from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
 from trace.tasks.shared.named_colors import available_named_colors
 from trace.tasks.three_d.shared.object_resources import object_profiles
+from trace.tasks.three_d.surface_fixture.color_count_after_operations_value import TASK_ID as COLOR_OPERATIONS_TASK_ID
 from trace.tasks.three_d.surface_fixture.colored_element_count import TASK_ID as COLORED_TASK_ID
 from trace.tasks.three_d.surface_fixture.element_count_extremum_label import (
     HIGHEST_QUERY_ID as EXTREMUM_HIGHEST_QUERY_ID,
@@ -38,6 +39,7 @@ SURFACE_FIXTURE_TASK_IDS = (
     REPEATED_TASK_ID,
     EXTREMUM_TASK_ID,
     COLORED_TASK_ID,
+    COLOR_OPERATIONS_TASK_ID,
     SCOPED_COLORED_TASK_ID,
     EMPTY_MISSING_TASK_ID,
 )
@@ -222,6 +224,51 @@ def test_surface_fixture_scoped_color_query_ids_bind_scope_axis() -> None:
         assert trace["scope_axis"] == expected_axis
         assert str(trace["scope_phrase"]).startswith(expected_axis)
         assert output.answer_gt.value == len(trace["target_element_ids"])
+
+
+def test_surface_fixture_color_count_after_operations_tracks_final_count() -> None:
+    output = create_task(COLOR_OPERATIONS_TASK_ID).generate(
+        20260811,
+        params={
+            "query_id": "single",
+            "scene_variant": "control_panel",
+            "target_color_name": "red",
+            "active_color_names": ["red", "yellow", "green"],
+            "initial_color_counts": {
+                "red": 3,
+                "yellow": 4,
+                "green": 3,
+            },
+            "operations": [
+                {"action": "add", "color_name": "red", "count": 2},
+                {"action": "remove", "color_name": "yellow", "count": 1},
+                {"action": "add", "color_name": "green", "count": 1},
+            ],
+            "post_image_noise_apply_prob": 0.0,
+        },
+        max_attempts=20,
+    )
+
+    trace = output.trace_payload["execution_trace"]
+    target_element_ids = [str(element_id) for element_id in trace["target_element_ids"]]
+
+    assert output.scene_id == "surface_fixture"
+    assert output.query_id == "single"
+    assert output.answer_gt.type == "integer"
+    assert output.answer_gt.value == 5
+    assert trace["initial_target_count"] == 3
+    assert trace["initial_color_counts"]["red"] == 3
+    assert trace["final_color_counts"]["red"] == 5
+    assert len(trace["operations"]) == 3
+    assert len(target_element_ids) == 3
+    assert output.annotation_gt.type == "point_set"
+    assert len(output.annotation_gt.value) == 3
+    assert output.annotation_gt.value == [
+        output.trace_payload["render_map"]["element_centers_px"][element_id] for element_id in target_element_ids
+    ]
+    assert "{operation_" not in output.prompt
+    assert "{target_" not in output.prompt
+    assert "after" in output.prompt.lower()
 
 
 def test_surface_fixture_missing_cell_default_answer_range() -> None:

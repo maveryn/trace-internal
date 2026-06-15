@@ -16,8 +16,13 @@ TASK_CLASSES = (
 )
 
 QUERY_IDS_BY_TASK = {
-    GeometryConeNetBaseRadiusFromSectorAngleTask: ("base_radius_from_sector_angle",),
-    GeometryConeNetHeightFromSectorAngleTask: ("height_from_sector_angle",),
+    GeometryConeNetBaseRadiusFromSectorAngleTask: ("single",),
+    GeometryConeNetHeightFromSectorAngleTask: ("single",),
+}
+
+INTERNAL_QUERY_ID_BY_TASK = {
+    GeometryConeNetBaseRadiusFromSectorAngleTask: "base_radius_from_sector_angle",
+    GeometryConeNetHeightFromSectorAngleTask: "height_from_sector_angle",
 }
 
 
@@ -41,6 +46,7 @@ def test_cone_sector_net_task_emits_public_contract(task_cls) -> None:
     assert trace["query_spec"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
+    assert trace["execution_trace"]["internal_query_id"] == INTERNAL_QUERY_ID_BY_TASK[task_cls]
     assert trace["projected_annotation"]["type"] == "keyed_point_map"
     assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
     assert trace["execution_trace"]["slant_height"] > 0
@@ -56,7 +62,7 @@ def test_cone_sector_net_task_emits_public_contract(task_cls) -> None:
     assert trace["execution_trace"]["cone_height"] == pytest.approx(
         round(cone_height, 1)
     )
-    if out.query_id == "base_radius_from_sector_angle":
+    if task_cls is GeometryConeNetBaseRadiusFromSectorAngleTask:
         assert out.answer_gt.value == pytest.approx(round(base_radius, 1))
     else:
         assert out.answer_gt.value == pytest.approx(round(cone_height, 1))
@@ -110,23 +116,23 @@ def test_cone_sector_net_annotation_stays_inside_canvas(task_cls) -> None:
 
 
 def test_cone_sector_net_annotation_uses_labeled_construction_points_not_labels() -> None:
-    expected_keys_by_query = {
-        "base_radius_from_sector_angle": {"S", "P", "Q", "C", "R"},
-        "height_from_sector_angle": {"S", "P", "Q", "C", "A"},
+    expected_keys_by_task = {
+        GeometryConeNetBaseRadiusFromSectorAngleTask: {"S", "P", "Q", "C", "R"},
+        GeometryConeNetHeightFromSectorAngleTask: {"S", "P", "Q", "C", "A"},
     }
-    for index, (task_cls, query_id) in enumerate(
+    for index, task_cls in enumerate(
         (
-            (GeometryConeNetBaseRadiusFromSectorAngleTask, "base_radius_from_sector_angle"),
-            (GeometryConeNetHeightFromSectorAngleTask, "height_from_sector_angle"),
+            GeometryConeNetBaseRadiusFromSectorAngleTask,
+            GeometryConeNetHeightFromSectorAngleTask,
         )
     ):
         task = task_cls()
         out = task.generate(
             59061 + index,
-            params={"query_id": query_id},
+            params={"query_id": "single"},
             max_attempts=20,
         )
-        expected_keys = expected_keys_by_query[str(query_id)]
+        expected_keys = expected_keys_by_task[task_cls]
         assert out.annotation_gt.type == "keyed_point_map"
         assert set(out.annotation_gt.value) == expected_keys
         assert set(out.trace_payload["execution_trace"]["annotation_roles"]) == expected_keys

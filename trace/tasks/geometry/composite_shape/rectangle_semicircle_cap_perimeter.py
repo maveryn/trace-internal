@@ -5,8 +5,11 @@ from __future__ import annotations
 from trace.tasks.registry import register_task
 
 from ._lifecycle import run_composite_shape_public_entry
-from .shared.construction import resolve_answer_balanced_semicircle_dimensions
-from .shared.measurements import SEMICIRCLE_DIMENSION_CANDIDATES, round1, semicircle_arc_length, semicircle_area
+from .shared.construction import resolve_semicircle_side_remainder_perimeter_case
+from .shared.measurements import (
+    SEMICIRCLE_DIMENSION_CANDIDATES,
+    semicircle_side_remainder_perimeter,
+)
 from .shared.sampling import group_cases_by_answer
 from .shared.state import CompositeShapeProblem
 
@@ -17,10 +20,10 @@ SUPPORTED_QUERY_IDS = (QUERY_ID,)
 
 def _answer_for_case(case: tuple[int, int, int]) -> float:
     width_units, height_units, radius_units = case
-    return round1(
-        (2.0 * float(width_units))
-        + float(height_units)
-        + float(semicircle_arc_length(radius_units))
+    return semicircle_side_remainder_perimeter(
+        width_units,
+        height_units,
+        radius_units,
     )
 
 
@@ -32,19 +35,30 @@ _CASES_BY_ANSWER = group_cases_by_answer(
 def _resolve_problem(*, selected_query: str, instance_seed, params):
     """Bind highlighted perimeter for a rectangle with a semicircle cap."""
 
-    width_units, height_units, radius_units, answer_probabilities = (
-        resolve_answer_balanced_semicircle_dimensions(
-            instance_seed=int(instance_seed),
-            params=params,
-            namespace=f"{TASK_ID}.{QUERY_ID}.values",
-            answer_cases=_CASES_BY_ANSWER,
-            answer_fn=_answer_for_case,
-        )
+    resolved = resolve_semicircle_side_remainder_perimeter_case(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=f"{TASK_ID}.{QUERY_ID}.values",
+        answer_cases=_CASES_BY_ANSWER,
+        answer_fn=_answer_for_case,
     )
-    arc_length = semicircle_arc_length(radius_units)
-    answer = _answer_for_case((width_units, height_units, radius_units))
-    dimensions = {"width_units": width_units, "height_units": height_units, "radius_units": radius_units, "semicircle_area": round1(semicircle_area(radius_units)), "arc_length": round1(arc_length), "straight_boundary_length": round1((2.0 * float(width_units)) + float(height_units)), "answer_value": answer}
-    return CompositeShapeProblem(prompt_key=QUERY_ID, shape_family="semi_cap", metric_kind="perimeter", answer_value=float(answer), answer_type="number", reasoning_kind="perimeter", scene_kind="geometry_curvilinear_composite_shape", witness_type="curvilinear_composite_formula", dimensions=dimensions, formula_family="rectangle_semicircle_boundary", reasoning_steps=2, metadata_fields={"target_answer_support_probabilities": dict(answer_probabilities)})
+    return CompositeShapeProblem(
+        prompt_key=QUERY_ID,
+        shape_family="semi_cap",
+        metric_kind="perimeter",
+        answer_value=float(resolved.answer),
+        answer_type="number",
+        reasoning_kind="perimeter",
+        scene_kind="geometry_curvilinear_composite_shape",
+        witness_type="curvilinear_composite_formula",
+        dimensions=resolved.dimensions,
+        formula_family="rectangle_semicircle_cap_boundary_with_side_remainders",
+        reasoning_steps=2,
+        metadata_fields={
+            "target_answer_support_probabilities": dict(resolved.answer_probabilities),
+        },
+        execution_fields=resolved.execution_fields,
+    )
 
 
 @register_task

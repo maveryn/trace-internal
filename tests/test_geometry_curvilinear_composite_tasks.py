@@ -8,6 +8,7 @@ from trace.tasks.geometry.composite_shape.missing_width_from_semicircle_cap_area
 from trace.tasks.geometry.composite_shape.missing_width_from_semicircle_cutout_area import GeometryMissingWidthFromSemicircleCutoutAreaTask
 from trace.tasks.geometry.composite_shape.rectangle_quarter_sector_cutout_area import GeometryRectangleQuarterSectorCutoutAreaTask
 from trace.tasks.geometry.composite_shape.shared.defaults import SCENE_ID
+from trace.tasks.geometry.composite_shape.shared.measurements import round1, semicircle_arc_length
 from trace.tasks.geometry.composite_shape.rectangle_quarter_sector_cutout_perimeter import GeometryRectangleQuarterSectorCutoutPerimeterTask
 from trace.tasks.geometry.composite_shape.rectangle_semicircle_cap_area import GeometryRectangleSemicircleCapAreaTask
 from trace.tasks.geometry.composite_shape.rectangle_semicircle_cap_perimeter import GeometryRectangleSemicircleCapPerimeterTask
@@ -175,6 +176,70 @@ def test_quarter_sector_area_omits_obvious_right_angle_label() -> None:
         "quarter_sector_right_angle",
     }
     assert "quarter_sector_right_angle" not in out.annotation_gt.value
+
+
+@pytest.mark.parametrize(
+    "task_cls",
+    (
+        GeometryRectangleSemicircleCapAreaTask,
+        GeometryRectangleSemicircleCutoutAreaTask,
+        GeometryRectangleSemicircleCapPerimeterTask,
+        GeometryRectangleSemicircleCutoutPerimeterTask,
+        GeometryMissingWidthFromSemicircleCapAreaTask,
+        GeometryMissingWidthFromSemicircleCutoutAreaTask,
+    ),
+)
+def test_semicircle_rectangle_variants_show_all_four_right_angle_markers(task_cls) -> None:
+    task = task_cls()
+    out = task.generate(
+        54095,
+        params={"query_id": "single", "width_units": 12, "height_units": 14, "radius_units": 4},
+        max_attempts=20,
+    )
+
+    assert set(out.trace_payload["render_map"]["visual_notation_bboxes"]) >= {
+        "top_left_right_angle",
+        "top_right_right_angle",
+        "bottom_right_right_angle",
+        "bottom_left_right_angle",
+    }
+
+
+@pytest.mark.parametrize(
+    "task_cls",
+    (
+        GeometryRectangleSemicircleCapPerimeterTask,
+        GeometryRectangleSemicircleCutoutPerimeterTask,
+    ),
+)
+def test_semicircle_perimeter_includes_right_side_remainders(task_cls) -> None:
+    task = task_cls()
+    width_units = 12
+    height_units = 14
+    radius_units = 4
+    out = task.generate(
+        54097,
+        params={
+            "query_id": "single",
+            "width_units": width_units,
+            "height_units": height_units,
+            "radius_units": radius_units,
+        },
+        max_attempts=20,
+    )
+    expected = round1(
+        (2.0 * float(width_units))
+        + (2.0 * float(height_units))
+        - (2.0 * float(radius_units))
+        + semicircle_arc_length(radius_units)
+    )
+
+    assert out.answer_gt.value == expected
+    assert out.trace_payload["execution_trace"]["straight_boundary_length"] == round1(
+        (2.0 * float(width_units))
+        + (2.0 * float(height_units))
+        - (2.0 * float(radius_units))
+    )
 
 
 def test_curvilinear_perimeter_omits_derived_boundary_total_labels() -> None:

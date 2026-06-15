@@ -660,44 +660,44 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
     right = left + rect_w
     bottom = top + rect_h
     mid_y = (top + bottom) / 2.0
+    cap_start_y = mid_y - radius_px
+    cap_end_y = mid_y + radius_px
     arc_box = (right - radius_px, mid_y - radius_px, right + radius_px, mid_y + radius_px)
     target_right = right if cutout else right + radius_px
     target_bbox = pad_bbox((left, top, target_right, bottom), 8.0, width=ctx.width, height=ctx.height)
     ctx.draw.rectangle((left, top, right, bottom), fill=ctx.fill_color)
     if cutout:
         ctx.draw.pieslice(arc_box, start=90, end=270, fill=ctx.background_color)
-        ctx.draw.line([(left, top), (right, top)], fill=ctx.line_color, width=ctx.line_width)
-        ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
-        ctx.draw.line([(left, top), (left, bottom)], fill=ctx.line_color, width=ctx.line_width)
-        ctx.draw.line([(right, top), (right, mid_y - radius_px)], fill=ctx.line_color, width=ctx.line_width)
-        ctx.draw.line([(right, mid_y + radius_px), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
-        ctx.draw.arc(arc_box, start=90, end=270, fill=ctx.line_color, width=ctx.line_width)
+        arc_start, arc_end = 90, 270
     else:
-        ctx.draw.rectangle((left, top, right, bottom), outline=ctx.line_color, width=ctx.line_width)
-        ctx.draw.pieslice(arc_box, start=-90, end=90, fill=ctx.fill_color, outline=ctx.line_color, width=ctx.line_width)
-        ctx.draw.line([(right, top + 2), (right, bottom - 2)], fill=ctx.fill_color, width=ctx.line_width + 2)
+        ctx.draw.pieslice(arc_box, start=-90, end=90, fill=ctx.fill_color)
+        arc_start, arc_end = -90, 90
+    ctx.draw.line([(left, top), (right, top)], fill=ctx.line_color, width=ctx.line_width)
+    ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
+    ctx.draw.line([(left, top), (left, bottom)], fill=ctx.line_color, width=ctx.line_width)
+    if cap_start_y > top + 1.0:
+        ctx.draw.line([(right, top), (right, cap_start_y)], fill=ctx.line_color, width=ctx.line_width)
+    if cap_end_y < bottom - 1.0:
+        ctx.draw.line([(right, cap_end_y), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
+    ctx.draw.arc(arc_box, start=arc_start, end=arc_end, fill=ctx.line_color, width=ctx.line_width)
+    top_right_reference = (right, cap_start_y) if cap_start_y > top + 1.0 else (right, bottom)
+    bottom_right_reference = (right, cap_end_y) if cap_end_y < bottom - 1.0 else (right, top)
     notation_bboxes = {
         "top_left_right_angle": _draw_right_angle_notation(ctx, (left, top), (right, top), (left, bottom)),
         "bottom_left_right_angle": _draw_right_angle_notation(ctx, (left, bottom), (left, top), (right, bottom)),
+        "top_right_right_angle": _draw_right_angle_notation(ctx, (right, top), (left, top), top_right_reference),
+        "bottom_right_right_angle": _draw_right_angle_notation(ctx, (right, bottom), bottom_right_reference, (left, bottom)),
     }
-    if cutout:
-        notation_bboxes.update(
-            {
-                "top_right_right_angle": _draw_right_angle_notation(ctx, (right, top), (left, top), (right, mid_y - radius_px)),
-                "bottom_right_right_angle": _draw_right_angle_notation(ctx, (right, bottom), (right, mid_y + radius_px), (left, bottom)),
-            }
-        )
     if problem.metric_kind == "perimeter":
         highlight_width = _boundary_width(ctx)
         ctx.draw.line([(left, top), (right, top)], fill=ctx.accent_color, width=highlight_width)
         ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
         ctx.draw.line([(left, top), (left, bottom)], fill=ctx.accent_color, width=highlight_width)
-        if cutout:
-            ctx.draw.line([(right, top), (right, mid_y - radius_px)], fill=ctx.accent_color, width=highlight_width)
-            ctx.draw.line([(right, mid_y + radius_px), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
-            ctx.draw.arc(arc_box, start=90, end=270, fill=ctx.accent_color, width=highlight_width)
-        else:
-            ctx.draw.arc(arc_box, start=-90, end=90, fill=ctx.accent_color, width=highlight_width)
+        if cap_start_y > top + 1.0:
+            ctx.draw.line([(right, top), (right, cap_start_y)], fill=ctx.accent_color, width=highlight_width)
+        if cap_end_y < bottom - 1.0:
+            ctx.draw.line([(right, cap_end_y), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
+        ctx.draw.arc(arc_box, start=arc_start, end=arc_end, fill=ctx.accent_color, width=highlight_width)
     width_dim_y = min(bottom + 34.0, float(ctx.height) - 46.0)
     width_label_offset_y = -22.0 if width_dim_y >= float(ctx.height) - 54.0 else 20.0
     width_label = "?" if problem.metric_kind == "missing_width" else fmt_measure(width_units)

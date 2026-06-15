@@ -8,7 +8,7 @@
 7. Annotation schema: `keyed_point_map`
 
 ## Program Contract
-- `solve_formula(visible_composite_shape_measurements, unknown_role=perimeter_measure, formula_schema=rectangle_semicircle_cutout_perimeter); scene=composite_shape; scope=rectangle_semicircle_cutout_perimeter`
+- `solve_formula(visible_composite_shape_measurements, unknown_role=perimeter_measure, formula_schema=rectangle_semicircle_cutout_perimeter_with_side_remainders); scene=composite_shape; scope=rectangle_semicircle_cutout_perimeter`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `composite_shape`.

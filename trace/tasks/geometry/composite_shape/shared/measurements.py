@@ -77,6 +77,37 @@ def semicircle_arc_length(radius_units: int) -> float:
     return math.pi * float(radius_units)
 
 
+def semicircle_side_remainder_straight_boundary(
+    width_units: int,
+    height_units: int,
+    radius_units: int,
+) -> float:
+    """Return straight perimeter parts when a semicircle spans part of one side."""
+
+    return (
+        (2.0 * float(width_units))
+        + (2.0 * float(height_units))
+        - (2.0 * float(radius_units))
+    )
+
+
+def semicircle_side_remainder_perimeter(
+    width_units: int,
+    height_units: int,
+    radius_units: int,
+) -> float:
+    """Return total perimeter with side remainders plus one semicircle arc."""
+
+    return round1(
+        semicircle_side_remainder_straight_boundary(
+            int(width_units),
+            int(height_units),
+            int(radius_units),
+        )
+        + semicircle_arc_length(int(radius_units))
+    )
+
+
 def quarter_sector_values(radius_units: int) -> tuple[float, float]:
     """Return the area and arc length of a quarter-circle cutout."""
 
@@ -134,5 +165,7 @@ __all__ = [
     "sector_values",
     "semicircle_arc_length",
     "semicircle_area",
+    "semicircle_side_remainder_perimeter",
+    "semicircle_side_remainder_straight_boundary",
     "uniform_support",
 ]

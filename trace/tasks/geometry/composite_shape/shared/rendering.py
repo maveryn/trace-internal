@@ -22,12 +22,12 @@ from trace.tasks.geometry.shared.measurement_rendering import (
 )
 from trace.tasks.geometry.shared.scene_transform import LazySceneTransform
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 
 from .defaults import SCENE_ID
 from .state import BBox, Color, CompositeRenderContext, CompositeShapeProblem, Point, RenderedCompositeShape
+from .styles import resolve_composite_shape_style
 
 
 def create_composite_render_context(
@@ -51,36 +51,13 @@ def create_composite_render_context(
         require_grid=False,
         style_profile=GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
     )
-    fill_palette: tuple[tuple[Color, Color, Color], ...] = (
-        (
-            tuple(int(value) for value in diagram_style.fill_rgb),
-            tuple(int(value) for value in diagram_style.muted_fill_rgb),
-            tuple(int(value) for value in diagram_style.accent_rgb),
-        ),
-        (
-            tuple(int(value) for value in diagram_style.option_fill_rgb),
-            tuple(int(value) for value in diagram_style.panel_alt_fill_rgb),
-            tuple(int(value) for value in diagram_style.highlight_rgb),
-        ),
-        (
-            tuple(int(value) for value in diagram_style.panel_alt_fill_rgb),
-            tuple(int(value) for value in diagram_style.muted_fill_rgb),
-            tuple(int(value) for value in diagram_style.secondary_accent_rgb),
-        ),
-        (
-            tuple(int(value) for value in diagram_style.fill_rgb),
-            tuple(int(value) for value in diagram_style.option_fill_rgb),
-            tuple(int(value) for value in diagram_style.highlight_rgb),
-        ),
+    composite_style = resolve_composite_shape_style(
+        instance_seed=int(instance_seed),
+        params=params,
+        render_namespace=str(render_namespace),
+        diagram_style=diagram_style,
+        background_meta=background_meta,
     )
-    palette_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{render_namespace}.fill",
-        )
-    ) % len(fill_palette)
-    fill_color, secondary_fill_color, accent_color = fill_palette[palette_index]
     font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
     small_font_size = int(params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18)))
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 4)))
@@ -93,11 +70,11 @@ def create_composite_render_context(
         height=int(height),
         background_color=tuple(int(value) for value in diagram_style.canvas_rgb),
         line_color=tuple(int(value) for value in diagram_style.stroke_rgb),
-        label_color=tuple(int(value) for value in diagram_style.label_rgb),
-        label_stroke_color=tuple(int(value) for value in diagram_style.label_stroke_rgb),
-        accent_color=accent_color,
-        fill_color=fill_color,
-        secondary_fill_color=secondary_fill_color,
+        label_color=tuple(int(value) for value in composite_style.label_color),
+        label_stroke_color=tuple(int(value) for value in composite_style.label_stroke_color),
+        accent_color=tuple(int(value) for value in composite_style.accent_color),
+        fill_color=tuple(int(value) for value in composite_style.fill_color),
+        secondary_fill_color=tuple(int(value) for value in composite_style.secondary_fill_color),
         line_width=max(2, int(line_width)),
         label_stroke_width=max(0, int(label_stroke_width)),
         font=load_font(max(12, int(font_size))),
@@ -117,9 +94,10 @@ def create_composite_render_context(
         "label_font_size": int(font_size),
         "small_label_font_size": int(small_font_size),
         "label_stroke_width": int(ctx.label_stroke_width),
-        "fill_color": list(fill_color),
-        "secondary_fill_color": list(secondary_fill_color),
-        "accent_color": list(accent_color),
+        "fill_color": list(ctx.fill_color),
+        "secondary_fill_color": list(ctx.secondary_fill_color),
+        "accent_color": list(ctx.accent_color),
+        "composite_fill_style": dict(composite_style.metadata),
     }
     return ctx, render_meta
 

@@ -7,20 +7,16 @@ import math
 
 import pytest
 
+from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.circle_pair_tangents.center_distance_value import (
-    GeometryCirclePairTangentsCenterDistanceValueTask,
-    QUERY_ID_CENTER_DISTANCE,
-    TASK_ID_CENTER_DISTANCE,
-)
-from trace.tasks.geometry.circle_pair_tangents.common_tangent_length_value import (
+from trace.tasks.geometry.circle_pair_tangents.external_tangent_segment_length_value import (
     ANNOTATION_KEYS,
-    GeometryCirclePairTangentsCommonTangentLengthValueTask,
-    QUERY_ID,
-    QUERY_ID_COMMON_TANGENT_LENGTH,
+    GeometryCirclePairTangentsExternalTangentSegmentLengthValueTask,
+    QUERY_ID_CENTER_DISTANCE_FROM_TANGENT_SEGMENT_LENGTH,
+    QUERY_ID_TANGENT_SEGMENT_LENGTH_FROM_CENTER_DISTANCE,
     SCENE_ID,
     TASK_ID,
-    TASK_ID_COMMON_TANGENT_LENGTH,
+    TASK_ID_EXTERNAL_TANGENT_SEGMENT_LENGTH,
 )
 from trace.tasks.geometry.circle_pair_tangents.shared.construction import (
     TANGENT_CASES,
@@ -34,10 +30,8 @@ def _generate(seed: int, *, task_id: str = TASK_ID, **params):
 
 
 def test_circle_pair_tangent_length_registered() -> None:
-    assert TASK_ID_COMMON_TANGENT_LENGTH in TASK_REGISTRY
-    assert TASK_REGISTRY[TASK_ID_COMMON_TANGENT_LENGTH] is GeometryCirclePairTangentsCommonTangentLengthValueTask
-    assert TASK_ID_CENTER_DISTANCE in TASK_REGISTRY
-    assert TASK_REGISTRY[TASK_ID_CENTER_DISTANCE] is GeometryCirclePairTangentsCenterDistanceValueTask
+    assert TASK_ID_EXTERNAL_TANGENT_SEGMENT_LENGTH in TASK_REGISTRY
+    assert TASK_REGISTRY[TASK_ID_EXTERNAL_TANGENT_SEGMENT_LENGTH] is GeometryCirclePairTangentsExternalTangentSegmentLengthValueTask
 
 
 def test_circle_pair_tangent_default_pool_has_broad_unique_answer_support() -> None:
@@ -53,20 +47,16 @@ def test_circle_pair_tangent_default_pool_has_broad_unique_answer_support() -> N
 
 
 @pytest.mark.parametrize(
-    ("task_id", "query_id", "expected_answer", "formula_family", "unknown_role"),
+    ("query_id", "expected_answer", "unknown_role"),
     [
         (
-            TASK_ID_COMMON_TANGENT_LENGTH,
-            QUERY_ID_COMMON_TANGENT_LENGTH,
+            QUERY_ID_TANGENT_SEGMENT_LENGTH_FROM_CENTER_DISTANCE,
             12,
-            "external_common_tangent_length",
             "tangent_length",
         ),
         (
-            TASK_ID_CENTER_DISTANCE,
-            QUERY_ID_CENTER_DISTANCE,
+            QUERY_ID_CENTER_DISTANCE_FROM_TANGENT_SEGMENT_LENGTH,
             13,
-            "external_common_tangent_center_distance",
             "center_distance",
         ),
     ],
@@ -74,17 +64,14 @@ def test_circle_pair_tangent_default_pool_has_broad_unique_answer_support() -> N
 @pytest.mark.parametrize("larger_side", ["left", "right"])
 @pytest.mark.parametrize("tangent_side", ["above", "below"])
 def test_circle_pair_tangent_formula_and_annotation(
-    task_id: str,
     query_id: str,
     expected_answer: int,
-    formula_family: str,
     unknown_role: str,
     larger_side: str,
     tangent_side: str,
 ) -> None:
     out = _generate(
         20260623,
-        task_id=task_id,
         query_id=query_id,
         tangent_case=(3, 8, 13, 12),
         larger_circle_side=larger_side,
@@ -100,11 +87,11 @@ def test_circle_pair_tangent_formula_and_annotation(
     assert execution["center_distance"] == 13
     assert execution["radius_difference"] == 5
     assert execution["tangent_length"] ** 2 == execution["center_distance"] ** 2 - execution["radius_difference"] ** 2
-    assert execution["formula_family"] == formula_family
+    assert execution["formula_family"] == "external_common_tangent_right_triangle"
     assert execution["larger_circle_side"] == larger_side
     assert execution["tangent_side"] == tangent_side
     assert execution["unknown_role"] == unknown_role
-    assert trace["witness_symbolic"]["formula_family"] == formula_family
+    assert trace["witness_symbolic"]["formula_family"] == "external_common_tangent_right_triangle"
     assert trace["witness_symbolic"]["unknown_role"] == unknown_role
 
     assert out.annotation_gt.type == "keyed_point_map"
@@ -120,7 +107,7 @@ def test_circle_pair_tangent_formula_and_annotation(
 
 def test_circle_pair_tangent_length_generation_is_deterministic() -> None:
     params = {
-        "query_id": QUERY_ID,
+        "query_id": QUERY_ID_TANGENT_SEGMENT_LENGTH_FROM_CENTER_DISTANCE,
         "tangent_case": (4, 12, 17, 15),
         "larger_circle_side": "right",
         "tangent_side": "above",
@@ -137,13 +124,13 @@ def test_circle_pair_tangent_length_generation_is_deterministic() -> None:
 
 def test_circle_pair_center_distance_generation_is_deterministic() -> None:
     params = {
-        "query_id": QUERY_ID_CENTER_DISTANCE,
+        "query_id": QUERY_ID_CENTER_DISTANCE_FROM_TANGENT_SEGMENT_LENGTH,
         "tangent_case": (4, 12, 17, 15),
         "larger_circle_side": "right",
         "tangent_side": "above",
     }
-    first = _generate(314160, task_id=TASK_ID_CENTER_DISTANCE, **params)
-    second = _generate(314160, task_id=TASK_ID_CENTER_DISTANCE, **params)
+    first = _generate(314160, **params)
+    second = _generate(314160, **params)
 
     assert first.prompt == second.prompt
     assert first.answer_gt.value == 17
@@ -154,16 +141,24 @@ def test_circle_pair_center_distance_generation_is_deterministic() -> None:
 
 
 def test_circle_pair_tangent_length_rejects_invalid_params() -> None:
-    for task_id in (TASK_ID_COMMON_TANGENT_LENGTH, TASK_ID_CENTER_DISTANCE):
-        task = create_task(task_id)
-        with pytest.raises(ValueError):
-            task.generate(1, params={"query_id": "bad_query"}, max_attempts=1)
-        with pytest.raises(ValueError):
-            task.generate(1, params={"larger_circle_side": "middle"}, max_attempts=1)
-        with pytest.raises(ValueError):
-            task.generate(1, params={"tangent_side": "inside"}, max_attempts=1)
-        with pytest.raises(ValueError):
-            task.generate(1, params={"tangent_case": (3, 8, 12, 12)}, max_attempts=1)
+    task = create_task(TASK_ID)
+    with pytest.raises(ValueError):
+        task.generate(1, params={"query_id": "bad_query"}, max_attempts=1)
+    with pytest.raises(ValueError):
+        task.generate(1, params={"larger_circle_side": "middle"}, max_attempts=1)
+    with pytest.raises(ValueError):
+        task.generate(1, params={"tangent_side": "inside"}, max_attempts=1)
+    with pytest.raises(ValueError):
+        task.generate(1, params={"tangent_case": (3, 8, 12, 12)}, max_attempts=1)
+
+
+def test_circle_pair_retired_task_ids_are_removed() -> None:
+    retired_ids = (
+        "task_geometry__circle_pair_tangents__center_distance_value",
+        "task_geometry__circle_pair_tangents__common_tangent_length_value",
+    )
+    for task_id in retired_ids:
+        assert lookup_task_taxonomy(task_id) is None
 
 
 def _assert_point_map_inside_image(annotation: dict[str, list[float]], image_size: tuple[int, int]) -> None:

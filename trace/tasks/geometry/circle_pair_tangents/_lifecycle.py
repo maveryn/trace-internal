@@ -5,10 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping
 
-from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
-from trace.tasks.base import TaskOutput
-from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.geometry.shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 
@@ -284,58 +281,10 @@ def build_pair_tangent_value_problem(
     )
 
 
-def complete_pair_tangent_value(
-    *,
-    task_id: str,
-    branch_name: str,
-    branch_probabilities: Mapping[str, float],
-    problem: PairTangentValueProblem,
-    prompt_defaults: Mapping[str, Any],
-    render_defaults: Mapping[str, Any],
-    scene_defaults: Mapping[str, Any],
-    instance_seed: int,
-    params: Mapping[str, Any],
-    max_attempts: int,
-    style_namespace: str,
-) -> TaskOutput:
-    """Complete rendering and output assembly for one public tangent-value task."""
-
-    prepared = prepare_pair_tangent_scene(
-        diagram_spec=problem.diagram_spec,
-        prompt_defaults=prompt_defaults,
-        prompt_key=str(branch_name),
-        answer_value=int(problem.answer),
-        instance_seed=int(instance_seed),
-        params=params,
-        render_defaults=render_defaults,
-        max_attempts=int(max_attempts),
-        style_namespace=str(style_namespace),
-    )
-    trace_payload = pair_tangent_trace_payload(
-        prepared=prepared,
-        branch_name=str(branch_name),
-        branch_probabilities=branch_probabilities,
-        problem=problem,
-    )
-    return TaskOutput(
-        prompt=str(prepared.prompt_artifacts.prompt),
-        answer_gt=TypedValue(type="integer", value=int(problem.answer)),
-        annotation_gt=TypedValue(type="keyed_point_map", value=dict(prepared.annotation_value)),
-        image=prepared.image,
-        image_id="img0",
-        trace_payload=trace_payload,
-        task_versions=default_task_versions(),
-        scene_id=SCENE_ID,
-        query_id=str(branch_name),
-        prompt_variants=dict(prepared.prompt_artifacts.prompt_variants),
-    )
-
-
 __all__ = [
     "PairTangentValueProblem",
     "PairTangentPreparedScene",
     "build_pair_tangent_value_problem",
-    "complete_pair_tangent_value",
     "pair_tangent_trace_base",
     "pair_tangent_trace_payload",
     "prepare_pair_tangent_scene",

@@ -13,7 +13,6 @@ from trace.tasks.illustrations.shared.cutouts import (
     JIGSAW_BOARD_STYLES,
     PATCH_FRAME_STYLES,
     PATCH_MODE_PLAIN,
-    PATCH_MODE_TRANSFORMED,
     ROTATED_GRID_STYLES,
     compose_jigsaw_arrangement_options,
     compose_jigsaw_board,
@@ -151,6 +150,7 @@ def test_patch_option_artifacts_use_keyed_visual_witnesses() -> None:
     assert len(artifacts.missing_region_bbox) == 4
     assert len(artifacts.selected_option_bbox) == 4
     assert artifacts.selected_transform == "none"
+    assert artifacts.option_source_crop_boxes.count(artifacts.source_crop_box) == 1
     missing_w = artifacts.missing_region_bbox[2] - artifacts.missing_region_bbox[0]
     missing_h = artifacts.missing_region_bbox[3] - artifacts.missing_region_bbox[1]
     for bbox in artifacts.option_bboxes.values():
@@ -185,27 +185,6 @@ def test_patch_option_candidate_crop_boxes_are_honored() -> None:
     assert len(artifacts.option_source_crop_boxes) == 4
     assert set(artifacts.option_source_crop_boxes).issubset(set(candidates))
     assert artifacts.option_source_crop_boxes[1] == artifacts.source_crop_box
-
-
-def test_transformed_patch_records_selected_transform() -> None:
-    artifacts = compose_patch_options(
-        source_image=_source_image(),
-        rng=random.Random(41),
-        patch_mode=PATCH_MODE_TRANSFORMED,
-        correct_index=1,
-        option_count=6,
-        patch_size=(128, 100),
-        crop_margin_px=32,
-        frame_style=PATCH_FRAME_STYLES["slate_cards"],
-        label_font_family=None,  # type: ignore[arg-type]
-    )
-
-    assert artifacts.selected_label == "B"
-    assert artifacts.selected_transform in {"rotate_180", "flip_horizontal", "flip_vertical"}
-    assert artifacts.option_grid_shape == (2, 3)
-    for bbox in artifacts.option_bboxes.values():
-        assert bbox[2] - bbox[0] == 128
-        assert bbox[3] - bbox[1] == 100
 
 
 def test_visual_shared_helpers_do_not_reference_public_task_plumbing() -> None:

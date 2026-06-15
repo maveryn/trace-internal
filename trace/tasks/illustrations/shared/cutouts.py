@@ -96,9 +96,8 @@ PATCH_FRAME_STYLES: Dict[str, Dict[str, Any]] = {
 }
 
 PATCH_MODE_PLAIN = "plain"
-PATCH_MODE_TRANSFORMED = "transformed"
 PATCH_MODE_IRREGULAR = "irregular"
-PATCH_MODES: Tuple[str, ...] = (PATCH_MODE_PLAIN, PATCH_MODE_TRANSFORMED, PATCH_MODE_IRREGULAR)
+PATCH_MODES: Tuple[str, ...] = (PATCH_MODE_PLAIN, PATCH_MODE_IRREGULAR)
 DEFAULT_OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 ROTATED_TILE_LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(9))
 
@@ -667,15 +666,6 @@ def select_crop_box(
     return tuple(int(v) for v in best_box)
 
 
-def transform_patch(patch: Image.Image, rng: Any) -> Tuple[Image.Image, str]:
-    transform = str(rng.choice(("rotate_180", "flip_horizontal", "flip_vertical")))
-    if transform == "rotate_180":
-        return patch.transpose(Image.Transpose.ROTATE_180), transform
-    if transform == "flip_horizontal":
-        return ImageOps.mirror(patch), transform
-    return ImageOps.flip(patch), transform
-
-
 def patch_difference_score(left: Image.Image, right: Image.Image) -> float:
     """Return a cheap mean-pixel difference between two same-size patches."""
 
@@ -745,8 +735,6 @@ def compose_patch_options(
     )
     correct_patch = source_rgb.crop(hole_box)
     correct_transform = "none"
-    if mode == PATCH_MODE_TRANSFORMED:
-        correct_patch, correct_transform = transform_patch(correct_patch, rng)
 
     options = []
     option_source_crop_boxes: list[Tuple[int, int, int, int]] = []
@@ -756,30 +744,27 @@ def compose_patch_options(
             options.append(correct_patch)
             option_source_crop_boxes.append(tuple(int(value) for value in hole_box))
             continue
-        if mode == PATCH_MODE_PLAIN and candidate_crop_boxes is None and option_index == 0:
-            distractor, _ = transform_patch(correct_patch, rng)
-            distractor_box = tuple(int(value) for value in hole_box)
-        else:
-            best_distractor: Tuple[float, Image.Image, Tuple[int, int, int, int]] | None = None
-            for _attempt in range(28):
-                candidate_box = select_crop_box(
-                    source_rgb,
-                    rng,
-                    patch_w=patch_w,
-                    patch_h=patch_h,
-                    crop_margin_px=int(crop_margin_px),
-                    avoid=hole_box,
-                    candidate_crop_boxes=candidate_crop_boxes,
-                )
-                if tuple(candidate_box) in used_crop_boxes:
-                    continue
-                candidate_patch = source_rgb.crop(candidate_box)
-                delta = patch_difference_score(correct_patch, candidate_patch)
-                if best_distractor is None or delta > best_distractor[0]:
-                    best_distractor = (float(delta), candidate_patch, tuple(int(value) for value in candidate_box))
-                if delta >= float(min_candidate_patch_difference):
-                    break
-            if best_distractor is None:
+        best_distractor: Tuple[float, Image.Image, Tuple[int, int, int, int]] | None = None
+        for _attempt in range(28):
+            candidate_box = select_crop_box(
+                source_rgb,
+                rng,
+                patch_w=patch_w,
+                patch_h=patch_h,
+                crop_margin_px=int(crop_margin_px),
+                avoid=hole_box,
+                candidate_crop_boxes=candidate_crop_boxes,
+            )
+            if tuple(candidate_box) in used_crop_boxes:
+                continue
+            candidate_patch = source_rgb.crop(candidate_box)
+            delta = patch_difference_score(correct_patch, candidate_patch)
+            if best_distractor is None or delta > best_distractor[0]:
+                best_distractor = (float(delta), candidate_patch, tuple(int(value) for value in candidate_box))
+            if delta >= float(min_candidate_patch_difference):
+                break
+        if best_distractor is None:
+            for _attempt in range(120):
                 candidate_box = select_crop_box(
                     source_rgb,
                     rng,
@@ -789,13 +774,18 @@ def compose_patch_options(
                     avoid=None,
                     candidate_crop_boxes=candidate_crop_boxes,
                 )
+                if tuple(candidate_box) in used_crop_boxes:
+                    continue
                 best_distractor = (
                     patch_difference_score(correct_patch, source_rgb.crop(candidate_box)),
                     source_rgb.crop(candidate_box),
                     tuple(int(value) for value in candidate_box),
                 )
-            _delta, distractor, distractor_box = best_distractor
-            used_crop_boxes.add(tuple(distractor_box))
+                break
+        if best_distractor is None:
+            raise ValueError("could not select enough unique patch distractors")
+        _delta, distractor, distractor_box = best_distractor
+        used_crop_boxes.add(tuple(distractor_box))
         options.append(distractor)
         option_source_crop_boxes.append(tuple(int(value) for value in distractor_box))
 
@@ -883,7 +873,6 @@ __all__ = [
     "PATCH_FRAME_STYLES",
     "PATCH_MODE_IRREGULAR",
     "PATCH_MODE_PLAIN",
-    "PATCH_MODE_TRANSFORMED",
     "PATCH_MODES",
     "ROTATED_GRID_STYLES",
     "ROTATED_TILE_LABELS",

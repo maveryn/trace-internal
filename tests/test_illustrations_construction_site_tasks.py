@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.seed import hash64
 from trace.tasks import create_task
 from trace.tasks.shared.font_assets import font_asset_version, list_font_families
@@ -70,10 +71,11 @@ def test_construction_site_tasks_record_zone_label_font_and_projected_annotation
 def test_construction_site_missing_patch_uses_keyed_visual_witnesses() -> None:
     out = create_task("task_illustrations__construction_site__missing_patch_label").generate(
         hash64(2026061301, "construction-site-missing-patch"),
-        params={"query_id": "plain_patch_label", "correct_index": 2},
+        params={"correct_index": 2},
         max_attempts=120,
     )
 
+    assert out.query_id == SINGLE_QUERY_ID
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
     assert out.annotation_gt.type == "keyed_bbox_map"
@@ -153,7 +155,7 @@ def test_construction_site_missing_patch_samples_four_and_six_options() -> None:
     for index in range(12):
         out = create_task("task_illustrations__construction_site__missing_patch_label").generate(
             hash64(2026061303, "construction-site-option-count-support", index),
-            params={"query_id": "plain_patch_label"},
+            params={},
             max_attempts=120,
         )
         option_count = int(out.trace_payload["query_spec"]["params"]["option_count"])

@@ -50,8 +50,6 @@
     ],
     "query:plain_patch_label": [
     ],
-    "query:transformed_patch_label": [
-    ],
     "query:rotated_tile_label": [
     ],
     "answer_or_annotation:answer_only": [
@@ -119,13 +117,6 @@
       "Which lettered patch belongs in the blank region?",
       "Find the option that completes the missing part of the park scene.",
       "Which option matches the removed region of the park playground?"
-    ],
-    "transformed_patch_label": [
-      "Which option matches the missing region after the allowed visual transformation?",
-      "Select the transformed option that corresponds to the missing patch.",
-      "Which lettered patch is the transformed match for the blank region?",
-      "Find the option that corresponds to the removed region, allowing rotation or reflection.",
-      "Which option is the transformed version of the missing park playground patch?"
     ],
     "rotated_tile_label": [
       "Which lettered tile has been rotated?",

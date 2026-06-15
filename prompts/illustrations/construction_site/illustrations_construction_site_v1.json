@@ -75,7 +75,6 @@
     "question_text_vest_color_worker_count": "How many workers are wearing {color_label} safety vests? If none are there, answer 0.",
     "question_text_vehicle_in_zone_count": "How many construction vehicles are in the {zone_name}? If none are there, answer 0.",
     "question_text_plain_patch_label": "Which option exactly fills the missing region?",
-    "question_text_transformed_patch_label": "Which option matches the missing region if rotation or reflection is allowed?",
     "question_text_irregular_cutout_patch_label": "Which option matches the missing region?",
     "answer_hint_worker_safety_gear": "set \"answer\" to the count of {match_phrase} as an integer, using 0 if none match",
     "annotation_hint_worker_safety_gear": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted worker; use [] if none match",

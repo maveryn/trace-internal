@@ -17,7 +17,6 @@ from ..shared.cutouts import (
     DEFAULT_OPTION_LABELS,
     PATCH_FRAME_STYLES,
     PATCH_MODE_PLAIN,
-    PATCH_MODE_TRANSFORMED,
     compose_patch_options,
     sample_style,
     style_trace,
@@ -48,11 +47,9 @@ TASK_ID = "task_illustrations__construction_site__missing_patch_label"
 DOMAIN = "illustrations"
 SCENE_ID = "construction_site"
 PLAIN_QUERY_ID = "plain_patch_label"
-TRANSFORMED_QUERY_ID = "transformed_patch_label"
-QUERY_IDS: Tuple[str, ...] = (PLAIN_QUERY_ID, TRANSFORMED_QUERY_ID)
+QUERY_IDS: Tuple[str, ...] = (PLAIN_QUERY_ID,)
 _QUERY_TO_PATCH_MODE: Dict[str, str] = {
     PLAIN_QUERY_ID: PATCH_MODE_PLAIN,
-    TRANSFORMED_QUERY_ID: PATCH_MODE_TRANSFORMED,
 }
 
 
@@ -373,7 +370,6 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
                 "json_output_contract_answer_only",
                 "object_description_missing_patch",
                 "question_text_plain_patch_label",
-                "question_text_transformed_patch_label",
                 "answer_hint_missing_patch",
                 "annotation_hint_missing_patch",
                 "json_example_missing_patch",
@@ -506,5 +502,4 @@ __all__ = [
     "PLAIN_QUERY_ID",
     "QUERY_IDS",
     "TASK_ID",
-    "TRANSFORMED_QUERY_ID",
 ]

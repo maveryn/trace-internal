@@ -12,7 +12,6 @@ from trace.tasks.illustrations.park_playground.jigsaw_arrangement_label import (
 )
 from trace.tasks.illustrations.park_playground.missing_patch_label import (
     PLAIN_QUERY_ID,
-    TRANSFORMED_QUERY_ID,
     _sample_spec as _sample_missing_patch_spec,
 )
 from trace.tasks.illustrations.park_playground.person_count import _sample_spec as _sample_person_count_spec
@@ -196,7 +195,6 @@ def test_missing_patch_label_contract() -> None:
     out = create_task("task_illustrations__park_playground__missing_patch_label").generate(
         hash64(2026061503, "park-missing-patch", 0),
         params={
-            "query_id": PLAIN_QUERY_ID,
             "option_count": 4,
             "correct_index": 2,
             "source_person_count": 9,
@@ -208,7 +206,7 @@ def test_missing_patch_label_contract() -> None:
     answer_label = str(out.answer_gt.value)
 
     assert out.scene_id == "park_playground"
-    assert out.query_id == PLAIN_QUERY_ID
+    assert out.query_id == SINGLE_QUERY_ID
     assert out.answer_gt.type == "option_letter"
     assert out.annotation_gt.type == "keyed_bbox_map"
     assert answer_label == "C"
@@ -223,20 +221,7 @@ def test_missing_patch_label_contract() -> None:
     _assert_keyed_annotation_inside_canvas(out)
 
 
-def test_missing_patch_query_branches_generate() -> None:
-    for index, query_id in enumerate((PLAIN_QUERY_ID, TRANSFORMED_QUERY_ID)):
-        out = create_task("task_illustrations__park_playground__missing_patch_label").generate(
-            hash64(2026061503, "park-missing-patch-branch", index),
-            params={"query_id": query_id, "option_count": 4, "correct_index": 1},
-            max_attempts=100,
-        )
-        assert out.query_id == query_id
-        assert out.answer_gt.type == "option_letter"
-        assert out.annotation_gt.type == "keyed_bbox_map"
-        assert set(out.annotation_gt.value) == {"missing_region", "selected_option"}
-
-
-def test_missing_patch_seeded_sampler_covers_answer_labels_and_modes() -> None:
+def test_missing_patch_seeded_sampler_covers_answer_labels() -> None:
     samples = [
         _sample_missing_patch_spec(
             instance_seed=hash64(2026061503, "park-missing-patch-sampling", index),
@@ -249,7 +234,7 @@ def test_missing_patch_seeded_sampler_covers_answer_labels_and_modes() -> None:
     option_counts = Counter(sample.option_count for sample in samples)
     answer_counts = Counter(sample.correct_index for sample in samples)
 
-    _assert_hash_balanced_counts(query_counts, {PLAIN_QUERY_ID, TRANSFORMED_QUERY_ID})
+    assert query_counts == Counter({PLAIN_QUERY_ID: 100})
     _assert_hash_balanced_counts(option_counts, {4, 6})
     assert set(answer_counts) <= set(range(6))
     assert {0, 1, 2, 3} <= set(answer_counts)

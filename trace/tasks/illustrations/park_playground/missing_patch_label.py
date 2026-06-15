@@ -17,7 +17,6 @@ from ..shared.cutouts import (
     DEFAULT_OPTION_LABELS,
     PATCH_FRAME_STYLES,
     PATCH_MODE_PLAIN,
-    PATCH_MODE_TRANSFORMED,
     compose_patch_options,
     sample_style,
     style_trace,
@@ -42,11 +41,9 @@ TASK_ID = "task_illustrations__park_playground__missing_patch_label"
 DOMAIN = "illustrations"
 SCENE_ID = "park_playground"
 PLAIN_QUERY_ID = "plain_patch_label"
-TRANSFORMED_QUERY_ID = "transformed_patch_label"
-QUERY_IDS: Tuple[str, ...] = (PLAIN_QUERY_ID, TRANSFORMED_QUERY_ID)
+QUERY_IDS: Tuple[str, ...] = (PLAIN_QUERY_ID,)
 _QUERY_TO_PATCH_MODE: Dict[str, str] = {
     PLAIN_QUERY_ID: PATCH_MODE_PLAIN,
-    TRANSFORMED_QUERY_ID: PATCH_MODE_TRANSFORMED,
 }
 
 
@@ -483,6 +480,5 @@ __all__ = [
     "PLAIN_QUERY_ID",
     "QUERY_IDS",
     "TASK_ID",
-    "TRANSFORMED_QUERY_ID",
     "_sample_spec",
 ]

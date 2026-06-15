@@ -132,7 +132,7 @@
     "annotation_hint_winning_roll_value": "set \"annotation\" to an object with keys \"token\" and \"finish\", each mapped to a bounding box as [x0,y0,x1,y1] in pixels",
     "answer_hint_winning_roll_value": "set \"answer\" to the integer die roll",
     "annotation_hint_capture_roll_option_label": "set \"annotation\" to an object with keys \"mover_token\" and \"target_token\", each mapped to a bounding box as [x0,y0,x1,y1] in pixels",
-    "answer_hint_capture_roll_option_label": "set \"answer\" to the selected shown option label",
+    "answer_hint_capture_roll_option_label": "set \"answer\" to the selected shown option letter",
     "annotation_hint_move_result_option_label": "set \"annotation\" to an object with keys \"moving_token\", \"roll_sequence\", and \"destination_cell\", each mapped to a bounding box as [x0,y0,x1,y1] in pixels",
     "answer_hint_move_result_option_label": "set \"answer\" to the selected shown destination label"
   }

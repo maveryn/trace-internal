@@ -8,25 +8,20 @@ from pathlib import Path
 import trace.tasks  # noqa: F401
 from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.ludo_board.winning_roll_value import (
-    CAPTURE_ROLL_QUERY_ID,
-    CAPTURE_ROLL_TASK_ID,
+from trace.tasks.games.ludo_board.capture_roll_option_label import TASK_ID as CAPTURE_ROLL_TASK_ID
+from trace.tasks.games.ludo_board.move_result_option_label import TASK_ID as MOVE_RESULT_TASK_ID
+from trace.tasks.games.ludo_board.shared.rules import roll_option_text, roll_sequence_for_total, route_for_color
+from trace.tasks.games.ludo_board.shared.state import (
     FLOW_ARROW_CELLS,
     FLOW_ARROW_SPECS,
     HOME_LANES,
     MAIN_PATH,
-    MOVE_RESULT_QUERY_ID,
-    MOVE_RESULT_TASK_ID,
     OPTION_LABELS,
     PLAYER_COLORS,
     START_COORDS,
-    WINNING_ROLL_QUERY_ID,
-    WINNING_ROLL_TASK_ID,
-    _roll_sequence_for_total,
-    _roll_option_text,
-    _route_for_color,
 )
-from trace.tasks.registry import create_task, list_default_task_ids
+from trace.tasks.games.ludo_board.winning_roll_value import TASK_ID as WINNING_ROLL_TASK_ID
+from trace.tasks.registry import create_task, ensure_scene_tasks_registered, is_default_dataset_task
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
@@ -42,28 +37,31 @@ def test_games_ludo_board_defaults_and_prompt_bundle() -> None:
         "arcade_gloss",
     }
     assert set(generation["query_color_weights"].keys()) == set(PLAYER_COLORS)
-    assert list(generation["winning_roll_support"]) == [1, 2, 3, 4, 5]
-    assert list(generation["capture_distance_support"]) == list(range(1, 12))
-    assert list(generation["move_roll_total_support"]) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17]
-    assert list(generation["answer_option_label_weights"].keys()) == list(OPTION_LABELS)
+    task_overrides = cfg["generation"]["task_overrides"]
+    assert list(task_overrides[WINNING_ROLL_TASK_ID]["winning_roll_support"]) == [1, 2, 3, 4, 5]
+    assert list(task_overrides[CAPTURE_ROLL_TASK_ID]["capture_distance_support"]) == list(range(1, 12))
+    assert list(task_overrides[CAPTURE_ROLL_TASK_ID]["answer_option_label_weights"].keys()) == list(OPTION_LABELS)
+    assert list(task_overrides[MOVE_RESULT_TASK_ID]["move_roll_total_support"]) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17]
+    assert list(task_overrides[MOVE_RESULT_TASK_ID]["answer_option_label_weights"].keys()) == list(OPTION_LABELS)
     assert int(rendering["cell_size_min_px"]) == 36
     assert int(rendering["cell_size_max_px"]) == 48
     assert bool(rendering["flow_arrow_enabled"]) is True
     assert int(rendering["flow_arrow_width_px"]) == 2
-    assert str(prompt["bundle_id"]) == "games_ludo_board_v0"
+    assert str(prompt["bundle_id"]) == "games_ludo_board_v1"
 
 
 def test_games_ludo_board_prompt_bundle_has_queries() -> None:
-    bundle = json.loads(Path("prompts/games/ludo_board/games_ludo_board_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/games/ludo_board/games_ludo_board_v1.json").read_text(encoding="utf-8"))
 
-    assert set(bundle["query_templates"].keys()) == {
-        WINNING_ROLL_QUERY_ID,
-        CAPTURE_ROLL_QUERY_ID,
-        MOVE_RESULT_QUERY_ID,
+    assert bundle["schema_version"] == "v1"
+    assert set(bundle["templates"]["query"].keys()) == {
+        "winning_roll_value",
+        "capture_roll_option_label",
+        "move_result_option_label",
     }
-    assert bundle["required_slots_by_key"][f"query:{WINNING_ROLL_QUERY_ID}"] == ["exact_finish_rule_text"]
-    assert bundle["required_slots_by_key"][f"query:{CAPTURE_ROLL_QUERY_ID}"] == ["capture_option_rule_text"]
-    assert bundle["required_slots_by_key"][f"query:{MOVE_RESULT_QUERY_ID}"] == ["move_sequence_rule_text"]
+    assert bundle["required_slots_by_key"]["query:winning_roll_value"] == ["exact_finish_rule_text"]
+    assert bundle["required_slots_by_key"]["query:capture_roll_option_label"] == ["capture_option_rule_text"]
+    assert bundle["required_slots_by_key"]["query:move_result_option_label"] == ["move_sequence_rule_text"]
     assert bool(bundle["allow_empty_task_templates"])
 
 
@@ -96,28 +94,28 @@ def test_games_ludo_board_path_and_roll_encoding() -> None:
     for start, end, _role in FLOW_ARROW_SPECS:
         assert max(abs(int(start[0]) - int(end[0])), abs(int(start[1]) - int(end[1]))) == 1
 
-    assert _roll_option_text(1) == "1"
-    assert _roll_option_text(6) == "6"
-    assert _roll_option_text(7) == "6 then 1"
-    assert _roll_option_text(11) == "6 then 5"
-    assert _roll_sequence_for_total(1) == (1,)
-    assert _roll_sequence_for_total(6) == (6,)
-    assert _roll_sequence_for_total(7) == (6, 1)
-    assert _roll_sequence_for_total(11) == (6, 5)
-    assert _roll_sequence_for_total(13) == (6, 6, 1)
-    assert _roll_sequence_for_total(17) == (6, 6, 5)
+    assert roll_option_text(1) == "1"
+    assert roll_option_text(6) == "6"
+    assert roll_option_text(7) == "6 then 1"
+    assert roll_option_text(11) == "6 then 5"
+    assert roll_sequence_for_total(1) == (1,)
+    assert roll_sequence_for_total(6) == (6,)
+    assert roll_sequence_for_total(7) == (6, 1)
+    assert roll_sequence_for_total(11) == (6, 5)
+    assert roll_sequence_for_total(13) == (6, 6, 1)
+    assert roll_sequence_for_total(17) == (6, 6, 5)
 
 
 def test_games_ludo_board_registry_and_taxonomy() -> None:
-    default_ids = set(list_default_task_ids())
-    assert WINNING_ROLL_TASK_ID in default_ids
-    assert CAPTURE_ROLL_TASK_ID in default_ids
-    assert MOVE_RESULT_TASK_ID in default_ids
+    ensure_scene_tasks_registered("games", "ludo_board")
+    assert is_default_dataset_task(WINNING_ROLL_TASK_ID)
+    assert is_default_dataset_task(CAPTURE_ROLL_TASK_ID)
+    assert is_default_dataset_task(MOVE_RESULT_TASK_ID)
     for task_id in (WINNING_ROLL_TASK_ID, CAPTURE_ROLL_TASK_ID, MOVE_RESULT_TASK_ID):
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "ludo_board"
-        assert taxonomy.source_scene_id == "ludo_board"
+        assert taxonomy.source_scene_id == ""
 
 
 def test_games_ludo_board_winning_roll_answer_matches_trace() -> None:
@@ -130,7 +128,8 @@ def test_games_ludo_board_winning_roll_answer_matches_trace() -> None:
         execution = out.trace_payload["execution_trace"]
 
         assert out.scene_id == "ludo_board"
-        assert out.query_id == WINNING_ROLL_QUERY_ID
+        assert out.query_id == "single"
+        assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "winning_roll_value"
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == roll
         assert execution["winning_roll"] == roll
@@ -160,12 +159,13 @@ def test_games_ludo_board_capture_option_answer_matches_trace() -> None:
         correct_options = [option for option in execution["options"] if int(option["distance"]) == distance]
 
         assert out.scene_id == "ludo_board"
-        assert out.query_id == CAPTURE_ROLL_QUERY_ID
-        assert out.answer_gt.type == "string"
+        assert out.query_id == "single"
+        assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "capture_roll_option_label"
+        assert out.answer_gt.type == "option_letter"
         assert out.answer_gt.value == "F"
         assert execution["capture_distance"] == distance
         assert execution["answer"] == "F"
-        assert correct_options == [{"label": "F", "distance": distance, "text": _roll_option_text(distance)}]
+        assert correct_options == [{"label": "F", "distance": distance, "text": roll_option_text(distance)}]
         assert len(execution["options"]) == 6
         assert len(out.trace_payload["render_map"]["flow_arrow_markers_px"]) == len(FLOW_ARROW_SPECS)
         assert out.annotation_gt.type == "keyed_bbox_map"
@@ -184,11 +184,12 @@ def test_games_ludo_board_move_result_answer_matches_trace() -> None:
                 "move_roll_total": total,
                 "query_color": "blue",
                 "answer_option_label": "D",
+                "option_count": 6,
             },
             max_attempts=100,
         )
         execution = out.trace_payload["execution_trace"]
-        route = _route_for_color("blue")
+        route = route_for_color("blue")
         start_coord = tuple(execution["token_coords_by_color"]["blue"])
         start_index = route.index(start_coord)
         expected_destination = tuple(route[start_index + total])
@@ -199,11 +200,12 @@ def test_games_ludo_board_move_result_answer_matches_trace() -> None:
         token_coords = {tuple(coord) for coord in execution["token_coords_by_color"].values()}
 
         assert out.scene_id == "ludo_board"
-        assert out.query_id == MOVE_RESULT_QUERY_ID
+        assert out.query_id == "single"
+        assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "move_result_option_label"
         assert out.answer_gt.type == "option_letter"
         assert out.answer_gt.value == "D"
         assert execution["move_roll_total"] == total
-        assert execution["roll_sequence"] == list(_roll_sequence_for_total(total))
+        assert execution["roll_sequence"] == list(roll_sequence_for_total(total))
         assert execution["answer"] == "D"
         assert destination_options["D"] == expected_destination
         assert len(destination_options) == len(execution["destination_options"])
@@ -216,4 +218,4 @@ def test_games_ludo_board_move_result_answer_matches_trace() -> None:
             "destination_cell",
         }
         assert set(out.trace_payload["render_map"]["destination_option_cell_bboxes_px"].keys()) == set(destination_options)
-        assert out.trace_payload["render_map"]["roll_sequence_px"]["values"] == list(_roll_sequence_for_total(total))
+        assert out.trace_payload["render_map"]["roll_sequence_px"]["values"] == list(roll_sequence_for_total(total))

@@ -2,14 +2,17 @@
 
 Public taxonomy: `games -> ludo_board -> task_games__ludo_board__winning_roll_value`.
 
-## Contract
+## Program Contract
 
-1. The scene renders a Ludo-style cross board with one visible token for each player color and twelve two-cell arrows showing clockwise track flow.
-2. The task asks for the exact die roll a named token needs to reach its matching finish.
-3. The token is already in its home lane; no capture, blocking, bonus-turn, or strategy rule is used.
-4. Answer type: `integer`.
-5. Annotation type: `keyed_bbox_map` with `token` and `finish`.
-6. Query id: `winning_roll_value`.
+Program code: `exact_finish_roll(token_position, finish_cell); scene=ludo_board; scope=winning_roll_value`.
+
+The scene renders a Ludo-style cross board with one visible token for each player color and twelve two-cell arrows showing clockwise flow. The task asks what single die roll the named token needs to land exactly on its matching finish. No capture, blocking, bonus-turn, or strategy rule is used.
+
+Answer schema: `integer` in `1..5`.
+
+Annotation schema: `keyed_bbox_map` with `token` and `finish`.
+
+Supported `query_id`: `single`.
 
 ## Generator
 

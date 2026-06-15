@@ -2,14 +2,17 @@
 
 Public taxonomy: `games -> ludo_board -> task_games__ludo_board__capture_roll_option_label`.
 
-## Contract
+## Program Contract
 
-1. The scene renders a Ludo-style cross board with one visible token for each player color, twelve two-cell arrows showing clockwise track flow, and six image-drawn roll options.
-2. The task asks which option lets the named mover token land on the named target token by moving clockwise.
-3. A single `6` is allowed, and a `6 then k` option means moving six spaces, then moving `k` more spaces.
-4. Answer type: `string`.
-5. Annotation type: `keyed_bbox_map` with `mover_token` and `target_token`.
-6. Query id: `capture_roll_option_label`.
+Program code: `select(option_label where clockwise_distance(mover_token, target_token) == option_roll_distance); scene=ludo_board; scope=capture_roll_option_label`.
+
+The scene renders a Ludo-style cross board with one visible token for each player color, twelve two-cell arrows showing clockwise flow, and visible roll-option cards. The task asks which displayed option moves the named token onto the named target token. A `6 then k` option means move six spaces, then k more spaces.
+
+Answer schema: `option_letter`.
+
+Annotation schema: `keyed_bbox_map` with `mover_token` and `target_token`.
+
+Supported `query_id`: `single`.
 
 ## Generator
 

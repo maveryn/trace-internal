@@ -19,7 +19,6 @@ from ...shared.procedural_named_icon_field_scene import (
 from ...shared.procedural_named_icons import (
     PROCEDURAL_NAMED_ICON_SHAPES,
     procedural_named_icon_display_name,
-    procedural_named_icon_fill_style_display_name,
     sample_procedural_named_icon_fill_style,
 )
 from .defaults import (
@@ -54,7 +53,7 @@ from .state import (
     ShapeCountSampleSpec,
 )
 
-_ATTRIBUTE_AXES: Tuple[str, ...] = ("color", "fill_style")
+_ATTRIBUTE_AXES: Tuple[str, ...] = ("color",)
 
 
 def _int_param(params: Mapping[str, Any], gen_defaults: Mapping[str, Any], key: str, fallback: int) -> int:
@@ -99,10 +98,10 @@ def _color_support(params: Mapping[str, Any], gen_defaults: Mapping[str, Any]) -
 def _attribute_axis_probability_map(params: Mapping[str, Any], gen_defaults: Mapping[str, Any]) -> Dict[str, float]:
     raw = params.get(
         "attribute_axis_probabilities",
-        group_default(gen_defaults, "attribute_axis_probabilities", {"color": 0.5, "fill_style": 0.5}),
+        group_default(gen_defaults, "attribute_axis_probabilities", {"color": 1.0}),
     )
     if not isinstance(raw, Mapping):
-        raw = {"color": 0.5, "fill_style": 0.5}
+        raw = {"color": 1.0}
     weights = {str(axis): max(0.0, float(raw.get(str(axis), 0.0))) for axis in _ATTRIBUTE_AXES}
     total = sum(float(value) for value in weights.values())
     if total <= 0.0:
@@ -241,7 +240,6 @@ def _boolean_semantic_specs_from_partitions(
     partition_counts: Mapping[str, int],
     target_shape_id: str,
     target_color_name: str,
-    target_fill_style: str,
     attribute_axis: str,
     shape_support: Sequence[str],
     color_support: Sequence[_NamedColorEntry],
@@ -256,20 +254,15 @@ def _boolean_semantic_specs_from_partitions(
     """
 
     color_names = tuple(str(entry.name) for entry in color_support)
-    fill_styles = tuple(str(value) for value in fill_style_support)
-
     def build_spec(*, shape_matches: bool, attribute_matches: bool, partition: str) -> _BooleanIconSemanticSpec:
         shape_id = str(target_shape_id) if bool(shape_matches) else _other_value(rng, shape_support, str(target_shape_id))
         if str(attribute_axis) == "color":
             color_name = str(target_color_name) if bool(attribute_matches) else _other_value(rng, color_names, str(target_color_name))
             fill_style = sample_procedural_named_icon_fill_style(
                 rng,
-                support=fill_styles,
+                support=fill_style_support,
                 probabilities=fill_style_probabilities,
             )
-        elif str(attribute_axis) == "fill_style":
-            color_name = str(rng.choice(color_names))
-            fill_style = str(target_fill_style) if bool(attribute_matches) else _other_value(rng, fill_styles, str(target_fill_style))
         else:
             raise ValueError(f"unsupported attribute axis: {attribute_axis}")
         return _BooleanIconSemanticSpec(
@@ -317,17 +310,8 @@ def _sample_boolean_spec(
         params,
         gen_defaults,
         fallback_support=_BOOLEAN_DEFAULTS.named_icon_fill_style_support,
-        queryable_only=False,
-        queryable_fallback_support=_BOOLEAN_DEFAULTS.queryable_named_icon_fill_style_support,
     )
     fill_style_probabilities = resolve_named_icon_fill_style_probabilities(params, gen_defaults, fill_style_support)
-    queryable_fill_style_support = resolve_named_icon_fill_style_support(
-        params,
-        gen_defaults,
-        fallback_support=_BOOLEAN_DEFAULTS.named_icon_fill_style_support,
-        queryable_only=True,
-        queryable_fallback_support=_BOOLEAN_DEFAULTS.queryable_named_icon_fill_style_support,
-    )
     arrangement_support = _arrangement_mode_support(params, render_defaults, _BOOLEAN_DEFAULTS.named_icon_layout_modes)
     attribute_axis, attribute_axis_probabilities = _sample_attribute_axis(params, gen_defaults, rng)
     answer_min, answer_max = resolve_named_icon_int_bounds(
@@ -380,9 +364,7 @@ def _sample_boolean_spec(
 
     color_by_name = {str(entry.name): entry for entry in color_support}
     explicit_color = params.get("color_name", params.get("target_color_name"))
-    explicit_fill_style = params.get("fill_style", params.get("target_fill_style"))
     target_color: _NamedColorEntry | None = None
-    target_fill_style = ""
     if str(attribute_axis) == "color":
         if explicit_color is not None:
             target_color_name = str(explicit_color).strip().lower()
@@ -394,14 +376,7 @@ def _sample_boolean_spec(
         target_attribute_value = str(target_color.name)
         target_attribute_label = str(target_color.label)
     else:
-        if explicit_fill_style is not None:
-            target_fill_style = str(explicit_fill_style).strip()
-            if target_fill_style not in set(queryable_fill_style_support):
-                raise ValueError(f"target fill style must be one of {queryable_fill_style_support}")
-        else:
-            target_fill_style = str(rng.choice(queryable_fill_style_support))
-        target_attribute_value = str(target_fill_style)
-        target_attribute_label = procedural_named_icon_fill_style_display_name(str(target_fill_style))
+        raise ValueError(f"unsupported attribute axis: {attribute_axis}")
 
     min_required_counts = _initial_partition_counts(str(predicate_kind), int(target_answer), rng)
     min_required_total = sum(int(value) for value in min_required_counts.values())
@@ -429,7 +404,6 @@ def _sample_boolean_spec(
         partition_counts=partition_counts,
         target_shape_id=str(target_shape_id),
         target_color_name=str(target_color.name) if target_color is not None else "",
-        target_fill_style=str(target_fill_style),
         attribute_axis=str(attribute_axis),
         shape_support=shape_support,
         color_support=color_support,
@@ -455,8 +429,6 @@ def _sample_boolean_spec(
         target_attribute_value=str(target_attribute_value),
         target_attribute_label=str(target_attribute_label),
         target_color=target_color,
-        target_fill_style=str(target_fill_style),
-        target_fill_style_label=procedural_named_icon_fill_style_display_name(str(target_fill_style)) if target_fill_style else "",
         target_answer=int(target_answer),
         object_count=int(object_count),
         object_count_max_answer_offset=int(object_max_answer_offset),

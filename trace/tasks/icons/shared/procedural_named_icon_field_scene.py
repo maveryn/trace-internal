@@ -122,35 +122,17 @@ def resolve_named_icon_fill_style_support(
     gen_defaults: Mapping[str, Any],
     *,
     fallback_support: Sequence[str],
-    queryable_only: bool = False,
-    queryable_fallback_support: Sequence[str] | None = None,
-    enforce_queryable_subset: bool = True,
 ) -> Tuple[str, ...]:
-    """Resolve renderable or queryable procedural named-icon fill styles."""
+    """Resolve renderable procedural named-icon fill styles."""
 
-    key = "queryable_named_icon_fill_style_support" if bool(queryable_only) else "named_icon_fill_style_support"
-    fallback = tuple(queryable_fallback_support if bool(queryable_only) and queryable_fallback_support is not None else fallback_support)
+    key = "named_icon_fill_style_support"
+    fallback = tuple(fallback_support)
     raw = params.get(key, group_default(gen_defaults, key, fallback))
     if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
         raw = fallback
     support = validate_procedural_named_icon_fill_style_support(
         tuple(str(value) for value in raw),
-        queryable_only=bool(queryable_only),
     )
-    if bool(queryable_only) and bool(enforce_queryable_subset):
-        renderable = set(
-            resolve_named_icon_fill_style_support(
-                params,
-                gen_defaults,
-                fallback_support=fallback_support,
-                queryable_only=False,
-                queryable_fallback_support=queryable_fallback_support,
-                enforce_queryable_subset=enforce_queryable_subset,
-            )
-        )
-        unsupported = sorted(set(support) - renderable)
-        if unsupported:
-            raise ValueError(f"queryable fill styles must also be renderable: {unsupported}")
     return support
 
 

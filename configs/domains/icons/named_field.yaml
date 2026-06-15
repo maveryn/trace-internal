@@ -17,7 +17,6 @@ generation:
         solid: 0.55
         striped: 0.15
         dotted: 0.15
-        half_filled: 0.15
       named_icon_stack_distractor_group_min: 3
       named_icon_stack_distractor_group_max: 6
       named_icon_stack_oddball_count_min: 1
@@ -26,7 +25,6 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_arrangement_profiles:
         jittered_grid:
           target_count_min: 1
@@ -95,19 +93,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.8
         striped: 0.0667
         dotted: 0.0667
-        half_filled: 0.0666
-      queryable_named_icon_fill_style_support:
-      - striped
-      - dotted
-      - half_filled
-      attribute_axis_probabilities:
-        color: 0.5
-        fill_style: 0.5
     task_icons__named_field__multi_attribute_or_count:
       object_count_min: 4
       object_count_max: 10
@@ -135,19 +124,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.8
         striped: 0.0667
         dotted: 0.0667
-        half_filled: 0.0666
-      queryable_named_icon_fill_style_support:
-      - striped
-      - dotted
-      - half_filled
-      attribute_axis_probabilities:
-        color: 0.5
-        fill_style: 0.5
     task_icons__named_field__multi_attribute_exclusion_count:
       object_count_min: 4
       object_count_max: 10
@@ -175,19 +155,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.8
         striped: 0.0667
         dotted: 0.0667
-        half_filled: 0.0666
-      queryable_named_icon_fill_style_support:
-      - striped
-      - dotted
-      - half_filled
-      attribute_axis_probabilities:
-        color: 0.5
-        fill_style: 0.5
     task_icons__named_field__multi_attribute_complement_count:
       object_count_min: 4
       object_count_max: 10
@@ -215,19 +186,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.8
         striped: 0.0667
         dotted: 0.0667
-        half_filled: 0.0666
-      queryable_named_icon_fill_style_support:
-      - striped
-      - dotted
-      - half_filled
-      attribute_axis_probabilities:
-        color: 0.5
-        fill_style: 0.5
     task_icons__named_field__multi_attribute_xor_count:
       object_count_min: 4
       object_count_max: 10
@@ -255,19 +217,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.8
         striped: 0.0667
         dotted: 0.0667
-        half_filled: 0.0666
-      queryable_named_icon_fill_style_support:
-      - striped
-      - dotted
-      - half_filled
-      attribute_axis_probabilities:
-        color: 0.5
-        fill_style: 0.5
     task_icons__named_field__count_arithmetic:
       operand_count_min: 1
       operand_count_max: 6
@@ -297,12 +250,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.75
         striped: 0.0834
         dotted: 0.0833
-        half_filled: 0.0833
     task_icons__named_field__closer_to_reference_count:
       target_icon_count_min: 4
       target_icon_count_max: 8
@@ -331,12 +282,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.75
         striped: 0.0834
         dotted: 0.0833
-        half_filled: 0.0833
     task_icons__named_field__counterfactual_attribute_count:
       target_count_min: 1
       target_count_max: 8
@@ -348,12 +297,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.65
         striped: 0.1167
         dotted: 0.1167
-        half_filled: 0.1166
     task_icons__named_field__counterfactual_total_count:
       target_count_min: 1
       target_count_max: 8
@@ -365,12 +312,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.65
         striped: 0.1167
         dotted: 0.1167
-        half_filled: 0.1166
     task_icons__named_field__scoped_attribute_count:
       object_count_min: 7
       object_count_max: 12
@@ -403,12 +348,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.75
         striped: 0.0834
         dotted: 0.0833
-        half_filled: 0.0833
     task_icons__named_field__reference_distance_rank_label:
       candidate_count: 6
       distractor_count_min: 4
@@ -432,12 +375,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.55
         striped: 0.15
         dotted: 0.15
-        half_filled: 0.15
 rendering:
   shared:
     canvas_width: 960
@@ -765,7 +706,7 @@ prompt:
       task_key: counting_query
     task_icons__named_field__multi_attribute_and_count:
       scene_key: single_scene_counting
-      object_description: a panel of icons with colors and fill styles
+      object_description: a panel of colored icons
       question_text_shape_and_color_count: How many icons are "{shape_name}" icons and have {attribute_phrase}?
       question_text_shape_or_color_count: How many icons are "{shape_name}" icons, have {attribute_phrase}, or both?
       question_text_shape_and_not_color_count: How many icons are "{shape_name}" icons but do not have {attribute_phrase}?
@@ -782,7 +723,7 @@ prompt:
       task_key: counting_query
     task_icons__named_field__multi_attribute_or_count:
       scene_key: single_scene_counting
-      object_description: a panel of icons with colors and fill styles
+      object_description: a panel of colored icons
       question_text_shape_and_color_count: How many icons are "{shape_name}" icons and have {attribute_phrase}?
       question_text_shape_or_color_count: How many icons are "{shape_name}" icons, have {attribute_phrase}, or both?
       question_text_shape_and_not_color_count: How many icons are "{shape_name}" icons but do not have {attribute_phrase}?
@@ -799,7 +740,7 @@ prompt:
       task_key: counting_query
     task_icons__named_field__multi_attribute_exclusion_count:
       scene_key: single_scene_counting
-      object_description: a panel of icons with colors and fill styles
+      object_description: a panel of colored icons
       question_text_shape_and_color_count: How many icons are "{shape_name}" icons and have {attribute_phrase}?
       question_text_shape_or_color_count: How many icons are "{shape_name}" icons, have {attribute_phrase}, or both?
       question_text_shape_and_not_color_count: How many icons are "{shape_name}" icons but do not have {attribute_phrase}?
@@ -816,7 +757,7 @@ prompt:
       task_key: counting_query
     task_icons__named_field__multi_attribute_complement_count:
       scene_key: single_scene_counting
-      object_description: a panel of icons with colors and fill styles
+      object_description: a panel of colored icons
       question_text_shape_and_color_count: How many icons are "{shape_name}" icons and have {attribute_phrase}?
       question_text_shape_or_color_count: How many icons are "{shape_name}" icons, have {attribute_phrase}, or both?
       question_text_shape_and_not_color_count: How many icons are "{shape_name}" icons but do not have {attribute_phrase}?
@@ -833,7 +774,7 @@ prompt:
       task_key: counting_query
     task_icons__named_field__multi_attribute_xor_count:
       scene_key: single_scene_counting
-      object_description: a panel of icons with colors and fill styles
+      object_description: a panel of colored icons
       question_text_shape_and_color_count: How many icons are "{shape_name}" icons and have {attribute_phrase}?
       question_text_shape_or_color_count: How many icons are "{shape_name}" icons, have {attribute_phrase}, or both?
       question_text_shape_and_not_color_count: How many icons are "{shape_name}" icons but do not have {attribute_phrase}?
@@ -850,7 +791,7 @@ prompt:
       task_key: counting_query
     task_icons__named_field__count_arithmetic:
       scene_key: single_scene_counting
-      object_description: a panel of icons with colors and fill styles
+      object_description: a panel of colored icons
       question_text_two_shape_total_count: How many "{left_shape_name}" icons and "{right_shape_name}" icons are there in
         total?
       question_text_two_bound_color_total_count: How many {left_operand_label} icons and {right_operand_label} icons are there

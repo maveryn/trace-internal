@@ -59,8 +59,6 @@ def boolean_attribute_matches(sample: Any, instance: Any) -> bool:
 
     if str(sample.target_attribute_axis) == "color":
         return str(instance.color_name) == str(sample.target_attribute_value)
-    if str(sample.target_attribute_axis) == "fill_style":
-        return str(instance.fill_style) == str(sample.target_attribute_value)
     raise ValueError(f"unsupported attribute axis: {sample.target_attribute_axis}")
 
 
@@ -100,8 +98,6 @@ def boolean_attribute_phrase(sample: Any) -> str:
 
     if str(sample.target_attribute_axis) == "color":
         return f"the color {sample.target_attribute_label}"
-    if str(sample.target_attribute_axis) == "fill_style":
-        return f"a {sample.target_attribute_label} fill style"
     raise ValueError(f"unsupported attribute axis: {sample.target_attribute_axis}")
 
 
@@ -110,8 +106,6 @@ def boolean_attribute_expression(sample: Any) -> str:
 
     if str(sample.target_attribute_axis) == "color":
         return "color_name == target_color_name"
-    if str(sample.target_attribute_axis) == "fill_style":
-        return "fill_style == target_fill_style"
     raise ValueError(f"unsupported attribute axis: {sample.target_attribute_axis}")
 
 

@@ -37,9 +37,7 @@ from ..shared.annotation import bbox_set_annotation
 from ..shared.procedural_named_icons import (
     PROCEDURAL_NAMED_ICON_FILL_STYLES,
     PROCEDURAL_NAMED_ICON_SHAPES,
-    QUERYABLE_PROCEDURAL_NAMED_ICON_FILL_STYLES,
     procedural_named_icon_display_name,
-    procedural_named_icon_fill_style_display_name,
     procedural_named_icon_fill_style_probability_map,
     render_procedural_named_icon_rgba,
     sample_procedural_named_icon_fill_style,
@@ -60,7 +58,6 @@ QUERY_IDS: Tuple[str, ...] = (
 TARGET_ATTRIBUTE_MODES: Tuple[str, ...] = (
     "shape_only",
     "color_shape",
-    "fill_style_shape",
 )
 
 VENN_CATEGORIES: Tuple[str, ...] = ("left_only", "right_only", "both", "neither")
@@ -100,7 +97,6 @@ class _TaskDefaults:
     icon_noise_edit_types: Tuple[str, ...] = ICON_SHARED_DEFAULTS.icon_noise_edit_types
     icon_noise_edit_count_range: Tuple[int, int] = ICON_SHARED_DEFAULTS.icon_noise_edit_count_range
     named_icon_fill_style_support: Tuple[str, ...] = PROCEDURAL_NAMED_ICON_FILL_STYLES
-    queryable_named_icon_fill_style_support: Tuple[str, ...] = QUERYABLE_PROCEDURAL_NAMED_ICON_FILL_STYLES
     target_attribute_mode_weights: Dict[str, float] | None = None
     venn_boundary_margin_px: int = 12
     venn_left_fill_rgb: Tuple[int, int, int] = (90, 150, 235)
@@ -168,7 +164,6 @@ class _ScenePayload:
     target_shape_id: str
     target_shape_name: str
     target_color: _NamedColorEntry | None
-    target_fill_style: str
     target_description: str
     target_count: int
     object_count: int
@@ -258,25 +253,15 @@ def _query_support(params: Mapping[str, Any]) -> Tuple[str, ...]:
     return values
 
 
-def _fill_style_support(params: Mapping[str, Any], *, queryable_only: bool = False) -> Tuple[str, ...]:
-    key = "queryable_named_icon_fill_style_support" if bool(queryable_only) else "named_icon_fill_style_support"
-    fallback = (
-        _DEFAULTS.queryable_named_icon_fill_style_support
-        if bool(queryable_only)
-        else _DEFAULTS.named_icon_fill_style_support
-    )
+def _fill_style_support(params: Mapping[str, Any]) -> Tuple[str, ...]:
+    key = "named_icon_fill_style_support"
+    fallback = _DEFAULTS.named_icon_fill_style_support
     raw = params.get(key, group_default(_GEN_DEFAULTS, key, fallback))
     if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
         raw = fallback
     support = validate_procedural_named_icon_fill_style_support(
         tuple(str(value) for value in raw),
-        queryable_only=bool(queryable_only),
     )
-    if bool(queryable_only):
-        renderable = set(_fill_style_support(params, queryable_only=False))
-        unsupported = sorted(set(support) - renderable)
-        if unsupported:
-            raise ValueError(f"queryable fill styles must also be renderable: {unsupported}")
     return support
 
 
@@ -293,7 +278,7 @@ def _fill_style_probabilities(params: Mapping[str, Any], support: Sequence[str])
 def _target_mode_probabilities(params: Mapping[str, Any]) -> Dict[str, float]:
     raw = params.get("target_attribute_mode_weights", group_default(_GEN_DEFAULTS, "target_attribute_mode_weights", None))
     if not isinstance(raw, Mapping):
-        raw = {"shape_only": 0.4, "color_shape": 0.35, "fill_style_shape": 0.25}
+        raw = {"shape_only": 0.5, "color_shape": 0.5}
     return weighted_probability_map(TARGET_ATTRIBUTE_MODES, raw)
 
 
@@ -432,7 +417,7 @@ def _counted_categories(query_id: str) -> Tuple[str, ...]:
     raise ValueError(f"unsupported query_id: {query_id}")
 
 
-def _target_description(*, mode: str, shape_name: str, target_color: _NamedColorEntry | None, target_fill_style: str) -> str:
+def _target_description(*, mode: str, shape_name: str, target_color: _NamedColorEntry | None) -> str:
     quoted_shape = f'"{shape_name}"'
     if str(mode) == "shape_only":
         return f"{quoted_shape} icons"
@@ -440,8 +425,6 @@ def _target_description(*, mode: str, shape_name: str, target_color: _NamedColor
         if target_color is None:
             raise ValueError("color_shape target is missing target_color")
         return f"{target_color.label} {quoted_shape} icons"
-    if str(mode) == "fill_style_shape":
-        return f"{procedural_named_icon_fill_style_display_name(str(target_fill_style))} {quoted_shape} icons"
     raise ValueError(f"unsupported target mode: {mode}")
 
 
@@ -451,7 +434,6 @@ def _sample_nonmatching_icon(
     mode: str,
     target_shape_id: str,
     target_color: _NamedColorEntry | None,
-    target_fill_style: str,
     shape_support: Sequence[str],
     color_support: Sequence[_NamedColorEntry],
     fill_style_support: Sequence[str],
@@ -484,17 +466,9 @@ def _sample_nonmatching_icon(
         fill_style = sample_procedural_named_icon_fill_style(rng, support=fill_style_support, probabilities=fill_style_probabilities)
         return str(shape_id), color_by_name[str(color.name)], str(fill_style)
 
-    other_fill_styles = [str(value) for value in fill_style_support if str(value) != str(target_fill_style)]
-    if draw < 0.40 and other_fill_styles:
-        shape_id = str(target_shape_id)
-        fill_style = str(rng.choice(other_fill_styles))
-    elif draw < 0.78:
-        shape_id = str(rng.choice(other_shapes))
-        fill_style = str(target_fill_style)
-    else:
-        shape_id = str(rng.choice(other_shapes))
-        fill_style = str(rng.choice(other_fill_styles or list(fill_style_support)))
+    shape_id = str(rng.choice(other_shapes))
     color = rng.choice(color_support)
+    fill_style = sample_procedural_named_icon_fill_style(rng, support=fill_style_support, probabilities=fill_style_probabilities)
     return str(shape_id), color_by_name[str(color.name)], str(fill_style)
 
 
@@ -508,7 +482,6 @@ def _make_plans(
     target_opposite_count: int,
     target_shape_id: str,
     target_color: _NamedColorEntry | None,
-    target_fill_style: str,
     shape_support: Sequence[str],
     color_support: Sequence[_NamedColorEntry],
     fill_style_support: Sequence[str],
@@ -529,10 +502,10 @@ def _make_plans(
 
     def _target_plan(category: str) -> _IconPlan:
         color = target_color_entry if str(mode) == "color_shape" else rng.choice(color_support)
-        fill_style = (
-            str(target_fill_style)
-            if str(mode) == "fill_style_shape"
-            else sample_procedural_named_icon_fill_style(rng, support=fill_style_support, probabilities=fill_style_probabilities)
+        fill_style = sample_procedural_named_icon_fill_style(
+            rng,
+            support=fill_style_support,
+            probabilities=fill_style_probabilities,
         )
         return _IconPlan(
             shape_id=str(target_shape_id),
@@ -554,7 +527,6 @@ def _make_plans(
             mode=str(mode),
             target_shape_id=str(target_shape_id),
             target_color=target_color,
-            target_fill_style=str(target_fill_style),
             shape_support=shape_support,
             color_support=color_support,
             fill_style_support=fill_style_support,
@@ -713,14 +685,11 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
 
     color_support = _color_support(params)
     color_by_name = {str(entry.name): entry for entry in color_support}
-    fill_style_support = _fill_style_support(params, queryable_only=False)
-    queryable_fill_style_support = _fill_style_support(params, queryable_only=True)
+    fill_style_support = _fill_style_support(params)
     fill_style_probabilities = _fill_style_probabilities(params, fill_style_support)
 
     target_color: _NamedColorEntry | None = None
-    target_fill_style = ""
     explicit_color = params.get("color_name", params.get("target_color_name"))
-    explicit_fill_style = params.get("fill_style", params.get("target_fill_style"))
     if str(target_attribute_mode) == "color_shape":
         if explicit_color is not None:
             color_name = str(explicit_color).strip().lower()
@@ -729,13 +698,6 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
         else:
             color_name = str(rng.choice(color_support).name)
         target_color = color_by_name[str(color_name)]
-    elif str(target_attribute_mode) == "fill_style_shape":
-        if explicit_fill_style is not None:
-            target_fill_style = str(explicit_fill_style).strip()
-            if target_fill_style not in set(queryable_fill_style_support):
-                raise ValueError(f"target fill style must be one of {queryable_fill_style_support}")
-        else:
-            target_fill_style = str(rng.choice(queryable_fill_style_support))
 
     answer_min, answer_max = _bounds(params, "target_count_min", "target_count_max", _DEFAULTS.target_count_min, _DEFAULTS.target_count_max)
     object_min, object_max = _bounds(params, "object_count_min", "object_count_max", _DEFAULTS.object_count_min, _DEFAULTS.object_count_max)
@@ -780,7 +742,6 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
         target_opposite_count=int(target_opposite_count),
         target_shape_id=str(target_shape_id),
         target_color=target_color,
-        target_fill_style=str(target_fill_style),
         shape_support=shape_support,
         color_support=color_support,
         fill_style_support=fill_style_support,
@@ -886,12 +847,10 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
         target_shape_id=str(target_shape_id),
         target_shape_name=str(target_shape_name),
         target_color=target_color,
-        target_fill_style=str(target_fill_style),
         target_description=_target_description(
             mode=str(target_attribute_mode),
             shape_name=str(target_shape_name),
             target_color=target_color,
-            target_fill_style=str(target_fill_style),
         ),
         target_count=int(target_count),
         object_count=int(object_count),
@@ -1048,7 +1007,6 @@ class IconsCountingNamedShapeVennRegionCountTask:
                     "target_shape_id": str(scene.target_shape_id),
                     "target_shape_name": str(scene.target_shape_name),
                     "target_color_name": "" if scene.target_color is None else str(scene.target_color.name),
-                    "target_fill_style": str(scene.target_fill_style),
                     "target_count": int(scene.target_count),
                     "counted_venn_categories": list(_counted_categories(str(scene.query_id))),
                     "category_counts": {str(key): int(value) for key, value in category_counts.items()},
@@ -1074,7 +1032,6 @@ class IconsCountingNamedShapeVennRegionCountTask:
                     "target_shape_id": str(scene.target_shape_id),
                     "target_shape_name": str(scene.target_shape_name),
                     "target_color_name": "" if scene.target_color is None else str(scene.target_color.name),
-                    "target_fill_style": str(scene.target_fill_style),
                     "target_count": int(scene.target_count),
                     "object_count": int(scene.object_count),
                     "shape_id_support": list(_shape_support(params)),
@@ -1127,7 +1084,6 @@ class IconsCountingNamedShapeVennRegionCountTask:
                 "target_shape_id": str(scene.target_shape_id),
                 "target_shape_name": str(scene.target_shape_name),
                 "target_color_name": "" if scene.target_color is None else str(scene.target_color.name),
-                "target_fill_style": str(scene.target_fill_style),
                 "target_count": int(scene.target_count),
                 "object_count": int(scene.object_count),
                 "counted_venn_categories": list(_counted_categories(str(scene.query_id))),

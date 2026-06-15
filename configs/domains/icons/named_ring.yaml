@@ -12,12 +12,10 @@ generation:
     - solid
     - striped
     - dotted
-    - half_filled
     named_icon_fill_style_weights:
       solid: 0.75
       striped: 0.0834
       dotted: 0.0833
-      half_filled: 0.0833
 rendering:
   shared:
     canvas_width: 880

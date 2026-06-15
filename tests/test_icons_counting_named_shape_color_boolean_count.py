@@ -119,45 +119,28 @@ def test_icons_counting_named_shape_color_boolean_contract_all_queries() -> None
         assert sorted(out.annotation_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted_entities)
 
 
-def test_icons_counting_named_shape_color_boolean_fill_style_axis_contract() -> None:
+def test_icons_counting_named_shape_color_boolean_rejects_fill_style_axis() -> None:
     query_id = "shape_and_color_count"
     task = create_task(TASK_ID_BY_QUERY_ID[str(query_id)])
     params = {
         "attribute_axis": "fill_style",
         "target_shape_id": "star",
-        "target_fill_style": "striped",
         "target_count": 3,
         "object_count": 6,
         "arrangement_mode": "ordered_grid",
     }
     if tuple(getattr(task, "supported_query_ids", ())) != ("single",):
         params["query_id"] = query_id
-    out = task.generate(
-        hash64(20260523, "named-shape-fill-style-boolean-contract", 0),
-        params=params,
-        max_attempts=200,
-    )
-    trace = out.trace_payload
-    entities = trace["scene_ir"]["entities"]
-    target_shape = trace["query_spec"]["params"]["target_shape_id"]
-    target_fill_style = trace["query_spec"]["params"]["target_fill_style"]
-    counted_entities = [
-        entity
-        for entity in entities
-        if _predicate(
-            query_id,
-            is_shape=str(entity["shape_id"]) == str(target_shape),
-            is_attribute=str(entity["fill_style"]) == str(target_fill_style),
+    try:
+        task.generate(
+            hash64(20260523, "named-shape-fill-style-boolean-contract", 0),
+            params=params,
+            max_attempts=20,
         )
-    ]
-
-    assert trace["query_spec"]["params"]["target_attribute_axis"] == "fill_style"
-    assert out.answer_gt.value == 3
-    assert len(counted_entities) == 3
-    assert "striped fill style" in out.prompt
-    assert all("fill_style" in entity for entity in entities)
-    assert set(trace["render_map"]["counted_instance_ids"]) == {str(entity["instance_id"]) for entity in counted_entities}
-    assert sorted(out.annotation_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted_entities)
+    except (RuntimeError, ValueError) as exc:
+        assert "attribute_axis" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("Boolean named-icon task accepted fill_style as a semantic axis")
 
 
 def test_icons_counting_named_shape_color_boolean_sampling_distribution() -> None:
@@ -190,7 +173,7 @@ def test_icons_counting_named_shape_color_boolean_sampling_distribution() -> Non
 
     assert set(query_counts) == set(QUERY_IDS)
     assert set(answer_counts).issubset(set(range(1, 6)))
-    assert set(attribute_axes) == {"color", "fill_style"}
+    assert set(attribute_axes) == {"color"}
     assert layouts.issubset({"jittered_grid", "ordered_grid", "shelf_rows", "free_scatter", "clustered_by_shape"})
     assert layouts
 

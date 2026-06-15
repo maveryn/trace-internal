@@ -6,10 +6,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 from ...shared.defaults import ICON_SHARED_DEFAULTS
-from ...shared.procedural_named_icons import (
-    PROCEDURAL_NAMED_ICON_FILL_STYLES,
-    QUERYABLE_PROCEDURAL_NAMED_ICON_FILL_STYLES,
-)
+from ...shared.procedural_named_icons import PROCEDURAL_NAMED_ICON_FILL_STYLES
 
 
 NON_STACK_LAYOUT_MODES: Tuple[str, ...] = (
@@ -170,7 +167,6 @@ class BooleanNamedFieldDefaults:
     named_icon_slot_jitter_px: int = 8
     named_icon_stack_gap_px: int = 1
     named_icon_fill_style_support: Tuple[str, ...] = PROCEDURAL_NAMED_ICON_FILL_STYLES
-    queryable_named_icon_fill_style_support: Tuple[str, ...] = QUERYABLE_PROCEDURAL_NAMED_ICON_FILL_STYLES
 
 
 @dataclass(frozen=True)

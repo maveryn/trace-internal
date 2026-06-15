@@ -332,15 +332,6 @@ def prepare_boolean_count_objective(
             task_params,
             generation_defaults,
             fallback_support=BOOLEAN_DEFAULTS.named_icon_fill_style_support,
-            queryable_only=False,
-            queryable_fallback_support=BOOLEAN_DEFAULTS.queryable_named_icon_fill_style_support,
-        )
-        queryable_fill_style_support = resolve_named_icon_fill_style_support(
-            task_params,
-            generation_defaults,
-            fallback_support=BOOLEAN_DEFAULTS.named_icon_fill_style_support,
-            queryable_only=True,
-            queryable_fallback_support=BOOLEAN_DEFAULTS.queryable_named_icon_fill_style_support,
         )
         counted_instance_ids = boolean_counted_instance_ids(sample, scene.instances)
         query_metadata = build_boolean_query_metadata(
@@ -351,7 +342,6 @@ def prepare_boolean_count_objective(
             shape_support=shape_support(task_params, generation_defaults),
             color_support=color_support(task_params, generation_defaults),
             fill_style_support=fill_style_support,
-            queryable_fill_style_support=queryable_fill_style_support,
         )
         trace_payload = build_boolean_trace_payload(
             sample=sample,
@@ -369,7 +359,6 @@ def prepare_boolean_count_objective(
             slot_jitter_px=rendered.slot_jitter_px,
             stack_gap_px=rendered.stack_gap_px,
             fill_style_support=tuple(fill_style_support),
-            queryable_fill_style_support=tuple(queryable_fill_style_support),
         )
         return NamedFieldBoundOutput(
             prompt=str(prompt_artifacts.prompt),

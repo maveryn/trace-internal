@@ -18,11 +18,10 @@ but may change shape, color, or fill style in the Right panel.
 Supported query ids:
 - `original_shape_label`
 - `original_color_shape_label`
-- `original_fill_shape_label`
 
 The prompt asks which labeled Right-panel icon was originally the named shape,
-color+shape, or fill-style+shape described in the prompt. It never asks for
-three-attribute bindings such as color+fill-style+shape.
+or color+shape described in the prompt. Fill style may vary visually between
+panels, but it is not a queried semantic descriptor for this task.
 
 ## Answer Contract
 - `answer_gt.type = option_letter`

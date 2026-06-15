@@ -26,12 +26,10 @@ Target modes:
 - `shape_only`: prompt names one procedural shape, e.g. `"bell"` icons.
 - `color_shape`: prompt names a shared semantic color plus shape, e.g.
   `red [#E63232] "bell" icons`.
-- `fill_style_shape`: prompt names a fill style plus shape, e.g.
-  `striped "bell" icons`.
 
 The target shape support is the full procedural named-icon vocabulary in
-`trace/tasks/icons/shared/procedural_named_icons.py`. The task avoids
-three-attribute bindings; color and fill style are separate target modes.
+`trace/tasks/icons/shared/procedural_named_icons.py`. Fill style is a
+render-only visual variation for this task and is not used as a target mode.
 
 ## Answer Contract
 - `answer_gt.type = integer`
@@ -52,7 +50,7 @@ three-attribute bindings; color and fill style are separate target modes.
   `venn_category`, and target/count flags.
 - `scene_ir.relations.venn` records both circle geometries.
 - `query_spec.params.target_attribute_mode` records whether the target is
-  shape-only, color+shape, or fill-style+shape.
+  shape-only or color+shape.
 - `execution_trace.counted_venn_categories` records the categories counted by
   the active query.
 - `render_map.counted_instance_ids`, `witness_symbolic.counted_instance_ids`,

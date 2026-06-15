@@ -32,7 +32,7 @@ Supported query ids:
 
 The target shape support is the full procedural named-icon vocabulary in
 `trace/tasks/icons/shared/procedural_named_icons.py`. Icons also sample a
-rendered `fill_style` from `solid`, `striped`, `dotted`, and `half_filled`;
+rendered `fill_style` from `solid`, `striped`, and `dotted`;
 fill style is metadata/visual variation only for this task and does not affect
 region membership.
 

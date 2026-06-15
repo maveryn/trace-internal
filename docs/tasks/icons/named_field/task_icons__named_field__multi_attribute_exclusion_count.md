@@ -8,37 +8,32 @@
 - prompt bundle: `prompts/icons/named_field/icons_named_field_v1.json`
 
 ## Program Contract
-`count.multi_attribute_exclusion(scene=named_field, scope=all_icons, predicates=shape_without_attribute|attribute_without_shape, secondary_attribute=color|fill_style, output=count)`
+`count.multi_attribute_exclusion(scene=named_field, scope=all_icons, predicates=shape_without_color|color_without_shape, secondary_attribute=color, output=count)`
 
 ## Scene And Query
 The task renders one panel labeled `Scene` containing procedurally generated
-named shape icons. Each icon has a semantic procedural `shape_id`, a semantic
-`color_name` sampled from the shared TRACE named-color palette, and a semantic
-`fill_style`.
+named shape icons. Each icon has a semantic procedural `shape_id` and a semantic
+`color_name` sampled from the shared TRACE named-color palette. Icons may also
+render with non-semantic fill patterns (`solid`, `striped`, or `dotted`) as
+visual variation, but fill style is not queried by this task.
 
-The prompt names one shape and one secondary attribute, then asks for the count
-satisfying one Boolean predicate. The secondary attribute axis is sampled with
-50% probability from color and 50% probability from fill style. Queryable fill
-styles are `striped`, `dotted`, and `half_filled`; `solid` remains a rendered
-baseline/distractor style.
+The prompt names one shape and one color, then asks for the count satisfying
+one Boolean predicate.
 
 Supported public query ids:
-- `shape_and_not_color_count`: count target-shape icons that do not have the secondary attribute.
-- `color_and_not_shape_count`: count icons with the secondary attribute that are not the target shape.
+- `shape_and_not_color_count`: count target-shape icons that do not have the target color.
+- `color_and_not_shape_count`: count icons with the target color that are not the target shape.
 
 The selected public query id is also recorded as `query_spec.internal_query_id`
 because it directly changes the user-facing exclusion side.
 
 The target shape support is the full procedural named-icon vocabulary in
-`trace/tasks/icons/shared/procedural_named_icons.py`. Color prompts use the
-shared named-color label with hex notation, such as `red [#E63232]`, from
-`trace/tasks/shared/named_colors.py`. Fill-style prompts use display labels
-from `trace/tasks/icons/shared/procedural_named_icons.py`, such as
-`striped`, `dotted`, or `half-filled`.
+`trace/tasks/icons/shared/procedural_named_icons.py`. Color prompts use the shared named-color label with hex notation, such as
+`red [#E63232]`, from `trace/tasks/shared/named_colors.py`.
 
 The scene uses only non-stack named-icon arrangements: jittered/ordered grids,
 shelf rows, collision-free scatter, and clusters by shape. Stack arrangements
-are intentionally excluded because Boolean shape/attribute membership should be
+are intentionally excluded because Boolean shape/color membership should be
 answered by attribute filtering rather than row/column stack arithmetic.
 
 ## Answer Contract

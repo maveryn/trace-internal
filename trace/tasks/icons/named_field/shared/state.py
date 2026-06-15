@@ -106,8 +106,6 @@ class BooleanSampleSpec:
     target_attribute_value: str
     target_attribute_label: str
     target_color: NamedColorEntry | None
-    target_fill_style: str
-    target_fill_style_label: str
     target_answer: int
     object_count: int
     object_count_max_answer_offset: int

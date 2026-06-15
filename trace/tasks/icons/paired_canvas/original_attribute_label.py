@@ -38,9 +38,7 @@ from ..shared.procedural_named_icons import (
     DEFAULT_PROCEDURAL_NAMED_ICON_FILL_STYLE_WEIGHTS,
     PROCEDURAL_NAMED_ICON_FILL_STYLES,
     PROCEDURAL_NAMED_ICON_SHAPES,
-    QUERYABLE_PROCEDURAL_NAMED_ICON_FILL_STYLES,
     procedural_named_icon_display_name,
-    procedural_named_icon_fill_style_display_name,
     procedural_named_icon_fill_style_probability_map,
     render_procedural_named_icon_rgba,
     sample_procedural_named_icon_fill_style,
@@ -56,7 +54,6 @@ PUBLIC_QUERY_ID = "named_original_attribute_label"
 QUERY_IDS: Tuple[str, ...] = (
     "original_shape_label",
     "original_color_shape_label",
-    "original_fill_shape_label",
 )
 OPTION_LABELS: Tuple[str, ...] = tuple(str(label) for label in LABEL_POOL_A_L[:6])
 
@@ -99,7 +96,6 @@ class _TaskDefaults:
     icon_noise_edit_count_range: Tuple[int, int] = ICON_SHARED_DEFAULTS.icon_noise_edit_count_range
     icon_noise_value_ranges: Dict[str, Dict[str, Tuple[float, float]]] | None = None
     named_icon_fill_style_support: Tuple[str, ...] = PROCEDURAL_NAMED_ICON_FILL_STYLES
-    queryable_named_icon_fill_style_support: Tuple[str, ...] = QUERYABLE_PROCEDURAL_NAMED_ICON_FILL_STYLES
     named_icon_fill_style_weights: Dict[str, float] | None = None
     candidate_label_font_size_px: int = 24
     candidate_label_padding_px: int = 5
@@ -168,8 +164,6 @@ class _ScenePayload:
     target_shape_id: str
     target_shape_name: str
     target_color: _NamedColorEntry | None
-    target_fill_style: str | None
-    target_fill_style_label: str
     target_description: str
     pairs: Tuple[_PairPlan, ...]
     original_icons: Tuple[_RenderedPanelIcon, ...]
@@ -276,13 +270,13 @@ def _color_support(params: Mapping[str, Any]) -> Tuple[_NamedColorEntry, ...]:
     )
 
 
-def _fill_style_support(params: Mapping[str, Any], *, queryable_only: bool = False) -> Tuple[str, ...]:
-    key = "queryable_named_icon_fill_style_support" if queryable_only else "named_icon_fill_style_support"
-    fallback = _DEFAULTS.queryable_named_icon_fill_style_support if queryable_only else _DEFAULTS.named_icon_fill_style_support
+def _fill_style_support(params: Mapping[str, Any]) -> Tuple[str, ...]:
+    key = "named_icon_fill_style_support"
+    fallback = _DEFAULTS.named_icon_fill_style_support
     raw = params.get(key, group_default(_GEN_DEFAULTS, key, fallback))
     if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
         raw = fallback
-    return validate_procedural_named_icon_fill_style_support(tuple(str(value) for value in raw), queryable_only=queryable_only)
+    return validate_procedural_named_icon_fill_style_support(tuple(str(value) for value in raw))
 
 
 
@@ -366,14 +360,11 @@ def _matches_descriptor(
     query_id: str,
     target_shape_id: str,
     target_color_name: str | None,
-    target_fill_style: str | None,
 ) -> bool:
     if str(state.shape_id) != str(target_shape_id):
         return False
     if str(query_id) == "original_color_shape_label":
         return str(state.color_name) == str(target_color_name)
-    if str(query_id) == "original_fill_shape_label":
-        return str(state.fill_style) == str(target_fill_style)
     return True
 
 
@@ -389,7 +380,6 @@ def _state_avoiding_descriptor(
     query_id: str,
     target_shape_id: str,
     target_color_name: str | None,
-    target_fill_style: str | None,
 ) -> _IconState:
     for _ in range(200):
         state = _random_state(
@@ -406,7 +396,6 @@ def _state_avoiding_descriptor(
             query_id=str(query_id),
             target_shape_id=str(target_shape_id),
             target_color_name=target_color_name,
-            target_fill_style=target_fill_style,
         ):
             return state
     raise ValueError("failed to sample non-matching original named icon")
@@ -418,17 +407,13 @@ def _state_with_descriptor(
     query_id: str,
     target_shape_id: str,
     target_color: _NamedColorEntry | None,
-    target_fill_style: str | None,
 ) -> _IconState:
     color_name = str(base.color_name)
     tint_rgb = tuple(int(value) for value in base.tint_rgb)
-    fill_style = str(base.fill_style)
     if str(query_id) == "original_color_shape_label" and target_color is not None:
         color_name = str(target_color.name)
         tint_rgb = tuple(int(value) for value in target_color.rgb)
-    if str(query_id) == "original_fill_shape_label" and target_fill_style is not None:
-        fill_style = str(target_fill_style)
-    return replace(base, shape_id=str(target_shape_id), color_name=color_name, tint_rgb=tint_rgb, fill_style=fill_style)
+    return replace(base, shape_id=str(target_shape_id), color_name=color_name, tint_rgb=tint_rgb)
 
 
 def _change_shape(rng, state: _IconState, shapes: Sequence[str], *, avoid: str) -> _IconState:
@@ -457,20 +442,16 @@ def _force_state_away_from_descriptor(
     fill_support: Sequence[str],
     target_shape_id: str,
     target_color_name: str | None,
-    target_fill_style: str | None,
 ) -> _IconState:
     if not _matches_descriptor(
         state,
         query_id=str(query_id),
         target_shape_id=str(target_shape_id),
         target_color_name=target_color_name,
-        target_fill_style=target_fill_style,
     ):
         return state
     if str(query_id) == "original_color_shape_label" and int(rng.randrange(2)) == 0 and target_color_name is not None:
         return _change_color(rng, state, colors, avoid=str(target_color_name))
-    if str(query_id) == "original_fill_shape_label" and int(rng.randrange(2)) == 0 and target_fill_style is not None:
-        return _change_fill(rng, state, fill_support, avoid=str(target_fill_style))
     return _change_shape(rng, state, shapes, avoid=str(target_shape_id))
 
 
@@ -497,13 +478,10 @@ def _descriptor_text(
     query_id: str,
     target_shape_name: str,
     target_color: _NamedColorEntry | None,
-    target_fill_style_label: str,
 ) -> str:
     quoted_shape = f'"{target_shape_name}"'
     if str(query_id) == "original_color_shape_label" and target_color is not None:
         return f"{target_color.label} {quoted_shape}"
-    if str(query_id) == "original_fill_shape_label":
-        return f"{target_fill_style_label} {quoted_shape}"
     return str(quoted_shape)
 
 
@@ -519,18 +497,12 @@ def _sample_pairs(
 ) -> Tuple[Tuple[_PairPlan, ...], Dict[str, Any]]:
     shapes = _shape_support(params)
     colors = _color_support(params)
-    fill_support = _fill_style_support(params, queryable_only=False)
-    queryable_fill_support = _fill_style_support(params, queryable_only=True)
+    fill_support = _fill_style_support(params)
     fill_probabilities = resolve_named_icon_fill_style_probabilities(params, _GEN_DEFAULTS, fill_support, default_weights=DEFAULT_PROCEDURAL_NAMED_ICON_FILL_STYLE_WEIGHTS)
     size_min = int(render_params["scene_icon_size_min_px"])
     size_max = int(render_params["scene_icon_size_max_px"])
     target_shape_id = str(shapes[int(rng.randrange(len(shapes)))])
     target_color = _random_color(rng, colors) if str(query_id) == "original_color_shape_label" else None
-    target_fill_style = (
-        str(queryable_fill_support[int(rng.randrange(len(queryable_fill_support)))])
-        if str(query_id) == "original_fill_shape_label"
-        else None
-    )
     target_color_name = None if target_color is None else str(target_color.name)
 
     answer_original = _random_state(
@@ -547,7 +519,6 @@ def _sample_pairs(
         query_id=str(query_id),
         target_shape_id=str(target_shape_id),
         target_color=target_color,
-        target_fill_style=target_fill_style,
     )
     answer_current = _force_state_away_from_descriptor(
         rng,
@@ -558,7 +529,6 @@ def _sample_pairs(
         fill_support=fill_support,
         target_shape_id=str(target_shape_id),
         target_color_name=target_color_name,
-        target_fill_style=target_fill_style,
     )
 
     false_positive_label = str(rng.choice([label for label in OPTION_LABELS if str(label) != str(answer_label)]))
@@ -583,7 +553,6 @@ def _sample_pairs(
                 query_id=str(query_id),
                 target_shape_id=str(target_shape_id),
                 target_color_name=target_color_name,
-                target_fill_style=target_fill_style,
             )
             current = _mutate_state(rng, original, colors=colors, shapes=shapes, fill_support=fill_support)
             if tracked and label == str(false_positive_label):
@@ -592,7 +561,6 @@ def _sample_pairs(
                     query_id=str(query_id),
                     target_shape_id=str(target_shape_id),
                     target_color=target_color,
-                    target_fill_style=target_fill_style,
                 )
         plans.append(
             _PairPlan(
@@ -628,21 +596,10 @@ def _sample_pairs(
         "target_shape_id": str(target_shape_id),
         "target_shape_name": procedural_named_icon_display_name(str(target_shape_id)),
         "target_color": target_color,
-        "target_fill_style": target_fill_style,
-        "target_fill_style_label": (
-            procedural_named_icon_fill_style_display_name(str(target_fill_style))
-            if target_fill_style is not None
-            else ""
-        ),
         "target_description": _descriptor_text(
             query_id=str(query_id),
             target_shape_name=procedural_named_icon_display_name(str(target_shape_id)),
             target_color=target_color,
-            target_fill_style_label=(
-                procedural_named_icon_fill_style_display_name(str(target_fill_style))
-                if target_fill_style is not None
-                else ""
-            ),
         ),
         "shape_probabilities": {str(shape): 1.0 / float(len(shapes)) for shape in shapes},
         "color_probabilities": {str(color.name): 1.0 / float(len(colors)) for color in colors},
@@ -992,8 +949,6 @@ def _render_scene(
         target_shape_id=str(meta["target_shape_id"]),
         target_shape_name=str(meta["target_shape_name"]),
         target_color=meta["target_color"],
-        target_fill_style=meta["target_fill_style"],
-        target_fill_style_label=str(meta["target_fill_style_label"]),
         target_description=str(meta["target_description"]),
         pairs=tuple(pairs),
         original_icons=tuple(original_icons),

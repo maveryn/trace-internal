@@ -225,7 +225,6 @@ def build_boolean_query_metadata(
     shape_support: Sequence[str],
     color_support: Sequence[Any],
     fill_style_support: Sequence[str],
-    queryable_fill_style_support: Sequence[str],
 ) -> dict[str, Any]:
     """Serialize sampled non-public axes for a Boolean count task."""
 
@@ -241,8 +240,6 @@ def build_boolean_query_metadata(
         "target_color_name": str(sample.target_color.name) if sample.target_color is not None else "",
         "target_color_rgb": [int(channel) for channel in sample.target_color.rgb] if sample.target_color is not None else [],
         "target_color_label": str(sample.target_color.label) if sample.target_color is not None else "",
-        "target_fill_style": str(sample.target_fill_style),
-        "target_fill_style_label": str(sample.target_fill_style_label),
         "target_answer": int(sample.target_answer),
         "object_count": int(sample.object_count),
         "object_count_max_answer_offset": int(sample.object_count_max_answer_offset),
@@ -253,7 +250,6 @@ def build_boolean_query_metadata(
         "shape_id_support": list(shape_support),
         "named_color_support": [str(entry.name) for entry in color_support],
         "named_icon_fill_style_support": list(fill_style_support),
-        "queryable_named_icon_fill_style_support": list(queryable_fill_style_support),
         "query_probabilities": {str(key): float(value) for key, value in public_query_probabilities.items()},
         "query_id_probabilities": {str(key): float(value) for key, value in public_query_probabilities.items()},
         "shape_probabilities": dict(sample.shape_probabilities),
@@ -403,7 +399,6 @@ def build_boolean_trace_payload(
     slot_jitter_px: int,
     stack_gap_px: int,
     fill_style_support: Tuple[str, ...],
-    queryable_fill_style_support: Tuple[str, ...],
 ) -> dict[str, Any]:
     """Build trace sections for a Boolean named-field count."""
 
@@ -411,11 +406,8 @@ def build_boolean_trace_payload(
     shape_counts = Counter(str(instance.shape_id) for instance in scene.instances)
     color_counts = Counter(str(instance.color_name) for instance in scene.instances)
     fill_style_counts = Counter(str(instance.fill_style) for instance in scene.instances)
-    attribute_counts = color_counts if str(sample.target_attribute_axis) == "color" else fill_style_counts
-    shape_attribute_counts = Counter(
-        f"{instance.shape_id}|{instance.color_name if str(sample.target_attribute_axis) == 'color' else instance.fill_style}"
-        for instance in scene.instances
-    )
+    attribute_counts = color_counts
+    shape_attribute_counts = Counter(f"{instance.shape_id}|{instance.color_name}" for instance in scene.instances)
     entity_partition = boolean_entity_partition(sample, scene.instances)
     return {
         "scene_ir": {
@@ -432,8 +424,6 @@ def build_boolean_trace_payload(
                 "target_color_name": str(sample.target_color.name) if sample.target_color is not None else "",
                 "target_color_rgb": [int(channel) for channel in sample.target_color.rgb] if sample.target_color is not None else [],
                 "target_color_label": str(sample.target_color.label) if sample.target_color is not None else "",
-                "target_fill_style": str(sample.target_fill_style),
-                "target_fill_style_label": str(sample.target_fill_style_label),
                 "shape_counts": {str(key): int(value) for key, value in shape_counts.items()},
                 "color_counts": {str(key): int(value) for key, value in color_counts.items()},
                 "fill_style_counts": {str(key): int(value) for key, value in fill_style_counts.items()},
@@ -466,8 +456,7 @@ def build_boolean_trace_payload(
                 "named_icon_slot_jitter_px": int(slot_jitter_px),
                 "named_icon_stack_gap_px": int(stack_gap_px),
                 "semantic_color_palette": semantic_color_palette(),
-                "semantic_fill_style_support": list(fill_style_support),
-                "queryable_semantic_fill_style_support": list(queryable_fill_style_support),
+                "named_icon_fill_style_support": list(fill_style_support),
             },
         },
         "render_map": {
@@ -491,8 +480,6 @@ def build_boolean_trace_payload(
             "target_color_name": str(sample.target_color.name) if sample.target_color is not None else "",
             "target_color_rgb": [int(channel) for channel in sample.target_color.rgb] if sample.target_color is not None else [],
             "target_color_label": str(sample.target_color.label) if sample.target_color is not None else "",
-            "target_fill_style": str(sample.target_fill_style),
-            "target_fill_style_label": str(sample.target_fill_style_label),
             "target_answer": int(sample.target_answer),
             "object_count": int(sample.object_count),
             "boolean_expression": str(query_expression),
@@ -515,8 +502,6 @@ def build_boolean_trace_payload(
             "target_attribute_label": str(sample.target_attribute_label),
             "target_color_name": str(sample.target_color.name) if sample.target_color is not None else "",
             "target_color_label": str(sample.target_color.label) if sample.target_color is not None else "",
-            "target_fill_style": str(sample.target_fill_style),
-            "target_fill_style_label": str(sample.target_fill_style_label),
             "answer": int(sample.target_answer),
             "counted_instance_ids": list(counted_instance_ids),
         },

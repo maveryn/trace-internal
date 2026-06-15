@@ -122,20 +122,13 @@ PROCEDURAL_NAMED_ICON_FILL_STYLE_DISPLAY_NAMES: Dict[str, str] = {
     "solid": "solid",
     "striped": "striped",
     "dotted": "dotted",
-    "half_filled": "half-filled",
 }
 
 PROCEDURAL_NAMED_ICON_FILL_STYLES: Tuple[str, ...] = tuple(PROCEDURAL_NAMED_ICON_FILL_STYLE_DISPLAY_NAMES)
-QUERYABLE_PROCEDURAL_NAMED_ICON_FILL_STYLES: Tuple[str, ...] = (
-    "striped",
-    "dotted",
-    "half_filled",
-)
 DEFAULT_PROCEDURAL_NAMED_ICON_FILL_STYLE_WEIGHTS: Dict[str, float] = {
-    "solid": 0.55,
+    "solid": 0.70,
     "striped": 0.15,
     "dotted": 0.15,
-    "half_filled": 0.15,
 }
 
 
@@ -159,12 +152,10 @@ def procedural_named_icon_fill_style_display_name(fill_style: str) -> str:
 
 def validate_procedural_named_icon_fill_style_support(
     values: Sequence[str],
-    *,
-    queryable_only: bool = False,
 ) -> Tuple[str, ...]:
     """Validate and de-duplicate fill-style ids from config-like support values."""
 
-    allowed = set(QUERYABLE_PROCEDURAL_NAMED_ICON_FILL_STYLES if bool(queryable_only) else PROCEDURAL_NAMED_ICON_FILL_STYLES)
+    allowed = set(PROCEDURAL_NAMED_ICON_FILL_STYLES)
     support = tuple(dict.fromkeys(str(value).strip() for value in values if str(value).strip()))
     unsupported = sorted(set(support) - allowed)
     if unsupported:
@@ -935,12 +926,12 @@ def _apply_fill_style(image: Image.Image, *, fill_style: str, tint_rgb: RGB) -> 
     if style == "striped":
         overlay = Image.new("RGBA", rgba.size, (0, 0, 0, 0))
         draw = ImageDraw.Draw(overlay)
-        spacing = max(12, int(round(min(width, height) * 0.28)))
-        stripe_width = max(2, int(round(min(width, height) * 0.035)))
+        spacing = max(16, int(round(min(width, height) * 0.38)))
+        stripe_width = max(1, int(round(min(width, height) * 0.022)))
         for offset in range(-height, width + height + spacing, spacing):
             draw.line(
                 (int(offset), int(height), int(offset + height), 0),
-                fill=tuple(int(value) for value in pattern_rgb) + (150,),
+                fill=tuple(int(value) for value in pattern_rgb) + (132,),
                 width=int(stripe_width),
             )
         rgba.alpha_composite(_clip_overlay_to_alpha(overlay, alpha))
@@ -949,29 +940,14 @@ def _apply_fill_style(image: Image.Image, *, fill_style: str, tint_rgb: RGB) -> 
     if style == "dotted":
         overlay = Image.new("RGBA", rgba.size, (0, 0, 0, 0))
         draw = ImageDraw.Draw(overlay)
-        spacing = max(14, int(round(min(width, height) * 0.34)))
-        radius = max(2, int(round(min(width, height) * 0.032)))
+        spacing = max(18, int(round(min(width, height) * 0.44)))
+        radius = max(1, int(round(min(width, height) * 0.022)))
         for y in range(spacing // 2, height, spacing):
             for x in range(spacing // 2, width, spacing):
                 draw.ellipse(
                     (int(x - radius), int(y - radius), int(x + radius), int(y + radius)),
-                    fill=tuple(int(value) for value in pattern_rgb) + (178,),
+                    fill=tuple(int(value) for value in pattern_rgb) + (150,),
                 )
-        rgba.alpha_composite(_clip_overlay_to_alpha(overlay, alpha))
-        return rgba
-
-    if style == "half_filled":
-        overlay = Image.new("RGBA", rgba.size, (0, 0, 0, 0))
-        light_rgb = tuple(int(round(0.20 * float(channel) + 0.80 * 255.0)) for channel in tint_rgb)
-        draw = ImageDraw.Draw(overlay)
-        split_x = int(round(width * 0.52))
-        draw.rectangle((split_x, 0, width, height), fill=tuple(int(value) for value in light_rgb) + (240,))
-        line_width = max(2, int(round(min(width, height) * 0.045)))
-        draw.line(
-            (split_x, 0, split_x, height),
-            fill=tuple(int(value) for value in pattern_rgb) + (190,),
-            width=int(line_width),
-        )
         rgba.alpha_composite(_clip_overlay_to_alpha(overlay, alpha))
         return rgba
 
@@ -1029,7 +1005,6 @@ __all__ = [
     "PROCEDURAL_NAMED_ICON_FILL_STYLE_DISPLAY_NAMES",
     "PROCEDURAL_NAMED_ICON_FILL_STYLES",
     "PROCEDURAL_NAMED_ICON_SHAPES",
-    "QUERYABLE_PROCEDURAL_NAMED_ICON_FILL_STYLES",
     "procedural_named_icon_display_name",
     "procedural_named_icon_fill_style_display_name",
     "procedural_named_icon_fill_style_probability_map",

@@ -84,7 +84,6 @@ generation:
       original_attribute_query_weights:
         original_shape_label: 1.0
         original_color_shape_label: 1.0
-        original_fill_shape_label: 1.0
       named_color_support:
       - red
       - blue
@@ -100,16 +99,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
-      queryable_named_icon_fill_style_support:
-      - striped
-      - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.55
         striped: 0.15
         dotted: 0.15
-        half_filled: 0.15
 rendering:
   shared:
     canvas_width: 1104
@@ -316,8 +309,6 @@ prompt:
       question_text_original_shape_label: Which labeled icon in the Right panel was
         originally a {target_description} icon in the Original panel?
       question_text_original_color_shape_label: Which labeled icon in the Right panel
-        was originally a {target_description} icon in the Original panel?
-      question_text_original_fill_shape_label: Which labeled icon in the Right panel
         was originally a {target_description} icon in the Original panel?
       annotation_hint: set "annotation" to a JSON object with keys "original_icon"
         and "right_icon"; values are [x0, y0, x1, y1] pixel boxes for the matched

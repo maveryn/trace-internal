@@ -39,12 +39,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.75
         striped: 0.0834
         dotted: 0.0833
-        half_filled: 0.0833
     task_icons__named_grid__row_column_shape_extreme_number:
       answer_line_number_min: 1
       answer_line_number_max: 6
@@ -80,12 +78,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.75
         striped: 0.0834
         dotted: 0.0833
-        half_filled: 0.0833
     task_icons__named_grid__group_predicate_count:
       answer_count_min: 0
       answer_count_max: 5
@@ -123,12 +119,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.75
         striped: 0.0834
         dotted: 0.0833
-        half_filled: 0.0833
 rendering:
   shared:
     canvas_width: 960

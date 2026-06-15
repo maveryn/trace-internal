@@ -27,9 +27,8 @@ generation:
       - inside_exactly_one_circle_count
       - outside_both_circles_count
       target_attribute_mode_weights:
-        shape_only: 0.4
-        color_shape: 0.35
-        fill_style_shape: 0.25
+        shape_only: 0.5
+        color_shape: 0.5
       named_color_support:
       - red
       - blue
@@ -45,16 +44,10 @@ generation:
       - solid
       - striped
       - dotted
-      - half_filled
-      queryable_named_icon_fill_style_support:
-      - striped
-      - dotted
-      - half_filled
       named_icon_fill_style_weights:
         solid: 0.55
         striped: 0.15
         dotted: 0.15
-        half_filled: 0.15
 rendering:
   shared:
     canvas_width: 960

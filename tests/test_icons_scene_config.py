@@ -286,7 +286,7 @@ def test_icons_counting_defaults_loaded() -> None:
     assert int(venn_generation['target_count_min']) == 1
     assert int(venn_generation['target_count_max']) == 5
     assert sorted(venn_generation['named_venn_query_ids']) == ['inside_both_circles_count', 'inside_either_circle_count', 'inside_exactly_one_circle_count', 'outside_both_circles_count']
-    assert sorted(venn_generation['target_attribute_mode_weights'].keys()) == ['color_shape', 'fill_style_shape', 'shape_only']
+    assert sorted(venn_generation['target_attribute_mode_weights'].keys()) == ['color_shape', 'shape_only']
     assert int(venn_rendering['canvas_width']) > 0
     assert int(venn_rendering['canvas_height']) > 0
     assert int(venn_rendering['venn_boundary_margin_px']) == 12
@@ -502,7 +502,7 @@ def test_icons_relation_defaults_loaded() -> None:
     assert int(distance_generation['distractor_count_min']) == 4
     assert int(distance_generation['distractor_count_max']) == 8
     assert dict(distance_generation['distance_rank_query_weights']) == {'closest_to_named_reference_label': 1.0, 'second_closest_to_named_reference_label': 1.0, 'farthest_from_named_reference_label': 1.0}
-    assert list(distance_generation['named_icon_fill_style_support']) == ['solid', 'striped', 'dotted', 'half_filled']
+    assert list(distance_generation['named_icon_fill_style_support']) == ['solid', 'striped', 'dotted']
     assert int(distance_rendering['canvas_width']) == 960
     assert int(distance_rendering['canvas_height']) == 560
     assert int(distance_rendering['scene_icon_size_min_px']) == 50
@@ -529,7 +529,7 @@ def test_icons_named_path_defaults_loaded() -> None:
     assert int(path_generation['distractor_count_max']) == 8
     assert int(path_generation['target_occurrence_count_min']) == 2
     assert int(path_generation['target_occurrence_count_max']) == 4
-    assert list(path_generation['named_icon_fill_style_support']) == ['solid', 'striped', 'dotted', 'half_filled']
+    assert list(path_generation['named_icon_fill_style_support']) == ['solid', 'striped', 'dotted']
     assert int(path_rendering['canvas_width']) == 1280
     assert int(path_rendering['canvas_height']) == 720
     assert int(path_rendering['scene_icon_size_min_px']) == 44

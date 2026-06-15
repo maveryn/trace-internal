@@ -19,8 +19,7 @@ present.
 
 The target shape support is the full procedural named-icon vocabulary in
 `trace/tasks/icons/shared/procedural_named_icons.py`. Icons also sample a
-non-semantic `fill_style` visual attribute from `solid`, `striped`, `dotted`,
-and `half_filled`; this varies rendering but is not part of this task's
+non-semantic `fill_style` visual attribute from `solid`, `striped`, and `dotted`; this varies rendering but is not part of this task's
 answer.
 
 The scene samples several internal arrangement modes while keeping the same

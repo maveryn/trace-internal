@@ -29,8 +29,6 @@ def _target_mode_params(mode: str) -> dict[str, object]:
         return {"target_attribute_mode": mode, "target_shape_id": "bell"}
     if mode == "color_shape":
         return {"target_attribute_mode": mode, "target_shape_id": "bell", "target_color_name": "red"}
-    if mode == "fill_style_shape":
-        return {"target_attribute_mode": mode, "target_shape_id": "bell", "target_fill_style": "striped"}
     raise AssertionError(f"unexpected target mode: {mode}")
 
 
@@ -42,8 +40,6 @@ def _matches_target(entity: dict[str, object], trace_params: dict[str, object]) 
         return True
     if mode == "color_shape":
         return str(entity["color_name"]) == str(trace_params["target_color_name"])
-    if mode == "fill_style_shape":
-        return str(entity["fill_style"]) == str(trace_params["target_fill_style"])
     raise AssertionError(f"unexpected target mode: {mode}")
 
 
@@ -54,7 +50,7 @@ def test_icons_counting_named_shape_venn_contract_all_queries_and_target_modes()
             out = task.generate(
                 hash64(20260525, "named-shape-venn-contract", query_index, mode_index),
                 params={
-                    "query_id": query_id,
+                    "named_venn_query_id": query_id,
                     "target_count": 2,
                     "object_count": 12,
                     **_target_mode_params(mode),
@@ -72,7 +68,8 @@ def test_icons_counting_named_shape_venn_contract_all_queries_and_target_modes()
             ]
 
             assert out.scene_id == "venn_field"
-            assert out.query_id == query_id
+            assert out.query_id == "single"
+            assert trace["query_spec"]["params"]["internal_query_id"] == query_id
             assert out.answer_gt.type == "integer"
             assert out.answer_gt.value == 2
             assert out.annotation_gt.type == "bbox_set"
@@ -91,10 +88,6 @@ def test_icons_counting_named_shape_venn_contract_all_queries_and_target_modes()
             assert '"bell"' in out.prompt
             if mode == "color_shape":
                 assert "red [#E63232]" in out.prompt
-                assert str(params["target_fill_style"]) == ""
-            if mode == "fill_style_shape":
-                assert 'striped "bell" icons' in out.prompt
-                assert str(params["target_color_name"]) == ""
 
 
 def test_icons_counting_named_shape_venn_sampling_distribution() -> None:
@@ -109,14 +102,15 @@ def test_icons_counting_named_shape_venn_sampling_distribution() -> None:
             max_attempts=200,
         )
         execution = out.trace_payload["execution_trace"]
-        query_counts[str(execution["query_id"])] += 1
+        internal_query_id = str(execution["internal_query_id"])
+        query_counts[internal_query_id] += 1
         mode_counts[str(execution["target_attribute_mode"])] += 1
         answer_counts[int(out.answer_gt.value)] += 1
 
         assert 8 <= int(execution["object_count"]) <= 16
         assert 1 <= int(out.answer_gt.value) <= 5
         assert len(out.annotation_gt.value) == int(out.answer_gt.value)
-        assert set(execution["counted_venn_categories"]) == _counted_categories(str(execution["query_id"]))
+        assert set(execution["counted_venn_categories"]) == _counted_categories(internal_query_id)
 
     assert set(query_counts) == set(QUERY_IDS)
     assert set(mode_counts) == set(TARGET_ATTRIBUTE_MODES)

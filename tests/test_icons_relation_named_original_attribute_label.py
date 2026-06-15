@@ -16,8 +16,6 @@ def _matches(record: dict, query_id: str, target: dict) -> bool:
         return False
     if query_id == "original_color_shape_label":
         return str(original["color_name"]) == str(target["color_name"])
-    if query_id == "original_fill_shape_label":
-        return str(original["fill_style"]) == str(target["fill_style"])
     return True
 
 

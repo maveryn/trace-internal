@@ -52,7 +52,16 @@ def edge_entities(rendered_scene: Any, sample: Any) -> list[dict[str, Any]]:
                 int(round((float(edge.edge_label_bbox_xyxy[0]) + float(edge.edge_label_bbox_xyxy[2])) / 2.0)),
                 int(round((float(edge.edge_label_bbox_xyxy[1]) + float(edge.edge_label_bbox_xyxy[3])) / 2.0)),
             ] if edge.edge_label_bbox_xyxy is not None else None,
-            "edge_weight": weights_by_edge.get((str(edge.node_u_label), str(edge.node_v_label))),
+            "edge_weight": int(edge.weight)
+            if edge.weight is not None
+            else weights_by_edge.get((str(edge.node_u_label), str(edge.node_v_label))),
+            "weight_label_bbox_xyxy": list(edge.weight_label_bbox_xyxy)
+            if edge.weight_label_bbox_xyxy is not None
+            else None,
+            "weight_label_center_px": [
+                int(round((float(edge.weight_label_bbox_xyxy[0]) + float(edge.weight_label_bbox_xyxy[2])) / 2.0)),
+                int(round((float(edge.weight_label_bbox_xyxy[1]) + float(edge.weight_label_bbox_xyxy[3])) / 2.0)),
+            ] if edge.weight_label_bbox_xyxy is not None else None,
         }
         for edge in rendered_scene.edges
     ]

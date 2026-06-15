@@ -80,6 +80,22 @@ def _semantic_edge_text_labels(sample: Any) -> dict[tuple[str, str], str]:
     return visible_labels
 
 
+def _semantic_edge_weights(sample: Any) -> dict[tuple[str, str], int]:
+    """Return visible numeric edge weights for weighted graph samples."""
+
+    weights = getattr(sample, "edge_weights_by_label", None)
+    if not isinstance(weights, Mapping):
+        return {}
+    visible_weights: dict[tuple[str, str], int] = {}
+    for edge, weight in weights.items():
+        try:
+            left, right = edge
+            visible_weights[(str(left), str(right))] = int(weight)
+        except Exception:
+            continue
+    return visible_weights
+
+
 def render_node_link_sample(
     *,
     sample: Any,
@@ -115,6 +131,7 @@ def render_node_link_sample(
         base_image=background,
         node_style_by_label=_semantic_node_styles(sample),
         edge_style_by_label=_semantic_edge_styles(sample),
+        edge_weights_by_label=_semantic_edge_weights(sample),
         edge_text_labels_by_label=_semantic_edge_text_labels(sample),
         edge_text_label_strict_placement=bool(strict_edge_label_placement),
     )

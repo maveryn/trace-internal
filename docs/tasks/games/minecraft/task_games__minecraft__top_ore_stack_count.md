@@ -4,12 +4,15 @@
 1. Domain: `games`
 2. Scene id: `minecraft`
 3. Public task id: `task_games__minecraft__top_ore_stack_count`
-4. Supported `query_id` values: `top_ore_stack_count`
-5. Answer schema: `integer_count`
+4. Supported `query_id` values: `single`
+5. Answer schema: `integer`
 6. Annotation schema: `point_set`
-7. Program schema: `count(filter(stacks, top_block_type=target_ore_type)); scene=minecraft; scope=top_ore_stack_count`
+
+## Program Contract
+`count(filter(stacks, top_block_type=target_ore_type)); scene=minecraft; scope=top_ore_stack_count`
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
-4. Annotation points mark the center of the top cube of each counted stack.
+1. The scene shows visible cube stacks in an isometric Minecraft-like block world.
+2. The target ore type is sampled from iron ore, gold ore, or diamond ore.
+3. The answer counts stacks whose top cube is the named ore, not ore blocks hidden below the top.
+4. Annotation points mark the top-cube centers of every counted stack.

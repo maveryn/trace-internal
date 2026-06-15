@@ -2,20 +2,30 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
 from ....shared.color_distance import resolve_contrasting_palette
 from ....shared.text_rendering import fit_font_to_box
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.font_assets import sample_font_family
+from trace.tasks.games.shared.layout import (
+    apply_games_layout_jitter_to_bbox,
+    attach_games_unit_size_jitter,
+    resolve_games_layout_jitter,
+    resolve_games_unit_size_scale,
+    scale_games_px,
+)
 from ...shared.text import draw_game_text_traced as draw_text_traced
-from ...shared.layout import apply_games_layout_jitter_to_bbox
-from .common import (
+from .defaults import DEFAULTS, STYLE_VARIANTS
+from .state import (
     MinecraftBlock,
     MinecraftCell,
+    MinecraftRenderParams,
     MinecraftRouteOverlay,
-    SUPPORTED_MINECRAFT_STYLE_VARIANTS,
+    MinecraftTheme,
+    RenderedMinecraftScene,
     ladder_entity_id,
     player_entity_id,
     stack_entity_id,
@@ -24,51 +34,6 @@ from .common import (
 
 Point2 = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
-
-
-@dataclass(frozen=True)
-class MinecraftRenderParams:
-    """Resolved render controls for one Minecraft-like scene."""
-
-    canvas_width: int
-    canvas_height: int
-    tile_width_px: int
-    tile_height_px: int
-    cube_height_px: int
-    outline_width_px: int
-    player_marker_size_px: int
-    font_family: str = ""
-    layout_jitter_meta: Dict[str, Any] | None = None
-    max_stack_height: int = 1
-    player_marker_label: str = "P"
-
-
-@dataclass(frozen=True)
-class MinecraftTheme:
-    """Palette for one Minecraft-like scene style."""
-
-    ground_rgb: Tuple[int, int, int]
-    ground_alt_rgb: Tuple[int, int, int]
-    water_rgb: Tuple[int, int, int]
-    water_line_rgb: Tuple[int, int, int]
-    outline_rgb: Tuple[int, int, int]
-    support_rgb: Tuple[int, int, int]
-    stone_rgb: Tuple[int, int, int]
-    iron_rgb: Tuple[int, int, int]
-    gold_rgb: Tuple[int, int, int]
-    diamond_rgb: Tuple[int, int, int]
-    ladder_rgb: Tuple[int, int, int]
-    player_rgb: Tuple[int, int, int]
-    arrow_rgb: Tuple[int, int, int]
-
-
-@dataclass(frozen=True)
-class RenderedMinecraftScene:
-    """Rendered Minecraft-like image plus trace-friendly geometry."""
-
-    image: Image.Image
-    scene_entities: Tuple[Dict[str, Any], ...]
-    render_map: Dict[str, Any]
 
 
 def build_games_minecraft_theme(*, style_variant: str) -> MinecraftTheme:
@@ -153,6 +118,92 @@ def build_games_minecraft_theme(*, style_variant: str) -> MinecraftTheme:
         ladder_rgb=(118, 72, 36),
         player_rgb=(219, 42, 42),
         arrow_rgb=(190, 47, 45),
+    )
+
+
+def resolve_minecraft_render_params(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    namespace: str,
+    instance_seed: int,
+    grid_width: int,
+    grid_depth: int,
+    max_stack_height: int = 1,
+    player_marker_label: str = "P",
+) -> MinecraftRenderParams:
+    """Resolve block-world rendering dimensions, font, and canvas jitter."""
+
+    unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
+        params,
+        render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.unit_size",
+    )
+    layout_jitter = attach_games_unit_size_jitter(
+        resolve_games_layout_jitter(
+            params,
+            render_defaults,
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.layout",
+        ),
+        unit_scale_meta,
+    )
+    tile_width = scale_games_px(
+        params.get("tile_width_px", group_default(render_defaults, "tile_width_px", DEFAULTS.tile_width_px)),
+        unit_scale,
+        min_px=29,
+    )
+    tile_height = scale_games_px(
+        params.get("tile_height_px", group_default(render_defaults, "tile_height_px", DEFAULTS.tile_height_px)),
+        unit_scale,
+        min_px=15,
+    )
+    cube_height = scale_games_px(
+        params.get("cube_height_px", group_default(render_defaults, "cube_height_px", DEFAULTS.cube_height_px)),
+        unit_scale,
+        min_px=15,
+    )
+    default_canvas_width = int(group_default(render_defaults, "canvas_width", DEFAULTS.canvas_width))
+    default_canvas_height = int(group_default(render_defaults, "canvas_height", DEFAULTS.canvas_height))
+    world_width = float((int(grid_width) + int(grid_depth)) * int(tile_width) / 2.0)
+    stack_height = max(1, int(max_stack_height))
+    world_height = float((int(grid_width) + int(grid_depth)) * int(tile_height) / 2.0) + float(
+        cube_height * stack_height
+    )
+    canvas_width = int(params.get("canvas_width", min(default_canvas_width, max(520, int(round(world_width + 190.0))))))
+    canvas_height = int(
+        params.get("canvas_height", min(default_canvas_height, max(430, int(round(world_height + 165.0)))))
+    )
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.font_family",
+        params=params,
+    )
+    return MinecraftRenderParams(
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        tile_width_px=int(tile_width),
+        tile_height_px=int(tile_height),
+        cube_height_px=int(cube_height),
+        outline_width_px=scale_games_px(
+            params.get("outline_width_px", group_default(render_defaults, "outline_width_px", DEFAULTS.outline_width_px)),
+            unit_scale,
+            min_px=1,
+        ),
+        player_marker_size_px=scale_games_px(
+            params.get(
+                "player_marker_size_px",
+                group_default(render_defaults, "player_marker_size_px", DEFAULTS.player_marker_size_px),
+            ),
+            unit_scale,
+            min_px=14,
+        ),
+        font_family=str(font_family),
+        layout_jitter_meta=layout_jitter,
+        max_stack_height=int(stack_height),
+        player_marker_label=str(player_marker_label or "P"),
     )
 
 
@@ -272,6 +323,8 @@ def _draw_block(
     origin: Tuple[float, float],
     params: MinecraftRenderParams,
 ) -> BBox:
+    """Draw one cube with shaded faces and resource markings on the top face."""
+
     x = int(block.x)
     y = int(block.y)
     z = int(block.z)
@@ -362,6 +415,8 @@ def _draw_player(
     origin: Tuple[float, float],
     params: MinecraftRenderParams,
 ) -> BBox:
+    """Draw the optional player marker as a fitted label anchored to a cell center."""
+
     center = _project(x=float(x) + 0.5, y=float(y) + 0.5, z=0.0, origin=origin, params=params)
     size = float(params.player_marker_size_px)
     label = str(params.player_marker_label or "P")
@@ -525,9 +580,9 @@ def render_minecraft_block_world_scene(
     target_cell: Tuple[int, int] | None = None,
     route_overlays: Sequence[MinecraftRouteOverlay] | None = None,
 ) -> RenderedMinecraftScene:
-    """Render one Minecraft-like block-world scene."""
+    """Render terrain, overlays, stacks, labels, and trace geometry in isometric order."""
 
-    if str(style_variant) not in SUPPORTED_MINECRAFT_STYLE_VARIANTS:
+    if str(style_variant) not in STYLE_VARIANTS:
         raise ValueError(f"unsupported minecraft style: {style_variant}")
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
@@ -737,4 +792,5 @@ __all__ = [
     "RenderedMinecraftScene",
     "build_games_minecraft_theme",
     "render_minecraft_block_world_scene",
+    "resolve_minecraft_render_params",
 ]

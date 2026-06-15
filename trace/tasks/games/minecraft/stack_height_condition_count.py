@@ -2,32 +2,71 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-from trace.core.seed import spawn_rng
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
 
-from .shared.scene import (
-    EXACT_HEIGHT_QUERY_ID,
-    SCENE_ID,
-    STACK_HEIGHT_QUERY_IDS,
-    build_components,
-    resolve_axes,
-    sample_scene,
-)
+from ._lifecycle import MinecraftObjectivePlan, minecraft_integer_attempt, run_minecraft_registered_task
+from .shared.defaults import HEIGHT_CONDITION_AT_LEAST, HEIGHT_CONDITION_EXACT
+from .shared.sampling import resolve_height_filter_axes, sample_height_filter_scene
 
 
 TASK_ID = "task_games__minecraft__stack_height_condition_count"
-SUPPORTED_QUERY_IDS = STACK_HEIGHT_QUERY_IDS
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
-    "games",
-    SCENE_ID,
-    task_id=TASK_ID,
-)
+EXACT_HEIGHT_QUERY_ID = "exact_height_count"
+AT_LEAST_HEIGHT_QUERY_ID = "at_least_height_count"
+SUPPORTED_QUERY_IDS = (EXACT_HEIGHT_QUERY_ID, AT_LEAST_HEIGHT_QUERY_ID)
+HEIGHT_BRANCHES = {
+    EXACT_HEIGHT_QUERY_ID: HEIGHT_CONDITION_EXACT,
+    AT_LEAST_HEIGHT_QUERY_ID: HEIGHT_CONDITION_AT_LEAST,
+}
+
+
+def _prepare_height_filter_objective(
+    instance_seed,
+    task_params,
+    selected_branch,
+    _branch_probabilities,
+    gen_defaults,
+) -> MinecraftObjectivePlan:
+    """Resolve the selected height predicate and bind exact-count construction."""
+
+    height_condition = HEIGHT_BRANCHES[str(selected_branch)]
+    axes = resolve_height_filter_axes(
+        int(instance_seed),
+        gen_defaults=gen_defaults,
+        namespace=f"games.minecraft.height_filter.{height_condition}",
+        params=task_params,
+        height_condition=str(height_condition),
+    )
+
+    def construct_attempt(rng, resolved_axes):
+        sample = sample_height_filter_scene(
+            rng=rng,
+            axes=resolved_axes,
+            gen_defaults=gen_defaults,
+            params=task_params,
+            height_condition=str(height_condition),
+        )
+        return minecraft_integer_attempt(
+            sample=sample,
+            prompt_key=str(selected_branch),
+            object_description_key="object_description_block_world",
+            answer_hint_key=f"answer_hint_{str(selected_branch)}",
+            annotation_hint_key=f"annotation_hint_{str(selected_branch)}",
+            example_annotation=[[290, 250], [423, 206], [542, 282]],
+            example_answer=3,
+            target_stack_height=int(sample.target_stack_height),
+            extra_query_params={
+                "prompt_query_key": str(selected_branch),
+                "target_stack_height": int(sample.target_stack_height),
+                "target_stack_height_probabilities": dict(resolved_axes.target_stack_height_probabilities),
+                "stack_height_condition": str(sample.stack_height_condition),
+            },
+        )
+
+    return MinecraftObjectivePlan(
+        axes=axes,
+        attempt_namespace=f"games.minecraft.height_filter.{height_condition}",
+        construct_attempt=construct_attempt,
+    )
 
 
 @register_task
@@ -36,72 +75,31 @@ class GamesMinecraftStackHeightConditionCountTask:
 
     task_id = TASK_ID
     domain = "games"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
+    _default_branch = EXACT_HEIGHT_QUERY_ID
+    _namespace = "games.minecraft.height_filter"
+    _prepare_objective = staticmethod(_prepare_height_filter_objective)
 
     def generate(
         self,
-        instance_seed: int,
+        instance_seed,
         *,
-        params: Dict[str, Any] | None = None,
-        max_attempts: int = 100,
-    ) -> TaskOutput:
-        query_id, query_id_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params or {},
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=EXACT_HEIGHT_QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        namespace = f"{SCENE_ID}.{query_id}"
-        axes = resolve_axes(
+        params=None,
+        max_attempts=100,
+    ):
+        """Generate a stack height condition count task instance."""
+
+        return run_minecraft_registered_task(
+            self,
             int(instance_seed),
-            gen_defaults=_GEN_DEFAULTS,
-            namespace=namespace,
-            params=task_params,
-            query_id=str(query_id),
-        )
-        sampled_scene = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            rng = spawn_rng(int(instance_seed), f"{TASK_ID}.attempt.{int(attempt_index)}")
-            try:
-                sampled_scene = sample_scene(
-                    rng=rng,
-                    axes=axes,
-                    gen_defaults=_GEN_DEFAULTS,
-                    params=task_params,
-                )
-            except ValueError:
-                continue
-            break
-        if sampled_scene is None:
-            raise RuntimeError(f"{TASK_ID} failed to generate after {max_attempts} attempts")
-
-        components = build_components(
-            sampled_scene=sampled_scene,
-            axes=axes,
-            query_id_probabilities=query_id_probabilities,
-            instance_seed=int(instance_seed),
-            params=task_params,
-            gen_defaults=_GEN_DEFAULTS,
-            render_defaults=_RENDER_DEFAULTS,
-            prompt_defaults=_PROMPT_DEFAULTS,
-            namespace=namespace,
-        )
-        return TaskOutput(
-            prompt=str(components.prompt),
-            prompt_variants=dict(components.prompt_variants),
-            answer_gt=components.answer_gt,
-            annotation_gt=components.annotation_gt,
-            image=components.image,
-            image_id="img0",
-            trace_payload=components.trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
+            params=params or {},
+            max_attempts=int(max_attempts),
         )
 
 
-__all__ = ["GamesMinecraftStackHeightConditionCountTask"]
+__all__ = [
+    "AT_LEAST_HEIGHT_QUERY_ID",
+    "EXACT_HEIGHT_QUERY_ID",
+    "GamesMinecraftStackHeightConditionCountTask",
+]

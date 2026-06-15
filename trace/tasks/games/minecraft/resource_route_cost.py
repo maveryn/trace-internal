@@ -2,31 +2,60 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-from trace.core.seed import spawn_rng
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
 
-from .shared.scene import (
-    RESOURCE_ROUTE_QUERY_ID,
-    SCENE_ID,
-    build_components,
-    resolve_axes,
-    sample_scene,
-)
+from ._lifecycle import MinecraftObjectivePlan, minecraft_integer_attempt, run_minecraft_registered_task
+from .shared.defaults import DEFAULT_BRANCH_ID
+from .shared.sampling import resolve_route_cost_axes, sample_route_cost_scene
 
 
 TASK_ID = "task_games__minecraft__resource_route_cost"
-SUPPORTED_QUERY_IDS = (RESOURCE_ROUTE_QUERY_ID,)
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
-    "games",
-    SCENE_ID,
-    task_id=TASK_ID,
-)
+QUERY_ID = DEFAULT_BRANCH_ID
+PROMPT_QUERY_KEY = "resource_route_cost"
+SUPPORTED_QUERY_IDS = (QUERY_ID,)
+
+
+def _prepare_route_cost_objective(
+    instance_seed,
+    task_params,
+    _selected_branch,
+    _branch_probabilities,
+    gen_defaults,
+) -> MinecraftObjectivePlan:
+    """Resolve route axes and bind selected-route cost construction."""
+
+    axes = resolve_route_cost_axes(
+        int(instance_seed),
+        gen_defaults=gen_defaults,
+        namespace="games.minecraft.route_cost",
+        params=task_params,
+    )
+
+    def construct_attempt(rng, resolved_axes):
+        sample = sample_route_cost_scene(rng=rng, axes=resolved_axes)
+        return minecraft_integer_attempt(
+            sample=sample,
+            prompt_key=PROMPT_QUERY_KEY,
+            object_description_key="object_description_block_world",
+            answer_hint_key=f"answer_hint_{PROMPT_QUERY_KEY}",
+            annotation_hint_key=f"annotation_hint_{PROMPT_QUERY_KEY}",
+            example_annotation=[[315, 316], [344, 287], [523, 212], [552, 240]],
+            example_answer=4,
+            selected_route_label=str(sample.selected_route_label),
+            extra_query_params={
+                "prompt_query_key": PROMPT_QUERY_KEY,
+                "route_costs": [[str(label), int(cost)] for label, cost in sample.route_costs],
+                "route_option_count": int(len(sample.route_costs)),
+                "selected_route_label": str(sample.selected_route_label),
+                "route_option_count_probabilities": dict(resolved_axes.route_option_count_probabilities),
+            },
+        )
+
+    return MinecraftObjectivePlan(
+        axes=axes,
+        attempt_namespace="games.minecraft.route_cost",
+        construct_attempt=construct_attempt,
+    )
 
 
 @register_task
@@ -35,71 +64,26 @@ class GamesMinecraftResourceRouteCostTask:
 
     task_id = TASK_ID
     domain = "games"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
+    _default_branch = QUERY_ID
+    _namespace = "games.minecraft.route_cost"
+    _prepare_objective = staticmethod(_prepare_route_cost_objective)
 
     def generate(
         self,
-        instance_seed: int,
+        instance_seed,
         *,
-        params: Dict[str, Any] | None = None,
-        max_attempts: int = 100,
-    ) -> TaskOutput:
-        query_id, query_id_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params or {},
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=RESOURCE_ROUTE_QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        namespace = f"{SCENE_ID}.{query_id}"
-        axes = resolve_axes(
-            int(instance_seed),
-            gen_defaults=_GEN_DEFAULTS,
-            namespace=namespace,
-            params=task_params,
-            query_id=str(query_id),
-        )
-        sampled_scene = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            rng = spawn_rng(int(instance_seed), f"{TASK_ID}.attempt.{int(attempt_index)}")
-            try:
-                sampled_scene = sample_scene(
-                    rng=rng,
-                    axes=axes,
-                    gen_defaults=_GEN_DEFAULTS,
-                    params=task_params,
-                )
-            except ValueError:
-                continue
-            break
-        if sampled_scene is None:
-            raise RuntimeError(f"{TASK_ID} failed to generate after {max_attempts} attempts")
+        params=None,
+        max_attempts=100,
+    ):
+        """Generate a route cost task instance."""
 
-        components = build_components(
-            sampled_scene=sampled_scene,
-            axes=axes,
-            query_id_probabilities=query_id_probabilities,
-            instance_seed=int(instance_seed),
-            params=task_params,
-            gen_defaults=_GEN_DEFAULTS,
-            render_defaults=_RENDER_DEFAULTS,
-            prompt_defaults=_PROMPT_DEFAULTS,
-            namespace=namespace,
-        )
-        return TaskOutput(
-            prompt=str(components.prompt),
-            prompt_variants=dict(components.prompt_variants),
-            answer_gt=components.answer_gt,
-            annotation_gt=components.annotation_gt,
-            image=components.image,
-            image_id="img0",
-            trace_payload=components.trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
+        return run_minecraft_registered_task(
+            self,
+            int(instance_seed),
+            params=params or {},
+            max_attempts=int(max_attempts),
         )
 
 

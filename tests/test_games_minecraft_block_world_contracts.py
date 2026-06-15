@@ -8,16 +8,22 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
+from trace.tasks.games.minecraft.reachable_ore_stack_count import (
+    QUERY_ID as REACHABLE_QUERY_ID,
+    GamesMinecraftReachableOreStackCountTask,
+)
 from trace.tasks.games.minecraft.resource_route_cost import (
+    QUERY_ID as ROUTE_QUERY_ID,
+    GamesMinecraftResourceRouteCostTask,
+)
+from trace.tasks.games.minecraft.stack_height_condition_count import (
     AT_LEAST_HEIGHT_QUERY_ID,
     EXACT_HEIGHT_QUERY_ID,
-    REACHABLE_ORE_STACK_QUERY_ID,
-    RESOURCE_ROUTE_QUERY_ID,
-    GamesMinecraftReachableOreStackCountTask,
-    GamesMinecraftResourceRouteCostTask,
     GamesMinecraftStackHeightConditionCountTask,
+)
+from trace.tasks.games.minecraft.top_ore_stack_count import (
+    QUERY_ID as TOP_RESOURCE_QUERY_ID,
     GamesMinecraftTopOreStackCountTask,
-    TOP_ORE_STACK_QUERY_ID,
 )
 from tests.helpers import read_jsonl
 
@@ -25,9 +31,9 @@ from tests.helpers import read_jsonl
 @pytest.mark.parametrize(
     ("task_cls", "target_answer", "expected_query", "extra_params"),
     (
-        (GamesMinecraftTopOreStackCountTask, 4, TOP_ORE_STACK_QUERY_ID, {}),
-        (GamesMinecraftReachableOreStackCountTask, 3, REACHABLE_ORE_STACK_QUERY_ID, {}),
-        (GamesMinecraftResourceRouteCostTask, 5, RESOURCE_ROUTE_QUERY_ID, {"query_id": RESOURCE_ROUTE_QUERY_ID}),
+        (GamesMinecraftTopOreStackCountTask, 4, TOP_RESOURCE_QUERY_ID, {}),
+        (GamesMinecraftReachableOreStackCountTask, 3, REACHABLE_QUERY_ID, {}),
+        (GamesMinecraftResourceRouteCostTask, 5, ROUTE_QUERY_ID, {}),
         (GamesMinecraftStackHeightConditionCountTask, 4, EXACT_HEIGHT_QUERY_ID, {"query_id": EXACT_HEIGHT_QUERY_ID}),
         (GamesMinecraftStackHeightConditionCountTask, 4, AT_LEAST_HEIGHT_QUERY_ID, {"query_id": AT_LEAST_HEIGHT_QUERY_ID}),
     ),
@@ -51,7 +57,7 @@ def test_games_minecraft_public_tasks_emit_expected_contract(
     assert out.query_id == expected_query
     assert out.scene_id == "minecraft"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert execution["query_id"] == expected_query
+    assert trace["query_spec"]["params"]["query_id"] == expected_query
     assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
     assert len(out.annotation_gt.value) >= 1
@@ -204,7 +210,6 @@ def test_games_minecraft_resource_route_cost_matches_queried_route() -> None:
             "target_answer": 5,
             "grid_width": 11,
             "grid_depth": 10,
-            "query_id": RESOURCE_ROUTE_QUERY_ID,
             "route_option_count": 3,
         },
         max_attempts=512,
@@ -230,7 +235,7 @@ def test_games_minecraft_resource_route_option_count_varies() -> None:
     for seed in range(2026052250, 2026052268):
         out = GamesMinecraftResourceRouteCostTask().generate(
             seed,
-            params={"query_id": RESOURCE_ROUTE_QUERY_ID},
+            params={},
             max_attempts=512,
         )
         execution = out.trace_payload["execution_trace"]

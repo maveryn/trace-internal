@@ -1,14 +1,27 @@
 from __future__ import annotations
 
+from collections import Counter
 from inspect import getsourcefile
 from pathlib import Path
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
+from trace.tasks.illustrations.pixel_village.jigsaw_arrangement_label import (
+    _sample_spec as _sample_jigsaw_arrangement_spec,
+)
+from trace.tasks.illustrations.pixel_village.missing_patch_label import (
+    _sample_spec as _sample_missing_patch_spec,
+)
+from trace.tasks.illustrations.pixel_village.rotated_tile_label import (
+    _sample_spec as _sample_rotated_tile_spec,
+)
 
 
+JIGSAW_TASK_ID = "task_illustrations__pixel_village__jigsaw_arrangement_label"
+MISSING_PATCH_TASK_ID = "task_illustrations__pixel_village__missing_patch_label"
 OBJECT_TASK_ID = "task_illustrations__pixel_village__object_type_count"
 PATH_TASK_ID = "task_illustrations__pixel_village__person_path_count"
+ROTATED_TILE_TASK_ID = "task_illustrations__pixel_village__rotated_tile_label"
 TERRITORY_TASK_ID = "task_illustrations__pixel_village__territory_object_count"
 RIVER_SIDE_TASK_ID = "task_illustrations__pixel_village__river_side_object_count"
 TARGETS = ("building", "person", "tree", "lamp_post", "well", "pond")
@@ -25,8 +38,11 @@ TERRITORY_TARGETS = {
     "orchard_tree": ("orchard_0", "tree"),
 }
 TASK_SOURCE_STEMS = {
+    JIGSAW_TASK_ID: "jigsaw_arrangement_label.py",
+    MISSING_PATCH_TASK_ID: "missing_patch_label.py",
     OBJECT_TASK_ID: "object_type_count.py",
     PATH_TASK_ID: "person_path_count.py",
+    ROTATED_TILE_TASK_ID: "rotated_tile_label.py",
     TERRITORY_TASK_ID: "territory_object_count.py",
     RIVER_SIDE_TASK_ID: "river_side_object_count.py",
 }
@@ -86,6 +102,165 @@ def _matches_target(entity: dict, target: str) -> bool:
     if target == "person":
         return entity["category"] == "person"
     return entity["public_name"] == target.replace("_", " ")
+
+
+def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
+    assert 0 <= float(bbox[0]) < float(bbox[2]) <= width
+    assert 0 <= float(bbox[1]) < float(bbox[3]) <= height
+
+
+def _assert_annotation_inside_canvas(out) -> None:
+    width, height = out.image.size
+    for bbox in out.annotation_gt.value:
+        _assert_bbox_inside_canvas(bbox, width=width, height=height)
+
+
+def _assert_keyed_annotation_inside_canvas(out) -> None:
+    width, height = out.image.size
+    for bbox in out.annotation_gt.value.values():
+        _assert_bbox_inside_canvas(bbox, width=width, height=height)
+
+
+def _assert_hash_balanced_counts(counts: Counter, expected_keys: set[int]) -> None:
+    assert set(counts) == set(expected_keys)
+    assert max(counts.values()) - min(counts.values()) <= 15
+
+
+def test_pixel_village_jigsaw_arrangement_label_contract() -> None:
+    _assert_scene_packaged_task(JIGSAW_TASK_ID)
+    out = create_task(JIGSAW_TASK_ID).generate(
+        hash64(2026061505, "pixel-village-jigsaw", 0),
+        params={"correct_index": 2},
+        max_attempts=160,
+    )
+    trace = out.trace_payload
+    _assert_scene_prompt_metadata(trace)
+    answer_label = str(out.answer_gt.value)
+    option_bboxes = trace["render_map"]["option_bboxes_px_by_label"]
+    option_permutations = trace["render_map"]["option_permutations_by_label"]
+
+    assert out.scene_id == "pixel_village"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "bbox_set"
+    assert answer_label == "C"
+    assert sorted(option_bboxes) == ["A", "B", "C", "D"]
+    assert out.annotation_gt.value == [option_bboxes[answer_label]]
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["render_map"]["selected_option_bbox_px"] == option_bboxes[answer_label]
+    assert option_permutations[answer_label] == [0, 1, 2, 3]
+    assert sum(perm == [0, 1, 2, 3] for perm in option_permutations.values()) == 1
+    assert trace["query_spec"]["params"]["grid_shape"] == [2, 2]
+    assert trace["render_map"]["option_layout_shape"] == [2, 2]
+    assert min(trace["query_spec"]["params"]["tile_detail_scores"]) >= 340
+    _assert_annotation_inside_canvas(out)
+
+
+def test_pixel_village_jigsaw_sampler_covers_answer_labels() -> None:
+    samples = [
+        _sample_jigsaw_arrangement_spec(
+            instance_seed=hash64(2026061505, "pixel-village-jigsaw-sampling", index),
+            params={"_sample_cursor": index},
+            attempt_index=0,
+        )
+        for index in range(100)
+    ]
+    assert Counter(sample.correct_index for sample in samples) == Counter({0: 25, 1: 25, 2: 25, 3: 25})
+
+
+def test_pixel_village_missing_patch_label_contract() -> None:
+    _assert_scene_packaged_task(MISSING_PATCH_TASK_ID)
+    out = create_task(MISSING_PATCH_TASK_ID).generate(
+        hash64(2026061505, "pixel-village-missing-patch", 0),
+        params={"option_count": 4, "correct_index": 2},
+        max_attempts=160,
+    )
+    trace = out.trace_payload
+    _assert_scene_prompt_metadata(trace)
+    answer_label = str(out.answer_gt.value)
+    render_map = trace["render_map"]
+    annotation = out.annotation_gt.value
+
+    assert out.scene_id == "pixel_village"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert answer_label == "C"
+    assert set(annotation) == {"missing_region", "selected_option"}
+    assert annotation["missing_region"] == render_map["missing_region_bbox_px"]
+    assert annotation["selected_option"] == render_map["selected_option_bbox_px"]
+    assert annotation["selected_option"] == render_map["option_bboxes_px_by_label"][answer_label]
+    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
+    assert trace["query_spec"]["params"]["patch_mode"] == "plain"
+    assert trace["query_spec"]["params"]["option_labels"] == ["A", "B", "C", "D"]
+    assert trace["query_spec"]["params"]["correct_index"] == 2
+    assert trace["execution_trace"]["selected_transform"] == "none"
+    assert len(render_map["option_source_crop_boxes_px"]) == 4
+    assert render_map["option_source_crop_boxes_px"][2] == render_map["source_crop_box_px"]
+    _assert_keyed_annotation_inside_canvas(out)
+
+
+def test_pixel_village_missing_patch_sampler_covers_options() -> None:
+    samples = [
+        _sample_missing_patch_spec(
+            instance_seed=hash64(2026061505, "pixel-village-missing-patch-sampling", index),
+            params={"_sample_cursor": index},
+            attempt_index=0,
+        )
+        for index in range(100)
+    ]
+    option_counts = Counter(sample.option_count for sample in samples)
+    answer_counts = Counter(sample.correct_index for sample in samples)
+
+    _assert_hash_balanced_counts(option_counts, {4, 6})
+    assert set(answer_counts) <= set(range(6))
+    assert {0, 1, 2, 3} <= set(answer_counts)
+
+
+def test_pixel_village_rotated_tile_label_contract() -> None:
+    _assert_scene_packaged_task(ROTATED_TILE_TASK_ID)
+    out = create_task(ROTATED_TILE_TASK_ID).generate(
+        hash64(2026061505, "pixel-village-rotated-tile", 0),
+        params={"rotation_degrees": 90},
+        max_attempts=200,
+    )
+    trace = out.trace_payload
+    _assert_scene_prompt_metadata(trace)
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
+    answer_label = str(out.answer_gt.value)
+    tile_bboxes = render_map["tile_bboxes_px_by_label"]
+
+    assert out.scene_id == "pixel_village"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "bbox_set"
+    assert answer_label in {"A", "B", "C", "D", "E", "F"}
+    assert sorted(tile_bboxes) == ["A", "B", "C", "D", "E", "F"]
+    assert out.annotation_gt.value == [tile_bboxes[answer_label]]
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert render_map["rotated_tile_bbox_px"] == tile_bboxes[answer_label]
+    assert execution["query_id"] == "single"
+    assert execution["answer_label"] == answer_label
+    assert execution["rotation_degrees"] == 90
+    assert execution["grid_shape"] == [2, 3]
+    assert execution["rotated_tile_index"] in execution["usable_tile_indices"]
+    _assert_annotation_inside_canvas(out)
+
+
+def test_pixel_village_rotated_tile_sampler_covers_rotation_support() -> None:
+    samples = [
+        _sample_rotated_tile_spec(
+            instance_seed=hash64(2026061505, "pixel-village-rotated-tile-sampling", index),
+            params={},
+            attempt_index=0,
+        )
+        for index in range(100)
+    ]
+    _assert_hash_balanced_counts(Counter(sample.rotation_degrees for sample in samples), {90, 270})
 
 
 def test_pixel_village_object_type_count_targets_are_metadata_grounded() -> None:

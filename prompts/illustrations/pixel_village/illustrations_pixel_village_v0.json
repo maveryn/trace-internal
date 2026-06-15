@@ -2,6 +2,20 @@
   "bundle_id": "illustrations_pixel_village_v0",
   "schema_version": "v0",
   "task_templates": {
+    "pixel_village_jigsaw_arrangement_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "pixel_village_missing_patch_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "pixel_village_object_type_count_task": [
       "",
       "",
@@ -10,6 +24,13 @@
       ""
     ],
     "pixel_village_person_path_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "pixel_village_rotated_tile_label_task": [
       "",
       "",
       "",
@@ -33,6 +54,8 @@
   },
   "required_slots_by_key": {
     "scene:pixel_village_canvas": [],
+    "query:jigsaw_arrangement_label": [],
+    "query:missing_patch_label": [],
     "query:object_type_count": [
       "target_plural",
       "target_unit"
@@ -48,6 +71,7 @@
       "target_plural",
       "target_unit"
     ],
+    "query:rotated_tile_label": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -86,6 +110,20 @@
     ]
   },
   "query_templates": {
+    "jigsaw_arrangement_label": [
+      "Which option shows the pixel village image with the 2x2 tiles arranged correctly?",
+      "Select the option where the 2x2 pixel village tiles are in the correct arrangement.",
+      "Which lettered option reconstructs the pixel village scene correctly?",
+      "Find the option whose four tiles form the correct pixel village image.",
+      "Which option places the pixel village tiles in the original row-major arrangement?"
+    ],
+    "missing_patch_label": [
+      "Which option restores the missing region of the pixel village image?",
+      "Select the option that fills the missing patch exactly.",
+      "Which lettered patch belongs in the blank region?",
+      "Find the option that completes the missing part of the pixel village.",
+      "Which option matches the removed region of the pixel village image?"
+    ],
     "object_type_count": [
       "How many {target_plural} are visible?",
       "Count the visible {target_plural}.",
@@ -113,6 +151,13 @@
       "What is the number of visible {target_plural} {river_relation} the river?",
       "How many {target_plural} can be seen {river_relation} the river?",
       "Find every visible {target_unit} {river_relation} the river. What is the count?"
+    ],
+    "rotated_tile_label": [
+      "Which lettered tile has been rotated?",
+      "Select the tile that is rotated relative to the rest of the pixel village image.",
+      "Which tile is turned the wrong way?",
+      "Find the rotated tile in the pixel village grid.",
+      "Which letter marks the tile with the incorrect orientation?"
     ]
   },
   "allow_empty_task_templates": true

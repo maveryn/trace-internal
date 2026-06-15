@@ -141,7 +141,6 @@ def _prepare_gem_count_objective(
             answer=int(len(matches)),
             answer_type="integer",
             option_specs=(),
-            target_clear_count=None,
             annotation_entity_ids=tuple(cell_entity_id(coord) for coord in matches),
             metadata={
                 **dict(board_spec.metadata),

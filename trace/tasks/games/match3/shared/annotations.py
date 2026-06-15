@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_annotation_artifacts, point_set_annotation_artifacts
 
 from .state import RenderedMatch3Scene
 
@@ -24,4 +24,14 @@ def match3_point_set_annotation(
     return point_set_annotation_artifacts(points)
 
 
-__all__ = ["match3_point_set_annotation"]
+def match3_point_annotation(
+    *,
+    rendered: RenderedMatch3Scene,
+    entity_id: str,
+) -> AnnotationArtifacts:
+    """Project one gem/arrow entity center into a public scalar point annotation."""
+
+    return point_annotation_artifacts(rendered.render_map["entity_points_px"][str(entity_id)])
+
+
+__all__ = ["match3_point_annotation", "match3_point_set_annotation"]

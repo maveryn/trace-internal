@@ -71,7 +71,6 @@ class Match3Defaults:
     col_count_support: Tuple[int, ...] = (5, 6, 7)
     gem_type_count_support: Tuple[int, ...] = (5, 6)
     option_count_support: Tuple[int, ...] = (4, 5, 6)
-    target_clear_count_support: Tuple[int, ...] = (0, 3, 4, 5, 6)
     gem_count_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6, 7, 8)
     canvas_width: int = 760
     canvas_height: int = 720

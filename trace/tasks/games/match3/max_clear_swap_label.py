@@ -21,7 +21,7 @@ PROMPT_SLOTS = make_match3_prompt_slots(
     object_description_key="object_description_match3_grid",
     answer_hint_key="answer_hint_max_clear_swap_label",
     annotation_hint_key="annotation_hint_max_clear_swap_label",
-    example_annotation=[[456, 284]],
+    example_annotation=[456, 284],
     example_answer="C",
 )
 
@@ -53,9 +53,10 @@ def _prepare_max_clear_objective(
     """Resolve option axes and bind maximum-clear swap semantics."""
 
     namespace = f"{SCENE_ID}.max_clear_swap"
+    fixed_task_params = {**dict(task_params), "option_count": 4}
     return prepare_match3_swap_option_plan(
         instance_seed=int(instance_seed),
-        task_params=task_params,
+        task_params=fixed_task_params,
         gen_defaults=gen_defaults,
         namespace=namespace,
         prompt_slots=PROMPT_SLOTS,

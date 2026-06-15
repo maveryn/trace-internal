@@ -91,7 +91,6 @@ class Match3Sample:
     answer: int | str
     answer_type: str
     option_specs: Tuple[SwapOption, ...] = ()
-    target_clear_count: int | None = None
     annotation_entity_ids: Tuple[str, ...] = ()
     metadata: Dict[str, Any] = field(default_factory=dict)
 

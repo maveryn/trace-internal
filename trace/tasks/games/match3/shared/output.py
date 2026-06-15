@@ -94,7 +94,6 @@ def build_match3_trace_payload(
             "style_variant": str(axes.style_variant),
             "board_before": [list(row) for row in sample.board],
             "swap_options": build_match3_option_trace(sample),
-            "target_clear_count": None if sample.target_clear_count is None else int(sample.target_clear_count),
             "answer": answer_value,
             "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
             **dict(execution_extra or {}),

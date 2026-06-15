@@ -37,7 +37,6 @@ class Match3PromptContext:
     object_description_key: str
     answer_hint_key: str
     annotation_hint_key: str
-    target_clear_count: int | None
     target_color_label: str
     row_index: int | None
     col_index: int | None
@@ -116,7 +115,6 @@ def build_match3_prompt_artifacts(
             "json_example": str(context.json_example),
             "json_example_answer_only": str(context.json_example_answer_only),
             "match3_rule_text": str(resolved_defaults["match3_rule_text"]),
-            "target_clear_count": 0 if context.target_clear_count is None else int(context.target_clear_count),
             "target_color_label": str(context.target_color_label),
             "row_index": "" if context.row_index is None else str(int(context.row_index)),
             "col_index": "" if context.col_index is None else str(int(context.col_index)),

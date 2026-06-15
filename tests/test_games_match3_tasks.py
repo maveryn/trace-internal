@@ -26,8 +26,7 @@ def test_games_match3_defaults_expose_axes_and_prompt_bundle() -> None:
         "diamond_gems",
         "orb_tokens",
     }
-    assert list(generation["option_count_support"]) == [4, 5, 6]
-    assert list(generation["target_clear_count_support"]) == [0, 3, 4, 5, 6]
+    assert list(generation["option_count_support"]) == [4]
     assert list(generation["gem_count_answer_support"]) == [1, 2, 3, 4, 5, 6, 7, 8]
     assert int(rendering["canvas_width"]) == 760
     assert int(rendering["canvas_height"]) == 720
@@ -43,9 +42,7 @@ def test_games_match3_prompt_bundle_has_queries() -> None:
         "grid_color_gem_count",
         "max_clear_swap_label",
         "row_color_gem_count",
-        "target_clear_swap_label",
     }
-    assert "target_clear_count" in bundle["required_slots_by_key"]["query:target_clear_swap_label"]
     assert "target_color_label" in bundle["required_slots_by_key"]["query:grid_color_gem_count"]
     assert "cascades" in str(bundle["code_prompt_defaults"]["match3_rule_text"])
 
@@ -60,26 +57,14 @@ def test_games_match3_best_swap_uses_easier_task_override() -> None:
     assert list(generation["row_count_support"]) == [5]
     assert list(generation["col_count_support"]) == [5]
     assert list(generation["gem_type_count_support"]) == [5]
-    assert list(generation["option_count_support"]) == [4, 5, 6]
-    assert list(generation["target_clear_count_support"]) == [0, 3]
+    assert list(generation["option_count_support"]) == [4]
     assert int(rendering["arrow_width_px"]) == 9
-
-    target_generation, target_rendering, _prompt = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_games__match3__target_clear_swap_label",
-    )
-    assert list(target_generation["row_count_support"]) == [5]
-    assert list(target_generation["col_count_support"]) == [5]
-    assert list(target_generation["gem_type_count_support"]) == [5]
-    assert list(target_generation["option_count_support"]) == [4, 5, 6]
-    assert list(target_generation["target_clear_count_support"]) == [0, 3]
-    assert int(target_rendering["arrow_width_px"]) == 9
 
 
 def test_games_match3_max_clear_label_has_unique_answer() -> None:
     out = create_task("task_games__match3__max_clear_swap_label").generate(
         71231,
-        params={"query_id": "single", "option_count": 4},
+        params={"query_id": "single", "option_count": 6},
         max_attempts=300,
     )
     options = out.trace_payload["execution_trace"]["swap_options"]
@@ -91,27 +76,10 @@ def test_games_match3_max_clear_label_has_unique_answer() -> None:
     assert out.scene_id == "match3"
     assert out.query_id == "single"
     assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "max_clear_swap_label"
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == 1
-    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
-
-
-def test_games_match3_target_clear_label_has_unique_answer() -> None:
-    out = create_task("task_games__match3__target_clear_swap_label").generate(
-        71241,
-        params={"query_id": "single", "target_answer": 3, "option_count": 4},
-        max_attempts=300,
-    )
-    options = out.trace_payload["execution_trace"]["swap_options"]
-    answers = [str(option["label"]) for option in options if int(option["clear_count"]) == 3]
-
-    assert out.answer_gt.type == "option_letter"
-    assert answers == [str(out.answer_gt.value)]
-    assert out.trace_payload["execution_trace"]["target_clear_count"] == 3
-    assert out.query_id == "single"
-    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "target_clear_swap_label"
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == 1
+    assert len(options) == 4
+    assert out.trace_payload["query_spec"]["params"]["option_count"] == 4
+    assert out.annotation_gt.type == "point"
+    assert out.trace_payload["projected_annotation"]["point"] == out.annotation_gt.value
 
 
 def test_games_match3_gem_count_uses_canonical_named_colors() -> None:

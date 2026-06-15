@@ -25,18 +25,11 @@ ADDED_VARIANT = "after_added_k_objects_count"
 REMOVED_VARIANT = "after_removed_k_objects_count"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (ADDED_VARIANT, REMOVED_VARIANT)
 DEFAULT_SOURCE_QUERIES: Mapping[str, Mapping[str, Any]] = {
-    "park_sitting": {
-        "source_task_id": "task_illustrations__park_playground__activity_person_count",
-        "source_params": {"target_activity": "sitting"},
-        "singular_phrase": "sitting person",
-        "plural_phrase": "sitting people",
-        "scene_id": "park_playground",
-    },
-    "park_walking": {
-        "source_task_id": "task_illustrations__park_playground__activity_person_count",
-        "source_params": {"target_activity": "walking"},
-        "singular_phrase": "walking person",
-        "plural_phrase": "walking people",
+    "park_people": {
+        "source_task_id": "task_illustrations__park_playground__person_count",
+        "source_params": {},
+        "singular_phrase": "person",
+        "plural_phrase": "people",
         "scene_id": "park_playground",
     },
     "construction_yellow_hard_hats": {
@@ -206,17 +199,15 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
 
 
 def _source_params_for(sample: _SampleSpec, params: Mapping[str, Any]) -> Dict[str, Any]:
-    source_params: Dict[str, Any] = {
-        **dict(sample.source_query.source_params),
-        "target_count": int(sample.current_count),
-        "target_count_min": 1,
-        "target_count_max": max(10, int(sample.current_count)),
-    }
-    if sample.source_query.source_task_id == "task_illustrations__park_playground__activity_person_count":
-        source_params["person_count"] = max(10, int(sample.current_count) + 4)
-        source_params["person_count_min"] = max(10, int(sample.current_count) + 4)
-        source_params["person_count_max"] = max(10, int(sample.current_count) + 4)
+    source_params: Dict[str, Any] = {**dict(sample.source_query.source_params)}
+    if sample.source_query.source_task_id == "task_illustrations__park_playground__person_count":
+        source_params["person_count"] = int(sample.current_count)
+        source_params["person_count_min"] = int(sample.current_count)
+        source_params["person_count_max"] = int(sample.current_count)
     elif sample.source_query.source_task_id == "task_illustrations__construction_site__worker_attribute_count":
+        source_params["target_count"] = int(sample.current_count)
+        source_params["target_count_min"] = 1
+        source_params["target_count_max"] = max(10, int(sample.current_count))
         source_params["worker_count"] = max(10, int(sample.current_count) + 4)
         source_params["worker_count_min"] = max(10, int(sample.current_count) + 4)
         source_params["worker_count_max"] = max(10, int(sample.current_count) + 4)

@@ -23,47 +23,11 @@ from .rendering import (
 
 
 @dataclass(frozen=True)
-class ActivitySampleSpec:
+class PersonCountSampleSpec:
     branch_id: str
-    target_activity: str
-    activity_phrase: str
-    target_count: int
     person_count: int
     person_specs: Tuple[ParkPersonSpec, ...]
     query_probabilities: Dict[str, float]
-    target_activity_probabilities: Dict[str, float]
-    target_count_probabilities: Dict[str, float]
-    person_count_probabilities: Dict[str, float]
-
-
-@dataclass(frozen=True)
-class AreaSampleSpec:
-    branch_id: str
-    target_zone: str
-    zone_name: str
-    target_count: int
-    person_count: int
-    person_specs: Tuple[ParkPersonSpec, ...]
-    query_probabilities: Dict[str, float]
-    target_zone_probabilities: Dict[str, float]
-    target_count_probabilities: Dict[str, float]
-    person_count_probabilities: Dict[str, float]
-
-
-@dataclass(frozen=True)
-class EquipmentUseSampleSpec:
-    branch_id: str
-    target_equipment_type: str
-    equipment_name: str
-    target_count: int
-    equipment_count: int
-    person_count: int
-    equipment_specs: Tuple[ParkEquipmentSpec, ...]
-    person_specs: Tuple[ParkPersonSpec, ...]
-    query_probabilities: Dict[str, float]
-    target_equipment_probabilities: Dict[str, float]
-    target_count_probabilities: Dict[str, float]
-    equipment_count_probabilities: Dict[str, float]
     person_count_probabilities: Dict[str, float]
 
 
@@ -101,10 +65,7 @@ class ParkCountBinding:
 
 
 __all__ = [
-    "ActivitySampleSpec",
-    "AreaSampleSpec",
     "EquipmentSampleSpec",
-    "EquipmentUseSampleSpec",
     "PARK_EQUIPMENT_LABELS",
     "PARK_EQUIPMENT_TYPES",
     "PARK_PERSON_ACTIVITIES",
@@ -115,6 +76,7 @@ __all__ = [
     "ParkCountBinding",
     "ParkEquipmentSpec",
     "ParkPersonSpec",
+    "PersonCountSampleSpec",
     "RenderedParkPlaygroundScene",
     "park_activity_display_name",
     "park_equipment_display_name",

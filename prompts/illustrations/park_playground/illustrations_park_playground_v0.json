@@ -2,21 +2,7 @@
   "bundle_id": "illustrations_park_playground_v0",
   "schema_version": "v0",
   "task_templates": {
-    "person_activity_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "person_in_park_zone_count_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "person_using_equipment_count_task": [
+    "person_count_task": [
       "",
       "",
       "",
@@ -36,25 +22,37 @@
       "",
       "",
       ""
+    ],
+    "missing_patch_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "rotated_tile_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:park_playground_canvas": [
-      "person_count"
     ],
-    "query:activity_person_count": [
-      "activity_phrase"
-    ],
-    "query:area_person_count": [
-      "zone_name"
-    ],
-    "query:equipment_use_person_count": [
-      "equipment_name"
+    "query:person_count": [
     ],
     "query:playground_equipment_count": [
       "equipment_name"
     ],
     "query:jigsaw_arrangement_label": [
+    ],
+    "query:plain_patch_label": [
+    ],
+    "query:transformed_patch_label": [
+    ],
+    "query:rotated_tile_label": [
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -86,34 +84,20 @@
   },
   "scene_templates": {
     "park_playground_canvas": [
-      "The image shows an illustrated park playground with {person_count} people.",
-      "The scene shows {person_count} people in a park playground.",
-      "The picture shows a synthetic park scene with {person_count} people.",
-      "The canvas contains an illustrated playground park with {person_count} people.",
-      "This park playground scene contains {person_count} people."
+      "The image shows an illustrated park playground.",
+      "The scene shows a park playground illustration.",
+      "The picture shows a synthetic park playground.",
+      "The canvas contains an illustrated playground park.",
+      "This is a park playground scene."
     ]
   },
   "query_templates": {
-    "activity_person_count": [
-      "How many people are {activity_phrase}?",
-      "Count the people shown {activity_phrase}.",
-      "What is the number of people {activity_phrase}?",
-      "How many people in the park are {activity_phrase}?",
-      "Find every person {activity_phrase}. What is the count?"
-    ],
-    "area_person_count": [
-      "How many people are in the {zone_name}?",
-      "Count the people inside the {zone_name}.",
-      "What is the number of people in the {zone_name}?",
-      "How many people are shown within the {zone_name}?",
-      "Find every person in the {zone_name}. What is the count?"
-    ],
-    "equipment_use_person_count": [
-      "How many people are using the {equipment_name}?",
-      "Count the people using the {equipment_name}.",
-      "What is the number of people using the {equipment_name}?",
-      "How many people are shown on or at the {equipment_name}?",
-      "Find every person using the {equipment_name}. What is the count?"
+    "person_count": [
+      "How many people are shown?",
+      "Count all visible people in the park playground.",
+      "What is the total number of people?",
+      "How many people can be seen in the scene?",
+      "Find every visible person. What is the count?"
     ],
     "playground_equipment_count": [
       "How many {equipment_name} are shown?",
@@ -128,6 +112,27 @@
       "Which lettered option reconstructs the park playground scene correctly?",
       "Find the option whose four tiles form the correct park playground image.",
       "Which option places the park playground tiles in the original row-major arrangement?"
+    ],
+    "plain_patch_label": [
+      "Which option restores the missing region of the park playground image?",
+      "Select the option that fills the missing patch exactly.",
+      "Which lettered patch belongs in the blank region?",
+      "Find the option that completes the missing part of the park scene.",
+      "Which option matches the removed region of the park playground?"
+    ],
+    "transformed_patch_label": [
+      "Which option matches the missing region after the allowed visual transformation?",
+      "Select the transformed option that corresponds to the missing patch.",
+      "Which lettered patch is the transformed match for the blank region?",
+      "Find the option that corresponds to the removed region, allowing rotation or reflection.",
+      "Which option is the transformed version of the missing park playground patch?"
+    ],
+    "rotated_tile_label": [
+      "Which lettered tile has been rotated?",
+      "Select the tile that is rotated relative to the rest of the park image.",
+      "Which tile is turned the wrong way?",
+      "Find the rotated tile in the park playground grid.",
+      "Which letter marks the tile with the incorrect orientation?"
     ]
   },
   "allow_empty_task_templates": true

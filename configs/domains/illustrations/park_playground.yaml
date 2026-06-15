@@ -14,28 +14,10 @@ generation:
       - swing_set
       - seesaw
       - climbing_frame
-    equipment_use_target_support:
-      - slide
-      - swing_set
-      - seesaw
   task_overrides:
-    task_illustrations__park_playground__activity_person_count:
-      person_count_min: 7
+    task_illustrations__park_playground__person_count:
+      person_count_min: 5
       person_count_max: 12
-      target_count_min: 1
-      target_count_max: 6
-    task_illustrations__park_playground__area_person_count:
-      person_count_min: 7
-      person_count_max: 12
-      target_count_min: 1
-      target_count_max: 6
-    task_illustrations__park_playground__equipment_use_person_count:
-      equipment_count_min: 4
-      equipment_count_max: 7
-      person_count_min: 8
-      person_count_max: 14
-      target_count_min: 1
-      target_count_max: 5
     task_illustrations__park_playground__playground_equipment_count:
       equipment_count_min: 4
       equipment_count_max: 7
@@ -51,6 +33,33 @@ generation:
       source_width: 520
       source_height: 366
       min_tile_detail_score: 600
+    task_illustrations__park_playground__missing_patch_label:
+      source_person_count_min: 8
+      source_person_count_max: 13
+      source_equipment_count_min: 4
+      source_equipment_count_max: 7
+      option_count_support:
+        - 4
+        - 6
+      patch_width_min: 170
+      patch_width_max: 240
+      patch_height_min: 130
+      patch_height_max: 185
+      crop_margin_px: 36
+      source_width: 820
+      source_height: 560
+    task_illustrations__park_playground__rotated_tile_label:
+      source_person_count_min: 8
+      source_person_count_max: 13
+      source_equipment_count_min: 4
+      source_equipment_count_max: 7
+      source_width: 960
+      source_height: 660
+      min_tile_detail_score: 180
+      min_rotation_delta: 7
+      rotation_degrees_support:
+        - 90
+        - 270
 
 rendering:
   shared:
@@ -80,37 +89,7 @@ rendering:
       soft_shadow: 1.0
       watercolor_wash: 1.0
   task_overrides:
-    task_illustrations__park_playground__activity_person_count:
-      art_style_support:
-        - flat_vector
-        - outlined_cartoon
-        - paper_cutout
-        - soft_shadow
-        - ink_sketch
-        - watercolor_wash
-      art_style_weights:
-        flat_vector: 1.0
-        outlined_cartoon: 1.0
-        paper_cutout: 1.0
-        soft_shadow: 1.0
-        ink_sketch: 1.0
-        watercolor_wash: 1.0
-    task_illustrations__park_playground__area_person_count:
-      art_style_support:
-        - flat_vector
-        - outlined_cartoon
-        - paper_cutout
-        - soft_shadow
-        - ink_sketch
-        - watercolor_wash
-      art_style_weights:
-        flat_vector: 1.0
-        outlined_cartoon: 1.0
-        paper_cutout: 1.0
-        soft_shadow: 1.0
-        ink_sketch: 1.0
-        watercolor_wash: 1.0
-    task_illustrations__park_playground__equipment_use_person_count:
+    task_illustrations__park_playground__person_count:
       art_style_support:
         - flat_vector
         - outlined_cartoon
@@ -141,6 +120,36 @@ rendering:
         ink_sketch: 1.0
         watercolor_wash: 1.0
     task_illustrations__park_playground__jigsaw_arrangement_label:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
+    task_illustrations__park_playground__missing_patch_label:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
+    task_illustrations__park_playground__rotated_tile_label:
       art_style_support:
         - flat_vector
         - outlined_cartoon
@@ -158,30 +167,14 @@ rendering:
 
 prompt:
   task_overrides:
-    task_illustrations__park_playground__activity_person_count:
+    task_illustrations__park_playground__person_count:
       bundle_id: illustrations_park_playground_v0
       scene_key: park_playground_canvas
-      task_key: person_activity_count_task
-      answer_hint_person_activity: set "answer" to the count of people shown {activity_phrase} as an integer
-      annotation_hint_person_activity: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person shown {activity_phrase}
-      json_example_person_activity: '{"annotation":[[178,512,234,610],[486,594,546,692],[824,456,884,554]],"answer":3}'
-      json_example_answer_only_person_activity: '{"answer":3}'
-    task_illustrations__park_playground__area_person_count:
-      bundle_id: illustrations_park_playground_v0
-      scene_key: park_playground_canvas
-      task_key: person_in_park_zone_count_task
-      answer_hint_person_in_park_zone: set "answer" to the count of people in the {zone_name} as an integer
-      annotation_hint_person_in_park_zone: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person in the {zone_name}
-      json_example_person_in_park_zone: '{"annotation":[[192,398,248,496],[376,430,432,530],[528,390,586,490]],"answer":3}'
-      json_example_answer_only_person_in_park_zone: '{"answer":3}'
-    task_illustrations__park_playground__equipment_use_person_count:
-      bundle_id: illustrations_park_playground_v0
-      scene_key: park_playground_canvas
-      task_key: person_using_equipment_count_task
-      answer_hint_person_using_equipment: set "answer" to the count of people using the {equipment_name} as an integer
-      annotation_hint_person_using_equipment: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted person using the {equipment_name}
-      json_example_person_using_equipment: '{"annotation":[[194,356,246,440],[492,382,542,462],[742,344,792,426]],"answer":3}'
-      json_example_answer_only_person_using_equipment: '{"answer":3}'
+      task_key: person_count_task
+      answer_hint_person_count: set "answer" to the total count of visible people as an integer
+      annotation_hint_person_count: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every visible person
+      json_example_person_count: '{"annotation":[[178,512,234,610],[486,594,546,692],[824,456,884,554]],"answer":3}'
+      json_example_answer_only_person_count: '{"answer":3}'
     task_illustrations__park_playground__playground_equipment_count:
       bundle_id: illustrations_park_playground_v0
       scene_key: park_playground_canvas
@@ -198,3 +191,19 @@ prompt:
       annotation_hint_jigsaw_arrangement: set "annotation" to a JSON array containing the single [x0, y0, x1, y1] box around the selected option image in pixel coordinates
       json_example_jigsaw_arrangement: '{"annotation":[[594,478,1114,844]],"answer":"C"}'
       json_example_answer_only_jigsaw_arrangement: '{"answer":"C"}'
+    task_illustrations__park_playground__missing_patch_label:
+      bundle_id: illustrations_park_playground_v0
+      scene_key: park_playground_canvas
+      task_key: missing_patch_label_task
+      answer_hint_missing_patch: set "answer" to the selected option letter
+      annotation_hint_missing_patch: set "annotation" to a JSON object with "missing_region" and "selected_option" keys, each mapped to a [x0, y0, x1, y1] pixel box
+      json_example_missing_patch: '{"annotation":{"missing_region":[152,188,356,330],"selected_option":[708,612,912,754]},"answer":"C"}'
+      json_example_answer_only_missing_patch: '{"answer":"C"}'
+    task_illustrations__park_playground__rotated_tile_label:
+      bundle_id: illustrations_park_playground_v0
+      scene_key: park_playground_canvas
+      task_key: rotated_tile_label_task
+      answer_hint_rotated_tile: set "answer" to the selected tile letter
+      annotation_hint_rotated_tile: set "annotation" to a JSON array containing the single [x0, y0, x1, y1] box around the rotated tile in pixel coordinates
+      json_example_rotated_tile: '{"annotation":[[438,168,756,436]],"answer":"B"}'
+      json_example_answer_only_rotated_tile: '{"answer":"B"}'

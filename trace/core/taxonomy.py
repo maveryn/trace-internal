@@ -843,13 +843,13 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__indoor_room__surface_object_count": _entry(
         "illustrations", "indoor_room", "illustrations", "indoor_room"
     ),
-    "task_illustrations__park_playground__activity_person_count": _entry(
+    "task_illustrations__park_playground__person_count": _entry(
         "illustrations", "park_playground", "illustrations", "park_playground"
     ),
-    "task_illustrations__park_playground__area_person_count": _entry(
+    "task_illustrations__park_playground__missing_patch_label": _entry(
         "illustrations", "park_playground", "illustrations", "park_playground"
     ),
-    "task_illustrations__park_playground__equipment_use_person_count": _entry(
+    "task_illustrations__park_playground__rotated_tile_label": _entry(
         "illustrations", "park_playground", "illustrations", "park_playground"
     ),
     "task_illustrations__park_playground__jigsaw_arrangement_label": _entry(

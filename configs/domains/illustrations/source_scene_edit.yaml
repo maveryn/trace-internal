@@ -8,8 +8,7 @@ generation:
       current_count_min: 3
       current_count_max: 8
       source_query_support:
-        - park_sitting
-        - park_walking
+        - park_people
         - construction_yellow_hard_hats
 
 rendering:

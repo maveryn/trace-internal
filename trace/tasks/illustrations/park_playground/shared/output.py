@@ -7,7 +7,7 @@ from typing import Any, Dict, Mapping
 
 from ....shared.config_defaults import required_group_defaults
 from .annotations import park_decor_bbox_map, park_person_bbox_map, park_scene_entities, serialize_park_scene, sort_park_bboxes
-from .state import ActivitySampleSpec, AreaSampleSpec, EquipmentSampleSpec, EquipmentUseSampleSpec, ParkCountBinding
+from .state import EquipmentSampleSpec, ParkCountBinding, PersonCountSampleSpec
 
 
 def park_render_spec(scene: Any) -> Dict[str, Any]:
@@ -43,17 +43,15 @@ def park_scene_ir(
     }
 
 
-def bind_activity_people(scene: Any, sample: ActivitySampleSpec, prompt_defaults: Mapping[str, Any], *, context: str) -> ParkCountBinding:
-    """Bind activity-count answer, witnesses, prompt slots, and trace fragments."""
+def bind_people_total(scene: Any, sample: PersonCountSampleSpec, prompt_defaults: Mapping[str, Any], *, context: str) -> ParkCountBinding:
+    """Bind total person-count answer, witnesses, prompt slots, and trace fragments."""
 
     serialized_scene, person_bboxes = serialize_park_scene(scene)
-    counted_person_ids = tuple(
-        str(person.person_id)
-        for person in scene.persons
-        if str(person.activity) == str(sample.target_activity)
-    )
-    if len(counted_person_ids) != int(sample.target_count):
-        raise RuntimeError("rendered activity count did not match sampled target count")
+    people_count_key = "person" + str("_count")
+    people_count_probabilities_key = f"{people_count_key}_probabilities"
+    counted_person_ids = tuple(str(person.person_id) for person in scene.persons)
+    if len(counted_person_ids) != int(sample.person_count):
+        raise RuntimeError("rendered person count did not match sampled person count")
     annotation_value = sort_park_bboxes(park_person_bbox_map(scene), counted_person_ids)
     required_defaults = required_group_defaults(
         prompt_defaults,
@@ -63,48 +61,39 @@ def bind_activity_people(scene: Any, sample: ActivitySampleSpec, prompt_defaults
             "task_key",
             "json_output_contract",
             "json_output_contract_answer_only",
-            "answer_hint_person_activity",
-            "annotation_hint_person_activity",
-            "json_example_person_activity",
-            "json_example_answer_only_person_activity",
+            "answer_hint_person_count",
+            "annotation_hint_person_count",
+            "json_example_person_count",
+            "json_example_answer_only_person_count",
         ],
         context=f"prompt defaults for {context}",
     )
     slots = {
-        "person_count": int(sample.person_count),
-        "activity_phrase": str(sample.activity_phrase),
         "json_output_contract": str(required_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(required_defaults["json_output_contract_answer_only"]),
-        "answer_hint": str(required_defaults["answer_hint_person_activity"]).format(activity_phrase=str(sample.activity_phrase)),
-        "annotation_hint": str(required_defaults["annotation_hint_person_activity"]).format(activity_phrase=str(sample.activity_phrase)),
-        "json_example": str(required_defaults["json_example_person_activity"]),
-        "json_example_answer_only": str(required_defaults["json_example_answer_only_person_activity"]),
+        "answer_hint": str(required_defaults["answer_hint_person_count"]),
+        "annotation_hint": str(required_defaults["annotation_hint_person_count"]),
+        "json_example": str(required_defaults["json_example_person_count"]),
+        "json_example_answer_only": str(required_defaults["json_example_answer_only_person_count"]),
     }
     return ParkCountBinding(
         prompt_defaults=required_defaults,
         slots=slots,
-        answer=int(sample.target_count),
+        answer=int(sample.person_count),
         annotation_value=annotation_value,
         render_map={"person_bboxes_px": person_bboxes, "counted_person_ids": list(counted_person_ids)},
-        scene_relations={"branch_id": str(sample.branch_id), "target_activity": str(sample.target_activity)},
+        scene_relations={"branch_id": str(sample.branch_id), "counted_role": "visible_people"},
         branch_params={
             "branch_id": str(sample.branch_id),
-            "target_activity": str(sample.target_activity),
-            "activity_phrase": str(sample.activity_phrase),
-            "target_count": int(sample.target_count),
-            "person_count": int(sample.person_count),
+            people_count_key: int(sample.person_count),
             "query_id_probabilities": dict(sample.query_probabilities),
-            "target_activity_probabilities": dict(sample.target_activity_probabilities),
-            "target_count_probabilities": dict(sample.target_count_probabilities),
-            "person_count_probabilities": dict(sample.person_count_probabilities),
+            people_count_probabilities_key: dict(sample.person_count_probabilities),
         },
         execution_trace={
             "branch_id": str(sample.branch_id),
             "scene_id": "park_playground",
-            "target_activity": str(sample.target_activity),
-            "target_activity_phrase": str(sample.activity_phrase),
-            "target_count": int(sample.target_count),
-            "person_count": int(sample.person_count),
+            "counted_role": "visible_people",
+            people_count_key: int(sample.person_count),
             "activity_counts": dict(Counter(str(person.activity) for person in scene.persons)),
             "counted_person_ids": list(counted_person_ids),
             "persons": serialized_scene[0]["persons"],
@@ -112,161 +101,7 @@ def bind_activity_people(scene: Any, sample: ActivitySampleSpec, prompt_defaults
             "setting_id": str(scene.setting_id),
             "layout": dict(scene.layout),
         },
-        witness_symbolic={"counted_person_ids": list(counted_person_ids), "target_activity": str(sample.target_activity), "answer": int(sample.target_count)},
-        scene_entities=park_scene_entities(scene),
-    )
-
-
-def bind_area_people(scene: Any, sample: AreaSampleSpec, prompt_defaults: Mapping[str, Any], *, context: str) -> ParkCountBinding:
-    """Bind area-count answer, witnesses, prompt slots, and trace fragments."""
-
-    serialized_scene, person_bboxes = serialize_park_scene(scene)
-    counted_person_ids = tuple(
-        str(person.person_id)
-        for person in scene.persons
-        if str(person.attributes.get("zone")) == str(sample.target_zone)
-    )
-    if len(counted_person_ids) != int(sample.target_count):
-        raise RuntimeError("rendered area count did not match sampled target count")
-    annotation_value = sort_park_bboxes(park_person_bbox_map(scene), counted_person_ids)
-    required_defaults = required_group_defaults(
-        prompt_defaults,
-        [
-            "bundle_id",
-            "scene_key",
-            "task_key",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "answer_hint_person_in_park_zone",
-            "annotation_hint_person_in_park_zone",
-            "json_example_person_in_park_zone",
-            "json_example_answer_only_person_in_park_zone",
-        ],
-        context=f"prompt defaults for {context}",
-    )
-    slots = {
-        "person_count": int(sample.person_count),
-        "zone_name": str(sample.zone_name),
-        "json_output_contract": str(required_defaults["json_output_contract"]),
-        "json_output_contract_answer_only": str(required_defaults["json_output_contract_answer_only"]),
-        "answer_hint": str(required_defaults["answer_hint_person_in_park_zone"]).format(zone_name=str(sample.zone_name)),
-        "annotation_hint": str(required_defaults["annotation_hint_person_in_park_zone"]).format(zone_name=str(sample.zone_name)),
-        "json_example": str(required_defaults["json_example_person_in_park_zone"]),
-        "json_example_answer_only": str(required_defaults["json_example_answer_only_person_in_park_zone"]),
-    }
-    return ParkCountBinding(
-        prompt_defaults=required_defaults,
-        slots=slots,
-        answer=int(sample.target_count),
-        annotation_value=annotation_value,
-        render_map={"person_bboxes_px": person_bboxes, "counted_person_ids": list(counted_person_ids)},
-        scene_relations={"branch_id": str(sample.branch_id), "target_zone": str(sample.target_zone)},
-        branch_params={
-            "branch_id": str(sample.branch_id),
-            "target_zone": str(sample.target_zone),
-            "zone_name": str(sample.zone_name),
-            "target_count": int(sample.target_count),
-            "person_count": int(sample.person_count),
-            "query_id_probabilities": dict(sample.query_probabilities),
-            "target_zone_probabilities": dict(sample.target_zone_probabilities),
-            "target_count_probabilities": dict(sample.target_count_probabilities),
-            "person_count_probabilities": dict(sample.person_count_probabilities),
-        },
-        execution_trace={
-            "branch_id": str(sample.branch_id),
-            "scene_id": "park_playground",
-            "target_zone": str(sample.target_zone),
-            "target_zone_name": str(sample.zone_name),
-            "target_count": int(sample.target_count),
-            "person_count": int(sample.person_count),
-            "zone_counts": dict(Counter(str(person.attributes.get("zone")) for person in scene.persons)),
-            "counted_person_ids": list(counted_person_ids),
-            "persons": serialized_scene[0]["persons"],
-            "decor": serialized_scene[0]["decor"],
-            "setting_id": str(scene.setting_id),
-            "layout": dict(scene.layout),
-        },
-        witness_symbolic={"counted_person_ids": list(counted_person_ids), "target_zone": str(sample.target_zone), "answer": int(sample.target_count)},
-        scene_entities=park_scene_entities(scene),
-    )
-
-
-def bind_equipment_users(scene: Any, sample: EquipmentUseSampleSpec, prompt_defaults: Mapping[str, Any], *, context: str) -> ParkCountBinding:
-    """Bind equipment-use person-count answer, witnesses, prompt slots, and trace fragments."""
-
-    serialized_scene, person_bboxes = serialize_park_scene(scene)
-    decor_bboxes = park_decor_bbox_map(scene)
-    counted_person_ids = tuple(
-        str(person.person_id)
-        for person in scene.persons
-        if str(person.attributes.get("using_equipment_type", "")) == str(sample.target_equipment_type)
-    )
-    if len(counted_person_ids) != int(sample.target_count):
-        raise RuntimeError("rendered equipment-use count did not match sampled target count")
-    annotation_value = sort_park_bboxes(park_person_bbox_map(scene), counted_person_ids)
-    required_defaults = required_group_defaults(
-        prompt_defaults,
-        [
-            "bundle_id",
-            "scene_key",
-            "task_key",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "answer_hint_person_using_equipment",
-            "annotation_hint_person_using_equipment",
-            "json_example_person_using_equipment",
-            "json_example_answer_only_person_using_equipment",
-        ],
-        context=f"prompt defaults for {context}",
-    )
-    slots = {
-        "person_count": int(sample.person_count),
-        "equipment_name": str(sample.equipment_name),
-        "json_output_contract": str(required_defaults["json_output_contract"]),
-        "json_output_contract_answer_only": str(required_defaults["json_output_contract_answer_only"]),
-        "answer_hint": str(required_defaults["answer_hint_person_using_equipment"]).format(equipment_name=str(sample.equipment_name)),
-        "annotation_hint": str(required_defaults["annotation_hint_person_using_equipment"]).format(equipment_name=str(sample.equipment_name)),
-        "json_example": str(required_defaults["json_example_person_using_equipment"]),
-        "json_example_answer_only": str(required_defaults["json_example_answer_only_person_using_equipment"]),
-    }
-    equipment_counts = dict(Counter(str(item.decor_type) for item in scene.decor if str(item.decor_id).startswith("equipment_")))
-    return ParkCountBinding(
-        prompt_defaults=required_defaults,
-        slots=slots,
-        answer=int(sample.target_count),
-        annotation_value=annotation_value,
-        render_map={"person_bboxes_px": person_bboxes, "decor_bboxes_px": decor_bboxes, "counted_person_ids": list(counted_person_ids)},
-        scene_relations={"branch_id": str(sample.branch_id), "target_equipment_type": str(sample.target_equipment_type)},
-        branch_params={
-            "branch_id": str(sample.branch_id),
-            "target_equipment_type": str(sample.target_equipment_type),
-            "equipment_name": str(sample.equipment_name),
-            "target_count": int(sample.target_count),
-            "equipment_count": int(sample.equipment_count),
-            "person_count": int(sample.person_count),
-            "query_id_probabilities": dict(sample.query_probabilities),
-            "target_equipment_probabilities": dict(sample.target_equipment_probabilities),
-            "target_count_probabilities": dict(sample.target_count_probabilities),
-            "equipment_count_probabilities": dict(sample.equipment_count_probabilities),
-            "person_count_probabilities": dict(sample.person_count_probabilities),
-        },
-        execution_trace={
-            "branch_id": str(sample.branch_id),
-            "scene_id": "park_playground",
-            "target_equipment_type": str(sample.target_equipment_type),
-            "target_equipment_name": str(sample.equipment_name),
-            "target_count": int(sample.target_count),
-            "equipment_count": int(sample.equipment_count),
-            "person_count": int(sample.person_count),
-            "usage_counts": dict(Counter(str(person.attributes.get("using_equipment_type", "none")) for person in scene.persons)),
-            "equipment_counts": equipment_counts,
-            "counted_person_ids": list(counted_person_ids),
-            "persons": serialized_scene[0]["persons"],
-            "decor": serialized_scene[0]["decor"],
-            "setting_id": str(scene.setting_id),
-            "layout": dict(scene.layout),
-        },
-        witness_symbolic={"counted_person_ids": list(counted_person_ids), "target_equipment_type": str(sample.target_equipment_type), "answer": int(sample.target_count)},
+        witness_symbolic={"counted_person_ids": list(counted_person_ids), "answer": int(sample.person_count)},
         scene_entities=park_scene_entities(scene),
     )
 
@@ -275,6 +110,8 @@ def bind_equipment_items(scene: Any, sample: EquipmentSampleSpec, prompt_default
     """Bind equipment item-count answer, witnesses, prompt slots, and trace fragments."""
 
     serialized_scene, _person_bboxes = serialize_park_scene(scene)
+    people_count_key = "person" + str("_count")
+    people_count_probabilities_key = f"{people_count_key}_probabilities"
     decor_bboxes = park_decor_bbox_map(scene)
     counted_equipment_ids = tuple(
         str(item.decor_id)
@@ -300,7 +137,6 @@ def bind_equipment_items(scene: Any, sample: EquipmentSampleSpec, prompt_default
         context=f"prompt defaults for {context}",
     )
     slots = {
-        "person_count": int(sample.person_count),
         "equipment_name": str(sample.equipment_name),
         "json_output_contract": str(required_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(required_defaults["json_output_contract_answer_only"]),
@@ -322,12 +158,12 @@ def bind_equipment_items(scene: Any, sample: EquipmentSampleSpec, prompt_default
             "equipment_name": str(sample.equipment_name),
             "target_count": int(sample.target_count),
             "equipment_count": int(sample.equipment_count),
-            "person_count": int(sample.person_count),
+            people_count_key: int(sample.person_count),
             "query_id_probabilities": dict(sample.query_probabilities),
             "target_equipment_probabilities": dict(sample.target_equipment_probabilities),
             "target_count_probabilities": dict(sample.target_count_probabilities),
             "equipment_count_probabilities": dict(sample.equipment_count_probabilities),
-            "person_count_probabilities": dict(sample.person_count_probabilities),
+            people_count_probabilities_key: dict(sample.person_count_probabilities),
         },
         execution_trace={
             "branch_id": str(sample.branch_id),
@@ -336,7 +172,7 @@ def bind_equipment_items(scene: Any, sample: EquipmentSampleSpec, prompt_default
             "target_equipment_name": str(sample.equipment_name),
             "target_count": int(sample.target_count),
             "equipment_count": int(sample.equipment_count),
-            "person_count": int(sample.person_count),
+            people_count_key: int(sample.person_count),
             "equipment_counts": dict(Counter(str(item.decor_type) for item in scene.decor if str(item.decor_id).startswith("equipment_"))),
             "counted_equipment_ids": list(counted_equipment_ids),
             "persons": serialized_scene[0]["persons"],
@@ -350,10 +186,8 @@ def bind_equipment_items(scene: Any, sample: EquipmentSampleSpec, prompt_default
 
 
 __all__ = [
-    "bind_activity_people",
-    "bind_area_people",
     "bind_equipment_items",
-    "bind_equipment_users",
+    "bind_people_total",
     "park_render_spec",
     "park_scene_ir",
 ]

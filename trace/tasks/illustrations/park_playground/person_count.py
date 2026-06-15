@@ -1,4 +1,4 @@
-"""Count people performing one activity in a park/playground scene."""
+"""Count all visible people in a park/playground scene."""
 
 from __future__ import annotations
 
@@ -11,15 +11,15 @@ from ...registry import register_task
 from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from ._lifecycle import ParkCountPlan, run_park_count_lifecycle
 from .shared.defaults import CountDefaults
-from .shared.output import bind_activity_people
-from .shared.sampling import sample_activity_people
+from .shared.output import bind_people_total
+from .shared.sampling import sample_people_total
 
 
-TASK_ID = "task_illustrations__park_playground__activity_person_count"
+TASK_ID = "task_illustrations__park_playground__person_count"
 SCENE_ID = "park_playground"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (SINGLE_QUERY_ID,)
-PROMPT_QUERY_KEY = "activity_person_count"
-_DEFAULTS = CountDefaults(person_count_min=7, person_count_max=12, target_count_min=1, target_count_max=6)
+PROMPT_QUERY_KEY = "person_count"
+_DEFAULTS = CountDefaults(person_count_min=5, person_count_max=12)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
     "illustrations",
     SCENE_ID,
@@ -28,13 +28,13 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_render
 
 
 def _build_plan() -> ParkCountPlan:
-    """Build the public-owned activity count objective plan."""
+    """Build the public-owned total person-count objective plan."""
 
     return ParkCountPlan(
         public_id=TASK_ID,
         prompt_query_key=PROMPT_QUERY_KEY,
         sample_spec=partial(
-            sample_activity_people,
+            sample_people_total,
             namespace=TASK_ID,
             query_support=SUPPORTED_QUERY_IDS,
             generation_defaults=_GEN_DEFAULTS,
@@ -43,7 +43,7 @@ def _build_plan() -> ParkCountPlan:
         person_specs=lambda sample: sample.person_specs,
         equipment_specs=lambda _sample: None,
         required_zones=lambda _sample: (),
-        bind_result=partial(bind_activity_people, context=TASK_ID),
+        bind_result=partial(bind_people_total, context=TASK_ID),
         fallback_width=_DEFAULTS.canvas_width,
         fallback_height=_DEFAULTS.canvas_height,
         fallback_scale=_DEFAULTS.render_scale,
@@ -57,8 +57,8 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
 
 
 @register_task
-class IllustrationsParkPlaygroundActivityPersonCountTask:
-    """Count visible people matching one sampled activity."""
+class IllustrationsParkPlaygroundPersonCountTask:
+    """Count all visible people in the park/playground scene."""
 
     task_id = TASK_ID
     domain = "illustrations"
@@ -77,4 +77,4 @@ class IllustrationsParkPlaygroundActivityPersonCountTask:
         )
 
 
-__all__ = ["IllustrationsParkPlaygroundActivityPersonCountTask", "TASK_ID", "SUPPORTED_QUERY_IDS", "_sample_spec"]
+__all__ = ["IllustrationsParkPlaygroundPersonCountTask", "TASK_ID", "SUPPORTED_QUERY_IDS", "_sample_spec"]

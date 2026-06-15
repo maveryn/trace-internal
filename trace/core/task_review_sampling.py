@@ -8,6 +8,7 @@ import threading
 from typing import Any, Dict, List, Sequence
 
 from .seed import hash64
+from .query_ids import LEGACY_DEFAULT_QUERY_ID, NO_BRANCH_QUERY_IDS, SINGLE_QUERY_ID
 from ..tasks import create_task
 
 
@@ -135,6 +136,22 @@ def _generate_batch_outputs(
     return list(executor.map(_generate_single_output, jobs))
 
 
+def _declared_semantic_query_ids(task_id: str) -> List[str]:
+    """Return declared public query ids that should be sampled explicitly."""
+
+    try:
+        task = create_task(str(task_id))
+    except Exception:
+        return []
+    raw_query_ids = getattr(task, "supported_query_ids", ())
+    if raw_query_ids is None:
+        raw_query_ids = ()
+    query_ids = [str(value) for value in tuple(raw_query_ids) if str(value).strip()]
+    if not query_ids or all(str(value).strip() in NO_BRANCH_QUERY_IDS for value in query_ids):
+        return []
+    return list(dict.fromkeys(query_ids))
+
+
 def _generate_explicit_query_id_batch(
     *,
     task_id: str,
@@ -207,9 +224,10 @@ def collect_query_id_samples(
 
     samples_by_query_id: Dict[str, List[Dict[str, Any]]] = {}
     generated_query_id_counts: Dict[str, int] = {}
-    expected_query_ids: set[str] = set()
+    declared_query_ids = _declared_semantic_query_ids(str(task_id))
+    expected_query_ids: set[str] = set(str(value) for value in declared_query_ids)
     request_counts_by_query_id: Dict[str, int] = {}
-    known_from_probabilities = False
+    known_from_probabilities = bool(declared_query_ids)
     no_new_query_id_streak = 0
     total_generated = 0
     generation_error_counts: Dict[str, int] = {}

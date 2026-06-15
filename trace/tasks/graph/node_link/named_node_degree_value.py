@@ -25,6 +25,9 @@ def _prompt_key(axes):
         return 'named_node_total_degree_value'
     return 'named_node_degree_value'
 
+def _annotation_hint_key(axes):
+    return 'annotation_hint_' + _prompt_key(axes)
+
 def _direction(axes):
     return 'directed' if str(axes.query_id).startswith('directed') else 'undirected'
 
@@ -39,7 +42,7 @@ def _build_objective_plan():
         'annotation_type': 'point_pair_set',
         'annotation_kind': 'edge_point_pair_set',
         'annotation_field': 'target_edges',
-        'annotation_hint_key': 'annotation_hint_degree_count',
+        'annotation_hint_key': _annotation_hint_key,
         'prompt_query_key': _prompt_key,
         'graph_directionality': _direction,
         'scene_kind': 'graph_named_node_degree_value',

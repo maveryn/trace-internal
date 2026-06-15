@@ -32,8 +32,8 @@
     "query:angle_bisector_base_length": [],
     "query:centroid_vertex_segment_length": [],
     "query:centroid_whole_median_length": [],
-    "query:rectangle_minus_triangle_area": [],
-    "query:l_shape_area": [],
+    "query:rectangle_triangle_cutout_area": [],
+    "query:l_profile_area": [],
     "query:house_outline_perimeter": [],
     "query:tabbed_rectilinear_perimeter": [],
     "answer_or_annotation:answer_only": [
@@ -158,14 +158,14 @@
       "Point \"G\" is the centroid, and \"D\" is the midpoint of segment \"BC\". What is the full length of median \"AD\"?",
       "Point \"G\" is the centroid, and \"D\" is the midpoint of segment \"BC\". What is the full length of median \"AD\"?"
     ],
-    "rectangle_minus_triangle_area": [
+    "rectangle_triangle_cutout_area": [
       "What is the area of the shaded region?",
       "What is the area of the shaded region?",
       "What is the area of the shaded region?",
       "What is the area of the shaded region?",
       "What is the area of the shaded region?"
     ],
-    "l_shape_area": [
+    "l_profile_area": [
       "What is the area of the shaded region?",
       "What is the area of the shaded region?",
       "What is the area of the shaded region?",

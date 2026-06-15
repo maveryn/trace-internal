@@ -1,14 +1,14 @@
-# `task_geometry__composite_shape__sector_angle_from_arc_length`
+# `task_geometry__composite_shape__missing_width_from_semicircle_area`
 
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `composite_shape`
-5. Query id: `single`
+5. Query id: `cap_from_total_area`, `cutout_from_total_area`
 6. Answer schema: `decimal_value_1dp`
 7. Annotation schema: `keyed_point_map`
 
 ## Program Contract
-- `derive_geometry_metric(visible_composite_shape_measurements, derivation_rule=sector_angle_from_arc_length, output_role=arc_length); scene=composite_shape; scope=sector_angle_from_arc_length`
+- `solve_formula(visible_composite_shape_measurements, unknown_role=width_length, formula_schema=semicircle_composite_area_inverse); scene=composite_shape; scope=missing_width_from_semicircle_area`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `composite_shape`.
@@ -22,4 +22,4 @@ Generation is deterministic for a fixed seed, params, config, and prompt bundle 
 
 ## Source
 - Config: `configs/domains/geometry/composite_shape.yaml`
-- Task module: `trace/tasks/geometry/composite_shape/sector_angle_from_arc_length.py`
+- Task module: `trace/tasks/geometry/composite_shape/missing_width_from_semicircle_area.py`

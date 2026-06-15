@@ -1,14 +1,14 @@
-# `task_geometry__composite_shape__missing_width_from_semicircle_cap_area`
+# `task_geometry__composite_shape__l_profile_area`
 
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `composite_shape`
 5. Query id: `single`
-6. Answer schema: `decimal_value_1dp`
+6. Answer schema: `integer_value`
 7. Annotation schema: `keyed_point_map`
 
 ## Program Contract
-- `solve_formula(visible_composite_shape_measurements, unknown_role=width_length, formula_schema=missing_width_from_semicircle_cap_area); scene=composite_shape; scope=missing_width_from_semicircle_cap_area`
+- `solve_formula(visible_composite_shape_measurements, unknown_role=area_measure, formula_schema=outer_rectangle_minus_corner_rectangle); scene=composite_shape; scope=l_profile_area`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `composite_shape`.
@@ -22,4 +22,4 @@ Generation is deterministic for a fixed seed, params, config, and prompt bundle 
 
 ## Source
 - Config: `configs/domains/geometry/composite_shape.yaml`
-- Task module: `trace/tasks/geometry/composite_shape/missing_width_from_semicircle_cap_area.py`
+- Task module: `trace/tasks/geometry/composite_shape/l_profile_area.py`

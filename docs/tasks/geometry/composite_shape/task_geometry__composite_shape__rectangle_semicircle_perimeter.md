@@ -1,14 +1,14 @@
-# `task_geometry__composite_shape__composite_area_value`
+# `task_geometry__composite_shape__rectangle_semicircle_perimeter`
 
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `composite_shape`
-5. Query id: `rectangle_minus_triangle_area`, `l_shape_area`
-6. Answer schema: `integer_value`
+5. Query id: `cap_perimeter`, `cutout_perimeter`
+6. Answer schema: `decimal_value_1dp`
 7. Annotation schema: `keyed_point_map`
 
 ## Program Contract
-- `solve_formula(visible_composite_shape_measurements, unknown_role=area_measure, formula_schema=composite_area_decomposition, decomposition_rule=visible_component_decomposition_rule); scene=composite_shape; scope=composite_area_value`
+- `solve_formula(visible_composite_shape_measurements, unknown_role=perimeter_measure, formula_schema=rectangle_semicircle_boundary_with_side_remainders); scene=composite_shape; scope=rectangle_semicircle_perimeter`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `composite_shape`.
@@ -22,4 +22,4 @@ Generation is deterministic for a fixed seed, params, config, and prompt bundle 
 
 ## Source
 - Config: `configs/domains/geometry/composite_shape.yaml`
-- Task module: `trace/tasks/geometry/composite_shape/composite_area_value.py`
+- Task module: `trace/tasks/geometry/composite_shape/rectangle_semicircle_perimeter.py`

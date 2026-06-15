@@ -4,13 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.composite_shape.composite_area_value import GeometryMeasurementCompositeAreaValueTask
 from trace.tasks.geometry.composite_shape.house_outline_perimeter import GeometryMeasurementCompositePerimeterValueTask
-from trace.tasks.geometry.composite_shape.missing_width_from_semicircle_cap_area import (
-    GeometryMissingWidthFromSemicircleCapAreaTask,
-)
-from trace.tasks.geometry.composite_shape.missing_width_from_semicircle_cutout_area import (
-    GeometryMissingWidthFromSemicircleCutoutAreaTask,
+from trace.tasks.geometry.composite_shape.l_profile_area import GeometryLProfileAreaTask
+from trace.tasks.geometry.composite_shape.missing_width_from_semicircle_area import (
+    GeometryMissingWidthFromSemicircleAreaTask,
 )
 from trace.tasks.geometry.composite_shape.rectangle_quarter_sector_cutout_area import (
     GeometryRectangleQuarterSectorCutoutAreaTask,
@@ -18,18 +15,12 @@ from trace.tasks.geometry.composite_shape.rectangle_quarter_sector_cutout_area i
 from trace.tasks.geometry.composite_shape.rectangle_quarter_sector_cutout_perimeter import (
     GeometryRectangleQuarterSectorCutoutPerimeterTask,
 )
-from trace.tasks.geometry.composite_shape.rectangle_semicircle_cap_area import GeometryRectangleSemicircleCapAreaTask
-from trace.tasks.geometry.composite_shape.rectangle_semicircle_cap_perimeter import (
-    GeometryRectangleSemicircleCapPerimeterTask,
+from trace.tasks.geometry.composite_shape.rectangle_semicircle_area import GeometryRectangleSemicircleAreaTask
+from trace.tasks.geometry.composite_shape.rectangle_semicircle_perimeter import (
+    GeometryRectangleSemicirclePerimeterTask,
 )
-from trace.tasks.geometry.composite_shape.rectangle_semicircle_cutout_area import (
-    GeometryRectangleSemicircleCutoutAreaTask,
-)
-from trace.tasks.geometry.composite_shape.rectangle_semicircle_cutout_perimeter import (
-    GeometryRectangleSemicircleCutoutPerimeterTask,
-)
-from trace.tasks.geometry.composite_shape.sector_angle_from_arc_length import GeometrySectorAngleFromArcLengthTask
-from trace.tasks.geometry.composite_shape.sector_angle_from_area import GeometrySectorAngleFromAreaTask
+from trace.tasks.geometry.composite_shape.rectangle_triangle_cutout_area import GeometryRectangleTriangleCutoutAreaTask
+from trace.tasks.geometry.composite_shape.sector_angle_value import GeometrySectorAngleValueTask
 from trace.tasks.geometry.composite_shape.tabbed_rectilinear_perimeter import (
     GeometryCompositeShapeTabbedRectilinearPerimeterTask,
 )
@@ -37,19 +28,16 @@ from trace.tasks.shared.color_distance import color_distance
 
 
 COMPOSITE_SHAPE_TASK_CLASSES = (
-    GeometryMeasurementCompositeAreaValueTask,
+    GeometryRectangleTriangleCutoutAreaTask,
+    GeometryLProfileAreaTask,
     GeometryMeasurementCompositePerimeterValueTask,
     GeometryCompositeShapeTabbedRectilinearPerimeterTask,
-    GeometryRectangleSemicircleCapAreaTask,
-    GeometryRectangleSemicircleCutoutAreaTask,
+    GeometryRectangleSemicircleAreaTask,
     GeometryRectangleQuarterSectorCutoutAreaTask,
-    GeometryRectangleSemicircleCapPerimeterTask,
-    GeometryRectangleSemicircleCutoutPerimeterTask,
+    GeometryRectangleSemicirclePerimeterTask,
     GeometryRectangleQuarterSectorCutoutPerimeterTask,
-    GeometryMissingWidthFromSemicircleCapAreaTask,
-    GeometryMissingWidthFromSemicircleCutoutAreaTask,
-    GeometrySectorAngleFromArcLengthTask,
-    GeometrySectorAngleFromAreaTask,
+    GeometryMissingWidthFromSemicircleAreaTask,
+    GeometrySectorAngleValueTask,
 )
 
 
@@ -78,8 +66,8 @@ def test_composite_shape_semantic_fills_stay_visible_against_background(task_cls
 
 
 def test_rectangle_semicircle_cutout_issue_seed_uses_visible_shaded_fill() -> None:
-    task = GeometryRectangleSemicircleCutoutAreaTask()
-    out = task.generate(70501177616888, params={"query_id": "single"}, max_attempts=20)
+    task = GeometryRectangleSemicircleAreaTask()
+    out = task.generate(70501177616888, params={"query_id": "cutout_area"}, max_attempts=20)
     style_meta = out.trace_payload["render_spec"]["composite_fill_style"]
 
     assert style_meta["fill_background_lab_distance_min"] >= style_meta["min_fill_background_lab_distance_required"]

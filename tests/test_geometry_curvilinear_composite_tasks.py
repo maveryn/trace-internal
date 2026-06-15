@@ -4,70 +4,45 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.composite_shape.missing_width_from_semicircle_cap_area import GeometryMissingWidthFromSemicircleCapAreaTask
-from trace.tasks.geometry.composite_shape.missing_width_from_semicircle_cutout_area import GeometryMissingWidthFromSemicircleCutoutAreaTask
+from trace.tasks.geometry.composite_shape.missing_width_from_semicircle_area import (
+    GeometryMissingWidthFromSemicircleAreaTask,
+)
 from trace.tasks.geometry.composite_shape.rectangle_quarter_sector_cutout_area import GeometryRectangleQuarterSectorCutoutAreaTask
 from trace.tasks.geometry.composite_shape.shared.defaults import SCENE_ID
 from trace.tasks.geometry.composite_shape.shared.measurements import round1, semicircle_arc_length
 from trace.tasks.geometry.composite_shape.rectangle_quarter_sector_cutout_perimeter import GeometryRectangleQuarterSectorCutoutPerimeterTask
-from trace.tasks.geometry.composite_shape.rectangle_semicircle_cap_area import GeometryRectangleSemicircleCapAreaTask
-from trace.tasks.geometry.composite_shape.rectangle_semicircle_cap_perimeter import GeometryRectangleSemicircleCapPerimeterTask
-from trace.tasks.geometry.composite_shape.rectangle_semicircle_cutout_area import GeometryRectangleSemicircleCutoutAreaTask
-from trace.tasks.geometry.composite_shape.rectangle_semicircle_cutout_perimeter import GeometryRectangleSemicircleCutoutPerimeterTask
-from trace.tasks.geometry.composite_shape.sector_angle_from_arc_length import GeometrySectorAngleFromArcLengthTask
-from trace.tasks.geometry.composite_shape.sector_angle_from_area import GeometrySectorAngleFromAreaTask
+from trace.tasks.geometry.composite_shape.rectangle_semicircle_area import GeometryRectangleSemicircleAreaTask
+from trace.tasks.geometry.composite_shape.rectangle_semicircle_perimeter import (
+    GeometryRectangleSemicirclePerimeterTask,
+)
+from trace.tasks.geometry.composite_shape.sector_angle_value import GeometrySectorAngleValueTask
 
 
 TASK_CLASSES = (
-    GeometryRectangleSemicircleCapAreaTask,
-    GeometryRectangleSemicircleCutoutAreaTask,
+    GeometryRectangleSemicircleAreaTask,
     GeometryRectangleQuarterSectorCutoutAreaTask,
-    GeometryRectangleSemicircleCapPerimeterTask,
-    GeometryRectangleSemicircleCutoutPerimeterTask,
+    GeometryRectangleSemicirclePerimeterTask,
     GeometryRectangleQuarterSectorCutoutPerimeterTask,
-    GeometryMissingWidthFromSemicircleCapAreaTask,
-    GeometryMissingWidthFromSemicircleCutoutAreaTask,
-    GeometrySectorAngleFromArcLengthTask,
-    GeometrySectorAngleFromAreaTask,
+    GeometryMissingWidthFromSemicircleAreaTask,
+    GeometrySectorAngleValueTask,
 )
 
 QUERY_IDS_BY_TASK = {
-    GeometryRectangleSemicircleCapAreaTask: ("single",),
-    GeometryRectangleSemicircleCutoutAreaTask: ("single",),
+    GeometryRectangleSemicircleAreaTask: ("cap_area", "cutout_area"),
     GeometryRectangleQuarterSectorCutoutAreaTask: ("single",),
-    GeometryRectangleSemicircleCapPerimeterTask: ("single",),
-    GeometryRectangleSemicircleCutoutPerimeterTask: ("single",),
+    GeometryRectangleSemicirclePerimeterTask: ("cap_perimeter", "cutout_perimeter"),
     GeometryRectangleQuarterSectorCutoutPerimeterTask: ("single",),
-    GeometryMissingWidthFromSemicircleCapAreaTask: ("single",),
-    GeometryMissingWidthFromSemicircleCutoutAreaTask: ("single",),
-    GeometrySectorAngleFromArcLengthTask: ("single",),
-    GeometrySectorAngleFromAreaTask: ("single",),
-}
-
-INTERNAL_QUERY_ID_BY_TASK = {
-    GeometryRectangleSemicircleCapAreaTask: "rectangle_semicircle_cap_area",
-    GeometryRectangleSemicircleCutoutAreaTask: "rectangle_semicircle_cutout_area",
-    GeometryRectangleQuarterSectorCutoutAreaTask: "rectangle_quarter_sector_cutout_area",
-    GeometryRectangleSemicircleCapPerimeterTask: "rectangle_semicircle_cap_perimeter",
-    GeometryRectangleSemicircleCutoutPerimeterTask: "rectangle_semicircle_cutout_perimeter",
-    GeometryRectangleQuarterSectorCutoutPerimeterTask: "rectangle_quarter_sector_cutout_perimeter",
-    GeometryMissingWidthFromSemicircleCapAreaTask: "missing_width_from_semicircle_cap_area",
-    GeometryMissingWidthFromSemicircleCutoutAreaTask: "missing_width_from_semicircle_cutout_area",
-    GeometrySectorAngleFromArcLengthTask: "sector_angle_from_arc_length",
-    GeometrySectorAngleFromAreaTask: "sector_angle_from_area",
+    GeometryMissingWidthFromSemicircleAreaTask: ("cap_from_total_area", "cutout_from_total_area"),
+    GeometrySectorAngleValueTask: ("from_arc_length", "from_sector_area"),
 }
 
 EXPECTED_ANNOTATION_KEYS_BY_TASK = {
-    GeometryRectangleSemicircleCapAreaTask: {"A", "B", "C", "D", "O"},
-    GeometryRectangleSemicircleCutoutAreaTask: {"A", "B", "C", "D", "O"},
+    GeometryRectangleSemicircleAreaTask: {"A", "B", "C", "D", "O"},
     GeometryRectangleQuarterSectorCutoutAreaTask: {"A", "B", "C", "D", "E", "F"},
-    GeometryRectangleSemicircleCapPerimeterTask: {"A", "B", "C", "D", "O"},
-    GeometryRectangleSemicircleCutoutPerimeterTask: {"A", "B", "C", "D", "O"},
+    GeometryRectangleSemicirclePerimeterTask: {"A", "B", "C", "D", "O"},
     GeometryRectangleQuarterSectorCutoutPerimeterTask: {"A", "B", "C", "D", "E", "F"},
-    GeometryMissingWidthFromSemicircleCapAreaTask: {"A", "B", "C", "D", "O"},
-    GeometryMissingWidthFromSemicircleCutoutAreaTask: {"A", "B", "C", "D", "O"},
-    GeometrySectorAngleFromArcLengthTask: {"O", "A", "B"},
-    GeometrySectorAngleFromAreaTask: {"O", "A", "B"},
+    GeometryMissingWidthFromSemicircleAreaTask: {"A", "B", "C", "D", "O"},
+    GeometrySectorAngleValueTask: {"O", "A", "B"},
 }
 
 
@@ -115,11 +90,11 @@ def test_curvilinear_tasks_support_every_explicit_query(task_cls) -> None:
             max_attempts=20,
         )
         assert out.query_id == query_id
-        assert out.trace_payload["query_spec"]["params"]["internal_query_id"] == INTERNAL_QUERY_ID_BY_TASK[task_cls]
         assert out.answer_gt.type == "number"
-        assert out.trace_payload["query_spec"]["params"]["query_id_probabilities"] == {
-            query_id: 1.0
-        }
+        probabilities = out.trace_payload["query_spec"]["params"]["query_id_probabilities"]
+        assert probabilities[query_id] == 1.0
+        assert set(probabilities) == set(QUERY_IDS_BY_TASK[task_cls])
+        assert sum(float(value) for value in probabilities.values()) == 1.0
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -140,7 +115,7 @@ def test_curvilinear_annotation_stays_inside_canvas(task_cls) -> None:
 
 
 def test_curvilinear_tasks_reject_unknown_query_id() -> None:
-    task = GeometryRectangleSemicircleCapAreaTask()
+    task = GeometryRectangleSemicircleAreaTask()
     with pytest.raises(ValueError):
         task.generate(54031, params={"query_id": "not_a_query"}, max_attempts=20)
 
@@ -179,21 +154,21 @@ def test_quarter_sector_area_omits_obvious_right_angle_label() -> None:
 
 
 @pytest.mark.parametrize(
-    "task_cls",
+    "task_cls, query_id",
     (
-        GeometryRectangleSemicircleCapAreaTask,
-        GeometryRectangleSemicircleCutoutAreaTask,
-        GeometryRectangleSemicircleCapPerimeterTask,
-        GeometryRectangleSemicircleCutoutPerimeterTask,
-        GeometryMissingWidthFromSemicircleCapAreaTask,
-        GeometryMissingWidthFromSemicircleCutoutAreaTask,
+        (GeometryRectangleSemicircleAreaTask, "cap_area"),
+        (GeometryRectangleSemicircleAreaTask, "cutout_area"),
+        (GeometryRectangleSemicirclePerimeterTask, "cap_perimeter"),
+        (GeometryRectangleSemicirclePerimeterTask, "cutout_perimeter"),
+        (GeometryMissingWidthFromSemicircleAreaTask, "cap_from_total_area"),
+        (GeometryMissingWidthFromSemicircleAreaTask, "cutout_from_total_area"),
     ),
 )
-def test_semicircle_rectangle_variants_show_all_four_right_angle_markers(task_cls) -> None:
+def test_semicircle_rectangle_variants_show_all_four_right_angle_markers(task_cls, query_id) -> None:
     task = task_cls()
     out = task.generate(
         54095,
-        params={"query_id": "single", "width_units": 12, "height_units": 14, "radius_units": 4},
+        params={"query_id": query_id, "width_units": 12, "height_units": 14, "radius_units": 4},
         max_attempts=20,
     )
 
@@ -206,21 +181,21 @@ def test_semicircle_rectangle_variants_show_all_four_right_angle_markers(task_cl
 
 
 @pytest.mark.parametrize(
-    "task_cls",
+    "query_id",
     (
-        GeometryRectangleSemicircleCapPerimeterTask,
-        GeometryRectangleSemicircleCutoutPerimeterTask,
+        "cap_perimeter",
+        "cutout_perimeter",
     ),
 )
-def test_semicircle_perimeter_includes_right_side_remainders(task_cls) -> None:
-    task = task_cls()
+def test_semicircle_perimeter_includes_right_side_remainders(query_id) -> None:
+    task = GeometryRectangleSemicirclePerimeterTask()
     width_units = 12
     height_units = 14
     radius_units = 4
     out = task.generate(
         54097,
         params={
-            "query_id": "single",
+            "query_id": query_id,
             "width_units": width_units,
             "height_units": height_units,
             "radius_units": radius_units,
@@ -244,38 +219,36 @@ def test_semicircle_perimeter_includes_right_side_remainders(task_cls) -> None:
 
 def test_curvilinear_perimeter_omits_derived_boundary_total_labels() -> None:
     for task_cls in (
-        GeometryRectangleSemicircleCapPerimeterTask,
-        GeometryRectangleSemicircleCutoutPerimeterTask,
+        GeometryRectangleSemicirclePerimeterTask,
         GeometryRectangleQuarterSectorCutoutPerimeterTask,
     ):
         task = task_cls()
-        query_id = QUERY_IDS_BY_TASK[task_cls][0]
-        out = task.generate(
-            54101,
-            params={"query_id": query_id},
-            max_attempts=20,
-        )
-        support_roles = set(out.trace_payload["render_map"]["support_roles"])
+        for query_id in QUERY_IDS_BY_TASK[task_cls]:
+            out = task.generate(
+                54101,
+                params={"query_id": query_id},
+                max_attempts=20,
+            )
+            support_roles = set(out.trace_payload["render_map"]["support_roles"])
 
-        assert "arc_length_label" not in support_roles
+            assert "arc_length_label" not in support_roles
         assert "straight_boundary_length_label" not in support_roles
 
 
 def test_curvilinear_perimeter_prompts_name_curve_type() -> None:
     expected_terms = {
-        GeometryRectangleSemicircleCapPerimeterTask: ("semicircle",),
-        GeometryRectangleSemicircleCutoutPerimeterTask: ("semicircle",),
+        GeometryRectangleSemicirclePerimeterTask: ("semicircle",),
         GeometryRectangleQuarterSectorCutoutPerimeterTask: ("quarter", "circle"),
     }
 
     for task_cls, terms in expected_terms.items():
         task = task_cls()
-        query_id = QUERY_IDS_BY_TASK[task_cls][0]
-        out = task.generate(
-            54111,
-            params={"query_id": query_id},
-            max_attempts=20,
-        )
-        prompt = str(out.prompt).lower()
+        for query_id in QUERY_IDS_BY_TASK[task_cls]:
+            out = task.generate(
+                54111,
+                params={"query_id": query_id},
+                max_attempts=20,
+            )
+            prompt = str(out.prompt).lower()
 
-        assert all(term in prompt for term in terms)
+            assert all(term in prompt for term in terms)

@@ -1,14 +1,14 @@
-# `task_geometry__composite_shape__rectangle_semicircle_cap_area`
+# `task_geometry__composite_shape__rectangle_triangle_cutout_area`
 
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `composite_shape`
 5. Query id: `single`
-6. Answer schema: `decimal_value_1dp`
+6. Answer schema: `integer_value`
 7. Annotation schema: `keyed_point_map`
 
 ## Program Contract
-- `solve_formula(visible_composite_shape_measurements, unknown_role=area_measure, formula_schema=rectangle_semicircle_cap_area); scene=composite_shape; scope=rectangle_semicircle_cap_area`
+- `solve_formula(visible_composite_shape_measurements, unknown_role=area_measure, formula_schema=outer_rectangle_minus_triangle); scene=composite_shape; scope=rectangle_triangle_cutout_area`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `composite_shape`.
@@ -22,4 +22,4 @@ Generation is deterministic for a fixed seed, params, config, and prompt bundle 
 
 ## Source
 - Config: `configs/domains/geometry/composite_shape.yaml`
-- Task module: `trace/tasks/geometry/composite_shape/rectangle_semicircle_cap_area.py`
+- Task module: `trace/tasks/geometry/composite_shape/rectangle_triangle_cutout_area.py`

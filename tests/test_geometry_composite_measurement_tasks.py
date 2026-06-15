@@ -11,8 +11,9 @@ from trace.tasks.geometry.angle_relations.parallel_supplement_angle import (
 from trace.tasks.geometry.angle_relations.triangle_exterior_angle import (
     GeometryAngleRelationsTriangleExteriorAngleTask,
 )
-from trace.tasks.geometry.composite_shape.composite_area_value import GeometryMeasurementCompositeAreaValueTask
 from trace.tasks.geometry.composite_shape.house_outline_perimeter import GeometryMeasurementCompositePerimeterValueTask
+from trace.tasks.geometry.composite_shape.l_profile_area import GeometryLProfileAreaTask
+from trace.tasks.geometry.composite_shape.rectangle_triangle_cutout_area import GeometryRectangleTriangleCutoutAreaTask
 from trace.tasks.geometry.composite_shape.tabbed_rectilinear_perimeter import GeometryCompositeShapeTabbedRectilinearPerimeterTask
 from trace.tasks.geometry.triangle_relations.angle_bisector_segment_value_angle_bisector_base_length import GeometryAngleBisectorBaseLengthTask
 from trace.tasks.geometry.triangle_relations.angle_bisector_segment_value_angle_bisector_split_length import GeometryAngleBisectorSplitLengthTask
@@ -38,7 +39,8 @@ TASK_CLASSES = (
     GeometryAngleBisectorSplitLengthTask,
     GeometryCentroidMedianVertexSegmentLengthTask,
     GeometryCentroidMedianWholeMedianLengthTask,
-    GeometryMeasurementCompositeAreaValueTask,
+    GeometryRectangleTriangleCutoutAreaTask,
+    GeometryLProfileAreaTask,
     GeometryMeasurementCompositePerimeterValueTask,
     GeometryCompositeShapeTabbedRectilinearPerimeterTask,
 )
@@ -210,12 +212,12 @@ def test_composite_measurement_tasks_reject_unknown_query_id() -> None:
     "task_cls, expected_keys_by_query",
     (
         (
-            GeometryMeasurementCompositeAreaValueTask,
+            GeometryRectangleTriangleCutoutAreaTask,
             {
-                "rectangle_minus_triangle_area": {"A", "B", "C", "D", "E", "F"},
-                "l_shape_area": {"A", "B", "C", "D", "E", "F"},
+                "single": {"A", "B", "C", "D", "E", "F"},
             },
         ),
+        (GeometryLProfileAreaTask, {"single": {"A", "B", "C", "D", "E", "F"}}),
         (GeometryMeasurementCompositePerimeterValueTask, {"single": {"A", "B", "C", "D", "E"}}),
         (
             GeometryCompositeShapeTabbedRectilinearPerimeterTask,
@@ -241,8 +243,8 @@ def test_rectilinear_composite_public_annotation_uses_labeled_points(task_cls, e
 @pytest.mark.parametrize(
     "task_cls, query_id, expected_count",
     (
-        (GeometryMeasurementCompositeAreaValueTask, "rectangle_minus_triangle_area", 5),
-        (GeometryMeasurementCompositeAreaValueTask, "l_shape_area", 6),
+        (GeometryRectangleTriangleCutoutAreaTask, "single", 5),
+        (GeometryLProfileAreaTask, "single", 6),
         (GeometryMeasurementCompositePerimeterValueTask, "single", 6),
         (GeometryCompositeShapeTabbedRectilinearPerimeterTask, "single", 8),
     ),

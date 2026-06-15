@@ -14,22 +14,22 @@
     "scene:curvilinear_composite_scene": [
       "object_description"
     ],
-    "query:rectangle_semicircle_cap_area": [],
-    "query:rectangle_semicircle_cutout_area": [],
+    "query:cap_area": [],
+    "query:cutout_area": [],
     "query:rectangle_quarter_sector_cutout_area": [],
-    "query:rectangle_semicircle_cap_perimeter": [],
-    "query:rectangle_semicircle_cutout_perimeter": [],
+    "query:cap_perimeter": [],
+    "query:cutout_perimeter": [],
     "query:rectangle_quarter_sector_cutout_perimeter": [],
-    "query:missing_width_from_semicircle_cap_area": [
+    "query:cap_from_total_area": [
       "total_area"
     ],
-    "query:missing_width_from_semicircle_cutout_area": [
+    "query:cutout_from_total_area": [
       "total_area"
     ],
-    "query:sector_angle_from_arc_length": [
+    "query:from_arc_length": [
       "arc_length"
     ],
-    "query:sector_angle_from_area": [
+    "query:from_sector_area": [
       "sector_area"
     ],
     "answer_or_annotation:answer_only": [
@@ -70,14 +70,14 @@
     ]
   },
   "query_templates": {
-    "rectangle_semicircle_cap_area": [
+    "cap_area": [
       "What is the area of the entire shaded region?",
       "Compute the area covered by the shaded curvilinear figure.",
       "Find the shaded area shown in the diagram.",
       "Using the shown dimensions, what is the area of the shaded figure?",
       "Determine the total shaded area of the figure."
     ],
-    "rectangle_semicircle_cutout_area": [
+    "cutout_area": [
       "What is the area of the shaded region?",
       "Compute the area covered by the shaded curvilinear figure.",
       "Find the shaded area shown in the diagram.",
@@ -91,14 +91,14 @@
       "Using the shown dimensions, what is the area of the shaded figure?",
       "Determine the total shaded area of the figure."
     ],
-    "rectangle_semicircle_cap_perimeter": [
+    "cap_perimeter": [
       "What is the perimeter of the highlighted boundary? Treat the curved cap as a semicircle and use the visible dimensions.",
       "Compute the total length of the highlighted outside boundary, including the semicircular cap.",
       "Find the perimeter of the shaded figure, including the semicircle arc.",
       "Using the shown dimensions and the semicircular cap, what is the perimeter of the highlighted boundary?",
       "Determine the total highlighted boundary length from the visible dimensions and semicircle arc."
     ],
-    "rectangle_semicircle_cutout_perimeter": [
+    "cutout_perimeter": [
       "What is the perimeter of the highlighted boundary? Treat the curved cutout as a semicircle and use the visible dimensions.",
       "Compute the total length of the highlighted outside and semicircular cutout boundary from the shown dimensions.",
       "Find the perimeter of the shaded figure, including the semicircle cutout boundary.",
@@ -112,28 +112,28 @@
       "Using the shown dimensions and the quarter-circle cutout, what is the perimeter of the highlighted boundary?",
       "Determine the total highlighted boundary length from the visible dimensions and quarter-circle arc."
     ],
-    "missing_width_from_semicircle_cap_area": [
+    "cap_from_total_area": [
       "The total shaded area is {total_area}. What is the missing rectangle width marked with a question mark?",
       "Given total area {total_area}, find the unknown rectangle width in the rectangle-plus-semicircle shape.",
       "The composite region has area {total_area}. What is the width labeled with the question mark?",
       "Using the shown height and radius, compute the missing rectangle width when the total area is {total_area}.",
       "Find the unknown width of the rectangle with the semicircular cap if the total area is {total_area}."
     ],
-    "missing_width_from_semicircle_cutout_area": [
+    "cutout_from_total_area": [
       "The total shaded area is {total_area}. What is the missing rectangle width marked with a question mark?",
       "Given total area {total_area}, find the unknown rectangle width in the rectangle-minus-semicircle shape.",
       "The remaining shaded region has area {total_area}. What is the width labeled with the question mark?",
       "Using the shown height and radius, compute the missing rectangle width when the shaded area is {total_area}.",
       "Find the unknown width of the rectangle with the semicircular notch if the shaded area is {total_area}."
     ],
-    "sector_angle_from_arc_length": [
+    "from_arc_length": [
       "The curved arc length is {arc_length}. What is the central angle marked with the question mark?",
       "Using the shown radius and arc length {arc_length}, find the missing sector angle.",
       "The sector has arc length {arc_length}. What is the degree measure of the marked central angle?",
       "Find the central angle of the sector from the shown radius and arc length {arc_length}.",
       "Determine the angle marked with the question mark when the sector arc length is {arc_length}."
     ],
-    "sector_angle_from_area": [
+    "from_sector_area": [
       "The sector area is {sector_area}. What is the central angle marked with the question mark?",
       "Using the shown radius and sector area {sector_area}, find the missing sector angle.",
       "The sector has area {sector_area}. What is the degree measure of the marked central angle?",

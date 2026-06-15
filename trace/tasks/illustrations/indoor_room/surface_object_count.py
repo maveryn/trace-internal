@@ -44,7 +44,7 @@ class _Defaults:
     object_count_min: int = 10
     object_count_max: int = 16
     target_count_min: int = 1
-    target_count_max: int = 6
+    target_count_max: int = 5
     canvas_width: int = 1280
     canvas_height: int = 840
     object_size_min_px: int = 52

@@ -82,6 +82,31 @@ def test_object_type_on_surface_count_contract() -> None:
     assert sorted(out.annotation_gt.value) == sorted(_expected_bboxes(trace, execution["counted_object_ids"]))
 
 
+def test_object_type_on_surface_count_answer_range() -> None:
+    task = create_task(SURFACE_TASK_ID)
+    answer_counts: Counter[int] = Counter()
+    for index in range(60):
+        out = task.generate(
+            hash64(2026052401, "type-on-surface-answer-range", index),
+            params={},
+            max_attempts=80,
+        )
+        answer_counts[int(out.answer_gt.value)] += 1
+
+    assert sorted(answer_counts) == [1, 2, 3, 4, 5]
+
+    try:
+        task.generate(
+            hash64(2026052401, "type-on-surface-answer-range-explicit", 0),
+            params={"target_count": 6},
+            max_attempts=1,
+        )
+    except RuntimeError as exc:
+        assert "target_count is outside configured support" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("target_count=6 should be outside the configured answer range")
+
+
 def test_counter_objects_rest_on_surface_baseline() -> None:
     out = create_task(SURFACE_TASK_ID).generate(
         hash64(2026052401, "type-on-counter", 0),

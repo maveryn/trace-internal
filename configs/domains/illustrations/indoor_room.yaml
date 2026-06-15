@@ -6,7 +6,7 @@ generation:
       object_count_min: 10
       object_count_max: 16
       target_count_min: 1
-      target_count_max: 6
+      target_count_max: 5
       surface_type_support:
         - table
         - shelf

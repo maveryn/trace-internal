@@ -32,7 +32,7 @@ Counts visible small indoor objects of a sampled object type that are placed on 
 ## Answer Contract
 - Answer schema: `integer_count`
 - Generator `answer_gt.type`: `integer`
-- The answer value is a non-negative integer derived from the same execution trace as the annotation.
+- The answer value is an integer in `1..5`, derived from the same execution trace as the annotation.
 
 ## Annotation Contract
 - Annotation schema: `bbox_set`

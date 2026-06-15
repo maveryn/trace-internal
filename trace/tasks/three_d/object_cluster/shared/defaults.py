@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Dict, Mapping, Sequence, Tuple
 
+from trace.tasks.shared.named_colors import available_named_colors
 from trace.tasks.three_d.shared.object_resources import (
     OBJECT_CLUSTER_DIMENSIONS,
     OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE,
@@ -35,12 +36,8 @@ DEFAULT_ANSWER_COUNT_BIN_WEIGHTS: Mapping[str, float] = {
 }
 
 PROMPT_COLOR_RGB: Dict[str, Tuple[int, int, int]] = {
-    "red": (218, 74, 62),
-    "blue": (64, 120, 218),
-    "green": (62, 158, 92),
-    "yellow": (226, 185, 60),
-    "purple": (143, 91, 190),
-    "orange": (226, 128, 47),
+    str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+    for name, rgb in available_named_colors()
 }
 COLOR_SAFE_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
     shape

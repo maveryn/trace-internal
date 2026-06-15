@@ -8,11 +8,13 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
+from trace.tasks.shared.named_colors import available_named_colors
 from trace.tasks.three_d.object_scene.shared.logical_predicate_count import (
     MULTI_ATTRIBUTE_AND_COUNT_TASK_ID,
     MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
     MULTI_ATTRIBUTE_OR_COUNT_TASK_ID,
     MULTI_ATTRIBUTE_XOR_COUNT_TASK_ID,
+    PROMPT_COLOR_RGB,
     SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID,
 )
 
@@ -26,6 +28,15 @@ TASK_ID_BY_QUERY_ID = {
     "object_type_and_not_color_count": MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
     "color_and_not_object_type_count": MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
 }
+
+
+def test_logical_predicate_count_prompt_colors_use_canonical_palette() -> None:
+    canonical = {
+        str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+        for name, rgb in available_named_colors()
+    }
+
+    assert dict(PROMPT_COLOR_RGB) == canonical
 
 
 def _spec_matches_target(spec: dict, target_spec: dict) -> bool:

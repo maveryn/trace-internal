@@ -8,20 +8,14 @@ from typing import Any, Dict, List, Mapping, MutableMapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from ...shared.named_colors import available_named_colors
 from ...shared.text_legibility import draw_text_traced
 from ...shared.text_rendering import load_font
 
 
 PROMPT_COLOR_RGB_BY_NAME: Dict[str, Tuple[int, int, int]] = {
-    "red": (190, 72, 66),
-    "orange": (204, 126, 48),
-    "yellow": (220, 184, 62),
-    "green": (64, 146, 102),
-    "blue": (58, 112, 190),
-    "purple": (104, 88, 172),
-    "pink": (210, 95, 150),
-    "gray": (82, 91, 106),
-    "brown": (132, 92, 54),
+    str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+    for name, rgb in available_named_colors()
 }
 
 
@@ -44,7 +38,7 @@ def prompt_color_name_for_rgb(rgb: Sequence[Any]) -> str:
     if len(rgb) < 3:
         raise ValueError("RGB color requires at least three channels")
     target = tuple(max(0, min(255, int(channel))) for channel in rgb[:3])
-    best_name = "gray"
+    best_name = next(iter(PROMPT_COLOR_RGB_BY_NAME), "red")
     best_distance = float("inf")
     for name, color in PROMPT_COLOR_RGB_BY_NAME.items():
         distance = math.sqrt(

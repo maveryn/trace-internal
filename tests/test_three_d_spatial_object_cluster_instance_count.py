@@ -6,6 +6,7 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
+from trace.tasks.shared.named_colors import available_named_colors
 from trace.tasks.three_d.shared.object_inventory_preview import render_three_d_object_profile_preview
 from trace.tasks.three_d.shared.object_resources import OBJECT_CLUSTER_EXTRA_SHAPE_TYPES, object_profiles
 from trace.tasks.three_d.object_cluster.color_membership_count import TASK_ID as COLOR_MEMBERSHIP_COUNT_TASK_ID
@@ -63,6 +64,15 @@ COUNTQA_CLUSTER_ADDITIONS = {
     "tape_roll",
     "bag",
 }
+
+
+def test_object_cluster_prompt_colors_use_canonical_palette() -> None:
+    canonical = {
+        str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+        for name, rgb in available_named_colors()
+    }
+
+    assert dict(PROMPT_COLOR_RGB) == canonical
 
 
 def test_object_cluster_total_object_count_answer_and_annotation() -> None:

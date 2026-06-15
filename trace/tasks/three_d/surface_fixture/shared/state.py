@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from typing import Mapping, Tuple
 
+from trace.tasks.shared.color_format import format_named_color_with_hex
+from trace.tasks.shared.named_colors import available_named_colors
+
 
 SCENE_ID = "surface_fixture"
 
@@ -148,13 +151,8 @@ ELEMENT_PLURAL: Mapping[str, str] = {
 }
 
 SEMANTIC_COLOR_RGB: Mapping[str, Tuple[int, int, int]] = {
-    "red": (196, 74, 62),
-    "blue": (65, 121, 185),
-    "green": (74, 144, 93),
-    "yellow": (221, 177, 73),
-    "purple": (129, 94, 169),
-    "orange": (210, 126, 58),
-    "gray": (142, 151, 156),
+    str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+    for name, rgb in available_named_colors()
 }
 
 SEMANTIC_COLOR_SUPPORT: Tuple[str, ...] = tuple(SEMANTIC_COLOR_RGB.keys())
@@ -259,7 +257,7 @@ def semantic_color_label(color_name: str) -> str:
     """Return the visible prompt label for one semantic color."""
 
     rgb = SEMANTIC_COLOR_RGB[str(color_name)]
-    return f"{color_name} [#{rgb[0]:02X}{rgb[1]:02X}{rgb[2]:02X}]"
+    return format_named_color_with_hex(str(color_name), rgb)
 
 
 __all__ = [

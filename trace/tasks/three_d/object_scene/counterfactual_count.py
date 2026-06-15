@@ -23,6 +23,7 @@ from ...shared.config_defaults import (
     split_scene_generation_rendering_prompt_defaults,
 )
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.named_colors import available_named_colors
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -65,12 +66,8 @@ COLOR_SAFE_SHAPE_TYPES: Tuple[str, ...] = (
     "wedge",
 )
 PROMPT_COLOR_RGB: Dict[str, Tuple[int, int, int]] = {
-    "red": (218, 74, 62),
-    "blue": (64, 120, 218),
-    "green": (62, 158, 92),
-    "yellow": (226, 185, 60),
-    "purple": (143, 91, 190),
-    "orange": (226, 128, 47),
+    str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+    for name, rgb in available_named_colors()
 }
 COUNT_SCENE_SLOTS: Tuple[Tuple[float, float], ...] = tuple(
     (x, y)

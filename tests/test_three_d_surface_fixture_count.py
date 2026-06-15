@@ -10,6 +10,7 @@ from trace.core.scene_package_migration import parse_public_task_id
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
+from trace.tasks.shared.named_colors import available_named_colors
 from trace.tasks.three_d.shared.object_resources import object_profiles
 from trace.tasks.three_d.surface_fixture.adjacent_to_reference_count import TASK_ID as ADJACENT_TASK_ID
 from trace.tasks.three_d.surface_fixture.colored_element_count import TASK_ID as COLORED_TASK_ID
@@ -19,6 +20,8 @@ from trace.tasks.three_d.surface_fixture.repeated_element_count import TASK_ID a
 from trace.tasks.three_d.surface_fixture.scoped_colored_element_count import TASK_ID as SCOPED_COLORED_TASK_ID
 from trace.tasks.three_d.surface_fixture.shared.state import (
     ELEMENT_TYPE_BY_SCENE_VARIANT,
+    SEMANTIC_COLOR_RGB,
+    SEMANTIC_COLOR_SUPPORT,
 )
 from trace.tasks.three_d.surface_fixture.shared.layout import VALID_LAYOUT_FAMILIES, VALID_LAYOUT_STYLES
 from trace.tasks.three_d.surface_fixture.state_element_count import TASK_ID as STATE_TASK_ID
@@ -32,6 +35,16 @@ SURFACE_FIXTURE_TASK_IDS = (
     EMPTY_MISSING_TASK_ID,
     ADJACENT_TASK_ID,
 )
+
+
+def test_surface_fixture_semantic_colors_use_canonical_palette() -> None:
+    canonical = {
+        str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+        for name, rgb in available_named_colors()
+    }
+
+    assert dict(SEMANTIC_COLOR_RGB) == canonical
+    assert tuple(SEMANTIC_COLOR_SUPPORT) == tuple(canonical)
 
 
 def test_surface_fixture_repeated_element_count_variants() -> None:

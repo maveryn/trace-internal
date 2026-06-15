@@ -6,7 +6,8 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.object_scene.counterfactual_count import TASK_ID
+from trace.tasks.shared.named_colors import available_named_colors
+from trace.tasks.three_d.object_scene.counterfactual_count import PROMPT_COLOR_RGB, TASK_ID
 
 
 def _spec_matches_predicate(spec: dict, predicate: dict) -> bool:
@@ -17,6 +18,15 @@ def _spec_matches_predicate(spec: dict, predicate: dict) -> bool:
     if color_name is not None and str(spec["color_name"]) != str(color_name):
         return False
     return True
+
+
+def test_counterfactual_attribute_count_prompt_colors_use_canonical_palette() -> None:
+    canonical = {
+        str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+        for name, rgb in available_named_colors()
+    }
+
+    assert dict(PROMPT_COLOR_RGB) == canonical
 
 
 def test_counterfactual_attribute_count_answer_and_annotation() -> None:

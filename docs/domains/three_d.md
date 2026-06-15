@@ -49,6 +49,12 @@ should expose stable projected bboxes or point markers. Semantic color, size,
 height, depth, support, and relation predicates must be recorded in trace
 metadata when queried.
 
+Prompt-facing named colors must use the repo-wide canonical 10-color palette
+from `trace.tasks.shared.named_colors` and should be rendered in prompts as
+`<color name> [#RRGGBB]`. Scene-specific palettes are acceptable only for
+unnamed visual/style variation that is not sampled as a named answer or prompt
+predicate.
+
 Use the 3D object review surfaces for object-fidelity audits. Style, lighting,
 camera, and object-palette variation must not encode answer value, query id,
 correct option, relation truth, or construction order unless explicitly queried.

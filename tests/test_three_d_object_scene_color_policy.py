@@ -5,6 +5,8 @@ from typing import Any, Mapping
 import pytest
 
 from trace.tasks import create_task
+from trace.tasks.shared.named_colors import available_named_colors
+from trace.tasks.three_d.shared.option_panel import PROMPT_COLOR_RGB_BY_NAME
 
 
 OBJECT_SCENE_OPTION_TASKS = (
@@ -15,6 +17,15 @@ OBJECT_SCENE_OPTION_TASKS = (
     "task_three_d__object_scene__occlusion_order_label",
     "task_three_d__object_scene__reference_nearest_label",
 )
+
+
+def test_object_scene_option_prompt_colors_use_canonical_palette() -> None:
+    canonical = {
+        str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+        for name, rgb in available_named_colors()
+    }
+
+    assert dict(PROMPT_COLOR_RGB_BY_NAME) == canonical
 
 
 def _answer_spec(trace: Mapping[str, Any]) -> Mapping[str, Any]:

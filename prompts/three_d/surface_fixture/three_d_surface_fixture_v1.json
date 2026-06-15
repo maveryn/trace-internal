@@ -29,6 +29,20 @@
         "How many {target_element_plural} are on the {fixture_display_name}?",
         "How many {target_element_plural} can be seen?"
       ],
+      "highest_element_count_panel": [
+        "Which labeled panel has the highest number of visible {target_element_plural}?",
+        "Choose the panel label with the most visible {target_element_plural}.",
+        "Among the four labeled panels, which one contains the greatest number of {target_element_plural}?",
+        "Which option panel shows the most {target_element_plural}?",
+        "What letter labels the panel with the highest count of visible {target_element_plural}?"
+      ],
+      "lowest_element_count_panel": [
+        "Which labeled panel has the lowest number of visible {target_element_plural}?",
+        "Choose the panel label with the fewest visible {target_element_plural}.",
+        "Among the four labeled panels, which one contains the smallest number of {target_element_plural}?",
+        "Which option panel shows the fewest {target_element_plural}?",
+        "What letter labels the panel with the lowest count of visible {target_element_plural}?"
+      ],
       "element_color_count": [
         "How many {target_color_label} {target_element_plural} are on the fixture?",
         "Count the {target_color_label} {target_element_plural}. How many are there?",
@@ -89,6 +103,18 @@
       "json_example": "{\"annotation\":[[147,472],[420,345],[730,550]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
+    "query:highest_element_count_panel": {
+      "answer_hint": "set \"answer\" to the selected panel label as a single capital letter",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around the selected panel",
+      "json_example": "{\"annotation\":[[80,90,520,410]],\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
+    },
+    "query:lowest_element_count_panel": {
+      "answer_hint": "set \"answer\" to the selected panel label as a single capital letter",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around the selected panel",
+      "json_example": "{\"annotation\":[[80,90,520,410]],\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
+    },
     "query:element_color_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
       "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted colored surface element",
@@ -133,6 +159,8 @@
   "required_slots_by_key": {
     "scene:surface_fixture": ["object_description"],
     "query:element_type_count": ["target_element_plural", "target_element_name", "fixture_display_name"],
+    "query:highest_element_count_panel": ["target_element_plural"],
+    "query:lowest_element_count_panel": ["target_element_plural"],
     "query:element_color_count": ["target_color_label", "target_element_plural"],
     "query:element_state_count": ["target_state_label", "target_element_plural"],
     "query:scoped_element_color_count": ["target_color_label", "target_element_plural", "scope_phrase"],

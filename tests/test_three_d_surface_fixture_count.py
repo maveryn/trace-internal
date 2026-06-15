@@ -14,6 +14,11 @@ from trace.tasks.shared.named_colors import available_named_colors
 from trace.tasks.three_d.shared.object_resources import object_profiles
 from trace.tasks.three_d.surface_fixture.adjacent_to_reference_count import TASK_ID as ADJACENT_TASK_ID
 from trace.tasks.three_d.surface_fixture.colored_element_count import TASK_ID as COLORED_TASK_ID
+from trace.tasks.three_d.surface_fixture.element_count_extremum_label import (
+    HIGHEST_QUERY_ID as EXTREMUM_HIGHEST_QUERY_ID,
+    LOWEST_QUERY_ID as EXTREMUM_LOWEST_QUERY_ID,
+    TASK_ID as EXTREMUM_TASK_ID,
+)
 from trace.tasks.three_d.surface_fixture.empty_or_missing_cell_count import TASK_ID as EMPTY_MISSING_TASK_ID
 from trace.tasks.three_d.surface_fixture.repeated_element_count import TASK_ID
 from trace.tasks.three_d.surface_fixture.repeated_element_count import TASK_ID as REPEATED_TASK_ID
@@ -33,6 +38,7 @@ from trace.tasks.three_d.surface_fixture.state_element_count import TASK_ID as S
 
 SURFACE_FIXTURE_TASK_IDS = (
     REPEATED_TASK_ID,
+    EXTREMUM_TASK_ID,
     COLORED_TASK_ID,
     STATE_TASK_ID,
     SCOPED_COLORED_TASK_ID,
@@ -174,6 +180,47 @@ def test_surface_fixture_predicate_count_tasks() -> None:
         assert "{target_" not in output.prompt
         assert "{scope_" not in output.prompt
         assert "{reference_" not in output.prompt
+
+
+def test_surface_fixture_element_count_extremum_label_queries() -> None:
+    cases = (
+        (EXTREMUM_HIGHEST_QUERY_ID, max),
+        (EXTREMUM_LOWEST_QUERY_ID, min),
+    )
+
+    for offset, (query_id, extremum_fn) in enumerate(cases):
+        output = create_task(EXTREMUM_TASK_ID).generate(
+            20260780 + offset,
+            params={
+                "query_id": query_id,
+                "scene_variant": "socket_bank",
+                "answer_label": "C",
+                "option_counts": [5, 8, 13, 10] if query_id == EXTREMUM_HIGHEST_QUERY_ID else [8, 10, 4, 13],
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=20,
+        )
+
+        trace = output.trace_payload["execution_trace"]
+        render_map = output.trace_payload["render_map"]
+        counts_by_label = {str(key): int(value) for key, value in trace["option_counts_by_label"].items()}
+        expected_count = int(extremum_fn(counts_by_label.values()))
+
+        assert output.scene_id == "surface_fixture"
+        assert output.query_id == query_id
+        assert output.answer_gt.type == "option_letter"
+        assert output.answer_gt.value == "C"
+        assert trace["answer_label"] == "C"
+        assert trace["answer_count"] == expected_count
+        assert counts_by_label["C"] == expected_count
+        assert set(counts_by_label) == {"A", "B", "C", "D"}
+        assert len(set(counts_by_label.values())) == 4
+        assert output.annotation_gt.type == "bbox_set"
+        assert output.annotation_gt.value == [render_map["option_panel_bboxes_px"]["C"]]
+        assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
+        assert "{target_" not in output.prompt
+        assert "{object_" not in output.prompt
+        assert output.image.size == (1180, 900)
 
 
 def test_surface_fixture_scoped_color_query_ids_bind_scope_axis() -> None:

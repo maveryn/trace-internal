@@ -3,15 +3,16 @@
 ## Contract
 1. Domain: `games`
 2. Scene id: `lane_runner`
-4. Public task id: `task_games__lane_runner__safe_path_label`
-5. Supported `query_id` values: `safe_path_label`
+3. Public task id: `task_games__lane_runner__safe_path_label`
+4. Supported `query_id` values: `single`
 
-## Program
+## Program Contract
+`select_unique(label(path) where no_hazard_collision(path, hazards)); scene=lane_runner; scope=safe_path_label`
+
 1. The scene shows labeled candidate path cards.
 2. Each card contains a two-lane track with hazard cells and one candidate path, using the same lane-grid scale as the shown-path lane-runner task.
 3. Each path advances one row per step toward the finish.
 4. The task asks which labeled path reaches the finish without entering any hazard cell.
-5. Program schema: `select_unique(label(path) where no_hazard_collision(path, hazards)); scene=lane_runner; scope=safe_path_label`
 
 ## Answer And Annotation
 1. `answer_gt.type`: `option_letter`.

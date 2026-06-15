@@ -9,7 +9,8 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....shared.text_rendering import load_font
-from .common import LaneRunnerCoin, LaneRunnerHazard, LaneRunnerPathOption, cell_entity_id, path_option_entity_id, runner_entity_id
+from .rules import cell_entity_id, path_option_entity_id, runner_entity_id
+from .state import LaneRunnerCoin, LaneRunnerHazard, LaneRunnerPathOption
 from ...shared.layout import apply_games_layout_jitter_to_bbox
 from ...shared.marking import draw_semantic_ellipse_marker, resolve_semantic_marker_style
 from ...shared.scene_style import (
@@ -85,7 +86,7 @@ class RenderedLaneRunnerScene:
 
 
 def build_games_lane_runner_theme(*, style_variant: str) -> LaneRunnerTheme:
-    """Return one lane-runner board theme."""
+    """Return one complete lane-runner board theme with readable contrast."""
 
     style = str(style_variant)
     if style == "city_road":
@@ -467,8 +468,10 @@ def _draw_path_option_card(
 def _option_card_column_count(option_count: int) -> int:
     """Return a compact, balanced option-card grid column count."""
 
-    if int(option_count) <= 4:
-        return int(option_count)
+    if int(option_count) == 4:
+        return 2
+    if int(option_count) == 6:
+        return 3
     return 3
 
 
@@ -485,7 +488,7 @@ def render_lane_runner_scene(
     panel_style: GamePanelSceneStyle | None = None,
     show_board: bool = True,
 ) -> RenderedLaneRunnerScene:
-    """Render one lane-runner scene."""
+    """Render the lane-runner board or option-card panel with trace geometry."""
 
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)

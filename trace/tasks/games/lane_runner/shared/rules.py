@@ -1,81 +1,18 @@
-"""Shared lane-runner scene contracts for games-domain tasks."""
+"""Lane-runner movement, entity ids, validation, and trace serializers."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Dict, Sequence, Tuple
 
-
-SUPPORTED_LANE_RUNNER_SCENE_VARIANTS: Tuple[str, ...] = ("two_lane_track",)
-SUPPORTED_LANE_RUNNER_STYLE_VARIANTS: Tuple[str, ...] = (
-    "arcade_lane",
-    "city_road",
-    "forest_path",
-    "neon_track",
-    "paper_course",
+from .state import (
+    SUPPORTED_LANE_RUNNER_SCENE_VARIANTS,
+    SUPPORTED_LANE_RUNNER_STYLE_VARIANTS,
+    LaneRunnerCoin,
+    LaneRunnerHazard,
+    LaneRunnerPathCoinSample,
+    LaneRunnerPathOption,
+    LaneRunnerSafePathSample,
 )
-SUPPORTED_LANE_RUNNER_PATH_COIN_QUERY_IDS: Tuple[str, ...] = ("path_coin_count",)
-SUPPORTED_LANE_RUNNER_SAFE_PATH_QUERY_IDS: Tuple[str, ...] = ("safe_path_label",)
-
-
-@dataclass(frozen=True)
-class LaneRunnerCoin:
-    """One visible coin in the lane-runner grid."""
-
-    coin_id: str
-    row: int
-    lane: int
-
-
-@dataclass(frozen=True)
-class LaneRunnerHazard:
-    """One visible hazard in the lane-runner grid."""
-
-    hazard_id: str
-    row: int
-    lane: int
-
-
-@dataclass(frozen=True)
-class LaneRunnerPathOption:
-    """One labeled candidate route in the lane-runner grid."""
-
-    label: str
-    lanes_by_row: Tuple[int, ...]
-
-
-@dataclass(frozen=True)
-class LaneRunnerSample:
-    """Symbolic lane-runner instance before rendering."""
-
-    mode: str
-    scene_variant: str
-    style_variant: str
-    row_count: int
-    lane_count: int
-    start_lane: int
-    coins: Tuple[LaneRunnerCoin, ...]
-    optimal_route_lanes: Tuple[int, ...]
-    answer: int
-    annotation_entity_ids: Tuple[str, ...]
-    construction_mode: str
-
-
-@dataclass(frozen=True)
-class LaneRunnerSafePathSample:
-    """Symbolic lane-runner safe-path instance before rendering."""
-
-    mode: str
-    scene_variant: str
-    style_variant: str
-    row_count: int
-    lane_count: int
-    start_lane: int
-    hazards: Tuple[LaneRunnerHazard, ...]
-    path_options: Tuple[LaneRunnerPathOption, ...]
-    answer_label: str
-    annotation_cell_ids: Tuple[str, ...]
-    construction_mode: str
 
 
 def coin_entity_id(row: int, lane: int) -> str:
@@ -155,6 +92,17 @@ def path_coin_collection(
     return len(collected), tuple(collected)
 
 
+def path_hits_hazard(
+    *,
+    lanes_by_row: Sequence[int],
+    hazards: Sequence[LaneRunnerHazard],
+) -> bool:
+    """Return true when a route enters at least one hazard cell."""
+
+    hazard_cells = {(int(hazard.row), int(hazard.lane)) for hazard in hazards}
+    return any((int(row), int(lane)) in hazard_cells for row, lane in enumerate(lanes_by_row))
+
+
 def visible_coin_trace(coins: Sequence[LaneRunnerCoin]) -> Tuple[dict[str, int | str], ...]:
     """Serialize visible coins for trace metadata."""
 
@@ -193,19 +141,17 @@ def visible_path_option_trace(options: Sequence[LaneRunnerPathOption]) -> Tuple[
     )
 
 
-def validate_lane_runner_sample(sample: LaneRunnerSample) -> None:
-    """Validate one lane-runner symbolic sample."""
+def validate_lane_runner_path_coin_sample(sample: LaneRunnerPathCoinSample) -> None:
+    """Validate one shown-path coin-count symbolic sample."""
 
-    if str(sample.mode) not in SUPPORTED_LANE_RUNNER_PATH_COIN_QUERY_IDS:
-        raise ValueError(f"unsupported lane-runner mode: {sample.mode}")
     if str(sample.scene_variant) not in SUPPORTED_LANE_RUNNER_SCENE_VARIANTS:
         raise ValueError(f"unsupported lane-runner scene_variant: {sample.scene_variant}")
     if str(sample.style_variant) not in SUPPORTED_LANE_RUNNER_STYLE_VARIANTS:
         raise ValueError(f"unsupported lane-runner style_variant: {sample.style_variant}")
     if int(sample.lane_count) != 2:
-        raise ValueError("lane-runner v0 requires exactly two lanes")
-    if len(sample.optimal_route_lanes) != int(sample.row_count):
-        raise ValueError("optimal_route_lanes must contain one lane per row")
+        raise ValueError("lane-runner requires exactly two lanes")
+    if len(sample.shown_path_lanes) != int(sample.row_count):
+        raise ValueError("shown_path_lanes must contain one lane per row")
     seen_ids: set[str] = set()
     for coin in sample.coins:
         if str(coin.coin_id) in seen_ids:
@@ -217,7 +163,7 @@ def validate_lane_runner_sample(sample: LaneRunnerSample) -> None:
             raise ValueError("coin lane out of range")
     answer, annotation_ids = path_coin_collection(
         coins=sample.coins,
-        shown_path_lanes=sample.optimal_route_lanes,
+        shown_path_lanes=sample.shown_path_lanes,
         row_count=int(sample.row_count),
         lane_count=int(sample.lane_count),
         start_lane=int(sample.start_lane),
@@ -227,38 +173,25 @@ def validate_lane_runner_sample(sample: LaneRunnerSample) -> None:
     if tuple(str(value) for value in annotation_ids) != tuple(str(value) for value in sample.annotation_entity_ids):
         raise ValueError("lane-runner annotation ids do not match shown-path coins")
     if len(sample.coins) <= int(sample.answer):
-        raise ValueError("lane-runner shown-path task requires off-path coin distractors")
+        raise ValueError("shown-path task requires off-path coin distractors")
     coin_cells = {(int(coin.row), int(coin.lane)) for coin in sample.coins}
     has_parallel_coin_row = any(
         (int(row), 1 - int(path_lane)) in coin_cells and (int(row), int(path_lane)) in coin_cells
-        for row, path_lane in enumerate(sample.optimal_route_lanes)
+        for row, path_lane in enumerate(sample.shown_path_lanes)
     )
     if not has_parallel_coin_row:
-        raise ValueError("lane-runner shown-path task requires at least one same-row parallel coin distractor")
-
-
-def path_hits_hazard(
-    *,
-    lanes_by_row: Sequence[int],
-    hazards: Sequence[LaneRunnerHazard],
-) -> bool:
-    """Return true when a route enters at least one hazard cell."""
-
-    hazard_cells = {(int(hazard.row), int(hazard.lane)) for hazard in hazards}
-    return any((int(row), int(lane)) in hazard_cells for row, lane in enumerate(lanes_by_row))
+        raise ValueError("shown-path task requires at least one same-row parallel coin distractor")
 
 
 def validate_lane_runner_safe_path_sample(sample: LaneRunnerSafePathSample) -> None:
-    """Validate one lane-runner safe-path symbolic sample."""
+    """Validate one safe-path option-card symbolic sample."""
 
-    if str(sample.mode) not in SUPPORTED_LANE_RUNNER_SAFE_PATH_QUERY_IDS:
-        raise ValueError(f"unsupported lane-runner safe-path mode: {sample.mode}")
     if str(sample.scene_variant) not in SUPPORTED_LANE_RUNNER_SCENE_VARIANTS:
         raise ValueError(f"unsupported lane-runner scene_variant: {sample.scene_variant}")
     if str(sample.style_variant) not in SUPPORTED_LANE_RUNNER_STYLE_VARIANTS:
         raise ValueError(f"unsupported lane-runner style_variant: {sample.style_variant}")
     if int(sample.lane_count) != 2:
-        raise ValueError("lane-runner v0 requires exactly two lanes")
+        raise ValueError("lane-runner requires exactly two lanes")
     if not (0 <= int(sample.start_lane) < int(sample.lane_count)):
         raise ValueError("start_lane out of range")
     hazard_cells: set[Tuple[int, int]] = set()
@@ -295,20 +228,11 @@ def validate_lane_runner_safe_path_sample(sample: LaneRunnerSafePathSample) -> N
             next(option.lanes_by_row for option in sample.path_options if str(option.label) == str(sample.answer_label))
         )
     )
-    if tuple(str(value) for value in sample.annotation_cell_ids) != tuple(str(value) for value in expected_cells):
-        raise ValueError("lane-runner safe-path annotation ids do not match answer route cells")
+    if tuple(str(value) for value in sample.safe_path_cell_ids) != tuple(str(value) for value in expected_cells):
+        raise ValueError("lane-runner safe-path cell ids do not match answer route cells")
 
 
 __all__ = [
-    "SUPPORTED_LANE_RUNNER_SCENE_VARIANTS",
-    "SUPPORTED_LANE_RUNNER_PATH_COIN_QUERY_IDS",
-    "SUPPORTED_LANE_RUNNER_SAFE_PATH_QUERY_IDS",
-    "SUPPORTED_LANE_RUNNER_STYLE_VARIANTS",
-    "LaneRunnerCoin",
-    "LaneRunnerHazard",
-    "LaneRunnerPathOption",
-    "LaneRunnerSample",
-    "LaneRunnerSafePathSample",
     "cell_entity_id",
     "coin_entity_id",
     "hazard_entity_id",
@@ -316,7 +240,7 @@ __all__ = [
     "path_hits_hazard",
     "path_option_entity_id",
     "runner_entity_id",
-    "validate_lane_runner_sample",
+    "validate_lane_runner_path_coin_sample",
     "validate_lane_runner_safe_path_sample",
     "visible_coin_trace",
     "visible_hazard_trace",

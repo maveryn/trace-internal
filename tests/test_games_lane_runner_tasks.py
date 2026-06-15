@@ -5,12 +5,17 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import trace.tasks  # noqa: F401
+import pytest
+
 from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.lane_runner.shared.common import LaneRunnerCoin, path_coin_collection
-from trace.tasks.games.lane_runner.shared.common import LaneRunnerHazard, path_hits_hazard, path_option_entity_id
-from trace.tasks.registry import create_task, list_default_task_ids
+from trace.tasks.games.lane_runner.shared.rules import (
+    path_coin_collection,
+    path_hits_hazard,
+    path_option_entity_id,
+)
+from trace.tasks.games.lane_runner.shared.state import LaneRunnerCoin, LaneRunnerHazard
+from trace.tasks.registry import create_task
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
@@ -22,12 +27,11 @@ def test_games_lane_runner_defaults_expose_axes_and_prompt_bundle() -> None:
     cfg = get_scene_defaults("games", "lane_runner")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="games_lane_runner_path_coin_base",
+        task_id=PATH_COIN_TASK_ID,
     )
 
     assert set(generation["scene_variant_weights"].keys()) == {"two_lane_track"}
-    assert generation["query_id_weights"]["path_coin_count"] == 1.0
-    assert generation["query_id_weights"]["safe_path_label"] == 0.0
+    assert "query_id_weights" not in generation
     assert set(generation["style_variant_weights"].keys()) == {
         "arcade_lane",
         "city_road",
@@ -42,53 +46,63 @@ def test_games_lane_runner_defaults_expose_axes_and_prompt_bundle() -> None:
     assert float(rendering["unit_size_scale_min"]) == 0.5
     assert float(rendering["unit_size_scale_max"]) == 1.0
     assert bool(rendering["layout_jitter_enabled"]) is True
-    assert str(prompt["bundle_id"]) == "games_lane_runner_v0"
-    assert "shown path" in str(prompt["object_description_two_lane_track_path_coin"])
-    assert "Follow the shown path" in str(prompt["lane_runner_path_rule_text"])
+    assert str(prompt["bundle_id"]) == "games_lane_runner_v1"
 
     safe_generation, _safe_rendering, safe_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="games_lane_runner_safe_path_base",
+        task_id=SAFE_PATH_TASK_ID,
     )
-    assert safe_generation["query_id_weights"]["path_coin_count"] == 0.0
-    assert safe_generation["query_id_weights"]["safe_path_label"] == 1.0
+    assert "query_id_weights" not in safe_generation
     assert list(safe_generation["option_count_support"]) == [4, 6]
     assert list(safe_generation["answer_option_index_support"]) == [0, 1, 2, 3, 4, 5]
-    assert "hazard cell" in str(safe_prompt["safe_path_rule_text"])
+    assert str(safe_prompt["bundle_id"]) == "games_lane_runner_v1"
 
 
 def test_games_lane_runner_prompt_bundle_has_active_queries() -> None:
-    bundle = json.loads(Path("prompts/games/lane_runner/games_lane_runner_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/games/lane_runner/games_lane_runner_v1.json").read_text(encoding="utf-8"))
 
-    assert set(bundle["query_templates"].keys()) == {"path_coin_count", "safe_path_label"}
+    assert bundle["schema_version"] == "v1"
+    assert set(bundle["templates"]["query"].keys()) == {"path_coin_count", "safe_path_label"}
     assert bundle["required_slots_by_key"]["query:path_coin_count"] == ["lane_runner_path_rule_text"]
     assert bundle["required_slots_by_key"]["query:safe_path_label"] == ["safe_path_rule_text"]
-    assert len(bundle["query_templates"]["path_coin_count"]) == 5
-    assert len(bundle["query_templates"]["safe_path_label"]) == 5
+    assert len(bundle["templates"]["query"]["path_coin_count"]) == 5
+    assert len(bundle["templates"]["query"]["safe_path_label"]) == 5
+    assert "hazard cell" in str(bundle["code_prompt_defaults"]["safe_path_rule_text"])
 
 
-def test_games_lane_runner_taxonomy_and_default_registry() -> None:
-    default_ids = set(list_default_task_ids())
-
+def test_games_lane_runner_taxonomy_and_direct_registry() -> None:
     path_taxonomy = resolve_task_taxonomy(PATH_COIN_TASK_ID)
     assert path_taxonomy.domain == "games"
     assert path_taxonomy.scene_id == "lane_runner"
     assert path_taxonomy.source_domain == "games"
-    assert path_taxonomy.source_scene_id == "lane_runner"
-    assert PATH_COIN_TASK_ID in default_ids
+    assert create_task(PATH_COIN_TASK_ID).task_id == PATH_COIN_TASK_ID
 
     safe_taxonomy = resolve_task_taxonomy(SAFE_PATH_TASK_ID)
     assert safe_taxonomy.domain == "games"
     assert safe_taxonomy.scene_id == "lane_runner"
     assert safe_taxonomy.source_domain == "games"
-    assert safe_taxonomy.source_scene_id == "lane_runner"
-    assert SAFE_PATH_TASK_ID in default_ids
+    assert create_task(SAFE_PATH_TASK_ID).task_id == SAFE_PATH_TASK_ID
+
+
+def test_games_lane_runner_tasks_reject_unsupported_public_query_id() -> None:
+    with pytest.raises(ValueError, match="query_id"):
+        create_task(PATH_COIN_TASK_ID).generate(
+            1,
+            params={"query_id": "path_coin_count"},
+            max_attempts=10,
+        )
+    with pytest.raises(ValueError, match="query_id"):
+        create_task(SAFE_PATH_TASK_ID).generate(
+            1,
+            params={"query_variant": "safe_path_label"},
+            max_attempts=10,
+        )
 
 
 def test_games_lane_runner_path_coin_answer_matches_shown_path() -> None:
     out = create_task(PATH_COIN_TASK_ID).generate(
         92342,
-        params={"row_count": 6, "target_answer": 3, "start_lane": 1},
+        params={"row_count": 6, "target_answer": 3, "start_lane": 1, "query_id": "single"},
         max_attempts=200,
     )
     execution = out.trace_payload["execution_trace"]
@@ -114,7 +128,8 @@ def test_games_lane_runner_path_coin_answer_matches_shown_path() -> None:
     )
 
     assert out.scene_id == "lane_runner"
-    assert out.query_id == "path_coin_count"
+    assert out.query_id == "single"
+    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "path_coin_count"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(answer) == 3
     assert len(coins) > int(answer)
@@ -132,7 +147,7 @@ def test_games_lane_runner_path_coin_answer_matches_shown_path() -> None:
 def test_games_lane_runner_safe_path_answer_matches_trace() -> None:
     out = create_task(SAFE_PATH_TASK_ID).generate(
         92741,
-        params={"row_count": 6, "option_count": 6, "answer_option_index": 2, "start_lane": 0},
+        params={"row_count": 6, "option_count": 6, "answer_option_index": 2, "start_lane": 0, "query_id": "single"},
         max_attempts=200,
     )
     execution = out.trace_payload["execution_trace"]
@@ -153,7 +168,8 @@ def test_games_lane_runner_safe_path_answer_matches_trace() -> None:
     answer_entity_id = path_option_entity_id(answer)
 
     assert out.scene_id == "lane_runner"
-    assert out.query_id == "safe_path_label"
+    assert out.query_id == "single"
+    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "safe_path_label"
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
     assert safe_labels == [answer] == ["C"]

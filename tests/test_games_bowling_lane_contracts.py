@@ -32,7 +32,7 @@ def test_games_bowling_scene_package_source_layout() -> None:
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "params", "expected_query"),
+    ("task_cls", "params", "expected_internal_query"),
     (
         (
             GamesBowlingFirstPinHitLabelTask,
@@ -49,40 +49,45 @@ def test_games_bowling_scene_package_source_layout() -> None:
 def test_games_bowling_public_tasks_emit_expected_contract(
     task_cls: type[Any],
     params: dict[str, int | str],
-    expected_query: str,
+    expected_internal_query: str,
 ) -> None:
     out = task_cls().generate(95000, params=params, max_attempts=256)
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == "string"
-    assert len(out.annotation_gt.value) == 1
-    if expected_query == "spare_path_label":
+    if expected_internal_query == "spare_path_label":
         assert out.annotation_gt.type == "point_pair_set"
+        assert len(out.annotation_gt.value) == 1
         assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
     else:
-        assert out.annotation_gt.type == "bbox_set"
-        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert out.query_id == expected_query
+        assert out.annotation_gt.type == "bbox"
+        assert len(out.annotation_gt.value) == 4
+        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert out.query_id == "single"
     assert out.scene_id == "bowling"
-    assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert execution["query_id"] == expected_query
+    assert trace["query_spec"]["query_id"] == "single"
+    assert trace["query_spec"]["internal_query_id"] == expected_internal_query
+    assert trace["query_spec"]["params"]["query_id"] == "single"
+    assert trace["query_spec"]["params"]["internal_query_id"] == expected_internal_query
+    assert execution["query_id"] == "single"
     assert len(execution["annotation_entity_ids"]) == 1
     assert trace["render_spec"]["text_style"]["font_family"]
     assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
     assert float(trace["render_map"]["path_color_safety"]["min_path_anchor_lab_distance"]) >= 40.0
     assert len(trace["render_map"]["path_palette_rgb"]) >= 6
-    if out.annotation_gt.type == "bbox_set":
-        for x0, y0, x1, y1 in out.annotation_gt.value:
-            assert 0 <= float(x0) <= float(x1) <= float(trace["render_spec"]["canvas_width"])
-            assert 0 <= float(y0) <= float(y1) <= float(trace["render_spec"]["canvas_height"])
-    else:
+    if out.annotation_gt.type == "bbox":
+        x0, y0, x1, y1 = out.annotation_gt.value
+        assert 0 <= float(x0) <= float(x1) <= float(trace["render_spec"]["canvas_width"])
+        assert 0 <= float(y0) <= float(y1) <= float(trace["render_spec"]["canvas_height"])
+    elif out.annotation_gt.type == "point_pair_set":
         for point_pair in out.annotation_gt.value:
             assert len(point_pair) == 2
             for x, y in point_pair:
                 assert 0 <= float(x) <= float(trace["render_spec"]["canvas_width"])
                 assert 0 <= float(y) <= float(trace["render_spec"]["canvas_height"])
+    else:
+        raise AssertionError(f"unexpected annotation type: {out.annotation_gt.type}")
 
 
 def test_games_bowling_first_pin_hit_label_matches_target_pin() -> None:

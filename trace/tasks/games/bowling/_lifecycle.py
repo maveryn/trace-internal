@@ -10,7 +10,7 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
-    bbox_set_annotation_artifacts,
+    bbox_annotation_artifacts,
     point_pair_set_annotation_artifacts,
 )
 from trace.tasks.shared.fixed_query import select_task_query_id
@@ -132,15 +132,14 @@ def pin_bbox_label_attempt(
     """Package a pin-label answer whose annotation is the target pin bbox."""
 
     annotation_entity_ids = tuple(str(entity_id) for entity_id in sample.annotation_entity_ids)
+    if len(annotation_entity_ids) != 1:
+        raise ValueError("Bowling first-pin annotation requires exactly one target pin")
     return BowlingAttemptResult(
         sample=sample,
         answer_gt=TypedValue(type="string", value=str(answer_value)),
         annotation_entity_ids=annotation_entity_ids,
-        build_annotation=lambda rendered_context: bbox_set_annotation_artifacts(
-            [
-                rendered_context.rendered_scene.render_map["entity_bboxes_px"][str(entity_id)]
-                for entity_id in annotation_entity_ids
-            ]
+        build_annotation=lambda rendered_context: bbox_annotation_artifacts(
+            rendered_context.rendered_scene.render_map["entity_bboxes_px"][str(annotation_entity_ids[0])]
         ),
         execution_extra=dict(execution_extra or {}),
     )

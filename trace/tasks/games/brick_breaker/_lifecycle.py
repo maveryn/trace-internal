@@ -10,6 +10,7 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
+    point_annotation_artifacts,
     point_set_annotation_artifacts,
 )
 from trace.tasks.shared.fixed_query import select_task_query_id
@@ -179,6 +180,38 @@ def point_set_attempt(
     )
 
 
+def point_attempt(
+    *,
+    sample: BrickBreakerSample,
+    answer_gt: TypedValue,
+    annotation_entity_ids: tuple[str, ...] | None = None,
+    execution_extra: Mapping[str, Any] | None = None,
+) -> BrickBreakerAttemptResult:
+    """Package a label answer whose annotation is one scene-entity center point."""
+
+    resolved_entity_ids = tuple(str(entity_id) for entity_id in (annotation_entity_ids or sample.annotation_entity_ids))
+    if len(resolved_entity_ids) != 1:
+        raise ValueError("Brick-breaker scalar point annotation requires exactly one entity")
+
+    def build_annotation(rendered_context: RenderedBrickBreakerTaskContext) -> AnnotationArtifacts:
+        entity_bboxes = rendered_context.rendered_scene.render_map["entity_bboxes_px"]
+        bbox = entity_bboxes[str(resolved_entity_ids[0])]
+        return point_annotation_artifacts(
+            [
+                round(float(bbox[0] + bbox[2]) / 2.0, 3),
+                round(float(bbox[1] + bbox[3]) / 2.0, 3),
+            ]
+        )
+
+    return BrickBreakerAttemptResult(
+        sample=sample,
+        answer_gt=answer_gt,
+        annotation_entity_ids=resolved_entity_ids,
+        build_annotation=build_annotation,
+        execution_extra=dict(execution_extra or {}),
+    )
+
+
 def run_brick_breaker_lifecycle(
     *,
     task_id: str,
@@ -296,6 +329,7 @@ __all__ = [
     "BrickBreakerIntegerAxisSpec",
     "BrickBreakerObjectivePlan",
     "brick_breaker_integer_axis_spec",
+    "point_attempt",
     "point_set_attempt",
     "resolve_brick_breaker_integer_axis_spec",
     "resolve_brick_breaker_playfield_axis_specs",

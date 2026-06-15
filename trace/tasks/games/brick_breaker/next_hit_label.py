@@ -8,7 +8,7 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 
 from ._lifecycle import (
     BrickBreakerObjectivePlan,
-    point_set_attempt,
+    point_attempt,
     resolve_brick_breaker_playfield_axis_specs,
     run_brick_breaker_lifecycle,
 )
@@ -54,7 +54,7 @@ def _prepare_next_hit_objective(
         )
         if sample.target_brick_label is None:
             raise ValueError("next-hit Brick-breaker sample is missing target brick label")
-        return point_set_attempt(
+        return point_attempt(
             sample=sample,
             answer_gt=TypedValue(type="string", value=str(sample.target_brick_label)),
         )

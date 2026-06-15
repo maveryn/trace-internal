@@ -69,14 +69,14 @@
       "brick_breaker_motion_rule_text": "The short dashed arrow shows the ball's current straight direction.",
       "answer_hint": "set \"answer\" to the selected brick label as a string",
       "annotation_hint": "set \"annotation\" to one pixel-space point [x, y] at the center of the brick hit first after extrapolating the ball direction",
-      "json_example": "{\"annotation\":[[476,207]],\"answer\":\"H\"}",
+      "json_example": "{\"annotation\":[476,207],\"answer\":\"H\"}",
       "json_example_answer_only": "{\"answer\":\"H\"}"
     },
     "query:paddle_catch_label": {
       "brick_breaker_motion_rule_text": "The short dashed arrow shows the ball's current straight direction.",
       "answer_hint": "set \"answer\" to the selected bottom lane label as a string",
       "annotation_hint": "set \"annotation\" to one pixel-space point [x, y] at the center of the selected bottom catch lane pad",
-      "json_example": "{\"annotation\":[[295,403]],\"answer\":\"C\"}",
+      "json_example": "{\"annotation\":[295,403],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "query:hit_row_remaining_count": {

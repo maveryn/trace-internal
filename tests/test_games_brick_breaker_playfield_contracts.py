@@ -16,17 +16,17 @@ from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "params", "expected_query", "expected_answer_type"),
+    ("task_cls", "params", "expected_internal_query", "expected_answer_type"),
     (
         (
             GamesBrickBreakerNextHitLabelTask,
-            {"query_id": "next_hit_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 6, "style_variant": "neon"},
+            {"brick_rows": 5, "brick_cols": 6, "lane_count": 6, "style_variant": "neon"},
             "next_hit_label",
             "string",
         ),
         (
             GamesBrickBreakerPaddleCatchLabelTask,
-            {"query_id": "paddle_catch_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 6, "style_variant": "paper"},
+            {"brick_rows": 5, "brick_cols": 6, "lane_count": 6, "style_variant": "paper"},
             "paddle_catch_label",
             "string",
         ),
@@ -41,7 +41,7 @@ from tests.helpers import read_jsonl
 def test_games_brick_breaker_public_tasks_emit_expected_contract(
     task_cls: type[Any],
     params: dict[str, int | str],
-    expected_query: str,
+    expected_internal_query: str,
     expected_answer_type: str,
 ) -> None:
     out = task_cls().generate(91000, params=params, max_attempts=256)
@@ -49,15 +49,22 @@ def test_games_brick_breaker_public_tasks_emit_expected_contract(
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == expected_answer_type
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) >= 1
-    assert out.query_id == expected_query
+    expected_annotation_type = "point_set" if expected_internal_query == "hit_row_remaining_count" else "point"
+    assert out.annotation_gt.type == expected_annotation_type
+    assert out.query_id == "single"
     assert out.scene_id == "brick_breaker"
-    assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert execution["query_id"] == expected_query
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
+    assert trace["query_spec"]["query_id"] == "single"
+    assert trace["query_spec"]["internal_query_id"] == expected_internal_query
+    assert trace["query_spec"]["params"]["query_id"] == "single"
+    assert trace["query_spec"]["params"]["internal_query_id"] == expected_internal_query
+    assert execution["query_id"] == "single"
+    if expected_annotation_type == "point":
+        assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+        assert len(execution["annotation_entity_ids"]) == 1
+    else:
+        assert len(out.annotation_gt.value) >= 1
+        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+        assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
     assert trace["render_spec"]["canvas_width"] <= 980
     assert trace["render_spec"]["canvas_height"] <= 740
     assert trace["render_spec"]["panel_scene_style"]["treatment"]
@@ -73,7 +80,8 @@ def test_games_brick_breaker_public_tasks_emit_expected_contract(
     )
     assert float(paddle_bbox[3] - paddle_bbox[1]) <= 9.0
     entity_bboxes = trace["render_map"]["entity_bboxes_px"]
-    for entity_id, point in zip(execution["annotation_entity_ids"], out.annotation_gt.value):
+    annotation_points = [out.annotation_gt.value] if expected_annotation_type == "point" else out.annotation_gt.value
+    for entity_id, point in zip(execution["annotation_entity_ids"], annotation_points):
         bbox = entity_bboxes[str(entity_id)]
         expected_point = [
             round(float(bbox[0] + bbox[2]) / 2.0, 3),
@@ -88,7 +96,7 @@ def test_games_brick_breaker_public_tasks_emit_expected_contract(
 def test_games_brick_breaker_next_hit_label_matches_target_brick() -> None:
     out = GamesBrickBreakerNextHitLabelTask().generate(
         91010,
-        params={"query_id": "next_hit_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 6},
+        params={"brick_rows": 5, "brick_cols": 6, "lane_count": 6},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
@@ -115,7 +123,7 @@ def test_games_brick_breaker_next_hit_label_matches_target_brick() -> None:
 def test_games_brick_breaker_paddle_catch_label_matches_target_lane() -> None:
     out = GamesBrickBreakerPaddleCatchLabelTask().generate(
         91020,
-        params={"query_id": "paddle_catch_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 6},
+        params={"brick_rows": 5, "brick_cols": 6, "lane_count": 6},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]

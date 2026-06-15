@@ -8,7 +8,10 @@ from typing import Any, Dict, Mapping, Sequence
 from PIL import ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.geometry.shared.diagram_style import (
+    GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
+    prepare_geometry_diagram_style_and_background,
+)
 from trace.tasks.geometry.shared.measurement_rendering import (
     bbox_from_points,
     bbox_to_list,
@@ -18,16 +21,12 @@ from trace.tasks.geometry.shared.measurement_rendering import (
     pad_bbox,
 )
 from trace.tasks.geometry.shared.scene_transform import LazySceneTransform
-from trace.tasks.geometry.shared.shape_style import (
-    extract_background_anchor_colors,
-    sample_geometry_shape_style,
-)
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 
-from .defaults import BACKGROUND_DEFAULTS
+from .defaults import SCENE_ID
 from .state import BBox, Color, CompositeRenderContext, CompositeShapeProblem, Point, RenderedCompositeShape
 
 
@@ -43,26 +42,36 @@ def create_composite_render_context(
     rng = spawn_rng(int(instance_seed), f"{render_namespace}.render")
     width = int(params.get("canvas_width", group_default(render_defaults, "canvas_width", 760)))
     height = int(params.get("canvas_height", group_default(render_defaults, "canvas_height", 560)))
-    image, background_meta = make_background_canvas(
-        canvas_width=int(width),
-        canvas_height=int(height),
+    image, background_meta, diagram_style, diagram_style_meta = prepare_geometry_diagram_style_and_background(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=BACKGROUND_DEFAULTS,
-        fallback_color=(255, 255, 252),
-    )
-    background_color = tuple(int(value) for value in background_meta.get("color", [255, 255, 252])[:3])
-    shape_style = sample_geometry_shape_style(
-        rng,
-        params=params,
-        render_defaults=render_defaults,
-        anchor_colors=extract_background_anchor_colors(background_meta),
+        scene_id=SCENE_ID,
+        canvas_width=int(width),
+        canvas_height=int(height),
+        require_grid=False,
+        style_profile=GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
     )
     fill_palette: tuple[tuple[Color, Color, Color], ...] = (
-        ((109, 164, 255), (118, 221, 151), (31, 91, 168)),
-        ((246, 156, 86), (237, 101, 131), (154, 74, 28)),
-        ((146, 116, 218), (96, 204, 210), (96, 69, 160)),
-        ((229, 108, 164), (206, 235, 85), (144, 72, 120)),
+        (
+            tuple(int(value) for value in diagram_style.fill_rgb),
+            tuple(int(value) for value in diagram_style.muted_fill_rgb),
+            tuple(int(value) for value in diagram_style.accent_rgb),
+        ),
+        (
+            tuple(int(value) for value in diagram_style.option_fill_rgb),
+            tuple(int(value) for value in diagram_style.panel_alt_fill_rgb),
+            tuple(int(value) for value in diagram_style.highlight_rgb),
+        ),
+        (
+            tuple(int(value) for value in diagram_style.panel_alt_fill_rgb),
+            tuple(int(value) for value in diagram_style.muted_fill_rgb),
+            tuple(int(value) for value in diagram_style.secondary_accent_rgb),
+        ),
+        (
+            tuple(int(value) for value in diagram_style.fill_rgb),
+            tuple(int(value) for value in diagram_style.option_fill_rgb),
+            tuple(int(value) for value in diagram_style.highlight_rgb),
+        ),
     )
     palette_index = int(
         resolve_selection_index(
@@ -82,17 +91,17 @@ def create_composite_render_context(
         draw=ImageDraw.Draw(image),
         width=int(width),
         height=int(height),
-        background_color=(int(background_color[0]), int(background_color[1]), int(background_color[2])),
-        line_color=shape_style.line_color,
-        label_color=shape_style.label_color,
-        label_stroke_color=shape_style.label_stroke_color,
+        background_color=tuple(int(value) for value in diagram_style.canvas_rgb),
+        line_color=tuple(int(value) for value in diagram_style.stroke_rgb),
+        label_color=tuple(int(value) for value in diagram_style.label_rgb),
+        label_stroke_color=tuple(int(value) for value in diagram_style.label_stroke_rgb),
         accent_color=accent_color,
         fill_color=fill_color,
         secondary_fill_color=secondary_fill_color,
         line_width=max(2, int(line_width)),
         label_stroke_width=max(0, int(label_stroke_width)),
-        font=load_font(max(12, int(font_size)), bold=True),
-        small_font=load_font(max(10, int(small_font_size)), bold=True),
+        font=load_font(max(12, int(font_size))),
+        small_font=load_font(max(10, int(small_font_size))),
         scene_transform=LazySceneTransform(
             rng,
             params=params,
@@ -103,7 +112,7 @@ def create_composite_render_context(
     )
     render_meta = {
         "background_style": dict(background_meta),
-        "shape_style": shape_style.to_trace_dict(),
+        "diagram_style": dict(diagram_style_meta),
         "line_width": int(ctx.line_width),
         "label_font_size": int(font_size),
         "small_label_font_size": int(small_font_size),
@@ -785,7 +794,6 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
     target_bbox = pad_bbox((left, top, right, bottom), 8.0, width=ctx.width, height=ctx.height)
     ctx.draw.rectangle((left, top, right, bottom), fill=ctx.secondary_fill_color)
     ctx.draw.pieslice(arc_box, start=90, end=180, fill=ctx.background_color)
-    ctx.draw.line([(left, top), (right, top)], fill=ctx.line_color, width=ctx.line_width)
     ctx.draw.line([(left, top), (left, bottom)], fill=ctx.line_color, width=ctx.line_width)
     ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
     ctx.draw.line([(right, top + radius_px), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)

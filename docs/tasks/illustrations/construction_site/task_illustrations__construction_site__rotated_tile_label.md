@@ -44,4 +44,5 @@ Renders a construction-site source illustration as a 2-row by 3-column grid of s
 - Render randomness, sampled construction-site contents, tile-label font, grid style, selected tile, and verifier payloads must be explicit in the instance trace.
 - The selected tile is sampled only from tiles with enough visual detail and rotation difference to make the anomaly visible.
 - Quarter-turn rotations require square source cells; for the 2x3 grid, source dimensions must keep `source_width / 3 == source_height / 2`.
+- The composed grid must be full-bleed over the source image with no decorative outer margin, border, or background frame.
 - The selected tile bbox, answer label, and rotated tile index must all come from the same `compose_rotated_tile_grid` execution trace.

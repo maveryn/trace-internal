@@ -18,10 +18,9 @@ from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.output_metadata import default_task_versions
 from ..shared.cutouts import (
     DEFAULT_OPTION_LABELS,
-    ROTATED_GRID_STYLES,
+    FRAMELESS_ILLUSTRATION_ROTATED_GRID_STYLE,
     compose_rotated_tile_grid,
     piece_crops,
-    sample_style,
     style_trace,
     tile_is_usable,
 )
@@ -293,8 +292,7 @@ class IllustrationsParkPlaygroundRotatedTileLabelTask:
                     attempt_index=int(attempt),
                     usable_indices=usable_indices,
                 )
-                option_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:tile_grid", int(attempt))
-                grid_style = sample_style(option_rng, ROTATED_GRID_STYLES)
+                grid_style = {"style_id": "frameless_illustration", **dict(FRAMELESS_ILLUSTRATION_ROTATED_GRID_STYLE)}
                 label_font_trace = sample_visual_label_font_trace(
                     namespace_prefix=TASK_ID,
                     instance_seed=int(instance_seed),
@@ -312,6 +310,7 @@ class IllustrationsParkPlaygroundRotatedTileLabelTask:
                     rows=GRID_ROWS,
                     cols=GRID_COLS,
                     labels=TILE_LABELS,
+                    render_margin=0,
                 )
                 break
             except Exception as exc:  # pragma: no cover - retry surface is seed/layout dependent.

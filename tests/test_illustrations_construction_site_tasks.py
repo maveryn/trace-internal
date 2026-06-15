@@ -118,6 +118,12 @@ def test_construction_site_rotated_tile_label_contract() -> None:
     assert execution["grid_shape"] == [2, 3]
     assert len(render_map["tile_bboxes_px_by_label"]) == 6
     assert set(render_map["tile_bboxes_px_by_label"]) == {"A", "B", "C", "D", "E", "F"}
+    assert trace["render_spec"]["canvas_size"] == trace["query_spec"]["params"]["source_size"]
+    assert render_map["tile_bboxes_px_by_label"]["A"][:2] == [0.0, 0.0]
+    assert render_map["tile_bboxes_px_by_label"]["F"][2:] == [
+        float(trace["render_spec"]["canvas_size"][0]),
+        float(trace["render_spec"]["canvas_size"][1]),
+    ]
     assert annotation == render_map["rotated_tile_bbox_px"]
     assert annotation == render_map["tile_bboxes_px_by_label"][out.answer_gt.value]
     assert trace["projected_annotation"]["type"] == "bbox"

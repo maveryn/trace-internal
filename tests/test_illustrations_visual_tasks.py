@@ -127,6 +127,27 @@ def test_rotated_tile_artifacts_select_one_labeled_tile() -> None:
     assert tile_is_usable(pieces, rotated, min_detail_score=1.0, min_rotation_delta=1.0)
 
 
+def test_rotated_tile_grid_draws_no_perimeter_border_when_frameless() -> None:
+    source = _source_image(600, 600)
+    style = {"style_id": "test", **dict(ROTATED_GRID_STYLES["slate_badges"])}
+    artifacts = compose_rotated_tile_grid(
+        source_image=source,
+        correct_index=4,
+        rotation_degrees=90,
+        grid_style=style,
+        label_font_family=None,  # type: ignore[arg-type]
+        render_margin=0,
+    )
+
+    assert artifacts.image.size == source.size
+    assert artifacts.image.getpixel((0, 0)) == source.getpixel((0, 0))
+    assert artifacts.image.getpixel((source.width - 1, source.height - 1)) == source.getpixel(
+        (source.width - 1, source.height - 1)
+    )
+    assert artifacts.image.getpixel((200, 100)) == style["grid_rgb"]
+    assert artifacts.image.getpixel((100, 200)) == style["grid_rgb"]
+
+
 def test_rotated_tile_rejects_non_square_quarter_turn_cells() -> None:
     with pytest.raises(ValueError, match="square cells"):
         compose_rotated_tile_grid(

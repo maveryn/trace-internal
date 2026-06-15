@@ -571,14 +571,14 @@ def compose_rotated_tile_grid(
         canvas.paste(patch, (x0, y0))
         tile_bboxes[label] = bbox_list((x0, y0, x0 + int(tile_w), y0 + int(tile_h)))
 
-    for col in range(int(cols) + 1):
+    for col in range(1, int(cols)):
         x = int(grid_x + col * tile_w)
         draw.line(
             (x, grid_y, x, grid_y + int(source_rgb.height)),
             fill=rgb(grid_style, "grid_rgb"),
             width=int(grid_style.get("grid_width_px", 3)),
         )
-    for row in range(int(rows) + 1):
+    for row in range(1, int(rows)):
         y = int(grid_y + row * tile_h)
         draw.line(
             (grid_x, y, grid_x + int(source_rgb.width), y),

@@ -262,6 +262,12 @@ def test_rotated_tile_label_contract() -> None:
     assert out.annotation_gt.type == "bbox"
     assert answer_label in {"A", "B", "C", "D", "E", "F"}
     assert sorted(tile_bboxes) == ["A", "B", "C", "D", "E", "F"]
+    assert trace["render_spec"]["canvas_size"] == trace["query_spec"]["params"]["source_size"]
+    assert tile_bboxes["A"][:2] == [0.0, 0.0]
+    assert tile_bboxes["F"][2:] == [
+        float(trace["render_spec"]["canvas_size"][0]),
+        float(trace["render_spec"]["canvas_size"][1]),
+    ]
     assert out.annotation_gt.value == tile_bboxes[answer_label]
     assert trace["projected_annotation"]["type"] == "bbox"
     assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value

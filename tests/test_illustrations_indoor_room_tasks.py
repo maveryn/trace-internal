@@ -224,8 +224,10 @@ def test_rotated_tile_label_contract() -> None:
     assert execution["grid_shape"] == [2, 3]
     assert len(render_map["tile_bboxes_px_by_label"]) == 6
     assert set(render_map["tile_bboxes_px_by_label"]) == {"A", "B", "C", "D", "E", "F"}
-    assert set(annotation) == {"rotated_tile"}
-    assert annotation["rotated_tile"] == render_map["rotated_tile_bbox_px"]
-    assert annotation["rotated_tile"] == render_map["tile_bboxes_px_by_label"][out.answer_gt.value]
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
+    assert out.annotation_gt.type == "bbox_set"
+    assert annotation == [render_map["rotated_tile_bbox_px"]]
+    assert annotation == [render_map["tile_bboxes_px_by_label"][out.answer_gt.value]]
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_set"] == annotation
     assert execution["rotated_tile_index"] in execution["usable_tile_indices"]

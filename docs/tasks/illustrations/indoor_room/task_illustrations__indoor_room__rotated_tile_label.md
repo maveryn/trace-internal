@@ -35,10 +35,9 @@ Renders an indoor-room source illustration as a 2-row by 3-column grid of six le
 - The answer value is one of the visible tile letters `A` through `F`.
 
 ## Annotation Contract
-- Annotation schema: `keyed_bbox_map`
-- Generator `annotation_gt.type`: `keyed_bbox_map`
-- Annotation key is `rotated_tile`.
-- Annotation box is the final-image pixel box around the rotated tile. Do not include all tile options, tile labels, room objects, or context-only source-scene regions.
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
+- Annotation contains exactly one final-image pixel box around the rotated tile. Do not include all tile options, tile labels, room objects, or context-only source-scene regions.
 
 ## Prompt And Trace Requirements
 - Prompt text must come from the `illustrations_indoor_room_v0` prompt bundle, with scene/task/output layers selected deterministically and recorded in metadata.

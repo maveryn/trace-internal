@@ -56,6 +56,19 @@ INTERNAL_QUERY_ID_BY_TASK = {
     GeometrySectorAngleFromAreaTask: "sector_angle_from_area",
 }
 
+EXPECTED_ANNOTATION_KEYS_BY_TASK = {
+    GeometryRectangleSemicircleCapAreaTask: {"A", "B", "C", "D", "O"},
+    GeometryRectangleSemicircleCutoutAreaTask: {"A", "B", "C", "D", "O"},
+    GeometryRectangleQuarterSectorCutoutAreaTask: {"A", "B", "C", "D", "E", "F"},
+    GeometryRectangleSemicircleCapPerimeterTask: {"A", "B", "C", "D", "O"},
+    GeometryRectangleSemicircleCutoutPerimeterTask: {"A", "B", "C", "D", "O"},
+    GeometryRectangleQuarterSectorCutoutPerimeterTask: {"A", "B", "C", "D", "E", "F"},
+    GeometryMissingWidthFromSemicircleCapAreaTask: {"A", "B", "C", "D", "O"},
+    GeometryMissingWidthFromSemicircleCutoutAreaTask: {"A", "B", "C", "D", "O"},
+    GeometrySectorAngleFromArcLengthTask: {"O", "A", "B"},
+    GeometrySectorAngleFromAreaTask: {"O", "A", "B"},
+}
+
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
 def test_curvilinear_tasks_emit_public_contract(task_cls) -> None:
@@ -65,8 +78,8 @@ def test_curvilinear_tasks_emit_public_contract(task_cls) -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id
     assert out.answer_gt.type == "number"
-    assert out.annotation_gt.type in {"keyed_bbox_map", "keyed_point_map"}
-    assert 1 <= len(out.annotation_gt.value) <= 3
+    assert out.annotation_gt.type == "keyed_point_map"
+    assert set(out.annotation_gt.value) == EXPECTED_ANNOTATION_KEYS_BY_TASK[task_cls]
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
@@ -118,17 +131,11 @@ def test_curvilinear_annotation_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        if out.annotation_gt.type == "keyed_bbox_map":
-            for x0, y0, x1, y1 in out.annotation_gt.value.values():
-                assert 0.0 <= x0 < x1 <= float(width)
-                assert 0.0 <= y0 < y1 <= float(height)
-                assert (x1 - x0) > 8.0
-                assert (y1 - y0) > 8.0
-        else:
-            assert out.annotation_gt.type == "keyed_point_map"
-            for x, y in out.annotation_gt.value.values():
-                assert 0.0 <= x <= float(width)
-                assert 0.0 <= y <= float(height)
+        assert out.annotation_gt.type == "keyed_point_map"
+        assert set(out.annotation_gt.value) == EXPECTED_ANNOTATION_KEYS_BY_TASK[task_cls]
+        for x, y in out.annotation_gt.value.values():
+            assert 0.0 <= x <= float(width)
+            assert 0.0 <= y <= float(height)
 
 
 def test_curvilinear_tasks_reject_unknown_query_id() -> None:
@@ -143,9 +150,13 @@ def test_curvilinear_public_annotation_avoids_measurement_label_boxes(task_cls) 
     for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
         out = task.generate(54061 + index, params={"query_id": query_id}, max_attempts=20)
         assert out.trace_payload["projected_annotation"]["type"] == out.annotation_gt.type
+        assert out.trace_payload["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
+        assert out.trace_payload["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
         assert set(out.annotation_gt.value) == set(out.trace_payload["execution_trace"]["annotation_roles"])
+        assert set(out.annotation_gt.value) == EXPECTED_ANNOTATION_KEYS_BY_TASK[task_cls]
         assert all("label" not in str(role) for role in out.trace_payload["execution_trace"]["annotation_roles"])
         assert "support_roles" in out.trace_payload["render_map"]
+        assert set(out.trace_payload["render_map"]["point_label_bboxes"]) == set(out.annotation_gt.value)
 
 
 def test_quarter_sector_area_omits_obvious_right_angle_label() -> None:

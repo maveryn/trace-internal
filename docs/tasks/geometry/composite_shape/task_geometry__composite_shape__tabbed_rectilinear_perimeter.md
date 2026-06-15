@@ -5,7 +5,7 @@
 2. Scene id: `composite_shape`
 5. Query id: `single`
 6. Answer schema: `integer_value`
-7. Annotation schema: `keyed_bbox_map`
+7. Annotation schema: `keyed_point_map`
 
 ## Program Contract
 - `solve_formula(visible_composite_shape_measurements, unknown_role=perimeter_measure, formula_schema=tabbed_rectilinear_perimeter); scene=composite_shape; scope=tabbed_rectilinear_perimeter`

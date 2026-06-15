@@ -66,8 +66,8 @@ def test_composite_measurement_tasks_emit_public_contract(task_cls) -> None:
         assert out.annotation_gt.type == "keyed_point_map"
         assert 2 <= len(out.annotation_gt.value) <= 4
     elif scene_id == "composite_shape":
-        assert out.annotation_gt.type == "keyed_bbox_map"
-        assert 1 <= len(out.annotation_gt.value) <= 2
+        assert out.annotation_gt.type == "keyed_point_map"
+        assert 3 <= len(out.annotation_gt.value) <= 8
     else:
         assert out.annotation_gt.type == "bbox_set"
         assert 2 <= len(out.annotation_gt.value) <= 6
@@ -207,24 +207,35 @@ def test_composite_measurement_tasks_reject_unknown_query_id() -> None:
 
 
 @pytest.mark.parametrize(
-    "task_cls, expected_keys",
+    "task_cls, expected_keys_by_query",
     (
-        (GeometryMeasurementCompositeAreaValueTask, {"outer_region"}),
-        (GeometryMeasurementCompositePerimeterValueTask, {"target_boundary"}),
-        (GeometryCompositeShapeTabbedRectilinearPerimeterTask, {"target_boundary"}),
+        (
+            GeometryMeasurementCompositeAreaValueTask,
+            {
+                "rectangle_minus_triangle_area": {"A", "B", "C", "D", "E", "F"},
+                "l_shape_area": {"A", "B", "C", "D", "E", "F"},
+            },
+        ),
+        (GeometryMeasurementCompositePerimeterValueTask, {"single": {"A", "B", "C", "D", "E"}}),
+        (
+            GeometryCompositeShapeTabbedRectilinearPerimeterTask,
+            {"single": {"A", "B", "C", "D", "E", "F", "G", "H"}},
+        ),
     ),
 )
-def test_rectilinear_composite_public_annotation_uses_shape_primitives(task_cls, expected_keys) -> None:
+def test_rectilinear_composite_public_annotation_uses_labeled_points(task_cls, expected_keys_by_query) -> None:
     task = task_cls()
     for query_id in tuple(task.supported_query_ids):
         out = task.generate(44121, params={"query_id": query_id, "case_index": 0}, max_attempts=20)
-        assert out.annotation_gt.type == "keyed_bbox_map"
-        assert expected_keys.issubset(set(out.annotation_gt.value))
-        assert out.trace_payload["projected_annotation"]["type"] == "keyed_bbox_map"
-        assert out.trace_payload["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+        assert out.annotation_gt.type == "keyed_point_map"
+        assert set(out.annotation_gt.value) == expected_keys_by_query[str(query_id)]
+        assert out.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
+        assert out.trace_payload["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
+        assert out.trace_payload["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
         assert set(out.annotation_gt.value) == set(out.trace_payload["execution_trace"]["annotation_roles"])
         assert all("label" not in str(role) for role in out.trace_payload["execution_trace"]["annotation_roles"])
         assert "measurement_label_bboxes" in out.trace_payload["render_map"]
+        assert set(out.trace_payload["render_map"]["point_label_bboxes"]) == set(out.annotation_gt.value)
 
 
 @pytest.mark.parametrize(

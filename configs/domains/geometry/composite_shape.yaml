@@ -115,134 +115,135 @@ prompt:
       bundle_id: geometry_analytical_measurement_v0
       scene_key: rectilinear_composite_scene
       task_key: analytical_measurement_value_query
-      object_description: a straight-edged composite shape with measurement labels
-      annotation_hint: 'set "annotation" to a JSON object with exactly these region
-        keys: {annotation_keys}; "outer_region" is the full enclosing shape before
-        the unshaded cutout is removed, and the other key marks the visible missing
-        or removed cutout; each value must be that visible region''s pixel bounding
-        box [x0,y0,x1,y1]'
+      object_description: a labeled straight-edged composite shape with measurement
+        labels
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_integer: set "answer" to the requested value as an integer
     task_geometry__composite_shape__house_outline_perimeter:
       bundle_id: geometry_analytical_measurement_v0
       scene_key: rectilinear_composite_scene
       task_key: analytical_measurement_value_query
-      object_description: a straight-edged composite shape with measurement labels
-      annotation_hint: 'set "annotation" to a JSON object with exactly these boundary
-        keys: {annotation_keys}; each value must be that visible boundary''s pixel
-        bounding box [x0,y0,x1,y1]'
+      object_description: a labeled straight-edged composite shape with measurement
+        labels
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_integer: set "answer" to the requested value as an integer
     task_geometry__composite_shape__tabbed_rectilinear_perimeter:
       bundle_id: geometry_analytical_measurement_v0
       scene_key: rectilinear_composite_scene
       task_key: analytical_measurement_value_query
-      object_description: a straight-edged composite shape with measurement labels
-      annotation_hint: 'set "annotation" to a JSON object with exactly these boundary
-        keys: {annotation_keys}; each value must be that visible boundary''s pixel
-        bounding box [x0,y0,x1,y1]'
+      object_description: a labeled straight-edged composite shape with measurement
+        labels
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_integer: set "answer" to the requested value as an integer
     task_geometry__composite_shape__rectangle_quarter_sector_cutout_area:
       bundle_id: geometry_curvilinear_composite_v0
       scene_key: curvilinear_composite_scene
       task_key: curvilinear_value_query
-      object_description: a shaded composite shape with straight and curved boundaries
-        plus measurement labels
-      annotation_hint: 'set "annotation" to a JSON object with exactly these shape
-        keys: {annotation_keys}; each value must be that visible shape component''s
-        pixel bounding box [x0,y0,x1,y1]'
+      object_description: a labeled shaded composite shape with straight and curved
+        boundaries plus measurement labels
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_number: set "answer" to the requested value rounded to one decimal
         place
-      json_example: '{"annotation":[[120,280,240,306],[42,120,78,240],[300,110,360,136]],"answer":42.5}'
+      json_example: '{"annotation":{"A":[120,180],"B":[260,180],"C":[260,300],"D":[120,300],"E":[210,180],"F":[260,230]},"answer":42.5}'
       json_example_answer_only: '{"answer":42.5}'
     task_geometry__composite_shape__rectangle_semicircle_cap_area:
       bundle_id: geometry_curvilinear_composite_v0
       scene_key: curvilinear_composite_scene
       task_key: curvilinear_value_query
-      object_description: a shaded composite shape with straight and curved boundaries
-        plus measurement labels
-      annotation_hint: 'set "annotation" to a JSON object with exactly these shape
-        keys: {annotation_keys}; each value must be that visible shape component''s
-        pixel bounding box [x0,y0,x1,y1]'
+      object_description: a labeled shaded composite shape with straight and curved
+        boundaries plus measurement labels
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_number: set "answer" to the requested value rounded to one decimal
         place
-      json_example: '{"annotation":[[120,280,240,306],[42,120,78,240],[300,110,360,136]],"answer":42.5}'
+      json_example: '{"annotation":{"A":[120,180],"B":[260,180],"C":[260,300],"D":[120,300],"O":[260,240]},"answer":42.5}'
       json_example_answer_only: '{"answer":42.5}'
     task_geometry__composite_shape__rectangle_semicircle_cutout_area:
       bundle_id: geometry_curvilinear_composite_v0
       scene_key: curvilinear_composite_scene
       task_key: curvilinear_value_query
-      object_description: a shaded composite shape with straight and curved boundaries
-        plus measurement labels
-      annotation_hint: 'set "annotation" to a JSON object with exactly these shape
-        keys: {annotation_keys}; each value must be that visible shape component''s
-        pixel bounding box [x0,y0,x1,y1]'
+      object_description: a labeled shaded composite shape with straight and curved
+        boundaries plus measurement labels
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_number: set "answer" to the requested value rounded to one decimal
         place
-      json_example: '{"annotation":[[120,280,240,306],[42,120,78,240],[300,110,360,136]],"answer":42.5}'
+      json_example: '{"annotation":{"A":[120,180],"B":[260,180],"C":[260,300],"D":[120,300],"O":[260,240]},"answer":42.5}'
       json_example_answer_only: '{"answer":42.5}'
     task_geometry__composite_shape__rectangle_quarter_sector_cutout_perimeter:
       bundle_id: geometry_curvilinear_composite_v0
       scene_key: curvilinear_composite_scene
       task_key: curvilinear_value_query
-      object_description: a shaded composite shape with straight sides, a highlighted
-        circular boundary, and measurement labels
-      annotation_hint: 'set "annotation" to a JSON object with exactly these boundary
-        keys: {annotation_keys}; each value must be that visible boundary component''s
-        pixel bounding box [x0,y0,x1,y1]'
+      object_description: a labeled shaded composite shape with straight sides, a
+        highlighted circular boundary, and measurement labels
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_number: set "answer" to the requested value rounded to one decimal
         place
-      json_example: '{"annotation":[[120,280,240,306],[300,110,420,136]],"answer":31.4}'
+      json_example: '{"annotation":{"A":[120,180],"B":[260,180],"C":[260,300],"D":[120,300],"E":[210,180],"F":[260,230]},"answer":31.4}'
       json_example_answer_only: '{"answer":31.4}'
     task_geometry__composite_shape__rectangle_semicircle_cap_perimeter:
       bundle_id: geometry_curvilinear_composite_v0
       scene_key: curvilinear_composite_scene
       task_key: curvilinear_value_query
-      object_description: a shaded composite shape with straight sides, a highlighted
-        circular boundary, and measurement labels
-      annotation_hint: 'set "annotation" to a JSON object with exactly these boundary
-        keys: {annotation_keys}; each value must be that visible boundary component''s
-        pixel bounding box [x0,y0,x1,y1]'
+      object_description: a labeled shaded composite shape with straight sides, a
+        highlighted circular boundary, and measurement labels
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_number: set "answer" to the requested value rounded to one decimal
         place
-      json_example: '{"annotation":[[120,280,240,306],[300,110,420,136]],"answer":31.4}'
+      json_example: '{"annotation":{"A":[120,180],"B":[260,180],"C":[260,300],"D":[120,300],"O":[260,240]},"answer":31.4}'
       json_example_answer_only: '{"answer":31.4}'
     task_geometry__composite_shape__rectangle_semicircle_cutout_perimeter:
       bundle_id: geometry_curvilinear_composite_v0
       scene_key: curvilinear_composite_scene
       task_key: curvilinear_value_query
-      object_description: a shaded composite shape with straight sides, a highlighted
-        circular boundary, and measurement labels
-      annotation_hint: 'set "annotation" to a JSON object with exactly these boundary
-        keys: {annotation_keys}; each value must be that visible boundary component''s
-        pixel bounding box [x0,y0,x1,y1]'
+      object_description: a labeled shaded composite shape with straight sides, a
+        highlighted circular boundary, and measurement labels
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_number: set "answer" to the requested value rounded to one decimal
         place
-      json_example: '{"annotation":[[120,280,240,306],[300,110,420,136]],"answer":31.4}'
+      json_example: '{"annotation":{"A":[120,180],"B":[260,180],"C":[260,300],"D":[120,300],"O":[260,240]},"answer":31.4}'
       json_example_answer_only: '{"answer":31.4}'
     task_geometry__composite_shape__missing_width_from_semicircle_cap_area:
       bundle_id: geometry_curvilinear_composite_v0
       scene_key: curvilinear_composite_scene
       task_key: curvilinear_value_query
-      object_description: a shaded composite shape with one side marked by a question
-        mark and enough labels to compute it
-      annotation_hint: 'set "annotation" to a JSON object with exactly these endpoint
-        keys: {annotation_keys}; each value must be that visible endpoint''s pixel
-        point [x,y]'
+      object_description: a labeled shaded composite shape with one side marked by
+        a question mark and enough labels to compute it
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_number: set "answer" to the missing side length rounded to one decimal
         place
-      json_example: '{"annotation":[[120,280,240,306],[42,120,78,240],[300,110,360,136],[160,52,280,82]],"answer":12.0}'
+      json_example: '{"annotation":{"A":[120,180],"B":[260,180],"C":[260,300],"D":[120,300],"O":[260,240]},"answer":12.0}'
       json_example_answer_only: '{"answer":12.0}'
     task_geometry__composite_shape__missing_width_from_semicircle_cutout_area:
       bundle_id: geometry_curvilinear_composite_v0
       scene_key: curvilinear_composite_scene
       task_key: curvilinear_value_query
-      object_description: a shaded composite shape with one side marked by a question
-        mark and enough labels to compute it
-      annotation_hint: 'set "annotation" to a JSON object with exactly these endpoint
-        keys: {annotation_keys}; each value must be that visible endpoint''s pixel
-        point [x,y]'
+      object_description: a labeled shaded composite shape with one side marked by
+        a question mark and enough labels to compute it
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_number: set "answer" to the missing side length rounded to one decimal
         place
-      json_example: '{"annotation":[[120,280,240,306],[42,120,78,240],[300,110,360,136],[160,52,280,82]],"answer":12.0}'
+      json_example: '{"annotation":{"A":[120,180],"B":[260,180],"C":[260,300],"D":[120,300],"O":[260,240]},"answer":12.0}'
       json_example_answer_only: '{"answer":12.0}'
     task_geometry__composite_shape__sector_angle_from_arc_length:
       bundle_id: geometry_curvilinear_composite_v0
@@ -250,12 +251,12 @@ prompt:
       task_key: curvilinear_value_query
       object_description: a circular sector with a marked central angle and formula
         labels
-      annotation_hint: 'set "annotation" to a JSON object with exactly these sector-point
-        keys: {annotation_keys}; each value must be that visible sector point''s pixel
-        point [x,y]'
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_number: set "answer" to the angle measure in degrees rounded to
         one decimal place
-      json_example: '{"annotation":[[190,150,224,184],[96,236,174,264],[420,180,520,208],[420,220,500,248]],"answer":90.0}'
+      json_example: '{"annotation":{"O":[190,220],"A":[90,320],"B":[310,320]},"answer":90.0}'
       json_example_answer_only: '{"answer":90.0}'
     task_geometry__composite_shape__sector_angle_from_area:
       bundle_id: geometry_curvilinear_composite_v0
@@ -263,10 +264,10 @@ prompt:
       task_key: curvilinear_value_query
       object_description: a circular sector with a marked central angle and formula
         labels
-      annotation_hint: 'set "annotation" to a JSON object with exactly these sector-point
-        keys: {annotation_keys}; each value must be that visible sector point''s pixel
-        point [x,y]'
+      annotation_hint: 'set "annotation" to a JSON object with exactly these visible
+        point-label keys: {annotation_keys}; each value must be that labeled point''s
+        pixel coordinate [x,y]'
       answer_hint_number: set "answer" to the angle measure in degrees rounded to
         one decimal place
-      json_example: '{"annotation":[[190,150,224,184],[96,236,174,264],[420,180,520,208],[420,220,500,248]],"answer":90.0}'
+      json_example: '{"annotation":{"O":[190,220],"A":[90,320],"B":[310,320]},"answer":90.0}'
       json_example_answer_only: '{"answer":90.0}'

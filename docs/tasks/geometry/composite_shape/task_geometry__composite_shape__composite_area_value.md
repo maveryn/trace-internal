@@ -5,7 +5,7 @@
 2. Scene id: `composite_shape`
 5. Query id: `rectangle_minus_triangle_area`, `l_shape_area`
 6. Answer schema: `integer_value`
-7. Annotation schema: `keyed_bbox_map`
+7. Annotation schema: `keyed_point_map`
 
 ## Program Contract
 - `solve_formula(visible_composite_shape_measurements, unknown_role=area_measure, formula_schema=composite_area_decomposition, decomposition_rule=visible_component_decomposition_rule); scene=composite_shape; scope=composite_area_value`

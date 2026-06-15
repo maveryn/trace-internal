@@ -15,7 +15,6 @@ _state = import_module("trace.tasks.games.2048.shared.state")
 _max_tile_task = import_module("trace.tasks.games.2048.max_tile_value")
 _merge_task = import_module("trace.tasks.games.2048.merge_count")
 _move_result_task = import_module("trace.tasks.games.2048.move_result_board_label")
-_score_task = import_module("trace.tasks.games.2048.score_value")
 
 SUPPORTED_2048_STYLE_VARIANTS = _state.SUPPORTED_2048_STYLE_VARIANTS
 board_max_tile = _mechanics.board_max_tile
@@ -25,7 +24,6 @@ simulate_2048_move = _mechanics.simulate_2048_move
 Games2048MaxTileValueTask = _max_tile_task.Games2048MaxTileValueTask
 Games2048MergeCountTask = _merge_task.Games2048MergeCountTask
 Games2048MoveResultBoardLabelTask = _move_result_task.Games2048MoveResultBoardLabelTask
-Games2048ScoreValueTask = _score_task.Games2048ScoreValueTask
 
 
 def test_games_2048_scene_package_source_layout() -> None:
@@ -33,7 +31,6 @@ def test_games_2048_scene_package_source_layout() -> None:
         Games2048MaxTileValueTask: Path("trace/tasks/games/2048/max_tile_value.py"),
         Games2048MergeCountTask: Path("trace/tasks/games/2048/merge_count.py"),
         Games2048MoveResultBoardLabelTask: Path("trace/tasks/games/2048/move_result_board_label.py"),
-        Games2048ScoreValueTask: Path("trace/tasks/games/2048/score_value.py"),
     }
 
     for task_cls, relative_path in expected_sources.items():
@@ -82,7 +79,6 @@ def _bbox_center(bbox: list[float]) -> list[float]:
     ("task_cls", "params", "expected_prompt_query", "expected_answer"),
     (
         (Games2048MergeCountTask, {"target_answer": 3}, "merge_count", 3),
-        (Games2048ScoreValueTask, {"target_answer": 40}, "score_value", 40),
         (Games2048MaxTileValueTask, {"target_answer": 128}, "max_tile_value", 128),
     ),
 )
@@ -98,7 +94,7 @@ def test_games_2048_move_result_value_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    expected_annotation_type = "segment_set" if expected_prompt_query in {"merge_count", "score_value"} else "bbox_set"
+    expected_annotation_type = "segment_set" if expected_prompt_query == "merge_count" else "bbox_set"
     assert out.annotation_gt.type == expected_annotation_type
     assert out.query_id == "single"
     assert out.scene_id == "2048"
@@ -120,36 +116,6 @@ def test_games_2048_move_result_value_emits_expected_contract(
     assert float(trace["render_spec"]["effective_cell_size_px"]) >= 28.0
     assert trace["render_spec"]["text_style"]["font_family"]
     assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
-
-
-def test_games_2048_move_result_value_matches_standard_move_simulation() -> None:
-    out = Games2048ScoreValueTask().generate(
-        204811,
-        params={"target_answer": 24, "move_direction": "left"},
-        max_attempts=128,
-    )
-    execution = out.trace_payload["execution_trace"]
-    result = simulate_2048_move(_board(execution["board_before"]), str(execution["move_direction"]))
-    expected_ids = tuple(coord_to_cell_id(coord) for pair in result.merge_pairs for coord in pair)
-    expected_id_pairs = [
-        [coord_to_cell_id(left), coord_to_cell_id(right)]
-        for left, right in result.merge_pairs
-    ]
-    expected_point_pairs = [
-        [
-            _bbox_center(out.trace_payload["render_map"]["entity_bboxes_px"][left_id]),
-            _bbox_center(out.trace_payload["render_map"]["entity_bboxes_px"][right_id]),
-        ]
-        for left_id, right_id in expected_id_pairs
-    ]
-
-    assert int(out.answer_gt.value) == int(result.score) == 24
-    assert out.annotation_gt.type == "segment_set"
-    assert out.annotation_gt.value == expected_point_pairs
-    assert tuple(execution["annotation_entity_ids"]) == expected_ids
-    assert execution["annotation_entity_id_pairs"] == expected_id_pairs
-    assert out.trace_payload["projected_annotation"]["segment_set"] == expected_point_pairs
-    assert execution["move_result"]["after"] == [[int(value) for value in row] for row in result.after]
 
 
 def test_games_2048_max_tile_annotation_uses_source_cells_for_unique_max() -> None:
@@ -204,12 +170,11 @@ def test_games_2048_move_result_board_label_lays_out_four_options_as_two_by_two(
 
 
 def test_games_2048_query_cycles_cover_supports() -> None:
-    value_tasks = (Games2048MergeCountTask(), Games2048ScoreValueTask(), Games2048MaxTileValueTask())
+    value_tasks = (Games2048MergeCountTask(), Games2048MaxTileValueTask())
     result_board_task = Games2048MoveResultBoardLabelTask()
     runtime_query_ids: set[str] = set()
     answers_by_task: dict[str, set[int]] = {
         Games2048MergeCountTask.task_id: set(),
-        Games2048ScoreValueTask.task_id: set(),
         Games2048MaxTileValueTask.task_id: set(),
     }
     styles: set[str] = set()
@@ -237,7 +202,6 @@ def test_games_2048_query_cycles_cover_supports() -> None:
 
     assert runtime_query_ids == {"single"}
     assert answers_by_task[Games2048MergeCountTask.task_id] == {0, 1, 2, 3, 4}
-    assert answers_by_task[Games2048ScoreValueTask.task_id] == {0, 4, 8, 12, 16, 24, 32, 40}
     assert answers_by_task[Games2048MaxTileValueTask.task_id] == {16, 32, 64, 128, 256}
     assert styles == set(SUPPORTED_2048_STYLE_VARIANTS)
     assert result_labels == set("ABCDEF")

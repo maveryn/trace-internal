@@ -360,7 +360,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__2048__move_result_board_label": _entry("games", "2048", "games", "2048"),
     "task_games__2048__max_tile_value": _entry("games", "2048", "games", "2048"),
     "task_games__2048__merge_count": _entry("games", "2048", "games", "2048"),
-    "task_games__2048__score_value": _entry("games", "2048", "games", "2048"),
     "task_games__backgammon__destination_count": _entry("games", "backgammon", "games", "backgammon"),
     "task_games__backgammon__point_state_count": _entry("games", "backgammon", "games", "backgammon"),
     "task_games__battleship__last_ship_cell_label": _entry("games", "battleship", "games", "battleship"),

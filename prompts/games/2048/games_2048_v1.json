@@ -29,13 +29,6 @@
         "{move_rule_text} For the displayed move, report the count of equal-tile merges.",
         "{move_rule_text} How many pairs of equal tiles merge after the shown move?"
       ],
-      "score_value": [
-        "{move_rule_text} {score_rule_text} What score does the shown move produce?",
-        "{move_rule_text} {score_rule_text} Apply the shown move once and return its score.",
-        "{move_rule_text} {score_rule_text} What is the total value of the newly merged tiles?",
-        "{move_rule_text} {score_rule_text} Determine the move score for the arrow direction.",
-        "{move_rule_text} {score_rule_text} After this move, what score is awarded?"
-      ],
       "max_tile_value": [
         "{move_rule_text} After applying the shown move once, what is the largest tile value on the board?",
         "{move_rule_text} Move the board in the arrow direction. What is the maximum resulting tile value?",
@@ -78,14 +71,6 @@
       "annotation_hint": "set \"annotation\" to segments [[x, y], [x, y]], one pair for each merge, using the centers of the two original tile cells that merge; use an empty list if no merge occurs",
       "json_example": "{\"annotation\":[[[284,284],[418,284]],[[284,418],[418,418]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
-    },
-    "query:score_value": {
-      "move_rule_text": "In 2048, a move slides all tiles toward the arrow; equal adjacent tiles in that direction merge once.",
-      "score_rule_text": "The move score is the sum of the newly created merged tile values.",
-      "answer_hint": "set \"answer\" to the move score",
-      "annotation_hint": "set \"annotation\" to segments [[x, y], [x, y]], one pair for each merge used for the score, using the centers of the two original tile cells that merge; use an empty list if the score is zero",
-      "json_example": "{\"annotation\":[[[284,284],[418,284]],[[284,418],[418,418]]],\"answer\":24}",
-      "json_example_answer_only": "{\"answer\":24}"
     },
     "query:max_tile_value": {
       "move_rule_text": "In 2048, a move slides all tiles toward the arrow; equal adjacent tiles in that direction merge once.",

@@ -25,17 +25,6 @@ generation:
         - 2
         - 3
         - 4
-    task_games__2048__score_value:
-      balanced_target_answer_sampling: true
-      score_value_support:
-        - 0
-        - 4
-        - 8
-        - 12
-        - 16
-        - 24
-        - 32
-        - 40
     task_games__2048__max_tile_value:
       balanced_target_answer_sampling: true
       max_tile_value_support:

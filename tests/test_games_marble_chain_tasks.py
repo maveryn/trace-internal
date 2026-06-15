@@ -3,11 +3,34 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 
 from trace.core.scene_config import get_scene_defaults
 from trace.tasks.registry import create_task
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
+
+
+def _assert_shot_labels_are_separated_from_marbles(out) -> None:
+    """Check option label markers are not placed on top of chain marbles."""
+
+    entities = out.trace_payload["scene_ir"]["entities"]
+    marble_centers = [
+        tuple(float(value) for value in entity["center_px"])
+        for entity in entities
+        if entity.get("entity_type") == "chain_marble"
+    ]
+    label_centers = [
+        tuple(float(value) for value in entity["label_center_px"])
+        for entity in entities
+        if entity.get("entity_type") == "shot_direction_arrow"
+    ]
+    assert label_centers
+    assert min(
+        math.hypot(label[0] - marble[0], label[1] - marble[1])
+        for label in label_centers
+        for marble in marble_centers
+    ) >= 42.0
 
 
 def test_games_marble_chain_defaults_expose_axes_and_prompt_bundle() -> None:
@@ -62,9 +85,12 @@ def test_games_marble_chain_max_pop_direction_has_unique_answer() -> None:
     assert out.scene_id == "marble_chain"
     assert out.query_id == "single"
     assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "max_pop_direction_label"
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == 1
-    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "point"
+    assert out.trace_payload["projected_annotation"]["point"] == out.annotation_gt.value
+    for spec in out.trace_payload["scene_ir"]["entities"]:
+        if spec.get("entity_type") == "shot_direction_arrow":
+            assert "label_center_px" in spec
+    _assert_shot_labels_are_separated_from_marbles(out)
 
 
 def test_games_marble_chain_target_pop_direction_has_unique_answer() -> None:
@@ -82,8 +108,9 @@ def test_games_marble_chain_target_pop_direction_has_unique_answer() -> None:
     assert execution["target_pop_count"] == 3
     assert out.query_id == "single"
     assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "target_pop_direction_label"
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == 1
+    assert out.annotation_gt.type == "point"
+    assert out.trace_payload["projected_annotation"]["point"] == out.annotation_gt.value
+    _assert_shot_labels_are_separated_from_marbles(out)
 
 
 def test_games_marble_chain_pop_count_matches_marked_outcome() -> None:

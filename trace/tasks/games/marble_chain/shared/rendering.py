@@ -49,7 +49,10 @@ def _draw_text_center(
     width = float(text_bbox[2] - text_bbox[0])
     height = float(text_bbox[3] - text_bbox[1])
     x0, y0, x1, y1 = bbox
-    origin = (float(x0 + ((x1 - x0) - width) / 2.0), float(y0 + ((y1 - y0) - height) / 2.0))
+    origin = (
+        float(x0 + ((x1 - x0) - width) / 2.0 - float(text_bbox[0])),
+        float(y0 + ((y1 - y0) - height) / 2.0 - float(text_bbox[1])),
+    )
     draw_text_traced(
         draw,
         origin,
@@ -176,6 +179,56 @@ def _arrow_bbox(start: Tuple[float, float], end: Tuple[float, float], *, pad: fl
     ]
 
 
+def _shot_label_center(
+    start: Tuple[float, float],
+    end: Tuple[float, float],
+    *,
+    avoid_centers: Sequence[Tuple[float, float]],
+    bounds: Tuple[float, float, float, float],
+    label_radius: float,
+) -> Tuple[float, float]:
+    """Choose a label marker position along the shot path away from marbles."""
+
+    sx, sy = float(start[0]), float(start[1])
+    ex, ey = float(end[0]), float(end[1])
+    length = max(1.0, math.hypot(ex - sx, ey - sy))
+    ux = float(ex - sx) / length
+    uy = float(ey - sy) / length
+    px, py = -uy, ux
+    x0, y0, x1, y1 = [float(value) for value in bounds]
+    margin = float(label_radius) + 5.0
+    candidates: list[Tuple[float, float]] = []
+    for fraction in (0.44, 0.54, 0.64, 0.74):
+        base_x = sx + (ex - sx) * float(fraction)
+        base_y = sy + (ey - sy) * float(fraction)
+        for offset in (label_radius + 16.0, label_radius + 27.0, 0.0):
+            if offset == 0.0:
+                candidate_offsets = (0.0,)
+            else:
+                candidate_offsets = (float(offset), -float(offset))
+            for signed_offset in candidate_offsets:
+                cx = float(base_x + px * signed_offset)
+                cy = float(base_y + py * signed_offset)
+                if x0 + margin <= cx <= x1 - margin and y0 + margin <= cy <= y1 - margin:
+                    candidates.append((cx, cy))
+    if not candidates:
+        return float(sx + (ex - sx) * 0.55), float(sy + (ey - sy) * 0.55)
+
+    def score(candidate: Tuple[float, float]) -> Tuple[float, float]:
+        cx, cy = candidate
+        nearest = min(
+            (
+                math.hypot(float(cx - float(ax)), float(cy - float(ay)))
+                for ax, ay in avoid_centers
+            ),
+            default=9999.0,
+        )
+        edge_margin = min(cx - x0, x1 - cx, cy - y0, y1 - cy)
+        return float(nearest), float(edge_margin)
+
+    return max(candidates, key=score)
+
+
 def _draw_shot_arrow(
     draw: ImageDraw.ImageDraw,
     start: Tuple[float, float],
@@ -189,6 +242,8 @@ def _draw_shot_arrow(
     label_outline_rgb: Tuple[int, int, int],
     width: int,
     emphasize: bool,
+    label_center: Tuple[float, float] | None = None,
+    label_radius: float = 18.0,
 ) -> List[float]:
     """Draw one shooter-to-gap arrow and return its full visual bbox."""
 
@@ -217,14 +272,17 @@ def _draw_shot_arrow(
     )
     bbox = _arrow_bbox(shaft_start, tip, pad=max(18.0, float(line_width) * 2.0))
     if label:
-        label_cx = float(x1 + px * 23.0 - ux * 6.0)
-        label_cy = float(y1 + py * 23.0 - uy * 6.0)
-        label_radius = 17.0
+        if label_center is None:
+            label_cx = float(x0 + (x1 - x0) * 0.55 + px * (float(label_radius) + 16.0))
+            label_cy = float(y0 + (y1 - y0) * 0.55 + py * (float(label_radius) + 16.0))
+        else:
+            label_cx = float(label_center[0])
+            label_cy = float(label_center[1])
         label_bbox = (
-            label_cx - label_radius,
-            label_cy - label_radius,
-            label_cx + label_radius,
-            label_cy + label_radius,
+            label_cx - float(label_radius),
+            label_cy - float(label_radius),
+            label_cx + float(label_radius),
+            label_cy + float(label_radius),
         )
         draw.ellipse(label_bbox, fill=tuple(label_fill_rgb), outline=tuple(label_outline_rgb), width=2)
         _draw_text_center(draw, label_bbox, str(label), font=label_font, fill=text_rgb, stroke_width=0)
@@ -421,8 +479,17 @@ def render_marble_scene(
         }
     )
 
+    option_label_centers: List[Tuple[float, float]] = []
     for option in sample.option_specs:
         arrow_end = _slot_center(int(option.slot_index), centers)
+        label_radius = 18.0
+        label_center = _shot_label_center(
+            shooter_center,
+            arrow_end,
+            avoid_centers=tuple(centers) + (shooter_center,) + tuple(option_label_centers),
+            bounds=track_bbox,
+            label_radius=float(label_radius),
+        )
         bbox = _draw_shot_arrow(
             draw,
             shooter_center,
@@ -435,7 +502,10 @@ def render_marble_scene(
             label_outline_rgb=accent_rgb,
             width=4,
             emphasize=False,
+            label_center=label_center,
+            label_radius=float(label_radius),
         )
+        option_label_centers.append((float(label_center[0]), float(label_center[1])))
         entity_bboxes[str(option.entity_id)] = [float(value) for value in bbox]
         entity_points[str(option.entity_id)] = [round(float(arrow_end[0]), 3), round(float(arrow_end[1]), 3)]
         spec = {
@@ -449,6 +519,7 @@ def render_marble_scene(
             "is_answer": bool(option.is_answer),
             "bbox_px": [float(value) for value in bbox],
             "insertion_point_px": [round(float(arrow_end[0]), 3), round(float(arrow_end[1]), 3)],
+            "label_center_px": [round(float(label_center[0]), 3), round(float(label_center[1]), 3)],
         }
         shot_specs.append(dict(spec))
         entities.append(dict(spec))

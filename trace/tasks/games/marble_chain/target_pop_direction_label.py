@@ -19,7 +19,7 @@ PROMPT_SLOTS = make_marble_prompt_slots(
     prompt_query_key="target_pop_direction_label",
     answer_hint_key="answer_hint_target_pop_direction_label",
     annotation_hint_key="annotation_hint_target_pop_direction_label",
-    example_annotation=[[465, 286]],
+    example_annotation=[465, 286],
     example_answer="B",
 )
 

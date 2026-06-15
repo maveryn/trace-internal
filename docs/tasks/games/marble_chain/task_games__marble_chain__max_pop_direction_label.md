@@ -10,7 +10,7 @@ The scene renders a Zuma-like marble chain with a central shooter marble and 4 t
 
 Answer schema: `option_letter`.
 
-Annotation schema: `point_set` containing the selected arrow's insertion-gap point.
+Annotation schema: `point` at the selected arrow's insertion gap.
 
 Supported `query_id`: `single`.
 

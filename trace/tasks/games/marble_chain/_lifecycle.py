@@ -18,7 +18,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import marble_point_set_annotation
+from .shared.annotations import marble_point_annotation, marble_point_set_annotation
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS, SCENE_ID
 from .shared.output import build_marble_common_trace_params, build_marble_trace_payload
 from .shared.prompts import (
@@ -146,6 +146,33 @@ def marble_point_set_attempt(
     )
 
 
+def marble_point_attempt(
+    *,
+    answer_gt: TypedValue,
+    sample: MarbleSample,
+    prompt_slots: MarblePromptSlots,
+    execution_extra: Mapping[str, Any] | None = None,
+    extra_query_params: Mapping[str, Any] | None = None,
+) -> MarbleAttemptResult:
+    """Package a marble-chain result whose annotation is one selected entity center."""
+
+    entity_ids = tuple(str(entity_id) for entity_id in sample.annotation_entity_ids)
+    if len(entity_ids) != 1:
+        raise ValueError("marble scalar point annotation requires exactly one entity id")
+    entity_id = str(entity_ids[0])
+    return MarbleAttemptResult(
+        answer_gt=answer_gt,
+        sample=sample,
+        prompt_slots=prompt_slots,
+        build_annotation=lambda rendered: marble_point_annotation(
+            rendered=rendered,
+            entity_id=entity_id,
+        ),
+        execution_extra=dict(execution_extra or {}),
+        extra_query_params=dict(extra_query_params or {}),
+    )
+
+
 def prepare_marble_direction_option_plan(
     *,
     instance_seed: int,
@@ -223,7 +250,7 @@ def prepare_marble_direction_option_plan(
             annotation_entity_ids=insertion_point_annotation_ids(str(answer_spec.entity_id)),
             metadata=dict(trace_params),
         )
-        return marble_point_set_attempt(
+        return marble_point_attempt(
             answer_gt=TypedValue(type="option_letter", value=str(sample.answer)),
             sample=sample,
             prompt_slots=prompt_slots,
@@ -414,6 +441,7 @@ __all__ = [
     "MarbleLifecycleResult",
     "MarbleObjectivePlan",
     "MarbleSingleQueryTaskBase",
+    "marble_point_attempt",
     "marble_point_set_attempt",
     "prepare_marble_direction_option_plan",
     "render_marble_lifecycle",

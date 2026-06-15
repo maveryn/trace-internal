@@ -35,10 +35,10 @@ Renders a park/playground source illustration, cuts it into a 2-row by 2-column 
 - The answer value is one of the visible option letters `A` through `D`.
 
 ## Annotation Contract
-- Annotation schema: `keyed_bbox_map`
-- Generator `annotation_gt.type`: `keyed_bbox_map`
-- Annotation key is `selected_option`.
-- Annotation box is the final-image pixel box around the selected jigsaw arrangement option image. Do not include the option label badge, all options, source-scene objects, or context-only regions.
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
+- Annotation contains exactly one bbox: the final-image pixel box around the selected jigsaw arrangement option image.
+- Do not include the option label badge, all options, source-scene objects, or context-only regions.
 
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/park_playground/illustrations_park_playground_v0.json`.

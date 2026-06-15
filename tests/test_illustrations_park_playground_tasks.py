@@ -34,14 +34,6 @@ def _assert_annotation_inside_canvas(out) -> None:
         assert 0 <= y0 < y1 <= height
 
 
-def _assert_keyed_annotation_inside_canvas(out) -> None:
-    width, height = out.trace_payload["render_spec"]["canvas_size"]
-    for bbox in out.annotation_gt.value.values():
-        x0, y0, x1, y1 = bbox
-        assert 0 <= x0 < x1 <= width
-        assert 0 <= y0 < y1 <= height
-
-
 def test_person_activity_count_contract() -> None:
     out = create_task("task_illustrations__park_playground__activity_person_count").generate(
         hash64(2026052407, "park-person-activity", 0),
@@ -304,13 +296,13 @@ def test_jigsaw_arrangement_label_contract() -> None:
     assert out.scene_id == "park_playground"
     assert out.query_id == SINGLE_QUERY_ID
     assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_set"
     assert answer_label == "C"
     assert sorted(option_bboxes) == ["A", "B", "C", "D"]
-    assert out.annotation_gt.value == {"selected_option": option_bboxes[answer_label]}
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+    assert out.annotation_gt.value == [option_bboxes[answer_label]]
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
     assert trace["render_map"]["selected_option_bbox_px"] == option_bboxes[answer_label]
     assert execution["option_permutations_by_label"][answer_label] == [0, 1, 2, 3]
     assert option_permutations[answer_label] == [0, 1, 2, 3]
@@ -319,7 +311,7 @@ def test_jigsaw_arrangement_label_contract() -> None:
     assert trace["render_map"]["option_layout_shape"] == [2, 2]
     assert min(trace["query_spec"]["params"]["tile_detail_scores"]) >= 600
     assert trace["render_spec"]["canvas_size"] == [1136, 892]
-    _assert_keyed_annotation_inside_canvas(out)
+    _assert_annotation_inside_canvas(out)
 
 
 def test_jigsaw_arrangement_seeded_sampler_covers_answer_labels() -> None:

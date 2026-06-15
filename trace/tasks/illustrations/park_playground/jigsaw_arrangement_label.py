@@ -193,11 +193,11 @@ def _tile_detail_scores(source_image: Image.Image) -> Tuple[float, ...]:
     return tuple(float(image_detail_score(piece)) for piece, _box in pieces)
 
 
-def _keyed_bbox_map(value: Mapping[str, Sequence[float]]) -> Dict[str, list[float]]:
-    return {
-        str(key): [round(float(coord), 3) for coord in bbox[:4]]
-        for key, bbox in value.items()
-    }
+def _bbox_set(value: Sequence[Sequence[float]]) -> list[list[float]]:
+    return [
+        [round(float(coord), 3) for coord in bbox[:4]]
+        for bbox in value
+    ]
 
 
 @register_task
@@ -299,7 +299,7 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
 
         serialized_scene, person_bboxes = serialize_park_scene(scene)
         answer_label = str(artifacts.selected_label)
-        annotation_value = _keyed_bbox_map({"selected_option": artifacts.selected_option_bbox})
+        annotation_value = _bbox_set([artifacts.selected_option_bbox])
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             [
@@ -421,16 +421,16 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
                 "correct_index": int(sample.correct_index),
             },
             "projected_annotation": {
-                "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(annotation_value),
-                "pixel_keyed_bbox_map": dict(annotation_value),
+                "type": "bbox_set",
+                "bbox_set": [list(bbox) for bbox in annotation_value],
+                "pixel_bbox_set": [list(bbox) for bbox in annotation_value],
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="option_letter", value=answer_label),
-            annotation_gt=TypedValue(type="keyed_bbox_map", value=dict(annotation_value)),
+            annotation_gt=TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_value]),
             image=artifacts.image,
             image_id="img0",
             trace_payload=trace_payload,

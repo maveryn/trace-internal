@@ -24,6 +24,19 @@ def book_bbox_map(scene: RenderedLibraryScene) -> Dict[str, List[float]]:
     return {str(book.book_id): [round(float(v), 3) for v in book.bbox_xyxy] for book in scene.books}
 
 
+def book_point_map(scene: RenderedLibraryScene) -> Dict[str, List[float]]:
+    """Return book center points keyed by book id."""
+
+    points: Dict[str, List[float]] = {}
+    for book in scene.books:
+        x0, y0, x1, y1 = [float(value) for value in book.bbox_xyxy]
+        points[str(book.book_id)] = [
+            round(0.5 * (x0 + x1), 3),
+            round(0.5 * (y0 + y1), 3),
+        ]
+    return points
+
+
 def section_bbox_map(scene: RenderedLibraryScene) -> Dict[str, List[float]]:
     """Return section bboxes keyed by section id."""
 
@@ -36,6 +49,20 @@ def sort_library_bboxes(bbox_map: Mapping[str, Sequence[float]], ids: Iterable[s
     boxes = [list(float(v) for v in bbox_map[str(item_id)]) for item_id in ids]
     boxes.sort(key=lambda box: (round(float(box[1]), 3), round(float(box[0]), 3), round(float(box[3]), 3), round(float(box[2]), 3)))
     return [[round(float(v), 3) for v in box] for box in boxes]
+
+
+def sort_library_points(bbox_map: Mapping[str, Sequence[float]], ids: Iterable[str]) -> List[List[float]]:
+    """Return bbox center points sorted top-to-bottom then left-to-right."""
+
+    boxes = [list(float(v) for v in bbox_map[str(item_id)]) for item_id in ids]
+    boxes.sort(key=lambda box: (round(float(box[1]), 3), round(float(box[0]), 3), round(float(box[3]), 3), round(float(box[2]), 3)))
+    return [
+        [
+            round(0.5 * (float(box[0]) + float(box[2])), 3),
+            round(0.5 * (float(box[1]) + float(box[3])), 3),
+        ]
+        for box in boxes
+    ]
 
 
 def library_scene_entities(scene: RenderedLibraryScene) -> List[Dict[str, Any]]:
@@ -208,8 +235,10 @@ def serialize_library_scene(scene: RenderedLibraryScene) -> Tuple[List[Dict[str,
 
 __all__ = [
     "book_bbox_map",
+    "book_point_map",
     "library_scene_entities",
     "section_bbox_map",
     "serialize_library_scene",
     "sort_library_bboxes",
+    "sort_library_points",
 ]

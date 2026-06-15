@@ -33,9 +33,9 @@ Counts visible books in one labeled library shelf section.
 - The answer value is the number of counted book witnesses projected from the same execution trace as the annotation.
 
 ## Annotation Contract
-- Annotation schema: `bbox_set`
-- Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel boxes, one per counted book. Do not include shelf labels, section boxes, decor, or prompt/answer labels.
+- Annotation schema: `point_set`
+- Generator `annotation_gt.type`: `point_set`
+- Annotation is an unordered set of final-image pixel center points, one per counted book. Do not include shelf labels, section boxes, decor, or prompt/answer labels.
 
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/library/illustrations_library_v0.json`.

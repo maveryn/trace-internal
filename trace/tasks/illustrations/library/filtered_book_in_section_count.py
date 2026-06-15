@@ -17,7 +17,7 @@ from .shared.annotations import (
     book_bbox_map,
     library_scene_entities,
     serialize_library_scene,
-    sort_library_bboxes,
+    sort_library_points,
 )
 from .shared.output import library_base_render_map, library_render_spec, library_scene_relations, render_fallback_from_defaults
 from .shared.prompts import build_library_prompt_artifacts
@@ -355,7 +355,7 @@ class IllustrationsLibraryFilteredBookInSectionCountTask:
             )
         if len(counted_book_ids) != int(sample.target_count):
             raise RuntimeError("rendered library filtered book count did not match sample target")
-        annotation_value = sort_library_bboxes(book_bbox_map(scene), counted_book_ids)
+        annotation_value = sort_library_points(book_bbox_map(scene), counted_book_ids)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -447,13 +447,17 @@ class IllustrationsLibraryFilteredBookInSectionCountTask:
                 "target_orientation": sample.orientation,
                 "answer": int(sample.target_count),
             },
-            "projected_annotation": {"bbox_set": list(annotation_value)},
+            "projected_annotation": {
+                "type": "point_set",
+                "point_set": list(annotation_value),
+                "pixel_point_set": list(annotation_value),
+            },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
+            annotation_gt=TypedValue(type="point_set", value=list(annotation_value)),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

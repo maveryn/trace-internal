@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
-from .annotations import book_bbox_map, section_bbox_map
+from .annotations import book_bbox_map, book_point_map, section_bbox_map
 from .state import RenderedLibraryScene
 
 
@@ -40,6 +40,7 @@ def library_base_render_map(
     return {
         "image_id": "img0",
         "book_bboxes_px": book_bbox_map(scene),
+        "book_points_px": book_point_map(scene),
         "section_bboxes_px": section_bbox_map(scene),
         "counted_book_ids": [str(book_id) for book_id in counted_book_ids],
     }

@@ -124,20 +124,20 @@ prompt:
       scene_key: library_canvas
       task_key: books_in_section_count_task
       answer_hint_books_in_section: set "answer" to the count of books in the {section_name} section as an integer
-      annotation_hint_books_in_section: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted book in the {section_name} section
-      json_example_books_in_section: '{"annotation":[[92,186,110,258],[116,192,132,258],[139,176,156,258],[162,204,214,220]],"answer":4}'
+      annotation_hint_books_in_section: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every counted book in the {section_name} section
+      json_example_books_in_section: '{"annotation":[[101,222],[124,225],[148,217],[188,212]],"answer":4}'
       json_example_answer_only_books_in_section: '{"answer":4}'
     task_illustrations__library__filtered_book_in_section_count:
       bundle_id: illustrations_library_v0
       scene_key: library_canvas
       task_key: filtered_book_in_section_count_task
       answer_hint_book_color: set "answer" to the count of {color_label} books in the {section_name} section as an integer
-      annotation_hint_book_color: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {color_label} book in the {section_name} section
-      json_example_book_color: '{"annotation":[[244,184,262,256],[288,188,306,256],[336,208,386,224]],"answer":3}'
+      annotation_hint_book_color: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every counted {color_label} book in the {section_name} section
+      json_example_book_color: '{"annotation":[[253,220],[297,222],[361,216]],"answer":3}'
       json_example_answer_only_book_color: '{"answer":3}'
       answer_hint_book_orientation: set "answer" to the count of {orientation_name} books in the {section_name} section as an integer
-      annotation_hint_book_orientation: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {orientation_name} book in the {section_name} section
-      json_example_book_orientation: '{"annotation":[[482,190,500,258],[526,178,544,258],[612,206,662,222]],"answer":3}'
+      annotation_hint_book_orientation: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every counted {orientation_name} book in the {section_name} section
+      json_example_book_orientation: '{"annotation":[[491,224],[535,218],[637,214]],"answer":3}'
       json_example_answer_only_book_orientation: '{"answer":3}'
     task_illustrations__library__rotated_tile_label:
       bundle_id: illustrations_library_v0

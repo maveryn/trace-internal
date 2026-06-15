@@ -18,6 +18,16 @@ def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
     assert max(counts.values()) <= int(expected * 1.7) + 1
 
 
+def _assert_points_inside_book_bboxes(trace: dict, book_ids: list[str]) -> None:
+    bboxes = trace["render_map"]["book_bboxes_px"]
+    points = trace["render_map"]["book_points_px"]
+    for book_id in book_ids:
+        x0, y0, x1, y1 = [float(value) for value in bboxes[book_id]]
+        x, y = [float(value) for value in points[book_id]]
+        assert x0 <= x <= x1
+        assert y0 <= y <= y1
+
+
 def test_books_in_section_count_contract() -> None:
     out = create_task("task_illustrations__library__books_in_section_count").generate(
         hash64(2026052404, "library-books-section", 0),
@@ -27,19 +37,22 @@ def test_books_in_section_count_contract() -> None:
     trace = out.trace_payload
     execution = trace["execution_trace"]
     counted_book_ids = execution["counted_book_ids"]
-    book_bboxes = trace["render_map"]["book_bboxes_px"]
+    book_points = trace["render_map"]["book_points_px"]
 
     assert out.scene_id == "library"
     assert out.query_id == SINGLE_QUERY_ID
     assert trace["query_spec"]["query_id"] == SINGLE_QUERY_ID
     assert trace["query_spec"]["params"]["prompt_query_key"] == "books_in_section_count"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 7
     assert len(counted_book_ids) == 7
     assert execution["target_section_key"] == "science"
-    assert sorted(out.annotation_gt.value) == sorted(book_bboxes[book_id] for book_id in counted_book_ids)
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert sorted(out.annotation_gt.value) == sorted(book_points[book_id] for book_id in counted_book_ids)
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    _assert_points_inside_book_bboxes(trace, counted_book_ids)
     for book in execution["books"]:
         if book["book_id"] in set(counted_book_ids):
             assert book["section_key"] == "science"
@@ -75,7 +88,7 @@ def test_book_color_count_contract() -> None:
     trace = out.trace_payload
     execution = trace["execution_trace"]
     counted_book_ids = execution["counted_book_ids"]
-    book_bboxes = trace["render_map"]["book_bboxes_px"]
+    book_points = trace["render_map"]["book_points_px"]
 
     assert out.scene_id == "library"
     assert out.query_id == "book_color_in_section_count"
@@ -84,8 +97,12 @@ def test_book_color_count_contract() -> None:
     assert execution["target_section_key"] == "history"
     assert execution["target_color_name"] == "red"
     assert execution["target_color_label"] == "red [#E63232]"
-    assert sorted(out.annotation_gt.value) == sorted(book_bboxes[book_id] for book_id in counted_book_ids)
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "point_set"
+    assert sorted(out.annotation_gt.value) == sorted(book_points[book_id] for book_id in counted_book_ids)
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    _assert_points_inside_book_bboxes(trace, counted_book_ids)
     for book in execution["books"]:
         is_target = book["section_key"] == "history" and book["color_name"] == "red"
         assert (book["book_id"] in set(counted_book_ids)) == is_target
@@ -114,7 +131,7 @@ def test_book_orientation_count_contract() -> None:
     trace = out.trace_payload
     execution = trace["execution_trace"]
     counted_book_ids = execution["counted_book_ids"]
-    book_bboxes = trace["render_map"]["book_bboxes_px"]
+    book_points = trace["render_map"]["book_points_px"]
 
     assert out.scene_id == "library"
     assert out.query_id == "horizontal_book_in_section_count"
@@ -123,8 +140,12 @@ def test_book_orientation_count_contract() -> None:
     assert len(counted_book_ids) == 3
     assert execution["target_section_key"] == "art"
     assert execution["target_orientation"] == "horizontal"
-    assert sorted(out.annotation_gt.value) == sorted(book_bboxes[book_id] for book_id in counted_book_ids)
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "point_set"
+    assert sorted(out.annotation_gt.value) == sorted(book_points[book_id] for book_id in counted_book_ids)
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    _assert_points_inside_book_bboxes(trace, counted_book_ids)
     for book in execution["books"]:
         is_target = book["section_key"] == "art" and book["orientation"] == "horizontal"
         assert (book["book_id"] in set(counted_book_ids)) == is_target

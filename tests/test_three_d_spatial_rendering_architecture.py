@@ -17,6 +17,7 @@ SURFACE_FIXTURE_TASK_FILES = (
     Path("trace/tasks/three_d/surface_fixture/repeated_element_count.py"),
     Path("trace/tasks/three_d/surface_fixture/colored_element_count.py"),
     Path("trace/tasks/three_d/surface_fixture/color_count_after_operations_value.py"),
+    Path("trace/tasks/three_d/surface_fixture/recolor_board_match_label.py"),
     Path("trace/tasks/three_d/surface_fixture/scoped_colored_element_count.py"),
     Path("trace/tasks/three_d/surface_fixture/empty_or_missing_cell_count.py"),
 )

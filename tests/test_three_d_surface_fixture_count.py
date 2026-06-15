@@ -20,6 +20,7 @@ from trace.tasks.three_d.surface_fixture.element_count_extremum_label import (
     TASK_ID as EXTREMUM_TASK_ID,
 )
 from trace.tasks.three_d.surface_fixture.empty_or_missing_cell_count import TASK_ID as EMPTY_MISSING_TASK_ID
+from trace.tasks.three_d.surface_fixture.recolor_board_match_label import TASK_ID as RECOLOR_MATCH_TASK_ID
 from trace.tasks.three_d.surface_fixture.repeated_element_count import TASK_ID
 from trace.tasks.three_d.surface_fixture.repeated_element_count import TASK_ID as REPEATED_TASK_ID
 from trace.tasks.three_d.surface_fixture.scoped_colored_element_count import (
@@ -40,6 +41,7 @@ SURFACE_FIXTURE_TASK_IDS = (
     EXTREMUM_TASK_ID,
     COLORED_TASK_ID,
     COLOR_OPERATIONS_TASK_ID,
+    RECOLOR_MATCH_TASK_ID,
     SCOPED_COLORED_TASK_ID,
     EMPTY_MISSING_TASK_ID,
 )
@@ -269,6 +271,53 @@ def test_surface_fixture_color_count_after_operations_tracks_final_count() -> No
     assert "{operation_" not in output.prompt
     assert "{target_" not in output.prompt
     assert "after" in output.prompt.lower()
+
+
+def test_surface_fixture_recolor_board_match_selects_matching_option() -> None:
+    output = create_task(RECOLOR_MATCH_TASK_ID).generate(
+        20260841,
+        params={
+            "query_id": "single",
+            "scene_variant": "control_panel",
+            "answer_label": "C",
+            "active_color_names": ["red", "blue", "green"],
+            "source_color_name": "red",
+            "destination_color_name": "blue",
+            "initial_color_counts": {
+                "red": 3,
+                "blue": 2,
+                "green": 4,
+            },
+            "post_image_noise_apply_prob": 0.0,
+        },
+        max_attempts=20,
+    )
+
+    trace = output.trace_payload["execution_trace"]
+    render_map = output.trace_payload["render_map"]
+    option_counts = {
+        str(label): {str(color): int(count) for color, count in counts.items()}
+        for label, counts in trace["option_color_counts_by_label"].items()
+    }
+
+    assert output.scene_id == "surface_fixture"
+    assert output.query_id == "single"
+    assert output.answer_gt.type == "option_letter"
+    assert output.answer_gt.value == "C"
+    assert trace["source_color_name"] == "red"
+    assert trace["destination_color_name"] == "blue"
+    assert trace["initial_color_counts"] == {"red": 3, "blue": 2, "green": 4}
+    assert trace["final_color_counts"] == {"red": 0, "blue": 5, "green": 4}
+    assert option_counts["C"] == trace["final_color_counts"]
+    assert len({tuple(sorted(counts.items())) for counts in option_counts.values()}) == 4
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.annotation_gt.value == [render_map["option_panel_bboxes_px"]["C"]]
+    assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
+    assert output.image.size == (1180, 900)
+    assert "{recolor_" not in output.prompt
+    assert "{source_" not in output.prompt
+    assert "{destination_" not in output.prompt
+    assert "rearranged" in output.prompt.lower() or "positions may change" in output.prompt.lower()
 
 
 def test_surface_fixture_missing_cell_default_answer_range() -> None:

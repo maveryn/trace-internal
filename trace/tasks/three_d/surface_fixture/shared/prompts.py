@@ -35,6 +35,11 @@ def dynamic_slots_for_surface(dataset: Mapping[str, Any], *, object_description:
         "target_element_plural": str(dataset.get("target_element_plural", "")),
         "target_color_label": semantic_color_label(target_color_name) if target_color_name else "",
         "operation_phrase": str(dataset.get("operation_phrase", "")),
+        "recolor_phrase": str(dataset.get("recolor_phrase", "")),
+        "source_color_label": semantic_color_label(str(dataset.get("source_color_name", ""))) if dataset.get("source_color_name") else "",
+        "destination_color_label": (
+            semantic_color_label(str(dataset.get("destination_color_name", ""))) if dataset.get("destination_color_name") else ""
+        ),
         "scope_phrase": str(dataset.get("scope_phrase", "")),
         "fixture_display_name": str(dataset.get("fixture_display_name", "fixture surface")),
     }

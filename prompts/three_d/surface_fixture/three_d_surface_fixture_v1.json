@@ -57,6 +57,13 @@
         "Using the visible fixture as the starting state, apply {operation_phrase}. What is the resulting count of {target_color_label} {target_element_plural}?",
         "If these changes are made to the fixture, {operation_phrase}, how many {target_color_label} {target_element_plural} are there in total?"
       ],
+      "recolor_board_match": [
+        "Apply this recolor to the original board: {recolor_phrase}. Objects may be rearranged, so only final color counts matter. Which labeled candidate board could be the result?",
+        "On the original board, suppose {recolor_phrase}. The objects may be rearranged afterward, so match only the final color counts. Which candidate board is correct?",
+        "Starting from the original board, recolor so that {recolor_phrase}. Since positions may change, use only the final color counts. Which option matches?",
+        "If {recolor_phrase} on the original board, and the objects may be rearranged, which labeled board has the correct final color counts?",
+        "Use the original board as the starting state and apply this recolor: {recolor_phrase}. Which candidate board could result if only color counts must match?"
+      ],
       "scoped_element_color_count": [
         "How many {target_color_label} {target_element_plural} are in {scope_phrase}?",
         "Count the {target_color_label} {target_element_plural} in {scope_phrase}. How many are there?",
@@ -120,6 +127,12 @@
       "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":5}",
       "json_example_answer_only": "{\"answer\":5}"
     },
+    "query:recolor_board_match": {
+      "answer_hint": "set \"answer\" to the selected candidate board label as a single capital letter",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around the selected candidate board",
+      "json_example": "{\"annotation\":[[640,470,1050,720]],\"answer\":\"C\"}",
+      "json_example_answer_only": "{\"answer\":\"C\"}"
+    },
     "query:scoped_element_color_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
       "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted colored surface element in the requested row or column",
@@ -139,6 +152,9 @@
     "target_element_plural": {"type": "string"},
     "target_color_label": {"type": "string"},
     "operation_phrase": {"type": "string"},
+    "recolor_phrase": {"type": "string"},
+    "source_color_label": {"type": "string"},
+    "destination_color_label": {"type": "string"},
     "scope_phrase": {"type": "string"},
     "fixture_display_name": {"type": "string"}
   },
@@ -149,6 +165,7 @@
     "query:lowest_element_count_panel": ["target_element_plural"],
     "query:element_color_count": ["target_color_label", "target_element_plural"],
     "query:color_count_after_operations": ["operation_phrase", "target_color_label", "target_element_plural"],
+    "query:recolor_board_match": ["recolor_phrase"],
     "query:scoped_element_color_count": ["target_color_label", "target_element_plural", "scope_phrase"],
     "query:empty_or_missing_cell_count": ["target_element_plural", "target_element_name"]
   }

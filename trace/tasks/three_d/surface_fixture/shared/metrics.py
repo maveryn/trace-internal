@@ -550,6 +550,435 @@ def build_color_operation_surface_data(
     return dataset, dict(answer_probabilities)
 
 
+def _resolve_recolor_active_colors(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> Tuple[str, ...]:
+    """Resolve the color vocabulary for one recolor-board matching instance."""
+
+    explicit_colors = params.get("active_color_names", params.get("color_names"))
+    if explicit_colors is not None:
+        if not isinstance(explicit_colors, Sequence) or isinstance(explicit_colors, (str, bytes)):
+            raise ValueError("active_color_names must be a sequence of color names")
+        colors = tuple(str(color) for color in explicit_colors)
+        if len(colors) != len(set(colors)):
+            raise ValueError("active_color_names must be unique")
+        if len(colors) < 3 or len(colors) > 4:
+            raise ValueError("active_color_names must contain 3 or 4 colors")
+        unsupported = [color for color in colors if color not in set(SEMANTIC_COLOR_SUPPORT)]
+        if unsupported:
+            raise ValueError(f"unsupported active color names: {unsupported}")
+        return tuple(colors)
+
+    minimum = max(3, configured_int(params, gen_defaults, "active_color_count_min", 3))
+    maximum = max(minimum, min(4, configured_int(params, gen_defaults, "active_color_count_max", 4)))
+    explicit_count = params.get("active_color_count")
+    if explicit_count is not None:
+        color_count = int(explicit_count)
+        if color_count < int(minimum) or color_count > int(maximum):
+            raise ValueError(f"active_color_count must be in {minimum}..{maximum}, got {color_count}")
+    else:
+        rng_count = spawn_rng(int(instance_seed), f"{namespace}.active_color_count")
+        color_count = int(minimum + int(rng_count.randrange(int(maximum - minimum + 1))))
+    rng = spawn_rng(int(instance_seed), f"{namespace}.active_colors")
+    colors = list(SEMANTIC_COLOR_SUPPORT)
+    rng.shuffle(colors)
+    return tuple(str(color) for color in colors[: int(color_count)])
+
+
+def _resolve_recolor_rule(
+    *,
+    params: Mapping[str, Any],
+    active_colors: Sequence[str],
+    instance_seed: int,
+    namespace: str,
+) -> Tuple[str, str]:
+    """Choose the single source->destination recolor rule over active colors."""
+
+    active = tuple(str(color) for color in active_colors)
+    source = params.get("source_color_name", params.get("source_color"))
+    destination = params.get("destination_color_name", params.get("target_color_name", params.get("destination_color")))
+    rng = spawn_rng(int(instance_seed), f"{namespace}.recolor_rule")
+    if source is None:
+        source_color = str(active[int(rng.randrange(len(active)))])
+    else:
+        source_color = str(source)
+        if source_color not in set(active):
+            raise ValueError(f"source_color_name must be one of active colors: {source_color}")
+    destination_support = [str(color) for color in active if str(color) != str(source_color)]
+    if destination is None:
+        destination_color = str(destination_support[int(rng.randrange(len(destination_support)))])
+    else:
+        destination_color = str(destination)
+        if destination_color not in set(destination_support):
+            raise ValueError("destination_color_name must be an active color different from source_color_name")
+    return str(source_color), str(destination_color)
+
+
+def _resolve_recolor_initial_counts(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    active_colors: Sequence[str],
+    source_color: str,
+    instance_seed: int,
+    namespace: str,
+) -> Tuple[Dict[str, int], Dict[str, float]]:
+    """Build the original board color-count vector for recolor matching.
+
+    The source color is forced to have at least two objects by default, making
+    the single recolor visually consequential while every other active color
+    remains present for option-board distractors.
+    """
+
+    raw_counts = params.get("initial_color_counts")
+    active = tuple(str(color) for color in active_colors)
+    if raw_counts is not None:
+        if not isinstance(raw_counts, Mapping):
+            raise ValueError("initial_color_counts must be a mapping from color name to count")
+        counts = {str(color): int(raw_counts.get(str(color), 0)) for color in active}
+        if any(int(count) <= 0 for count in counts.values()):
+            raise ValueError("each active color must have at least one initial object")
+        if int(counts[str(source_color)]) <= 0:
+            raise ValueError("source color must have at least one initial object")
+        total = int(sum(counts.values()))
+        return counts, uniform_int_probability_map(range(1, max(2, total + 1)), selected=total)
+
+    source_count, _source_probabilities = resolve_int_support(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.source_count",
+        min_key="initial_source_count_min",
+        max_key="initial_source_count_max",
+        default_min=2,
+        default_max=5,
+        explicit_keys=("initial_source_count", "source_count"),
+        lower_bound=1,
+        upper_bound=10,
+    )
+    minimum_total = int(source_count) + len(active) - 1
+    initial_total, total_probabilities = resolve_int_support(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.initial_total_count",
+        min_key="initial_total_count_min",
+        max_key="initial_total_count_max",
+        default_min=8,
+        default_max=14,
+        explicit_keys=("initial_total_count", "total_count"),
+        lower_bound=minimum_total,
+        upper_bound=20,
+    )
+    counts = {str(color): 1 for color in active}
+    counts[str(source_color)] = int(source_count)
+    remaining = int(initial_total) - int(source_count) - (len(active) - 1)
+    rng = spawn_rng(int(instance_seed), f"{namespace}.initial_count_allocation")
+    for _ in range(max(0, int(remaining))):
+        color = str(active[int(rng.randrange(len(active)))])
+        counts[color] += 1
+    return counts, dict(total_probabilities)
+
+
+def _apply_single_recolor(
+    *,
+    initial_counts: Mapping[str, int],
+    source_color: str,
+    destination_color: str,
+) -> Dict[str, int]:
+    counts = {str(color): int(count) for color, count in initial_counts.items()}
+    moved = int(counts[str(source_color)])
+    counts[str(source_color)] = 0
+    counts[str(destination_color)] += int(moved)
+    return counts
+
+
+def _count_vector_key(counts: Mapping[str, int], colors: Sequence[str]) -> Tuple[int, ...]:
+    return tuple(int(counts[str(color)]) for color in colors)
+
+
+def _with_color_transfer(
+    counts: Mapping[str, int],
+    *,
+    from_color: str,
+    to_color: str,
+    amount: int = 1,
+) -> Dict[str, int] | None:
+    if str(from_color) == str(to_color) or int(counts[str(from_color)]) < int(amount):
+        return None
+    updated = {str(color): int(count) for color, count in counts.items()}
+    updated[str(from_color)] -= int(amount)
+    updated[str(to_color)] += int(amount)
+    return updated
+
+
+def _sample_recolor_option_counts(
+    *,
+    params: Mapping[str, Any],
+    active_colors: Sequence[str],
+    initial_counts: Mapping[str, int],
+    final_counts: Mapping[str, int],
+    source_color: str,
+    destination_color: str,
+    answer_label: str,
+    instance_seed: int,
+    namespace: str,
+) -> Dict[str, Dict[str, int]]:
+    """Create four unique answer-option count vectors for the visual MCQ.
+
+    The correct vector is the full source->destination recolor. Distractors
+    preserve total object count but encode common mistakes: unchanged board,
+    reversed recolor, partial recolor, wrong destination, or one-object transfer.
+    """
+
+    labels = ("A", "B", "C", "D")
+    raw = params.get("option_color_counts_by_label")
+    active = tuple(str(color) for color in active_colors)
+    final_key = _count_vector_key(final_counts, active)
+    if raw is not None:
+        if not isinstance(raw, Mapping):
+            raise ValueError("option_color_counts_by_label must be a mapping")
+        options = {
+            str(label): {str(color): int(raw[str(label)][str(color)]) for color in active}
+            for label in labels
+        }
+        if _count_vector_key(options[str(answer_label)], active) != final_key:
+            raise ValueError("answer_label option must match final recolor counts")
+        if len({_count_vector_key(counts, active) for counts in options.values()}) != len(labels):
+            raise ValueError("option color count vectors must be unique")
+        return options
+
+    candidates: list[Dict[str, int]] = []
+    seen = {final_key}
+
+    def add_candidate(candidate: Mapping[str, int] | None) -> None:
+        if candidate is None:
+            return
+        normalized = {str(color): int(candidate[str(color)]) for color in active}
+        if any(int(value) < 0 for value in normalized.values()):
+            return
+        if int(sum(normalized.values())) != int(sum(int(value) for value in initial_counts.values())):
+            return
+        key = _count_vector_key(normalized, active)
+        if key in seen:
+            return
+        seen.add(key)
+        candidates.append(normalized)
+
+    add_candidate(initial_counts)
+    reverse = {str(color): int(initial_counts[str(color)]) for color in active}
+    reverse[str(source_color)] += int(reverse[str(destination_color)])
+    reverse[str(destination_color)] = 0
+    add_candidate(reverse)
+    if int(initial_counts[str(source_color)]) > 1:
+        partial = {str(color): int(final_counts[str(color)]) for color in active}
+        partial[str(source_color)] = 1
+        partial[str(destination_color)] -= 1
+        add_candidate(partial)
+    for color in active:
+        if str(color) not in {str(source_color), str(destination_color)}:
+            wrong_destination = {str(name): int(initial_counts[str(name)]) for name in active}
+            wrong_destination[str(color)] += int(wrong_destination[str(source_color)])
+            wrong_destination[str(source_color)] = 0
+            add_candidate(wrong_destination)
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.distractor_counts")
+    for _attempt in range(200):
+        from_options = [str(color) for color in active if int(final_counts[str(color)]) > 0]
+        from_color = str(from_options[int(rng.randrange(len(from_options)))])
+        to_options = [str(color) for color in active if str(color) != str(from_color)]
+        to_color = str(to_options[int(rng.randrange(len(to_options)))])
+        add_candidate(
+            _with_color_transfer(
+                final_counts,
+                from_color=from_color,
+                to_color=to_color,
+            )
+        )
+        if len(candidates) >= 3:
+            break
+    if len(candidates) < 3:
+        raise ValueError("could not build three unique recolor distractor options")
+
+    rng.shuffle(candidates)
+    options: Dict[str, Dict[str, int]] = {}
+    distractor_iter = iter(candidates[:3])
+    for label in labels:
+        if str(label) == str(answer_label):
+            options[str(label)] = {str(color): int(final_counts[str(color)]) for color in active}
+        else:
+            options[str(label)] = dict(next(distractor_iter))
+    return options
+
+
+def _colored_dataset_from_counts(
+    *,
+    scene_variant: str,
+    element_type: str,
+    rows: int,
+    cols: int,
+    present_indices: Sequence[int],
+    color_counts: Mapping[str, int],
+    rng: Any,
+    layout_style: str,
+    option_label: str | None = None,
+) -> Dict[str, Any]:
+    """Materialize one board dataset from a color-count vector.
+
+    The geometry is fixed by the shared rows/columns/present indices; only the
+    color assignment is shuffled, which lets recolor options rearrange objects
+    while preserving the same fixture grammar and object rendering path.
+    """
+
+    color_sequence: list[str] = []
+    for color, count in color_counts.items():
+        color_sequence.extend([str(color)] * int(count))
+    if len(color_sequence) != len(present_indices):
+        raise ValueError("color_counts total must equal present index count")
+    rng.shuffle(color_sequence)
+    color_by_index = {int(index): str(color_sequence[offset]) for offset, index in enumerate(present_indices)}
+    cells = layout_cells(
+        scene_variant=str(scene_variant),
+        element_type=str(element_type),
+        rows=int(rows),
+        cols=int(cols),
+        present_indices=present_indices,
+        target_indices=[],
+        rng=rng,
+        layout_style=str(layout_style),
+        color_by_index=color_by_index,
+    )
+    extra: Dict[str, Any] = {
+        "color_counts": {str(color): int(count) for color, count in color_counts.items()},
+        "active_color_names": [str(color) for color in color_counts.keys()],
+    }
+    if option_label is not None:
+        extra["option_label"] = str(option_label)
+    return base_surface_data(
+        scene_variant=str(scene_variant),
+        element_type=str(element_type),
+        answer_value=0,
+        target_element_ids=[],
+        surface_cells=cells,
+        rows=int(rows),
+        cols=int(cols),
+        layout_style=str(layout_style),
+        solver_trace={
+            "count_predicate": "color_counts_by_visible_surface_elements",
+            "color_counts": {str(color): int(count) for color, count in color_counts.items()},
+            "total_count": int(sum(int(count) for count in color_counts.values())),
+        },
+        extra=extra,
+    )
+
+
+def build_recolor_board_match_surface_data(
+    *,
+    namespace: str,
+    scene_variant: str,
+    element_type: str,
+    answer_label: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Create original and candidate fixture boards for one recolor MCQ."""
+
+    active_colors = _resolve_recolor_active_colors(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
+    source_color, destination_color = _resolve_recolor_rule(
+        params=params,
+        active_colors=active_colors,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
+    initial_counts, initial_total_probabilities = _resolve_recolor_initial_counts(
+        params=params,
+        gen_defaults=gen_defaults,
+        active_colors=active_colors,
+        source_color=str(source_color),
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
+    final_counts = _apply_single_recolor(
+        initial_counts=initial_counts,
+        source_color=str(source_color),
+        destination_color=str(destination_color),
+    )
+    option_counts_by_label = _sample_recolor_option_counts(
+        params=params,
+        active_colors=active_colors,
+        initial_counts=initial_counts,
+        final_counts=final_counts,
+        source_color=str(source_color),
+        destination_color=str(destination_color),
+        answer_label=str(answer_label),
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
+    total = int(sum(int(count) for count in initial_counts.values()))
+    rows, cols = grid_for_total(total)
+    total_slots = int(rows) * int(cols)
+    rng = spawn_rng(int(instance_seed), f"{namespace}.cells")
+    present_indices = sample_indices(rng, list(range(total_slots)), total)
+    layout_style = "variable_grid" if str(scene_variant) in {"brick_wall", "paver_floor", "mailbox_bank"} else "uniform_grid"
+    original_dataset = _colored_dataset_from_counts(
+        scene_variant=str(scene_variant),
+        element_type=str(element_type),
+        rows=int(rows),
+        cols=int(cols),
+        present_indices=present_indices,
+        color_counts=initial_counts,
+        rng=spawn_rng(int(instance_seed), f"{namespace}.original_cells"),
+        layout_style=str(layout_style),
+    )
+    option_datasets = {
+        str(label): _colored_dataset_from_counts(
+            scene_variant=str(scene_variant),
+            element_type=str(element_type),
+            rows=int(rows),
+            cols=int(cols),
+            present_indices=present_indices,
+            color_counts=counts,
+            rng=spawn_rng(int(instance_seed), f"{namespace}.option_cells.{label}"),
+            layout_style=str(layout_style),
+            option_label=str(label),
+        )
+        for label, counts in option_counts_by_label.items()
+    }
+    recolor_phrase = (
+        f"every {semantic_color_label(str(source_color))} {ELEMENT_DISPLAY_NAME[str(element_type)]} "
+        f"becomes {semantic_color_label(str(destination_color))}"
+    )
+    return {
+        "original_dataset": dict(original_dataset),
+        "option_datasets": {str(label): dict(dataset) for label, dataset in option_datasets.items()},
+        "answer_label": str(answer_label),
+        "active_color_names": list(active_colors),
+        "source_color_name": str(source_color),
+        "destination_color_name": str(destination_color),
+        "source_color_label": semantic_color_label(str(source_color)),
+        "destination_color_label": semantic_color_label(str(destination_color)),
+        "recolor_phrase": str(recolor_phrase),
+        "initial_color_counts": dict(initial_counts),
+        "final_color_counts": dict(final_counts),
+        "option_color_counts_by_label": {str(label): dict(counts) for label, counts in option_counts_by_label.items()},
+        "initial_total_count_probabilities": dict(initial_total_probabilities),
+        "layout_rows": int(rows),
+        "layout_columns": int(cols),
+        "layout_style": str(layout_style),
+        "present_indices": [int(index) for index in present_indices],
+    }
+
+
 def build_scoped_color_surface_data(
     *,
     namespace: str,
@@ -733,6 +1162,7 @@ __all__ = [
     "build_color_operation_surface_data",
     "build_color_surface_data",
     "build_missing_surface_data",
+    "build_recolor_board_match_surface_data",
     "build_repeated_surface_data",
     "build_scoped_color_surface_data",
 ]

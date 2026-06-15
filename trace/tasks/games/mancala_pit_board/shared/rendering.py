@@ -17,7 +17,7 @@ from trace.tasks.shared.font_assets import font_role_trace, sample_font_family
 from trace.tasks.shared.text_rendering import load_font
 
 from .rules import pit_label, visual_row_col
-from .state import DEFAULTS, STYLE_VARIANTS, MancalaSample, MancalaSceneAxes, MancalaTheme, PitBBox, RenderedMancalaScene
+from .state import DEFAULTS, PIT_COUNT, PITS_PER_ROW, STYLE_VARIANTS, MancalaSample, MancalaSceneAxes, MancalaTheme, PitBBox, RenderedMancalaScene
 
 
 def _theme_for_style(style_variant: str) -> Tuple[MancalaTheme, Dict[str, Any]]:
@@ -215,7 +215,7 @@ def render_mancala_scene(
     seed_diameter = int(rng.randint(min(seed_diameter_min, seed_diameter_max), max(seed_diameter_min, seed_diameter_max)))
     pit_outline_width = int(params.get("pit_outline_width_px", group_default(render_defaults, "pit_outline_width_px", DEFAULTS.pit_outline_width_px)))
     marker_width = int(params.get("marker_width_px", group_default(render_defaults, "marker_width_px", DEFAULTS.marker_width_px)))
-    board_width = (6 * pit_width) + (5 * pit_gap)
+    board_width = (PITS_PER_ROW * pit_width) + ((PITS_PER_ROW - 1) * pit_gap)
     board_height = (2 * pit_height) + row_gap
     side_padding = int(params.get("canvas_side_padding_px", group_default(render_defaults, "canvas_side_padding_px", DEFAULTS.canvas_side_padding_px)))
     vertical_padding = int(params.get("canvas_vertical_padding_px", group_default(render_defaults, "canvas_vertical_padding_px", DEFAULTS.canvas_vertical_padding_px)))
@@ -259,13 +259,19 @@ def render_mancala_scene(
         instance_seed=int(instance_seed),
         namespace=f"{namespace}.layout",
     )
-    board_bbox, _dx, _dy, resolved_jitter = apply_games_layout_jitter_to_bbox(
-        bbox_px=board_bbox,
+    padded_board_bbox = _bbox_pad(board_bbox, float(board_padding))
+    tray_bbox, dx, dy, resolved_jitter = apply_games_layout_jitter_to_bbox(
+        bbox_px=padded_board_bbox,
         canvas_width=int(canvas_width),
         canvas_height=int(canvas_height),
         jitter=layout_jitter,
     )
-    tray_bbox = _bbox_pad(board_bbox, float(board_padding))
+    board_bbox = (
+        round(float(board_bbox[0]) + float(dx), 3),
+        round(float(board_bbox[1]) + float(dy), 3),
+        round(float(board_bbox[2]) + float(dx), 3),
+        round(float(board_bbox[3]) + float(dy), 3),
+    )
     draw_panel_scene_chrome(
         draw,
         bbox=tuple(int(round(value)) for value in tray_bbox),
@@ -297,7 +303,7 @@ def render_mancala_scene(
     mark_font = load_font(max(15, int(round(float(pit_height) * 0.24))), bold=True, font_family=label_font_family)
     board_left = float(board_bbox[0])
     board_top = float(board_bbox[1])
-    for pit_index in range(12):
+    for pit_index in range(PIT_COUNT):
         row, col = visual_row_col(pit_index)
         x0 = board_left + (float(col) * float(pit_width + pit_gap))
         y0 = board_top + (float(row) * float(pit_height + row_gap))
@@ -398,16 +404,20 @@ def render_mancala_scene(
     bottom_y = float(board_bbox[3]) + 20.0
     left_x = float(board_bbox[0]) - 24.0
     right_x = float(board_bbox[2]) + 24.0
-    for pit_index in range(5):
+    for pit_index in range(PITS_PER_ROW - 1):
         start_pit = pit_centers[f"pit_{pit_label(pit_index)}"]
         end_pit = pit_centers[f"pit_{pit_label(pit_index + 1)}"]
         _draw_arrow(draw, (start_pit[0] + 0.36 * pit_width, top_y), (end_pit[0] - 0.36 * pit_width, top_y), fill=theme.arrow_rgb, width=arrow_width)
-    _draw_arrow(draw, (right_x, float(pit_centers["pit_F"][1]) + 0.30 * pit_height), (right_x, float(pit_centers["pit_G"][1]) - 0.30 * pit_height), fill=theme.arrow_rgb, width=arrow_width)
-    for pit_index in range(6, 11):
+    last_top_pit = f"pit_{pit_label(PITS_PER_ROW - 1)}"
+    first_bottom_pit = f"pit_{pit_label(PITS_PER_ROW)}"
+    _draw_arrow(draw, (right_x, float(pit_centers[last_top_pit][1]) + 0.30 * pit_height), (right_x, float(pit_centers[first_bottom_pit][1]) - 0.30 * pit_height), fill=theme.arrow_rgb, width=arrow_width)
+    for pit_index in range(PITS_PER_ROW, PIT_COUNT - 1):
         start_pit = pit_centers[f"pit_{pit_label(pit_index)}"]
         end_pit = pit_centers[f"pit_{pit_label(pit_index + 1)}"]
         _draw_arrow(draw, (start_pit[0] - 0.36 * pit_width, bottom_y), (end_pit[0] + 0.36 * pit_width, bottom_y), fill=theme.arrow_rgb, width=arrow_width)
-    _draw_arrow(draw, (left_x, float(pit_centers["pit_L"][1]) - 0.30 * pit_height), (left_x, float(pit_centers["pit_A"][1]) + 0.30 * pit_height), fill=theme.arrow_rgb, width=arrow_width)
+    last_bottom_pit = f"pit_{pit_label(PIT_COUNT - 1)}"
+    first_top_pit = f"pit_{pit_label(0)}"
+    _draw_arrow(draw, (left_x, float(pit_centers[last_bottom_pit][1]) - 0.30 * pit_height), (left_x, float(pit_centers[first_top_pit][1]) + 0.30 * pit_height), fill=theme.arrow_rgb, width=arrow_width)
 
     source_pit_id = f"pit_{pit_label(sample.source_index)}"
     source_bbox = pit_bboxes[source_pit_id]

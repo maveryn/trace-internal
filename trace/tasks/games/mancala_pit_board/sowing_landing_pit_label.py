@@ -35,7 +35,7 @@ def _construct_landing_sample(*, rng: Any, axes: MancalaSceneAxes, target_label:
     viable_seed_counts = [
         seed_count
         for seed_count in range(max(1, min_source), max_source + 1)
-        if seed_count <= 11
+        if seed_count <= len(LABELS) - 1
     ]
     rng.shuffle(viable_seed_counts)
     if not viable_seed_counts:

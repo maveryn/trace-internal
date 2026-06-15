@@ -29,8 +29,6 @@ generation:
       - H
       - I
       - J
-      - K
-      - L
       balanced_target_landing_label_sampling: true
     task_games__mancala_pit_board__post_sow_pit_count_value:
       target_count_support:

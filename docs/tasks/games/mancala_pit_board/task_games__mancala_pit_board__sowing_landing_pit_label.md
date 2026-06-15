@@ -6,7 +6,7 @@ Public taxonomy: `games -> mancala_pit_board -> task_games__mancala_pit_board__s
 
 Program code: `select(pit_label where pit == last(sow_all_seeds_from(source_pit))); scene=mancala_pit_board; scope=sowing_landing_pit_label`.
 
-The scene renders a simplified two-row pit board with 12 labeled pits, visible seeds, a sowing direction arrow, and one X-marked source pit. The task asks which labeled pit receives the last seed after picking up all seeds from the source pit and sowing one seed at a time in the arrow direction. No stores, captures, extra turns, or strategy rules are used.
+The scene renders a simplified two-row pit board with 10 labeled pits, visible seeds, a sowing direction arrow, and one X-marked source pit. The task asks which labeled pit receives the last seed after picking up all seeds from the source pit and sowing one seed at a time in the arrow direction. No stores, captures, extra turns, or strategy rules are used.
 
 Answer schema: `string` capital pit label.
 

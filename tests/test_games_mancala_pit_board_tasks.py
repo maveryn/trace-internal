@@ -52,7 +52,8 @@ def test_games_mancala_pit_board_prompt_bundle_has_queries() -> None:
 
 
 def test_games_mancala_pit_board_sowing_logic() -> None:
-    counts = [0] * 12
+    assert list(LABELS) == list("ABCDEFGHIJ")
+    counts = [0] * len(LABELS)
     counts[pit_index("F")] = 3
     final_counts, path = sow_counts(counts, pit_index("F"))
     assert [pit_label(index) for index in path] == ["G", "H", "I"]
@@ -116,7 +117,7 @@ def test_games_mancala_pit_board_post_sow_count_answer_matches_trace() -> None:
 
 def test_games_mancala_pit_board_support_endpoints_are_constructible() -> None:
     landing_task = create_task(SOWING_LANDING_TASK_ID)
-    for label in ("A", "L"):
+    for label in ("A", "J"):
         out = landing_task.generate(883000 + pit_index(label), params={"target_landing_label": label}, max_attempts=100)
         assert str(out.answer_gt.value) == label
 

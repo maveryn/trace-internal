@@ -9,7 +9,9 @@ from PIL import Image
 
 
 SCENE_ID = "mancala_pit_board"
-LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(12))
+PITS_PER_ROW = 5
+PIT_COUNT = PITS_PER_ROW * 2
+LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(PIT_COUNT))
 STYLE_VARIANTS: Tuple[str, ...] = ("wood_tray", "sand_stone", "slate_bowls", "cloth_pits", "arcade_pits")
 SCENE_VARIANTS: Tuple[str, ...] = ("low_seed", "mixed_seed", "busy_seed")
 PitBBox = Tuple[float, float, float, float]
@@ -122,6 +124,8 @@ DEFAULTS = MancalaDefaults()
 __all__ = [
     "DEFAULTS",
     "LABELS",
+    "PIT_COUNT",
+    "PITS_PER_ROW",
     "SCENE_ID",
     "SCENE_VARIANTS",
     "STYLE_VARIANTS",

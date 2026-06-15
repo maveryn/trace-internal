@@ -114,7 +114,7 @@ scene is migrated:
 | `park_playground_scene.py`, `park_playground_rendering.py`, `park_task_common.py` | `trace/tasks/illustrations/park_playground/shared/{state,layout,rendering,annotations,prompts,output,sampling,regions}.py` as needed. |
 | `transit_terminal_scene.py`, `transit_terminal_rendering.py`, `transit_task_common.py` | `trace/tasks/illustrations/transit_terminal/shared/{state,layout,rendering,annotations,prompts,output,sampling,regions}.py` as needed. |
 | `mixed_object_scene.py`, `mixed_object_rendering.py`, `mixed_task_common.py` | Scene-local package for the public scene that owns the mixed-object grammar, if retained. |
-| `pixel_village_rendering.py`, `pixel_territory_rendering.py` | `trace/tasks/illustrations/pixel_village/shared/{state,layout,rendering,annotations,prompts,output,sampling,regions,objects}.py` unless another accepted pixel-map scene needs the same primitive. |
+| `pixel_village_rendering.py`, `pixel_territory_rendering.py` | Migrated to `trace/tasks/illustrations/pixel_village/shared/{rendering,regions}.py`; keep future pixel-map helpers scene-local unless another accepted pixel-map scene needs the same primitive. |
 
 Legacy shared surfaces that require decomposition before their owning scenes
 can become review-candidate scenes:
@@ -126,9 +126,6 @@ can become review-candidate scenes:
   task-common role file and passes `task_id` into scene rendering. It should be
   split into role files, and public task files should pass neutral namespaces or
   resolved semantic arguments instead of task identity.
-- `trace/tasks/illustrations/pixel_village/shared/counting.py` defines public
-  task ids, query ids, and generation logic inside shared. It must be split into
-  public objective files and scene-shared role primitives.
 - Private branch modules under `trace/tasks/illustrations/counting/` may be
   useful extraction sources, but migrated public task files must not remain
   thin wrappers around private branch task classes.
@@ -223,7 +220,7 @@ legacy group-level files:
   settings for `construction_site`, `environment`, `library`, `park_playground`,
   and `transit_terminal`.
 - `configs/domains/illustrations/indoor_room.yaml`,
-  `pixel_village.yaml`, `single_object_figure.yaml`, and
+  `single_object_figure.yaml`, and
   `source_scene_edit.yaml` are already scene-keyed but still need review for
   task/query routing keys before a scene is registered.
 

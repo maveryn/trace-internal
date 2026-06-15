@@ -4,7 +4,7 @@ generation:
   task_overrides:
     task_illustrations__pixel_village__object_type_count:
       query_id_support:
-        - object_type_count
+        - single
       target_object_support:
         - building
         - person
@@ -15,19 +15,19 @@ generation:
       target_answer_count_max: 8
     task_illustrations__pixel_village__person_path_count:
       query_id_support:
-        - people_on_path_count
+        - single
       path_person_count_min: 2
       path_person_count_max: 6
     task_illustrations__pixel_village__territory_object_count:
       query_id_support:
-        - territory_object_count
+        - single
       territory_object_support:
         - cemetery_grave_marker
         - orchard_tree
-      target_answer_count_max: 8
+      target_answer_count_max: 9
     task_illustrations__pixel_village__river_side_object_count:
       query_id_support:
-        - river_side_object_count
+        - single
       river_side_target_object_support:
         - building
         - person

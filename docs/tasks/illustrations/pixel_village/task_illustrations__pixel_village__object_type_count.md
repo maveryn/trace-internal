@@ -9,11 +9,14 @@
 ## Task Contract
 Counts visible village entities for one approved public target category.
 
+## Program Contract
+`count(filter(pixel_village_entities, target_entity_type(entity)=target_object)); scene=pixel_village; scope=object_type_count`
+
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `object_type_count` | `count(filter(pixel_village_entities, target_entity_type(entity)=target_object)); scene=pixel_village; scope=object_type_count; query_branch=object_type_count` |
+| `single` | `count(filter(pixel_village_entities, target_entity_type(entity)=target_object)); scene=pixel_village; scope=object_type_count` |
 
 ## Program Metadata
 - Program signatures: `count.single_attribute_membership`
@@ -24,7 +27,7 @@ Counts visible village entities for one approved public target category.
   - `pixel_village_entities`: semantic_role; allowed `visible_pixel_village_entities`; source `program_schema_concrete`
   - `target_object`: semantic_role; allowed `building`, `person`, `tree`, `lamp_post`, `well`, `pond`; source `parameter_axes`
 - Argument metadata status: `curated`
-- Supported query ids: `object_type_count`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `integer_count`

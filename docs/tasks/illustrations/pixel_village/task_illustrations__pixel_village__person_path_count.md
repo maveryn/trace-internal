@@ -9,11 +9,14 @@
 ## Task Contract
 Counts people whose occupied tile footprint intersects a visible path tile in a top-down pixel village.
 
+## Program Contract
+`count(filter(pixel_village_people, intersects(tile_footprint(person), path_tiles))); scene=pixel_village; scope=person_path_count`
+
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `people_on_path_count` | `count(filter(pixel_village_people, intersects(tile_footprint(person), path_tiles))); scene=pixel_village; scope=person_path_count; query_branch=people_on_path_count` |
+| `single` | `count(filter(pixel_village_people, intersects(tile_footprint(person), path_tiles))); scene=pixel_village; scope=person_path_count` |
 
 ## Program Metadata
 - Program signatures: `count.spatial_relation`
@@ -24,7 +27,7 @@ Counts people whose occupied tile footprint intersects a visible path tile in a 
   - `pixel_village_people`: semantic_role; allowed `visible_pixel_village_people`; source `program_schema_concrete`
   - `path_tiles`: semantic_role; allowed `visible_pixel_village_path_tiles`; source `scene_trace`
 - Argument metadata status: `curated`
-- Supported query ids: `people_on_path_count`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `integer_count`

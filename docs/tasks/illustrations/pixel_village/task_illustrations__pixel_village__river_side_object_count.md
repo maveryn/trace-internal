@@ -9,11 +9,14 @@
 ## Task Contract
 Counts visible target entities that lie strictly on one named side of the river.
 
+## Program Contract
+`count(filter(pixel_village_entities, target_entity_type(entity)=target_object and strict_side_of_river(entity_tile_footprint, river_side))); scene=pixel_village; scope=river_side_object_count`
+
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `river_side_object_count` | `count(filter(pixel_village_entities, target_entity_type(entity)=target_object and strict_side_of_river(entity_tile_footprint, river_side))); scene=pixel_village; scope=river_side_object_count; query_branch=river_side_object_count` |
+| `single` | `count(filter(pixel_village_entities, target_entity_type(entity)=target_object and strict_side_of_river(entity_tile_footprint, river_side))); scene=pixel_village; scope=river_side_object_count` |
 
 ## Program Metadata
 - Program signatures: `count.spatial_relation_membership`
@@ -25,7 +28,7 @@ Counts visible target entities that lie strictly on one named side of the river.
   - `target_object`: semantic_role; allowed `building`, `person`, `tree`; source `parameter_axes`
   - `river_side`: spatial_relation; allowed `left`, `right`, `above`, `below`; source `parameter_axes`
 - Argument metadata status: `curated`
-- Supported query ids: `river_side_object_count`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `integer_count`

@@ -49,7 +49,7 @@ from trace.tasks.illustrations.shared.pixel_world_objects import (
     draw_pixel_wagon,
     draw_pixel_winter_overlay,
 )
-from trace.tasks.illustrations.shared.pixel_territory_rendering import (
+from .regions import (
     PixelOrchardPlan,
     draw_pixel_orchard_boundary,
     draw_pixel_orchard_ground,
@@ -215,6 +215,8 @@ def _shade_rgb(color: tuple[int, int, int], delta: int) -> tuple[int, int, int]:
 
 
 def _sample_village_theme(rng: random.Random, theme_mode: str) -> PixelVillageTheme:
+    """Choose seasonal palette metadata while preserving map geometry."""
+
     mode = str(theme_mode)
     if mode not in {"temperate", "winter", "autumn", "auto"}:
         raise ValueError("theme_mode must be one of: temperate, winter, autumn, auto")
@@ -343,6 +345,8 @@ def _draw_grass_tile(
     variant: int,
     theme: PixelVillageTheme,
 ) -> None:
+    """Draw one terrain tile with theme-specific visual noise."""
+
     px = x * CANONICAL_TILE_PX
     py = y * CANONICAL_TILE_PX
     if theme.theme_id == "winter":
@@ -394,6 +398,8 @@ def _draw_path_tile(
     connections: Mapping[str, bool],
     theme: PixelVillageTheme,
 ) -> None:
+    """Draw one connected path tile with edge continuity."""
+
     px = x * CANONICAL_TILE_PX
     py = y * CANONICAL_TILE_PX
     if theme.theme_id == "winter":
@@ -563,6 +569,8 @@ def _draw_roof_texture(
     roof_style: str,
     direction: str,
 ) -> None:
+    """Apply roof texture without changing the building footprint."""
+
     x0, y0, x1, y1 = rect
     roof_dark = _shade_rgb(roof_color, -40)
     roof_light = _shade_rgb(roof_color, 24)
@@ -678,6 +686,8 @@ def _draw_house(
     wall_style: str = "stucco",
     door_state: str = "closed",
 ) -> None:
+    """Draw a building variant inside its allocated tile box."""
+
     if variant == "castle":
         draw_pixel_castle(draw, tile_xywh, stone_rgb=body_color, door_state=door_state)
         return
@@ -804,6 +814,8 @@ def _draw_cemetery_ground(draw: ImageDraw.ImageDraw, tile_xywh: TileBox) -> None
 
 
 def _draw_entity(draw: ImageDraw.ImageDraw, entity: PixelVillageEntity, *, rng: random.Random) -> None:
+    """Dispatch entity rendering from semantic metadata to glyph drawers."""
+
     kind = str(entity.metadata.get("variant", entity.public_name))
     spec = _shared_object_spec(
         entity_id=entity.entity_id,
@@ -1035,6 +1047,8 @@ def _shared_object_spec(
     bbox_xyxy: BBox | None,
     metadata: Mapping[str, Any],
 ) -> IllustrationObjectSpec | None:
+    """Convert supported pixel entities into shared object records."""
+
     variant = str(metadata.get("variant", public_name))
     if variant == "tree":
         return IllustrationObjectSpec(
@@ -1131,6 +1145,8 @@ def _autumn_metadata_for_entity(
     *,
     theme: PixelVillageTheme,
 ) -> dict[str, Any]:
+    """Sample autumn overlays without changing semantic entity identity."""
+
     if theme.theme_id != "autumn":
         return {}
     variant = str(entity.metadata.get("variant", entity.public_name))
@@ -1357,6 +1373,8 @@ def _make_water(
     river_orientation: str = "auto",
     river_placement: str = "edge",
 ) -> tuple[set[tuple[int, int]], TileBox | None, str]:
+    """Plan river water tiles while keeping paths connected."""
+
     mode = str(river_mode).strip().lower()
     if mode not in {"auto", "force", "none"}:
         raise ValueError("river_mode must be 'auto', 'force', or 'none'")
@@ -1421,6 +1439,8 @@ def _plan_cemetery_territory(
     water_tiles: set[tuple[int, int]],
     cemetery_mode: str,
 ) -> Mapping[str, Any] | None:
+    """Choose a cemetery territory that avoids water and paths."""
+
     mode = str(cemetery_mode)
     if mode not in {"auto", "force", "none"}:
         raise ValueError("cemetery_mode must be one of: auto, force, none")
@@ -1509,6 +1529,8 @@ def _plan_orchard_territory(
     reserved_tiles: set[tuple[int, int]],
     orchard_mode: str,
 ) -> PixelOrchardPlan | None:
+    """Choose an orchard territory with room for rows and a gate."""
+
     mode = str(orchard_mode)
     if mode not in {"auto", "force", "none"}:
         raise ValueError("orchard_mode must be one of: auto, force, none")
@@ -1615,6 +1637,8 @@ def _place_buildings(
     layout: PixelVillageLayout,
     offset_xy: tuple[int, int],
 ) -> None:
+    """Place countable buildings near paths without overlap."""
+
     candidates = _building_candidate_positions(path_tiles)
     rng.shuffle(candidates)
     common_variants = ("house", "house", "house", "shop", "inn")
@@ -1687,6 +1711,8 @@ def _place_windmill_landmark(
     offset_xy: tuple[int, int],
     windmill_mode: str,
 ) -> bool:
+    """Optionally place one large windmill landmark off paths."""
+
     mode = str(windmill_mode)
     if mode not in {"auto", "force", "none"}:
         raise ValueError("windmill_mode must be one of: auto, force, none")
@@ -1772,6 +1798,8 @@ def _place_large_village_props(
     layout: PixelVillageLayout,
     offset_xy: tuple[int, int],
 ) -> None:
+    """Place large non-building props as visual context objects."""
+
     prop_index = 0
     wood_palette = [(128, 76, 43), (146, 91, 50), (111, 80, 51)]
     roof_palette = [(154, 82, 74), (68, 116, 171), (161, 96, 58)]
@@ -1920,6 +1948,8 @@ def _place_path_side_props(
     layout: PixelVillageLayout,
     offset_xy: tuple[int, int],
 ) -> None:
+    """Place small props adjacent to paths without blocking roads."""
+
     prop_index = 0
 
     def place_prop(
@@ -2024,6 +2054,8 @@ def _place_small_entities(
     offset_xy: tuple[int, int],
     npc_avoid_tiles: set[tuple[int, int]] | None = None,
 ) -> None:
+    """Place countable people and small props in free cells."""
+
     avoid_tiles = set(npc_avoid_tiles or set())
     specs = [
         ("well", "landmark", "well", (2, 2), 1),
@@ -2178,6 +2210,8 @@ def _place_cemetery_territory(
     layout: PixelVillageLayout,
     offset_xy: tuple[int, int],
 ) -> None:
+    """Render cemetery territory and register its countable entities."""
+
     if cemetery_plan is None:
         return
 
@@ -2223,7 +2257,7 @@ def _place_cemetery_territory(
     inner_tiles = [(tx, ty) for ty in range(y + 1, y + h - 1) for tx in range(x + 1, x + w - 1)]
     rng.shuffle(inner_tiles)
     used_inner: set[tuple[int, int]] = set()
-    grave_target = min(len(inner_tiles), rng.randint(5, 8))
+    grave_target = min(len(inner_tiles), rng.randint(4, 9))
     stone_palette = [(150, 157, 151), (166, 166, 157), (138, 145, 144), (174, 170, 158)]
     mound_palette = [(101, 80, 55), (91, 74, 54), (112, 92, 58)]
     flower_palette = [(220, 74, 90), (232, 190, 70), (185, 89, 180)]
@@ -2316,6 +2350,8 @@ def _place_orchard_territory(
     layout: PixelVillageLayout,
     offset_xy: tuple[int, int],
 ) -> None:
+    """Render orchard territory and register its countable trees."""
+
     if orchard_plan is None:
         return
 

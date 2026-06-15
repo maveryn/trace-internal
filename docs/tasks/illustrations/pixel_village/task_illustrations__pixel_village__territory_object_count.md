@@ -9,11 +9,14 @@
 ## Task Contract
 Counts target entities inside one semantic pixel-village territory.
 
+## Program Contract
+`count(filter(pixel_village_entities, territory_id(entity)=target_territory and public_name(entity)=target_public_name)); scene=pixel_village; scope=territory_object_count`
+
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `territory_object_count` | `count(filter(pixel_village_entities, territory_id(entity)=target_territory and public_name(entity)=target_public_name)); scene=pixel_village; scope=territory_object_count; query_branch=territory_object_count` |
+| `single` | `count(filter(pixel_village_entities, territory_id(entity)=target_territory and public_name(entity)=target_public_name)); scene=pixel_village; scope=territory_object_count` |
 
 ## Program Metadata
 - Program signatures: `count.scoped_attribute_membership`
@@ -21,13 +24,13 @@ Counts target entities inside one semantic pixel-village territory.
 - Parameter axes: `territory_object`
 - Supported operands: `cemetery_grave_marker`, `orchard_tree`
 - Argument metadata status: `curated`
-- Supported query ids: `territory_object_count`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `integer_count`
 - Generator `answer_gt.type`: `integer`
 - The answer value is a positive integer derived from the same execution trace as the annotation.
-- Generated instances must keep the selected target count at or below the configured cap, currently `8`.
+- Generated instances must keep the selected target count at or below the configured cap, currently `9`.
 
 ## Annotation Contract
 - Annotation schema: `bbox_set`

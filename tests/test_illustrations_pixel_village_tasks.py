@@ -44,7 +44,7 @@ def _assert_scene_prompt_metadata(trace: dict) -> None:
     prompt_variant = trace["query_spec"]["prompt_variant"]
     assert prompt_variant["prompt_bundle_id"] == "illustrations_pixel_village_v0"
     assert prompt_variant["prompt_scene_id"] == "pixel_village"
-    assert "prompt_scene_id" not in prompt_variant
+    assert trace["query_spec"]["params"]["query_id"] == "single"
 
 
 def _footprint(tile_xywh: list[int]) -> set[tuple[int, int]]:
@@ -105,7 +105,7 @@ def test_pixel_village_object_type_count_targets_are_metadata_grounded() -> None
         entities = {entity["entity_id"]: entity for entity in trace["scene_ir"]["entities"]}
 
         assert out.scene_id == "pixel_village"
-        assert out.query_id == "object_type_count"
+        assert out.query_id == "single"
         assert params["target_object"] == target
         assert out.answer_gt.type == "integer"
         assert out.annotation_gt.type == "bbox_set"
@@ -146,7 +146,7 @@ def test_pixel_village_person_path_count_uses_path_tile_intersection() -> None:
     path_neighborhood = _expanded(path_tiles, path_clearance)
 
     assert out.scene_id == "pixel_village"
-    assert out.query_id == "people_on_path_count"
+    assert out.query_id == "single"
     assert trace["query_spec"]["params"]["path_person_count"] == 4
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "bbox_set"
@@ -186,12 +186,12 @@ def test_pixel_village_territory_object_count_targets_are_metadata_grounded() ->
         entities = {entity["entity_id"]: entity for entity in trace["scene_ir"]["entities"]}
 
         assert out.scene_id == "pixel_village"
-        assert out.query_id == "territory_object_count"
+        assert out.query_id == "single"
         assert params["territory_object"] == target
         assert params["territory_id"] == territory_id
         assert out.answer_gt.type == "integer"
         assert out.annotation_gt.type == "bbox_set"
-        assert 0 < int(out.answer_gt.value) <= 8
+        assert 0 < int(out.answer_gt.value) <= 9
         assert int(out.answer_gt.value) == len(counted_ids) == len(out.annotation_gt.value)
         assert sorted(out.annotation_gt.value) == sorted(entity_bboxes[entity_id] for entity_id in counted_ids)
         assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
@@ -221,7 +221,7 @@ def test_pixel_village_river_side_object_count_uses_strict_tile_side_membership(
         river_bounds = trace["execution_trace"]["river_bounds"]
 
         assert out.scene_id == "pixel_village"
-        assert out.query_id == "river_side_object_count"
+        assert out.query_id == "single"
         assert params["target_object"] == target
         assert params["river_side"] == side
         assert params["river_orientation"] == RIVER_SIDE_ORIENTATION[side]

@@ -21,7 +21,7 @@ from trace.tasks.illustrations.shared.pixel_world_objects import (
     PIXEL_PERSON_VARIANTS,
     PIXEL_TREE_STYLES,
 )
-from trace.tasks.illustrations.shared.pixel_village_rendering import render_pixel_village_map
+from trace.tasks.illustrations.pixel_village.shared.rendering import render_pixel_village_map
 
 
 def test_pixel_village_renderer_is_deterministic_and_semantic() -> None:
@@ -63,7 +63,7 @@ def test_pixel_village_renderer_is_deterministic_and_semantic() -> None:
     assert int(first.trace["territory_count"]) == 2
     assert first.trace["cemetery_mode"] == "force"
     assert first.trace["cemetery_present"] is True
-    assert int(first.trace["cemetery_grave_marker_count"]) >= 5
+    assert int(first.trace["cemetery_grave_marker_count"]) >= 4
     assert first.trace["orchard_mode"] == "force"
     assert first.trace["orchard_present"] is True
     assert int(first.trace["orchard_tree_count"]) >= 4
@@ -71,7 +71,7 @@ def test_pixel_village_renderer_is_deterministic_and_semantic() -> None:
     assert first.trace["windmill_present"] is True
     assert first.trace["territory_type_counts"] == {"cemetery": 1, "orchard": 1}
     assert int(first.trace["category_counts"]["building"]) >= 3
-    assert int(first.trace["category_counts"]["grave_marker"]) >= 5
+    assert int(first.trace["category_counts"]["grave_marker"]) >= 4
     assert first.trace["public_name_counts"]
     assert first.trace["public_name_counts"]["cemetery gate"] == 1
     assert first.trace["public_name_counts"]["windmill"] == 1

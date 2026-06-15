@@ -127,7 +127,7 @@ def _sample_orchard_trees(rng: random.Random, tile_xywh: TileBox) -> tuple[Pixel
         row_index += 1
     # Keep smaller orchards legible while still making size matter.
     min_count = min(len(tree_positions), max(4, (w * h) // 12))
-    max_count = min(len(tree_positions), max(min_count, (w * h) // 7))
+    max_count = min(len(tree_positions), max(min_count, (w * h) // 6))
     target_count = rng.randint(min_count, max_count) if tree_positions else 0
     rng.shuffle(tree_positions)
     selected = sorted(tree_positions[:target_count], key=lambda item: (item[2], item[3], item[1], item[0]))

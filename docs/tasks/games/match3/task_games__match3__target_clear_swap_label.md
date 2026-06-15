@@ -4,11 +4,14 @@
 1. Domain: `games`
 2. Scene id: `match3`
 3. Public task id: `task_games__match3__target_clear_swap_label`
-4. Supported `query_id` values: `target_clear_swap_label`
-5. Answer schema: `string_label`
+4. Supported `query_id` values: `single`
+5. Answer schema: `option_letter`
 6. Annotation schema: `point_set`
-7. Program schema: `label(select_option(swap_options, option_value=target_clear_count, option_metric=cleared_count_after_swap(option))); scene=match3; scope=target_clear_swap_label`
+
+## Program Contract
+`selection.option_value_match(candidate_set=visible_swap_arrows, option_value=target_clear_count, option_metric=immediate_clear_count_after_arrow_swap); scene=match3; scope=target_clear_swap_label`
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
+1. The selected arrow is the only displayed option whose immediate clear count equals the prompted target.
+2. The immediate clear rule counts horizontal or vertical runs of three or more after the swap; no falling, refill, special effects, or cascades are applied.
+3. Annotation is one point on the selected swap arrow.

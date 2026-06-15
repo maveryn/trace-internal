@@ -8,7 +8,7 @@
 7. Annotation schema: `keyed_bbox_map`
 
 ## Program Contract
-- `solve_formula(visible_source_container_and_repeated_pours, target=total_transferred_volume, formula_schema=container_volume_transfer_transferred_volume); scene=container_volume_transfer`
+- `solve_formula(visible_source_container_and_repeated_pours, target=total_transferred_volume, formula_schema=container_volume_transfer_transferred_volume); scene=container_volume_transfer; scope=transferred_volume_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_container_volume_transfer_v0`.

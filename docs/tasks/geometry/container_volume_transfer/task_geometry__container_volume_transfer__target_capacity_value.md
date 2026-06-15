@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `container_volume_transfer`
-5. Query id: `target_capacity_from_source_and_count`
+5. Query id: `single`
 6. Answer schema: `integer_value`
 7. Annotation schema: `keyed_bbox_map`
 

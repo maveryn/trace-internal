@@ -7,29 +7,36 @@ import json
 import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks import TASK_REGISTRY, create_task
 from trace.tasks.geometry.container_volume_transfer.fill_count_value import (
     ANNOTATION_KEYS,
-    RESULTING_HEIGHT_ANNOTATION_KEYS,
-    TARGET_CAPACITY_ANNOTATION_KEYS,
-    TRANSFERRED_VOLUME_ANNOTATION_KEYS,
-    QUERY_ID_CONE_POURS_TO_CYLINDER_HEIGHT,
     QUERY_ID_CONE_TO_CYLINDER_FILL_COUNT,
-    QUERY_ID_CYLINDER_POURS_TO_CUBOID_HEIGHT,
     QUERY_ID_CYLINDER_TO_CUBOID_FILL_COUNT,
-    QUERY_ID_REPEATED_CONE_POURS_TOTAL_VOLUME,
-    QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT,
-    SCENE_ID,
     TASK_ID,
     TASK_ID_FILL_COUNT,
-    TASK_ID_RESULTING_HEIGHT,
-    TASK_ID_TARGET_CAPACITY,
-    TASK_ID_TRANSFERRED_VOLUME,
     GeometryContainerVolumeTransferFillCountValueTask,
 )
-from trace.tasks.geometry.container_volume_transfer.resulting_height_value import GeometryContainerVolumeTransferResultingHeightValueTask
-from trace.tasks.geometry.container_volume_transfer.target_capacity_value import GeometryContainerVolumeTransferTargetCapacityValueTask
-from trace.tasks.geometry.container_volume_transfer.transferred_volume_value import GeometryContainerVolumeTransferTransferredVolumeValueTask
+from trace.tasks.geometry.container_volume_transfer.shared.defaults import SCENE_ID
+from trace.tasks.geometry.container_volume_transfer.resulting_height_value import (
+    GeometryContainerVolumeTransferResultingHeightValueTask,
+    QUERY_ID_CONE_POURS_TO_CYLINDER_HEIGHT,
+    QUERY_ID_CYLINDER_POURS_TO_CUBOID_HEIGHT,
+    RESULTING_HEIGHT_ANNOTATION_KEYS,
+    TASK_ID_RESULTING_HEIGHT,
+)
+from trace.tasks.geometry.container_volume_transfer.target_capacity_value import (
+    GeometryContainerVolumeTransferTargetCapacityValueTask,
+    QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT,
+    TARGET_CAPACITY_ANNOTATION_KEYS,
+    TASK_ID_TARGET_CAPACITY,
+)
+from trace.tasks.geometry.container_volume_transfer.transferred_volume_value import (
+    GeometryContainerVolumeTransferTransferredVolumeValueTask,
+    QUERY_ID_REPEATED_CONE_POURS_TOTAL_VOLUME,
+    TASK_ID_TRANSFERRED_VOLUME,
+    TRANSFERRED_VOLUME_ANNOTATION_KEYS,
+)
 
 
 def _generate(seed: int, *, task_id: str = TASK_ID_FILL_COUNT, **params):
@@ -166,14 +173,15 @@ def test_cone_source_target_capacity_formula_and_annotation() -> None:
     out = _generate(
         20260634,
         task_id=TASK_ID_TARGET_CAPACITY,
-        query_id=QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT,
+        query_id=SINGLE_QUERY_ID,
         transfer_case=(0, 0, 15, 6, 4),
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT
+    assert out.query_id == SINGLE_QUERY_ID
+    assert execution["internal_query_id"] == QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 120 == execution["answer"]
     assert execution["source_shape"] == "cone"
@@ -197,14 +205,15 @@ def test_cylinder_source_target_capacity_formula_and_annotation() -> None:
     out = _generate(
         20260635,
         task_id=TASK_ID_TARGET_CAPACITY,
-        query_id=QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT,
+        query_id=SINGLE_QUERY_ID,
         transfer_case=(1, 1, 7, 4, 3),
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT
+    assert out.query_id == SINGLE_QUERY_ID
+    assert execution["internal_query_id"] == QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 84 == execution["answer"]
     assert execution["source_shape"] == "cylinder"
@@ -340,19 +349,19 @@ def test_container_volume_transfer_rejects_invalid_params() -> None:
     with pytest.raises(ValueError):
         capacity_task.generate(
             1,
-            params={"query_id": QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT, "transfer_case": (0, 0, 12, 6)},
+            params={"query_id": SINGLE_QUERY_ID, "transfer_case": (0, 0, 12, 6)},
             max_attempts=1,
         )
     with pytest.raises(ValueError):
         capacity_task.generate(
             1,
-            params={"query_id": QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT, "transfer_case": (2, 0, 12, 6, 2)},
+            params={"query_id": SINGLE_QUERY_ID, "transfer_case": (2, 0, 12, 6, 2)},
             max_attempts=1,
         )
     with pytest.raises(ValueError):
         capacity_task.generate(
             1,
-            params={"query_id": QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT, "transfer_case": (0, 0, 10, 5, 2)},
+            params={"query_id": SINGLE_QUERY_ID, "transfer_case": (0, 0, 10, 5, 2)},
             max_attempts=1,
         )
     transferred_task = create_task(TASK_ID_TRANSFERRED_VOLUME)

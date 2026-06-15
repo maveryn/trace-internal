@@ -225,3 +225,28 @@ def test_rectilinear_composite_public_annotation_uses_shape_primitives(task_cls,
         assert set(out.annotation_gt.value) == set(out.trace_payload["execution_trace"]["annotation_roles"])
         assert all("label" not in str(role) for role in out.trace_payload["execution_trace"]["annotation_roles"])
         assert "measurement_label_bboxes" in out.trace_payload["render_map"]
+
+
+@pytest.mark.parametrize(
+    "task_cls, query_id, expected_count",
+    (
+        (GeometryMeasurementCompositeAreaValueTask, "rectangle_minus_triangle_area", 2),
+        (GeometryMeasurementCompositeAreaValueTask, "l_shape_area", 2),
+        (GeometryMeasurementCompositePerimeterValueTask, "single", 5),
+        (GeometryCompositeShapeTabbedRectilinearPerimeterTask, "single", 3),
+    ),
+)
+def test_rectilinear_composite_visual_notation_is_render_metadata(task_cls, query_id, expected_count) -> None:
+    task = task_cls()
+    out = task.generate(
+        44131,
+        params={"query_id": query_id, "case_index": 0, "scene_rotation_degrees": 35},
+        max_attempts=20,
+    )
+    notation = out.trace_payload["render_map"]["visual_notation_bboxes"]
+
+    assert len(notation) == expected_count
+    assert set(notation).isdisjoint(set(out.annotation_gt.value))
+    for x0, y0, x1, y1 in notation.values():
+        assert 0.0 <= x0 < x1 <= float(out.image.size[0])
+        assert 0.0 <= y0 < y1 <= float(out.image.size[1])

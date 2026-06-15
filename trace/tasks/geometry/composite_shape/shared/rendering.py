@@ -12,6 +12,7 @@ from trace.core.visual.background import make_background_canvas
 from trace.tasks.geometry.shared.measurement_rendering import (
     bbox_from_points,
     bbox_to_list,
+    draw_right_angle_marker,
     draw_label,
     fmt_measure,
     pad_bbox,
@@ -244,6 +245,52 @@ def _draw_dimension(
     return draw_label(ctx, label, center, small=True)
 
 
+def _vector_from(vertex: Point, endpoint: Point) -> Point:
+    return (float(endpoint[0]) - float(vertex[0]), float(endpoint[1]) - float(vertex[1]))
+
+
+def _draw_right_angle_notation(ctx: CompositeRenderContext, vertex: Point, arm_a: Point, arm_b: Point) -> BBox:
+    return draw_right_angle_marker(
+        ctx,
+        vertex,
+        arm_a=_vector_from(vertex, arm_a),
+        arm_b=_vector_from(vertex, arm_b),
+        side_px=max(15.0, float(ctx.line_width) * 4.5),
+        color=ctx.line_color,
+        width=max(2, int(ctx.line_width) - 1),
+    )
+
+
+def _draw_equal_side_ticks(
+    ctx: CompositeRenderContext,
+    a: Point,
+    b: Point,
+    *,
+    count: int,
+) -> BBox:
+    dx = float(b[0]) - float(a[0])
+    dy = float(b[1]) - float(a[1])
+    length = max(1.0, math.hypot(dx, dy))
+    ux = dx / length
+    uy = dy / length
+    nx = -uy
+    ny = ux
+    center_x = (float(a[0]) + float(b[0])) / 2.0
+    center_y = (float(a[1]) + float(b[1])) / 2.0
+    tick_len = max(12.0, float(ctx.line_width) * 3.5)
+    spacing = max(5.0, float(ctx.line_width) * 1.6)
+    drawn_points: list[Point] = []
+    for index in range(max(1, int(count))):
+        along = (float(index) - (float(count) - 1.0) / 2.0) * spacing
+        cx = center_x + ux * along
+        cy = center_y + uy * along
+        start = (cx - nx * tick_len / 2.0, cy - ny * tick_len / 2.0)
+        end = (cx + nx * tick_len / 2.0, cy + ny * tick_len / 2.0)
+        ctx.draw.line([start, end], fill=ctx.line_color, width=max(2, int(ctx.line_width) - 1))
+        drawn_points.extend([start, end])
+    return bbox_from_points(drawn_points, width=ctx.width, height=ctx.height, pad=4.0)
+
+
 def _render_rect_cut(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -> RenderedCompositeShape:
     """Draw a rectangle with a visible triangular cutout for area subtraction."""
 
@@ -268,6 +315,10 @@ def _render_rect_cut(ctx: CompositeRenderContext, problem: CompositeShapeProblem
     ctx.draw.polygon([(float(x), float(y)) for x, y in tri], fill=ctx.background_color)
     _draw_polygon(ctx, rect)
     _draw_polygon(ctx, tri, outline=ctx.accent_color, width=max(2, ctx.line_width - 1))
+    notation_bboxes = {
+        "outer_right_angle": _draw_right_angle_notation(ctx, rect[3], rect[2], rect[0]),
+        "cutout_right_angle": _draw_right_angle_notation(ctx, tri[0], tri[1], tri[2]),
+    }
     region_bbox = bbox_from_points(rect, width=ctx.width, height=ctx.height, pad=2.0)
     cutout_bbox = bbox_from_points(tri, width=ctx.width, height=ctx.height, pad=4.0)
     label_bboxes = {
@@ -286,6 +337,7 @@ def _render_rect_cut(ctx: CompositeRenderContext, problem: CompositeShapeProblem
             "outer_region_bbox": bbox_to_list(region_bbox),
             "cutout_region_bbox": bbox_to_list(cutout_bbox),
             "measurement_label_bboxes": {key: bbox_to_list(bbox) for key, bbox in label_bboxes.items()},
+            "visual_notation_bboxes": {key: bbox_to_list(bbox) for key, bbox in notation_bboxes.items()},
             "coord_space": "pixel",
         },
         witness={
@@ -324,6 +376,10 @@ def _render_l_profile(ctx: CompositeRenderContext, problem: CompositeShapeProble
     cutout_corner = placed[6]
     _draw_polygon(ctx, pts, fill=ctx.fill_color)
     _draw_polygon(ctx, pts)
+    notation_bboxes = {
+        "outer_right_angle": _draw_right_angle_notation(ctx, pts[0], pts[1], pts[5]),
+        "missing_corner_right_angle": _draw_right_angle_notation(ctx, pts[3], pts[2], pts[4]),
+    }
     cutout_rect = [pts[3], pts[2], cutout_corner, pts[4]]
     region_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=2.0)
     cutout_bbox = bbox_from_points(cutout_rect, width=ctx.width, height=ctx.height, pad=4.0)
@@ -343,6 +399,7 @@ def _render_l_profile(ctx: CompositeRenderContext, problem: CompositeShapeProble
             "outer_region_bbox": bbox_to_list(region_bbox),
             "missing_corner_bbox": bbox_to_list(cutout_bbox),
             "measurement_label_bboxes": {key: bbox_to_list(bbox) for key, bbox in label_bboxes.items()},
+            "visual_notation_bboxes": {key: bbox_to_list(bbox) for key, bbox in notation_bboxes.items()},
             "coord_space": "pixel",
         },
         witness={
@@ -383,6 +440,13 @@ def _render_house(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -
     pts = [a, b, c, d, e]
     _draw_polygon(ctx, pts, fill=ctx.fill_color)
     _draw_polygon(ctx, pts)
+    notation_bboxes = {
+        "base_wall_right_angle": _draw_right_angle_notation(ctx, a, b, e),
+        "left_wall_equal_tick": _draw_equal_side_ticks(ctx, a, e, count=1),
+        "right_wall_equal_tick": _draw_equal_side_ticks(ctx, b, c, count=1),
+        "left_roof_equal_tick": _draw_equal_side_ticks(ctx, e, d, count=2),
+        "right_roof_equal_tick": _draw_equal_side_ticks(ctx, c, d, count=2),
+    }
     target_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=4.0)
     label_bboxes = {
         "base_length_AB": _draw_segment_label(ctx, str(width_value), a, b, offset=25.0),
@@ -401,6 +465,7 @@ def _render_house(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -
         render_map={
             "target_boundary_bbox": bbox_to_list(target_bbox),
             "measurement_label_bboxes": {key: bbox_to_list(bbox) for key, bbox in label_bboxes.items()},
+            "visual_notation_bboxes": {key: bbox_to_list(bbox) for key, bbox in notation_bboxes.items()},
             "coord_space": "pixel",
         },
         witness={
@@ -445,6 +510,11 @@ def _render_tabbed(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
     pts = list(_place_points(ctx, raw_pts))
     _draw_polygon(ctx, pts, fill=ctx.fill_color)
     _draw_polygon(ctx, pts)
+    notation_bboxes = {
+        "outer_right_angle": _draw_right_angle_notation(ctx, pts[0], pts[1], pts[7]),
+        "right_tab_shoulder_right_angle": _draw_right_angle_notation(ctx, pts[3], pts[2], pts[4]),
+        "left_tab_shoulder_right_angle": _draw_right_angle_notation(ctx, pts[6], pts[5], pts[7]),
+    }
     target_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=4.0)
     label_bboxes = {
         "overall_width": _draw_segment_label(ctx, str(width_value), pts[0], pts[1], offset=25.0),
@@ -460,6 +530,7 @@ def _render_tabbed(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
         render_map={
             "target_boundary_bbox": bbox_to_list(target_bbox),
             "measurement_label_bboxes": {key: bbox_to_list(bbox) for key, bbox in label_bboxes.items()},
+            "visual_notation_bboxes": {key: bbox_to_list(bbox) for key, bbox in notation_bboxes.items()},
             "coord_space": "pixel",
         },
         witness={
@@ -626,6 +697,14 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
     ctx.draw.line([(right, top + radius_px), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
     ctx.draw.line([(right - radius_px, top), (left, top)], fill=ctx.line_color, width=ctx.line_width)
     ctx.draw.arc(arc_box, start=90, end=180, fill=ctx.line_color, width=ctx.line_width)
+    notation_bboxes = {
+        "quarter_sector_right_angle": _draw_right_angle_notation(
+            ctx,
+            center,
+            (right - radius_px, top),
+            (right, top + radius_px),
+        )
+    }
     if problem.metric_kind == "perimeter":
         highlight_width = _boundary_width(ctx)
         ctx.draw.line([(left, top), (right - radius_px, top)], fill=ctx.accent_color, width=highlight_width)
@@ -664,6 +743,7 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
             "curved_component_bbox": bbox_to_list(curved_component_bbox),
             "support_bboxes": [bbox_to_list(width_bbox), bbox_to_list(height_bbox), bbox_to_list(radius_bbox)],
             "support_roles": ["width_label", "height_label", "radius_label"],
+            "visual_notation_bboxes": {key: bbox_to_list(bbox) for key, bbox in notation_bboxes.items()},
             "coord_space": "pixel",
         },
         witness={"formula_family": problem.formula_family, **dict(values)},

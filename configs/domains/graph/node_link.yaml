@@ -4745,7 +4745,7 @@ prompt:
       json_output_contract_answer_only: Use a valid JSON object with key "answer"
         for the final answer.
       object_description_undirected: a labeled connected weighted graph
-      annotation_hint: set "annotation" to an array of point-pair arrays, where each
+      annotation_hint: set "annotation" to an array of segment arrays, where each
         pair contains [x,y] pixel points at the centers of the two endpoint nodes
         of one edge in the minimum spanning tree
       answer_hint: set "answer" to the total weight of that minimum spanning tree
@@ -4761,14 +4761,12 @@ prompt:
       json_output_contract_answer_only: Use a valid JSON object with key "answer"
         for the final answer.
       object_description: a labeled directed acyclic graph
-      annotation_hint_first_in_topological_order_label: set "annotation" to an array
-        containing one [x,y] pixel point at the center of the first node in the unique
-        topological order
-      annotation_hint_last_in_topological_order_label: set "annotation" to an array
-        containing one [x,y] pixel point at the center of the last node in the unique
-        topological order
+      annotation_hint_first_in_topological_order_label: set "annotation" to one [x,y]
+        pixel point at the center of the first node in the unique topological order
+      annotation_hint_last_in_topological_order_label: set "annotation" to one [x,y]
+        pixel point at the center of the last node in the unique topological order
       answer_hint: set "answer" to that node label as a string
-      json_example: '{"annotation":[[180,160]],"answer":"A"}'
+      json_example: '{"annotation":[180,160],"answer":"A"}'
       json_example_answer_only: '{"answer":"A"}'
     task_graph__node_link__degree_value_filter_count:
       bundle_id: graph_counting_v0
@@ -5222,7 +5220,7 @@ prompt:
       question_text_minimum_spanning_tree_weight: A spanning tree connects every node
         without cycles. The graph has one spanning tree with the smallest total edge
         weight. What is that total weight?
-      annotation_hint: set "annotation" to an array of point-pair arrays, where each
+      annotation_hint: set "annotation" to an array of segment arrays, where each
         pair contains [x,y] pixel points at the centers of the two endpoint nodes
         of one edge in that minimum spanning tree
       answer_hint: set "answer" to the total weight of that minimum spanning tree
@@ -5234,7 +5232,7 @@ prompt:
       answer_hint_minimum_cut_edge_count: set "answer" to the number of directed edges
         in the unique minimum cut as an integer
       annotation_hint_minimum_cut_edges: set "annotation" to an array of directed
-        edge point-pairs for every edge in the unique minimum cut; each point-pair
+        edge segments for every edge in the unique minimum cut; each segment
         contains the [x,y] pixel centers of the two endpoint nodes of that directed
         edge
       json_example_max_flow_value: '{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":7}'
@@ -5255,7 +5253,7 @@ prompt:
       question_text_minimum_spanning_tree_weight: A spanning tree connects every node
         without cycles. The graph has one spanning tree with the smallest total edge
         weight. What is that total weight?
-      annotation_hint: set "annotation" to an array of point-pair arrays, where each
+      annotation_hint: set "annotation" to an array of segment arrays, where each
         pair contains [x,y] pixel points at the centers of the two endpoint nodes
         of one edge in that minimum spanning tree
       answer_hint: set "answer" to the total weight of that minimum spanning tree
@@ -5267,7 +5265,7 @@ prompt:
       answer_hint_minimum_cut_edge_count: set "answer" to the number of directed edges
         in the unique minimum cut as an integer
       annotation_hint_minimum_cut_edges: set "annotation" to an array of directed
-        edge point-pairs for every edge in the unique minimum cut; each point-pair
+        edge segments for every edge in the unique minimum cut; each segment
         contains the [x,y] pixel centers of the two endpoint nodes of that directed
         edge
       json_example_max_flow_value: '{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":7}'
@@ -5471,7 +5469,7 @@ prompt:
       json_example: '{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       question_text_bridge_count: How many edges are bridges?
-      annotation_hint: set "annotation" to an array of point-pair arrays, where each
+      annotation_hint: set "annotation" to an array of segment arrays, where each
         pair contains [x,y] pixel points at the centers of the two endpoint nodes
         of one bridge edge
     task_graph__node_link__common_related_node_count:
@@ -5526,13 +5524,13 @@ prompt:
       answer_hint: set "answer" to the count of matching edges as an integer
       json_example: '{"annotation":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      annotation_hint_cross_color_edge_count: set "annotation" to an array of point-pair
-        arrays, where each pair contains [x,y] pixel points at the centers of the
+      annotation_hint_cross_color_edge_count: set "annotation" to an array of segment
+        arrays, where each segment contains [x,y] pixel points at the centers of the
         two endpoint nodes of one edge connecting a {source_color_label} node and
         a {target_color_label} node; use an empty array when the answer is zero
       annotation_hint_directed_cross_color_edge_count: set "annotation" to an array
-        of point-pair arrays for every arrow from a {source_color_label} node to a
-        {target_color_label} node; each pair is two [x,y] pixel points in source-to-target
+        of segment arrays for every arrow from a {source_color_label} node to a
+        {target_color_label} node; each segment is two [x,y] pixel points in source-to-target
         order, [[source_x,source_y],[target_x,target_y]]; use an empty array when
         the answer is zero
     task_graph__node_link__degree_after_removal_filter_count:
@@ -5570,21 +5568,21 @@ prompt:
         for the final answer.
       answer_hint: set "answer" to the requested maximum or minimum degree value as
         an integer
-      json_example: '{"annotation":[[180,220]],"answer":3}'
+      json_example: '{"annotation":[180,220],"answer":3}'
       json_example_answer_only: '{"answer":3}'
       object_description_undirected: a labeled undirected graph
       object_description_directed: a labeled directed graph
-      annotation_hint_max_degree_value: set "annotation" to an array containing
-        one [x,y] pixel point at the center of the node whose degree equals the
+      annotation_hint_max_degree_value: set "annotation" to one [x,y] pixel point
+        at the center of the node whose degree equals the
         maximum degree value
-      annotation_hint_min_degree_value: set "annotation" to an array containing
-        one [x,y] pixel point at the center of the node whose degree equals the
+      annotation_hint_min_degree_value: set "annotation" to one [x,y] pixel point
+        at the center of the node whose degree equals the
         minimum degree value
-      annotation_hint_max_in_degree_value: set "annotation" to an array containing
-        one [x,y] pixel point at the center of the node whose in-degree equals
+      annotation_hint_max_in_degree_value: set "annotation" to one [x,y] pixel point
+        at the center of the node whose in-degree equals
         the maximum in-degree value
-      annotation_hint_max_out_degree_value: set "annotation" to an array containing
-        one [x,y] pixel point at the center of the node whose out-degree equals
+      annotation_hint_max_out_degree_value: set "annotation" to one [x,y] pixel point
+        at the center of the node whose out-degree equals
         the maximum out-degree value
     task_graph__node_link__edge_between_nodes_label:
       bundle_id: graph_relation_v0
@@ -5639,7 +5637,7 @@ prompt:
       answer_hint: set "answer" to the count of matching edges as an integer
       json_example: '{"annotation":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      annotation_hint: set "annotation" to an array of point-pair arrays, where each
+      annotation_hint: set "annotation" to an array of segment arrays, where each
         pair contains [x,y] pixel points at the centers of the two endpoint nodes
         of one edge colored {target_color_label}; for directed graphs, keep each pair
         in source-to-target order; use an empty array when the answer is zero
@@ -5685,10 +5683,10 @@ prompt:
       object_description_directed: a labeled directed graph
       question_text_same_component_count: How many nodes, including node {query_label}
         itself, are in the same connected component as {query_label}?
-      annotation_hint: set "annotation" to an array containing one [x,y] pixel point
-        at the center of the answer node
+      annotation_hint: set "annotation" to one [x,y] pixel point at the center of
+        the answer node
       answer_hint: set "answer" to the label of the requested node as a string
-      json_example: '{"annotation":[[310,180]],"answer":"C"}'
+      json_example: '{"annotation":[310,180],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
       question_text_next_in_hamiltonian_cycle_label: Use the Hamiltonian-cycle direction
         that starts at node {orientation_start_label} and returns to it from node {orientation_final_label}.
@@ -5802,20 +5800,20 @@ prompt:
       answer_hint: set "answer" to the queried node degree as an integer
       json_example: '{"annotation":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      annotation_hint_named_node_degree_value: set "annotation" to an array of point-pair
-        arrays, where each pair contains [x,y] pixel points at the centers of the
+      annotation_hint_named_node_degree_value: set "annotation" to an array of segment
+        arrays, where each segment contains [x,y] pixel points at the centers of the
         two endpoint nodes of one edge touching node {query_label}; use an empty array
         when the answer is zero
       annotation_hint_named_node_in_degree_value: set "annotation" to an array of
-        point-pair arrays for every arrow pointing into node {query_label}; each pair
+        segment arrays for every arrow pointing into node {query_label}; each pair
         is two [x,y] pixel points in source-to-target order, [[source_x,source_y],[target_x,target_y]];
         use an empty array when the answer is zero
       annotation_hint_named_node_out_degree_value: set "annotation" to an array of
-        point-pair arrays for every arrow leaving node {query_label}; each pair is
+        segment arrays for every arrow leaving node {query_label}; each segment is
         two [x,y] pixel points in source-to-target order, [[source_x,source_y],[target_x,target_y]];
         use an empty array when the answer is zero
       annotation_hint_named_node_total_degree_value: set "annotation" to an array
-        of point-pair arrays for every arrow touching node {query_label}; each pair
+        of segment arrays for every arrow touching node {query_label}; each pair
         is two [x,y] pixel points in image pixel coordinates, kept in source-to-target
         order; use an empty array when the answer is zero
     task_graph__node_link__node_color_count:
@@ -5998,7 +5996,7 @@ prompt:
         pipes
       question_text_bridge_count: How many open pipes are bridges? A bridge is an
         open pipe whose removal would disconnect part of the open-pipe network.
-      annotation_hint: set "annotation" to an array of point-pair arrays, where each
+      annotation_hint: set "annotation" to an array of segment arrays, where each
         pair contains [x,y] pixel points at the centers of the two endpoint junctions
         of one bridge pipe; endpoint order inside each pair does not matter
     task_graph__pipe_network__pipe_exact_distance_count:

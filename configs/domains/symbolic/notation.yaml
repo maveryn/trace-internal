@@ -325,7 +325,7 @@ prompt:
       object_description_notebook_problem: a notebook-style organic skeletal structure
         drawn with plausible line-angle single, double, and triple bonds
       annotation_hint_bond_order_count: set "annotation" to an array containing one
-        pixel-space endpoint pair for every matching bond, where each endpoint is
+        pixel-space segment for every matching bond, where each endpoint is
         a point [x, y] formatted as [[x1, y1], [x2, y2]]
       answer_hint_bond_order_count: set "answer" to the integer count of matching
         bonds

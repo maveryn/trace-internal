@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `combo_mark`
 3. Source implementation domain/scene: `charts/combo_mark`
-4. Query id: `interval_threshold_condition_count`
+4. Query ids: `primary_between_and_line_above`, `line_between_and_primary_above`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -15,13 +15,17 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
-2. Annotation schema: `point_pair_set`.
-3. Annotation is one primary/line point pair for each matching category; each pair is ordered as `[primary mark point, line mark point]`.
+2. Annotation schema: `segment_set`.
+3. Annotation is one primary/line segment for each matching category; each pair is ordered as `[primary mark point, line mark point]`.
 4. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
 5. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Program Contract
+- `count(x_label where in_interval(value(condition_series,x_label), lower_bound, upper_bound) and compare(value(target_series,x_label), threshold, relation=above)); output=integer_count; annotation=segment_set(matching_primary_line_marks); scene=combo_mark; scope=interval_threshold_condition_count`
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `interval_threshold_condition_count` | `count.interval_threshold_predicate` | `integer_count` | `point_pair_set` |
+| `primary_between_and_line_above` | `count.interval_and_threshold_condition` | `integer_count` | `segment_set` |
+| `line_between_and_primary_above` | `count.interval_and_threshold_condition` | `integer_count` | `segment_set` |

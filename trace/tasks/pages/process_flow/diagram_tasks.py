@@ -1781,9 +1781,9 @@ def _build_output(
     elif _is_handoff_task(str(task_id)):
         annotation_bboxes = []
         annotation_projection = {
-            "type": "point_pair_set",
-            "point_pair_set": list(annotation_point_pairs),
-            "pixel_point_pair_set": list(annotation_point_pairs),
+            "type": "segment_set",
+            "segment_set": list(annotation_point_pairs),
+            "pixel_segment_set": list(annotation_point_pairs),
             "annotation_ids": list(annotation_ids),
         }
     else:
@@ -1796,7 +1796,7 @@ def _build_output(
     if str(task_id) == CONDITION_PATH_ENDPOINT_TASK_ID:
         annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_keyed_bboxes))
     elif _is_handoff_task(str(task_id)):
-        annotation_gt = TypedValue(type="point_pair_set", value=list(annotation_point_pairs))
+        annotation_gt = TypedValue(type="segment_set", value=list(annotation_point_pairs))
     else:
         annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
 

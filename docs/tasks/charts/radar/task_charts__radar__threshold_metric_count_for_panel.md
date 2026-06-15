@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `radar`
 3. Source implementation scene package: `charts/radar`
-4. Query id: `threshold_metric_count_for_panel`
+4. Query id: `single`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -23,4 +23,4 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `threshold_metric_count_for_panel` | `count.one_bound_threshold` | `integer_count` | `point_set` |
+| `single` | `count.one_bound_threshold` | `integer_count` | `point_set` |

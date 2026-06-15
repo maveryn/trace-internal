@@ -375,7 +375,7 @@ def build_flow_network_instance_bundle(
     annotation_projection = projected_edge_pair_annotation(render.rendered_scene, annotation_edges)
     annotation_point_pairs = tuple(
         [list(point) for point in pair]
-        for pair in annotation_projection["point_pair_set"]
+        for pair in annotation_projection["segment_set"]
     )
     if len(annotation_point_pairs) != len(annotation_edges):
         raise RuntimeError("flow min-cut annotation projection is incomplete")
@@ -559,7 +559,7 @@ def build_flow_network_trace_payload(
             "edges": [list(edge) for edge in bundle.annotation_edges],
         },
         "projected_annotation": {
-            "type": "point_pair_set",
+            "type": "segment_set",
             **dict(bundle.annotation_projection),
         },
     }

@@ -14,7 +14,7 @@
 5. Alternate annotation forms:
 6. Annotation witness policy:
    - minimal object/primitive witnesses:
-   - annotation shape choice (`point_set`, `bbox_set`, `point_pair_set`,
+   - annotation shape choice (`point`, `bbox`, `segment`, `point_set`, `bbox_set`, `segment_set`,
      `keyed_point_map`, `keyed_bbox_map`, etc.):
    - keyed annotation role names, if used:
    - numeric/readout annotation handling:

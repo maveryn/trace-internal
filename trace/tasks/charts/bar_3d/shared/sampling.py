@@ -613,7 +613,7 @@ def select_pairwise_series_greater_count(
     return _Selection(
         answer=int(target_count),
         annotation_bar_ids=annotation_ids,
-        annotation_kind="point_pair_set",
+        annotation_kind="segment_set",
         annotation_bar_id_pairs=annotation_pairs,
         trace={
             "series_label_a": str(series_labels[series_a]),

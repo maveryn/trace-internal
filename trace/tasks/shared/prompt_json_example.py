@@ -6,8 +6,8 @@ import json
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 
-def _is_point_pair(value: Any) -> bool:
-    """Return true when value is one numeric 2D point pair."""
+def _is_point_coordinate(value: Any) -> bool:
+    """Return true when value is one numeric 2D point."""
     if not isinstance(value, (list, tuple)) or len(value) != 2:
         return False
     return all(isinstance(item, (int, float)) and not isinstance(item, bool) for item in value)
@@ -44,20 +44,20 @@ def _canonical_point_examples(count: int) -> List[List[int]] | None:
     return layouts.get(int(count))
 
 
-def _mapping_of_point_pairs(value: Any) -> Mapping[str, Any] | None:
-    """Return mapping when all values are point pairs."""
+def _mapping_of_points(value: Any) -> Mapping[str, Any] | None:
+    """Return mapping when all values are points."""
     if not isinstance(value, Mapping) or not value:
         return None
-    if all(_is_point_pair(item) for item in value.values()):
+    if all(_is_point_coordinate(item) for item in value.values()):
         return value
     return None
 
 
-def _sequence_of_point_pairs(value: Any) -> Sequence[Any] | None:
-    """Return sequence when all items are point pairs."""
+def _sequence_of_points(value: Any) -> Sequence[Any] | None:
+    """Return sequence when all items are points."""
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes)) or not value:
         return None
-    if all(_is_point_pair(item) for item in value):
+    if all(_is_point_coordinate(item) for item in value):
         return value
     return None
 
@@ -83,7 +83,7 @@ def _sequence_of_assignment_strings(value: Any) -> Sequence[str] | None:
 
 def _example_like(value: Any, *, index: int) -> Any:
     """Build one lightweight placeholder that preserves JSON shape."""
-    point_map = _mapping_of_point_pairs(value)
+    point_map = _mapping_of_points(value)
     if point_map is not None:
         layout = _canonical_point_examples(len(point_map))
         if layout is not None:
@@ -91,7 +91,7 @@ def _example_like(value: Any, *, index: int) -> Any:
             for offset, key in enumerate(point_map.keys()):
                 out[str(key)] = list(layout[offset])
             return out
-    point_seq = _sequence_of_point_pairs(value)
+    point_seq = _sequence_of_points(value)
     if point_seq is not None:
         layout = _canonical_point_examples(len(point_seq))
         if layout is not None:
@@ -109,7 +109,7 @@ def _example_like(value: Any, *, index: int) -> Any:
         count = min(len(alphabet), len(string_seq))
         start = 1 if count > 1 else 0
         return [str(alphabet[(start + index) % len(alphabet)]) for index in range(count)]
-    if _is_point_pair(value):
+    if _is_point_coordinate(value):
         return [int(120 + 30 * index), int(140 + 30 * index)]
     if isinstance(value, bool):
         return bool(value)

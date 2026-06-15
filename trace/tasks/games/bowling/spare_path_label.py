@@ -8,7 +8,7 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 from ._lifecycle import (
     BowlingObjectivePlan,
     bowling_integer_axis_spec,
-    path_point_pair_label_attempt,
+    path_segment_label_attempt,
     resolve_bowling_integer_axis_specs,
     run_bowling_lifecycle,
 )
@@ -63,7 +63,7 @@ def _prepare_spare_path_objective(
             path_option_count=int(path_option_count),
             target_path_index=int(target_axis.value),
         )
-        return path_point_pair_label_attempt(
+        return path_segment_label_attempt(
             sample=sample,
             answer_value=str(sample.target_path_label),
             execution_extra={

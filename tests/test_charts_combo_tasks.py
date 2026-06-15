@@ -39,18 +39,20 @@ def test_combo_tasks_generate_default_public_variant() -> None:
         assert output.scene_id == "combo_mark"
         assert output.query_id
         assert output.answer_gt.value is not None
-        assert output.annotation_gt.type in {"keyed_point_map", "point_pair_set"}
+        assert output.annotation_gt.type in {"keyed_point_map", "point", "segment_set"}
         assert output.annotation_gt.value
         projected_annotation = output.trace_payload["projected_annotation"]
         assert projected_annotation["type"] == output.annotation_gt.type
-        if output.annotation_gt.type == "keyed_point_map":
+        if output.annotation_gt.type == "point":
+            assert projected_annotation["point"] == output.annotation_gt.value
+        elif output.annotation_gt.type == "keyed_point_map":
             assert set(output.annotation_gt.value) in (
                 {"primary_mark", "line_mark"},
                 {"answer_mark"},
             )
             assert projected_annotation["keyed_point_map"] == output.annotation_gt.value
         else:
-            assert projected_annotation["point_pair_set"] == output.annotation_gt.value
+            assert projected_annotation["segment_set"] == output.annotation_gt.value
             assert all(len(pair) == 2 for pair in output.annotation_gt.value)
             assert all(len(point) == 2 for pair in output.annotation_gt.value for point in pair)
         assert output.image.size[0] > 0
@@ -136,8 +138,7 @@ def test_combo_series_threshold_crossing_label_matches_contract() -> None:
 
         assert output.answer_gt.type == "string"
         assert str(output.answer_gt.value) == answer_label
-        assert output.annotation_gt.type == "keyed_point_map"
-        assert set(output.annotation_gt.value) == {"answer_mark"}
+        assert output.annotation_gt.type == "point"
         assert 2 <= int(execution_trace["crossing_index"]) <= min(8, len(labels) - 2)
         assert str(execution_trace["query_id"]) == str(query_id)
         assert f'"{execution_trace["target_series_name"]}"' in str(output.prompt)
@@ -153,10 +154,11 @@ def test_combo_series_threshold_crossing_label_matches_contract() -> None:
         render_map = output.trace_payload["render_map"]
         target_points = render_map["primary_points_px"] if target_role == "primary" else render_map["line_points_px"]
         expected_point = [round(float(value), 3) for value in target_points[int(answer_index)]]
-        assert output.annotation_gt.value == {"answer_mark": expected_point}
+        assert output.annotation_gt.value == expected_point
+        assert output.trace_payload["projected_annotation"]["point"] == expected_point
 
 
-def test_combo_count_tasks_use_point_pair_set_annotation() -> None:
+def test_combo_count_tasks_use_segment_set_annotation() -> None:
     for offset, task_id in enumerate(
         (
             "task_charts__combo_mark__dual_threshold_condition_count",
@@ -169,9 +171,9 @@ def test_combo_count_tasks_use_point_pair_set_annotation() -> None:
             max_attempts=200,
         )
         assert output.answer_gt.type == "integer"
-        assert output.annotation_gt.type == "point_pair_set"
+        assert output.annotation_gt.type == "segment_set"
         assert len(output.annotation_gt.value) == int(output.answer_gt.value)
-        assert output.trace_payload["projected_annotation"]["point_pair_set"] == output.annotation_gt.value
+        assert output.trace_payload["projected_annotation"]["segment_set"] == output.annotation_gt.value
         for pair in output.annotation_gt.value:
             assert len(pair) == 2
             assert all(len(point) == 2 for point in pair)

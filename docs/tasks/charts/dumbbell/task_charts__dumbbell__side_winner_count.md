@@ -15,13 +15,16 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
-2. Annotation schema: `bbox_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
+2. Annotation schema: `segment_set`.
+3. Annotation marks the two colored dot centers for each matching dumbbell row, following the cross-domain annotation policy.
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Program Contract
+- `count(row where compare(value(winning_series,row), value(other_series,row), relation=greater_than)); output=integer_count; annotation=segment_set(matching_row_dot_centers); scene=dumbbell; scope=side_winner_count`
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `series_a_greater_threshold_count` | `count.pairwise_comparison` | `integer_count` | `bbox_set` |
-| `series_b_greater_threshold_count` | `count.pairwise_comparison` | `integer_count` | `bbox_set` |
+| `series_a_greater_threshold_count` | `count.side_winner_rows` | `integer_count` | `segment_set` |
+| `series_b_greater_threshold_count` | `count.side_winner_rows` | `integer_count` | `segment_set` |

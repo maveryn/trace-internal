@@ -106,21 +106,43 @@ def test_validate_point_sequence_checks_pixel_bounds() -> None:
     assert any("outside image bounds" in message for message in invalid)
 
 
-def test_validate_point_pair_set_checks_nested_points() -> None:
+def test_validate_segment_set_checks_nested_points() -> None:
     valid = audit._validate_annotation_value(
-        "point_pair_set",
+        "segment_set",
         [[[1, 2], [3, 4]]],
         image_size=(10, 10),
     )
     invalid = audit._validate_annotation_value(
-        "point_pair_set",
+        "segment_set",
         [[[1, 2], [30, 4]], [[1, 2, 3]]],
         image_size=(10, 10),
     )
 
     assert valid == []
     assert any("outside image bounds" in message for message in invalid)
-    assert any("not a two-point pair" in message for message in invalid)
+    assert any("not a two-endpoint segment" in message for message in invalid)
+
+
+def test_validate_segment_checks_nested_points() -> None:
+    valid = audit._validate_annotation_value(
+        "segment",
+        [[1, 2], [3, 4]],
+        image_size=(10, 10),
+    )
+    invalid = audit._validate_annotation_value(
+        "segment",
+        [[1, 2], [30, 4]],
+        image_size=(10, 10),
+    )
+    wrong_shape = audit._validate_annotation_value(
+        "segment",
+        [[[1, 2], [3, 4]]],
+        image_size=(10, 10),
+    )
+
+    assert valid == []
+    assert any("outside image bounds" in message for message in invalid)
+    assert any("one two-endpoint segment" in message for message in wrong_shape)
 
 
 def test_validate_keyed_point_map_checks_keys_points_and_bounds() -> None:

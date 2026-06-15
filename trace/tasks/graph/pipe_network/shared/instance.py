@@ -415,14 +415,14 @@ class PipeJunctionInstanceBuilder:
         if self.query_id == "pipe_bridge_count":
             annotation_edges = tuple((str(left), str(right)) for left, right in pipe_sample.target_edges)
             projection = projected_pipe_edge_pair_annotation(rendered_scene, annotation_edges)
-            annotation = [[list(point) for point in pair] for pair in projection["point_pair_set"]]
+            annotation = [[list(point) for point in pair] for pair in projection["segment_set"]]
             return (
                 "integer",
                 int(pipe_sample.target_bridge_count),
-                "point_pair_set",
+                "segment_set",
                 list(annotation),
                 {"type": "edge_pair_set", "edges": [list(edge) for edge in annotation_edges]},
-                {"type": "point_pair_set", **dict(projection)},
+                {"type": "segment_set", **dict(projection)},
             )
         annotation_labels = tuple(str(label) for label in pipe_sample.target_labels)
         projection = projected_pipe_node_point_annotation(rendered_scene, annotation_labels)

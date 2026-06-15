@@ -159,6 +159,7 @@ class ChartsDumbbellGapRankRowLabelTask:
             question_format="dumbbell_gap_rank_row_label",
             reasoning_load=0.68,
             prompt_artifacts=prompt_artifacts,
+            annotation_style="row_pair_segment",
         )
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:

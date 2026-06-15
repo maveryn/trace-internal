@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `bar_3d`
 3. Source implementation scene package: `charts/bar_3d`
-4. Query id: `series_comparison_count`
+4. Query id: `single`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -15,12 +15,15 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
-2. Annotation schema: `point_pair_set`.
+2. Annotation schema: `segment_set`.
 3. Annotation marks paired top-center bar points for each compared category.
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Program Contract
+- `count(category where compare(value(category,series_a), value(category,series_b), relation=greater_than)); output=integer_count; annotation=point_set(comparison_bar_top_centers); scene=bar_3d; scope=pairwise_comparison_count`
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `series_comparison_count` | `count.pairwise_comparison` | `integer_count` | `point_pair_set` |
+| `single` | `count.pairwise_series_comparison` | `integer_count` | `segment_set` |

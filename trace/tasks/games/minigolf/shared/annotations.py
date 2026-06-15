@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_annotation_artifacts, point_pair_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_annotation_artifacts, segment_annotation_artifacts
 
 from .rendering import RenderedMinigolfScene
 
@@ -18,18 +18,18 @@ def minigolf_obstacle_point_annotation(
     return point_annotation_artifacts(point)
 
 
-def minigolf_path_point_pair_set_annotation(
+def minigolf_path_segment_annotation(
     *,
     rendered: RenderedMinigolfScene,
     path_id: str,
 ) -> AnnotationArtifacts:
-    """Project one visible cue segment as a point-pair set annotation."""
+    """Project one visible cue segment as a scalar segment annotation."""
 
     pair = rendered.render_map["path_point_pairs_px"][str(path_id)]
-    return point_pair_set_annotation_artifacts([pair])
+    return segment_annotation_artifacts(pair)
 
 
 __all__ = [
     "minigolf_obstacle_point_annotation",
-    "minigolf_path_point_pair_set_annotation",
+    "minigolf_path_segment_annotation",
 ]

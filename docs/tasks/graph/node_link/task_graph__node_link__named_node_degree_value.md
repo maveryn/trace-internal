@@ -17,7 +17,7 @@
 4. Supported directed `degree_mode` values: `in_degree`, `out_degree`, `total_degree`
 5. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 6. `answer_gt.type`: `integer`
-7. `annotation_gt.type`: `point_pair_set`
+7. `annotation_gt.type`: `segment_set`
 8. Scene contract:
    - one single-panel labeled node-link graph,
    - simple unweighted graph only,
@@ -38,18 +38,18 @@
 4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":2}`
 6. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}`
-7. Prompt-facing annotation uses pixel-space endpoint pairs for every counted edge, with each endpoint as a `[x,y]` pixel point.
+7. Prompt-facing annotation uses pixel-space endpoints for every counted edge, with each endpoint as a `[x,y]` pixel point.
 8. If the node label format is `named`, prompt references quote the node label, for example node `"Abby"`.
 
 ## 4) Annotation + trace contract
-1. Prompt-facing annotation is the `point_pair_set` of endpoint-center pairs for all edges counted toward the queried degree value.
+1. Prompt-facing annotation is the `segment_set` of endpoint-center pairs for all edges counted toward the queried degree value.
 2. For directed branches, annotation edge pairs preserve source-to-target order.
 3. `answer_gt.value == len(annotation_gt.value)` by construction, including zero-degree cases where annotation is an empty array.
 4. `execution_trace.graph_directionality` records `undirected` or `directed`; `execution_trace.degree_mode` records `degree`, `in_degree`, `out_degree`, or `total_degree`.
 5. `execution_trace.query_label` records the canonical node label and `execution_trace.query_label_prompt` records the prompt-facing label after short-name quoting.
 6. `scene_ir.entities` stores node labels, total degrees, directed degrees, queried degree values, neighbors/successors/predecessors, center points, and bboxes.
 7. `scene_ir.entities` stores `is_counted` on graph edges that contribute to the answer.
-8. `projected_annotation` includes `point_pair_set`.
+8. `projected_annotation` includes `segment_set`.
 
 ## 5) Visual policy
 1. Rendering uses the shared graph light-panel style from `configs/domains/graph/base.yaml`.

@@ -19,16 +19,16 @@
 ## Answer And Annotation
 1. `answer_gt.type = integer`
 2. `answer_gt.value` is the number of bonds whose rendered order matches `target_bond_order`.
-3. `annotation_gt.type = point_pair_set`
-4. Annotation contains one unordered endpoint point-pair for every matching bond.
-5. Each point-pair marks the semantic bond endpoints, not every parallel stroke in a double/triple bond.
+3. `annotation_gt.type = segment_set`
+4. Annotation contains one unordered endpoint segment for every matching bond.
+5. Each segment marks the semantic bond endpoints, not every parallel stroke in a double/triple bond.
 6. Bond bboxes may remain render/debug metadata, but prompt-facing annotation excludes vertices, rings, nonmatching bonds, panel marks, and annotations.
 
 ## Trace Contract
 1. `execution_trace.organic_metadata` records the supported bond orders, scaffold id/family, and constraint policy.
-2. `execution_trace.annotation_item_ids` records the rendered bond ids used for point-pair projection.
-3. `render_map.bond_point_pairs_px` exposes bond endpoint pairs after final layout.
-4. `execution_trace.bonds` records each bond endpoint pair and rendered order.
+2. `execution_trace.annotation_item_ids` records the rendered bond ids used for segment projection.
+3. `render_map.bond_point_pairs_px` exposes bond endpoints after final layout.
+4. `execution_trace.bonds` records each bond segment and rendered order.
 5. `execution_trace.atoms` records implicit line-angle atom vertices for downstream organic-structure tasks.
 6. `execution_trace.organic_metadata.constraint_report` records valence, ring-size, triple-linearity, and crossing-check metadata.
 

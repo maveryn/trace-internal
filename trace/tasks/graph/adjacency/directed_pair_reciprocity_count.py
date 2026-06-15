@@ -156,7 +156,7 @@ class GraphCountingAdjacencyDirectedPairReciprocityCountTask:
     supported_query_ids = SUPPORTED_ADJACENCY_PAIR_RECIPROCITY_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Generate a mutual-pair count and bind one point-pair per counted pair."""
+        """Generate a mutual-pair count and bind one segment per counted pair."""
         query = _resolve_query(int(instance_seed), params=params)
         labels = resolve_adjacency_labels(instance_seed=int(instance_seed), rng_namespace=TASK_ID, label_variant=str(query.label_variant), node_count=int(query.node_count), max_chars=int(group_default(_GEN_DEFAULTS, 'label_max_chars', _DEFAULTS.label_max_chars)))
         sample, pair_states, counted_pairs = _sample_reciprocity_matrix(instance_seed=int(instance_seed), labels=tuple(labels.labels), query_id=str(query.query_id), target_count=int(query.target_count))

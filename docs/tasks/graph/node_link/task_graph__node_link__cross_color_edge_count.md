@@ -16,7 +16,7 @@
 3. Supported `graph_directionality` values: `undirected|directed`
 4. Supported node colors: the 10-color shared TRACE named-color palette: red, blue, green, yellow, orange, purple, brown, cyan, magenta, and maroon
 5. `answer_gt.type`: `integer`
-6. `annotation_gt.type`: `point_pair_set`
+6. `annotation_gt.type`: `segment_set`
 7. Undirected query: count edges with one endpoint in the first queried color and the other endpoint in the second queried color.
 8. Directed query: count arrows whose source node has the first queried color and target node has the second queried color.
 9. The queried source/target color names are sampled as an ordered distinct pair unless both are provided explicitly.
@@ -31,7 +31,7 @@
 7. Prompt-facing color text uses `<color_name> [#RRGGBB]`.
 
 ## 4) Annotation + trace contract
-1. Prompt-facing annotation is a `point_pair_set` of endpoint-node-center pairs for every counted edge; each endpoint is a `[x,y]` pixel point.
+1. Prompt-facing annotation is a `segment_set` of endpoint-node-center pairs for every counted edge; each endpoint is a `[x,y]` pixel point.
 2. For directed graphs, each annotation pair is ordered source-to-target.
 3. `answer_gt.value == len(annotation_gt.value)` by construction, including zero-answer cases.
 4. `execution_trace.node_color_names_by_label` records every node's semantic color.

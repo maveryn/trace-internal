@@ -7,7 +7,7 @@ from typing import Any, Mapping, Sequence
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
     bbox_set_annotation_artifacts,
-    point_pair_set_annotation_artifacts,
+    segment_set_annotation_artifacts,
 )
 
 
@@ -30,7 +30,7 @@ def dots_and_boxes_annotation_artifacts(
             [list(point) for point in render_map["edge_point_pairs_px"][str(edge_id)]]
             for edge_id in annotation_entity_ids
         ]
-        return point_pair_set_annotation_artifacts(point_pairs)
+        return segment_set_annotation_artifacts(point_pairs)
     raise ValueError(f"unsupported dots-and-boxes annotation kind: {annotation_kind}")
 
 

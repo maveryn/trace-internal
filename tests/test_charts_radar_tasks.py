@@ -6,7 +6,7 @@ from trace.tasks.charts.radar.highlighted_metric_threshold_panel_count import Ch
 from trace.tasks.charts.radar.matching_condition_panel_count import ChartsRadarMatchingConditionPanelCountTask
 from trace.tasks.charts.radar.profile_advantage_count import ChartsRadarProfileAdvantageCountTask
 from trace.tasks.charts.radar.threshold_metric_count_for_panel import ChartsRadarThresholdMetricCountForPanelTask
-CASES = ((ChartsRadarHighlightedMetricThresholdPanelCountTask, 'highlighted_metric_threshold_panel_count', 'bbox_set'), (ChartsRadarMatchingConditionPanelCountTask, 'matching_condition_panel_count', 'bbox_set'), (ChartsRadarThresholdMetricCountForPanelTask, 'threshold_metric_count_for_panel', 'point_set'), (ChartsRadarProfileAdvantageCountTask, 'profile_advantage_count', 'point_pair_set'))
+CASES = ((ChartsRadarHighlightedMetricThresholdPanelCountTask, 'highlighted_metric_threshold_panel_count', 'bbox_set'), (ChartsRadarMatchingConditionPanelCountTask, 'matching_condition_panel_count', 'bbox_set'), (ChartsRadarThresholdMetricCountForPanelTask, 'threshold_metric_count_for_panel', 'point_set'), (ChartsRadarProfileAdvantageCountTask, 'profile_advantage_count', 'segment_set'))
 
 def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
     assert len(bbox) == 4
@@ -50,8 +50,8 @@ def test_charts_radar_tasks_match_contract(task_cls: type, query_id: str, annota
         for point in out.annotation_gt.value:
             _assert_point_inside_canvas([float(value) for value in point], width=width, height=height)
     else:
-        assert annotation_type == 'point_pair_set'
-        assert projected['point_pair_set'] == out.annotation_gt.value
+        assert annotation_type == 'segment_set'
+        assert projected['segment_set'] == out.annotation_gt.value
         assert int(out.answer_gt.value) == _annotation_len(out.annotation_gt.value)
         for pair in out.annotation_gt.value:
             assert len(pair) == 2

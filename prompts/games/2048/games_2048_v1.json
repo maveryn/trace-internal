@@ -75,7 +75,7 @@
     "query:merge_count": {
       "move_rule_text": "In 2048, a move slides all tiles toward the arrow; equal adjacent tiles in that direction merge once.",
       "answer_hint": "set \"answer\" to the number of merges made by the shown move",
-      "annotation_hint": "set \"annotation\" to point pairs [[x, y], [x, y]], one pair for each merge, using the centers of the two original tile cells that merge; use an empty list if no merge occurs",
+      "annotation_hint": "set \"annotation\" to segments [[x, y], [x, y]], one pair for each merge, using the centers of the two original tile cells that merge; use an empty list if no merge occurs",
       "json_example": "{\"annotation\":[[[284,284],[418,284]],[[284,418],[418,418]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
@@ -83,7 +83,7 @@
       "move_rule_text": "In 2048, a move slides all tiles toward the arrow; equal adjacent tiles in that direction merge once.",
       "score_rule_text": "The move score is the sum of the newly created merged tile values.",
       "answer_hint": "set \"answer\" to the move score",
-      "annotation_hint": "set \"annotation\" to point pairs [[x, y], [x, y]], one pair for each merge used for the score, using the centers of the two original tile cells that merge; use an empty list if the score is zero",
+      "annotation_hint": "set \"annotation\" to segments [[x, y], [x, y]], one pair for each merge used for the score, using the centers of the two original tile cells that merge; use an empty list if the score is zero",
       "json_example": "{\"annotation\":[[[284,284],[418,284]],[[284,418],[418,418]]],\"answer\":24}",
       "json_example_answer_only": "{\"answer\":24}"
     },

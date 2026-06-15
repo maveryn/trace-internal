@@ -40,13 +40,16 @@ _TRACE_OUTPUT_MODE_ALIASES = {
     "answer_and_annotation": _TRACE_OUTPUT_MODE_ANSWER_AND_ANNOTATION,
 }
 TRACE_ANNOTATION_LOG_TYPES = (
+    "bbox",
     "bbox_sequence",
     "bbox_set",
     "keyed_bbox_map",
     "keyed_bbox_set_map",
     "keyed_point_map",
     "keyed_point_set_map",
-    "point_pair_set",
+    "point",
+    "segment",
+    "segment_set",
     "point_sequence",
     "point_set",
 )
@@ -435,6 +438,14 @@ def _normalize_coord_pair(value: Any) -> tuple[float | int, float | int] | None:
     return (x, y)
 
 
+def _normalize_point(value: Any) -> tuple[float, float] | None:
+    parsed = _parse_json_like(value)
+    point = _normalize_coord_pair(parsed)
+    if point is None:
+        return None
+    return (float(point[0]), float(point[1]))
+
+
 def _normalize_point_list(value: Any) -> list[tuple[float, float]] | None:
     parsed = _parse_json_like(value)
     single = _normalize_coord_pair(parsed)
@@ -451,7 +462,21 @@ def _normalize_point_list(value: Any) -> list[tuple[float, float]] | None:
     return normalized
 
 
-def _normalize_point_pair_list(value: Any) -> list[tuple[tuple[float, float], tuple[float, float]]] | None:
+def _normalize_segment(value: Any) -> tuple[tuple[float, float], tuple[float, float]] | None:
+    parsed = _parse_json_like(value)
+    if not _is_non_string_sequence(parsed):
+        return None
+    endpoints = list(parsed)
+    if len(endpoints) != 2:
+        return None
+    left = _normalize_coord_pair(endpoints[0])
+    right = _normalize_coord_pair(endpoints[1])
+    if left is None or right is None:
+        return None
+    return ((float(left[0]), float(left[1])), (float(right[0]), float(right[1])))
+
+
+def _normalize_segment_list(value: Any) -> list[tuple[tuple[float, float], tuple[float, float]]] | None:
     parsed = _parse_json_like(value)
     if not _is_non_string_sequence(parsed):
         return None
@@ -490,6 +515,11 @@ def _normalize_bbox(value: Any) -> list[float] | None:
     if left == right or top == bottom:
         return None
     return [left, top, right, bottom]
+
+
+def _normalize_bbox_scalar(value: Any) -> list[float] | None:
+    parsed = _parse_json_like(value)
+    return _normalize_bbox(parsed)
 
 
 def _normalize_bbox_set(value: Any) -> list[list[float]] | None:
@@ -842,7 +872,7 @@ def _score_keyed_point_set_map_soft_distance(
     return score, len(shared_keys), mean_similarity, total_assigned
 
 
-def _point_pair_distance(
+def _segment_distance(
     pred_pair: tuple[tuple[float, float], tuple[float, float]],
     gt_pair: tuple[tuple[float, float], tuple[float, float]],
 ) -> float:
@@ -857,7 +887,7 @@ def _point_pair_distance(
     return float(min(direct, flipped))
 
 
-def _score_point_pair_set_soft_distance(
+def _score_segment_set_soft_distance(
     pred_pairs: list[tuple[tuple[float, float], tuple[float, float]]],
     gt_pairs: list[tuple[tuple[float, float], tuple[float, float]]],
     *,
@@ -871,7 +901,7 @@ def _score_point_pair_set_soft_distance(
     distance_matrix = np.zeros((len(pred_pairs), len(gt_pairs)), dtype=np.float32)
     for row, pred_pair in enumerate(pred_pairs):
         for col, gt_pair in enumerate(gt_pairs):
-            distance_matrix[row, col] = _point_pair_distance(pred_pair, gt_pair)
+            distance_matrix[row, col] = _segment_distance(pred_pair, gt_pair)
 
     if linear_sum_assignment is None:
         row_ind, col_ind = _greedy_assignment(-distance_matrix)
@@ -944,6 +974,21 @@ def _score_trace_annotation(
     if annotation_contract_id != expected_contract_id:
         return 0.0, False, {"reason": "annotation_contract_id_mismatch"}
 
+    if annotation_type == "point":
+        pred = _normalize_point(annotation_value)
+        gt = _normalize_point(annotation_gt_value)
+        if pred is None or gt is None:
+            return 0.0, False, {"reason": "point_parse_failed"}
+        distance = _point_distance(pred, gt)
+        similarity = _point_soft_similarity(distance, half_life_px=point_half_life_px)
+        return similarity, True, {
+            "pred_size": 1,
+            "gt_size": 1,
+            "assigned_count": 1,
+            "assigned_similarity_mean": float(similarity),
+            "point_half_life_px": float(point_half_life_px),
+        }
+
     if annotation_type == "point_set":
         pred = _normalize_point_list(annotation_value)
         gt = _normalize_point_list(annotation_gt_value)
@@ -980,12 +1025,27 @@ def _score_trace_annotation(
             "point_half_life_px": float(point_half_life_px),
         }
 
-    if annotation_type == "point_pair_set":
-        pred = _normalize_point_pair_list(annotation_value)
-        gt = _normalize_point_pair_list(annotation_gt_value)
+    if annotation_type == "segment":
+        pred = _normalize_segment(annotation_value)
+        gt = _normalize_segment(annotation_gt_value)
         if pred is None or gt is None:
-            return 0.0, False, {"reason": "point_pair_set_parse_failed"}
-        score, assigned_count, assigned_similarity_mean = _score_point_pair_set_soft_distance(
+            return 0.0, False, {"reason": "segment_parse_failed"}
+        distance = _segment_distance(pred, gt)
+        similarity = _point_soft_similarity(distance, half_life_px=point_half_life_px)
+        return similarity, True, {
+            "pred_size": 1,
+            "gt_size": 1,
+            "assigned_count": 1,
+            "assigned_similarity_mean": float(similarity),
+            "point_half_life_px": float(point_half_life_px),
+        }
+
+    if annotation_type == "segment_set":
+        pred = _normalize_segment_list(annotation_value)
+        gt = _normalize_segment_list(annotation_gt_value)
+        if pred is None or gt is None:
+            return 0.0, False, {"reason": "segment_set_parse_failed"}
+        score, assigned_count, assigned_similarity_mean = _score_segment_set_soft_distance(
             pred,
             gt,
             half_life_px=point_half_life_px,
@@ -996,6 +1056,19 @@ def _score_trace_annotation(
             "assigned_count": int(assigned_count),
             "assigned_similarity_mean": float(assigned_similarity_mean),
             "point_half_life_px": float(point_half_life_px),
+        }
+
+    if annotation_type == "bbox":
+        pred = _normalize_bbox_scalar(annotation_value)
+        gt = _normalize_bbox_scalar(annotation_gt_value)
+        if pred is None or gt is None:
+            return 0.0, False, {"reason": "bbox_parse_failed"}
+        iou = _bbox_iou(pred, gt)
+        return iou, True, {
+            "pred_size": 1,
+            "gt_size": 1,
+            "assigned_count": 1,
+            "assigned_iou_mean": float(iou),
         }
 
     if annotation_type == "bbox_set":

@@ -7,7 +7,7 @@ from typing import Sequence, Tuple
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
     bbox_set_annotation_artifacts,
-    point_pair_set_annotation_artifacts,
+    segment_set_annotation_artifacts,
 )
 
 from .state import AdjacencyGraphSample, AdjacencyRepresentationRender, matrix_cell_key
@@ -78,7 +78,7 @@ def mirrored_pair_cell_point_pair_artifacts(
     rendered: AdjacencyRepresentationRender,
     pairs: Sequence[tuple[str, str]],
 ) -> tuple[AnnotationArtifacts, tuple[str, ...]]:
-    """Project counted mirrored matrix cells to one point-pair per node pair."""
+    """Project counted mirrored matrix cells to one segment per node pair."""
 
     cell_keys: list[str] = []
     point_pairs: list[list[list[float]]] = []
@@ -92,7 +92,7 @@ def mirrored_pair_cell_point_pair_artifacts(
                 _bbox_center(rendered.cell_bboxes[reverse_key]),
             ]
         )
-    return point_pair_set_annotation_artifacts(point_pairs), tuple(cell_keys)
+    return segment_set_annotation_artifacts(point_pairs), tuple(cell_keys)
 
 
 def mst_cell_bbox_artifacts(

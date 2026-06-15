@@ -55,6 +55,20 @@ def annotation_value(
     """Project task-selected minimal witnesses into pixel annotation space."""
 
     kind = str(annotation_kind)
+    if kind == "node_point":
+        labels = labels_from_sample(sample, str(annotation_field))
+        if len(labels) != 1:
+            raise RuntimeError("node-link scalar point annotation requires exactly one node label")
+        projection = projected_node_point_annotation(rendered_scene, labels)
+        points = [list(point) for point in projection["pixel_point_set"]]
+        if len(points) != 1:
+            raise RuntimeError("node-link scalar point projection requires exactly one point")
+        point = list(points[0])
+        return (
+            TypedValue(type="point", value=point),
+            {"type": "point", "point": point, "pixel_point": point, **dict(projection)},
+            {"type": "object", "labels": list(labels)},
+        )
     if kind in {"node_point_set", "node_point_sequence"}:
         labels = labels_from_sample(sample, str(annotation_field))
         projection = projected_node_point_annotation(rendered_scene, labels)
@@ -65,13 +79,13 @@ def annotation_value(
             {"type": annotation_type, annotation_type: list(points), **dict(projection)},
             {"type": "object_sequence" if kind == "node_point_sequence" else "object_set", "labels": list(labels)},
         )
-    if kind == "edge_point_pair_set":
+    if kind == "edge_segment_set":
         edges = edges_from_sample(sample, str(annotation_field))
         projection = projected_edge_pair_annotation(rendered_scene, edges)
-        pairs = [[list(pair[0]), list(pair[1])] for pair in projection["point_pair_set"]]
+        pairs = [[list(pair[0]), list(pair[1])] for pair in projection["segment_set"]]
         return (
-            TypedValue(type="point_pair_set", value=list(pairs)),
-            {"type": "point_pair_set", "point_pair_set": list(pairs), **dict(projection)},
+            TypedValue(type="segment_set", value=list(pairs)),
+            {"type": "segment_set", "segment_set": list(pairs), **dict(projection)},
             {"type": "edge_set", "edge_labels": [list(edge) for edge in edges]},
         )
     if kind == "edge_label_bbox_set":

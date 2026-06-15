@@ -57,9 +57,9 @@ def test_games_bowling_public_tasks_emit_expected_contract(
 
     assert out.answer_gt.type == "string"
     if expected_internal_query == "spare_path_label":
-        assert out.annotation_gt.type == "point_pair_set"
-        assert len(out.annotation_gt.value) == 1
-        assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+        assert out.annotation_gt.type == "segment"
+        assert len(out.annotation_gt.value) == 2
+        assert trace["projected_annotation"]["segment"] == out.annotation_gt.value
     else:
         assert out.annotation_gt.type == "bbox"
         assert len(out.annotation_gt.value) == 4
@@ -80,12 +80,10 @@ def test_games_bowling_public_tasks_emit_expected_contract(
         x0, y0, x1, y1 = out.annotation_gt.value
         assert 0 <= float(x0) <= float(x1) <= float(trace["render_spec"]["canvas_width"])
         assert 0 <= float(y0) <= float(y1) <= float(trace["render_spec"]["canvas_height"])
-    elif out.annotation_gt.type == "point_pair_set":
-        for point_pair in out.annotation_gt.value:
-            assert len(point_pair) == 2
-            for x, y in point_pair:
-                assert 0 <= float(x) <= float(trace["render_spec"]["canvas_width"])
-                assert 0 <= float(y) <= float(trace["render_spec"]["canvas_height"])
+    elif out.annotation_gt.type == "segment":
+        for x, y in out.annotation_gt.value:
+            assert 0 <= float(x) <= float(trace["render_spec"]["canvas_width"])
+            assert 0 <= float(y) <= float(trace["render_spec"]["canvas_height"])
     else:
         raise AssertionError(f"unexpected annotation type: {out.annotation_gt.type}")
 
@@ -154,8 +152,8 @@ def test_games_bowling_spare_path_label_matches_target_path() -> None:
     assert all(bool(pin["standing"]) for pin in execution["pins"])
     assert len(execution["pins"]) == len(standing_pin_ids)
     assert target_id in out.trace_payload["render_map"]["motion_paths_px"]
-    assert out.annotation_gt.type == "point_pair_set"
-    assert out.annotation_gt.value == [out.trace_payload["render_map"]["path_point_pairs_px"][target_id]]
+    assert out.annotation_gt.type == "segment"
+    assert out.annotation_gt.value == out.trace_payload["render_map"]["path_point_pairs_px"][target_id]
 
 
 def test_games_bowling_build_smoke(tmp_path: Path) -> None:

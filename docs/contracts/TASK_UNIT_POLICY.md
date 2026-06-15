@@ -68,8 +68,18 @@ A query id must not choose between public objectives. If changing `query_id`
 changes the answer schema, annotation schema, concrete program schema, semantic
 witness roles, or visible task scaffold, split the public task.
 
+For keyed annotation, the schema is defined by annotation type, semantic role
+family, and cardinality/order requirements, not by fixed literal key names.
+Different samples or query branches may bind different visible labels as keys
+when those keys fill the same witness roles. For example, a segment-length task
+that always annotates the two requested segment endpoints can use keys `A,Y` in
+one sample and `X,B` in another without becoming a new annotation schema.
+
 Every review-candidate task should declare `supported_query_ids`. Tasks with
-no internal branches use `("default",)`.
+no semantic query branches use the single repo-wide sentinel `("single",)`.
+Do not use `default`, the task id, or the objective-contract name as a
+single-query placeholder; those values blur public task identity with internal
+branch metadata.
 
 ## 4) Public Task Selection
 `task_id` is the public selector. Callers should request:
@@ -124,6 +134,12 @@ task is a true visual option-image task.
 Prefer keyed annotation types when roles matter or an unordered set would be
 ambiguous. Use unordered sets for homogeneous counting witnesses where
 cardinality is the answer or role identity does not matter.
+
+For `keyed_point_map` and `keyed_bbox_map`, the required key literals may be
+instance-bound visible labels as long as the role family remains stable. Split
+only when the semantic witness role changes, such as requested endpoints vs all
+construction points, point witnesses vs region bboxes, or two required points vs
+a variable-size witness set.
 
 Answer and annotation must come from the same execution trace.
 

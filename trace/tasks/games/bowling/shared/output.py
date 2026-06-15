@@ -71,9 +71,9 @@ def build_bowling_trace_payload(
 
     rendered_scene = rendered_context.rendered_scene
     standing_pin_count = sum(1 for pin in sample.pins if bool(pin.standing))
-    if str(annotation_artifacts.annotation_type) == "point_pair_set":
+    if str(annotation_artifacts.annotation_type) in {"segment", "segment_set"}:
         witness_symbolic = {
-            "type": "point_pair_set",
+            "type": str(annotation_artifacts.annotation_type),
             "ids": [str(entity_id) for entity_id in annotation_entity_ids],
         }
     else:

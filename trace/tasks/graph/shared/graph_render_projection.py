@@ -39,11 +39,11 @@ def projected_edge_pair_annotation(
     rendered_scene: RenderedGraphScene,
     edges: Sequence[Sequence[str]],
 ) -> Dict[str, Any]:
-    """Project ordered edge label pairs into node-center point pairs."""
+    """Project ordered edge label pairs into node-center segments."""
 
     node_by_label = {str(node.label): node for node in rendered_scene.nodes}
 
-    point_pair_set: List[List[List[float]]] = []
+    segment_set: List[List[List[float]]] = []
     for edge in edges:
         endpoints = [str(value) for value in edge]
         if len(endpoints) != 2:
@@ -57,9 +57,9 @@ def projected_edge_pair_annotation(
             [float(left_node.center_xy[0]), float(left_node.center_xy[1])],
             [float(right_node.center_xy[0]), float(right_node.center_xy[1])],
         ]
-        point_pair_set.append([list(point) for point in pair])
+        segment_set.append([list(point) for point in pair])
     return {
-        "point_pair_set": point_pair_set,
+        "segment_set": segment_set,
     }
 
 

@@ -30,7 +30,7 @@ def _prepare_completed_column_objective(instance_seed, task_params, _query_id, _
 
     def construct_attempt(rng, _axes):
         card_state = build_completed_column_label_card_state(rng=rng, target_column_label=str(target_label), distractor_mark_prob=float(distractor_mark_prob))
-        return BingoAttemptResult(card_state=card_state, answer_value=str(target_label), annotation_cell_ids=(top_cell_id, bottom_cell_id), annotation_type='point_pair_set', annotation_cell_id_pairs=((top_cell_id, bottom_cell_id),), execution_extra={'target_column_label': str(target_label), 'target_column_index': int(target_column_index), 'target_column_label_probabilities': dict(target_label_probabilities), 'column_distractor_mark_prob': float(distractor_mark_prob)})
+        return BingoAttemptResult(card_state=card_state, answer_value=str(target_label), annotation_cell_ids=(top_cell_id, bottom_cell_id), annotation_type='segment', annotation_cell_id_pairs=((top_cell_id, bottom_cell_id),), execution_extra={'target_column_label': str(target_label), 'target_column_index': int(target_column_index), 'target_column_label_probabilities': dict(target_label_probabilities), 'column_distractor_mark_prob': float(distractor_mark_prob)})
     return BingoObjectivePlan(attempt_namespace=f'games.bingo.{TASK_ID}', prompt_query_key=QUERY_ID, query_params={'target_column_label': str(target_label), 'target_column_index': int(target_column_index), 'target_column_label_probabilities': dict(target_label_probabilities), 'column_distractor_mark_prob': float(distractor_mark_prob)}, construct_attempt=construct_attempt)
 
 @register_task

@@ -4,7 +4,7 @@ Normative contract for TRACE answer and annotation reward dispatch.
 
 TRACE v0 uses **annotation** as the public grounding term. Active prompts,
 outputs, review artifacts, and reward contracts must use `annotation` /
-`annotation_gt`; do not add new public `evidence` keys, prompt wording, or
+`annotation_gt`; do not add alternate public grounding keys, prompt wording, or
 compatibility aliases.
 
 ## 1) Purpose
@@ -49,13 +49,16 @@ Rules:
 | Public type | Reward id | Scoring rule |
 | --- | --- | --- |
 | any registered answer type | `answer_exact_match_v0` | Exact match after answer-type normalization. Ordered answer types remain sequence-sensitive. |
+| `bbox` | `bbox_soft_iou_v0` | One scalar bbox scored by raw IoU. |
 | `bbox_set` | `bbox_set_soft_iou_v0` | Unordered Hungarian matching over raw IoU. |
 | `bbox_sequence` | `bbox_sequence_soft_iou_v0` | Index-aligned IoU aggregation. |
 | `keyed_bbox_map` | `keyed_bbox_map_soft_iou_v0` | Exact key matching, then one bbox IoU per key. |
 | `keyed_bbox_set_map` | `keyed_bbox_set_map_soft_iou_v0` | Exact key matching, then unordered bbox-set IoU matching inside each key. |
+| `point` | `point_soft_distance_v0` | One scalar point scored by soft pixel distance. |
 | `point_set` | `point_set_soft_distance_v0` | Unordered Hungarian matching over soft pixel distance. |
 | `point_sequence` | `point_sequence_soft_distance_v0` | Index-aligned soft pixel distance. |
-| `point_pair_set` | `point_pair_set_soft_distance_v0` | Unordered matching of undirected endpoint-pair witnesses. |
+| `segment` | `segment_soft_distance_v0` | One undirected segment scored by endpoint distance. |
+| `segment_set` | `segment_set_soft_distance_v0` | Unordered matching of undirected segment witnesses. |
 | `keyed_point_map` | `keyed_point_map_soft_distance_v0` | Exact key matching, then one point-distance score per key. |
 | `keyed_point_set_map` | `keyed_point_set_map_soft_distance_v0` | Exact key matching, then unordered point-set distance matching inside each key. |
 
@@ -64,13 +67,16 @@ Rules:
 Public annotation contracts are image-level only. Use these global homogeneous
 annotation type names directly:
 
+- `bbox`
 - `bbox_set`
 - `bbox_sequence`
 - `keyed_bbox_map`
 - `keyed_bbox_set_map`
+- `point`
 - `point_set`
 - `point_sequence`
-- `point_pair_set`
+- `segment`
+- `segment_set`
 - `keyed_point_map`
 - `keyed_point_set_map`
 
@@ -100,8 +106,8 @@ only when the contract cannot be expressed with the current homogeneous types.
 5. Sequence contracts compare by position and divide by the max sequence length.
 6. Keyed map contracts divide shared-key similarity by the union of predicted
    and target keys, so missing and extra role keys are penalized.
-7. `point_pair_set_soft_distance_v0` treats each endpoint pair as undirected, so
-   reversed endpoints score as the same edge witness.
+7. `segment_soft_distance_v0` and `segment_set_soft_distance_v0` treat each
+   segment as undirected, so reversed endpoints score as the same witness.
 
 ## 6) Update Rules
 When a public answer or annotation reward contract changes:

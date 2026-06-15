@@ -83,7 +83,7 @@
     },
     "query:profile_advantage_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array of pixel-space point pairs [[x,y],[x,y]], one pair for each counted metric; put the first named profile point first in each pair",
+      "annotation_hint": "set \"annotation\" to an array of pixel-space segments [[x,y],[x,y]], one pair for each counted metric; put the first named profile point first in each pair",
       "json_example": "{\"annotation\":[[[650,244],[622,270]],[[744,430],[708,408]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },

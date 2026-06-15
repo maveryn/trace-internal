@@ -10,7 +10,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.counting.cross_color_edge_count import GraphCountingCrossColorEdgeCountTask
+from trace.tasks.graph.node_link.cross_color_edge_count import GraphCountingCrossColorEdgeCountTask
 from trace.tasks.shared.color_format import format_named_color_with_hex
 from trace.tasks.shared.named_colors import named_color
 from tests.helpers import read_jsonl
@@ -51,7 +51,7 @@ def test_graph_counting_cross_color_edge_count_contract_matches_trace() -> None:
     assert out.scene_id == "node_link"
     assert out.query_id == "directed_cross_color_edge_count"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "segment_set"
     assert int(out.answer_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_cross_color_edge_counting"
     assert execution["query_id"] == "directed_cross_color_edge_count"
@@ -79,8 +79,8 @@ def test_graph_counting_cross_color_edge_count_contract_matches_trace() -> None:
     assert sum(1 for edge in edge_entities if bool(edge["is_target_cross_color_edge"])) == 3
     assert len(edge_entities) == int(execution["edge_count"])
     assert any(bool(edge["directed"]) for edge in edge_entities)
-    assert trace["projected_annotation"]["type"] == "point_pair_set"
-    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "segment_set"
+    assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
     assert trace["render_spec"]["style"]["semantic_node_color_names_by_label"] == node_colors
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 

@@ -7,7 +7,7 @@
 4. Public task id: `task_games__bowling__spare_path_label`
 5. Supported `query_id` values: `single`
 6. Answer schema: `string_label`
-7. Annotation schema: `point_pair_set`
+7. Annotation schema: `segment`
 8. Program schema: `label(select_option(shot_paths, option_rule=clears_remaining_pins)); scene=bowling; scope=spare_path_label`
 
 ## Program Contract

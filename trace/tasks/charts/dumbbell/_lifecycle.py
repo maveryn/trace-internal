@@ -29,6 +29,7 @@ class DumbbellTaskPlan:
     question_format: str
     reasoning_load: float
     prompt_artifacts: PromptTraceArtifacts
+    annotation_style: str = "row_pair_segment_set"
 
 
 @dataclass(frozen=True)
@@ -75,7 +76,11 @@ def materialize_dumbbell_plan(
     """Render a task-owned plan and project its bound row annotations."""
 
     rendered, render_meta, sidecar_meta = render_dataset(plan.dataset, params=plan.params, instance_seed=int(instance_seed))
-    annotation_type, annotation, projected_annotation, annotation_refs = annotation_payload(dataset=plan.dataset, rendered=rendered)
+    annotation_type, annotation, projected_annotation, annotation_refs = annotation_payload(
+        dataset=plan.dataset,
+        rendered=rendered,
+        annotation_style=str(plan.annotation_style),
+    )
     trace_payload = build_trace_scaffold(
         dataset=plan.dataset,
         rendered=rendered,

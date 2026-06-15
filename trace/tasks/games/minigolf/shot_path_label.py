@@ -5,7 +5,7 @@ from __future__ import annotations
 from trace.tasks.registry import register_task
 
 from ._lifecycle import MinigolfObjectivePlan, minigolf_string_answer_attempt, run_minigolf_registered_task
-from .shared.annotations import minigolf_path_point_pair_set_annotation
+from .shared.annotations import minigolf_path_segment_annotation
 from .shared.defaults import DEFAULT_BRANCH_ID
 from .shared.sampling import resolve_minigolf_axes, resolve_minigolf_integer_choice, sample_shot_options_scene
 
@@ -71,9 +71,9 @@ def _prepare_shot_path_objective(
             object_description_key=f"object_description_{str(resolved_axes.scene_variant)}",
             answer_hint_key=f"answer_hint_{PROMPT_QUERY_KEY}",
             annotation_hint_key=f"annotation_hint_{PROMPT_QUERY_KEY}",
-            example_annotation=[[[486, 562], [592, 520]]],
+            example_annotation=[[486, 562], [592, 520]],
             example_answer="3",
-            bind_annotation=lambda rendered: minigolf_path_point_pair_set_annotation(
+            bind_annotation=lambda rendered: minigolf_path_segment_annotation(
                 rendered=rendered,
                 path_id=target_id,
             ),

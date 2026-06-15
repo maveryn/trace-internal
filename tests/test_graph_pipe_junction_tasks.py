@@ -61,7 +61,7 @@ def test_pipe_bridge_count_contract() -> None:
     assert out.query_id == "pipe_bridge_count"
     assert 0 <= int(out.answer_gt.value) <= 5
     assert out.answer_gt.value == bridge_count
-    assert out.annotation_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "segment_set"
     assert len(out.annotation_gt.value) == bridge_count
 
 

@@ -41,11 +41,11 @@ def domino_integer_json_examples(answer_value: int = 2) -> tuple[str, str]:
     )
 
 
-def domino_option_label_point_pair_json_examples(answer_value: str = "C") -> tuple[str, str]:
-    """Return generic option-label JSON examples for point-pair annotation tasks."""
+def domino_option_label_segment_json_examples(answer_value: str = "C") -> tuple[str, str]:
+    """Return generic option-label JSON examples for scalar segment annotation tasks."""
 
     return (
-        json.dumps({"annotation": [[[312, 142], [326, 142]]], "answer": str(answer_value)}, separators=(",", ":")),
+        json.dumps({"annotation": [[312, 142], [326, 142]], "answer": str(answer_value)}, separators=(",", ":")),
         json.dumps({"answer": str(answer_value)}, separators=(",", ":")),
     )
 
@@ -127,7 +127,7 @@ def build_domino_prompt_artifacts(
 __all__ = [
     "build_domino_prompt_artifacts",
     "domino_integer_json_examples",
-    "domino_option_label_point_pair_json_examples",
+    "domino_option_label_segment_json_examples",
     "domino_object_description",
     "domino_output_slots",
 ]

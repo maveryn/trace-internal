@@ -51,7 +51,7 @@ def test_graph_counting_edge_color_count_contract_matches_trace() -> None:
     assert out.scene_id == "node_link"
     assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "segment_set"
     assert int(out.answer_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_edge_color_counting"
     assert execution["query_id"] == "single"
@@ -87,8 +87,8 @@ def test_graph_counting_edge_color_count_contract_matches_trace() -> None:
     )
     assert len(edge_entities) == int(execution["edge_count"])
     assert any(bool(edge["directed"]) for edge in edge_entities)
-    assert trace["projected_annotation"]["type"] == "point_pair_set"
-    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "segment_set"
+    assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
     assert (
         trace["render_spec"]["style"]["semantic_edge_color_names_by_label_pair"]
         == execution["edge_color_names_by_label_pair"]

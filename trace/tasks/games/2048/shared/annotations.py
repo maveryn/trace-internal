@@ -20,7 +20,7 @@ def source_merge_point_pairs(
     result: Move2048Result,
     rendered_scene,
 ) -> list[list[list[float]]]:
-    """Project visible merge source-cell pairs to point pairs."""
+    """Project visible merge source-cell pairs to segments."""
 
     entity_bboxes = rendered_scene.render_map["entity_bboxes_px"]
     pairs: list[list[list[float]]] = []

@@ -28,7 +28,7 @@ task policy. If the algorithm is genuinely different, split the task.
 
 ## Annotation Policy
 Node witnesses usually use `point_set` or `bbox_set`. Edge witnesses use
-`point_pair_set` or path-like point/box sequences. Ordered path, traversal, or
+`segment_set` or path-like point/box sequences. Ordered path, traversal, or
 operation tasks must use sequence annotation. Unordered node/edge counts should
 use unordered sets.
 

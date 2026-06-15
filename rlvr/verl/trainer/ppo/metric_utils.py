@@ -34,7 +34,8 @@ except Exception:  # pragma: no cover
         "bbox_set",
         "keyed_bbox_map",
         "keyed_point_map",
-        "point_pair_set",
+        "segment",
+        "segment_set",
         "point_sequence",
         "point_set",
     )

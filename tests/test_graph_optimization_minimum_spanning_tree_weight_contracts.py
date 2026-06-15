@@ -7,7 +7,7 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.graph.optimization.minimum_spanning_tree_weight import (
+from trace.tasks.graph.node_link.mst_weight import (
     GraphOptimizationMinimumSpanningTreeWeightTask,
 )
 from tests.helpers import read_jsonl
@@ -24,7 +24,7 @@ def test_graph_optimization_minimum_spanning_tree_weight_deterministic() -> None
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.answer_gt.type == "integer"
-    assert out_a.annotation_gt.type == "point_pair_set"
+    assert out_a.annotation_gt.type == "segment_set"
 
 
 def test_graph_optimization_minimum_spanning_tree_weight_build_smoke(tmp_path: Path) -> None:

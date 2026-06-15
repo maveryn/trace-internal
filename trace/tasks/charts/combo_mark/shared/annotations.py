@@ -6,7 +6,11 @@ from typing import Iterable, Mapping, Sequence
 
 from trace.core.types import TypedValue
 from trace.tasks.charts.combo_mark.shared.state import ComboScene
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_pair_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import (
+    AnnotationArtifacts,
+    point_annotation_artifacts,
+    segment_set_annotation_artifacts,
+)
 
 
 def combo_annotation_artifacts(
@@ -42,6 +46,19 @@ def combo_annotation_artifacts(
         else:
             raise ValueError(f"unsupported single mark role: {mark_role}")
         return keyed_point_artifacts({"answer_mark": [float(point[0]), float(point[1])]}), labels
+    if str(mode) == "single_mark_point":
+        if len(selected_indices) != 1:
+            raise ValueError("single_mark_point expects exactly one selected category")
+        idx = int(selected_indices[0])
+        if str(mark_role) == "primary":
+            point = scene.primary_points[idx]
+            labels = [f"{scene.primary_name}:{scene.labels[idx]}"]
+        elif str(mark_role) == "line":
+            point = scene.line_points[idx]
+            labels = [f"{scene.line_name}:{scene.labels[idx]}"]
+        else:
+            raise ValueError(f"unsupported single mark role: {mark_role}")
+        return point_annotation_artifacts([float(point[0]), float(point[1])]), labels
     if str(mode) == "mark_pair_set":
         pairs = [
             [
@@ -51,7 +68,7 @@ def combo_annotation_artifacts(
             for idx in selected_indices
         ]
         labels = [f"{scene.primary_name}+{scene.line_name}:{scene.labels[int(idx)]}" for idx in selected_indices]
-        return point_pair_set_annotation_artifacts(pairs), labels
+        return segment_set_annotation_artifacts(pairs), labels
     raise ValueError(f"unsupported combo annotation mode: {mode}")
 
 

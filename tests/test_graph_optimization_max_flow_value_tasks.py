@@ -84,7 +84,7 @@ def test_graph_optimization_max_flow_contract_matches_trace() -> None:
     assert out.scene_id == "flow_network"
     assert out.query_id == "max_flow_value"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "segment_set"
     assert int(out.answer_gt.value) == 5
     assert len(out.annotation_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_capacity_flow_network"
@@ -101,8 +101,8 @@ def test_graph_optimization_max_flow_contract_matches_trace() -> None:
     assert int(nx.maximum_flow_value(graph, "S", "T", capacity="capacity")) == int(min_cut_value) == 5
     assert tuple(tuple(edge) for edge in execution["original_min_cut_edges"]) == tuple(min_cut_edges)
     assert tuple(tuple(edge) for edge in execution["annotation_edges"]) == tuple(min_cut_edges)
-    assert trace["projected_annotation"]["type"] == "point_pair_set"
-    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "segment_set"
+    assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 

@@ -7,7 +7,7 @@ from typing import Any, Mapping, Sequence
 from trace.core.types import TypedValue
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
-    point_pair_set_annotation_artifacts,
+    segment_set_annotation_artifacts,
     point_set_annotation_artifacts,
 )
 
@@ -42,7 +42,7 @@ def annotation_point_pairs_for_bar_pairs(
     rendered: _RenderedBarGrid,
     bar_id_pairs: Sequence[Sequence[str]],
 ) -> list[list[list[float]]]:
-    """Project selected bar-id pairs to top-center point-pair annotations."""
+    """Project selected bar-id pairs to top-center segment annotations."""
 
     trace_by_id = _trace_by_bar_id(rendered)
     pairs: list[list[list[float]]] = []
@@ -116,14 +116,14 @@ def annotation_artifacts_for_selection(
 ) -> tuple[AnnotationArtifacts, dict[str, Any]]:
     """Project one task-owned selection into its declared annotation contract."""
 
-    if str(selection.annotation_kind) == "point_pair_set":
+    if str(selection.annotation_kind) == "segment_set":
         point_pairs = annotation_point_pairs_for_bar_pairs(
             rendered=rendered,
             bar_id_pairs=selection.annotation_bar_id_pairs,
         )
-        annotation = point_pair_set_annotation_artifacts(point_pairs)
+        annotation = segment_set_annotation_artifacts(point_pairs)
         return annotation, {
-            "type": "point_pair_set",
+            "type": "segment_set",
             "annotation_bar_id_pairs": [
                 [str(first), str(second)]
                 for first, second in selection.annotation_bar_id_pairs

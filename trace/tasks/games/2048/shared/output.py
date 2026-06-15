@@ -76,7 +76,7 @@ def build_2048_common_trace_payload(
     """Assemble objective-neutral trace sections after task-specific binding."""
 
     rendered_scene = rendered_context.rendered_scene
-    if str(annotation_artifacts.annotation_type) == "point_pair_set":
+    if str(annotation_artifacts.annotation_type) == "segment_set":
         witness_symbolic = {
             "type": "object_pair_set",
             "pairs": [list(pair) for pair in annotation_cell_id_pairs],

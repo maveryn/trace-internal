@@ -28,7 +28,7 @@
 2. `execution_trace.annotation_item_ids` and `execution_trace.branch_point_item_ids` record the atom ids used for point projection.
 3. `render_map.atom_points_px` exposes atom-center points after final layout.
 4. `execution_trace.atoms` records implicit line-angle atom vertices, degree, and branch-point status.
-5. `execution_trace.bonds` records each drawn bond endpoint pair and order.
+5. `execution_trace.bonds` records each drawn bond segment and order.
 6. `execution_trace.organic_metadata.constraint_report` records valence, branch-point ids, minimum branch angle, ring-size, triple-linearity, and crossing-check metadata.
 
 ## Prompt Contract

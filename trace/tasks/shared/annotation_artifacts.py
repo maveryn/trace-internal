@@ -29,6 +29,27 @@ def _round_bbox(bbox: Sequence[float], *, ndigits: int = 3) -> list[float]:
     return [round(float(value), int(ndigits)) for value in bbox[:4]]
 
 
+def bbox_annotation_artifacts(
+    bbox: Sequence[float],
+    *,
+    ndigits: int = 3,
+) -> AnnotationArtifacts:
+    """Build public annotation artifacts for one bbox witness."""
+
+    value = _round_bbox(bbox, ndigits=int(ndigits))
+    projected_annotation = {
+        "type": "bbox",
+        "bbox": list(value),
+        "pixel_bbox": list(value),
+    }
+    return AnnotationArtifacts(
+        annotation_type="bbox",
+        value=list(value),
+        annotation_gt=TypedValue(type="bbox", value=list(value)),
+        projected_annotation=projected_annotation,
+    )
+
+
 def bbox_set_annotation_artifacts(
     bboxes: Sequence[Sequence[float]],
     *,
@@ -46,6 +67,27 @@ def bbox_set_annotation_artifacts(
         annotation_type="bbox_set",
         value=[list(bbox) for bbox in value],
         annotation_gt=TypedValue(type="bbox_set", value=[list(bbox) for bbox in value]),
+        projected_annotation=projected_annotation,
+    )
+
+
+def point_annotation_artifacts(
+    point: Sequence[float],
+    *,
+    ndigits: int = 3,
+) -> AnnotationArtifacts:
+    """Build public annotation artifacts for one point witness."""
+
+    value = _round_point(point, ndigits=int(ndigits))
+    projected_annotation = {
+        "type": "point",
+        "point": list(value),
+        "pixel_point": list(value),
+    }
+    return AnnotationArtifacts(
+        annotation_type="point",
+        value=list(value),
+        annotation_gt=TypedValue(type="point", value=list(value)),
         projected_annotation=projected_annotation,
     )
 
@@ -71,28 +113,52 @@ def point_set_annotation_artifacts(
     )
 
 
-def point_pair_set_annotation_artifacts(
-    point_pairs: Sequence[Sequence[Sequence[float]]],
+def segment_set_annotation_artifacts(
+    segments: Sequence[Sequence[Sequence[float]]],
     *,
     ndigits: int = 3,
 ) -> AnnotationArtifacts:
-    """Build public annotation artifacts for unordered point-pair witnesses."""
+    """Build public annotation artifacts for unordered segment witnesses."""
 
     value = [
-        [_round_point(point, ndigits=int(ndigits)) for point in pair[:2]]
-        for pair in point_pairs
+        [_round_point(point, ndigits=int(ndigits)) for point in segment[:2]]
+        for segment in segments
     ]
     projected_annotation = {
-        "type": "point_pair_set",
-        "point_pair_set": [[list(point) for point in pair] for pair in value],
-        "pixel_point_pair_set": [[list(point) for point in pair] for pair in value],
+        "type": "segment_set",
+        "segment_set": [[list(point) for point in pair] for pair in value],
+        "pixel_segment_set": [[list(point) for point in pair] for pair in value],
     }
     return AnnotationArtifacts(
-        annotation_type="point_pair_set",
+        annotation_type="segment_set",
         value=[[list(point) for point in pair] for pair in value],
         annotation_gt=TypedValue(
-            type="point_pair_set",
+            type="segment_set",
             value=[[list(point) for point in pair] for pair in value],
+        ),
+        projected_annotation=projected_annotation,
+    )
+
+
+def segment_annotation_artifacts(
+    segment: Sequence[Sequence[float]],
+    *,
+    ndigits: int = 3,
+) -> AnnotationArtifacts:
+    """Build public annotation artifacts for one finite segment witness."""
+
+    value = [_round_point(point, ndigits=int(ndigits)) for point in segment[:2]]
+    projected_annotation = {
+        "type": "segment",
+        "segment": [list(point) for point in value],
+        "pixel_segment": [list(point) for point in value],
+    }
+    return AnnotationArtifacts(
+        annotation_type="segment",
+        value=[list(point) for point in value],
+        annotation_gt=TypedValue(
+            type="segment",
+            value=[list(point) for point in value],
         ),
         projected_annotation=projected_annotation,
     )
@@ -100,7 +166,10 @@ def point_pair_set_annotation_artifacts(
 
 __all__ = [
     "AnnotationArtifacts",
+    "bbox_annotation_artifacts",
     "bbox_set_annotation_artifacts",
-    "point_pair_set_annotation_artifacts",
+    "point_annotation_artifacts",
+    "segment_annotation_artifacts",
+    "segment_set_annotation_artifacts",
     "point_set_annotation_artifacts",
 ]

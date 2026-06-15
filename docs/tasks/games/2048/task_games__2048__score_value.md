@@ -8,7 +8,7 @@
 5. Supported `query_id` values: `single`
 6. Prompt query key: `score_value`
 7. Answer schema: `integer_value`
-8. Annotation schema: `point_pair_set`
+8. Annotation schema: `segment_set`
 9. Program schema: `sum(values(simulate(board, rules=slide_merge_2048, action=move_direction).merge_events, metric=created_tile_value)); scene=2048; scope=score_value`
 
 ## Program Contract

@@ -7,18 +7,22 @@ from trace.core.reward_contracts import (
     resolve_reward_contract,
     validate_reward_contract_payload,
 )
+from trace.core.type_registry import load_type_registry
 
 
 def test_resolve_reward_contract_for_supported_annotation_types() -> None:
     cases = [
+        ("bbox", "bbox_soft_iou_v0"),
         ("bbox_sequence", "bbox_sequence_soft_iou_v0"),
         ("bbox_set", "bbox_set_soft_iou_v0"),
         ("keyed_bbox_map", "keyed_bbox_map_soft_iou_v0"),
         ("keyed_bbox_set_map", "keyed_bbox_set_map_soft_iou_v0"),
+        ("point", "point_soft_distance_v0"),
         ("keyed_point_map", "keyed_point_map_soft_distance_v0"),
         ("keyed_point_set_map", "keyed_point_set_map_soft_distance_v0"),
         ("point_sequence", "point_sequence_soft_distance_v0"),
-        ("point_pair_set", "point_pair_set_soft_distance_v0"),
+        ("segment", "segment_soft_distance_v0"),
+        ("segment_set", "segment_set_soft_distance_v0"),
         ("point_set", "point_set_soft_distance_v0"),
     ]
 
@@ -65,3 +69,11 @@ def test_reward_contract_validation_rejects_mismatched_annotation_contract() -> 
     )
     assert error is not None
     assert "must match the resolved contract" in error
+
+
+def test_scalar_annotation_types_are_registered() -> None:
+    registry = load_type_registry()
+
+    assert registry.validate_annotation_type("point") is True
+    assert registry.validate_annotation_type("bbox") is True
+    assert registry.validate_annotation_type("segment") is True

@@ -70,8 +70,8 @@ def test_trace_reward_supports_all_active_annotation_contracts() -> None:
         (
             {"answer": 2, "annotation": [[[100, 200], [320, 420]], [[500, 300], [620, 300]]]},
             {"type": "integer", "value": 2},
-            {"type": "point_pair_set", "value": [[[320, 420], [100, 200]], [[620, 300], [500, 300]]]},
-            _reward_contract("point_pair_set_soft_distance_v0", "point_pair_set"),
+            {"type": "segment_set", "value": [[[320, 420], [100, 200]], [[620, 300], [500, 300]]]},
+            _reward_contract("segment_set_soft_distance_v0", "segment_set"),
         ),
         (
             {"answer": 2, "annotation": {"A": [100, 200], "B": [320, 420]}},

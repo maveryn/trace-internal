@@ -121,14 +121,14 @@ def test_graph_counting_adjacency_pair_reciprocity_contracts() -> None:
     assert out.scene_id == "adjacency"
     assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "segment_set"
     assert int(out.answer_gt.value) == 3
     assert execution["representation_variant"] == "adjacency_matrix_panel"
     assert execution["target_pair_state"] == "mutual"
     assert len(execution["counted_pairs"]) == int(out.answer_gt.value)
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
     assert len(execution["annotation_cell_keys"]) == 2 * len(out.annotation_gt.value)
-    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
     assert all("||" in key for key in execution["annotation_cell_keys"])
     for key in execution["annotation_cell_keys"]:
         row_label, column_label = str(key).split("||")
@@ -172,7 +172,7 @@ def test_graph_counting_adjacency_pair_reciprocity_allows_zero_answer() -> None:
     )
     assert zero.answer_gt.value == 0
     assert zero.annotation_gt.value == []
-    assert zero.trace_payload["projected_annotation"]["point_pair_set"] == []
+    assert zero.trace_payload["projected_annotation"]["segment_set"] == []
 
 
 def test_graph_optimization_adjacency_matrix_mst_weight_contracts() -> None:

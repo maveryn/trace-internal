@@ -122,7 +122,7 @@ def test_pages_process_flow_handoff_count_contract() -> None:
             assert out.scene_id == "process_flow"
             assert out.query_id == query_id
             assert out.answer_gt.type == "integer"
-            assert out.annotation_gt.type == "point_pair_set"
+            assert out.annotation_gt.type == "segment_set"
             assert int(out.answer_gt.value) == int(query["answer"])
             assert len(out.annotation_gt.value) == int(out.answer_gt.value)
             assert out.annotation_gt.value == expected

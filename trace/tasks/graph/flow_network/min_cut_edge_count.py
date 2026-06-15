@@ -70,7 +70,7 @@ class GraphFlowNetworkMinCutEdgeCountTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(bundle.answer_value)),
-            annotation_gt=TypedValue(type="point_pair_set", value=annotation_point_pairs),
+            annotation_gt=TypedValue(type="segment_set", value=annotation_point_pairs),
             image=bundle.render.image,
             image_id="img0",
             trace_payload=build_flow_network_trace_payload(

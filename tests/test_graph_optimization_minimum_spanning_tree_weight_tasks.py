@@ -4,7 +4,7 @@ import json
 from collections import Counter
 import networkx as nx
 from trace.core.seed import hash64
-from trace.tasks.graph.optimization.minimum_spanning_tree_weight import GraphOptimizationMinimumSpanningTreeWeightTask
+from trace.tasks.graph.node_link.mst_weight import GraphOptimizationMinimumSpanningTreeWeightTask
 from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.graph.shared.graph_scene import _segment_intersects_bbox
 from trace.tasks.shared.named_colors import named_color
@@ -34,7 +34,7 @@ def test_graph_optimization_minimum_spanning_tree_weight_contract_matches_trace(
     node_entities = [entity for entity in scene_entities if entity['entity_kind'] == 'graph_node']
     edge_entities = [entity for entity in scene_entities if entity['entity_kind'] == 'graph_edge']
     assert out.answer_gt.type == 'integer'
-    assert out.annotation_gt.type == 'point_pair_set'
+    assert out.annotation_gt.type == 'segment_set'
     assert trace['scene_ir']['scene_kind'] == 'graph_minimum_spanning_tree_weight'
     assert execution['question_format'] == 'sum_unique_mst_weights'
     assert execution['graph_directionality'] == 'undirected'
@@ -54,8 +54,8 @@ def test_graph_optimization_minimum_spanning_tree_weight_contract_matches_trace(
     assert int(out.answer_gt.value) == int(sum((int(data['weight']) for _, _, data in mst_graph.edges(data=True))))
     assert int(out.answer_gt.value) == int(execution['minimum_spanning_tree_total_weight'])
     assert 'edge_set' not in trace['projected_annotation']
-    assert trace['projected_annotation']['type'] == 'point_pair_set'
-    assert trace['projected_annotation']['point_pair_set'] == annotation_point_pairs
+    assert trace['projected_annotation']['type'] == 'segment_set'
+    assert trace['projected_annotation']['segment_set'] == annotation_point_pairs
     assert sum((1 for edge in edge_entities if bool(edge['is_in_minimum_spanning_tree']))) == len(annotation_point_pairs)
     width, height = trace['render_spec']['canvas_size']
     for pair in annotation_point_pairs:

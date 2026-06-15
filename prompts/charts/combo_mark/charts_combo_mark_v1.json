@@ -233,31 +233,31 @@
     },
     "query:primary_above_and_line_above": {
       "answer_hint": "set \"answer\" to the number of matching categories as an integer",
-      "annotation_hint": "set \"annotation\" to a list of point pairs, one pair for each matching category; each pair contains a [x,y] point on the primary-series mark and a [x,y] point on the overlaid line mark for the same category",
+      "annotation_hint": "set \"annotation\" to a list of segments, one pair for each matching category; each pair contains a [x,y] point on the primary-series mark and a [x,y] point on the overlaid line mark for the same category",
       "json_example": "{\"annotation\":[[[180,260],[180,190]],[[360,220],[360,170]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:primary_above_and_line_below": {
       "answer_hint": "set \"answer\" to the number of matching categories as an integer",
-      "annotation_hint": "set \"annotation\" to a list of point pairs, one pair for each matching category; each pair contains a [x,y] point on the primary-series mark and a [x,y] point on the overlaid line mark for the same category",
+      "annotation_hint": "set \"annotation\" to a list of segments, one pair for each matching category; each pair contains a [x,y] point on the primary-series mark and a [x,y] point on the overlaid line mark for the same category",
       "json_example": "{\"annotation\":[[[180,260],[180,190]],[[360,220],[360,170]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:primary_below_and_line_above": {
       "answer_hint": "set \"answer\" to the number of matching categories as an integer",
-      "annotation_hint": "set \"annotation\" to a list of point pairs, one pair for each matching category; each pair contains a [x,y] point on the primary-series mark and a [x,y] point on the overlaid line mark for the same category",
+      "annotation_hint": "set \"annotation\" to a list of segments, one pair for each matching category; each pair contains a [x,y] point on the primary-series mark and a [x,y] point on the overlaid line mark for the same category",
       "json_example": "{\"annotation\":[[[180,260],[180,190]],[[360,220],[360,170]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:primary_between_and_line_above": {
       "answer_hint": "set \"answer\" to the number of matching categories as an integer",
-      "annotation_hint": "set \"annotation\" to a list of point pairs, one pair for each matching category; each pair contains a [x,y] point on the primary-series mark and a [x,y] point on the overlaid line mark for the same category",
+      "annotation_hint": "set \"annotation\" to a list of segments, one pair for each matching category; each pair contains a [x,y] point on the primary-series mark and a [x,y] point on the overlaid line mark for the same category",
       "json_example": "{\"annotation\":[[[180,260],[180,190]],[[360,220],[360,170]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:line_between_and_primary_above": {
       "answer_hint": "set \"answer\" to the number of matching categories as an integer",
-      "annotation_hint": "set \"annotation\" to a list of point pairs, one pair for each matching category; each pair contains a [x,y] point on the primary-series mark and a [x,y] point on the overlaid line mark for the same category",
+      "annotation_hint": "set \"annotation\" to a list of segments, one pair for each matching category; each pair contains a [x,y] point on the primary-series mark and a [x,y] point on the overlaid line mark for the same category",
       "json_example": "{\"annotation\":[[[180,260],[180,190]],[[360,220],[360,170]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
@@ -287,26 +287,26 @@
     },
     "query:primary_first_above_threshold_label": {
       "answer_hint": "set \"answer\" to the first matching category label as a string",
-      "annotation_hint": "set \"annotation\" to an object with key \"answer_mark\"; its value must be a [x,y] pixel point on the target-series mark at the answer category",
-      "json_example": "{\"annotation\":{\"answer_mark\":[400,240]},\"answer\":\"Harbor\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the target-series mark at the answer category",
+      "json_example": "{\"annotation\":[400,240],\"answer\":\"Harbor\"}",
       "json_example_answer_only": "{\"answer\":\"Harbor\"}"
     },
     "query:primary_first_below_threshold_label": {
       "answer_hint": "set \"answer\" to the first matching category label as a string",
-      "annotation_hint": "set \"annotation\" to an object with key \"answer_mark\"; its value must be a [x,y] pixel point on the target-series mark at the answer category",
-      "json_example": "{\"annotation\":{\"answer_mark\":[400,240]},\"answer\":\"Harbor\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the target-series mark at the answer category",
+      "json_example": "{\"annotation\":[400,240],\"answer\":\"Harbor\"}",
       "json_example_answer_only": "{\"answer\":\"Harbor\"}"
     },
     "query:line_first_above_threshold_label": {
       "answer_hint": "set \"answer\" to the first matching category label as a string",
-      "annotation_hint": "set \"annotation\" to an object with key \"answer_mark\"; its value must be a [x,y] pixel point on the target-series mark at the answer category",
-      "json_example": "{\"annotation\":{\"answer_mark\":[400,240]},\"answer\":\"Harbor\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the target-series mark at the answer category",
+      "json_example": "{\"annotation\":[400,240],\"answer\":\"Harbor\"}",
       "json_example_answer_only": "{\"answer\":\"Harbor\"}"
     },
     "query:line_first_below_threshold_label": {
       "answer_hint": "set \"answer\" to the first matching category label as a string",
-      "annotation_hint": "set \"annotation\" to an object with key \"answer_mark\"; its value must be a [x,y] pixel point on the target-series mark at the answer category",
-      "json_example": "{\"annotation\":{\"answer_mark\":[400,240]},\"answer\":\"Harbor\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the target-series mark at the answer category",
+      "json_example": "{\"annotation\":[400,240],\"answer\":\"Harbor\"}",
       "json_example_answer_only": "{\"answer\":\"Harbor\"}"
     }
   },

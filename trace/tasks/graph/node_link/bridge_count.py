@@ -15,7 +15,7 @@ def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
 
 def _build_objective_plan() -> NodeLinkObjectivePlan:
     """Bind query ids, sampler, answer, and annotation for this objective."""
-    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphCountingBridgeCountTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='integer', answer_field='target_count', annotation_type='point_pair_set', annotation_kind='edge_point_pair_set', annotation_field='target_edges', prompt_query_key='bridge_count', scene_kind='graph_bridge_counting', question_format='count_bridge_edges', value_ranges={'target_count': (1, 4)}, annotation_example=[[[180, 220], [310, 180]], [[310, 180], [430, 260]]])
+    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphCountingBridgeCountTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='integer', answer_field='target_count', annotation_type='segment_set', annotation_kind='edge_segment_set', annotation_field='target_edges', prompt_query_key='bridge_count', scene_kind='graph_bridge_counting', question_format='count_bridge_edges', value_ranges={'target_count': (1, 4)}, annotation_example=[[[180, 220], [310, 180]], [[310, 180], [430, 260]]])
 
 @register_task
 class GraphCountingBridgeCountTask:

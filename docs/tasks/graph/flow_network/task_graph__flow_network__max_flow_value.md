@@ -11,7 +11,7 @@
 1. Branch metadata: `query_id`
 2. `query_id`: `max_flow_value`
 3. `answer_gt.type`: `integer`
-4. `annotation_gt.type`: `point_pair_set`
+4. `annotation_gt.type`: `segment_set`
 5. Scene contract:
    - one single-panel directed capacity graph,
    - node `S` is the source and node `T` is the sink,
@@ -29,15 +29,15 @@
 4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":7}`
 6. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":7}`
-7. Prompt-facing annotation is an array of directed edge point-pairs for the unique minimum cut; each pair contains the two endpoint node centers of one directed edge.
+7. Prompt-facing annotation is an array of directed edge segments for the unique minimum cut; each pair contains the two endpoint node centers of one directed edge.
 
 ## 4) Annotation + Trace Contract
-1. Prompt-facing annotation is a `point_pair_set` over directed minimum-cut edges.
+1. Prompt-facing annotation is a `segment_set` over directed minimum-cut edges.
 2. `answer_gt.value` equals `execution_trace.answer`.
 3. `execution_trace.capacity_by_edge` records every visible capacity.
 4. `execution_trace.original_max_flow_value` and `original_min_cut_edges` record the unedited network solution.
 5. `scene_ir.entities` stores node geometry, edge geometry, capacity-label bboxes, source/sink roles, and cut-edge flags.
-6. `projected_annotation` includes the public `point_pair_set`.
+6. `projected_annotation` includes the public `segment_set`.
 
 ## 5) Visual Policy
 1. Rendering uses the shared graph light-panel style and role-appropriate shared font pool from `configs/domains/graph/base.yaml`.

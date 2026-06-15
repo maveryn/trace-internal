@@ -14,7 +14,7 @@
 2. `query_id`: `single`
 3. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 3. `answer_gt.type`: `integer`
-4. `annotation_gt.type`: `point_pair_set`
+4. `annotation_gt.type`: `segment_set`
 5. Scene contract:
    - one single-panel labeled undirected node-link graph per image,
    - simple unweighted graph only,
@@ -57,11 +57,11 @@
 5. Modes: `answer_only`, `answer_and_annotation`
 6. Answer-only JSON shape: `{"answer":2}`
 7. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}`
-8. Prompt-facing annotation uses pixel-space endpoint-node-center point pairs because each witness is a graph edge rather than one node.
+8. Prompt-facing annotation uses pixel-space endpoint-node-center segments because each witness is a graph edge rather than one node.
 
 ## 4) Annotation + trace contract
-1. Prompt-facing annotation is the `point_pair_set` of endpoint-node-center pixel points for all bridge edges.
-2. Each bridge witness is represented as a two-point endpoint pair; the pair is unordered semantically for reward matching, and the implementation keeps the corresponding label pair in `witness_symbolic`.
+1. Prompt-facing annotation is the `segment_set` of endpoint-node-center pixel points for all bridge edges.
+2. Each bridge witness is represented as an undirected segment; endpoint order is unordered semantically for reward matching, and the implementation keeps the corresponding label pair in `witness_symbolic`.
 3. The list of bridge-edge pairs is unordered semantically as well; the implementation only canonicalizes the symbolic outer order internally for deterministic serialization.
 4. `answer_gt.value == len(annotation_gt.value)` by construction.
 5. `scene_ir.entities` stores:
@@ -73,8 +73,8 @@
    - the full edge-label list,
    - the matching bridge-edge label pairs.
 7. `projected_annotation` includes:
-   - `point_pair_set`
-   - `point_pair_map`
+   - `segment_set`
+   - `segment_map`
 8. `execution_trace` records:
    - `query_id` (the concrete public query branch)
    - `scene_variant`

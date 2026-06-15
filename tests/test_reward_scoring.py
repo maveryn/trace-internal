@@ -30,6 +30,111 @@ def test_core_reward_scoring_uses_trace_v0_contract_ids() -> None:
     assert score["annotation_reward"] == 1.0
 
 
+def test_core_reward_scoring_scores_scalar_point_exactly() -> None:
+    score = score_trace_response(
+        response='{"answer":2,"annotation":[10,10]}',
+        answer_gt={"type": "integer", "value": 2},
+        annotation_gt={"type": "point", "value": [10, 10]},
+        reward_contract=_reward_contract("point_soft_distance_v0", "point"),
+        point_half_life_px=32.0,
+    )
+
+    assert score["overall"] == 1.0
+    assert score["annotation_reward"] == 1.0
+    assert score["annotation_parse_ok"] == 1.0
+    assert score["annotation_type_point"] == 1.0
+
+
+def test_core_reward_scoring_scores_scalar_point_soft_distance() -> None:
+    score = score_trace_response(
+        response='{"answer":2,"annotation":[42,10]}',
+        answer_gt={"type": "integer", "value": 2},
+        annotation_gt={"type": "point", "value": [10, 10]},
+        reward_contract=_reward_contract("point_soft_distance_v0", "point"),
+        point_half_life_px=32.0,
+    )
+
+    assert np.isclose(score["annotation_reward"], 0.5)
+    assert score["annotation_parse_ok"] == 1.0
+
+
+def test_core_reward_scoring_rejects_point_set_shape_for_scalar_point() -> None:
+    score = score_trace_response(
+        response='{"answer":2,"annotation":[[10,10]]}',
+        answer_gt={"type": "integer", "value": 2},
+        annotation_gt={"type": "point", "value": [10, 10]},
+        reward_contract=_reward_contract("point_soft_distance_v0", "point"),
+    )
+
+    assert score["annotation_reward"] == 0.0
+    assert score["annotation_parse_ok"] == 0.0
+
+
+def test_core_reward_scoring_scores_scalar_segment_exactly_with_reversed_endpoints() -> None:
+    score = score_trace_response(
+        response='{"answer":2,"annotation":[[30,40],[10,20]]}',
+        answer_gt={"type": "integer", "value": 2},
+        annotation_gt={"type": "segment", "value": [[10, 20], [30, 40]]},
+        reward_contract=_reward_contract("segment_soft_distance_v0", "segment"),
+        point_half_life_px=32.0,
+    )
+
+    assert score["overall"] == 1.0
+    assert score["annotation_reward"] == 1.0
+    assert score["annotation_parse_ok"] == 1.0
+    assert score["annotation_type_segment"] == 1.0
+
+
+def test_core_reward_scoring_rejects_segment_set_shape_for_scalar_segment() -> None:
+    score = score_trace_response(
+        response='{"answer":2,"annotation":[[[10,20],[30,40]]]}',
+        answer_gt={"type": "integer", "value": 2},
+        annotation_gt={"type": "segment", "value": [[10, 20], [30, 40]]},
+        reward_contract=_reward_contract("segment_soft_distance_v0", "segment"),
+    )
+
+    assert score["annotation_reward"] == 0.0
+    assert score["annotation_parse_ok"] == 0.0
+
+
+def test_core_reward_scoring_scores_scalar_bbox_exactly() -> None:
+    score = score_trace_response(
+        response='{"answer":2,"annotation":[10,10,20,20]}',
+        answer_gt={"type": "integer", "value": 2},
+        annotation_gt={"type": "bbox", "value": [10, 10, 20, 20]},
+        reward_contract=_reward_contract("bbox_soft_iou_v0", "bbox"),
+    )
+
+    assert score["overall"] == 1.0
+    assert score["annotation_reward"] == 1.0
+    assert score["annotation_parse_ok"] == 1.0
+    assert score["annotation_type_bbox"] == 1.0
+
+
+def test_core_reward_scoring_scores_scalar_bbox_iou() -> None:
+    score = score_trace_response(
+        response='{"answer":2,"annotation":[5,0,15,10]}',
+        answer_gt={"type": "integer", "value": 2},
+        annotation_gt={"type": "bbox", "value": [0, 0, 10, 10]},
+        reward_contract=_reward_contract("bbox_soft_iou_v0", "bbox"),
+    )
+
+    assert np.isclose(score["annotation_reward"], 1.0 / 3.0)
+    assert score["annotation_parse_ok"] == 1.0
+
+
+def test_core_reward_scoring_rejects_bbox_set_shape_for_scalar_bbox() -> None:
+    score = score_trace_response(
+        response='{"answer":2,"annotation":[[10,10,20,20]]}',
+        answer_gt={"type": "integer", "value": 2},
+        annotation_gt={"type": "bbox", "value": [10, 10, 20, 20]},
+        reward_contract=_reward_contract("bbox_soft_iou_v0", "bbox"),
+    )
+
+    assert score["annotation_reward"] == 0.0
+    assert score["annotation_parse_ok"] == 0.0
+
+
 def test_core_reward_scoring_scores_keyed_point_map_by_shared_keys() -> None:
     response = json.dumps({"answer": 2, "annotation": {"A": [132, 200], "extra": [0, 0]}})
     score = score_trace_response(

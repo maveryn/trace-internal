@@ -15,7 +15,9 @@ from trace.tasks.charts.dumbbell.shared.state import DumbbellRow
 def rank_phrase(rank_order: str, rank_n: int) -> str:
     """Return a human-readable rank phrase."""
 
-    ordinal = {2: "second", 3: "third", 4: "fourth"}.get(int(rank_n), f"{int(rank_n)}th")
+    if int(rank_n) == 1:
+        return str(rank_order)
+    ordinal = {2: "second"}.get(int(rank_n), f"{int(rank_n)}th")
     return f"{ordinal} {str(rank_order)}"
 
 
@@ -71,7 +73,7 @@ def sample_rank_n(params: Mapping[str, Any], *, instance_seed: int, namespace: s
         params,
         instance_seed=int(instance_seed),
         namespace=str(namespace),
-        values=(2, 3, 4),
+        values=(1, 2),
     )
 
 

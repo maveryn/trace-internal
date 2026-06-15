@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from trace.tasks.shared.annotation_artifacts import (
     bbox_set_annotation_artifacts,
-    point_pair_set_annotation_artifacts,
+    segment_annotation_artifacts,
+    segment_set_annotation_artifacts,
     point_set_annotation_artifacts,
 )
 
@@ -47,29 +48,43 @@ def test_point_set_annotation_artifacts_round_and_project() -> None:
     }
 
 
-def test_point_pair_set_annotation_artifacts_round_and_project() -> None:
-    artifacts = point_pair_set_annotation_artifacts(
+def test_segment_set_annotation_artifacts_round_and_project() -> None:
+    artifacts = segment_set_annotation_artifacts(
         [
             [[1.1114, 2.2225], [3.3336, 4.4447]],
             ((5, 6), (7, 8)),
         ]
     )
 
-    assert artifacts.annotation_type == "point_pair_set"
+    assert artifacts.annotation_type == "segment_set"
     assert artifacts.value == [
         [[1.111, 2.223], [3.334, 4.445]],
         [[5.0, 6.0], [7.0, 8.0]],
     ]
-    assert artifacts.annotation_gt.type == "point_pair_set"
+    assert artifacts.annotation_gt.type == "segment_set"
     assert artifacts.annotation_gt.value == artifacts.value
     assert artifacts.projected_annotation == {
-        "type": "point_pair_set",
-        "point_pair_set": artifacts.value,
-        "pixel_point_pair_set": artifacts.value,
+        "type": "segment_set",
+        "segment_set": artifacts.value,
+        "pixel_segment_set": artifacts.value,
+    }
+
+
+def test_segment_annotation_artifacts_round_and_project() -> None:
+    artifacts = segment_annotation_artifacts([[1.1114, 2.2225], [3.3336, 4.4447]])
+
+    assert artifacts.annotation_type == "segment"
+    assert artifacts.value == [[1.111, 2.223], [3.334, 4.445]]
+    assert artifacts.annotation_gt.type == "segment"
+    assert artifacts.annotation_gt.value == artifacts.value
+    assert artifacts.projected_annotation == {
+        "type": "segment",
+        "segment": artifacts.value,
+        "pixel_segment": artifacts.value,
     }
 
 
 def test_annotation_artifacts_support_empty_sets() -> None:
     assert bbox_set_annotation_artifacts([]).value == []
     assert point_set_annotation_artifacts([]).value == []
-    assert point_pair_set_annotation_artifacts([]).value == []
+    assert segment_set_annotation_artifacts([]).value == []

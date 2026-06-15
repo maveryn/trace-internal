@@ -4,7 +4,7 @@ import json
 from collections import Counter
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.counting.named_node_degree_value import GraphCountingNamedNodeDegreeValueTask
+from trace.tasks.graph.node_link.named_node_degree_value import GraphCountingNamedNodeDegreeValueTask
 
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = 'Example JSON:\n'
@@ -25,7 +25,7 @@ def test_graph_counting_named_node_degree_value_undirected_contract_matches_trac
     assert out.query_id == 'undirected_named_node_degree_value'
     assert out.answer_gt.type == 'integer'
     assert int(out.answer_gt.value) == 2
-    assert out.annotation_gt.type == 'point_pair_set'
+    assert out.annotation_gt.type == 'segment_set'
     assert len(out.annotation_gt.value) == 2
     assert trace['scene_ir']['scene_kind'] == 'graph_named_node_degree_value'
     assert execution['query_id'] == 'undirected_named_node_degree_value'
@@ -43,8 +43,8 @@ def test_graph_counting_named_node_degree_value_undirected_contract_matches_trac
     assert queried_degrees[query_label] == int(out.answer_gt.value)
     assert trace['witness_symbolic']['query_label'] == query_label
     assert trace['witness_symbolic']['edges'] == counted_edges
-    assert trace['projected_annotation']['type'] == 'point_pair_set'
-    assert trace['projected_annotation']['point_pair_set'] == out.annotation_gt.value
+    assert trace['projected_annotation']['type'] == 'segment_set'
+    assert trace['projected_annotation']['segment_set'] == out.annotation_gt.value
     for left, right in counted_edges:
         assert query_label in {str(left), str(right)}
         other = str(right) if str(left) == query_label else str(left)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts, point_pair_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts, segment_annotation_artifacts
 
 from .rendering import RenderedDominoTaskContext
 
@@ -23,15 +23,15 @@ def domino_bbox_set_annotation(
     return bbox_set_annotation_artifacts(bboxes)
 
 
-def domino_join_point_pair_annotation(
+def domino_join_segment_annotation(
     rendered_context: RenderedDominoTaskContext,
     join_label: str,
 ) -> AnnotationArtifacts:
-    """Project one labeled domino join into a point-pair annotation."""
+    """Project one labeled domino join into a scalar segment annotation."""
 
     render_map = rendered_context.rendered_scene.render_map
     join_points = render_map["chain_join_endpoint_points_px"][str(join_label)]
-    return point_pair_set_annotation_artifacts([join_points])
+    return segment_annotation_artifacts(join_points)
 
 
-__all__ = ["domino_bbox_set_annotation", "domino_join_point_pair_annotation"]
+__all__ = ["domino_bbox_set_annotation", "domino_join_segment_annotation"]

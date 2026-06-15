@@ -291,6 +291,8 @@ def _validate_annotation_value(
 ) -> list[str]:
     kind = str(annotation_type)
     errors: list[str] = []
+    if kind == "bbox":
+        return _validate_bbox(value, image_size=image_size, field=field)
     if kind in {"bbox_sequence", "bbox_set"}:
         if not isinstance(value, list):
             return [f"{field} must be a list of bounding boxes"]
@@ -319,6 +321,8 @@ def _validate_annotation_value(
             for index, bbox in enumerate(bboxes):
                 errors.extend(_validate_bbox(bbox, image_size=image_size, field=f"{field}.{key}[{index}]"))
         return errors
+    if kind == "point":
+        return _validate_point(value, image_size=image_size, field=field)
     if kind in {"point_sequence", "point_set"}:
         if not isinstance(value, list):
             return [f"{field} must be a list of points"]
@@ -347,19 +351,31 @@ def _validate_annotation_value(
             for index, point in enumerate(points):
                 errors.extend(_validate_point(point, image_size=image_size, field=f"{field}.{key}[{index}]"))
         return errors
-    if kind == "point_pair_set":
+    if kind == "segment":
+        if not isinstance(value, (list, tuple)) or len(value) != 2:
+            return [f"{field} must be one two-endpoint segment"]
+        for endpoint_index, point in enumerate(value):
+            errors.extend(
+                _validate_point(
+                    point,
+                    image_size=image_size,
+                    field=f"{field}[{endpoint_index}]",
+                )
+            )
+        return errors
+    if kind == "segment_set":
         if not isinstance(value, list):
-            return [f"{field} must be a list of point pairs"]
-        for pair_index, pair in enumerate(value):
-            if not isinstance(pair, (list, tuple)) or len(pair) != 2:
-                errors.append(f"{field}[{pair_index}] is not a two-point pair")
+            return [f"{field} must be a list of segments"]
+        for segment_index, segment in enumerate(value):
+            if not isinstance(segment, (list, tuple)) or len(segment) != 2:
+                errors.append(f"{field}[{segment_index}] is not a two-endpoint segment")
                 continue
-            for endpoint_index, point in enumerate(pair):
+            for endpoint_index, point in enumerate(segment):
                 errors.extend(
                     _validate_point(
                         point,
                         image_size=image_size,
-                        field=f"{field}[{pair_index}][{endpoint_index}]",
+                        field=f"{field}[{segment_index}][{endpoint_index}]",
                     )
                 )
         return errors
@@ -371,7 +387,11 @@ def _flatten_example_points(annotation_type: str, annotation_value: Any) -> list
 
     kind = str(annotation_type)
     points: list[tuple[float, float]] = []
-    if kind in {"point_sequence", "point_set"} and isinstance(annotation_value, list):
+    if kind == "point":
+        parsed = _parse_point(annotation_value)
+        if parsed is not None:
+            points.append(parsed)
+    elif kind in {"point_sequence", "point_set"} and isinstance(annotation_value, list):
         for item in annotation_value:
             parsed = _parse_point(item)
             if parsed is not None:
@@ -388,10 +408,15 @@ def _flatten_example_points(annotation_type: str, annotation_value: Any) -> list
                     parsed = _parse_point(point)
                     if parsed is not None:
                         points.append(parsed)
-    elif kind == "point_pair_set" and isinstance(annotation_value, list):
-        for pair in annotation_value:
-            if isinstance(pair, (list, tuple)) and len(pair) == 2:
-                for endpoint in pair:
+    elif kind == "segment" and isinstance(annotation_value, (list, tuple)) and len(annotation_value) == 2:
+        for endpoint in annotation_value:
+            parsed = _parse_point(endpoint)
+            if parsed is not None:
+                points.append(parsed)
+    elif kind == "segment_set" and isinstance(annotation_value, list):
+        for segment in annotation_value:
+            if isinstance(segment, (list, tuple)) and len(segment) == 2:
+                for endpoint in segment:
                     parsed = _parse_point(endpoint)
                     if parsed is not None:
                         points.append(parsed)
@@ -481,7 +506,7 @@ def _audit_annotation_prompt(prompt: str, *, annotation_type: str, mode: str) ->
             )
         )
 
-    if str(annotation_type) in {"bbox_sequence", "bbox_set", "keyed_bbox_map", "keyed_bbox_set_map"} and _BBOX_NOTATION_RE.search(prompt_text) is None:
+    if str(annotation_type) in {"bbox", "bbox_sequence", "bbox_set", "keyed_bbox_map", "keyed_bbox_set_map"} and _BBOX_NOTATION_RE.search(prompt_text) is None:
         issues.append(
             _issue(
                 category="annotation_prompt",
@@ -491,7 +516,7 @@ def _audit_annotation_prompt(prompt: str, *, annotation_type: str, mode: str) ->
                 message=f"{annotation_type} annotation prompt should explicitly use [x0, y0, x1, y1] pixel boxes.",
             )
         )
-    if str(annotation_type) in {"point_sequence", "point_set", "point_pair_set", "keyed_point_map", "keyed_point_set_map"}:
+    if str(annotation_type) in {"point", "point_sequence", "point_set", "segment", "segment_set", "keyed_point_map", "keyed_point_set_map"}:
         if _POINT_NOTATION_RE.search(prompt_text) is None:
             issues.append(
                 _issue(
@@ -673,6 +698,10 @@ def _audit_annotation_payload(output: Any) -> tuple[dict[str, Any], list[dict[st
         )
 
     projected_value = projected.get(annotation_type) if isinstance(projected, Mapping) else None
+    if projected_value is None and annotation_type == "point" and isinstance(projected, Mapping):
+        projected_value = projected.get("pixel_point")
+    if projected_value is None and annotation_type == "bbox" and isinstance(projected, Mapping):
+        projected_value = projected.get("pixel_bbox")
     if projected_value is None and annotation_type == "point_set" and isinstance(projected, Mapping):
         projected_value = projected.get("pixel_point_set")
     if projected_value is None and annotation_type == "keyed_point_map" and isinstance(projected, Mapping):

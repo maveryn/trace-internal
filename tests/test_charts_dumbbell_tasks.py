@@ -28,11 +28,17 @@ TASK_QUERY_IDS = {
 }
 
 
-def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
-    assert len(bbox) == 4
-    x0, y0, x1, y1 = [float(value) for value in bbox]
-    assert 0 <= x0 < x1 <= width
-    assert 0 <= y0 < y1 <= height
+def _bbox_center(bbox: list[float]) -> list[float]:
+    return [
+        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
+        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
+    ]
+
+
+def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) -> None:
+    assert len(point) == 2
+    assert 0 <= float(point[0]) <= width
+    assert 0 <= float(point[1]) <= height
 
 
 def _expected_answer(execution: dict) -> str | int:
@@ -75,7 +81,8 @@ def test_chart_dumbbell_query_branches_match_contract(task_id: str, query_ids: t
         assert out.query_id == query_id
         assert str(execution["scene_variant"]) == "horizontal_dumbbell"
         assert str(execution["question_format"]).startswith("dumbbell_")
-        assert out.annotation_gt.type == "bbox_set"
+        expected_annotation_type = "segment" if task_id.endswith("__gap_rank_row_label") else "segment_set"
+        assert out.annotation_gt.type == expected_annotation_type
         assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert 10 <= int(execution["row_count"]) <= 16
@@ -88,19 +95,32 @@ def test_chart_dumbbell_query_branches_match_contract(task_id: str, query_ids: t
             assert out.answer_gt.type == "string"
             assert str(out.answer_gt.value) in set(execution["row_labels"])
             assert len(execution["annotation_row_ids"]) == 1
+            assert int(execution["query_params"]["rank_n"]) in {1, 2}
         else:
             assert out.answer_gt.type == "integer"
             assert 2 <= int(out.answer_gt.value) <= 10
             assert len(execution["annotation_row_ids"]) == int(out.answer_gt.value)
-        expected_bboxes = [
-            trace["render_map"]["row_pair_bboxes_px"][str(row_id)]
+        expected_point_pairs = [
+            [
+                _bbox_center(trace["render_map"]["point_bboxes_px"][f"{row_id}:series_a"]),
+                _bbox_center(trace["render_map"]["point_bboxes_px"][f"{row_id}:series_b"]),
+            ]
             for row_id in execution["annotation_row_ids"]
         ]
-        assert out.annotation_gt.value == expected_bboxes
-        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        expected_annotation = expected_point_pairs[0] if expected_annotation_type == "segment" else expected_point_pairs
+        assert out.annotation_gt.value == expected_annotation
+        if expected_annotation_type == "segment":
+            assert trace["projected_annotation"]["segment"] == out.annotation_gt.value
+            assert trace["projected_annotation"]["pixel_segment"] == out.annotation_gt.value
+        else:
+            assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
+            assert trace["projected_annotation"]["pixel_segment_set"] == out.annotation_gt.value
         assert trace["projected_annotation"]["row_ids"] == execution["annotation_row_ids"]
-        for bbox in out.annotation_gt.value:
-            _assert_bbox_inside_canvas([float(value) for value in bbox], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
+        annotation_segments = [out.annotation_gt.value] if expected_annotation_type == "segment" else out.annotation_gt.value
+        for segment in annotation_segments:
+            assert len(segment) == 2
+            for point in segment:
+                _assert_point_inside_canvas([float(value) for value in point], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
 
 
 def test_chart_dumbbell_prompt_examples_match_contract() -> None:
@@ -159,7 +179,7 @@ def test_chart_dumbbell_balanced_sampling_covers_axes() -> None:
 
 def test_chart_dumbbell_is_deterministic() -> None:
     task = create_task("task_charts__dumbbell__gap_rank_row_label")
-    params = {"query_id": "largest_gap_rank_row_label", "rank_n": 3}
+    params = {"query_id": "largest_gap_rank_row_label", "rank_n": 2}
     out_a = task.generate(92300, params=params, max_attempts=80)
     out_b = task.generate(92300, params=params, max_attempts=80)
     assert out_a.prompt == out_b.prompt

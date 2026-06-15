@@ -9,13 +9,16 @@ from .types import TypedValue
 
 PUBLIC_IMAGE_ANNOTATION_TYPES = frozenset(
     {
+        "bbox",
         "bbox_sequence",
         "bbox_set",
         "keyed_bbox_map",
         "keyed_bbox_set_map",
         "keyed_point_map",
         "keyed_point_set_map",
-        "point_pair_set",
+        "point",
+        "segment",
+        "segment_set",
         "point_sequence",
         "point_set",
     }
@@ -92,6 +95,13 @@ def public_projected_annotation(annotation: TypedValue) -> dict[str, Any]:
 
     annotation_type = str(annotation.type)
     value = _as_list(annotation.value)
+    if annotation_type == "bbox":
+        bbox = list(annotation.value) if isinstance(annotation.value, (list, tuple)) else annotation.value
+        return {
+            "type": "bbox",
+            "bbox": bbox,
+            "pixel_bbox": bbox,
+        }
     if annotation_type == "bbox_set":
         return {
             "type": "bbox_set",
@@ -117,6 +127,20 @@ def public_projected_annotation(annotation: TypedValue) -> dict[str, Any]:
             "type": "keyed_bbox_set_map",
             "keyed_bbox_set_map": keyed_bbox_sets,
             "pixel_keyed_bbox_set_map": keyed_bbox_sets,
+        }
+    if annotation_type == "point":
+        point = list(annotation.value) if isinstance(annotation.value, (list, tuple)) else annotation.value
+        return {
+            "type": "point",
+            "point": point,
+            "pixel_point": point,
+        }
+    if annotation_type == "segment":
+        segment = [list(item) for item in value]
+        return {
+            "type": "segment",
+            "segment": segment,
+            "pixel_segment": segment,
         }
     if annotation_type == "point_set":
         points = [list(item) for item in value]
@@ -149,11 +173,12 @@ def public_projected_annotation(annotation: TypedValue) -> dict[str, Any]:
             "keyed_point_set_map": keyed_point_sets,
             "pixel_keyed_point_set_map": keyed_point_sets,
         }
-    if annotation_type == "point_pair_set":
+    if annotation_type == "segment_set":
         pairs = [[list(endpoint) for endpoint in item] for item in value]
         return {
-            "type": "point_pair_set",
-            "point_pair_set": pairs,
+            "type": "segment_set",
+            "segment_set": pairs,
+            "pixel_segment_set": pairs,
         }
     return {
         "type": annotation_type,
@@ -164,9 +189,11 @@ def public_projected_annotation(annotation: TypedValue) -> dict[str, Any]:
 def public_witness_summary(annotation: TypedValue) -> dict[str, Any]:
     """Return a non-symbolic witness summary for persisted traces."""
 
+    annotation_type = str(annotation.type)
+    count = 1 if annotation_type in {"bbox", "point", "segment"} and annotation.value is not None else _annotation_count(annotation.value)
     return {
-        "type": str(annotation.type),
-        "count": _annotation_count(annotation.value),
+        "type": annotation_type,
+        "count": count,
     }
 
 

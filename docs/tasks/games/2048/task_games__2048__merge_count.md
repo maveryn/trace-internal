@@ -8,7 +8,7 @@
 5. Supported `query_id` values: `single`
 6. Prompt query key: `merge_count`
 7. Answer schema: `integer_count`
-8. Annotation schema: `point_pair_set`
+8. Annotation schema: `segment_set`
 9. Program schema: `count(simulate(board, rules=slide_merge_2048, action=move_direction).merge_events); scene=2048; scope=merge_count`
 
 ## Program Contract

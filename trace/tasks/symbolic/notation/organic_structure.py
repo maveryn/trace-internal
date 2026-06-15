@@ -622,7 +622,7 @@ class SymbolicBondOrderCountTask:
             for item_id in dataset.annotation_item_ids
         ]
         answer_gt = TypedValue(type="integer", value=int(dataset.answer_value))
-        annotation_gt = TypedValue(type="point_pair_set", value=list(annotation_point_pairs))
+        annotation_gt = TypedValue(type="segment_set", value=list(annotation_point_pairs))
 
         query_params = {
             "query_id": str(query_id),
@@ -720,8 +720,8 @@ class SymbolicBondOrderCountTask:
                 "ring_vertex_sets": [[int(idx) for idx in ring] for ring in dataset.structure.ring_atom_sets],
                 "question_format": str(dataset.query_id),
             },
-            "witness_symbolic": {"type": "point_pair_set", "value": list(annotation_point_pairs)},
-            "projected_annotation": {"type": "point_pair_set", "point_pair_set": list(annotation_point_pairs), "value": list(annotation_point_pairs)},
+            "witness_symbolic": {"type": "segment_set", "value": list(annotation_point_pairs)},
+            "projected_annotation": {"type": "segment_set", "segment_set": list(annotation_point_pairs), "value": list(annotation_point_pairs)},
             "answer_gt": answer_gt.to_dict(),
             "annotation_gt": annotation_gt.to_dict(),
         }

@@ -11,7 +11,7 @@ from trace.tasks.base import TaskOutput
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
     bbox_annotation_artifacts,
-    point_pair_set_annotation_artifacts,
+    segment_annotation_artifacts,
 )
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
@@ -145,7 +145,7 @@ def pin_bbox_label_attempt(
     )
 
 
-def path_point_pair_label_attempt(
+def path_segment_label_attempt(
     *,
     sample: BowlingSample,
     answer_value: str,
@@ -159,10 +159,8 @@ def path_point_pair_label_attempt(
         sample=sample,
         answer_gt=TypedValue(type="string", value=str(answer_value)),
         annotation_entity_ids=tuple(str(entity_id) for entity_id in sample.annotation_entity_ids),
-        build_annotation=lambda rendered_context: point_pair_set_annotation_artifacts(
-            [
-                rendered_context.rendered_scene.render_map["path_point_pairs_px"][str(sample.target_path_id)]
-            ]
+        build_annotation=lambda rendered_context: segment_annotation_artifacts(
+            rendered_context.rendered_scene.render_map["path_point_pairs_px"][str(sample.target_path_id)]
         ),
         execution_extra=dict(execution_extra or {}),
     )
@@ -271,7 +269,7 @@ __all__ = [
     "BowlingIntegerAxisSpec",
     "BowlingObjectivePlan",
     "bowling_integer_axis_spec",
-    "path_point_pair_label_attempt",
+    "path_segment_label_attempt",
     "pin_bbox_label_attempt",
     "resolve_bowling_integer_axis_specs",
     "run_bowling_lifecycle",

@@ -28,7 +28,7 @@ def build_dots_and_boxes_prompt_json_examples(
 ) -> Tuple[str, str]:
     """Return JSON examples matching the active dots-and-boxes annotation shape."""
 
-    if str(annotation_example_shape) == "point_pair_set":
+    if str(annotation_example_shape) == "segment_set":
         annotation_value = [
             [[180, 220], [300, 220]],
             [[310, 340], [430, 340]],

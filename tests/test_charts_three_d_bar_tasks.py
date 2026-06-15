@@ -21,7 +21,7 @@ THREE_D_BAR_TASKS = {
 EXPECTED_ANNOTATION_TYPES = {
     "task_charts__bar_3d__category_extremum_gap_value": "keyed_point_map",
     "task_charts__bar_3d__category_total_gap_value": "keyed_point_set_map",
-    "task_charts__bar_3d__pairwise_comparison_count": "point_pair_set",
+    "task_charts__bar_3d__pairwise_comparison_count": "segment_set",
     "task_charts__bar_3d__series_total_gap_value": "keyed_point_set_map",
 }
 
@@ -51,9 +51,9 @@ def test_three_d_bar_tasks_generate_default_query_outputs() -> None:
         if expected_annotation_type == "point_set":
             assert projected["point_set"] == output.annotation_gt.value
             assert projected["pixel_point_set"] == output.annotation_gt.value
-        elif expected_annotation_type == "point_pair_set":
-            assert projected["point_pair_set"] == output.annotation_gt.value
-            assert projected["pixel_point_pair_set"] == output.annotation_gt.value
+        elif expected_annotation_type == "segment_set":
+            assert projected["segment_set"] == output.annotation_gt.value
+            assert projected["pixel_segment_set"] == output.annotation_gt.value
         elif expected_annotation_type == "keyed_point_map":
             assert projected["keyed_point_map"] == output.annotation_gt.value
             assert projected["pixel_keyed_point_map"] == output.annotation_gt.value
@@ -129,7 +129,7 @@ def test_three_d_bar_condition_tasks_avoid_too_small_or_crowded_grids() -> None:
             assert execution["matched_bar_ids"] == execution["annotation_bar_ids"]
         elif query_id == "series_comparison_count":
             assert int(execution["target_count"]) == int(output.answer_gt.value)
-            assert output.annotation_gt.type == "point_pair_set"
+            assert output.annotation_gt.type == "segment_set"
             assert len(output.annotation_gt.value) == int(output.answer_gt.value)
             assert len(execution["annotation_bar_id_pairs"]) == int(output.answer_gt.value)
 

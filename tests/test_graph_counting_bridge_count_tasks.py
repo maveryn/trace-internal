@@ -4,7 +4,7 @@ import json
 from collections import Counter
 import networkx as nx
 from trace.core.seed import hash64
-from trace.tasks.graph.counting.bridge_count import GraphCountingBridgeCountTask
+from trace.tasks.graph.node_link.bridge_count import GraphCountingBridgeCountTask
 from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.named_colors import named_color
 
@@ -31,7 +31,7 @@ def test_graph_counting_bridge_count_contract_matches_trace() -> None:
     node_entities = [entity for entity in scene_entities if entity['entity_kind'] == 'graph_node']
     edge_entities = [entity for entity in scene_entities if entity['entity_kind'] == 'graph_edge']
     assert out.answer_gt.type == 'integer'
-    assert out.annotation_gt.type == 'point_pair_set'
+    assert out.annotation_gt.type == 'segment_set'
     assert trace['scene_ir']['scene_kind'] == 'graph_bridge_counting'
     assert execution['question_format'] == 'count_bridge_edges'
     assert execution['graph_directionality'] == 'undirected'
@@ -48,8 +48,8 @@ def test_graph_counting_bridge_count_contract_matches_trace() -> None:
     assert trace['witness_symbolic']['type'] == 'edge_pair_set'
     assert trace['witness_symbolic']['edges'] == [list(edge) for edge in bridge_edges]
     assert 'edge_set' not in trace['projected_annotation']
-    assert trace['projected_annotation']['type'] == 'point_pair_set'
-    assert trace['projected_annotation']['point_pair_set'] == annotation_point_pairs
+    assert trace['projected_annotation']['type'] == 'segment_set'
+    assert trace['projected_annotation']['segment_set'] == annotation_point_pairs
     assert sum((1 for edge in edge_entities if bool(edge['is_bridge']))) == len(annotation_point_pairs)
     width, height = trace['render_spec']['canvas_size']
     for pair in annotation_point_pairs:

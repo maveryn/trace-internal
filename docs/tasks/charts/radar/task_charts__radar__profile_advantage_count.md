@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `radar`
 3. Source implementation scene package: `charts/radar`
-4. Query id: `profile_advantage_count`
+4. Query id: `single`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -15,7 +15,7 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
-2. Annotation schema: `point_pair_set`.
+2. Annotation schema: `segment_set`.
 3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
@@ -23,4 +23,4 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `profile_advantage_count` | `count.pairwise_comparison` | `integer_count` | `point_pair_set` |
+| `single` | `count.pairwise_comparison` | `integer_count` | `segment_set` |

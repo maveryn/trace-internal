@@ -58,7 +58,7 @@ SET_ANNOTATION_TYPES = {
     "bbox_set",
     "keyed_bbox_map",
     "keyed_point_map",
-    "point_pair_set",
+    "segment_set",
     "point_set",
 }
 
@@ -97,7 +97,9 @@ def _values_equal(left, right) -> bool:
     return str(left_value) == str(right_value)
 
 
-def _annotation_cardinality(value) -> int:
+def _annotation_cardinality(value, *, annotation_type: str = "") -> int:
+    if str(annotation_type) in {"bbox", "point", "segment"}:
+        return 1 if value is not None else 0
     if isinstance(value, dict):
         return len(value)
     if isinstance(value, (list, tuple)):
@@ -118,6 +120,10 @@ def _iter_nested_lists(value, *, prefix: str = ""):
 
 def _projected_value_for_type(projected: dict, annotation_type: str):
     value = projected.get(annotation_type)
+    if value is None and annotation_type == "point":
+        value = projected.get("pixel_point")
+    if value is None and annotation_type == "bbox":
+        value = projected.get("pixel_bbox")
     if value is None and annotation_type == "point_set":
         value = projected.get("pixel_point_set")
     if value is None and annotation_type == "point_sequence":
@@ -134,7 +140,7 @@ def _assert_answer_annotation_consistency(output, *, task_id: str, query_id: str
 
     annotation_type = str(output.annotation_gt.type)
     annotation_value = _normalize_jsonable(output.annotation_gt.value)
-    annotation_len = _annotation_cardinality(annotation_value)
+    annotation_len = _annotation_cardinality(annotation_value, annotation_type=annotation_type)
     image_size = tuple(output.image.size) if output.image is not None else None
 
     annotation_errors = _validate_annotation_value(

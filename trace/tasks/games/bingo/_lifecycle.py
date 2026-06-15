@@ -10,7 +10,8 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.annotation_artifacts import (
     bbox_set_annotation_artifacts,
-    point_pair_set_annotation_artifacts,
+    segment_annotation_artifacts,
+    segment_set_annotation_artifacts,
     point_set_annotation_artifacts,
 )
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
@@ -135,8 +136,12 @@ def run_bingo_lifecycle(
             rendered_context.rendered_scene,
             attempt.annotation_cell_id_pairs,
         )
-        if str(attempt.annotation_type) == "point_pair_set":
-            annotation_artifacts = point_pair_set_annotation_artifacts(annotation_point_pairs)
+        if str(attempt.annotation_type) == "segment":
+            if len(annotation_point_pairs) != 1:
+                raise ValueError("scalar segment annotation requires exactly one cell pair")
+            annotation_artifacts = segment_annotation_artifacts(annotation_point_pairs[0])
+        elif str(attempt.annotation_type) == "segment_set":
+            annotation_artifacts = segment_set_annotation_artifacts(annotation_point_pairs)
         elif str(attempt.annotation_type) == "point_set":
             annotation_artifacts = point_set_annotation_artifacts(annotation_points)
         elif str(attempt.annotation_type) == "bbox_set":

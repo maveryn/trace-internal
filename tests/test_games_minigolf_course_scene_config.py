@@ -30,7 +30,7 @@ def test_games_minigolf_course_defaults_present() -> None:
     assert "[x, y] pixel point" in str(
         required_group_default(prompt, "annotation_hint_first_obstacle_label", context="minigolf prompt")
     )
-    assert "point-pair" in str(required_group_default(prompt, "annotation_hint_shot_path_label", context="minigolf prompt"))
+    assert "path segment" in str(required_group_default(prompt, "annotation_hint_shot_path_label", context="minigolf prompt"))
 
 
 def test_games_minigolf_shot_path_task_defaults_present() -> None:

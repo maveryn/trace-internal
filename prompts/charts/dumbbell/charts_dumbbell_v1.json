@@ -77,7 +77,7 @@
         "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "Annotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
         "Required annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-        "Final answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "Format for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
       ]
     }
@@ -85,38 +85,38 @@
   "static_slots_by_key": {
     "query:largest_gap_rank_row_label": {
       "answer_hint": "set \"answer\" to the exact visible row label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0,y0,x1,y1] pixel box around the supporting connector and its two colored dots",
-      "json_example": "{\"annotation\":[[276,214,1032,248]],\"answer\":\"Harbor\"}",
+      "annotation_hint": "set \"annotation\" to one segment [[x,y],[x,y]] on the two colored dot centers for the supporting row",
+      "json_example": "{\"annotation\":[[276,231],[1032,231]],\"answer\":\"Harbor\"}",
       "json_example_answer_only": "{\"answer\":\"Harbor\"}"
     },
     "query:smallest_gap_rank_row_label": {
       "answer_hint": "set \"answer\" to the exact visible row label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0,y0,x1,y1] pixel box around the supporting connector and its two colored dots",
-      "json_example": "{\"annotation\":[[276,214,1032,248]],\"answer\":\"Harbor\"}",
+      "annotation_hint": "set \"annotation\" to one segment [[x,y],[x,y]] on the two colored dot centers for the supporting row",
+      "json_example": "{\"annotation\":[[276,231],[1032,231]],\"answer\":\"Harbor\"}",
       "json_example_answer_only": "{\"answer\":\"Harbor\"}"
     },
     "query:series_a_greater_threshold_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around every connector-and-dot pair that satisfies the condition",
-      "json_example": "{\"annotation\":[[276,214,1032,248],[318,338,1032,372],[284,524,1032,558]],\"answer\":3}",
+      "annotation_hint": "set \"annotation\" to an array of segments; each segment [[x,y],[x,y]] marks the two colored dot centers for one row that satisfies the condition",
+      "json_example": "{\"annotation\":[[[276,231],[1032,231]],[[318,355],[1032,355]],[[284,541],[1032,541]]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:series_b_greater_threshold_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around every connector-and-dot pair that satisfies the condition",
-      "json_example": "{\"annotation\":[[276,214,1032,248],[318,338,1032,372],[284,524,1032,558]],\"answer\":3}",
+      "annotation_hint": "set \"annotation\" to an array of segments; each segment [[x,y],[x,y]] marks the two colored dot centers for one row that satisfies the condition",
+      "json_example": "{\"annotation\":[[[276,231],[1032,231]],[[318,355],[1032,355]],[[284,541],[1032,541]]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:absolute_gap_at_least_threshold_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around every connector-and-dot pair that satisfies the condition",
-      "json_example": "{\"annotation\":[[276,214,1032,248],[318,338,1032,372],[284,524,1032,558]],\"answer\":3}",
+      "annotation_hint": "set \"annotation\" to an array of segments; each segment [[x,y],[x,y]] marks the two colored dot centers for one row that satisfies the condition",
+      "json_example": "{\"annotation\":[[[276,231],[1032,231]],[[318,355],[1032,355]],[[284,541],[1032,541]]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:absolute_gap_at_most_threshold_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around every connector-and-dot pair that satisfies the condition",
-      "json_example": "{\"annotation\":[[276,214,1032,248],[318,338,1032,372],[284,524,1032,558]],\"answer\":3}",
+      "annotation_hint": "set \"annotation\" to an array of segments; each segment [[x,y],[x,y]] marks the two colored dot centers for one row that satisfies the condition",
+      "json_example": "{\"annotation\":[[[276,231],[1032,231]],[[318,355],[1032,355]],[[284,541],[1032,541]]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     }
   },

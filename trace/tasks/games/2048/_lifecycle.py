@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, Mapping, Sequence
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_pair_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, segment_set_annotation_artifacts
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
@@ -110,7 +110,7 @@ def prepare_merge_source_integer_objective(
             answer_gt=TypedValue(type="integer", value=target),
             annotation_entity_ids=tuple(coord for pair in annotation_pairs for coord in pair),
             annotation_cell_id_pairs=annotation_pairs,
-            build_annotation=lambda rendered: point_pair_set_annotation_artifacts(
+            build_annotation=lambda rendered: segment_set_annotation_artifacts(
                 source_merge_point_pairs(result, rendered.rendered_scene)
             ),
         )

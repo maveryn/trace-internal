@@ -1698,9 +1698,9 @@ def _build_output(
         annotation_bboxes = []
     elif str(task_id) == RELATIONSHIP_COUNT_TASK_ID:
         annotation_projection = {
-            "type": "point_pair_set",
-            "point_pair_set": list(annotation_point_pairs),
-            "pixel_point_pair_set": list(annotation_point_pairs),
+            "type": "segment_set",
+            "segment_set": list(annotation_point_pairs),
+            "pixel_segment_set": list(annotation_point_pairs),
             "annotation_ids": list(annotation_ids),
         }
         annotation_bboxes: list[list[float]] = []
@@ -1713,7 +1713,7 @@ def _build_output(
         else TypedValue(type="integer", value=int(query["answer"]))
     )
     annotation_gt = (
-        TypedValue(type="point_pair_set", value=list(annotation_point_pairs))
+        TypedValue(type="segment_set", value=list(annotation_point_pairs))
         if str(task_id) == RELATIONSHIP_COUNT_TASK_ID
         else (
             TypedValue(type="keyed_bbox_map", value=dict(keyed_bbox_map))

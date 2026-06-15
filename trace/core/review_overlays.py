@@ -231,21 +231,24 @@ def resolve_overlay_annotation(
 
     annotation_kind = str(annotation_type)
     if annotation_kind in {
+        "bbox",
         "bbox_sequence",
         "bbox_set",
         "keyed_bbox_map",
         "keyed_bbox_set_map",
         "keyed_point_map",
         "keyed_point_set_map",
-        "point_pair_set",
+        "point",
+        "segment",
+        "segment_set",
         "point_sequence",
         "point_set",
     }:
-        if annotation_kind in projected:
-            return annotation_kind, projected.get(annotation_kind)
         pixel_key = f"pixel_{annotation_kind}"
         if pixel_key in projected:
             return annotation_kind, projected.get(pixel_key)
+        if annotation_kind in projected:
+            return annotation_kind, projected.get(annotation_kind)
     return str(annotation_type), annotation_value
 
 
@@ -313,6 +316,7 @@ def render_annotation_overlay(source: PILImage.Image, *, annotation_type: str, a
 
     if annotation_kind in {
         "point",
+        "pixel_point",
         "point_set",
         "pixel_point_set",
         "point_sequence",
@@ -326,7 +330,7 @@ def render_annotation_overlay(source: PILImage.Image, *, annotation_type: str, a
             _draw_point_marker(draw, (x, y), color=color, radius=radius, line_width=line_width)
         return image
 
-    if annotation_kind == "point_pair_set":
+    if annotation_kind in {"segment", "segment_set"}:
         edge_segments = _extract_edge_segments(annotation_value)
         for idx, (left, right) in enumerate(edge_segments):
             color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]

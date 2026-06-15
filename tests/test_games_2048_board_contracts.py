@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from trace.core.scene_package_migration import parse_public_task_id
+
 _mechanics = import_module("trace.tasks.games.2048.shared.rules")
 _state = import_module("trace.tasks.games.2048.shared.state")
 _max_tile_task = import_module("trace.tasks.games.2048.max_tile_value")
@@ -37,8 +39,7 @@ def test_games_2048_scene_package_source_layout() -> None:
     for task_cls, relative_path in expected_sources.items():
         source_path = Path(inspect.getsourcefile(task_cls) or "").resolve()
         assert source_path == (Path.cwd() / relative_path).resolve()
-        assert getattr(task_cls, "scene_id", "")
-        assert getattr(task_cls, "scene_id") == "2048"
+        assert parse_public_task_id(str(task_cls.task_id)).scene_id == "2048"
 
 
 def _board(rows: list[list[int]]) -> tuple[tuple[int, ...], ...]:
@@ -97,16 +98,16 @@ def test_games_2048_move_result_value_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    expected_annotation_type = "point_pair_set" if expected_prompt_query in {"merge_count", "score_value"} else "bbox_set"
+    expected_annotation_type = "segment_set" if expected_prompt_query in {"merge_count", "score_value"} else "bbox_set"
     assert out.annotation_gt.type == expected_annotation_type
-    assert out.query_id == "default"
+    assert out.query_id == "single"
     assert out.scene_id == "2048"
-    assert trace["query_spec"]["params"]["query_id"] == "default"
-    assert execution["query_id"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "single"
+    assert execution["query_id"] == "single"
     assert trace["query_spec"]["prompt_variant"]["selected_keys"]["query"] == expected_prompt_query
-    if expected_annotation_type == "point_pair_set":
-        assert trace["projected_annotation"]["type"] == "point_pair_set"
-        assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    if expected_annotation_type == "segment_set":
+        assert trace["projected_annotation"]["type"] == "segment_set"
+        assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
         assert len(out.annotation_gt.value) == len(execution["move_result"]["merge_pairs"])
         assert execution["annotation_entity_id_pairs"]
         assert len(execution["annotation_entity_id_pairs"]) == len(out.annotation_gt.value)
@@ -143,11 +144,11 @@ def test_games_2048_move_result_value_matches_standard_move_simulation() -> None
     ]
 
     assert int(out.answer_gt.value) == int(result.score) == 24
-    assert out.annotation_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "segment_set"
     assert out.annotation_gt.value == expected_point_pairs
     assert tuple(execution["annotation_entity_ids"]) == expected_ids
     assert execution["annotation_entity_id_pairs"] == expected_id_pairs
-    assert out.trace_payload["projected_annotation"]["point_pair_set"] == expected_point_pairs
+    assert out.trace_payload["projected_annotation"]["segment_set"] == expected_point_pairs
     assert execution["move_result"]["after"] == [[int(value) for value in row] for row in result.after]
 
 
@@ -234,7 +235,7 @@ def test_games_2048_query_cycles_cover_supports() -> None:
         )
         result_labels.add(str(out.answer_gt.value))
 
-    assert runtime_query_ids == {"default"}
+    assert runtime_query_ids == {"single"}
     assert answers_by_task[Games2048MergeCountTask.task_id] == {0, 1, 2, 3, 4}
     assert answers_by_task[Games2048ScoreValueTask.task_id] == {0, 4, 8, 12, 16, 24, 32, 40}
     assert answers_by_task[Games2048MaxTileValueTask.task_id] == {16, 32, 64, 128, 256}

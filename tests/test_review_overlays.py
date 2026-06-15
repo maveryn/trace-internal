@@ -41,24 +41,41 @@ def test_resolve_overlay_annotation_uses_canonical_bbox_projection() -> None:
     assert annotation_value == [[10.0, 20.0, 30.0, 40.0], [50.0, 60.0, 70.0, 80.0]]
 
 
-def test_resolve_overlay_annotation_uses_canonical_point_pair_projection() -> None:
+def test_resolve_overlay_annotation_uses_canonical_segment_set_projection() -> None:
     annotation_type, annotation_value = resolve_overlay_annotation(
-        annotation_type="point_pair_set",
+        annotation_type="segment_set",
         annotation_value=[],
         trace_payload={
             "projected_annotation": {
-                "point_pair_set": [
+                "segment_set": [
                     [[10.0, 20.0], [30.0, 40.0]],
                     [[50.0, 60.0], [70.0, 80.0]],
                 ],
             }
         },
     )
-    assert annotation_type == "point_pair_set"
+    assert annotation_type == "segment_set"
     assert annotation_value == [
         [[10.0, 20.0], [30.0, 40.0]],
         [[50.0, 60.0], [70.0, 80.0]],
     ]
+
+
+def test_resolve_overlay_annotation_prefers_scalar_pixel_segment() -> None:
+    annotation_type, annotation_value = resolve_overlay_annotation(
+        annotation_type="segment",
+        annotation_value=[[1, 2], [3, 4]],
+        trace_payload={
+            "projected_annotation": {
+                "type": "segment",
+                "segment": [[10, 20], [30, 40]],
+                "pixel_segment": [[50, 60], [70, 80]],
+            }
+        },
+    )
+
+    assert annotation_type == "segment"
+    assert annotation_value == [[50, 60], [70, 80]]
 
 
 def test_resolve_overlay_annotation_uses_canonical_keyed_point_projection() -> None:
@@ -101,6 +118,40 @@ def test_resolve_overlay_annotation_uses_canonical_keyed_bbox_set_projection() -
     assert annotation_value == {"A": [[10.0, 20.0, 30.0, 40.0]]}
 
 
+def test_resolve_overlay_annotation_prefers_scalar_pixel_point() -> None:
+    annotation_type, annotation_value = resolve_overlay_annotation(
+        annotation_type="point",
+        annotation_value=[1, 2],
+        trace_payload={
+            "projected_annotation": {
+                "type": "point",
+                "point": [3, 4],
+                "pixel_point": [5, 6],
+            }
+        },
+    )
+
+    assert annotation_type == "point"
+    assert annotation_value == [5, 6]
+
+
+def test_resolve_overlay_annotation_prefers_scalar_pixel_bbox() -> None:
+    annotation_type, annotation_value = resolve_overlay_annotation(
+        annotation_type="bbox",
+        annotation_value=[1, 2, 3, 4],
+        trace_payload={
+            "projected_annotation": {
+                "type": "bbox",
+                "bbox": [3, 4, 5, 6],
+                "pixel_bbox": [7, 8, 9, 10],
+            }
+        },
+    )
+
+    assert annotation_type == "bbox"
+    assert annotation_value == [7, 8, 9, 10]
+
+
 def test_render_annotation_overlay_draws_visible_x_marker_for_points() -> None:
     source = PILImage.new("RGB", (100, 100), color=(255, 255, 255))
     overlay = render_annotation_overlay(source, annotation_type="point_set", annotation_value=[[50, 50]])
@@ -109,11 +160,11 @@ def test_render_annotation_overlay_draws_visible_x_marker_for_points() -> None:
     assert overlay.getpixel((44, 56)) != (255, 255, 255)
 
 
-def test_render_annotation_overlay_draws_visible_point_pair_segments() -> None:
+def test_render_annotation_overlay_draws_visible_segments() -> None:
     source = PILImage.new("RGB", (100, 100), color=(255, 255, 255))
     overlay = render_annotation_overlay(
         source,
-        annotation_type="point_pair_set",
+        annotation_type="segment_set",
         annotation_value=[
             [[10, 10], [90, 10]],
             [[10, 30], [90, 70]],
@@ -121,6 +172,16 @@ def test_render_annotation_overlay_draws_visible_point_pair_segments() -> None:
     )
     assert overlay.getpixel((50, 10)) != (255, 255, 255)
     assert overlay.getpixel((50, 50)) != (255, 255, 255)
+
+
+def test_render_annotation_overlay_draws_visible_scalar_segment() -> None:
+    source = PILImage.new("RGB", (100, 100), color=(255, 255, 255))
+    overlay = render_annotation_overlay(
+        source,
+        annotation_type="segment",
+        annotation_value=[[10, 10], [90, 10]],
+    )
+    assert overlay.getpixel((50, 10)) != (255, 255, 255)
 
 
 def test_render_annotation_overlay_draws_all_bbox_set_members_with_shadow() -> None:

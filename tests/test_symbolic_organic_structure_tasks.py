@@ -71,12 +71,12 @@ def test_organic_structure_double_bond_count_contract() -> None:
     expected_ids = [bond["item_id"] for bond in bonds if bond["bond_order"] == "double"]
     assert out.query_id == "bond_order_count"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "segment_set"
     assert out.answer_gt.value == len(expected_ids)
     assert len(out.annotation_gt.value) == len(expected_ids)
     assert trace["execution_trace"]["annotation_item_ids"] == expected_ids
-    assert trace["projected_annotation"]["type"] == "point_pair_set"
-    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "segment_set"
+    assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
     for bond_id, point_pair in zip(expected_ids, out.annotation_gt.value):
         assert point_pair == trace["render_map"]["bond_point_pairs_px"][str(bond_id)]
         assert len(point_pair) == 2
@@ -96,12 +96,12 @@ def test_organic_structure_triple_bond_count_contract() -> None:
     bonds = trace["execution_trace"]["bonds"]
     expected_ids = [bond["item_id"] for bond in bonds if bond["bond_order"] == "triple"]
     assert out.query_id == "bond_order_count"
-    assert out.annotation_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "segment_set"
     assert out.answer_gt.value == len(expected_ids)
     assert len(out.annotation_gt.value) == len(expected_ids)
     assert trace["execution_trace"]["annotation_item_ids"] == expected_ids
-    assert trace["projected_annotation"]["type"] == "point_pair_set"
-    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "segment_set"
+    assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
     assert set(trace["execution_trace"]["organic_metadata"]["target_bond_order_support"]) == set(TARGET_BOND_ORDERS)
     assert "not enforced" not in trace["execution_trace"]["organic_metadata"]["chemical_validity_policy"]
     assert "triple" in out.prompt

@@ -8,10 +8,10 @@
 5. Objective: Count all visible arrows that cross from one process-flow lane to another.
 
 ## 2) Scene + Task Contract
-1. Supported `query_id` values: `all_cross_lane_handoff_count`
+1. Supported `query_id` values: `single`
 2. `answer_gt.type`: `integer`
-3. `annotation_gt.type`: `point_pair_set`
-4. Annotation witness policy: One pixel point pair for every counted handoff arrow.
+3. `annotation_gt.type`: `segment_set`
+4. Annotation witness policy: One pixel segment for every counted handoff arrow.
 5. `query_id` is retained as internal replay metadata; this public task id is the sampling unit.
 
 ## 3) Prompt Contract

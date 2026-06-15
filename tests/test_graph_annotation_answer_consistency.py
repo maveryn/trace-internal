@@ -279,7 +279,7 @@ def _check_annotation_shape(annotation_type: str, annotation_value: Any) -> list
                     f"{annotation_type}[{index}] has non-positive extent: {bbox!r}"
                 )
                 break
-    elif annotation_type == "point_pair_set":
+    elif annotation_type == "segment_set":
         if not isinstance(annotation_value, list):
             return [f"{annotation_type} value is not a list"]
         for index, pair in enumerate(annotation_value):
@@ -293,7 +293,7 @@ def _check_annotation_shape(annotation_type: str, annotation_value: Any) -> list
                     for point in pair
                 )
             ):
-                errors.append(f"{annotation_type}[{index}] is not a point pair: {pair!r}")
+                errors.append(f"{annotation_type}[{index}] is not a segment: {pair!r}")
                 break
     elif annotation_type == "keyed_point_map":
         if not isinstance(annotation_value, Mapping):
@@ -433,21 +433,21 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
             annotation_len=annotation_len,
             values=execution_trace.get("matching_labels"),
         )
-    if execution_trace.get("matching_edges") and annotation_type in {"point_pair_set", "bbox_set"}:
+    if execution_trace.get("matching_edges") and annotation_type in {"segment_set", "bbox_set"}:
         _check_len(
             errors,
             name="matching_edges",
             annotation_len=annotation_len,
             values=execution_trace.get("matching_edges"),
         )
-    if "counted_edges" in execution_trace and annotation_type == "point_pair_set":
+    if "counted_edges" in execution_trace and annotation_type == "segment_set":
         _check_len(
             errors,
             name="counted_edges",
             annotation_len=annotation_len,
             values=execution_trace.get("counted_edges"),
         )
-    if "annotation_edges" in execution_trace and annotation_type == "point_pair_set":
+    if "annotation_edges" in execution_trace and annotation_type == "segment_set":
         _check_len(
             errors,
             name="annotation_edges",
@@ -548,8 +548,8 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
     if task_id == "task_graph__adjacency__directed_pair_reciprocity_count":
         counted_pairs = execution_trace.get("counted_pairs") or []
         annotation_cell_keys = execution_trace.get("annotation_cell_keys") or []
-        if annotation_type != "point_pair_set":
-            errors.append("adjacency reciprocity annotation must be point_pair_set")
+        if annotation_type != "segment_set":
+            errors.append("adjacency reciprocity annotation must be segment_set")
         if int(answer_value) != len(counted_pairs):
             errors.append("adjacency reciprocity answer does not match counted_pairs length")
         if annotation_len != int(answer_value):

@@ -11,9 +11,9 @@
 1. Branch metadata: `query_id`
 2. `query_id`: `pipe_bridge_count`
 3. `answer_gt.type`: `integer`
-4. `annotation_gt.type`: `point_pair_set`
+4. `annotation_gt.type`: `segment_set`
 5. Only open pipes can be bridges; blocked pipes are ignored by the graph computation.
-6. Annotation is an unordered set of endpoint-center point pairs, one pair per bridge pipe; endpoint order inside each pair is semantically unordered.
+6. Annotation is an unordered set of endpoint-center segments, one pair per bridge pipe; endpoint order inside each segment is semantically unordered.
 7. Default bridge-pipe answer support is `0..5`.
 8. Rendering uses compact letter/number junction labels and physical pipe-board styling with cylindrical tubes, flanged junction fittings, sampled board treatments, and clear blocked-pipe valve/X markers.
 

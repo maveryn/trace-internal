@@ -64,10 +64,10 @@ def _near_complete_gap_cell_ids(mark_grid: list[list[bool]], *, query_id: str) -
 
 @pytest.mark.parametrize(
     ("params", "expected_answer", "expected_column_index"),
-    (
-        ({"query_id": "completed_column_label", "target_column_label": "B"}, "B", 0),
-        ({"query_id": "completed_column_label", "target_column_label": "N"}, "N", 2),
-        ({"query_id": "completed_column_label", "target_column_label": "O"}, "O", 4),
+        (
+            ({"target_column_label": "B"}, "B", 0),
+            ({"target_column_label": "N"}, "N", 2),
+            ({"target_column_label": "O"}, "O", 4),
     ),
 )
 def test_games_bingo_completed_column_label_emits_expected_contract(
@@ -82,22 +82,20 @@ def test_games_bingo_completed_column_label_emits_expected_contract(
 
     assert out.answer_gt.type == "string"
     assert str(out.answer_gt.value) == str(expected_answer)
-    assert out.annotation_gt.type == "point_pair_set"
+    assert out.annotation_gt.type == "segment"
     assert out.annotation_gt.value == [
-        [
-            list(trace["render_map"]["cell_mark_centers_px"][f"cell_r0_c{expected_column_index}"]),
-            list(trace["render_map"]["cell_mark_centers_px"][f"cell_r4_c{expected_column_index}"]),
-        ]
+        list(trace["render_map"]["cell_mark_centers_px"][f"cell_r0_c{expected_column_index}"]),
+        list(trace["render_map"]["cell_mark_centers_px"][f"cell_r4_c{expected_column_index}"]),
     ]
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
-    assert out.query_id == "completed_column_label"
+    assert out.query_id == "single"
     assert execution["target_answer"] == str(expected_answer)
     assert execution["target_column_label"] == str(expected_answer)
     assert int(execution["target_column_index"]) == int(expected_column_index)
     assert execution["completed_column_indices"] == [int(expected_column_index)]
     assert execution["completed_row_indices"] == []
-    assert trace["projected_annotation"]["type"] == "point_pair_set"
-    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "segment"
+    assert trace["projected_annotation"]["segment"] == out.annotation_gt.value
     assert execution["annotation_entity_ids"] == [
         f"cell_r0_c{expected_column_index}",
         f"cell_r4_c{expected_column_index}",
@@ -111,10 +109,9 @@ def test_games_bingo_completed_column_label_emits_expected_contract(
     assert trace["render_spec"]["text_style"]["font_family"]
     assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
     assert any(not bool(cell["is_marked"]) for cell in cells)
-    for point_pair in out.annotation_gt.value:
-        for x, y in point_pair:
-            assert 0 <= float(x) <= float(trace["render_spec"]["canvas_width"])
-            assert 0 <= float(y) <= float(trace["render_spec"]["canvas_height"])
+    for x, y in out.annotation_gt.value:
+        assert 0 <= float(x) <= float(trace["render_spec"]["canvas_width"])
+        assert 0 <= float(y) <= float(trace["render_spec"]["canvas_height"])
 
 
 @pytest.mark.parametrize(
@@ -172,8 +169,8 @@ def test_games_bingo_completed_line_sum_value_sums_single_completed_line(
 
 def test_games_bingo_completed_line_sum_public_wrapper_uses_default_variant() -> None:
     out = create_task("task_games__bingo__completed_line_sum_value").generate(27024, params={}, max_attempts=100)
-    assert out.query_id == "completed_line_sum_value"
-    assert out.trace_payload["query_spec"]["params"]["query_id"] == "completed_line_sum_value"
+    assert out.query_id == "single"
+    assert out.trace_payload["query_spec"]["params"]["query_id"] == "single"
 
 
 @pytest.mark.parametrize(
@@ -260,7 +257,7 @@ def test_games_bingo_called_number_match_count_matches_card_numbers() -> None:
     ]
 
     assert out.scene_id == "bingo"
-    assert out.query_id == "called_number_match_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == len(called_cell_ids) == 3
     assert out.annotation_gt.type == "point_set"
@@ -308,7 +305,6 @@ def test_games_bingo_completed_line_sum_value_taxonomy() -> None:
 
 def test_games_bingo_completed_column_label_is_deterministic() -> None:
     params = {
-        "query_id": "completed_column_label",
         "target_column_label": "G",
     }
     task = GamesBingoCompletedColumnLabelTask()

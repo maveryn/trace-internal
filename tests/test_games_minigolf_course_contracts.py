@@ -30,7 +30,7 @@ from tests.helpers import read_jsonl
             GamesMinigolfShotPathLabelTask,
             {"path_option_count": 6, "target_path_index": 4, "style_variant": "blueprint"},
             "shot_path_label",
-            "point_pair_set",
+            "segment",
         ),
     ),
 )
@@ -53,9 +53,10 @@ def test_games_minigolf_public_tasks_emit_expected_contract(
     assert execution["query_id"] == SINGLE_QUERY_ID
     assert out.annotation_gt.type == expected_annotation_type
     assert trace["projected_annotation"]["type"] == expected_annotation_type
-    if expected_annotation_type == "point_pair_set":
-        assert len(out.annotation_gt.value) == 1
-        assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
+    if expected_annotation_type == "segment":
+        assert len(out.annotation_gt.value) == 2
+        assert trace["projected_annotation"]["segment"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_segment"] == out.annotation_gt.value
     else:
         assert len(out.annotation_gt.value) == 2
         assert trace["projected_annotation"]["point"] == out.annotation_gt.value
@@ -133,8 +134,8 @@ def test_games_minigolf_shot_path_has_one_hole_reaching_option() -> None:
     assert success_ids == [target_id]
     assert str(out.answer_gt.value) == str(execution["target_path_label"])
     assert list(execution["annotation_entity_ids"]) == [target_id]
-    assert out.annotation_gt.type == "point_pair_set"
-    assert out.annotation_gt.value == [out.trace_payload["render_map"]["path_point_pairs_px"][target_id]]
+    assert out.annotation_gt.type == "segment"
+    assert out.annotation_gt.value == out.trace_payload["render_map"]["path_point_pairs_px"][target_id]
     assert 4 <= len(execution["shot_options"]) <= 6
 
 

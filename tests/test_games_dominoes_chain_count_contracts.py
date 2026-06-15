@@ -170,10 +170,10 @@ def test_games_dominoes_invalid_join_label_has_six_options_and_one_invalid_join(
     assert out.query_id == "single"
     assert out.answer_gt.type == "option_letter"
     assert str(out.answer_gt.value) == "D"
-    assert out.annotation_gt.type == "point_pair_set"
-    assert trace["projected_annotation"]["type"] == "point_pair_set"
-    assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
-    assert out.annotation_gt.value == [render_map["chain_join_endpoint_points_px"]["D"]]
+    assert out.annotation_gt.type == "segment"
+    assert trace["projected_annotation"]["type"] == "segment"
+    assert trace["projected_annotation"]["segment"] == out.annotation_gt.value
+    assert out.annotation_gt.value == render_map["chain_join_endpoint_points_px"]["D"]
     assert trace["query_spec"]["prompt_variant"]["query_key"] == "invalid_join_label"
     assert execution["answer_option_label"] == "D"
     assert execution["annotation_entity_ids"] == ["join_D"]

@@ -172,10 +172,10 @@ def projected_pipe_edge_pair_annotation(
     rendered_scene: RenderedPipeJunctionScene,
     edges: Sequence[Sequence[str]],
 ) -> Dict[str, Any]:
-    """Project edge endpoint labels into node-center point-pair annotation."""
+    """Project edge endpoint labels into node-center segment annotation."""
 
     node_by_label = {str(node.label): node for node in rendered_scene.nodes}
-    point_pair_set: list[list[list[float]]] = []
+    segment_set: list[list[list[float]]] = []
     for edge in edges:
         endpoints = [str(value) for value in edge]
         if len(endpoints) != 2:
@@ -184,13 +184,13 @@ def projected_pipe_edge_pair_annotation(
         right_node = node_by_label.get(endpoints[1])
         if left_node is None or right_node is None:
             continue
-        point_pair_set.append(
+        segment_set.append(
             [
                 [float(left_node.center_xy[0]), float(left_node.center_xy[1])],
                 [float(right_node.center_xy[0]), float(right_node.center_xy[1])],
             ]
         )
-    return {"point_pair_set": point_pair_set}
+    return {"segment_set": segment_set}
 
 
 def _canonical_node_edge(left: int, right: int) -> NodeEdge:

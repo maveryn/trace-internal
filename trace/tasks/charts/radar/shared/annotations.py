@@ -51,10 +51,10 @@ def annotation_for_query(dataset: _Dataset, rendered: _Rendered) -> Tuple[str, L
             [_point_for_id(rendered, point_ids[index]), _point_for_id(rendered, point_ids[index + 1])]
             for index in range(0, len(point_ids), 2)
         ]
-        return "point_pair_set", list(pairs), {
-            "type": "point_pair_set",
-            "point_pair_set": list(pairs),
-            "pixel_point_pair_set": list(pairs),
+        return "segment_set", list(pairs), {
+            "type": "segment_set",
+            "segment_set": list(pairs),
+            "pixel_segment_set": list(pairs),
             "annotation_point_ids": list(point_ids),
             "advantage_metric_labels": list(dataset.query.trace.get("advantage_metric_labels", [])),
         }

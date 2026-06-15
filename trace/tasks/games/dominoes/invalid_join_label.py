@@ -11,9 +11,9 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
 from ._lifecycle import DominoAttemptResult, DominoObjectivePlan, run_domino_lifecycle
-from .shared.annotations import domino_join_point_pair_annotation
+from .shared.annotations import domino_join_segment_annotation
 from .shared.defaults import DEFAULTS, DOMINOES_NAMESPACE, SCENE_ID
-from .shared.prompts import domino_option_label_point_pair_json_examples, domino_output_slots
+from .shared.prompts import domino_option_label_segment_json_examples, domino_output_slots
 from .shared.rules import OPTION_LABELS, PIP_VALUES, canonical_tile
 from .shared.sampling import build_sampled_scene, build_tile_instance
 from .shared.state import DominoSceneAxes
@@ -156,7 +156,7 @@ def _prepare_invalid_join_objective(
         task_params=task_params,
         gen_defaults=_GEN_DEFAULTS,
     )
-    json_example, json_example_answer_only = domino_option_label_point_pair_json_examples(answer_value="C")
+    json_example, json_example_answer_only = domino_option_label_segment_json_examples(answer_value="C")
     prompt_dynamic_slots = domino_output_slots(
         prompt_query_key=QUERY_ID,
         json_example=json_example,
@@ -171,7 +171,7 @@ def _prepare_invalid_join_objective(
             sample=sample,
             answer_gt=TypedValue(type="option_letter", value=str(answer_label)),
             annotation_entity_ids=(f"join_{str(answer_label)}",),
-            build_annotation=lambda rendered_context: domino_join_point_pair_annotation(
+            build_annotation=lambda rendered_context: domino_join_segment_annotation(
                 rendered_context,
                 str(answer_label),
             ),

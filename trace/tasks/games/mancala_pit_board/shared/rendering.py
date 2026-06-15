@@ -128,10 +128,12 @@ def _draw_centered_text(
     """Draw centered text with game text contrast tracing."""
 
     text_bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=max(0, int(stroke_width)))
-    width = float(text_bbox[2] - text_bbox[0])
-    height = float(text_bbox[3] - text_bbox[1])
-    x = 0.5 * (float(bbox[0]) + float(bbox[2]) - width)
-    y = 0.5 * (float(bbox[1]) + float(bbox[3]) - height)
+    bbox_center_x = 0.5 * (float(bbox[0]) + float(bbox[2]))
+    bbox_center_y = 0.5 * (float(bbox[1]) + float(bbox[3]))
+    text_center_x = 0.5 * (float(text_bbox[0]) + float(text_bbox[2]))
+    text_center_y = 0.5 * (float(text_bbox[1]) + float(text_bbox[3]))
+    x = bbox_center_x - text_center_x
+    y = bbox_center_y - text_center_y
     return draw_text_traced(
         draw,
         (float(x), float(y)),
@@ -518,27 +520,33 @@ def render_mancala_scene(
             outline=tuple(theme.target_marker_rgb) + (255,),
             width=max(3, int(marker_width)),
         )
-        badge_size = max(22.0, float(pit_height) * 0.34)
+        badge_size = max(24.0, float(pit_height) * 0.38)
         badge_bbox = _pit_badge_bbox(
             target_bbox,
             row=pit_rows[target_pit_id],
             badge_size=badge_size,
             side="right",
         )
-        draw.ellipse(
+        draw.rounded_rectangle(
             badge_bbox,
-            fill=tuple(theme.target_marker_rgb) + (245,),
-            outline=tuple(theme.pit_outline_rgb) + (230,),
-            width=max(1, int(round(float(marker_width) * 0.35))),
-        )
-        inner_pad = max(5.0, float(badge_size) * 0.28)
-        draw.ellipse(
-            _bbox_pad(badge_bbox, -inner_pad),
-            fill=(255, 255, 255, 235),
+            radius=max(5, int(round(float(badge_size) * 0.25))),
+            fill=(255, 255, 255, 246),
             outline=tuple(theme.target_marker_rgb) + (255,),
-            width=1,
+            width=max(1, int(round(float(marker_width) * 0.38))),
         )
-        marker_metadata["target_pit_marker"] = {"pit_id": target_pit_id, "bbox_px": list(target_marker_bbox), "dot_badge_bbox_px": list(badge_bbox)}
+        _draw_centered_text(
+            draw,
+            badge_bbox,
+            "T",
+            font=option_font,
+            fill=theme.target_marker_rgb,
+            surface_rgb=(255, 255, 255),
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.target_marker",
+            role="target_marker_label",
+            stroke_width=0,
+        )
+        marker_metadata["target_pit_marker"] = {"pit_id": target_pit_id, "bbox_px": list(target_marker_bbox), "t_badge_bbox_px": list(badge_bbox)}
 
     render_map = {
         "board_bbox_px": [float(value) for value in board_bbox],

@@ -118,6 +118,7 @@ def test_games_mancala_pit_board_post_sow_count_answer_matches_trace() -> None:
     assert set(out.annotation_gt.value.keys()) == {"source_pit", "target_pit"}
     assert out.trace_payload["projected_annotation"]["type"] == "keyed_bbox_map"
     assert set(out.trace_payload["projected_annotation"]["pixel_keyed_bbox_map"].keys()) == {"source_pit", "target_pit"}
+    assert "t_badge_bbox_px" in out.trace_payload["render_map"]["marker_metadata"]["target_pit_marker"]
 
 
 def test_games_mancala_pit_board_support_endpoints_are_constructible() -> None:

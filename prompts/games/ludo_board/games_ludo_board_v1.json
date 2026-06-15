@@ -129,7 +129,7 @@
     "exact_finish_rule_text": "A token must land exactly on finish.",
     "capture_option_rule_text": "Move clockwise along the track. A \"6 then k\" option means move 6 spaces, then k more spaces.",
     "move_sequence_rule_text": "Use the dice sequence shown below the board and move clockwise along the track.",
-    "annotation_hint_winning_roll_value": "set \"annotation\" to an object with keys \"token\" and \"finish\", each mapped to a point as [x,y] in pixels",
+    "annotation_hint_winning_roll_value": "set \"annotation\" to a one-point list [[x,y]] at the token center",
     "answer_hint_winning_roll_value": "set \"answer\" to the integer die roll",
     "annotation_hint_capture_roll_option_label": "set \"annotation\" to an object with keys \"mover_token\" and \"target_token\", each mapped to a point as [x,y] in pixels",
     "answer_hint_capture_roll_option_label": "set \"answer\" to the selected shown option letter",

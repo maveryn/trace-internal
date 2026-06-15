@@ -41,7 +41,7 @@ def test_games_ludo_board_defaults_and_prompt_bundle() -> None:
     assert list(task_overrides[WINNING_ROLL_TASK_ID]["winning_roll_support"]) == [1, 2, 3, 4, 5]
     assert list(task_overrides[CAPTURE_ROLL_TASK_ID]["capture_distance_support"]) == list(range(1, 12))
     assert list(task_overrides[CAPTURE_ROLL_TASK_ID]["answer_option_label_weights"].keys()) == list(OPTION_LABELS)
-    assert list(task_overrides[MOVE_RESULT_TASK_ID]["move_roll_total_support"]) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17]
+    assert list(task_overrides[MOVE_RESULT_TASK_ID]["move_roll_total_support"]) == list(range(1, 12))
     assert list(task_overrides[MOVE_RESULT_TASK_ID]["answer_option_label_weights"].keys()) == list(OPTION_LABELS)
     assert int(rendering["cell_size_min_px"]) == 36
     assert int(rendering["cell_size_max_px"]) == 48
@@ -102,8 +102,6 @@ def test_games_ludo_board_path_and_roll_encoding() -> None:
     assert roll_sequence_for_total(6) == (6,)
     assert roll_sequence_for_total(7) == (6, 1)
     assert roll_sequence_for_total(11) == (6, 5)
-    assert roll_sequence_for_total(13) == (6, 6, 1)
-    assert roll_sequence_for_total(17) == (6, 6, 5)
 
 
 def test_games_ludo_board_registry_and_taxonomy() -> None:
@@ -135,10 +133,11 @@ def test_games_ludo_board_winning_roll_answer_matches_trace() -> None:
         assert execution["winning_roll"] == roll
         assert execution["query_color"] == "blue"
         assert execution["token_coords_by_color"]["blue"] == list(HOME_LANES["blue"][5 - roll])
-        assert out.annotation_gt.type == "keyed_point_map"
-        assert set(out.annotation_gt.value.keys()) == {"token", "finish"}
-        assert out.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
-        assert set(out.trace_payload["projected_annotation"]["pixel_keyed_point_map"].keys()) == {"token", "finish"}
+        assert out.annotation_gt.type == "point_set"
+        assert len(out.annotation_gt.value) == 1
+        assert out.trace_payload["projected_annotation"]["type"] == "point_set"
+        assert out.trace_payload["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+        assert out.trace_payload["scene_ir"]["relations"]["annotation_entity_ids"] == {"point_0": "token_blue"}
         assert len(out.trace_payload["render_map"]["flow_arrow_markers_px"]) == len(FLOW_ARROW_SPECS)
         assert set(out.trace_payload["render_map"]["flow_arrow_markers_px"][0]) >= {"start_coord", "end_coord", "role"}
 
@@ -178,7 +177,7 @@ def test_games_ludo_board_capture_option_answer_matches_trace() -> None:
 
 
 def test_games_ludo_board_move_result_answer_matches_trace() -> None:
-    for total in (1, 7, 13, 17):
+    for total in (1, 7, 10, 11):
         out = create_task(MOVE_RESULT_TASK_ID).generate(
             982100 + total,
             params={
@@ -207,6 +206,7 @@ def test_games_ludo_board_move_result_answer_matches_trace() -> None:
         assert out.answer_gt.value == "D"
         assert execution["move_roll_total"] == total
         assert execution["roll_sequence"] == list(roll_sequence_for_total(total))
+        assert len(execution["roll_sequence"]) <= 2
         assert execution["answer"] == "D"
         assert destination_options["D"] == expected_destination
         assert len(destination_options) == len(execution["destination_options"])

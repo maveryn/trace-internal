@@ -455,7 +455,7 @@ def _draw_destination_options(
     centers: dict[str, list[float]] = {}
     if not destination_options:
         return {"cell_bboxes": cell_bboxes, "text_bboxes": text_bboxes, "centers": centers}
-    font = load_font(max(17, int(round(float(cell_size) * 0.48))), bold=True, font_family=font_family)
+    font = load_font(max(22, int(round(float(cell_size) * 0.64))), bold=True, font_family=font_family)
     surface_rgbs = (
         theme.track_fill_rgb,
         soft_color("red", amount=0.72),
@@ -466,16 +466,29 @@ def _draw_destination_options(
     for option in destination_options:
         cell_bbox = _cell_bbox(board_bbox, float(cell_size), tuple(option.coord))
         center = _bbox_center(cell_bbox)
+        disk_radius = max(9.0, float(cell_size) * 0.34)
+        disk_bbox = (
+            float(center[0]) - disk_radius,
+            float(center[1]) - disk_radius,
+            float(center[0]) + disk_radius,
+            float(center[1]) + disk_radius,
+        )
+        draw.ellipse(
+            disk_bbox,
+            fill=(255, 255, 255, 238),
+            outline=tuple(theme.track_outline_rgb) + (255,),
+            width=max(2, int(round(float(cell_size) * 0.06))),
+        )
         record = draw_centered_game_text_traced(
             draw,
             center=center,
             text=str(option.label),
             font=font,
             fill_rgb=theme.option_text_rgb,
-            stroke_width=1,
+            stroke_width=2,
             role="board_mark",
             required=True,
-            surface_rgbs=surface_rgbs,
+            surface_rgbs=((255, 255, 255),) + surface_rgbs,
             instance_seed=int(instance_seed),
             namespace=f"{namespace}.destination_option.{option.label}",
         )

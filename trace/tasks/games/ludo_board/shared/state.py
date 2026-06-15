@@ -76,7 +76,7 @@ class LudoDefaults:
 
     winning_roll_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     capture_distance_support: Tuple[int, ...] = tuple(range(1, 12))
-    move_roll_total_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17)
+    move_roll_total_support: Tuple[int, ...] = tuple(range(1, 12))
     option_label_support: Tuple[str, ...] = OPTION_LABELS
     capture_option_count_support: Tuple[int, ...] = (4, 6)
     move_result_option_count_support: Tuple[int, ...] = (4, 5, 6)

@@ -6,7 +6,7 @@ Public taxonomy: `games -> ludo_board -> task_games__ludo_board__move_result_opt
 
 Program code: `select(destination_label where destination_cell == advance(token_position, shown_roll_sequence)); scene=ludo_board; scope=move_result_option_label`.
 
-The scene renders a Ludo-style cross board with one visible token for each player color, twelve two-cell arrows showing clockwise flow, a visible dice sequence, and destination letters on board cells. The task asks which destination letter the named token reaches after applying the shown sequence.
+The scene renders a Ludo-style cross board with one visible token for each player color, twelve two-cell arrows showing clockwise flow, a visible dice sequence of one or two rolls, and destination letters on board cells. The task asks which destination letter the named token reaches after applying the shown sequence.
 
 Answer schema: `option_letter`.
 

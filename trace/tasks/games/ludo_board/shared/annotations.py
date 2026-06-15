@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 from trace.core.types import TypedValue
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_set_annotation_artifacts
 
 
 @dataclass(frozen=True)
@@ -89,4 +89,28 @@ def keyed_ludo_render_map_point_annotation(
     )
 
 
-__all__ = ["LudoAnnotationBundle", "keyed_ludo_point_annotation", "keyed_ludo_render_map_point_annotation"]
+def point_set_ludo_render_map_annotation(
+    *,
+    rendered: Any,
+    point_sources: Sequence[Sequence[str]],
+    point_entity_ids: Sequence[str],
+) -> LudoAnnotationBundle:
+    """Project an unordered point-set annotation from renderer map paths chosen by the task."""
+
+    points = [_render_map_point(rendered.render_map, source) for source in point_sources]
+    artifacts = point_set_annotation_artifacts(points)
+    ids = [str(entity_id) for entity_id in point_entity_ids]
+    return LudoAnnotationBundle(
+        annotation_gt=artifacts.annotation_gt,
+        projected_annotation=dict(artifacts.projected_annotation),
+        witness_symbolic={"type": artifacts.annotation_type, "ids": list(ids)},
+        entity_ids={f"point_{index}": entity_id for index, entity_id in enumerate(ids)},
+    )
+
+
+__all__ = [
+    "LudoAnnotationBundle",
+    "keyed_ludo_point_annotation",
+    "keyed_ludo_render_map_point_annotation",
+    "point_set_ludo_render_map_annotation",
+]

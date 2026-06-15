@@ -17,6 +17,8 @@ some positions intentionally empty or missing. The prompt asks for the number of
 missing positions.
 
 The answer is the integer count of finalized cells whose `present == false`.
+Default generation samples the missing-position count from `1` through `6`
+inclusive.
 
 ## Annotation Contract
 Annotation is a `point_set` containing one center point for each counted missing

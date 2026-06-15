@@ -172,6 +172,22 @@ def test_surface_fixture_predicate_count_tasks() -> None:
         assert "{reference_" not in output.prompt
 
 
+def test_surface_fixture_missing_cell_default_answer_range() -> None:
+    task = create_task(EMPTY_MISSING_TASK_ID)
+
+    for seed in range(20260710, 20260730):
+        output = task.generate(
+            seed,
+            params={
+                "query_id": "single",
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=30,
+        )
+
+        assert 1 <= int(output.answer_gt.value) <= 6
+
+
 def test_surface_fixture_task_registered_in_three_d_taxonomy() -> None:
     ensure_scene_tasks_registered("three_d", "surface_fixture")
 

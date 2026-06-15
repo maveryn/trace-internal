@@ -122,8 +122,8 @@ generation:
         bracket_panel: 1.0
         u_bolt_plate: 1.0
         pipe_rack: 1.0
-      missing_count_min: 2
-      missing_count_max: 8
+      missing_count_min: 1
+      missing_count_max: 6
       total_slot_count_min: 12
       total_slot_count_max: 24
       balanced_scene_variant_sampling: true

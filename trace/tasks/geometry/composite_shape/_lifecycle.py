@@ -60,6 +60,8 @@ def prepare_composite_shape_scene(
             )
             rendered = render_composite_shape(ctx, problem)
             render_meta = dict(attempt_meta)
+            if ctx.scene_transform is not None and ctx.scene_transform.resolved:
+                render_meta["single_object_scene_rotation"] = ctx.scene_transform.metadata()
             break
         except Exception as exc:
             last_error = exc

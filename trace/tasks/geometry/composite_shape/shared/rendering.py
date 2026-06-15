@@ -16,6 +16,7 @@ from trace.tasks.geometry.shared.measurement_rendering import (
     fmt_measure,
     pad_bbox,
 )
+from trace.tasks.geometry.shared.scene_transform import LazySceneTransform
 from trace.tasks.geometry.shared.shape_style import (
     extract_background_anchor_colors,
     sample_geometry_shape_style,
@@ -91,6 +92,13 @@ def create_composite_render_context(
         label_stroke_width=max(0, int(label_stroke_width)),
         font=load_font(max(12, int(font_size)), bold=True),
         small_font=load_font(max(10, int(small_font_size)), bold=True),
+        scene_transform=LazySceneTransform(
+            rng,
+            params=params,
+            render_defaults=render_defaults,
+            canvas_width=int(width),
+            canvas_height=int(height),
+        ),
     )
     render_meta = {
         "background_style": dict(background_meta),
@@ -104,6 +112,21 @@ def create_composite_render_context(
         "accent_color": list(accent_color),
     }
     return ctx, render_meta
+
+
+def _place_points(ctx: CompositeRenderContext, points: Sequence[Point]) -> tuple[Point, ...]:
+    """Apply the optional scene-level rigid transform before drawing/annotation."""
+
+    resolved = tuple((float(point[0]), float(point[1])) for point in points)
+    if ctx.scene_transform is None:
+        return resolved
+    return ctx.scene_transform.points(resolved)
+
+
+def _place_point(ctx: CompositeRenderContext, point: Point) -> Point:
+    if ctx.scene_transform is None:
+        return (float(point[0]), float(point[1]))
+    return ctx.scene_transform.point((float(point[0]), float(point[1])))
 
 
 def _draw_text(
@@ -152,6 +175,24 @@ def _draw_segment_label(ctx: CompositeRenderContext, text: str, a: Point, b: Poi
         (float(a[1]) + float(b[1])) / 2.0 + ny * float(offset),
     )
     return _draw_text(ctx, str(text), center)
+
+
+def _draw_point_label_outward(
+    ctx: CompositeRenderContext,
+    label: str,
+    point: Point,
+    *,
+    center: Point,
+    distance: float = 24.0,
+) -> BBox:
+    dx = float(point[0]) - float(center[0])
+    dy = float(point[1]) - float(center[1])
+    length = max(1.0, math.hypot(dx, dy))
+    label_center = (
+        float(point[0]) + (dx / length) * float(distance),
+        float(point[1]) + (dy / length) * float(distance),
+    )
+    return _draw_text(ctx, str(label), label_center, font=ctx.small_font)
 
 
 def _draw_polygon(
@@ -214,12 +255,15 @@ def _render_rect_cut(ctx: CompositeRenderContext, problem: CompositeShapeProblem
     left, top = 150.0, 135.0
     w_px = 390.0
     h_px = 270.0
-    rect = [(left, top), (left + w_px, top), (left + w_px, top + h_px), (left, top + h_px)]
-    tri = [
+    raw_rect = [(left, top), (left + w_px, top), (left + w_px, top + h_px), (left, top + h_px)]
+    raw_tri = [
         (left + w_px, top + h_px),
         (left + w_px - (w_px * cut_base / width_value), top + h_px),
         (left + w_px, top + h_px - (h_px * cut_height / height_value)),
     ]
+    placed = _place_points(ctx, [*raw_rect, *raw_tri])
+    rect = list(placed[:4])
+    tri = list(placed[4:7])
     _draw_polygon(ctx, rect, fill=ctx.fill_color)
     ctx.draw.polygon([(float(x), float(y)) for x, y in tri], fill=ctx.background_color)
     _draw_polygon(ctx, rect)
@@ -227,12 +271,11 @@ def _render_rect_cut(ctx: CompositeRenderContext, problem: CompositeShapeProblem
     region_bbox = bbox_from_points(rect, width=ctx.width, height=ctx.height, pad=2.0)
     cutout_bbox = bbox_from_points(tri, width=ctx.width, height=ctx.height, pad=4.0)
     label_bboxes = {
-        "outer_width": _draw_segment_label(ctx, str(width_value), rect[3], rect[2], offset=26.0),
+        "outer_width": _draw_segment_label(ctx, str(width_value), rect[3], rect[2], offset=-30.0),
         "outer_height": _draw_segment_label(ctx, str(height_value), rect[0], rect[3], offset=-26.0),
         "cutout_base": _draw_segment_label(ctx, str(cut_base), tri[1], tri[0], offset=24.0),
         "cutout_height": _draw_segment_label(ctx, str(cut_height), tri[0], tri[2], offset=25.0),
     }
-    _draw_text(ctx, "shaded", (left + 175.0, top + 130.0), font=ctx.small_font, fill=ctx.accent_color, stroke_width=1)
     return RenderedCompositeShape(
         image=ctx.image,
         answer_value=problem.answer_value,
@@ -267,7 +310,7 @@ def _render_l_profile(ctx: CompositeRenderContext, problem: CompositeShapeProble
     w_px, h_px = 420.0, 300.0
     cut_w_px = w_px * cut_width / width_value
     cut_h_px = h_px * cut_height / height_value
-    pts = [
+    raw_pts = [
         (left, top),
         (left + w_px, top),
         (left + w_px, top + h_px - cut_h_px),
@@ -275,18 +318,21 @@ def _render_l_profile(ctx: CompositeRenderContext, problem: CompositeShapeProble
         (left + w_px - cut_w_px, top + h_px),
         (left, top + h_px),
     ]
+    raw_cutout_corner = (raw_pts[2][0], raw_pts[4][1])
+    placed = _place_points(ctx, [*raw_pts, raw_cutout_corner])
+    pts = list(placed[:6])
+    cutout_corner = placed[6]
     _draw_polygon(ctx, pts, fill=ctx.fill_color)
     _draw_polygon(ctx, pts)
-    cutout_rect = [pts[3], pts[2], (pts[2][0], pts[4][1]), pts[4]]
+    cutout_rect = [pts[3], pts[2], cutout_corner, pts[4]]
     region_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=2.0)
     cutout_bbox = bbox_from_points(cutout_rect, width=ctx.width, height=ctx.height, pad=4.0)
     label_bboxes = {
-        "outer_width": _draw_segment_label(ctx, str(width_value), pts[5], pts[4], offset=26.0),
+        "outer_width": _draw_segment_label(ctx, str(width_value), pts[0], pts[1], offset=-30.0),
         "outer_height": _draw_segment_label(ctx, str(height_value), pts[0], pts[5], offset=-26.0),
         "missing_width": _draw_segment_label(ctx, str(cut_width), pts[3], pts[2], offset=-24.0),
         "missing_height": _draw_segment_label(ctx, str(cut_height), pts[3], pts[4], offset=25.0),
     }
-    _draw_text(ctx, "shaded", (left + 170.0, top + 130.0), font=ctx.small_font, fill=ctx.accent_color, stroke_width=1)
     return RenderedCompositeShape(
         image=ctx.image,
         answer_value=problem.answer_value,
@@ -328,11 +374,12 @@ def _render_house(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -
     roof_h = math.sqrt(max(1.0, (float(roof_side) * scale) ** 2 - (half_w**2)))
     left = (float(ctx.width) - w_px) / 2.0
     base_y = 78.0 + (float(wall_height) * scale) + roof_h
-    a = (left, base_y)
-    b = (left + w_px, base_y)
-    c = (left + w_px, base_y - (float(wall_height) * scale))
-    d = (left + w_px / 2.0, c[1] - roof_h)
-    e = (left, c[1])
+    raw_a = (left, base_y)
+    raw_b = (left + w_px, base_y)
+    raw_c = (left + w_px, base_y - (float(wall_height) * scale))
+    raw_d = (left + w_px / 2.0, raw_c[1] - roof_h)
+    raw_e = (left, raw_c[1])
+    a, b, c, d, e = _place_points(ctx, (raw_a, raw_b, raw_c, raw_d, raw_e))
     pts = [a, b, c, d, e]
     _draw_polygon(ctx, pts, fill=ctx.fill_color)
     _draw_polygon(ctx, pts)
@@ -342,8 +389,9 @@ def _render_house(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -
         "wall_height_AE": _draw_segment_label(ctx, str(wall_height), a, e, offset=-25.0),
         "roof_side_CD": _draw_segment_label(ctx, str(roof_side), d, c, offset=28.0),
     }
+    label_center = (sum(point[0] for point in pts) / float(len(pts)), sum(point[1] for point in pts) / float(len(pts)))
     for label, point in {"A": a, "B": b, "C": c, "D": d, "E": e}.items():
-        _draw_text(ctx, label, (point[0], point[1] + (22.0 if label in {"A", "B"} else -22.0)), font=ctx.small_font)
+        _draw_point_label_outward(ctx, label, point, center=label_center)
     return RenderedCompositeShape(
         image=ctx.image,
         answer_value=problem.answer_value,
@@ -384,7 +432,7 @@ def _render_tabbed(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
     bottom = 78.0 + h_px + tab_h_px
     x0 = left + (w_px - tab_w_px) / 2.0
     x1 = x0 + tab_w_px
-    pts = [
+    raw_pts = [
         (left, bottom),
         (left + w_px, bottom),
         (left + w_px, bottom - h_px),
@@ -394,6 +442,7 @@ def _render_tabbed(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
         (x0, bottom - h_px),
         (left, bottom - h_px),
     ]
+    pts = list(_place_points(ctx, raw_pts))
     _draw_polygon(ctx, pts, fill=ctx.fill_color)
     _draw_polygon(ctx, pts)
     target_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=4.0)

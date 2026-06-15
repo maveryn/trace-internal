@@ -32,6 +32,7 @@ class CompositeRenderContext:
     label_stroke_width: int
     font: Any
     small_font: Any
+    scene_transform: Any | None = None
 
 
 @dataclass(frozen=True)

@@ -13,6 +13,7 @@ from ...registry import register_task
 from ...shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
+from ...shared.prompt_variants import build_prompt_query_spec
 from ..shared.task_support import sample_count as _shared_sample_count
 from ..shared.task_support import bounds as _shared_bounds
 from .shared.annotations import serialize_indoor_scene, sort_bboxes_by_ids
@@ -34,26 +35,18 @@ from .shared.state import (
 
 TASK_ID = "task_illustrations__indoor_room__furniture_side_count"
 SCENE_ID = "indoor_room"
-RELATION_SUPPORT: Tuple[str, ...] = ("left", "right", "above", "below")
+RELATION_SUPPORT: Tuple[str, ...] = ("left", "right")
 QUERY_ID_TO_RELATION: Dict[str, str] = {
     "left_side": "left",
     "right_side": "right",
-    "above_side": "above",
-    "below_side": "below",
 }
 RELATION_TO_QUERY_ID: Dict[str, str] = {relation: query_id for query_id, relation in QUERY_ID_TO_RELATION.items()}
 QUERY_IDS = tuple(QUERY_ID_TO_RELATION.keys())
 PROMPT_QUERY_KEY = "furniture_side_count"
-OPPOSITE_RELATION: Dict[str, str] = {"left": "right", "right": "left", "above": "below", "below": "above"}
+OPPOSITE_RELATION: Dict[str, str] = {"left": "right", "right": "left"}
 VALID_FURNITURE_RELATION_PAIRS: Tuple[Tuple[str, str], ...] = (
     ("table", "left"),
     ("table", "right"),
-    ("table", "above"),
-    ("table", "below"),
-    ("sofa", "above"),
-    ("sofa", "below"),
-    ("cabinet", "above"),
-    ("cabinet", "below"),
 )
 
 
@@ -288,7 +281,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
 
 @register_task
 class IllustrationsIndoorRoomFurnitureSideCountTask:
-    """Count objects left/right/above/below named furniture."""
+    """Count objects left or right of named furniture."""
 
     task_id = TASK_ID
     domain = "illustrations"
@@ -353,8 +346,6 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
         relation_word = {
             "left": "to the left of",
             "right": "to the right of",
-            "above": "above",
-            "below": "below",
         }.get(str(sample.relation), str(sample.relation))
         slots = {
             "object_count": int(sample.object_count),
@@ -385,6 +376,33 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
             slots=slots,
             instance_seed=int(instance_seed),
         )
+        query_params = {
+            "theme": str(sample.theme_id),
+            "theme_id": str(sample.theme_id),
+            "furniture_type": str(sample.furniture_type),
+            "furniture_name": str(sample.furniture_type),
+            "furniture_id": str(furniture_id),
+            "query_relation": str(sample.relation),
+            "relation": str(sample.relation),
+            "prompt_query_key": PROMPT_QUERY_KEY,
+            "object_type": str(sample.object_type),
+            "object_name": str(sample.object_name),
+            "target_count": int(sample.target_count),
+            "object_count": int(sample.object_count),
+            "theme_probabilities": dict(sample.theme_probabilities),
+            "furniture_type_probabilities": dict(sample.furniture_type_probabilities),
+            "relation_probabilities": dict(sample.relation_probabilities),
+            "object_type_probabilities": dict(sample.object_type_probabilities),
+            "target_count_probabilities": dict(sample.target_count_probabilities),
+            "object_count_probabilities": dict(sample.object_count_probabilities),
+        }
+        query_spec = build_prompt_query_spec(
+            prompt_artifacts=prompt_artifacts,
+            query_id=query_id,
+            params=query_params,
+        )
+        query_spec["task_id"] = self.task_id
+        query_spec["scene_id"] = SCENE_ID
         render_map = indoor_base_render_map(scene, object_bboxes=object_bboxes, part_bboxes=part_bboxes)
         render_map["target_furniture_id"] = str(furniture_id)
         render_map["counted_object_ids"] = list(counted_ids)
@@ -401,33 +419,7 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
                     "object_type": str(sample.object_type),
                 },
             },
-            "query_spec": {
-                "task_id": self.task_id,
-                "query_id": query_id,
-                "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "theme": str(sample.theme_id),
-                    "theme_id": str(sample.theme_id),
-                    "furniture_type": str(sample.furniture_type),
-                    "furniture_name": str(sample.furniture_type),
-                    "furniture_id": str(furniture_id),
-                    "query_relation": str(sample.relation),
-                    "relation": str(sample.relation),
-                    "prompt_query_key": PROMPT_QUERY_KEY,
-                    "object_type": str(sample.object_type),
-                    "object_name": str(sample.object_name),
-                    "target_count": int(sample.target_count),
-                    "object_count": int(sample.object_count),
-                    "theme_probabilities": dict(sample.theme_probabilities),
-                    "furniture_type_probabilities": dict(sample.furniture_type_probabilities),
-                    "relation_probabilities": dict(sample.relation_probabilities),
-                    "object_type_probabilities": dict(sample.object_type_probabilities),
-                    "target_count_probabilities": dict(sample.target_count_probabilities),
-                    "object_count_probabilities": dict(sample.object_count_probabilities),
-                },
-            },
+            "query_spec": query_spec,
             "render_spec": indoor_render_spec(scene, scene_id=SCENE_ID),
             "render_map": render_map,
             "execution_trace": {

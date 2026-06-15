@@ -173,12 +173,6 @@ def test_furniture_side_count_calibration_sampling_is_decoupled() -> None:
     assert set(furniture_relation_counts) == {
         ("table", "left"),
         ("table", "right"),
-        ("table", "above"),
-        ("table", "below"),
-        ("sofa", "above"),
-        ("sofa", "below"),
-        ("cabinet", "above"),
-        ("cabinet", "below"),
     }
 
 
@@ -188,8 +182,6 @@ def test_furniture_side_count_query_id_selects_relation() -> None:
         (
             ("left_side", "left"),
             ("right_side", "right"),
-            ("above_side", "above"),
-            ("below_side", "below"),
         )
     ):
         out = task.generate(

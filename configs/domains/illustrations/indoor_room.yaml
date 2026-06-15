@@ -46,13 +46,9 @@ generation:
       target_count_max: 6
       furniture_type_support:
         - table
-        - sofa
-        - cabinet
       relation_support:
         - left
         - right
-        - above
-        - below
       indoor_object_type_support:
         - apple
         - backpack

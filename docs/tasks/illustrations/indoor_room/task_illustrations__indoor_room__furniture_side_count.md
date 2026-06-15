@@ -7,7 +7,7 @@
 - Implementation source: `trace/tasks/illustrations/indoor_room/furniture_side_count.py`
 
 ## Task Contract
-Counts visible small indoor objects of a sampled object type that lie on a queried image-plane side of one sampled furniture item.
+Counts visible small indoor objects of a sampled object type that lie to the left or right of the table.
 
 ## Program Contract
 `count(filter(visible_room_objects, object_type(object)=target_object_type and side_relation(object, target_furniture)=query_side)); scene=indoor_room; scope=furniture_side_count`
@@ -18,20 +18,18 @@ Counts visible small indoor objects of a sampled object type that lie on a queri
 | --- | --- |
 | `left_side` | `count(filter(visible_room_objects, object_type(object)=target_object_type and left_of(object, target_furniture))); scene=indoor_room; scope=furniture_side_count` |
 | `right_side` | `count(filter(visible_room_objects, object_type(object)=target_object_type and right_of(object, target_furniture))); scene=indoor_room; scope=furniture_side_count` |
-| `above_side` | `count(filter(visible_room_objects, object_type(object)=target_object_type and above(object, target_furniture))); scene=indoor_room; scope=furniture_side_count` |
-| `below_side` | `count(filter(visible_room_objects, object_type(object)=target_object_type and below(object, target_furniture))); scene=indoor_room; scope=furniture_side_count` |
 
 ## Program Metadata
 - Program signatures: `count.spatial_relation_attribute`
 - Base program contract: `count(filter(visible_room_objects, object_type(object)=target_object_type and side_relation(object, target_furniture)=query_side)); scene=indoor_room; scope=furniture_side_count`
-- Parameter axes: `query_side`, `target_object_type`, `target_furniture`
+- Parameter axes: `query_side`, `target_object_type`
 - Arguments:
   - `visible_room_objects`: semantic_role; allowed `visible_room_objects`; source `program_schema_concrete`
-  - `query_side`: relation; allowed `left_side|right_side|above_side|below_side`; source `query_id`
+  - `query_side`: relation; allowed `left_side|right_side`; source `query_id`
   - `target_object_type`: object_type; allowed `sampled_indoor_object_type`; source `trace_metadata`
-  - `target_furniture`: furniture_type; allowed `table|sofa|cabinet`; source `trace_metadata`
+  - `target_furniture`: furniture_type; allowed `table`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `left_side`, `right_side`, `above_side`, `below_side`
+- Supported query ids: `left_side`, `right_side`
 
 ## Answer Contract
 - Answer schema: `integer_count`

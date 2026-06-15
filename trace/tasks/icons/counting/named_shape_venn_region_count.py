@@ -651,6 +651,7 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
         outer_margin_px=int(render_params["outer_margin_px"]),
         panel_padding_px=int(render_params["panel_padding_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
+        reserve_title=False,
     )
     content_bbox = tuple(int(value) for value in layout.scene_content_xyxy)
     venn = _sample_venn_spec(rng, content_bbox=content_bbox)
@@ -758,7 +759,7 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
         title_color_rgb=tuple(int(value) for value in render_params["header_text_rgb"]),
         corner_radius_px=int(render_params["panel_corner_radius_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
-        scene_title="Scene",
+        scene_title="",
         icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     _draw_venn_underlay(image, venn=venn, render_params=render_params)

@@ -273,6 +273,7 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
         outer_margin_px=int(render_params["outer_margin_px"]),
         panel_padding_px=int(render_params["panel_padding_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
+        reserve_title=False,
     )
     content_bbox = tuple(int(value) for value in layout.scene_content_xyxy)
     query_support = _query_support(params)

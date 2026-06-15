@@ -121,6 +121,7 @@ def render_icon_sequence_scene(
         outer_margin_px=int(outer_margin_px),
         panel_padding_px=int(panel_padding_px),
         title_font_size_px=int(panel_title_font_size_px),
+        reserve_title=False,
     )
     image = Image.new("RGBA", (int(layout.canvas_width), int(layout.canvas_height)))
     draw_single_panel(
@@ -132,7 +133,7 @@ def render_icon_sequence_scene(
         title_color_rgb=title_color_rgb,
         corner_radius_px=int(panel_corner_radius_px),
         title_font_size_px=int(panel_title_font_size_px),
-        scene_title=str(scene_title),
+        scene_title="",
         icon_canvas_style=icon_canvas_style,
     )
 

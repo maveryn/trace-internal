@@ -11,7 +11,7 @@
 `count.reference_metric_relation(scene=named_field, scope=target_shape_icons, metric=center_distance_to_two_references, relation=closer_to_queried_reference, output=count)`
 
 ## Scene And Query
-The task renders one panel labeled `Scene` containing two larger reference
+The task renders one panel containing two larger reference
 icons plus several icons of one prompt-named target shape. The references are
 identified in the prompt by icon name, and there are no unrelated distractor
 icon types in the scene.

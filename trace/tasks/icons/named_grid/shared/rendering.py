@@ -81,6 +81,7 @@ def render_named_grid_scene(
         outer_margin_px=int(render_params["outer_margin_px"]),
         panel_padding_px=int(render_params["panel_padding_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
+        reserve_title=False,
     )
     image = Image.new("RGBA", (int(layout.canvas_width), int(layout.canvas_height)))
     draw_single_panel(
@@ -92,7 +93,7 @@ def render_named_grid_scene(
         title_color_rgb=tuple(int(value) for value in render_params["header_text_rgb"]),
         corner_radius_px=int(render_params["panel_corner_radius_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
-        scene_title="Grid",
+        scene_title="",
         icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     row_label_band_width_px = int(render_params.get("row_label_band_width_px", render_int(params, "row_label_band_width_px", _DEFAULTS.row_label_band_width_px)))

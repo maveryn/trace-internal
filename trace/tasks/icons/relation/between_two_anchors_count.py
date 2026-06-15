@@ -454,6 +454,7 @@ def _sample_scene(
         outer_margin_px=int(render_params["outer_margin_px"]),
         panel_padding_px=int(render_params["panel_padding_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
+        reserve_title=False,
     )
     image = Image.new("RGBA", (int(layout.canvas_width), int(layout.canvas_height)))
     draw_single_panel(
@@ -465,7 +466,7 @@ def _sample_scene(
         title_color_rgb=tuple(int(v) for v in render_params["header_text_rgb"]),
         corner_radius_px=int(render_params["panel_corner_radius_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
-        scene_title="Scene",
+        scene_title="",
         icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     scene_content_bbox = tuple(int(value) for value in layout.scene_content_xyxy)

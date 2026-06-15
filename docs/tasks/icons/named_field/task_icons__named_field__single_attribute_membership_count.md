@@ -12,7 +12,7 @@
 `count.single_attribute_membership(scene=named_field, scope=all_icons, attribute=shape, output=count)`
 
 ## Scene And Query
-The task renders one panel labeled `Scene` containing procedurally generated
+The task renders one panel containing procedurally generated
 named shape icons. The prompt names one shape, such as `star`, `crescent`,
 `plus sign`, or `lightning bolt`, and asks how many icons of that shape are
 present.

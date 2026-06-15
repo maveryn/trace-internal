@@ -11,7 +11,7 @@
 `count.multi_attribute_xor(scene=named_field, scope=all_icons, predicates=exactly_one_of_shape_or_secondary_attribute, secondary_attribute=color, output=count)`
 
 ## Scene And Query
-The task renders one panel labeled `Scene` containing procedurally generated
+The task renders one panel containing procedurally generated
 named shape icons. Each icon has a semantic procedural `shape_id` and a semantic
 `color_name` sampled from the shared TRACE named-color palette. Icons may also
 render with non-semantic fill patterns (`solid`, `striped`, or `dotted`) as

@@ -9,7 +9,7 @@
 ## Program Contract
 `count.group_predicate(scene=icon_field, scope=single_panel_icon_types, groups=icon_type, predicates=singleton|unique_most_frequent, output=count)`
 
-Renders one Scene panel with assorted icons and asks for an integer count based
+Renders one panel with assorted icons and asks for an integer count based
 on icon-type frequency.
 
 Query ids:

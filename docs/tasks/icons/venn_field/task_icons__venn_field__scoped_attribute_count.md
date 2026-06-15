@@ -9,7 +9,7 @@
 - prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
 
 ## Scene And Query
-The task renders one panel labeled `Scene` containing procedurally generated
+The task renders one panel containing procedurally generated
 named shape icons plus two overlapping marked circles. The prompt names one
 target icon condition and asks how many matching icons have centers in a Venn
 region.

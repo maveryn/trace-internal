@@ -138,6 +138,7 @@ def resolve_single_panel_layout(
     outer_margin_px: int,
     panel_padding_px: int,
     title_font_size_px: int,
+    reserve_title: bool = True,
 ) -> SingleIconPanelLayout:
     """Resolve one single-panel layout for icon tasks without a reference pane."""
 
@@ -150,11 +151,20 @@ def resolve_single_panel_layout(
         raise ValueError("canvas height is too small for icon single-panel layout")
 
     scene_panel = (int(margin), int(margin), int(width - margin), int(height - margin))
-    _, scene_content = _fit_header_band(
-        scene_panel,
-        padding_px=int(panel_padding_px),
-        title_font_size_px=int(title_font_size_px),
-    )
+    if bool(reserve_title):
+        _, scene_content = _fit_header_band(
+            scene_panel,
+            padding_px=int(panel_padding_px),
+            title_font_size_px=int(title_font_size_px),
+        )
+    else:
+        x0, y0, x1, y1 = scene_panel
+        scene_content = (
+            int(x0 + int(panel_padding_px)),
+            int(y0 + int(panel_padding_px)),
+            int(x1 - int(panel_padding_px)),
+            int(y1 - int(panel_padding_px)),
+        )
     return SingleIconPanelLayout(
         canvas_width=width,
         canvas_height=height,
@@ -182,7 +192,7 @@ def draw_two_panel_panels(
     corner_radius_px: int,
     title_font_size_px: int,
     reference_title: str = "Reference",
-    scene_title: str = "Scene",
+    scene_title: str = "",
     icon_canvas_style: IconCanvasStyle | None = None,
 ) -> None:
     """Draw panel chrome and titles on one icon scene image."""
@@ -257,15 +267,17 @@ def draw_single_panel(
         radius=max(0, int(corner_radius_px)),
         border_width=2,
     )
-    draw_text_centered(
-        draw,
-        text=str(scene_title),
-        center=_panel_title_center(layout.scene_panel_xyxy, title_font_size_px=int(title_font_size_px)),
-        font=load_font(int(title_font_size_px), bold=True),
-        fill=tuple(int(v) for v in title_color_rgb),
-        stroke_fill=tuple(int(v) for v in panel_fill_rgb),
-        stroke_width=2,
-    )
+    title = str(scene_title).strip()
+    if title:
+        draw_text_centered(
+            draw,
+            text=str(title),
+            center=_panel_title_center(layout.scene_panel_xyxy, title_font_size_px=int(title_font_size_px)),
+            font=load_font(int(title_font_size_px), bold=True),
+            fill=tuple(int(v) for v in title_color_rgb),
+            stroke_fill=tuple(int(v) for v in panel_fill_rgb),
+            stroke_width=2,
+        )
 
 
 def _grid_slots(content_bbox: BBox, *, rows: int, cols: int, inner_padding_px: int) -> List[BBox]:

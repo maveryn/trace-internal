@@ -8,8 +8,8 @@
 5. Objective: count how many Scene icons have centers inside the strip between two marked anchors.
 
 ## 2) Scene + task contract
-1. Entities/relations: one single-panel `Scene` image of free-placed icons; exactly two Scene icons are visibly marked as `Anchor A` and `Anchor B`.
-2. Supported `query_id` values: `inside_vertical_strip|inside_horizontal_strip`.
+1. Entities/relations: one single-panel image of free-placed icons; exactly two Scene icons are visibly marked as `Anchor A` and `Anchor B`.
+2. Supported `query_id` values: `single`.
 3. Supported semantic parameter axis: `strip_axis=vertical|horizontal`.
 4. Answer type: `answer_gt.type = integer`.
 5. Annotation type: `annotation_gt.type = bbox_set` (scene-only boxes in final image pixel coordinates, sorted top-to-bottom then left-to-right).
@@ -32,7 +32,7 @@
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
 7. Variant counts (scene/task/mode): exactly 5 templates per required key.
-8. Prompt style: the scene stem establishes the single Scene panel plus the two icons marked A and B; task wording asks only about other icon centers inside the requested vertical or horizontal strip.
+8. Prompt style: the scene stem establishes the single panel plus the two icons marked A and B; task wording asks only about other icon centers inside the requested vertical or horizontal strip.
 
 ## 4) Determinism + constraints
 1. Seed namespaces used: scene-level RNG via `spawn_rng(instance_seed, "scene")`.

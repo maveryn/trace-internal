@@ -10,7 +10,7 @@
 ## Program Contract
 `numeric.count_arithmetic(scene=named_field, scope=all_icons, operands=two_named_icon_groups, operators=sum|absolute_difference, output=integer)`
 
-Renders one Scene panel containing procedural named shape icons. The prompt names
+Renders one panel containing procedural named shape icons. The prompt names
 two icon groups and asks either for their total count or the absolute difference
 between their counts.
 

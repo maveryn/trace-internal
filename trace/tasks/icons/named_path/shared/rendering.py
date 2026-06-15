@@ -231,6 +231,7 @@ def render_named_path_scene(
         outer_margin_px=int(render_params["outer_margin_px"]),
         panel_padding_px=int(render_params["panel_padding_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
+        reserve_title=False,
     )
     content_bbox = tuple(int(value) for value in layout.scene_content_xyxy)
     label_font = load_font(int(render_params["candidate_label_font_size_px"]), bold=True)
@@ -270,7 +271,7 @@ def render_named_path_scene(
         title_color_rgb=tuple(int(value) for value in render_params["header_text_rgb"]),
         corner_radius_px=int(render_params["panel_corner_radius_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
-        scene_title="Path",
+        scene_title="",
         icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     _draw_path_underlay(image=image, points=path_points, content_bbox=content_bbox, render_params=render_params)

@@ -12,7 +12,7 @@
 `selection.ranked_item(scene=named_field, scope=labeled_option_icons, metric=center_distance_to_reference, ranks=closest|second_closest|farthest, output=option_letter)`
 
 ## Scene And Query
-The task renders one panel labeled `Scene` with exactly one unique named
+The task renders one panel with exactly one unique named
 reference icon, six option icons labeled `A`..`F`, and `4..8` other icons.
 The reference is uniquely identified by its
 prompt-named color and procedural shape, for example `red [#E63232] star`.

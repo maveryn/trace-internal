@@ -11,7 +11,7 @@
 `count.counterfactual(scene=named_field, scope=visible_icons, edit=shape_removal, target=total_icon_count, output=count)`
 
 ## Scene And Query
-The task renders one panel labeled `Scene` containing procedurally generated
+The task renders one panel containing procedurally generated
 named shape icons. The prompt describes a hypothetical edit and asks for the
 integer count after applying that edit mentally.
 

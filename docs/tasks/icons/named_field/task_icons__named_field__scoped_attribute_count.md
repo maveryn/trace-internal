@@ -12,7 +12,7 @@
 `count.scoped_attribute(scene=named_field, scope=marked_region_or_band_or_quadrant_or_shelf, attribute=shape, output=count)`
 
 ## Scene And Query
-The task renders one panel labeled `Scene` containing procedurally generated
+The task renders one panel containing procedurally generated
 named shape icons plus a visible marked region. The prompt names one procedural
 shape and asks how many matching icons are inside or outside the queried region.
 

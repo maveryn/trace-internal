@@ -17,7 +17,11 @@ from trace.tasks.three_d.surface_fixture.colored_element_count import TASK_ID as
 from trace.tasks.three_d.surface_fixture.empty_or_missing_cell_count import TASK_ID as EMPTY_MISSING_TASK_ID
 from trace.tasks.three_d.surface_fixture.repeated_element_count import TASK_ID
 from trace.tasks.three_d.surface_fixture.repeated_element_count import TASK_ID as REPEATED_TASK_ID
-from trace.tasks.three_d.surface_fixture.scoped_colored_element_count import TASK_ID as SCOPED_COLORED_TASK_ID
+from trace.tasks.three_d.surface_fixture.scoped_colored_element_count import (
+    COLUMN_QUERY_ID as SCOPED_COLORED_COLUMN_QUERY_ID,
+    ROW_QUERY_ID as SCOPED_COLORED_ROW_QUERY_ID,
+    TASK_ID as SCOPED_COLORED_TASK_ID,
+)
 from trace.tasks.three_d.surface_fixture.shared.state import (
     ELEMENT_TYPE_BY_SCENE_VARIANT,
     SEMANTIC_COLOR_RGB,
@@ -118,7 +122,7 @@ def test_surface_fixture_predicate_count_tasks() -> None:
         (
             SCOPED_COLORED_TASK_ID,
             {
-                "query_id": "single",
+                "query_id": SCOPED_COLORED_ROW_QUERY_ID,
                 "scene_variant": "solar_panel_array",
                 "target_count": 3,
                 "target_color_name": "blue",
@@ -170,6 +174,36 @@ def test_surface_fixture_predicate_count_tasks() -> None:
         assert "{target_" not in output.prompt
         assert "{scope_" not in output.prompt
         assert "{reference_" not in output.prompt
+
+
+def test_surface_fixture_scoped_color_query_ids_bind_scope_axis() -> None:
+    cases = (
+        (SCOPED_COLORED_ROW_QUERY_ID, "row", 1),
+        (SCOPED_COLORED_COLUMN_QUERY_ID, "column", 2),
+    )
+
+    for offset, (query_id, expected_axis, scope_index) in enumerate(cases):
+        output = create_task(SCOPED_COLORED_TASK_ID).generate(
+            20260740 + offset,
+            params={
+                "query_id": query_id,
+                "scene_variant": "wall_tile_panel",
+                "target_count": 2,
+                "target_color_name": "green",
+                "scope_index": scope_index,
+                "layout_rows": 4,
+                "layout_columns": 5,
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=20,
+        )
+
+        trace = output.trace_payload["execution_trace"]
+        assert output.query_id == query_id
+        assert trace["query_id"] == query_id
+        assert trace["scope_axis"] == expected_axis
+        assert str(trace["scope_phrase"]).startswith(expected_axis)
+        assert output.answer_gt.value == len(trace["target_element_ids"])
 
 
 def test_surface_fixture_missing_cell_default_answer_range() -> None:

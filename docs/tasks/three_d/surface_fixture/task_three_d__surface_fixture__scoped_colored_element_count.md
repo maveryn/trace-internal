@@ -4,7 +4,7 @@
 - Domain: `three_d`
 - Scene id: `surface_fixture`
 - Scene package: `surface_fixture`
-- Query id: `single`
+- Query ids: `row_scoped_color_count`, `column_scoped_color_count`
 - Answer type: `integer`
 - Annotation type: unordered `point_set`
 
@@ -18,6 +18,8 @@ requested color within one sampled row or column.
 
 The answer is the integer count of finalized present cells matching both the
 requested scope and `color_name == target_color_name`.
+The `row_scoped_color_count` query binds `scope_axis=row`; the
+`column_scoped_color_count` query binds `scope_axis=column`.
 
 ## Annotation Contract
 Annotation is a `point_set` containing one center point for each counted colored

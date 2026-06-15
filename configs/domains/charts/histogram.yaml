@@ -12,9 +12,6 @@ generation:
     interval_bin_span_max: 16
     outside_interval_bin_count_min: 6
     outside_interval_bin_count_max: 12
-    interval_relation_weights:
-      inside: 1.0
-      outside: 1.0
 rendering:
   shared:
     canvas_width: 860

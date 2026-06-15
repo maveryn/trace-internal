@@ -24,10 +24,14 @@ def _assert_value_axis_covers_values(render: dict, values: list[int]) -> None:
     assert set((int(value) for value in render['y_ticks'])).issubset(set((int(value) for value in render['value_axis_minor_ticks'])))
 
 def test_chart_distribution_histogram_variants_match_contract() -> None:
-    task = ChartsDistributionHistogramCountTask()
-    cases = (('interval_mass', {'interval_relation': 'inside'}), ('interval_mass', {'interval_relation': 'outside'}), ('bin_count_between_values', {}), ('rank_item_bin_label', {}))
-    for seed, (query_id, extra_params) in enumerate(cases, start=11010):
-        out = task.generate(seed, params={'query_id': query_id, **extra_params}, max_attempts=10)
+    cases = (
+        (ChartsDistributionHistogramIntervalMassTask, 'inside_interval_mass'),
+        (ChartsDistributionHistogramIntervalMassTask, 'outside_interval_mass'),
+        (ChartsDistributionHistogramBinCountBetweenValuesTask, 'single'),
+        (ChartsDistributionHistogramCumulativeRankLabelTask, 'single'),
+    )
+    for seed, (task_cls, query_id) in enumerate(cases, start=11010):
+        out = task_cls().generate(seed, params={'query_id': query_id}, max_attempts=10)
         trace = out.trace_payload
         execution = trace['execution_trace']
         render = trace['render_spec']
@@ -35,19 +39,27 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
         counts = [int(value) for value in execution['bin_counts']]
         counts_by_label = {str(label): int(value) for label, value in execution['counts_by_label'].items()}
         intervals_by_label = {str(entity['attrs']['label']): (int(entity['attrs']['interval_start']), int(entity['attrs']['interval_end'])) for entity in trace['scene_ir']['entities']}
-        annotation_bboxes = [list(bbox) for bbox in out.annotation_gt.value]
         annotation_labels = [str(label) for label in execution['annotation_labels']]
         axis_values = [int(label) for label in labels]
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == 'integer'
-        assert out.annotation_gt.type == 'bbox_set'
+        if task_cls is ChartsDistributionHistogramCumulativeRankLabelTask:
+            assert out.annotation_gt.type == 'bbox'
+            annotation_bboxes = [list(out.annotation_gt.value)]
+        else:
+            assert out.annotation_gt.type == 'bbox_set'
+            annotation_bboxes = [list(bbox) for bbox in out.annotation_gt.value]
         assert str(execution['scene_variant']) == 'histogram'
         assert str(render['scene_variant']) == 'histogram'
         assert render['information_scene_style']['kind'] == 'information_scene_style'
         assert render['information_scene_style']['style_request']['style_family'] == 'information_scene'
         assert render['information_scene_style']['style_request']['domain'] == 'charts'
-        assert trace['projected_annotation']['bbox_set'] == annotation_bboxes
-        assert len(trace['projected_annotation']['bbox_set']) == len(annotation_labels)
+        if out.annotation_gt.type == 'bbox':
+            assert trace['projected_annotation']['bbox'] == annotation_bboxes[0]
+        else:
+            assert trace['projected_annotation']['bbox_set'] == annotation_bboxes
+        projected_items = annotation_bboxes
+        assert len(projected_items) == len(annotation_labels)
         assert len(annotation_bboxes) == len(annotation_labels)
         assert len(trace['scene_ir']['entities']) == int(execution['bin_count'])
         assert set((str(entity['attrs']['label']) for entity in trace['scene_ir']['entities'])) == set(labels)
@@ -59,21 +71,21 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
         assert int(render['value_axis_min']) == 0
         assert render['guide_line_style'] in {'dashed', 'dotted', 'solid'}
         assert len(render['guide_lines']) == int(execution['bin_count'])
-        if str(query_id) in {'interval_mass', 'bin_count_between_values'}:
+        if task_cls in {ChartsDistributionHistogramIntervalMassTask, ChartsDistributionHistogramBinCountBetweenValuesTask}:
             query_start = int(execution['query_interval_start_value'])
             query_end = int(execution['query_interval_end_value'])
             assert str(execution['query_interval_label']) == f'{query_start}-{query_end}'
             inside_interval_labels = [str(label) for label in labels if int(intervals_by_label[str(label)][0]) >= query_start and int(intervals_by_label[str(label)][1]) <= query_end]
             outside_interval_labels = [str(label) for label in labels if str(label) not in set(inside_interval_labels)]
-        if str(query_id) == 'interval_mass' and str(execution['interval_relation']) == 'inside':
+        if str(query_id) == 'inside_interval_mass':
             assert 5 <= len(annotation_labels) <= int(execution['bin_count'])
             assert annotation_labels == inside_interval_labels
             assert int(out.answer_gt.value) == sum((int(counts_by_label[label]) for label in annotation_labels))
-        elif str(query_id) == 'bin_count_between_values':
+        elif task_cls is ChartsDistributionHistogramBinCountBetweenValuesTask:
             assert 2 <= len(annotation_labels) <= 15
             assert annotation_labels == inside_interval_labels
             assert int(out.answer_gt.value) == len(annotation_labels)
-        elif str(query_id) == 'rank_item_bin_label':
+        elif task_cls is ChartsDistributionHistogramCumulativeRankLabelTask:
             answer_index = int(execution['answer_bin_index'])
             target_rank = int(execution['target_rank'])
             assert annotation_labels == [labels[answer_index]]
@@ -82,7 +94,7 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
             assert int(execution['cumulative_count_before_answer_bin']) < target_rank
             assert target_rank <= int(execution['cumulative_count_through_answer_bin'])
         else:
-            assert str(query_id) == 'interval_mass'
+            assert str(query_id) == 'outside_interval_mass'
             assert str(execution['interval_relation']) == 'outside'
             assert 2 <= len(annotation_labels) <= int(execution['bin_count'])
             assert annotation_labels == outside_interval_labels
@@ -95,8 +107,8 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
             assert int(execution['excluded_interval_bin_span']) >= 2
 
 def test_histogram_bins_are_contiguous_numeric_intervals() -> None:
-    task = ChartsDistributionHistogramCountTask()
-    out = task.generate(11030, params={'query_id': 'interval_mass'}, max_attempts=10)
+    task = ChartsDistributionHistogramIntervalMassTask()
+    out = task.generate(11030, params={'query_id': 'inside_interval_mass'}, max_attempts=10)
     entities = out.trace_payload['scene_ir']['entities']
     intervals = [(int(entity['attrs']['interval_start']), int(entity['attrs']['interval_end'])) for entity in entities]
     for index in range(len(intervals) - 1):
@@ -105,18 +117,21 @@ def test_histogram_bins_are_contiguous_numeric_intervals() -> None:
     assert max((int(end) for _, end in intervals)) <= 99
 
 def test_chart_distribution_histogram_prompt_examples_match_selected_variant() -> None:
-    task = ChartsDistributionHistogramCountTask()
-    expected = {'interval_mass': {'annotation': [[160, 260, 204, 520], [212, 300, 256, 520], [264, 240, 308, 520]], 'answer': 15}, 'bin_count_between_values': {'annotation': [[160, 260, 204, 520], [212, 300, 256, 520], [264, 240, 308, 520]], 'answer': 3}, 'rank_item_bin_label': {'annotation': [[264, 240, 308, 520]], 'answer': 18}}
-    for index, query_id in enumerate(expected, start=11040):
-        out = task.generate(index, params={'query_id': query_id}, max_attempts=10)
+    cases = (
+        (ChartsDistributionHistogramIntervalMassTask, 'inside_interval_mass', {'annotation': [[210, 320, 246, 520], [252, 280, 288, 520]], 'answer': 17}),
+        (ChartsDistributionHistogramBinCountBetweenValuesTask, 'single', {'annotation': [[210, 320, 246, 520], [252, 280, 288, 520]], 'answer': 2}),
+        (ChartsDistributionHistogramCumulativeRankLabelTask, 'single', {'annotation': [336, 240, 372, 520], 'answer': 18}),
+    )
+    for index, (task_cls, query_id, expected) in enumerate(cases, start=11040):
+        out = task_cls().generate(index, params={'query_id': query_id}, max_attempts=10)
         answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
         answer_only = _extract_prompt_json_example(out.prompt_variants['answer_only'])
-        assert answer_and_annotation == expected[query_id]
-        assert answer_only == {'answer': expected[query_id]['answer']}
+        assert answer_and_annotation == expected
+        assert answer_only == {'answer': expected['answer']}
 
 def test_chart_distribution_histogram_task_is_deterministic() -> None:
-    task = ChartsDistributionHistogramCountTask()
-    params = {'query_id': 'bin_count_between_values'}
+    task = ChartsDistributionHistogramBinCountBetweenValuesTask()
+    params = {'query_id': 'single'}
     out_a = task.generate(11060, params=params, max_attempts=10)
     out_b = task.generate(11060, params=params, max_attempts=10)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -127,12 +142,12 @@ def test_chart_distribution_histogram_task_is_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 def test_chart_distribution_histogramseeded_sampler_decouples_variant_and_answer_support() -> None:
-    task = ChartsDistributionHistogramCountTask()
+    task = ChartsDistributionHistogramBinCountBetweenValuesTask()
     bin_count_answers = []
     for sampling_index in range(42):
         out = task.generate(11070 + sampling_index, params={}, max_attempts=10)
-        if str(out.query_id) == 'bin_count_between_values':
-            bin_count_answers.append(int(out.answer_gt.value))
+        assert str(out.query_id) == 'single'
+        bin_count_answers.append(int(out.answer_gt.value))
     assert set(bin_count_answers).issubset(set(range(2, 16)))
     assert len(set(bin_count_answers)) >= 8
 
@@ -141,11 +156,11 @@ def test_chart_distribution_histogram_cumulative_rank_public_task_contract() -> 
     out = task.generate(11080, params={}, max_attempts=10)
     execution = out.trace_payload['execution_trace']
     query_spec = out.trace_payload['query_spec']
-    assert str(out.query_id) == 'rank_item_bin_label'
-    assert str(execution['query_id']) == 'rank_item_bin_label'
-    assert str(query_spec['params']['query_id']) == 'rank_item_bin_label'
+    assert str(out.query_id) == 'single'
+    assert str(execution['query_id']) == 'single'
+    assert str(query_spec['params']['query_id']) == 'single'
     assert out.answer_gt.type == 'integer'
-    assert out.annotation_gt.type == 'bbox_set'
+    assert out.annotation_gt.type == 'bbox'
 
 def test_chart_distribution_boxplot_variants_match_contract() -> None:
     cases = (

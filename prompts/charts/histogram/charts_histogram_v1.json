@@ -76,8 +76,8 @@
     },
     "query:rank_item_bin_label": {
       "answer_hint": "set \"answer\" to the x-axis value containing the requested item rank, as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0,y0,x1,y1] box around the answer histogram bar",
-      "json_example": "{\"annotation\":[[336,240,372,520]],\"answer\":18}",
+      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] box around the answer histogram bar",
+      "json_example": "{\"annotation\":[336,240,372,520],\"answer\":18}",
       "json_example_answer_only": "{\"answer\":18}"
     }
   },

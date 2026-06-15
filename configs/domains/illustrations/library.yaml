@@ -31,6 +31,18 @@ generation:
       target_count_max: 6
       section_book_count_min: 7
       section_book_count_max: 14
+    task_illustrations__library__rotated_tile_label:
+      section_count_min: 4
+      section_count_max: 6
+      section_book_count_min: 8
+      section_book_count_max: 14
+      source_width: 960
+      source_height: 660
+      rotation_degrees_support:
+        - 90
+        - 270
+      min_tile_detail_score: 160
+      min_rotation_delta: 7
 
 rendering:
   shared:
@@ -89,6 +101,21 @@ rendering:
         soft_shadow: 1.0
         ink_sketch: 1.0
         watercolor_wash: 1.0
+    task_illustrations__library__rotated_tile_label:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
 
 prompt:
   task_overrides:
@@ -112,3 +139,11 @@ prompt:
       annotation_hint_book_orientation: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {orientation_name} book in the {section_name} section
       json_example_book_orientation: '{"annotation":[[482,190,500,258],[526,178,544,258],[612,206,662,222]],"answer":3}'
       json_example_answer_only_book_orientation: '{"answer":3}'
+    task_illustrations__library__rotated_tile_label:
+      bundle_id: illustrations_library_v0
+      scene_key: library_canvas
+      task_key: rotated_tile_label_task
+      answer_hint_rotated_tile: set "answer" to the letter of the rotated tile
+      annotation_hint_rotated_tile: set "annotation" to a JSON array containing the [x0, y0, x1, y1] box around the rotated tile in image pixel coordinates
+      json_example_rotated_tile: '{"annotation":[[350,42,670,362]],"answer":"B"}'
+      json_example_answer_only_rotated_tile: '{"answer":"B"}'

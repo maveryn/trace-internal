@@ -142,3 +142,34 @@ def test_book_orientation_countseeded_sampler_covers_answer_counts_and_variants(
     counts = Counter(sample.target_count for sample in samples)
     _assert_hash_balanced_counts(counts, range(1, 7))
     assert {sample.query_id for sample in samples} == {"upright_book_in_section_count", "horizontal_book_in_section_count"}
+
+
+def test_rotated_tile_label_contract() -> None:
+    out = create_task("task_illustrations__library__rotated_tile_label").generate(
+        hash64(2026061501, "library-rotated-tile", 0),
+        params={"section_count": 5, "rotation_degrees": 90},
+        max_attempts=120,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
+    annotation = out.annotation_gt.value
+
+    assert out.scene_id == "library"
+    assert out.query_id == SINGLE_QUERY_ID
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "bbox_set"
+    assert out.answer_gt.value in {"A", "B", "C", "D", "E", "F"}
+    assert execution["query_id"] == SINGLE_QUERY_ID
+    assert execution["prompt_query_key"] == "rotated_tile_label"
+    assert execution["answer_label"] == out.answer_gt.value
+    assert execution["rotation_degrees"] == 90
+    assert execution["grid_shape"] == [2, 3]
+    assert len(render_map["tile_bboxes_px_by_label"]) == 6
+    assert set(render_map["tile_bboxes_px_by_label"]) == {"A", "B", "C", "D", "E", "F"}
+    assert annotation == [render_map["rotated_tile_bbox_px"]]
+    assert annotation == [render_map["tile_bboxes_px_by_label"][out.answer_gt.value]]
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_set"] == annotation
+    assert execution["rotated_tile_index"] in execution["usable_tile_indices"]

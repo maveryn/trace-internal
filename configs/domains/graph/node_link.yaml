@@ -4770,6 +4770,28 @@ prompt:
       answer_hint: set "answer" to that node label as a string
       json_example: '{"annotation":[[180,160]],"answer":"A"}'
       json_example_answer_only: '{"answer":"A"}'
+    task_graph__node_link__degree_value_filter_count:
+      bundle_id: graph_counting_v0
+      scene_key: single_graph_counting
+      task_key: degree_count_query
+      json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
+        in that order for the final answer.
+      json_output_contract_answer_only: Use a valid JSON object with key "answer"
+        for the final answer.
+      object_description_undirected: a labeled undirected graph
+      object_description_directed: a labeled directed graph
+      annotation_hint_degree_count: set "annotation" to an array of [x,y] pixel points
+        at the centers of all nodes with degree {query_degree}; use an empty array
+        when the answer is zero
+      annotation_hint_in_degree_count: set "annotation" to an array of [x,y] pixel
+        points at the centers of all nodes with in-degree {query_degree}; use an empty
+        array when the answer is zero
+      annotation_hint_out_degree_count: set "annotation" to an array of [x,y] pixel
+        points at the centers of all nodes with out-degree {query_degree}; use an
+        empty array when the answer is zero
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"annotation":[[180,220],[310,180]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
     graph_node_link_degree_predicate_count_source:
       bundle_id: graph_counting_v0
       scene_key: single_graph_counting

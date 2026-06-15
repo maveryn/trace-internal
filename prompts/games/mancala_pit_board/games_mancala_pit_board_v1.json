@@ -22,12 +22,12 @@
       ]
     },
     "query": {
-      "sowing_landing_pit_label": [
-        "{sowing_rule_text} Which labeled pit receives the last seed?",
-        "{sowing_rule_text} What is the label of the pit where the last seed lands?",
-        "{sowing_rule_text} Select the pit that receives the final seed.",
-        "{sowing_rule_text} Which pit label is the final landing pit?",
-        "{sowing_rule_text} Which labeled pit gets the last seed?"
+      "sowing_landing_option_label": [
+        "{sowing_rule_text} Which option marks the pit that receives the last seed?",
+        "{sowing_rule_text} What option letter marks the pit where the last seed lands?",
+        "{sowing_rule_text} Select the option marking the final landing pit.",
+        "{sowing_rule_text} Which option letter is on the final landing pit?",
+        "{sowing_rule_text} Which option marks the pit that gets the last seed?"
       ],
       "post_sow_pit_count_value": [
         "{sowing_rule_text} After that move, how many seeds are in the target-marked pit?",
@@ -58,7 +58,7 @@
     "scene:mancala_pit_board": [
       "object_description"
     ],
-    "query:sowing_landing_pit_label": [
+    "query:sowing_landing_option_label": [
       "sowing_rule_text"
     ],
     "query:post_sow_pit_count_value": [
@@ -103,12 +103,12 @@
     }
   },
   "code_prompt_defaults": {
-    "object_description_low_seed": "a two-row pit board with labeled pits, visible seeds, and an arrow direction",
-    "object_description_mixed_seed": "a two-row pit board with labeled pits, visible seeds, and an arrow direction",
-    "object_description_busy_seed": "a two-row pit board with labeled pits, visible seeds, and an arrow direction",
+    "object_description_low_seed": "a two-row pit board with visible seeds and an arrow direction",
+    "object_description_mixed_seed": "a two-row pit board with visible seeds and an arrow direction",
+    "object_description_busy_seed": "a two-row pit board with visible seeds and an arrow direction",
     "sowing_rule_text": "Pick up all seeds from the X-marked pit and sow one seed at a time in the arrow direction.",
-    "annotation_hint_sowing_landing_pit_label": "set \"annotation\" to a JSON array containing the selected landing pit bounding box as [x0,y0,x1,y1] in pixels",
-    "answer_hint_sowing_landing_pit_label": "set \"answer\" to the single selected pit label as a capital letter A through J",
+    "annotation_hint_sowing_landing_option_label": "set \"annotation\" to a JSON array containing the selected landing pit bounding box as [x0,y0,x1,y1] in pixels",
+    "answer_hint_sowing_landing_option_label": "set \"answer\" to the option letter marking the final landing pit",
     "annotation_hint_post_sow_pit_count_value": "set \"annotation\" to an object with keys \"source_pit\" and \"target_pit\", each mapped to that pit bounding box as [x0,y0,x1,y1] in pixels",
     "answer_hint_post_sow_pit_count_value": "set \"answer\" to the integer number of seeds in the target-marked pit after the move"
   }

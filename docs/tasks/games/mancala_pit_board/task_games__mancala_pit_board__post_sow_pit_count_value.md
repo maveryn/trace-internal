@@ -6,7 +6,7 @@ Public taxonomy: `games -> mancala_pit_board -> task_games__mancala_pit_board__p
 
 Program code: `count(final_seeds(target_pit) after sow_all_seeds_from(source_pit)); scene=mancala_pit_board; scope=post_sow_pit_count_value`.
 
-The scene renders a simplified two-row pit board with 10 labeled pits, visible seeds, a sowing direction arrow, one X-marked source pit, and one target-marked pit. The task asks how many seeds are in the target-marked pit after one sowing move from the source pit. No stores, captures, extra turns, or strategy rules are used.
+The scene renders a simplified two-row pit board with 10 unlabeled pits, visible seeds, a sowing direction arrow, one X-marked source pit, and one target-marked pit. The task asks how many seeds are in the target-marked pit after one sowing move from the source pit. No stores, captures, extra turns, or strategy rules are used.
 
 Answer schema: `integer`.
 

@@ -147,6 +147,33 @@ def _draw_centered_text(
     )
 
 
+def _pit_badge_bbox(
+    pit_bbox: Sequence[float],
+    *,
+    row: int,
+    badge_size: float,
+    side: str,
+) -> PitBBox:
+    """Place a small badge outside a pit so it does not cover seeds."""
+
+    if str(side) == "left":
+        cx = float(pit_bbox[0]) + (0.18 * float(badge_size))
+    elif str(side) == "right":
+        cx = float(pit_bbox[2]) - (0.18 * float(badge_size))
+    else:
+        cx = 0.5 * (float(pit_bbox[0]) + float(pit_bbox[2]))
+    if int(row) == 0:
+        cy = float(pit_bbox[1]) - (0.18 * float(badge_size))
+    else:
+        cy = float(pit_bbox[3]) + (0.18 * float(badge_size))
+    return (
+        round(cx - (0.5 * float(badge_size)), 3),
+        round(cy - (0.5 * float(badge_size)), 3),
+        round(cx + (0.5 * float(badge_size)), 3),
+        round(cy + (0.5 * float(badge_size)), 3),
+    )
+
+
 def _draw_arrow(draw: ImageDraw.ImageDraw, start: Tuple[float, float], end: Tuple[float, float], *, fill: Sequence[int], width: int) -> None:
     """Draw one direction arrow between adjacent visual pit positions."""
 
@@ -294,15 +321,15 @@ def render_mancala_scene(
     label_font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
-        namespace=f"{namespace}.pit_labels",
+        namespace=f"{namespace}.markers",
         params=params,
-        explicit_key="pit_label_font_family",
-        weights_key="pit_label_font_family_weights",
+        explicit_key="marker_font_family",
+        weights_key="marker_font_family_weights",
     )
-    label_font = load_font(max(16, int(round(float(pit_height) * 0.30))), bold=True, font_family=label_font_family)
-    mark_font = load_font(max(15, int(round(float(pit_height) * 0.24))), bold=True, font_family=label_font_family)
+    option_font = load_font(max(18, int(round(float(pit_height) * 0.34))), bold=True, font_family=label_font_family)
     board_left = float(board_bbox[0])
     board_top = float(board_bbox[1])
+    pit_rows: Dict[str, int] = {}
     for pit_index in range(PIT_COUNT):
         row, col = visual_row_col(pit_index)
         x0 = board_left + (float(col) * float(pit_width + pit_gap))
@@ -319,34 +346,9 @@ def render_mancala_scene(
             outline=tuple(theme.pit_outline_rgb) + (255,),
             width=max(2, int(pit_outline_width)),
         )
-        label_radius = max(15, int(round(float(pit_height) * 0.22)))
-        label_center = (pit_bbox[0] + label_radius + 5.0, pit_bbox[1] + label_radius + 5.0)
-        label_bbox = (
-            label_center[0] - label_radius,
-            label_center[1] - label_radius,
-            label_center[0] + label_radius,
-            label_center[1] + label_radius,
-        )
-        draw.ellipse(
-            label_bbox,
-            fill=tuple(theme.label_fill_rgb) + (245,),
-            outline=tuple(theme.tray_border_rgb) + (210,),
-            width=1,
-        )
-        _draw_centered_text(
-            draw,
-            label_bbox,
-            label,
-            font=label_font,
-            fill=theme.label_text_rgb,
-            surface_rgb=theme.label_fill_rgb,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}.label.{label}",
-            role="board_mark",
-            stroke_width=0,
-        )
         pit_bboxes[pit_id] = [float(value) for value in pit_bbox]
         pit_centers[pit_id] = [float(value) for value in center]
+        pit_rows[pit_id] = int(row)
         seed_rng = spawn_rng(int(instance_seed), f"{namespace}.pit.{label}.seeds")
         offsets = _seed_offsets(
             int(sample.initial_counts[pit_index]),
@@ -419,6 +421,54 @@ def render_mancala_scene(
     first_top_pit = f"pit_{pit_label(0)}"
     _draw_arrow(draw, (left_x, float(pit_centers[last_bottom_pit][1]) - 0.30 * pit_height), (left_x, float(pit_centers[first_top_pit][1]) + 0.30 * pit_height), fill=theme.arrow_rgb, width=arrow_width)
 
+    option_marker_bboxes: Dict[str, List[float]] = {}
+    option_marker_centers: Dict[str, List[float]] = {}
+    option_marker_pit_ids: Dict[str, str] = {}
+    for option_label, option_index in zip(sample.option_labels, sample.option_pit_indices):
+        option_pit_id = f"pit_{pit_label(int(option_index))}"
+        option_pit_bbox = pit_bboxes[option_pit_id]
+        option_bbox = _pit_badge_bbox(
+            option_pit_bbox,
+            row=pit_rows[option_pit_id],
+            badge_size=max(26.0, float(pit_height) * 0.40),
+            side="left",
+        )
+        draw.ellipse(
+            option_bbox,
+            fill=tuple(theme.label_fill_rgb) + (250,),
+            outline=tuple(theme.tray_border_rgb) + (255,),
+            width=max(2, int(round(float(pit_outline_width) * 0.45))),
+        )
+        _draw_centered_text(
+            draw,
+            option_bbox,
+            str(option_label),
+            font=option_font,
+            fill=theme.label_text_rgb,
+            surface_rgb=theme.label_fill_rgb,
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.option_marker.{option_label}",
+            role="option_label",
+            stroke_width=0,
+        )
+        option_marker_bboxes[str(option_label)] = [float(value) for value in option_bbox]
+        option_marker_centers[str(option_label)] = [
+            round(0.5 * (float(option_bbox[0]) + float(option_bbox[2])), 3),
+            round(0.5 * (float(option_bbox[1]) + float(option_bbox[3])), 3),
+        ]
+        option_marker_pit_ids[str(option_label)] = option_pit_id
+        entities.append(
+            {
+                "entity_id": f"landing_option_{option_label}",
+                "entity_type": "mancala_landing_option",
+                "label": str(option_label),
+                "pit_id": option_pit_id,
+                "pit_index": int(option_index),
+                "center_px": list(option_marker_centers[str(option_label)]),
+                "bbox_px": list(option_marker_bboxes[str(option_label)]),
+            }
+        )
+
     source_pit_id = f"pit_{pit_label(sample.source_index)}"
     source_bbox = pit_bboxes[source_pit_id]
     source_marker_bbox = _bbox_pad(source_bbox, max(5.0, float(marker_width) * 1.2))
@@ -427,12 +477,12 @@ def render_mancala_scene(
         outline=tuple(theme.source_marker_rgb) + (255,),
         width=max(3, int(marker_width)),
     )
-    source_badge_size = max(24, int(round(float(pit_height) * 0.36)))
-    source_badge_bbox = (
-        float(source_bbox[2]) - source_badge_size - 4.0,
-        float(source_bbox[1]) + 4.0,
-        float(source_bbox[2]) - 4.0,
-        float(source_bbox[1]) + source_badge_size + 4.0,
+    source_badge_size = max(24.0, float(pit_height) * 0.38)
+    source_badge_bbox = _pit_badge_bbox(
+        source_bbox,
+        row=pit_rows[source_pit_id],
+        badge_size=source_badge_size,
+        side="right",
     )
     draw.rounded_rectangle(
         source_badge_bbox,
@@ -468,33 +518,27 @@ def render_mancala_scene(
             outline=tuple(theme.target_marker_rgb) + (255,),
             width=max(3, int(marker_width)),
         )
-        badge_size = max(22, int(round(float(pit_height) * 0.32)))
-        badge_bbox = (
-            float(target_bbox[2]) - badge_size - 4.0,
-            float(target_bbox[1]) + 4.0,
-            float(target_bbox[2]) - 4.0,
-            float(target_bbox[1]) + badge_size + 4.0,
+        badge_size = max(22.0, float(pit_height) * 0.34)
+        badge_bbox = _pit_badge_bbox(
+            target_bbox,
+            row=pit_rows[target_pit_id],
+            badge_size=badge_size,
+            side="right",
         )
-        draw.rounded_rectangle(
+        draw.ellipse(
             badge_bbox,
-            radius=max(5, int(round(float(badge_size) * 0.25))),
             fill=tuple(theme.target_marker_rgb) + (245,),
             outline=tuple(theme.pit_outline_rgb) + (230,),
+            width=max(1, int(round(float(marker_width) * 0.35))),
+        )
+        inner_pad = max(5.0, float(badge_size) * 0.28)
+        draw.ellipse(
+            _bbox_pad(badge_bbox, -inner_pad),
+            fill=(255, 255, 255, 235),
+            outline=tuple(theme.target_marker_rgb) + (255,),
             width=1,
         )
-        _draw_centered_text(
-            draw,
-            badge_bbox,
-            "T",
-            font=mark_font,
-            fill=(255, 255, 255),
-            surface_rgb=theme.target_marker_rgb,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}.target_badge",
-            role="board_mark",
-            stroke_width=0,
-        )
-        marker_metadata["target_pit_marker"] = {"pit_id": target_pit_id, "bbox_px": list(target_marker_bbox)}
+        marker_metadata["target_pit_marker"] = {"pit_id": target_pit_id, "bbox_px": list(target_marker_bbox), "dot_badge_bbox_px": list(badge_bbox)}
 
     render_map = {
         "board_bbox_px": [float(value) for value in board_bbox],
@@ -502,13 +546,16 @@ def render_mancala_scene(
         "pit_bboxes_px": dict(pit_bboxes),
         "pit_centers_px": dict(pit_centers),
         "seed_centers_px": dict(seed_centers),
+        "landing_option_marker_bboxes_px": dict(option_marker_bboxes),
+        "landing_option_marker_centers_px": dict(option_marker_centers),
+        "landing_option_marker_pit_ids": dict(option_marker_pit_ids),
         "layout_jitter": dict(resolved_jitter),
         "marker_metadata": dict(marker_metadata),
         "effective_pit_width_px": int(pit_width),
         "effective_pit_height_px": int(pit_height),
         "effective_seed_diameter_px": int(seed_diameter),
         "effective_pit_outline_width_px": int(pit_outline_width),
-        "pit_label_font": font_role_trace(str(label_font_family), role="readout"),
+        "marker_font": font_role_trace(str(label_font_family), role="readout"),
     }
     return RenderedMancalaScene(
         image=image.convert("RGB"),
@@ -517,7 +564,7 @@ def render_mancala_scene(
         style_meta={
             "panel_scene_style": dict(panel_style_meta),
             "mancala_pit_board_style": dict(theme_meta),
-            "pit_label_font": font_role_trace(str(label_font_family), role="readout"),
+            "marker_font": font_role_trace(str(label_font_family), role="readout"),
         },
         background_meta=dict(background_meta),
     )

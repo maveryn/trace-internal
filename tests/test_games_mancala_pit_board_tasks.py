@@ -11,8 +11,8 @@ from trace.tasks.games.mancala_pit_board.post_sow_pit_count_value import (
     TASK_ID as POST_SOW_COUNT_TASK_ID,
 )
 from trace.tasks.games.mancala_pit_board.shared.rules import pit_index, pit_label, sow_counts
-from trace.tasks.games.mancala_pit_board.shared.state import LABELS
-from trace.tasks.games.mancala_pit_board.sowing_landing_pit_label import (
+from trace.tasks.games.mancala_pit_board.shared.state import LABELS, OPTION_LABELS
+from trace.tasks.games.mancala_pit_board.sowing_landing_option_label import (
     TASK_ID as SOWING_LANDING_TASK_ID,
 )
 from trace.tasks.registry import create_task, ensure_scene_tasks_registered, is_default_dataset_task
@@ -33,6 +33,7 @@ def test_games_mancala_pit_board_defaults_and_prompt_bundle() -> None:
     }
     task_overrides = cfg["generation"]["task_overrides"]
     assert list(task_overrides[SOWING_LANDING_TASK_ID]["target_landing_label_support"]) == list(LABELS)
+    assert list(task_overrides[SOWING_LANDING_TASK_ID]["answer_option_label_support"]) == list(OPTION_LABELS)
     assert list(task_overrides[POST_SOW_COUNT_TASK_ID]["target_count_support"]) == list(range(9))
     assert int(rendering["seed_diameter_min_px"]) == 16
     assert int(rendering["seed_diameter_max_px"]) == 20
@@ -45,7 +46,7 @@ def test_games_mancala_pit_board_prompt_bundle_has_queries() -> None:
     )
     assert bundle["schema_version"] == "v1"
     assert set(bundle["templates"]["query"].keys()) == {
-        "sowing_landing_pit_label",
+        "sowing_landing_option_label",
         "post_sow_pit_count_value",
     }
     assert bool(bundle["allow_empty_task_templates"])
@@ -77,21 +78,25 @@ def test_games_mancala_pit_board_registry_and_taxonomy() -> None:
 def test_games_mancala_pit_board_landing_answer_matches_trace() -> None:
     out = create_task(SOWING_LANDING_TASK_ID).generate(
         881003,
-        params={"target_landing_label": "G"},
+        params={"target_landing_label": "G", "answer_option_label": "C"},
         max_attempts=100,
     )
     trace = out.trace_payload["execution_trace"]
 
     assert out.scene_id == "mancala_pit_board"
     assert out.query_id == "single"
-    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "sowing_landing_pit_label"
-    assert out.answer_gt.type == "string"
-    assert str(out.answer_gt.value) == "G"
+    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "sowing_landing_option_label"
+    assert out.answer_gt.type == "option_letter"
+    assert str(out.answer_gt.value) == "C"
     assert trace["landing_label"] == "G"
+    assert trace["answer_option_label"] == "C"
+    assert trace["option_pits_by_label"]["C"] == "G"
     assert trace["sowing_path_labels"][-1] == "G"
     assert out.annotation_gt.type == "bbox_set"
     assert len(out.annotation_gt.value) == 1
     assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
+    assert len(out.trace_payload["render_map"]["landing_option_marker_bboxes_px"]) == 4
+    assert set(out.trace_payload["render_map"]["landing_option_marker_pit_ids"].keys()) == set(OPTION_LABELS)
 
 
 def test_games_mancala_pit_board_post_sow_count_answer_matches_trace() -> None:
@@ -118,8 +123,13 @@ def test_games_mancala_pit_board_post_sow_count_answer_matches_trace() -> None:
 def test_games_mancala_pit_board_support_endpoints_are_constructible() -> None:
     landing_task = create_task(SOWING_LANDING_TASK_ID)
     for label in ("A", "J"):
-        out = landing_task.generate(883000 + pit_index(label), params={"target_landing_label": label}, max_attempts=100)
-        assert str(out.answer_gt.value) == label
+        out = landing_task.generate(
+            883000 + pit_index(label),
+            params={"target_landing_label": label, "answer_option_label": "D"},
+            max_attempts=100,
+        )
+        assert str(out.answer_gt.value) == "D"
+        assert out.trace_payload["execution_trace"]["option_pits_by_label"]["D"] == label
 
     count_task = create_task(POST_SOW_COUNT_TASK_ID)
     for target in (0, 8):

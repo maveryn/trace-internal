@@ -17,7 +17,7 @@ generation:
     min_source_seed_count: 1
     max_source_seed_count: 8
   task_overrides:
-    task_games__mancala_pit_board__sowing_landing_pit_label:
+    task_games__mancala_pit_board__sowing_landing_option_label:
       target_landing_label_support:
       - A
       - B
@@ -30,6 +30,12 @@ generation:
       - I
       - J
       balanced_target_landing_label_sampling: true
+      answer_option_label_support:
+      - A
+      - B
+      - C
+      - D
+      balanced_answer_option_label_sampling: true
     task_games__mancala_pit_board__post_sow_pit_count_value:
       target_count_support:
       - 0

@@ -12,6 +12,7 @@ SCENE_ID = "mancala_pit_board"
 PITS_PER_ROW = 5
 PIT_COUNT = PITS_PER_ROW * 2
 LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(PIT_COUNT))
+OPTION_LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(4))
 STYLE_VARIANTS: Tuple[str, ...] = ("wood_tray", "sand_stone", "slate_bowls", "cloth_pits", "arcade_pits")
 SCENE_VARIANTS: Tuple[str, ...] = ("low_seed", "mixed_seed", "busy_seed")
 PitBBox = Tuple[float, float, float, float]
@@ -23,6 +24,7 @@ class MancalaDefaults:
 
     target_count_support: Tuple[int, ...] = tuple(range(9))
     target_landing_label_support: Tuple[str, ...] = LABELS
+    landing_option_label_support: Tuple[str, ...] = OPTION_LABELS
     min_seed_count_per_pit: int = 0
     max_seed_count_per_pit: int = 8
     min_source_seed_count: int = 1
@@ -87,6 +89,8 @@ class MancalaSample:
     landing_index: int
     target_index: int | None
     construction_mode: str
+    option_pit_indices: Tuple[int, ...] = ()
+    option_labels: Tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -124,6 +128,7 @@ DEFAULTS = MancalaDefaults()
 __all__ = [
     "DEFAULTS",
     "LABELS",
+    "OPTION_LABELS",
     "PIT_COUNT",
     "PITS_PER_ROW",
     "SCENE_ID",

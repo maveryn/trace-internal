@@ -105,7 +105,7 @@ def build_mancala_trace_payload(
             "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
             "panel_scene_style": dict(rendered_scene.style_meta.get("panel_scene_style", {})),
             "mancala_pit_board_style": dict(rendered_scene.style_meta.get("mancala_pit_board_style", {})),
-            "pit_label_font": dict(rendered_scene.style_meta.get("pit_label_font", {})),
+            "marker_font": dict(rendered_scene.style_meta.get("marker_font", {})),
             "effective_pit_width_px": int(rendered_scene.render_map["effective_pit_width_px"]),
             "effective_pit_height_px": int(rendered_scene.render_map["effective_pit_height_px"]),
             "effective_seed_diameter_px": int(rendered_scene.render_map["effective_seed_diameter_px"]),

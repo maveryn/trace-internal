@@ -2,14 +2,17 @@
 
 Public taxonomy: `games -> mancala_pit_board -> task_games__mancala_pit_board__sowing_landing_pit_label`.
 
-## Contract
+## Program Contract
 
-1. The scene renders a simplified two-row pit board with 12 labeled pits, visible seeds, a sowing direction arrow, and one X-marked source pit.
-2. The task asks which labeled pit receives the last seed after picking up all seeds from the source pit and sowing one seed at a time in the arrow direction.
-3. The task does not use stores, captures, extra turns, or strategy rules.
-4. Answer type: `string`.
-5. Annotation type: `bbox_set` containing the selected landing pit bounding box.
-6. Query id: `sowing_landing_pit_label`.
+Program code: `select(pit_label where pit == last(sow_all_seeds_from(source_pit))); scene=mancala_pit_board; scope=sowing_landing_pit_label`.
+
+The scene renders a simplified two-row pit board with 12 labeled pits, visible seeds, a sowing direction arrow, and one X-marked source pit. The task asks which labeled pit receives the last seed after picking up all seeds from the source pit and sowing one seed at a time in the arrow direction. No stores, captures, extra turns, or strategy rules are used.
+
+Answer schema: `string` capital pit label.
+
+Annotation schema: `bbox_set` containing the selected landing pit bounding box.
+
+Supported `query_id`: `single`.
 
 ## Generator
 

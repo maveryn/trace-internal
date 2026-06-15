@@ -5,18 +5,17 @@ from __future__ import annotations
 from pathlib import Path
 import json
 
-import trace.tasks  # noqa: F401
 from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.mancala_pit_board.sowing_landing_pit_label import (
-    LABELS,
-    POST_SOW_COUNT_TASK_ID,
-    SOWING_LANDING_TASK_ID,
-    _pit_index,
-    _pit_label,
-    _sow_counts,
+from trace.tasks.games.mancala_pit_board.post_sow_pit_count_value import (
+    TASK_ID as POST_SOW_COUNT_TASK_ID,
 )
-from trace.tasks.registry import create_task, list_default_task_ids
+from trace.tasks.games.mancala_pit_board.shared.rules import pit_index, pit_label, sow_counts
+from trace.tasks.games.mancala_pit_board.shared.state import LABELS
+from trace.tasks.games.mancala_pit_board.sowing_landing_pit_label import (
+    TASK_ID as SOWING_LANDING_TASK_ID,
+)
+from trace.tasks.registry import create_task, ensure_scene_tasks_registered, is_default_dataset_task
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
@@ -32,18 +31,20 @@ def test_games_mancala_pit_board_defaults_and_prompt_bundle() -> None:
         "cloth_pits",
         "arcade_pits",
     }
-    assert list(generation["target_landing_label_support"]) == list(LABELS)
-    assert list(generation["target_count_support"]) == list(range(9))
+    task_overrides = cfg["generation"]["task_overrides"]
+    assert list(task_overrides[SOWING_LANDING_TASK_ID]["target_landing_label_support"]) == list(LABELS)
+    assert list(task_overrides[POST_SOW_COUNT_TASK_ID]["target_count_support"]) == list(range(9))
     assert int(rendering["seed_diameter_min_px"]) == 16
     assert int(rendering["seed_diameter_max_px"]) == 20
-    assert str(prompt["bundle_id"]) == "games_mancala_pit_board_v0"
+    assert str(prompt["bundle_id"]) == "games_mancala_pit_board_v1"
 
 
 def test_games_mancala_pit_board_prompt_bundle_has_queries() -> None:
     bundle = json.loads(
-        Path("prompts/games/mancala_pit_board/games_mancala_pit_board_v0.json").read_text(encoding="utf-8")
+        Path("prompts/games/mancala_pit_board/games_mancala_pit_board_v1.json").read_text(encoding="utf-8")
     )
-    assert set(bundle["query_templates"].keys()) == {
+    assert bundle["schema_version"] == "v1"
+    assert set(bundle["templates"]["query"].keys()) == {
         "sowing_landing_pit_label",
         "post_sow_pit_count_value",
     }
@@ -52,24 +53,24 @@ def test_games_mancala_pit_board_prompt_bundle_has_queries() -> None:
 
 def test_games_mancala_pit_board_sowing_logic() -> None:
     counts = [0] * 12
-    counts[_pit_index("F")] = 3
-    final_counts, path = _sow_counts(counts, _pit_index("F"))
-    assert [_pit_label(index) for index in path] == ["G", "H", "I"]
-    assert final_counts[_pit_index("F")] == 0
-    assert final_counts[_pit_index("G")] == 1
-    assert final_counts[_pit_index("H")] == 1
-    assert final_counts[_pit_index("I")] == 1
+    counts[pit_index("F")] = 3
+    final_counts, path = sow_counts(counts, pit_index("F"))
+    assert [pit_label(index) for index in path] == ["G", "H", "I"]
+    assert final_counts[pit_index("F")] == 0
+    assert final_counts[pit_index("G")] == 1
+    assert final_counts[pit_index("H")] == 1
+    assert final_counts[pit_index("I")] == 1
 
 
 def test_games_mancala_pit_board_registry_and_taxonomy() -> None:
-    default_ids = set(list_default_task_ids())
-    assert SOWING_LANDING_TASK_ID in default_ids
-    assert POST_SOW_COUNT_TASK_ID in default_ids
+    ensure_scene_tasks_registered("games", "mancala_pit_board")
+    assert is_default_dataset_task(SOWING_LANDING_TASK_ID)
+    assert is_default_dataset_task(POST_SOW_COUNT_TASK_ID)
     for task_id in (SOWING_LANDING_TASK_ID, POST_SOW_COUNT_TASK_ID):
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "mancala_pit_board"
-        assert taxonomy.source_scene_id == "mancala_pit_board"
+        assert taxonomy.source_scene_id == ""
 
 
 def test_games_mancala_pit_board_landing_answer_matches_trace() -> None:
@@ -81,7 +82,8 @@ def test_games_mancala_pit_board_landing_answer_matches_trace() -> None:
     trace = out.trace_payload["execution_trace"]
 
     assert out.scene_id == "mancala_pit_board"
-    assert out.query_id == "sowing_landing_pit_label"
+    assert out.query_id == "single"
+    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "sowing_landing_pit_label"
     assert out.answer_gt.type == "string"
     assert str(out.answer_gt.value) == "G"
     assert trace["landing_label"] == "G"
@@ -101,7 +103,8 @@ def test_games_mancala_pit_board_post_sow_count_answer_matches_trace() -> None:
     target_label = str(trace["target_label"])
 
     assert out.scene_id == "mancala_pit_board"
-    assert out.query_id == "post_sow_pit_count_value"
+    assert out.query_id == "single"
+    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "post_sow_pit_count_value"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 8
     assert trace["final_counts_by_label"][target_label] == 8
@@ -114,7 +117,7 @@ def test_games_mancala_pit_board_post_sow_count_answer_matches_trace() -> None:
 def test_games_mancala_pit_board_support_endpoints_are_constructible() -> None:
     landing_task = create_task(SOWING_LANDING_TASK_ID)
     for label in ("A", "L"):
-        out = landing_task.generate(883000 + _pit_index(label), params={"target_landing_label": label}, max_attempts=100)
+        out = landing_task.generate(883000 + pit_index(label), params={"target_landing_label": label}, max_attempts=100)
         assert str(out.answer_gt.value) == label
 
     count_task = create_task(POST_SOW_COUNT_TASK_ID)

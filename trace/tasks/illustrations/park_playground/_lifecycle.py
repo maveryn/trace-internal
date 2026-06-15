@@ -89,7 +89,7 @@ def compose_count_result(
     annotation_value: Sequence[Sequence[float]],
     render_map: Mapping[str, Any],
     scene_relations: Mapping[str, Any],
-    query_params: Mapping[str, Any],
+    branch_params: Mapping[str, Any],
     execution_trace: Mapping[str, Any],
     witness_symbolic: Mapping[str, Any],
     scene_entities: Sequence[Mapping[str, Any]],
@@ -109,24 +109,33 @@ def compose_count_result(
         slots=dict(slots),
         instance_seed=int(instance_seed),
     )
+    branch_metadata = dict(branch_params)
+    public_query_id = str(branch_metadata.pop("branch_id", "single"))
+    public_scene_relations = dict(scene_relations)
+    public_scene_relations.pop("branch_id", None)
+    public_scene_relations["query_id"] = public_query_id
+    public_query_params = {"query_id": public_query_id, **branch_metadata}
+    public_execution_trace = dict(execution_trace)
+    public_execution_trace.pop("branch_id", None)
+    public_execution_trace["query_id"] = public_query_id
     trace_payload = {
         "scene_ir": park_scene_ir(
             domain=str(task.domain),
             scene_id="park_playground",
             entities=[dict(entity) for entity in scene_entities],
-            relations=dict(scene_relations),
+            relations=public_scene_relations,
         ),
         "query_spec": {
             "task_id": str(task.task_id),
-            "query_id": str(query_params["query_id"]),
+            "query_id": public_query_id,
             "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
             "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-            "params": dict(query_params),
+            "params": public_query_params,
         },
         "render_spec": park_render_spec(scene),
         "render_map": dict(render_map),
-        "execution_trace": dict(execution_trace),
+        "execution_trace": public_execution_trace,
         "witness_symbolic": dict(witness_symbolic),
         "projected_annotation": {"bbox_set": [list(box) for box in annotation_value]},
     }
@@ -140,7 +149,7 @@ def compose_count_result(
         trace_payload=trace_payload,
         task_versions=default_task_versions(),
         scene_id="park_playground",
-        query_id=str(query_params["query_id"]),
+        query_id=public_query_id,
     )
 
 
@@ -183,7 +192,7 @@ def run_park_count_lifecycle(
         annotation_value=bound.annotation_value,
         render_map=bound.render_map,
         scene_relations=bound.scene_relations,
-        query_params=bound.query_params,
+        branch_params=bound.branch_params,
         execution_trace=bound.execution_trace,
         witness_symbolic=bound.witness_symbolic,
         scene_entities=bound.scene_entities,

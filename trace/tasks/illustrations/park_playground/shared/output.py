@@ -86,9 +86,9 @@ def bind_activity_people(scene: Any, sample: ActivitySampleSpec, prompt_defaults
         answer=int(sample.target_count),
         annotation_value=annotation_value,
         render_map={"person_bboxes_px": person_bboxes, "counted_person_ids": list(counted_person_ids)},
-        scene_relations={"query_id": str(sample.query_id), "target_activity": str(sample.target_activity)},
-        query_params={
-            "query_id": str(sample.query_id),
+        scene_relations={"branch_id": str(sample.branch_id), "target_activity": str(sample.target_activity)},
+        branch_params={
+            "branch_id": str(sample.branch_id),
             "target_activity": str(sample.target_activity),
             "activity_phrase": str(sample.activity_phrase),
             "target_count": int(sample.target_count),
@@ -99,7 +99,7 @@ def bind_activity_people(scene: Any, sample: ActivitySampleSpec, prompt_defaults
             "person_count_probabilities": dict(sample.person_count_probabilities),
         },
         execution_trace={
-            "query_id": str(sample.query_id),
+            "branch_id": str(sample.branch_id),
             "scene_id": "park_playground",
             "target_activity": str(sample.target_activity),
             "target_activity_phrase": str(sample.activity_phrase),
@@ -160,9 +160,9 @@ def bind_area_people(scene: Any, sample: AreaSampleSpec, prompt_defaults: Mappin
         answer=int(sample.target_count),
         annotation_value=annotation_value,
         render_map={"person_bboxes_px": person_bboxes, "counted_person_ids": list(counted_person_ids)},
-        scene_relations={"query_id": str(sample.query_id), "target_zone": str(sample.target_zone)},
-        query_params={
-            "query_id": str(sample.query_id),
+        scene_relations={"branch_id": str(sample.branch_id), "target_zone": str(sample.target_zone)},
+        branch_params={
+            "branch_id": str(sample.branch_id),
             "target_zone": str(sample.target_zone),
             "zone_name": str(sample.zone_name),
             "target_count": int(sample.target_count),
@@ -173,7 +173,7 @@ def bind_area_people(scene: Any, sample: AreaSampleSpec, prompt_defaults: Mappin
             "person_count_probabilities": dict(sample.person_count_probabilities),
         },
         execution_trace={
-            "query_id": str(sample.query_id),
+            "branch_id": str(sample.branch_id),
             "scene_id": "park_playground",
             "target_zone": str(sample.target_zone),
             "target_zone_name": str(sample.zone_name),
@@ -236,9 +236,9 @@ def bind_equipment_users(scene: Any, sample: EquipmentUseSampleSpec, prompt_defa
         answer=int(sample.target_count),
         annotation_value=annotation_value,
         render_map={"person_bboxes_px": person_bboxes, "decor_bboxes_px": decor_bboxes, "counted_person_ids": list(counted_person_ids)},
-        scene_relations={"query_id": str(sample.query_id), "target_equipment_type": str(sample.target_equipment_type)},
-        query_params={
-            "query_id": str(sample.query_id),
+        scene_relations={"branch_id": str(sample.branch_id), "target_equipment_type": str(sample.target_equipment_type)},
+        branch_params={
+            "branch_id": str(sample.branch_id),
             "target_equipment_type": str(sample.target_equipment_type),
             "equipment_name": str(sample.equipment_name),
             "target_count": int(sample.target_count),
@@ -251,7 +251,7 @@ def bind_equipment_users(scene: Any, sample: EquipmentUseSampleSpec, prompt_defa
             "person_count_probabilities": dict(sample.person_count_probabilities),
         },
         execution_trace={
-            "query_id": str(sample.query_id),
+            "branch_id": str(sample.branch_id),
             "scene_id": "park_playground",
             "target_equipment_type": str(sample.target_equipment_type),
             "target_equipment_name": str(sample.equipment_name),
@@ -315,9 +315,9 @@ def bind_equipment_items(scene: Any, sample: EquipmentSampleSpec, prompt_default
         answer=int(sample.target_count),
         annotation_value=annotation_value,
         render_map={"decor_bboxes_px": decor_bboxes, "counted_equipment_ids": list(counted_equipment_ids)},
-        scene_relations={"query_id": str(sample.query_id), "target_equipment_type": str(sample.target_equipment_type)},
-        query_params={
-            "query_id": str(sample.query_id),
+        scene_relations={"branch_id": str(sample.branch_id), "target_equipment_type": str(sample.target_equipment_type)},
+        branch_params={
+            "branch_id": str(sample.branch_id),
             "target_equipment_type": str(sample.target_equipment_type),
             "equipment_name": str(sample.equipment_name),
             "target_count": int(sample.target_count),
@@ -330,7 +330,7 @@ def bind_equipment_items(scene: Any, sample: EquipmentSampleSpec, prompt_default
             "person_count_probabilities": dict(sample.person_count_probabilities),
         },
         execution_trace={
-            "query_id": str(sample.query_id),
+            "branch_id": str(sample.branch_id),
             "scene_id": "park_playground",
             "target_equipment_type": str(sample.target_equipment_type),
             "target_equipment_name": str(sample.equipment_name),

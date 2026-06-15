@@ -174,7 +174,7 @@ def sample_activity_people(
 ) -> ActivitySampleSpec:
     """Sample one activity predicate with exact target and distractor people."""
 
-    query_id, query_probabilities, task_params = select_task_query_id(
+    branch_id, query_probabilities, task_params = select_task_query_id(
         instance_seed=int(instance_seed),
         params=params,
         supported_query_ids=tuple(str(value) for value in query_support),
@@ -232,7 +232,7 @@ def sample_activity_people(
         person_specs.append(ParkPersonSpec(activity=distractor_activity, role="distractor"))
     rng.shuffle(person_specs)
     return ActivitySampleSpec(
-        query_id=str(query_id),
+        branch_id=str(branch_id),
         target_activity=str(target_activity),
         activity_phrase=park_activity_display_name(str(target_activity)),
         target_count=int(target_count),
@@ -257,7 +257,7 @@ def sample_area_people(
 ) -> AreaSampleSpec:
     """Sample one target area and construct exact target/distractor people."""
 
-    query_id, query_probabilities, task_params = select_task_query_id(
+    branch_id, query_probabilities, task_params = select_task_query_id(
         instance_seed=int(instance_seed),
         params=params,
         supported_query_ids=tuple(str(value) for value in query_support),
@@ -328,7 +328,7 @@ def sample_area_people(
         )
     rng.shuffle(person_specs)
     return AreaSampleSpec(
-        query_id=str(query_id),
+        branch_id=str(branch_id),
         target_zone=str(target_zone),
         zone_name=park_zone_display_name(str(target_zone)),
         target_count=int(target_count),
@@ -353,7 +353,7 @@ def sample_equipment_users(
 ) -> EquipmentUseSampleSpec:
     """Sample one equipment-use predicate with exact target people."""
 
-    query_id, query_probabilities, task_params = select_task_query_id(
+    branch_id, query_probabilities, task_params = select_task_query_id(
         instance_seed=int(instance_seed),
         params=params,
         supported_query_ids=tuple(str(value) for value in query_support),
@@ -465,7 +465,7 @@ def sample_equipment_users(
         person_specs.append(ParkPersonSpec(activity=str(rng.choice(normal_activities)), role="distractor"))
     rng.shuffle(person_specs)
     return EquipmentUseSampleSpec(
-        query_id=str(query_id),
+        branch_id=str(branch_id),
         target_equipment_type=str(target_equipment),
         equipment_name=usage_label(str(target_equipment)),
         target_count=int(target_count),
@@ -493,7 +493,7 @@ def sample_equipment_items(
 ) -> EquipmentSampleSpec:
     """Sample one equipment type with exact target and distractor equipment."""
 
-    query_id, query_probabilities, task_params = select_task_query_id(
+    branch_id, query_probabilities, task_params = select_task_query_id(
         instance_seed=int(instance_seed),
         params=params,
         supported_query_ids=tuple(str(value) for value in query_support),
@@ -571,7 +571,7 @@ def sample_equipment_items(
         for _ in range(int(person_count))
     )
     return EquipmentSampleSpec(
-        query_id=str(query_id),
+        branch_id=str(branch_id),
         target_equipment_type=str(target_equipment),
         equipment_name=park_equipment_display_name(str(target_equipment)),
         target_count=int(target_count),

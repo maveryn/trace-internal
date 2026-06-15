@@ -114,6 +114,20 @@ class JigsawArtifacts:
 
 
 @dataclass(frozen=True)
+class JigsawArrangementArtifacts:
+    image: Image.Image
+    option_bboxes: Dict[str, list[float]]
+    selected_option_bbox: list[float]
+    selected_label: str
+    selected_index: int
+    option_permutations: Tuple[Tuple[int, ...], ...]
+    tile_source_boxes: Tuple[Tuple[int, int, int, int], ...]
+    correct_permutation: Tuple[int, ...]
+    grid_shape: Tuple[int, int]
+    option_layout_shape: Tuple[int, int]
+
+
+@dataclass(frozen=True)
 class RotatedTileArtifacts:
     image: Image.Image
     tile_bboxes: Dict[str, list[float]]
@@ -323,6 +337,142 @@ def compose_jigsaw_board(
         display_order_content_indices=tuple(int(value) for value in display_order),
         anchored_content_index=0,
         display_grid_shape=(int(rows), int(cols)),
+    )
+
+
+def _jigsaw_distractor_permutations(
+    *,
+    rng: Any,
+    piece_count: int,
+    needed: int,
+) -> Tuple[Tuple[int, ...], ...]:
+    identity = tuple(range(int(piece_count)))
+    candidates = [
+        tuple(int(value) for value in perm)
+        for perm in permutations(identity)
+        if tuple(int(value) for value in perm) != identity
+    ]
+    if int(needed) > len(candidates):
+        raise ValueError("not enough unique jigsaw distractor permutations")
+    rng.shuffle(candidates)
+    return tuple(candidates[: int(needed)])
+
+
+def compose_jigsaw_arrangement_options(
+    *,
+    source_image: Image.Image,
+    rows: int,
+    cols: int,
+    correct_index: int,
+    rng: Any,
+    board_style: Mapping[str, Any],
+    label_font_family: str,
+    labels: Sequence[str] = DEFAULT_OPTION_LABELS[:4],
+    render_margin: int = 34,
+    option_gap: int = 28,
+    label_h: int = 32,
+    option_columns: int = 2,
+) -> JigsawArrangementArtifacts:
+    """Compose lettered full-image jigsaw arrangement options."""
+
+    row_count = int(rows)
+    col_count = int(cols)
+    if row_count < 1 or col_count < 1:
+        raise ValueError("rows and cols must be positive")
+    piece_count = row_count * col_count
+    label_values = tuple(str(value) for value in labels)
+    if len(label_values) < 2:
+        raise ValueError("at least two option labels are required")
+    if int(correct_index) < 0 or int(correct_index) >= len(label_values):
+        raise ValueError("correct_index outside option label support")
+
+    source_rgb = source_image.convert("RGB")
+    pieces = piece_crops(source_rgb, rows=row_count, cols=col_count)
+    correct_permutation = tuple(range(piece_count))
+    distractors = _jigsaw_distractor_permutations(
+        rng=rng,
+        piece_count=piece_count,
+        needed=len(label_values) - 1,
+    )
+    option_permutations: list[Tuple[int, ...]] = []
+    distractor_index = 0
+    for option_index in range(len(label_values)):
+        if int(option_index) == int(correct_index):
+            option_permutations.append(correct_permutation)
+        else:
+            option_permutations.append(tuple(distractors[distractor_index]))
+            distractor_index += 1
+
+    margin = int(render_margin)
+    gap = int(option_gap)
+    label_height = int(label_h)
+    option_cols = max(1, int(option_columns))
+    option_rows = (len(label_values) + option_cols - 1) // option_cols
+    option_w = int(source_rgb.width)
+    option_h = int(source_rgb.height)
+    canvas_w = option_cols * option_w + (option_cols - 1) * gap + 2 * margin
+    canvas_h = option_rows * (label_height + option_h) + (option_rows - 1) * gap + 2 * margin
+    canvas = Image.new("RGB", (int(canvas_w), int(canvas_h)), rgb(board_style, "canvas_rgb"))
+    draw = ImageDraw.Draw(canvas)
+    tile_w = int(source_rgb.width // col_count)
+    tile_h = int(source_rgb.height // row_count)
+    option_bboxes: Dict[str, list[float]] = {}
+
+    for option_index, permutation in enumerate(option_permutations):
+        row = option_index // option_cols
+        col = option_index % option_cols
+        x0 = int(margin + col * (option_w + gap))
+        y0 = int(margin + row * (label_height + option_h + gap))
+        grid_x = x0
+        grid_y = y0 + label_height
+        label = label_values[option_index]
+        draw_label_badge(
+            draw,
+            label,
+            (x0, y0, x0 + 42, y0 + 25),
+            font_family=label_font_family,
+            fill=rgb(board_style, "badge_fill_rgb"),
+            outline=rgb(board_style, "badge_outline_rgb"),
+        )
+        for slot_index, content_index in enumerate(permutation):
+            slot_row = int(slot_index // col_count)
+            slot_col = int(slot_index % col_count)
+            paste_x = int(grid_x + slot_col * tile_w)
+            paste_y = int(grid_y + slot_row * tile_h)
+            canvas.paste(pieces[int(content_index)][0].convert("RGB"), (paste_x, paste_y))
+        for grid_col in range(col_count + 1):
+            x = int(grid_x + grid_col * tile_w)
+            draw.line(
+                (x, grid_y, x, grid_y + option_h),
+                fill=rgb(board_style, "blank_outline_rgb"),
+                width=2,
+            )
+        for grid_row in range(row_count + 1):
+            y = int(grid_y + grid_row * tile_h)
+            draw.line(
+                (grid_x, y, grid_x + option_w, y),
+                fill=rgb(board_style, "blank_outline_rgb"),
+                width=2,
+            )
+        draw.rectangle(
+            (grid_x, grid_y, grid_x + option_w, grid_y + option_h),
+            outline=rgb(board_style, "board_outline_rgb"),
+            width=3,
+        )
+        option_bboxes[label] = bbox_list((grid_x, grid_y, grid_x + option_w, grid_y + option_h))
+
+    selected_label = label_values[int(correct_index)]
+    return JigsawArrangementArtifacts(
+        image=canvas,
+        option_bboxes=option_bboxes,
+        selected_option_bbox=list(option_bboxes[selected_label]),
+        selected_label=str(selected_label),
+        selected_index=int(correct_index),
+        option_permutations=tuple(option_permutations),
+        tile_source_boxes=tuple(tuple(int(coord) for coord in box) for _piece, box in pieces),
+        correct_permutation=correct_permutation,
+        grid_shape=(row_count, col_count),
+        option_layout_shape=(int(option_rows), int(option_cols)),
     )
 
 
@@ -738,8 +888,10 @@ __all__ = [
     "ROTATED_GRID_STYLES",
     "ROTATED_TILE_LABELS",
     "JigsawArtifacts",
+    "JigsawArrangementArtifacts",
     "PatchOptionArtifacts",
     "RotatedTileArtifacts",
+    "compose_jigsaw_arrangement_options",
     "compose_jigsaw_board",
     "compose_patch_options",
     "compose_rotated_tile_grid",

@@ -24,7 +24,7 @@ from .rendering import (
 
 @dataclass(frozen=True)
 class ActivitySampleSpec:
-    query_id: str
+    branch_id: str
     target_activity: str
     activity_phrase: str
     target_count: int
@@ -38,7 +38,7 @@ class ActivitySampleSpec:
 
 @dataclass(frozen=True)
 class AreaSampleSpec:
-    query_id: str
+    branch_id: str
     target_zone: str
     zone_name: str
     target_count: int
@@ -52,7 +52,7 @@ class AreaSampleSpec:
 
 @dataclass(frozen=True)
 class EquipmentUseSampleSpec:
-    query_id: str
+    branch_id: str
     target_equipment_type: str
     equipment_name: str
     target_count: int
@@ -69,7 +69,7 @@ class EquipmentUseSampleSpec:
 
 @dataclass(frozen=True)
 class EquipmentSampleSpec:
-    query_id: str
+    branch_id: str
     target_equipment_type: str
     equipment_name: str
     target_count: int
@@ -94,7 +94,7 @@ class ParkCountBinding:
     annotation_value: Tuple[Tuple[float, ...], ...] | Tuple[list[float], ...] | list[list[float]]
     render_map: Mapping[str, Any]
     scene_relations: Mapping[str, Any]
-    query_params: Mapping[str, Any]
+    branch_params: Mapping[str, Any]
     execution_trace: Mapping[str, Any]
     witness_symbolic: Mapping[str, Any]
     scene_entities: Tuple[Mapping[str, Any], ...] | list[Mapping[str, Any]]

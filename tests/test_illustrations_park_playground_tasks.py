@@ -12,6 +12,9 @@ from trace.tasks.illustrations.park_playground.area_person_count import _sample_
 from trace.tasks.illustrations.park_playground.equipment_use_person_count import (
     _sample_spec as _sample_person_using_equipment_spec,
 )
+from trace.tasks.illustrations.park_playground.jigsaw_arrangement_label import (
+    _sample_spec as _sample_jigsaw_arrangement_spec,
+)
 from trace.tasks.illustrations.park_playground.playground_equipment_count import (
     _sample_spec as _sample_playground_equipment_spec,
 )
@@ -27,6 +30,14 @@ def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
 def _assert_annotation_inside_canvas(out) -> None:
     width, height = out.trace_payload["render_spec"]["canvas_size"]
     for x0, y0, x1, y1 in out.annotation_gt.value:
+        assert 0 <= x0 < x1 <= width
+        assert 0 <= y0 < y1 <= height
+
+
+def _assert_keyed_annotation_inside_canvas(out) -> None:
+    width, height = out.trace_payload["render_spec"]["canvas_size"]
+    for bbox in out.annotation_gt.value.values():
+        x0, y0, x1, y1 = bbox
         assert 0 <= x0 < x1 <= width
         assert 0 <= y0 < y1 <= height
 
@@ -68,7 +79,7 @@ def test_person_activity_countseeded_sampler_covers_answers_and_variants() -> No
         for index in range(100)
     ]
     answer_counts = Counter(sample.target_count for sample in samples)
-    query_counts = Counter(sample.query_id for sample in samples)
+    query_counts = Counter(sample.branch_id for sample in samples)
     activity_counts = Counter(sample.target_activity for sample in samples)
 
     answer_support = set(range(1, 7))
@@ -119,7 +130,7 @@ def test_playground_equipment_countseeded_sampler_covers_answers_and_variants() 
         for index in range(100)
     ]
     answer_counts = Counter(sample.target_count for sample in samples)
-    query_counts = Counter(sample.query_id for sample in samples)
+    query_counts = Counter(sample.branch_id for sample in samples)
     equipment_type_counts = Counter(sample.target_equipment_type for sample in samples)
 
     answer_support = set(range(1, 6))
@@ -196,7 +207,7 @@ def test_person_using_equipment_countseeded_sampler_covers_answers_and_variants(
         for index in range(100)
     ]
     answer_counts = Counter(sample.target_count for sample in samples)
-    query_counts = Counter(sample.query_id for sample in samples)
+    query_counts = Counter(sample.branch_id for sample in samples)
     equipment_type_counts = Counter(sample.target_equipment_type for sample in samples)
 
     answer_support = set(range(1, 6))
@@ -265,7 +276,7 @@ def test_person_in_park_zone_countseeded_sampler_covers_answers_and_variants() -
         for index in range(100)
     ]
     answer_counts = Counter(sample.target_count for sample in samples)
-    query_counts = Counter(sample.query_id for sample in samples)
+    query_counts = Counter(sample.branch_id for sample in samples)
     zone_counts = Counter(sample.target_zone for sample in samples)
 
     answer_support = set(range(1, 7))
@@ -276,3 +287,56 @@ def test_person_in_park_zone_countseeded_sampler_covers_answers_and_variants() -
         per_query_answers = Counter(sample.target_count for sample in samples if sample.target_zone == zone)
         assert set(per_query_answers) <= answer_support
         assert per_query_answers
+
+
+def test_jigsaw_arrangement_label_contract() -> None:
+    out = create_task("task_illustrations__park_playground__jigsaw_arrangement_label").generate(
+        hash64(2026061502, "park-jigsaw-arrangement", 0),
+        params={"correct_index": 2, "person_count": 9, "equipment_count": 5},
+        max_attempts=100,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    answer_label = str(out.answer_gt.value)
+    option_bboxes = trace["render_map"]["option_bboxes_px_by_label"]
+    option_permutations = trace["render_map"]["option_permutations_by_label"]
+
+    assert out.scene_id == "park_playground"
+    assert out.query_id == SINGLE_QUERY_ID
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert answer_label == "C"
+    assert sorted(option_bboxes) == ["A", "B", "C", "D"]
+    assert out.annotation_gt.value == {"selected_option": option_bboxes[answer_label]}
+    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["render_map"]["selected_option_bbox_px"] == option_bboxes[answer_label]
+    assert execution["option_permutations_by_label"][answer_label] == [0, 1, 2, 3]
+    assert option_permutations[answer_label] == [0, 1, 2, 3]
+    assert sum(perm == [0, 1, 2, 3] for perm in option_permutations.values()) == 1
+    assert trace["query_spec"]["params"]["grid_shape"] == [2, 2]
+    assert trace["render_map"]["option_layout_shape"] == [2, 2]
+    assert min(trace["query_spec"]["params"]["tile_detail_scores"]) >= 600
+    assert trace["render_spec"]["canvas_size"] == [1136, 892]
+    _assert_keyed_annotation_inside_canvas(out)
+
+
+def test_jigsaw_arrangement_seeded_sampler_covers_answer_labels() -> None:
+    samples = [
+        _sample_jigsaw_arrangement_spec(
+            instance_seed=hash64(2026061502, "park-jigsaw-arrangement-sampling", index),
+            params={"_sample_cursor": index},
+            attempt_index=0,
+        )
+        for index in range(100)
+    ]
+    answer_counts = Counter(sample.correct_index for sample in samples)
+    person_counts = Counter(sample.person_count for sample in samples)
+    equipment_counts = Counter(sample.equipment_count for sample in samples)
+
+    assert answer_counts == Counter({0: 25, 1: 25, 2: 25, 3: 25})
+    assert set(person_counts) <= set(range(8, 14))
+    assert set(equipment_counts) <= set(range(4, 8))
+    assert person_counts
+    assert equipment_counts

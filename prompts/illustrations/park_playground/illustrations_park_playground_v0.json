@@ -29,6 +29,13 @@
       "",
       "",
       ""
+    ],
+    "jigsaw_arrangement_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -46,6 +53,8 @@
     ],
     "query:playground_equipment_count": [
       "equipment_name"
+    ],
+    "query:jigsaw_arrangement_label": [
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -112,6 +121,13 @@
       "What is the number of {equipment_name}?",
       "How many playground {equipment_name} can be seen?",
       "Find every {equipment_name}. What is the count?"
+    ],
+    "jigsaw_arrangement_label": [
+      "Which option shows the park playground image with the 2x2 tiles arranged correctly?",
+      "Select the option where the 2x2 park playground tiles are in the correct arrangement.",
+      "Which lettered option reconstructs the park playground scene correctly?",
+      "Find the option whose four tiles form the correct park playground image.",
+      "Which option places the park playground tiles in the original row-major arrangement?"
     ]
   },
   "allow_empty_task_templates": true

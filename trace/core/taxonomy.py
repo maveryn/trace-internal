@@ -852,6 +852,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__park_playground__equipment_use_person_count": _entry(
         "illustrations", "park_playground", "illustrations", "park_playground"
     ),
+    "task_illustrations__park_playground__jigsaw_arrangement_label": _entry(
+        "illustrations", "park_playground", "illustrations", "park_playground"
+    ),
     "task_illustrations__park_playground__playground_equipment_count": _entry(
         "illustrations", "park_playground", "illustrations", "park_playground"
     ),

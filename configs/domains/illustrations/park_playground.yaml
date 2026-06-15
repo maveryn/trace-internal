@@ -43,6 +43,14 @@ generation:
       target_count_max: 5
       person_count_min: 5
       person_count_max: 9
+    task_illustrations__park_playground__jigsaw_arrangement_label:
+      person_count_min: 8
+      person_count_max: 13
+      equipment_count_min: 4
+      equipment_count_max: 7
+      source_width: 520
+      source_height: 366
+      min_tile_detail_score: 600
 
 rendering:
   shared:
@@ -132,6 +140,21 @@ rendering:
         soft_shadow: 1.0
         ink_sketch: 1.0
         watercolor_wash: 1.0
+    task_illustrations__park_playground__jigsaw_arrangement_label:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
 
 prompt:
   task_overrides:
@@ -167,3 +190,11 @@ prompt:
       annotation_hint_playground_equipment: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {equipment_name}
       json_example_playground_equipment: '{"annotation":[[158,326,286,424],[430,344,558,446],[704,318,832,420]],"answer":3}'
       json_example_answer_only_playground_equipment: '{"answer":3}'
+    task_illustrations__park_playground__jigsaw_arrangement_label:
+      bundle_id: illustrations_park_playground_v0
+      scene_key: park_playground_canvas
+      task_key: jigsaw_arrangement_label_task
+      answer_hint_jigsaw_arrangement: set "answer" to the selected option letter
+      annotation_hint_jigsaw_arrangement: set "annotation" to a JSON object with key "selected_option" mapped to the [x0, y0, x1, y1] box around the selected option image in pixel coordinates
+      json_example_jigsaw_arrangement: '{"annotation":{"selected_option":[594,478,1114,844]},"answer":"C"}'
+      json_example_answer_only_jigsaw_arrangement: '{"answer":"C"}'

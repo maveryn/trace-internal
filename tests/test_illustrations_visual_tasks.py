@@ -15,6 +15,7 @@ from trace.tasks.illustrations.shared.cutouts import (
     PATCH_MODE_PLAIN,
     PATCH_MODE_TRANSFORMED,
     ROTATED_GRID_STYLES,
+    compose_jigsaw_arrangement_options,
     compose_jigsaw_board,
     compose_patch_options,
     compose_rotated_tile_grid,
@@ -76,6 +77,32 @@ def test_jigsaw_artifacts_bind_answer_order_and_bbox_sequence() -> None:
     assert set(artifacts.answer_labels) == {"1", "2", "3"}
     assert [artifacts.option_bboxes[label] for label in artifacts.answer_labels]
     assert artifacts.image.width > 0 and artifacts.image.height > 0
+
+
+def test_jigsaw_arrangement_options_bind_single_correct_option() -> None:
+    rng = random.Random(19)
+    style = sample_style(rng, JIGSAW_BOARD_STYLES)
+    artifacts = compose_jigsaw_arrangement_options(
+        source_image=_source_image(520, 366),
+        rows=2,
+        cols=2,
+        correct_index=2,
+        rng=rng,
+        board_style=style,
+        label_font_family=None,  # type: ignore[arg-type]
+    )
+
+    assert artifacts.grid_shape == (2, 2)
+    assert artifacts.option_layout_shape == (2, 2)
+    assert set(artifacts.option_bboxes) == {"A", "B", "C", "D"}
+    assert artifacts.selected_label == "C"
+    assert artifacts.selected_index == 2
+    assert artifacts.option_permutations[2] == artifacts.correct_permutation
+    assert artifacts.correct_permutation == (0, 1, 2, 3)
+    assert sum(perm == artifacts.correct_permutation for perm in artifacts.option_permutations) == 1
+    assert len(set(artifacts.option_permutations)) == 4
+    assert artifacts.selected_option_bbox == artifacts.option_bboxes["C"]
+    assert artifacts.image.size == (1136, 892)
 
 
 def test_rotated_tile_artifacts_select_one_labeled_tile() -> None:

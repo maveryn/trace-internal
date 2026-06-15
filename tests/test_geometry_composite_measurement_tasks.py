@@ -230,10 +230,10 @@ def test_rectilinear_composite_public_annotation_uses_shape_primitives(task_cls,
 @pytest.mark.parametrize(
     "task_cls, query_id, expected_count",
     (
-        (GeometryMeasurementCompositeAreaValueTask, "rectangle_minus_triangle_area", 2),
-        (GeometryMeasurementCompositeAreaValueTask, "l_shape_area", 2),
-        (GeometryMeasurementCompositePerimeterValueTask, "single", 5),
-        (GeometryCompositeShapeTabbedRectilinearPerimeterTask, "single", 3),
+        (GeometryMeasurementCompositeAreaValueTask, "rectangle_minus_triangle_area", 5),
+        (GeometryMeasurementCompositeAreaValueTask, "l_shape_area", 6),
+        (GeometryMeasurementCompositePerimeterValueTask, "single", 6),
+        (GeometryCompositeShapeTabbedRectilinearPerimeterTask, "single", 8),
     ),
 )
 def test_rectilinear_composite_visual_notation_is_render_metadata(task_cls, query_id, expected_count) -> None:

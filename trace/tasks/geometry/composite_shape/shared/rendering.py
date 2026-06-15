@@ -249,16 +249,41 @@ def _vector_from(vertex: Point, endpoint: Point) -> Point:
     return (float(endpoint[0]) - float(vertex[0]), float(endpoint[1]) - float(vertex[1]))
 
 
-def _draw_right_angle_notation(ctx: CompositeRenderContext, vertex: Point, arm_a: Point, arm_b: Point) -> BBox:
+def _draw_right_angle_notation(
+    ctx: CompositeRenderContext,
+    vertex: Point,
+    arm_a: Point,
+    arm_b: Point,
+    *,
+    side_px: float | None = None,
+) -> BBox:
     return draw_right_angle_marker(
         ctx,
         vertex,
         arm_a=_vector_from(vertex, arm_a),
         arm_b=_vector_from(vertex, arm_b),
-        side_px=max(15.0, float(ctx.line_width) * 4.5),
+        side_px=float(side_px) if side_px is not None else max(12.0, float(ctx.line_width) * 3.5),
         color=ctx.line_color,
-        width=max(2, int(ctx.line_width) - 1),
+        width=max(1, int(ctx.line_width) - 2),
     )
+
+
+def _draw_polygon_right_angle_notation(
+    ctx: CompositeRenderContext,
+    points: Sequence[Point],
+    *,
+    key_prefix: str,
+) -> dict[str, BBox]:
+    bboxes: dict[str, BBox] = {}
+    point_list = list(points)
+    for index, vertex in enumerate(point_list):
+        bboxes[f"{key_prefix}_{index}_right_angle"] = _draw_right_angle_notation(
+            ctx,
+            vertex,
+            point_list[index - 1],
+            point_list[(index + 1) % len(point_list)],
+        )
+    return bboxes
 
 
 def _draw_equal_side_ticks(
@@ -316,7 +341,7 @@ def _render_rect_cut(ctx: CompositeRenderContext, problem: CompositeShapeProblem
     _draw_polygon(ctx, rect)
     _draw_polygon(ctx, tri, outline=ctx.accent_color, width=max(2, ctx.line_width - 1))
     notation_bboxes = {
-        "outer_right_angle": _draw_right_angle_notation(ctx, rect[3], rect[2], rect[0]),
+        **_draw_polygon_right_angle_notation(ctx, rect, key_prefix="outer_corner"),
         "cutout_right_angle": _draw_right_angle_notation(ctx, tri[0], tri[1], tri[2]),
     }
     region_bbox = bbox_from_points(rect, width=ctx.width, height=ctx.height, pad=2.0)
@@ -376,10 +401,7 @@ def _render_l_profile(ctx: CompositeRenderContext, problem: CompositeShapeProble
     cutout_corner = placed[6]
     _draw_polygon(ctx, pts, fill=ctx.fill_color)
     _draw_polygon(ctx, pts)
-    notation_bboxes = {
-        "outer_right_angle": _draw_right_angle_notation(ctx, pts[0], pts[1], pts[5]),
-        "missing_corner_right_angle": _draw_right_angle_notation(ctx, pts[3], pts[2], pts[4]),
-    }
+    notation_bboxes = _draw_polygon_right_angle_notation(ctx, pts, key_prefix="corner")
     cutout_rect = [pts[3], pts[2], cutout_corner, pts[4]]
     region_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=2.0)
     cutout_bbox = bbox_from_points(cutout_rect, width=ctx.width, height=ctx.height, pad=4.0)
@@ -441,7 +463,8 @@ def _render_house(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -
     _draw_polygon(ctx, pts, fill=ctx.fill_color)
     _draw_polygon(ctx, pts)
     notation_bboxes = {
-        "base_wall_right_angle": _draw_right_angle_notation(ctx, a, b, e),
+        "left_base_wall_right_angle": _draw_right_angle_notation(ctx, a, b, e),
+        "right_base_wall_right_angle": _draw_right_angle_notation(ctx, b, a, c),
         "left_wall_equal_tick": _draw_equal_side_ticks(ctx, a, e, count=1),
         "right_wall_equal_tick": _draw_equal_side_ticks(ctx, b, c, count=1),
         "left_roof_equal_tick": _draw_equal_side_ticks(ctx, e, d, count=2),
@@ -510,11 +533,7 @@ def _render_tabbed(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
     pts = list(_place_points(ctx, raw_pts))
     _draw_polygon(ctx, pts, fill=ctx.fill_color)
     _draw_polygon(ctx, pts)
-    notation_bboxes = {
-        "outer_right_angle": _draw_right_angle_notation(ctx, pts[0], pts[1], pts[7]),
-        "right_tab_shoulder_right_angle": _draw_right_angle_notation(ctx, pts[3], pts[2], pts[4]),
-        "left_tab_shoulder_right_angle": _draw_right_angle_notation(ctx, pts[6], pts[5], pts[7]),
-    }
+    notation_bboxes = _draw_polygon_right_angle_notation(ctx, pts, key_prefix="corner")
     target_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=4.0)
     label_bboxes = {
         "overall_width": _draw_segment_label(ctx, str(width_value), pts[0], pts[1], offset=25.0),
@@ -585,6 +604,17 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
         ctx.draw.rectangle((left, top, right, bottom), outline=ctx.line_color, width=ctx.line_width)
         ctx.draw.pieslice(arc_box, start=-90, end=90, fill=ctx.fill_color, outline=ctx.line_color, width=ctx.line_width)
         ctx.draw.line([(right, top + 2), (right, bottom - 2)], fill=ctx.fill_color, width=ctx.line_width + 2)
+    notation_bboxes = {
+        "top_left_right_angle": _draw_right_angle_notation(ctx, (left, top), (right, top), (left, bottom)),
+        "bottom_left_right_angle": _draw_right_angle_notation(ctx, (left, bottom), (left, top), (right, bottom)),
+    }
+    if cutout:
+        notation_bboxes.update(
+            {
+                "top_right_right_angle": _draw_right_angle_notation(ctx, (right, top), (left, top), (right, mid_y - radius_px)),
+                "bottom_right_right_angle": _draw_right_angle_notation(ctx, (right, bottom), (right, mid_y + radius_px), (left, bottom)),
+            }
+        )
     if problem.metric_kind == "perimeter":
         highlight_width = _boundary_width(ctx)
         ctx.draw.line([(left, top), (right, top)], fill=ctx.accent_color, width=highlight_width)
@@ -656,6 +686,7 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
             "curved_component_bbox": bbox_to_list(curved_component_bbox),
             "support_bboxes": [bbox_to_list(bbox) for bbox in support_bboxes],
             "support_roles": list(support_roles),
+            "visual_notation_bboxes": {key: bbox_to_list(bbox) for key, bbox in notation_bboxes.items()},
             "coord_space": "pixel",
         },
         witness={
@@ -697,14 +728,6 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
     ctx.draw.line([(right, top + radius_px), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
     ctx.draw.line([(right - radius_px, top), (left, top)], fill=ctx.line_color, width=ctx.line_width)
     ctx.draw.arc(arc_box, start=90, end=180, fill=ctx.line_color, width=ctx.line_width)
-    notation_bboxes = {
-        "quarter_sector_right_angle": _draw_right_angle_notation(
-            ctx,
-            center,
-            (right - radius_px, top),
-            (right, top + radius_px),
-        )
-    }
     if problem.metric_kind == "perimeter":
         highlight_width = _boundary_width(ctx)
         ctx.draw.line([(left, top), (right - radius_px, top)], fill=ctx.accent_color, width=highlight_width)
@@ -712,6 +735,17 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
         ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
         ctx.draw.line([(right, top + radius_px), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
         ctx.draw.arc(arc_box, start=90, end=180, fill=ctx.accent_color, width=highlight_width)
+    notation_bboxes = {
+        "top_left_right_angle": _draw_right_angle_notation(ctx, (left, top), (right - radius_px, top), (left, bottom)),
+        "bottom_left_right_angle": _draw_right_angle_notation(ctx, (left, bottom), (left, top), (right, bottom)),
+        "bottom_right_right_angle": _draw_right_angle_notation(ctx, (right, bottom), (right, top + radius_px), (left, bottom)),
+        "quarter_sector_right_angle": _draw_right_angle_notation(
+            ctx,
+            center,
+            (right - radius_px, top),
+            (right, top + radius_px),
+        ),
+    }
     width_dim_y = min(bottom + 34.0, float(ctx.height) - 46.0)
     width_bbox = _draw_dimension(ctx, (left, width_dim_y), (right, width_dim_y), fmt_measure(width_units), label_offset=(0.0, 20.0))
     height_bbox = _draw_dimension(ctx, (left - 34.0, top), (left - 34.0, bottom), fmt_measure(height_units), label_offset=(-26.0, 0.0))

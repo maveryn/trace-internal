@@ -157,7 +157,12 @@ def test_quarter_sector_area_omits_obvious_right_angle_label() -> None:
     )
 
     assert "angle_label" not in out.trace_payload["render_map"]["support_roles"]
-    assert set(out.trace_payload["render_map"]["visual_notation_bboxes"]) == {"quarter_sector_right_angle"}
+    assert set(out.trace_payload["render_map"]["visual_notation_bboxes"]) == {
+        "top_left_right_angle",
+        "bottom_left_right_angle",
+        "bottom_right_right_angle",
+        "quarter_sector_right_angle",
+    }
     assert "quarter_sector_right_angle" not in out.annotation_gt.value
 
 

@@ -400,7 +400,6 @@ def _draw_element(
     bbox = bbox_from_points(cell)
     center = quad_point(quad, (u0 + u1) * 0.5, (v0 + v1) * 0.5)
     fill = _as_rgb(cell_record.get("fill_rgb"), _mix(_panel_fill(str(scene_variant)), (255, 255, 255), 0.16))
-    state = str(cell_record.get("state", "normal"))
     index = int(cell_record.get("flat_index", 0))
 
     if not bool(cell_record.get("present", True)):
@@ -460,9 +459,7 @@ def _draw_element(
             draw.line([(bbox[0] + w * 0.12, y), (bbox[2] - w * 0.12, y - h * 0.05)], fill=(57, 69, 78), width=2)
     elif element_type == "window":
         frame = shrink_polygon(cell, 0.86)
-        pane_fill = (249, 221, 114) if state == "lit" else fill
-        if state == "unlit":
-            pane_fill = _mix(fill, (30, 45, 57), 0.52)
+        pane_fill = fill
         pane = shrink_polygon(cell, 0.70)
         draw.polygon(frame, fill=(236, 242, 244), outline=(58, 82, 98))
         draw.polygon(pane, fill=pane_fill, outline=(62, 100, 124))
@@ -474,14 +471,9 @@ def _draw_element(
     elif element_type in {"door", "locker", "mailbox"}:
         face = shrink_polygon(cell, 0.88 if element_type == "door" else 0.92)
         body_fill = fill
-        if state == "open":
-            draw.polygon(face, fill=_mix(fill, (18, 22, 27), 0.64), outline=(52, 57, 63))
-            inner = shrink_polygon(face, 0.70)
-            draw.polygon(inner, fill=(34, 39, 45), outline=(102, 110, 118))
-        else:
-            draw.polygon(face, fill=body_fill, outline=(72, 54, 38) if element_type == "door" else (70, 78, 84))
-            inner = shrink_polygon(face, 0.66)
-            draw.polygon(inner, outline=_mix(body_fill, (35, 40, 44), 0.30))
+        draw.polygon(face, fill=body_fill, outline=(72, 54, 38) if element_type == "door" else (70, 78, 84))
+        inner = shrink_polygon(face, 0.66)
+        draw.polygon(inner, outline=_mix(body_fill, (35, 40, 44), 0.30))
         if element_type == "door":
             knob = quad_point(face, 0.78, 0.52)
             knob_radius = max(2.0, min(float(bbox[2]) - float(bbox[0]), float(bbox[3]) - float(bbox[1])) * 0.055)
@@ -514,32 +506,28 @@ def _draw_element(
         bbox = list(pull_bbox)
     elif element_type == "drive_bay":
         bay = shrink_polygon(cell, 0.88)
-        bay_fill = (38, 45, 52)
-        if state == "lit":
-            bay_fill = _mix(bay_fill, fill, 0.30)
+        bay_fill = _mix(fill, (28, 34, 40), 0.12)
         draw.polygon(bay, fill=bay_fill, outline=(16, 20, 24))
+        inset = shrink_polygon(bay, 0.78)
+        draw.polygon(inset, fill=_mix(bay_fill, (255, 255, 255), 0.10), outline=_mix(bay_fill, (14, 18, 22), 0.35))
         for vv in (0.28, 0.50, 0.72):
-            a = quad_point(bay, 0.14, vv)
-            b = quad_point(bay, 0.86, vv)
-            draw.line([a, b], fill=(102, 116, 125), width=1)
+            a = quad_point(inset, 0.14, vv)
+            b = quad_point(inset, 0.86, vv)
+            draw.line([a, b], fill=_mix(bay_fill, (15, 20, 25), 0.42), width=1)
         led = quad_point(bay, 0.86, 0.28)
-        led_rgb = fill if state == "lit" else (72, 80, 82)
-        draw.ellipse([led[0] - 3, led[1] - 3, led[0] + 3, led[1] + 3], fill=led_rgb, outline=(18, 22, 24))
+        draw.ellipse([led[0] - 3, led[1] - 3, led[0] + 3, led[1] + 3], fill=_mix(fill, (255, 255, 255), 0.20), outline=(18, 22, 24))
         bbox = bbox_from_points(bay)
     elif element_type == "button":
         button = shrink_polygon(cell, 0.76)
         button_bbox = bbox_from_points(button)
-        button_fill = _mix(fill, (45, 50, 55), 0.24) if state == "pressed" else fill
-        if state == "lit":
-            glow = bbox_from_points(shrink_polygon(cell, 0.92))
-            draw.ellipse(glow, fill=_mix(fill, (250, 240, 120), 0.35))
+        button_fill = fill
         draw.ellipse(button_bbox, fill=button_fill, outline=(28, 32, 37), width=2)
         highlight = [button_bbox[0] + 4, button_bbox[1] + 3, button_bbox[0] + (button_bbox[2] - button_bbox[0]) * 0.52, button_bbox[1] + (button_bbox[3] - button_bbox[1]) * 0.34]
         draw.ellipse(highlight, fill=_mix(button_fill, (255, 255, 255), 0.34))
         bbox = list(button_bbox)
     elif element_type == "screw":
         screw_bbox = _mounted_bbox(bbox, center, 0.56, 0.56, min_width=13.0, min_height=13.0)
-        head_fill = _mix(fill, (207, 213, 216), 0.55)
+        head_fill = _mix(fill, (255, 255, 255), 0.10)
         draw.ellipse(screw_bbox, fill=head_fill, outline=(61, 70, 78), width=2)
         inner = [
             screw_bbox[0] + (screw_bbox[2] - screw_bbox[0]) * 0.16,
@@ -559,7 +547,7 @@ def _draw_element(
         rx = (nut_bbox[2] - nut_bbox[0]) * 0.50
         ry = (nut_bbox[3] - nut_bbox[1]) * 0.50
         hex_points = _regular_polygon_points(center, rx, ry, 6, rotation=math.pi / 6.0)
-        nut_fill = _mix(fill, (199, 204, 206), 0.48)
+        nut_fill = _mix(fill, (255, 255, 255), 0.08)
         draw.polygon(hex_points, fill=nut_fill, outline=(56, 63, 70))
         hole = _centered_bbox(center, max(6.0, rx * 0.78), max(5.0, ry * 0.70))
         draw.ellipse(hole, fill=_mix(_panel_fill(str(scene_variant)), (28, 32, 36), 0.72), outline=(222, 226, 227), width=1)
@@ -568,7 +556,7 @@ def _draw_element(
         bbox = list(nut_bbox)
     elif element_type == "washer":
         washer_bbox = _mounted_bbox(bbox, center, 0.70, 0.66, min_width=16.0, min_height=15.0)
-        washer_fill = _mix(fill, (202, 208, 210), 0.50)
+        washer_fill = _mix(fill, (255, 255, 255), 0.08)
         draw.ellipse(washer_bbox, fill=washer_fill, outline=(60, 68, 76), width=2)
         outer_w = washer_bbox[2] - washer_bbox[0]
         outer_h = washer_bbox[3] - washer_bbox[1]
@@ -652,7 +640,7 @@ def _draw_element(
         u_bbox = _mounted_bbox(bbox, center, 0.72, 0.78, min_width=20.0, min_height=24.0)
         uw = u_bbox[2] - u_bbox[0]
         uh = u_bbox[3] - u_bbox[1]
-        metal = _mix(fill, (214, 220, 222), 0.52)
+        metal = _mix(fill, (255, 255, 255), 0.08)
         stroke = max(3, int(min(uw, uh) * 0.11))
         left_leg_x = u_bbox[0] + uw * 0.32
         right_leg_x = u_bbox[0] + uw * 0.68
@@ -690,13 +678,8 @@ def _draw_element(
     elif element_type == "light":
         glow_bbox = _mounted_bbox(bbox, center, 0.78, 0.78, min_width=18.0, min_height=18.0)
         light_bbox = _mounted_bbox(bbox, center, 0.56, 0.56, min_width=13.0, min_height=13.0)
-        if state == "lit":
-            draw.ellipse(glow_bbox, fill=_mix(fill, (255, 241, 122), 0.42))
-            lens_fill = _mix(fill, (255, 246, 168), 0.38)
-        elif state == "unlit":
-            lens_fill = _mix(fill, (26, 31, 35), 0.58)
-        else:
-            lens_fill = fill
+        lens_fill = fill
+        draw.ellipse(glow_bbox, fill=_mix(fill, (255, 255, 255), 0.54))
         draw.ellipse(light_bbox, fill=lens_fill, outline=(24, 29, 34), width=2)
         highlight = [
             light_bbox[0] + (light_bbox[2] - light_bbox[0]) * 0.18,
@@ -705,7 +688,7 @@ def _draw_element(
             light_bbox[1] + (light_bbox[3] - light_bbox[1]) * 0.42,
         ]
         draw.ellipse(highlight, fill=_mix(lens_fill, (255, 255, 255), 0.46))
-        bbox = list(glow_bbox if state == "lit" else light_bbox)
+        bbox = list(glow_bbox)
     elif element_type == "solar_panel":
         panel = shrink_polygon(cell, 0.88)
         panel_fill = fill if cell_record.get("fill_rgb") is not None else (35, 76, 126)
@@ -718,9 +701,6 @@ def _draw_element(
             a = quad_point(panel, 0.10, vv)
             b = quad_point(panel, 0.90, vv)
             draw.line([a, b], fill=(96, 140, 178), width=1)
-        if state == "cracked":
-            crack = [quad_point(panel, 0.20, 0.22), quad_point(panel, 0.44, 0.48), quad_point(panel, 0.36, 0.78), quad_point(panel, 0.72, 0.88)]
-            draw.line(crack, fill=(230, 236, 239), width=2)
         bbox = bbox_from_points(panel)
     else:
         raise ValueError(f"unsupported surface element type: {element_type}")
@@ -756,7 +736,6 @@ def _draw_surface_elements(
                     "column": int(cell_record.get("column", 0)),
                     "present": bool(cell_record.get("present", True)),
                     "color_name": str(cell_record.get("color_name", "")),
-                    "state": str(cell_record.get("state", "normal")),
                     "count_role": str(cell_record.get("count_role", "distractor")),
                 },
             }

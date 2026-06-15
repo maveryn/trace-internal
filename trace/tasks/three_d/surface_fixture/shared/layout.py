@@ -200,14 +200,12 @@ def layout_cells(
     rng: Any,
     layout_style: str,
     color_by_index: Mapping[int, str] | None = None,
-    state_by_index: Mapping[int, str] | None = None,
     reference_index: int | None = None,
     include_absent: bool = False,
 ) -> List[Dict[str, Any]]:
     """Create projected-cell records before pixel rendering."""
 
     color_by_index = color_by_index or {}
-    state_by_index = state_by_index or {}
     present_set = {int(index) for index in present_indices}
     target_set = {int(index) for index in target_indices}
     u_pad = 0.065
@@ -270,7 +268,6 @@ def layout_cells(
         if not is_present and not bool(include_absent):
             continue
         color_name = str(color_by_index.get(int(flat_index), ""))
-        state = str(state_by_index.get(int(flat_index), "normal"))
         count_role = "target" if int(flat_index) in target_set else "distractor"
         if reference_index is not None and int(flat_index) == int(reference_index):
             count_role = "reference"
@@ -290,7 +287,6 @@ def layout_cells(
                 "present": bool(is_present),
                 "color_name": str(color_name),
                 "fill_rgb": list(SEMANTIC_COLOR_RGB[color_name]) if color_name else None,
-                "state": str(state),
                 "count_role": str(count_role),
                 "layout_style": str(layout_style),
             }

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 from pathlib import Path
+from statistics import mean
 
 import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.scene_package_migration import parse_public_task_id
@@ -45,6 +46,22 @@ SURFACE_FIXTURE_TASK_IDS = (
     SCOPED_COLORED_TASK_ID,
     EMPTY_MISSING_TASK_ID,
 )
+
+
+def _mean_rgb_for_bbox(image, bbox):
+    x0, y0, x1, y1 = [int(round(float(value))) for value in bbox]
+    width = int(x1 - x0)
+    height = int(y1 - y0)
+    crop = image.convert("RGB").crop(
+        (
+            x0 + width // 4,
+            y0 + height // 4,
+            x1 - width // 4,
+            y1 - height // 4,
+        )
+    )
+    pixels = list(crop.getdata())
+    return tuple(float(mean(pixel[channel] for pixel in pixels)) for channel in range(3))
 
 
 def test_surface_fixture_semantic_colors_use_canonical_palette() -> None:
@@ -344,6 +361,40 @@ def test_surface_fixture_recolor_board_match_selects_matching_option() -> None:
     assert "rearranged" not in output.prompt.lower()
     assert "positions may change" not in output.prompt.lower()
     assert "color counts" not in output.prompt.lower()
+
+
+def test_surface_fixture_recolor_drive_bay_uses_visible_fill_rgb() -> None:
+    output = create_task(RECOLOR_MATCH_TASK_ID).generate(
+        158141830484107,
+        params={
+            "query_id": "single",
+            "post_image_noise_apply_prob": 0.0,
+        },
+        max_attempts=80,
+    )
+
+    trace = output.trace_payload["execution_trace"]
+    render_map = output.trace_payload["render_map"]
+    answer_label = str(trace["answer_label"])
+
+    assert trace["scene_variant"] == "server_rack"
+    assert trace["target_element_type"] == "drive_bay"
+    assert trace["source_color_name"] == "brown"
+    assert trace["destination_color_name"] == "green"
+    assert not any("state" in cell for cell in trace["surface_original_dataset"]["surface_cells"])
+    assert not any(
+        "state" in cell
+        for dataset in trace["surface_option_datasets"].values()
+        for cell in dataset["surface_cells"]
+    )
+
+    original_brown = _mean_rgb_for_bbox(output.image, render_map["element_bboxes_px"]["original:drive_bay_01"])
+    recolored_green = _mean_rgb_for_bbox(output.image, render_map["element_bboxes_px"][f"{answer_label}:drive_bay_01"])
+
+    assert original_brown[0] > original_brown[2] + 30.0
+    assert original_brown[1] > original_brown[2] + 20.0
+    assert recolored_green[1] > recolored_green[0] + 50.0
+    assert recolored_green[1] > recolored_green[2] + 50.0
 
 
 def test_surface_fixture_missing_cell_default_answer_range() -> None:

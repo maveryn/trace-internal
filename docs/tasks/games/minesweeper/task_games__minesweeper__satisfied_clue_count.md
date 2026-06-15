@@ -4,11 +4,14 @@
 1. Domain: `games`
 2. Scene id: `minesweeper`
 3. Public task id: `task_games__minesweeper__satisfied_clue_count`
-4. Supported `query_id` values: `satisfied_clue_count`
-5. Answer schema: `integer_count`
+4. Supported `query_id` values: `single`
+5. Answer schema: `integer`
 6. Annotation schema: `bbox_set`
-7. Program schema: `count(filter(numbered_clues, adjacent_flag_count(clue)=clue_value)); scene=minesweeper; scope=satisfied_clue_count`
+
+## Program Contract
+`count(filter(opened_number_cells, adjacent_flag_count=clue_value)); scene=minesweeper; scope=satisfied_clue_count`
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
+1. The scene includes both satisfied and unsatisfied opened number cells.
+2. The answer counts only opened number cells whose clue equals their adjacent flag count.
+3. Annotation boxes mark every counted opened clue cell.

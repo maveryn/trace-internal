@@ -3,15 +3,26 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
+
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.font_assets import sample_font_family
+from trace.tasks.games.shared.layout import (
+    attach_games_unit_size_jitter,
+    resolve_games_layout_jitter,
+    resolve_games_unit_size_scale,
+    scale_games_px,
+)
 
 from ....shared.text_rendering import fit_font_to_box
 from ...shared.text import draw_game_text_traced as draw_text_traced
 from ...shared.layout import apply_games_layout_jitter_to_bbox
 from ...shared.marking import draw_semantic_bbox_marker, resolve_semantic_marker_style
-from .common import Coord, all_coords, clue_number, coord_to_cell_id
+from .defaults import DEFAULTS
+from .rules import clue_number
+from .state import Coord, all_coords, coord_to_cell_id
 from ...shared.option_layout import balanced_option_grid_spec, option_grid_position
 from ...shared.style import MinesweeperTheme, build_games_minesweeper_theme
 
@@ -240,6 +251,75 @@ def _draw_reveal_outcome_options(
         draw_text_traced(draw, (label_x, label_y), label_text, fill=label_fill, font=label_font, role="option_label", required=False)
         draw_text_traced(draw, (outcome_x, outcome_y), outcome_text, fill=text_fill, font=outcome_font, role="option_text", required=False)
     return option_bboxes
+
+
+def resolve_minesweeper_render_params(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    namespace: str,
+    instance_seed: int,
+) -> MinesweeperRenderParams:
+    """Resolve Minesweeper render dimensions, font, jitter, and unit scaling."""
+
+    unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
+        params,
+        render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.unit_size",
+    )
+    layout_jitter = attach_games_unit_size_jitter(
+        resolve_games_layout_jitter(
+            params,
+            render_defaults,
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.layout",
+        ),
+        unit_scale_meta,
+    )
+    max_board_size_px = scale_games_px(
+        params.get("max_board_size_px", group_default(render_defaults, "max_board_size_px", DEFAULTS.max_board_size_px)),
+        unit_scale,
+        min_px=360,
+    )
+    default_canvas_width = int(group_default(render_defaults, "canvas_width", DEFAULTS.canvas_width))
+    default_canvas_height = int(group_default(render_defaults, "canvas_height", DEFAULTS.canvas_height))
+    canvas_size = int(max(500, min(max(default_canvas_width, default_canvas_height), int(max_board_size_px) + 160)))
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.font_family",
+        params=params,
+    )
+    return MinesweeperRenderParams(
+        canvas_width=int(params.get("canvas_width", canvas_size)),
+        canvas_height=int(params.get("canvas_height", canvas_size)),
+        panel_margin_px=int(params.get("panel_margin_px", group_default(render_defaults, "panel_margin_px", DEFAULTS.panel_margin_px))),
+        max_board_size_px=int(max_board_size_px),
+        board_border_width_px=scale_games_px(
+            params.get("board_border_width_px", group_default(render_defaults, "board_border_width_px", DEFAULTS.board_border_width_px)),
+            unit_scale,
+            min_px=2,
+        ),
+        grid_line_width_px=scale_games_px(
+            params.get("grid_line_width_px", group_default(render_defaults, "grid_line_width_px", DEFAULTS.grid_line_width_px)),
+            unit_scale,
+            min_px=1,
+        ),
+        cell_padding_px=scale_games_px(
+            params.get("cell_padding_px", group_default(render_defaults, "cell_padding_px", DEFAULTS.cell_padding_px)),
+            unit_scale,
+            min_px=3,
+        ),
+        number_font_size_px=scale_games_px(
+            params.get("number_font_size_px", group_default(render_defaults, "number_font_size_px", DEFAULTS.number_font_size_px)),
+            unit_scale,
+            min_px=18,
+        ),
+        font_family=str(font_family),
+        layout_jitter_meta=layout_jitter,
+        instance_seed=int(instance_seed),
+    )
 
 
 def render_minesweeper_grid_scene(
@@ -493,4 +573,5 @@ __all__ = [
     "MinesweeperRenderParams",
     "RenderedMinesweeperScene",
     "render_minesweeper_grid_scene",
+    "resolve_minesweeper_render_params",
 ]

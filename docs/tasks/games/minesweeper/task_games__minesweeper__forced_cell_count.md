@@ -5,10 +5,13 @@
 2. Scene id: `minesweeper`
 3. Public task id: `task_games__minesweeper__forced_cell_count`
 4. Supported `query_id` values: `forced_mine_count`, `forced_safe_count`
-5. Answer schema: `integer_count`
+5. Answer schema: `integer`
 6. Annotation schema: `bbox_set`
-7. Program schema: `count(filter(hidden_cells, forced_status=forced_cell_status)); scene=minesweeper; scope=forced_cell_count; query_branch=forced_mine_count`
+
+## Program Contract
+`count(filter(hidden_cells, forced_status in {mine,safe})); scene=minesweeper; scope=forced_cell_count`
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
+1. The scene shows a visible Minesweeper board with opened number cells, hidden cells, and flags.
+2. The query branch selects whether to count hidden cells forced to be mines or forced to be safe.
+3. Annotation boxes mark every counted hidden cell.

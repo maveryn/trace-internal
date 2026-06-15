@@ -1,64 +1,10 @@
-"""Shared Minesweeper construction helpers for games-domain tasks."""
+"""Minesweeper rule computations over board coordinates."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Dict, Iterable, Sequence, Tuple
 
-
-SUPPORTED_MINESWEEPER_QUERY_IDS: Tuple[str, ...] = (
-    "forced_mine_count",
-    "forced_safe_count",
-    "remaining_mine_count",
-    "reveal_outcome_label",
-    "satisfied_clue_count",
-)
-SUPPORTED_MINESWEEPER_SCENE_VARIANTS: Tuple[str, ...] = (
-    "open_grid",
-    "mixed_grid",
-)
-Coord = Tuple[int, int]
-
-
-@dataclass(frozen=True)
-class MinesweeperSample:
-    """One generated Minesweeper board and query-specific witnesses."""
-
-    size: int
-    mode: str
-    answer: int | str
-    mine_coords: Tuple[Coord, ...]
-    revealed_coords: Tuple[Coord, ...]
-    flagged_coords: Tuple[Coord, ...]
-    hidden_coords: Tuple[Coord, ...]
-    forced_mine_coords: Tuple[Coord, ...]
-    forced_safe_coords: Tuple[Coord, ...]
-    satisfied_clue_coords: Tuple[Coord, ...]
-    unsatisfied_clue_coords: Tuple[Coord, ...]
-    forcing_clue_coords: Tuple[Coord, ...]
-    annotation_coords: Tuple[Coord, ...]
-    target_answer: int | None
-    distractor_hidden_count: int
-    construction_mode: str
-    target_cell_coord: Coord | None = None
-    supporting_clue_coords: Tuple[Coord, ...] = ()
-    supporting_flag_coords: Tuple[Coord, ...] = ()
-    reveal_outcome: str = ""
-    answer_options: Tuple[Tuple[str, str], ...] = ()
-
-
-def coord_to_cell_id(coord: Coord) -> str:
-    """Return the canonical visible-cell id for one Minesweeper coordinate."""
-
-    row, col = int(coord[0]), int(coord[1])
-    return f"cell_r{row}_c{col}"
-
-
-def in_bounds(coord: Coord, *, size: int) -> bool:
-    """Return whether one coordinate is inside the square board."""
-
-    row, col = int(coord[0]), int(coord[1])
-    return 0 <= row < int(size) and 0 <= col < int(size)
+from .state import Coord, all_coords, in_bounds, sorted_coords
 
 
 def neighbor_coords(coord: Coord, *, size: int) -> Tuple[Coord, ...]:
@@ -81,12 +27,6 @@ def clue_number(coord: Coord, *, mine_coords: Iterable[Coord], size: int) -> int
 
     mines = {(int(row), int(col)) for row, col in mine_coords}
     return sum(1 for item in neighbor_coords(coord, size=int(size)) if item in mines)
-
-
-def all_coords(*, size: int) -> Tuple[Coord, ...]:
-    """Return all coordinates in row-major order."""
-
-    return tuple((row, col) for row in range(int(size)) for col in range(int(size)))
 
 
 def forced_cell_supports(
@@ -124,7 +64,7 @@ def forced_cell_supports(
                 for coord in adjacent_hidden:
                     support.setdefault(coord, set()).add(clue)
         else:
-            raise ValueError(f"unsupported Minesweeper force_kind: {force_kind}")
+            raise ValueError(f"unsupported Minesweeper force kind: {force_kind}")
     return {coord: tuple(sorted(clues)) for coord, clues in sorted(support.items())}
 
 
@@ -136,7 +76,7 @@ def forced_mine_supports(
     flagged_coords: Iterable[Coord],
     hidden_coords: Iterable[Coord],
 ) -> Dict[Coord, Tuple[Coord, ...]]:
-    """Return cells forced to be mines by basic revealed-number constraints."""
+    """Return cells forced to be mines by revealed-number constraints."""
 
     return forced_cell_supports(
         size=int(size),
@@ -156,7 +96,7 @@ def forced_safe_supports(
     flagged_coords: Iterable[Coord],
     hidden_coords: Iterable[Coord],
 ) -> Dict[Coord, Tuple[Coord, ...]]:
-    """Return cells forced to be safe by basic revealed-number constraints."""
+    """Return cells forced to be safe by revealed-number constraints."""
 
     return forced_cell_supports(
         size=int(size),
@@ -223,12 +163,6 @@ def clue_context_flags(*, clue_coords: Iterable[Coord], flagged_coords: Iterable
     return tuple(sorted(context))
 
 
-def sorted_coords(coords: Iterable[Coord]) -> Tuple[Coord, ...]:
-    """Return canonical sorted coordinates."""
-
-    return tuple(sorted((int(row), int(col)) for row, col in coords))
-
-
 def validate_board_contract(
     *,
     size: int,
@@ -257,20 +191,14 @@ def validate_board_contract(
 
 
 __all__ = [
-    "Coord",
-    "MinesweeperSample",
-    "SUPPORTED_MINESWEEPER_QUERY_IDS",
-    "SUPPORTED_MINESWEEPER_SCENE_VARIANTS",
     "adjacent_flag_count",
-    "all_coords",
     "clue_context_flags",
     "clue_number",
-    "coord_to_cell_id",
+    "forced_cell_supports",
     "forced_mine_supports",
     "forced_safe_supports",
     "neighbor_coords",
     "satisfied_clue_coords",
-    "sorted_coords",
     "unsatisfied_clue_coords",
     "validate_board_contract",
 ]

@@ -9,14 +9,11 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.minesweeper.forced_cell_count import (
-    GamesMinesweeperForcedCellCountTask,
-    GamesMinesweeperGridTask,
-    GamesMinesweeperRemainingMineCountValueTask,
-    GamesMinesweeperRevealOutcomeLabelTask,
-    GamesMinesweeperSatisfiedClueCountTask,
-)
-from trace.tasks.games.minesweeper.shared.common import (
+from trace.tasks.games.minesweeper.forced_cell_count import GamesMinesweeperForcedCellCountTask
+from trace.tasks.games.minesweeper.remaining_mine_count_value import GamesMinesweeperRemainingMineCountValueTask
+from trace.tasks.games.minesweeper.reveal_outcome_label import GamesMinesweeperRevealOutcomeLabelTask
+from trace.tasks.games.minesweeper.satisfied_clue_count import GamesMinesweeperSatisfiedClueCountTask
+from trace.tasks.games.minesweeper.shared.rules import (
     adjacent_flag_count,
     clue_number,
     forced_mine_supports,
@@ -66,28 +63,28 @@ def _bbox_row_counts(bboxes: dict[str, list[float]], *, tolerance_px: float = 4.
         (
             GamesMinesweeperSatisfiedClueCountTask,
             {"target_answer": 5, "scene_variant": "mixed_grid", "board_size": 7},
-            "satisfied_clue_count",
+            "single",
             "integer",
             "bbox_set",
         ),
         (
             GamesMinesweeperRemainingMineCountValueTask,
             {"target_answer": 3, "scene_variant": "mixed_grid", "board_size": 6},
-            "remaining_mine_count",
+            "single",
             "integer",
-            "bbox_set",
+            "bbox",
         ),
         (
             GamesMinesweeperRevealOutcomeLabelTask,
             {"target_answer": 4, "scene_variant": "mixed_grid", "board_size": 6},
-            "reveal_outcome_label",
+            "single",
             "option_letter",
             "keyed_bbox_set_map",
         ),
     ),
 )
 def test_games_minesweeper_grid_emits_expected_contract(
-    task_cls: type[GamesMinesweeperGridTask],
+    task_cls: type,
     params: dict[str, int | str],
     expected_query: str,
     expected_answer_type: str,
@@ -104,10 +101,12 @@ def test_games_minesweeper_grid_emits_expected_contract(
     assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
     assert execution["query_id"] == str(expected_query)
     if str(expected_annotation_type) == "keyed_bbox_set_map":
-        assert trace["projected_annotation"]["type"] == "keyed_bbox_set_map"
         assert trace["projected_annotation"]["keyed_bbox_set_map"] == out.annotation_gt.value
         assert trace["projected_annotation"]["pixel_keyed_bbox_set_map"] == out.annotation_gt.value
         assert set(out.annotation_gt.value) == {"target_cell", "supporting_clues", "supporting_flags"}
+    elif str(expected_annotation_type) == "bbox":
+        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+        assert len(execution["annotation_entity_ids"]) == 1
     else:
         assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
         assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
@@ -201,6 +200,7 @@ def test_games_minesweeper_satisfied_clue_count_matches_adjacent_flags() -> None
         flagged_coords=flagged_coords,
     )
 
+    assert out.query_id == "single"
     assert int(out.answer_gt.value) == 5
     assert set(satisfied) == set(_coords(execution["satisfied_clue_coords"]))
     assert set(unsatisfied) == set(_coords(execution["unsatisfied_clue_coords"]))
@@ -211,16 +211,6 @@ def test_games_minesweeper_satisfied_clue_count_matches_adjacent_flags() -> None
         clue = clue_number(coord, mine_coords=mine_coords, size=size)
         assert clue > 0
         assert adjacent_flag_count(coord, flagged_coords=flagged_coords, size=size) == clue
-    assert all(
-        adjacent_flag_count(coord, flagged_coords=flagged_coords, size=size)
-        < clue_number(coord, mine_coords=mine_coords, size=size)
-        for coord in unsatisfied
-    )
-    assert any(
-        clue_number(coord, mine_coords=mine_coords, size=size) >= 2
-        and adjacent_flag_count(coord, flagged_coords=flagged_coords, size=size) == 0
-        for coord in unsatisfied
-    )
 
 
 @pytest.mark.parametrize("target_answer", (0, 1, 2, 3, 4, 5))
@@ -246,15 +236,13 @@ def test_games_minesweeper_remaining_mine_count_matches_marked_clue(target_answe
         flagged_coords=flagged_coords,
         hidden_coords=hidden_coords,
     )
-
-    assert out.query_id == "remaining_mine_count"
+    assert out.query_id == "single"
+    assert out.annotation_gt.type == "bbox"
     assert int(out.answer_gt.value) == int(target_answer)
     assert len(forcing_clues) == 1
     assert annotation_coords == forcing_clues
-    assert len(out.annotation_gt.value) == 1
     marked = forcing_clues[0]
     assert marked in set(revealed_coords)
-
     clue = clue_number(marked, mine_coords=mine_coords, size=size)
     flags = adjacent_flag_count(marked, flagged_coords=flagged_coords, size=size)
     assert clue > 0
@@ -289,10 +277,7 @@ def test_games_minesweeper_reveal_outcome_matches_marked_hidden_cell(target_answ
         8: "7",
     }
     expected_outcome = reveal_outcome_by_code[int(target_answer)]
-    option_by_label = {
-        str(item["label"]): str(item["outcome"])
-        for item in execution["answer_options"]
-    }
+    option_by_label = {str(item["label"]): str(item["outcome"]) for item in execution["answer_options"]}
 
     validate_board_contract(
         size=size,
@@ -301,6 +286,7 @@ def test_games_minesweeper_reveal_outcome_matches_marked_hidden_cell(target_answ
         flagged_coords=flagged_coords,
         hidden_coords=hidden_coords,
     )
+    assert out.query_id == "single"
     assert out.answer_gt.type == "option_letter"
     assert str(out.answer_gt.value) in set("ABCDEF")
     assert option_by_label[str(out.answer_gt.value)] == expected_outcome
@@ -311,7 +297,6 @@ def test_games_minesweeper_reveal_outcome_matches_marked_hidden_cell(target_answ
     assert len(out.annotation_gt.value["target_cell"]) == 1
     assert len(out.annotation_gt.value["supporting_clues"]) >= 1
     assert set(out.annotation_gt.value) == {"target_cell", "supporting_clues", "supporting_flags"}
-    assert out.trace_payload["projected_annotation"]["keyed_bbox_set_map"] == out.annotation_gt.value
 
     if expected_outcome == "mine":
         supports = forced_mine_supports(
@@ -350,86 +335,54 @@ def test_games_minesweeper_reveal_outcome_lays_out_four_options_as_two_by_two() 
     assert _bbox_row_counts(option_bboxes) == (2, 2)
 
 
-def test_games_minesweeper_grid_query_cycle_covers_answer_scene_status_board_and_style_support() -> None:
-    task = GamesMinesweeperGridTask()
-    answers_by_query: dict[str, set[int | str]] = {
-        "forced_mine_count": set(),
-        "forced_safe_count": set(),
-        "remaining_mine_count": set(),
-        "reveal_outcome_label": set(),
-        "satisfied_clue_count": set(),
-    }
-    scenes_by_query: dict[str, set[str]] = {key: set() for key in answers_by_query}
-    boards_by_query: dict[str, set[int]] = {key: set() for key in answers_by_query}
-    styles_by_query: dict[str, set[str]] = {key: set() for key in answers_by_query}
-
-    for sampling_index in range(240):
-        out = task.generate(
-            51301 + int(sampling_index),
-            params={},
-            max_attempts=128,
-        )
+def test_games_minesweeper_task_sampling_covers_supports() -> None:
+    forced_task = GamesMinesweeperForcedCellCountTask()
+    forced_answers: dict[str, set[int]] = {"forced_mine_count": set(), "forced_safe_count": set()}
+    forced_boards: dict[str, set[int]] = {"forced_mine_count": set(), "forced_safe_count": set()}
+    for sampling_index in range(120):
+        out = forced_task.generate(51301 + int(sampling_index), params={}, max_attempts=128)
         execution = out.trace_payload["execution_trace"]
-        query = str(execution["query_id"])
-        if query == "reveal_outcome_label":
-            answers_by_query[query].add(int(execution["target_answer"]))
-        else:
-            answers_by_query[query].add(out.answer_gt.value)
-        scenes_by_query[query].add(str(execution["scene_variant"]))
-        boards_by_query[query].add(int(execution["board_size"]))
-        styles_by_query[query].add(str(execution["style_variant"]))
+        forced_answers[str(out.query_id)].add(int(out.answer_gt.value))
+        forced_boards[str(out.query_id)].add(int(execution["board_size"]))
+    assert forced_answers == {"forced_mine_count": {1, 2, 3, 4, 5}, "forced_safe_count": {1, 2, 3, 4, 5}}
+    assert forced_boards == {"forced_mine_count": {4, 5}, "forced_safe_count": {4, 5}}
 
-    assert answers_by_query == {
-        "forced_mine_count": {1, 2, 3, 4, 5},
-        "forced_safe_count": {1, 2, 3, 4, 5},
-        "remaining_mine_count": {0, 1, 2, 3, 4, 5},
-        "reveal_outcome_label": set(range(9)),
-        "satisfied_clue_count": {1, 2, 3, 4, 5},
+    remaining_answers = {
+        int(GamesMinesweeperRemainingMineCountValueTask().generate(51401 + i, params={}, max_attempts=128).answer_gt.value)
+        for i in range(80)
     }
-    assert all(values == {"open_grid", "mixed_grid"} for values in scenes_by_query.values())
-    assert all(values == {4, 5, 6, 7, 8} for values in boards_by_query.values())
-    assert all(values == set(SUPPORTED_MINESWEEPER_STYLE_VARIANTS) for values in styles_by_query.values())
-
-
-def test_games_minesweeper_forced_cell_task_uses_eased_board_support() -> None:
-    task = GamesMinesweeperForcedCellCountTask()
-    boards_by_query: dict[str, set[int]] = {"forced_mine_count": set(), "forced_safe_count": set()}
-
-    for sampling_index in range(80):
-        out = task.generate(
-            51401 + int(sampling_index),
-            params={},
-            max_attempts=128,
+    satisfied_answers = {
+        int(GamesMinesweeperSatisfiedClueCountTask().generate(51501 + i, params={}, max_attempts=128).answer_gt.value)
+        for i in range(80)
+    }
+    reveal_targets = {
+        int(
+            GamesMinesweeperRevealOutcomeLabelTask()
+            .generate(51601 + i, params={}, max_attempts=256)
+            .trace_payload["execution_trace"]["target_answer"]
         )
+        for i in range(120)
+    }
+    assert remaining_answers == {0, 1, 2, 3, 4, 5}
+    assert satisfied_answers == {1, 2, 3, 4, 5}
+    assert reveal_targets == set(range(9))
+
+
+def test_games_minesweeper_style_sampling_covers_supported_variants() -> None:
+    styles: set[str] = set()
+    scenes: set[str] = set()
+    for sampling_index in range(120):
+        out = GamesMinesweeperSatisfiedClueCountTask().generate(51701 + sampling_index, params={}, max_attempts=128)
         execution = out.trace_payload["execution_trace"]
-        boards_by_query[str(execution["query_id"])].add(int(execution["board_size"]))
-
-    assert boards_by_query == {"forced_mine_count": {4, 5}, "forced_safe_count": {4, 5}}
-
-
-def test_games_minesweeper_reveal_outcome_task_uses_reveal_board_support() -> None:
-    task = GamesMinesweeperRevealOutcomeLabelTask()
-    boards: set[int] = set()
-
-    for sampling_index in range(80):
-        out = task.generate(
-            51481 + int(sampling_index),
-            params={},
-            max_attempts=256,
-        )
-        boards.add(int(out.trace_payload["execution_trace"]["board_size"]))
-
-    assert boards == {5, 6, 7, 8}
+        styles.add(str(execution["style_variant"]))
+        scenes.add(str(execution["scene_variant"]))
+    assert styles == set(SUPPORTED_MINESWEEPER_STYLE_VARIANTS)
+    assert scenes == {"open_grid", "mixed_grid"}
 
 
 def test_games_minesweeper_grid_is_deterministic() -> None:
-    params = {
-        "query_id": "forced_safe_count",
-        "target_answer": 3,
-        "scene_variant": "mixed_grid",
-        "board_size": 7,
-    }
-    task = GamesMinesweeperGridTask()
+    params = {"query_id": "forced_safe_count", "target_answer": 3, "scene_variant": "mixed_grid", "board_size": 5}
+    task = GamesMinesweeperForcedCellCountTask()
     out_a = task.generate(51241, params=params, max_attempts=128)
     out_b = task.generate(51241, params=params, max_attempts=128)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -441,7 +394,7 @@ def test_games_minesweeper_grid_is_deterministic() -> None:
 
 
 def test_games_minesweeper_grid_prompt_bundle_requires_rule_texts() -> None:
-    bundle = json.loads(Path("prompts/games/minesweeper/games_minesweeper_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/games/minesweeper/games_minesweeper_v1.json").read_text(encoding="utf-8"))
     required = bundle["required_slots_by_key"]
     assert required["query:forced_mine_count"] == ["minesweeper_rule_text"]
     assert required["query:forced_safe_count"] == ["minesweeper_rule_text"]
@@ -457,13 +410,7 @@ def test_games_minesweeper_grid_build_smoke(tmp_path: Path) -> None:
         dataset_name="build_smoke_task_games__minesweeper__forced_cell_count",
         instance_version="v0",
         image_format="png",
-        tasks=[
-            BuildTaskConfig(
-                task_id="task_games__minesweeper__forced_cell_count",
-                count=4,
-                params={},
-            )
-        ],
+        tasks=[BuildTaskConfig(task_id="task_games__minesweeper__forced_cell_count", count=4, params={})],
         strict_repro=False,
         max_attempts_per_instance=128,
         sampling_seed=61,

@@ -829,10 +829,16 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__construction_site__missing_patch_label": _entry(
         "illustrations", "construction_site", "illustrations", "construction_site"
     ),
+    "task_illustrations__construction_site__rotated_tile_label": _entry(
+        "illustrations", "construction_site", "illustrations", "construction_site"
+    ),
     "task_illustrations__environment__feature_relation_object_count": _entry(
         "illustrations", "environment", "illustrations", "environment"
     ),
     "task_illustrations__environment__missing_patch_label": _entry(
+        "illustrations", "environment", "illustrations", "environment"
+    ),
+    "task_illustrations__environment__rotated_tile_label": _entry(
         "illustrations", "environment", "illustrations", "environment"
     ),
     "task_illustrations__environment__crossing_feature_count": _entry(
@@ -840,7 +846,15 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     ),
     "task_illustrations__library__books_in_section_count": _entry("illustrations", "library", "illustrations", "library"),
     "task_illustrations__library__filtered_book_in_section_count": _entry("illustrations", "library", "illustrations", "library"),
+    "task_illustrations__library__missing_patch_label": _entry("illustrations", "library", "illustrations", "library"),
+    "task_illustrations__library__rotated_tile_label": _entry("illustrations", "library", "illustrations", "library"),
     "task_illustrations__indoor_room__surface_object_count": _entry(
+        "illustrations", "indoor_room", "illustrations", "indoor_room"
+    ),
+    "task_illustrations__indoor_room__missing_patch_label": _entry(
+        "illustrations", "indoor_room", "illustrations", "indoor_room"
+    ),
+    "task_illustrations__indoor_room__rotated_tile_label": _entry(
         "illustrations", "indoor_room", "illustrations", "indoor_room"
     ),
     "task_illustrations__park_playground__person_count": _entry(

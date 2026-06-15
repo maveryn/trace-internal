@@ -115,6 +115,47 @@ generation:
         - potted_plant
         - flower
         - mushroom
+    task_illustrations__indoor_room__missing_patch_label:
+      source_object_count_min: 12
+      source_object_count_max: 18
+      option_count_support:
+        - 4
+        - 6
+      patch_width_min: 150
+      patch_width_max: 230
+      patch_height_min: 110
+      patch_height_max: 175
+      crop_margin_px: 34
+      source_width: 820
+      source_height: 560
+      indoor_object_type_support:
+        - apple
+        - backpack
+        - egg
+        - soccer_ball
+        - rugby_ball
+        - spoon
+        - plate
+        - book
+        - camera
+        - remote
+        - pencil
+        - ruler
+        - clock
+        - gift
+        - vase
+        - bowl
+        - candle
+        - lightbulb
+        - mug
+        - teapot
+        - bottle
+        - key
+        - scissors
+        - lamp
+        - potted_plant
+        - flower
+        - mushroom
 
 rendering:
   shared:
@@ -202,6 +243,21 @@ rendering:
         soft_shadow: 1.0
         ink_sketch: 1.0
         watercolor_wash: 1.0
+    task_illustrations__indoor_room__missing_patch_label:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
 
 prompt:
   task_overrides:
@@ -229,3 +285,11 @@ prompt:
       annotation_hint_rotated_tile: set "annotation" to a JSON array containing the [x0, y0, x1, y1] box around the rotated tile in image pixel coordinates
       json_example_rotated_tile: '{"annotation":[[350,42,670,362]],"answer":"B"}'
       json_example_answer_only_rotated_tile: '{"answer":"B"}'
+    task_illustrations__indoor_room__missing_patch_label:
+      bundle_id: illustrations_indoor_room_v0
+      scene_key: indoor_room_canvas
+      task_key: missing_patch_label_task
+      answer_hint_missing_patch: set "answer" to the selected option letter as a string
+      annotation_hint_missing_patch: set "annotation" to a JSON object with keys "missing_region" and "selected_option", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates
+      json_example_missing_patch: '{"annotation":{"missing_region":[214,128,374,252],"selected_option":[562,676,722,800]},"answer":"C"}'
+      json_example_answer_only_missing_patch: '{"answer":"C"}'

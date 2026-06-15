@@ -96,6 +96,34 @@ def test_construction_site_missing_patch_uses_keyed_visual_witnesses() -> None:
     assert out.trace_payload["render_spec"]["style"]["source_layout"]["show_zone_labels"] is False
 
 
+def test_construction_site_rotated_tile_label_contract() -> None:
+    out = create_task("task_illustrations__construction_site__rotated_tile_label").generate(
+        hash64(2026061502, "construction-site-rotated-tile", 0),
+        params={"rotation_degrees": 90, "correct_index": 2},
+        max_attempts=160,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
+    annotation = out.annotation_gt.value
+
+    assert out.scene_id == "construction_site"
+    assert out.query_id == SINGLE_QUERY_ID
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "C"
+    assert out.annotation_gt.type == "bbox_set"
+    assert execution["query_id"] == SINGLE_QUERY_ID
+    assert execution["answer_label"] == out.answer_gt.value
+    assert execution["rotation_degrees"] == 90
+    assert execution["grid_shape"] == [2, 3]
+    assert len(render_map["tile_bboxes_px_by_label"]) == 6
+    assert set(render_map["tile_bboxes_px_by_label"]) == {"A", "B", "C", "D", "E", "F"}
+    assert annotation == [render_map["rotated_tile_bbox_px"]]
+    assert annotation == [render_map["tile_bboxes_px_by_label"][out.answer_gt.value]]
+    assert trace["projected_annotation"]["bbox_set"] == annotation
+    assert execution["rotated_tile_index"] in execution["usable_tile_indices"]
+
+
 def test_construction_site_equipment_zone_count_allows_zero_with_empty_annotation() -> None:
     out = create_task("task_illustrations__construction_site__equipment_zone_count").generate(
         hash64(2026061302, "construction-site-zero-equipment-zone"),

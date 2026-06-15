@@ -67,6 +67,20 @@ generation:
       crop_margin_px: 36
       source_width: 820
       source_height: 560
+    task_illustrations__construction_site__rotated_tile_label:
+      source_worker_count_min: 10
+      source_worker_count_max: 16
+      source_material_count_min: 6
+      source_material_count_max: 10
+      source_equipment_count_min: 4
+      source_equipment_count_max: 7
+      source_width: 960
+      source_height: 660
+      rotation_degrees_support:
+        - 90
+        - 270
+      min_tile_detail_score: 160
+      min_rotation_delta: 7
 
 rendering:
   shared:

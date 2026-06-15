@@ -29,19 +29,7 @@ from ..shared.option_rendering import fit_source_image, sample_visual_label_font
 from .shared.annotations import library_scene_entities, serialize_library_scene
 from .shared.output import render_fallback_from_defaults
 from .shared.prompts import build_library_prompt_artifacts
-from .shared.rendering import render_library_scene
-from .shared.sampling import (
-    bounds,
-    color_support,
-    make_library_section_specs,
-    random_book_specs,
-    render_params,
-    sample_count,
-    section_support,
-    setting_weights,
-    spawned_task_rng,
-    style_weights,
-)
+from .shared.source_images import LibrarySourceSceneSpec, render_library_source_scene, sample_library_source_scene_spec
 
 
 TASK_ID = "task_illustrations__library__rotated_tile_label"
@@ -71,14 +59,9 @@ class _Defaults:
 
 @dataclass(frozen=True)
 class _SampleSpec:
-    section_count: int
-    section_specs: Tuple[Any, ...]
-    section_keys: Tuple[str, ...]
-    source_size: Tuple[int, int]
+    source: LibrarySourceSceneSpec
     rotation_degrees: int
-    section_count_probabilities: Dict[str, float]
     rotation_probabilities: Dict[str, float]
-    section_book_counts_by_section: Dict[str, int]
 
 
 _DEFAULTS = _Defaults()
@@ -120,71 +103,27 @@ def _sample_rotation(*, params: Mapping[str, Any], instance_seed: int) -> Tuple[
     return int(value), {str(item): float(probability) for item in support}
 
 
-def _sample_section_keys(*, rng: Any, support: Sequence[str], section_count: int) -> Tuple[str, ...]:
-    values = tuple(str(value) for value in support if str(value))
-    if int(section_count) > len(values):
-        raise ValueError("section_count exceeds available unique library section support")
-    selected = list(rng.sample(list(values), k=int(section_count)))
-    rng.shuffle(selected)
-    return tuple(str(value) for value in selected)
-
-
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
     """Sample a dense library source scene and a non-semantic rotation angle."""
 
-    section_min, section_max = bounds(
-        params,
-        _GEN_DEFAULTS,
-        "section_count_min",
-        "section_count_max",
-        _DEFAULTS.section_count_min,
-        _DEFAULTS.section_count_max,
-    )
-    section_values = section_support(params, _GEN_DEFAULTS)
-    section_count, section_count_probabilities = sample_count(
-        params=params,
+    source = sample_library_source_scene_spec(
+        seed_namespace=TASK_ID,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}:section_count",
-        low=int(section_min),
-        high=min(int(section_max), len(section_values)),
-        explicit_key="section_count",
+        params=params,
+        attempt_index=int(attempt_index),
+        generation_defaults=_GEN_DEFAULTS,
+        section_count_min=_DEFAULTS.section_count_min,
+        section_count_max=_DEFAULTS.section_count_max,
+        section_book_count_min=_DEFAULTS.section_book_count_min,
+        section_book_count_max=_DEFAULTS.section_book_count_max,
+        source_width=_DEFAULTS.source_width,
+        source_height=_DEFAULTS.source_height,
     )
     rotation_degrees, rotation_probabilities = _sample_rotation(params=params, instance_seed=int(instance_seed))
-    rng = spawned_task_rng(int(instance_seed), TASK_ID, int(attempt_index))
-    section_keys = _sample_section_keys(rng=rng, support=section_values, section_count=int(section_count))
-    colors = color_support(params, _GEN_DEFAULTS)
-    section_book_min, section_book_max = bounds(
-        params,
-        _GEN_DEFAULTS,
-        "section_book_count_min",
-        "section_book_count_max",
-        _DEFAULTS.section_book_count_min,
-        _DEFAULTS.section_book_count_max,
-    )
-    specs_by_section = {}
-    book_counts_by_section: Dict[str, int] = {}
-    for section_key in section_keys:
-        count = int(rng.randint(int(section_book_min), int(section_book_max)))
-        book_counts_by_section[str(section_key)] = int(count)
-        specs_by_section[str(section_key)] = random_book_specs(
-            rng=rng,
-            section_key=str(section_key),
-            count=int(count),
-            colors=colors,
-            role="source",
-        )
     return _SampleSpec(
-        section_count=int(section_count),
-        section_specs=make_library_section_specs(section_keys=section_keys, specs_by_section=specs_by_section),
-        section_keys=tuple(section_keys),
-        source_size=(
-            _int_value(params, _GEN_DEFAULTS, "source_width", _DEFAULTS.source_width),
-            _int_value(params, _GEN_DEFAULTS, "source_height", _DEFAULTS.source_height),
-        ),
+        source=source,
         rotation_degrees=int(rotation_degrees),
-        section_count_probabilities=dict(section_count_probabilities),
         rotation_probabilities=dict(rotation_probabilities),
-        section_book_counts_by_section=dict(book_counts_by_section),
     )
 
 
@@ -268,29 +207,19 @@ class IllustrationsLibraryRotatedTileLabelTask:
         for attempt in range(max(1, int(max_attempts))):
             try:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
-                scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:scene", int(attempt))
-                rp = render_params(
-                    params,
-                    _RENDER_DEFAULTS,
-                    fallback_width=int(fallback["canvas_width"]),
-                    fallback_height=int(fallback["canvas_height"]),
-                    fallback_scale=int(fallback["render_scale"]),
-                )
-                scene = render_library_scene(
-                    rng=scene_rng,
-                    section_specs=sample.section_specs,
-                    canvas_width=int(rp["canvas_width"]),
-                    canvas_height=int(rp["canvas_height"]),
-                    render_scale=int(rp["render_scale"]),
-                    setting_weights=setting_weights(params, _RENDER_DEFAULTS),
-                    style_weights=style_weights(params, _RENDER_DEFAULTS),
+                scene = render_library_source_scene(
+                    seed_namespace=TASK_ID,
                     instance_seed=int(instance_seed),
-                    font_params=params,
+                    attempt_index=int(attempt),
+                    source=sample.source,
+                    params=params,
+                    render_defaults=_RENDER_DEFAULTS,
+                    fallback=fallback,
                 )
                 source_panel = fit_source_image(
                     scene.image,
-                    width=int(sample.source_size[0]),
-                    height=int(sample.source_size[1]),
+                    width=int(sample.source.source_size[0]),
+                    height=int(sample.source.source_size[1]),
                 )
                 usable_indices = _usable_tile_indices(
                     source_image=source_panel,
@@ -365,7 +294,7 @@ class IllustrationsLibraryRotatedTileLabelTask:
             context=f"prompt defaults for {TASK_ID}",
         )
         slots = {
-            "section_count": int(sample.section_count),
+            "section_count": int(sample.source.section_count),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "answer_hint": str(prompt_defaults["answer_hint_rotated_tile"]),
@@ -404,10 +333,10 @@ class IllustrationsLibraryRotatedTileLabelTask:
                 "params": {
                     "query_id": QUERY_ID,
                     "prompt_query_key": PROMPT_QUERY_KEY,
-                    "section_count": int(sample.section_count),
-                    "section_keys": list(sample.section_keys),
-                    "section_book_counts_by_section": dict(sample.section_book_counts_by_section),
-                    "section_count_probabilities": dict(sample.section_count_probabilities),
+                    "section_count": int(sample.source.section_count),
+                    "section_keys": list(sample.source.section_keys),
+                    "section_book_counts_by_section": dict(sample.source.section_book_counts_by_section),
+                    "section_count_probabilities": dict(sample.source.section_count_probabilities),
                     "rotation_degrees": int(sample.rotation_degrees),
                     "rotation_degrees_support": [int(value) for value in _rotation_support(params)],
                     "rotation_degrees_probabilities": dict(sample.rotation_probabilities),
@@ -417,7 +346,7 @@ class IllustrationsLibraryRotatedTileLabelTask:
                     "answer_label": answer_label,
                     "correct_index": int(correct_index),
                     "correct_index_probabilities": dict(correct_index_probabilities),
-                    "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
+                    "source_size": [int(sample.source.source_size[0]), int(sample.source.source_size[1])],
                 },
             },
             "render_spec": {
@@ -443,7 +372,7 @@ class IllustrationsLibraryRotatedTileLabelTask:
                 "source_section_bboxes_px": section_bboxes,
                 "source_scene_canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
                 "source_tile_index": int(correct_index),
-                "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
+                "source_size": [int(sample.source.source_size[0]), int(sample.source.source_size[1])],
                 "grid_shape": [GRID_ROWS, GRID_COLS],
             },
             "execution_trace": {
@@ -459,8 +388,8 @@ class IllustrationsLibraryRotatedTileLabelTask:
                 "grid_shape": [GRID_ROWS, GRID_COLS],
                 "tile_labels": list(TILE_LABELS),
                 "usable_tile_indices": [int(index) for index in usable_indices],
-                "section_count": int(sample.section_count),
-                "section_keys": list(sample.section_keys),
+                "section_count": int(sample.source.section_count),
+                "section_keys": list(sample.source.section_keys),
                 "sections": serialized_scene[0]["sections"],
                 "books": serialized_scene[0]["books"],
                 "decor": serialized_scene[0]["decor"],

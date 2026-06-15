@@ -14,10 +14,12 @@ from trace.tasks.illustrations.indoor_room.shared.state import INDOOR_OBJECT_TYP
 SURFACE_TASK_ID = "task_illustrations__indoor_room__surface_object_count"
 FURNITURE_TASK_ID = "task_illustrations__indoor_room__furniture_side_count"
 ROTATED_TILE_TASK_ID = "task_illustrations__indoor_room__rotated_tile_label"
+MISSING_PATCH_TASK_ID = "task_illustrations__indoor_room__missing_patch_label"
 TASK_SOURCE_STEMS = {
     SURFACE_TASK_ID: "surface_object_count.py",
     FURNITURE_TASK_ID: "furniture_side_count.py",
     ROTATED_TILE_TASK_ID: "rotated_tile_label.py",
+    MISSING_PATCH_TASK_ID: "missing_patch_label.py",
 }
 
 
@@ -256,3 +258,35 @@ def test_rotated_tile_label_contract() -> None:
     assert trace["projected_annotation"]["bbox_set"] == annotation
     assert trace["projected_annotation"]["pixel_bbox_set"] == annotation
     assert execution["rotated_tile_index"] in execution["usable_tile_indices"]
+
+
+def test_missing_patch_label_contract() -> None:
+    _assert_scene_packaged_task(MISSING_PATCH_TASK_ID)
+    out = create_task(MISSING_PATCH_TASK_ID).generate(
+        hash64(2026061503, "indoor-missing-patch", 0),
+        params={"theme_id": "living_room", "source_object_count": 16, "option_count": 4, "correct_index": 2},
+        max_attempts=120,
+    )
+    trace = out.trace_payload
+    _assert_scene_prompt_metadata(trace)
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
+    annotation = out.annotation_gt.value
+
+    assert out.scene_id == "indoor_room"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "C"
+    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert execution["query_id"] == "single"
+    assert execution["prompt_query_key"] == "missing_patch_label"
+    assert execution["patch_mode"] == "plain"
+    assert execution["selected_transform"] == "none"
+    assert set(annotation) == {"missing_region", "selected_option"}
+    assert annotation["missing_region"] == render_map["missing_region_bbox_px"]
+    assert annotation["selected_option"] == render_map["selected_option_bbox_px"]
+    assert annotation["selected_option"] == render_map["option_bboxes_px_by_label"][out.answer_gt.value]
+    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
+    assert len(render_map["option_bboxes_px_by_label"]) == 4
+    assert len(render_map["option_source_crop_boxes_px"]) == 4
+    assert render_map["option_source_crop_boxes_px"][2] == render_map["source_crop_box_px"]

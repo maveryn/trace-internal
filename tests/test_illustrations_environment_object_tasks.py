@@ -159,3 +159,31 @@ def test_missing_patch_label_contract() -> None:
     assert render_map["option_source_crop_boxes_px"][2] == render_map["source_crop_box_px"]
     assert trace["query_spec"]["params"]["option_labels"] == ["A", "B", "C", "D"]
     assert trace["query_spec"]["params"]["candidate_crop_count"] == render_map["candidate_crop_count"]
+
+
+def test_rotated_tile_label_contract() -> None:
+    out = create_task("task_illustrations__environment__rotated_tile_label").generate(
+        hash64(2026061502, "environment-rotated-tile", 0),
+        params={"theme_id": "road_and_river", "source_object_count": 14, "rotation_degrees": 90, "correct_index": 2},
+        max_attempts=300,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
+    annotation = out.annotation_gt.value
+
+    assert out.scene_id == "environment"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "C"
+    assert out.annotation_gt.type == "bbox_set"
+    assert execution["query_id"] == "single"
+    assert execution["answer_label"] == out.answer_gt.value
+    assert execution["rotation_degrees"] == 90
+    assert execution["grid_shape"] == [2, 3]
+    assert len(render_map["tile_bboxes_px_by_label"]) == 6
+    assert set(render_map["tile_bboxes_px_by_label"]) == {"A", "B", "C", "D", "E", "F"}
+    assert annotation == [render_map["rotated_tile_bbox_px"]]
+    assert annotation == [render_map["tile_bboxes_px_by_label"][out.answer_gt.value]]
+    assert trace["projected_annotation"]["bbox_set"] == annotation
+    assert execution["rotated_tile_index"] in execution["usable_tile_indices"]

@@ -194,3 +194,33 @@ def test_rotated_tile_label_contract() -> None:
     assert trace["projected_annotation"]["bbox_set"] == annotation
     assert trace["projected_annotation"]["pixel_bbox_set"] == annotation
     assert execution["rotated_tile_index"] in execution["usable_tile_indices"]
+
+
+def test_missing_patch_label_contract() -> None:
+    out = create_task("task_illustrations__library__missing_patch_label").generate(
+        hash64(2026061503, "library-missing-patch", 0),
+        params={"section_count": 5, "option_count": 4, "correct_index": 2},
+        max_attempts=120,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
+    annotation = out.annotation_gt.value
+
+    assert out.scene_id == "library"
+    assert out.query_id == SINGLE_QUERY_ID
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "C"
+    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert execution["query_id"] == SINGLE_QUERY_ID
+    assert execution["prompt_query_key"] == "missing_patch_label"
+    assert execution["patch_mode"] == "plain"
+    assert execution["selected_transform"] == "none"
+    assert set(annotation) == {"missing_region", "selected_option"}
+    assert annotation["missing_region"] == render_map["missing_region_bbox_px"]
+    assert annotation["selected_option"] == render_map["selected_option_bbox_px"]
+    assert annotation["selected_option"] == render_map["option_bboxes_px_by_label"][out.answer_gt.value]
+    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
+    assert len(render_map["option_bboxes_px_by_label"]) == 4
+    assert len(render_map["option_source_crop_boxes_px"]) == 4
+    assert render_map["option_source_crop_boxes_px"][2] == render_map["source_crop_box_px"]

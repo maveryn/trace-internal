@@ -73,6 +73,7 @@
     "question_text_crossing_feature_count": "How many {crossing_name} cross the {crossed_feature_name}? If none are there, answer 0.",
     "question_text_building_window_count": "How many {window_phrase} are shown on the buildings? If none are there, answer 0.",
     "question_text_missing_patch_label": "Which option exactly fills the missing region?",
+    "question_text_rotated_tile_label": "One of the six lettered tiles is rotated relative to the rest of the environment image. Which tile is it?",
     "answer_hint_feature_relation": "set \"answer\" to the count of foreground objects {feature_relation_phrase} as an integer, using 0 if none match",
     "annotation_hint_feature_relation": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted foreground object {feature_relation_phrase}; use [] if none match",
     "json_example_feature_relation": "{\"annotation\":[],\"answer\":0}",
@@ -88,6 +89,10 @@
     "answer_hint_missing_patch": "set \"answer\" to the selected option letter as a string",
     "annotation_hint_missing_patch": "set \"annotation\" to a JSON object with keys \"missing_region\" and \"selected_option\", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates",
     "json_example_missing_patch": "{\"annotation\":{\"missing_region\":[214,128,374,252],\"selected_option\":[562,676,722,800]},\"answer\":\"C\"}",
-    "json_example_answer_only_missing_patch": "{\"answer\":\"C\"}"
+    "json_example_answer_only_missing_patch": "{\"answer\":\"C\"}",
+    "answer_hint_rotated_tile": "set \"answer\" to the letter of the rotated tile",
+    "annotation_hint_rotated_tile": "set \"annotation\" to a JSON array containing the [x0, y0, x1, y1] box around the rotated tile in image pixel coordinates",
+    "json_example_rotated_tile": "{\"annotation\":[[350,42,670,362]],\"answer\":\"B\"}",
+    "json_example_answer_only_rotated_tile": "{\"answer\":\"B\"}"
   }
 }

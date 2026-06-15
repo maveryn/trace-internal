@@ -22,6 +22,13 @@
       "",
       "",
       ""
+    ],
+    "missing_patch_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -44,6 +51,7 @@
       "section_name"
     ],
     "query:rotated_tile_label": [],
+    "query:missing_patch_label": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -116,6 +124,13 @@
       "One of the six lettered tiles is rotated relative to the rest of the library. Which tile is it?",
       "Look at the lettered tile grid. Which tile has the rotated library fragment?",
       "Select the letter of the tile whose library fragment is rotated."
+    ],
+    "missing_patch_label": [
+      "Which option exactly fills the missing region?",
+      "Select the option that restores the missing part of the library image.",
+      "One region is missing from the library scene. Which lettered option matches it exactly?",
+      "Look at the missing region in the library image. Which option belongs there?",
+      "Choose the patch option that completes the library illustration."
     ]
   },
   "allow_empty_task_templates": true

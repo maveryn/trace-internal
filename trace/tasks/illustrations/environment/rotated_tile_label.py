@@ -1,4 +1,4 @@
-"""Identify the rotated tile in an indoor-room illustration grid."""
+"""Identify the rotated tile in an environment illustration grid."""
 
 from __future__ import annotations
 
@@ -8,12 +8,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from PIL import Image
 
 from ....core.query_ids import SINGLE_QUERY_ID
-from ....core.scene_config import get_scene_defaults
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
+from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ..shared.cutouts import (
@@ -26,17 +25,19 @@ from ..shared.cutouts import (
     tile_is_usable,
 )
 from ..shared.option_rendering import fit_source_image, sample_visual_label_font_trace
-from .shared.annotations import serialize_indoor_scene
-from .shared.output import object_type_map
-from .shared.prompts import build_indoor_prompt_artifacts, indoor_setting_name
-from .shared.rendering import indoor_scene_entities
-from .shared.source_images import IndoorSourceSceneSpec, render_indoor_source_scene, sample_indoor_source_scene_spec
+from ..shared.task_support import uniform_string_probability_map
+from .shared.annotations import feature_bbox_map, feature_path_map
+from .shared.defaults import CountContractDefaults, render_fallback
+from .shared.output import serialize_environment_objects
+from .shared.prompts import render_environment_prompt, required_environment_prompt_defaults
+from .shared.rendering import ENVIRONMENT_THEME_IDS, environment_scene_entities, render_environment_object_scene, serialize_environment_scene
+from .shared.sampling import environment_render_params, environment_setting_name, sample_count_support, style_weights, theme_support
 
 
-TASK_ID = "task_illustrations__indoor_room__rotated_tile_label"
-SCENE_ID = "indoor_room"
+TASK_ID = "task_illustrations__environment__rotated_tile_label"
+DOMAIN = "illustrations"
+SCENE_ID = "environment"
 QUERY_ID = SINGLE_QUERY_ID
-PROMPT_QUERY_KEY = "rotated_tile_label"
 GRID_ROWS = 2
 GRID_COLS = 3
 TILE_LABELS: Tuple[str, ...] = DEFAULT_OPTION_LABELS[: GRID_ROWS * GRID_COLS]
@@ -49,26 +50,33 @@ class _Defaults:
     source_object_count_max: int = 18
     source_width: int = 960
     source_height: int = 640
-    canvas_width: int = 1280
-    canvas_height: int = 840
-    object_size_min_px: int = 52
-    object_size_max_px: int = 86
-    render_scale: int = 2
-    min_tile_detail_score: float = 150.0
+    min_tile_detail_score: float = 160.0
     min_rotation_delta: float = 7.0
 
 
 @dataclass(frozen=True)
 class _SampleSpec:
-    source: IndoorSourceSceneSpec
+    theme_id: str
+    theme_probabilities: Dict[str, float]
+    source_object_count: int
+    source_object_count_probabilities: Dict[str, float]
     rotation_degrees: int
+    source_size: Tuple[int, int]
     rotation_probabilities: Dict[str, float]
 
 
 _DEFAULTS = _Defaults()
-_SCENE_DEFAULTS = get_scene_defaults("illustrations", SCENE_ID)
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
-    _SCENE_DEFAULTS if isinstance(_SCENE_DEFAULTS, Mapping) else {},
+_RENDER_FALLBACK = render_fallback(
+    CountContractDefaults(
+        object_count_min=_DEFAULTS.source_object_count_min,
+        object_count_max=_DEFAULTS.source_object_count_max,
+        target_count_min=0,
+        target_count_max=0,
+    )
+)
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    DOMAIN,
+    SCENE_ID,
     task_id=TASK_ID,
 )
 
@@ -79,6 +87,32 @@ def _int_value(params: Mapping[str, Any], defaults: Mapping[str, Any], key: str,
 
 def _float_value(params: Mapping[str, Any], defaults: Mapping[str, Any], key: str, fallback: float) -> float:
     return float(params.get(str(key), group_default(defaults, str(key), float(fallback))))
+
+
+def _sample_theme(*, params: Mapping[str, Any], instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    themes = theme_support(params, _GEN_DEFAULTS)
+    explicit = params.get("theme_id")
+    if explicit is not None:
+        theme_id = str(explicit)
+        if theme_id not in set(themes):
+            raise ValueError(f"theme_id must be one of {themes}")
+        return theme_id, uniform_string_probability_map(themes, selected=theme_id)
+    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:theme")
+    theme_id = str(themes[int(index) % len(themes)])
+    return theme_id, uniform_string_probability_map(themes)
+
+
+def _sample_source_object_count(*, params: Mapping[str, Any], instance_seed: int) -> Tuple[int, Dict[str, float]]:
+    low = int(params.get("source_object_count_min", group_default(_GEN_DEFAULTS, "source_object_count_min", _DEFAULTS.source_object_count_min)))
+    high = int(params.get("source_object_count_max", group_default(_GEN_DEFAULTS, "source_object_count_max", _DEFAULTS.source_object_count_max)))
+    if low < 1 or high < low:
+        raise ValueError("invalid source_object_count_min/source_object_count_max range")
+    return sample_count_support(
+        params=params,
+        support=tuple(range(int(low), int(high) + 1)),
+        explicit_key="source_object_count",
+        cycle_index=resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:source_object_count"),
+    )
 
 
 def _rotation_support(params: Mapping[str, Any]) -> Tuple[int, ...]:
@@ -99,29 +133,31 @@ def _sample_rotation(*, params: Mapping[str, Any], instance_seed: int) -> Tuple[
             raise ValueError(f"rotation_degrees must be one of {support}")
         return int(value), {str(value): 1.0}
     index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:rotation_degrees")
-    value = int(support[int(index) % len(support)])
+    selected = int(support[int(index) % len(support)])
     probability = 1.0 / float(len(support))
-    return int(value), {str(item): float(probability) for item in support}
+    return int(selected), {str(value): float(probability) for value in support}
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
-    """Sample a dense indoor source scene and a non-semantic rotation angle."""
+    """Sample source environment density and rotation parameters before rendering selects a usable tile."""
 
-    source = sample_indoor_source_scene_spec(
-        seed_namespace=TASK_ID,
-        instance_seed=int(instance_seed),
+    del attempt_index
+    theme_id, theme_probabilities = _sample_theme(params=params, instance_seed=int(instance_seed))
+    source_object_count, source_object_count_probabilities = _sample_source_object_count(
         params=params,
-        attempt_index=int(attempt_index),
-        generation_defaults=_GEN_DEFAULTS,
-        source_object_count_min=_DEFAULTS.source_object_count_min,
-        source_object_count_max=_DEFAULTS.source_object_count_max,
-        source_width=_DEFAULTS.source_width,
-        source_height=_DEFAULTS.source_height,
+        instance_seed=int(instance_seed),
     )
     rotation_degrees, rotation_probabilities = _sample_rotation(params=params, instance_seed=int(instance_seed))
     return _SampleSpec(
-        source=source,
+        theme_id=str(theme_id),
+        theme_probabilities=dict(theme_probabilities),
+        source_object_count=int(source_object_count),
+        source_object_count_probabilities=dict(source_object_count_probabilities),
         rotation_degrees=int(rotation_degrees),
+        source_size=(
+            _int_value(params, _GEN_DEFAULTS, "source_width", _DEFAULTS.source_width),
+            _int_value(params, _GEN_DEFAULTS, "source_height", _DEFAULTS.source_height),
+        ),
         rotation_probabilities=dict(rotation_probabilities),
     )
 
@@ -137,12 +173,7 @@ def _usable_tile_indices(
     usable: list[int] = []
     for index, (piece, _source_box) in enumerate(pieces):
         rotated = piece.rotate(-int(rotation_degrees), expand=False, resample=Image.Resampling.BICUBIC)
-        if tile_is_usable(
-            piece,
-            rotated,
-            min_detail_score=float(min_detail_score),
-            min_rotation_delta=float(min_rotation_delta),
-        ):
+        if tile_is_usable(piece, rotated, min_detail_score=float(min_detail_score), min_rotation_delta=float(min_rotation_delta)):
             usable.append(int(index))
     return tuple(usable)
 
@@ -156,7 +187,7 @@ def _select_correct_index(
 ) -> Tuple[int, Dict[str, float]]:
     usable = tuple(int(index) for index in usable_indices)
     if not usable:
-        raise ValueError("no visually usable indoor-room tile for rotation")
+        raise ValueError("no visually usable environment tile for rotation")
     explicit = params.get("correct_index")
     if explicit is not None:
         value = int(explicit)
@@ -165,37 +196,30 @@ def _select_correct_index(
         if value not in set(usable):
             raise ValueError("explicit correct_index is not visually usable for rotation")
         return int(value), {str(value): 1.0}
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}:answer:{attempt_index}",
-    )
+    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:answer:{attempt_index}")
     selected = int(usable[int(index) % len(usable)])
     return int(selected), dict(uniform_probability_map(usable))
 
 
 def _bbox_set(*boxes: Sequence[float]) -> list[list[float]]:
-    return [
-        [round(float(coord), 3) for coord in bbox[:4]]
-        for bbox in boxes
-    ]
+    return [[round(float(coord), 3) for coord in bbox[:4]] for bbox in boxes]
 
 
 @register_task
-class IllustrationsIndoorRoomRotatedTileLabelTask:
-    """Select the lettered tile that has been rotated inside a room grid."""
+class IllustrationsEnvironmentRotatedTileLabelTask:
+    """Select the lettered tile that has been rotated inside an environment grid."""
 
     task_id = TASK_ID
-    domain = "illustrations"
+    domain = DOMAIN
     supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Generate one tiled indoor-room scene and bind tile-level evidence."""
+        """Render one source environment scene, rotate one usable tile, and bind tile evidence."""
 
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
-        scene = None
+        source_scene = None
         artifacts = None
         grid_style = None
         label_font_trace: Dict[str, Any] | None = None
@@ -205,20 +229,25 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
         for attempt in range(max(1, int(max_attempts))):
             try:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
-                scene = render_indoor_source_scene(
-                    render_namespace="rotated_tile_label",
-                    instance_seed=int(instance_seed),
-                    attempt_index=int(attempt),
-                    source=sample.source,
-                    params=params,
-                    render_defaults=_RENDER_DEFAULTS,
-                    fallback_defaults=_DEFAULTS,
+                render_params = environment_render_params(params, _RENDER_DEFAULTS, fallback=_RENDER_FALLBACK)
+                scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:source_scene", int(attempt))
+                source_scene = render_environment_object_scene(
+                    rng=scene_rng,
+                    canvas_width=int(render_params["canvas_width"]),
+                    canvas_height=int(render_params["canvas_height"]),
+                    object_count=int(sample.source_object_count),
+                    render_scale=int(render_params["render_scale"]),
+                    theme_weights={theme: (1.0 if theme == sample.theme_id else 0.0) for theme in ENVIRONMENT_THEME_IDS},
+                    style_weights=style_weights(params, _RENDER_DEFAULTS),
+                    object_size_min_px=int(render_params["object_size_min_px"]),
+                    object_size_max_px=int(render_params["object_size_max_px"]),
+                    min_gap_px=int(render_params["min_gap_px"]),
+                    max_overlap_fraction=float(render_params["max_overlap_fraction"]),
+                    placement_max_attempts=int(render_params["placement_max_attempts"]),
+                    skyline_building_min=int(render_params["skyline_building_min"]),
+                    skyline_building_max=int(render_params["skyline_building_max"]),
                 )
-                source_panel = fit_source_image(
-                    scene.image,
-                    width=int(sample.source.source_size[0]),
-                    height=int(sample.source.source_size[1]),
-                )
+                source_panel = fit_source_image(source_scene.image, width=int(sample.source_size[0]), height=int(sample.source_size[1]))
                 usable_indices = _usable_tile_indices(
                     source_image=source_panel,
                     rotation_degrees=int(sample.rotation_degrees),
@@ -255,7 +284,7 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
             except Exception as exc:  # pragma: no cover
                 last_error = exc
                 sample = None
-                scene = None
+                source_scene = None
                 artifacts = None
                 grid_style = None
                 label_font_trace = None
@@ -264,7 +293,7 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
                 usable_indices = tuple()
         if (
             sample is None
-            or scene is None
+            or source_scene is None
             or artifacts is None
             or grid_style is None
             or label_font_trace is None
@@ -273,45 +302,50 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
         ):
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
-        serialized_objects, object_bboxes, part_bboxes = serialize_indoor_scene(scene)
+        serialized_objects, object_bboxes, part_bboxes = serialize_environment_objects(source_scene)
+        feature_bboxes = feature_bbox_map(source_scene)
+        feature_paths = feature_path_map(source_scene)
         answer_label = str(artifacts.selected_label)
         annotation_value = _bbox_set(artifacts.selected_bbox)
-        prompt_defaults = required_group_defaults(
+        prompt_defaults = required_environment_prompt_defaults(
             _PROMPT_DEFAULTS,
-            [
+            (
                 "bundle_id",
                 "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
+                "question_text_rotated_tile_label",
                 "answer_hint_rotated_tile",
                 "annotation_hint_rotated_tile",
                 "json_example_rotated_tile",
                 "json_example_answer_only_rotated_tile",
-            ],
-            context=f"prompt defaults for {TASK_ID}",
+            ),
+            context=f"prompt defaults for {self.task_id}",
         )
-        prompt_artifacts = build_indoor_prompt_artifacts(
+        prompt_artifacts = render_environment_prompt(
             domain=self.domain,
             scene_id=SCENE_ID,
             prompt_defaults=prompt_defaults,
-            prompt_query_key=PROMPT_QUERY_KEY,
-            slots={
-                "room_setting": indoor_setting_name(str(scene.theme_id)),
+            dynamic_slots={
+                "environment_setting": environment_setting_name(str(sample.theme_id)),
+                "question_text": str(prompt_defaults["question_text_rotated_tile_label"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint_rotated_tile"]),
                 "annotation_hint": str(prompt_defaults["annotation_hint_rotated_tile"]),
+                "answer_hint": str(prompt_defaults["answer_hint_rotated_tile"]),
                 "json_example": str(prompt_defaults["json_example_rotated_tile"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only_rotated_tile"]),
             },
             instance_seed=int(instance_seed),
+            preferred_mode="answer_and_annotation",
         )
         trace_payload = {
             "scene_ir": {
                 "domain": self.domain,
                 "scene_id": SCENE_ID,
-                "entities": indoor_scene_entities(scene),
+                "scene_kind": "environment_rotated_tile_label",
+                "entities": environment_scene_entities(source_scene),
                 "relations": {
                     "query_id": QUERY_ID,
                     "rotated_tile_label": answer_label,
@@ -321,16 +355,18 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
             },
             "query_spec": {
                 "task_id": self.task_id,
+                "scene_id": SCENE_ID,
                 "query_id": QUERY_ID,
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "theme": str(sample.source.theme_id),
-                    "theme_id": str(sample.source.theme_id),
-                    "source_object_count": int(len(scene.placements)),
-                    "requested_source_object_count": int(sample.source.source_object_count),
-                    "source_object_count_probabilities": dict(sample.source.source_object_count_probabilities),
+                    "theme": str(sample.theme_id),
+                    "theme_id": str(sample.theme_id),
+                    "theme_probabilities": dict(sample.theme_probabilities),
+                    "source_object_count": int(len(source_scene.placements)),
+                    "requested_source_object_count": int(sample.source_object_count),
+                    "source_object_count_probabilities": dict(sample.source_object_count_probabilities),
                     "rotation_degrees": int(sample.rotation_degrees),
                     "rotation_degrees_support": [int(value) for value in _rotation_support(params)],
                     "rotation_degrees_probabilities": dict(sample.rotation_probabilities),
@@ -340,19 +376,19 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
                     "answer_label": answer_label,
                     "correct_index": int(correct_index),
                     "correct_index_probabilities": dict(correct_index_probabilities),
-                    "source_size": [int(sample.source.source_size[0]), int(sample.source.source_size[1])],
-                    "theme_probabilities": dict(sample.source.theme_probabilities),
+                    "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
                 },
             },
             "render_spec": {
                 "canvas_size": [int(artifacts.image.width), int(artifacts.image.height)],
                 "coord_space": "pixel",
                 "scene_id": SCENE_ID,
-                "source_scene_canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
+                "source_scene_canvas_size": [int(source_scene.canvas_width), int(source_scene.canvas_height)],
                 "style": {
-                    "source_theme_id": str(scene.theme_id),
-                    "source_style_id": str(scene.style_id),
-                    "render_scale": int(scene.render_scale),
+                    "source_theme_id": str(source_scene.theme_id),
+                    "source_style_id": str(source_scene.style_id),
+                    "render_scale": int(source_scene.render_scale),
+                    "source_layout": dict(source_scene.layout),
                     "grid_style": style_trace(grid_style),
                     "tile_label_font": dict(label_font_trace),
                 },
@@ -364,16 +400,18 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
                 "selected_tile_bbox_px": list(artifacts.selected_bbox),
                 "source_object_bboxes_px": object_bboxes,
                 "source_part_bboxes_px": part_bboxes,
-                "source_scene_canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
+                "source_feature_bboxes_px": feature_bboxes,
+                "source_feature_paths_px": feature_paths,
+                "source_scene_canvas_size": [int(source_scene.canvas_width), int(source_scene.canvas_height)],
                 "source_tile_index": int(correct_index),
-                "source_size": [int(sample.source.source_size[0]), int(sample.source.source_size[1])],
+                "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
                 "grid_shape": [GRID_ROWS, GRID_COLS],
             },
             "execution_trace": {
                 "query_id": QUERY_ID,
                 "scene_id": SCENE_ID,
-                "theme_id": str(scene.theme_id),
-                "theme": str(scene.theme_id),
+                "theme_id": str(source_scene.theme_id),
+                "theme": str(source_scene.theme_id),
                 "answer": answer_label,
                 "answer_label": answer_label,
                 "rotated_tile_label": answer_label,
@@ -382,8 +420,8 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
                 "grid_shape": [GRID_ROWS, GRID_COLS],
                 "tile_labels": list(TILE_LABELS),
                 "usable_tile_indices": [int(index) for index in usable_indices],
-                "source_object_count": int(len(scene.placements)),
-                "object_types": object_type_map(serialized_objects),
+                "source_scene": serialize_environment_scene(source_scene),
+                "objects": serialized_objects,
             },
             "witness_symbolic": {
                 "rotated_tile_label": answer_label,
@@ -411,4 +449,4 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
         )
 
 
-__all__ = ["IllustrationsIndoorRoomRotatedTileLabelTask"]
+__all__ = ["IllustrationsEnvironmentRotatedTileLabelTask"]

@@ -50,13 +50,6 @@
         "Looking across the fixture, how many {target_element_plural} are {target_color_label}?",
         "How many visible {target_element_plural} have color {target_color_label}?"
       ],
-      "element_state_count": [
-        "How many {target_state_label} {target_element_plural} are on the fixture?",
-        "Count the {target_element_plural} that are {target_state_label}. How many are there?",
-        "What is the number of {target_state_label} {target_element_plural} on the surface?",
-        "Looking across the fixture, how many {target_element_plural} are {target_state_label}?",
-        "How many visible {target_element_plural} have the {target_state_label} state?"
-      ],
       "scoped_element_color_count": [
         "How many {target_color_label} {target_element_plural} are in {scope_phrase}?",
         "Count the {target_color_label} {target_element_plural} in {scope_phrase}. How many are there?",
@@ -70,13 +63,6 @@
         "What is the number of missing {target_element_plural} positions?",
         "Looking across the fixture grid, how many {target_element_plural} spaces are empty?",
         "How many visible fixture positions are missing a {target_element_name}?"
-      ],
-      "adjacent_to_reference_count": [
-        "How many {target_element_plural} share an edge with the uniquely colored {reference_color_label} {target_element_name}?",
-        "Count the {target_element_plural} directly edge-adjacent to the {reference_color_label} {target_element_name}. How many are there?",
-        "What is the number of {target_element_plural} that touch the {reference_color_label} {target_element_name} by an edge?",
-        "Looking at the {reference_color_label} {target_element_name}, how many neighboring {target_element_plural} share an edge with it?",
-        "How many {target_element_plural} are immediately above, below, left, or right of the {reference_color_label} {target_element_name}?"
       ]
     },
     "output": {
@@ -121,12 +107,6 @@
       "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
-    "query:element_state_count": {
-      "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted surface element in the requested state",
-      "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
     "query:scoped_element_color_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
       "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted colored surface element in the requested row or column",
@@ -138,12 +118,6 @@
       "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each missing fixture position",
       "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
-    },
-    "query:adjacent_to_reference_count": {
-      "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted element that shares an edge with the reference element",
-      "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
     }
   },
   "dynamic_slots": {
@@ -151,9 +125,7 @@
     "target_element_name": {"type": "string"},
     "target_element_plural": {"type": "string"},
     "target_color_label": {"type": "string"},
-    "target_state_label": {"type": "string"},
     "scope_phrase": {"type": "string"},
-    "reference_color_label": {"type": "string"},
     "fixture_display_name": {"type": "string"}
   },
   "required_slots_by_key": {
@@ -162,9 +134,7 @@
     "query:highest_element_count_panel": ["target_element_plural"],
     "query:lowest_element_count_panel": ["target_element_plural"],
     "query:element_color_count": ["target_color_label", "target_element_plural"],
-    "query:element_state_count": ["target_state_label", "target_element_plural"],
     "query:scoped_element_color_count": ["target_color_label", "target_element_plural", "scope_phrase"],
-    "query:empty_or_missing_cell_count": ["target_element_plural", "target_element_name"],
-    "query:adjacent_to_reference_count": ["target_element_plural", "target_element_name", "reference_color_label"]
+    "query:empty_or_missing_cell_count": ["target_element_plural", "target_element_name"]
   }
 }

@@ -16,10 +16,8 @@ OBJECT_SCENE_TASK_FILES = (
 SURFACE_FIXTURE_TASK_FILES = (
     Path("trace/tasks/three_d/surface_fixture/repeated_element_count.py"),
     Path("trace/tasks/three_d/surface_fixture/colored_element_count.py"),
-    Path("trace/tasks/three_d/surface_fixture/state_element_count.py"),
     Path("trace/tasks/three_d/surface_fixture/scoped_colored_element_count.py"),
     Path("trace/tasks/three_d/surface_fixture/empty_or_missing_cell_count.py"),
-    Path("trace/tasks/three_d/surface_fixture/adjacent_to_reference_count.py"),
 )
 
 

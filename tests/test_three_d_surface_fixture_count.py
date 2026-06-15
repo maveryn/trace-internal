@@ -12,7 +12,6 @@ from trace.tasks import create_task
 from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
 from trace.tasks.shared.named_colors import available_named_colors
 from trace.tasks.three_d.shared.object_resources import object_profiles
-from trace.tasks.three_d.surface_fixture.adjacent_to_reference_count import TASK_ID as ADJACENT_TASK_ID
 from trace.tasks.three_d.surface_fixture.colored_element_count import TASK_ID as COLORED_TASK_ID
 from trace.tasks.three_d.surface_fixture.element_count_extremum_label import (
     HIGHEST_QUERY_ID as EXTREMUM_HIGHEST_QUERY_ID,
@@ -33,17 +32,14 @@ from trace.tasks.three_d.surface_fixture.shared.state import (
     SEMANTIC_COLOR_SUPPORT,
 )
 from trace.tasks.three_d.surface_fixture.shared.layout import VALID_LAYOUT_FAMILIES, VALID_LAYOUT_STYLES
-from trace.tasks.three_d.surface_fixture.state_element_count import TASK_ID as STATE_TASK_ID
 
 
 SURFACE_FIXTURE_TASK_IDS = (
     REPEATED_TASK_ID,
     EXTREMUM_TASK_ID,
     COLORED_TASK_ID,
-    STATE_TASK_ID,
     SCOPED_COLORED_TASK_ID,
     EMPTY_MISSING_TASK_ID,
-    ADJACENT_TASK_ID,
 )
 
 
@@ -115,17 +111,6 @@ def test_surface_fixture_predicate_count_tasks() -> None:
             },
         ),
         (
-            STATE_TASK_ID,
-            {
-                "query_id": "single",
-                "scene_variant": "server_rack",
-                "target_count": 3,
-                "distractor_count": 7,
-                "target_state": "lit",
-                "post_image_noise_apply_prob": 0.0,
-            },
-        ),
-        (
             SCOPED_COLORED_TASK_ID,
             {
                 "query_id": SCOPED_COLORED_ROW_QUERY_ID,
@@ -149,19 +134,6 @@ def test_surface_fixture_predicate_count_tasks() -> None:
                 "post_image_noise_apply_prob": 0.0,
             },
         ),
-        (
-            ADJACENT_TASK_ID,
-            {
-                "query_id": "single",
-                "scene_variant": "control_panel",
-                "target_count": 4,
-                "reference_color_name": "purple",
-                "layout_rows": 4,
-                "layout_columns": 5,
-                "reference_index": 6,
-                "post_image_noise_apply_prob": 0.0,
-            },
-        ),
     ]
 
     for index, (task_id, params) in enumerate(cases):
@@ -179,7 +151,6 @@ def test_surface_fixture_predicate_count_tasks() -> None:
         ]
         assert "{target_" not in output.prompt
         assert "{scope_" not in output.prompt
-        assert "{reference_" not in output.prompt
 
 
 def test_surface_fixture_element_count_extremum_label_queries() -> None:

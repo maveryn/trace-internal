@@ -157,27 +157,6 @@ SEMANTIC_COLOR_RGB: Mapping[str, Tuple[int, int, int]] = {
 
 SEMANTIC_COLOR_SUPPORT: Tuple[str, ...] = tuple(SEMANTIC_COLOR_RGB.keys())
 
-STATE_SUPPORT_BY_SCENE_VARIANT: Mapping[str, Tuple[str, ...]] = {
-    "locker_bank": ("open", "closed"),
-    "mailbox_bank": ("open", "closed"),
-    "server_rack": ("lit", "unlit"),
-    "control_panel": ("lit", "unlit", "pressed"),
-    "solar_panel_array": ("intact", "cracked"),
-    "door_bank": ("open", "closed"),
-    "window_grid": ("lit", "unlit"),
-    "indicator_light_panel": ("lit", "unlit"),
-}
-
-STATE_DISPLAY_NAME: Mapping[str, str] = {
-    "open": "open",
-    "closed": "closed",
-    "lit": "lit",
-    "unlit": "unlit",
-    "pressed": "pressed",
-    "intact": "intact",
-    "cracked": "cracked",
-}
-
 COLORABLE_SCENE_VARIANTS: Tuple[str, ...] = (
     "wall_tile_panel",
     "compartment_tray",
@@ -226,30 +205,6 @@ MISSING_SCENE_VARIANTS: Tuple[str, ...] = (
     "pipe_rack",
 )
 
-ADJACENCY_SCENE_VARIANTS: Tuple[str, ...] = (
-    "wall_tile_panel",
-    "compartment_tray",
-    "vent_panel",
-    "window_grid",
-    "door_bank",
-    "brick_wall",
-    "paver_floor",
-    "locker_bank",
-    "mailbox_bank",
-    "server_rack",
-    "control_panel",
-    "solar_panel_array",
-    "screw_plate",
-    "hex_nut_plate",
-    "washer_plate",
-    "socket_bank",
-    "hook_board",
-    "indicator_light_panel",
-    "bracket_panel",
-    "u_bolt_plate",
-    "pipe_rack",
-)
-
 SURFACE_FIXTURE_OBJECT_TYPES: Tuple[str, ...] = SUPPORTED_SCENE_VARIANTS
 
 
@@ -261,7 +216,6 @@ def semantic_color_label(color_name: str) -> str:
 
 
 __all__ = [
-    "ADJACENCY_SCENE_VARIANTS",
     "COLORABLE_SCENE_VARIANTS",
     "ELEMENT_DISPLAY_NAME",
     "ELEMENT_PLURAL",
@@ -271,8 +225,6 @@ __all__ = [
     "SCENE_VARIANT_BY_ELEMENT_TYPE",
     "SEMANTIC_COLOR_RGB",
     "SEMANTIC_COLOR_SUPPORT",
-    "STATE_DISPLAY_NAME",
-    "STATE_SUPPORT_BY_SCENE_VARIANT",
     "SUPPORTED_SCENE_VARIANTS",
     "SURFACE_FIXTURE_DISPLAY_NAME",
     "SURFACE_FIXTURE_OBJECT_TYPES",

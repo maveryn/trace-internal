@@ -314,29 +314,11 @@ def grid_for_total(total_slots: int, *, min_cols: int = 3) -> Tuple[int, int]:
     return int(rows), int(cols)
 
 
-def edge_neighbors(index: int, rows: int, cols: int) -> List[int]:
-    """Return flat-index edge neighbors for one grid cell."""
-
-    row = int(index // cols)
-    col = int(index % cols)
-    neighbors = []
-    if row > 0:
-        neighbors.append((row - 1) * cols + col)
-    if row + 1 < rows:
-        neighbors.append((row + 1) * cols + col)
-    if col > 0:
-        neighbors.append(row * cols + col - 1)
-    if col + 1 < cols:
-        neighbors.append(row * cols + col + 1)
-    return neighbors
-
-
 __all__ = [
     "SURFACE_LAYOUT_FAMILY_WEIGHTS_BY_VARIANT",
     "SURFACE_LAYOUT_STYLE_WEIGHTS_BY_FAMILY",
     "VALID_LAYOUT_FAMILIES",
     "VALID_LAYOUT_STYLES",
-    "edge_neighbors",
     "grid_for_total",
     "layout_cells",
     "resolve_repeated_layout_style",

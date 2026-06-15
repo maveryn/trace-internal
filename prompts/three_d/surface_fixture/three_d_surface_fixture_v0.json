@@ -16,13 +16,6 @@
       "",
       ""
     ],
-    "surface_fixture_state_element_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "surface_fixture_scoped_colored_element_count_query": [
       "",
       "",
@@ -31,13 +24,6 @@
       ""
     ],
     "surface_fixture_empty_or_missing_cell_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "surface_fixture_adjacent_to_reference_count_query": [
       "",
       "",
       "",
@@ -101,13 +87,6 @@
       "Looking across the fixture, how many {target_element_plural} are {target_color_name}?",
       "How many visible {target_element_plural} have the {target_color_name} color?"
     ],
-    "element_state_count": [
-      "How many {target_state_label} {target_element_plural} are on the fixture?",
-      "Count the {target_element_plural} that are {target_state_label}. How many are there?",
-      "What is the number of {target_state_label} {target_element_plural} on the surface?",
-      "Looking across the fixture, how many {target_element_plural} are {target_state_label}?",
-      "How many visible {target_element_plural} have the {target_state_label} state?"
-    ],
     "scoped_element_color_count": [
       "How many {target_color_name} {target_element_plural} are in {scope_phrase}?",
       "Count the {target_color_name} {target_element_plural} in {scope_phrase}. How many are there?",
@@ -121,13 +100,6 @@
       "What is the number of missing {target_element_plural} positions?",
       "Looking across the fixture grid, how many {target_element_plural} spaces are empty?",
       "How many visible fixture positions are missing a {target_element_name}?"
-    ],
-    "adjacent_to_reference_count": [
-      "How many {target_element_plural} share an edge with the uniquely colored {reference_color_name} {target_element_name}?",
-      "Count the {target_element_plural} directly edge-adjacent to the {reference_color_name} {target_element_name}. How many are there?",
-      "What is the number of {target_element_plural} that touch the {reference_color_name} {target_element_name} by an edge?",
-      "Looking at the {reference_color_name} {target_element_name}, how many neighboring {target_element_plural} share an edge with it?",
-      "How many {target_element_plural} are immediately above, below, left, or right of the {reference_color_name} {target_element_name}?"
     ]
   },
   "allow_empty_task_templates": true

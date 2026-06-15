@@ -29,15 +29,12 @@ def dynamic_slots_for_surface(dataset: Mapping[str, Any], *, object_description:
     """Return dynamic prompt slots bound to one rendered fixture dataset."""
 
     target_color_name = str(dataset.get("target_color_name", ""))
-    reference_color_name = str(dataset.get("reference_color_name", ""))
     return {
         "object_description": str(object_description),
         "target_element_name": str(dataset.get("target_element_name", "")),
         "target_element_plural": str(dataset.get("target_element_plural", "")),
         "target_color_label": semantic_color_label(target_color_name) if target_color_name else "",
-        "target_state_label": str(dataset.get("target_state_label", "")),
         "scope_phrase": str(dataset.get("scope_phrase", "")),
-        "reference_color_label": semantic_color_label(reference_color_name) if reference_color_name else "",
         "fixture_display_name": str(dataset.get("fixture_display_name", "fixture surface")),
     }
 

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
@@ -10,16 +9,32 @@ from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults, required_group_defaults
+from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
+from ...shared.prompt_variants import build_prompt_query_spec
 from ...shared.variant_sampling import resolve_variant
 from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_scene import sort_bboxes_reading_order
-from ..shared.procedural_named_icons import PROCEDURAL_NAMED_ICON_SHAPES, procedural_named_icon_display_name
-from .shared.defaults import DEFAULT_GRID_SIZE_SUPPORT, SCENE_ID, NamedGridDefaults
-from .shared.output import render_map_fragment, render_spec_fragment, scene_ir_fragment
+from ..shared.procedural_named_icons import procedural_named_icon_display_name
+from .shared.defaults import SCENE_ID, NamedGridDefaults
+from .shared.metrics import (
+    active_line_counts,
+    axis_line_capacity,
+    axis_line_count,
+    column_target_counts as grid_column_target_counts,
+    line_cells,
+    qualifying_line_indices as matching_line_indices,
+    row_target_counts as grid_row_target_counts,
+)
+from .shared.output import (
+    build_named_grid_trace_payload,
+    cells_to_trace,
+    counts_to_trace,
+    shape_counts_from_icons,
+    task_output_prompt_variants,
+)
+from .shared.prompts import build_named_grid_prompt_artifacts
 from .shared.rendering import render_named_grid_scene, serialize_named_grid_icon
 from .shared.sampling import (
     fill_style_probability_map as resolve_fill_style_probability_map,
@@ -134,130 +149,100 @@ class IconsCountingNamedGridLineConditionCountTask:
             raise RuntimeError("rendered named-grid line-condition annotation count does not match answer")
         annotation_payload = bbox_set_annotation(annotation_bboxes)
 
-        prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
-            (
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "question_text_row_at_least_shape_count",
-                "question_text_column_at_least_shape_count",
-                "question_text_row_exactly_shape_count",
-                "question_text_column_exactly_shape_count",
-                "question_text_row_no_shape_count",
-                "question_text_column_no_shape_count",
-                "annotation_hint",
-                "answer_hint",
-                "json_example",
-                "json_example_answer_only",
-            ),
-            context=f"prompt defaults for {self.task_id}",
-        )
         question_key = f"question_text_{sample.query_id}"
         line_kind_plural = "rows" if str(sample.queried_axis) == "row" else "columns"
-        prompt_selection = render_task_prompt_variants(
+        prompt_artifacts, _prompt_defaults = build_named_grid_prompt_artifacts(
             domain=DOMAIN,
-            scene_id=SCENE_ID,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "question_text": str(prompt_defaults[question_key]).format(
-                    target_shape_name=str(sample.target_shape_name),
-                    threshold=int(sample.threshold),
-                ),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]).format(
-                    target_shape_name=str(sample.target_shape_name),
-                    line_kind=str(sample.queried_axis),
-                    line_kind_plural=str(line_kind_plural),
-                    threshold=int(sample.threshold),
-                ),
-                "answer_hint": str(prompt_defaults["answer_hint"]).format(line_kind_plural=str(line_kind_plural)),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
+            run_namespace=self.task_id,
+            prompt_defaults_map=_PROMPT_DEFAULTS,
+            question_key=str(question_key),
+            question_slots={
+                "target_shape_name": str(sample.target_shape_name),
+                "threshold": int(sample.threshold),
             },
+            annotation_slots={
+                "target_shape_name": str(sample.target_shape_name),
+                "line_kind": str(sample.queried_axis),
+                "line_kind_plural": str(line_kind_plural),
+                "threshold": int(sample.threshold),
+            },
+            answer_slots={"line_kind_plural": str(line_kind_plural)},
             instance_seed=int(instance_seed),
         )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         serialized_icons = [serialize_named_grid_icon(icon) for icon in scene.icons]
-        shape_counts = dict(Counter(str(icon.shape_id) for icon in scene.icons))
-        active_counts = sample.row_target_counts if str(sample.queried_axis) == "row" else sample.column_target_counts
+        shape_counts = shape_counts_from_icons(scene.icons)
+        active_counts = active_line_counts(
+            axis=str(sample.queried_axis),
+            row_counts=sample.row_target_counts,
+            column_counts=sample.column_target_counts,
+        )
         qualifying_line_numbers = tuple(int(index) + 1 for index in sample.qualifying_line_indices)
         line_region_bboxes = _all_line_region_bboxes(scene, axis=str(sample.queried_axis))
         qualifying_region_map = {
             f"{sample.queried_axis}_{int(index) + 1}": [int(value) for value in _line_region_bbox(scene, axis=str(sample.queried_axis), line_index=int(index))]
             for index in sample.qualifying_line_indices
         }
-        trace_payload = {
-            "scene_ir": scene_ir_fragment(
-                scene,
-                scene_kind="icons_named_grid_line_condition_count",
-                entities=list(serialized_icons),
-                relations={
-                    "counting_rule": "grid_line_shape_count_condition",
-                    "target_shape_id": str(sample.target_shape_id),
-                    "target_shape_name": str(sample.target_shape_name),
-                    "queried_axis": str(sample.queried_axis),
-                    "condition": str(sample.condition),
-                    "threshold": int(sample.threshold),
-                    "answer_count": int(sample.answer_count),
-                    "grid_rows": int(sample.grid_rows),
-                    "grid_cols": int(sample.grid_cols),
-                    "shape_counts": {str(key): int(value) for key, value in shape_counts.items()},
-                    "row_target_counts": [int(value) for value in sample.row_target_counts],
-                    "column_target_counts": [int(value) for value in sample.column_target_counts],
-                    "active_line_target_counts": [int(value) for value in active_counts],
-                    "qualifying_line_numbers": [int(value) for value in qualifying_line_numbers],
-                    "qualifying_line_regions": dict(qualifying_region_map),
-                    "selected_line_target_cells": [[int(row), int(col)] for row, col in sample.counted_cells],
-                    "other_target_cells": [[int(row), int(col)] for row, col in sample.off_line_target_cells],
-                },
-            ),
-            "query_spec": {
-                "query_id": str(sample.query_id),
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "target_shape_id": str(sample.target_shape_id),
-                    "target_shape_name": str(sample.target_shape_name),
-                    "answer_count": int(sample.answer_count),
-                    "query_id": str(sample.query_id),
-                    "grid_rows": int(sample.grid_rows),
-                    "grid_cols": int(sample.grid_cols),
-                    "queried_axis": str(sample.queried_axis),
-                    "condition": str(sample.condition),
-                    "threshold": int(sample.threshold),
-                    "query_id_probabilities": dict(sample.query_probabilities),
-                    "answer_probabilities": dict(sample.answer_probabilities),
-                    "grid_size_probabilities": dict(sample.grid_size_probabilities),
-                    "threshold_probabilities": dict(sample.threshold_probabilities),
-                    "shape_id_support": list(resolve_shape_support(params, _GEN_DEFAULTS)),
-                    "shape_probabilities": dict(sample.shape_probabilities),
-                    "named_icon_fill_style_support": list(sample.fill_style_support),
-                    "fill_style_probabilities": dict(sample.fill_style_probabilities),
-                },
+        selected_cells_trace = cells_to_trace(sample.counted_cells)
+        other_cells_trace = cells_to_trace(sample.off_line_target_cells)
+        active_counts_trace = counts_to_trace(active_counts)
+        row_counts_trace = counts_to_trace(sample.row_target_counts)
+        column_counts_trace = counts_to_trace(sample.column_target_counts)
+        qualifying_numbers_trace = counts_to_trace(qualifying_line_numbers)
+        query_spec = build_prompt_query_spec(
+            prompt_artifacts=prompt_artifacts,
+            query_id=str(sample.query_id),
+            params={
+                "target_shape_id": str(sample.target_shape_id),
+                "target_shape_name": str(sample.target_shape_name),
+                "answer_count": int(sample.answer_count),
+                "grid_rows": int(sample.grid_rows),
+                "grid_cols": int(sample.grid_cols),
+                "queried_axis": str(sample.queried_axis),
+                "condition": str(sample.condition),
+                "threshold": int(sample.threshold),
+                "query_id_probabilities": dict(sample.query_probabilities),
+                "answer_probabilities": dict(sample.answer_probabilities),
+                "grid_size_probabilities": dict(sample.grid_size_probabilities),
+                "threshold_probabilities": dict(sample.threshold_probabilities),
+                "shape_id_support": list(resolve_shape_support(params, _GEN_DEFAULTS)),
+                "shape_probabilities": dict(sample.shape_probabilities),
+                "named_icon_fill_style_support": list(sample.fill_style_support),
+                "fill_style_probabilities": dict(sample.fill_style_probabilities),
             },
-            "render_spec": render_spec_fragment(scene, render_params=render_params),
-            "render_map": render_map_fragment(
-                scene,
-                rows=int(sample.grid_rows),
-                cols=int(sample.grid_cols),
-                extra_fields={
-                    "line_region_bboxes_px": dict(line_region_bboxes),
-                    "qualifying_line_region_bboxes_px": dict(qualifying_region_map),
-                },
-            ),
-            "execution_trace": {
+        )
+        trace_payload = build_named_grid_trace_payload(
+            scene=scene,
+            scene_kind="icons_named_grid_line_condition_count",
+            entities=serialized_icons,
+            relations={
+                "counting_rule": "grid_line_shape_count_condition",
+                "target_shape_id": str(sample.target_shape_id),
+                "target_shape_name": str(sample.target_shape_name),
+                "queried_axis": str(sample.queried_axis),
+                "condition": str(sample.condition),
+                "threshold": int(sample.threshold),
+                "answer_count": int(sample.answer_count),
+                "grid_rows": int(sample.grid_rows),
+                "grid_cols": int(sample.grid_cols),
+                "shape_counts": dict(shape_counts),
+                "row_target_counts": row_counts_trace,
+                "column_target_counts": column_counts_trace,
+                "active_line_target_counts": active_counts_trace,
+                "qualifying_line_numbers": qualifying_numbers_trace,
+                "qualifying_line_regions": dict(qualifying_region_map),
+                "selected_line_target_cells": selected_cells_trace,
+                "other_target_cells": other_cells_trace,
+            },
+            query_spec=query_spec,
+            render_params=render_params,
+            rows=int(sample.grid_rows),
+            cols=int(sample.grid_cols),
+            render_map_extra={
+                "line_region_bboxes_px": dict(line_region_bboxes),
+                "qualifying_line_region_bboxes_px": dict(qualifying_region_map),
+            },
+            execution_trace={
                 "scene_variant": "single_panel_named_grid",
                 "query_id": str(sample.query_id),
                 "question_format": "count_grid_lines_satisfying_named_shape_count_condition",
@@ -270,24 +255,24 @@ class IconsCountingNamedGridLineConditionCountTask:
                 "condition": str(sample.condition),
                 "threshold": int(sample.threshold),
                 "shape_ids_by_cell": [list(row) for row in sample.shape_ids_by_cell],
-                "row_target_counts": [int(value) for value in sample.row_target_counts],
-                "column_target_counts": [int(value) for value in sample.column_target_counts],
-                "active_line_target_counts": [int(value) for value in active_counts],
-                "qualifying_line_indices": [int(value) for value in sample.qualifying_line_indices],
-                "qualifying_line_numbers": [int(value) for value in qualifying_line_numbers],
-                "selected_line_target_cells": [[int(row), int(col)] for row, col in sample.counted_cells],
-                "other_target_cells": [[int(row), int(col)] for row, col in sample.off_line_target_cells],
+                "row_target_counts": row_counts_trace,
+                "column_target_counts": column_counts_trace,
+                "active_line_target_counts": active_counts_trace,
+                "qualifying_line_indices": counts_to_trace(sample.qualifying_line_indices),
+                "qualifying_line_numbers": qualifying_numbers_trace,
+                "selected_line_target_cells": selected_cells_trace,
+                "other_target_cells": other_cells_trace,
             },
-            "witness_symbolic": {
+            witness_symbolic={
                 "query_id": str(sample.query_id),
                 "target_shape_id": str(sample.target_shape_id),
                 "target_shape_name": str(sample.target_shape_name),
                 "answer": int(sample.answer_count),
-                "qualifying_line_numbers": [int(value) for value in qualifying_line_numbers],
+                "qualifying_line_numbers": qualifying_numbers_trace,
                 "qualifying_line_region_bboxes": dict(qualifying_region_map),
             },
-            "projected_annotation": dict(annotation_payload["projected_annotation"]),
-        }
+            annotation_payload=annotation_payload,
+        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.answer_count)),
@@ -298,7 +283,7 @@ class IconsCountingNamedGridLineConditionCountTask:
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
-            prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
+            prompt_variants=task_output_prompt_variants(prompt_artifacts),
         )
 
 
@@ -335,10 +320,10 @@ def _choose_answer_count(
     explicit_rows = params.get("grid_rows")
     explicit_cols = params.get("grid_cols")
     if explicit_rows is not None and explicit_cols is not None:
-        axis_count = int(explicit_rows) if str(axis) == "row" else int(explicit_cols)
+        axis_count = axis_line_count(axis=str(axis), rows=int(explicit_rows), cols=int(explicit_cols))
         high = min(int(high), int(axis_count))
     else:
-        max_axis_count = max(int(size[0]) if str(axis) == "row" else int(size[1]) for size in grid_size_support)
+        max_axis_count = max(axis_line_count(axis=str(axis), rows=int(size[0]), cols=int(size[1])) for size in grid_size_support)
         high = min(int(high), int(max_axis_count))
     support = tuple(range(int(low), int(high) + 1))
     if not support:
@@ -369,7 +354,7 @@ def _choose_grid_size(
         size = (int(explicit_rows), int(explicit_cols))
         if size not in set(support):
             raise ValueError("explicit grid size is outside grid_size_support")
-        axis_count = int(size[0]) if str(axis) == "row" else int(size[1])
+        axis_count = axis_line_count(axis=str(axis), rows=int(size[0]), cols=int(size[1]))
         if int(answer_count) > int(axis_count):
             raise ValueError("explicit grid size cannot support answer_count")
         labels = tuple(grid_size_label(value) for value in support)
@@ -378,7 +363,7 @@ def _choose_grid_size(
     feasible = tuple(
         size
         for size in support
-        if int(answer_count) <= (int(size[0]) if str(axis) == "row" else int(size[1]))
+        if int(answer_count) <= axis_line_count(axis=str(axis), rows=int(size[0]), cols=int(size[1]))
     )
     if not feasible:
         raise ValueError("grid_size_support cannot support answer_count")
@@ -414,22 +399,6 @@ def _choose_threshold(
     return int(threshold), uniform_probability_map(support)
 
 
-def _line_cells(*, axis: str, line_index: int, rows: int, cols: int) -> Tuple[Tuple[int, int], ...]:
-    if str(axis) == "row":
-        return tuple((int(line_index), col) for col in range(int(cols)))
-    return tuple((row, int(line_index)) for row in range(int(rows)))
-
-
-def _line_qualifies(count: int, *, condition: str, threshold: int) -> bool:
-    if str(condition) == "at_least":
-        return int(count) >= int(threshold)
-    if str(condition) == "exactly":
-        return int(count) == int(threshold)
-    if str(condition) == "none":
-        return int(count) == 0
-    raise ValueError(f"unsupported condition: {condition}")
-
-
 def _sample_line_target_count(rng, *, qualifies: bool, condition: str, threshold: int, line_capacity: int) -> int:
     if bool(qualifies):
         if str(condition) == "at_least":
@@ -463,8 +432,8 @@ def _construct_grid_shapes(
     predicate by construction, while non-target icons fill all remaining cells.
     """
 
-    axis_count = int(grid_rows) if str(axis) == "row" else int(grid_cols)
-    line_capacity = int(grid_cols) if str(axis) == "row" else int(grid_rows)
+    axis_count = axis_line_count(axis=str(axis), rows=int(grid_rows), cols=int(grid_cols))
+    line_capacity = axis_line_capacity(axis=str(axis), rows=int(grid_rows), cols=int(grid_cols))
     if int(answer_count) > int(axis_count):
         raise ValueError("answer_count exceeds number of available grid lines")
 
@@ -483,7 +452,7 @@ def _construct_grid_shapes(
             threshold=int(threshold),
             line_capacity=int(line_capacity),
         )
-        cells = list(_line_cells(axis=str(axis), line_index=int(line_index), rows=int(grid_rows), cols=int(grid_cols)))
+        cells = list(line_cells(axis=str(axis), line_index=int(line_index), rows=int(grid_rows), cols=int(grid_cols)))
         rng.shuffle(cells)
         selected_cells = set(cells[: int(target_count)])
         target_cells.update(selected_cells)
@@ -502,20 +471,14 @@ def _construct_grid_shapes(
         rows_out.append(tuple(row_values))
 
     shape_ids = tuple(rows_out)
-    row_counts = tuple(
-        sum(1 for col in range(int(grid_cols)) if shape_ids[int(row)][int(col)] == str(target_shape_id))
-        for row in range(int(grid_rows))
+    row_counts = grid_row_target_counts(shape_ids, target_shape_id=str(target_shape_id))
+    column_counts = grid_column_target_counts(shape_ids, target_shape_id=str(target_shape_id))
+    active_counts = active_line_counts(
+        axis=str(axis),
+        row_counts=row_counts,
+        column_counts=column_counts,
     )
-    column_counts = tuple(
-        sum(1 for row in range(int(grid_rows)) if shape_ids[int(row)][int(col)] == str(target_shape_id))
-        for col in range(int(grid_cols))
-    )
-    active_counts = row_counts if str(axis) == "row" else column_counts
-    realized = tuple(
-        int(index)
-        for index, count in enumerate(active_counts)
-        if _line_qualifies(int(count), condition=str(condition), threshold=int(threshold))
-    )
+    realized = matching_line_indices(active_counts, condition=str(condition), threshold=int(threshold))
     if realized != qualifying_line_indices:
         raise RuntimeError("constructed grid does not realize requested qualifying-line count")
 
@@ -555,7 +518,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         axis=str(axis),
         answer_count=int(answer_count),
     )
-    line_capacity = int(grid_cols) if str(axis) == "row" else int(grid_rows)
+    line_capacity = axis_line_capacity(axis=str(axis), rows=int(grid_rows), cols=int(grid_cols))
     threshold, threshold_probabilities = _choose_threshold(
         rng,
         params=params,

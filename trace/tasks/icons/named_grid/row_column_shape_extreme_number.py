@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
@@ -10,16 +9,33 @@ from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults, required_group_defaults
+from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
+from ...shared.prompt_variants import build_prompt_query_spec
 from ...shared.variant_sampling import resolve_variant
 from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_scene import sort_bboxes_reading_order
-from ..shared.procedural_named_icons import PROCEDURAL_NAMED_ICON_SHAPES, procedural_named_icon_display_name
-from .shared.defaults import DEFAULT_GRID_SIZE_SUPPORT, SCENE_ID, NamedGridDefaults
-from .shared.output import render_map_fragment, render_spec_fragment, scene_ir_fragment
+from ..shared.procedural_named_icons import procedural_named_icon_display_name
+from .shared.defaults import SCENE_ID, NamedGridDefaults
+from .shared.metrics import (
+    active_line_counts,
+    axis_line_capacity,
+    axis_line_count,
+    column_target_counts as grid_column_target_counts,
+    line_cells,
+    row_target_counts as grid_row_target_counts,
+    unique_extreme_index,
+)
+from .shared.output import (
+    build_named_grid_trace_payload,
+    cells_to_trace,
+    counts_to_trace,
+    instance_ids,
+    shape_counts_from_icons,
+    task_output_prompt_variants,
+)
+from .shared.prompts import build_named_grid_prompt_artifacts
 from .shared.rendering import render_named_grid_scene, serialize_named_grid_icon
 from .shared.sampling import (
     fill_style_probability_map as resolve_fill_style_probability_map,
@@ -104,9 +120,9 @@ def _choose_answer_line_number(
     low, high = int_bounds(params, _GEN_DEFAULTS, "answer_line_number_min", "answer_line_number_max", 1, 6)
     explicit_rows = params.get("grid_rows")
     explicit_cols = params.get("grid_cols")
-    max_line_number = max(int(size[0]) if str(axis) == "row" else int(size[1]) for size in grid_size_support)
+    max_line_number = max(axis_line_count(axis=str(axis), rows=int(size[0]), cols=int(size[1])) for size in grid_size_support)
     if explicit_rows is not None and explicit_cols is not None:
-        max_line_number = int(explicit_rows) if str(axis) == "row" else int(explicit_cols)
+        max_line_number = axis_line_count(axis=str(axis), rows=int(explicit_rows), cols=int(explicit_cols))
     high = min(int(high), int(max_line_number))
     support = tuple(range(int(low), int(high) + 1))
     if not support:
@@ -137,7 +153,7 @@ def _choose_grid_size(
         size = (int(explicit_rows), int(explicit_cols))
         if size not in set(support):
             raise ValueError("explicit grid size is outside grid_size_support")
-        axis_count = int(size[0]) if str(axis) == "row" else int(size[1])
+        axis_count = axis_line_count(axis=str(axis), rows=int(size[0]), cols=int(size[1]))
         if int(answer_line_number) > int(axis_count):
             raise ValueError("explicit grid size cannot support answer_line_number")
         labels = tuple(grid_size_label(value) for value in support)
@@ -146,7 +162,7 @@ def _choose_grid_size(
     feasible = tuple(
         size
         for size in support
-        if int(answer_line_number) <= (int(size[0]) if str(axis) == "row" else int(size[1]))
+        if int(answer_line_number) <= axis_line_count(axis=str(axis), rows=int(size[0]), cols=int(size[1]))
     )
     if not feasible:
         raise ValueError("grid_size_support cannot support answer_line_number")
@@ -181,12 +197,6 @@ def _choose_winning_count(
     return int(value), uniform_probability_map(support)
 
 
-def _line_cells(*, axis: str, line_index: int, rows: int, cols: int) -> Tuple[Tuple[int, int], ...]:
-    if str(axis) == "row":
-        return tuple((int(line_index), col) for col in range(int(cols)))
-    return tuple((row, int(line_index)) for row in range(int(rows)))
-
-
 def _construct_grid_shapes(
     rng,
     *,
@@ -206,8 +216,8 @@ def _construct_grid_shapes(
     uniqueness.
     """
 
-    axis_count = int(grid_rows) if str(axis) == "row" else int(grid_cols)
-    line_capacity = int(grid_cols) if str(axis) == "row" else int(grid_rows)
+    axis_count = axis_line_count(axis=str(axis), rows=int(grid_rows), cols=int(grid_cols))
+    line_capacity = axis_line_capacity(axis=str(axis), rows=int(grid_rows), cols=int(grid_cols))
     winning_index = int(answer_line_number) - 1
     if winning_index < 0 or winning_index >= axis_count:
         raise ValueError("answer_line_number is outside selected axis")
@@ -224,7 +234,7 @@ def _construct_grid_shapes(
     target_cells: set[Tuple[int, int]] = set()
     counted_cells: set[Tuple[int, int]] = set()
     for line_index, target_count in enumerate(line_counts):
-        cells = list(_line_cells(axis=str(axis), line_index=int(line_index), rows=int(grid_rows), cols=int(grid_cols)))
+        cells = list(line_cells(axis=str(axis), line_index=int(line_index), rows=int(grid_rows), cols=int(grid_cols)))
         rng.shuffle(cells)
         selected_cells = set(cells[: int(target_count)])
         target_cells.update(selected_cells)
@@ -243,22 +253,16 @@ def _construct_grid_shapes(
         rows_out.append(tuple(row_values))
 
     shape_ids = tuple(rows_out)
-    row_counts = tuple(
-        sum(1 for col in range(int(grid_cols)) if shape_ids[int(row)][int(col)] == str(target_shape_id))
-        for row in range(int(grid_rows))
+    row_counts = grid_row_target_counts(shape_ids, target_shape_id=str(target_shape_id))
+    column_counts = grid_column_target_counts(shape_ids, target_shape_id=str(target_shape_id))
+    active_counts = active_line_counts(
+        axis=str(axis),
+        row_counts=row_counts,
+        column_counts=column_counts,
     )
-    column_counts = tuple(
-        sum(1 for row in range(int(grid_rows)) if shape_ids[int(row)][int(col)] == str(target_shape_id))
-        for col in range(int(grid_cols))
-    )
-    active_counts = row_counts if str(axis) == "row" else column_counts
     winning_count = active_counts[int(winning_index)]
-    if str(extremum) == "most":
-        if sum(1 for value in active_counts if int(value) == max(active_counts)) != 1 or int(winning_count) != max(active_counts):
-            raise RuntimeError("constructed grid does not realize a unique most line")
-    else:
-        if sum(1 for value in active_counts if int(value) == min(active_counts)) != 1 or int(winning_count) != min(active_counts):
-            raise RuntimeError("constructed grid does not realize a unique fewest line")
+    if unique_extreme_index(active_counts, extremum=str(extremum)) != int(winning_index):
+        raise RuntimeError(f"constructed grid does not realize a unique {extremum} line")
 
     return (
         tuple(tuple(str(value) for value in row) for row in shape_ids),
@@ -295,7 +299,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         axis=str(axis),
         answer_line_number=int(answer_line_number),
     )
-    line_capacity = int(grid_cols) if str(axis) == "row" else int(grid_rows)
+    line_capacity = axis_line_capacity(axis=str(axis), rows=int(grid_rows), cols=int(grid_cols))
     winning_target_count, winning_count_probabilities = _choose_winning_count(
         rng,
         params=params,
@@ -388,117 +392,86 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
             raise RuntimeError("rendered named-grid extreme annotation count does not match winning line count")
         annotation_payload = bbox_set_annotation(annotation_bboxes)
 
-        prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
-            (
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "question_text_row_most_shape_number",
-                "question_text_row_fewest_shape_number",
-                "question_text_column_most_shape_number",
-                "question_text_column_fewest_shape_number",
-                "annotation_hint",
-                "answer_hint",
-                "json_example",
-                "json_example_answer_only",
-            ),
-            context=f"prompt defaults for {self.task_id}",
-        )
         question_key = f"question_text_{sample.query_id}"
-        prompt_selection = render_task_prompt_variants(
+        prompt_artifacts, _prompt_defaults = build_named_grid_prompt_artifacts(
             domain=DOMAIN,
-            scene_id=SCENE_ID,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "question_text": str(prompt_defaults[question_key]).format(
-                    target_shape_name=str(sample.target_shape_name),
-                ),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]).format(
-                    target_shape_name=str(sample.target_shape_name),
-                    line_kind=str(sample.queried_axis),
-                    line_number=int(sample.answer_line_number),
-                    extremum=str(sample.extremum),
-                ),
-                "answer_hint": str(prompt_defaults["answer_hint"]).format(line_kind=str(sample.queried_axis)),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
+            run_namespace=self.task_id,
+            prompt_defaults_map=_PROMPT_DEFAULTS,
+            question_key=str(question_key),
+            question_slots={"target_shape_name": str(sample.target_shape_name)},
+            annotation_slots={
+                "target_shape_name": str(sample.target_shape_name),
+                "line_kind": str(sample.queried_axis),
+                "line_number": int(sample.answer_line_number),
+                "extremum": str(sample.extremum),
             },
+            answer_slots={"line_kind": str(sample.queried_axis)},
             instance_seed=int(instance_seed),
         )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         serialized_icons = [serialize_named_grid_icon(icon) for icon in scene.icons]
-        counted_instance_ids = tuple(str(icon.instance_id) for icon in counted_icons)
-        shape_counts = dict(Counter(str(icon.shape_id) for icon in scene.icons))
-        active_counts = sample.row_target_counts if str(sample.queried_axis) == "row" else sample.column_target_counts
-        trace_payload = {
-            "scene_ir": scene_ir_fragment(
-                scene,
-                scene_kind="icons_named_grid_row_column_shape_extreme_number",
-                entities=list(serialized_icons),
-                relations={
-                    "counting_rule": "unique_extreme_shape_count_over_grid_lines",
-                    "target_shape_id": str(sample.target_shape_id),
-                    "target_shape_name": str(sample.target_shape_name),
-                    "queried_axis": str(sample.queried_axis),
-                    "extremum": str(sample.extremum),
-                    "answer_line_number": int(sample.answer_line_number),
-                    "answer_line_index": int(sample.answer_line_number) - 1,
-                    "winning_target_count": int(sample.winning_target_count),
-                    "grid_rows": int(sample.grid_rows),
-                    "grid_cols": int(sample.grid_cols),
-                    "shape_counts": {str(key): int(value) for key, value in shape_counts.items()},
-                    "row_target_counts": [int(value) for value in sample.row_target_counts],
-                    "column_target_counts": [int(value) for value in sample.column_target_counts],
-                    "active_line_target_counts": [int(value) for value in active_counts],
-                    "selected_line_target_cells": [[int(row), int(col)] for row, col in sample.counted_cells],
-                    "off_line_target_cells": [[int(row), int(col)] for row, col in sample.off_line_target_cells],
-                },
-            ),
-            "query_spec": {
-                "query_id": str(sample.query_id),
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "target_shape_id": str(sample.target_shape_id),
-                    "target_shape_name": str(sample.target_shape_name),
-                    "query_id": str(sample.query_id),
-                    "answer_line_number": int(sample.answer_line_number),
-                    "winning_target_count": int(sample.winning_target_count),
-                    "grid_rows": int(sample.grid_rows),
-                    "grid_cols": int(sample.grid_cols),
-                    "queried_axis": str(sample.queried_axis),
-                    "extremum": str(sample.extremum),
-                    "query_id_probabilities": dict(sample.query_probabilities),
-                    "answer_probabilities": dict(sample.answer_probabilities),
-                    "grid_size_probabilities": dict(sample.grid_size_probabilities),
-                    "winning_count_probabilities": dict(sample.winning_count_probabilities),
-                    "shape_id_support": list(resolve_shape_support(params, _GEN_DEFAULTS)),
-                    "shape_probabilities": dict(sample.shape_probabilities),
-                    "named_icon_fill_style_support": list(sample.fill_style_support),
-                    "fill_style_probabilities": dict(sample.fill_style_probabilities),
-                },
+        counted_instance_ids = instance_ids(counted_icons)
+        shape_counts = shape_counts_from_icons(scene.icons)
+        active_counts = active_line_counts(
+            axis=str(sample.queried_axis),
+            row_counts=sample.row_target_counts,
+            column_counts=sample.column_target_counts,
+        )
+        selected_cells_trace = cells_to_trace(sample.counted_cells)
+        off_line_cells_trace = cells_to_trace(sample.off_line_target_cells)
+        row_counts_trace = counts_to_trace(sample.row_target_counts)
+        column_counts_trace = counts_to_trace(sample.column_target_counts)
+        active_counts_trace = counts_to_trace(active_counts)
+        query_spec = build_prompt_query_spec(
+            prompt_artifacts=prompt_artifacts,
+            query_id=str(sample.query_id),
+            params={
+                "target_shape_id": str(sample.target_shape_id),
+                "target_shape_name": str(sample.target_shape_name),
+                "answer_line_number": int(sample.answer_line_number),
+                "winning_target_count": int(sample.winning_target_count),
+                "grid_rows": int(sample.grid_rows),
+                "grid_cols": int(sample.grid_cols),
+                "queried_axis": str(sample.queried_axis),
+                "extremum": str(sample.extremum),
+                "query_id_probabilities": dict(sample.query_probabilities),
+                "answer_probabilities": dict(sample.answer_probabilities),
+                "grid_size_probabilities": dict(sample.grid_size_probabilities),
+                "winning_count_probabilities": dict(sample.winning_count_probabilities),
+                "shape_id_support": list(resolve_shape_support(params, _GEN_DEFAULTS)),
+                "shape_probabilities": dict(sample.shape_probabilities),
+                "named_icon_fill_style_support": list(sample.fill_style_support),
+                "fill_style_probabilities": dict(sample.fill_style_probabilities),
             },
-            "render_spec": render_spec_fragment(scene, render_params=render_params),
-            "render_map": render_map_fragment(
-                scene,
-                rows=int(sample.grid_rows),
-                cols=int(sample.grid_cols),
-                extra_fields={"selected_line_target_instance_ids": list(counted_instance_ids)},
-            ),
-            "execution_trace": {
+        )
+        trace_payload = build_named_grid_trace_payload(
+            scene=scene,
+            scene_kind="icons_named_grid_row_column_shape_extreme_number",
+            entities=serialized_icons,
+            relations={
+                "counting_rule": "unique_extreme_shape_count_over_grid_lines",
+                "target_shape_id": str(sample.target_shape_id),
+                "target_shape_name": str(sample.target_shape_name),
+                "queried_axis": str(sample.queried_axis),
+                "extremum": str(sample.extremum),
+                "answer_line_number": int(sample.answer_line_number),
+                "answer_line_index": int(sample.answer_line_number) - 1,
+                "winning_target_count": int(sample.winning_target_count),
+                "grid_rows": int(sample.grid_rows),
+                "grid_cols": int(sample.grid_cols),
+                "shape_counts": dict(shape_counts),
+                "row_target_counts": row_counts_trace,
+                "column_target_counts": column_counts_trace,
+                "active_line_target_counts": active_counts_trace,
+                "selected_line_target_cells": selected_cells_trace,
+                "off_line_target_cells": off_line_cells_trace,
+            },
+            query_spec=query_spec,
+            render_params=render_params,
+            rows=int(sample.grid_rows),
+            cols=int(sample.grid_cols),
+            render_map_extra={"selected_line_target_instance_ids": list(counted_instance_ids)},
+            execution_trace={
                 "scene_variant": "single_panel_named_grid",
                 "query_id": str(sample.query_id),
                 "question_format": "select_grid_line_number_by_extreme_named_shape_count",
@@ -513,24 +486,24 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
                 "answer_line_index": int(sample.answer_line_number) - 1,
                 "winning_target_count": int(sample.winning_target_count),
                 "shape_ids_by_cell": [list(row) for row in sample.shape_ids_by_cell],
-                "row_target_counts": [int(value) for value in sample.row_target_counts],
-                "column_target_counts": [int(value) for value in sample.column_target_counts],
-                "active_line_target_counts": [int(value) for value in active_counts],
-                "selected_line_target_cells": [[int(row), int(col)] for row, col in sample.counted_cells],
-                "off_line_target_cells": [[int(row), int(col)] for row, col in sample.off_line_target_cells],
+                "row_target_counts": row_counts_trace,
+                "column_target_counts": column_counts_trace,
+                "active_line_target_counts": active_counts_trace,
+                "selected_line_target_cells": selected_cells_trace,
+                "off_line_target_cells": off_line_cells_trace,
                 "selected_line_target_instance_ids": list(counted_instance_ids),
             },
-            "witness_symbolic": {
+            witness_symbolic={
                 "query_id": str(sample.query_id),
                 "target_shape_id": str(sample.target_shape_id),
                 "target_shape_name": str(sample.target_shape_name),
                 "answer": int(sample.answer_line_number),
                 "winning_target_count": int(sample.winning_target_count),
-                "selected_line_target_cells": [[int(row), int(col)] for row, col in sample.counted_cells],
+                "selected_line_target_cells": selected_cells_trace,
                 "selected_line_target_instance_ids": list(counted_instance_ids),
             },
-            "projected_annotation": dict(annotation_payload["projected_annotation"]),
-        }
+            annotation_payload=annotation_payload,
+        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.answer_line_number)),
@@ -541,7 +514,7 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
-            prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
+            prompt_variants=task_output_prompt_variants(prompt_artifacts),
         )
 
 

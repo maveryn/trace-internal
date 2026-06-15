@@ -9,6 +9,7 @@ from trace.core.scene_config import get_scene_defaults
 from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
+from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
@@ -227,4 +228,40 @@ def complete_composite_shape_task(
         scene_id=SCENE_ID,
         query_id=str(branch_name),
         prompt_variants=dict(prepared.prompt_artifacts.prompt_variants),
+    )
+
+
+def run_composite_shape_public_entry(
+    *,
+    task_id: str,
+    supported_query_ids: tuple[str, ...],
+    default_query_id: str,
+    resolve_problem: Any,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+):
+    """Run neutral query/render plumbing around a public file's objective hook."""
+
+    selected_query, query_probabilities, task_params = select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=tuple(str(query_id) for query_id in supported_query_ids),
+        default_query_id=str(default_query_id),
+        task_id=str(task_id),
+    )
+    problem = resolve_problem(
+        selected_query=str(selected_query),
+        instance_seed=int(instance_seed),
+        params=task_params,
+    )
+    return complete_composite_shape_task(
+        task_id=str(task_id),
+        branch_name=str(selected_query),
+        branch_probabilities=query_probabilities,
+        problem=problem,
+        instance_seed=int(instance_seed),
+        params=task_params,
+        max_attempts=int(max_attempts),
+        render_namespace=f"{task_id}.{selected_query}",
     )

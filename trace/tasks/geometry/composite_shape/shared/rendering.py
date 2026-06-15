@@ -316,11 +316,18 @@ def _render_house(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -
     width_value = int(values["width"])
     wall_height = int(values["wall_height"])
     roof_side = int(values["roof_side"])
-    scale = 26.0
+    roof_height_units = math.sqrt(max(1.0, float(roof_side) ** 2 - (float(width_value) / 2.0) ** 2))
+    scale = min(
+        26.0,
+        (float(ctx.width) - 220.0) / max(1.0, float(width_value)),
+        (float(ctx.height) - 170.0) / max(1.0, float(wall_height) + roof_height_units),
+    )
+    scale = max(8.0, float(scale))
     w_px = float(width_value) * scale
     half_w = w_px / 2.0
     roof_h = math.sqrt(max(1.0, (float(roof_side) * scale) ** 2 - (half_w**2)))
-    left, base_y = 165.0, 415.0
+    left = (float(ctx.width) - w_px) / 2.0
+    base_y = 78.0 + (float(wall_height) * scale) + roof_h
     a = (left, base_y)
     b = (left + w_px, base_y)
     c = (left + w_px, base_y - (float(wall_height) * scale))
@@ -365,10 +372,16 @@ def _render_tabbed(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
     width_value = int(values["width"])
     height_value = int(values["height"])
     tab_height = int(values["tab_height"])
-    scale = 25.0
+    scale = min(
+        25.0,
+        (float(ctx.width) - 220.0) / max(1.0, float(width_value)),
+        (float(ctx.height) - 170.0) / max(1.0, float(height_value + tab_height)),
+    )
+    scale = max(8.0, float(scale))
     w_px, h_px, tab_h_px = float(width_value) * scale, float(height_value) * scale, float(tab_height) * scale
     tab_w_px = w_px * 0.42
-    left, bottom = 145.0, 420.0
+    left = (float(ctx.width) - w_px) / 2.0
+    bottom = 78.0 + h_px + tab_h_px
     x0 = left + (w_px - tab_w_px) / 2.0
     x1 = x0 + tab_w_px
     pts = [
@@ -420,12 +433,19 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
     width_units = int(values["width_units"])
     height_units = int(values["height_units"])
     radius_units = int(values["radius_units"])
-    scale = 22.0
+    total_width_units = float(width_units + radius_units)
+    total_height_units = max(float(height_units), float(2 * radius_units))
+    scale = min(
+        22.0,
+        (float(ctx.width) - 210.0) / max(1.0, total_width_units),
+        (float(ctx.height) - 180.0) / max(1.0, total_height_units),
+    )
+    scale = max(7.0, float(scale))
     rect_w = float(width_units) * scale
     rect_h = float(height_units) * scale
     radius_px = float(radius_units) * scale
-    left = 130.0
-    top = 150.0
+    left = (float(ctx.width) - (total_width_units * scale)) / 2.0
+    top = max(112.0, (float(ctx.height) - rect_h) / 2.0)
     right = left + rect_w
     bottom = top + rect_h
     mid_y = (top + bottom) / 2.0
@@ -533,12 +553,17 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
     width_units = int(values["width_units"])
     height_units = int(values["height_units"])
     radius_units = int(values["radius_units"])
-    scale = 23.0
+    scale = min(
+        23.0,
+        (float(ctx.width) - 210.0) / max(1.0, float(width_units)),
+        (float(ctx.height) - 180.0) / max(1.0, float(height_units)),
+    )
+    scale = max(8.0, float(scale))
     rect_w = float(width_units) * scale
     rect_h = float(height_units) * scale
     radius_px = float(radius_units) * scale
-    left = 130.0
-    top = 120.0
+    left = (float(ctx.width) - rect_w) / 2.0
+    top = max(112.0, (float(ctx.height) - rect_h) / 2.0)
     right = left + rect_w
     bottom = top + rect_h
     center = (right, top)

@@ -8,27 +8,45 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from trace.tasks.geometry.shared.measurement_rendering import fmt_measure, round1
 from trace.tasks.shared.fixed_query import geometry_probability_map, geometry_selected_probability_map
 
-WIDTH_SUPPORT: Tuple[int, ...] = tuple(range(8, 19))
-HEIGHT_SUPPORT: Tuple[int, ...] = (6, 8, 10, 12, 14, 16)
-RADIUS_SUPPORT: Tuple[int, ...] = (4, 5, 6, 7, 8, 9, 10, 11, 12)
-THETA_SUPPORT: Tuple[int, ...] = (45, 60, 75, 90, 105, 120, 135, 150)
+WIDTH_SUPPORT: Tuple[int, ...] = tuple(range(8, 37))
+HEIGHT_SUPPORT: Tuple[int, ...] = tuple(range(6, 21))
+RADIUS_SUPPORT: Tuple[int, ...] = tuple(range(3, 13))
+SECTOR_RADIUS_SUPPORT: Tuple[int, ...] = tuple(range(4, 16))
+THETA_SUPPORT: Tuple[int, ...] = tuple(range(35, 156))
+
+SEMICIRCLE_DIMENSION_CANDIDATES: Tuple[Tuple[int, int, int], ...] = tuple(
+    (width, height, radius)
+    for width in WIDTH_SUPPORT
+    for height in HEIGHT_SUPPORT
+    for radius in range(3, min(11, height // 2) + 1)
+)
+QUARTER_CUT_DIMENSION_CANDIDATES: Tuple[Tuple[int, int, int], ...] = tuple(
+    (width, height, radius)
+    for width in range(9, 31)
+    for height in range(7, 21)
+    for radius in range(3, min(12, width - 4, height - 3) + 1)
+)
+SECTOR_DIMENSION_CANDIDATES: Tuple[Tuple[int, int], ...] = tuple(
+    (theta, radius)
+    for theta in THETA_SUPPORT
+    for radius in SECTOR_RADIUS_SUPPORT
+)
 
 
 def dimension_values(index: int) -> tuple[int, int, int]:
     """Return width, height, and radius support values for curved composites."""
 
-    width_units = WIDTH_SUPPORT[int(index) % len(WIDTH_SUPPORT)]
-    height_units = HEIGHT_SUPPORT[(int(index) // len(WIDTH_SUPPORT)) % len(HEIGHT_SUPPORT)]
-    radius_units = max(3, int(height_units // 2))
-    return int(width_units), int(height_units), int(radius_units)
+    return SEMICIRCLE_DIMENSION_CANDIDATES[
+        int(index) % len(SEMICIRCLE_DIMENSION_CANDIDATES)
+    ]
 
 
 def sector_values(index: int) -> tuple[int, int]:
     """Return central-angle and radius support values for sector tasks."""
 
-    theta = THETA_SUPPORT[int(index) % len(THETA_SUPPORT)]
-    radius = RADIUS_SUPPORT[(int(index) // len(THETA_SUPPORT)) % len(RADIUS_SUPPORT)]
-    return int(theta), int(radius)
+    return SECTOR_DIMENSION_CANDIDATES[
+        int(index) % len(SECTOR_DIMENSION_CANDIDATES)
+    ]
 
 
 def one_hot_support(values: Sequence[Any], selected: Any) -> Dict[str, float]:
@@ -98,6 +116,10 @@ def numeric_prompt_slots(values: Mapping[str, Any]) -> Dict[str, str]:
 __all__ = [
     "HEIGHT_SUPPORT",
     "RADIUS_SUPPORT",
+    "QUARTER_CUT_DIMENSION_CANDIDATES",
+    "SECTOR_DIMENSION_CANDIDATES",
+    "SECTOR_RADIUS_SUPPORT",
+    "SEMICIRCLE_DIMENSION_CANDIDATES",
     "THETA_SUPPORT",
     "WIDTH_SUPPORT",
     "dimension_values",

@@ -3,29 +3,45 @@
 from __future__ import annotations
 
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
 
-from ._lifecycle import complete_composite_shape_task
-from .shared.sampling import select_case_value
+from ._lifecycle import run_composite_shape_public_entry
+from .shared.sampling import group_cases_by_answer, select_answer_balanced_case
 from .shared.state import CompositeShapeProblem
 
 TASK_ID = "task_geometry__composite_shape__tabbed_rectilinear_perimeter"
 QUERY_ID = "tabbed_rectilinear_perimeter"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 
-_CASES = ((10, 6, 2), (12, 7, 3), (14, 8, 4), (16, 9, 5), (18, 10, 6), (20, 11, 7))
+_CASES = tuple(
+    (width, height, tab_height)
+    for width in range(9, 26)
+    for height in range(6, 17)
+    for tab_height in range(2, 10)
+)
 
 
-def _resolve_problem(*, instance_seed, params):
+def _answer(case: tuple[int, int, int]) -> int:
+    width, height, tab_height = case
+    return (2 * int(width)) + (2 * int(height)) + (2 * int(tab_height))
+
+
+_CASES_BY_ANSWER = group_cases_by_answer(_CASES, answer_fn=_answer)
+
+
+def _resolve_problem(*, selected_query: str, instance_seed, params):
     """Bind a rectilinear tab perimeter from total width, height, and tab height."""
 
-    width, height, tab_height = select_case_value(
-        _CASES,
+    (
+        width,
+        height,
+        tab_height,
+    ), answer_probabilities = select_answer_balanced_case(
+        _CASES_BY_ANSWER,
         instance_seed=int(instance_seed),
         params=params,
         namespace=f"{TASK_ID}.{QUERY_ID}.case",
     )
-    answer = (2 * int(width)) + (2 * int(height)) + (2 * int(tab_height))
+    answer = _answer((width, height, tab_height))
     return CompositeShapeProblem(
         prompt_key=QUERY_ID,
         shape_family="tabbed",
@@ -38,6 +54,9 @@ def _resolve_problem(*, instance_seed, params):
         dimensions={"width": width, "height": height, "tab_height": tab_height},
         formula_family="tabbed_rectilinear_outline",
         reasoning_steps=2,
+        metadata_fields={
+            "target_answer_support_probabilities": dict(answer_probabilities),
+        },
         execution_fields={"perimeter_formula": "2*width + 2*height + 2*tab_height"},
     )
 
@@ -53,21 +72,12 @@ class GeometryCompositeShapeTabbedRectilinearPerimeterTask:
     def generate(self, instance_seed, *, params, max_attempts):
         """Bind a tabbed-outline case and construct the perimeter output."""
 
-        selected_query, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
+        return run_composite_shape_public_entry(
+            task_id=TASK_ID,
             supported_query_ids=SUPPORTED_QUERY_IDS,
             default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-        )
-        problem = _resolve_problem(instance_seed=int(instance_seed), params=task_params)
-        return complete_composite_shape_task(
-            task_id=TASK_ID,
-            branch_name=str(selected_query),
-            branch_probabilities=query_probabilities,
-            problem=problem,
+            resolve_problem=_resolve_problem,
             instance_seed=int(instance_seed),
-            params=task_params,
+            params=params,
             max_attempts=int(max_attempts),
-            render_namespace=f"{TASK_ID}.{selected_query}",
         )

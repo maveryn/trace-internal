@@ -8,7 +8,7 @@
 5. Supported `query_id` values: `single`
 6. Prompt query key: `move_result_board_label`
 7. Answer schema: `string_label`
-8. Annotation schema: `bbox_set`
+8. Annotation schema: `bbox`
 9. Program schema: `label(select_option(candidate_result_boards, option_board = simulate(board, rules=slide_merge_2048, action=move_direction).final_board)); scene=2048; scope=move_result_board_label`
 
 ## Program Contract
@@ -16,4 +16,5 @@
 
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
+3. Annotation is the scalar bounding box around the single selected candidate board.
+4. Annotation is projected from the same generated game state used for answer verification.

@@ -4,7 +4,7 @@ from typing import Any, Dict
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.annotation_artifacts import bbox_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import bbox_annotation_artifacts
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 from ._lifecycle import Attempt2048Result, Objective2048Plan, all_direction_results, run_2048_lifecycle
@@ -41,7 +41,7 @@ def _prepare_result_board_objective(instance_seed: int, params: Dict[str, Any], 
         answer = str(matching_labels[0])
         annotation_ids = (f'result_option_{answer}',)
         sample = Sample2048(scene_variant=str(axes.scene_variant), style_variant=str(axes.style_variant), board=board, move_direction=str(axes.move_direction), move_result=result, all_move_results=all_results, construction_mode='single_move_full_result_board_mcq', result_option_boards=option_boards)
-        return Attempt2048Result(sample=sample, answer_gt=TypedValue(type='string', value=answer), annotation_entity_ids=annotation_ids, build_annotation=lambda rendered: bbox_set_annotation_artifacts(entity_bboxes_for_ids(rendered.rendered_scene, annotation_ids)))
+        return Attempt2048Result(sample=sample, answer_gt=TypedValue(type='string', value=answer), annotation_entity_ids=annotation_ids, build_annotation=lambda rendered: bbox_annotation_artifacts(entity_bboxes_for_ids(rendered.rendered_scene, annotation_ids)[0]))
     return Objective2048Plan(attempt_namespace='games.2048.move_result_board_label', query_params={'target_label': str(target_axis.target_label), 'target_label_support': [str(value) for value in target_axis.target_label_support], 'target_label_probabilities': dict(target_axis.target_label_probabilities), 'result_board_option_count': int(target_axis.result_board_option_count), 'result_board_option_count_support': [int(value) for value in target_axis.result_board_option_count_support], 'result_board_option_count_probabilities': dict(target_axis.result_board_option_count_probabilities)}, construct_attempt=construct_attempt)
 
 @register_task

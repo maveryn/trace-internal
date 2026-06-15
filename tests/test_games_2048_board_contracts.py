@@ -183,11 +183,11 @@ def test_games_2048_move_result_board_label_has_unique_option_board() -> None:
 
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "F"
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 1
+    assert out.annotation_gt.type == "bbox"
     assert matching_labels == ["F"]
     assert tuple(execution["annotation_entity_ids"]) == ("result_option_F",)
-    assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.trace_payload["projected_annotation"]["type"] == "bbox"
+    assert out.trace_payload["projected_annotation"]["bbox"] == out.annotation_gt.value
 
 
 def test_games_2048_move_result_board_label_lays_out_four_options_as_two_by_two() -> None:

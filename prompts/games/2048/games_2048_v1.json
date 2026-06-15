@@ -98,8 +98,8 @@
       "move_rule_text": "In 2048, a move slides all tiles toward the arrow; equal adjacent tiles in that direction merge once.",
       "result_board_rule_text": "Labeled candidate boards are shown below. Use only the slide-and-merge result before any new tile is added.",
       "answer_hint": "set \"answer\" to the single option letter of the candidate board that matches the result after the shown move",
-      "annotation_hint": "set \"annotation\" to a JSON array containing the bounding box [x0, y0, x1, y1] around the selected candidate result board",
-      "json_example": "{\"annotation\":[[356,542,508,694]],\"answer\":\"C\"}",
+      "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the selected candidate result board",
+      "json_example": "{\"annotation\":[356,542,508,694],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     }
   },

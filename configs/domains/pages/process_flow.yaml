@@ -87,8 +87,9 @@ prompt:
     annotation_hint_path_endpoint: set "annotation" to an object mapping start_step,
       first_decision_label, intermediate_step, second_decision_label, and endpoint_step
       to [x0,y0,x1,y1] pixel bounding boxes for the named path witnesses
-    annotation_hint_handoff_count: set "annotation" to an array of pixel segments
-      for the counted handoff arrows, with each pair formatted as [[x, y], [x, y]]
+    annotation_hint_handoff_count: set "annotation" to a list of segments. Each
+      segment is [[x1, y1], [x2, y2]], using the endpoints of one counted handoff
+      arrow; use [] when the answer is zero
   task_overrides:
     task_pages__process_flow__filtered_node_count:
       integer_answer_hint: set "answer" to the requested integer count
@@ -101,12 +102,14 @@ prompt:
         to [x0,y0,x1,y1] pixel bounding boxes for the named path witnesses
     task_pages__process_flow__all_cross_lane_handoff_count:
       integer_answer_hint: set "answer" to the requested integer count
-      annotation_hint_handoff_count: set "annotation" to an array of pixel segments
-        for the counted handoff arrows, with each pair formatted as [[x, y], [x, y]]
+      annotation_hint_handoff_count: set "annotation" to a list of segments. Each
+        segment is [[x1, y1], [x2, y2]], using the endpoints of one counted handoff
+        arrow; use [] when the answer is zero
     task_pages__process_flow__lane_filtered_handoff_count:
       integer_answer_hint: set "answer" to the requested integer count
-      annotation_hint_handoff_count: set "annotation" to an array of pixel segments
-        for the counted handoff arrows, with each pair formatted as [[x, y], [x, y]]
+      annotation_hint_handoff_count: set "annotation" to a list of segments. Each
+        segment is [[x1, y1], [x2, y2]], using the endpoints of one counted handoff
+        arrow; use [] when the answer is zero
 visual:
   background:
     enabled: true

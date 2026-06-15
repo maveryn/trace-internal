@@ -17,4 +17,4 @@
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.
-4. Each annotation item is an unordered pair of point centers for the two original source tiles that merge; annotation cardinality equals the merge-count answer.
+4. Annotation is a `segment_set`; each segment is `[[x1, y1], [x2, y2]]` and connects the centers of the two original source tile cells that merge. Annotation cardinality equals the merge-count answer.

@@ -154,7 +154,7 @@
     },
     "query:pairwise_comparison_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to segments; each pair contains the [x, y] top-center point on the first series bar and the [x, y] top-center point on the second series bar for one category where the first series is greater",
+      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is [[x1, y1], [x2, y2]], using the top-center point on the first series bar and the top-center point on the second series bar for one counted category; use [] if no categories match",
       "json_example": "{\"annotation\":[[[210,360],[210,260]],[[320,330],[320,240]],[[430,300],[430,220]]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     }

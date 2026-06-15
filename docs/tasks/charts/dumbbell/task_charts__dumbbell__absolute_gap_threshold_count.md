@@ -16,7 +16,7 @@
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `segment_set`.
-3. Annotation marks the two colored dot centers for each matching dumbbell row, following the cross-domain annotation policy.
+3. Annotation is a `segment_set`; each segment is `[[x1, y1], [x2, y2]]` and connects the two colored dot centers for one matching dumbbell row.
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract

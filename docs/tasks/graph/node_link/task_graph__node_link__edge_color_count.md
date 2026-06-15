@@ -37,10 +37,10 @@
 5. Answer-only JSON shape: `{"answer":2}`
 6. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}`
 7. Prompt-facing color text uses `<color_name> [#RRGGBB]`, for example `green [#37B94B]`.
-8. Prompt-facing annotation uses pixel-space endpoint-center pairs for every matching edge; directed edge pairs are ordered source-to-target.
+8. Prompt-facing annotation uses a `segment_set`; each segment is `[[x1, y1], [x2, y2]]` using endpoint node centers for one matching edge.
 
 ## 4) Annotation + trace contract
-1. Prompt-facing annotation is the unordered `segment_set` of endpoint-center pairs for all edges whose semantic stroke color matches the queried color.
+1. Prompt-facing annotation is the unordered `segment_set` of endpoint-center segments for all edges whose semantic stroke color matches the queried color.
 2. `answer_gt.value == len(annotation_gt.value)` by construction, including zero-answer cases where annotation is an empty array.
 3. `execution_trace.target_color_name` records the queried color name.
 4. `execution_trace.edge_color_names_by_label_pair` records every rendered edge's semantic color.

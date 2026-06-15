@@ -57,11 +57,11 @@
 5. Modes: `answer_only`, `answer_and_annotation`
 6. Answer-only JSON shape: `{"answer":2}`
 7. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}`
-8. Prompt-facing annotation uses pixel-space endpoint-node-center segments because each witness is a graph edge rather than one node.
+8. Prompt-facing annotation uses a `segment_set` because each witness is a graph edge. Each segment is `[[x1, y1], [x2, y2]]` using endpoint node centers.
 
 ## 4) Annotation + trace contract
-1. Prompt-facing annotation is the `segment_set` of endpoint-node-center pixel points for all bridge edges.
-2. Each bridge witness is represented as an undirected segment; endpoint order is unordered semantically for reward matching, and the implementation keeps the corresponding label pair in `witness_symbolic`.
+1. Prompt-facing annotation is the `segment_set` of endpoint-node-center segments for all bridge edges.
+2. Each bridge witness is represented as an undirected segment `[[x1, y1], [x2, y2]]`; endpoint order is unordered semantically for reward matching, and the implementation keeps the corresponding endpoint labels in `witness_symbolic`.
 3. The list of bridge-edge pairs is unordered semantically as well; the implementation only canonicalizes the symbolic outer order internally for deterministic serialization.
 4. `answer_gt.value == len(annotation_gt.value)` by construction.
 5. `scene_ir.entities` stores:

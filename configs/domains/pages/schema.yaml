@@ -96,9 +96,9 @@ prompt:
       of "one_to_one", "one_to_many", or "optional_many"
     annotation_hint_field_count: set "annotation" to an array of [x0,y0,x1,y1] pixel
       bounding boxes for the counted field rows
-    annotation_hint_relationship_count: set "annotation" to an array of pixel point
-      pairs for the counted relationship lines, with each pair formatted as [[x, y],
-      [x, y]]
+    annotation_hint_relationship_count: set "annotation" to a list of segments.
+      Each segment is [[x1, y1], [x2, y2]], using the endpoints of one counted
+      relationship line; use [] when the answer is zero
     annotation_hint_relationship_endpoint: set "annotation" to an object with keys
       "source_table", "relationship_label", and "target_table", each mapped to a [x0,y0,x1,y1]
       pixel bounding box

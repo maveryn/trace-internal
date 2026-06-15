@@ -16,3 +16,4 @@
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.
+4. Annotation is one `segment` `[[x1, y1], [x2, y2]]` using the endpoints of the selected visible dashed cue.

@@ -56,13 +56,13 @@
   },
   "static_slots_by_key": {
     "query:max_flow_value": {
-      "annotation_hint": "set \"annotation\" to a JSON array of segments [[x0,y0],[x1,y1]] in image pixel coordinates, one segment for each directed edge in a minimum S-T cut supporting the max-flow value",
+      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is [[x1, y1], [x2, y2]], using the endpoint node centers of one directed edge in a minimum S-T cut supporting the max-flow value",
       "answer_hint": "set \"answer\" to the maximum flow value as an integer",
       "json_example": "{\"annotation\":[[[170,280],[330,210]],[[170,280],[330,350]]],\"answer\":5}",
       "json_example_answer_only": "{\"answer\":5}"
     },
     "query:minimum_cut_edge_count": {
-      "annotation_hint": "set \"annotation\" to a JSON array of segments [[x0,y0],[x1,y1]] in image pixel coordinates, one segment for each directed edge in the unique minimum S-T cut",
+      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is [[x1, y1], [x2, y2]], using the endpoint node centers of one directed edge in the unique minimum S-T cut",
       "answer_hint": "set \"answer\" to the number of directed edges in the unique minimum S-T cut as an integer",
       "json_example": "{\"annotation\":[[[170,280],[330,210]],[[170,280],[330,350]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"

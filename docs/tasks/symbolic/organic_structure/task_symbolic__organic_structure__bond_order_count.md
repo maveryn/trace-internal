@@ -20,7 +20,7 @@
 1. `answer_gt.type = integer`
 2. `answer_gt.value` is the number of bonds whose rendered order matches `target_bond_order`.
 3. `annotation_gt.type = segment_set`
-4. Annotation contains one unordered endpoint segment for every matching bond.
+4. Annotation is a `segment_set`; each segment is `[[x1, y1], [x2, y2]]` and connects the semantic endpoints of one matching bond.
 5. Each segment marks the semantic bond endpoints, not every parallel stroke in a double/triple bond.
 6. Bond bboxes may remain render/debug metadata, but prompt-facing annotation excludes vertices, rings, nonmatching bonds, panel marks, and annotations.
 

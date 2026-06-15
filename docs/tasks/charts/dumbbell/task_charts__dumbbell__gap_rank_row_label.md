@@ -16,7 +16,7 @@
 ## Annotation Contract
 1. Answer schema: `string_label`.
 2. Annotation schema: `segment`.
-3. Annotation marks the two colored dot centers for the selected dumbbell row, following the cross-domain annotation policy.
+3. Annotation is one `segment` `[[x1, y1], [x2, y2]]` connecting the two colored dot centers for the selected dumbbell row.
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract

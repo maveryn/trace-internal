@@ -324,9 +324,9 @@ prompt:
         drawn with plausible line-angle single, double, and triple bonds
       object_description_notebook_problem: a notebook-style organic skeletal structure
         drawn with plausible line-angle single, double, and triple bonds
-      annotation_hint_bond_order_count: set "annotation" to an array containing one
-        pixel-space segment for every matching bond, where each endpoint is
-        a point [x, y] formatted as [[x1, y1], [x2, y2]]
+      annotation_hint_bond_order_count: set "annotation" to a list of segments.
+        Each segment is [[x1, y1], [x2, y2]], using the two semantic bond endpoints
+        for one matching bond; use [] when the answer is zero
       answer_hint_bond_order_count: set "answer" to the integer count of matching
         bonds
       json_example_bond_order_count: '{"annotation":[[[420,260],[512,310]],[[610,340],[704,388]]],"answer":2}'

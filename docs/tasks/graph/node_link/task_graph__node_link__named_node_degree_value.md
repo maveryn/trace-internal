@@ -38,12 +38,12 @@
 4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":2}`
 6. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}`
-7. Prompt-facing annotation uses pixel-space endpoints for every counted edge, with each endpoint as a `[x,y]` pixel point.
+7. Prompt-facing annotation uses `segment_set`; each segment is `[[x1, y1], [x2, y2]]` using endpoint node centers for one counted edge.
 8. If the node label format is `named`, prompt references quote the node label, for example node `"Abby"`.
 
 ## 4) Annotation + trace contract
-1. Prompt-facing annotation is the `segment_set` of endpoint-center pairs for all edges counted toward the queried degree value.
-2. For directed branches, annotation edge pairs preserve source-to-target order.
+1. Prompt-facing annotation is the `segment_set` of endpoint-center segments for all edges counted toward the queried degree value.
+2. For directed branches, segment endpoints correspond to the source and target node centers.
 3. `answer_gt.value == len(annotation_gt.value)` by construction, including zero-degree cases where annotation is an empty array.
 4. `execution_trace.graph_directionality` records `undirected` or `directed`; `execution_trace.degree_mode` records `degree`, `in_degree`, `out_degree`, or `total_degree`.
 5. `execution_trace.query_label` records the canonical node label and `execution_trace.query_label_prompt` records the prompt-facing label after short-name quoting.

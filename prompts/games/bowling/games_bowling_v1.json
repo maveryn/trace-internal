@@ -68,7 +68,7 @@
     "query:spare_path_label": {
       "spare_path_rule_text": "Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin.",
       "answer_hint": "set \"answer\" to the selected numbered path label as a string",
-      "annotation_hint": "set \"annotation\" to one path segment [[x0, y0], [x1, y1]], using the two endpoints of the selected visible dashed cue",
+      "annotation_hint": "set \"annotation\" to one segment [[x1, y1], [x2, y2]], using the two endpoints of the selected visible dashed cue",
       "json_example": "{\"annotation\":[[430,610],[620,250]],\"answer\":\"4\"}",
       "json_example_answer_only": "{\"answer\":\"4\"}"
     }

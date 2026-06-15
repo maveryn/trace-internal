@@ -15,4 +15,4 @@
 ## Generation Notes
 1. The card has exactly one completed BINGO column.
 2. The answer is one of `B`, `I`, `N`, `G`, or `O`.
-3. Annotation is the top-to-bottom cell-center segment for the completed column.
+3. Annotation is one `segment` `[[x1, y1], [x2, y2]]` connecting the top and bottom cell centers of the completed column.

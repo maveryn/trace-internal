@@ -29,7 +29,7 @@
 4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":2}`
 6. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}`
-7. Prompt-facing annotation is an array of directed edge segments for the unique minimum cut; each pair contains the two endpoint node centers of one directed edge.
+7. Prompt-facing annotation is a `segment_set` for the unique minimum cut; each segment is `[[x1, y1], [x2, y2]]` using the endpoint node centers of one directed edge.
 
 ## 4) Annotation + Trace Contract
 1. Prompt-facing annotation is a `segment_set` over directed minimum-cut edges.

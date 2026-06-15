@@ -13,7 +13,7 @@
 3. `answer_gt.type`: `integer`
 4. `annotation_gt.type`: `segment_set`
 5. Only open pipes can be bridges; blocked pipes are ignored by the graph computation.
-6. Annotation is an unordered set of endpoint-center segments, one pair per bridge pipe; endpoint order inside each segment is semantically unordered.
+6. Annotation is an unordered `segment_set`; each segment is `[[x1, y1], [x2, y2]]` and connects the endpoint junction centers of one bridge pipe. Endpoint order inside each segment is semantically unordered.
 7. Default bridge-pipe answer support is `0..5`.
 8. Rendering uses compact letter/number junction labels and physical pipe-board styling with cylindrical tubes, flanged junction fittings, sampled board treatments, and clear blocked-pipe valve/X markers.
 

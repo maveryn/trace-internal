@@ -31,8 +31,8 @@
 7. Prompt-facing color text uses `<color_name> [#RRGGBB]`.
 
 ## 4) Annotation + trace contract
-1. Prompt-facing annotation is a `segment_set` of endpoint-node-center pairs for every counted edge; each endpoint is a `[x,y]` pixel point.
-2. For directed graphs, each annotation pair is ordered source-to-target.
+1. Prompt-facing annotation is a `segment_set` for every counted edge; each segment is `[[x1, y1], [x2, y2]]` using endpoint node centers.
+2. For directed graphs, segment endpoints correspond to the source and target node centers.
 3. `answer_gt.value == len(annotation_gt.value)` by construction, including zero-answer cases.
 4. `execution_trace.node_color_names_by_label` records every node's semantic color.
 5. `execution_trace.matching_edges` records the symbolic counted edge labels.

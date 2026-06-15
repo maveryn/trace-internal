@@ -14,8 +14,8 @@
 The rendered course shows one ball, a hole, obstacles, and numbered shot cues.
 Each cue defines the initial putt direction. The program traces each putt with
 mirror-like wall bounces, selects the only cue that reaches the hole before an
-obstacle, returns that cue label, and annotates the selected visible cue segment
-with one segment.
+obstacle, returns that cue label, and annotates the selected visible cue with one
+segment `[[x1, y1], [x2, y2]]`.
 
 ## Generation Notes
 1. Query ids are internal replay/sampling keys and do not define public task units.

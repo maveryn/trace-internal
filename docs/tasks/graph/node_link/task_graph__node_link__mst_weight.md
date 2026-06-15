@@ -27,7 +27,7 @@
 6. Query contract:
    - the prompt defines a spanning tree as connecting every node without cycles and asks for the smallest total edge weight,
    - answer is the sum of the weights on the unique minimum spanning tree,
-   - annotation is the unordered set of MST edges, represented as endpoint-node-center pixel segments.
+     - annotation is the unordered set of MST edges, represented as endpoint-node-center pixel segments `[[x1, y1], [x2, y2]]`.
 7. Weight policy:
    - edge weights are distinct integers from `1..9`,
    - generation samples `1..2` non-tree edges,
@@ -61,10 +61,10 @@
 5. Modes: `answer_only`, `answer_and_annotation`
 6. Answer-only JSON shape: `{"answer":12}`
 7. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]],[[430,260],[520,340]]],"answer":12}`
-8. Prompt-facing annotation uses `segment_set`; each edge is one endpoint-node-center segment.
+8. Prompt-facing annotation uses `segment_set`; each edge is one endpoint-node-center segment `[[x1, y1], [x2, y2]]`.
 
 ## 4) Annotation + trace contract
-1. Prompt-facing annotation is the `segment_set` of endpoint-node-center pixel points for all MST edges.
+1. Prompt-facing annotation is the `segment_set` of endpoint-node-center segments for all MST edges.
 2. Each annotation item is an undirected segment; endpoint order is unordered semantically for reward matching, and the corresponding endpoint labels remain in `witness_symbolic`.
 3. `scene_ir.entities` stores one node entity per rendered node plus one edge entity per rendered edge with:
    - endpoint labels,

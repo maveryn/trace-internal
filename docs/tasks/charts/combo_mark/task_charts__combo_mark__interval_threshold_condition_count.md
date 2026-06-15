@@ -16,7 +16,7 @@
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `segment_set`.
-3. Annotation is one primary/line segment for each matching category; each pair is ordered as `[primary mark point, line mark point]`.
+3. Annotation is a `segment_set`; each segment is `[[x1, y1], [x2, y2]]` and connects the primary-series mark point to the overlaid line mark point for one matching category.
 4. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
 5. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 

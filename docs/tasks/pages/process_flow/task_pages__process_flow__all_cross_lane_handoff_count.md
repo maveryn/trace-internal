@@ -11,7 +11,7 @@
 1. Supported `query_id` values: `single`
 2. `answer_gt.type`: `integer`
 3. `annotation_gt.type`: `segment_set`
-4. Annotation witness policy: One pixel segment for every counted handoff arrow.
+4. Annotation witness policy: one `segment_set`; each segment is `[[x1, y1], [x2, y2]]` using the endpoints of one counted handoff arrow.
 5. `query_id` is retained as internal replay metadata; this public task id is the sampling unit.
 
 ## 3) Prompt Contract

@@ -81,7 +81,7 @@
     },
     "query:completed_column_label": {
       "answer_hint": "set \"answer\" to the completed column label as B, I, N, G, or O",
-      "annotation_hint": "set \"annotation\" to one pixel-space segment [[x, y], [x, y]] using the centers of the top and bottom cells in the completed column",
+      "annotation_hint": "set \"annotation\" to one segment [[x1, y1], [x2, y2]], using the centers of the top and bottom cells in the completed column",
       "json_example": "{\"annotation\":[[180,90],[180,330]],\"answer\":\"I\"}",
       "json_example_answer_only": "{\"answer\":\"I\"}"
     },

@@ -18,7 +18,7 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import LudoAnnotationBundle, keyed_ludo_render_map_bbox_annotation
+from .shared.annotations import LudoAnnotationBundle, keyed_ludo_render_map_point_annotation
 from .shared.output import base_ludo_execution_trace, build_ludo_common_trace_params, build_ludo_trace_payload
 from .shared.prompts import LudoPromptContext, LudoPromptSlots, build_ludo_prompt_artifacts, make_ludo_prompt_slots_from_keys
 from .shared.rendering import RenderedLudoScene, make_ludo_render_state, render_ludo_scene
@@ -265,7 +265,7 @@ def build_ludo_bound_attempt(
             roll_options=roll_options,
             destination_options=destination_options,
         ),
-        build_annotation=lambda rendered: keyed_ludo_render_map_bbox_annotation(
+        build_annotation=lambda rendered: keyed_ludo_render_map_point_annotation(
             rendered=rendered,
             role_sources=role_sources,
             role_entity_ids=role_entity_ids,

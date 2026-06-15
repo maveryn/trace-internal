@@ -26,9 +26,9 @@ _MOVE_RESULT_PROMPT_KEYS = (
     "annotation_hint_move_result_option_label",
 )
 _MOVE_RESULT_EXAMPLE_ANNOTATION = {
-    "moving_token": [100, 200, 130, 230],
-    "roll_sequence": [180, 760, 285, 810],
-    "destination_cell": [320, 260, 365, 305],
+    "moving_token": [115, 215],
+    "roll_sequence": [232, 785],
+    "destination_cell": [342, 282],
 }
 
 
@@ -114,9 +114,9 @@ def _build_move_result_attempt(rng: Any, axes: LudoSceneAxes, selected_query_id:
         roll_sequence=move_sample.roll_sequence,
         destination_options=move_sample.destination_options,
         role_sources={
-            "moving_token": ("token_bboxes_px", f"token_{move_sample.query_color}"),
-            "roll_sequence": ("roll_sequence_px", "bbox_px"),
-            "destination_cell": ("destination_option_cell_bboxes_px", str(move_sample.answer)),
+            "moving_token": ("token_centers_px", f"token_{move_sample.query_color}"),
+            "roll_sequence": ("roll_sequence_px", "center_px"),
+            "destination_cell": ("destination_option_centers_px", str(move_sample.answer)),
         },
         role_entity_ids={
             "moving_token": f"token_{move_sample.query_color}",

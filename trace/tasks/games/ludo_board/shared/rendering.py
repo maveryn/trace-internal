@@ -374,6 +374,7 @@ def _draw_ludo_board(
     draw.rectangle(finish_bbox, outline=tuple(theme.track_outline_rgb) + (255,), width=max(1, int(grid_width) + 1))
     return {
         "finish_bbox_px": [round(float(v), 3) for v in finish_bbox],
+        "finish_center_px": [round(float(fx), 3), round(float(fy), 3)],
         "flow_arrow_markers_px": [dict(marker) for marker in flow_arrow_markers],
     }
 
@@ -539,6 +540,7 @@ def _draw_roll_sequence(
         box_bboxes.append([round(float(coord), 3) for coord in bbox])
     return {
         "bbox_px": [round(float(value), 3) for value in sequence_bbox],
+        "center_px": [round(float(_bbox_center(sequence_bbox)[0]), 3), round(float(_bbox_center(sequence_bbox)[1]), 3)],
         "box_bboxes_px": box_bboxes,
         "values": [int(value) for value in roll_sequence],
     }
@@ -721,6 +723,7 @@ def render_ludo_scene(
     render_map = {
         "board_bbox_px": [round(float(value), 3) for value in board_bbox],
         "finish_bbox_px": list(board_meta["finish_bbox_px"]),
+        "finish_center_px": list(board_meta["finish_center_px"]),
         "flow_arrow_markers_px": [dict(marker) for marker in board_meta.get("flow_arrow_markers_px", [])],
         "token_bboxes_px": dict(token_bboxes),
         "token_centers_px": dict(token_centers),

@@ -10,7 +10,7 @@ The scene renders a Ludo-style cross board with one visible token for each playe
 
 Answer schema: `option_letter`.
 
-Annotation schema: `keyed_bbox_map` with `moving_token`, `roll_sequence`, and `destination_cell`.
+Annotation schema: `keyed_point_map` with `moving_token`, `roll_sequence`, and `destination_cell`.
 
 Supported `query_id`: `single`.
 

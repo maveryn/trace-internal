@@ -18,7 +18,7 @@ from .shared.state import DEFAULTS, HOME_LANES, PLAYER_COLORS, SCENE_NAMESPACE, 
 TASK_ID = "task_games__ludo_board__winning_roll_value"
 _PROMPT_SLOTS = make_ludo_prompt_slots_from_keys(
     keys=("winning_roll_value", "exact_finish_rule_text", "answer_hint_winning_roll_value", "annotation_hint_winning_roll_value"),
-    example_annotation={"token": [100, 200, 130, 230], "finish": [320, 320, 410, 410]},
+    example_annotation={"token": [115, 215], "finish": [365, 365]},
     example_answer=4,
 )
 
@@ -94,8 +94,8 @@ def _prepare_winning_roll_objective(
             query_color=str(sample.query_color),
             target_color=None,
             role_sources={
-                "token": ("token_bboxes_px", f"token_{sample.query_color}"),
-                "finish": ("finish_bbox_px",),
+                "token": ("token_centers_px", f"token_{sample.query_color}"),
+                "finish": ("finish_center_px",),
             },
             role_entity_ids={"token": f"token_{sample.query_color}", "finish": "finish"},
             extra_execution_trace={

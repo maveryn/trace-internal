@@ -105,8 +105,8 @@ def _build_capture_roll_attempt(rng: Any, axes: LudoSceneAxes, selected_query_id
         target_color=str(capture_sample.target_color),
         roll_options=capture_sample.options,
         role_sources={
-            "mover_token": ("token_bboxes_px", f"token_{capture_sample.query_color}"),
-            "target_token": ("token_bboxes_px", f"token_{capture_sample.target_color}"),
+            "mover_token": ("token_centers_px", f"token_{capture_sample.query_color}"),
+            "target_token": ("token_centers_px", f"token_{capture_sample.target_color}"),
         },
         role_entity_ids={
             "mover_token": f"token_{capture_sample.query_color}",
@@ -129,7 +129,7 @@ def _build_capture_roll_attempt(rng: Any, axes: LudoSceneAxes, selected_query_id
 
 _PREPARE_OBJECTIVE = make_ludo_value_option_preparer(
     prompt_keys=("capture_roll_option_label", "capture_option_rule_text", "answer_hint_capture_roll_option_label", "annotation_hint_capture_roll_option_label"),
-    example_annotation={"mover_token": [100, 200, 130, 230], "target_token": [260, 200, 290, 230]},
+    example_annotation={"mover_token": [115, 215], "target_token": [275, 215]},
     example_answer="C",
     axis_config=_AXIS_CONFIG,
     attempt_namespace=f"{SCENE_NAMESPACE}.capture_roll",

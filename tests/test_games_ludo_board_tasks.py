@@ -135,9 +135,10 @@ def test_games_ludo_board_winning_roll_answer_matches_trace() -> None:
         assert execution["winning_roll"] == roll
         assert execution["query_color"] == "blue"
         assert execution["token_coords_by_color"]["blue"] == list(HOME_LANES["blue"][5 - roll])
-        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert out.annotation_gt.type == "keyed_point_map"
         assert set(out.annotation_gt.value.keys()) == {"token", "finish"}
-        assert out.trace_payload["projected_annotation"]["type"] == "keyed_bbox_map"
+        assert out.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
+        assert set(out.trace_payload["projected_annotation"]["pixel_keyed_point_map"].keys()) == {"token", "finish"}
         assert len(out.trace_payload["render_map"]["flow_arrow_markers_px"]) == len(FLOW_ARROW_SPECS)
         assert set(out.trace_payload["render_map"]["flow_arrow_markers_px"][0]) >= {"start_coord", "end_coord", "role"}
 
@@ -168,9 +169,9 @@ def test_games_ludo_board_capture_option_answer_matches_trace() -> None:
         assert correct_options == [{"label": "F", "distance": distance, "text": roll_option_text(distance)}]
         assert len(execution["options"]) == 6
         assert len(out.trace_payload["render_map"]["flow_arrow_markers_px"]) == len(FLOW_ARROW_SPECS)
-        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert out.annotation_gt.type == "keyed_point_map"
         assert set(out.annotation_gt.value.keys()) == {"mover_token", "target_token"}
-        assert set(out.trace_payload["projected_annotation"]["pixel_keyed_bbox_map"].keys()) == {
+        assert set(out.trace_payload["projected_annotation"]["pixel_keyed_point_map"].keys()) == {
             "mover_token",
             "target_token",
         }
@@ -212,7 +213,8 @@ def test_games_ludo_board_move_result_answer_matches_trace() -> None:
         assert len(set(destination_options.values())) == len(execution["destination_options"])
         assert not set(destination_options.values()) & token_coords
         assert set(out.annotation_gt.value.keys()) == {"moving_token", "roll_sequence", "destination_cell"}
-        assert set(out.trace_payload["projected_annotation"]["pixel_keyed_bbox_map"].keys()) == {
+        assert out.annotation_gt.type == "keyed_point_map"
+        assert set(out.trace_payload["projected_annotation"]["pixel_keyed_point_map"].keys()) == {
             "moving_token",
             "roll_sequence",
             "destination_cell",

@@ -10,7 +10,7 @@ The scene renders a Ludo-style cross board with one visible token for each playe
 
 Answer schema: `integer` in `1..5`.
 
-Annotation schema: `keyed_bbox_map` with `token` and `finish`.
+Annotation schema: `keyed_point_map` with `token` and `finish`.
 
 Supported `query_id`: `single`.
 

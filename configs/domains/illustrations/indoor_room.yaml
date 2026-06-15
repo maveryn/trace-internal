@@ -282,8 +282,9 @@ prompt:
       scene_key: indoor_room_canvas
       task_key: rotated_tile_label_task
       answer_hint_rotated_tile: set "answer" to the letter of the rotated tile
-      annotation_hint_rotated_tile: set "annotation" to a JSON array containing the [x0, y0, x1, y1] box around the rotated tile in image pixel coordinates
-      json_example_rotated_tile: '{"annotation":[[350,42,670,362]],"answer":"B"}'
+      annotation_hint_rotated_tile: set "annotation" to one [x0, y0, x1,
+        y1] box around the rotated tile in image pixel coordinates
+      json_example_rotated_tile: '{"annotation":[350,42,670,362],"answer":"B"}'
       json_example_answer_only_rotated_tile: '{"answer":"B"}'
     task_illustrations__indoor_room__missing_patch_label:
       bundle_id: illustrations_indoor_room_v0

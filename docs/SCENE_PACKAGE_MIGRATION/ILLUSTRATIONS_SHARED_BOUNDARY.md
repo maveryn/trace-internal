@@ -110,6 +110,9 @@ rotated-tile, or jigsaw tasks should use the frameless illustration styles and
 only draw functional marks such as option letters, missing-region masks, tile
 grid lines, and tight gutters. Do not add source-panel titles, decorative
 outer borders, or background frames around the illustration itself.
+Rotated-tile tasks that use quarter-turn rotations must configure source
+dimensions so each grid cell is square; for the standard 2x3 layout this means
+using a 3:2 source image such as 960x640.
 
 Domain-shared modules that should move to scene-local shared when their owning
 scene is migrated:

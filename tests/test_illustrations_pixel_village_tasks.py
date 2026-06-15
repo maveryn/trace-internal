@@ -234,25 +234,28 @@ def test_pixel_village_rotated_tile_label_contract() -> None:
     render_map = trace["render_map"]
     answer_label = str(out.answer_gt.value)
     tile_bboxes = render_map["tile_bboxes_px_by_label"]
+    annotation = out.annotation_gt.value
 
     assert out.scene_id == "pixel_village"
     assert out.query_id == "single"
     assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox"
     assert answer_label in {"A", "B", "C", "D", "E", "F"}
     assert sorted(tile_bboxes) == ["A", "B", "C", "D", "E", "F"]
-    assert out.annotation_gt.value == [tile_bboxes[answer_label]]
-    assert trace["projected_annotation"]["type"] == "bbox_set"
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    for bbox in tile_bboxes.values():
+        assert round(float(bbox[2]) - float(bbox[0]), 3) == round(float(bbox[3]) - float(bbox[1]), 3)
+    assert annotation == tile_bboxes[answer_label]
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == annotation
     assert render_map["rotated_tile_bbox_px"] == tile_bboxes[answer_label]
-    assert trace["render_spec"]["canvas_size"] == [960, 720]
+    assert trace["render_spec"]["canvas_size"] == [960, 640]
     assert trace["render_spec"]["style"]["rotated_grid_style"]["style_id"] == "frameless_illustration"
     assert execution["query_id"] == "single"
     assert execution["answer_label"] == answer_label
     assert execution["rotation_degrees"] == 90
     assert execution["grid_shape"] == [2, 3]
     assert execution["rotated_tile_index"] in execution["usable_tile_indices"]
-    _assert_annotation_inside_canvas(out)
+    _assert_bbox_inside_canvas(annotation, width=out.image.width, height=out.image.height)
 
 
 def test_pixel_village_rotated_tile_sampler_covers_rotation_support() -> None:

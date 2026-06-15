@@ -35,12 +35,13 @@ Renders a construction-site source illustration as a 2-row by 3-column grid of s
 - The answer value is one of the visible tile letters `A` through `F`.
 
 ## Annotation Contract
-- Annotation schema: `bbox_set`
-- Generator `annotation_gt.type`: `bbox_set`
+- Annotation schema: `bbox`
+- Generator `annotation_gt.type`: `bbox`
 - Annotation contains exactly one final-image pixel box around the rotated tile. Do not include all tile options, tile labels, source-scene objects, or context-only regions.
 
 ## Prompt And Trace Requirements
 - Prompt text must come from the `illustrations_construction_site_v1` prompt bundle, with scene/task/output layers selected deterministically and recorded in metadata.
 - Render randomness, sampled construction-site contents, tile-label font, grid style, selected tile, and verifier payloads must be explicit in the instance trace.
 - The selected tile is sampled only from tiles with enough visual detail and rotation difference to make the anomaly visible.
+- Quarter-turn rotations require square source cells; for the 2x3 grid, source dimensions must keep `source_width / 3 == source_height / 2`.
 - The selected tile bbox, answer label, and rotated tile index must all come from the same `compose_rotated_tile_grid` execution trace.

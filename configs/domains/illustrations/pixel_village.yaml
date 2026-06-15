@@ -41,7 +41,7 @@ generation:
       query_id_support:
         - single
       source_width: 960
-      source_height: 720
+      source_height: 640
       min_tile_detail_score: 120
       min_rotation_delta: 7
       rotation_degrees_support:
@@ -113,7 +113,7 @@ rendering:
       annotation_padding_px: 0.0
     task_illustrations__pixel_village__rotated_tile_label:
       pixel_village_canvas_width: 960
-      pixel_village_canvas_height: 720
+      pixel_village_canvas_height: 640
       pixel_village_tile_px: 32
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: force
@@ -183,8 +183,8 @@ prompt:
       scene_key: pixel_village_canvas
       task_key: pixel_village_rotated_tile_label_task
       answer_hint_rotated_tile: set "answer" to the selected tile letter
-      annotation_hint_rotated_tile: set "annotation" to a JSON array containing the single [x0, y0, x1, y1] box around the rotated tile in pixel coordinates
-      json_example_rotated_tile: '{"annotation":[[438,168,756,436]],"answer":"B"}'
+      annotation_hint_rotated_tile: set "annotation" to the [x0, y0, x1, y1] box around the rotated tile in pixel coordinates
+      json_example_rotated_tile: '{"annotation":[438,168,758,488],"answer":"B"}'
       json_example_answer_only_rotated_tile: '{"answer":"B"}'
     task_illustrations__pixel_village__territory_object_count:
       bundle_id: illustrations_pixel_village_v0

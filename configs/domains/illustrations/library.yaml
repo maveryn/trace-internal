@@ -37,7 +37,7 @@ generation:
       section_book_count_min: 8
       section_book_count_max: 14
       source_width: 960
-      source_height: 660
+      source_height: 640
       rotation_degrees_support:
         - 90
         - 270
@@ -174,8 +174,9 @@ prompt:
       scene_key: library_canvas
       task_key: rotated_tile_label_task
       answer_hint_rotated_tile: set "answer" to the letter of the rotated tile
-      annotation_hint_rotated_tile: set "annotation" to a JSON array containing the [x0, y0, x1, y1] box around the rotated tile in image pixel coordinates
-      json_example_rotated_tile: '{"annotation":[[350,42,670,362]],"answer":"B"}'
+      annotation_hint_rotated_tile: set "annotation" to one [x0, y0, x1,
+        y1] box around the rotated tile in image pixel coordinates
+      json_example_rotated_tile: '{"annotation":[350,42,670,362],"answer":"B"}'
       json_example_answer_only_rotated_tile: '{"answer":"B"}'
     task_illustrations__library__missing_patch_label:
       bundle_id: illustrations_library_v0

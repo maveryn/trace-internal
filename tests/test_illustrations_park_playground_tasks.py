@@ -44,6 +44,13 @@ def _assert_keyed_annotation_inside_canvas(out) -> None:
         assert 0 <= y0 < y1 <= height
 
 
+def _assert_bbox_inside_canvas(out) -> None:
+    width, height = out.trace_payload["render_spec"]["canvas_size"]
+    x0, y0, x1, y1 = out.annotation_gt.value
+    assert 0 <= x0 < x1 <= width
+    assert 0 <= y0 < y1 <= height
+
+
 def test_person_count_contract() -> None:
     out = create_task("task_illustrations__park_playground__person_count").generate(
         hash64(2026061503, "park-person-total", 0),
@@ -152,13 +159,12 @@ def test_jigsaw_arrangement_label_contract() -> None:
     assert out.scene_id == "park_playground"
     assert out.query_id == SINGLE_QUERY_ID
     assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox"
     assert answer_label == "C"
     assert sorted(option_bboxes) == ["A", "B", "C", "D"]
-    assert out.annotation_gt.value == [option_bboxes[answer_label]]
-    assert trace["projected_annotation"]["type"] == "bbox_set"
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.value == option_bboxes[answer_label]
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
     assert trace["render_map"]["selected_option_bbox_px"] == option_bboxes[answer_label]
     assert execution["option_permutations_by_label"][answer_label] == [0, 1, 2, 3]
     assert option_permutations[answer_label] == [0, 1, 2, 3]
@@ -168,7 +174,7 @@ def test_jigsaw_arrangement_label_contract() -> None:
     assert min(trace["query_spec"]["params"]["tile_detail_scores"]) >= 600
     assert trace["render_spec"]["canvas_size"] == [1136, 892]
     assert "9 people" not in out.prompt
-    _assert_annotation_inside_canvas(out)
+    _assert_bbox_inside_canvas(out)
 
 
 def test_jigsaw_arrangement_seeded_sampler_covers_answer_labels() -> None:
@@ -253,17 +259,17 @@ def test_rotated_tile_label_contract() -> None:
     assert out.scene_id == "park_playground"
     assert out.query_id == SINGLE_QUERY_ID
     assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox"
     assert answer_label in {"A", "B", "C", "D", "E", "F"}
     assert sorted(tile_bboxes) == ["A", "B", "C", "D", "E", "F"]
-    assert out.annotation_gt.value == [tile_bboxes[answer_label]]
-    assert trace["projected_annotation"]["type"] == "bbox_set"
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.value == tile_bboxes[answer_label]
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
     assert trace["render_map"]["rotated_tile_bbox_px"] == tile_bboxes[answer_label]
     assert trace["query_spec"]["params"]["grid_shape"] == [2, 3]
     assert trace["query_spec"]["params"]["rotation_degrees"] in {90, 270}
     assert trace["query_spec"]["params"]["answer_label"] == answer_label
-    _assert_annotation_inside_canvas(out)
+    _assert_bbox_inside_canvas(out)
 
 
 def test_rotated_tile_seeded_sampler_covers_rotation_support() -> None:

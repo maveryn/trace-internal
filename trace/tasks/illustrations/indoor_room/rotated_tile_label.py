@@ -15,6 +15,7 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.output_metadata import default_task_versions
 from ..shared.cutouts import (
     DEFAULT_OPTION_LABELS,
@@ -174,13 +175,6 @@ def _select_correct_index(
     return int(selected), dict(uniform_probability_map(usable))
 
 
-def _bbox_set(*boxes: Sequence[float]) -> list[list[float]]:
-    return [
-        [round(float(coord), 3) for coord in bbox[:4]]
-        for bbox in boxes
-    ]
-
-
 @register_task
 class IllustrationsIndoorRoomRotatedTileLabelTask:
     """Select the lettered tile that has been rotated inside a room grid."""
@@ -191,7 +185,7 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Generate one tiled indoor-room scene and bind tile-level evidence."""
+        """Generate one tiled indoor-room scene and bind tile-level annotation."""
 
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
@@ -275,7 +269,7 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
 
         serialized_objects, object_bboxes, part_bboxes = serialize_indoor_scene(scene)
         answer_label = str(artifacts.selected_label)
-        annotation_value = _bbox_set(artifacts.selected_bbox)
+        annotation_artifacts = bbox_annotation_artifacts(artifacts.selected_bbox)
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             [
@@ -392,16 +386,14 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
                 "rotation_degrees": int(sample.rotation_degrees),
             },
             "projected_annotation": {
-                "type": "bbox_set",
-                "bbox_set": list(annotation_value),
-                "pixel_bbox_set": list(annotation_value),
+                **dict(annotation_artifacts.projected_annotation),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="option_letter", value=answer_label),
-            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
+            annotation_gt=annotation_artifacts.annotation_gt,
             image=artifacts.image,
             image_id="img0",
             trace_payload=trace_payload,

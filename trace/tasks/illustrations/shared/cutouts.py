@@ -546,6 +546,11 @@ def compose_rotated_tile_grid(
     margin = int(render_margin)
     tile_w = int(source_rgb.width // int(cols))
     tile_h = int(source_rgb.height // int(rows))
+    if abs(int(rotation_degrees)) % 180 == 90 and int(tile_w) != int(tile_h):
+        raise ValueError(
+            f"rotated tile grid requires square cells for {rotation_degrees}-degree rotation; "
+            f"got {tile_w}x{tile_h} cells from {source_rgb.width}x{source_rgb.height} over {rows}x{cols}"
+        )
     canvas_w = int(source_rgb.width) + 2 * margin
     canvas_h = int(source_rgb.height) + 2 * margin
     canvas = Image.new("RGB", (canvas_w, canvas_h), rgb(grid_style, "canvas_rgb"))

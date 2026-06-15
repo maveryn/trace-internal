@@ -75,7 +75,7 @@ generation:
       source_equipment_count_min: 4
       source_equipment_count_max: 7
       source_width: 960
-      source_height: 660
+      source_height: 640
       rotation_degrees_support:
         - 90
         - 270

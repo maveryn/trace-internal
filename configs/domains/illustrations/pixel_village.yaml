@@ -74,7 +74,7 @@ rendering:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
       pixel_village_tile_px: 32
-      pixel_village_theme_mode: temperate
+      pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: force
       pixel_village_orchard_mode: force
       pixel_village_windmill_mode: force
@@ -85,7 +85,7 @@ rendering:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
       pixel_village_tile_px: 32
-      pixel_village_theme_mode: temperate
+      pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: force
       pixel_village_orchard_mode: force
       pixel_village_windmill_mode: force
@@ -96,7 +96,7 @@ rendering:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
       pixel_village_tile_px: 32
-      pixel_village_theme_mode: temperate
+      pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
       pixel_village_orchard_mode: auto
       pixel_village_windmill_mode: auto
@@ -105,7 +105,7 @@ rendering:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
       pixel_village_tile_px: 32
-      pixel_village_theme_mode: temperate
+      pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
       pixel_village_orchard_mode: auto
       pixel_village_windmill_mode: auto
@@ -115,7 +115,7 @@ rendering:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
       pixel_village_tile_px: 32
-      pixel_village_theme_mode: temperate
+      pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: force
       pixel_village_orchard_mode: force
       pixel_village_windmill_mode: force
@@ -126,7 +126,7 @@ rendering:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
       pixel_village_tile_px: 32
-      pixel_village_theme_mode: temperate
+      pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
       pixel_village_orchard_mode: auto
       pixel_village_windmill_mode: auto
@@ -135,7 +135,7 @@ rendering:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
       pixel_village_tile_px: 32
-      pixel_village_theme_mode: temperate
+      pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
       pixel_village_orchard_mode: auto
       pixel_village_windmill_mode: auto

@@ -9,57 +9,57 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.minigolf.first_obstacle_label import (
-    GamesMinigolfCourseTask,
-    GamesMinigolfFirstObstacleLabelTask,
-    GamesMinigolfShotPathLabelTask,
-    _first_hit_obstacle_id,
-    _trace_shot_path,
-)
-from trace.tasks.games.minigolf.shared.common import MinigolfObstacle
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.tasks.games.minigolf.first_obstacle_label import GamesMinigolfFirstObstacleLabelTask
+from trace.tasks.games.minigolf.shot_path_label import GamesMinigolfShotPathLabelTask
+from trace.tasks.games.minigolf.shared.rules import first_hit_obstacle_id, trace_shot_path
+from trace.tasks.games.minigolf.shared.state import MinigolfObstacle
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "params", "expected_query"),
+    ("task_cls", "params", "prompt_query_key", "expected_annotation_type"),
     (
         (
             GamesMinigolfFirstObstacleLabelTask,
             {"target_obstacle_label": "F", "obstacle_count": 8, "style_variant": "garden"},
             "first_obstacle_label",
+            "point",
         ),
         (
             GamesMinigolfShotPathLabelTask,
             {"path_option_count": 6, "target_path_index": 4, "style_variant": "blueprint"},
             "shot_path_label",
+            "point_pair_set",
         ),
     ),
 )
 def test_games_minigolf_public_tasks_emit_expected_contract(
-    task_cls: type[GamesMinigolfCourseTask],
+    task_cls: type[GamesMinigolfFirstObstacleLabelTask | GamesMinigolfShotPathLabelTask],
     params: dict[str, int | str],
-    expected_query: str,
+    prompt_query_key: str,
+    expected_annotation_type: str,
 ) -> None:
     out = task_cls().generate(97000, params=params, max_attempts=512)
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == "string"
-    assert len(out.annotation_gt.value) == 1
-    assert out.query_id == expected_query
+    assert out.query_id == SINGLE_QUERY_ID
     assert out.scene_id == "minigolf"
-    assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert execution["query_id"] == expected_query
-    if expected_query == "shot_path_label":
-        assert out.annotation_gt.type == "point_pair_set"
-        assert trace["projected_annotation"]["type"] == "point_pair_set"
+    assert trace["query_spec"]["query_id"] == SINGLE_QUERY_ID
+    assert trace["query_spec"]["params"]["query_id"] == SINGLE_QUERY_ID
+    assert trace["query_spec"]["params"]["prompt_query_key"] == prompt_query_key
+    assert execution["query_id"] == SINGLE_QUERY_ID
+    assert out.annotation_gt.type == expected_annotation_type
+    assert trace["projected_annotation"]["type"] == expected_annotation_type
+    if expected_annotation_type == "point_pair_set":
+        assert len(out.annotation_gt.value) == 1
         assert trace["projected_annotation"]["point_pair_set"] == out.annotation_gt.value
     else:
-        assert out.annotation_gt.type == "point_set"
-        assert trace["projected_annotation"]["type"] == "point_set"
-        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+        assert len(out.annotation_gt.value) == 2
+        assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_point"] == out.annotation_gt.value
     assert "panel_scene_style" in trace["render_spec"]
     assert "text_style" in trace["render_spec"]
     assert len(execution["annotation_entity_ids"]) == 1
@@ -90,7 +90,7 @@ def test_games_minigolf_first_obstacle_matches_first_ray_hit() -> None:
         for obstacle in execution["obstacles"]
     )
 
-    first_hit = _first_hit_obstacle_id(origin=start, angle_rad=angle, obstacles=obstacles)
+    first_hit = first_hit_obstacle_id(origin=start, angle_rad=angle, obstacles=obstacles)
     assert str(first_hit) == target_id
     assert str(out.answer_gt.value) == str(execution["target_obstacle_label"])
     assert list(execution["annotation_entity_ids"]) == [target_id]
@@ -121,7 +121,7 @@ def test_games_minigolf_shot_path_has_one_hole_reaching_option() -> None:
     )
     success_ids: list[str] = []
     for option in execution["shot_options"]:
-        reaches_hole, _blocked_by, _path = _trace_shot_path(
+        reaches_hole, _blocked_by, _path = trace_shot_path(
             ball_xy=ball,
             angle_rad=float(option["angle_rad"]),
             hole_xy=hole,

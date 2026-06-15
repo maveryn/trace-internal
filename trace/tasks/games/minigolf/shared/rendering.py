@@ -11,9 +11,12 @@ from PIL import Image, ImageDraw
 from ....shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
 from ....shared.drawing import draw_dashed_line
 from ....shared.text_rendering import fit_font_to_box
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.font_assets import sample_font_family
 from ...shared.text import draw_game_text_traced as draw_text_traced
-from ...shared.layout import apply_games_layout_jitter_to_bbox
-from .common import MinigolfObstacle, MinigolfShotOption
+from ...shared.layout import apply_games_layout_jitter_to_bbox, resolve_games_layout_jitter
+from .defaults import DEFAULTS, FIRST_OBSTACLE_MODE
+from .state import MinigolfObstacle, MinigolfShotOption
 from ...shared.scene_style import (
     GamePanelSceneStyle,
     game_panel_contrast_anchor_colors,
@@ -70,7 +73,7 @@ class RenderedMinigolfScene:
 
 
 def build_games_minigolf_theme(*, style_variant: str) -> MinigolfTheme:
-    """Return one Mini-golf course theme."""
+    """Return the full color contract for one Mini-golf course style."""
 
     style = str(style_variant)
     if style == "desert":
@@ -213,6 +216,43 @@ def _course_bbox(params: MinigolfRenderParams) -> Tuple[Tuple[float, float, floa
     return bbox, {}
 
 
+def resolve_minigolf_render_params(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    namespace: str,
+    instance_seed: int,
+) -> MinigolfRenderParams:
+    """Resolve Mini-golf rendering parameters from config/defaults."""
+
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.font_family",
+        params=params,
+    )
+    return MinigolfRenderParams(
+        canvas_width=int(params.get("canvas_width", group_default(render_defaults, "canvas_width", DEFAULTS.canvas_width))),
+        canvas_height=int(params.get("canvas_height", group_default(render_defaults, "canvas_height", DEFAULTS.canvas_height))),
+        panel_margin_px=int(params.get("panel_margin_px", group_default(render_defaults, "panel_margin_px", DEFAULTS.panel_margin_px))),
+        course_width_px=int(params.get("course_width_px", group_default(render_defaults, "course_width_px", DEFAULTS.course_width_px))),
+        course_height_px=int(params.get("course_height_px", group_default(render_defaults, "course_height_px", DEFAULTS.course_height_px))),
+        course_border_width_px=int(params.get("course_border_width_px", group_default(render_defaults, "course_border_width_px", DEFAULTS.course_border_width_px))),
+        ball_radius_px=int(params.get("ball_radius_px", group_default(render_defaults, "ball_radius_px", DEFAULTS.ball_radius_px))),
+        hole_radius_px=int(params.get("hole_radius_px", group_default(render_defaults, "hole_radius_px", DEFAULTS.hole_radius_px))),
+        obstacle_radius_px=int(params.get("obstacle_radius_px", group_default(render_defaults, "obstacle_radius_px", DEFAULTS.obstacle_radius_px))),
+        path_width_px=int(params.get("path_width_px", group_default(render_defaults, "path_width_px", DEFAULTS.path_width_px))),
+        label_font_size_px=int(params.get("label_font_size_px", group_default(render_defaults, "label_font_size_px", DEFAULTS.label_font_size_px))),
+        font_family=str(font_family),
+        layout_jitter_meta=resolve_games_layout_jitter(
+            params,
+            render_defaults,
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.layout",
+        ),
+    )
+
+
 def _to_px(course_bbox: Tuple[float, float, float, float], point: Tuple[float, float]) -> Tuple[float, float]:
     """Project normalized course coordinates to pixels."""
 
@@ -316,7 +356,7 @@ def render_minigolf_scene(
     params: MinigolfRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedMinigolfScene:
-    """Render one mini-golf course."""
+    """Render one course and preserve entity projections for annotation binding."""
 
     image = background.convert("RGB").copy()
     draw = ImageDraw.Draw(image)
@@ -405,7 +445,7 @@ def render_minigolf_scene(
     motion_paths_px: Dict[str, Dict[str, Any]] = {}
     path_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     path_point_pairs: Dict[str, Tuple[Tuple[float, float], Tuple[float, float]]] = {}
-    if str(mode) == "first_obstacle_label":
+    if str(mode) == FIRST_OBSTACLE_MODE:
         path = hidden_paths_norm.get("shown_path", tuple())
         if len(path) >= 2:
             start = _to_px(course_bbox, path[0])
@@ -515,4 +555,5 @@ __all__ = [
     "RenderedMinigolfScene",
     "build_games_minigolf_theme",
     "render_minigolf_scene",
+    "resolve_minigolf_render_params",
 ]

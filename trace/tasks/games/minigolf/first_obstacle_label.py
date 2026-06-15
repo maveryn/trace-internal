@@ -2,27 +2,79 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-from trace.core.seed import spawn_rng
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
 
-from .shared.scene import SCENE_ID, build_components, resolve_axes, sample_scene
+from ._lifecycle import MinigolfObjectivePlan, minigolf_string_answer_attempt, run_minigolf_registered_task
+from .shared.annotations import minigolf_obstacle_point_annotation
+from .shared.defaults import DEFAULT_BRANCH_ID, OBSTACLE_LABELS
+from .shared.sampling import resolve_minigolf_axes, resolve_minigolf_label_choice, sample_first_obstacle_scene
 
 
 TASK_ID = "task_games__minigolf__first_obstacle_label"
-QUERY_ID = "first_obstacle_label"
+QUERY_ID = DEFAULT_BRANCH_ID
+PROMPT_QUERY_KEY = "first_obstacle_label"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
-TARGET_OBSTACLE_LABEL_FALLBACK_SUPPORT = tuple(chr(ord("A") + index) for index in range(8))
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
-    "games",
-    SCENE_ID,
-    task_id=TASK_ID,
-)
+TARGET_OBSTACLE_LABEL_SUPPORT_KEY = "target_obstacle_label_support"
+
+
+def _prepare_first_obstacle_objective(
+    instance_seed,
+    task_params,
+    _selected_branch,
+    branch_probabilities,
+    gen_defaults,
+) -> MinigolfObjectivePlan:
+    """Resolve target-label axes and bind first-obstacle construction."""
+
+    axes = resolve_minigolf_axes(
+        int(instance_seed),
+        gen_defaults=gen_defaults,
+        namespace="games.minigolf.first_obstacle",
+        params=task_params,
+    )
+    target_label, target_label_probabilities = resolve_minigolf_label_choice(
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        params=task_params,
+        support_key=TARGET_OBSTACLE_LABEL_SUPPORT_KEY,
+        explicit_key="target_obstacle_label",
+        fallback_support=OBSTACLE_LABELS,
+        namespace="games.minigolf.first_obstacle.target_label",
+        balanced_flag_key="balanced_target_obstacle_label_sampling",
+    )
+
+    def construct_attempt(rng, resolved_axes):
+        sample = sample_first_obstacle_scene(
+            rng=rng,
+            axes=resolved_axes,
+            target_label=str(target_label),
+        )
+        target_id = str(sample.target_obstacle_id)
+        return minigolf_string_answer_attempt(
+            sample=sample,
+            prompt_key=PROMPT_QUERY_KEY,
+            object_description_key=f"object_description_{str(resolved_axes.scene_variant)}",
+            answer_hint_key=f"answer_hint_{PROMPT_QUERY_KEY}",
+            annotation_hint_key=f"annotation_hint_{PROMPT_QUERY_KEY}",
+            example_annotation=[486, 258],
+            example_answer="D",
+            bind_annotation=lambda rendered: minigolf_obstacle_point_annotation(
+                rendered=rendered,
+                obstacle_id=target_id,
+            ),
+            annotation_entity_ids=(target_id,),
+            extra_query_params={
+                "prompt_query_key": PROMPT_QUERY_KEY,
+                "target_obstacle_label": str(target_label),
+                "target_obstacle_label_probabilities": dict(target_label_probabilities),
+            },
+        )
+
+    return MinigolfObjectivePlan(
+        axes=axes,
+        attempt_namespace="games.minigolf.first_obstacle",
+        construct_attempt=construct_attempt,
+    )
 
 
 @register_task
@@ -31,59 +83,20 @@ class GamesMinigolfFirstObstacleLabelTask:
 
     task_id = TASK_ID
     domain = "games"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
+    _default_branch = QUERY_ID
+    _namespace = "games.minigolf.first_obstacle"
+    _prepare_objective = staticmethod(_prepare_first_obstacle_objective)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        axes = resolve_axes(
+    def generate(self, instance_seed, *, params=None, max_attempts=100):
+        """Generate a first-obstacle Mini-golf task instance."""
+
+        return run_minigolf_registered_task(
+            self,
             int(instance_seed),
-            gen_defaults=_GEN_DEFAULTS,
-            namespace=f"{SCENE_ID}.{str(query_id)}",
-            params=task_params,
-            query_id=str(query_id),
-            query_id_probabilities=query_probabilities,
-            target_obstacle_label_fallback_support=TARGET_OBSTACLE_LABEL_FALLBACK_SUPPORT,
-        )
-        sampled = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            rng = spawn_rng(int(instance_seed), f"games.{SCENE_ID}.{TASK_ID}.attempt.{int(attempt_index)}")
-            try:
-                sampled = sample_scene(rng=rng, axes=axes)
-            except ValueError:
-                continue
-            break
-        if sampled is None:
-            raise RuntimeError(f"{TASK_ID} failed to generate a valid Mini-golf scene after {max_attempts} attempts")
-
-        components = build_components(
-            sampled_scene=sampled,
-            axes=axes,
-            instance_seed=int(instance_seed),
-            params=task_params,
-            render_defaults=_RENDER_DEFAULTS,
-            prompt_defaults=_PROMPT_DEFAULTS,
-            namespace=f"{SCENE_ID}.{str(query_id)}",
-        )
-        return TaskOutput(
-            prompt=components.prompt,
-            prompt_variants=components.prompt_variants,
-            answer_gt=components.answer_gt,
-            annotation_gt=components.annotation_gt,
-            image=components.image,
-            image_id="img0",
-            trace_payload=components.trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
+            params=params or {},
+            max_attempts=int(max_attempts),
         )
 
 

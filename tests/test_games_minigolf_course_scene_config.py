@@ -3,12 +3,8 @@
 from __future__ import annotations
 
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.games.minigolf.shared.common import (
-    SUPPORTED_MINIGOLF_QUERY_IDS,
-    SUPPORTED_MINIGOLF_SCENE_VARIANTS,
-    SUPPORTED_MINIGOLF_STYLE_VARIANTS,
-)
-from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
+from trace.tasks.games.minigolf.shared.defaults import SCENE_VARIANTS, STYLE_VARIANTS
+from trace.tasks.shared.config_defaults import required_group_default, split_generation_rendering_prompt_defaults
 
 
 def test_games_minigolf_course_defaults_present() -> None:
@@ -19,23 +15,32 @@ def test_games_minigolf_course_defaults_present() -> None:
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_obstacle_count_sampling"]) is True
-    assert bool(generation["balanced_path_option_count_sampling"]) is True
     assert bool(generation["balanced_target_obstacle_label_sampling"]) is True
-    assert bool(generation["balanced_target_path_sampling"]) is True
-    assert set(generation["scene_variant_weights"].keys()) == set(SUPPORTED_MINIGOLF_SCENE_VARIANTS)
-    assert set(generation["query_id_weights"].keys()) == set(SUPPORTED_MINIGOLF_QUERY_IDS)
-    assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_MINIGOLF_STYLE_VARIANTS)
+    assert set(generation["scene_variant_weights"].keys()) == set(SCENE_VARIANTS)
+    assert set(generation["style_variant_weights"].keys()) == set(STYLE_VARIANTS)
     assert list(generation["obstacle_count_support"]) == [4, 5, 6, 7, 8]
-    assert list(generation["path_option_count_support"]) == [4, 5, 6]
     assert list(generation["target_obstacle_label_support"]) == list("ABCDEFGH")
-    assert list(generation["target_path_index_support"]) == list(range(6))
     assert int(rendering["canvas_width"]) == 1000
     assert int(rendering["canvas_height"]) == 740
     assert int(rendering["obstacle_radius_px"]) > 0
-    assert str(prompt["bundle_id"]) == "games_minigolf_v0"
-    assert "straight line" in str(prompt["minigolf_cue_rule_text"]).lower()
-    assert "[x, y] pixel point" in str(prompt["annotation_hint_first_obstacle_label"])
-    assert "point-pair" in str(prompt["annotation_hint_shot_path_label"])
+    assert str(prompt["bundle_id"]) == "games_minigolf_v1"
+    assert "straight line" in str(required_group_default(prompt, "minigolf_cue_rule_text", context="minigolf prompt")).lower()
+    assert "[x, y] pixel point" in str(
+        required_group_default(prompt, "annotation_hint_first_obstacle_label", context="minigolf prompt")
+    )
+    assert "point-pair" in str(required_group_default(prompt, "annotation_hint_shot_path_label", context="minigolf prompt"))
+
+
+def test_games_minigolf_shot_path_task_defaults_present() -> None:
+    cfg = get_scene_defaults("games", "minigolf")
+    generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_games__minigolf__shot_path_label",
+    )
+
+    assert bool(generation["balanced_path_option_count_sampling"]) is True
+    assert bool(generation["balanced_target_path_sampling"]) is True
+    assert list(generation["path_option_count_support"]) == [4, 5, 6]
+    assert list(generation["target_path_index_support"]) == list(range(6))

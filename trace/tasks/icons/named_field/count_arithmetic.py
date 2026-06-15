@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
@@ -11,28 +10,26 @@ from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.color_format import format_named_color_with_hex
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import uniform_probability_map
-from ...shared.named_colors import available_named_colors, named_color
+from ...shared.named_colors import named_color
 from ...shared.fixed_query import select_task_query_id
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.weighted_sampling import sample_weighted_value, weighted_probability_map
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.annotation import keyed_bbox_set_map_annotation
-from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
+from ..shared.icon_task_rendering import resolve_icon_render_params, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
     SCENE_ID,
     NamedIconFieldSpec,
     render_procedural_named_icon_field_scene,
-    serialize_named_icon_instance,
     resolve_named_icon_fill_style_probabilities,
-    resolve_named_icon_fill_style_support,
     resolve_named_icon_int_bounds,
     rotation_for_named_shape,
     uniform_string_probability_map,
 )
+from .shared.output import build_pair_arithmetic_trace_payload
 from .shared.rendering import build_named_icon_specs_from_semantics
 from ..shared.procedural_named_icons import (
     PROCEDURAL_NAMED_ICON_FILL_STYLES,
@@ -279,14 +276,6 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         role_by_instance_id = pair_arithmetic_role_by_instance_id(sample)
-        serialized_instances = []
-        for instance in scene.instances:
-            entity = serialize_named_icon_instance(instance)
-            entity["operand_role"] = str(role_by_instance_id.get(str(instance.instance_id), ""))
-            serialized_instances.append(entity)
-        shape_counts = Counter(str(instance.shape_id) for instance in scene.instances)
-        color_counts = Counter(str(instance.color_name) for instance in scene.instances)
-        shape_color_counts = Counter(f"{instance.shape_id}|{instance.color_name}" for instance in scene.instances)
         left_instance_ids = tuple(
             str(instance_id)
             for instance_id in counted_instance_ids
@@ -308,188 +297,27 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
         if annotation_bbox_count != int(sample.left_count) + int(sample.right_count):
             raise RuntimeError("rendered named-icon pair arithmetic annotation did not match operand counts")
         annotation_artifacts = keyed_bbox_set_map_annotation(annotation_role_bboxes)
-
-        trace_payload = {
-            "scene_ir": {
-                "scene_kind": "icons_named_shape_pair_arithmetic_field",
-                "scene_id": SCENE_ID,
-                "entities": list(serialized_instances),
-                "relations": {
-                    "counting_rule": "two_operand_total_or_absolute_difference",
-                    "operation": str(sample.operation),
-                    "uses_color_binding": bool(sample.uses_color_binding),
-                    "left_operand": {
-                        "shape_id": str(sample.left_operand.shape_id),
-                        "shape_name": str(sample.left_operand.shape_name),
-                        "color_name": str(sample.left_operand.color_name),
-                        "color_label": str(sample.left_operand.color_label),
-                        "label": str(sample.left_operand.label),
-                    },
-                    "right_operand": {
-                        "shape_id": str(sample.right_operand.shape_id),
-                        "shape_name": str(sample.right_operand.shape_name),
-                        "color_name": str(sample.right_operand.color_name),
-                        "color_label": str(sample.right_operand.color_label),
-                        "label": str(sample.right_operand.label),
-                    },
-                    "left_count": int(sample.left_count),
-                    "right_count": int(sample.right_count),
-                    "target_answer": int(sample.target_answer),
-                    "shape_counts": {str(key): int(value) for key, value in shape_counts.items()},
-                    "color_counts": {str(key): int(value) for key, value in color_counts.items()},
-                    "shape_color_counts": {str(key): int(value) for key, value in shape_color_counts.items()},
-                    "arrangement_mode": str(sample.arrangement_mode),
-                },
-                "frames": {
-                    "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
-                    "panels": dict(scene.panel_geometry),
-                },
-            },
-            "query_spec": {
-                "query_id": str(sample.query_key),
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "query_id": str(sample.query_key),
-                    "operation": str(sample.operation),
-                    "uses_color_binding": bool(sample.uses_color_binding),
-                    "left_operand": {
-                        "shape_id": str(sample.left_operand.shape_id),
-                        "shape_name": str(sample.left_operand.shape_name),
-                        "color_name": str(sample.left_operand.color_name),
-                        "color_label": str(sample.left_operand.color_label),
-                        "label": str(sample.left_operand.label),
-                    },
-                    "right_operand": {
-                        "shape_id": str(sample.right_operand.shape_id),
-                        "shape_name": str(sample.right_operand.shape_name),
-                        "color_name": str(sample.right_operand.color_name),
-                        "color_label": str(sample.right_operand.color_label),
-                        "label": str(sample.right_operand.label),
-                    },
-                    "left_count": int(sample.left_count),
-                    "right_count": int(sample.right_count),
-                    "target_answer": int(sample.target_answer),
-                    "distractor_count": int(sample.distractor_count),
-                    "object_count": int(sample.object_count),
-                    "arrangement_mode": str(sample.arrangement_mode),
-                    "pair_arithmetic_query_ids": list(tuple(self.query_ids)),
-                    "query_probabilities": dict(sample.query_probabilities),
-                    "shape_id_support": list(_shape_support(task_params)),
-                    "named_color_support": [str(entry.name) for entry in _color_support(task_params)],
-                    "shape_probabilities": dict(sample.shape_probabilities),
-                    "color_probabilities": dict(sample.color_probabilities),
-                    "answer_probabilities": dict(sample.answer_probabilities),
-                    "operand_count_probabilities": dict(sample.operand_count_probabilities),
-                    "distractor_count_probabilities": dict(sample.distractor_count_probabilities),
-                    "named_icon_fill_style_support": list(sample.fill_style_support),
-                    "fill_style_probabilities": dict(sample.fill_style_probabilities),
-                    "arrangement_mode_probabilities": dict(sample.arrangement_mode_probabilities),
-                },
-            },
-            "render_spec": {
-                "canvas_size": list(scene.panel_geometry["canvas_size"]),
-                "coord_space": "pixel",
-                "scene_id": SCENE_ID,
-                "panel_geometry": dict(scene.panel_geometry),
-                "style": {
-                    **icon_render_style_trace(render_params=render_params, sampled_palette_rgb=sampled_palette_rgb),
-                    "layout_mode": str(scene.layout_mode),
-                    "named_icon_slot_padding_px": int(slot_padding_px),
-                    "named_icon_slot_jitter_px": int(slot_jitter_px),
-                    "named_icon_stack_gap_px": int(stack_gap_px),
-                    "semantic_color_palette": [
-                        {
-                            "name": str(name),
-                            "rgb": [int(channel) for channel in rgb],
-                            "label": format_named_color_with_hex(str(name), rgb),
-                        }
-                        for name, rgb in available_named_colors()
-                    ],
-                    "semantic_fill_style_support": list(resolve_named_icon_fill_style_support(task_params, _GEN_DEFAULTS, fallback_support=_DEFAULTS.named_icon_fill_style_support)),
-                },
-            },
-            "render_map": {
-                "image_id": "img0",
-                "object_bboxes_px": {
-                    str(instance.instance_id): [int(value) for value in instance.bbox_xyxy]
-                    for instance in scene.instances
-                },
-                "counted_instance_ids": list(counted_instance_ids),
-                "left_operand_instance_ids": list(left_instance_ids),
-                "right_operand_instance_ids": list(right_instance_ids),
-                "entity_partition": {
-                    str(instance.instance_id): str(role_by_instance_id.get(str(instance.instance_id), ""))
-                    for instance in scene.instances
-                },
-            },
-            "execution_trace": {
-                "scene_variant": "single_panel_named_shape_pair_arithmetic_field",
-                "arrangement_mode": str(sample.arrangement_mode),
-                "query_id": str(sample.query_key),
-                "question_format": "count_named_shape_pair_arithmetic_icons",
-                "operation": str(sample.operation),
-                "uses_color_binding": bool(sample.uses_color_binding),
-                "left_operand": {
-                    "shape_id": str(sample.left_operand.shape_id),
-                    "shape_name": str(sample.left_operand.shape_name),
-                    "color_name": str(sample.left_operand.color_name),
-                    "color_label": str(sample.left_operand.color_label),
-                    "label": str(sample.left_operand.label),
-                },
-                "right_operand": {
-                    "shape_id": str(sample.right_operand.shape_id),
-                    "shape_name": str(sample.right_operand.shape_name),
-                    "color_name": str(sample.right_operand.color_name),
-                    "color_label": str(sample.right_operand.color_label),
-                    "label": str(sample.right_operand.label),
-                },
-                "left_count": int(sample.left_count),
-                "right_count": int(sample.right_count),
-                "target_answer": int(sample.target_answer),
-                "distractor_count": int(sample.distractor_count),
-                "object_count": int(sample.object_count),
-                "shape_counts": {str(key): int(value) for key, value in shape_counts.items()},
-                "color_counts": {str(key): int(value) for key, value in color_counts.items()},
-                "shape_color_counts": {str(key): int(value) for key, value in shape_color_counts.items()},
-                "scene_shape_ids": [str(instance.shape_id) for instance in scene.instances],
-                "scene_color_names": [str(instance.color_name) for instance in scene.instances],
-                "scene_fill_styles": [str(instance.fill_style) for instance in scene.instances],
-                "counted_instance_ids": list(counted_instance_ids),
-                "left_operand_instance_ids": list(left_instance_ids),
-                "right_operand_instance_ids": list(right_instance_ids),
-            },
-            "witness_symbolic": {
-                "operation": str(sample.operation),
-                "uses_color_binding": bool(sample.uses_color_binding),
-                "left_operand": {
-                    "shape_id": str(sample.left_operand.shape_id),
-                    "shape_name": str(sample.left_operand.shape_name),
-                    "color_name": str(sample.left_operand.color_name),
-                    "color_label": str(sample.left_operand.color_label),
-                    "label": str(sample.left_operand.label),
-                },
-                "right_operand": {
-                    "shape_id": str(sample.right_operand.shape_id),
-                    "shape_name": str(sample.right_operand.shape_name),
-                    "color_name": str(sample.right_operand.color_name),
-                    "color_label": str(sample.right_operand.color_label),
-                    "label": str(sample.right_operand.label),
-                },
-                "left_count": int(sample.left_count),
-                "right_count": int(sample.right_count),
-                "answer": int(sample.target_answer),
-                "counted_instance_ids": list(counted_instance_ids),
-                "left_operand_instance_ids": list(left_instance_ids),
-                "right_operand_instance_ids": list(right_instance_ids),
-                "annotation_roles": dict(annotation_role_instance_ids),
-            },
-            "projected_annotation": {
-                **dict(annotation_artifacts["projected_annotation"]),
-            },
-        }
+        trace_payload = build_pair_arithmetic_trace_payload(
+            sample=sample,
+            scene=scene,
+            render_params=render_params,
+            sampled_palette_rgb=sampled_palette_rgb,
+            prompt_defaults=prompt_defaults,
+            prompt_artifacts=prompt_artifacts,
+            annotation_artifacts=annotation_artifacts,
+            counted_instance_ids=counted_instance_ids,
+            left_instance_ids=left_instance_ids,
+            right_instance_ids=right_instance_ids,
+            role_by_instance_id=role_by_instance_id,
+            annotation_role_instance_ids=annotation_role_instance_ids,
+            query_ids=tuple(self.query_ids),
+            shape_support=_shape_support(task_params),
+            color_support=_color_support(task_params),
+            fill_style_support=tuple(sample.fill_style_support),
+            slot_padding_px=slot_padding_px,
+            slot_jitter_px=slot_jitter_px,
+            stack_gap_px=stack_gap_px,
+        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.target_answer)),

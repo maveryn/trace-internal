@@ -26,7 +26,7 @@ from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.annotation import keyed_bbox_map_annotation
 from ..shared.icon_scene import BBox, draw_single_panel, resolve_single_panel_layout, single_panel_geometry_to_trace
-from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
+from ..shared.icon_task_rendering import resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
     bbox_center_float,
     bbox_from_center_dimensions,
@@ -47,7 +47,7 @@ from ..shared.procedural_named_icons import (
     sample_procedural_named_icon_fill_style,
     validate_procedural_named_icon_fill_style_support,
 )
-from .shared.output import serialize_distance_rank_icon as _serialize_distance_icon
+from .shared.output import build_distance_rank_trace_payload
 from .shared.rendering import (
     render_distance_rank_scene as _render_placed_scene,
 )
@@ -595,126 +595,18 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
             type=str(annotation_artifacts["annotation_type"]),
             value=dict(annotation_artifacts["annotation_value"]),
         )
-        serialized_reference = _serialize_distance_icon(scene_payload.reference_icon)
-        serialized_candidates = [_serialize_distance_icon(icon) for icon in scene_payload.candidate_icons]
-        serialized_distractors = [_serialize_distance_icon(icon) for icon in scene_payload.distractor_icons]
-
-        trace_payload = {
-            "scene_ir": {
-                "scene_kind": "icons_named_field_distance_rank",
-                "scene_id": SCENE_ID,
-                "entities": [dict(serialized_reference), *serialized_candidates, *serialized_distractors],
-                "relations": {
-                    "target": "labeled_candidate_distance_rank_from_named_reference",
-                    "query_id": str(scene_payload.query_key),
-                    "reference_instance_id": str(scene_payload.reference_icon.instance_id),
-                    "reference_description": str(scene_payload.reference_description),
-                    "candidate_labels": [str(label) for label in OPTION_LABELS],
-                    "answer_label": str(scene_payload.answer_label),
-                    "answer_rank": int(scene_payload.answer_rank),
-                    "sorted_candidate_labels_by_distance": list(scene_payload.sorted_candidate_labels_by_distance),
-                },
-                "frames": {
-                    "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
-                    "panels": dict(scene_payload.panel_geometry),
-                },
-            },
-            "query_spec": {
-                "query_id": str(scene_payload.query_key),
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "query_id": str(scene_payload.query_key),
-                    "query_id_probabilities": dict(query_probabilities),
-                    "distance_rank_query": str(scene_payload.query_key),
-                    "distance_rank_query_probabilities": dict(query_probabilities),
-                    "answer_label": str(scene_payload.answer_label),
-                    "answer_label_probabilities": dict(answer_label_probabilities),
-                    "candidate_count": int(len(scene_payload.candidate_icons)),
-                    "distractor_count": int(scene_payload.distractor_count),
-                    "distractor_count_probabilities": dict(distractor_count_probabilities),
-                    "reference_description": str(scene_payload.reference_description),
-                },
-            },
-            "render_spec": {
-                "canvas_size": [int(render_params["canvas_width"]), int(render_params["canvas_height"])],
-                "coord_space": "pixel",
-                "panel_geometry": dict(scene_payload.panel_geometry),
-                "style": {
-                    **icon_render_style_trace(
-                        render_params=render_params,
-                        sampled_palette_rgb=tuple(scene_payload.sampled_palette_rgb),
-                    ),
-                    "candidate_label_font_size_px": int(render_params["candidate_label_font_size_px"]),
-                    "candidate_label_color_rgb": [int(value) for value in render_params["candidate_label_color_rgb"]],
-                    "candidate_label_stroke_rgb": [
-                        int(value) for value in render_params["candidate_label_stroke_rgb"]
-                    ],
-                    "candidate_label_background_rgb": [
-                        int(value) for value in render_params["candidate_label_background_rgb"]
-                    ],
-                    "candidate_label_border_rgb": [int(value) for value in render_params["candidate_label_border_rgb"]],
-                },
-            },
-            "render_map": {
-                "image_id": "img0",
-                "anchors": {
-                    "reference": dict(serialized_reference),
-                    "candidate_icons": list(serialized_candidates),
-                    "distractor_icons": list(serialized_distractors),
-                    "answer_label": str(scene_payload.answer_label),
-                    "answer_candidate": _serialize_distance_icon(answer_icon),
-                },
-            },
-            "execution_trace": {
-                "scene_variant": "single_panel_named_field_distance_rank",
-                "query_id": str(scene_payload.query_key),
-                "distance_rank_query": str(scene_payload.query_key),
-                "distance_rank_query_probabilities": dict(query_probabilities),
-                "answer_label": str(scene_payload.answer_label),
-                "answer_label_probabilities": dict(answer_label_probabilities),
-                "answer_rank": int(scene_payload.answer_rank),
-                "candidate_count": int(len(scene_payload.candidate_icons)),
-                "distractor_count": int(scene_payload.distractor_count),
-                "distractor_count_probabilities": dict(distractor_count_probabilities),
-                "reference_description": str(scene_payload.reference_description),
-                "reference_instance_id": str(scene_payload.reference_icon.instance_id),
-                "candidate_labels": [str(label) for label in OPTION_LABELS],
-                "distance_by_label_px": {str(key): float(value) for key, value in scene_payload.distance_by_label.items()},
-                "sorted_candidate_labels_by_distance": list(scene_payload.sorted_candidate_labels_by_distance),
-                "question_format": "select_labeled_named_icon_by_distance_rank_from_unique_named_reference",
-            },
-            "witness_symbolic": {
-                "query_id": str(scene_payload.query_key),
-                "reference_instance_id": str(scene_payload.reference_icon.instance_id),
-                "reference_description": str(scene_payload.reference_description),
-                "answer_label": str(scene_payload.answer_label),
-                "answer_instance_id": str(answer_icon.instance_id),
-                "answer_rank": int(scene_payload.answer_rank),
-                "sorted_candidate_labels_by_distance": list(scene_payload.sorted_candidate_labels_by_distance),
-                "annotation_roles": {
-                    "reference_icon": str(scene_payload.reference_icon.instance_id),
-                    "selected_candidate": str(answer_icon.instance_id),
-                },
-            },
-            "projected_annotation": {
-                **dict(annotation_artifacts["projected_annotation"]),
-                "items": [
-                    {
-                        "role": "reference_icon",
-                        "instance_id": str(scene_payload.reference_icon.instance_id),
-                        "bbox_xyxy": list(scene_payload.reference_icon.bbox_xyxy),
-                    },
-                    {
-                        "role": "selected_candidate",
-                        "instance_id": str(answer_icon.instance_id),
-                        "bbox_xyxy": list(answer_icon.bbox_xyxy),
-                    },
-                ],
-            },
-        }
+        trace_payload = build_distance_rank_trace_payload(
+            scene_payload=scene_payload,
+            render_params=render_params,
+            prompt_defaults=prompt_defaults,
+            prompt_artifacts=prompt_artifacts,
+            annotation_artifacts=annotation_artifacts,
+            answer_icon=answer_icon,
+            query_probabilities=query_probabilities,
+            answer_label_probabilities=answer_label_probabilities,
+            distractor_count_probabilities=distractor_count_probabilities,
+            option_labels=OPTION_LABELS,
+        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
@@ -24,7 +23,7 @@ from ..shared.icon_scene import (
     sort_bboxes_reading_order,
 )
 from ..shared.icon_style import sample_icon_palette
-from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params
+from ..shared.icon_task_rendering import resolve_icon_render_params
 from ..shared.procedural_named_icon_field_scene import (
     SCENE_ID,
     resolve_named_icon_fill_style_probabilities,
@@ -43,10 +42,7 @@ from .shared.layout import (
     sample_quadrant_region as _sample_quadrant_region,
     sample_shelf_region as _sample_shelf_region,
 )
-from .shared.output import (
-    region_to_trace as _region_to_trace,
-    serialize_region_icon as _serialize_icon,
-)
+from .shared.output import build_scoped_region_trace_payload
 from .shared.rendering import (
     render_scoped_region_scene as _render_scoped_region_scene,
 )
@@ -496,109 +492,16 @@ class IconsCountingNamedShapeRegionCountTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        serialized_instances = [_serialize_icon(instance) for instance in scene.instances]
-        shape_counts = dict(Counter(str(instance.shape_id) for instance in scene.instances))
-        inside_shape_counts = dict(Counter(str(instance.shape_id) for instance in scene.instances if instance.inside_region))
-        outside_shape_counts = dict(Counter(str(instance.shape_id) for instance in scene.instances if not instance.inside_region))
         counted_instance_ids = tuple(str(instance.instance_id) for instance in scene.instances if instance.counted)
-        region_payload = _region_to_trace(scene.region)
-        trace_payload = {
-            "scene_ir": {
-                "scene_kind": "icons_named_shape_region_field",
-                "scene_id": SCENE_ID,
-                "entities": list(serialized_instances),
-                "relations": {
-                    "counting_rule": "target_shape_center_membership_in_visible_region",
-                    "target_shape_id": str(scene.target_shape_id),
-                    "target_shape_name": str(scene.target_shape_name),
-                    "target_count": int(scene.target_count),
-                    "shape_counts": {str(key): int(value) for key, value in shape_counts.items()},
-                    "inside_shape_counts": {str(key): int(value) for key, value in inside_shape_counts.items()},
-                    "outside_shape_counts": {str(key): int(value) for key, value in outside_shape_counts.items()},
-                    "region": dict(region_payload),
-                },
-                "frames": {
-                    "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
-                    "panels": dict(scene.panel_geometry),
-                },
-            },
-            "query_spec": {
-                "query_id": str(scene.region.query_key),
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "target_shape_id": str(scene.target_shape_id),
-                    "target_shape_name": str(scene.target_shape_name),
-                    "target_count": int(scene.target_count),
-                    "object_count": int(scene.object_count),
-                    "query_id": str(scene.region.query_key),
-                    "region": dict(region_payload),
-                    "shape_id_support": list(_shape_support(params)),
-                    "query_probabilities": dict(scene.query_probabilities),
-                    "shape_probabilities": dict(scene.shape_probabilities),
-                    "target_count_probabilities": dict(scene.target_count_probabilities),
-                    "object_count_probabilities": dict(scene.object_count_probabilities),
-                    "named_icon_fill_style_support": list(scene.fill_style_support),
-                    "fill_style_probabilities": dict(scene.fill_style_probabilities),
-                },
-            },
-            "render_spec": {
-                "canvas_size": list(scene.panel_geometry["canvas_size"]),
-                "coord_space": "pixel",
-                "scene_id": SCENE_ID,
-                "panel_geometry": dict(scene.panel_geometry),
-                "style": {
-                    **icon_render_style_trace(render_params=render_params, sampled_palette_rgb=scene.sampled_palette_rgb),
-                    "named_icon_fill_style_support": list(scene.fill_style_support),
-                    "region_fill_rgb": [int(value) for value in render_params["region_fill_rgb"]],
-                    "region_outline_rgb": [int(value) for value in render_params["region_outline_rgb"]],
-                    "region_guide_rgb": [int(value) for value in render_params["region_guide_rgb"]],
-                    "region_fill_alpha": int(render_params["region_fill_alpha"]),
-                    "region_outline_width_px": int(render_params["region_outline_width_px"]),
-                    "region_boundary_margin_px": int(render_params["region_boundary_margin_px"]),
-                },
-            },
-            "render_map": {
-                "image_id": "img0",
-                "object_bboxes_px": {
-                    str(instance.instance_id): [int(value) for value in instance.bbox_xyxy]
-                    for instance in scene.instances
-                },
-                "object_centers_px": {
-                    str(instance.instance_id): [float(value) for value in instance.center_xy]
-                    for instance in scene.instances
-                },
-                "counted_instance_ids": list(counted_instance_ids),
-                "region": dict(region_payload),
-            },
-            "execution_trace": {
-                "scene_variant": "single_panel_named_shape_region_field",
-                "query_id": str(scene.region.query_key),
-                "question_format": "count_named_shape_icons_by_visible_region_membership",
-                "target_shape_id": str(scene.target_shape_id),
-                "target_shape_name": str(scene.target_shape_name),
-                "target_count": int(scene.target_count),
-                "object_count": int(scene.object_count),
-                "region": dict(region_payload),
-                "shape_counts": {str(key): int(value) for key, value in shape_counts.items()},
-                "inside_shape_counts": {str(key): int(value) for key, value in inside_shape_counts.items()},
-                "outside_shape_counts": {str(key): int(value) for key, value in outside_shape_counts.items()},
-                "counted_instance_ids": list(counted_instance_ids),
-            },
-            "witness_symbolic": {
-                "target_shape_id": str(scene.target_shape_id),
-                "target_shape_name": str(scene.target_shape_name),
-                "answer": int(scene.target_count),
-                "counted_instance_ids": list(counted_instance_ids),
-                "region": dict(region_payload),
-            },
-            "projected_annotation": {
-                **dict(annotation_artifacts["projected_annotation"]),
-                "counted_instance_ids": list(counted_instance_ids),
-            },
-        }
+        trace_payload = build_scoped_region_trace_payload(
+            scene=scene,
+            render_params=render_params,
+            prompt_defaults=prompt_defaults,
+            prompt_artifacts=prompt_artifacts,
+            annotation_artifacts=annotation_artifacts,
+            counted_instance_ids=counted_instance_ids,
+            shape_support=_shape_support(params),
+        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(scene.target_count)),

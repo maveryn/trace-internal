@@ -643,6 +643,428 @@ def build_counterfactual_trace_payload(
     }
 
 
+def build_pair_arithmetic_trace_payload(
+    *,
+    sample: Any,
+    scene: Any,
+    render_params: Mapping[str, Any],
+    sampled_palette_rgb: Tuple[Tuple[int, int, int], ...],
+    prompt_defaults: Mapping[str, Any],
+    prompt_artifacts: Any,
+    annotation_artifacts: Mapping[str, Any],
+    counted_instance_ids: Tuple[str, ...],
+    left_instance_ids: Tuple[str, ...],
+    right_instance_ids: Tuple[str, ...],
+    role_by_instance_id: Mapping[str, str],
+    annotation_role_instance_ids: Mapping[str, Sequence[str]],
+    query_ids: Sequence[str],
+    shape_support: Sequence[str],
+    color_support: Sequence[Any],
+    fill_style_support: Sequence[str],
+    slot_padding_px: int,
+    slot_jitter_px: int,
+    stack_gap_px: int,
+) -> dict[str, Any]:
+    """Build trace sections for arithmetic over two named-icon groups."""
+
+    serialized_instances = []
+    for instance in scene.instances:
+        entity = serialize_named_icon_instance(instance)
+        entity["operand_role"] = str(role_by_instance_id.get(str(instance.instance_id), ""))
+        serialized_instances.append(entity)
+
+    shape_counts = Counter(str(instance.shape_id) for instance in scene.instances)
+    color_counts = Counter(str(instance.color_name) for instance in scene.instances)
+    shape_color_counts = Counter(f"{instance.shape_id}|{instance.color_name}" for instance in scene.instances)
+
+    left_operand = {
+        "shape_id": str(sample.left_operand.shape_id),
+        "shape_name": str(sample.left_operand.shape_name),
+        "color_name": str(sample.left_operand.color_name),
+        "color_label": str(sample.left_operand.color_label),
+        "label": str(sample.left_operand.label),
+    }
+    right_operand = {
+        "shape_id": str(sample.right_operand.shape_id),
+        "shape_name": str(sample.right_operand.shape_name),
+        "color_name": str(sample.right_operand.color_name),
+        "color_label": str(sample.right_operand.color_label),
+        "label": str(sample.right_operand.label),
+    }
+    count_maps = {
+        "shape_counts": {str(key): int(value) for key, value in shape_counts.items()},
+        "color_counts": {str(key): int(value) for key, value in color_counts.items()},
+        "shape_color_counts": {str(key): int(value) for key, value in shape_color_counts.items()},
+    }
+    return {
+        "scene_ir": {
+            "scene_kind": "icons_named_shape_pair_arithmetic_field",
+            "scene_id": SCENE_ID,
+            "entities": list(serialized_instances),
+            "relations": {
+                "counting_rule": "two_operand_total_or_absolute_difference",
+                "operation": str(sample.operation),
+                "uses_color_binding": bool(sample.uses_color_binding),
+                "left_operand": dict(left_operand),
+                "right_operand": dict(right_operand),
+                "left_count": int(sample.left_count),
+                "right_count": int(sample.right_count),
+                "target_answer": int(sample.target_answer),
+                **count_maps,
+                "arrangement_mode": str(sample.arrangement_mode),
+            },
+            "frames": {
+                "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
+                "panels": dict(scene.panel_geometry),
+            },
+        },
+        "query_spec": {
+            trace_key("query", "id"): str(sample.query_key),
+            "template_id": str(prompt_defaults["bundle_id"]),
+            "prompt_variant": dict(prompt_artifacts.prompt_variant),
+            "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
+            "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
+            "params": {
+                trace_key("query", "id"): str(sample.query_key),
+                "operation": str(sample.operation),
+                "uses_color_binding": bool(sample.uses_color_binding),
+                "left_operand": dict(left_operand),
+                "right_operand": dict(right_operand),
+                "left_count": int(sample.left_count),
+                "right_count": int(sample.right_count),
+                "target_answer": int(sample.target_answer),
+                "distractor_count": int(sample.distractor_count),
+                "object_count": int(sample.object_count),
+                "arrangement_mode": str(sample.arrangement_mode),
+                "pair_arithmetic_query_ids": list(tuple(query_ids)),
+                "query_probabilities": dict(sample.query_probabilities),
+                "shape_id_support": list(shape_support),
+                "named_color_support": [str(entry.name) for entry in color_support],
+                "shape_probabilities": dict(sample.shape_probabilities),
+                "color_probabilities": dict(sample.color_probabilities),
+                "answer_probabilities": dict(sample.answer_probabilities),
+                "operand_count_probabilities": dict(sample.operand_count_probabilities),
+                "distractor_count_probabilities": dict(sample.distractor_count_probabilities),
+                "named_icon_fill_style_support": list(sample.fill_style_support),
+                "fill_style_probabilities": dict(sample.fill_style_probabilities),
+                "arrangement_mode_probabilities": dict(sample.arrangement_mode_probabilities),
+            },
+        },
+        "render_spec": {
+            "canvas_size": list(scene.panel_geometry["canvas_size"]),
+            "coord_space": "pixel",
+            "scene_id": SCENE_ID,
+            "panel_geometry": dict(scene.panel_geometry),
+            "style": {
+                **icon_render_style_trace(render_params=render_params, sampled_palette_rgb=sampled_palette_rgb),
+                "layout_mode": str(scene.layout_mode),
+                "named_icon_slot_padding_px": int(slot_padding_px),
+                "named_icon_slot_jitter_px": int(slot_jitter_px),
+                "named_icon_stack_gap_px": int(stack_gap_px),
+                "semantic_color_palette": semantic_color_palette(),
+                "semantic_fill_style_support": list(fill_style_support),
+            },
+        },
+        "render_map": {
+            "image_id": "img0",
+            "object_bboxes_px": object_bboxes(scene.instances),
+            "counted_instance_ids": list(counted_instance_ids),
+            "left_operand_instance_ids": list(left_instance_ids),
+            "right_operand_instance_ids": list(right_instance_ids),
+            "entity_partition": {
+                str(instance.instance_id): str(role_by_instance_id.get(str(instance.instance_id), ""))
+                for instance in scene.instances
+            },
+        },
+        "execution_trace": {
+            "scene_variant": "single_panel_named_shape_pair_arithmetic_field",
+            "arrangement_mode": str(sample.arrangement_mode),
+            trace_key("query", "id"): str(sample.query_key),
+            "question_format": "count_named_shape_pair_arithmetic_icons",
+            "operation": str(sample.operation),
+            "uses_color_binding": bool(sample.uses_color_binding),
+            "left_operand": dict(left_operand),
+            "right_operand": dict(right_operand),
+            "left_count": int(sample.left_count),
+            "right_count": int(sample.right_count),
+            "target_answer": int(sample.target_answer),
+            "distractor_count": int(sample.distractor_count),
+            "object_count": int(sample.object_count),
+            **count_maps,
+            "scene_shape_ids": [str(instance.shape_id) for instance in scene.instances],
+            "scene_color_names": [str(instance.color_name) for instance in scene.instances],
+            "scene_fill_styles": [str(instance.fill_style) for instance in scene.instances],
+            "counted_instance_ids": list(counted_instance_ids),
+            "left_operand_instance_ids": list(left_instance_ids),
+            "right_operand_instance_ids": list(right_instance_ids),
+        },
+        "witness_symbolic": {
+            "operation": str(sample.operation),
+            "uses_color_binding": bool(sample.uses_color_binding),
+            "left_operand": dict(left_operand),
+            "right_operand": dict(right_operand),
+            "left_count": int(sample.left_count),
+            "right_count": int(sample.right_count),
+            "answer": int(sample.target_answer),
+            "counted_instance_ids": list(counted_instance_ids),
+            "left_operand_instance_ids": list(left_instance_ids),
+            "right_operand_instance_ids": list(right_instance_ids),
+            "annotation_roles": dict(annotation_role_instance_ids),
+        },
+        "projected_annotation": {**dict(annotation_artifacts["projected_annotation"])},
+    }
+
+
+def build_scoped_region_trace_payload(
+    *,
+    scene: Any,
+    render_params: Mapping[str, Any],
+    prompt_defaults: Mapping[str, Any],
+    prompt_artifacts: Any,
+    annotation_artifacts: Mapping[str, Any],
+    counted_instance_ids: Tuple[str, ...],
+    shape_support: Sequence[str],
+) -> dict[str, Any]:
+    """Build trace sections for named-icon counts inside or outside a region."""
+
+    serialized_instances = [serialize_region_icon(instance) for instance in scene.instances]
+    shape_counts = Counter(str(instance.shape_id) for instance in scene.instances)
+    inside_shape_counts = Counter(str(instance.shape_id) for instance in scene.instances if instance.inside_region)
+    outside_shape_counts = Counter(str(instance.shape_id) for instance in scene.instances if not instance.inside_region)
+    region_payload = region_to_trace(scene.region)
+    count_maps = {
+        "shape_counts": {str(key): int(value) for key, value in shape_counts.items()},
+        "inside_shape_counts": {str(key): int(value) for key, value in inside_shape_counts.items()},
+        "outside_shape_counts": {str(key): int(value) for key, value in outside_shape_counts.items()},
+    }
+    return {
+        "scene_ir": {
+            "scene_kind": "icons_named_shape_region_field",
+            "scene_id": SCENE_ID,
+            "entities": list(serialized_instances),
+            "relations": {
+                "counting_rule": "target_shape_center_membership_in_visible_region",
+                "target_shape_id": str(scene.target_shape_id),
+                "target_shape_name": str(scene.target_shape_name),
+                "target_count": int(scene.target_count),
+                **count_maps,
+                "region": dict(region_payload),
+            },
+            "frames": {
+                "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
+                "panels": dict(scene.panel_geometry),
+            },
+        },
+        "query_spec": {
+            trace_key("query", "id"): str(scene.region.query_key),
+            "template_id": str(prompt_defaults["bundle_id"]),
+            "prompt_variant": dict(prompt_artifacts.prompt_variant),
+            "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
+            "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
+            "params": {
+                "target_shape_id": str(scene.target_shape_id),
+                "target_shape_name": str(scene.target_shape_name),
+                "target_count": int(scene.target_count),
+                "object_count": int(scene.object_count),
+                trace_key("query", "id"): str(scene.region.query_key),
+                "region": dict(region_payload),
+                "shape_id_support": list(shape_support),
+                "query_probabilities": dict(scene.query_probabilities),
+                "shape_probabilities": dict(scene.shape_probabilities),
+                "target_count_probabilities": dict(scene.target_count_probabilities),
+                "object_count_probabilities": dict(scene.object_count_probabilities),
+                "named_icon_fill_style_support": list(scene.fill_style_support),
+                "fill_style_probabilities": dict(scene.fill_style_probabilities),
+            },
+        },
+        "render_spec": {
+            "canvas_size": list(scene.panel_geometry["canvas_size"]),
+            "coord_space": "pixel",
+            "scene_id": SCENE_ID,
+            "panel_geometry": dict(scene.panel_geometry),
+            "style": {
+                **icon_render_style_trace(render_params=render_params, sampled_palette_rgb=scene.sampled_palette_rgb),
+                "named_icon_fill_style_support": list(scene.fill_style_support),
+                "region_fill_rgb": [int(value) for value in render_params["region_fill_rgb"]],
+                "region_outline_rgb": [int(value) for value in render_params["region_outline_rgb"]],
+                "region_guide_rgb": [int(value) for value in render_params["region_guide_rgb"]],
+                "region_fill_alpha": int(render_params["region_fill_alpha"]),
+                "region_outline_width_px": int(render_params["region_outline_width_px"]),
+                "region_boundary_margin_px": int(render_params["region_boundary_margin_px"]),
+            },
+        },
+        "render_map": {
+            "image_id": "img0",
+            "object_bboxes_px": object_bboxes(scene.instances),
+            "object_centers_px": {
+                str(instance.instance_id): [float(value) for value in instance.center_xy]
+                for instance in scene.instances
+            },
+            "counted_instance_ids": list(counted_instance_ids),
+            "region": dict(region_payload),
+        },
+        "execution_trace": {
+            "scene_variant": "single_panel_named_shape_region_field",
+            trace_key("query", "id"): str(scene.region.query_key),
+            "question_format": "count_named_shape_icons_by_visible_region_membership",
+            "target_shape_id": str(scene.target_shape_id),
+            "target_shape_name": str(scene.target_shape_name),
+            "target_count": int(scene.target_count),
+            "object_count": int(scene.object_count),
+            "region": dict(region_payload),
+            **count_maps,
+            "counted_instance_ids": list(counted_instance_ids),
+        },
+        "witness_symbolic": {
+            "target_shape_id": str(scene.target_shape_id),
+            "target_shape_name": str(scene.target_shape_name),
+            "answer": int(scene.target_count),
+            "counted_instance_ids": list(counted_instance_ids),
+            "region": dict(region_payload),
+        },
+        "projected_annotation": {
+            **dict(annotation_artifacts["projected_annotation"]),
+            "counted_instance_ids": list(counted_instance_ids),
+        },
+    }
+
+
+def build_distance_rank_trace_payload(
+    *,
+    scene_payload: Any,
+    render_params: Mapping[str, Any],
+    prompt_defaults: Mapping[str, Any],
+    prompt_artifacts: Any,
+    annotation_artifacts: Mapping[str, Any],
+    answer_icon: DistanceRankRenderedIcon,
+    query_probabilities: Mapping[str, float],
+    answer_label_probabilities: Mapping[str, float],
+    distractor_count_probabilities: Mapping[str, float],
+    option_labels: Sequence[str],
+) -> dict[str, Any]:
+    """Build trace sections for distance-rank selection from a reference icon."""
+
+    serialized_reference = serialize_distance_rank_icon(scene_payload.reference_icon)
+    serialized_candidates = [serialize_distance_rank_icon(icon) for icon in scene_payload.candidate_icons]
+    serialized_distractors = [serialize_distance_rank_icon(icon) for icon in scene_payload.distractor_icons]
+    serialized_answer = serialize_distance_rank_icon(answer_icon)
+
+    return {
+        "scene_ir": {
+            "scene_kind": "icons_named_field_distance_rank",
+            "scene_id": SCENE_ID,
+            "entities": [dict(serialized_reference), *serialized_candidates, *serialized_distractors],
+            "relations": {
+                "target": "labeled_candidate_distance_rank_from_named_reference",
+                trace_key("query", "id"): str(scene_payload.query_key),
+                "reference_instance_id": str(scene_payload.reference_icon.instance_id),
+                "reference_description": str(scene_payload.reference_description),
+                "candidate_labels": [str(label) for label in option_labels],
+                "answer_label": str(scene_payload.answer_label),
+                "answer_rank": int(scene_payload.answer_rank),
+                "sorted_candidate_labels_by_distance": list(scene_payload.sorted_candidate_labels_by_distance),
+            },
+            "frames": {
+                "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
+                "panels": dict(scene_payload.panel_geometry),
+            },
+        },
+        "query_spec": {
+            trace_key("query", "id"): str(scene_payload.query_key),
+            "template_id": str(prompt_defaults["bundle_id"]),
+            "prompt_variant": dict(prompt_artifacts.prompt_variant),
+            "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
+            "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
+            "params": {
+                trace_key("query", "id"): str(scene_payload.query_key),
+                "query_id_probabilities": dict(query_probabilities),
+                "distance_rank_query": str(scene_payload.query_key),
+                "distance_rank_query_probabilities": dict(query_probabilities),
+                "answer_label": str(scene_payload.answer_label),
+                "answer_label_probabilities": dict(answer_label_probabilities),
+                "candidate_count": int(len(scene_payload.candidate_icons)),
+                "distractor_count": int(scene_payload.distractor_count),
+                "distractor_count_probabilities": dict(distractor_count_probabilities),
+                "reference_description": str(scene_payload.reference_description),
+            },
+        },
+        "render_spec": {
+            "canvas_size": [int(render_params["canvas_width"]), int(render_params["canvas_height"])],
+            "coord_space": "pixel",
+            "panel_geometry": dict(scene_payload.panel_geometry),
+            "style": {
+                **icon_render_style_trace(
+                    render_params=render_params,
+                    sampled_palette_rgb=tuple(scene_payload.sampled_palette_rgb),
+                ),
+                "candidate_label_font_size_px": int(render_params["candidate_label_font_size_px"]),
+                "candidate_label_color_rgb": [int(value) for value in render_params["candidate_label_color_rgb"]],
+                "candidate_label_stroke_rgb": [int(value) for value in render_params["candidate_label_stroke_rgb"]],
+                "candidate_label_background_rgb": [
+                    int(value) for value in render_params["candidate_label_background_rgb"]
+                ],
+                "candidate_label_border_rgb": [int(value) for value in render_params["candidate_label_border_rgb"]],
+            },
+        },
+        "render_map": {
+            "image_id": "img0",
+            "anchors": {
+                "reference": dict(serialized_reference),
+                "candidate_icons": list(serialized_candidates),
+                "distractor_icons": list(serialized_distractors),
+                "answer_label": str(scene_payload.answer_label),
+                "answer_candidate": dict(serialized_answer),
+            },
+        },
+        "execution_trace": {
+            "scene_variant": "single_panel_named_field_distance_rank",
+            trace_key("query", "id"): str(scene_payload.query_key),
+            "distance_rank_query": str(scene_payload.query_key),
+            "distance_rank_query_probabilities": dict(query_probabilities),
+            "answer_label": str(scene_payload.answer_label),
+            "answer_label_probabilities": dict(answer_label_probabilities),
+            "answer_rank": int(scene_payload.answer_rank),
+            "candidate_count": int(len(scene_payload.candidate_icons)),
+            "distractor_count": int(scene_payload.distractor_count),
+            "distractor_count_probabilities": dict(distractor_count_probabilities),
+            "reference_description": str(scene_payload.reference_description),
+            "reference_instance_id": str(scene_payload.reference_icon.instance_id),
+            "candidate_labels": [str(label) for label in option_labels],
+            "distance_by_label_px": {str(key): float(value) for key, value in scene_payload.distance_by_label.items()},
+            "sorted_candidate_labels_by_distance": list(scene_payload.sorted_candidate_labels_by_distance),
+            "question_format": "select_labeled_named_icon_by_distance_rank_from_unique_named_reference",
+        },
+        "witness_symbolic": {
+            trace_key("query", "id"): str(scene_payload.query_key),
+            "reference_instance_id": str(scene_payload.reference_icon.instance_id),
+            "reference_description": str(scene_payload.reference_description),
+            "answer_label": str(scene_payload.answer_label),
+            "answer_instance_id": str(answer_icon.instance_id),
+            "answer_rank": int(scene_payload.answer_rank),
+            "sorted_candidate_labels_by_distance": list(scene_payload.sorted_candidate_labels_by_distance),
+            "annotation_roles": {
+                "reference_icon": str(scene_payload.reference_icon.instance_id),
+                "selected_candidate": str(answer_icon.instance_id),
+            },
+        },
+        "projected_annotation": {
+            **dict(annotation_artifacts["projected_annotation"]),
+            "items": [
+                {
+                    "role": "reference_icon",
+                    "instance_id": str(scene_payload.reference_icon.instance_id),
+                    "bbox_xyxy": list(scene_payload.reference_icon.bbox_xyxy),
+                },
+                {
+                    "role": "selected_candidate",
+                    "instance_id": str(answer_icon.instance_id),
+                    "bbox_xyxy": list(answer_icon.bbox_xyxy),
+                },
+            ],
+        },
+    }
+
+
 __all__ = [
     "BOOLEAN_PREDICATE_AND",
     "BOOLEAN_PREDICATE_ATTRIBUTE_WITHOUT_SHAPE",
@@ -656,8 +1078,11 @@ __all__ = [
     "build_boolean_trace_payload",
     "build_counterfactual_query_metadata",
     "build_counterfactual_trace_payload",
+    "build_distance_rank_trace_payload",
+    "build_pair_arithmetic_trace_payload",
     "build_shape_count_query_metadata",
     "build_shape_count_trace_payload",
+    "build_scoped_region_trace_payload",
     "object_bboxes",
     "region_to_trace",
     "render_slot_params",

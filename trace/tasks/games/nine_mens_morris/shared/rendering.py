@@ -7,12 +7,19 @@ from typing import Any, Dict, List, Mapping, Tuple
 
 from PIL import Image, ImageDraw
 
-from ....shared.text_rendering import load_font, resolve_text_stroke_fill
-from ...shared.text import draw_game_text_traced as draw_text_traced
-from ...shared.layout import apply_games_layout_jitter_to_bbox
-from .common import NineMensMorrisBoardState, NineMensMorrisPieceInstance, POSITION_LAYOUT
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.font_assets import sample_font_family
+
+from ...shared.layout import (
+    apply_games_layout_jitter_to_bbox,
+    attach_games_unit_size_jitter,
+    resolve_games_layout_jitter,
+    resolve_games_unit_size_scale,
+    scale_games_px,
+)
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from ...shared.style import NineMensMorrisTheme, build_games_nine_mens_morris_theme
+from .state import POSITION_LAYOUT, NineMensMorrisBoardState
 
 
 @dataclass(frozen=True)
@@ -35,6 +42,26 @@ class NineMensMorrisRenderParams:
 
 
 @dataclass(frozen=True)
+class _RenderFallbacks:
+    """Stable fallback defaults for Nine Men's Morris rendering."""
+
+    canvas_width: int = 1180
+    canvas_height: int = 820
+    board_width_px: int = 860
+    board_height_px: int = 660
+    board_corner_radius_px: int = 24
+    panel_margin_px: int = 56
+    title_font_size_px: int = 34
+    title_band_height_px: int = 62
+    board_padding_px: int = 72
+    piece_radius_px: int = 22
+    node_radius_px: int = 5
+
+
+_FALLBACKS = _RenderFallbacks()
+
+
+@dataclass(frozen=True)
 class RenderedNineMensMorrisPieceSpec:
     """One rendered nine-men's-morris piece."""
 
@@ -53,6 +80,103 @@ class RenderedNineMensMorrisScene:
     piece_specs: Tuple[RenderedNineMensMorrisPieceSpec, ...]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
+
+
+def resolve_nine_mens_morris_render_params(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    namespace: str,
+    instance_seed: int,
+) -> NineMensMorrisRenderParams:
+    """Resolve stable render parameters for one Morris scene."""
+
+    unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
+        params,
+        render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.unit_size",
+        fallback_min=0.55,
+        fallback_max=1.10,
+    )
+    layout_jitter = attach_games_unit_size_jitter(
+        resolve_games_layout_jitter(
+            params,
+            render_defaults,
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.layout",
+        ),
+        unit_scale_meta,
+    )
+    board_width_px = scale_games_px(
+        params.get("board_width_px", group_default(render_defaults, "board_width_px", _FALLBACKS.board_width_px)),
+        unit_scale,
+        min_px=470,
+    )
+    board_height_px = scale_games_px(
+        params.get("board_height_px", group_default(render_defaults, "board_height_px", _FALLBACKS.board_height_px)),
+        unit_scale,
+        min_px=360,
+    )
+    default_canvas_width = int(group_default(render_defaults, "canvas_width", _FALLBACKS.canvas_width))
+    default_canvas_height = int(group_default(render_defaults, "canvas_height", _FALLBACKS.canvas_height))
+    canvas_width = int(max(620, min(default_canvas_width, int(board_width_px) + 250)))
+    canvas_height = int(max(500, min(default_canvas_height, int(board_height_px) + 190)))
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.font_family",
+        params=params,
+    )
+    return NineMensMorrisRenderParams(
+        canvas_width=int(params.get("canvas_width", canvas_width)),
+        canvas_height=int(params.get("canvas_height", canvas_height)),
+        board_width_px=int(board_width_px),
+        board_height_px=int(board_height_px),
+        board_corner_radius_px=scale_games_px(
+            params.get(
+                "board_corner_radius_px",
+                group_default(render_defaults, "board_corner_radius_px", _FALLBACKS.board_corner_radius_px),
+            ),
+            unit_scale,
+            min_px=12,
+        ),
+        panel_margin_px=scale_games_px(
+            params.get("panel_margin_px", group_default(render_defaults, "panel_margin_px", _FALLBACKS.panel_margin_px)),
+            unit_scale,
+            min_px=30,
+        ),
+        title_font_size_px=scale_games_px(
+            params.get("title_font_size_px", group_default(render_defaults, "title_font_size_px", _FALLBACKS.title_font_size_px)),
+            unit_scale,
+            min_px=18,
+        ),
+        title_band_height_px=scale_games_px(
+            params.get(
+                "title_band_height_px",
+                group_default(render_defaults, "title_band_height_px", _FALLBACKS.title_band_height_px),
+            ),
+            unit_scale,
+            min_px=38,
+        ),
+        board_padding_px=scale_games_px(
+            params.get("board_padding_px", group_default(render_defaults, "board_padding_px", _FALLBACKS.board_padding_px)),
+            unit_scale,
+            min_px=38,
+        ),
+        piece_radius_px=scale_games_px(
+            params.get("piece_radius_px", group_default(render_defaults, "piece_radius_px", _FALLBACKS.piece_radius_px)),
+            unit_scale,
+            min_px=13,
+        ),
+        node_radius_px=scale_games_px(
+            params.get("node_radius_px", group_default(render_defaults, "node_radius_px", _FALLBACKS.node_radius_px)),
+            unit_scale,
+            min_px=3,
+        ),
+        font_family=str(font_family),
+        layout_jitter_meta=layout_jitter,
+    )
 
 
 def _draw_shadow(
@@ -106,7 +230,12 @@ def render_nine_mens_morris_scene(
     params: NineMensMorrisRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedNineMensMorrisScene:
-    """Render one visible nine-men's-morris board."""
+    """Render one Morris board from state while preserving node projections.
+
+    The node-coordinate layout is the single source for both visible pieces and
+    `render_map` centers, so annotation projection stays aligned with the
+    rendered board after panel jitter and unit-size scaling.
+    """
 
     if str(scene_variant) != "single_board":
         raise ValueError(f"unsupported nine-men's-morris scene_variant: {scene_variant}")
@@ -258,4 +387,5 @@ __all__ = [
     "RenderedNineMensMorrisPieceSpec",
     "RenderedNineMensMorrisScene",
     "render_nine_mens_morris_scene",
+    "resolve_nine_mens_morris_render_params",
 ]

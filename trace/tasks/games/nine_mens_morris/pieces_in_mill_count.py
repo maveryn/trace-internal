@@ -1,29 +1,80 @@
-"""Count nine-men's-morris pieces that belong to mills."""
+"""Count Nine Men's Morris pieces that belong to mills."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-from trace.core.seed import spawn_rng
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.base import TaskOutput
+from trace.tasks.games.shared.style import SUPPORTED_NINE_MENS_MORRIS_STYLE_VARIANTS
 from trace.tasks.registry import register_task
-from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
 
-from .shared.scene import SCENE_ID, build_components, resolve_axes, sample_scene
+from ._lifecycle import (
+    NineMensMorrisObjectivePlan,
+    morris_piece_count_attempt,
+    resolve_morris_count_target,
+    run_morris_registered_task,
+)
+from .shared.sampling import (
+    ALL_MILL_PIECE_COUNT_SUPPORT,
+    resolve_nine_mens_morris_visual_axes,
+    sample_all_mill_piece_board,
+)
 
 
 TASK_ID = "task_games__nine_mens_morris__pieces_in_mill_count"
-QUERY_ID = "all_pieces_in_mill_count"
+QUERY_ID = SINGLE_QUERY_ID
+PROMPT_QUERY_KEY = "all_pieces_in_mill_count"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 TARGET_SUPPORT_KEY = "all_pieces_in_mill_count_support"
-TARGET_FALLBACK_SUPPORT = (0, 3, 5, 6, 7, 8, 9)
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
-    "games",
-    SCENE_ID,
-    task_id=TASK_ID,
-)
+TARGET_FALLBACK_SUPPORT = ALL_MILL_PIECE_COUNT_SUPPORT
+
+
+def _prepare_pieces_in_mill_objective(
+    instance_seed,
+    task_params,
+    _selected_branch,
+    branch_probabilities,
+    gen_defaults,
+):
+    """Resolve the exact mill-piece count and bind board construction."""
+
+    del branch_probabilities
+    axes = resolve_nine_mens_morris_visual_axes(
+        int(instance_seed),
+        gen_defaults=gen_defaults,
+        params=task_params,
+        namespace="games.nine_mens_morris.pieces_in_mill",
+        supported_style_variants=SUPPORTED_NINE_MENS_MORRIS_STYLE_VARIANTS,
+    )
+    target = resolve_morris_count_target(
+        instance_seed=int(instance_seed),
+        task_params=task_params,
+        gen_defaults=gen_defaults,
+        support_key=TARGET_SUPPORT_KEY,
+        fallback_support=TARGET_FALLBACK_SUPPORT,
+        namespace="games.nine_mens_morris.pieces_in_mill.target_answer",
+    )
+
+    def construct_attempt(rng, _resolved_axes):
+        board_state = sample_all_mill_piece_board(
+            rng=rng,
+            target_answer=int(target.target_answer),
+        )
+        piece_ids = tuple(str(piece_id) for piece_id in board_state.all_piece_ids_in_mill)
+        return morris_piece_count_attempt(
+            board_state=board_state,
+            prompt_key=PROMPT_QUERY_KEY,
+            annotation_entity_ids=piece_ids,
+            target=target,
+            extra_query_params={
+                "target_answer": int(target.target_answer),
+            },
+        )
+
+    return NineMensMorrisObjectivePlan(
+        axes=axes,
+        attempt_namespace="games.nine_mens_morris.pieces_in_mill",
+        construct_attempt=construct_attempt,
+    )
 
 
 @register_task
@@ -32,60 +83,20 @@ class GamesNineMensMorrisAllPiecesInMillCountTask:
 
     task_id = TASK_ID
     domain = "games"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
+    _default_branch = QUERY_ID
+    _namespace = "games.nine_mens_morris.pieces_in_mill"
+    _prepare_objective = staticmethod(_prepare_pieces_in_mill_objective)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        axes = resolve_axes(
+    def generate(self, instance_seed: int, *, params: dict | None = None, max_attempts: int = 100) -> TaskOutput:
+        """Generate an all-pieces-in-mill count instance."""
+
+        return run_morris_registered_task(
+            self,
             int(instance_seed),
-            gen_defaults=_GEN_DEFAULTS,
-            namespace=f"{SCENE_ID}.{str(query_id)}",
-            params=task_params,
-            query_id=str(query_id),
-            query_id_probabilities=query_probabilities,
-            target_support_key=TARGET_SUPPORT_KEY,
-            target_fallback_support=TARGET_FALLBACK_SUPPORT,
-        )
-        board_state = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            rng = spawn_rng(int(instance_seed), f"games.{SCENE_ID}.{TASK_ID}.attempt.{int(attempt_index)}")
-            try:
-                board_state = sample_scene(rng=rng, axes=axes)
-            except ValueError:
-                continue
-            break
-        if board_state is None:
-            raise RuntimeError(f"{TASK_ID} failed to generate a valid Morris board after {max_attempts} attempts")
-
-        components = build_components(
-            board_state=board_state,
-            axes=axes,
-            instance_seed=int(instance_seed),
-            params=task_params,
-            render_defaults=_RENDER_DEFAULTS,
-            prompt_defaults=_PROMPT_DEFAULTS,
-            namespace=f"{SCENE_ID}.{str(query_id)}",
-        )
-        return TaskOutput(
-            prompt=components.prompt,
-            prompt_variants=components.prompt_variants,
-            answer_gt=components.answer_gt,
-            annotation_gt=components.annotation_gt,
-            image=components.image,
-            image_id="img0",
-            trace_payload=components.trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
+            params=params or {},
+            max_attempts=int(max_attempts),
         )
 
 

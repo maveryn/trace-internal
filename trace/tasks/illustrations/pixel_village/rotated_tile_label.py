@@ -18,10 +18,9 @@ from ...shared.deterministic_sampling import resolve_selection_index, uniform_pr
 from ...shared.output_metadata import default_task_versions
 from ..shared.cutouts import (
     DEFAULT_OPTION_LABELS,
-    ROTATED_GRID_STYLES,
+    FRAMELESS_ILLUSTRATION_ROTATED_GRID_STYLE,
     compose_rotated_tile_grid,
     piece_crops,
-    sample_style,
     style_trace,
     tile_is_usable,
 )
@@ -170,7 +169,7 @@ class IllustrationsPixelVillageRotatedTileLabelTask:
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Generate one tiled pixel-village scene and bind tile-level evidence."""
+        """Generate one tiled pixel-village scene and bind tile-level annotation."""
 
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
@@ -212,7 +211,7 @@ class IllustrationsPixelVillageRotatedTileLabelTask:
                     usable_indices=usable_indices,
                 )
                 option_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:tile_grid", int(attempt))
-                grid_style = sample_style(option_rng, ROTATED_GRID_STYLES)
+                grid_style = {"style_id": "frameless_illustration", **dict(FRAMELESS_ILLUSTRATION_ROTATED_GRID_STYLE)}
                 label_font_trace = sample_visual_label_font_trace(
                     namespace_prefix=TASK_ID,
                     instance_seed=int(instance_seed),
@@ -230,6 +229,7 @@ class IllustrationsPixelVillageRotatedTileLabelTask:
                     rows=GRID_ROWS,
                     cols=GRID_COLS,
                     labels=TILE_LABELS,
+                    render_margin=0,
                 )
                 break
             except Exception as exc:  # pragma: no cover

@@ -43,4 +43,5 @@ Renders a pixel-village source illustration as a 2-row by 3-column lettered tile
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/pixel_village/illustrations_pixel_village_v0.json`.
 - Runtime query id is the single-query sentinel `single`; rotation angle, usable tile indices, selected tile, source render modes, and label font are trace parameters.
+- The composed grid uses the source image full-bleed with functional tile grid lines and option letters only; it must not add decorative outer margins, borders, or background frames.
 - The selected tile bbox, answer label, rotation angle, and usable-tile set must all come from the same `compose_rotated_tile_grid` execution trace.

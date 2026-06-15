@@ -50,6 +50,13 @@ Environment scenes should keep placements natural, such as sky-capable objects
 in sky bands, vehicles on roads, water objects in water, and land objects on
 valid ground/surface regions.
 
+The rendered source illustration itself should not be placed on a decorative
+outer background, card, border, or frame. If a visual-option task needs layout
+space for choices, keep that wrapper functional and minimal: option labels,
+missing-region masks, tile grid lines, and tight gutters are acceptable, but
+source-panel titles, decorative outlines, and worksheet-like card backgrounds
+should not be added to the scene image.
+
 Style and background variation must remain non-semantic unless queried. Dense
 scenes should cap foreground object counts to preserve readable object and part
 bboxes.

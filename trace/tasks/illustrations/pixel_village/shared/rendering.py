@@ -2395,21 +2395,66 @@ def _sample_layout(
     grid_cols: int | None,
     grid_rows: int | None,
 ) -> PixelVillageLayout:
-    tile_px = max(20, min(36, int(tile_px)))
-    max_cols = max(22, min(34, (int(width) - 24) // tile_px))
-    max_rows = max(16, min(24, (int(height) - 24) // tile_px))
-    min_cols = min(max_cols, 24)
-    min_rows = min(max_rows, 17)
-    cols = int(grid_cols) if grid_cols is not None else rng.randint(min_cols, max_cols)
-    rows = int(grid_rows) if grid_rows is not None else rng.randint(min_rows, max_rows)
-    if cols < 20 or rows < 15:
-        raise ValueError("pixel village grid must be at least 20x15")
-    layout = PixelVillageLayout(cols=cols, rows=rows, tile_px=tile_px)
-    if layout.display_width_px > int(width) or layout.display_height_px > int(height):
-        raise ValueError(
-            f"pixel village grid {cols}x{rows} at {tile_px}px tiles does not fit in {width}x{height}"
+    """Choose a full-bleed tile grid so the village itself fills the output canvas."""
+
+    requested_tile_px = max(20, min(36, int(tile_px)))
+    image_w = int(width)
+    image_h = int(height)
+
+    if grid_cols is None and grid_rows is None:
+        candidates: list[PixelVillageLayout] = []
+        for candidate_tile_px in range(20, 37):
+            if image_w % candidate_tile_px != 0 or image_h % candidate_tile_px != 0:
+                continue
+            candidate = PixelVillageLayout(
+                cols=image_w // candidate_tile_px,
+                rows=image_h // candidate_tile_px,
+                tile_px=candidate_tile_px,
+            )
+            if 20 <= candidate.cols <= 34 and 15 <= candidate.rows <= 24:
+                candidates.append(candidate)
+        if candidates:
+            return min(
+                candidates,
+                key=lambda candidate: (abs(candidate.tile_px - requested_tile_px), candidate.cols, candidate.rows),
+            )
+        raise ValueError(f"no full-bleed pixel village grid fits {width}x{height}")
+
+    if grid_cols is not None and grid_rows is not None:
+        cols = int(grid_cols)
+        rows = int(grid_rows)
+        if cols < 20 or rows < 15:
+            raise ValueError("pixel village grid must be at least 20x15")
+        if image_w % cols != 0 or image_h % rows != 0 or image_w // cols != image_h // rows:
+            raise ValueError(
+                f"explicit pixel village grid {cols}x{rows} cannot fill {width}x{height} with square tiles"
+            )
+        layout = PixelVillageLayout(cols=cols, rows=rows, tile_px=image_w // cols)
+        if not (20 <= layout.tile_px <= 36):
+            raise ValueError("explicit pixel village grid implies unsupported tile size")
+        return layout
+
+    explicit_cols = int(grid_cols) if grid_cols is not None else None
+    explicit_rows = int(grid_rows) if grid_rows is not None else None
+    candidates = []
+    for candidate_tile_px in range(20, 37):
+        if image_w % candidate_tile_px != 0 or image_h % candidate_tile_px != 0:
+            continue
+        candidate = PixelVillageLayout(
+            cols=explicit_cols if explicit_cols is not None else image_w // candidate_tile_px,
+            rows=explicit_rows if explicit_rows is not None else image_h // candidate_tile_px,
+            tile_px=candidate_tile_px,
         )
-    return layout
+        if (
+            candidate.display_width_px == image_w
+            and candidate.display_height_px == image_h
+            and 20 <= candidate.cols <= 34
+            and 15 <= candidate.rows <= 24
+        ):
+            candidates.append(candidate)
+    if candidates:
+        return min(candidates, key=lambda candidate: abs(candidate.tile_px - requested_tile_px))
+    raise ValueError(f"explicit pixel village grid cannot fill {width}x{height}")
 
 
 def render_pixel_village_map(
@@ -2590,11 +2635,8 @@ def render_pixel_village_map(
     for entity in sorted(entities, key=lambda item: (item.tile_xywh[1], item.tile_xywh[0], item.layer)):
         _draw_entity(draw, entity, rng=rng)
 
-    # Pixel-frame border.
-    draw.rectangle((0, 0, layout.canonical_width_px - 1, layout.canonical_height_px - 1), outline=(42, 82, 48), width=2)
     image = base.resize((layout.display_width_px, layout.display_height_px), Image.Resampling.NEAREST)
-    canvas = Image.new("RGB", (int(width), int(height)), theme.canvas_rgb)
-    canvas.paste(image, offset_xy)
+    canvas = image
 
     entities_sorted = tuple(sorted(entities, key=lambda item: item.entity_id))
     territories_sorted = tuple(sorted(territories, key=lambda item: item.territory_id))
@@ -2653,6 +2695,8 @@ def render_pixel_village_map(
         "tile_px": layout.tile_px,
         "map_size_px": [layout.display_width_px, layout.display_height_px],
         "map_offset_xy": list(offset_xy),
+        "uses_outer_canvas_background": False,
+        "uses_pixel_frame_border": False,
         "main_street_tile": {"x": int(street_x), "y": int(street_y)},
         "path_tiles": [[int(x), int(y)] for x, y in sorted(path_tiles)],
         "water_tiles": [[int(x), int(y)] for x, y in sorted(water_tiles)],

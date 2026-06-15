@@ -16,10 +16,9 @@ from ...shared.deterministic_sampling import resolve_selection_index, uniform_pr
 from ...shared.output_metadata import default_task_versions
 from ..shared.cutouts import (
     DEFAULT_OPTION_LABELS,
-    PATCH_FRAME_STYLES,
+    FRAMELESS_ILLUSTRATION_PATCH_STYLE,
     PATCH_MODE_PLAIN,
     compose_patch_options,
-    sample_style,
     style_trace,
 )
 from ..shared.option_rendering import sample_visual_label_font_trace
@@ -180,7 +179,7 @@ class IllustrationsPixelVillageMissingPatchLabelTask:
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Render a pixel-village source panel, compose patch options, and bind keyed evidence."""
+        """Render a pixel-village source panel, compose patch options, and bind keyed annotation."""
 
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
@@ -205,7 +204,7 @@ class IllustrationsPixelVillageMissingPatchLabelTask:
                     source_spec=source_spec,
                 )
                 option_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:patch_options", int(attempt))
-                frame_style = sample_style(option_rng, PATCH_FRAME_STYLES)
+                frame_style = {"style_id": "frameless_illustration", **dict(FRAMELESS_ILLUSTRATION_PATCH_STYLE)}
                 label_font_trace = sample_visual_label_font_trace(
                     namespace_prefix=TASK_ID,
                     instance_seed=int(instance_seed),
@@ -231,6 +230,12 @@ class IllustrationsPixelVillageMissingPatchLabelTask:
                     crop_margin_px=int(sample.crop_margin_px),
                     frame_style=frame_style,
                     label_font_family=str(label_font_trace["font_family"]),
+                    render_margin=0,
+                    option_gap=14,
+                    source_option_gap=16,
+                    show_source_label=False,
+                    draw_source_outline=False,
+                    draw_option_outlines=False,
                     candidate_crop_boxes=candidate_boxes or None,
                 )
                 break

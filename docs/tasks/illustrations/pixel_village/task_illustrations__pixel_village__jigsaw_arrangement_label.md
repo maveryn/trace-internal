@@ -44,4 +44,5 @@ Renders a pixel-village source illustration, cuts it into a 2-row by 2-column ti
 - Prompt text must come from `prompts/illustrations/pixel_village/illustrations_pixel_village_v0.json`.
 - Runtime query id is the single-query sentinel `single`; selected option, option permutations, source render modes, source tile boxes, style, and option-label font are trace parameters.
 - Source panels are accepted only when every 2x2 tile has enough visual detail to avoid flat-background jigsaw options.
+- The option composition uses a frameless functional layout: option labels, tile grid lines, and tight gutters only, with no decorative option-board border or scene background frame.
 - The selected option bbox, answer label, option permutations, and source tile boxes must all come from the same `compose_jigsaw_arrangement_options` execution trace.

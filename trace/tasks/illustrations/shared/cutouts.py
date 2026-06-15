@@ -95,6 +95,34 @@ PATCH_FRAME_STYLES: Dict[str, Dict[str, Any]] = {
     },
 }
 
+FRAMELESS_ILLUSTRATION_JIGSAW_STYLE: Dict[str, Any] = {
+    "canvas_rgb": (255, 255, 255),
+    "blank_fill_rgb": (255, 255, 255),
+    "blank_outline_rgb": (34, 39, 46),
+    "blank_mark_rgb": (34, 39, 46),
+    "board_outline_rgb": (34, 39, 46),
+    "badge_fill_rgb": (255, 255, 255),
+    "badge_outline_rgb": (34, 39, 46),
+    "blank_marker": "x",
+}
+
+FRAMELESS_ILLUSTRATION_ROTATED_GRID_STYLE: Dict[str, Any] = {
+    "canvas_rgb": (255, 255, 255),
+    "grid_rgb": (34, 39, 46),
+    "badge_fill_rgb": (255, 255, 255),
+    "badge_outline_rgb": (34, 39, 46),
+    "grid_width_px": 3,
+}
+
+FRAMELESS_ILLUSTRATION_PATCH_STYLE: Dict[str, Any] = {
+    "canvas_rgb": (255, 255, 255),
+    "panel_outline_rgb": (34, 39, 46),
+    "badge_fill_rgb": (255, 255, 255),
+    "badge_outline_rgb": (34, 39, 46),
+    "hole_fill_rgb": (16, 18, 20),
+    "hole_outline_rgb": (255, 255, 255),
+}
+
 PATCH_MODE_PLAIN = "plain"
 PATCH_MODE_IRREGULAR = "irregular"
 PATCH_MODES: Tuple[str, ...] = (PATCH_MODE_PLAIN, PATCH_MODE_IRREGULAR)
@@ -371,6 +399,7 @@ def compose_jigsaw_arrangement_options(
     option_gap: int = 28,
     label_h: int = 32,
     option_columns: int = 2,
+    draw_option_outline: bool = True,
 ) -> JigsawArrangementArtifacts:
     """Compose lettered full-image jigsaw arrangement options."""
 
@@ -453,11 +482,12 @@ def compose_jigsaw_arrangement_options(
                 fill=rgb(board_style, "blank_outline_rgb"),
                 width=2,
             )
-        draw.rectangle(
-            (grid_x, grid_y, grid_x + option_w, grid_y + option_h),
-            outline=rgb(board_style, "board_outline_rgb"),
-            width=3,
-        )
+        if bool(draw_option_outline):
+            draw.rectangle(
+                (grid_x, grid_y, grid_x + option_w, grid_y + option_h),
+                outline=rgb(board_style, "board_outline_rgb"),
+                width=3,
+            )
         option_bboxes[label] = bbox_list((grid_x, grid_y, grid_x + option_w, grid_y + option_h))
 
     selected_label = label_values[int(correct_index)]
@@ -710,6 +740,12 @@ def compose_patch_options(
     label_font_family: str,
     labels: Sequence[str] = DEFAULT_OPTION_LABELS,
     render_margin: int = 30,
+    option_gap: int = 24,
+    source_option_gap: int = 54,
+    option_label_height: int = 30,
+    show_source_label: bool = True,
+    draw_source_outline: bool = True,
+    draw_option_outlines: bool = True,
     candidate_crop_boxes: Sequence[Sequence[int]] | None = None,
     min_candidate_patch_difference: float = 7.5,
 ) -> PatchOptionArtifacts:
@@ -793,8 +829,8 @@ def compose_patch_options(
     margin = int(render_margin)
     source_w, source_h = source_with_hole.size
     option_rows, row_capacity = option_grid_shape(int(option_count))
-    option_gap = 24
-    label_h = 30
+    option_gap = int(option_gap)
+    label_h = int(option_label_height)
     display_options = [option.convert("RGB") for option in options]
     option_w = int(patch_w)
     option_h = int(patch_h)
@@ -802,19 +838,21 @@ def compose_patch_options(
         source_w + 2 * margin,
         row_capacity * option_w + (row_capacity - 1) * option_gap + 2 * margin,
     )
-    top_y = 58
-    options_y = top_y + source_h + 54
+    top_y = 58 if bool(show_source_label) else margin
+    options_y = top_y + source_h + int(source_option_gap)
     full_h = options_y + option_rows * (option_h + label_h + 18) + margin
     canvas = Image.new("RGB", (int(full_w), int(full_h)), rgb(frame_style, "canvas_rgb"))
     draw = ImageDraw.Draw(canvas)
     source_x = (full_w - source_w) // 2
     canvas.paste(source_with_hole, (source_x, top_y))
-    draw.rectangle(
-        (source_x, top_y, source_x + source_w, top_y + source_h),
-        outline=rgb(frame_style, "panel_outline_rgb"),
-        width=2,
-    )
-    draw_panel_label(draw, "Source", (source_x + 10, 18), size=22, font_family=label_font_family)
+    if bool(draw_source_outline):
+        draw.rectangle(
+            (source_x, top_y, source_x + source_w, top_y + source_h),
+            outline=rgb(frame_style, "panel_outline_rgb"),
+            width=2,
+        )
+    if bool(show_source_label):
+        draw_panel_label(draw, "Source", (source_x + 10, 18), size=22, font_family=label_font_family)
     option_bboxes: Dict[str, list[float]] = {}
     label_values = tuple(str(label) for label in labels[: int(option_count)])
     for index, option in enumerate(display_options):
@@ -826,20 +864,22 @@ def compose_patch_options(
         y = int(options_y + row * (option_h + label_h + 18))
         patch_x = x
         patch_y = y + label_h
-        draw.rectangle(
-            (patch_x, patch_y, patch_x + option_w, patch_y + option_h),
-            fill=(255, 255, 255),
-            outline=rgb(frame_style, "panel_outline_rgb"),
-            width=2,
-        )
+        if bool(draw_option_outlines):
+            draw.rectangle(
+                (patch_x, patch_y, patch_x + option_w, patch_y + option_h),
+                fill=(255, 255, 255),
+                outline=rgb(frame_style, "panel_outline_rgb"),
+                width=2,
+            )
         if int(option.width) != option_w or int(option.height) != option_h:
             option = ImageOps.pad(option, (option_w, option_h), method=Image.Resampling.LANCZOS, color=(255, 255, 255))
         canvas.paste(option, (patch_x, patch_y))
-        draw.rectangle(
-            (patch_x, patch_y, patch_x + option_w, patch_y + option_h),
-            outline=rgb(frame_style, "panel_outline_rgb"),
-            width=2,
-        )
+        if bool(draw_option_outlines):
+            draw.rectangle(
+                (patch_x, patch_y, patch_x + option_w, patch_y + option_h),
+                outline=rgb(frame_style, "panel_outline_rgb"),
+                width=2,
+            )
         label = label_values[index]
         draw_label_badge(
             draw,
@@ -869,6 +909,9 @@ def compose_patch_options(
 
 __all__ = [
     "DEFAULT_OPTION_LABELS",
+    "FRAMELESS_ILLUSTRATION_JIGSAW_STYLE",
+    "FRAMELESS_ILLUSTRATION_PATCH_STYLE",
+    "FRAMELESS_ILLUSTRATION_ROTATED_GRID_STYLE",
     "JIGSAW_BOARD_STYLES",
     "PATCH_FRAME_STYLES",
     "PATCH_MODE_IRREGULAR",

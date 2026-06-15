@@ -104,6 +104,13 @@ Domain-shared modules that should generally remain domain-shared:
 | `option_rendering.py` | Scene-neutral option-label, panel-label, bbox, font-trace, image-fit, and crop-detail helpers. |
 | `cutouts.py` | Scene-neutral visual-reconstruction mechanics for jigsaw boards, rotated grids, and patch-option layouts. |
 
+Visual-reconstruction helpers must not turn the source illustration into a
+decorative worksheet/card. Future source-scene-owned missing-patch,
+rotated-tile, or jigsaw tasks should use the frameless illustration styles and
+only draw functional marks such as option letters, missing-region masks, tile
+grid lines, and tight gutters. Do not add source-panel titles, decorative
+outer borders, or background frames around the illustration itself.
+
 Domain-shared modules that should move to scene-local shared when their owning
 scene is migrated:
 

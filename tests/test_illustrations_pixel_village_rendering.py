@@ -52,12 +52,12 @@ def test_pixel_village_renderer_is_deterministic_and_semantic() -> None:
     assert first.trace["autumn_intensity"] == "none"
     assert 24 <= int(first.trace["grid_cols"]) <= 34
     assert 17 <= int(first.trace["grid_rows"]) <= 24
-    assert first.trace["tile_px"] == 32
+    assert first.trace["tile_px"] == 30
     assert first.trace["canonical_tile_px"] == 16
-    assert first.trace["map_size_px"] == [
-        int(first.trace["grid_cols"]) * 32,
-        int(first.trace["grid_rows"]) * 32,
-    ]
+    assert first.trace["map_size_px"] == [960, 720]
+    assert first.trace["map_offset_xy"] == [0, 0]
+    assert first.trace["uses_outer_canvas_background"] is False
+    assert first.trace["uses_pixel_frame_border"] is False
     assert first.trace["path_tiles"]
     assert int(first.trace["entity_count"]) >= 20
     assert int(first.trace["territory_count"]) == 2
@@ -481,21 +481,22 @@ def test_pixel_village_orchard_uses_variable_sizes() -> None:
     assert len(sizes) >= 3
 
 
-def test_pixel_village_renderer_supports_explicit_grid_and_tile_size() -> None:
+def test_pixel_village_renderer_supports_explicit_full_bleed_grid() -> None:
     scene = render_pixel_village_map(
         123,
         width=960,
         height=720,
         tile_px=32,
-        grid_cols=27,
-        grid_rows=19,
+        grid_cols=32,
+        grid_rows=24,
         cemetery_mode="none",
         orchard_mode="none",
         windmill_mode="none",
     )
 
-    assert scene.trace["grid_cols"] == 27
-    assert scene.trace["grid_rows"] == 19
-    assert scene.trace["tile_px"] == 32
-    assert scene.trace["map_size_px"] == [864, 608]
+    assert scene.trace["grid_cols"] == 32
+    assert scene.trace["grid_rows"] == 24
+    assert scene.trace["tile_px"] == 30
+    assert scene.trace["map_size_px"] == [960, 720]
+    assert scene.trace["map_offset_xy"] == [0, 0]
     assert scene.image.size == (960, 720)

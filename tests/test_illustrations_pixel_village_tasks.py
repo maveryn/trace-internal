@@ -149,6 +149,7 @@ def test_pixel_village_jigsaw_arrangement_label_contract() -> None:
     assert trace["projected_annotation"]["type"] == "bbox_set"
     assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert trace["render_map"]["selected_option_bbox_px"] == option_bboxes[answer_label]
+    assert trace["render_spec"]["style"]["jigsaw_style"]["style_id"] == "frameless_illustration"
     assert option_permutations[answer_label] == [0, 1, 2, 3]
     assert sum(perm == [0, 1, 2, 3] for perm in option_permutations.values()) == 1
     assert trace["query_spec"]["params"]["grid_shape"] == [2, 2]
@@ -197,6 +198,7 @@ def test_pixel_village_missing_patch_label_contract() -> None:
     assert trace["query_spec"]["params"]["option_labels"] == ["A", "B", "C", "D"]
     assert trace["query_spec"]["params"]["correct_index"] == 2
     assert trace["execution_trace"]["selected_transform"] == "none"
+    assert trace["render_spec"]["style"]["patch_frame_style"]["style_id"] == "frameless_illustration"
     assert len(render_map["option_source_crop_boxes_px"]) == 4
     assert render_map["option_source_crop_boxes_px"][2] == render_map["source_crop_box_px"]
     _assert_keyed_annotation_inside_canvas(out)
@@ -243,6 +245,8 @@ def test_pixel_village_rotated_tile_label_contract() -> None:
     assert trace["projected_annotation"]["type"] == "bbox_set"
     assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert render_map["rotated_tile_bbox_px"] == tile_bboxes[answer_label]
+    assert trace["render_spec"]["canvas_size"] == [960, 720]
+    assert trace["render_spec"]["style"]["rotated_grid_style"]["style_id"] == "frameless_illustration"
     assert execution["query_id"] == "single"
     assert execution["answer_label"] == answer_label
     assert execution["rotation_degrees"] == 90

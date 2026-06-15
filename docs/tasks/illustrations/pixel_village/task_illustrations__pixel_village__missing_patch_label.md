@@ -44,4 +44,5 @@ Renders a pixel-village source panel with one missing visual region and four or 
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/pixel_village/illustrations_pixel_village_v0.json`.
 - Runtime query id is the single-query sentinel `single`; option count, patch size, crop box, style, source render modes, and option-label font are trace parameters.
+- The composed image uses a frameless functional layout: no source-panel title, decorative outer border, option-card outline, or extra scene background.
 - The selected option bbox, answer label, missing-region bbox, and crop boxes must all come from the same `compose_patch_options` execution trace.

@@ -16,10 +16,9 @@ from ...shared.deterministic_sampling import resolve_selection_index, uniform_pr
 from ...shared.output_metadata import default_task_versions
 from ..shared.cutouts import (
     DEFAULT_OPTION_LABELS,
-    JIGSAW_BOARD_STYLES,
+    FRAMELESS_ILLUSTRATION_JIGSAW_STYLE,
     compose_jigsaw_arrangement_options,
     piece_crops,
-    sample_style,
     style_trace,
 )
 from ..shared.option_rendering import image_detail_score, sample_visual_label_font_trace
@@ -109,7 +108,7 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Render a source pixel village, build jigsaw MCQ options, and bind selected-option evidence."""
+        """Render a source pixel village, build jigsaw MCQ options, and bind selected-option annotation."""
 
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
@@ -141,7 +140,7 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
                 if min(tile_detail_scores) < float(min_tile_detail_score):
                     raise ValueError("source scene has a weak jigsaw tile")
                 option_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:jigsaw_options", int(attempt))
-                board_style = sample_style(option_rng, JIGSAW_BOARD_STYLES)
+                board_style = {"style_id": "frameless_illustration", **dict(FRAMELESS_ILLUSTRATION_JIGSAW_STYLE)}
                 label_font_trace = sample_visual_label_font_trace(
                     namespace_prefix=TASK_ID,
                     instance_seed=int(instance_seed),
@@ -159,6 +158,10 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
                     board_style=board_style,
                     label_font_family=str(label_font_trace["font_family"]),
                     labels=OPTION_LABELS,
+                    render_margin=0,
+                    option_gap=12,
+                    label_h=28,
+                    draw_option_outline=False,
                 )
                 break
             except Exception as exc:  # pragma: no cover

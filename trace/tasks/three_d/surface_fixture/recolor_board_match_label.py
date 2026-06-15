@@ -178,6 +178,12 @@ class ThreeDSurfaceFixtureRecolorBoardMatchLabelTask:
                             str(label): dict(counts)
                             for label, counts in dict(board_data["option_color_counts_by_label"]).items()
                         },
+                        "original_color_by_flat_index": dict(board_data["original_color_by_flat_index"]),
+                        "final_color_by_flat_index": dict(board_data["final_color_by_flat_index"]),
+                        "option_color_by_flat_index_by_label": {
+                            str(label): dict(color_map)
+                            for label, color_map in dict(board_data["option_color_by_flat_index_by_label"]).items()
+                        },
                     },
                 )
                 answer_gt = TypedValue(type="option_letter", value=str(answer_label))
@@ -197,6 +203,12 @@ class ThreeDSurfaceFixtureRecolorBoardMatchLabelTask:
                             "initial_color_counts": dict(board_data["initial_color_counts"]),
                             "final_color_counts": dict(board_data["final_color_counts"]),
                             "option_color_counts_by_label": dict(rendered.option_color_counts_by_label),
+                            "original_color_by_flat_index": dict(board_data["original_color_by_flat_index"]),
+                            "final_color_by_flat_index": dict(board_data["final_color_by_flat_index"]),
+                            "option_color_by_flat_index_by_label": {
+                                str(label): dict(color_map)
+                                for label, color_map in dict(board_data["option_color_by_flat_index_by_label"]).items()
+                            },
                         },
                     },
                     "query_spec": dict(query_spec),
@@ -237,6 +249,12 @@ class ThreeDSurfaceFixtureRecolorBoardMatchLabelTask:
                         "initial_color_counts": dict(board_data["initial_color_counts"]),
                         "final_color_counts": dict(board_data["final_color_counts"]),
                         "option_color_counts_by_label": dict(rendered.option_color_counts_by_label),
+                        "original_color_by_flat_index": dict(board_data["original_color_by_flat_index"]),
+                        "final_color_by_flat_index": dict(board_data["final_color_by_flat_index"]),
+                        "option_color_by_flat_index_by_label": {
+                            str(label): dict(color_map)
+                            for label, color_map in dict(board_data["option_color_by_flat_index_by_label"]).items()
+                        },
                         "selected_option_panel_bbox_px": list(selected_panel_bbox),
                         "surface_original_dataset": {
                             "layout_rows": int(original_dataset["layout_rows"]),
@@ -256,15 +274,21 @@ class ThreeDSurfaceFixtureRecolorBoardMatchLabelTask:
                         },
                         "question_format": str(selected_query),
                         "solver_trace": {
-                            "operation": "select_option_matching_single_recolor_color_counts",
+                            "operation": "select_option_matching_single_recolor_fixed_position_color_state",
                             "source_color_name": str(board_data["source_color_name"]),
                             "destination_color_name": str(board_data["destination_color_name"]),
                             "initial_color_counts": dict(board_data["initial_color_counts"]),
                             "final_color_counts": dict(board_data["final_color_counts"]),
                             "option_color_counts_by_label": dict(rendered.option_color_counts_by_label),
+                            "original_color_by_flat_index": dict(board_data["original_color_by_flat_index"]),
+                            "final_color_by_flat_index": dict(board_data["final_color_by_flat_index"]),
+                            "option_color_by_flat_index_by_label": {
+                                str(label): dict(color_map)
+                                for label, color_map in dict(board_data["option_color_by_flat_index_by_label"]).items()
+                            },
                             "answer_label": str(answer_label),
-                            "unique_option_color_counts": True,
-                            "spatial_positions_irrelevant": True,
+                            "unique_option_fixed_position_color_states": True,
+                            "spatial_positions_fixed": True,
                         },
                     },
                     "witness_symbolic": {

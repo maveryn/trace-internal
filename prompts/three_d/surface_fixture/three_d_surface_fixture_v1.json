@@ -58,11 +58,11 @@
         "If these changes are made to the fixture, {operation_phrase}, how many {target_color_label} {target_element_plural} are there in total?"
       ],
       "recolor_board_match": [
-        "Apply this recolor to the original board: {recolor_phrase}. Objects may be rearranged, so only final color counts matter. Which labeled candidate board could be the result?",
-        "On the original board, suppose {recolor_phrase}. The objects may be rearranged afterward, so match only the final color counts. Which candidate board is correct?",
-        "Starting from the original board, recolor so that {recolor_phrase}. Since positions may change, use only the final color counts. Which option matches?",
-        "If {recolor_phrase} on the original board, and the objects may be rearranged, which labeled board has the correct final color counts?",
-        "Use the original board as the starting state and apply this recolor: {recolor_phrase}. Which candidate board could result if only color counts must match?"
+        "Apply this recolor to the original board: {recolor_phrase}. Which labeled candidate board shows the result?",
+        "On the original board, suppose {recolor_phrase}. Which candidate board is correct?",
+        "Starting from the original board, recolor so that {recolor_phrase}. Which option matches?",
+        "If {recolor_phrase} on the original board, which labeled board shows the result?",
+        "Use the original board as the starting state and apply this recolor: {recolor_phrase}. Which candidate board matches?"
       ],
       "scoped_element_color_count": [
         "How many {target_color_label} {target_element_plural} are in {scope_phrase}?",

@@ -309,7 +309,31 @@ def test_surface_fixture_recolor_board_match_selects_matching_option() -> None:
     assert trace["initial_color_counts"] == {"red": 3, "blue": 2, "green": 4}
     assert trace["final_color_counts"] == {"red": 0, "blue": 5, "green": 4}
     assert option_counts["C"] == trace["final_color_counts"]
-    assert len({tuple(sorted(counts.items())) for counts in option_counts.values()}) == 4
+    assert trace["option_color_by_flat_index_by_label"]["C"] == trace["final_color_by_flat_index"]
+    assert len(
+        {
+            tuple(sorted(color_by_index.items()))
+            for color_by_index in trace["option_color_by_flat_index_by_label"].values()
+        }
+    ) == 4
+    original_cells = {
+        int(cell["flat_index"]): cell
+        for cell in trace["surface_original_dataset"]["surface_cells"]
+        if cell["present"]
+    }
+    for option_dataset in trace["surface_option_datasets"].values():
+        option_cells = {
+            int(cell["flat_index"]): cell
+            for cell in option_dataset["surface_cells"]
+            if cell["present"]
+        }
+        assert set(option_cells) == set(original_cells)
+        for index, original_cell in original_cells.items():
+            option_cell = option_cells[index]
+            assert option_cell["u0"] == original_cell["u0"]
+            assert option_cell["u1"] == original_cell["u1"]
+            assert option_cell["v0"] == original_cell["v0"]
+            assert option_cell["v1"] == original_cell["v1"]
     assert output.annotation_gt.type == "bbox_set"
     assert output.annotation_gt.value == [render_map["option_panel_bboxes_px"]["C"]]
     assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
@@ -317,7 +341,9 @@ def test_surface_fixture_recolor_board_match_selects_matching_option() -> None:
     assert "{recolor_" not in output.prompt
     assert "{source_" not in output.prompt
     assert "{destination_" not in output.prompt
-    assert "rearranged" in output.prompt.lower() or "positions may change" in output.prompt.lower()
+    assert "rearranged" not in output.prompt.lower()
+    assert "positions may change" not in output.prompt.lower()
+    assert "color counts" not in output.prompt.lower()
 
 
 def test_surface_fixture_missing_cell_default_answer_range() -> None:

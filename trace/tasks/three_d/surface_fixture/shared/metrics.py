@@ -13,6 +13,7 @@ from .state import (
     ELEMENT_DISPLAY_NAME,
     ELEMENT_PLURAL,
     SEMANTIC_COLOR_SUPPORT,
+    SEMANTIC_COLOR_RGB,
     SURFACE_FIXTURE_DISPLAY_NAME,
     semantic_color_label,
 )
@@ -876,6 +877,213 @@ def _colored_dataset_from_counts(
     )
 
 
+def _visible_color_by_index(cells: Sequence[Mapping[str, Any]]) -> Dict[int, str]:
+    return {
+        int(cell["flat_index"]): str(cell["color_name"])
+        for cell in cells
+        if bool(cell.get("present", True))
+    }
+
+
+def _color_state_key(color_by_index: Mapping[int, str]) -> Tuple[Tuple[int, str], ...]:
+    return tuple((int(index), str(color_by_index[int(index)])) for index in sorted(int(index) for index in color_by_index.keys()))
+
+
+def _recolor_by_index(
+    color_by_index: Mapping[int, str],
+    *,
+    source_color: str,
+    destination_color: str,
+    indices: Sequence[int] | None = None,
+) -> Dict[int, str]:
+    allowed = None if indices is None else {int(index) for index in indices}
+    updated = {int(index): str(color) for index, color in color_by_index.items()}
+    for index, color in list(updated.items()):
+        if str(color) == str(source_color) and (allowed is None or int(index) in allowed):
+            updated[int(index)] = str(destination_color)
+    return updated
+
+
+def _counts_from_color_by_index(
+    color_by_index: Mapping[int, str],
+    *,
+    active_colors: Sequence[str],
+) -> Dict[str, int]:
+    counts = {str(color): 0 for color in active_colors}
+    for color in color_by_index.values():
+        counts[str(color)] = int(counts.get(str(color), 0)) + 1
+    return counts
+
+
+def _sample_recolor_option_color_maps(
+    *,
+    params: Mapping[str, Any],
+    active_colors: Sequence[str],
+    original_color_by_index: Mapping[int, str],
+    final_color_by_index: Mapping[int, str],
+    source_color: str,
+    destination_color: str,
+    answer_label: str,
+    instance_seed: int,
+    namespace: str,
+) -> Dict[str, Dict[int, str]]:
+    """Create four unique fixed-position candidate boards for the recolor MCQ."""
+
+    labels = ("A", "B", "C", "D")
+    active = tuple(str(color) for color in active_colors)
+    active_set = set(active)
+    final_key = _color_state_key(final_color_by_index)
+    raw = params.get("option_color_by_index_by_label")
+    if raw is not None:
+        if not isinstance(raw, Mapping):
+            raise ValueError("option_color_by_index_by_label must be a mapping")
+        options: Dict[str, Dict[int, str]] = {}
+        original_indices = {int(index) for index in original_color_by_index.keys()}
+        for label in labels:
+            raw_for_label = raw[str(label)]
+            if not isinstance(raw_for_label, Mapping):
+                raise ValueError("each option_color_by_index_by_label value must be a mapping")
+            option_map = {int(index): str(color) for index, color in raw_for_label.items()}
+            if set(option_map.keys()) != original_indices:
+                raise ValueError("option color maps must use exactly the original visible cell indices")
+            if not set(option_map.values()).issubset(active_set):
+                raise ValueError("option color maps must use active colors only")
+            options[str(label)] = option_map
+        if _color_state_key(options[str(answer_label)]) != final_key:
+            raise ValueError("answer_label option must match the fixed-position final recolor state")
+        if len({_color_state_key(option_map) for option_map in options.values()}) != len(labels):
+            raise ValueError("option fixed-position color states must be unique")
+        return options
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.distractor_color_maps")
+    source_indices = sorted(
+        int(index)
+        for index, color in original_color_by_index.items()
+        if str(color) == str(source_color)
+    )
+    destination_indices = sorted(
+        int(index)
+        for index, color in original_color_by_index.items()
+        if str(color) == str(destination_color)
+    )
+    candidates: list[Dict[int, str]] = []
+    seen = {final_key}
+
+    def add_candidate(candidate: Mapping[int, str] | None) -> None:
+        if candidate is None:
+            return
+        normalized = {int(index): str(color) for index, color in candidate.items()}
+        if set(normalized.keys()) != set(int(index) for index in original_color_by_index.keys()):
+            return
+        if not set(normalized.values()).issubset(active_set):
+            return
+        key = _color_state_key(normalized)
+        if key in seen:
+            return
+        seen.add(key)
+        candidates.append(normalized)
+
+    add_candidate(original_color_by_index)
+    if len(source_indices) > 1:
+        keep_source = int(source_indices[int(rng.randrange(len(source_indices)))])
+        recolor_indices = [int(index) for index in source_indices if int(index) != keep_source]
+        add_candidate(
+            _recolor_by_index(
+                original_color_by_index,
+                source_color=str(source_color),
+                destination_color=str(destination_color),
+                indices=recolor_indices,
+            )
+        )
+    for color in active:
+        if str(color) not in {str(source_color), str(destination_color)}:
+            add_candidate(
+                _recolor_by_index(
+                    original_color_by_index,
+                    source_color=str(source_color),
+                    destination_color=str(color),
+                )
+            )
+    if destination_indices:
+        changed = dict(final_color_by_index)
+        index = int(destination_indices[int(rng.randrange(len(destination_indices)))])
+        changed[index] = str(source_color)
+        add_candidate(changed)
+
+    visible_indices = sorted(int(index) for index in original_color_by_index.keys())
+    for _attempt in range(300):
+        candidate = dict(final_color_by_index)
+        index = int(visible_indices[int(rng.randrange(len(visible_indices)))])
+        choices = [str(color) for color in active if str(color) != str(candidate[index])]
+        candidate[index] = str(choices[int(rng.randrange(len(choices)))])
+        add_candidate(candidate)
+        if len(candidates) >= 3:
+            break
+    if len(candidates) < 3:
+        raise ValueError("could not build three unique fixed-position recolor distractor options")
+
+    rng.shuffle(candidates)
+    options: Dict[str, Dict[int, str]] = {}
+    distractor_iter = iter(candidates[:3])
+    for label in labels:
+        if str(label) == str(answer_label):
+            options[str(label)] = {int(index): str(color) for index, color in final_color_by_index.items()}
+        else:
+            options[str(label)] = dict(next(distractor_iter))
+    return options
+
+
+def _fixed_position_dataset_from_color_map(
+    *,
+    scene_variant: str,
+    element_type: str,
+    template_cells: Sequence[Mapping[str, Any]],
+    color_by_index: Mapping[int, str],
+    active_colors: Sequence[str],
+    rows: int,
+    cols: int,
+    layout_style: str,
+    option_label: str | None = None,
+) -> Dict[str, Any]:
+    """Materialize one board by recoloring the original visible cells in place."""
+
+    cells: list[Dict[str, Any]] = []
+    for cell in template_cells:
+        updated = dict(cell)
+        if bool(updated.get("present", True)):
+            index = int(updated["flat_index"])
+            color = str(color_by_index[index])
+            updated["color_name"] = str(color)
+            updated["fill_rgb"] = list(SEMANTIC_COLOR_RGB[str(color)])
+            updated["count_role"] = "distractor"
+        cells.append(updated)
+    color_counts = _counts_from_color_by_index(color_by_index, active_colors=active_colors)
+    extra: Dict[str, Any] = {
+        "color_counts": dict(color_counts),
+        "color_by_flat_index": {str(index): str(color) for index, color in sorted(color_by_index.items())},
+        "active_color_names": [str(color) for color in active_colors],
+    }
+    if option_label is not None:
+        extra["option_label"] = str(option_label)
+    return base_surface_data(
+        scene_variant=str(scene_variant),
+        element_type=str(element_type),
+        answer_value=0,
+        target_element_ids=[],
+        surface_cells=cells,
+        rows=int(rows),
+        cols=int(cols),
+        layout_style=str(layout_style),
+        solver_trace={
+            "count_predicate": "fixed_position_color_state_by_visible_surface_elements",
+            "color_counts": dict(color_counts),
+            "color_by_flat_index": {str(index): str(color) for index, color in sorted(color_by_index.items())},
+            "total_count": int(len(color_by_index)),
+        },
+        extra=extra,
+    )
+
+
 def build_recolor_board_match_surface_data(
     *,
     namespace: str,
@@ -908,22 +1116,6 @@ def build_recolor_board_match_surface_data(
         instance_seed=int(instance_seed),
         namespace=str(namespace),
     )
-    final_counts = _apply_single_recolor(
-        initial_counts=initial_counts,
-        source_color=str(source_color),
-        destination_color=str(destination_color),
-    )
-    option_counts_by_label = _sample_recolor_option_counts(
-        params=params,
-        active_colors=active_colors,
-        initial_counts=initial_counts,
-        final_counts=final_counts,
-        source_color=str(source_color),
-        destination_color=str(destination_color),
-        answer_label=str(answer_label),
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
     total = int(sum(int(count) for count in initial_counts.values()))
     rows, cols = grid_for_total(total)
     total_slots = int(rows) * int(cols)
@@ -940,19 +1132,41 @@ def build_recolor_board_match_surface_data(
         rng=spawn_rng(int(instance_seed), f"{namespace}.original_cells"),
         layout_style=str(layout_style),
     )
+    original_color_by_index = _visible_color_by_index(original_dataset["surface_cells"])
+    final_color_by_index = _recolor_by_index(
+        original_color_by_index,
+        source_color=str(source_color),
+        destination_color=str(destination_color),
+    )
+    final_counts = _counts_from_color_by_index(final_color_by_index, active_colors=active_colors)
+    option_color_by_index_by_label = _sample_recolor_option_color_maps(
+        params=params,
+        active_colors=active_colors,
+        original_color_by_index=original_color_by_index,
+        final_color_by_index=final_color_by_index,
+        source_color=str(source_color),
+        destination_color=str(destination_color),
+        answer_label=str(answer_label),
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
+    option_counts_by_label = {
+        str(label): _counts_from_color_by_index(color_map, active_colors=active_colors)
+        for label, color_map in option_color_by_index_by_label.items()
+    }
     option_datasets = {
-        str(label): _colored_dataset_from_counts(
+        str(label): _fixed_position_dataset_from_color_map(
             scene_variant=str(scene_variant),
             element_type=str(element_type),
+            template_cells=original_dataset["surface_cells"],
+            color_by_index=color_map,
+            active_colors=active_colors,
             rows=int(rows),
             cols=int(cols),
-            present_indices=present_indices,
-            color_counts=counts,
-            rng=spawn_rng(int(instance_seed), f"{namespace}.option_cells.{label}"),
             layout_style=str(layout_style),
             option_label=str(label),
         )
-        for label, counts in option_counts_by_label.items()
+        for label, color_map in option_color_by_index_by_label.items()
     }
     recolor_phrase = (
         f"every {semantic_color_label(str(source_color))} {ELEMENT_DISPLAY_NAME[str(element_type)]} "
@@ -971,6 +1185,12 @@ def build_recolor_board_match_surface_data(
         "initial_color_counts": dict(initial_counts),
         "final_color_counts": dict(final_counts),
         "option_color_counts_by_label": {str(label): dict(counts) for label, counts in option_counts_by_label.items()},
+        "original_color_by_flat_index": {str(index): str(color) for index, color in sorted(original_color_by_index.items())},
+        "final_color_by_flat_index": {str(index): str(color) for index, color in sorted(final_color_by_index.items())},
+        "option_color_by_flat_index_by_label": {
+            str(label): {str(index): str(color) for index, color in sorted(color_map.items())}
+            for label, color_map in option_color_by_index_by_label.items()
+        },
         "initial_total_count_probabilities": dict(initial_total_probabilities),
         "layout_rows": int(rows),
         "layout_columns": int(cols),

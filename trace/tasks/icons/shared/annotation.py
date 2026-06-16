@@ -70,6 +70,32 @@ def matching_scene_cell_bbox_annotation(
     }
 
 
+def matching_scene_cell_point_annotation(
+    *,
+    scene_cells: Sequence[Mapping[str, Any]],
+    matching_labels: Sequence[str],
+) -> Dict[str, Any]:
+    """Return point-set annotation for matching labeled Scene cell centers."""
+
+    bbox_artifacts = matching_scene_cell_bbox_annotation(
+        scene_cells=scene_cells,
+        matching_labels=matching_labels,
+    )
+    bboxes = bbox_artifacts["annotation_value"]
+    points = [_bbox_center(bbox) for bbox in bboxes]
+    return {
+        "annotation_type": "point_set",
+        "annotation_value": [list(point) for point in points],
+        "labels_top_left": list(bbox_artifacts["labels_top_left"]),
+        "witness_symbolic": dict(bbox_artifacts["witness_symbolic"]),
+        "projected_annotation": {
+            "type": "point_set",
+            "point_set": [list(point) for point in points],
+            "pixel_point_set": [list(point) for point in points],
+        },
+    }
+
+
 def point_set_annotation(
     points: Sequence[Sequence[int | float]],
 ) -> Dict[str, Any]:
@@ -88,6 +114,19 @@ def point_set_annotation(
             "pixel_point_set": [list(point) for point in normalized_points],
         },
     }
+
+
+def point_set_from_bboxes(
+    bboxes: Sequence[Sequence[int | float]],
+) -> Dict[str, Any]:
+    """Return point-set annotation using bbox centers as witnesses."""
+
+    normalized_bboxes: list[list[int]] = []
+    for index, bbox in enumerate(bboxes):
+        if not isinstance(bbox, Sequence) or len(bbox) != 4:
+            raise RuntimeError(f"invalid source bbox for point_set annotation at index {index}: {bbox}")
+        normalized_bboxes.append([int(round(float(value))) for value in bbox])
+    return point_set_annotation(_bbox_center(bbox) for bbox in normalized_bboxes)
 
 
 def bbox_set_annotation(
@@ -130,6 +169,19 @@ def keyed_point_map_annotation(
             "pixel_keyed_point_map": {str(key): list(value) for key, value in keyed_points.items()},
         },
     }
+
+
+def keyed_point_map_from_bboxes(
+    role_bboxes: Mapping[str, Sequence[int | float]],
+) -> Dict[str, Any]:
+    """Return keyed-point annotation using role bbox centers as witnesses."""
+
+    role_points: dict[str, list[float]] = {}
+    for role, bbox in role_bboxes.items():
+        if not isinstance(bbox, Sequence) or len(bbox) != 4:
+            raise RuntimeError(f"invalid keyed source bbox for role {role!r}: {bbox}")
+        role_points[str(role)] = _bbox_center(bbox)
+    return keyed_point_map_annotation(role_points)
 
 
 def keyed_bbox_map_annotation(
@@ -184,6 +236,9 @@ __all__ = [
     "keyed_bbox_map_annotation",
     "keyed_bbox_set_map_annotation",
     "keyed_point_map_annotation",
+    "keyed_point_map_from_bboxes",
     "matching_scene_cell_bbox_annotation",
+    "matching_scene_cell_point_annotation",
     "point_set_annotation",
+    "point_set_from_bboxes",
 ]

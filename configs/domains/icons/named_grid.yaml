@@ -344,10 +344,10 @@ prompt:
       object_description: a numbered grid with one icon in each cell
       question_text_row_shape_count: How many "{target_shape_name}" icons are in row {line_number}?
       question_text_column_shape_count: How many "{target_shape_name}" icons are in column {line_number}?
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates
+      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates
         for every counted "{target_shape_name}" icon in {line_kind} {line_number}
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[180,172,232,224],[388,172,440,224],[596,172,648,224]],"answer":3}'
+      json_example: '{"annotation":[[206,198],[414,198],[622,198]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
     task_icons__named_grid__row_column_shape_extreme_number:
       scene_key: single_scene_counting
@@ -356,10 +356,10 @@ prompt:
       question_text_row_fewest_shape_number: Which row has the fewest "{target_shape_name}" icons?
       question_text_column_most_shape_number: Which column has the most "{target_shape_name}" icons?
       question_text_column_fewest_shape_number: Which column has the fewest "{target_shape_name}" icons?
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates
+      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates
         for the "{target_shape_name}" icons in the selected {line_kind}
       answer_hint: set "answer" to the selected {line_kind} number as an integer
-      json_example: '{"annotation":[[180,172,232,224],[388,172,440,224],[596,172,648,224]],"answer":3}'
+      json_example: '{"annotation":[[206,198],[414,198],[622,198]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
     task_icons__named_grid__group_predicate_count:
       scene_key: single_scene_counting
@@ -374,8 +374,8 @@ prompt:
         icons?
       question_text_row_no_shape_count: How many rows contain no "{target_shape_name}" icons?
       question_text_column_no_shape_count: How many columns contain no "{target_shape_name}" icons?
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates
-        around every qualifying {line_kind} region
+      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates
+        for every qualifying {line_kind} region
       answer_hint: set "answer" to the number of qualifying {line_kind_plural} as an integer
-      json_example: '{"annotation":[[150,176,566,260],[150,344,566,428]],"answer":2}'
+      json_example: '{"annotation":[[358,218],[358,386]],"answer":2}'
       json_example_answer_only: '{"answer":2}'

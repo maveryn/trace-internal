@@ -24,6 +24,10 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(str(prompt).split(marker, 1)[1].strip())
 
 
+def _bbox_center(bbox: list[int]) -> list[float]:
+    return [round((float(bbox[0]) + float(bbox[2])) / 2.0, 3), round((float(bbox[1]) + float(bbox[3])) / 2.0, 3)]
+
+
 def _line_counts(shape_grid: list[list[str]], *, axis: str, target_shape_id: str) -> list[int]:
     if axis == "row":
         return [sum(1 for value in row if str(value) == str(target_shape_id)) for row in shape_grid]
@@ -59,15 +63,18 @@ def test_icons_counting_named_grid_row_most_contract_matches_scene() -> None:
     assert out.query_id == "row_most_shape_number"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 3
-    assert out.annotation_gt.type == "bbox_set"
+    entity_by_id = {str(entity["instance_id"]): entity for entity in trace["scene_ir"]["entities"]}
+    counted_ids = set(trace["render_map"]["selected_line_target_instance_ids"])
+    assert out.annotation_gt.type == "point_set"
     assert execution["question_format"] == "select_grid_line_number_by_extreme_named_shape_count"
     assert counts == execution["row_target_counts"]
     assert counts[2] == max(counts)
     assert counts.count(max(counts)) == 1
     assert len(out.annotation_gt.value) == counts[2]
-    assert trace["projected_annotation"]["type"] == "bbox_set"
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+    assert sorted(out.annotation_gt.value) == sorted((_bbox_center(entity_by_id[instance_id]["bbox_xyxy"]) for instance_id in counted_ids))
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
     style = trace["render_spec"]["style"]
     assert "axis_label_stroke_rgb" in style
     assert style["text_legibility"]["required_role_count"] >= 2
@@ -117,6 +124,7 @@ def test_icons_counting_named_grid_extreme_prompt_example_matches_contract() -> 
     assert answer_only == {"answer": 3}
     assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
     assert isinstance(answer_and_annotation["annotation"], list)
+    assert all((len(point) == 2 for point in answer_and_annotation["annotation"]))
     assert answer_and_annotation["answer"] == 3
 
 

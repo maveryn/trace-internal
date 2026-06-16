@@ -12,6 +12,9 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     assert marker in str(prompt)
     return json.loads(str(prompt).split(marker, 1)[1].strip())
 
+def _bbox_center(bbox: list[int]) -> list[float]:
+    return [round((float(bbox[0]) + float(bbox[2])) / 2.0, 3), round((float(bbox[1]) + float(bbox[3])) / 2.0, 3)]
+
 def _arc_indices(start_index: int, end_index: int, *, count: int, direction: str) -> list[int]:
     step = 1 if direction == 'clockwise' else -1
     values: list[int] = []
@@ -39,7 +42,7 @@ def test_icons_counting_named_ring_clockwise_contract_matches_scene() -> None:
     assert out.query_id == 'clockwise_arc_shape_count'
     assert out.answer_gt.type == 'integer'
     assert out.answer_gt.value == 3
-    assert out.annotation_gt.type == 'bbox_set'
+    assert out.annotation_gt.type == 'point_set'
     assert len(out.annotation_gt.value) == 3
     assert trace['scene_ir']['scene_kind'] == 'icons_named_ring'
     assert execution['question_format'] == 'count_named_shape_icons_strictly_between_ring_markers'
@@ -49,10 +52,10 @@ def test_icons_counting_named_ring_clockwise_contract_matches_scene() -> None:
     assert len(counted_ids) == 3
     assert all((str(entity_by_id[instance_id]['shape_id']) == 'star' for instance_id in counted_ids))
     assert all((int(entity_by_id[instance_id]['ring_index']) in set(execution['arc_indices']) for instance_id in counted_ids))
-    assert sorted(out.annotation_gt.value) == sorted((entity_by_id[instance_id]['bbox_xyxy'] for instance_id in counted_ids))
-    assert trace['projected_annotation']['type'] == 'bbox_set'
-    assert trace['projected_annotation']['bbox_set'] == out.annotation_gt.value
-    assert trace['projected_annotation']['pixel_bbox_set'] == out.annotation_gt.value
+    assert sorted(out.annotation_gt.value) == sorted((_bbox_center(entity_by_id[instance_id]['bbox_xyxy']) for instance_id in counted_ids))
+    assert trace['projected_annotation']['type'] == 'point_set'
+    assert trace['projected_annotation']['point_set'] == out.annotation_gt.value
+    assert trace['projected_annotation']['pixel_point_set'] == out.annotation_gt.value
     style = trace['render_spec']['style']
     assert 'marker_label_stroke_rgb' in style
     assert style['text_legibility']['required_role_count'] >= 2
@@ -89,6 +92,7 @@ def test_icons_counting_named_ring_prompt_example_matches_contract() -> None:
     assert answer_only == {'answer': 2}
     assert list(answer_and_annotation.keys()) == ['annotation', 'answer']
     assert isinstance(answer_and_annotation['annotation'], list)
+    assert all((len(point) == 2 for point in answer_and_annotation['annotation']))
     assert answer_and_annotation['answer'] == 2
 
 def test_icons_counting_named_ring_sampling_distribution() -> None:

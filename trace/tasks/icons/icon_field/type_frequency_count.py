@@ -20,6 +20,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
+from ..shared.annotation import point_set_from_bboxes
 from .shared.annotations import bboxes_for_icon_ids, indices_for_icon_ids
 from .shared.defaults import IconFieldDefaults
 from .shared.rendering import sample_and_render_icon_field_scene
@@ -127,7 +128,7 @@ def _frequency_spec_for_query(query_id: str, *, instance_seed: int, params: Mapp
 
 
 def _bind_answer_annotation(scene_payload, frequency_spec, query_id: str) -> Tuple[int, Dict[str, Any]]:
-    """Bind the integer answer and bbox-set annotation from the same scene trace."""
+    """Bind the integer answer and annotation witnesses from the same scene trace."""
 
     if str(query_id) == SINGLETON_QUERY_ID:
         counted_icon_ids = tuple(str(icon_id) for icon_id in scene_payload.singleton_icon_ids)
@@ -265,8 +266,12 @@ class IconsIconFieldTypeFrequencyCountTask:
 
         annotation_bboxes = list(binding["annotation_bboxes"])
         annotation_indices = list(binding["annotation_indices"])
+        annotation_payload = point_set_from_bboxes(annotation_bboxes)
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
+        annotation_gt = TypedValue(
+            type=str(annotation_payload["annotation_type"]),
+            value=list(annotation_payload["annotation_value"]),
+        )
 
         scene_kind = (
             "icons_singleton_type_counting"
@@ -361,6 +366,7 @@ class IconsIconFieldTypeFrequencyCountTask:
                 "singleton_indices": list(scene_payload.singleton_indices),
                 "repeated_indices": list(scene_payload.repeated_indices),
                 "annotation_indices": list(annotation_indices),
+                "annotation_bboxes": list(annotation_bboxes),
                 "winner_icon_id": binding["winner_icon_id"],
                 "winner_frequency": binding["winner_frequency"],
             },
@@ -372,12 +378,11 @@ class IconsIconFieldTypeFrequencyCountTask:
                 "singleton_indices": list(scene_payload.singleton_indices),
                 "repeated_indices": list(scene_payload.repeated_indices),
                 "annotation_indices": list(annotation_indices),
+                "annotation_bboxes": list(annotation_bboxes),
                 "winner_icon_id": binding["winner_icon_id"],
                 "winner_frequency": binding["winner_frequency"],
             },
-            "projected_annotation": {
-                "bbox_set": list(annotation_bboxes),
-            },
+            "projected_annotation": dict(annotation_payload["projected_annotation"]),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),

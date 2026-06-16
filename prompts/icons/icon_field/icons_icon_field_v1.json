@@ -57,17 +57,17 @@
   "static_slots_by_key": {
     "global": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "json_example": "{\"annotation\":[[116,128,176,188],[634,302,704,372]],\"answer\":2}",
+      "json_example": "{\"annotation\":[[146,158],[669,337]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "scene:single_scene_counting": {
       "object_description": "one panel of assorted icons"
     },
     "query:singleton_type_count": {
-      "annotation_hint": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted icon"
+      "annotation_hint": "set \"annotation\" to a JSON array of [x, y] center points in image pixel coordinates for every counted icon"
     },
     "query:most_frequent_type_count": {
-      "annotation_hint": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted icon of the unique most frequent type"
+      "annotation_hint": "set \"annotation\" to a JSON array of [x, y] center points in image pixel coordinates for every counted icon of the unique most frequent type"
     }
   },
   "dynamic_slots": {},

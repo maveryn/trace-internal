@@ -22,7 +22,7 @@ def test_icons_transformation_pair_count_deterministic() -> None:
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.answer_gt.type == "integer"
-    assert out_a.annotation_gt.type == "bbox_set"
+    assert out_a.annotation_gt.type == "point_set"
 
 
 def test_icons_transformation_pair_count_build_smoke(tmp_path: Path) -> None:

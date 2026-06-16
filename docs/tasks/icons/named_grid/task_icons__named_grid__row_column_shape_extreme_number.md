@@ -14,9 +14,9 @@
    column has the most or fewest target-shape icons.
 4. The answer is the one-based row or column number with the unique extreme.
 5. `answer_gt.type = integer`.
-6. `annotation_gt.type = bbox_set` over the target-shape icons in the selected
-   row or column. `projected_annotation` mirrors this as typed bbox-set annotation
-   with `bbox_set`, `pixel_bbox_set`, and bbox-center `pixel_point_set`.
+6. `annotation_gt.type = point_set` over the center points of the target-shape
+   icons in the selected row or column. `projected_annotation` mirrors this as
+   typed point-set annotation with `point_set` and `pixel_point_set`.
 
 ## Query IDs
 - `row_most_shape_number`

@@ -14,7 +14,7 @@ from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import build_prompt_query_spec
 from ...shared.variant_sampling import resolve_variant
-from ..shared.annotation import bbox_set_annotation
+from ..shared.annotation import point_set_from_bboxes
 from ..shared.icon_scene import sort_bboxes_reading_order
 from ..shared.procedural_named_icons import procedural_named_icon_display_name
 from .shared.defaults import SCENE_ID, NamedGridDefaults
@@ -147,7 +147,7 @@ class IconsCountingNamedGridLineConditionCountTask:
         annotation_bboxes = sort_bboxes_reading_order(qualifying_line_bboxes)
         if len(annotation_bboxes) != int(sample.answer_count):
             raise RuntimeError("rendered named-grid line-condition annotation count does not match answer")
-        annotation_payload = bbox_set_annotation(annotation_bboxes)
+        annotation_payload = point_set_from_bboxes(annotation_bboxes)
 
         question_key = f"question_text_{sample.query_id}"
         line_kind_plural = "rows" if str(sample.queried_axis) == "row" else "columns"

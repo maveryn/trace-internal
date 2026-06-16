@@ -16,7 +16,7 @@ Query ids:
 - `single`
 
 Answer schema: integer.
-Annotation schema: `bbox_set` around matching Scene cells.
+Annotation schema: `point_set` over the center points of matching Scene cells.
 
 ## Program Contract
 `count.reference_relation_match(scene=pair_grid, scope=labeled_scene_cells, reference_relation=geometric_transform, output=integer)`

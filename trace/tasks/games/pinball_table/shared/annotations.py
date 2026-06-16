@@ -5,7 +5,11 @@ from __future__ import annotations
 from typing import Sequence
 
 from trace.core.types import TypedValue
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import (
+    AnnotationArtifacts,
+    point_annotation_artifacts,
+    point_set_annotation_artifacts,
+)
 
 from .rendering import RenderedPinballScene
 
@@ -46,7 +50,19 @@ def point_sequence_for_entity_ids(
     )
 
 
+def point_set_for_entity_ids(
+    rendered_scene: RenderedPinballScene,
+    entity_ids: Sequence[str],
+) -> AnnotationArtifacts:
+    """Build unordered point-set annotation for selected pinball objects."""
+
+    return point_set_annotation_artifacts(
+        [_point_for_entity_id(rendered_scene, str(entity_id)) for entity_id in entity_ids]
+    )
+
+
 __all__ = [
     "point_for_entity_id",
+    "point_set_for_entity_ids",
     "point_sequence_for_entity_ids",
 ]

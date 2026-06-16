@@ -26,9 +26,9 @@ _PROMPT_WIRING_KEYS = (
     "json_output_contract",
     "json_output_contract_answer_only",
     "object_description_schematic_table",
-    "object_description_score_path",
+    "object_description_scoreable_count",
     "pinball_motion_rule_text",
-    "pinball_score_rule_text",
+    "pinball_scoreable_rule_text",
 )
 
 
@@ -55,7 +55,7 @@ def build_pinball_prompt_artifacts(
     slots: Dict[str, Any] = {
         "object_description": str(prompt_defaults[str(object_description_key)]),
         "pinball_motion_rule_text": str(prompt_defaults["pinball_motion_rule_text"]),
-        "pinball_score_rule_text": str(prompt_defaults["pinball_score_rule_text"]),
+        "pinball_scoreable_rule_text": str(prompt_defaults["pinball_scoreable_rule_text"]),
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "answer_hint": str(answer_hint),

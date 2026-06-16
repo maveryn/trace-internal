@@ -19,17 +19,15 @@ generation:
   task_overrides:
     task_games__pinball_table__first_hit_object_label:
       balanced_target_object_label_sampling: true
-    task_games__pinball_table__path_score_value:
-      balanced_path_shape_sampling: true
-      balanced_path_hit_count_sampling: true
-      path_shape_weights:
-        one_ricochet: 1.0
-        two_ricochet: 1.0
-        target_revisit: 1.0
-      path_hit_count_support:
+    task_games__pinball_table__scoreable_object_count:
+      balanced_scoreable_object_count_sampling: true
+      scoreable_object_count_support:
+      - 1
       - 2
       - 3
       - 4
+      - 5
+      - 6
 rendering:
   shared:
     canvas_width: 900

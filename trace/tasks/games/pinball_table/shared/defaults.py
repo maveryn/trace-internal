@@ -10,9 +10,7 @@ from trace.tasks.games.shared.visual_defaults import load_games_scene_noise_defa
 
 SCENE_ID = "pinball_table"
 OBJECT_LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(8))
-PATH_SCORE_SHAPES: Tuple[str, ...] = ("one_ricochet", "two_ricochet", "target_revisit")
 PATH_SCORE_VALUES: Tuple[int, ...] = (10, 20, 30, 50)
-PATH_HIT_COUNT_SUPPORT: Tuple[int, ...] = (2, 3, 4)
 
 BUMPER_RADIUS_NORM = 0.045
 STANDUP_RADIUS_NORM = 0.034
@@ -51,8 +49,6 @@ __all__ = [
     "DROP_TARGET_HEIGHT_NORM",
     "DROP_TARGET_WIDTH_NORM",
     "OBJECT_LABELS",
-    "PATH_HIT_COUNT_SUPPORT",
-    "PATH_SCORE_SHAPES",
     "PATH_SCORE_VALUES",
     "POST_IMAGE_NOISE_DEFAULTS",
     "ROLLOVER_HEIGHT_NORM",

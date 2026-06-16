@@ -457,7 +457,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__pacman__pellet_count_before_ghost": _entry("games", "pacman", "games", "pacman"),
     "task_games__pacman__route_score_value": _entry("games", "pacman", "games", "pacman"),
     "task_games__pinball_table__first_hit_object_label": _entry("games", "pinball_table", "games", "pinball_table"),
-    "task_games__pinball_table__path_score_value": _entry("games", "pinball_table", "games", "pinball_table"),
+    "task_games__pinball_table__scoreable_object_count": _entry("games", "pinball_table", "games", "pinball_table"),
     "task_games__irregular_link_board__capture_move_count": _entry("games", "irregular_link_board", "games", "irregular_link_board"),
     "task_games__irregular_link_board__marked_piece_destination_count": _entry("games", "irregular_link_board", "games", "irregular_link_board"),
     "task_games__platformer__collectible_count": _entry("games", "platformer", "games", "platformer"),

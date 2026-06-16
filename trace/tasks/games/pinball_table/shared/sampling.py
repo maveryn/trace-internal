@@ -17,8 +17,6 @@ from .defaults import (
     DROP_TARGET_HEIGHT_NORM,
     DROP_TARGET_WIDTH_NORM,
     OBJECT_LABELS,
-    PATH_HIT_COUNT_SUPPORT,
-    PATH_SCORE_SHAPES,
     PATH_SCORE_VALUES,
     ROLLOVER_HEIGHT_NORM,
     ROLLOVER_WIDTH_NORM,
@@ -56,16 +54,6 @@ class PinballTargetLabelAxis:
 
 
 @dataclass(frozen=True)
-class PinballScorePathAxes:
-    """Resolved path-shape and hit-count axes for score-path tasks."""
-
-    path_shape: str
-    path_shape_probabilities: Dict[str, float]
-    path_hit_count: int
-    path_hit_count_probabilities: Dict[str, float]
-
-
-@dataclass(frozen=True)
 class PinballFirstHitConstruction:
     """Constructed launch scene with the unique first-hit object bound."""
 
@@ -75,22 +63,13 @@ class PinballFirstHitConstruction:
 
 
 @dataclass(frozen=True)
-class PinballPathScoreConstruction:
-    """Constructed drawn-path score scene with ordered hit ids bound."""
+class PinballScoreableObjectCountConstruction:
+    """Constructed mixed-score scene with scoreable object ids bound."""
 
     scene: PinballSceneState
     annotation_entity_ids: Tuple[str, ...]
-    score_total: int
-    hit_score_values: Tuple[int, ...]
-    repeated_hit_object_ids: Tuple[str, ...]
-
-
-@dataclass(frozen=True)
-class _ScorePathPlan:
-    """Complete drawn scoring path plus any forced scoring events."""
-
-    points: Tuple[Tuple[float, float], ...]
-    forced_hit_events: Tuple[Tuple[float, Tuple[float, float]], ...] = ()
+    scoreable_count: int
+    score_values: Tuple[int, ...]
 
 
 def _resolve_named_axis(
@@ -207,49 +186,6 @@ def resolve_pinball_target_label(
     )
 
 
-def resolve_pinball_score_path_axes(
-    instance_seed: int,
-    *,
-    gen_defaults: Mapping[str, Any],
-    namespace: str,
-    params: Mapping[str, Any],
-    object_count: int,
-) -> PinballScorePathAxes:
-    """Resolve path-shape and path-hit-count axes for a drawn scoring path."""
-
-    path_shape, path_shape_probabilities = _resolve_named_axis(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=gen_defaults,
-        namespace_root=str(namespace),
-        namespace="path_shape",
-        explicit_key="path_shape",
-        weights_key="path_shape_weights",
-        balance_flag_key="balanced_path_shape_sampling",
-        supported=PATH_SCORE_SHAPES,
-    )
-    support = tuple(value for value in PATH_HIT_COUNT_SUPPORT if int(value) <= max(1, int(object_count) - 1))
-    path_hit_count, path_hit_count_probabilities = resolve_integer_choice(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=gen_defaults,
-        support_key="path_hit_count_support",
-        explicit_key="path_hit_count",
-        fallback_support=support or (2,),
-        namespace=f"{str(namespace)}.path_hit_count",
-        balanced_flag_key="balanced_path_hit_count_sampling",
-        namespace_support_permutation=True,
-    )
-    if int(path_hit_count) >= int(object_count):
-        raise ValueError("path_hit_count must be smaller than object_count")
-    return PinballScorePathAxes(
-        path_shape=str(path_shape),
-        path_shape_probabilities=dict(path_shape_probabilities),
-        path_hit_count=int(path_hit_count),
-        path_hit_count_probabilities=dict(path_hit_count_probabilities),
-    )
-
-
 def _unit_from_angle(angle_rad: float) -> Tuple[float, float]:
     """Return a unit vector for an angle in normalized table coordinates."""
 
@@ -279,91 +215,6 @@ def _distance_to_segment(
     t = max(0.0, min(1.0, (((px - ax) * vx) + ((py - ay) * vy)) / denom))
     closest = (ax + (t * vx), ay + (t * vy))
     return _distance(point, closest)
-
-
-def _distance_to_polyline(point: Tuple[float, float], path: Sequence[Tuple[float, float]]) -> float:
-    """Return the minimum distance from a point to a normalized polyline."""
-
-    if len(path) < 2:
-        return 1.0e9
-    return min(
-        _distance_to_segment(point, path[index], path[index + 1])
-        for index in range(len(path) - 1)
-    )
-
-
-def _polyline_lengths(path: Sequence[Tuple[float, float]]) -> Tuple[float, Tuple[float, ...]]:
-    """Return total polyline length and per-segment lengths."""
-
-    lengths = tuple(
-        _distance(path[index], path[index + 1])
-        for index in range(max(0, len(path) - 1))
-    )
-    return float(sum(lengths)), lengths
-
-
-def _path_distance_at_vertex(path: Sequence[Tuple[float, float]], vertex_index: int) -> float:
-    """Return arclength distance from the path start to one vertex."""
-
-    index_limit = max(0, min(int(vertex_index), len(path) - 1))
-    if index_limit <= 0:
-        return 0.0
-    return float(
-        sum(
-            _distance(path[index], path[index + 1])
-            for index in range(index_limit)
-        )
-    )
-
-
-def _turn_angle_degrees(
-    a: Tuple[float, float],
-    b: Tuple[float, float],
-    c: Tuple[float, float],
-) -> float:
-    """Return the direction-change angle at ``b`` in degrees."""
-
-    v1 = (float(b[0]) - float(a[0]), float(b[1]) - float(a[1]))
-    v2 = (float(c[0]) - float(b[0]), float(c[1]) - float(b[1]))
-    len1 = math.hypot(float(v1[0]), float(v1[1]))
-    len2 = math.hypot(float(v2[0]), float(v2[1]))
-    if len1 <= 1e-9 or len2 <= 1e-9:
-        return 0.0
-    dot = ((float(v1[0]) * float(v2[0])) + (float(v1[1]) * float(v2[1]))) / (len1 * len2)
-    dot = max(-1.0, min(1.0, float(dot)))
-    return float(math.degrees(math.acos(dot)))
-
-
-def _has_clean_pinball_turns(path: Sequence[Tuple[float, float]]) -> bool:
-    """Return whether turns are visually clear rather than shallow zig-zags."""
-
-    if len(path) < 4:
-        return False
-    angles = [
-        _turn_angle_degrees(path[index - 1], path[index], path[index + 1])
-        for index in range(1, len(path) - 1)
-    ]
-    return bool(angles) and all(52.0 <= float(angle) <= 158.0 for angle in angles)
-
-
-def _point_at_polyline_distance(path: Sequence[Tuple[float, float]], distance: float) -> Tuple[float, float]:
-    """Return one point at arclength distance along a normalized polyline."""
-
-    remaining = max(0.0, float(distance))
-    for index in range(max(0, len(path) - 1)):
-        start = path[index]
-        end = path[index + 1]
-        segment_length = _distance(start, end)
-        if float(segment_length) <= 1e-9:
-            continue
-        if float(remaining) <= float(segment_length):
-            t = float(remaining / segment_length)
-            return (
-                float(start[0] + (t * (float(end[0]) - float(start[0])))),
-                float(start[1] + (t * (float(end[1]) - float(start[1])))),
-            )
-        remaining -= float(segment_length)
-    return (float(path[-1][0]), float(path[-1][1]))
 
 
 def _ray_circle_intersection(
@@ -476,16 +327,6 @@ def first_hit_object_id(
     if len(hits) >= 2 and abs(float(hits[1][0]) - float(hits[0][0])) < 0.035:
         return None
     return str(hits[0][1])
-
-
-def pinball_turn_angle_degrees(
-    a: Tuple[float, float],
-    b: Tuple[float, float],
-    c: Tuple[float, float],
-) -> float:
-    """Expose the clean-turn calculation for focused contract tests."""
-
-    return _turn_angle_degrees(a, b, c)
 
 
 def _safe_object_position(
@@ -677,149 +518,14 @@ def sample_unique_first_hit_playfield(
     raise ValueError("failed to construct pinball first-hit scene")
 
 
-def _sample_score_path(*, rng: Any, path_shape: str) -> _ScorePathPlan | None:
-    """Sample one complete drawn pinball trajectory in normalized playfield coordinates."""
-
-    shape = str(path_shape)
-    for _attempt in range(180):
-        start = (float(rng.uniform(0.40, 0.60)), float(rng.uniform(0.84, 0.89)))
-        end = (float(rng.uniform(0.34, 0.66)), float(rng.uniform(0.91, 0.94)))
-        forced_hit_events: Tuple[Tuple[float, Tuple[float, float]], ...] = ()
-        if shape == "one_ricochet":
-            first_side_left = bool(rng.randrange(2))
-            side_bounce = (
-                float(rng.uniform(0.09, 0.12) if first_side_left else rng.uniform(0.88, 0.91)),
-                float(rng.uniform(0.42, 0.60)),
-            )
-            top_bounce = (
-                float(rng.uniform(0.60, 0.80) if first_side_left else rng.uniform(0.20, 0.40)),
-                float(rng.uniform(0.10, 0.15)),
-            )
-            path = (start, side_bounce, top_bounce, end)
-        elif shape == "two_ricochet":
-            first_side_left = bool(rng.randrange(2))
-            side_bounce_1 = (
-                float(rng.uniform(0.09, 0.12) if first_side_left else rng.uniform(0.88, 0.91)),
-                float(rng.uniform(0.48, 0.64)),
-            )
-            top_bounce = (
-                float(rng.uniform(0.32, 0.68)),
-                float(rng.uniform(0.10, 0.15)),
-            )
-            side_bounce_2 = (
-                float(rng.uniform(0.88, 0.91) if first_side_left else rng.uniform(0.09, 0.12)),
-                float(rng.uniform(0.36, 0.54)),
-            )
-            path = (start, side_bounce_1, top_bounce, side_bounce_2, end)
-        else:
-            first_side_left = bool(rng.randrange(2))
-            repeat_center = (float(rng.uniform(0.40, 0.60)), float(rng.uniform(0.36, 0.52)))
-            top_bounce = (float(rng.uniform(0.20, 0.80)), float(rng.uniform(0.10, 0.16)))
-            end_y = float(rng.uniform(0.91, 0.94))
-            scale = (end_y - float(top_bounce[1])) / max(1e-6, float(repeat_center[1]) - float(top_bounce[1]))
-            end_x = float(top_bounce[0]) + (scale * (float(repeat_center[0]) - float(top_bounce[0])))
-            if not (0.30 <= end_x <= 0.70):
-                continue
-            if first_side_left:
-                rail_bounce = (float(rng.uniform(0.09, 0.12)), float(rng.uniform(0.12, 0.30)))
-            else:
-                rail_bounce = (float(rng.uniform(0.88, 0.91)), float(rng.uniform(0.12, 0.30)))
-            end = (float(end_x), float(end_y))
-            path = (start, repeat_center, rail_bounce, top_bounce, end)
-            distance_to_second_hit = (
-                _path_distance_at_vertex(path, 3)
-                + _distance(top_bounce, repeat_center)
-            )
-            forced_hit_events = (
-                (_path_distance_at_vertex(path, 1), repeat_center),
-                (float(distance_to_second_hit), repeat_center),
-            )
-        total_length, segment_lengths = _polyline_lengths(path)
-        if float(total_length) < 0.86:
-            continue
-        if any(float(length) < 0.18 for length in segment_lengths):
-            continue
-        if len(path) - 1 not in {3, 4}:
-            continue
-        if float(path[-1][1]) < 0.90:
-            continue
-        if not _has_clean_pinball_turns(path):
-            continue
-        return _ScorePathPlan(
-            points=tuple((float(x), float(y)) for x, y in path),
-            forced_hit_events=tuple(
-                (float(distance), (float(center[0]), float(center[1])))
-                for distance, center in forced_hit_events
-            ),
-        )
-    return None
-
-
-def _sample_hit_centers_on_path(
-    *,
-    rng: Any,
-    path: Tuple[Tuple[float, float], ...],
-    hit_count: int,
-    forced_hit_events: Sequence[Tuple[float, Tuple[float, float]]] = (),
-) -> Tuple[Tuple[float, float], ...] | None:
-    """Sample ordered scoring-hit centers along a visible trajectory."""
-
-    total_length, _segment_lengths = _polyline_lengths(path)
-    if float(total_length) <= 0.0:
-        return None
-    forced_events = tuple(
-        (float(distance), (float(center[0]), float(center[1])))
-        for distance, center in forced_hit_events
-    )
-    if len(forced_events) > int(hit_count):
-        return None
-    forced_centers = tuple(center for _distance_value, center in forced_events)
-    for _attempt in range(120):
-        sampled_distances: list[float] = []
-        needed_count = int(hit_count) - len(forced_events)
-        for _distance_attempt in range(180):
-            if len(sampled_distances) >= needed_count:
-                break
-            candidate = float(rng.uniform(0.12 * total_length, 0.88 * total_length))
-            if any(abs(float(candidate) - float(existing)) < 0.13 for existing in sampled_distances):
-                continue
-            if any(abs(float(candidate) - float(existing)) < 0.13 for existing, _center in forced_events):
-                continue
-            sampled_distances.append(candidate)
-        if len(sampled_distances) < needed_count:
-            continue
-        distances = sorted(sampled_distances)
-        sampled_centers = tuple(_point_at_polyline_distance(path, distance) for distance in distances)
-        if any(not (0.13 <= float(x) <= 0.87 and 0.12 <= float(y) <= 0.77) for x, y in sampled_centers + forced_centers):
-            continue
-        unique_centers: list[Tuple[float, float]] = []
-        valid = True
-        for center in sampled_centers:
-            if any(_distance(center, existing) < 0.13 for existing in unique_centers):
-                valid = False
-                break
-            if any(_distance(center, forced) < 0.13 for forced in forced_centers):
-                valid = False
-                break
-            unique_centers.append(center)
-        if not valid:
-            continue
-        events = [(float(distance), center) for distance, center in zip(distances, sampled_centers)]
-        events.extend((float(distance), center) for distance, center in forced_events)
-        events.sort(key=lambda item: item[0])
-        return tuple((float(center[0]), float(center[1])) for _distance_value, center in events)
-    return None
-
-
-def _safe_score_distractor_position(
+def _safe_mixed_object_position(
     *,
     rng: Any,
     kind: str,
     existing: Sequence[PinballObject],
     ball: Tuple[float, float],
-    path: Tuple[Tuple[float, float], ...],
 ) -> Tuple[float, float] | None:
-    """Sample one scored-object distractor away from the shown trajectory."""
+    """Sample one mixed-score object position away from the ball and objects."""
 
     for _attempt in range(220):
         point = _sample_zone_position(rng=rng, kind=str(kind))
@@ -827,135 +533,96 @@ def _safe_score_distractor_position(
             continue
         if any(_distance(point, (float(obj.x_norm), float(obj.y_norm))) < 0.14 for obj in existing):
             continue
-        if _distance_to_polyline(point, path) < 0.12:
-            continue
         return point
     return None
 
 
-def _objects_for_path_score(
+def sample_scoreable_object_count_playfield(
     *,
     rng: Any,
     axes: PinballVisualAxes,
-    path: Tuple[Tuple[float, float], ...],
-    hit_count: int,
-    forced_hit_events: Sequence[Tuple[float, Tuple[float, float]]] = (),
-) -> Tuple[Tuple[PinballObject, ...], Tuple[str, ...]] | None:
-    """Create scored pinball objects and ordered scoring-hit annotation ids."""
+    scoreable_count: int,
+) -> PinballScoreableObjectCountConstruction:
+    """Construct a playfield with mixed numeric-score and letter-only objects."""
 
-    hit_centers = _sample_hit_centers_on_path(
-        rng=rng,
-        path=path,
-        hit_count=int(hit_count),
-        forced_hit_events=forced_hit_events,
-    )
-    if hit_centers is None:
-        return None
-    labels = list(OBJECT_LABELS[: int(axes.object_count)])
-    rng.shuffle(labels)
-    kind_pool = list(SUPPORTED_PINBALL_OBJECT_KINDS)
-    objects: list[PinballObject] = []
-    annotation_ids: list[str] = []
-    center_to_object_id: dict[Tuple[int, int], str] = {}
-    for center in hit_centers:
-        center_key = (int(round(float(center[0]) * 10000.0)), int(round(float(center[1]) * 10000.0)))
-        existing_object_id = center_to_object_id.get(center_key)
-        if existing_object_id is not None:
-            annotation_ids.append(str(existing_object_id))
-            continue
-        index = len(objects)
-        kind = _kind_for_target_center(y_norm=float(center[1]), rng=rng)
-        score_value = int(rng.choice(PATH_SCORE_VALUES))
-        obj = _make_object(index=index, label=str(labels[index]), kind=kind, center=center, rng=rng, score_value=score_value)
-        objects.append(obj)
-        center_to_object_id[center_key] = str(obj.object_id)
-        annotation_ids.append(str(obj.object_id))
-    for index in range(len(objects), int(axes.object_count)):
-        kind = str(kind_pool[int((index + rng.randrange(len(kind_pool))) % len(kind_pool))])
-        center = _safe_score_distractor_position(
-            rng=rng,
-            kind=kind,
-            existing=objects,
-            ball=path[0],
-            path=path,
-        )
-        if center is None:
-            return None
-        score_value = int(rng.choice(PATH_SCORE_VALUES))
-        objects.append(_make_object(index=index, label=str(labels[index]), kind=kind, center=center, rng=rng, score_value=score_value))
-    return tuple(objects), tuple(annotation_ids)
-
-
-def sample_path_score_playfield(
-    *,
-    rng: Any,
-    axes: PinballVisualAxes,
-    path_shape: str,
-    hit_count: int,
-) -> PinballPathScoreConstruction:
-    """Construct a playfield with a complete shown score trajectory."""
+    if int(scoreable_count) < 1:
+        raise ValueError("scoreable_count must be positive")
+    if int(scoreable_count) >= int(axes.object_count):
+        raise ValueError("scoreable_count must leave at least one non-scoreable object")
 
     for _attempt in range(240):
-        path_plan = _sample_score_path(rng=rng, path_shape=str(path_shape))
-        if path_plan is None:
-            continue
-        maybe_objects = _objects_for_path_score(
-            rng=rng,
-            axes=axes,
-            path=path_plan.points,
-            hit_count=int(hit_count),
-            forced_hit_events=path_plan.forced_hit_events,
+        ball = (float(rng.uniform(0.38, 0.62)), float(rng.uniform(0.82, 0.90)))
+        cue_angle = float(rng.uniform(-2.34, -0.80))
+        cue_direction = _unit_from_angle(cue_angle)
+        hidden_end = (
+            float(ball[0] + (cue_direction[0] * 0.48)),
+            float(ball[1] + (cue_direction[1] * 0.48)),
         )
-        if maybe_objects is None:
-            continue
-        objects, annotation_ids = maybe_objects
-        score_by_id = {str(obj.object_id): int(obj.score_value or 0) for obj in objects}
-        hit_score_values = tuple(int(score_by_id[str(entity_id)]) for entity_id in annotation_ids)
-        score_total = int(sum(hit_score_values))
-        if int(score_total) <= 0:
-            continue
-        repeated_ids = tuple(
-            sorted(
-                {
-                    str(entity_id)
-                    for entity_id in annotation_ids
-                    if annotation_ids.count(str(entity_id)) > 1
-                }
+        labels = list(OBJECT_LABELS[: int(axes.object_count)])
+        rng.shuffle(labels)
+        scoreable_indices = set(rng.sample(range(int(axes.object_count)), int(scoreable_count)))
+        kind_pool = list(SUPPORTED_PINBALL_OBJECT_KINDS)
+        rng.shuffle(kind_pool)
+        objects: list[PinballObject] = []
+        score_values: list[int] = []
+        annotation_ids: list[str] = []
+        for index, label in enumerate(labels):
+            kind = str(kind_pool[int((index + rng.randrange(len(kind_pool))) % len(kind_pool))])
+            center = _safe_mixed_object_position(
+                rng=rng,
+                kind=kind,
+                existing=objects,
+                ball=ball,
             )
-        )
+            if center is None:
+                break
+            is_scoreable = int(index) in scoreable_indices
+            score_value = int(rng.choice(PATH_SCORE_VALUES)) if is_scoreable else None
+            obj = _make_object(
+                index=index,
+                label=str(label),
+                kind=kind,
+                center=center,
+                rng=rng,
+                score_value=score_value,
+            )
+            objects.append(obj)
+            if is_scoreable:
+                annotation_ids.append(str(obj.object_id))
+                score_values.append(int(score_value or 0))
+        if len(objects) != int(axes.object_count):
+            continue
+        if len(annotation_ids) != int(scoreable_count):
+            continue
         scene = PinballSceneState(
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
-            ball_x_norm=float(path_plan.points[0][0]),
-            ball_y_norm=float(path_plan.points[0][1]),
-            cue_angle_rad=0.0,
-            cue_visible_fraction=1.0,
-            objects=objects,
-            construction_mode=f"complete_{str(path_shape)}_path_score_sum",
-            hidden_path_norm=tuple(path_plan.points),
+            ball_x_norm=float(ball[0]),
+            ball_y_norm=float(ball[1]),
+            cue_angle_rad=float(cue_angle),
+            cue_visible_fraction=float(rng.uniform(0.30, 0.42)),
+            objects=tuple(objects),
+            construction_mode="mixed_scoreable_object_count",
+            hidden_path_norm=(ball, hidden_end),
         )
         validate_pinball_scene_state(scene)
-        return PinballPathScoreConstruction(
+        return PinballScoreableObjectCountConstruction(
             scene=scene,
-            annotation_entity_ids=tuple(str(entity_id) for entity_id in annotation_ids),
-            score_total=int(score_total),
-            hit_score_values=hit_score_values,
-            repeated_hit_object_ids=repeated_ids,
+            annotation_entity_ids=tuple(annotation_ids),
+            scoreable_count=int(scoreable_count),
+            score_values=tuple(int(value) for value in score_values),
         )
-    raise ValueError("failed to construct pinball path-score scene")
+    raise ValueError("failed to construct pinball scoreable-object count scene")
 
 
 __all__ = [
     "PinballFirstHitConstruction",
-    "PinballPathScoreConstruction",
-    "PinballScorePathAxes",
+    "PinballScoreableObjectCountConstruction",
     "PinballTargetLabelAxis",
     "PinballVisualAxes",
     "first_hit_object_id",
-    "pinball_turn_angle_degrees",
-    "resolve_pinball_score_path_axes",
     "resolve_pinball_target_label",
     "resolve_pinball_visual_axes",
-    "sample_path_score_playfield",
+    "sample_scoreable_object_count_playfield",
     "sample_unique_first_hit_playfield",
 ]

@@ -14,10 +14,19 @@ from trace.tasks.geometry.coordinate_composite.intersection_point_count import (
     GeometryCoordinateCompositeIntersectionPointCountTask,
 )
 
+TRANSFORMS = ("identity", "reflect_x", "reflect_y", "rotate90", "rotate180")
+
 
 def _generate(seed: int, **params):
     task = create_task(TASK_ID)
     return task.generate(seed, params=dict(params), max_attempts=20)
+
+
+def _assert_segment_not_on_axis(p0, p1) -> None:
+    x0, y0 = [float(value) for value in p0]
+    x1, y1 = [float(value) for value in p1]
+    assert not (abs(y0) < 1e-6 and abs(y1) < 1e-6)
+    assert not (abs(x0) < 1e-6 and abs(x1) < 1e-6)
 
 
 def test_coordinate_composite_intersection_count_registered() -> None:
@@ -64,6 +73,25 @@ def test_coordinate_composite_zero_intersection_uses_empty_annotation() -> None:
     assert out.answer_gt.value == 0
     assert out.annotation_gt.value == []
     assert out.trace_payload["projected_annotation"]["point_set"] == []
+
+
+@pytest.mark.parametrize("query_id", QUERY_IDS)
+@pytest.mark.parametrize("target_count", range(5))
+@pytest.mark.parametrize("transform", TRANSFORMS)
+def test_coordinate_composite_line_segments_do_not_overlap_axes(query_id: str, target_count: int, transform: str) -> None:
+    out = _generate(
+        20260623,
+        query_id=query_id,
+        target_count=target_count,
+        transform=transform,
+    )
+    for obj in out.trace_payload["scene_ir"]["objects"]:
+        if obj["kind"] == "line_segment":
+            _assert_segment_not_on_axis(obj["p0"], obj["p1"])
+        if obj["kind"] == "polygon":
+            vertices = list(obj["vertices"])
+            for index, p0 in enumerate(vertices):
+                _assert_segment_not_on_axis(p0, vertices[(index + 1) % len(vertices)])
 
 
 def test_coordinate_composite_is_deterministic() -> None:

@@ -92,11 +92,11 @@ def _case_pool_by_query() -> Dict[str, Tuple[_CompositeCase, ...]]:
         QUERY_ID_LINE_CIRCLE: (
             _CompositeCase("line_circle_zero_points", (line_object("line_a", (-7.0, 5.0), (7.0, 5.0)), circle_object("circle_b", (0.0, 0.0), 2.0)), 0),
             _CompositeCase("line_circle_one_tangent", (line_object("line_a", (-7.0, 2.0), (7.0, 2.0)), circle_object("circle_b", (0.0, 0.0), 2.0)), 1),
-            _CompositeCase("line_circle_two_secant", (line_object("line_a", (-7.0, 0.0), (7.0, 0.0)), circle_object("circle_b", (0.0, 0.0), 2.0)), 2),
+            _CompositeCase("line_circle_two_secant", (line_object("line_a", (-7.0, 1.0), (7.0, 1.0)), circle_object("circle_b", (0.0, 0.0), 2.0)), 2),
             _CompositeCase(
                 "line_circle_three_two_plus_tangent",
                 (
-                    line_object("line_a", (-7.0, 0.0), (7.0, 0.0)),
+                    line_object("line_a", (-7.0, 1.0), (7.0, 1.0)),
                     circle_object("circle_b", (-3.0, 0.0), 1.0),
                     circle_object("circle_c", (3.0, 1.0), 1.0),
                 ),
@@ -105,9 +105,9 @@ def _case_pool_by_query() -> Dict[str, Tuple[_CompositeCase, ...]]:
             _CompositeCase(
                 "line_circle_four_two_secants",
                 (
-                    line_object("line_a", (-7.0, 0.0), (7.0, 0.0)),
-                    circle_object("circle_b", (-3.0, 0.0), 1.0),
-                    circle_object("circle_c", (3.0, 0.0), 1.0),
+                    line_object("line_a", (-7.0, 1.0), (7.0, 1.0)),
+                    circle_object("circle_b", (-3.0, 1.0), 1.0),
+                    circle_object("circle_c", (3.0, 1.0), 1.0),
                 ),
                 4,
             ),
@@ -135,15 +135,15 @@ def _case_pool_by_query() -> Dict[str, Tuple[_CompositeCase, ...]]:
         QUERY_ID_LINE_POLYGON: (
             _CompositeCase("line_polygon_zero_external", (line_object("line_a", (-7.0, 4.0), (7.0, 4.0)), polygon_object("polygon_b", rect)), 0),
             _CompositeCase("line_polygon_one_corner_touch", (line_object("line_a", (-7.0, 2.0), (-3.0, 2.0)), polygon_object("polygon_b", rect)), 1),
-            _CompositeCase("line_polygon_two_crossing", (line_object("line_a", (-7.0, 0.0), (7.0, 0.0)), polygon_object("polygon_b", rect)), 2),
+            _CompositeCase("line_polygon_two_crossing", (line_object("line_a", (-7.0, 1.0), (7.0, 1.0)), polygon_object("polygon_b", rect)), 2),
             _CompositeCase(
                 "line_polygon_three_cross_and_touch",
-                (line_object("line_a", (-7.0, 0.0), (7.0, 0.0)), line_object("line_b", (-7.0, 2.0), (-3.0, 2.0)), polygon_object("polygon_c", rect)),
+                (line_object("line_a", (-7.0, 1.0), (7.0, 1.0)), line_object("line_b", (-7.0, 2.0), (-3.0, 2.0)), polygon_object("polygon_c", rect)),
                 3,
             ),
             _CompositeCase(
                 "line_polygon_four_two_crossings",
-                (line_object("line_a", (-7.0, 0.0), (7.0, 0.0)), line_object("line_b", (0.0, -6.0), (0.0, 6.0)), polygon_object("polygon_c", rect)),
+                (line_object("line_a", (-7.0, 1.0), (7.0, 1.0)), line_object("line_b", (1.0, -6.0), (1.0, 6.0)), polygon_object("polygon_c", rect)),
                 4,
             ),
         ),
@@ -196,7 +196,7 @@ def _case_pool_by_query() -> Dict[str, Tuple[_CompositeCase, ...]]:
             _CompositeCase(
                 "mixed_two_secant",
                 (
-                    line_object("line_a", (-7.0, 0.0), (2.0, 0.0)),
+                    line_object("line_a", (-7.0, 1.0), (2.0, 1.0)),
                     circle_object("circle_b", (0.0, 0.0), 2.0),
                     polygon_object("polygon_c", ((4.0, -2.0), (7.0, -2.0), (7.0, 2.0), (4.0, 2.0))),
                 ),
@@ -205,8 +205,8 @@ def _case_pool_by_query() -> Dict[str, Tuple[_CompositeCase, ...]]:
             _CompositeCase(
                 "mixed_three_line_circle_rectangle",
                 (
-                    line_object("line_a", (-7.0, 0.0), (7.0, 0.0)),
-                    circle_object("circle_b", (0.0, 3.0), 3.0),
+                    line_object("line_a", (-7.0, 1.0), (7.0, 1.0)),
+                    circle_object("circle_b", (0.0, 4.0), 3.0),
                     polygon_object("polygon_c", ((4.0, -2.0), (7.0, -2.0), (7.0, 2.0), (4.0, 2.0))),
                 ),
                 3,

@@ -1,6 +1,6 @@
 # `task_games__pinball_table__path_score_value`
 
-## Program Contract
+## Contract
 1. Domain: `games`
 2. Scene package: `trace/tasks/games/pinball_table/`
 3. Scene id: `pinball_table`
@@ -8,7 +8,9 @@
 5. Supported `query_id` values: `single`
 6. Answer schema: `integer`
 7. Annotation schema: `point_sequence`
-8. Program schema: `sum(score(hit_object) for hit_object in ordered_scoring_hits_along_visible_path); scene=pinball_table; scope=path_score_value`
+
+## Program Contract
+`sum(score(hit_object) for hit_object in ordered_scoring_hits_along_visible_path); scene=pinball_table; scope=path_score_value`
 
 ## Generation Notes
 1. The scene renders a tilted pinball playfield with one ball, a full drawn ball path that travels to a rail/top edge and then continues to the bottom edge, plus flippers, slingshots, rails, bumpers, lanes, and scored targets.

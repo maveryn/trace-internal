@@ -867,9 +867,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__park_playground__swapped_tile_pair_label": _entry(
         "illustrations", "park_playground", "illustrations", "park_playground"
     ),
-    "task_illustrations__pixel_village__jigsaw_arrangement_label": _entry(
-        "illustrations", "pixel_village", "illustrations", "pixel_village"
-    ),
     "task_illustrations__pixel_village__missing_patch_label": _entry(
         "illustrations", "pixel_village", "illustrations", "pixel_village"
     ),

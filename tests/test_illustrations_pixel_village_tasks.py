@@ -6,9 +6,6 @@ from pathlib import Path
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
-from trace.tasks.illustrations.pixel_village.jigsaw_arrangement_label import (
-    _sample_spec as _sample_jigsaw_arrangement_spec,
-)
 from trace.tasks.illustrations.pixel_village.missing_patch_label import (
     _sample_spec as _sample_missing_patch_spec,
 )
@@ -21,7 +18,6 @@ from trace.tasks.illustrations.pixel_village.swapped_tile_pair_label import (
 from trace.tasks.illustrations.shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS
 
 
-JIGSAW_TASK_ID = "task_illustrations__pixel_village__jigsaw_arrangement_label"
 MISSING_PATCH_TASK_ID = "task_illustrations__pixel_village__missing_patch_label"
 OBJECT_TASK_ID = "task_illustrations__pixel_village__object_type_count"
 PATH_TASK_ID = "task_illustrations__pixel_village__person_path_count"
@@ -43,7 +39,6 @@ TERRITORY_TARGETS = {
     "orchard_tree": ("orchard_0", "tree"),
 }
 TASK_SOURCE_STEMS = {
-    JIGSAW_TASK_ID: "jigsaw_arrangement_label.py",
     MISSING_PATCH_TASK_ID: "missing_patch_label.py",
     OBJECT_TASK_ID: "object_type_count.py",
     PATH_TASK_ID: "person_path_count.py",
@@ -130,51 +125,6 @@ def _assert_keyed_annotation_inside_canvas(out) -> None:
 def _assert_hash_balanced_counts(counts: Counter, expected_keys: set[int]) -> None:
     assert set(counts) == set(expected_keys)
     assert max(counts.values()) - min(counts.values()) <= 15
-
-
-def test_pixel_village_jigsaw_arrangement_label_contract() -> None:
-    _assert_scene_packaged_task(JIGSAW_TASK_ID)
-    out = create_task(JIGSAW_TASK_ID).generate(
-        hash64(2026061505, "pixel-village-jigsaw", 0),
-        params={"correct_index": 2, "canvas_profile": "square"},
-        max_attempts=160,
-    )
-    trace = out.trace_payload
-    _assert_scene_prompt_metadata(trace)
-    answer_label = str(out.answer_gt.value)
-    option_bboxes = trace["render_map"]["option_bboxes_px_by_label"]
-    option_permutations = trace["render_map"]["option_permutations_by_label"]
-
-    assert out.scene_id == "pixel_village"
-    assert out.query_id == "single"
-    assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "bbox"
-    assert answer_label == "C"
-    assert sorted(option_bboxes) == ["A", "B", "C", "D"]
-    assert out.annotation_gt.value == option_bboxes[answer_label]
-    assert trace["projected_annotation"]["type"] == "bbox"
-    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
-    assert trace["render_map"]["selected_option_bbox_px"] == option_bboxes[answer_label]
-    assert trace["render_spec"]["style"]["jigsaw_style"]["style_id"] == "frameless_illustration"
-    assert option_permutations[answer_label] == [0, 1, 2, 3]
-    assert sum(perm == [0, 1, 2, 3] for perm in option_permutations.values()) == 1
-    assert trace["query_spec"]["params"]["grid_shape"] == [2, 2]
-    assert trace["render_map"]["option_layout_shape"] == [2, 2]
-    assert trace["query_spec"]["params"]["canvas_profile"] == "square"
-    assert min(trace["query_spec"]["params"]["tile_detail_scores"]) >= 340
-    _assert_bbox_inside_canvas(out.annotation_gt.value, width=out.image.width, height=out.image.height)
-
-
-def test_pixel_village_jigsaw_sampler_covers_answer_labels() -> None:
-    samples = [
-        _sample_jigsaw_arrangement_spec(
-            instance_seed=hash64(2026061505, "pixel-village-jigsaw-sampling", index),
-            params={"_sample_cursor": index},
-            attempt_index=0,
-        )
-        for index in range(100)
-    ]
-    assert Counter(sample.correct_index for sample in samples) == Counter({0: 25, 1: 25, 2: 25, 3: 25})
 
 
 def test_pixel_village_missing_patch_label_contract() -> None:

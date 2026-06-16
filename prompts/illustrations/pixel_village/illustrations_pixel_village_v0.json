@@ -2,13 +2,6 @@
   "bundle_id": "illustrations_pixel_village_v0",
   "schema_version": "v0",
   "task_templates": {
-    "pixel_village_jigsaw_arrangement_label_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "pixel_village_missing_patch_label_task": [
       "",
       "",
@@ -61,7 +54,6 @@
   },
   "required_slots_by_key": {
     "scene:pixel_village_canvas": [],
-    "query:jigsaw_arrangement_label": [],
     "query:missing_patch_label": [],
     "query:object_type_count": [
       "target_plural",
@@ -118,13 +110,6 @@
     ]
   },
   "query_templates": {
-    "jigsaw_arrangement_label": [
-      "Which option shows the pixel village image with the tiles arranged correctly?",
-      "Select the option where the pixel village tiles are in the correct arrangement.",
-      "Which lettered option reconstructs the pixel village scene correctly?",
-      "Find the option whose tiles form the correct pixel village image.",
-      "Which option places the pixel village tiles in the original row-major arrangement?"
-    ],
     "missing_patch_label": [
       "Which option restores the missing region of the pixel village image?",
       "Select the option that fills the missing patch exactly.",

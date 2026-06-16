@@ -2,12 +2,6 @@ generation:
   shared:
     balanced_sampling: true
   task_overrides:
-    task_illustrations__pixel_village__jigsaw_arrangement_label:
-      query_id_support:
-        - single
-      source_width: 520
-      source_height: 390
-      min_tile_detail_score: 340
     task_illustrations__pixel_village__missing_patch_label:
       query_id_support:
         - single
@@ -77,17 +71,6 @@ generation:
 
 rendering:
   task_overrides:
-    task_illustrations__pixel_village__jigsaw_arrangement_label:
-      pixel_village_canvas_width: 960
-      pixel_village_canvas_height: 720
-      pixel_village_tile_px: 40
-      pixel_village_theme_mode: auto
-      pixel_village_cemetery_mode: force
-      pixel_village_orchard_mode: force
-      pixel_village_windmill_mode: force
-      pixel_village_river_mode: force
-      pixel_village_river_orientation: auto
-      pixel_village_river_placement: balanced
     task_illustrations__pixel_village__missing_patch_label:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
@@ -164,14 +147,6 @@ rendering:
 
 prompt:
   task_overrides:
-    task_illustrations__pixel_village__jigsaw_arrangement_label:
-      bundle_id: illustrations_pixel_village_v0
-      scene_key: pixel_village_canvas
-      task_key: pixel_village_jigsaw_arrangement_label_task
-      answer_hint_jigsaw_arrangement: set "answer" to the selected option letter
-      annotation_hint_jigsaw_arrangement: set "annotation" to one [x0, y0, x1, y1] box around the selected option image in pixel coordinates
-      json_example_jigsaw_arrangement: '{"annotation":[594,478,1114,844],"answer":"C"}'
-      json_example_answer_only_jigsaw_arrangement: '{"answer":"C"}'
     task_illustrations__pixel_village__missing_patch_label:
       bundle_id: illustrations_pixel_village_v0
       scene_key: pixel_village_canvas

@@ -9,6 +9,11 @@ from trace.tasks.geometry.concentric_chord.chord_length_from_radii import (
 )
 from trace.tasks.geometry.concentric_chord.inner_radius_from_chord import GeometryConcentricInnerRadiusFromChordTask
 from trace.tasks.geometry.concentric_chord.shared.defaults import SCENE_ID
+from trace.tasks.geometry.concentric_chord.shared.sampling import (
+    MAX_INNER_RADIUS_RATIO,
+    MIN_INNER_RADIUS_RATIO,
+    PYTHAGOREAN_CASES,
+)
 
 TASK_CLASSES = (
     GeometryConcentricChordLengthFromRadiiTask,
@@ -129,3 +134,31 @@ def test_concentric_circle_chord_tasks_reject_unknown_query_id() -> None:
     task = GeometryConcentricChordLengthFromRadiiTask()
     with pytest.raises(ValueError):
         task.generate(56031, params={"query_id": "not_a_query"}, max_attempts=20)
+
+
+def test_concentric_circle_chord_case_pool_has_visible_separation_and_answer_diversity() -> None:
+    assert len({case.chord_length for case in PYTHAGOREAN_CASES}) >= 50
+    assert len({case.inner_radius for case in PYTHAGOREAN_CASES}) >= 50
+    for case in PYTHAGOREAN_CASES:
+        ratio = float(case.inner_radius) / float(case.outer_radius)
+        assert MIN_INNER_RADIUS_RATIO <= ratio <= MAX_INNER_RADIUS_RATIO
+        assert case.outer_radius**2 == case.inner_radius**2 + case.half_chord**2
+
+
+@pytest.mark.parametrize(
+    "task_cls",
+    (
+        GeometryConcentricChordLengthFromRadiiTask,
+        GeometryConcentricInnerRadiusFromChordTask,
+    ),
+)
+def test_concentric_circle_chord_review_sample_spreads_answers(task_cls) -> None:
+    task = task_cls()
+    counts: dict[float, int] = {}
+    for seed in range(56200, 56300):
+        out = task.generate(seed, params={}, max_attempts=20)
+        answer = float(out.answer_gt.value)
+        counts[answer] = counts.get(answer, 0) + 1
+
+    assert len(counts) >= 50
+    assert max(counts.values()) <= 4

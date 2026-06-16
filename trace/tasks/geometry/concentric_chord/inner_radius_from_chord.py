@@ -1,5 +1,3 @@
-"""Compute an inner radius from an outer tangent chord."""
-
 from __future__ import annotations
 
 from trace.core.types import TypedValue
@@ -11,20 +9,25 @@ from ._lifecycle import prepare_concentric_chord_task_parts
 from .shared.measurements import (
     fmt_measure,
     inner_radius_from_case,
-    inner_radius_support_values,
     tangent_chord_diagram_spec,
 )
-from .shared.sampling import PYTHAGOREAN_CASES, select_concentric_chord_case
+from .shared.sampling import (
+    group_concentric_chord_cases_by_answer,
+    select_answer_balanced_concentric_chord_case,
+)
 
 TASK_ID = "task_geometry__concentric_chord__inner_radius_from_chord"
 INTERNAL_QUERY_ID = "inner_radius_from_chord"
 SUPPORTED_QUERY_IDS = ("single",)
 
+_CASES_BY_ANSWER = group_concentric_chord_cases_by_answer(
+    answer_fn=inner_radius_from_case,
+)
+
 
 def _inner_radius_request(*, instance_seed, params):
-    """Select one case and hide the inner radius value."""
-
-    case, case_index = select_concentric_chord_case(
+    case, case_index, answer_probabilities = select_answer_balanced_concentric_chord_case(
+        answer_cases=_CASES_BY_ANSWER,
         instance_seed=int(instance_seed),
         params=params,
         namespace=f"{TASK_ID}.{INTERNAL_QUERY_ID}.case",
@@ -38,22 +41,16 @@ def _inner_radius_request(*, instance_seed, params):
         formula_family="inner_radius_from_chord",
         unknown_measure="inner_radius",
     )
-    return diagram_spec, int(case_index)
+    return diagram_spec, case_index, answer_probabilities
 
 
 @register_task
 class GeometryConcentricInnerRadiusFromChordTask:
-    """Compute the inner radius from the visible outer radius and chord."""
-
     task_id = TASK_ID
     domain = "geometry"
-    default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
-    reasoning_kind = "concentric_circle_chord"
 
-    def generate(self, instance_seed, *, params, max_attempts) -> TaskOutput:
-        """Bind the radius objective and return answer plus keyed annotation."""
-
+    def generate(self, instance_seed, *, params, max_attempts):
         selected_query, query_probabilities, task_params = select_task_query_id(
             instance_seed=int(instance_seed),
             params=params,
@@ -61,7 +58,7 @@ class GeometryConcentricInnerRadiusFromChordTask:
             default_query_id="single",
             task_id=TASK_ID,
         )
-        spec, case_index = _inner_radius_request(
+        spec, case_index, answer_probabilities = _inner_radius_request(
             instance_seed=int(instance_seed),
             params=task_params,
         )
@@ -71,11 +68,11 @@ class GeometryConcentricInnerRadiusFromChordTask:
             selected_query=str(selected_query),
             query_probabilities=query_probabilities,
             spec=spec,
-            case_index=int(case_index),
-            support_values=inner_radius_support_values(PYTHAGOREAN_CASES),
-            instance_seed=int(instance_seed),
+            case_index=case_index,
+            instance_seed=instance_seed,
             params=task_params,
-            max_attempts=int(max_attempts),
+            max_attempts=max_attempts,
+            target_support_probabilities=answer_probabilities,
         )
         return TaskOutput(
             parts.prompt,
@@ -86,9 +83,6 @@ class GeometryConcentricInnerRadiusFromChordTask:
             parts.trace_payload,
             parts.task_versions,
             parts.scene_id,
-            str(selected_query),
-            dict(parts.prompt_variants),
+            selected_query,
+            parts.prompt_variants,
         )
-
-
-__all__ = ["GeometryConcentricInnerRadiusFromChordTask"]

@@ -123,10 +123,11 @@ def prepare_concentric_chord_task_parts(
     query_probabilities: Mapping[str, float],
     spec: ConcentricChordDiagramSpec,
     case_index: int,
-    support_values: tuple[int, ...],
     instance_seed: int,
     params: Mapping[str, Any],
     max_attempts: int,
+    target_support_probabilities: Mapping[str, float] | None = None,
+    support_values: tuple[int, ...] = (),
 ) -> ConcentricChordTaskParts:
     """Prepare shared visual artifacts after the public task has bound its answer."""
 
@@ -151,11 +152,14 @@ def prepare_concentric_chord_task_parts(
         instance_seed=int(instance_seed),
     )
     annotation_artifacts = concentric_chord_annotation(rendered)
-    support_probabilities = geometry_selected_probability_map(
-        support_values,
-        float(spec.answer),
-        is_selected=lambda value, selected: float(value) == float(selected),
-    )
+    if target_support_probabilities is None:
+        support_probabilities = geometry_selected_probability_map(
+            support_values,
+            float(spec.answer),
+            is_selected=lambda value, selected: float(value) == float(selected),
+        )
+    else:
+        support_probabilities = {str(key): float(value) for key, value in target_support_probabilities.items()}
     measurement_fields = {
         "formula_family": "concentric_circle_tangent_chord",
         "unknown_measure": str(spec.unknown_measure),

@@ -1,5 +1,3 @@
-"""Compute an outer chord length from concentric-circle radii."""
-
 from __future__ import annotations
 
 from trace.core.types import TypedValue
@@ -10,20 +8,25 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from ._lifecycle import prepare_concentric_chord_task_parts
 from .shared.measurements import (
     chord_length_from_case,
-    chord_length_support_values,
     tangent_chord_diagram_spec,
 )
-from .shared.sampling import PYTHAGOREAN_CASES, select_concentric_chord_case
+from .shared.sampling import (
+    group_concentric_chord_cases_by_answer,
+    select_answer_balanced_concentric_chord_case,
+)
 
 TASK_ID = "task_geometry__concentric_chord__chord_length_from_radii"
 INTERNAL_QUERY_ID = "chord_length_from_radii"
 SUPPORTED_QUERY_IDS = ("single",)
 
+_CASES_BY_ANSWER = group_concentric_chord_cases_by_answer(
+    answer_fn=chord_length_from_case,
+)
+
 
 def _build_chord_length_spec(*, instance_seed, params):
-    """Select one tangent-chord case and bind the chord as the unknown."""
-
-    case, case_index = select_concentric_chord_case(
+    case, case_index, answer_probabilities = select_answer_balanced_concentric_chord_case(
+        answer_cases=_CASES_BY_ANSWER,
         instance_seed=int(instance_seed),
         params=params,
         namespace=f"{TASK_ID}.{INTERNAL_QUERY_ID}.case",
@@ -38,23 +41,18 @@ def _build_chord_length_spec(*, instance_seed, params):
             formula_family="chord_length_from_radii",
             unknown_measure="chord_length",
         ),
-        int(case_index),
+        case_index,
+        answer_probabilities,
     )
 
 
 @register_task
 class GeometryConcentricChordLengthFromRadiiTask:
-    """Compute the outer chord length from visible radii."""
-
     task_id = TASK_ID
     domain = "geometry"
-    default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
-    reasoning_kind = "concentric_circle_chord"
 
-    def generate(self, instance_seed, *, params, max_attempts) -> TaskOutput:
-        """Bind the chord-length objective and construct the final task output."""
-
+    def generate(self, instance_seed, *, params, max_attempts):
         selected_query, query_probabilities, task_params = select_task_query_id(
             instance_seed=int(instance_seed),
             params=params,
@@ -62,7 +60,7 @@ class GeometryConcentricChordLengthFromRadiiTask:
             default_query_id="single",
             task_id=TASK_ID,
         )
-        spec, case_index = _build_chord_length_spec(
+        spec, case_index, answer_probabilities = _build_chord_length_spec(
             instance_seed=int(instance_seed),
             params=task_params,
         )
@@ -72,11 +70,11 @@ class GeometryConcentricChordLengthFromRadiiTask:
             selected_query=str(selected_query),
             query_probabilities=query_probabilities,
             spec=spec,
-            case_index=int(case_index),
-            support_values=chord_length_support_values(PYTHAGOREAN_CASES),
-            instance_seed=int(instance_seed),
+            case_index=case_index,
+            instance_seed=instance_seed,
             params=task_params,
-            max_attempts=int(max_attempts),
+            max_attempts=max_attempts,
+            target_support_probabilities=answer_probabilities,
         )
         return TaskOutput(
             parts.prompt,
@@ -87,9 +85,6 @@ class GeometryConcentricChordLengthFromRadiiTask:
             parts.trace_payload,
             parts.task_versions,
             parts.scene_id,
-            str(selected_query),
-            dict(parts.prompt_variants),
+            selected_query,
+            parts.prompt_variants,
         )
-
-
-__all__ = ["GeometryConcentricChordLengthFromRadiiTask"]

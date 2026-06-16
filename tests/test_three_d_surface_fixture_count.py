@@ -75,6 +75,17 @@ def _assert_composite_canvas_expanded(output) -> None:
     assert int(output.image.height) == int(render_spec["final_canvas_height"])
 
 
+def _assert_present_cells_have_canonical_colors(cells) -> None:
+    present_cells = [dict(cell) for cell in cells if bool(cell.get("present", True))]
+    assert present_cells
+    colors = [str(cell.get("color_name", "")) for cell in present_cells]
+
+    assert all(color in set(SEMANTIC_COLOR_SUPPORT) for color in colors)
+    assert len(set(colors)) >= 2
+    for cell, color in zip(present_cells, colors):
+        assert list(cell.get("fill_rgb", [])) == list(SEMANTIC_COLOR_RGB[color])
+
+
 def test_surface_fixture_semantic_colors_use_canonical_palette() -> None:
     canonical = {
         str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
@@ -118,6 +129,9 @@ def test_surface_fixture_repeated_element_count_variants() -> None:
         if scene_variant == "perforated_panel":
             assert trace["layout_family"] == "tiled_staggered"
             assert trace["layout_style"] != "panel_scatter"
+        _assert_present_cells_have_canonical_colors(trace["surface_cells"])
+        assert trace["solver_trace"]["color_role"] == "non_semantic_visual_variation"
+        assert sum(int(count) for count in trace["solver_trace"]["visual_color_counts"].values()) == count
         assert output.annotation_gt.value == [render_map["element_centers_px"][element_id] for element_id in target_element_ids]
         assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
         assert output.trace_payload["projected_annotation"]["pixel_point_set"] == output.annotation_gt.value
@@ -218,6 +232,12 @@ def test_surface_fixture_element_count_extremum_label_queries() -> None:
         assert counts_by_label["C"] == expected_count
         assert set(counts_by_label) == {"A", "B", "C", "D"}
         assert len(set(counts_by_label.values())) == 4
+        for option_dataset in trace["surface_option_datasets"].values():
+            _assert_present_cells_have_canonical_colors(option_dataset["surface_cells"])
+            assert option_dataset["color_role"] == "non_semantic_visual_variation"
+            assert sum(int(count) for count in option_dataset["visual_color_counts"].values()) == len(
+                [cell for cell in option_dataset["surface_cells"] if bool(cell.get("present", True))]
+            )
         assert output.annotation_gt.type == "bbox"
         assert output.annotation_gt.value == render_map["option_panel_bboxes_px"]["C"]
         assert output.trace_payload["projected_annotation"]["bbox"] == output.annotation_gt.value

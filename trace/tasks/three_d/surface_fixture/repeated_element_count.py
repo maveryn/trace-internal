@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
 from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 
@@ -52,6 +49,9 @@ def _prepare_repeated_objective(
             "target_count": int(dataset["answer_value"]),
             "layout_family": str(dataset["layout_family"]),
             "layout_style": str(dataset["layout_style"]),
+            "visual_color_names": list(dataset.get("visual_color_names", [])),
+            "visual_color_counts": dict(dataset.get("visual_color_counts", {})),
+            "color_role": str(dataset.get("color_role", "non_semantic_visual_variation")),
         },
     )
 
@@ -65,7 +65,7 @@ class ThreeDSurfaceFixtureRepeatedElementCountTask:
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+    def generate(self, instance_seed, *, params, max_attempts):
         return run_surface_fixture_lifecycle(
             public_name=TASK_ID,
             domain_name=self.domain,

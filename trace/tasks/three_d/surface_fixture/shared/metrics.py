@@ -60,6 +60,72 @@ def base_surface_data(
     return data
 
 
+def _resolve_visual_color_names(
+    *,
+    params: Mapping[str, Any],
+    rng: Any,
+) -> Tuple[str, ...]:
+    """Choose visible object colors for non-color count tasks.
+
+    These colors are a visual factor only. They are intentionally not part of
+    the count predicate for repeated-element and extremum tasks.
+    """
+
+    explicit_colors = params.get("visual_color_names")
+    if explicit_colors is None:
+        explicit_colors = params.get("active_color_names", params.get("color_names"))
+    if explicit_colors is not None:
+        if not isinstance(explicit_colors, Sequence) or isinstance(explicit_colors, (str, bytes)):
+            raise ValueError("visual_color_names must be a sequence of color names")
+        colors = tuple(str(color) for color in explicit_colors)
+        if len(colors) != len(set(colors)):
+            raise ValueError("visual_color_names must be unique")
+        if len(colors) < 2 or len(colors) > 4:
+            raise ValueError("visual_color_names must contain 2 to 4 colors")
+        unsupported = [color for color in colors if color not in set(SEMANTIC_COLOR_SUPPORT)]
+        if unsupported:
+            raise ValueError(f"unsupported visual color names: {unsupported}")
+        return tuple(colors)
+
+    color_count = int(
+        params.get(
+            "visual_color_count",
+            params.get("active_color_count", params.get("color_count", 2 + int(rng.randrange(3)))),
+        )
+    )
+    if color_count < 2 or color_count > 4:
+        raise ValueError(f"visual_color_count must be in 2..4, got {color_count}")
+    colors = list(str(color) for color in SEMANTIC_COLOR_SUPPORT)
+    rng.shuffle(colors)
+    return tuple(colors[: int(color_count)])
+
+
+def _sample_visual_color_by_index(
+    *,
+    indices: Sequence[int],
+    params: Mapping[str, Any],
+    rng: Any,
+) -> Tuple[Dict[int, str], Dict[str, int], Tuple[str, ...]]:
+    """Assign canonical colors to each visible element for visual variety."""
+
+    active_colors = _resolve_visual_color_names(params=params, rng=rng)
+    index_sequence = [int(index) for index in indices]
+    color_sequence: list[str] = []
+    guaranteed_color_count = min(len(index_sequence), len(active_colors))
+    color_sequence.extend(str(color) for color in active_colors[:guaranteed_color_count])
+    for _ in range(max(0, len(index_sequence) - guaranteed_color_count)):
+        color_sequence.append(str(active_colors[int(rng.randrange(len(active_colors)))]))
+    rng.shuffle(color_sequence)
+    color_by_index = {
+        int(index): str(color_sequence[offset])
+        for offset, index in enumerate(index_sequence)
+    }
+    color_counts = {str(color): 0 for color in active_colors}
+    for color in color_by_index.values():
+        color_counts[str(color)] = int(color_counts.get(str(color), 0)) + 1
+    return color_by_index, color_counts, tuple(str(color) for color in active_colors)
+
+
 def build_repeated_surface_data(
     *,
     namespace: str,
@@ -92,6 +158,11 @@ def build_repeated_surface_data(
     )
     rng = spawn_rng(int(instance_seed), f"{namespace}.cells")
     indices = list(range(int(count)))
+    color_by_index, visual_color_counts, visual_color_names = _sample_visual_color_by_index(
+        indices=indices,
+        params=params,
+        rng=rng,
+    )
     cells = layout_cells(
         scene_variant=str(scene_variant),
         element_type=str(element_type),
@@ -101,6 +172,7 @@ def build_repeated_surface_data(
         target_indices=indices,
         rng=rng,
         layout_style=layout_style,
+        color_by_index=color_by_index,
     )
     dataset = base_surface_data(
         scene_variant=str(scene_variant),
@@ -121,12 +193,18 @@ def build_repeated_surface_data(
             "layout_family_probabilities": dict(layout_family_probabilities),
             "layout_style": str(layout_style),
             "layout_style_probabilities": dict(layout_style_probabilities),
+            "visual_color_names": list(visual_color_names),
+            "visual_color_counts": dict(visual_color_counts),
+            "color_role": "non_semantic_visual_variation",
             "unique_integer_answer": True,
         },
         extra={
             "layout_family": str(layout_family),
             "layout_family_probabilities": dict(layout_family_probabilities),
             "layout_style_probabilities": dict(layout_style_probabilities),
+            "visual_color_names": list(visual_color_names),
+            "visual_color_counts": dict(visual_color_counts),
+            "color_role": "non_semantic_visual_variation",
         },
     )
     return dataset, dict(probabilities)

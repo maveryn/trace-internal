@@ -49,6 +49,10 @@ The answer is the integer count of finalized elements whose `element_type`
 matches the sampled `target_element_type`. Pixels are render output, not
 verifier source of truth.
 
+Visible elements are assigned canonical named colors for visual variety. For
+this task, color is recorded as `non_semantic_visual_variation`; it is not part
+of the count predicate and should not be used to filter the counted set.
+
 The placement family is sampled by scene variant and recorded as
 `layout_family`; the concrete placement style is recorded as `layout_style`.
 The shared scene layout families are:
@@ -78,8 +82,8 @@ annotation.
 ## Prompt And Trace
 The prompt bundle is `three_d_surface_fixture_v1` under `prompts/three_d/surface_fixture/`.
 The trace records scene variant, target element type, target element ids,
-surface projection metadata, layout family, layout style, projected element
-centers, and the solver count predicate.
+surface projection metadata, layout family, layout style, visual color names
+and counts, projected element centers, and the solver count predicate.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config

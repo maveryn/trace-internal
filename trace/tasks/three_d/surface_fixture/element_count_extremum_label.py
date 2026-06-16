@@ -353,6 +353,9 @@ class ThreeDSurfaceFixtureElementCountExtremumLabelTask:
                                 "layout_rows": int(dataset["layout_rows"]),
                                 "layout_columns": int(dataset["layout_columns"]),
                                 "layout_style": str(dataset["layout_style"]),
+                                "visual_color_names": list(dataset.get("visual_color_names", [])),
+                                "visual_color_counts": dict(dataset.get("visual_color_counts", {})),
+                                "color_role": str(dataset.get("color_role", "non_semantic_visual_variation")),
                                 "surface_cells": [dict(cell) for cell in dataset["surface_cells"]],
                             }
                             for label, dataset in option_datasets.items()

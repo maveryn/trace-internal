@@ -17,6 +17,11 @@ numeric counts are printed in the image.
 The answer is the capital letter of the option panel whose visible element
 count is highest or lowest, depending on the query id.
 
+Visible elements are assigned canonical named colors for visual variety. For
+this task, color is recorded as `non_semantic_visual_variation`; it is not part
+of the extremum predicate. The selected option is determined only by total
+visible element count.
+
 ## Program Contract
 - `label(select_panel(candidate_surface_fixture_panels, extremum(total_visible_element_count, highest|lowest))); scene=surface_fixture; scope=element_count_extremum_label`
 

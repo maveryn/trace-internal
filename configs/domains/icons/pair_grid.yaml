@@ -1,28 +1,13 @@
 generation:
   shared:
-    object_count_min: 4
-    object_count_max: 9
-    target_count_min: 0
-    target_count_max: 4
-    distractor_count_min: 1
-    distractor_count_max: 9
-    balanced_sampling: true
+    option_count: 6
   task_overrides:
-    task_icons__pair_grid__attribute_delta_pair_count:
+    task_icons__pair_grid__reference_color_pair_match_label:
       pool_manifest: all_icons.txt
-      object_count_min: 6
-      object_count_max: 6
-      attribute_rule_weights:
-        color_only_change: 1.0
-        size_only_change: 1.0
-        color_and_size_change: 1.0
-      balanced_attribute_rule_sampling: true
-      size_scale_small: 0.76
-      size_scale_large: 1.16
-    task_icons__pair_grid__reference_transform_match_count:
+      option_count: 6
+    task_icons__pair_grid__reference_transform_match_label:
       pool_manifest: non_symmetry.txt
-      object_count_min: 6
-      object_count_max: 6
+      option_count: 6
       transform_ids:
       - rot90
       - rot180
@@ -202,13 +187,13 @@ rendering:
         - 0.03
         - 0.08
   task_overrides:
-    task_icons__pair_grid__attribute_delta_pair_count:
+    task_icons__pair_grid__reference_color_pair_match_label:
       scene_icon_size_max_px: 88
       reference_icon_size_px: 96
       palette_size_min: 5
       palette_size_max: 5
       min_color_distance: 42.0
-    task_icons__pair_grid__reference_transform_match_count:
+    task_icons__pair_grid__reference_transform_match_label:
       scene_icon_size_max_px: 96
       reference_icon_size_px: 110
       palette_size_min: 1
@@ -217,4 +202,25 @@ prompt:
   shared:
     bundle_id: icons_pair_grid_v1
     scene_key: reference_pair_grid
-    task_key: relation_match_count_query
+    task_key: relation_match_label_query
+  task_overrides:
+    task_icons__pair_grid__reference_color_pair_match_label:
+      bundle_id: icons_pair_grid_v1
+      scene_key: reference_pair_grid
+      task_key: relation_match_label_query
+      object_description: a Reference pair beside a labeled Scene grid
+      question_text: Which labeled Scene cell has the same left and right colors as the Reference pair?
+      annotation_hint: set "annotation" to one [x0, y0, x1, y1] box in image pixel coordinates around the selected Scene cell
+      answer_hint: set "answer" to the selected option letter as a string
+      json_example: '{"annotation":[336,104,506,274],"answer":"A"}'
+      json_example_answer_only: '{"answer":"A"}'
+    task_icons__pair_grid__reference_transform_match_label:
+      bundle_id: icons_pair_grid_v1
+      scene_key: reference_pair_grid
+      task_key: relation_match_label_query
+      object_description: a Reference pair beside a labeled Scene grid
+      question_text: Which labeled Scene cell shows the same before-to-after transformation as the Reference pair?
+      annotation_hint: set "annotation" to one [x0, y0, x1, y1] box in image pixel coordinates around the selected Scene cell
+      answer_hint: set "answer" to the selected option letter as a string
+      json_example: '{"annotation":[336,104,506,274],"answer":"A"}'
+      json_example_answer_only: '{"answer":"A"}'

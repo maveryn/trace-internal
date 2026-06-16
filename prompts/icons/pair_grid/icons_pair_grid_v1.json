@@ -12,7 +12,7 @@
       ]
     },
     "task": {
-      "relation_match_count_query": [
+      "relation_match_label_query": [
         "{question_text}",
         "{question_text}",
         "{question_text}",
@@ -51,7 +51,7 @@
     "scene:reference_pair_grid": [
       "object_description"
     ],
-    "task:relation_match_count_query": [
+    "task:relation_match_label_query": [
       "question_text"
     ],
     "output:answer_only": [

@@ -148,6 +148,24 @@ def bbox_set_annotation(
     }
 
 
+def bbox_annotation(bbox: Sequence[int | float]) -> Dict[str, Any]:
+    """Return typed scalar bbox annotation for one icon witness."""
+
+    if not isinstance(bbox, Sequence) or len(bbox) != 4:
+        raise RuntimeError(f"invalid bbox annotation: {bbox}")
+    normalized_bbox = [int(round(float(value))) for value in bbox]
+    return {
+        "annotation_type": "bbox",
+        "annotation_value": list(normalized_bbox),
+        "projected_annotation": {
+            "type": "bbox",
+            "bbox": list(normalized_bbox),
+            "pixel_bbox": list(normalized_bbox),
+            "pixel_point": _bbox_center(normalized_bbox),
+        },
+    }
+
+
 def keyed_point_map_annotation(
     role_points: Mapping[str, Sequence[int | float]],
 ) -> Dict[str, Any]:
@@ -229,6 +247,7 @@ def keyed_bbox_set_map_annotation(
 
 
 __all__ = [
+    "bbox_annotation",
     "bbox_set_annotation",
     "keyed_bbox_map_annotation",
     "keyed_bbox_set_map_annotation",

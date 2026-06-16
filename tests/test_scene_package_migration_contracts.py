@@ -1086,7 +1086,7 @@ def test_review_candidate_scenes_are_structurally_routed() -> None:
 
 def test_scene_package_task_detects_no_scene_allowlist_after_reset() -> None:
     assert scene_package_migration.is_scene_package_task('task_charts__hexbin_density__threshold_bin_count', domain='charts')
-    assert scene_package_migration.is_scene_package_task('task_icons__pair_grid__attribute_delta_pair_count', domain='icons')
-    assert scene_package_migration.is_scene_package_task('task_icons__pair_grid__reference_transform_match_count', domain='icons')
+    assert scene_package_migration.is_scene_package_task('task_icons__pair_grid__reference_color_pair_match_label', domain='icons')
+    assert scene_package_migration.is_scene_package_task('task_icons__pair_grid__reference_transform_match_label', domain='icons')
     assert not scene_package_migration.is_scene_package_task('task_icons__single_transform_options__geometric_transform_result_label', domain='icons')
     assert not scene_package_migration.is_scene_package_task('task_icons__paired_canvas__panel_attribute_change_count', domain='icons')

@@ -303,15 +303,9 @@ def test_icons_counting_defaults_loaded() -> None:
 def test_icons_pair_grid_scene_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'pair_grid')
     generation_shared = cfg['generation']['shared']
-    assert int(generation_shared['object_count_min']) == 4
-    assert int(generation_shared['object_count_max']) == 9
-    assert int(generation_shared['target_count_min']) == 0
-    assert int(generation_shared['target_count_max']) == 4
-    assert int(generation_shared['distractor_count_min']) == 1
-    assert int(generation_shared['distractor_count_max']) == 9
-    assert bool(generation_shared['balanced_sampling']) is True
-    assert 'task_icons__pair_grid__attribute_delta_pair_count' in cfg['generation']['task_overrides']
-    assert 'task_icons__pair_grid__reference_transform_match_count' in cfg['generation']['task_overrides']
+    assert int(generation_shared['option_count']) == 6
+    assert 'task_icons__pair_grid__reference_color_pair_match_label' in cfg['generation']['task_overrides']
+    assert 'task_icons__pair_grid__reference_transform_match_label' in cfg['generation']['task_overrides']
     render_shared = cfg['rendering']['shared']
     assert int(render_shared['canvas_width']) > 0
     assert int(render_shared['canvas_height']) > 0
@@ -324,13 +318,12 @@ def test_icons_pair_grid_scene_defaults_loaded() -> None:
     prompt_shared = cfg['prompt']['shared']
     assert str(prompt_shared['bundle_id']) == 'icons_pair_grid_v1'
     assert str(prompt_shared['scene_key']) == 'reference_pair_grid'
-    assert str(prompt_shared['task_key']) == 'relation_match_count_query'
+    assert str(prompt_shared['task_key']) == 'relation_match_label_query'
     assert str(prompt_shared['json_output_contract']).strip()
     assert str(prompt_shared['json_output_contract_answer_only']).strip()
-    generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__pair_grid__reference_transform_match_count')
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__pair_grid__reference_transform_match_label')
     assert str(generation['pool_manifest']).strip() == 'non_symmetry.txt'
-    assert int(generation['object_count_min']) == 6
-    assert int(generation['object_count_max']) == 6
+    assert int(generation['option_count']) == 6
     assert list(generation['transform_ids']) == ['rot90', 'rot180', 'rot270', 'flip_h', 'flip_v', 'flip_diag_main', 'flip_diag_anti']
     assert int(generation['transform_check_size_px']) > 0
     assert int(rendering['canvas_width']) > 0
@@ -353,15 +346,14 @@ def test_icons_pair_grid_scene_defaults_loaded() -> None:
     assert str(prompt_defaults['answer_hint']).strip()
     assert str(prompt_defaults['json_example']).strip()
     assert str(prompt_defaults['json_example_answer_only']).strip()
-    attribute_generation, attribute_rendering, attribute_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__pair_grid__attribute_delta_pair_count')
-    assert sorted(attribute_generation['attribute_rule_weights'].keys()) == ['color_and_size_change', 'color_only_change', 'size_only_change']
-    assert bool(attribute_generation['balanced_attribute_rule_sampling']) is True
-    assert float(attribute_generation['size_scale_small']) < 1.0 < float(attribute_generation['size_scale_large'])
-    assert int(attribute_rendering['reference_icon_size_px']) > 0
-    assert int(attribute_rendering['palette_size_min']) >= 2
-    assert int(attribute_rendering['palette_size_max']) >= int(attribute_rendering['palette_size_min'])
-    attribute_prompt_defaults = required_group_defaults(
-        attribute_prompt,
+    color_generation, color_rendering, color_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__pair_grid__reference_color_pair_match_label')
+    assert str(color_generation['pool_manifest']).strip() == 'all_icons.txt'
+    assert int(color_generation['option_count']) == 6
+    assert int(color_rendering['reference_icon_size_px']) > 0
+    assert int(color_rendering['palette_size_min']) >= 4
+    assert int(color_rendering['palette_size_max']) >= int(color_rendering['palette_size_min'])
+    color_prompt_defaults = required_group_defaults(
+        color_prompt,
         (
             'object_description',
             'question_text',
@@ -370,18 +362,18 @@ def test_icons_pair_grid_scene_defaults_loaded() -> None:
             'json_example',
             'json_example_answer_only',
         ),
-        context='pair_grid attribute-delta prompt defaults',
+        context='pair_grid color-pair prompt defaults',
     )
-    assert str(attribute_prompt_defaults['object_description']).strip()
-    assert str(attribute_prompt_defaults['question_text']).strip()
-    assert str(attribute_prompt_defaults['annotation_hint']).strip()
-    assert str(attribute_prompt_defaults['answer_hint']).strip()
-    assert str(attribute_prompt_defaults['json_example']).strip()
-    assert str(attribute_prompt_defaults['json_example_answer_only']).strip()
+    assert str(color_prompt_defaults['object_description']).strip()
+    assert str(color_prompt_defaults['question_text']).strip()
+    assert str(color_prompt_defaults['annotation_hint']).strip()
+    assert str(color_prompt_defaults['answer_hint']).strip()
+    assert str(color_prompt_defaults['json_example']).strip()
+    assert str(color_prompt_defaults['json_example_answer_only']).strip()
     bundle = load_scene_prompt_bundle('icons', 'pair_grid', 'icons_pair_grid_v1')
     assert bundle.bundle_id == 'icons_pair_grid_v1'
     assert set(bundle.scene_templates.keys()) == {'reference_pair_grid'}
-    assert set(bundle.task_templates.keys()) == {'relation_match_count_query'}
+    assert set(bundle.task_templates.keys()) == {'relation_match_label_query'}
 
 def test_icons_paired_canvas_scene_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'paired_canvas')

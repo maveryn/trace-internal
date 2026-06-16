@@ -7,6 +7,7 @@ import math
 
 import pytest
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks import TASK_REGISTRY
 from trace.tasks.geometry.circle_polygon_composite.square_circle_tangent_angle_value import (
     SUPPORTED_QUERY_IDS as SQUARE_CIRCLE_TANGENT_ANGLE_QUERY_IDS,
@@ -14,7 +15,6 @@ from trace.tasks.geometry.circle_polygon_composite.square_circle_tangent_angle_v
     GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask,
 )
 from trace.tasks.geometry.circle_polygon_composite.tangential_quadrilateral_side_length_value import (
-    QUERY_ID,
     TASK_ID,
     GeometryCirclePolygonCompositeTangentialQuadrilateralSideLengthValueTask,
 )
@@ -49,7 +49,6 @@ def test_circle_polygon_composite_registered_public_task() -> None:
 def test_tangential_quadrilateral_side_length_formula(missing_side: str, expected: int) -> None:
     out = _generate(
         20260604,
-        query_id=QUERY_ID,
         missing_side=missing_side,
         tangent_lengths=(3, 4, 5, 6),
     )
@@ -57,7 +56,7 @@ def test_tangential_quadrilateral_side_length_formula(missing_side: str, expecte
     execution = trace["execution_trace"]
 
     assert out.scene_id == "circle_polygon_composite"
-    assert out.query_id == QUERY_ID
+    assert out.query_id == SINGLE_QUERY_ID
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == expected == execution["answer"]
     side_lengths = execution["side_lengths"]
@@ -79,7 +78,6 @@ def test_tangential_quadrilateral_side_length_formula(missing_side: str, expecte
 
 def test_tangential_quadrilateral_generation_is_deterministic() -> None:
     params = {
-        "query_id": QUERY_ID,
         "missing_side": "AB",
         "tangent_lengths": (5, 6, 7, 8),
     }
@@ -143,7 +141,7 @@ def test_square_circle_tangent_angle_contract(query_id: str, side_sign: int) -> 
 
 def test_square_circle_tangent_angle_generation_is_deterministic() -> None:
     params = {
-        "query_id": "square_semicircle_tangent_angle",
+        "query_id": "rectangle_semicircle_tangent_angle",
         "target_angle": 60,
         "side_sign": 1,
     }

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Callable, Dict, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
@@ -134,6 +134,12 @@ def _transform_local(point: Point, *, scale: float, offset: Point) -> Point:
     return ((float(point[0]) * float(scale)) + float(offset[0]), float(offset[1]) - (float(point[1]) * float(scale)))
 
 
+def _base_projector(*, scale: float, offset: Point) -> Callable[[Point], Point]:
+    """Return the unrotated local-to-canvas projection for one fitted layout."""
+
+    return lambda point: _transform_local(point, scale=scale, offset=offset)
+
+
 def _centroid(points: Sequence[Point]) -> Point:
     return (
         sum(float(point[0]) for point in points) / float(len(points)),
@@ -214,12 +220,11 @@ def _draw_local_polyline(
     ctx: CirclePolygonRenderContext,
     points: Sequence[Point],
     *,
-    scale: float,
-    offset: Point,
+    project: Callable[[Point], Point],
     fill: Color,
     width: int,
 ) -> Tuple[Point, ...]:
-    transformed = tuple(_transform_local(point, scale=scale, offset=offset) for point in points)
+    transformed = tuple(project(point) for point in points)
     ctx.draw.line(transformed, fill=fill, width=max(1, int(width)), joint="curve")
     return transformed
 
@@ -253,8 +258,7 @@ def _draw_angle_arc_at_vertex(
     arm_a: Point,
     arm_b: Point,
     radius: float,
-    scale: float,
-    offset: Point,
+    project: Callable[[Point], Point],
 ) -> Tuple[Point, ...]:
     angle_a = _angle_between_degrees(_sub(arm_a, vertex))
     angle_b = _angle_between_degrees(_sub(arm_b, vertex))
@@ -268,8 +272,7 @@ def _draw_angle_arc_at_vertex(
     return _draw_local_polyline(
         ctx,
         points,
-        scale=scale,
-        offset=offset,
+        project=project,
         fill=ctx.accent_color,
         width=max(2, ctx.line_width - 1),
     )
@@ -280,15 +283,13 @@ def _draw_semicircle(
     *,
     center: Point,
     radius: float,
-    scale: float,
-    offset: Point,
+    project: Callable[[Point], Point],
 ) -> Tuple[Point, ...]:
     points = _arc_points(center=center, radius=float(radius), start_degrees=0.0, end_degrees=180.0, steps=48)
     return _draw_local_polyline(
         ctx,
         points,
-        scale=scale,
-        offset=offset,
+        project=project,
         fill=ctx.secondary_color,
         width=max(2, ctx.line_width - 1),
     )
@@ -315,7 +316,7 @@ def render_angle_scene(
             "C": (1.25, 0.0),
             "D": (-1.25, 0.0),
         }
-        scale = min((ctx.width - 180.0) / 2.5, (ctx.height - 150.0) / 1.35) * float(rng.uniform(0.88, 0.96))
+        scale = min((ctx.width - 180.0) / 2.5, (ctx.height - 150.0) / 1.35) * float(rng.uniform(0.78, 0.84))
         offset = (
             (ctx.width / 2.0) + float(rng.uniform(-30.0, 30.0)),
             (ctx.height * 0.70) + float(rng.uniform(-18.0, 18.0)),
@@ -334,11 +335,6 @@ def render_angle_scene(
             (ctx.height / 2.0) + float(rng.uniform(-20.0, 20.0)),
         )
 
-    _assert_bboxes_inside(
-        (bbox_from_points(tuple(_transform_local(point, scale=scale, offset=offset) for point in corners.values()), width=ctx.width, height=ctx.height, pad=4.0),),
-        width=ctx.width,
-        height=ctx.height,
-    )
     tangent_point = (float(sign) * math.sin(theta), math.cos(theta))
     tangent_direction = (-float(sign) * math.cos(theta), math.sin(theta))
     tangent_endpoints = _line_rectangle_intersections(tangent_point, tangent_direction, bounds)
@@ -348,43 +344,87 @@ def render_angle_scene(
     target_reference_point = (0.0, 1.0)
     circle_center = (0.0, 0.0)
 
-    corner_px = {key: _transform_local(value, scale=scale, offset=offset) for key, value in corners.items()}
-    tangent_point_px = _transform_local(tangent_point, scale=scale, offset=offset)
-    circle_center_px = _transform_local(circle_center, scale=scale, offset=offset)
-    known_angle_vertex_px = _transform_local(known_angle_vertex, scale=scale, offset=offset)
-    known_angle_reference_px = _transform_local(known_angle_reference_point, scale=scale, offset=offset)
-    target_reference_px = _transform_local(target_reference_point, scale=scale, offset=offset)
+    corner_label_locals: Dict[str, Point] = {}
+    for key, local_point in corners.items():
+        direction = _unit(local_point)
+        corner_label_locals[str(key)] = _add(local_point, _mul(direction, 0.13))
+    center_label_local = (0.12, -0.12)
+    tangent_label_local = _add(tangent_point, _mul(_unit(tangent_point), 0.15))
+    known_label_direction = _unit(
+        _add(
+            _unit(_sub(known_angle_reference_point, known_angle_vertex)),
+            _unit(_sub(tangent_point, known_angle_vertex)),
+        )
+    )
+    known_label_local = _add(known_angle_vertex, _mul(known_label_direction, 0.30))
+    target_label_local = _add(
+        target_angle_vertex,
+        _mul(_unit(_add(_sub(target_reference_point, target_angle_vertex), _sub(tangent_point, target_angle_vertex))), 0.43),
+    )
+
+    base_project = _base_projector(scale=scale, offset=offset)
+    circle_fit_points = (
+        _arc_points(center=(0.0, 0.0), radius=1.0, start_degrees=0.0, end_degrees=180.0, steps=24)
+        if is_semicircle
+        else _arc_points(center=(0.0, 0.0), radius=1.0, start_degrees=0.0, end_degrees=360.0, steps=48)
+    )
+    fit_local_points: Tuple[Point, ...] = (
+        *corners.values(),
+        *tangent_endpoints,
+        tangent_point,
+        circle_center,
+        known_angle_vertex,
+        known_angle_reference_point,
+        target_reference_point,
+        *circle_fit_points,
+    )
+    ctx.scene_transform.resolve(tuple(base_project(point) for point in fit_local_points))
+
+    def project(point: Point) -> Point:
+        return ctx.scene_transform.point(base_project(point))
+
+    corner_px = {key: project(value) for key, value in corners.items()}
+    tangent_point_px = project(tangent_point)
+    circle_center_px = project(circle_center)
+    known_angle_vertex_px = project(known_angle_vertex)
+    known_angle_reference_px = project(known_angle_reference_point)
+    target_reference_px = project(target_reference_point)
 
     polygon = (corner_px["A"], corner_px["B"], corner_px["C"], corner_px["D"])
+    _assert_bboxes_inside(
+        (bbox_from_points(polygon, width=ctx.width, height=ctx.height, pad=4.0),),
+        width=ctx.width,
+        height=ctx.height,
+    )
     ctx.draw.polygon(polygon, fill=ctx.polygon_fill)
     ctx.draw.line([*polygon, polygon[0]], fill=ctx.line_color, width=ctx.line_width, joint="curve")
     if is_semicircle:
-        _draw_semicircle(ctx, center=(0.0, 0.0), radius=1.0, scale=scale, offset=offset)
+        _draw_semicircle(ctx, center=(0.0, 0.0), radius=1.0, project=project)
         diameter = (
-            _transform_local((-1.0, 0.0), scale=scale, offset=offset),
-            _transform_local((1.0, 0.0), scale=scale, offset=offset),
+            project((-1.0, 0.0)),
+            project((1.0, 0.0)),
         )
         ctx.draw.line(diameter, fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
     else:
+        radius_px = float(scale) * float(ctx.scene_transform.transform.scale)
         circle_bbox = (
-            circle_center_px[0] - scale,
-            circle_center_px[1] - scale,
-            circle_center_px[0] + scale,
-            circle_center_px[1] + scale,
+            circle_center_px[0] - radius_px,
+            circle_center_px[1] - radius_px,
+            circle_center_px[0] + radius_px,
+            circle_center_px[1] + radius_px,
         )
         ctx.draw.ellipse(circle_bbox, fill=ctx.circle_fill, outline=ctx.secondary_color, width=max(2, ctx.line_width - 1))
 
-    _draw_local_polyline(ctx, tangent_endpoints, scale=scale, offset=offset, fill=ctx.line_color, width=ctx.line_width)
-    _draw_local_polyline(ctx, (circle_center, tangent_point), scale=scale, offset=offset, fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
-    _draw_local_polyline(ctx, (circle_center, target_reference_point), scale=scale, offset=offset, fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
+    _draw_local_polyline(ctx, tangent_endpoints, project=project, fill=ctx.line_color, width=ctx.line_width)
+    _draw_local_polyline(ctx, (circle_center, tangent_point), project=project, fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
+    _draw_local_polyline(ctx, (circle_center, target_reference_point), project=project, fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
     target_arc = _draw_angle_arc_at_vertex(
         ctx,
         vertex=target_angle_vertex,
         arm_a=target_reference_point,
         arm_b=tangent_point,
         radius=0.28,
-        scale=scale,
-        offset=offset,
+        project=project,
     )
     known_arc = _draw_angle_arc_at_vertex(
         ctx,
@@ -392,8 +432,7 @@ def render_angle_scene(
         arm_a=known_angle_reference_point,
         arm_b=tangent_point,
         radius=0.20,
-        scale=scale,
-        offset=offset,
+        project=project,
     )
 
     dot_radius = max(3, int(ctx.line_width + 1))
@@ -406,45 +445,31 @@ def render_angle_scene(
         )
 
     label_bboxes: Dict[str, BBox] = {}
-    for key, point in corner_px.items():
-        local_point = corners[str(key)]
-        direction = _unit(local_point)
-        label_local = _add(local_point, _mul(direction, 0.13))
+    for key in corner_px:
         label_bboxes[f"corner_{key}_label"] = _draw_text_centered(
             ctx,
             str(key),
-            _transform_local(label_local, scale=scale, offset=offset),
+            project(corner_label_locals[str(key)]),
             small=True,
         )
-    label_bboxes["center_label"] = _draw_text_centered(ctx, "O", _add(circle_center_px, (16.0, 15.0)), small=True)
+    label_bboxes["center_label"] = _draw_text_centered(ctx, "O", project(center_label_local), small=True)
     label_bboxes["tangent_label"] = _draw_text_centered(
         ctx,
         "T",
-        _add(tangent_point_px, (float(sign) * 18.0, -16.0)),
+        project(tangent_label_local),
         small=True,
-    )
-    known_label_direction = _unit(
-        _add(
-            _unit(_sub(known_angle_reference_point, known_angle_vertex)),
-            _unit(_sub(tangent_point, known_angle_vertex)),
-        )
-    )
-    known_label_local = _add(known_angle_vertex, _mul(known_label_direction, 0.30))
-    target_label_local = _add(
-        target_angle_vertex,
-        _mul(_unit(_add(_sub(target_reference_point, target_angle_vertex), _sub(tangent_point, target_angle_vertex))), 0.43),
     )
     degree = "\N{DEGREE SIGN}"
     label_bboxes["known_angle_label"] = _draw_text_centered(
         ctx,
         f"{int(spec.angle_degrees)}{degree}",
-        _transform_local(known_label_local, scale=scale, offset=offset),
+        project(known_label_local),
         small=True,
     )
     label_bboxes["target_angle_label"] = _draw_text_centered(
         ctx,
         "?",
-        _transform_local(target_label_local, scale=scale, offset=offset),
+        project(target_label_local),
         small=True,
     )
     _assert_bboxes_inside(label_bboxes.values(), width=ctx.width, height=ctx.height)
@@ -469,7 +494,7 @@ def render_angle_scene(
         "known_angle_reference_point": _point_to_list(known_angle_reference_px),
         "target_angle_vertex": _point_to_list(circle_center_px),
         "target_reference_point": _point_to_list(target_reference_px),
-        "tangent_segment": [_point_to_list(_transform_local(point, scale=scale, offset=offset)) for point in tangent_endpoints],
+        "tangent_segment": [_point_to_list(project(point)) for point in tangent_endpoints],
         "known_angle_arc_bbox": bbox_to_list(bbox_from_points(known_arc, width=ctx.width, height=ctx.height, pad=2.0)),
         "target_angle_arc_bbox": bbox_to_list(bbox_from_points(target_arc, width=ctx.width, height=ctx.height, pad=2.0)),
         "label_bboxes": {key: bbox_to_list(value) for key, value in label_bboxes.items()},

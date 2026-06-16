@@ -43,7 +43,7 @@
         "Determine the angle marked ?.",
         "Find angle ? using the tangent angle."
       ],
-      "square_semicircle_tangent_angle": [
+      "rectangle_semicircle_tangent_angle": [
         "A tangent touches the semicircle at T. What is the angle marked ?",
         "Use the tangent-radius construction to find angle ?.",
         "The radius to T is perpendicular to the tangent line. What is the angle marked ?",
@@ -78,6 +78,12 @@
       "object_description": "It includes a square or rectangle, a circle or semicircle, a tangent line, radius to T, one known angle, and one target angle marked ?.",
       "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible point-label keys: \"A\", \"B\", \"C\", \"D\", \"O\", and \"T\"; each value must be that labeled construction point's pixel point [x,y]",
       "answer_hint": "set \"answer\" to the target angle in degrees as an integer"
+    },
+    "query:square_incircle_tangent_angle": {
+      "object_description": "It includes a square with an incircle, a tangent line touching the circle at T, radius OT, one known angle, and one target angle marked ?."
+    },
+    "query:rectangle_semicircle_tangent_angle": {
+      "object_description": "It includes a rectangle with a semicircle, a tangent line touching the semicircle at T, radius OT, one known angle, and one target angle marked ?."
     }
   },
   "dynamic_slots": {
@@ -106,7 +112,7 @@
       "visible_sides"
     ],
     "query:square_incircle_tangent_angle": [],
-    "query:square_semicircle_tangent_angle": [],
+    "query:rectangle_semicircle_tangent_angle": [],
     "output:answer_only": [
       "answer_hint",
       "json_example_answer_only"

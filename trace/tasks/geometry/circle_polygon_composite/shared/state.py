@@ -43,7 +43,7 @@ class TangentialDiagramSpec:
 
 @dataclass(frozen=True)
 class AngleDiagramSpec:
-    """Visual grammar inputs for a square/circle tangent-angle diagram."""
+    """Visual grammar inputs for a square/incircle or rectangle/semicircle tangent-angle diagram."""
 
     construction_kind: str
     angle_degrees: int

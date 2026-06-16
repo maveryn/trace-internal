@@ -1,4 +1,4 @@
-"""Compute a tangent angle in a square or semicircle construction."""
+"""Compute a tangent angle in a square/incircle or rectangle/semicircle construction."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ from .shared.state import ANGLE_ANNOTATION_KEYS, SCENE_ID, AngleDiagramSpec, Ren
 
 TASK_ID = "task_geometry__circle_polygon_composite__square_circle_tangent_angle_value"
 QUERY_ID_INCIRCLE = "square_incircle_tangent_angle"
-QUERY_ID_SEMICIRCLE = "square_semicircle_tangent_angle"
+QUERY_ID_SEMICIRCLE = "rectangle_semicircle_tangent_angle"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID_INCIRCLE, QUERY_ID_SEMICIRCLE)
 
 _CONSTRUCTION_BY_QUERY = {

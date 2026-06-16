@@ -104,6 +104,7 @@ Domain-shared modules that should generally remain domain-shared:
 | `option_rendering.py` | Scene-neutral option-label, panel-label, bbox, font-trace, image-fit, and crop-detail helpers. |
 | `cutouts.py` | Scene-neutral visual-reconstruction mechanics for jigsaw boards, rotated grids, and patch-option layouts. |
 | `canvas_profiles.py` | Shared render-only canvas profiles, profile-aware reconstruction grids, and final-output downscale helpers for illustration tasks. |
+| `bounds.py` | Shared canvas-bound checks and clamping helpers for profile-safe foreground bboxes. |
 
 Visual-reconstruction helpers must not turn the source illustration into a
 decorative worksheet/card. Future source-scene-owned missing-patch,
@@ -122,6 +123,16 @@ tasks that use quarter-turn rotations must use square source cells: landscape
 `2x3`, square `2x2`, and portrait `3x2`. Jigsaw-arrangement tasks may use the
 same profile-aware source grids while keeping the answer options fixed at
 lettered arrangement choices such as `A` through `D`.
+
+Profile support must include foreground bounds safety. Any object, region, or
+mark that can be counted, named in a prompt, used as evidence, or used as a
+candidate must have its bbox fully inside the active source canvas and final
+review image. Scene backgrounds may use full-bleed context features such as
+roads, rivers, walking paths, skyline strips, or floor/wall fills only when the
+feature is explicitly treated as context and not used as a minimal evidence
+witness. If a full-bleed context feature is serialized with a bbox for generic
+scene inspection, prefer the visible canvas-clipped bbox unless downstream
+logic specifically needs the off-canvas extent.
 
 Domain-shared modules that should move to scene-local shared when their owning
 scene is migrated:

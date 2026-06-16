@@ -366,6 +366,9 @@ def _layout(rng, *, width: int, height: int, theme_id: str, style_id: str) -> Tu
     else:
         box_x0 = float(rng.uniform(820.0, 895.0))
     box_y0 = float(rng.uniform(638.0, 668.0))
+    floor_container_bottom = 812.0
+    basket_y0 = min(basket_y0, floor_container_bottom - basket_h)
+    box_y0 = min(box_y0, floor_container_bottom - box_h)
     drawer_w = float(cab_x1 - cab_x0) * float(rng.uniform(0.62, 0.72))
     drawer_x0 = cab_x0 + float(cab_x1 - cab_x0) * float(rng.uniform(0.20, 0.26))
     drawer_y0 = cab_y0 + float(cab_y1 - cab_y0) * float(rng.uniform(0.48, 0.56))

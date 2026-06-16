@@ -192,10 +192,14 @@ def _draw_background(
     draw.rectangle(_scale_bbox((0.0, horizon, float(width), float(height)), s), fill=tuple(ground))
     draw.rectangle(_scale_bbox((0.0, horizon, float(width), horizon + 38.0), s), fill=tuple(far))
 
-    x = -20.0
+    x = 0.0
     building_idx = 0
     while x < float(width):
         bw = float(rng.uniform(72.0, 132.0))
+        if x + bw > float(width):
+            bw = float(width) - x
+        if bw < 36.0:
+            break
         bh = float(rng.uniform(82.0, 168.0))
         bbox = (x, horizon - bh, x + bw, horizon + 8.0)
         _rect(draw, bbox, fill=_jitter_rgb(rng, (126, 137, 145), 10), outline=None, width=1, scale=s)
@@ -217,13 +221,21 @@ def _draw_background(
             _line(draw, [(x0, scaffold_box[1]), (x0, scaffold_box[3])], fill=(94, 101, 109), width=3, scale=s)
         decor.append(ConstructionDecor("decor_scaffold", "scaffold", scaffold_box, {"setting_id": str(setting_id)}))
     if str(setting_id) in {"urban_build", "foundation_yard", "scaffold_site"}:
-        base_x = float(rng.uniform(780.0, 960.0))
-        crane_box = (base_x, 72.0, base_x + 292.0, 292.0)
-        _line(draw, [(base_x + 24.0, 286.0), (base_x + 24.0, 92.0)], fill=(192, 139, 45), width=10, scale=s)
-        _line(draw, [(base_x - 44.0, 108.0), (base_x + 248.0, 108.0)], fill=(206, 157, 51), width=8, scale=s)
-        _line(draw, [(base_x + 24.0, 92.0), (base_x + 248.0, 108.0)], fill=(166, 119, 40), width=4, scale=s)
-        _line(draw, [(base_x + 202.0, 108.0), (base_x + 202.0, 178.0)], fill=(66, 68, 74), width=3, scale=s)
-        _rect(draw, (base_x + 186.0, 174.0, base_x + 218.0, 206.0), fill=(112, 99, 82), outline=outline, width=outline_w, scale=s, radius=2)
+        crane_w = min(292.0, max(220.0, float(width) * 0.34))
+        crane_scale = crane_w / 292.0
+        base_x_max = max(42.0, float(width) - 42.0 - crane_w)
+        base_x_min = max(58.0, min(base_x_max, float(width) * 0.58))
+        base_x = float(rng.uniform(base_x_min, base_x_max))
+        crane_box = (base_x, 72.0, base_x + crane_w, 292.0)
+
+        def sx(offset: float) -> float:
+            return base_x + float(offset) * crane_scale
+
+        _line(draw, [(sx(24.0), 286.0), (sx(24.0), 92.0)], fill=(192, 139, 45), width=10, scale=s)
+        _line(draw, [(sx(0.0), 108.0), (sx(292.0), 108.0)], fill=(206, 157, 51), width=8, scale=s)
+        _line(draw, [(sx(24.0), 92.0), (sx(292.0), 108.0)], fill=(166, 119, 40), width=4, scale=s)
+        _line(draw, [(sx(238.0), 108.0), (sx(238.0), 178.0)], fill=(66, 68, 74), width=3, scale=s)
+        _rect(draw, (sx(220.0), 174.0, sx(254.0), 206.0), fill=(112, 99, 82), outline=outline, width=outline_w, scale=s, radius=2)
         decor.append(ConstructionDecor("decor_crane", "tower_crane", crane_box, {"setting_id": str(setting_id)}))
     if str(setting_id) == "roadwork" or str(layout.get("layout_id")) == "diagonal_road":
         road_poly = [(0.0, 752.0), (float(width), 628.0), (float(width), 734.0), (0.0, 860.0)]

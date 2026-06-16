@@ -209,6 +209,8 @@ def _clamp_bbox_to_canvas(box: BBox, *, width: int, height: int, margin: float =
     x0, y0, x1, y1 = (float(v) for v in box)
     box_w = max(1.0, x1 - x0)
     box_h = max(1.0, y1 - y0)
+    box_w = min(box_w, max(1.0, float(width) - 2.0 * float(margin)))
+    box_h = min(box_h, max(1.0, float(height) - 2.0 * float(margin)))
     max_x0 = max(float(margin), float(width) - float(margin) - box_w)
     max_y0 = max(float(margin), float(height) - float(margin) - box_h)
     clamped_x0 = max(float(margin), min(float(x0), max_x0))
@@ -275,6 +277,11 @@ def _sample_layout(rng, *, width: int, height: int, setting_id: str, required_zo
         garden_box = (705.0, 625.0, 1150.0, 825.0)
     else:
         garden_box = (float(rng.uniform(520.0, 645.0)), float(rng.uniform(275.0, 335.0)), float(rng.uniform(930.0, 1060.0)), float(rng.uniform(455.0, 545.0)))
+    playground_box = _clamp_bbox_to_canvas(playground_box, width=int(width), height=int(height), margin=24.0)
+    picnic_box = _clamp_bbox_to_canvas(picnic_box, width=int(width), height=int(height), margin=24.0)
+    garden_box = _clamp_bbox_to_canvas(garden_box, width=int(width), height=int(height), margin=24.0)
+    if pond_box is not None:
+        pond_box = _clamp_bbox_to_canvas(pond_box, width=int(width), height=int(height), margin=24.0)
     return {
         "layout_id": layout_id,
         "path_points": [[round(float(x), 3), round(float(y), 3)] for x, y in path_points],
@@ -310,6 +317,7 @@ def _draw_background(draw: ImageDraw.ImageDraw, *, rng, setting_id: str, layout:
     _line(draw, path_points, fill=_jitter_rgb(rng, (198, 182, 151), amount=10), width=path_width, scale=s)
     _line(draw, path_points, fill=_jitter_rgb(rng, (169, 151, 122), amount=8), width=max(3, int(path_width * 0.10)), scale=s)
     path_bbox = _bbox_union([(x - path_width * 0.5, y - path_width * 0.5, x + path_width * 0.5, y + path_width * 0.5) for x, y in path_points])
+    path_bbox = _clamp_bbox_to_canvas(path_bbox, width=int(width), height=int(height), margin=0.0)
     decor.append(ParkDecor("decor_path", "walking_path", tuple(round(float(v), 3) for v in path_bbox), {"points": layout["path_points"], "width": float(path_width)}))
     playground = tuple(float(v) for v in layout["playground_bbox"])
     _ellipse(draw, playground, fill=_jitter_rgb(rng, (219, 186, 124), amount=12), outline=_jitter_rgb(rng, (139, 114, 84), amount=8), width=3, scale=s)
@@ -425,11 +433,15 @@ def _draw_equipment_and_fixtures(
         )
     tree_count = int(rng.randint(4, 8))
     for index in range(tree_count):
-        x = float(rng.uniform(28.0, float(width) - 82.0))
-        y = float(rng.uniform(245.0, float(height) - 160.0))
         h = float(rng.uniform(100.0, 165.0))
         w = h * float(rng.uniform(0.65, 0.90))
+        x = float(rng.uniform(28.0, max(28.0, float(width) - w - 28.0)))
+        y = float(rng.uniform(245.0, max(245.0, float(height) - h - 28.0)))
         box = (x, y, x + w, y + h)
+        box = _clamp_bbox_to_canvas(box, width=int(width), height=int(height), margin=18.0)
+        x, y, x1, y1 = [float(v) for v in box]
+        w = x1 - x
+        h = y1 - y
         trunk = (x + 0.43 * w, y + 0.52 * h, x + 0.58 * w, y + 0.96 * h)
         _rect(draw, trunk, fill=_jitter_rgb(rng, (117, 78, 49), amount=8), outline=(80, 60, 43), width=1, scale=scale, radius=4)
         for lx, ly in ((0.28, 0.20), (0.52, 0.12), (0.68, 0.30), (0.38, 0.39), (0.58, 0.46)):
@@ -443,6 +455,7 @@ def _draw_equipment_and_fixtures(
         y = float(rng.uniform(625.0, float(height) - 88.0))
         if fixture_type == "bench":
             box = (x, y, x + 130.0, y + 52.0)
+            box = _clamp_bbox_to_canvas(box, width=int(width), height=int(height), margin=20.0)
             rendered = render_vector_scene_object(
                 draw,
                 object_id=f"decor_fixture_{index}",
@@ -460,15 +473,20 @@ def _draw_equipment_and_fixtures(
             object_record = rendered.object_record
         elif fixture_type == "lamp_post":
             box = (x, y - 110.0, x + 38.0, y + 20.0)
-            _line(draw, [(x + 18.0, y - 88.0), (x + 18.0, y + 18.0)], fill=(74, 82, 91), width=5, scale=scale)
-            _ellipse(draw, (x + 4.0, y - 122.0, x + 34.0, y - 88.0), fill=(246, 220, 122), outline=(74, 82, 91), width=2, scale=scale)
+            box = _clamp_bbox_to_canvas(box, width=int(width), height=int(height), margin=18.0)
+            x0, y0, x1, y1 = [float(v) for v in box]
+            cx = 0.5 * (x0 + x1)
+            _line(draw, [(cx, y0 + 34.0), (cx, y1 - 2.0)], fill=(74, 82, 91), width=5, scale=scale)
+            _ellipse(draw, (cx - 15.0, y0, cx + 15.0, y0 + 34.0), fill=(246, 220, 122), outline=(74, 82, 91), width=2, scale=scale)
             object_record = None
         else:
             box = (x, y, x + 148.0, y + 48.0)
+            box = _clamp_bbox_to_canvas(box, width=int(width), height=int(height), margin=20.0)
+            x, y, x1, y1 = [float(v) for v in box]
             _ellipse(draw, box, fill=_jitter_rgb(rng, (93, 148, 81), amount=8), outline=(65, 111, 65), width=1, scale=scale)
             for petal in range(8):
-                px = x + float(rng.uniform(16.0, 132.0))
-                py = y + float(rng.uniform(10.0, 34.0))
+                px = x + float(rng.uniform(16.0, max(17.0, x1 - x - 16.0)))
+                py = y + float(rng.uniform(10.0, max(11.0, y1 - y - 14.0)))
                 _ellipse(draw, (px, py, px + 12.0, py + 10.0), fill=_jitter_rgb(rng, rng.choice(((221, 85, 114), (238, 197, 77), (145, 97, 177))), amount=5), outline=None, width=1, scale=scale)
             object_record = None
         decor.append(ParkDecor(f"decor_fixture_{index}", fixture_type, tuple(round(float(v), 3) for v in box), {}, object_record=object_record))
@@ -686,11 +704,23 @@ def _clothes_color(rng) -> RGB:
     return tuple(int(v) for v in rng.choice(((74, 122, 180), (194, 83, 85), (220, 169, 75), (94, 151, 124), (130, 104, 160), (83, 154, 177))))  # type: ignore[return-value]
 
 
-def _draw_activity_support(draw: ImageDraw.ImageDraw, *, rng, person_id: str, activity: str, bbox: BBox, scale: int, style_id: str) -> Tuple[ParkDecor, ...]:
+def _draw_activity_support(
+    draw: ImageDraw.ImageDraw,
+    *,
+    rng,
+    person_id: str,
+    activity: str,
+    bbox: BBox,
+    width: int,
+    height: int,
+    scale: int,
+    style_id: str,
+) -> Tuple[ParkDecor, ...]:
     x0, y0, x1, y1 = bbox
     decor: List[ParkDecor] = []
     if str(activity) == "sitting":
         bench = (x0 - 24.0, y0 + 0.47 * (y1 - y0), x1 + 34.0, y0 + 0.86 * (y1 - y0))
+        bench = _clamp_bbox_to_canvas(bench, width=int(width), height=int(height), margin=12.0)
         rendered = render_vector_scene_object(
             draw,
             object_id=f"{person_id}_bench",
@@ -712,6 +742,7 @@ def _draw_activity_support(draw: ImageDraw.ImageDraw, *, rng, person_id: str, ac
         bx = x0 - ball_size * 0.9 if side < 0 else x1 + ball_size * 0.25
         by = y1 - ball_size * float(rng.uniform(0.75, 1.05))
         ball = (bx, by, bx + ball_size, by + ball_size)
+        ball = _clamp_bbox_to_canvas(ball, width=int(width), height=int(height), margin=12.0)
         _ellipse(draw, ball, fill=_jitter_rgb(rng, (236, 128, 71), amount=8), outline=(65, 71, 80), width=2, scale=scale)
         _line(draw, [(ball[0] + 0.18 * ball_size, ball[1] + 0.50 * ball_size), (ball[2] - 0.18 * ball_size, ball[1] + 0.50 * ball_size)], fill=(65, 71, 80), width=1, scale=scale)
         decor.append(ParkDecor(f"{person_id}_ball", "activity_ball", tuple(round(float(v), 3) for v in ball), {"supports_person_id": str(person_id)}))
@@ -753,7 +784,19 @@ def render_park_playground_scene(
         if bool(spec.attributes.get("suppress_activity_support", False)):
             continue
         person_id = f"person_{index:02d}"
-        decor.extend(_draw_activity_support(draw, rng=rng, person_id=person_id, activity=str(spec.activity), bbox=bbox, scale=scale, style_id=str(style_id)))
+        decor.extend(
+            _draw_activity_support(
+                draw,
+                rng=rng,
+                person_id=person_id,
+                activity=str(spec.activity),
+                bbox=bbox,
+                width=int(width),
+                height=int(height),
+                scale=scale,
+                style_id=str(style_id),
+            )
+        )
     for index, (spec, bbox, zone) in enumerate(placed_sorted):
         person_id = f"person_{index:02d}"
         primary = _clothes_color(rng)

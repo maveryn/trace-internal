@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ...shared.object_library import BBox
+from ...shared.bounds import clamp_box_size_to_region
 
 from .labels import construction_zone_display_name
 from .state import CONSTRUCTION_ZONE_TYPES, ConstructionZone
@@ -19,8 +20,79 @@ def _expanded_intersects(a: BBox, b: BBox, gap: float) -> bool:
     )
 
 
+def _canvas_profile_kind(*, width: int, height: int) -> str:
+    if int(height) > int(width):
+        return "portrait"
+    if abs(int(width) - int(height)) <= max(12, int(0.04 * max(int(width), int(height)))):
+        return "square"
+    return "landscape"
+
+
+def _profile_zone_bboxes(layout_id: str, *, width: int, height: int) -> Dict[str, BBox]:
+    """Return profile-aware construction zone boxes before small jitter."""
+
+    w = float(width)
+    h = float(height)
+    profile = _canvas_profile_kind(width=int(width), height=int(height))
+    margin_x = max(38.0, min(72.0, 0.058 * w))
+    bottom = h - max(34.0, min(54.0, 0.045 * h))
+    gap = max(22.0, min(34.0, 0.028 * w))
+
+    if profile == "portrait":
+        top = max(250.0, 0.23 * h)
+        row_h = max(172.0, (bottom - top - 2.0 * gap) / 3.0)
+        row_h = min(row_h, (bottom - top - 2.0 * gap) / 3.0)
+        boxes = {}
+        for index, zone_id in enumerate(CONSTRUCTION_ZONE_TYPES):
+            y0 = top + float(index) * (row_h + gap)
+            boxes[str(zone_id)] = (margin_x, y0, w - margin_x, y0 + row_h)
+        return boxes
+
+    if profile == "square":
+        top = max(240.0, 0.245 * h)
+        row_h = (bottom - top - gap) / 2.0
+        col_w = (w - 2.0 * margin_x - gap) / 2.0
+        return {
+            "excavation_zone": (margin_x, top, margin_x + col_w, top + row_h),
+            "loading_zone": (margin_x + col_w + gap, top, w - margin_x, top + row_h),
+            "roadwork_zone": (margin_x, top + row_h + gap, w - margin_x, bottom),
+        }
+
+    top = max(232.0, 0.30 * h)
+    if str(layout_id) == "vertical_yard":
+        col_w = (w - 2.0 * margin_x - 2.0 * gap) / 3.0
+        return {
+            "excavation_zone": (margin_x, top, margin_x + col_w, bottom),
+            "loading_zone": (margin_x + col_w + gap, top - 4.0, margin_x + 2.0 * col_w + gap, bottom),
+            "roadwork_zone": (margin_x + 2.0 * (col_w + gap), top, w - margin_x, bottom),
+        }
+    if str(layout_id) == "diagonal_road":
+        top_h = max(250.0, 0.38 * h)
+        return {
+            "excavation_zone": (margin_x, top, margin_x + 0.36 * w, top + top_h),
+            "loading_zone": (w - margin_x - 0.40 * w, top - 2.0, w - margin_x, top + top_h),
+            "roadwork_zone": (margin_x + 0.12 * w, top + top_h + gap, w - margin_x - 0.06 * w, bottom),
+        }
+    if str(layout_id) == "scaffold_front":
+        zone_h = max(225.0, 0.31 * h)
+        y0 = bottom - zone_h
+        col_w = (w - 2.0 * margin_x - 2.0 * gap) / 3.0
+        return {
+            "excavation_zone": (margin_x, y0, margin_x + col_w, bottom),
+            "loading_zone": (margin_x + col_w + gap, y0, margin_x + 2.0 * col_w + gap, bottom),
+            "roadwork_zone": (margin_x + 2.0 * (col_w + gap), y0, w - margin_x, bottom),
+        }
+
+    top_h = max(250.0, 0.39 * h)
+    return {
+        "excavation_zone": (margin_x, top, margin_x + 0.38 * w, top + top_h),
+        "loading_zone": (margin_x + 0.42 * w, top - 2.0, w - margin_x, top + top_h),
+        "roadwork_zone": (margin_x + 0.08 * w, top + top_h + gap, w - margin_x - 0.02 * w, bottom),
+    }
+
+
 def sample_construction_layout(rng, *, width: int, height: int, setting_id: str) -> Dict[str, Any]:
-    """Sample stable work-zone geometry shared by construction tasks."""
+    """Sample stable profile-aware work-zone geometry shared by construction tasks."""
 
     layout_id = str(rng.choice(("horizontal_yard", "vertical_yard", "diagonal_road", "scaffold_front")))
     if str(setting_id) == "roadwork":
@@ -28,41 +100,30 @@ def sample_construction_layout(rng, *, width: int, height: int, setting_id: str)
     elif str(setting_id) == "scaffold_site":
         layout_id = str(rng.choice(("scaffold_front", "horizontal_yard", "vertical_yard")))
 
-    if layout_id == "vertical_yard":
-        zones = {
-            "excavation_zone": (68.0, 260.0, 428.0, 760.0),
-            "loading_zone": (458.0, 255.0, 820.0, 760.0),
-            "roadwork_zone": (852.0, 260.0, 1212.0, 760.0),
-        }
-    elif layout_id == "diagonal_road":
-        zones = {
-            "excavation_zone": (74.0, 250.0, 492.0, 550.0),
-            "loading_zone": (700.0, 245.0, 1190.0, 548.0),
-            "roadwork_zone": (238.0, 590.0, 1048.0, 820.0),
-        }
-    elif layout_id == "scaffold_front":
-        zones = {
-            "excavation_zone": (70.0, 568.0, 472.0, 810.0),
-            "loading_zone": (504.0, 560.0, 840.0, 812.0),
-            "roadwork_zone": (872.0, 560.0, 1210.0, 812.0),
-        }
-    else:
-        zones = {
-            "excavation_zone": (72.0, 300.0, 520.0, 610.0),
-            "loading_zone": (566.0, 298.0, 1210.0, 610.0),
-            "roadwork_zone": (168.0, 650.0, 1118.0, 830.0),
-        }
+    zones = _profile_zone_bboxes(layout_id, width=int(width), height=int(height))
     jittered: Dict[str, List[float]] = {}
     for zone_id, box in zones.items():
-        dx = float(rng.uniform(-14.0, 14.0))
-        dy = float(rng.uniform(-10.0, 10.0))
+        dx = float(rng.uniform(-10.0, 10.0))
+        dy = float(rng.uniform(-8.0, 8.0))
+        box_w = float(box[2]) - float(box[0])
+        box_h = float(box[3]) - float(box[1])
+        min_x0 = max(34.0, float(width) * 0.035)
+        min_y0 = max(204.0, float(height) * 0.19)
+        max_x0 = max(min_x0, float(width) - min_x0 - box_w)
+        max_y0 = max(min_y0, float(height) - 32.0 - box_h)
+        x0 = max(min_x0, min(float(box[0]) + dx, max_x0))
+        y0 = max(min_y0, min(float(box[1]) + dy, max_y0))
         jittered[zone_id] = [
-            max(40.0, float(box[0]) + dx),
-            max(218.0, float(box[1]) + dy),
-            min(float(width) - 40.0, float(box[2]) + dx),
-            min(float(height) - 36.0, float(box[3]) + dy),
+            round(x0, 3),
+            round(y0, 3),
+            round(x0 + box_w, 3),
+            round(y0 + box_h, 3),
         ]
-    return {"layout_id": layout_id, "zone_bboxes": jittered}
+    return {
+        "layout_id": layout_id,
+        "canvas_profile_kind": _canvas_profile_kind(width=int(width), height=int(height)),
+        "zone_bboxes": jittered,
+    }
 
 
 def build_construction_zones(layout: Mapping[str, Any]) -> Tuple[ConstructionZone, ...]:
@@ -116,6 +177,15 @@ def place_construction_box(
 ) -> BBox:
     """Place a non-overlapping bbox inside a construction zone."""
 
+    width, height = clamp_box_size_to_region(
+        width=float(width),
+        height=float(height),
+        region_bbox=zone_bbox,
+        padding_x=18.0,
+        padding_y=54.0,
+        min_width=28.0,
+        min_height=36.0,
+    )
     x0_min = float(zone_bbox[0]) + 18.0
     x0_max = float(zone_bbox[2]) - float(width) - 18.0
     y0_min = float(zone_bbox[1]) + 50.0

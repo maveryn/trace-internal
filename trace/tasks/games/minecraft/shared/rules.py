@@ -139,13 +139,25 @@ def _validate_route_cost_sample(sample: MinecraftSceneSample) -> None:
     annotation_ids = {str(entity_id) for entity_id in sample.annotation_entity_ids}
     if len(sample.annotation_entity_ids) != int(sample.answer):
         raise ValueError("route annotation count must match raised track-block cost")
-    if annotation_ids != set(block_by_id):
-        raise ValueError("route annotation must include every raised track block and no other blocks")
-    for block in block_by_id.values():
-        if (int(block.x), int(block.y)) not in track_cells:
-            raise ValueError("raised route block must sit on the visible track")
+    if not annotation_ids <= set(block_by_id):
+        raise ValueError("route annotation must reference raised blocks in the scene")
+    endpoint_cells = {(int(x), int(y)) for x, y in tuple(sample.track_cells[:1]) + tuple(sample.track_cells[-1:])}
+    distractor_count = 0
+    for block_id, block in block_by_id.items():
+        block_cell = (int(block.x), int(block.y))
+        is_annotated = str(block_id) in annotation_ids
+        if is_annotated and block_cell not in track_cells:
+            raise ValueError("annotated route block must sit on the visible track")
+        if is_annotated and block_cell in endpoint_cells:
+            raise ValueError("annotated route block must not sit on a track endpoint")
+        if not is_annotated and block_cell in track_cells:
+            raise ValueError("distractor route block must not sit on the visible track")
+        if not is_annotated:
+            distractor_count += 1
         if str(block.kind) not in {"stone", "dirt"}:
             raise ValueError("raised route blocks must be stone or dirt")
+    if distractor_count < 2:
+        raise ValueError("route sample requires off-track distractor blocks")
 
 
 def _validate_height_filter_sample(sample: MinecraftSceneSample) -> None:

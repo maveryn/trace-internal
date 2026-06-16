@@ -112,17 +112,27 @@ def test_games_minecraft_resource_route_cost_matches_single_track_blocks() -> No
     execution = out.trace_payload["execution_trace"]
     annotation_ids = {str(entity_id) for entity_id in execution["annotation_entity_ids"]}
     block_by_id = {str(block["block_id"]): block for block in execution["blocks"]}
-    track_cells = {tuple(int(v) for v in cell) for cell in execution["track_cells"]}
+    ordered_track_cells = [tuple(int(v) for v in cell) for cell in execution["track_cells"]]
+    track_cells = set(ordered_track_cells)
+    endpoint_cells = {ordered_track_cells[0], ordered_track_cells[-1]}
     annotation_cells = {
         (int(block_by_id[entity_id]["x"]), int(block_by_id[entity_id]["y"]))
         for entity_id in annotation_ids
+    }
+    distractor_cells = {
+        (int(block["x"]), int(block["y"]))
+        for block_id, block in block_by_id.items()
+        if str(block_id) not in annotation_ids
     }
 
     assert int(out.answer_gt.value) == 5
     assert int(execution["track_raised_block_count"]) == 5
     assert len(track_cells) >= 6
-    assert annotation_ids == set(block_by_id)
+    assert annotation_ids < set(block_by_id)
     assert annotation_cells <= track_cells
+    assert not (annotation_cells & endpoint_cells)
+    assert len(distractor_cells) >= 2
+    assert not (distractor_cells & track_cells)
     assert all(str(block["kind"]) in {"stone", "dirt"} for block in block_by_id.values())
     assert "route_option_count" not in execution
     assert "route_costs" not in execution
@@ -143,6 +153,7 @@ def test_games_minecraft_resource_route_cost_allows_zero_answer() -> None:
     assert execution["annotation_entity_ids"] == []
     assert out.annotation_gt.value == []
     assert execution["track_cells"]
+    assert len(execution["blocks"]) >= 2
 
 
 @pytest.mark.parametrize(

@@ -14,5 +14,6 @@
 ## Generation Notes
 1. The scene shows one visible track across an isometric block world.
 2. Each raised stone or dirt block sitting on the track counts 1.
-3. Empty track cells do not count.
+3. Empty track cells and raised blocks away from the track do not count.
 4. Annotation points mark the centers of every counted raised block on the track.
+5. Counted raised blocks are never placed on the first or last track cell.

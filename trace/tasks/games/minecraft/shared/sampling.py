@@ -213,13 +213,14 @@ def sample_route_cost_scene(*, rng: Any, axes: MinecraftAxes) -> MinecraftSceneS
     grid_width = int(axes.grid_width)
     grid_depth = int(axes.grid_depth)
     track_cells = _sample_track_cells(rng=rng, grid_width=grid_width, grid_depth=grid_depth)
-    if int(answer) > len(track_cells):
+    countable_track_cells = tuple(track_cells[1:-1])
+    if int(answer) > len(countable_track_cells):
         raise ValueError("track path too short for requested route cost")
 
     cell_kinds: dict[Tuple[int, int], str] = {cell: "route_path" for cell in track_cells}
     blocks: list[MinecraftBlock] = []
     annotation_ids: list[str] = []
-    obstacle_cells = tuple(rng.sample(track_cells, int(answer))) if answer else ()
+    obstacle_cells = tuple(rng.sample(countable_track_cells, int(answer))) if answer else ()
     for obstacle_index, (x, y) in enumerate(obstacle_cells):
         block_id = track_block_entity_id(int(obstacle_index))
         blocks.append(
@@ -232,6 +233,25 @@ def sample_route_cost_scene(*, rng: Any, axes: MinecraftAxes) -> MinecraftSceneS
             )
         )
         annotation_ids.append(block_id)
+
+    distractor_count = int(rng.randrange(2, 6))
+    distractor_cells = _sample_off_track_distractor_cells(
+        rng=rng,
+        grid_width=grid_width,
+        grid_depth=grid_depth,
+        track_cells=track_cells,
+        count=distractor_count,
+    )
+    for distractor_index, (x, y) in enumerate(distractor_cells):
+        blocks.append(
+            MinecraftBlock(
+                block_id=f"route_distractor_block_{int(distractor_index):02d}",
+                x=int(x),
+                y=int(y),
+                z=0,
+                kind=str(rng.choice(("stone", "dirt"))),
+            )
+        )
 
     track_rgb = (224, 184, 45) if float(rng.random()) < 0.5 else (73, 210, 220)
     route_overlay = MinecraftRouteOverlay(label="", cells=track_cells, rgb=track_rgb)
@@ -250,7 +270,7 @@ def sample_route_cost_scene(*, rng: Any, axes: MinecraftAxes) -> MinecraftSceneS
         scaffold_cost=0,
         ladder_present=False,
         annotation_entity_ids=tuple(annotation_ids),
-        construction_mode=f"single_track_route_cost_{answer}",
+        construction_mode=f"single_track_route_cost_{answer}_distractors_{distractor_count}",
         route_overlays=(route_overlay,),
         track_cells=track_cells,
     )
@@ -520,6 +540,34 @@ def _sample_track_cells(*, rng: Any, grid_width: int, grid_depth: int) -> Tuple[
             y = max(min_y, min(max_y, int(y) + int(delta)))
         cells.append((int(x), int(y)))
     return tuple(cells)
+
+
+def _sample_off_track_distractor_cells(
+    *,
+    rng: Any,
+    grid_width: int,
+    grid_depth: int,
+    track_cells: Sequence[Tuple[int, int]],
+    count: int,
+) -> Tuple[Tuple[int, int], ...]:
+    """Sample raised-block distractor cells away from the visible track when possible."""
+
+    track_set = {(int(x), int(y)) for x, y in track_cells}
+    interior_cells = [
+        (int(x), int(y))
+        for y in range(1, int(grid_depth) - 1)
+        for x in range(1, int(grid_width) - 1)
+        if (int(x), int(y)) not in track_set
+    ]
+    separated_cells = [
+        cell
+        for cell in interior_cells
+        if all(max(abs(int(cell[0]) - tx), abs(int(cell[1]) - ty)) > 1 for tx, ty in track_set)
+    ]
+    candidates = separated_cells if len(separated_cells) >= int(count) else interior_cells
+    if len(candidates) < int(count):
+        raise ValueError("not enough off-track cells for route distractors")
+    return tuple(rng.sample(candidates, int(count)))
 
 
 def _stack_height_support(params: Mapping[str, Any], *, gen_defaults: Mapping[str, Any]) -> Tuple[int, ...]:

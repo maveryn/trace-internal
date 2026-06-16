@@ -133,7 +133,7 @@
   },
   "code_prompt_defaults": {
     "object_description_block_world": "a Minecraft-like isometric block world with cube terrain, visible cube stacks or raised blocks, and any marked track needed for the question",
-    "minecraft_route_cost_rule_text": "Each raised stone or dirt block sitting on the visible track counts 1; empty track cells count 0.",
+    "minecraft_route_cost_rule_text": "Each raised stone or dirt block sitting on the visible track counts 1; empty track cells and raised blocks away from the track count 0.",
     "annotation_hint_top_ore_stack_count": "set \"annotation\" to [x, y] pixel points at the centers of the top cubes of every visible stack whose top cube is the named ore",
     "answer_hint_top_ore_stack_count": "set \"answer\" to the integer number of stacks whose top cube is the named ore",
     "annotation_hint_resource_route_cost": "set \"annotation\" to [x, y] pixel points at the centers of the raised stone or dirt blocks on the visible track; use an empty array if the count is 0",

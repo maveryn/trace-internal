@@ -7,7 +7,7 @@
 4. Public task id: `task_games__bowling__first_pin_hit_label`
 5. Supported `query_id` values: `single`
 6. Answer schema: `string_label`
-7. Annotation schema: `bbox`
+7. Annotation schema: `point`
 8. Program schema: `label(first_collision(ball_path, pins)); scene=bowling; scope=first_pin_hit_label`
 
 ## Program Contract
@@ -15,4 +15,4 @@
 
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is one bbox around the selected first-hit pin, projected from the same generated game state used for answer verification.
+3. Annotation is one center point for the selected first-hit pin, projected from the same generated game state used for answer verification.

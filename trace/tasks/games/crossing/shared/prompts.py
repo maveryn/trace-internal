@@ -25,7 +25,7 @@ def json_examples_for_integer_answer() -> tuple[str, str]:
     """Return generic integer-answer JSON examples for this scene."""
 
     return (
-        json.dumps({"annotation": [[186, 282, 262, 330], [516, 404, 592, 452]], "answer": 2}, separators=(",", ":")),
+        json.dumps({"annotation": [[224, 306], [554, 428]], "answer": 2}, separators=(",", ":")),
         json.dumps({"answer": 2}, separators=(",", ":")),
     )
 
@@ -34,7 +34,7 @@ def json_examples_for_label_answer() -> tuple[str, str]:
     """Return generic label-answer JSON examples for Crossing option tasks."""
 
     return (
-        json.dumps({"annotation": [[428, 342, 498, 384]], "answer": "C"}, separators=(",", ":")),
+        json.dumps({"annotation": [463, 363], "answer": "C"}, separators=(",", ":")),
         json.dumps({"answer": "C"}, separators=(",", ":")),
     )
 

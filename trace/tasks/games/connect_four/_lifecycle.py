@@ -8,7 +8,7 @@ from typing import Any, Callable, Mapping, Sequence
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.shared.annotation_artifacts import point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import point_annotation_artifacts, point_set_annotation_artifacts
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
@@ -53,6 +53,7 @@ class ConnectFourObjectivePlan:
     prompt_dynamic_slots: SampleMappingBuilder
     answer_gt: SampleAnswerBuilder
     annotation_coords: SampleCoordsBuilder
+    annotation_type: str
     render_marked_square: SampleMarkedCoordBuilder
     render_column_labels: SampleColumnLabelsBuilder
     query_spec_params: SampleMappingBuilder
@@ -140,6 +141,7 @@ def prepare_count_objective_from_spec(
         prompt_dynamic_slots=prompt_slots,
         answer_gt=lambda sample: TypedValue(type="integer", value=int(sample.evaluation.answer)),
         annotation_coords=lambda sample: sample.evaluation.annotation_coords,
+        annotation_type="point_set",
         render_marked_square=lambda _sample: None,
         render_column_labels=lambda _sample: None,
         query_spec_params=query_spec_params,
@@ -213,7 +215,14 @@ def run_connect_four_lifecycle(
         rendered_context.rendered_scene,
         objective.annotation_coords(sample),
     )
-    annotation_artifacts = point_set_annotation_artifacts(annotation_points)
+    if str(objective.annotation_type) == "point":
+        if len(annotation_points) != 1:
+            raise ValueError("scalar Connect Four point annotation requires exactly one cell")
+        annotation_artifacts = point_annotation_artifacts(annotation_points[0])
+    elif str(objective.annotation_type) == "point_set":
+        annotation_artifacts = point_set_annotation_artifacts(annotation_points)
+    else:
+        raise ValueError(f"unsupported Connect Four annotation type: {objective.annotation_type}")
     _prompt_defaults, prompt_artifacts = build_connect_four_prompt_artifacts(
         domain=str(domain),
         prompt_query_key=str(objective.prompt_query_key),

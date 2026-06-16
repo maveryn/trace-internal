@@ -8,7 +8,7 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 from ._lifecycle import (
     BowlingObjectivePlan,
     bowling_integer_axis_spec,
-    pin_bbox_label_attempt,
+    pin_point_label_attempt,
     resolve_bowling_integer_axis_specs,
     run_bowling_lifecycle,
 )
@@ -62,7 +62,7 @@ def _prepare_first_pin_objective(
             target_pin_label_index=int(target_axis.value),
             visible_pin_count=int(visible_axis.value),
         )
-        return pin_bbox_label_attempt(
+        return pin_point_label_attempt(
             sample=sample,
             answer_value=str(sample.target_pin_label),
             execution_extra={

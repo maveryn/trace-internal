@@ -59,6 +59,7 @@ def _prepare_completed_line_sum_objective(instance_seed, task_params, _query_id,
             card_state=card_state,
             answer_value=int(card_state.line_sum_target_value),
             annotation_cell_ids=annotation_cell_ids,
+            annotation_type="point_set",
             execution_extra={
                 "line_axis": str(line_axis),
                 "target_line_index": int(line_index_target.target_answer),

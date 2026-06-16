@@ -6,7 +6,7 @@
 3. Public task id: `task_games__connect_four__winning_move_column_label`
 4. Supported `query_id` values: `single`
 5. Answer schema: `label_string`
-6. Annotation schema: `point_set`
+6. Annotation schema: `point`
 7. Program schema: `select(column_label, legal_drop_result=immediate_win_for_current_player); scene=connect_four; scope=winning_move_column_label`
 
 ## Program Contract

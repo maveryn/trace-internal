@@ -10,7 +10,7 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
-    bbox_annotation_artifacts,
+    point_annotation_artifacts,
     segment_annotation_artifacts,
 )
 from trace.tasks.shared.fixed_query import select_task_query_id
@@ -123,24 +123,31 @@ def resolve_bowling_integer_axis_specs(
     return axes, trace_params
 
 
-def pin_bbox_label_attempt(
+def pin_point_label_attempt(
     *,
     sample: BowlingSample,
     answer_value: str,
     execution_extra: Mapping[str, Any] | None = None,
 ) -> BowlingAttemptResult:
-    """Package a pin-label answer whose annotation is the target pin bbox."""
+    """Package a pin-label answer whose annotation is the target pin center."""
 
     annotation_entity_ids = tuple(str(entity_id) for entity_id in sample.annotation_entity_ids)
     if len(annotation_entity_ids) != 1:
         raise ValueError("Bowling first-pin annotation requires exactly one target pin")
+
+    def build_annotation(rendered_context: RenderedBowlingTaskContext) -> AnnotationArtifacts:
+        bbox = rendered_context.rendered_scene.render_map["entity_bboxes_px"][str(annotation_entity_ids[0])]
+        point = [
+            0.5 * (float(bbox[0]) + float(bbox[2])),
+            0.5 * (float(bbox[1]) + float(bbox[3])),
+        ]
+        return point_annotation_artifacts(point)
+
     return BowlingAttemptResult(
         sample=sample,
         answer_gt=TypedValue(type="string", value=str(answer_value)),
         annotation_entity_ids=annotation_entity_ids,
-        build_annotation=lambda rendered_context: bbox_annotation_artifacts(
-            rendered_context.rendered_scene.render_map["entity_bboxes_px"][str(annotation_entity_ids[0])]
-        ),
+        build_annotation=build_annotation,
         execution_extra=dict(execution_extra or {}),
     )
 
@@ -270,7 +277,7 @@ __all__ = [
     "BowlingObjectivePlan",
     "bowling_integer_axis_spec",
     "path_segment_label_attempt",
-    "pin_bbox_label_attempt",
+    "pin_point_label_attempt",
     "resolve_bowling_integer_axis_specs",
     "run_bowling_lifecycle",
 ]

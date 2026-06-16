@@ -137,7 +137,7 @@ def test_games_bingo_completed_line_sum_value_sums_single_completed_line(
     cells = execution["cell_specs"]
 
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == 5
     assert execution["line_sum_target_axis"] == line_axis
     assert int(execution["line_sum_target_line_index"]) == int(target_line_index)
@@ -158,6 +158,12 @@ def test_games_bingo_completed_line_sum_value_sums_single_completed_line(
         assert execution["completed_row_indices"] == []
     assert int(out.answer_gt.value) == int(expected_answer)
     assert execution["annotation_entity_ids"] == expected_ids
+    expected_points = [
+        list(out.trace_payload["render_map"]["cell_mark_centers_px"][str(cell_id)])
+        for cell_id in expected_ids
+    ]
+    assert out.annotation_gt.value == expected_points
+    assert out.trace_payload["projected_annotation"]["point_set"] == expected_points
     assert execution["completed_line_sums"] == [
         {
             "axis": line_axis,

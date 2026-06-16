@@ -148,6 +148,7 @@ def _prepare_column_disc_profile_label_objective(
         prompt_dynamic_slots=prompt_slots,
         answer_gt=lambda sample: TypedValue(type="string", value=str(sample.answer_label)),
         annotation_coords=lambda sample: sample.evaluation.annotation_coords,
+        annotation_type="point_set",
         render_marked_square=lambda _sample: None,
         render_column_labels=lambda sample: sample.column_labels,
         query_spec_params=query_spec_params,

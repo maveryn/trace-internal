@@ -100,8 +100,8 @@ def test_games_connect_four_winning_move_column_label_contract(
 
     assert out.answer_gt.type == "string"
     assert str(out.answer_gt.value) == str(expected_label)
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == 1
+    assert out.annotation_gt.type == "point"
+    assert len(out.annotation_gt.value) == 2
     assert str(out.query_id) == "single"
     assert trace["query_spec"]["prompt_variant"]["selected_keys"]["query"] == "winning_move_column_label"
     assert int(execution["answer_column"]) == int(expected_column)
@@ -110,7 +110,7 @@ def test_games_connect_four_winning_move_column_label_contract(
     assert len(execution["winning_move_coords"]) == 1
     assert int(execution["winning_move_coords"][0][1]) == int(expected_column)
     assert execution["annotation_coords"] == execution["winning_move_coords"]
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["point"] == out.annotation_gt.value
     assert trace["render_map"]["marked_square_bbox_px"] is None
 
 

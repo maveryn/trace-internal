@@ -58,7 +58,7 @@ def _prepare_winning_column_label_objective(
         )
 
     def prompt_slots(sample) -> dict[str, Any]:
-        json_example, json_example_answer_only = json_examples_for_label_answer()
+        json_example, json_example_answer_only = json_examples_for_label_answer(scalar_annotation=True)
         return {
             "object_description": connect_four_object_description(str(sample.scene_variant)),
             **connect_four_rule_slots(current_player=int(sample.current_player)),
@@ -96,6 +96,7 @@ def _prepare_winning_column_label_objective(
         prompt_dynamic_slots=prompt_slots,
         answer_gt=lambda sample: TypedValue(type="string", value=str(sample.answer_label)),
         annotation_coords=lambda sample: sample.evaluation.annotation_coords,
+        annotation_type="point",
         render_marked_square=lambda _sample: None,
         render_column_labels=lambda sample: sample.column_labels,
         query_spec_params=query_spec_params,

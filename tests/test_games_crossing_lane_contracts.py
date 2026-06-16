@@ -52,19 +52,19 @@ def _routes(execution: dict) -> tuple[CrossingRouteOption, ...]:
         (
             GamesCrossingFirstExitObjectLabelTask,
             {"target_label": "B", "lane_count": 7, "row_count": 7, "style_variant": "paper"},
-            "first_exit_object_label",
+            "single",
             "B",
             "string",
-            "bbox_set",
+            "point",
             1,
         ),
         (
             GamesCrossingHitObjectLabelTask,
             {"target_label": "C", "lane_count": 6, "row_count": 6, "style_variant": "retro"},
-            "hit_object_label",
+            "single",
             "C",
             "string",
-            "bbox_set",
+            "point",
             1,
         ),
         (
@@ -73,7 +73,7 @@ def _routes(execution: dict) -> tuple[CrossingRouteOption, ...]:
             "left_moving_object_count",
             4,
             "integer",
-            "bbox_set",
+            "point_set",
             4,
         ),
     ),
@@ -94,7 +94,11 @@ def test_games_crossing_public_tasks_emit_expected_contract(
     assert out.answer_gt.type == expected_answer_type
     assert out.answer_gt.value == expected_answer
     assert out.annotation_gt.type == expected_annotation_type
-    assert len(out.annotation_gt.value) == annotation_count
+    if expected_annotation_type == "point":
+        assert len(out.annotation_gt.value) == 2
+        assert annotation_count == 1
+    else:
+        assert len(out.annotation_gt.value) == annotation_count
     assert out.query_id == expected_query
     assert out.scene_id == "crossing"
     assert trace["query_spec"]["query_id"] == expected_query
@@ -102,7 +106,7 @@ def test_games_crossing_public_tasks_emit_expected_contract(
     assert execution["query_id"] == expected_query
     assert trace["projected_annotation"]["type"] == expected_annotation_type
     assert trace["projected_annotation"][expected_annotation_type] == out.annotation_gt.value
-    assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
+    assert len(execution["annotation_entity_ids"]) == annotation_count
 
 
 def test_games_crossing_hit_object_label_matches_trace() -> None:
@@ -186,7 +190,7 @@ def test_games_crossing_direction_count_matches_trace(query_id: str, target_answ
     assert out.query_id == query_id
     assert int(out.answer_gt.value) == len(matching_ids) == int(target_answer)
     assert set(execution["annotation_entity_ids"]) == set(matching_ids)
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == int(target_answer)
     assert execution["route_options"] == []
     assert execution["marked_route_label"] is None

@@ -78,6 +78,7 @@ def _prepare_first_exit_object_label_objective(
         prompt_dynamic_slots=plan.prompt_dynamic_slots,
         answer_gt=plan.answer_gt,
         annotation_entity_ids=plan.annotation_entity_ids,
+        annotation_type=plan.annotation_type,
         query_spec_params=plan.query_spec_params,
         execution_updates=lambda sample: {
             **dict(plan.execution_updates(sample)),

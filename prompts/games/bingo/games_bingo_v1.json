@@ -87,8 +87,8 @@
     },
     "query:completed_line_sum_value": {
       "answer_hint": "set \"answer\" to the sum of the five printed numbers in the completed row or column",
-      "annotation_hint": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for the five cells in the completed row or column",
-      "json_example": "{\"annotation\":[[40,80,90,130],[100,80,150,130],[160,80,210,130],[220,80,270,130],[280,80,330,130]],\"answer\":184}",
+      "annotation_hint": "set \"annotation\" to an array of points [x, y], one at the center of each of the five cells in the completed row or column",
+      "json_example": "{\"annotation\":[[65,105],[125,105],[185,105],[245,105],[305,105]],\"answer\":184}",
       "json_example_answer_only": "{\"answer\":184}"
     },
     "query:near_complete_row_count": {

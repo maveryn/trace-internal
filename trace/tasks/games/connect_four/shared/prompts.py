@@ -31,11 +31,12 @@ def json_examples_for_integer_answer() -> tuple[str, str]:
     )
 
 
-def json_examples_for_label_answer() -> tuple[str, str]:
+def json_examples_for_label_answer(*, scalar_annotation: bool = False) -> tuple[str, str]:
     """Return generic label-answer JSON examples for this scene."""
 
+    annotation = [155, 215] if bool(scalar_annotation) else [[155, 215]]
     return (
-        json.dumps({"annotation": [[155, 215]], "answer": "C"}, separators=(",", ":")),
+        json.dumps({"annotation": annotation, "answer": "C"}, separators=(",", ":")),
         json.dumps({"answer": "C"}, separators=(",", ":")),
     )
 

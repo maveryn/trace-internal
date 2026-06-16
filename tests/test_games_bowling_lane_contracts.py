@@ -61,9 +61,9 @@ def test_games_bowling_public_tasks_emit_expected_contract(
         assert len(out.annotation_gt.value) == 2
         assert trace["projected_annotation"]["segment"] == out.annotation_gt.value
     else:
-        assert out.annotation_gt.type == "bbox"
-        assert len(out.annotation_gt.value) == 4
-        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+        assert out.annotation_gt.type == "point"
+        assert len(out.annotation_gt.value) == 2
+        assert trace["projected_annotation"]["point"] == out.annotation_gt.value
     assert out.query_id == "single"
     assert out.scene_id == "bowling"
     assert trace["query_spec"]["query_id"] == "single"
@@ -76,10 +76,10 @@ def test_games_bowling_public_tasks_emit_expected_contract(
     assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
     assert float(trace["render_map"]["path_color_safety"]["min_path_anchor_lab_distance"]) >= 40.0
     assert len(trace["render_map"]["path_palette_rgb"]) >= 6
-    if out.annotation_gt.type == "bbox":
-        x0, y0, x1, y1 = out.annotation_gt.value
-        assert 0 <= float(x0) <= float(x1) <= float(trace["render_spec"]["canvas_width"])
-        assert 0 <= float(y0) <= float(y1) <= float(trace["render_spec"]["canvas_height"])
+    if out.annotation_gt.type == "point":
+        x, y = out.annotation_gt.value
+        assert 0 <= float(x) <= float(trace["render_spec"]["canvas_width"])
+        assert 0 <= float(y) <= float(trace["render_spec"]["canvas_height"])
     elif out.annotation_gt.type == "segment":
         for x, y in out.annotation_gt.value:
             assert 0 <= float(x) <= float(trace["render_spec"]["canvas_width"])

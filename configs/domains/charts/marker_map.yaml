@@ -9,12 +9,6 @@ generation:
     legend_bin_count: 3
     count_answer_min: 1
     count_answer_max: 5
-    threshold_direction_weights:
-      greater_than: 1.0
-      less_than: 1.0
-    marker_extremum_direction_weights:
-      largest: 1.0
-      smallest: 1.0
     marker_value_min: 1
     marker_value_max: 5
     scene_variant_weights:
@@ -27,8 +21,6 @@ generation:
       china_provinces: 0.125
     balanced_scene_variant_sampling: true
     balanced_geographic_map_variant_sampling: true
-    balanced_threshold_direction_sampling: true
-    balanced_marker_extremum_direction_sampling: true
 rendering:
   shared:
     canvas_width: 1180

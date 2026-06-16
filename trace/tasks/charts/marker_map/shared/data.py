@@ -1,4 +1,4 @@
-"""Synthetic-region dataset helpers for marker-map tasks."""
+"""Synthetic-region data helpers for marker-map charts."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....shared.config_defaults import resolve_required_int_bounds
 from ....shared.deterministic_sampling import uniform_probability_map
-from .choropleth_config import _GEN_DEFAULTS, SCENE_NAMESPACE
-from .choropleth_geometry import (
+from .defaults import _GEN_DEFAULTS, SCENE_NAMESPACE
+from .spatial_primitives import (
     _balanced_int,
     _grid_pair_support,
     _sample_connected_cells,
@@ -53,6 +53,8 @@ def build_synthetic_marker_regions(
     rng,
     namespace_suffix: str,
 ) -> Tuple[int, int, List[Tuple[int, int]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Sample a connected synthetic grid-map shape and neutral legend bins for marker overlays."""
+
     row_min, row_max = resolve_required_int_bounds(
         params,
         _GEN_DEFAULTS,

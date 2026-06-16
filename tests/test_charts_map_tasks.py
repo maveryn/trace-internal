@@ -8,23 +8,57 @@ import pytest
 
 from tests.helpers import extract_prompt_json_example
 from trace.core.seed import hash64
-from trace.tasks.charts.region_map.shared.choropleth_region_label import (
-    SUPPORTED_ADJACENT_QUERY_IDS,
-    SUPPORTED_REGION_VALUE_QUERY_IDS,
-    SUPPORTED_WORLD_FILTERED_QUERY_IDS,
+from trace.tasks.charts.region_map.adjacent_category_count import (
+    QUERY_ID as ADJACENT_CATEGORY_QUERY_ID,
     ChartsMapAdjacentCategoryCountTask,
+)
+from trace.tasks.charts.region_map.adjacent_numeric_threshold_count import (
+    QUERY_ID as ADJACENT_NUMERIC_THRESHOLD_QUERY_ID,
     ChartsMapAdjacentNumericThresholdCountTask,
+)
+from trace.tasks.charts.region_map.adjacent_same_category_count import (
+    QUERY_ID as ADJACENT_SAME_CATEGORY_QUERY_ID,
     ChartsMapAdjacentSameCategoryCountTask,
+)
+from trace.tasks.charts.region_map.categorical_region_count import (
+    QUERY_ID as CATEGORICAL_REGION_QUERY_ID,
     ChartsMapCategoricalRegionCountTask,
+)
+from trace.tasks.charts.region_map.continent_category_region_count import (
+    QUERY_ID as CONTINENT_CATEGORY_REGION_QUERY_ID,
     ChartsMapContinentCategoryRegionCountTask,
+)
+from trace.tasks.charts.region_map.continent_region_count import (
+    QUERY_ID as CONTINENT_REGION_QUERY_ID,
     ChartsMapContinentRegionCountTask,
+)
+from trace.tasks.charts.region_map.continent_threshold_region_count import (
+    QUERY_ID as CONTINENT_THRESHOLD_REGION_QUERY_ID,
     ChartsMapContinentThresholdRegionCountTask,
+)
+from trace.tasks.charts.region_map.group_filtered_region_value import (
     ChartsMapGroupFilteredRegionValueTask,
-    ChartsMapMarkerRegionExtremumLabelTask,
-    ChartsMapMarkerRegionThresholdCountTask,
+)
+from trace.tasks.charts.region_map.named_region_set_total_value import (
     ChartsMapNamedRegionSetTotalValueTask,
+)
+from trace.tasks.charts.region_map.numeric_interval_region_count import (
+    QUERY_ID as NUMERIC_INTERVAL_REGION_QUERY_ID,
     ChartsMapNumericIntervalRegionCountTask,
+)
+from trace.tasks.charts.region_map.numeric_threshold_region_count import (
+    QUERY_ID as NUMERIC_THRESHOLD_REGION_QUERY_ID,
     ChartsMapNumericThresholdRegionCountTask,
+)
+from trace.tasks.charts.marker_map.marker_region_extremum_label import (
+    LARGEST_QUERY_ID as MARKER_MAP_LARGEST_QUERY_ID,
+    SMALLEST_QUERY_ID as MARKER_MAP_SMALLEST_QUERY_ID,
+    ChartsMarkerMapMarkerRegionExtremumLabelTask,
+)
+from trace.tasks.charts.marker_map.marker_region_threshold_count import (
+    GREATER_THAN_QUERY_ID as MARKER_MAP_GREATER_THAN_QUERY_ID,
+    LESS_THAN_QUERY_ID as MARKER_MAP_LESS_THAN_QUERY_ID,
+    ChartsMarkerMapMarkerRegionThresholdCountTask,
 )
 
 
@@ -33,16 +67,31 @@ REGION_VALUE_TASKS = {
     "numeric_interval_region_count": ChartsMapNumericIntervalRegionCountTask,
     "categorical_region_count": ChartsMapCategoricalRegionCountTask,
 }
+SUPPORTED_REGION_VALUE_QUERY_IDS = (
+    NUMERIC_THRESHOLD_REGION_QUERY_ID,
+    NUMERIC_INTERVAL_REGION_QUERY_ID,
+    CATEGORICAL_REGION_QUERY_ID,
+)
 WORLD_FILTERED_TASKS = {
     "continent_region_count": ChartsMapContinentRegionCountTask,
     "continent_category_region_count": ChartsMapContinentCategoryRegionCountTask,
     "continent_threshold_region_count": ChartsMapContinentThresholdRegionCountTask,
 }
+SUPPORTED_WORLD_FILTERED_QUERY_IDS = (
+    CONTINENT_REGION_QUERY_ID,
+    CONTINENT_CATEGORY_REGION_QUERY_ID,
+    CONTINENT_THRESHOLD_REGION_QUERY_ID,
+)
 ADJACENT_TASKS = {
     "adjacent_same_category_count": ChartsMapAdjacentSameCategoryCountTask,
     "adjacent_category_count": ChartsMapAdjacentCategoryCountTask,
     "adjacent_numeric_threshold_count": ChartsMapAdjacentNumericThresholdCountTask,
 }
+SUPPORTED_ADJACENT_QUERY_IDS = (
+    ADJACENT_SAME_CATEGORY_QUERY_ID,
+    ADJACENT_CATEGORY_QUERY_ID,
+    ADJACENT_NUMERIC_THRESHOLD_QUERY_ID,
+)
 
 
 def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
@@ -289,18 +338,25 @@ def test_chart_map_task_sampling_covers_map_scene_types() -> None:
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "expected_query_id", "expected_answer_type"),
+    ("task_cls", "expected_query_id", "expected_answer_type", "expected_annotation_type"),
     [
-        (ChartsMapMarkerRegionThresholdCountTask, "marker_region_threshold_count", "integer"),
-        (ChartsMapMarkerRegionExtremumLabelTask, "marker_region_extremum_label", "string"),
+        (ChartsMarkerMapMarkerRegionThresholdCountTask, MARKER_MAP_GREATER_THAN_QUERY_ID, "integer", "bbox_set"),
+        (ChartsMarkerMapMarkerRegionThresholdCountTask, MARKER_MAP_LESS_THAN_QUERY_ID, "integer", "bbox_set"),
+        (ChartsMarkerMapMarkerRegionExtremumLabelTask, MARKER_MAP_LARGEST_QUERY_ID, "string", "bbox"),
+        (ChartsMarkerMapMarkerRegionExtremumLabelTask, MARKER_MAP_SMALLEST_QUERY_ID, "string", "bbox"),
     ],
 )
-def test_chart_map_marker_tasks_use_marker_bubble_annotation(task_cls, expected_query_id: str, expected_answer_type: str) -> None:
+def test_chart_map_marker_tasks_use_marker_bubble_annotation(
+    task_cls,
+    expected_query_id: str,
+    expected_answer_type: str,
+    expected_annotation_type: str,
+) -> None:
     task = task_cls()
     render_variant = "proportional_bubble"
     out = task.generate(
         hash64(67700, f"{expected_query_id}.{render_variant}"),
-        params={"scene_variant": "synthetic_region_map"},
+        params={"query_id": expected_query_id, "scene_variant": "synthetic_region_map"},
         max_attempts=10,
     )
     trace = out.trace_payload
@@ -311,25 +367,32 @@ def test_chart_map_marker_tasks_use_marker_bubble_annotation(task_cls, expected_
     assert out.query_id == expected_query_id
     assert out.scene_id == "marker_map"
     assert out.answer_gt.type == expected_answer_type
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == expected_annotation_type
     assert str(execution["question_format"]) == "map_marker_query"
     assert str(execution["query_id"]) == expected_query_id
     assert str(trace["query_spec"]["params"]["marker_render_variant"]) == render_variant
     assert str(render["marker_render"]["marker_render_variant"]) == render_variant
     assert str(render["font_assets"]["font_asset_version"])
     assert str(render["font_assets"]["chart_font_family"])
-    assert projected["type"] == "bbox_set"
-    assert projected["bbox_set"] == out.annotation_gt.value
+    assert projected["type"] == expected_annotation_type
     assert projected["marker_bboxes_by_region"]
-    assert len(out.annotation_gt.value) == len(projected["region_ids"])
-    assert out.annotation_gt.value == [projected["bbox_map"][str(region_id)] for region_id in projected["region_ids"]]
-    assert len(out.annotation_gt.value) >= 1
+    if expected_annotation_type == "bbox_set":
+        assert projected["bbox_set"] == out.annotation_gt.value
+        assert len(out.annotation_gt.value) == len(projected["region_ids"])
+        assert out.annotation_gt.value == [projected["bbox_map"][str(region_id)] for region_id in projected["region_ids"]]
+        assert len(out.annotation_gt.value) >= 1
+        bboxes_to_check = out.annotation_gt.value
+    else:
+        assert projected["bbox"] == out.annotation_gt.value
+        assert len(projected["region_ids"]) == 1
+        assert out.annotation_gt.value == projected["bbox_map"][str(projected["region_id"])]
+        bboxes_to_check = [out.annotation_gt.value]
     assert "marker" in out.prompt.lower()
     assert "choropleth" not in out.prompt.lower()
     marker_label_entities = [
         entity for entity in trace["scene_ir"]["entities"] if str(entity.get("entity_type")) == "map_marker_label"
     ]
-    for bbox in out.annotation_gt.value:
+    for bbox in bboxes_to_check:
         _assert_bbox_inside_canvas(
             [float(value) for value in bbox],
             width=int(render["canvas_width"]),

@@ -63,8 +63,8 @@
     },
     "query:marker_region_extremum_label": {
       "answer_hint": "set \"answer\" to the exact visible region label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0,y0,x1,y1] pixel box around the answer marker bubble",
-      "json_example": "{\"annotation\":[[420,230,462,272]],\"answer\":\"D\"}",
+      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the answer marker bubble",
+      "json_example": "{\"annotation\":[420,230,462,272],\"answer\":\"D\"}",
       "json_example_answer_only": "{\"answer\":\"D\"}"
     }
   },

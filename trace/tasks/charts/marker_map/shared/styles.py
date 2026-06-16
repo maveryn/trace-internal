@@ -1,11 +1,11 @@
-"""Shared style registries and resolvers for choropleth map tasks."""
+"""Shared style registries and resolvers for marker-map charts."""
 
 from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....shared.color_distance import coerce_rgb as _rgb
-from ...shared.labeled_chart_common import resolve_chart_axis_variant
+from ...shared.labeled_chart_common import resolve_chart_axis_variant_for_namespace
 
 
 SUPPORTED_LEGEND_POSITIONS: Tuple[str, ...] = ("right", "bottom", "top", "none")
@@ -322,6 +322,8 @@ def resolve_choropleth_palette(
     required_palette_count: int,
     categorical: bool,
 ) -> Tuple[str, Dict[str, float], Tuple[Tuple[int, int, int], ...]]:
+    """Resolve a map palette with enough contrast for bins or categorical region fills."""
+
     explicit_palette_raw = params.get("map_palette_rgb")
     if explicit_palette_raw is not None:
         palette = tuple(_rgb(item, (150, 180, 210)) for item in explicit_palette_raw)
@@ -337,16 +339,15 @@ def resolve_choropleth_palette(
     resolved_params: Mapping[str, Any] = params
     if "map_palette_variant" in params and explicit_key not in params:
         resolved_params = {**dict(params), explicit_key: params.get("map_palette_variant")}
-    variant, probabilities = resolve_chart_axis_variant(
+    variant, probabilities = resolve_chart_axis_variant_for_namespace(
         params=resolved_params,
         gen_defaults=render_defaults,
         instance_seed=int(style_seed),
         supported_variants=supported,
-        **{"task" "_id": str(namespace)},
+        namespace=f"{namespace}.{prefix}_palette_variant",
         explicit_key=explicit_key,
         weights_key=f"{prefix}_palette_variant_weights",
         balance_flag_key=f"balanced_{prefix}_palette_variant_sampling",
-        axis_namespace=f"{prefix}_palette_variant",
     )
     palette = palettes.get(str(variant), next(iter(palettes.values())))
     return (
@@ -363,16 +364,15 @@ def resolve_choropleth_legend_position(
     namespace: str,
     instance_seed: int,
 ) -> Tuple[str, Dict[str, float]]:
-    return resolve_chart_axis_variant(
+    return resolve_chart_axis_variant_for_namespace(
         params=params,
         gen_defaults=render_defaults,
         instance_seed=int(instance_seed),
         supported_variants=SUPPORTED_LEGEND_POSITIONS,
-        **{"task" "_id": str(namespace)},
+        namespace=f"{namespace}.legend_position",
         explicit_key="legend_position",
         weights_key="legend_position_weights",
         balance_flag_key="balanced_legend_position_sampling",
-        axis_namespace="legend_position",
     )
 
 
@@ -383,16 +383,15 @@ def resolve_choropleth_world_map_style(
     namespace: str,
     instance_seed: int,
 ) -> Tuple[str, Dict[str, float], Dict[str, Any]]:
-    style_id, probabilities = resolve_chart_axis_variant(
+    style_id, probabilities = resolve_chart_axis_variant_for_namespace(
         params=params,
         gen_defaults=render_defaults,
         instance_seed=int(instance_seed),
         supported_variants=SUPPORTED_WORLD_MAP_STYLES,
-        **{"task" "_id": str(namespace)},
+        namespace=f"{namespace}.world_map_style",
         explicit_key="world_map_style",
         weights_key="world_map_style_weights",
         balance_flag_key="balanced_world_map_style_sampling",
-        axis_namespace="world_map_style",
     )
     return (
         str(style_id),
@@ -408,16 +407,15 @@ def resolve_choropleth_marker_style(
     namespace: str,
     instance_seed: int,
 ) -> Tuple[str, Dict[str, float], Dict[str, Tuple[int, int, int]]]:
-    style_id, probabilities = resolve_chart_axis_variant(
+    style_id, probabilities = resolve_chart_axis_variant_for_namespace(
         params=params,
         gen_defaults=render_defaults,
         instance_seed=int(instance_seed),
         supported_variants=tuple(sorted(MARKER_STYLES.keys())),
-        **{"task" "_id": str(namespace)},
+        namespace=f"{namespace}.marker_style_variant",
         explicit_key="marker_style_variant",
         weights_key="marker_style_variant_weights",
         balance_flag_key="balanced_marker_style_variant_sampling",
-        axis_namespace="marker_style_variant",
     )
     return str(style_id), {str(key): float(value) for key, value in sorted(probabilities.items())}, dict(MARKER_STYLES[str(style_id)])
 

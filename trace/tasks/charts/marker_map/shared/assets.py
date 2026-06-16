@@ -1,4 +1,4 @@
-"""Bundled geographic map assets for choropleth map tasks."""
+"""Bundled geographic map assets for marker-map tasks."""
 
 from __future__ import annotations
 

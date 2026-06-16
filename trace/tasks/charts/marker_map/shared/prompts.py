@@ -12,7 +12,7 @@ from trace.tasks.shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 
-from .choropleth_config import SCENE_ID, SCENE_NAMESPACE
+from .defaults import SCENE_ID, SCENE_NAMESPACE
 
 
 DOMAIN = "charts"
@@ -20,7 +20,6 @@ PROMPT_BUNDLE_ID = "charts_marker_map_v1"
 _DEFAULTS = get_scene_defaults(DOMAIN, SCENE_ID)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
     _DEFAULTS if isinstance(_DEFAULTS, Mapping) else {},
-    **{"task" "_id": f"{SCENE_NAMESPACE}_prompt"},
 )
 
 

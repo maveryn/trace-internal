@@ -1,4 +1,4 @@
-"""Geometry helpers for chart-domain choropleth map tasks."""
+"""Spatial primitives for marker-map chart tasks."""
 
 from __future__ import annotations
 

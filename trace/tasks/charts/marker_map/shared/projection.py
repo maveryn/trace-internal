@@ -1,4 +1,4 @@
-"""Geographic adjacency helpers for chart-domain choropleth map tasks."""
+"""Geographic projection and adjacency helpers for marker-map charts."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import math
 from functools import lru_cache
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from .choropleth_assets import load_geographic_map_asset as _load_geographic_map_asset
+from .assets import load_geographic_map_asset as _load_geographic_map_asset
 
 
 WORLD_FILTERED_CONTINENTS: Tuple[str, ...] = (

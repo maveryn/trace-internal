@@ -1,4 +1,4 @@
-"""Marker-map dataset construction."""
+"""Dataset sampling for marker-map chart tasks."""
 
 from __future__ import annotations
 
@@ -7,18 +7,101 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from .....core.seed import spawn_rng
 from ....shared.config_defaults import resolve_required_int_bounds
 from ....shared.deterministic_sampling import uniform_probability_map
-from .choropleth_config import (
-    _GEN_DEFAULTS,
-    SCENE_NAMESPACE,
-    resolve_marker_render_variant,
-)
-from .choropleth_geometry import _balanced_int, _choose_random, _reading_order_region_ids
-from .choropleth_region_dataset import (
-    _marker_label_for_index,
-    build_synthetic_marker_regions,
-    sample_target_count,
-)
-from .choropleth_world_dataset import build_geographic_marker_regions
+from .assets import GEOGRAPHIC_MAP_ASSETS, load_geographic_map_asset
+from .data import _make_numeric_bins, _marker_label_for_index, build_synthetic_marker_regions, sample_target_count
+from .defaults import _GEN_DEFAULTS, SCENE_NAMESPACE, resolve_geographic_map_variant, resolve_marker_render_variant
+from .projection import _centroid_lonlat_from_rings
+from .spatial_primitives import _balanced_int, _choose_random, _reading_order_region_ids
+
+def _world_selected_count_support(params: Mapping[str, Any], *, eligible_count: int) -> List[int]:
+    count_min = int(
+        params.get(
+            "geographic_selected_region_count_min",
+            params.get("world_selected_region_count_min", _GEN_DEFAULTS.get("geographic_selected_region_count_min", 9)),
+        )
+    )
+    count_max = int(
+        params.get(
+            "geographic_selected_region_count_max",
+            params.get("world_selected_region_count_max", _GEN_DEFAULTS.get("geographic_selected_region_count_max", 14)),
+        )
+    )
+    if int(count_min) > int(count_max):
+        raise ValueError(f"{SCENE_NAMESPACE} geographic selected region min cannot exceed max")
+    high = min(int(count_max), int(eligible_count))
+    low = min(int(count_min), int(high))
+    return list(range(int(low), int(high) + 1))
+
+
+def build_geographic_marker_regions(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    rng,
+    namespace_suffix: str,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[str], List[int], Dict[str, Any]]:
+    """Select question-eligible geographic regions and adapt them to marker-map region records."""
+
+    geographic_map_variant, geographic_map_variant_probabilities = resolve_geographic_map_variant(
+        params,
+        instance_seed=int(instance_seed),
+    )
+    asset = load_geographic_map_asset(str(geographic_map_variant))
+    asset_regions = [dict(region) for region in asset.get("regions", []) if isinstance(region, Mapping)]
+    eligible_regions = [
+        dict(region)
+        for region in asset_regions
+        if bool(region.get("question_eligible"))
+    ]
+    if not eligible_regions:
+        raise ValueError("geographic map asset has no question-eligible regions")
+
+    selected_count_support = _world_selected_count_support(params, eligible_count=len(eligible_regions))
+    selected_count = _balanced_int(
+        selected_count_support,
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.{namespace_suffix}.selected_region_count",
+    )
+    selected_asset_regions = rng.sample(
+        sorted(eligible_regions, key=lambda item: str(item["region_id"])),
+        int(selected_count),
+    )
+
+    bin_count = int(params.get("legend_bin_count", _GEN_DEFAULTS.get("legend_bin_count", 3)))
+    legend_bins = _make_numeric_bins(int(bin_count))
+    regions: List[Dict[str, Any]] = []
+    region_prefix = str(asset.get("region_prefix") or "geo_region")
+    for asset_region in selected_asset_regions:
+        region_id = f"{region_prefix}_{asset_region['region_id']}"
+        bbox_lonlat = [float(value) for value in asset_region.get("bbox_lonlat", [0.0, 0.0, 0.0, 0.0])]
+        regions.append(
+            {
+                "region_id": str(region_id),
+                "asset_region_id": str(asset_region["region_id"]),
+                "display_name": str(asset_region.get("display_name") or asset_region["region_id"]),
+                "continent": str(asset_region.get("continent") or ""),
+                "admin0_a3": str(asset_region.get("admin0_a3") or ""),
+                "subregion": str(asset_region.get("subregion") or ""),
+                "bbox_lonlat": [round(float(value), 3) for value in bbox_lonlat],
+                "centroid_lonlat": _centroid_lonlat_from_rings(asset_region.get("rings", [])),
+                "bin_index": int(rng.randrange(int(bin_count))),
+                "bin_label": str(legend_bins[0]["bin_label"]),
+                "category": "",
+                "is_reference_region": False,
+            }
+        )
+    asset_meta = {
+        "asset_id": str(asset.get("asset_id") or GEOGRAPHIC_MAP_ASSETS[str(geographic_map_variant)]["asset_id"]),
+        "map_variant": str(geographic_map_variant),
+        "map_variant_probabilities": dict(geographic_map_variant_probabilities),
+        "display_name": str(asset.get("display_name") or ""),
+        "region_noun": str(asset.get("region_noun") or "regions"),
+        "object_description": str(asset.get("object_description") or ""),
+        "title_options": [str(item) for item in asset.get("title_options", [])],
+        "source": dict(asset.get("source", {})) if isinstance(asset.get("source"), Mapping) else {},
+    }
+    return list(regions), list(legend_bins), [str(region["region_id"]) for region in regions], list(selected_count_support), dict(asset_meta)
 
 
 def _marker_value_bounds(params: Mapping[str, Any]) -> Tuple[int, int]:
@@ -43,6 +126,8 @@ def _base_marker_map_dataset(
     instance_seed: int,
     namespace_suffix: str,
 ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], List[str], Any]:
+    """Build the scene-neutral marker-map dataset before objective-specific answer constraints."""
+
     if str(scene_variant) not in {"synthetic_region_map", "geographic_region_map"}:
         raise ValueError(f"unsupported marker-map scene variant: {scene_variant}")
     rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.{namespace_suffix}.dataset")
@@ -167,6 +252,8 @@ def construct_marker_threshold_dataset(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Constrain marker values so exactly the sampled target regions satisfy the threshold."""
+
     base, regions_by_id, region_ids, rng = _base_marker_map_dataset(
         scene_variant=str(scene_variant),
         params=params,
@@ -241,6 +328,8 @@ def construct_marker_extremum_dataset(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Constrain marker values so one visible region has the unique selected extremum."""
+
     base, regions_by_id, region_ids, rng = _base_marker_map_dataset(
         scene_variant=str(scene_variant),
         params=params,
@@ -299,6 +388,7 @@ def construct_marker_extremum_dataset(
 
 
 __all__ = [
+    "build_geographic_marker_regions",
     "construct_marker_extremum_dataset",
     "construct_marker_threshold_dataset",
 ]

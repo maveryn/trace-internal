@@ -123,7 +123,7 @@ def test_object_cluster_instance_count_answer_and_annotation() -> None:
         params={
             "query_id": "single",
             "scene_variant": "tabletop_pile",
-            "object_count": 22,
+            "object_count": 20,
             "target_count": 6,
             "target_shape_type": "pencil",
             "post_image_noise_apply_prob": 0.0,
@@ -163,7 +163,7 @@ def test_object_cluster_single_type_mode_counts_every_object() -> None:
             "query_id": "single",
             "scene_variant": "cluster_mat",
             "composition_mode": "single_type_cluster",
-            "target_count": 12,
+            "target_count": 8,
             "target_shape_type": "spoon",
             "post_image_noise_apply_prob": 0.0,
         },
@@ -174,11 +174,11 @@ def test_object_cluster_single_type_mode_counts_every_object() -> None:
     object_specs = list(trace["object_specs"])
 
     assert trace["cluster_composition_mode"] == "single_type_cluster"
-    assert trace["object_count"] == 12
-    assert trace["target_count"] == 12
+    assert trace["object_count"] == 8
+    assert trace["target_count"] == 8
     assert trace["distractor_count"] == 0
-    assert output.answer_gt.value == 12
-    assert len(output.annotation_gt.value) == 12
+    assert output.answer_gt.value == 8
+    assert len(output.annotation_gt.value) == 8
     assert all(str(spec["shape_type"]) == "spoon" for spec in object_specs)
     assert all(bool(spec.get("matches_query", False)) for spec in object_specs)
 

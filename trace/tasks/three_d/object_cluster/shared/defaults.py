@@ -25,6 +25,7 @@ MIN_PROJECTED_OBJECT_AREA_PX = 260.0
 MAX_PAIRWISE_OVERLAP_FRACTION = 0.72
 MAX_PAIRWISE_OVERLAP_PX = 6200.0
 ANSWER_COUNT_BINS: Mapping[str, Tuple[int, int]] = {
+    "4_8": (4, 8),
     "6_10": (6, 10),
     "11_17": (11, 17),
     "18_25": (18, 25),

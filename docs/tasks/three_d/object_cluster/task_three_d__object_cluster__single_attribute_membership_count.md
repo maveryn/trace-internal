@@ -22,11 +22,11 @@ pieces.
 
 Generation samples a `cluster_composition_mode` axis:
 
-- `single_type_cluster` (`0.6`): all visible objects are the target type, with answer/object count in `6-25`.
-- `near_homogeneous_cluster` (`0.3`): the scene is mostly the target type with `1-4` visually distinct non-target distractors; target answer remains capped at `25`.
-- `mixed_type_cluster` (`0.1`): the target type is counted among more varied distractor types, with target answer in `6-18`.
+- `single_type_cluster` (`0.6`): all visible objects are the target type, with answer/object count in `4-8`.
+- `near_homogeneous_cluster` (`0.3`): the scene is mostly the target type with `1-4` visually distinct non-target distractors; target answer is in `4-8`.
+- `mixed_type_cluster` (`0.1`): the target type is counted among more varied distractor types, with target answer in `4-8` and total object count capped at `20`.
 
-The default answer distribution is weighted over `6-10`, `11-17`, and `18-25`. Visually confusable same-family distractors are excluded for the selected target in modes that use distractors.
+The default answer distribution is weighted over the capped `4-8` support. Visually confusable same-family distractors are excluded for the selected target in modes that use distractors.
 
 Prompt-facing wording must not mention absent labels, missing letters, or other non-present features for this scene. The prompt should describe only the visible scaffold and ask the count question directly.
 

@@ -129,9 +129,9 @@ def resolve_membership_counts(
             gen_defaults=gen_defaults,
             minimum_key="single_type_count_min",
             maximum_key="single_type_count_max",
-            fallback_minimum=configured_int(params, gen_defaults, "target_count_min", 6),
+            fallback_minimum=configured_int(params, gen_defaults, "target_count_min", 4),
             fallback_maximum=configured_int(params, gen_defaults, "target_count_max", 25),
-            lower=6,
+            lower=4,
             upper=25,
         )
         if explicit_object_count is not None and explicit_target_count is not None:
@@ -168,9 +168,9 @@ def resolve_membership_counts(
             gen_defaults=gen_defaults,
             minimum_key="near_homogeneous_target_count_min",
             maximum_key="near_homogeneous_target_count_max",
-            fallback_minimum=configured_int(params, gen_defaults, "target_count_min", 6),
+            fallback_minimum=configured_int(params, gen_defaults, "target_count_min", 4),
             fallback_maximum=configured_int(params, gen_defaults, "target_count_max", 25),
-            lower=6,
+            lower=4,
             upper=25,
         )
         object_minimum, object_maximum = count_bounds(
@@ -247,9 +247,9 @@ def resolve_membership_counts(
         gen_defaults=gen_defaults,
         minimum_key="mixed_type_target_count_min",
         maximum_key="mixed_type_target_count_max",
-        fallback_minimum=6,
+        fallback_minimum=4,
         fallback_maximum=18,
-        lower=6,
+        lower=4,
         upper=25,
     )
     object_minimum, object_maximum = count_bounds(

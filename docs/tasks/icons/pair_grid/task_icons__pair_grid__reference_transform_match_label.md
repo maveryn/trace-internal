@@ -13,7 +13,7 @@ scene=pair_grid
 scope=labeled_scene_cells
 
 ## Contract
-Renders a Reference before/after icon pair and a labeled Scene grid of six
+Renders a Reference before/after icon pair and a labeled Scene grid of four
 before/after icon-pair cells, then asks which labeled Scene cell shows the same
 geometric transformation as the Reference pair. Exactly one Scene cell is
 correct by construction.

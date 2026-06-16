@@ -227,9 +227,11 @@ def _sample_scene(
     """Sample and render one reference color-pair match label scene."""
 
     pool = list(resolve_icon_pool(str(pool_manifest)))
-    if not pool:
-        raise ValueError("icon pool is empty for color-pair scene")
-    reference_icon_id = str(rng.choice(tuple(pool)))
+    if len(pool) < int(option_count) + 1:
+        raise ValueError("icon pool is too small for requested color-pair scene")
+    rng.shuffle(pool)
+    reference_icon_id = str(pool[0])
+    scene_icon_ids = [str(icon_id) for icon_id in pool[1 : 1 + int(option_count)]]
     labels = tuple(str(value) for value in LABEL_POOL_A_L[: int(option_count)])
     answer_index = labels.index(str(answer_label))
     palette = _sample_palette(rng, render_params=render_params)
@@ -259,13 +261,13 @@ def _sample_scene(
     )
     scene_pairs = [
         _make_pair_spec(
-            icon_id=str(reference_icon_id),
+            icon_id=str(icon_id),
             color_pair=color_pair,
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}:scene_{str(label)}",
             render_params=render_params,
         )
-        for label, color_pair in zip(labels, cell_color_pairs)
+        for label, icon_id, color_pair in zip(labels, scene_icon_ids, cell_color_pairs)
     ]
 
     rendered_payload = render_pair_grid_payload(
@@ -293,7 +295,7 @@ def _sample_scene(
         answer_label=str(answer_label),
         reference_color_pair=reference_color_pair,
         cell_labels=tuple(str(value) for value in labels),
-        cell_icon_ids=tuple(str(reference_icon_id) for _ in labels),
+        cell_icon_ids=tuple(str(icon_id) for icon_id in scene_icon_ids),
         cell_color_pairs=tuple(cell_color_pairs),
         sampled_palette_rgb=tuple(palette),
         panel_geometry=dict(rendered_payload.panel_geometry),

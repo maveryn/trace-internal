@@ -7,7 +7,7 @@ generation:
       option_count: 6
     task_icons__pair_grid__reference_transform_match_label:
       pool_manifest: non_symmetry.txt
-      option_count: 6
+      option_count: 4
       transform_ids:
       - rot90
       - rot180

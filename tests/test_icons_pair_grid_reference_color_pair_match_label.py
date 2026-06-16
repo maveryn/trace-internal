@@ -48,6 +48,9 @@ def test_icons_pair_grid_reference_color_pair_match_label_contract_matches_scene
     assert float(reference_pair["right_size_scale"]) == 1.0
 
     matching = []
+    scene_icon_ids = {str(entity["icon_id"]) for entity in scene_entities}
+    assert str(reference_pair["icon_id"]) not in scene_icon_ids
+    assert len(scene_icon_ids) == 6
     for entity in scene_entities:
         color_pair = [list(entity["left_tint_rgb"]), list(entity["right_tint_rgb"])]
         is_match = color_pair == reference_color_pair
@@ -55,7 +58,6 @@ def test_icons_pair_grid_reference_color_pair_match_label_contract_matches_scene
         assert str(entity["transform_id"]) == IDENTITY_TRANSFORM_ID
         assert float(entity["left_size_scale"]) == 1.0
         assert float(entity["right_size_scale"]) == 1.0
-        assert str(entity["icon_id"]) == str(reference_pair["icon_id"])
         if is_match:
             matching.append(entity)
     assert [str(entity["label"]) for entity in matching] == ["D"]

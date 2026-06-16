@@ -25,10 +25,11 @@ Answer schema: `option_letter`.
 Annotation schema: scalar `bbox` around the selected Scene cell.
 
 ## Notes
-This task holds shape, size, and transform constant so the only answer-bearing
-relation is the left/right color pair. Distractors include same-left/different-
-right, different-left/same-right, reversed-color, and both-different color-pair
-cases when the sampled palette permits them.
+This task holds size and transform constant while sampling different icon shapes
+for the Reference and Scene cells. Shape is non-answer-bearing; the only
+answer-bearing relation is the left/right color pair. Distractors include
+same-left/different-right, different-left/same-right, reversed-color, and
+both-different color-pair cases when the sampled palette permits them.
 
 Renderer metadata records sampled palette/style, panel-header and cell-label
 text-legibility metadata, and per-icon noise edits.

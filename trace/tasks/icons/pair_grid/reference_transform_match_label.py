@@ -53,6 +53,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = PairGridTaskDefaults(
+    option_count=4,
     pool_manifest="non_symmetry.txt",
     palette_size_min=1,
     palette_size_max=1,

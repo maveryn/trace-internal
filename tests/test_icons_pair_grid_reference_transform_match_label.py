@@ -45,9 +45,9 @@ def test_icons_pair_grid_reference_transform_match_label_contract_matches_scene(
     assert execution["question_format"] == "select_scene_cell_matching_reference_transform"
     assert out.query_id == "single"
     assert execution["query_id"] == "single"
-    assert int(execution["option_count"]) == 6
-    assert len(scene_entities) == 6
-    assert len(set(str(entity["label"]) for entity in scene_entities)) == 6
+    assert int(execution["option_count"]) == 4
+    assert len(scene_entities) == 4
+    assert len(set(str(entity["label"]) for entity in scene_entities)) == 4
 
     reference_transform_id = str(execution["reference_transform_id"])
     matching = [entity for entity in scene_entities if str(entity["transform_id"]) == reference_transform_id]

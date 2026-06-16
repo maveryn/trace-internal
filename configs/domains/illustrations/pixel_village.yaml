@@ -47,6 +47,13 @@ generation:
       rotation_degrees_support:
         - 90
         - 270
+    task_illustrations__pixel_village__swapped_tile_pair_label:
+      query_id_support:
+        - single
+      source_width: 1200
+      source_height: 840
+      min_tile_detail_score: 150
+      min_pair_difference: 8
     task_illustrations__pixel_village__territory_object_count:
       query_id_support:
         - single
@@ -122,6 +129,17 @@ rendering:
       pixel_village_river_mode: force
       pixel_village_river_orientation: auto
       pixel_village_river_placement: balanced
+    task_illustrations__pixel_village__swapped_tile_pair_label:
+      pixel_village_canvas_width: 1200
+      pixel_village_canvas_height: 840
+      pixel_village_tile_px: 40
+      pixel_village_theme_mode: auto
+      pixel_village_cemetery_mode: force
+      pixel_village_orchard_mode: force
+      pixel_village_windmill_mode: force
+      pixel_village_river_mode: force
+      pixel_village_river_orientation: auto
+      pixel_village_river_placement: balanced
     task_illustrations__pixel_village__territory_object_count:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
@@ -186,6 +204,14 @@ prompt:
       annotation_hint_rotated_tile: set "annotation" to the [x0, y0, x1, y1] box around the rotated tile in pixel coordinates
       json_example_rotated_tile: '{"annotation":[438,168,758,488],"answer":"B"}'
       json_example_answer_only_rotated_tile: '{"answer":"B"}'
+    task_illustrations__pixel_village__swapped_tile_pair_label:
+      bundle_id: illustrations_pixel_village_v0
+      scene_key: pixel_village_canvas
+      task_key: pixel_village_swapped_tile_pair_label_task
+      answer_hint_swapped_tile_pair: set "answer" to the selected option letter
+      annotation_hint_swapped_tile_pair: set "annotation" to a JSON array containing two [x0, y0, x1, y1] boxes around the two swapped numbered cells
+      json_example_swapped_tile_pair: '{"annotation":[[0,0,400,280],[800,560,1200,840]],"answer":"C"}'
+      json_example_answer_only_swapped_tile_pair: '{"answer":"C"}'
     task_illustrations__pixel_village__territory_object_count:
       bundle_id: illustrations_pixel_village_v0
       scene_key: pixel_village_canvas

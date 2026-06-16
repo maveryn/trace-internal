@@ -40,6 +40,7 @@ MIGRATED_ILLUSTRATION_TASK_IDS: tuple[str, ...] = (
     "task_illustrations__pixel_village__person_path_count",
     "task_illustrations__pixel_village__river_side_object_count",
     "task_illustrations__pixel_village__rotated_tile_label",
+    "task_illustrations__pixel_village__swapped_tile_pair_label",
     "task_illustrations__pixel_village__territory_object_count",
 )
 

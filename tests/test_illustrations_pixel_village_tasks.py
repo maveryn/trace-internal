@@ -15,6 +15,10 @@ from trace.tasks.illustrations.pixel_village.missing_patch_label import (
 from trace.tasks.illustrations.pixel_village.rotated_tile_label import (
     _sample_spec as _sample_rotated_tile_spec,
 )
+from trace.tasks.illustrations.pixel_village.swapped_tile_pair_label import (
+    _sample_spec as _sample_swapped_tile_pair_spec,
+)
+from trace.tasks.illustrations.shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS
 
 
 JIGSAW_TASK_ID = "task_illustrations__pixel_village__jigsaw_arrangement_label"
@@ -22,6 +26,7 @@ MISSING_PATCH_TASK_ID = "task_illustrations__pixel_village__missing_patch_label"
 OBJECT_TASK_ID = "task_illustrations__pixel_village__object_type_count"
 PATH_TASK_ID = "task_illustrations__pixel_village__person_path_count"
 ROTATED_TILE_TASK_ID = "task_illustrations__pixel_village__rotated_tile_label"
+SWAPPED_TILE_PAIR_TASK_ID = "task_illustrations__pixel_village__swapped_tile_pair_label"
 TERRITORY_TASK_ID = "task_illustrations__pixel_village__territory_object_count"
 RIVER_SIDE_TASK_ID = "task_illustrations__pixel_village__river_side_object_count"
 TARGETS = ("building", "person", "tree", "lamp_post", "well", "pond")
@@ -43,6 +48,7 @@ TASK_SOURCE_STEMS = {
     OBJECT_TASK_ID: "object_type_count.py",
     PATH_TASK_ID: "person_path_count.py",
     ROTATED_TILE_TASK_ID: "rotated_tile_label.py",
+    SWAPPED_TILE_PAIR_TASK_ID: "swapped_tile_pair_label.py",
     TERRITORY_TASK_ID: "territory_object_count.py",
     RIVER_SIDE_TASK_ID: "river_side_object_count.py",
 }
@@ -271,6 +277,62 @@ def test_pixel_village_rotated_tile_sampler_covers_rotation_support() -> None:
         for index in range(100)
     ]
     _assert_hash_balanced_counts(Counter(sample.rotation_degrees for sample in samples), {90, 270})
+
+
+def test_pixel_village_swapped_tile_pair_label_contract() -> None:
+    _assert_scene_packaged_task(SWAPPED_TILE_PAIR_TASK_ID)
+    out = create_task(SWAPPED_TILE_PAIR_TASK_ID).generate(
+        hash64(2026061604, "pixel-village-swapped-tile-pair", 0),
+        params={"correct_index": 2, "canvas_profile": "landscape"},
+        max_attempts=240,
+    )
+    trace = out.trace_payload
+    _assert_scene_prompt_metadata(trace)
+    render_map = trace["render_map"]
+    params = trace["query_spec"]["params"]
+    answer_label = str(out.answer_gt.value)
+    annotation = out.annotation_gt.value
+    option_pairs = render_map["option_pairs_by_label"]
+    source_width, source_height = [int(value) for value in render_map["source_size"]]
+    canvas_width, canvas_height = [int(value) for value in trace["render_spec"]["canvas_size"]]
+
+    assert out.scene_id == "pixel_village"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "bbox_set"
+    assert answer_label == "C"
+    assert sorted(render_map["option_bboxes_px_by_label"]) == ["A", "B", "C", "D"]
+    assert len(annotation) == 2
+    assert sorted(annotation) == sorted(render_map["swapped_cell_bboxes_px"])
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert sorted(trace["projected_annotation"]["bbox_set"]) == sorted(annotation)
+    assert trace["projected_annotation"]["pixel_bbox_set"] == trace["projected_annotation"]["bbox_set"]
+    assert option_pairs[answer_label] == render_map["swapped_cell_numbers"]
+    assert params["option_pairs_by_label"][answer_label] == render_map["swapped_cell_numbers"]
+    assert params["swapped_pair_indices"] == render_map["swapped_pair_indices"]
+    assert params["candidate_pair_count"] >= 4
+    assert params["grid_shape"] == [3, 3]
+    assert source_width % 3 == 0
+    assert source_height % 3 == 0
+    assert source_width % 40 == 0
+    assert source_height % 40 == 0
+    assert canvas_width * canvas_height <= MAX_RECONSTRUCTION_OUTPUT_PIXELS
+    assert trace["render_spec"]["style"]["swapped_grid_style"]["style_id"] == "frameless_illustration"
+    assert "swapped" in out.prompt.lower()
+    assert "tile numbers" in out.prompt.lower() or "numbered cells" in out.prompt.lower()
+    _assert_annotation_inside_canvas(out)
+
+
+def test_pixel_village_swapped_tile_pair_sampler_covers_answer_labels() -> None:
+    samples = [
+        _sample_swapped_tile_pair_spec(
+            instance_seed=hash64(2026061604, "pixel-village-swapped-tile-pair-sampling", index),
+            params={"_sample_cursor": index},
+            attempt_index=0,
+        )
+        for index in range(100)
+    ]
+    assert Counter(sample.correct_index for sample in samples) == Counter({0: 25, 1: 25, 2: 25, 3: 25})
 
 
 def test_pixel_village_object_type_count_targets_are_metadata_grounded() -> None:

@@ -7,7 +7,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from .....core.seed import hash64
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index
+from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.canvas_profiles import resolve_profile_render_params
 from ...shared.task_support import bounds, sample_count, uniform_string_probability_map
 from .rendering import PixelVillageEntity, PixelVillageScene, render_pixel_village_map
@@ -70,6 +70,36 @@ RIVER_SIDE_PROMPT_RELATION: Dict[str, str] = {
     "above": "above",
     "below": "below",
 }
+
+
+def sample_option_answer_index(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    seed_scope: str,
+    option_labels: Sequence[str],
+) -> Tuple[int, Dict[str, float]]:
+    """Sample a correct MCQ option index from visible option labels."""
+
+    labels = tuple(str(label) for label in option_labels)
+    explicit = params.get("correct_index")
+    if explicit is not None:
+        value = int(explicit)
+        if value < 0 or value >= len(labels):
+            raise ValueError("correct_index outside option label support")
+        return int(value), {str(value): 1.0}
+    if params.get("answer_label") is not None:
+        label = str(params["answer_label"])
+        if label not in set(labels):
+            raise ValueError("answer_label outside option label support")
+        value = int(labels.index(label))
+        return int(value), {str(value): 1.0}
+    if params.get("_sample_cursor") is not None:
+        value = abs(int(params["_sample_cursor"])) % len(labels)
+        return int(value), dict(uniform_probability_map(tuple(range(len(labels)))))
+    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{seed_scope}:answer")
+    selected = int(index) % len(labels)
+    return int(selected), dict(uniform_probability_map(tuple(range(len(labels)))))
 
 TERRITORY_OBJECT_KEYS: Tuple[str, ...] = (
     "cemetery_grave_marker",
@@ -620,6 +650,7 @@ __all__ = [
     "SCENE_ID",
     "TARGET_OBJECT_KEYS",
     "TERRITORY_OBJECT_KEYS",
+    "sample_option_answer_index",
     "_DEFAULTS",
     "_build_object_sample",
     "_build_path_sample",

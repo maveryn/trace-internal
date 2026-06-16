@@ -13,7 +13,6 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ..shared.cutouts import (
     DEFAULT_OPTION_LABELS,
@@ -30,7 +29,7 @@ from ..shared.canvas_profiles import (
 from ..shared.option_rendering import image_detail_score, sample_visual_label_font_trace
 from .shared.output import pixel_village_scene_ir
 from .shared.prompts import build_pixel_village_prompt_artifacts
-from .shared.sampling import SCENE_ID
+from .shared.sampling import SCENE_ID, sample_option_answer_index
 from .shared.source_images import build_pixel_village_source_spec, render_pixel_village_source_scene, source_panel_for_scene
 
 
@@ -67,35 +66,14 @@ def _float_value(params: Mapping[str, Any], key: str, fallback: float) -> float:
     return float(params.get(str(key), group_default(_GEN_DEFAULTS, str(key), float(fallback))))
 
 
-def _sample_correct_index(*, params: Mapping[str, Any], instance_seed: int, option_labels: Sequence[str]) -> Tuple[int, Dict[str, float]]:
-    labels = tuple(str(label) for label in option_labels)
-    explicit = params.get("correct_index")
-    if explicit is not None:
-        value = int(explicit)
-        if value < 0 or value >= len(labels):
-            raise ValueError("correct_index outside option label support")
-        return int(value), {str(value): 1.0}
-    if params.get("answer_label") is not None:
-        label = str(params["answer_label"])
-        if label not in set(labels):
-            raise ValueError("answer_label outside option label support")
-        value = int(labels.index(label))
-        return int(value), {str(value): 1.0}
-    if params.get("_sample_cursor") is not None:
-        value = abs(int(params["_sample_cursor"])) % len(labels)
-        return int(value), dict(uniform_probability_map(tuple(range(len(labels)))))
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:answer")
-    selected = int(index) % len(labels)
-    return int(selected), dict(uniform_probability_map(tuple(range(len(labels)))))
-
-
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int, option_labels: Sequence[str] = OPTION_LABELS) -> _SampleSpec:
     """Sample one correct option position for the jigsaw arrangement task."""
 
     del attempt_index
-    correct_index, correct_index_probabilities = _sample_correct_index(
+    correct_index, correct_index_probabilities = sample_option_answer_index(
         params=params,
         instance_seed=int(instance_seed),
+        seed_scope=TASK_ID,
         option_labels=option_labels,
     )
     return _SampleSpec(correct_index=int(correct_index), correct_index_probabilities=dict(correct_index_probabilities))

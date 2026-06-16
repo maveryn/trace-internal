@@ -242,7 +242,7 @@ def sample_shot_options_scene(
             continue
 
         obstacles: list[MinigolfObstacle] = []
-        for index in range(max(2, int(axes.obstacle_count) - 1)):
+        for index in range(int(axes.obstacle_count)):
             maybe = _safe_obstacle_position(
                 rng=rng,
                 existing=obstacles,

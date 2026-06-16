@@ -27,7 +27,7 @@ BALL_RADIUS_NORM = 0.026
 class MinigolfDefaults:
     """Stable scene/render fallback defaults for visible Mini-golf scenes."""
 
-    obstacle_count_support: Tuple[int, ...] = (4, 5, 6, 7, 8)
+    obstacle_count_support: Tuple[int, ...] = (4, 6)
     canvas_width: int = 1000
     canvas_height: int = 740
     panel_margin_px: int = 34

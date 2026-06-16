@@ -13,10 +13,7 @@ generation:
     balanced_obstacle_count_sampling: true
     obstacle_count_support:
     - 4
-    - 5
     - 6
-    - 7
-    - 8
   task_overrides:
     task_games__minigolf__first_obstacle_label:
       balanced_target_obstacle_label_sampling: true

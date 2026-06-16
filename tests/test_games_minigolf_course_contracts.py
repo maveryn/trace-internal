@@ -23,7 +23,7 @@ from tests.helpers import read_jsonl
     (
         (
             GamesMinigolfFirstObstacleLabelTask,
-            {"target_obstacle_label": "F", "obstacle_count": 8, "style_variant": "garden"},
+            {"target_obstacle_label": "F", "obstacle_count": 6, "style_variant": "garden"},
             "first_obstacle_label",
             "point",
         ),
@@ -70,7 +70,7 @@ def test_games_minigolf_public_tasks_emit_expected_contract(
 def test_games_minigolf_first_obstacle_matches_first_ray_hit() -> None:
     out = GamesMinigolfFirstObstacleLabelTask().generate(
         97010,
-        params={"target_obstacle_label": "H", "obstacle_count": 8},
+        params={"target_obstacle_label": "H", "obstacle_count": 6},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
@@ -96,13 +96,13 @@ def test_games_minigolf_first_obstacle_matches_first_ray_hit() -> None:
     assert str(first_hit) == target_id
     assert str(out.answer_gt.value) == str(execution["target_obstacle_label"])
     assert list(execution["annotation_entity_ids"]) == [target_id]
-    assert 4 <= len(execution["obstacles"]) <= 8
+    assert len(execution["obstacles"]) in {4, 6}
 
 
 @pytest.mark.parametrize(
     ("task_cls", "params"),
     (
-        (GamesMinigolfFirstObstacleLabelTask, {"obstacle_count": 8}),
+        (GamesMinigolfFirstObstacleLabelTask, {"obstacle_count": 6}),
         (GamesMinigolfShotPathLabelTask, {"path_option_count": 6, "target_path_index": 4}),
     ),
 )
@@ -118,6 +118,7 @@ def test_games_minigolf_obstacles_stay_clear_of_hole_and_ball(
         execution = out.trace_payload["execution_trace"]
         ball = tuple(float(value) for value in execution["ball_xy_norm"])
         hole = tuple(float(value) for value in execution["hole_xy_norm"])
+        assert len(execution["obstacles"]) in {4, 6}
         for obstacle in execution["obstacles"]:
             center = (float(obstacle["x_norm"]), float(obstacle["y_norm"]))
             assert distance(center, hole) >= MIN_OBSTACLE_POINT_CLEARANCE_NORM - 1e-9

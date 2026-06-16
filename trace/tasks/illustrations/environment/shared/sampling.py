@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....shared.config_defaults import group_default
 from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.object_library import STYLE_IDS
+from ...shared.canvas_profiles import resolve_profile_render_params
 from ...shared.style_registry import resolve_art_style_weights
 from ...shared.task_support import uniform_string_probability_map
 
@@ -50,16 +51,27 @@ def environment_render_params(
     render_defaults: Mapping[str, Any],
     *,
     fallback: Mapping[str, Any],
+    instance_seed: int | None = None,
+    namespace: str = "environment:canvas_profile",
 ) -> Dict[str, Any]:
     """Resolve scene-level environment rendering parameters from task and scene defaults."""
 
+    profile_params = resolve_profile_render_params(
+        params,
+        render_defaults,
+        prefix="environment",
+        fallback_width=int(fallback["canvas_width"]),
+        fallback_height=int(fallback["canvas_height"]),
+        fallback_scale=int(fallback["render_scale"]),
+        instance_seed=instance_seed,
+        namespace=namespace,
+    )
     return {
-        "canvas_width": int(
-            params.get("canvas_width", group_default(render_defaults, "environment_canvas_width", int(fallback["canvas_width"])))
-        ),
-        "canvas_height": int(
-            params.get("canvas_height", group_default(render_defaults, "environment_canvas_height", int(fallback["canvas_height"])))
-        ),
+        "canvas_width": int(profile_params["canvas_width"]),
+        "canvas_height": int(profile_params["canvas_height"]),
+        "canvas_profile": str(profile_params["canvas_profile"]),
+        "canvas_profile_size": list(profile_params["canvas_profile_size"]),
+        "canvas_profile_probabilities": dict(profile_params["canvas_profile_probabilities"]),
         "object_size_min_px": int(
             params.get(
                 "object_size_min_px",
@@ -85,7 +97,7 @@ def environment_render_params(
                 group_default(render_defaults, "environment_placement_max_attempts", int(fallback["placement_max_attempts"])),
             )
         ),
-        "render_scale": int(params.get("render_scale", group_default(render_defaults, "environment_render_scale", int(fallback["render_scale"])))),
+        "render_scale": int(profile_params["render_scale"]),
         "skyline_building_min": int(params.get("skyline_building_min", group_default(render_defaults, "skyline_building_min", int(fallback.get("skyline_building_min", 7))))),
         "skyline_building_max": int(params.get("skyline_building_max", group_default(render_defaults, "skyline_building_max", int(fallback.get("skyline_building_max", 14))))),
     }

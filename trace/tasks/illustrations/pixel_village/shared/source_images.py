@@ -9,6 +9,7 @@ from PIL import Image
 
 from .....core.seed import hash64
 from ....shared.config_defaults import group_default
+from ...shared.canvas_profiles import resolve_reconstruction_source_profile
 from ...shared.option_rendering import fit_source_image
 from .rendering import DEFAULT_DISPLAY_TILE_PX, PixelVillageScene, render_pixel_village_map
 from .sampling import _DEFAULTS
@@ -21,6 +22,8 @@ class PixelVillageSourceSpec:
     source_size: Tuple[int, int]
     canvas_size: Tuple[int, int]
     tile_px: int
+    canvas_profile: str
+    canvas_profile_probabilities: Mapping[str, float]
     theme_mode: str
     cemetery_mode: str
     orchard_mode: str
@@ -37,17 +40,25 @@ def build_pixel_village_source_spec(
     rendering_defaults: Mapping[str, Any],
     fallback_source_width: int,
     fallback_source_height: int,
+    instance_seed: int,
+    namespace: str,
 ) -> PixelVillageSourceSpec:
     """Resolve source-image render parameters from task params and defaults."""
 
-    source_w = int(params.get("source_width", group_default(generation_defaults, "source_width", int(fallback_source_width))))
-    source_h = int(params.get("source_height", group_default(generation_defaults, "source_height", int(fallback_source_height))))
-    canvas_w = int(params.get("canvas_width", group_default(rendering_defaults, "pixel_village_canvas_width", _DEFAULTS.canvas_width)))
-    canvas_h = int(params.get("canvas_height", group_default(rendering_defaults, "pixel_village_canvas_height", _DEFAULTS.canvas_height)))
+    profile = resolve_reconstruction_source_profile(
+        params=params,
+        defaults=rendering_defaults,
+        fallback_source_width=int(fallback_source_width),
+        fallback_source_height=int(fallback_source_height),
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
     return PixelVillageSourceSpec(
-        source_size=(int(source_w), int(source_h)),
-        canvas_size=(int(canvas_w), int(canvas_h)),
+        source_size=(int(profile.width), int(profile.height)),
+        canvas_size=(int(profile.width), int(profile.height)),
         tile_px=int(params.get("tile_px", group_default(rendering_defaults, "pixel_village_tile_px", DEFAULT_DISPLAY_TILE_PX))),
+        canvas_profile=str(profile.profile_id),
+        canvas_profile_probabilities=dict(profile.probabilities),
         theme_mode=str(params.get("theme_mode", group_default(rendering_defaults, "pixel_village_theme_mode", _DEFAULTS.theme_mode))),
         cemetery_mode=str(params.get("cemetery_mode", group_default(rendering_defaults, "pixel_village_cemetery_mode", "force"))),
         orchard_mode=str(params.get("orchard_mode", group_default(rendering_defaults, "pixel_village_orchard_mode", "force"))),
@@ -86,6 +97,8 @@ def render_pixel_village_source_scene(
 def source_panel_for_scene(scene: PixelVillageScene, source_size: Sequence[int]) -> Image.Image:
     """Return a fixed-size RGB source panel from a rendered pixel village."""
 
+    if int(scene.image.width) == int(source_size[0]) and int(scene.image.height) == int(source_size[1]):
+        return scene.image.convert("RGB")
     return fit_source_image(scene.image, width=int(source_size[0]), height=int(source_size[1]))
 
 

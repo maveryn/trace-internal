@@ -75,6 +75,8 @@ def run_environment_count_lifecycle(
         dict(params),
         rendering_defaults,
         fallback=plan.render_fallback,
+        instance_seed=int(instance_seed),
+        namespace=f"{plan.seed_namespace}:canvas_profile",
     )
 
     scene = None

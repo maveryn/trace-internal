@@ -73,7 +73,7 @@ rendering:
     task_illustrations__pixel_village__jigsaw_arrangement_label:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
-      pixel_village_tile_px: 32
+      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: force
       pixel_village_orchard_mode: force
@@ -84,7 +84,7 @@ rendering:
     task_illustrations__pixel_village__missing_patch_label:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
-      pixel_village_tile_px: 32
+      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: force
       pixel_village_orchard_mode: force
@@ -95,7 +95,7 @@ rendering:
     task_illustrations__pixel_village__object_type_count:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
-      pixel_village_tile_px: 32
+      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
       pixel_village_orchard_mode: auto
@@ -104,7 +104,7 @@ rendering:
     task_illustrations__pixel_village__person_path_count:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
-      pixel_village_tile_px: 32
+      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
       pixel_village_orchard_mode: auto
@@ -114,7 +114,7 @@ rendering:
     task_illustrations__pixel_village__rotated_tile_label:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 640
-      pixel_village_tile_px: 32
+      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: force
       pixel_village_orchard_mode: force
@@ -125,7 +125,7 @@ rendering:
     task_illustrations__pixel_village__territory_object_count:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
-      pixel_village_tile_px: 32
+      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
       pixel_village_orchard_mode: auto
@@ -134,7 +134,7 @@ rendering:
     task_illustrations__pixel_village__river_side_object_count:
       pixel_village_canvas_width: 960
       pixel_village_canvas_height: 720
-      pixel_village_tile_px: 32
+      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
       pixel_village_orchard_mode: auto
@@ -151,8 +151,8 @@ prompt:
       scene_key: pixel_village_canvas
       task_key: pixel_village_jigsaw_arrangement_label_task
       answer_hint_jigsaw_arrangement: set "answer" to the selected option letter
-      annotation_hint_jigsaw_arrangement: set "annotation" to a JSON array containing the single [x0, y0, x1, y1] box around the selected option image in pixel coordinates
-      json_example_jigsaw_arrangement: '{"annotation":[[594,478,1114,844]],"answer":"C"}'
+      annotation_hint_jigsaw_arrangement: set "annotation" to one [x0, y0, x1, y1] box around the selected option image in pixel coordinates
+      json_example_jigsaw_arrangement: '{"annotation":[594,478,1114,844],"answer":"C"}'
       json_example_answer_only_jigsaw_arrangement: '{"answer":"C"}'
     task_illustrations__pixel_village__missing_patch_label:
       bundle_id: illustrations_pixel_village_v0

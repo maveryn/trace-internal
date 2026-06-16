@@ -111,10 +111,10 @@
   },
   "query_templates": {
     "jigsaw_arrangement_label": [
-      "Which option shows the pixel village image with the 2x2 tiles arranged correctly?",
-      "Select the option where the 2x2 pixel village tiles are in the correct arrangement.",
+      "Which option shows the pixel village image with the tiles arranged correctly?",
+      "Select the option where the pixel village tiles are in the correct arrangement.",
       "Which lettered option reconstructs the pixel village scene correctly?",
-      "Find the option whose four tiles form the correct pixel village image.",
+      "Find the option whose tiles form the correct pixel village image.",
       "Which option places the pixel village tiles in the original row-major arrangement?"
     ],
     "missing_patch_label": [

@@ -103,6 +103,7 @@ Domain-shared modules that should generally remain domain-shared:
 | `scene_objects.py` | Extraction of normalized object records from scene outputs. |
 | `option_rendering.py` | Scene-neutral option-label, panel-label, bbox, font-trace, image-fit, and crop-detail helpers. |
 | `cutouts.py` | Scene-neutral visual-reconstruction mechanics for jigsaw boards, rotated grids, and patch-option layouts. |
+| `canvas_profiles.py` | Shared render-only canvas profiles, profile-aware reconstruction grids, and final-output downscale helpers for illustration tasks. |
 
 Visual-reconstruction helpers must not turn the source illustration into a
 decorative worksheet/card. Future source-scene-owned missing-patch,
@@ -110,9 +111,16 @@ rotated-tile, or jigsaw tasks should use the frameless illustration styles and
 only draw functional marks such as option letters, missing-region masks, tile
 grid lines, and tight gutters. Do not add source-panel titles, decorative
 outer borders, or background frames around the illustration itself.
-Rotated-tile tasks that use quarter-turn rotations must configure source
-dimensions so each grid cell is square; for the standard 2x3 layout this means
-using a 3:2 source image such as 960x640.
+Illustration scenes should support the shared render-only canvas profiles by
+default: landscape `1200x800`, square `960x960`, and portrait `800x1200`.
+Canvas profile must remain render metadata, not a public task split or query
+id. Reconstruction tasks should render the source scene directly at the chosen
+profile, use profile-aware source grids, and downscale only the final composed
+option image when needed, scaling annotations with the final image. Rotated-tile
+tasks that use quarter-turn rotations must use square source cells: landscape
+`2x3`, square `2x2`, and portrait `3x2`. Jigsaw-arrangement tasks may use the
+same profile-aware source grids while keeping the answer options fixed at
+lettered arrangement choices such as `A` through `D`.
 
 Domain-shared modules that should move to scene-local shared when their owning
 scene is migrated:

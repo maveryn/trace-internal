@@ -20,11 +20,17 @@ from ..shared.cutouts import (
     DEFAULT_OPTION_LABELS,
     JIGSAW_BOARD_STYLES,
     compose_jigsaw_arrangement_options,
+    downscale_jigsaw_arrangement_artifacts,
     piece_crops,
     sample_style,
     style_trace,
 )
-from ..shared.option_rendering import fit_source_image, image_detail_score, sample_visual_label_font_trace
+from ..shared.canvas_profiles import (
+    MAX_RECONSTRUCTION_OUTPUT_PIXELS,
+    reconstruction_grid_for_size,
+    resolve_reconstruction_source_profile,
+)
+from ..shared.option_rendering import image_detail_score, sample_visual_label_font_trace
 from .shared.annotations import park_scene_entities, serialize_park_scene
 from .shared.defaults import CountDefaults
 from .shared.prompts import build_park_prompt_artifacts
@@ -68,6 +74,7 @@ class _SampleSpec:
     person_specs: Tuple[ParkPersonSpec, ...]
     equipment_specs: Tuple[ParkEquipmentSpec, ...]
     source_size: Tuple[int, int]
+    source_profile_trace: Dict[str, Any]
     correct_index: int
     person_count_probabilities: Dict[str, float]
     equipment_count_probabilities: Dict[str, float]
@@ -99,28 +106,29 @@ def _float_value(params: Mapping[str, Any], defaults: Mapping[str, Any], key: st
     return float(params.get(str(key), group_default(defaults, str(key), float(fallback))))
 
 
-def _sample_correct_index(*, params: Mapping[str, Any], instance_seed: int) -> Tuple[int, Dict[str, float]]:
+def _sample_correct_index(*, params: Mapping[str, Any], instance_seed: int, option_labels: Sequence[str]) -> Tuple[int, Dict[str, float]]:
+    labels = tuple(str(label) for label in option_labels)
     if params.get("correct_index") is not None:
         value = int(params["correct_index"])
-        if value < 0 or value >= len(OPTION_LABELS):
+        if value < 0 or value >= len(labels):
             raise ValueError("correct_index outside option label support")
         return int(value), {str(value): 1.0}
     if params.get("answer_label") is not None:
         label = str(params["answer_label"])
-        if label not in set(OPTION_LABELS):
+        if label not in set(labels):
             raise ValueError("answer_label outside option label support")
-        value = int(OPTION_LABELS.index(label))
+        value = int(labels.index(label))
         return int(value), {str(value): 1.0}
     if params.get("_sample_cursor") is not None:
-        value = abs(int(params["_sample_cursor"])) % len(OPTION_LABELS)
-        return int(value), dict(uniform_probability_map(tuple(range(len(OPTION_LABELS)))))
+        value = abs(int(params["_sample_cursor"])) % len(labels)
+        return int(value), dict(uniform_probability_map(tuple(range(len(labels)))))
     index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}:answer",
     )
-    value = int(index) % len(OPTION_LABELS)
-    return int(value), dict(uniform_probability_map(tuple(range(len(OPTION_LABELS)))))
+    value = int(index) % len(labels)
+    return int(value), dict(uniform_probability_map(tuple(range(len(labels)))))
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
@@ -169,19 +177,27 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         ParkEquipmentSpec(equipment_type=str(rng.choice(equipment_values)), role="source")
         for _ in range(int(equipment_count))
     )
+    source_profile = resolve_reconstruction_source_profile(
+        params=params,
+        defaults=_GEN_DEFAULTS,
+        fallback_source_width=_DEFAULTS.source_width,
+        fallback_source_height=_DEFAULTS.source_height,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}:source_profile",
+    )
+    grid_rows, grid_cols = reconstruction_grid_for_size(int(source_profile.width), int(source_profile.height))
     correct_index, correct_index_probabilities = _sample_correct_index(
         params=params,
         instance_seed=int(instance_seed),
+        option_labels=OPTION_LABELS,
     )
     return _SampleSpec(
         person_count=int(person_count),
         equipment_count=int(equipment_count),
         person_specs=person_specs,
         equipment_specs=equipment_specs,
-        source_size=(
-            _int_value(params, _GEN_DEFAULTS, "source_width", _DEFAULTS.source_width),
-            _int_value(params, _GEN_DEFAULTS, "source_height", _DEFAULTS.source_height),
-        ),
+        source_size=tuple(int(value) for value in source_profile.size),
+        source_profile_trace=dict(source_profile.trace()),
         correct_index=int(correct_index),
         person_count_probabilities=dict(person_count_probabilities),
         equipment_count_probabilities=dict(equipment_count_probabilities),
@@ -189,14 +205,14 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
     )
 
 
-def _tile_detail_scores(source_image: Image.Image) -> Tuple[float, ...]:
-    pieces = piece_crops(source_image.convert("RGB"), rows=GRID_ROWS, cols=GRID_COLS)
+def _tile_detail_scores(source_image: Image.Image, *, rows: int, cols: int) -> Tuple[float, ...]:
+    pieces = piece_crops(source_image.convert("RGB"), rows=int(rows), cols=int(cols))
     return tuple(float(image_detail_score(piece)) for piece, _box in pieces)
 
 
 @register_task
 class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
-    """Select the option that correctly arranges 2x2 park-scene tiles."""
+    """Select the option that correctly arranges profile-aware park-scene tiles."""
 
     task_id = TASK_ID
     domain = "illustrations"
@@ -225,12 +241,21 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
             try:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
                 scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:scene", int(attempt))
+                source_width, source_height = int(sample.source_size[0]), int(sample.source_size[1])
+                grid_rows, grid_cols = reconstruction_grid_for_size(source_width, source_height)
+                option_labels = OPTION_LABELS
                 rp = render_params(
-                    params,
+                    {
+                        **dict(params),
+                        "canvas_width": source_width,
+                        "canvas_height": source_height,
+                    },
                     _RENDER_DEFAULTS,
                     fallback_width=_COUNT_DEFAULTS.canvas_width,
                     fallback_height=_COUNT_DEFAULTS.canvas_height,
                     fallback_scale=_COUNT_DEFAULTS.render_scale,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_ID}:source_profile",
                 )
                 scene = render_park_playground_scene(
                     rng=scene_rng,
@@ -242,12 +267,8 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
                     setting_weights=setting_weights(params, _RENDER_DEFAULTS),
                     style_weights=style_weights(params, _RENDER_DEFAULTS),
                 )
-                source_panel = fit_source_image(
-                    scene.image,
-                    width=int(sample.source_size[0]),
-                    height=int(sample.source_size[1]),
-                )
-                tile_detail_scores = _tile_detail_scores(source_panel)
+                source_panel = scene.image.convert("RGB")
+                tile_detail_scores = _tile_detail_scores(source_panel, rows=grid_rows, cols=grid_cols)
                 if min(tile_detail_scores) < float(min_tile_detail_score):
                     raise ValueError("source scene has a weak jigsaw tile")
                 option_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:jigsaw_options", int(attempt))
@@ -262,13 +283,17 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
                 )
                 artifacts = compose_jigsaw_arrangement_options(
                     source_image=source_panel,
-                    rows=GRID_ROWS,
-                    cols=GRID_COLS,
+                    rows=grid_rows,
+                    cols=grid_cols,
                     correct_index=int(sample.correct_index),
                     rng=option_rng,
                     board_style=board_style,
                     label_font_family=str(label_font_trace["font_family"]),
-                    labels=OPTION_LABELS,
+                    labels=option_labels,
+                )
+                artifacts = downscale_jigsaw_arrangement_artifacts(
+                    artifacts,
+                    max_pixels=MAX_RECONSTRUCTION_OUTPUT_PIXELS,
                 )
                 break
             except Exception as exc:  # pragma: no cover - retry surface is seed/layout dependent.
@@ -293,6 +318,8 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
 
         serialized_scene, person_bboxes = serialize_park_scene(scene)
         answer_label = str(artifacts.selected_label)
+        grid_rows, grid_cols = int(artifacts.grid_shape[0]), int(artifacts.grid_shape[1])
+        option_labels = OPTION_LABELS
         annotation_artifacts = bbox_annotation_artifacts(artifacts.selected_option_bbox)
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -328,7 +355,7 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
         )
         option_permutations_by_label = {
             str(label): [int(value) for value in artifacts.option_permutations[index]]
-            for index, label in enumerate(OPTION_LABELS)
+            for index, label in enumerate(option_labels)
         }
         trace_payload = {
             "scene_ir": {
@@ -339,7 +366,7 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
                     "query_id": QUERY_ID,
                     "prompt_query_key": PROMPT_QUERY_KEY,
                     "answer_label": answer_label,
-                    "grid_shape": [GRID_ROWS, GRID_COLS],
+                    "grid_shape": [grid_rows, grid_cols],
                 },
             },
             "query_spec": {
@@ -360,9 +387,10 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
                     "correct_index": int(sample.correct_index),
                     "correct_index_probabilities": dict(sample.correct_index_probabilities),
                     "answer_label": answer_label,
-                    "option_labels": list(OPTION_LABELS),
-                    "grid_shape": [GRID_ROWS, GRID_COLS],
+                    "option_labels": list(option_labels),
+                    "grid_shape": [grid_rows, grid_cols],
                     "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
+                    **dict(sample.source_profile_trace),
                     "min_tile_detail_score": float(min_tile_detail_score),
                     "tile_detail_scores": [round(float(value), 3) for value in tile_detail_scores],
                 },
@@ -372,6 +400,7 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
                 "coord_space": "pixel",
                 "scene_id": SCENE_ID,
                 "source_scene_canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
+                "source_profile": dict(sample.source_profile_trace),
                 "style": {
                     "source_setting_id": str(scene.setting_id),
                     "source_style_id": str(scene.style_id),
@@ -391,8 +420,10 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
                 "tile_source_boxes_px": [[int(coord) for coord in box] for box in artifacts.tile_source_boxes],
                 "option_permutations_by_label": option_permutations_by_label,
                 "correct_permutation": [int(value) for value in artifacts.correct_permutation],
-                "grid_shape": [GRID_ROWS, GRID_COLS],
+                "grid_shape": [grid_rows, grid_cols],
                 "option_layout_shape": [int(artifacts.option_layout_shape[0]), int(artifacts.option_layout_shape[1])],
+                "pre_downscale_canvas_size": [int(value) for value in artifacts.pre_downscale_canvas_size],
+                "output_scale_xy": [float(value) for value in artifacts.output_scale_xy],
             },
             "execution_trace": {
                 "query_id": QUERY_ID,
@@ -401,10 +432,10 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
                 "answer": answer_label,
                 "answer_label": answer_label,
                 "correct_index": int(sample.correct_index),
-                "option_labels": list(OPTION_LABELS),
+                "option_labels": list(option_labels),
                 "option_permutations_by_label": option_permutations_by_label,
                 "correct_permutation": [int(value) for value in artifacts.correct_permutation],
-                "grid_shape": [GRID_ROWS, GRID_COLS],
+                "grid_shape": [grid_rows, grid_cols],
                 "person_count": int(sample.person_count),
                 "equipment_count": int(sample.equipment_count),
                 "source_scene": serialized_scene[0],

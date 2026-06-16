@@ -105,10 +105,10 @@
       "Find every {equipment_name}. What is the count?"
     ],
     "jigsaw_arrangement_label": [
-      "Which option shows the park playground image with the 2x2 tiles arranged correctly?",
-      "Select the option where the 2x2 park playground tiles are in the correct arrangement.",
+      "Which option shows the park playground image with the tiles arranged correctly?",
+      "Select the option where the park playground tiles are in the correct arrangement.",
       "Which lettered option reconstructs the park playground scene correctly?",
-      "Find the option whose four tiles form the correct park playground image.",
+      "Find the option whose tiles form the correct park playground image.",
       "Which option places the park playground tiles in the original row-major arrangement?"
     ],
     "plain_patch_label": [

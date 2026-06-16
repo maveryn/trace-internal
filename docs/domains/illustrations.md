@@ -50,6 +50,15 @@ Environment scenes should keep placements natural, such as sky-capable objects
 in sky bands, vehicles on roads, water objects in water, and land objects on
 valid ground/surface regions.
 
+Illustration scenes should support the shared render-only canvas profiles by
+default: landscape `1200x800`, square `960x960`, and portrait `800x1200`.
+Canvas profile is a render/style axis, not a query id or public task split.
+Derived reconstruction tasks should render their source scene directly at the
+selected profile and then downscale the final option layout only if needed to
+stay under the review pixel cap, scaling annotation coordinates with the image.
+For quarter-turn rotated-tile tasks, choose profile-aware square-cell grids:
+landscape `2x3`, square `2x2`, and portrait `3x2`.
+
 The rendered source illustration itself should not be placed on a decorative
 outer background, card, border, or frame. If a visual-option task needs layout
 space for choices, keep that wrapper functional and minimal: option labels,

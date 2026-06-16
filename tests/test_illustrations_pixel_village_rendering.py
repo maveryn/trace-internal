@@ -52,7 +52,7 @@ def test_pixel_village_renderer_is_deterministic_and_semantic() -> None:
     assert first.trace["autumn_intensity"] == "none"
     assert 24 <= int(first.trace["grid_cols"]) <= 34
     assert 17 <= int(first.trace["grid_rows"]) <= 24
-    assert first.trace["tile_px"] == 30
+    assert first.trace["tile_px"] == 40
     assert first.trace["canonical_tile_px"] == 16
     assert first.trace["map_size_px"] == [960, 720]
     assert first.trace["map_offset_xy"] == [0, 0]
@@ -70,7 +70,7 @@ def test_pixel_village_renderer_is_deterministic_and_semantic() -> None:
     assert first.trace["windmill_mode"] == "force"
     assert first.trace["windmill_present"] is True
     assert first.trace["territory_type_counts"] == {"cemetery": 1, "orchard": 1}
-    assert int(first.trace["category_counts"]["building"]) >= 3
+    assert int(first.trace["category_counts"]["building"]) >= 2
     assert int(first.trace["category_counts"]["grave_marker"]) >= 4
     assert first.trace["public_name_counts"]
     assert first.trace["public_name_counts"]["cemetery gate"] == 1

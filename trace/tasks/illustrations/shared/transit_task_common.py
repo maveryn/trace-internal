@@ -29,7 +29,16 @@ def area_support(params: Mapping[str, Any], defaults: Mapping[str, Any], *, fall
     return tuple(dict.fromkeys(support))
 
 
-def render_params(params: Mapping[str, Any], render_defaults: Mapping[str, Any], *, fallback_width: int, fallback_height: int, fallback_scale: int) -> Dict[str, int]:
+def render_params(
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    *,
+    fallback_width: int,
+    fallback_height: int,
+    fallback_scale: int,
+    instance_seed: int | None = None,
+    namespace: str = "transit_terminal:canvas_profile",
+) -> Dict[str, Any]:
     """Resolve transit canvas render parameters."""
 
     return _shared_render_params(
@@ -39,6 +48,8 @@ def render_params(params: Mapping[str, Any], render_defaults: Mapping[str, Any],
         fallback_width=fallback_width,
         fallback_height=fallback_height,
         fallback_scale=fallback_scale,
+        instance_seed=instance_seed,
+        namespace=namespace,
     )
 
 

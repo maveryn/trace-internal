@@ -6,6 +6,10 @@ prompt:
       the final answer.
 rendering:
   shared:
+    canvas_profile_support:
+    - landscape
+    - square
+    - portrait
     art_style_support:
     - flat_vector
     - outlined_cartoon

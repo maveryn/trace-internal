@@ -36,6 +36,7 @@ Counts foreground objects in a queried relation to a road or river feature.
 - Answer schema: `integer_count`
 - Generator `answer_gt.type`: `integer`
 - The answer value is a non-negative integer derived from the same execution trace as the annotation.
+- Default answer support is `1..18` for `above_feature` and `below_feature`; `on_feature` uses `2..5` so road/river placements remain visually separated across all supported canvas profiles.
 
 ## Annotation Contract
 - Annotation schema: `bbox_set`

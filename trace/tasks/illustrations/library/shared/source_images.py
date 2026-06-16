@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from .....core.seed import spawn_rng
+from ...shared.canvas_profiles import resolve_reconstruction_source_profile
 from ..shared.rendering import render_library_scene
 from ..shared.sampling import (
     bounds,
@@ -29,13 +30,9 @@ class LibrarySourceSceneSpec:
     section_specs: Tuple[Any, ...]
     section_keys: Tuple[str, ...]
     source_size: Tuple[int, int]
+    source_profile_trace: Dict[str, Any]
     section_count_probabilities: Dict[str, float]
     section_book_counts_by_section: Dict[str, int]
-
-
-def _int_from(params: Mapping[str, Any], defaults: Mapping[str, Any], key: str, fallback: int) -> int:
-    value = params.get(str(key), defaults.get(str(key), int(fallback)))
-    return int(value)
 
 
 def _sample_section_keys(*, rng: Any, support: Sequence[str], section_count: int) -> Tuple[str, ...]:
@@ -81,6 +78,14 @@ def sample_library_source_scene_spec(
         explicit_key="section_count",
     )
     rng = spawned_task_rng(int(instance_seed), f"{seed_namespace}:source_scene_spec", int(attempt_index))
+    source_profile = resolve_reconstruction_source_profile(
+        params=params,
+        defaults=generation_defaults,
+        fallback_source_width=int(source_width),
+        fallback_source_height=int(source_height),
+        instance_seed=int(instance_seed),
+        namespace=f"{seed_namespace}:source_profile",
+    )
     section_keys = _sample_section_keys(rng=rng, support=section_values, section_count=int(section_count))
     colors = color_support(params, generation_defaults)
     section_book_min, section_book_max = bounds(
@@ -107,10 +112,8 @@ def sample_library_source_scene_spec(
         section_count=int(section_count),
         section_specs=make_library_section_specs(section_keys=section_keys, specs_by_section=specs_by_section),
         section_keys=tuple(section_keys),
-        source_size=(
-            _int_from(params, generation_defaults, "source_width", int(source_width)),
-            _int_from(params, generation_defaults, "source_height", int(source_height)),
-        ),
+        source_size=(int(source_profile.width), int(source_profile.height)),
+        source_profile_trace=dict(source_profile.trace()),
         section_count_probabilities=dict(section_count_probabilities),
         section_book_counts_by_section=dict(book_counts_by_section),
     )
@@ -129,12 +132,19 @@ def render_library_source_scene(
     """Render one sampled source library through the scene renderer."""
 
     scene_rng = spawn_rng(int(instance_seed), f"{seed_namespace}:scene", int(attempt_index))
+    render_param_overrides = {
+        **dict(params),
+        "canvas_width": int(source.source_size[0]),
+        "canvas_height": int(source.source_size[1]),
+    }
     rp = render_params(
-        params,
+        render_param_overrides,
         render_defaults,
         fallback_width=int(fallback["canvas_width"]),
         fallback_height=int(fallback["canvas_height"]),
         fallback_scale=int(fallback["render_scale"]),
+        instance_seed=int(instance_seed),
+        namespace=f"{seed_namespace}:canvas_profile",
     )
     return render_library_scene(
         rng=scene_rng,
@@ -142,10 +152,10 @@ def render_library_source_scene(
         canvas_width=int(rp["canvas_width"]),
         canvas_height=int(rp["canvas_height"]),
         render_scale=int(rp["render_scale"]),
-        setting_weights=setting_weights(params, render_defaults),
-        style_weights=style_weights(params, render_defaults),
+        setting_weights=setting_weights(render_param_overrides, render_defaults),
+        style_weights=style_weights(render_param_overrides, render_defaults),
         instance_seed=int(instance_seed),
-        font_params=params,
+        font_params=render_param_overrides,
     )
 
 

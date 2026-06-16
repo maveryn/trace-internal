@@ -211,6 +211,8 @@ class IllustrationsLibraryBooksInSectionCountTask:
                     fallback_width=int(fallback["canvas_width"]),
                     fallback_height=int(fallback["canvas_height"]),
                     fallback_scale=int(fallback["render_scale"]),
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_ID}:canvas_profile",
                 )
                 scene = render_library_scene(
                     rng=scene_rng,

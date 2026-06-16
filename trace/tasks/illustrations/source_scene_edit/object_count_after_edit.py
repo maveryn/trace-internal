@@ -200,6 +200,16 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
 
 def _source_params_for(sample: _SampleSpec, params: Mapping[str, Any]) -> Dict[str, Any]:
     source_params: Dict[str, Any] = {**dict(sample.source_query.source_params)}
+    for key in (
+        "canvas_profile",
+        "canvas_profile_support",
+        "canvas_width",
+        "canvas_height",
+        "render_scale",
+        "_sample_cursor",
+    ):
+        if key in params:
+            source_params[str(key)] = params[key]
     if sample.source_query.source_task_id == "task_illustrations__park_playground__person_count":
         source_params["person_count"] = int(sample.current_count)
         source_params["person_count_min"] = int(sample.current_count)

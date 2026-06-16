@@ -21,7 +21,7 @@ Renders a pixel-village source panel with one missing visual region and four or 
 ## Program Metadata
 - Program signatures: `selection.option_match`
 - Base program contract: `select_option(match_patch(source_image, missing_region, options, transform=none)); scene=pixel_village; scope=missing_patch_label`
-- Parameter axes: `option_count`, `patch_size`, `source_size`
+- Parameter axes: `option_count`, `patch_size`, `source_size`, `canvas_profile`
 - Arguments:
   - `source_image`: semantic_role; allowed `pixel_village_source_panel`; source `program_schema_concrete`
   - `missing_region`: semantic_role; allowed `masked_source_region`; source `program_schema_concrete`

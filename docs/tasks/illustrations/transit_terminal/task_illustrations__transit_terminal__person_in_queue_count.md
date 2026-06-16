@@ -13,7 +13,7 @@ Counts people standing in the rendered queue relation.
 
 | Query id | Program schema |
 | --- | --- |
-| `person_in_queue_count` | `count(filter(people, in_queue(person))); scene=transit_terminal; scope=person_in_queue_count` |
+| `single` | `count(filter(people, in_queue(person))); scene=transit_terminal; scope=person_in_queue_count` |
 
 ## Program Metadata
 - Program signatures: `count.relation_attribute`
@@ -23,7 +23,7 @@ Counts people standing in the rendered queue relation.
   - `people`: semantic_role; allowed `visible_people`; source `program_schema_concrete`
   - `person`: semantic_role; allowed `person_instance`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `person_in_queue_count`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `integer_count`

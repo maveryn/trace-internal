@@ -62,7 +62,16 @@ def tool_support(params: Mapping[str, Any], defaults: Mapping[str, Any]) -> Tupl
     return string_support(params, defaults, "tool_type_support", CONSTRUCTION_TOOL_TYPES, valid_values=CONSTRUCTION_TOOL_TYPES, min_count=1)
 
 
-def render_params(params: Mapping[str, Any], render_defaults: Mapping[str, Any], *, fallback_width: int, fallback_height: int, fallback_scale: int) -> Dict[str, int]:
+def render_params(
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    *,
+    fallback_width: int,
+    fallback_height: int,
+    fallback_scale: int,
+    instance_seed: int | None = None,
+    namespace: str = "construction_site:canvas_profile",
+) -> Dict[str, Any]:
     """Resolve construction canvas render parameters."""
 
     return _shared_render_params(
@@ -72,6 +81,8 @@ def render_params(params: Mapping[str, Any], render_defaults: Mapping[str, Any],
         fallback_width=fallback_width,
         fallback_height=fallback_height,
         fallback_scale=fallback_scale,
+        instance_seed=instance_seed,
+        namespace=namespace,
     )
 
 

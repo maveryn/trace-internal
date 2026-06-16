@@ -64,7 +64,7 @@ TileBox = tuple[int, int, int, int]
 DEFAULT_GRID_COLS = 30
 DEFAULT_GRID_ROWS = 22
 CANONICAL_TILE_PX = 16
-DEFAULT_DISPLAY_TILE_PX = 32
+DEFAULT_DISPLAY_TILE_PX = 40
 
 # Backward-compatible constants for review scripts/tests that inspect the
 # prototype module directly. Rendered scenes now sample per-instance dimensions.
@@ -2397,13 +2397,13 @@ def _sample_layout(
 ) -> PixelVillageLayout:
     """Choose a full-bleed tile grid so the village itself fills the output canvas."""
 
-    requested_tile_px = max(20, min(36, int(tile_px)))
+    requested_tile_px = max(20, min(40, int(tile_px)))
     image_w = int(width)
     image_h = int(height)
 
     if grid_cols is None and grid_rows is None:
         candidates: list[PixelVillageLayout] = []
-        for candidate_tile_px in range(20, 37):
+        for candidate_tile_px in range(20, 41):
             if image_w % candidate_tile_px != 0 or image_h % candidate_tile_px != 0:
                 continue
             candidate = PixelVillageLayout(
@@ -2411,7 +2411,7 @@ def _sample_layout(
                 rows=image_h // candidate_tile_px,
                 tile_px=candidate_tile_px,
             )
-            if 20 <= candidate.cols <= 34 and 15 <= candidate.rows <= 24:
+            if 20 <= candidate.cols <= 34 and 15 <= candidate.rows <= 30:
                 candidates.append(candidate)
         if candidates:
             return min(
@@ -2430,14 +2430,14 @@ def _sample_layout(
                 f"explicit pixel village grid {cols}x{rows} cannot fill {width}x{height} with square tiles"
             )
         layout = PixelVillageLayout(cols=cols, rows=rows, tile_px=image_w // cols)
-        if not (20 <= layout.tile_px <= 36):
+        if not (20 <= layout.tile_px <= 40):
             raise ValueError("explicit pixel village grid implies unsupported tile size")
         return layout
 
     explicit_cols = int(grid_cols) if grid_cols is not None else None
     explicit_rows = int(grid_rows) if grid_rows is not None else None
     candidates = []
-    for candidate_tile_px in range(20, 37):
+    for candidate_tile_px in range(20, 41):
         if image_w % candidate_tile_px != 0 or image_h % candidate_tile_px != 0:
             continue
         candidate = PixelVillageLayout(
@@ -2449,7 +2449,7 @@ def _sample_layout(
             candidate.display_width_px == image_w
             and candidate.display_height_px == image_h
             and 20 <= candidate.cols <= 34
-            and 15 <= candidate.rows <= 24
+            and 15 <= candidate.rows <= 30
         ):
             candidates.append(candidate)
     if candidates:

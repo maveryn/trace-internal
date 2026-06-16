@@ -99,9 +99,9 @@
       "Find every {object_name} {relation_word} the {furniture_name}. What is the count?"
     ],
     "rotated_tile_label": [
-      "The room image is divided into six lettered tiles. One tile has been rotated. Which lettered tile is rotated?",
+      "The room image is divided into lettered tiles. One tile has been rotated. Which lettered tile is rotated?",
       "The indoor room is split into lettered tiles. Identify the tile that has been rotated.",
-      "One of the six lettered tiles is rotated relative to the rest of the room. Which tile is it?",
+      "One of the lettered tiles is rotated relative to the rest of the room. Which tile is it?",
       "Look at the lettered tile grid. Which tile has the rotated room fragment?",
       "Select the letter of the tile whose room fragment is rotated."
     ],

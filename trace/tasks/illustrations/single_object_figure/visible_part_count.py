@@ -17,6 +17,7 @@ from ...shared.config_defaults import group_default, required_group_defaults, sp
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
+from ..shared.canvas_profiles import resolve_profile_render_params
 from ..shared.object_rendering import IllustrationObjectSpec, vector_object_record_for_spec
 
 
@@ -946,9 +947,19 @@ def _draw_chair(draw: ImageDraw.ImageDraw, *, box: Sequence[float], style: str, 
 
 
 def _render_scene(sample: _SampleSpec, *, instance_seed: int, params: Mapping[str, Any]) -> Tuple[Image.Image, list[_PartSpec], Dict[str, Any], Tuple[float, float, float, float]]:
-    width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
-    height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
-    scale = int(params.get("render_scale", group_default(_RENDER_DEFAULTS, "render_scale", _DEFAULTS.render_scale)))
+    profile_params = resolve_profile_render_params(
+        params,
+        _RENDER_DEFAULTS,
+        prefix="single_object_figure",
+        fallback_width=_DEFAULTS.canvas_width,
+        fallback_height=_DEFAULTS.canvas_height,
+        fallback_scale=_DEFAULTS.render_scale,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}:canvas_profile",
+    )
+    width = int(profile_params["canvas_width"])
+    height = int(profile_params["canvas_height"])
+    scale = int(profile_params["render_scale"])
     pad = float(params.get("annotation_padding_px", group_default(_RENDER_DEFAULTS, "annotation_padding_px", _DEFAULTS.annotation_padding_px)))
     scale_min = float(params.get("object_scale_min", group_default(_RENDER_DEFAULTS, "object_scale_min", _DEFAULTS.object_scale_min)))
     scale_max = float(params.get("object_scale_max", group_default(_RENDER_DEFAULTS, "object_scale_max", _DEFAULTS.object_scale_max)))
@@ -1018,6 +1029,9 @@ def _render_scene(sample: _SampleSpec, *, instance_seed: int, params: Mapping[st
     render_meta = {
         "canvas_width": int(width),
         "canvas_height": int(height),
+        "canvas_profile": str(profile_params["canvas_profile"]),
+        "canvas_profile_size": list(profile_params["canvas_profile_size"]),
+        "canvas_profile_probabilities": dict(profile_params["canvas_profile_probabilities"]),
         "render_scale": int(scale),
         "style_id": str(sample.style_id),
         "background_style": _background_style_for_trace(background_style),

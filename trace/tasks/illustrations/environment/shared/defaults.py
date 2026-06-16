@@ -36,7 +36,7 @@ FEATURE_RELATION_ON_DEFAULTS = CountContractDefaults(
     object_count_min=12,
     object_count_max=18,
     target_count_min=2,
-    target_count_max=7,
+    target_count_max=5,
 )
 CROSSING_DEFAULTS = CountContractDefaults(
     object_count_min=12,

@@ -13,7 +13,7 @@ Counts luggage items assigned to one labeled boarding area.
 
 | Query id | Program schema |
 | --- | --- |
-| `luggage_in_boarding_area_count` | `count(filter(luggage_items, area(luggage)=boarding_area)); scene=transit_terminal; scope=luggage_in_boarding_area_count` |
+| `single` | `count(filter(luggage_items, area(luggage)=boarding_area)); scene=transit_terminal; scope=luggage_in_boarding_area_count` |
 
 ## Program Metadata
 - Program signatures: `count.scoped_attribute`
@@ -24,7 +24,7 @@ Counts luggage items assigned to one labeled boarding area.
   - `luggage`: semantic_role; allowed `luggage_item`; source `program_schema_concrete`
   - `luggage_items`: semantic_role; allowed `visible_luggage_items`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `luggage_in_boarding_area_count`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `integer_count`

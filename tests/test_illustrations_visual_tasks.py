@@ -18,9 +18,17 @@ from trace.tasks.illustrations.shared.cutouts import (
     compose_jigsaw_board,
     compose_patch_options,
     compose_rotated_tile_grid,
+    downscale_jigsaw_arrangement_artifacts,
     option_content_order,
     sample_style,
     tile_is_usable,
+)
+from trace.tasks.illustrations.shared.canvas_profiles import (
+    MAX_RECONSTRUCTION_OUTPUT_PIXELS,
+    reconstruction_grid_for_size,
+    reconstruction_option_labels,
+    resize_to_max_pixels,
+    resolve_canvas_profile,
 )
 
 
@@ -100,6 +108,10 @@ def test_jigsaw_arrangement_options_bind_single_correct_option() -> None:
     assert artifacts.correct_permutation == (0, 1, 2, 3)
     assert sum(perm == artifacts.correct_permutation for perm in artifacts.option_permutations) == 1
     assert len(set(artifacts.option_permutations)) == 4
+    for index, permutation in enumerate(artifacts.option_permutations):
+        if index == artifacts.selected_index:
+            continue
+        assert sum(left != right for left, right in zip(permutation, artifacts.correct_permutation)) == 2
     assert artifacts.selected_option_bbox == artifacts.option_bboxes["C"]
     assert artifacts.image.size == (1136, 892)
 
@@ -159,6 +171,60 @@ def test_rotated_tile_rejects_non_square_quarter_turn_cells() -> None:
             rows=2,
             cols=3,
         )
+
+
+def test_canvas_profiles_resolve_profile_grids_and_labels() -> None:
+    defaults = {"canvas_profile_support": ["landscape", "square", "portrait"]}
+    assert resolve_canvas_profile(
+        params={"canvas_profile": "landscape"},
+        defaults=defaults,
+        fallback_width=640,
+        fallback_height=420,
+    ).size == (1200, 800)
+    assert resolve_canvas_profile(
+        params={"canvas_profile": "square"},
+        defaults=defaults,
+        fallback_width=640,
+        fallback_height=420,
+    ).size == (960, 960)
+    assert resolve_canvas_profile(
+        params={"canvas_profile": "portrait"},
+        defaults=defaults,
+        fallback_width=640,
+        fallback_height=420,
+    ).size == (800, 1200)
+    assert reconstruction_grid_for_size(1200, 800) == (2, 3)
+    assert reconstruction_grid_for_size(960, 960) == (2, 2)
+    assert reconstruction_grid_for_size(800, 1200) == (3, 2)
+    assert reconstruction_option_labels(2, 2) == ("A", "B", "C", "D")
+    assert reconstruction_option_labels(2, 3) == ("A", "B", "C", "D", "E", "F")
+
+
+def test_downscale_helpers_scale_jigsaw_bboxes_under_pixel_cap() -> None:
+    rng = random.Random(29)
+    artifacts = compose_jigsaw_arrangement_options(
+        source_image=_source_image(1200, 800),
+        rows=2,
+        cols=3,
+        correct_index=1,
+        rng=rng,
+        board_style=JIGSAW_BOARD_STYLES["pale_cross"],
+        label_font_family=None,  # type: ignore[arg-type]
+        labels=("A", "B", "C", "D"),
+    )
+
+    assert artifacts.image.width * artifacts.image.height > MAX_RECONSTRUCTION_OUTPUT_PIXELS
+    scaled = downscale_jigsaw_arrangement_artifacts(
+        artifacts,
+        max_pixels=MAX_RECONSTRUCTION_OUTPUT_PIXELS,
+    )
+    assert scaled.image.width * scaled.image.height <= MAX_RECONSTRUCTION_OUTPUT_PIXELS
+    assert scaled.pre_downscale_canvas_size == artifacts.image.size
+    assert scaled.output_scale_xy[0] < 1.0
+    assert scaled.selected_option_bbox == scaled.option_bboxes[scaled.selected_label]
+    resized, scale_x, scale_y = resize_to_max_pixels(artifacts.image, max_pixels=MAX_RECONSTRUCTION_OUTPUT_PIXELS)
+    assert resized.size == scaled.image.size
+    assert scaled.output_scale_xy == (scale_x, scale_y)
 
 
 def test_patch_option_artifacts_use_keyed_visual_witnesses() -> None:

@@ -11,6 +11,7 @@ from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
+from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.output_metadata import default_task_versions
@@ -18,8 +19,13 @@ from ..shared.cutouts import (
     DEFAULT_OPTION_LABELS,
     FRAMELESS_ILLUSTRATION_JIGSAW_STYLE,
     compose_jigsaw_arrangement_options,
+    downscale_jigsaw_arrangement_artifacts,
     piece_crops,
     style_trace,
+)
+from ..shared.canvas_profiles import (
+    MAX_RECONSTRUCTION_OUTPUT_PIXELS,
+    reconstruction_grid_for_size,
 )
 from ..shared.option_rendering import image_detail_score, sample_visual_label_font_trace
 from .shared.output import pixel_village_scene_ir
@@ -61,46 +67,48 @@ def _float_value(params: Mapping[str, Any], key: str, fallback: float) -> float:
     return float(params.get(str(key), group_default(_GEN_DEFAULTS, str(key), float(fallback))))
 
 
-def _sample_correct_index(*, params: Mapping[str, Any], instance_seed: int) -> Tuple[int, Dict[str, float]]:
+def _sample_correct_index(*, params: Mapping[str, Any], instance_seed: int, option_labels: Sequence[str]) -> Tuple[int, Dict[str, float]]:
+    labels = tuple(str(label) for label in option_labels)
     explicit = params.get("correct_index")
     if explicit is not None:
         value = int(explicit)
-        if value < 0 or value >= len(OPTION_LABELS):
+        if value < 0 or value >= len(labels):
             raise ValueError("correct_index outside option label support")
         return int(value), {str(value): 1.0}
     if params.get("answer_label") is not None:
         label = str(params["answer_label"])
-        if label not in set(OPTION_LABELS):
+        if label not in set(labels):
             raise ValueError("answer_label outside option label support")
-        value = int(OPTION_LABELS.index(label))
+        value = int(labels.index(label))
         return int(value), {str(value): 1.0}
     if params.get("_sample_cursor") is not None:
-        value = abs(int(params["_sample_cursor"])) % len(OPTION_LABELS)
-        return int(value), dict(uniform_probability_map(tuple(range(len(OPTION_LABELS)))))
+        value = abs(int(params["_sample_cursor"])) % len(labels)
+        return int(value), dict(uniform_probability_map(tuple(range(len(labels)))))
     index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:answer")
-    selected = int(index) % len(OPTION_LABELS)
-    return int(selected), dict(uniform_probability_map(tuple(range(len(OPTION_LABELS)))))
+    selected = int(index) % len(labels)
+    return int(selected), dict(uniform_probability_map(tuple(range(len(labels)))))
 
 
-def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
+def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int, option_labels: Sequence[str] = OPTION_LABELS) -> _SampleSpec:
     """Sample one correct option position for the jigsaw arrangement task."""
 
-    correct_index, correct_index_probabilities = _sample_correct_index(params=params, instance_seed=int(instance_seed))
+    del attempt_index
+    correct_index, correct_index_probabilities = _sample_correct_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        option_labels=option_labels,
+    )
     return _SampleSpec(correct_index=int(correct_index), correct_index_probabilities=dict(correct_index_probabilities))
 
 
-def _tile_detail_scores(source_image: Any) -> Tuple[float, ...]:
-    pieces = piece_crops(source_image.convert("RGB"), rows=GRID_ROWS, cols=GRID_COLS)
+def _tile_detail_scores(source_image: Any, *, rows: int, cols: int) -> Tuple[float, ...]:
+    pieces = piece_crops(source_image.convert("RGB"), rows=int(rows), cols=int(cols))
     return tuple(float(image_detail_score(piece)) for piece, _box in pieces)
-
-
-def _bbox_set(*boxes: Sequence[float]) -> list[list[float]]:
-    return [[round(float(coord), 3) for coord in bbox[:4]] for bbox in boxes]
 
 
 @register_task
 class IllustrationsPixelVillageJigsawArrangementLabelTask:
-    """Select the option that correctly arranges 2x2 pixel-village tiles."""
+    """Select the option that correctly arranges profile-aware pixel-village tiles."""
 
     task_id = TASK_ID
     domain = "illustrations"
@@ -124,11 +132,21 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
             rendering_defaults=_RENDER_DEFAULTS,
             fallback_source_width=_DEFAULTS.source_width,
             fallback_source_height=_DEFAULTS.source_height,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}:source_profile",
         )
+        source_width, source_height = int(source_spec.source_size[0]), int(source_spec.source_size[1])
+        grid_rows, grid_cols = reconstruction_grid_for_size(source_width, source_height)
+        option_labels = OPTION_LABELS
 
         for attempt in range(max(1, int(max_attempts))):
             try:
-                sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
+                sample = _sample_spec(
+                    instance_seed=int(instance_seed),
+                    params=params,
+                    attempt_index=int(attempt),
+                    option_labels=option_labels,
+                )
                 scene = render_pixel_village_source_scene(
                     seed_namespace=TASK_ID,
                     instance_seed=int(instance_seed),
@@ -136,7 +154,7 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
                     source_spec=source_spec,
                 )
                 source_panel = source_panel_for_scene(scene, source_spec.source_size)
-                tile_detail_scores = _tile_detail_scores(source_panel)
+                tile_detail_scores = _tile_detail_scores(source_panel, rows=grid_rows, cols=grid_cols)
                 if min(tile_detail_scores) < float(min_tile_detail_score):
                     raise ValueError("source scene has a weak jigsaw tile")
                 option_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:jigsaw_options", int(attempt))
@@ -151,17 +169,21 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
                 )
                 artifacts = compose_jigsaw_arrangement_options(
                     source_image=source_panel,
-                    rows=GRID_ROWS,
-                    cols=GRID_COLS,
+                    rows=grid_rows,
+                    cols=grid_cols,
                     correct_index=int(sample.correct_index),
                     rng=option_rng,
                     board_style=board_style,
                     label_font_family=str(label_font_trace["font_family"]),
-                    labels=OPTION_LABELS,
+                    labels=option_labels,
                     render_margin=0,
                     option_gap=12,
                     label_h=28,
                     draw_option_outline=False,
+                )
+                artifacts = downscale_jigsaw_arrangement_artifacts(
+                    artifacts,
+                    max_pixels=MAX_RECONSTRUCTION_OUTPUT_PIXELS,
                 )
                 break
             except Exception as exc:  # pragma: no cover
@@ -176,7 +198,9 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
         answer_label = str(artifacts.selected_label)
-        annotation_value = _bbox_set(artifacts.selected_option_bbox)
+        grid_rows, grid_cols = int(artifacts.grid_shape[0]), int(artifacts.grid_shape[1])
+        option_labels = OPTION_LABELS
+        annotation_artifacts = bbox_annotation_artifacts(artifacts.selected_option_bbox)
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             [
@@ -210,7 +234,7 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
         )
         option_permutations_by_label = {
             str(label): [int(value) for value in artifacts.option_permutations[index]]
-            for index, label in enumerate(OPTION_LABELS)
+            for index, label in enumerate(option_labels)
         }
         trace_payload = {
             "scene_ir": pixel_village_scene_ir(
@@ -221,7 +245,7 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
                     "query_id": QUERY_ID,
                     "prompt_query_key": PROMPT_QUERY_KEY,
                     "answer_label": answer_label,
-                    "grid_shape": [GRID_ROWS, GRID_COLS],
+                    "grid_shape": [grid_rows, grid_cols],
                 },
             ),
             "query_spec": {
@@ -238,9 +262,12 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
                     "correct_index": int(sample.correct_index),
                     "correct_index_probabilities": dict(sample.correct_index_probabilities),
                     "answer_label": answer_label,
-                    "option_labels": list(OPTION_LABELS),
-                    "grid_shape": [GRID_ROWS, GRID_COLS],
+                    "option_labels": list(option_labels),
+                    "grid_shape": [grid_rows, grid_cols],
                     "source_size": [int(value) for value in source_spec.source_size],
+                    "canvas_profile": str(source_spec.canvas_profile),
+                    "canvas_profile_size": [int(value) for value in source_spec.source_size],
+                    "canvas_profile_probabilities": dict(source_spec.canvas_profile_probabilities),
                     "min_tile_detail_score": float(min_tile_detail_score),
                     "tile_detail_scores": [round(float(value), 3) for value in tile_detail_scores],
                 },
@@ -250,6 +277,11 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
                 "coord_space": "pixel",
                 "scene_id": SCENE_ID,
                 "source_scene_canvas_size": [int(scene.image.width), int(scene.image.height)],
+                "source_profile": {
+                    "canvas_profile": str(source_spec.canvas_profile),
+                    "canvas_profile_size": [int(value) for value in source_spec.source_size],
+                    "canvas_profile_probabilities": dict(source_spec.canvas_profile_probabilities),
+                },
                 "style": {
                     "source_renderer_id": str(scene.trace.get("renderer_id", "")),
                     "source_theme_id": str(scene.trace.get("theme_id", "")),
@@ -267,8 +299,10 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
                 "tile_source_boxes_px": [[int(coord) for coord in box] for box in artifacts.tile_source_boxes],
                 "option_permutations_by_label": option_permutations_by_label,
                 "correct_permutation": [int(value) for value in artifacts.correct_permutation],
-                "grid_shape": [GRID_ROWS, GRID_COLS],
+                "grid_shape": [grid_rows, grid_cols],
                 "option_layout_shape": [int(artifacts.option_layout_shape[0]), int(artifacts.option_layout_shape[1])],
+                "pre_downscale_canvas_size": [int(value) for value in artifacts.pre_downscale_canvas_size],
+                "output_scale_xy": [float(value) for value in artifacts.output_scale_xy],
             },
             "execution_trace": {
                 "query_id": QUERY_ID,
@@ -277,10 +311,10 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
                 "answer": answer_label,
                 "answer_label": answer_label,
                 "correct_index": int(sample.correct_index),
-                "option_labels": list(OPTION_LABELS),
+                "option_labels": list(option_labels),
                 "option_permutations_by_label": option_permutations_by_label,
                 "correct_permutation": [int(value) for value in artifacts.correct_permutation],
-                "grid_shape": [GRID_ROWS, GRID_COLS],
+                "grid_shape": [grid_rows, grid_cols],
             },
             "witness_symbolic": {
                 "selected_option_bbox": list(artifacts.selected_option_bbox),
@@ -288,16 +322,14 @@ class IllustrationsPixelVillageJigsawArrangementLabelTask:
                 "correct_index": int(sample.correct_index),
             },
             "projected_annotation": {
-                "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in annotation_value],
-                "pixel_bbox_set": [list(bbox) for bbox in annotation_value],
+                **dict(annotation_artifacts.projected_annotation),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="option_letter", value=answer_label),
-            annotation_gt=TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_value]),
+            annotation_gt=annotation_artifacts.annotation_gt,
             image=artifacts.image,
             image_id="img0",
             trace_payload=trace_payload,

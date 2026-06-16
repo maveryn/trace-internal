@@ -19,8 +19,10 @@ from ..shared.cutouts import (
     FRAMELESS_ILLUSTRATION_PATCH_STYLE,
     PATCH_MODE_PLAIN,
     compose_patch_options,
+    downscale_patch_option_artifacts,
     style_trace,
 )
+from ..shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS
 from ..shared.option_rendering import sample_visual_label_font_trace
 from .shared.output import pixel_village_scene_ir
 from .shared.prompts import build_pixel_village_prompt_artifacts
@@ -193,6 +195,8 @@ class IllustrationsPixelVillageMissingPatchLabelTask:
             rendering_defaults=_RENDER_DEFAULTS,
             fallback_source_width=_DEFAULTS.source_width,
             fallback_source_height=_DEFAULTS.source_height,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}:source_profile",
         )
         for attempt in range(max(1, int(max_attempts))):
             try:
@@ -237,6 +241,10 @@ class IllustrationsPixelVillageMissingPatchLabelTask:
                     draw_source_outline=False,
                     draw_option_outlines=False,
                     candidate_crop_boxes=candidate_boxes or None,
+                )
+                artifacts = downscale_patch_option_artifacts(
+                    artifacts,
+                    max_pixels=MAX_RECONSTRUCTION_OUTPUT_PIXELS,
                 )
                 break
             except Exception as exc:  # pragma: no cover
@@ -322,6 +330,9 @@ class IllustrationsPixelVillageMissingPatchLabelTask:
                     "patch_size": [int(sample.patch_size[0]), int(sample.patch_size[1])],
                     "crop_margin_px": int(sample.crop_margin_px),
                     "source_size": [int(value) for value in source_spec.source_size],
+                    "canvas_profile": str(source_spec.canvas_profile),
+                    "canvas_profile_size": [int(value) for value in source_spec.source_size],
+                    "canvas_profile_probabilities": dict(source_spec.canvas_profile_probabilities),
                     "source_render_modes": {
                         "theme_mode": str(source_spec.theme_mode),
                         "cemetery_mode": str(source_spec.cemetery_mode),
@@ -338,6 +349,11 @@ class IllustrationsPixelVillageMissingPatchLabelTask:
                 "coord_space": "pixel",
                 "scene_id": SCENE_ID,
                 "source_scene_canvas_size": [int(scene.image.width), int(scene.image.height)],
+                "source_profile": {
+                    "canvas_profile": str(source_spec.canvas_profile),
+                    "canvas_profile_size": [int(value) for value in source_spec.source_size],
+                    "canvas_profile_probabilities": dict(source_spec.canvas_profile_probabilities),
+                },
                 "style": {
                     "source_renderer_id": str(scene.trace.get("renderer_id", "")),
                     "source_theme_id": str(scene.trace.get("theme_id", "")),
@@ -355,6 +371,8 @@ class IllustrationsPixelVillageMissingPatchLabelTask:
                 "option_source_crop_boxes_px": [[int(coord) for coord in box] for box in artifacts.option_source_crop_boxes],
                 "selected_transform": str(artifacts.selected_transform),
                 "option_grid_shape": [int(artifacts.option_grid_shape[0]), int(artifacts.option_grid_shape[1])],
+                "pre_downscale_canvas_size": [int(value) for value in artifacts.pre_downscale_canvas_size],
+                "output_scale_xy": [float(value) for value in artifacts.output_scale_xy],
             },
             "execution_trace": {
                 "query_id": QUERY_ID,

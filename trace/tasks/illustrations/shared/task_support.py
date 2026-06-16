@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from .canvas_profiles import resolve_profile_render_params
 from .style_registry import resolve_art_style_weights
 
 
@@ -130,14 +131,21 @@ def render_params(
     fallback_width: int,
     fallback_height: int,
     fallback_scale: int,
-) -> Dict[str, int]:
+    instance_seed: int | None = None,
+    namespace: str = "illustrations:canvas_profile",
+) -> Dict[str, Any]:
     """Resolve prefix-scoped illustration canvas render parameters."""
 
-    return {
-        "canvas_width": int(params.get("canvas_width", group_default(render_defaults, f"{prefix}_canvas_width", fallback_width))),
-        "canvas_height": int(params.get("canvas_height", group_default(render_defaults, f"{prefix}_canvas_height", fallback_height))),
-        "render_scale": int(params.get("render_scale", group_default(render_defaults, f"{prefix}_render_scale", fallback_scale))),
-    }
+    return resolve_profile_render_params(
+        params,
+        render_defaults,
+        prefix=str(prefix),
+        fallback_width=int(fallback_width),
+        fallback_height=int(fallback_height),
+        fallback_scale=int(fallback_scale),
+        instance_seed=instance_seed,
+        namespace=str(namespace),
+    )
 
 
 def spawned_task_rng(instance_seed: int, task_id: str, attempt_index: int):

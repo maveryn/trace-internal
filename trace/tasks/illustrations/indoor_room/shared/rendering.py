@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw
 
 from .....core.seed import spawn_rng
 from ....shared.config_defaults import group_default
+from ...shared.canvas_profiles import resolve_profile_render_params
 from ...shared.render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
 from ...shared.object_library import (
     BBox,
@@ -1121,14 +1122,25 @@ def _indoor_render_params(
     render_defaults: Mapping[str, Any],
     *,
     fallback: Mapping[str, Any],
+    instance_seed: int | None = None,
+    namespace: str = "indoor_room:canvas_profile",
 ) -> Dict[str, Any]:
+    profile_params = resolve_profile_render_params(
+        params,
+        render_defaults,
+        prefix="indoor",
+        fallback_width=int(fallback["canvas_width"]),
+        fallback_height=int(fallback["canvas_height"]),
+        fallback_scale=int(fallback["render_scale"]),
+        instance_seed=instance_seed,
+        namespace=namespace,
+    )
     return {
-        "canvas_width": int(
-            params.get("canvas_width", group_default(render_defaults, "indoor_canvas_width", int(fallback["canvas_width"])))
-        ),
-        "canvas_height": int(
-            params.get("canvas_height", group_default(render_defaults, "indoor_canvas_height", int(fallback["canvas_height"])))
-        ),
+        "canvas_width": int(profile_params["canvas_width"]),
+        "canvas_height": int(profile_params["canvas_height"]),
+        "canvas_profile": str(profile_params["canvas_profile"]),
+        "canvas_profile_size": list(profile_params["canvas_profile_size"]),
+        "canvas_profile_probabilities": dict(profile_params["canvas_profile_probabilities"]),
         "object_size_min_px": int(
             params.get(
                 "object_size_min_px",
@@ -1141,7 +1153,7 @@ def _indoor_render_params(
                 group_default(render_defaults, "indoor_object_size_max_px", int(fallback["object_size_max_px"])),
             )
         ),
-        "render_scale": int(params.get("render_scale", group_default(render_defaults, "indoor_render_scale", int(fallback["render_scale"])))),
+        "render_scale": int(profile_params["render_scale"]),
     }
 
 
@@ -1156,7 +1168,13 @@ def render_indoor_scene_from_specs(
     render_defaults: Mapping[str, Any],
     fallback: Mapping[str, Any],
 ) -> RenderedIndoorRoomScene:
-    render_params = _indoor_render_params(params, render_defaults, fallback=fallback)
+    render_params = _indoor_render_params(
+        params,
+        render_defaults,
+        fallback=fallback,
+        instance_seed=instance_seed,
+        namespace=f"{render_namespace}:canvas_profile",
+    )
     rng = spawn_rng(int(instance_seed), f"{render_namespace}:indoor-scene", int(attempt_index))
     return render_indoor_room_scene(
         rng=rng,

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
 from .....core.seed import spawn_rng
+from ...shared.canvas_profiles import resolve_reconstruction_source_profile
 from ...shared.task_support import bounds as _shared_bounds
 from ...shared.task_support import sample_count as _shared_sample_count
 from ..shared.output import render_fallback_from_defaults
@@ -26,14 +27,10 @@ class IndoorSourceSceneSpec:
     theme_id: str
     source_object_count: int
     source_size: Tuple[int, int]
+    source_profile_trace: Dict[str, Any]
     specs: Tuple[IndoorObjectSpec, ...]
     theme_probabilities: Dict[str, float]
     source_object_count_probabilities: Dict[str, float]
-
-
-def _int_from(params: Mapping[str, Any], defaults: Mapping[str, Any], key: str, fallback: int) -> int:
-    value = params.get(str(key), defaults.get(str(key), int(fallback)))
-    return int(value)
 
 
 def sample_indoor_source_scene_spec(
@@ -64,6 +61,14 @@ def sample_indoor_source_scene_spec(
         default_key="indoor_object_type_support",
         fallback=INDOOR_OBJECT_TYPES,
         error_name="object_type_support",
+    )
+    source_profile = resolve_reconstruction_source_profile(
+        params=params,
+        defaults=generation_defaults,
+        fallback_source_width=int(source_width),
+        fallback_source_height=int(source_height),
+        instance_seed=int(instance_seed),
+        namespace=f"{seed_namespace}:source_profile",
     )
     object_min, object_max = _shared_bounds(
         params,
@@ -112,10 +117,8 @@ def sample_indoor_source_scene_spec(
     return IndoorSourceSceneSpec(
         theme_id=str(theme_id),
         source_object_count=int(source_object_count),
-        source_size=(
-            _int_from(params, generation_defaults, "source_width", int(source_width)),
-            _int_from(params, generation_defaults, "source_height", int(source_height)),
-        ),
+        source_size=(int(source_profile.width), int(source_profile.height)),
+        source_profile_trace=dict(source_profile.trace()),
         specs=tuple(specs),
         theme_probabilities=dict(theme_probabilities),
         source_object_count_probabilities=dict(object_count_probabilities),
@@ -134,13 +137,18 @@ def render_indoor_source_scene(
 ) -> Any:
     """Render one sampled source room through the scene renderer."""
 
+    render_params = {
+        **dict(params),
+        "canvas_width": int(source.source_size[0]),
+        "canvas_height": int(source.source_size[1]),
+    }
     return render_indoor_scene_from_specs(
         render_namespace=str(render_namespace),
         instance_seed=int(instance_seed),
         attempt_index=int(attempt_index),
         specs=source.specs,
         theme_id=str(source.theme_id),
-        params=params,
+        params=render_params,
         render_defaults=render_defaults,
         fallback=render_fallback_from_defaults(fallback_defaults),
     )

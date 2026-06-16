@@ -10,8 +10,8 @@
 1. Domain: `illustrations`
 2. Scene id: `construction_site`
 3. Public task id: `task_illustrations__construction_site__equipment_zone_count`
-4. Supported `query_id` values: `vehicle_in_zone_count`
-5. Query ids: `vehicle_in_zone_count`
+4. Supported `query_id` values: `single`
+5. Query ids: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
 8. Program schema: `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count`
@@ -26,7 +26,7 @@ Counts visible construction vehicles assigned to one named construction-zone sco
 
 | Query id | Program schema |
 | --- | --- |
-| `vehicle_in_zone_count` | `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count` |
+| `single` | `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count` |
 
 ## Program Metadata
 - Program signatures: `count.scoped_attribute`
@@ -37,7 +37,7 @@ Counts visible construction vehicles assigned to one named construction-zone sco
   - `target_zone`: semantic_role; allowed `excavation_zone`, `loading_zone`, `roadwork_zone`; source `sampled_scene_value`
   - `vehicle`: semantic_role; allowed `construction_vehicle_instance`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `vehicle_in_zone_count`
+- Supported query ids: `single`
 - `target_zone` is sampled/overridden through task parameters and recorded in trace metadata; it is not a public query-id branch because the prompt resolves the concrete zone name before asking the same count operation.
 
 ## Answer Contract

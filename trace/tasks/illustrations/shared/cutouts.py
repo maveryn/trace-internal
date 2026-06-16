@@ -8,6 +8,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageChops, ImageDraw, ImageOps, ImageStat
 
+from .canvas_profiles import resize_to_max_pixels, scale_bbox, scale_bbox_map
 from .option_rendering import bbox_list, draw_label_badge, draw_panel_label, image_detail_score
 
 
@@ -152,6 +153,8 @@ class JigsawArrangementArtifacts:
     correct_permutation: Tuple[int, ...]
     grid_shape: Tuple[int, int]
     option_layout_shape: Tuple[int, int]
+    output_scale_xy: Tuple[float, float] = (1.0, 1.0)
+    pre_downscale_canvas_size: Tuple[int, int] = (0, 0)
 
 
 @dataclass(frozen=True)
@@ -163,6 +166,8 @@ class RotatedTileArtifacts:
     selected_index: int
     rotation_degrees: int
     grid_shape: Tuple[int, int]
+    output_scale_xy: Tuple[float, float] = (1.0, 1.0)
+    pre_downscale_canvas_size: Tuple[int, int] = (0, 0)
 
 
 @dataclass(frozen=True)
@@ -178,6 +183,8 @@ class PatchOptionArtifacts:
     option_grid_shape: Tuple[int, int]
     option_source_crop_boxes: Tuple[Tuple[int, int, int, int], ...] = ()
     candidate_crop_count: int = 0
+    output_scale_xy: Tuple[float, float] = (1.0, 1.0)
+    pre_downscale_canvas_size: Tuple[int, int] = (0, 0)
 
 
 def rgb(style: Mapping[str, Any], key: str) -> Tuple[int, int, int]:
@@ -374,11 +381,12 @@ def _jigsaw_distractor_permutations(
     needed: int,
 ) -> Tuple[Tuple[int, ...], ...]:
     identity = tuple(range(int(piece_count)))
-    candidates = [
-        tuple(int(value) for value in perm)
-        for perm in permutations(identity)
-        if tuple(int(value) for value in perm) != identity
-    ]
+    candidates: list[Tuple[int, ...]] = []
+    for left in range(int(piece_count)):
+        for right in range(left + 1, int(piece_count)):
+            order = list(identity)
+            order[left], order[right] = order[right], order[left]
+            candidates.append(tuple(int(value) for value in order))
     if int(needed) > len(candidates):
         raise ValueError("not enough unique jigsaw distractor permutations")
     rng.shuffle(candidates)
@@ -912,6 +920,124 @@ def compose_patch_options(
     )
 
 
+def downscale_jigsaw_arrangement_artifacts(
+    artifacts: JigsawArrangementArtifacts,
+    *,
+    max_pixels: int,
+) -> JigsawArrangementArtifacts:
+    """Return jigsaw arrangement artifacts scaled under a final pixel cap."""
+
+    image, scale_x, scale_y = resize_to_max_pixels(artifacts.image, max_pixels=int(max_pixels))
+    if scale_x == 1.0 and scale_y == 1.0:
+        return JigsawArrangementArtifacts(
+            image=artifacts.image,
+            option_bboxes=dict(artifacts.option_bboxes),
+            selected_option_bbox=list(artifacts.selected_option_bbox),
+            selected_label=str(artifacts.selected_label),
+            selected_index=int(artifacts.selected_index),
+            option_permutations=tuple(tuple(int(value) for value in perm) for perm in artifacts.option_permutations),
+            tile_source_boxes=tuple(tuple(int(coord) for coord in box) for box in artifacts.tile_source_boxes),
+            correct_permutation=tuple(int(value) for value in artifacts.correct_permutation),
+            grid_shape=tuple(int(value) for value in artifacts.grid_shape),
+            option_layout_shape=tuple(int(value) for value in artifacts.option_layout_shape),
+            output_scale_xy=(1.0, 1.0),
+            pre_downscale_canvas_size=(int(artifacts.image.width), int(artifacts.image.height)),
+        )
+    option_bboxes = scale_bbox_map(artifacts.option_bboxes, scale_x=scale_x, scale_y=scale_y)
+    selected_bbox = scale_bbox(artifacts.selected_option_bbox, scale_x=scale_x, scale_y=scale_y)
+    return JigsawArrangementArtifacts(
+        image=image,
+        option_bboxes=option_bboxes,
+        selected_option_bbox=selected_bbox,
+        selected_label=str(artifacts.selected_label),
+        selected_index=int(artifacts.selected_index),
+        option_permutations=tuple(tuple(int(value) for value in perm) for perm in artifacts.option_permutations),
+        tile_source_boxes=tuple(tuple(int(coord) for coord in box) for box in artifacts.tile_source_boxes),
+        correct_permutation=tuple(int(value) for value in artifacts.correct_permutation),
+        grid_shape=tuple(int(value) for value in artifacts.grid_shape),
+        option_layout_shape=tuple(int(value) for value in artifacts.option_layout_shape),
+        output_scale_xy=(float(scale_x), float(scale_y)),
+        pre_downscale_canvas_size=(int(artifacts.image.width), int(artifacts.image.height)),
+    )
+
+
+def downscale_rotated_tile_artifacts(
+    artifacts: RotatedTileArtifacts,
+    *,
+    max_pixels: int,
+) -> RotatedTileArtifacts:
+    """Return rotated-tile artifacts scaled under a final pixel cap."""
+
+    image, scale_x, scale_y = resize_to_max_pixels(artifacts.image, max_pixels=int(max_pixels))
+    if scale_x == 1.0 and scale_y == 1.0:
+        return RotatedTileArtifacts(
+            image=artifacts.image,
+            tile_bboxes=dict(artifacts.tile_bboxes),
+            selected_bbox=list(artifacts.selected_bbox),
+            selected_label=str(artifacts.selected_label),
+            selected_index=int(artifacts.selected_index),
+            rotation_degrees=int(artifacts.rotation_degrees),
+            grid_shape=tuple(int(value) for value in artifacts.grid_shape),
+            output_scale_xy=(1.0, 1.0),
+            pre_downscale_canvas_size=(int(artifacts.image.width), int(artifacts.image.height)),
+        )
+    tile_bboxes = scale_bbox_map(artifacts.tile_bboxes, scale_x=scale_x, scale_y=scale_y)
+    selected_bbox = scale_bbox(artifacts.selected_bbox, scale_x=scale_x, scale_y=scale_y)
+    return RotatedTileArtifacts(
+        image=image,
+        tile_bboxes=tile_bboxes,
+        selected_bbox=selected_bbox,
+        selected_label=str(artifacts.selected_label),
+        selected_index=int(artifacts.selected_index),
+        rotation_degrees=int(artifacts.rotation_degrees),
+        grid_shape=tuple(int(value) for value in artifacts.grid_shape),
+        output_scale_xy=(float(scale_x), float(scale_y)),
+        pre_downscale_canvas_size=(int(artifacts.image.width), int(artifacts.image.height)),
+    )
+
+
+def downscale_patch_option_artifacts(
+    artifacts: PatchOptionArtifacts,
+    *,
+    max_pixels: int,
+) -> PatchOptionArtifacts:
+    """Return missing-patch artifacts scaled under a final pixel cap."""
+
+    image, scale_x, scale_y = resize_to_max_pixels(artifacts.image, max_pixels=int(max_pixels))
+    if scale_x == 1.0 and scale_y == 1.0:
+        return PatchOptionArtifacts(
+            image=artifacts.image,
+            option_bboxes=dict(artifacts.option_bboxes),
+            missing_region_bbox=list(artifacts.missing_region_bbox),
+            selected_option_bbox=list(artifacts.selected_option_bbox),
+            selected_label=str(artifacts.selected_label),
+            selected_index=int(artifacts.selected_index),
+            source_crop_box=tuple(int(value) for value in artifacts.source_crop_box),
+            selected_transform=str(artifacts.selected_transform),
+            option_grid_shape=tuple(int(value) for value in artifacts.option_grid_shape),
+            option_source_crop_boxes=tuple(tuple(int(coord) for coord in box) for box in artifacts.option_source_crop_boxes),
+            candidate_crop_count=int(artifacts.candidate_crop_count),
+            output_scale_xy=(1.0, 1.0),
+            pre_downscale_canvas_size=(int(artifacts.image.width), int(artifacts.image.height)),
+        )
+    option_bboxes = scale_bbox_map(artifacts.option_bboxes, scale_x=scale_x, scale_y=scale_y)
+    return PatchOptionArtifacts(
+        image=image,
+        option_bboxes=option_bboxes,
+        missing_region_bbox=scale_bbox(artifacts.missing_region_bbox, scale_x=scale_x, scale_y=scale_y),
+        selected_option_bbox=scale_bbox(artifacts.selected_option_bbox, scale_x=scale_x, scale_y=scale_y),
+        selected_label=str(artifacts.selected_label),
+        selected_index=int(artifacts.selected_index),
+        source_crop_box=tuple(int(value) for value in artifacts.source_crop_box),
+        selected_transform=str(artifacts.selected_transform),
+        option_grid_shape=tuple(int(value) for value in artifacts.option_grid_shape),
+        option_source_crop_boxes=tuple(tuple(int(coord) for coord in box) for box in artifacts.option_source_crop_boxes),
+        candidate_crop_count=int(artifacts.candidate_crop_count),
+        output_scale_xy=(float(scale_x), float(scale_y)),
+        pre_downscale_canvas_size=(int(artifacts.image.width), int(artifacts.image.height)),
+    )
+
+
 __all__ = [
     "DEFAULT_OPTION_LABELS",
     "FRAMELESS_ILLUSTRATION_JIGSAW_STYLE",
@@ -932,6 +1058,9 @@ __all__ = [
     "compose_jigsaw_board",
     "compose_patch_options",
     "compose_rotated_tile_grid",
+    "downscale_jigsaw_arrangement_artifacts",
+    "downscale_patch_option_artifacts",
+    "downscale_rotated_tile_artifacts",
     "draw_source_hole",
     "non_identity_permutation",
     "option_content_order",

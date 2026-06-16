@@ -130,7 +130,7 @@ def test_pixel_village_jigsaw_arrangement_label_contract() -> None:
     _assert_scene_packaged_task(JIGSAW_TASK_ID)
     out = create_task(JIGSAW_TASK_ID).generate(
         hash64(2026061505, "pixel-village-jigsaw", 0),
-        params={"correct_index": 2},
+        params={"correct_index": 2, "canvas_profile": "square"},
         max_attempts=160,
     )
     trace = out.trace_payload
@@ -142,20 +142,21 @@ def test_pixel_village_jigsaw_arrangement_label_contract() -> None:
     assert out.scene_id == "pixel_village"
     assert out.query_id == "single"
     assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "bbox"
     assert answer_label == "C"
     assert sorted(option_bboxes) == ["A", "B", "C", "D"]
-    assert out.annotation_gt.value == [option_bboxes[answer_label]]
-    assert trace["projected_annotation"]["type"] == "bbox_set"
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.value == option_bboxes[answer_label]
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
     assert trace["render_map"]["selected_option_bbox_px"] == option_bboxes[answer_label]
     assert trace["render_spec"]["style"]["jigsaw_style"]["style_id"] == "frameless_illustration"
     assert option_permutations[answer_label] == [0, 1, 2, 3]
     assert sum(perm == [0, 1, 2, 3] for perm in option_permutations.values()) == 1
     assert trace["query_spec"]["params"]["grid_shape"] == [2, 2]
     assert trace["render_map"]["option_layout_shape"] == [2, 2]
+    assert trace["query_spec"]["params"]["canvas_profile"] == "square"
     assert min(trace["query_spec"]["params"]["tile_detail_scores"]) >= 340
-    _assert_annotation_inside_canvas(out)
+    _assert_bbox_inside_canvas(out.annotation_gt.value, width=out.image.width, height=out.image.height)
 
 
 def test_pixel_village_jigsaw_sampler_covers_answer_labels() -> None:
@@ -225,7 +226,7 @@ def test_pixel_village_rotated_tile_label_contract() -> None:
     _assert_scene_packaged_task(ROTATED_TILE_TASK_ID)
     out = create_task(ROTATED_TILE_TASK_ID).generate(
         hash64(2026061505, "pixel-village-rotated-tile", 0),
-        params={"rotation_degrees": 90},
+        params={"rotation_degrees": 90, "canvas_profile": "landscape"},
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -248,12 +249,14 @@ def test_pixel_village_rotated_tile_label_contract() -> None:
     assert trace["projected_annotation"]["type"] == "bbox"
     assert trace["projected_annotation"]["bbox"] == annotation
     assert render_map["rotated_tile_bbox_px"] == tile_bboxes[answer_label]
-    assert trace["render_spec"]["canvas_size"] == [960, 640]
+    assert trace["render_spec"]["canvas_size"] == [1200, 800]
     assert trace["render_spec"]["style"]["rotated_grid_style"]["style_id"] == "frameless_illustration"
     assert execution["query_id"] == "single"
     assert execution["answer_label"] == answer_label
     assert execution["rotation_degrees"] == 90
     assert execution["grid_shape"] == [2, 3]
+    assert execution["tile_labels"] == ["A", "B", "C", "D", "E", "F"]
+    assert trace["query_spec"]["params"]["canvas_profile"] == "landscape"
     assert execution["rotated_tile_index"] in execution["usable_tile_indices"]
     _assert_bbox_inside_canvas(annotation, width=out.image.width, height=out.image.height)
 

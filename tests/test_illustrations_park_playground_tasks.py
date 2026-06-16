@@ -166,13 +166,14 @@ def test_jigsaw_arrangement_label_contract() -> None:
     assert trace["projected_annotation"]["type"] == "bbox"
     assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
     assert trace["render_map"]["selected_option_bbox_px"] == option_bboxes[answer_label]
-    assert execution["option_permutations_by_label"][answer_label] == [0, 1, 2, 3]
-    assert option_permutations[answer_label] == [0, 1, 2, 3]
-    assert sum(perm == [0, 1, 2, 3] for perm in option_permutations.values()) == 1
-    assert trace["query_spec"]["params"]["grid_shape"] == [2, 2]
+    correct_permutation = trace["render_map"]["correct_permutation"]
+    assert execution["option_permutations_by_label"][answer_label] == correct_permutation
+    assert option_permutations[answer_label] == correct_permutation
+    assert sum(perm == correct_permutation for perm in option_permutations.values()) == 1
+    assert trace["query_spec"]["params"]["grid_shape"] in ([2, 2], [2, 3], [3, 2])
     assert trace["render_map"]["option_layout_shape"] == [2, 2]
     assert min(trace["query_spec"]["params"]["tile_detail_scores"]) >= 600
-    assert trace["render_spec"]["canvas_size"] == [1136, 892]
+    assert trace["render_spec"]["canvas_size"][0] * trace["render_spec"]["canvas_size"][1] <= 1_000_000
     assert "9 people" not in out.prompt
     _assert_bbox_inside_canvas(out)
 

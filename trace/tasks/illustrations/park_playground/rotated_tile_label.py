@@ -20,11 +20,18 @@ from ..shared.cutouts import (
     DEFAULT_OPTION_LABELS,
     FRAMELESS_ILLUSTRATION_ROTATED_GRID_STYLE,
     compose_rotated_tile_grid,
+    downscale_rotated_tile_artifacts,
     piece_crops,
     style_trace,
     tile_is_usable,
 )
-from ..shared.option_rendering import fit_source_image, sample_visual_label_font_trace
+from ..shared.canvas_profiles import (
+    MAX_RECONSTRUCTION_OUTPUT_PIXELS,
+    reconstruction_grid_for_size,
+    reconstruction_option_labels,
+    resolve_reconstruction_source_profile,
+)
+from ..shared.option_rendering import sample_visual_label_font_trace
 from .shared.annotations import park_scene_entities, serialize_park_scene
 from .shared.prompts import build_park_prompt_artifacts
 from .shared.rendering import PARK_EQUIPMENT_TYPES, PARK_PERSON_ACTIVITIES, ParkEquipmentSpec, ParkPersonSpec, render_park_playground_scene
@@ -71,6 +78,7 @@ class _SampleSpec:
     source_equipment_count: int
     rotation_degrees: int
     source_size: Tuple[int, int]
+    source_profile_trace: Dict[str, Any]
     person_specs: Tuple[ParkPersonSpec, ...]
     equipment_specs: Tuple[ParkEquipmentSpec, ...]
     source_person_count_probabilities: Dict[str, float]
@@ -156,6 +164,14 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         explicit_key="source_equipment_count",
     )
     rotation_degrees, rotation_probabilities = _sample_rotation(params=params, instance_seed=int(instance_seed))
+    source_profile = resolve_reconstruction_source_profile(
+        params=params,
+        defaults=_GEN_DEFAULTS,
+        fallback_source_width=_DEFAULTS.source_width,
+        fallback_source_height=_DEFAULTS.source_height,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}:source_profile",
+    )
     person_specs = tuple(
         ParkPersonSpec(activity=str(rng.choice(activities)), role="source")
         for _ in range(int(source_person_count))
@@ -168,10 +184,8 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         source_person_count=int(source_person_count),
         source_equipment_count=int(source_equipment_count),
         rotation_degrees=int(rotation_degrees),
-        source_size=(
-            _int_value(params, _GEN_DEFAULTS, "source_width", _DEFAULTS.source_width),
-            _int_value(params, _GEN_DEFAULTS, "source_height", _DEFAULTS.source_height),
-        ),
+        source_size=tuple(int(value) for value in source_profile.size),
+        source_profile_trace=dict(source_profile.trace()),
         person_specs=person_specs,
         equipment_specs=equipment_specs,
         source_person_count_probabilities=dict(person_count_probabilities),
@@ -186,8 +200,10 @@ def _usable_tile_indices(
     rotation_degrees: int,
     min_detail_score: float,
     min_rotation_delta: float,
+    rows: int,
+    cols: int,
 ) -> Tuple[int, ...]:
-    pieces = piece_crops(source_image.convert("RGB"), rows=GRID_ROWS, cols=GRID_COLS)
+    pieces = piece_crops(source_image.convert("RGB"), rows=int(rows), cols=int(cols))
     usable: list[int] = []
     for index, (piece, _source_box) in enumerate(pieces):
         rotated = piece.rotate(-int(rotation_degrees), expand=False, resample=Image.Resampling.BICUBIC)
@@ -207,6 +223,7 @@ def _select_correct_index(
     instance_seed: int,
     attempt_index: int,
     usable_indices: Sequence[int],
+    tile_labels: Sequence[str],
 ) -> Tuple[int, Dict[str, float]]:
     usable = tuple(int(index) for index in usable_indices)
     if not usable:
@@ -214,16 +231,16 @@ def _select_correct_index(
     explicit = params.get("correct_index")
     if explicit is not None:
         value = int(explicit)
-        if value < 0 or value >= len(TILE_LABELS):
+        if value < 0 or value >= len(tile_labels):
             raise ValueError("correct_index outside tile label support")
         if value not in set(usable):
             raise ValueError("explicit correct_index is not visually usable for rotation")
         return int(value), {str(value): 1.0}
     if params.get("_sample_cursor") is not None:
-        value = abs(int(params["_sample_cursor"])) % len(TILE_LABELS)
+        value = abs(int(params["_sample_cursor"])) % len(tile_labels)
         if value not in set(usable):
             raise ValueError("sample-cursor selected tile is not visually usable for rotation")
-        return int(value), dict(uniform_probability_map(tuple(range(len(TILE_LABELS)))))
+        return int(value), dict(uniform_probability_map(tuple(range(len(tile_labels)))))
     index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
@@ -258,12 +275,21 @@ class IllustrationsParkPlaygroundRotatedTileLabelTask:
             try:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
                 scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:source_scene", int(attempt))
+                source_width, source_height = int(sample.source_size[0]), int(sample.source_size[1])
+                grid_rows, grid_cols = reconstruction_grid_for_size(source_width, source_height)
+                tile_labels = reconstruction_option_labels(grid_rows, grid_cols)
                 rp = render_params(
-                    params,
+                    {
+                        **dict(params),
+                        "canvas_width": source_width,
+                        "canvas_height": source_height,
+                    },
                     _RENDER_DEFAULTS,
                     fallback_width=_DEFAULTS.canvas_width,
                     fallback_height=_DEFAULTS.canvas_height,
                     fallback_scale=_DEFAULTS.render_scale,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_ID}:source_profile",
                 )
                 scene = render_park_playground_scene(
                     rng=scene_rng,
@@ -275,22 +301,21 @@ class IllustrationsParkPlaygroundRotatedTileLabelTask:
                     setting_weights=setting_weights(params, _RENDER_DEFAULTS),
                     style_weights=style_weights(params, _RENDER_DEFAULTS),
                 )
-                source_panel = fit_source_image(
-                    scene.image,
-                    width=int(sample.source_size[0]),
-                    height=int(sample.source_size[1]),
-                )
+                source_panel = scene.image.convert("RGB")
                 usable_indices = _usable_tile_indices(
                     source_image=source_panel,
                     rotation_degrees=int(sample.rotation_degrees),
                     min_detail_score=_float_value(params, _GEN_DEFAULTS, "min_tile_detail_score", _DEFAULTS.min_tile_detail_score),
                     min_rotation_delta=_float_value(params, _GEN_DEFAULTS, "min_rotation_delta", _DEFAULTS.min_rotation_delta),
+                    rows=grid_rows,
+                    cols=grid_cols,
                 )
                 correct_index, correct_index_probabilities = _select_correct_index(
                     params=params,
                     instance_seed=int(instance_seed),
                     attempt_index=int(attempt),
                     usable_indices=usable_indices,
+                    tile_labels=tile_labels,
                 )
                 grid_style = {"style_id": "frameless_illustration", **dict(FRAMELESS_ILLUSTRATION_ROTATED_GRID_STYLE)}
                 label_font_trace = sample_visual_label_font_trace(
@@ -307,10 +332,14 @@ class IllustrationsParkPlaygroundRotatedTileLabelTask:
                     rotation_degrees=int(sample.rotation_degrees),
                     grid_style=grid_style,
                     label_font_family=str(label_font_trace["font_family"]),
-                    rows=GRID_ROWS,
-                    cols=GRID_COLS,
-                    labels=TILE_LABELS,
+                    rows=grid_rows,
+                    cols=grid_cols,
+                    labels=tile_labels,
                     render_margin=0,
+                )
+                artifacts = downscale_rotated_tile_artifacts(
+                    artifacts,
+                    max_pixels=MAX_RECONSTRUCTION_OUTPUT_PIXELS,
                 )
                 break
             except Exception as exc:  # pragma: no cover - retry surface is seed/layout dependent.
@@ -336,6 +365,8 @@ class IllustrationsParkPlaygroundRotatedTileLabelTask:
 
         serialized_scene, person_bboxes = serialize_park_scene(scene)
         answer_label = str(artifacts.selected_label)
+        grid_rows, grid_cols = int(artifacts.grid_shape[0]), int(artifacts.grid_shape[1])
+        tile_labels = reconstruction_option_labels(grid_rows, grid_cols)
         annotation_artifacts = bbox_annotation_artifacts(artifacts.selected_bbox)
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -394,13 +425,14 @@ class IllustrationsParkPlaygroundRotatedTileLabelTask:
                     "rotation_degrees": int(sample.rotation_degrees),
                     "rotation_degrees_support": [int(value) for value in _rotation_support(params)],
                     "rotation_degrees_probabilities": dict(sample.rotation_probabilities),
-                    "grid_shape": [GRID_ROWS, GRID_COLS],
-                    "option_labels": list(TILE_LABELS),
+                    "grid_shape": [grid_rows, grid_cols],
+                    "option_labels": list(tile_labels),
                     "usable_tile_indices": [int(index) for index in usable_indices],
                     "answer_label": answer_label,
                     "correct_index": int(correct_index),
                     "correct_index_probabilities": dict(correct_index_probabilities),
                     "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
+                    **dict(sample.source_profile_trace),
                 },
             },
             "render_spec": {
@@ -408,6 +440,7 @@ class IllustrationsParkPlaygroundRotatedTileLabelTask:
                 "coord_space": "pixel",
                 "scene_id": SCENE_ID,
                 "source_scene_canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
+                "source_profile": dict(sample.source_profile_trace),
                 "style": {
                     "source_setting_id": str(scene.setting_id),
                     "source_style_id": str(scene.style_id),
@@ -426,7 +459,9 @@ class IllustrationsParkPlaygroundRotatedTileLabelTask:
                 "source_scene_canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
                 "source_tile_index": int(correct_index),
                 "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
-                "grid_shape": [GRID_ROWS, GRID_COLS],
+                "grid_shape": [grid_rows, grid_cols],
+                "pre_downscale_canvas_size": [int(value) for value in artifacts.pre_downscale_canvas_size],
+                "output_scale_xy": [float(value) for value in artifacts.output_scale_xy],
             },
             "execution_trace": {
                 "query_id": QUERY_ID,
@@ -436,8 +471,8 @@ class IllustrationsParkPlaygroundRotatedTileLabelTask:
                 "rotated_tile_label": answer_label,
                 "rotated_tile_index": int(correct_index),
                 "rotation_degrees": int(sample.rotation_degrees),
-                "grid_shape": [GRID_ROWS, GRID_COLS],
-                "tile_labels": list(TILE_LABELS),
+                "grid_shape": [grid_rows, grid_cols],
+                "tile_labels": list(tile_labels),
                 "usable_tile_indices": [int(index) for index in usable_indices],
                 "source_person_count": int(sample.source_person_count),
                 "source_equipment_count": int(sample.source_equipment_count),

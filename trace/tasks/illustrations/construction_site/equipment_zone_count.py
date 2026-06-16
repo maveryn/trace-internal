@@ -260,7 +260,7 @@ class IllustrationsCountingEquipmentInZoneCountTask:
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Render one scene and bind target-zone equipment to evidence."""
+        """Render one scene and bind target-zone equipment to annotation."""
 
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
@@ -275,6 +275,8 @@ class IllustrationsCountingEquipmentInZoneCountTask:
                     fallback_width=_DEFAULTS.canvas_width,
                     fallback_height=_DEFAULTS.canvas_height,
                     fallback_scale=_DEFAULTS.render_scale,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_ID}:canvas_profile",
                 )
                 scene = render_construction_site_scene(
                     rng=scene_rng,

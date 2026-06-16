@@ -21,11 +21,17 @@ from ..shared.cutouts import (
     DEFAULT_OPTION_LABELS,
     FRAMELESS_ILLUSTRATION_ROTATED_GRID_STYLE,
     compose_rotated_tile_grid,
+    downscale_rotated_tile_artifacts,
     piece_crops,
     style_trace,
     tile_is_usable,
 )
-from ..shared.option_rendering import fit_source_image, sample_visual_label_font_trace
+from ..shared.canvas_profiles import (
+    MAX_RECONSTRUCTION_OUTPUT_PIXELS,
+    reconstruction_grid_for_size,
+    reconstruction_option_labels,
+)
+from ..shared.option_rendering import sample_visual_label_font_trace
 from .shared.annotations import serialize_indoor_scene
 from .shared.output import object_type_map
 from .shared.prompts import build_indoor_prompt_artifacts, indoor_setting_name
@@ -132,8 +138,10 @@ def _usable_tile_indices(
     rotation_degrees: int,
     min_detail_score: float,
     min_rotation_delta: float,
+    rows: int,
+    cols: int,
 ) -> Tuple[int, ...]:
-    pieces = piece_crops(source_image.convert("RGB"), rows=GRID_ROWS, cols=GRID_COLS)
+    pieces = piece_crops(source_image.convert("RGB"), rows=int(rows), cols=int(cols))
     usable: list[int] = []
     for index, (piece, _source_box) in enumerate(pieces):
         rotated = piece.rotate(-int(rotation_degrees), expand=False, resample=Image.Resampling.BICUBIC)
@@ -153,6 +161,7 @@ def _select_correct_index(
     instance_seed: int,
     attempt_index: int,
     usable_indices: Sequence[int],
+    tile_labels: Sequence[str],
 ) -> Tuple[int, Dict[str, float]]:
     usable = tuple(int(index) for index in usable_indices)
     if not usable:
@@ -160,7 +169,7 @@ def _select_correct_index(
     explicit = params.get("correct_index")
     if explicit is not None:
         value = int(explicit)
-        if value < 0 or value >= len(TILE_LABELS):
+        if value < 0 or value >= len(tile_labels):
             raise ValueError("correct_index outside tile label support")
         if value not in set(usable):
             raise ValueError("explicit correct_index is not visually usable for rotation")
@@ -198,6 +207,9 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
         for attempt in range(max(1, int(max_attempts))):
             try:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
+                source_width, source_height = int(sample.source.source_size[0]), int(sample.source.source_size[1])
+                grid_rows, grid_cols = reconstruction_grid_for_size(source_width, source_height)
+                tile_labels = reconstruction_option_labels(grid_rows, grid_cols)
                 scene = render_indoor_source_scene(
                     render_namespace="rotated_tile_label",
                     instance_seed=int(instance_seed),
@@ -207,22 +219,21 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
                     render_defaults=_RENDER_DEFAULTS,
                     fallback_defaults=_DEFAULTS,
                 )
-                source_panel = fit_source_image(
-                    scene.image,
-                    width=int(sample.source.source_size[0]),
-                    height=int(sample.source.source_size[1]),
-                )
+                source_panel = scene.image.convert("RGB")
                 usable_indices = _usable_tile_indices(
                     source_image=source_panel,
                     rotation_degrees=int(sample.rotation_degrees),
                     min_detail_score=_float_value(params, _GEN_DEFAULTS, "min_tile_detail_score", _DEFAULTS.min_tile_detail_score),
                     min_rotation_delta=_float_value(params, _GEN_DEFAULTS, "min_rotation_delta", _DEFAULTS.min_rotation_delta),
+                    rows=grid_rows,
+                    cols=grid_cols,
                 )
                 correct_index, correct_index_probabilities = _select_correct_index(
                     params=params,
                     instance_seed=int(instance_seed),
                     attempt_index=int(attempt),
                     usable_indices=usable_indices,
+                    tile_labels=tile_labels,
                 )
                 grid_style = {"style_id": "frameless_illustration", **dict(FRAMELESS_ILLUSTRATION_ROTATED_GRID_STYLE)}
                 label_font_trace = sample_visual_label_font_trace(
@@ -239,10 +250,14 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
                     rotation_degrees=int(sample.rotation_degrees),
                     grid_style=grid_style,
                     label_font_family=str(label_font_trace["font_family"]),
-                    rows=GRID_ROWS,
-                    cols=GRID_COLS,
-                    labels=TILE_LABELS,
+                    rows=grid_rows,
+                    cols=grid_cols,
+                    labels=tile_labels,
                     render_margin=0,
+                )
+                artifacts = downscale_rotated_tile_artifacts(
+                    artifacts,
+                    max_pixels=MAX_RECONSTRUCTION_OUTPUT_PIXELS,
                 )
                 break
             except Exception as exc:  # pragma: no cover
@@ -268,6 +283,8 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
 
         serialized_objects, object_bboxes, part_bboxes = serialize_indoor_scene(scene)
         answer_label = str(artifacts.selected_label)
+        grid_rows, grid_cols = int(artifacts.grid_shape[0]), int(artifacts.grid_shape[1])
+        tile_labels = reconstruction_option_labels(grid_rows, grid_cols)
         annotation_artifacts = bbox_annotation_artifacts(artifacts.selected_bbox)
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -327,13 +344,14 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
                     "rotation_degrees": int(sample.rotation_degrees),
                     "rotation_degrees_support": [int(value) for value in _rotation_support(params)],
                     "rotation_degrees_probabilities": dict(sample.rotation_probabilities),
-                    "grid_shape": [GRID_ROWS, GRID_COLS],
-                    "option_labels": list(TILE_LABELS),
+                    "grid_shape": [grid_rows, grid_cols],
+                    "option_labels": list(tile_labels),
                     "usable_tile_indices": [int(index) for index in usable_indices],
                     "answer_label": answer_label,
                     "correct_index": int(correct_index),
                     "correct_index_probabilities": dict(correct_index_probabilities),
                     "source_size": [int(sample.source.source_size[0]), int(sample.source.source_size[1])],
+                    **dict(sample.source.source_profile_trace),
                     "theme_probabilities": dict(sample.source.theme_probabilities),
                 },
             },
@@ -342,6 +360,7 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
                 "coord_space": "pixel",
                 "scene_id": SCENE_ID,
                 "source_scene_canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
+                "source_profile": dict(sample.source.source_profile_trace),
                 "style": {
                     "source_theme_id": str(scene.theme_id),
                     "source_style_id": str(scene.style_id),
@@ -360,7 +379,9 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
                 "source_scene_canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
                 "source_tile_index": int(correct_index),
                 "source_size": [int(sample.source.source_size[0]), int(sample.source.source_size[1])],
-                "grid_shape": [GRID_ROWS, GRID_COLS],
+                "grid_shape": [grid_rows, grid_cols],
+                "pre_downscale_canvas_size": [int(value) for value in artifacts.pre_downscale_canvas_size],
+                "output_scale_xy": [float(value) for value in artifacts.output_scale_xy],
             },
             "execution_trace": {
                 "query_id": QUERY_ID,
@@ -372,8 +393,8 @@ class IllustrationsIndoorRoomRotatedTileLabelTask:
                 "rotated_tile_label": answer_label,
                 "rotated_tile_index": int(correct_index),
                 "rotation_degrees": int(sample.rotation_degrees),
-                "grid_shape": [GRID_ROWS, GRID_COLS],
-                "tile_labels": list(TILE_LABELS),
+                "grid_shape": [grid_rows, grid_cols],
+                "tile_labels": list(tile_labels),
                 "usable_tile_indices": [int(index) for index in usable_indices],
                 "source_object_count": int(len(scene.placements)),
                 "object_types": object_type_map(serialized_objects),

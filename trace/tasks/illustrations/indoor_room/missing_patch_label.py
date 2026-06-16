@@ -19,10 +19,12 @@ from ..shared.cutouts import (
     PATCH_FRAME_STYLES,
     PATCH_MODE_PLAIN,
     compose_patch_options,
+    downscale_patch_option_artifacts,
     sample_style,
     style_trace,
 )
-from ..shared.option_rendering import fit_source_image, sample_visual_label_font_trace
+from ..shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS
+from ..shared.option_rendering import sample_visual_label_font_trace
 from ..shared.task_support import bounds as _shared_bounds
 from .shared.annotations import serialize_indoor_scene
 from .shared.output import object_type_map
@@ -184,7 +186,7 @@ class IllustrationsIndoorRoomMissingPatchLabelTask:
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Render one room source panel, compose exact patch options, and bind keyed evidence."""
+        """Render one room source panel, compose exact patch options, and bind keyed annotation."""
 
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
@@ -214,7 +216,7 @@ class IllustrationsIndoorRoomMissingPatchLabelTask:
                     explicit_key="patch_label_font_family",
                     weights_key="patch_label_font_weights",
                 )
-                source_panel = fit_source_image(scene.image, width=int(sample.source.source_size[0]), height=int(sample.source.source_size[1]))
+                source_panel = scene.image.convert("RGB")
                 artifacts = compose_patch_options(
                     source_image=source_panel,
                     rng=option_rng,
@@ -225,6 +227,10 @@ class IllustrationsIndoorRoomMissingPatchLabelTask:
                     crop_margin_px=int(sample.crop_margin_px),
                     frame_style=frame_style,
                     label_font_family=str(label_font_trace["font_family"]),
+                )
+                artifacts = downscale_patch_option_artifacts(
+                    artifacts,
+                    max_pixels=MAX_RECONSTRUCTION_OUTPUT_PIXELS,
                 )
                 break
             except Exception as exc:  # pragma: no cover
@@ -310,6 +316,7 @@ class IllustrationsIndoorRoomMissingPatchLabelTask:
                     "correct_index": int(sample.correct_index),
                     "patch_size": [int(sample.patch_size[0]), int(sample.patch_size[1])],
                     "source_size": [int(sample.source.source_size[0]), int(sample.source.source_size[1])],
+                    **dict(sample.source.source_profile_trace),
                     "crop_margin_px": int(sample.crop_margin_px),
                     "correct_index_probabilities": dict(sample.correct_index_probabilities),
                     "theme_probabilities": dict(sample.source.theme_probabilities),
@@ -320,6 +327,7 @@ class IllustrationsIndoorRoomMissingPatchLabelTask:
                 "coord_space": "pixel",
                 "scene_id": SCENE_ID,
                 "source_scene_canvas_size": [int(scene.canvas_width), int(scene.canvas_height)],
+                "source_profile": dict(sample.source.source_profile_trace),
                 "style": {
                     "source_theme_id": str(scene.theme_id),
                     "source_style_id": str(scene.style_id),
@@ -338,6 +346,8 @@ class IllustrationsIndoorRoomMissingPatchLabelTask:
                 "option_source_crop_boxes_px": [[int(coord) for coord in box] for box in artifacts.option_source_crop_boxes],
                 "selected_transform": str(artifacts.selected_transform),
                 "option_grid_shape": [int(artifacts.option_grid_shape[0]), int(artifacts.option_grid_shape[1])],
+                "pre_downscale_canvas_size": [int(value) for value in artifacts.pre_downscale_canvas_size],
+                "output_scale_xy": [float(value) for value in artifacts.output_scale_xy],
             },
             "execution_trace": {
                 "query_id": QUERY_ID,

@@ -232,7 +232,7 @@ def test_rotated_tile_label_contract() -> None:
     _assert_scene_packaged_task(ROTATED_TILE_TASK_ID)
     out = create_task(ROTATED_TILE_TASK_ID).generate(
         hash64(2026061407, "indoor-rotated-tile", 0),
-        params={"theme_id": "living_room", "source_object_count": 16, "rotation_degrees": 90},
+        params={"theme_id": "living_room", "source_object_count": 16, "rotation_degrees": 90, "canvas_profile": "landscape"},
         max_attempts=120,
     )
     trace = out.trace_payload

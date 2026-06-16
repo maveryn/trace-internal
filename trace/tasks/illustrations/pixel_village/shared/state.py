@@ -8,7 +8,7 @@ from typing import Any, Mapping, Sequence
 
 @dataclass(frozen=True)
 class PixelVillageCountBinding:
-    """Bound answer/evidence fragments for a generated pixel-village count."""
+    """Bound answer/annotation fragments for a generated pixel-village count."""
 
     prompt_defaults: Mapping[str, Any]
     slots: Mapping[str, Any]

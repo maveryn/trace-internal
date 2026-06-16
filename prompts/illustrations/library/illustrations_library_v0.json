@@ -119,9 +119,9 @@
       "Find every horizontal book in the {section_name} section. What is the count?"
     ],
     "rotated_tile_label": [
-      "The library image is divided into six lettered tiles. One tile has been rotated. Which lettered tile is rotated?",
+      "The library image is divided into lettered tiles. One tile has been rotated. Which lettered tile is rotated?",
       "The library scene is split into lettered tiles. Identify the tile that has been rotated.",
-      "One of the six lettered tiles is rotated relative to the rest of the library. Which tile is it?",
+      "One of the lettered tiles is rotated relative to the rest of the library. Which tile is it?",
       "Look at the lettered tile grid. Which tile has the rotated library fragment?",
       "Select the letter of the tile whose library fragment is rotated."
     ],

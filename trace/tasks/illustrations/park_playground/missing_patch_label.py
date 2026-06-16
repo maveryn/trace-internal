@@ -18,10 +18,12 @@ from ..shared.cutouts import (
     PATCH_FRAME_STYLES,
     PATCH_MODE_PLAIN,
     compose_patch_options,
+    downscale_patch_option_artifacts,
     sample_style,
     style_trace,
 )
-from ..shared.option_rendering import fit_source_image, sample_visual_label_font_trace
+from ..shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS, resolve_reconstruction_source_profile
+from ..shared.option_rendering import sample_visual_label_font_trace
 from .shared.annotations import park_scene_entities, serialize_park_scene
 from .shared.prompts import build_park_prompt_artifacts
 from .shared.rendering import PARK_EQUIPMENT_TYPES, PARK_PERSON_ACTIVITIES, ParkEquipmentSpec, ParkPersonSpec, render_park_playground_scene
@@ -77,6 +79,7 @@ class _SampleSpec:
     patch_size: Tuple[int, int]
     crop_margin_px: int
     source_size: Tuple[int, int]
+    source_profile_trace: Dict[str, Any]
     person_specs: Tuple[ParkPersonSpec, ...]
     equipment_specs: Tuple[ParkEquipmentSpec, ...]
     query_probabilities: Dict[str, float]
@@ -223,6 +226,14 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         fallback_low=_DEFAULTS.patch_height_min,
         fallback_high=_DEFAULTS.patch_height_max,
     )
+    source_profile = resolve_reconstruction_source_profile(
+        params=task_params,
+        defaults=_GEN_DEFAULTS,
+        fallback_source_width=_DEFAULTS.source_width,
+        fallback_source_height=_DEFAULTS.source_height,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}:source_profile",
+    )
     person_specs = tuple(
         ParkPersonSpec(activity=str(rng.choice(activities)), role="source")
         for _ in range(int(source_person_count))
@@ -240,10 +251,8 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         correct_index=int(correct_index),
         patch_size=(int(patch_w), int(patch_h)),
         crop_margin_px=_int_value(task_params, _GEN_DEFAULTS, "crop_margin_px", _DEFAULTS.crop_margin_px),
-        source_size=(
-            _int_value(task_params, _GEN_DEFAULTS, "source_width", _DEFAULTS.source_width),
-            _int_value(task_params, _GEN_DEFAULTS, "source_height", _DEFAULTS.source_height),
-        ),
+        source_size=tuple(int(value) for value in source_profile.size),
+        source_profile_trace=dict(source_profile.trace()),
         person_specs=person_specs,
         equipment_specs=equipment_specs,
         query_probabilities=dict(query_probabilities),
@@ -271,7 +280,7 @@ class IllustrationsParkPlaygroundMissingPatchLabelTask:
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Render a park source panel and keyed missing-region/option evidence."""
+        """Render a park source panel and keyed missing-region/option annotation."""
 
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
@@ -284,11 +293,17 @@ class IllustrationsParkPlaygroundMissingPatchLabelTask:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
                 scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:source_scene", int(attempt))
                 rp = render_params(
-                    params,
+                    {
+                        **dict(params),
+                        "canvas_width": int(sample.source_size[0]),
+                        "canvas_height": int(sample.source_size[1]),
+                    },
                     _RENDER_DEFAULTS,
                     fallback_width=_DEFAULTS.canvas_width,
                     fallback_height=_DEFAULTS.canvas_height,
                     fallback_scale=_DEFAULTS.render_scale,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_ID}:source_profile",
                 )
                 source_scene = render_park_playground_scene(
                     rng=scene_rng,
@@ -310,11 +325,7 @@ class IllustrationsParkPlaygroundMissingPatchLabelTask:
                     explicit_key="patch_label_font_family",
                     weights_key="patch_label_font_weights",
                 )
-                source_panel = fit_source_image(
-                    source_scene.image,
-                    width=int(sample.source_size[0]),
-                    height=int(sample.source_size[1]),
-                )
+                source_panel = source_scene.image.convert("RGB")
                 artifacts = compose_patch_options(
                     source_image=source_panel,
                     rng=option_rng,
@@ -325,6 +336,10 @@ class IllustrationsParkPlaygroundMissingPatchLabelTask:
                     crop_margin_px=int(sample.crop_margin_px),
                     frame_style=frame_style,
                     label_font_family=str(label_font_trace["font_family"]),
+                )
+                artifacts = downscale_patch_option_artifacts(
+                    artifacts,
+                    max_pixels=MAX_RECONSTRUCTION_OUTPUT_PIXELS,
                 )
                 break
             except Exception as exc:  # pragma: no cover - retry surface is seed/layout dependent.
@@ -410,6 +425,7 @@ class IllustrationsParkPlaygroundMissingPatchLabelTask:
                     "correct_index_probabilities": dict(sample.correct_index_probabilities),
                     "patch_size": [int(sample.patch_size[0]), int(sample.patch_size[1])],
                     "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
+                    **dict(sample.source_profile_trace),
                     "crop_margin_px": int(sample.crop_margin_px),
                     "query_id_probabilities": dict(sample.query_probabilities),
                     "query_probabilities": dict(sample.query_probabilities),
@@ -420,6 +436,7 @@ class IllustrationsParkPlaygroundMissingPatchLabelTask:
                 "coord_space": "pixel",
                 "scene_id": SCENE_ID,
                 "source_scene_canvas_size": [int(source_scene.canvas_width), int(source_scene.canvas_height)],
+                "source_profile": dict(sample.source_profile_trace),
                 "style": {
                     "source_setting_id": str(source_scene.setting_id),
                     "source_style_id": str(source_scene.style_id),
@@ -437,6 +454,8 @@ class IllustrationsParkPlaygroundMissingPatchLabelTask:
                 "source_crop_box_px": [int(value) for value in artifacts.source_crop_box],
                 "selected_transform": str(artifacts.selected_transform),
                 "option_grid_shape": [int(artifacts.option_grid_shape[0]), int(artifacts.option_grid_shape[1])],
+                "pre_downscale_canvas_size": [int(value) for value in artifacts.pre_downscale_canvas_size],
+                "output_scale_xy": [float(value) for value in artifacts.output_scale_xy],
             },
             "execution_trace": {
                 "query_id": str(sample.query_id),

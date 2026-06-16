@@ -156,13 +156,12 @@ def draw_label_badge(
 
 
 def fit_source_image(image: Image.Image, *, width: int, height: int) -> Image.Image:
-    """Pad/resize a source illustration to a fixed panel."""
+    """Crop-fit a source illustration to a fixed panel without blank padding."""
 
-    return ImageOps.pad(
+    return ImageOps.fit(
         image.convert("RGB"),
         (int(width), int(height)),
         method=Image.Resampling.LANCZOS,
-        color=(246, 248, 250),
     )
 
 

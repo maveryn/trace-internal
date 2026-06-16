@@ -24,7 +24,7 @@ generation:
       feature_side_target_count_min: 1
       feature_side_target_count_max: 18
       on_feature_target_count_min: 2
-      on_feature_target_count_max: 7
+      on_feature_target_count_max: 5
     task_illustrations__environment__crossing_feature_count:
       object_count_min: 12
       object_count_max: 18
@@ -91,6 +91,10 @@ rendering:
       ink_sketch: 1.0
       watercolor_wash: 1.0
   task_overrides:
+    task_illustrations__environment__feature_relation_object_count:
+      environment_object_size_min_px: 54
+      environment_object_size_max_px: 96
+      environment_placement_max_attempts: 720
     task_illustrations__environment__lit_window_count:
       environment_object_size_min_px: 58
       environment_object_size_max_px: 108

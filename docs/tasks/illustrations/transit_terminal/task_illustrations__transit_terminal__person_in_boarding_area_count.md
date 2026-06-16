@@ -13,7 +13,7 @@ Counts people assigned to one labeled boarding area.
 
 | Query id | Program schema |
 | --- | --- |
-| `person_in_boarding_area_count` | `count(filter(people, area(person)=boarding_area)); scene=transit_terminal; scope=person_in_boarding_area_count` |
+| `single` | `count(filter(people, area(person)=boarding_area)); scene=transit_terminal; scope=person_in_boarding_area_count` |
 
 ## Program Metadata
 - Program signatures: `count.scoped_attribute`
@@ -24,7 +24,7 @@ Counts people assigned to one labeled boarding area.
   - `people`: semantic_role; allowed `visible_people`; source `program_schema_concrete`
   - `person`: semantic_role; allowed `person_instance`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `person_in_boarding_area_count`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `integer_count`

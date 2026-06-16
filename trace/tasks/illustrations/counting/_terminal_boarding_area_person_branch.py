@@ -211,6 +211,8 @@ class TerminalBoardingAreaPersonBranch:
                     fallback_width=_DEFAULTS.canvas_width,
                     fallback_height=_DEFAULTS.canvas_height,
                     fallback_scale=_DEFAULTS.render_scale,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_ID}:canvas_profile",
                 )
                 scene = render_transit_terminal_scene(
                     rng=scene_rng,

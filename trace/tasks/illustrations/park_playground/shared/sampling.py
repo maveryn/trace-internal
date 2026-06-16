@@ -92,7 +92,16 @@ def support_choice(
     return str(values[int(index) % len(values)]), uniform_string_probability_map(values)
 
 
-def render_params(params: Mapping[str, Any], render_defaults: Mapping[str, Any], *, fallback_width: int, fallback_height: int, fallback_scale: int) -> Dict[str, int]:
+def render_params(
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    *,
+    fallback_width: int,
+    fallback_height: int,
+    fallback_scale: int,
+    instance_seed: int | None = None,
+    namespace: str = "park_playground:canvas_profile",
+) -> Dict[str, Any]:
     """Resolve park canvas render parameters."""
 
     return _shared_render_params(
@@ -102,6 +111,8 @@ def render_params(params: Mapping[str, Any], render_defaults: Mapping[str, Any],
         fallback_width=fallback_width,
         fallback_height=fallback_height,
         fallback_scale=fallback_scale,
+        instance_seed=instance_seed,
+        namespace=namespace,
     )
 
 

@@ -99,7 +99,7 @@ def test_construction_site_missing_patch_uses_keyed_visual_witnesses() -> None:
 def test_construction_site_rotated_tile_label_contract() -> None:
     out = create_task("task_illustrations__construction_site__rotated_tile_label").generate(
         hash64(2026061502, "construction-site-rotated-tile", 0),
-        params={"rotation_degrees": 90, "correct_index": 2},
+        params={"rotation_degrees": 90, "correct_index": 2, "canvas_profile": "landscape"},
         max_attempts=160,
     )
     trace = out.trace_payload

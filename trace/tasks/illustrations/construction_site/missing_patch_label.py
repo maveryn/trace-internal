@@ -18,10 +18,12 @@ from ..shared.cutouts import (
     PATCH_FRAME_STYLES,
     PATCH_MODE_PLAIN,
     compose_patch_options,
+    downscale_patch_option_artifacts,
     sample_style,
     style_trace,
 )
-from ..shared.option_rendering import fit_source_image, sample_visual_label_font_trace
+from ..shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS, resolve_reconstruction_source_profile
+from ..shared.option_rendering import sample_visual_label_font_trace
 from .shared.output import construction_scene_entities, serialize_construction_scene
 from .shared.rendering import render_construction_site_scene
 from .shared.state import (
@@ -285,7 +287,7 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Render a construction source panel and keyed patch-option evidence."""
+        """Render a construction source panel and keyed patch-option annotation."""
 
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
@@ -293,16 +295,32 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
         artifacts = None
         frame_style = None
         label_font_trace: Dict[str, Any] | None = None
+        source_profile = resolve_reconstruction_source_profile(
+            params=params,
+            defaults=_RENDER_DEFAULTS,
+            fallback_source_width=_DEFAULTS.source_width,
+            fallback_source_height=_DEFAULTS.source_height,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}:source_profile",
+        )
+        source_size = source_profile.size
         for attempt in range(max(1, int(max_attempts))):
             try:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
                 scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:source_scene", int(attempt))
+                render_overrides = {
+                    **dict(params),
+                    "canvas_width": int(source_size[0]),
+                    "canvas_height": int(source_size[1]),
+                }
                 rp = render_params(
-                    params,
+                    render_overrides,
                     _RENDER_DEFAULTS,
                     fallback_width=_DEFAULTS.canvas_width,
                     fallback_height=_DEFAULTS.canvas_height,
                     fallback_scale=_DEFAULTS.render_scale,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_ID}:canvas_profile",
                 )
                 source_scene = render_construction_site_scene(
                     rng=scene_rng,
@@ -312,10 +330,10 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
                     canvas_width=int(rp["canvas_width"]),
                     canvas_height=int(rp["canvas_height"]),
                     render_scale=int(rp["render_scale"]),
-                    setting_weights=setting_weights(params, _RENDER_DEFAULTS),
-                    style_weights=style_weights(params, _RENDER_DEFAULTS),
+                    setting_weights=setting_weights(render_overrides, _RENDER_DEFAULTS),
+                    style_weights=style_weights(render_overrides, _RENDER_DEFAULTS),
                     instance_seed=int(instance_seed),
-                    font_params={**dict(_RENDER_DEFAULTS), **dict(params)},
+                    font_params={**dict(_RENDER_DEFAULTS), **dict(render_overrides)},
                     show_zone_labels=False,
                 )
                 option_rng = spawned_task_rng(int(instance_seed), f"{TASK_ID}:patch_options", int(attempt))
@@ -328,11 +346,7 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
                     explicit_key="patch_label_font_family",
                     weights_key="patch_label_font_weights",
                 )
-                source_panel = fit_source_image(
-                    source_scene.image,
-                    width=int(sample.source_size[0]),
-                    height=int(sample.source_size[1]),
-                )
+                source_panel = source_scene.image.convert("RGB")
                 artifacts = compose_patch_options(
                     source_image=source_panel,
                     rng=option_rng,
@@ -343,6 +357,10 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
                     crop_margin_px=int(sample.crop_margin_px),
                     frame_style=frame_style,
                     label_font_family=str(label_font_trace["font_family"]),
+                )
+                artifacts = downscale_patch_option_artifacts(
+                    artifacts,
+                    max_pixels=MAX_RECONSTRUCTION_OUTPUT_PIXELS,
                 )
                 break
             except Exception as exc:  # pragma: no cover
@@ -430,7 +448,8 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
                     "answer_label": answer_label,
                     "correct_index": int(sample.correct_index),
                     "patch_size": [int(sample.patch_size[0]), int(sample.patch_size[1])],
-                    "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
+                    "source_size": [int(source_size[0]), int(source_size[1])],
+                    **source_profile.trace(),
                     "crop_margin_px": int(sample.crop_margin_px),
                     "query_id_probabilities": dict(sample.query_probabilities),
                     "query_probabilities": dict(sample.query_probabilities),
@@ -442,6 +461,7 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
                 "coord_space": "pixel",
                 "scene_id": SCENE_ID,
                 "source_scene_canvas_size": [int(source_scene.canvas_width), int(source_scene.canvas_height)],
+                "source_profile": source_profile.trace(),
                 "style": {
                     "source_setting_id": str(source_scene.setting_id),
                     "source_style_id": str(source_scene.style_id),
@@ -459,6 +479,8 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
                 "source_crop_box_px": [int(value) for value in artifacts.source_crop_box],
                 "selected_transform": str(artifacts.selected_transform),
                 "option_grid_shape": [int(artifacts.option_grid_shape[0]), int(artifacts.option_grid_shape[1])],
+                "pre_downscale_canvas_size": [int(value) for value in artifacts.pre_downscale_canvas_size],
+                "output_scale_xy": [float(value) for value in artifacts.output_scale_xy],
             },
             "execution_trace": {
                 "query_id": str(sample.query_id),

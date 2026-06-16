@@ -274,7 +274,7 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Render one scene and bind counted workers to prompt and evidence."""
+        """Render one scene and bind counted workers to prompt and annotation."""
 
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
@@ -283,7 +283,15 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
             try:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
                 scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:scene", int(attempt))
-                rp = render_params(params, _RENDER_DEFAULTS, fallback_width=_DEFAULTS.canvas_width, fallback_height=_DEFAULTS.canvas_height, fallback_scale=_DEFAULTS.render_scale)
+                rp = render_params(
+                    params,
+                    _RENDER_DEFAULTS,
+                    fallback_width=_DEFAULTS.canvas_width,
+                    fallback_height=_DEFAULTS.canvas_height,
+                    fallback_scale=_DEFAULTS.render_scale,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_ID}:canvas_profile",
+                )
                 scene = render_construction_site_scene(
                     rng=scene_rng,
                     worker_specs=sample.worker_specs,

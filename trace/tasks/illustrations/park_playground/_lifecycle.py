@@ -59,6 +59,8 @@ def render_scene_with_retries(
                 fallback_width=int(fallback_width),
                 fallback_height=int(fallback_height),
                 fallback_scale=int(fallback_scale),
+                instance_seed=int(instance_seed),
+                namespace=f"{namespace}:canvas_profile",
             )
             return render_park_playground_scene(
                 rng=scene_rng,

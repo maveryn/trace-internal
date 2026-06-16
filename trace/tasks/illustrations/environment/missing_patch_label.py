@@ -20,10 +20,12 @@ from ..shared.cutouts import (
     PATCH_FRAME_STYLES,
     PATCH_MODE_PLAIN,
     compose_patch_options,
+    downscale_patch_option_artifacts,
     sample_style,
     style_trace,
 )
-from ..shared.option_rendering import fit_source_image, image_detail_score, sample_visual_label_font_trace
+from ..shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS, resolve_reconstruction_source_profile
+from ..shared.option_rendering import image_detail_score, sample_visual_label_font_trace
 from ..shared.task_support import uniform_string_probability_map
 from .shared.annotations import feature_bbox_map, feature_path_map
 from .shared.defaults import CountContractDefaults, render_fallback
@@ -64,6 +66,7 @@ class _SampleSpec:
     patch_size: Tuple[int, int]
     crop_margin_px: int
     source_size: Tuple[int, int]
+    source_profile_trace: Dict[str, Any]
     option_count_probabilities: Dict[str, float]
     correct_index_probabilities: Dict[str, float]
 
@@ -168,6 +171,14 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         instance_seed=int(instance_seed),
     )
     option_count, option_count_probabilities = _sample_option_count(params=params, instance_seed=int(instance_seed))
+    source_profile = resolve_reconstruction_source_profile(
+        params=params,
+        defaults=_GEN_DEFAULTS,
+        fallback_source_width=_DEFAULTS.source_width,
+        fallback_source_height=_DEFAULTS.source_height,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}:source_profile",
+    )
     if params.get("correct_index") is not None:
         correct_index = int(params["correct_index"])
         if correct_index < 0 or correct_index >= int(option_count):
@@ -204,10 +215,8 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         correct_index=int(correct_index),
         patch_size=(int(patch_w), int(patch_h)),
         crop_margin_px=_int_value(params, _GEN_DEFAULTS, "crop_margin_px", _DEFAULTS.crop_margin_px),
-        source_size=(
-            _int_value(params, _GEN_DEFAULTS, "source_width", _DEFAULTS.source_width),
-            _int_value(params, _GEN_DEFAULTS, "source_height", _DEFAULTS.source_height),
-        ),
+        source_size=tuple(int(value) for value in source_profile.size),
+        source_profile_trace=dict(source_profile.trace()),
         option_count_probabilities=dict(option_count_probabilities),
         correct_index_probabilities=dict(correct_index_probabilities),
     )
@@ -303,7 +312,7 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Render one source scene, compose patch options, and bind keyed evidence from that trace."""
+        """Render one source scene, compose patch options, and bind keyed annotation from that trace."""
 
         last_error: Exception | None = None
         sample: _SampleSpec | None = None
@@ -315,7 +324,18 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
         for attempt in range(max(1, int(max_attempts))):
             try:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
-                render_params = environment_render_params(params, _RENDER_DEFAULTS, fallback=_RENDER_FALLBACK)
+                render_overrides = {
+                    **dict(params),
+                    "canvas_width": int(sample.source_size[0]),
+                    "canvas_height": int(sample.source_size[1]),
+                }
+                render_params = environment_render_params(
+                    render_overrides,
+                    _RENDER_DEFAULTS,
+                    fallback=_RENDER_FALLBACK,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_ID}:source_profile",
+                )
                 scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:source_scene", int(attempt))
                 source_scene = render_environment_object_scene(
                     rng=scene_rng,
@@ -343,11 +363,7 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
                     explicit_key="patch_label_font_family",
                     weights_key="patch_label_font_weights",
                 )
-                source_panel = fit_source_image(
-                    source_scene.image,
-                    width=int(sample.source_size[0]),
-                    height=int(sample.source_size[1]),
-                )
+                source_panel = source_scene.image.convert("RGB")
                 candidate_crop_boxes = _informative_crop_boxes(
                     source_image=source_panel,
                     rng=spawn_rng(int(instance_seed), f"{TASK_ID}:patch_candidates", int(attempt)),
@@ -366,6 +382,10 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
                     frame_style=frame_style,
                     label_font_family=str(label_font_trace["font_family"]),
                     candidate_crop_boxes=candidate_crop_boxes,
+                )
+                artifacts = downscale_patch_option_artifacts(
+                    artifacts,
+                    max_pixels=MAX_RECONSTRUCTION_OUTPUT_PIXELS,
                 )
                 break
             except Exception as exc:  # pragma: no cover - random crop/placement feasibility is retry based
@@ -455,6 +475,7 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
                     "correct_index": int(sample.correct_index),
                     "patch_size": [int(sample.patch_size[0]), int(sample.patch_size[1])],
                     "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
+                    **dict(sample.source_profile_trace),
                     "crop_margin_px": int(sample.crop_margin_px),
                     "candidate_crop_count": int(artifacts.candidate_crop_count),
                     "correct_index_probabilities": dict(sample.correct_index_probabilities),
@@ -465,6 +486,7 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
                 "coord_space": "pixel",
                 "scene_id": SCENE_ID,
                 "source_scene_canvas_size": [int(source_scene.canvas_width), int(source_scene.canvas_height)],
+                "source_profile": dict(sample.source_profile_trace),
                 "style": {
                     "source_theme_id": str(source_scene.theme_id),
                     "source_style_id": str(source_scene.style_id),
@@ -490,6 +512,8 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
                 "candidate_crop_count": int(artifacts.candidate_crop_count),
                 "selected_transform": str(artifacts.selected_transform),
                 "option_grid_shape": [int(artifacts.option_grid_shape[0]), int(artifacts.option_grid_shape[1])],
+                "pre_downscale_canvas_size": [int(value) for value in artifacts.pre_downscale_canvas_size],
+                "output_scale_xy": [float(value) for value in artifacts.output_scale_xy],
             },
             "execution_trace": {
                 "query_id": SINGLE_QUERY_ID,

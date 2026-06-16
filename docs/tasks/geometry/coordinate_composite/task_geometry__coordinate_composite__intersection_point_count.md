@@ -8,7 +8,7 @@
 7. Annotation schema: `point_set`
 
 ## Program Contract
-- `count(visible_intersection_points(objects)); scene=coordinate_composite; scope=intersection_point_count`
+- `count(intersection_points(filter_pairs(objects, pair_filter))); scene=coordinate_composite; scope=intersection_point_count`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_coordinate_composite_v0`.

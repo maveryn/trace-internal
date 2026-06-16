@@ -2,12 +2,23 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from typing import Any, Callable, Dict, Mapping, Sequence, Tuple
 
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .measurements import (
     case_probability_map,
+    cone_source_volume,
+    cylinder_source_volume,
+    json_answer_value,
+    resolve_cone_fill_count,
+    resolve_cone_resulting_height,
+    resolve_cylinder_fill_count,
+    resolve_cylinder_resulting_height,
+    resolve_target_capacity,
+    resolve_transferred_volume,
+    round1,
     validate_cone_fill_case,
     validate_cone_height_case,
     validate_cylinder_fill_case,
@@ -16,69 +27,218 @@ from .measurements import (
     validate_transferred_volume_case,
 )
 
-CONE_FILL_CASES: Tuple[Tuple[int, int, int, int], ...] = (
-    (12, 6, 8, 6),
-    (9, 9, 9, 6),
-    (15, 6, 10, 9),
-    (12, 9, 9, 12),
-    (12, 5, 10, 8),
-    (15, 4, 10, 10),
-    (18, 5, 12, 15),
-    (21, 4, 14, 14),
-    (24, 3, 12, 16),
-)
-CYLINDER_FILL_CASES: Tuple[Tuple[int, int, int, int, int], ...] = (
-    (6, 5, 5, 4, 3),
-    (8, 4, 8, 4, 3),
-    (10, 3, 10, 4, 3),
-    (9, 4, 9, 5, 4),
-    (12, 3, 12, 6, 3),
-    (14, 2, 14, 7, 2),
-    (8, 5, 10, 8, 4),
-)
-CONE_HEIGHT_CASES: Tuple[Tuple[int, int, int, int, int], ...] = (
-    (12, 6, 8, 9, 1),
-    (9, 9, 9, 10, 2),
-    (15, 6, 12, 10, 3),
-    (12, 9, 8, 12, 2),
-    (18, 5, 12, 12, 2),
-    (21, 4, 14, 10, 3),
-    (24, 3, 12, 10, 2),
-    (15, 4, 10, 8, 1),
-)
-CYLINDER_HEIGHT_CASES: Tuple[Tuple[int, int, int, int, int, int], ...] = (
-    (6, 5, 5, 4, 8, 2),
-    (8, 4, 8, 4, 7, 2),
-    (10, 3, 10, 4, 6, 5),
-    (9, 4, 9, 5, 7, 5),
-    (12, 3, 9, 4, 8, 5),
-    (14, 2, 7, 5, 8, 4),
-    (8, 5, 10, 5, 9, 3),
-)
-TARGET_CAPACITY_CASES: Tuple[Tuple[int, int, int, int, int], ...] = (
-    (0, 0, 12, 6, 2),
-    (0, 1, 9, 9, 3),
-    (0, 0, 15, 6, 4),
-    (0, 1, 12, 9, 2),
-    (0, 0, 18, 5, 5),
-    (1, 1, 7, 4, 3),
-    (1, 0, 8, 5, 4),
-    (1, 1, 9, 4, 5),
-    (1, 0, 11, 3, 3),
-    (1, 1, 12, 4, 4),
-)
-TRANSFERRED_VOLUME_CASES: Tuple[Tuple[int, int, int, int, int], ...] = (
-    (0, 0, 12, 6, 4),
-    (0, 1, 15, 6, 3),
-    (0, 0, 18, 5, 5),
-    (0, 1, 21, 4, 6),
-    (0, 0, 24, 3, 5),
-    (1, 1, 8, 5, 3),
-    (1, 0, 9, 4, 5),
-    (1, 1, 11, 3, 4),
-    (1, 0, 12, 4, 6),
-    (1, 1, 14, 3, 5),
-)
+_CASES_PER_ANSWER = 16
+
+
+def _answer_key(value: int | float) -> str:
+    return str(json_answer_value(value))
+
+
+def _answer_sort_key(key: str) -> tuple[int, float | str]:
+    try:
+        return (0, float(key))
+    except ValueError:
+        return (1, str(key))
+
+
+def _append_case(
+    grouped: dict[str, list[Tuple[int, ...]]],
+    answer: int | float,
+    case: Sequence[int],
+) -> None:
+    key = _answer_key(answer)
+    if len(grouped[key]) < _CASES_PER_ANSWER:
+        grouped[key].append(tuple(int(value) for value in case))
+
+
+def _flatten_grouped(grouped: Mapping[str, Sequence[Sequence[int]]]) -> Tuple[Tuple[int, ...], ...]:
+    return tuple(
+        tuple(int(value) for value in case)
+        for key in sorted(grouped, key=_answer_sort_key)
+        for case in tuple(grouped[str(key)])
+    )
+
+
+def _generate_cone_fill_cases() -> Tuple[Tuple[int, int, int, int], ...]:
+    grouped: dict[str, list[Tuple[int, ...]]] = defaultdict(list)
+    for fill_count in range(2, 21):
+        for source_base_area in range(6, 61):
+            for source_height in range(3, 31):
+                if int(source_base_area * source_height) % 3:
+                    continue
+                source_volume = cone_source_volume(source_base_area, source_height)
+                if not (12 <= int(source_volume) <= 220):
+                    continue
+                target_volume = int(source_volume) * int(fill_count)
+                for target_base_area in range(6, 81):
+                    if target_volume % target_base_area:
+                        continue
+                    target_height = target_volume // target_base_area
+                    if 4 <= int(target_height) <= 32:
+                        case = (source_base_area, source_height, target_base_area, target_height)
+                        try:
+                            validate_cone_fill_case(case)
+                        except ValueError:
+                            continue
+                        _append_case(grouped, fill_count, case)
+                        break
+                if len(grouped[_answer_key(fill_count)]) >= _CASES_PER_ANSWER:
+                    break
+            if len(grouped[_answer_key(fill_count)]) >= _CASES_PER_ANSWER:
+                break
+    return _flatten_grouped(grouped)
+
+
+def _generate_cylinder_fill_cases() -> Tuple[Tuple[int, int, int, int, int], ...]:
+    grouped: dict[str, list[Tuple[int, ...]]] = defaultdict(list)
+    for fill_count in range(2, 21):
+        for source_base_area in range(4, 61):
+            for source_height in range(2, 31):
+                source_volume = cylinder_source_volume(source_base_area, source_height)
+                if not (12 <= int(source_volume) <= 220):
+                    continue
+                target_volume = int(source_volume) * int(fill_count)
+                found = False
+                for target_length in range(4, 31):
+                    for target_width in range(3, 18):
+                        target_base_area = int(target_length) * int(target_width)
+                        if target_volume % target_base_area:
+                            continue
+                        target_height = target_volume // target_base_area
+                        if 3 <= int(target_height) <= 32:
+                            case = (source_base_area, source_height, target_length, target_width, target_height)
+                            try:
+                                validate_cylinder_fill_case(case)
+                            except ValueError:
+                                continue
+                            _append_case(grouped, fill_count, case)
+                            found = True
+                            break
+                    if found:
+                        break
+                if len(grouped[_answer_key(fill_count)]) >= _CASES_PER_ANSWER:
+                    break
+            if len(grouped[_answer_key(fill_count)]) >= _CASES_PER_ANSWER:
+                break
+    return _flatten_grouped(grouped)
+
+
+def _generate_cone_height_cases() -> Tuple[Tuple[int, int, int, int, int], ...]:
+    grouped: dict[str, list[Tuple[int, ...]]] = defaultdict(list)
+    for source_base_area in range(6, 91):
+        for source_height in range(3, 31):
+            if int(source_base_area * source_height) % 3:
+                continue
+            source_volume = cone_source_volume(source_base_area, source_height)
+            if not (10 <= int(source_volume) <= 260):
+                continue
+            for pour_count in range(1, 11):
+                total_volume = int(source_volume) * int(pour_count)
+                for target_base_area in range(6, 101):
+                    result = round1(float(total_volume) / float(target_base_area))
+                    if not (1.5 <= float(result) <= 24.0):
+                        continue
+                    target_height = max(4, int(float(result) / 0.85) + 2)
+                    if target_height <= 36:
+                        case = (source_base_area, source_height, target_base_area, target_height, pour_count)
+                        try:
+                            validate_cone_height_case(case)
+                        except ValueError:
+                            continue
+                        _append_case(grouped, result, case)
+    return _flatten_grouped(grouped)
+
+
+def _generate_cylinder_height_cases() -> Tuple[Tuple[int, int, int, int, int, int], ...]:
+    grouped: dict[str, list[Tuple[int, ...]]] = defaultdict(list)
+    for source_base_area in range(4, 81):
+        for source_height in range(2, 31):
+            source_volume = cylinder_source_volume(source_base_area, source_height)
+            if not (10 <= int(source_volume) <= 260):
+                continue
+            for pour_count in range(1, 11):
+                total_volume = int(source_volume) * int(pour_count)
+                for target_length in range(4, 31):
+                    for target_width in range(3, 18):
+                        target_base_area = int(target_length) * int(target_width)
+                        result = round1(float(total_volume) / float(target_base_area))
+                        if not (1.5 <= float(result) <= 24.0):
+                            continue
+                        target_height = max(4, int(float(result) / 0.85) + 2)
+                        if target_height <= 36:
+                            case = (source_base_area, source_height, target_length, target_width, target_height, pour_count)
+                            try:
+                                validate_cylinder_height_case(case)
+                            except ValueError:
+                                continue
+                            _append_case(
+                                grouped,
+                                result,
+                                case,
+                            )
+    return _flatten_grouped(grouped)
+
+
+def _generate_target_capacity_cases() -> Tuple[Tuple[int, int, int, int, int], ...]:
+    grouped: dict[str, list[Tuple[int, ...]]] = defaultdict(list)
+    for source_kind in (0, 1):
+        for target_kind in (0, 1):
+            for source_base_area in range(6, 81):
+                for source_height in range(3, 31):
+                    if int(source_kind) == 0 and int(source_base_area * source_height) % 3:
+                        continue
+                    source_volume = (
+                        cone_source_volume(source_base_area, source_height)
+                        if int(source_kind) == 0
+                        else cylinder_source_volume(source_base_area, source_height)
+                    )
+                    if not (8 <= int(source_volume) <= 180):
+                        continue
+                    for pour_count in range(2, 16):
+                        target_volume = int(source_volume) * int(pour_count)
+                        if 40 <= int(target_volume) <= 600:
+                            case = (source_kind, target_kind, source_base_area, source_height, pour_count)
+                            try:
+                                validate_target_capacity_case(case)
+                            except ValueError:
+                                continue
+                            _append_case(grouped, target_volume, case)
+    return _flatten_grouped(grouped)
+
+
+def _generate_transferred_volume_cases() -> Tuple[Tuple[int, int, int, int, int], ...]:
+    grouped: dict[str, list[Tuple[int, ...]]] = defaultdict(list)
+    for source_kind in (0, 1):
+        for target_kind in (0, 1):
+            for source_base_area in range(6, 91):
+                for source_height in range(3, 32):
+                    if int(source_kind) == 0 and int(source_base_area * source_height) % 3:
+                        continue
+                    source_volume = (
+                        cone_source_volume(source_base_area, source_height)
+                        if int(source_kind) == 0
+                        else cylinder_source_volume(source_base_area, source_height)
+                    )
+                    if not (8 <= int(source_volume) <= 180):
+                        continue
+                    for pour_count in range(2, 16):
+                        total_volume = int(source_volume) * int(pour_count)
+                        if 60 <= int(total_volume) <= 720:
+                            case = (source_kind, target_kind, source_base_area, source_height, pour_count)
+                            try:
+                                validate_transferred_volume_case(case, required_source_kind=int(source_kind))
+                            except ValueError:
+                                continue
+                            _append_case(grouped, total_volume, case)
+    return _flatten_grouped(grouped)
+
+
+CONE_FILL_CASES = _generate_cone_fill_cases()
+CYLINDER_FILL_CASES = _generate_cylinder_fill_cases()
+CONE_HEIGHT_CASES = _generate_cone_height_cases()
+CYLINDER_HEIGHT_CASES = _generate_cylinder_height_cases()
+TARGET_CAPACITY_CASES = _generate_target_capacity_cases()
+TRANSFERRED_VOLUME_CASES = _generate_transferred_volume_cases()
 
 
 def _cone_case_key(case: Sequence[int]) -> str:
@@ -118,8 +278,16 @@ def select_case_from_pool(
     namespace: str,
     validator: Callable[[Sequence[int]], None],
     key_fn: Callable[[Sequence[int]], str],
+    answer_fn: Callable[[Sequence[int]], int | float],
     expected_length: int,
 ) -> tuple[Tuple[int, ...], Dict[str, float]]:
+    """Select a transfer construction by answer first, preserving explicit replay cases.
+
+    The invariant is that normal sampling is uniform over attainable final
+    answers for the objective pool, then uniform over constructions that realize
+    that answer. Explicit `transfer_case` remains an exact replay override.
+    """
+
     explicit = params.get("transfer_case")
     if explicit is not None:
         if not isinstance(explicit, Sequence) or isinstance(explicit, (str, bytes)):
@@ -130,9 +298,24 @@ def select_case_from_pool(
         validator(case)
         selected_key = str(key_fn(case))
         return case, case_probability_map(tuple(dict.fromkeys(tuple(keys) + (selected_key,))), selected_key)
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    case = tuple(int(value) for value in cases[int(index) % len(cases)])
-    return case, {str(key): 1.0 / float(max(1, len(keys))) for key in keys}
+    grouped: dict[str, list[Tuple[int, ...]]] = defaultdict(list)
+    for candidate in cases:
+        grouped[_answer_key(answer_fn(candidate))].append(tuple(int(value) for value in candidate))
+    answer_keys = tuple(sorted(grouped, key=_answer_sort_key))
+    if not answer_keys:
+        raise ValueError("answer-first container case support must not be empty")
+    explicit_answer = params.get("target_answer")
+    if explicit_answer is not None:
+        answer_key = _answer_key(float(explicit_answer))
+        if answer_key not in grouped:
+            raise ValueError(f"target_answer={explicit_answer} is not supported")
+    else:
+        answer_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{namespace}.answer") % len(answer_keys)
+        answer_key = answer_keys[int(answer_index)]
+    candidates = tuple(grouped[str(answer_key)])
+    case_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{namespace}.case.{answer_key}") % len(candidates)
+    case = tuple(int(value) for value in candidates[int(case_index)])
+    return case, {str(key_fn(case)): 1.0}
 
 
 def select_cone_fill_case(*, instance_seed: int, params: Mapping[str, Any], namespace: str) -> tuple[Tuple[int, ...], Dict[str, float]]:
@@ -146,6 +329,7 @@ def select_cone_fill_case(*, instance_seed: int, params: Mapping[str, Any], name
         namespace=f"{namespace}.cone_case",
         validator=validate_cone_fill_case,
         key_fn=_cone_case_key,
+        answer_fn=lambda case: resolve_cone_fill_count(case).fill_count,
         expected_length=4,
     )
 
@@ -161,6 +345,7 @@ def select_cylinder_fill_case(*, instance_seed: int, params: Mapping[str, Any], 
         namespace=f"{namespace}.cuboid_case",
         validator=validate_cylinder_fill_case,
         key_fn=_cuboid_case_key,
+        answer_fn=lambda case: resolve_cylinder_fill_count(case).fill_count,
         expected_length=5,
     )
 
@@ -176,6 +361,7 @@ def select_cone_height_case(*, instance_seed: int, params: Mapping[str, Any], na
         namespace=f"{namespace}.cone_height_case",
         validator=validate_cone_height_case,
         key_fn=_cone_height_case_key,
+        answer_fn=lambda case: resolve_cone_resulting_height(case).answer,
         expected_length=5,
     )
 
@@ -191,6 +377,7 @@ def select_cylinder_height_case(*, instance_seed: int, params: Mapping[str, Any]
         namespace=f"{namespace}.cuboid_height_case",
         validator=validate_cylinder_height_case,
         key_fn=_cuboid_height_case_key,
+        answer_fn=lambda case: resolve_cylinder_resulting_height(case).answer,
         expected_length=6,
     )
 
@@ -206,6 +393,7 @@ def select_target_capacity_case(*, instance_seed: int, params: Mapping[str, Any]
         namespace=f"{namespace}.target_capacity_case",
         validator=validate_target_capacity_case,
         key_fn=_kind_case_key,
+        answer_fn=lambda case: resolve_target_capacity(case).target_volume,
         expected_length=5,
     )
 
@@ -221,6 +409,7 @@ def select_repeated_cone_volume_case(*, instance_seed: int, params: Mapping[str,
         namespace=f"{namespace}.transferred_cone_case",
         validator=lambda case: validate_transferred_volume_case(case, required_source_kind=0),
         key_fn=lambda case: _kind_case_key(case, total=True),
+        answer_fn=lambda case: resolve_transferred_volume(case).answer,
         expected_length=5,
     )
 
@@ -236,6 +425,7 @@ def select_repeated_cylinder_volume_case(*, instance_seed: int, params: Mapping[
         namespace=f"{namespace}.transferred_cylinder_case",
         validator=lambda case: validate_transferred_volume_case(case, required_source_kind=1),
         key_fn=lambda case: _kind_case_key(case, total=True),
+        answer_fn=lambda case: resolve_transferred_volume(case).answer,
         expected_length=5,
     )
 

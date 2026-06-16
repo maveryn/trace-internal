@@ -37,7 +37,7 @@ ENDPOINT_GRID_ROUTE_CASES: Tuple[Tuple[int, int, int], ...] = (
     (5, 7, 9),
 )
 CARDINAL_BEARINGS: Tuple[int, ...] = (0, 90, 180, 270)
-FINAL_BEARING_VALUES: Tuple[int, ...] = (0, 45, 90, 135, 180, 225, 270, 315)
+FINAL_BEARING_VALUES: Tuple[int, ...] = tuple(range(0, 360, 5))
 FINAL_BEARING_LEG_LENGTHS: Tuple[int, ...] = (4, 5, 6, 7, 8, 9, 10, 12)
 ENDPOINT_RESERVED_VISIBLE_LABELS: Tuple[str, ...] = ("N", "E", "S", "W", "F")
 ENDPOINT_CANDIDATE_LABEL_POOL: Tuple[str, ...] = tuple(

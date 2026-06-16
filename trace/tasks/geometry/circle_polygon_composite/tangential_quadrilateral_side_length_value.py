@@ -50,6 +50,7 @@ class _TangentialProblem:
     answer: int
     missing_side_probabilities: dict[str, float]
     tangent_case_probabilities: dict[str, float]
+    answer_probabilities: dict[str, float]
 
 
 def _pitot_missing_side_answer(side_lengths: Mapping[str, int], missing_side: str) -> int:
@@ -80,7 +81,8 @@ def _bind_side_length_problem(
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}.{selected_query}.missing_side",
     )
-    tangent_case, tangent_case_probabilities = select_tangent_case(
+    tangent_case, tangent_case_probabilities, answer_probabilities = select_tangent_case(
+        missing_side=str(missing_side),
         params=params,
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}.{selected_query}.tangent_case",
@@ -100,6 +102,7 @@ def _bind_side_length_problem(
         answer=int(answer),
         missing_side_probabilities=dict(missing_side_probabilities),
         tangent_case_probabilities=dict(tangent_case_probabilities),
+        answer_probabilities=dict(answer_probabilities),
     )
 
 
@@ -164,6 +167,7 @@ def _build_side_length_trace_payload(
             "missing_side": str(problem.missing_side),
             "missing_side_probabilities": dict(problem.missing_side_probabilities),
             "tangent_case_probabilities": dict(problem.tangent_case_probabilities),
+            "target_answer_support_probabilities": dict(problem.answer_probabilities),
         },
     )
     query_spec["scene_id"] = SCENE_ID
@@ -205,6 +209,7 @@ def _build_side_length_trace_payload(
             "visible_sides": list(problem.visible_sides),
             "vertex_tangents": dict(problem.diagram_spec.vertex_tangents),
             "side_lengths": dict(side_lengths),
+            "target_answer_support_probabilities": dict(problem.answer_probabilities),
             "opposite_sum_AB_CD": int(opposite_sum_ab_cd),
             "opposite_sum_BC_DA": int(opposite_sum_bc_da),
             "answer": int(problem.answer),
@@ -219,6 +224,7 @@ def _build_side_length_trace_payload(
             "visible_sides": list(problem.visible_sides),
             "vertex_tangents": dict(problem.diagram_spec.vertex_tangents),
             "side_lengths": dict(side_lengths),
+            "target_answer_support_probabilities": dict(problem.answer_probabilities),
             "opposite_sum_AB_CD": int(opposite_sum_ab_cd),
             "opposite_sum_BC_DA": int(opposite_sum_bc_da),
             "answer_value": int(problem.answer),

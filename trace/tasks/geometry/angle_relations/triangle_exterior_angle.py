@@ -11,7 +11,7 @@ from .shared.state import DOMAIN, SCENE_ID
 TASK_ID = 'task_geometry__angle_relations__triangle_exterior_angle'
 TRIANGLE_EXTERIOR_QUERY_ID = 'triangle_exterior_angle'
 SUPPORTED_QUERY_IDS = (TRIANGLE_EXTERIOR_QUERY_ID,)
-TRIANGLE_EXTERIOR_CASE_SUPPORT = tuple((triangle_exterior_parameters_for_answer(answer_value, variant_index=11) for answer_value in range(42, 87)))
+TRIANGLE_EXTERIOR_CASE_SUPPORT = tuple((triangle_exterior_parameters_for_answer(answer_value, variant_index=11) for answer_value in range(35, 108)))
 TRIANGLE_EXTERIOR_CASES = tuple((make_triangle_exterior_case(*values) for values in TRIANGLE_EXTERIOR_CASE_SUPPORT))
 _RENDER_DEFAULTS = load_scene_generation_rendering_prompt_defaults(DOMAIN, SCENE_ID, task_id=TASK_ID)[1]
 

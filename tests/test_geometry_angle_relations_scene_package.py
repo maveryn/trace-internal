@@ -52,8 +52,8 @@ def test_angle_relations_scene_has_no_wrapper_only_modules() -> None:
     ("task_id", "query_ids"),
     (
         ("task_geometry__angle_relations__algebraic_angle_value", ("target_angle_value", "variable_x_value")),
-        ("task_geometry__angle_relations__parallel_supplement_angle", ("parallel_supplement_angle",)),
-        ("task_geometry__angle_relations__triangle_exterior_angle", ("triangle_exterior_angle",)),
+        ("task_geometry__angle_relations__parallel_supplement_angle", ("single",)),
+        ("task_geometry__angle_relations__triangle_exterior_angle", ("single",)),
     ),
 )
 def test_angle_relations_tasks_generate_keyed_angle_points(task_id: str, query_ids: tuple[str, ...]) -> None:
@@ -87,10 +87,12 @@ def test_parallel_supplement_uses_aef_given_angle_and_cfe_target() -> None:
     task = create_task("task_geometry__angle_relations__parallel_supplement_angle")
     output = task.generate(
         20260612,
-        params={"query_id": "parallel_supplement_angle", "case_index": 0},
+        params={"query_id": "single", "case_index": 0},
         max_attempts=20,
     )
 
+    assert output.query_id == "single"
+    assert output.trace_payload["execution_trace"]["internal_query_id"] == "parallel_supplement_angle"
     assert set(output.annotation_gt.value) == {"AEF", "CFE"}
     assert "given_angle_AEF" in output.trace_payload["execution_trace"]
     assert "given_angle_BEF" not in output.trace_payload["execution_trace"]

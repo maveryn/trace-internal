@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import math
+from collections import defaultdict
+from functools import lru_cache
 from typing import Any, Dict, Mapping, Sequence
 
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
@@ -12,22 +14,11 @@ from trace.tasks.geometry.shared.vector2d import mul as _mul
 from .state import CONSTRUCTION_KINDS, Point, SIDE_KEYS
 
 
-TANGENT_CASES: tuple[tuple[int, int, int, int], ...] = (
-    (3, 4, 5, 6),
-    (4, 5, 6, 7),
-    (5, 6, 7, 8),
-    (4, 6, 8, 10),
-    (6, 7, 9, 10),
-    (5, 8, 9, 12),
-    (7, 9, 10, 12),
-    (8, 10, 11, 13),
-    (6, 8, 12, 14),
-    (9, 10, 12, 15),
-    (7, 11, 13, 16),
-    (10, 12, 14, 18),
-)
-ANGLE_SUPPORT: tuple[int, ...] = (25, 30, 35, 40, 45, 50, 55, 60, 65)
+ANGLE_SUPPORT: tuple[int, ...] = tuple(range(18, 73))
 SIDE_SIGN_SUPPORT: tuple[int, int] = (-1, 1)
+_TANGENT_VALUE_SUPPORT: range = range(4, 37)
+_TANGENT_MAX_RATIO: float = 2.8
+_TANGENT_CASES_PER_SIDE_ANSWER: int = 8
 
 
 def case_key(case: Sequence[int]) -> str:
@@ -59,13 +50,58 @@ def select_missing_side(
     return missing_side, geometry_selected_probability_map(SIDE_KEYS)
 
 
+def _generate_tangent_cases() -> tuple[tuple[int, int, int, int], ...]:
+    """Generate a compact broad support of tangential quadrilateral cases."""
+
+    grouped: dict[tuple[str, int], list[tuple[int, int, int, int]]] = defaultdict(list)
+    cases: list[tuple[int, int, int, int]] = []
+    seen: set[tuple[int, int, int, int]] = set()
+    for t_a in _TANGENT_VALUE_SUPPORT:
+        for t_b in _TANGENT_VALUE_SUPPORT:
+            for t_c in _TANGENT_VALUE_SUPPORT:
+                for t_d in _TANGENT_VALUE_SUPPORT:
+                    case = (int(t_a), int(t_b), int(t_c), int(t_d))
+                    if float(max(case)) / float(min(case)) > _TANGENT_MAX_RATIO:
+                        continue
+                    side_lengths = side_lengths_from_vertex_tangents(case)
+                    needs_case = any(
+                        len(grouped[(str(side), int(answer))]) < _TANGENT_CASES_PER_SIDE_ANSWER
+                        for side, answer in side_lengths.items()
+                    )
+                    if not needs_case:
+                        continue
+                    if case not in seen:
+                        cases.append(case)
+                        seen.add(case)
+                    for side, answer in side_lengths.items():
+                        key = (str(side), int(answer))
+                        if len(grouped[key]) < _TANGENT_CASES_PER_SIDE_ANSWER:
+                            grouped[key].append(case)
+    return tuple(cases)
+
+
+@lru_cache(maxsize=None)
+def _tangent_cases_by_answer(missing_side: str) -> dict[str, tuple[tuple[int, int, int, int], ...]]:
+    """Return tangent cases grouped by prompt-facing missing side length."""
+
+    side = str(missing_side)
+    if side not in SIDE_KEYS:
+        raise ValueError(f"unsupported missing_side: {missing_side}")
+    grouped: dict[str, list[tuple[int, int, int, int]]] = defaultdict(list)
+    for case in TANGENT_CASES:
+        answer = int(side_lengths_from_vertex_tangents(case)[side])
+        grouped[str(answer)].append(case)
+    return {key: tuple(values) for key, values in grouped.items()}
+
+
 def select_tangent_case(
     *,
+    missing_side: str,
     params: Mapping[str, Any],
     instance_seed: int,
     namespace: str,
-) -> tuple[tuple[int, int, int, int], dict[str, float]]:
-    """Select or validate one set of four vertex tangent lengths."""
+) -> tuple[tuple[int, int, int, int], dict[str, float], dict[str, float]]:
+    """Select or validate one set of vertex tangents by final side answer first."""
 
     explicit = params.get("tangent_lengths")
     if explicit is not None:
@@ -74,15 +110,35 @@ def select_tangent_case(
         case = tuple(int(value) for value in explicit)
         if any(value <= 0 for value in case):
             raise ValueError("tangent_lengths values must be positive")
-        return case, {case_key(case): 1.0}
-    index = resolve_selection_index(
+        answer = int(side_lengths_from_vertex_tangents(case)[str(missing_side)])
+        return case, {case_key(case): 1.0}, {str(answer): 1.0}
+
+    answer_cases = _tangent_cases_by_answer(str(missing_side))
+    answer_keys = tuple(sorted(answer_cases, key=lambda key: int(key)))
+    if not answer_keys:
+        raise ValueError("tangent answer support must not be empty")
+    support_probability = 1.0 / float(len(answer_keys))
+    answer_probabilities = {key: float(support_probability) for key in answer_keys}
+    explicit_answer = params.get("target_answer")
+    if explicit_answer is not None:
+        answer_key = str(int(explicit_answer))
+        if answer_key not in answer_cases:
+            raise ValueError(f"target_answer={explicit_answer} is not supported for side {missing_side}")
+    else:
+        answer_index = resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.answer",
+        ) % len(answer_keys)
+        answer_key = answer_keys[int(answer_index)]
+    cases = tuple(answer_cases[str(answer_key)])
+    case_index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    case = TANGENT_CASES[int(index) % len(TANGENT_CASES)]
-    probability = 1.0 / float(len(TANGENT_CASES))
-    return case, {case_key(candidate): probability for candidate in TANGENT_CASES}
+        namespace=f"{namespace}.case.{answer_key}",
+    ) % len(cases)
+    case = tuple(int(value) for value in cases[int(case_index)])
+    return case, {case_key(case): 1.0}, answer_probabilities
 
 
 def side_lengths_from_vertex_tangents(case: Sequence[int]) -> dict[str, int]:
@@ -95,6 +151,9 @@ def side_lengths_from_vertex_tangents(case: Sequence[int]) -> dict[str, int]:
         "CD": int(t_c + t_d),
         "DA": int(t_d + t_a),
     }
+
+
+TANGENT_CASES: tuple[tuple[int, int, int, int], ...] = _generate_tangent_cases()
 
 
 def vertex_tangents_from_case(case: Sequence[int]) -> dict[str, int]:

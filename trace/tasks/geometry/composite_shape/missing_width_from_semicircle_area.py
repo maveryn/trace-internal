@@ -6,7 +6,7 @@ from trace.tasks.registry import register_task
 
 from ._lifecycle import run_composite_shape_public_entry
 from .shared.construction import resolve_answer_balanced_semicircle_dimensions
-from .shared.measurements import SEMICIRCLE_DIMENSION_CANDIDATES, round1, semicircle_arc_length, semicircle_area
+from .shared.measurements import round1, semicircle_arc_length, semicircle_area
 from .shared.sampling import group_cases_by_answer
 from .shared.state import CompositeShapeProblem
 
@@ -21,8 +21,14 @@ def _answer_for_case(case: tuple[int, int, int]) -> float:
     return float(width_units)
 
 
+_MISSING_WIDTH_CASES = tuple(
+    (width, height, radius)
+    for width in range(8, 73)
+    for height in range(6, 27)
+    for radius in range(3, min(12, height // 2) + 1)
+)
 _CASES_BY_ANSWER = group_cases_by_answer(
-    SEMICIRCLE_DIMENSION_CANDIDATES,
+    _MISSING_WIDTH_CASES,
     answer_fn=_answer_for_case,
 )
 

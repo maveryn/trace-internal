@@ -65,8 +65,8 @@ def validate_fill_count(source_volume: int, target_volume: int) -> int:
     if int(target_volume) % int(source_volume) != 0:
         raise ValueError("target volume must be an exact multiple of source volume")
     fill_count = int(target_volume) // int(source_volume)
-    if not (2 <= int(fill_count) <= 8):
-        raise ValueError("fill_count must be in the v1 support range 2..8")
+    if not (2 <= int(fill_count) <= 20):
+        raise ValueError("fill_count must be in the v1 support range 2..20")
     return int(fill_count)
 
 
@@ -133,8 +133,8 @@ def validate_target_capacity_case(case: Sequence[int]) -> None:
         raise ValueError("target-capacity source dimensions and pour count must be positive")
     source_volume = cone_source_volume(source_base_area, source_height) if source_kind == 0 else cylinder_source_volume(source_base_area, source_height)
     target_volume = int(source_volume) * int(pour_count)
-    if not (40 <= int(target_volume) <= 220):
-        raise ValueError("target capacity must be in the v1 support range 40..220")
+    if not (40 <= int(target_volume) <= 600):
+        raise ValueError("target capacity must be in the v1 support range 40..600")
 
 
 def validate_transferred_volume_case(case: Sequence[int], *, required_source_kind: int) -> None:
@@ -149,8 +149,8 @@ def validate_transferred_volume_case(case: Sequence[int], *, required_source_kin
         raise ValueError("transferred-volume source dimensions and pour count must be positive")
     source_volume = cone_source_volume(source_base_area, source_height) if source_kind == 0 else cylinder_source_volume(source_base_area, source_height)
     total_volume = int(source_volume) * int(pour_count)
-    if not (60 <= int(total_volume) <= 320):
-        raise ValueError("transferred volume must be in the v1 support range 60..320")
+    if not (60 <= int(total_volume) <= 720):
+        raise ValueError("transferred volume must be in the v1 support range 60..720")
 
 
 def resolve_cone_fill_count(case: Sequence[int]) -> ResolvedProblem:

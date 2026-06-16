@@ -64,22 +64,24 @@ def _answer_sort_key(key: str) -> tuple[int, float | str]:
         return (1, str(key))
 
 
-def _balanced_answer_index(
+def _uniform_answer_index(
     *,
     answer_count: int,
     instance_seed: int,
+    params: Mapping[str, Any],
     namespace: str,
 ) -> int:
-    """Choose answers evenly for consecutive review seeds."""
+    """Choose a final answer uniformly before selecting one construction case."""
 
     if int(answer_count) <= 0:
         raise ValueError("answer_count must be positive")
-    offset = resolve_selection_index(
-        params={},
-        instance_seed=0,
-        namespace=f"{namespace}.answer_offset",
-    )
-    return int(int(instance_seed) + int(offset)) % int(answer_count)
+    return int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.answer",
+        )
+    ) % int(answer_count)
 
 
 def select_answer_balanced_case(
@@ -89,7 +91,12 @@ def select_answer_balanced_case(
     params: Mapping[str, Any],
     namespace: str,
 ) -> tuple[T, Dict[str, float]]:
-    """Select a candidate by final answer first, then by case within that answer."""
+    """Select a candidate by final answer first, then by case within that answer.
+
+    The historical name is kept because many composite-shape tasks already
+    import it. The policy is now answer-first uniform sampling, not consecutive
+    review-seed balancing.
+    """
 
     keys = tuple(sorted((str(key) for key in answer_cases), key=_answer_sort_key))
     if not keys:
@@ -106,12 +113,19 @@ def select_answer_balanced_case(
             raise ValueError("answer_cases must contain at least one case")
         return flat_cases[int(explicit_case) % len(flat_cases)], support_probabilities
 
-    answer_index = _balanced_answer_index(
-        answer_count=len(keys),
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    answer = keys[int(answer_index)]
+    explicit_answer = params.get("target_answer")
+    if explicit_answer is not None:
+        answer = answer_key(explicit_answer)
+        if answer not in answer_cases:
+            raise ValueError(f"target_answer {explicit_answer!r} is not in answer support")
+    else:
+        answer_index = _uniform_answer_index(
+            answer_count=len(keys),
+            instance_seed=int(instance_seed),
+            params=params,
+            namespace=str(namespace),
+        )
+        answer = keys[int(answer_index)]
     cases = tuple(answer_cases[str(answer)])
     if not cases:
         raise ValueError(f"answer {answer!r} has no candidate cases")

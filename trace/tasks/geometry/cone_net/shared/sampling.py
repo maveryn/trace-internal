@@ -2,48 +2,82 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from functools import lru_cache
+from typing import Any, Callable, Mapping
 
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
+from .measurements import base_radius_from_sector, height_from_sector
 from .state import ConeNetCase
 
-CONE_NET_CASES: tuple[ConeNetCase, ...] = (
-    ConeNetCase(9, 120),
-    ConeNetCase(10, 144),
-    ConeNetCase(12, 150),
-    ConeNetCase(14, 180),
-    ConeNetCase(15, 120),
-    ConeNetCase(16, 135),
-    ConeNetCase(18, 160),
-    ConeNetCase(20, 162),
-    ConeNetCase(21, 120),
-    ConeNetCase(24, 150),
-    ConeNetCase(24, 180),
-    ConeNetCase(30, 144),
+SLANT_HEIGHT_SUPPORT: tuple[int, ...] = tuple(range(8, 61))
+THETA_DEGREE_SUPPORT: tuple[int, ...] = tuple(range(60, 301, 5))
+CONE_NET_CASES: tuple[ConeNetCase, ...] = tuple(
+    ConeNetCase(int(slant_height), int(theta_degrees))
+    for slant_height in SLANT_HEIGHT_SUPPORT
+    for theta_degrees in THETA_DEGREE_SUPPORT
+    if base_radius_from_sector(ConeNetCase(int(slant_height), int(theta_degrees))) < float(slant_height)
 )
+
+
+def _answer_key(value: float) -> str:
+    return f"{float(value):.1f}"
+
+
+@lru_cache(maxsize=None)
+def _cases_by_answer(target_measure: str) -> dict[str, tuple[ConeNetCase, ...]]:
+    if str(target_measure) == "base_radius":
+        answer_fn: Callable[[ConeNetCase], float] = base_radius_from_sector
+    elif str(target_measure) == "height":
+        answer_fn = height_from_sector
+    else:
+        raise ValueError(f"unsupported cone-net target_measure: {target_measure}")
+    grouped: dict[str, list[ConeNetCase]] = {}
+    for case in CONE_NET_CASES:
+        grouped.setdefault(_answer_key(answer_fn(case)), []).append(case)
+    return {key: tuple(values) for key, values in grouped.items()}
+
+
+def _sort_answer_key(value: str) -> float:
+    return float(value)
 
 
 def resolve_cone_net_case(
     *,
+    target_measure: str,
     instance_seed: int,
     params: Mapping[str, Any],
     namespace: str,
 ) -> tuple[ConeNetCase, int]:
-    """Select and validate one cone-net measurement case."""
+    """Select one cone-net case by target answer first, then construction."""
 
     explicit_case = params.get("case_index")
-    if explicit_case is None:
-        selection_index = resolve_selection_index(
+    if explicit_case is not None:
+        case_index = int(explicit_case) % len(CONE_NET_CASES)
+        selected = CONE_NET_CASES[int(case_index)]
+    else:
+        answer_cases = _cases_by_answer(str(target_measure))
+        answer_keys = tuple(sorted(answer_cases, key=_sort_answer_key))
+        explicit_answer = params.get("target_answer")
+        if explicit_answer is not None:
+            answer_key = _answer_key(float(explicit_answer))
+            if answer_key not in answer_cases:
+                raise ValueError(f"target_answer={explicit_answer} is not supported for {target_measure}")
+        else:
+            answer_index = resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"{namespace}.answer",
+            ) % len(answer_keys)
+            answer_key = answer_keys[int(answer_index)]
+        cases = tuple(answer_cases[str(answer_key)])
+        local_case_index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=str(namespace),
-        )
-        case_index = int(selection_index) % len(CONE_NET_CASES)
-    else:
-        case_index = int(explicit_case) % len(CONE_NET_CASES)
-
-    selected = CONE_NET_CASES[int(case_index)]
+            namespace=f"{namespace}.case.{answer_key}",
+        ) % len(cases)
+        selected = cases[int(local_case_index)]
+        case_index = CONE_NET_CASES.index(selected)
     slant_height = int(params.get("slant_height", selected.slant_height))
     theta_degrees = int(params.get("theta_degrees", selected.theta_degrees))
     if slant_height <= 0:
@@ -53,4 +87,4 @@ def resolve_cone_net_case(
     return ConeNetCase(int(slant_height), int(theta_degrees)), int(case_index)
 
 
-__all__ = ["CONE_NET_CASES", "resolve_cone_net_case"]
+__all__ = ["CONE_NET_CASES", "SLANT_HEIGHT_SUPPORT", "THETA_DEGREE_SUPPORT", "resolve_cone_net_case"]

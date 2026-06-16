@@ -10,10 +10,10 @@ from trace.tasks.shared.fixed_query import geometry_selected_probability_map
 
 from .state import BOUNDARY_PAIRS, BOUNDARY_TARGET_ROLES, LABEL_MODES, CircleOverlapCase
 
-RADIUS_A_RANGE: tuple[int, int] = (8, 15)
-RADIUS_B_RANGE: tuple[int, int] = (12, 24)
-RADIUS_C_RANGE: tuple[int, int] = (8, 15)
-OVERLAP_RANGE: tuple[int, int] = (2, 8)
+RADIUS_A_RANGE: tuple[int, int] = (8, 18)
+RADIUS_B_RANGE: tuple[int, int] = (12, 28)
+RADIUS_C_RANGE: tuple[int, int] = (8, 18)
+OVERLAP_RANGE: tuple[int, int] = (2, 10)
 
 
 def _select_int_inclusive(
@@ -200,6 +200,94 @@ def select_overlap_case(
     return case, {case.key: 1.0}
 
 
+def _select_case_by_answer(
+    answer_cases: Mapping[int, Sequence[CircleOverlapCase]],
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    namespace: str,
+) -> tuple[CircleOverlapCase, dict[str, float]]:
+    """Select an overlap case by final integer answer first."""
+
+    answer_values = tuple(sorted(int(value) for value in answer_cases))
+    if not answer_values:
+        raise ValueError("overlap answer support must not be empty")
+    explicit_answer = params.get("target_answer")
+    if explicit_answer is not None:
+        answer = int(explicit_answer)
+        if answer not in answer_cases:
+            raise ValueError(f"target_answer={answer} is not supported")
+    else:
+        answer_index = resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.answer",
+        ) % len(answer_values)
+        answer = int(answer_values[int(answer_index)])
+    cases = tuple(answer_cases[int(answer)])
+    case_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.case.{answer}",
+    ) % len(cases)
+    case = cases[int(case_index)]
+    return case, {case.key: 1.0}
+
+
+def select_center_distance_overlap_case(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    namespace: str,
+) -> tuple[CircleOverlapCase, dict[str, float]]:
+    """Select an overlap case by final AC center distance."""
+
+    if params.get("overlap_case") is not None:
+        return select_overlap_case(
+            instance_seed=int(instance_seed),
+            params=params,
+            namespace=str(namespace),
+        )
+    grouped: dict[int, list[CircleOverlapCase]] = {}
+    for case in generated_overlap_cases():
+        grouped.setdefault(int(case.distance_ac), []).append(case)
+    return _select_case_by_answer(
+        grouped,
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=str(namespace),
+    )
+
+
+def select_boundary_segment_overlap_case(
+    *,
+    boundary_pair: str,
+    boundary_target_role: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    namespace: str,
+) -> tuple[CircleOverlapCase, dict[str, float]]:
+    """Select an overlap case by final boundary segment length."""
+
+    if params.get("overlap_case") is not None:
+        return select_overlap_case(
+            instance_seed=int(instance_seed),
+            params=params,
+            namespace=str(namespace),
+        )
+    pair = str(boundary_pair)
+    role = str(boundary_target_role)
+    grouped: dict[int, list[CircleOverlapCase]] = {}
+    for case in generated_overlap_cases():
+        grouped.setdefault(int(segment_length(case, pair, role)), []).append(case)
+    return _select_case_by_answer(
+        grouped,
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=str(namespace),
+    )
+
+
 def select_label_mode(
     *,
     params: Mapping[str, Any],
@@ -314,7 +402,9 @@ __all__ = [
     "generated_overlap_cases",
     "segment_length",
     "select_boundary_pair",
+    "select_boundary_segment_overlap_case",
     "select_boundary_target_role",
+    "select_center_distance_overlap_case",
     "select_label_mode",
     "select_overlap_case",
     "validate_overlap_case",

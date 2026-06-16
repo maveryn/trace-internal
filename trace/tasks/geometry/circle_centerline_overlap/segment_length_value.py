@@ -25,9 +25,10 @@ from .shared.construction import (
     center_distance_answer_support,
     segment_length,
     select_boundary_pair,
+    select_boundary_segment_overlap_case,
     select_boundary_target_role,
+    select_center_distance_overlap_case,
     select_label_mode,
-    select_overlap_case,
 )
 from .shared.prompts import circle_centerline_prompt_artifacts
 from .shared.rendering import (
@@ -329,17 +330,17 @@ class GeometryCircleCenterlineOverlapSegmentLengthValueTask:
             default_query_id=QUERY_ID_CENTER_DISTANCE,
             task_id=TASK_ID,
         )
-        case, case_probabilities = select_overlap_case(
-            instance_seed=int(instance_seed),
-            params=task_params,
-            namespace=f"{TASK_ID}.{selected_query}.overlap_case",
-        )
         label_mode, label_mode_probabilities = select_label_mode(
             params=task_params,
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}.{selected_query}.label_mode",
         )
         if str(selected_query) == QUERY_ID_CENTER_DISTANCE:
+            case, case_probabilities = select_center_distance_overlap_case(
+                instance_seed=int(instance_seed),
+                params=task_params,
+                namespace=f"{TASK_ID}.{selected_query}.overlap_case",
+            )
             problem = _center_distance_problem(
                 case=case,
                 label_mode=str(label_mode),
@@ -358,6 +359,13 @@ class GeometryCircleCenterlineOverlapSegmentLengthValueTask:
                     instance_seed=int(instance_seed),
                     namespace=f"{TASK_ID}.{selected_query}.boundary_target_role",
                 )
+            )
+            case, case_probabilities = select_boundary_segment_overlap_case(
+                boundary_pair=str(boundary_pair),
+                boundary_target_role=str(boundary_target_role),
+                instance_seed=int(instance_seed),
+                params=task_params,
+                namespace=f"{TASK_ID}.{selected_query}.overlap_case",
             )
             problem = _boundary_segment_problem(
                 case=case,

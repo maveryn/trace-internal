@@ -28,10 +28,10 @@ DOUBLE_EXTENSION_CASE = "double_extension"
 EXTENSION_CASE_SUPPORT: Tuple[str, ...] = (SINGLE_EXTENSION_CASE, DOUBLE_EXTENSION_CASE)
 
 ALGEBRAIC_SINGLE_EXTENSION_CASE_SUPPORT: Tuple[Tuple[int, int, int, int, int], ...] = tuple(
-    algebraic_case_parameters_for_answer(answer_value, variant_index=3) for answer_value in range(44, 87)
+    algebraic_case_parameters_for_answer(answer_value, variant_index=3) for answer_value in range(35, 104)
 )
 ALGEBRAIC_DOUBLE_EXTENSION_CASE_SUPPORT: Tuple[Tuple[int, int, int, int, int], ...] = tuple(
-    algebraic_case_parameters_for_answer(answer_value, variant_index=19) for answer_value in range(45, 88)
+    algebraic_case_parameters_for_answer(answer_value, variant_index=19) for answer_value in range(35, 104)
 )
 
 _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = (

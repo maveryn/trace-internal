@@ -19,7 +19,7 @@ def base_radius_from_sector(case: ConeNetCase) -> float:
 def height_from_sector(case: ConeNetCase) -> float:
     """Return folded cone height from slant height and derived base radius."""
 
-    radius = base_radius_from_sector(case)
+    radius = float(case.slant_height) * float(case.theta_degrees) / 360.0
     return round1(math.sqrt(max(0.0, float(case.slant_height) ** 2 - float(radius) ** 2)))
 
 

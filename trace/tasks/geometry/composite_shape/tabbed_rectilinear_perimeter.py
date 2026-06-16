@@ -14,9 +14,9 @@ SUPPORTED_QUERY_IDS = (QUERY_ID,)
 
 _CASES = tuple(
     (width, height, tab_height)
-    for width in range(9, 26)
-    for height in range(6, 17)
-    for tab_height in range(2, 10)
+    for width in range(9, 47)
+    for height in range(6, 35)
+    for tab_height in range(2, 21)
 )
 
 

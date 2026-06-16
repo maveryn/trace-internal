@@ -9,6 +9,16 @@ from .sampling import PinballVisualAxes
 from .state import PinballSceneState
 
 
+def pinball_object_display_text(score_value: int | None, label: str, show_label: bool) -> str | None:
+    """Return the visible text drawn inside one pinball object."""
+
+    if score_value is not None:
+        return str(int(score_value))
+    if bool(show_label):
+        return str(label)
+    return None
+
+
 def build_pinball_object_trace(scene: PinballSceneState) -> list[Dict[str, Any]]:
     """Build trace records for all labeled/scored pinball objects."""
 
@@ -23,7 +33,8 @@ def build_pinball_object_trace(scene: PinballSceneState) -> list[Dict[str, Any]]
             "width_norm": float(obj.width_norm),
             "height_norm": float(obj.height_norm),
             "score_value": None if obj.score_value is None else int(obj.score_value),
-            "display_text": str(int(obj.score_value)) if obj.score_value is not None else str(obj.label),
+            "show_label": bool(obj.show_label),
+            "display_text": pinball_object_display_text(obj.score_value, str(obj.label), bool(obj.show_label)),
         }
         for obj in scene.objects
     ]
@@ -119,4 +130,5 @@ __all__ = [
     "build_pinball_common_trace_payload",
     "build_pinball_object_trace",
     "common_pinball_trace_params",
+    "pinball_object_display_text",
 ]

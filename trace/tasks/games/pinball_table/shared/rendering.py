@@ -586,16 +586,17 @@ def _draw_object(
         bbox[2] - 0.18 * (bbox[2] - bbox[0]),
         bbox[3] - 0.16 * (bbox[3] - bbox[1]),
     )
-    display_text = str(int(obj.score_value)) if obj.score_value is not None else str(obj.label)
-    _fit_text(
-        draw,
-        bbox=label_box,
-        text=str(display_text),
-        fill=theme.object_text_rgb,
-        max_size_px=int(params.label_font_size_px),
-        font_family=str(params.font_family),
-        surface_rgb=tuple(int(v) for v in fill),
-    )
+    display_text = str(int(obj.score_value)) if obj.score_value is not None else (str(obj.label) if bool(obj.show_label) else "")
+    if display_text:
+        _fit_text(
+            draw,
+            bbox=label_box,
+            text=str(display_text),
+            fill=theme.object_text_rgb,
+            max_size_px=int(params.label_font_size_px),
+            font_family=str(params.font_family),
+            surface_rgb=tuple(int(v) for v in fill),
+        )
     return tuple(round(float(v), 3) for v in bbox)
 
 
@@ -765,6 +766,7 @@ def render_pinball_scene(
                 "bbox": list(bbox),
                 "point": list(point),
                 "score_value": None if obj.score_value is None else int(obj.score_value),
+                "show_label": bool(obj.show_label),
             }
         )
 

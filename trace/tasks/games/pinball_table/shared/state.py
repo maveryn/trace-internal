@@ -36,6 +36,7 @@ class PinballObject:
     height_norm: float
     color_index: int
     score_value: int | None = None
+    show_label: bool = True
 
 
 @dataclass(frozen=True)

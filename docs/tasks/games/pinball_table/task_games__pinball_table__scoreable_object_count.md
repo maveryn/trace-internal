@@ -14,6 +14,6 @@
 
 ## Generation Notes
 1. The scene renders a tilted pinball playfield with one ball, decorative table elements, and 5 to 8 visible table objects.
-2. Scoreable objects display numeric score labels. Non-scoreable distractors display letter labels only.
+2. Scoreable objects display numeric score labels. Non-scoreable distractors have no visible text.
 3. The answer is the number of scoreable objects, balanced across 1 to 6 when the visible object count allows it.
 4. Annotation is an unordered point set containing the pixel center of every scoreable object.

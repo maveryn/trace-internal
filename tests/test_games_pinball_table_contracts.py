@@ -58,7 +58,7 @@ def test_games_pinball_table_defaults_present() -> None:
     assert "straight path" in str(prompt_defaults["pinball_motion_rule_text"]).lower()
     assert "numeric score targets" in str(prompt_defaults["object_description_scoreable_count"]).lower()
     assert "[x, y] pixel point" in str(prompt_defaults["annotation_hint_first_hit_object_label"])
-    assert "only a letter" in str(prompt_defaults["pinball_scoreable_rule_text"]).lower()
+    assert "without a number" in str(prompt_defaults["pinball_scoreable_rule_text"]).lower()
     assert "numeric score labels" in str(prompt_defaults["annotation_hint_scoreable_object_count"]).lower()
     assert "[x, y] pixel point" in str(prompt_defaults["annotation_hint_scoreable_object_count"])
 
@@ -177,7 +177,8 @@ def test_games_pinball_scoreable_object_count_emits_expected_contract() -> None:
     assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
     for obj in execution["objects"]:
         if obj["score_value"] is None:
-            assert str(obj["display_text"]) == str(obj["label"])
+            assert obj["display_text"] is None
+            assert obj["show_label"] is False
         else:
             assert str(obj["display_text"]) == str(int(obj["score_value"]))
 

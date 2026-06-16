@@ -387,6 +387,7 @@ def _make_object(
     center: Tuple[float, float],
     rng: Any,
     score_value: int | None = None,
+    show_label: bool = True,
 ) -> PinballObject:
     """Create one pinball object with kind-appropriate footprint."""
 
@@ -421,6 +422,7 @@ def _make_object(
         height_norm=float(height_norm),
         color_index=int(index),
         score_value=None if score_value is None else int(score_value),
+        show_label=bool(show_label),
     )
 
 
@@ -543,7 +545,7 @@ def sample_scoreable_object_count_playfield(
     axes: PinballVisualAxes,
     scoreable_count: int,
 ) -> PinballScoreableObjectCountConstruction:
-    """Construct a playfield with mixed numeric-score and letter-only objects."""
+    """Construct a playfield with mixed numeric-score and blank objects."""
 
     if int(scoreable_count) < 1:
         raise ValueError("scoreable_count must be positive")
@@ -585,6 +587,7 @@ def sample_scoreable_object_count_playfield(
                 center=center,
                 rng=rng,
                 score_value=score_value,
+                show_label=False,
             )
             objects.append(obj)
             if is_scoreable:

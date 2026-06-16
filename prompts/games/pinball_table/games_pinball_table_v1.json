@@ -107,9 +107,9 @@
   },
   "code_prompt_defaults": {
     "object_description_schematic_table": "a tilted pinball playfield with a ball, a straight launch cue, flippers, bumpers, lanes, and labeled targets",
-    "object_description_scoreable_count": "a tilted pinball playfield with a ball, flippers, bumpers, lanes, numeric score targets, and letter-only objects",
+    "object_description_scoreable_count": "a tilted pinball playfield with a ball, flippers, bumpers, lanes, numeric score targets, and blank objects",
     "pinball_motion_rule_text": "The arrow shows the ball's straight path; extend it in the same direction.",
-    "pinball_scoreable_rule_text": "Objects with a number are scoreable; objects with only a letter are not scoreable.",
+    "pinball_scoreable_rule_text": "Objects with a number are scoreable; objects without a number are not scoreable.",
     "annotation_hint_first_hit_object_label": "set \"annotation\" to one [x, y] pixel point at the center of the first labeled object hit by the path",
     "answer_hint_first_hit_object_label": "set \"answer\" to the selected object label as a string",
     "annotation_hint_scoreable_object_count": "set \"annotation\" to a JSON array of [x, y] pixel points at the centers of all objects that show numeric score labels",

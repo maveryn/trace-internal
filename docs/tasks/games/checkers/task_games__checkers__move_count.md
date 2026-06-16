@@ -7,7 +7,7 @@
 4. Public task id: `task_games__checkers__move_count`
 5. Supported `query_id` values: `legal_move_count`, `capture_move_count`
 6. Answer schema: `integer_count`
-7. Annotation schema: `bbox_set`
+7. Annotation schema: `point_set`
 8. Program schema: `count(filter(legal_moves(current_player), move_filter)); scene=checkers; scope=move_count; query_branch=capture_move_count`
 
 ## Program Contract

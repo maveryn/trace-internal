@@ -19,6 +19,8 @@ Program schema: `select_extremum(racing_cars, remaining_distance_to_finish, oper
 String car label.
 
 ## Annotation
+Annotation schema: `point`.
+
 `point` at the selected car center.
 
 ## Notes

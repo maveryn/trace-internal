@@ -6,7 +6,7 @@
 3. Public task id: `task_games__chess__king_escape_square_count`
 4. Supported `query_id` values: `single`
 5. Answer schema: `integer_count`
-6. Annotation schema: `bbox_set`
+6. Annotation schema: `point_set`
 7. Program schema: `count(legal_escape_squares(king)); scene=chess; scope=king_escape_square_count`
 
 ## Program Contract

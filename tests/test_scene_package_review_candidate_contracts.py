@@ -159,6 +159,22 @@ def _doc_supported_query_ids(path: Path) -> tuple[str, ...]:
         return values
     return tuple()
 
+
+def _doc_annotation_schema(path: Path) -> str:
+    """Extract the documented annotation schema from one task contract doc."""
+
+    if not path.exists():
+        return ""
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if "Annotation schema" not in line:
+            continue
+        match = re.search(r"`([^`]+)`", line)
+        if match:
+            return str(match.group(1)).strip()
+        _, _, value = line.partition(":")
+        return value.strip()
+    return ""
+
 def test_review_candidate_scenes_have_scene_package_source_layout() -> None:
     active_by_scene = _active_task_ids_for_review_candidate_scenes()
     if not active_by_scene:
@@ -279,4 +295,37 @@ def test_review_candidate_single_query_task_docs_use_single_sentinel() -> None:
                 continue
             if supported_query_ids != ('single',):
                 offenders.append(f'{doc_path}: {supported_query_ids[0]}')
+    assert offenders == []
+
+
+def test_review_candidate_task_docs_match_generated_annotation_schema() -> None:
+    active_by_scene = _active_task_ids_for_review_candidate_scenes()
+    if not active_by_scene:
+        return
+    from trace.tasks.registry import TASK_REGISTRY
+
+    offenders: list[str] = []
+    for (domain, scene_id), task_ids in active_by_scene.items():
+        for task_id in task_ids:
+            task_cls = TASK_REGISTRY[task_id]
+            doc_path = Path("docs") / "tasks" / domain / scene_id / f"{task_id}.md"
+            doc_schema = _doc_annotation_schema(doc_path)
+            if not doc_schema:
+                offenders.append(f"{doc_path}: missing Annotation schema")
+                continue
+            observed_schemas: set[str] = set()
+            supported_query_ids = _declared_supported_query_ids(task_cls) or ("single",)
+            task = task_cls()
+            for query_index, query_id in enumerate(supported_query_ids):
+                output = task.generate(
+                    instance_seed=2026061700 + query_index,
+                    params={"query_id": query_id},
+                    max_attempts=100,
+                )
+                observed_schemas.add(str(getattr(output.annotation_gt, "type", "")))
+            if observed_schemas != {doc_schema}:
+                offenders.append(
+                    f"{doc_path}: Annotation schema `{doc_schema}` does not match "
+                    f"generated annotation_gt.type {sorted(observed_schemas)}"
+                )
     assert offenders == []

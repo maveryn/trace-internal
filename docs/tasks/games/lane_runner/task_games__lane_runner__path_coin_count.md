@@ -5,6 +5,7 @@
 2. Scene id: `lane_runner`
 3. Public task id: `task_games__lane_runner__path_coin_count`
 4. Supported `query_id` values: `single`
+5. Annotation schema: `point_set`
 
 ## Program Contract
 `count(intersection(coins, shown_path_cells)); scene=lane_runner; scope=path_coin_count`

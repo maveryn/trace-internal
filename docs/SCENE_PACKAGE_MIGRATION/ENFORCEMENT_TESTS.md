@@ -4,6 +4,7 @@ The migration tests live in:
 
 ```text
 tests/test_scene_package_migration_contracts.py
+tests/test_scene_package_review_candidate_contracts.py
 ```
 
 They apply to scenes listed in `SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES`.
@@ -37,6 +38,7 @@ Review-candidate scenes are checked for:
 - no migrated games-scene imports of legacy `resolve_games_query_id`
 - large functions documented with a concise role/invariant note
 - smoke coverage for every public task and supported local query branch
+- documented `Annotation schema` matches generated `annotation_gt.type` for every query branch
 
 Approved private lifecycle files are allowed only for neutral scene plumbing.
 They must not register tasks or route objective behavior by public identity.
@@ -51,7 +53,8 @@ TRACE_SCENE_PACKAGE_REVIEW_SCENE=<domain>/<scene_id> \
 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q \
   tests/test_review_app.py \
   tests/test_run_task_review.py \
-  tests/test_scene_package_migration_contracts.py
+  tests/test_scene_package_migration_contracts.py \
+  tests/test_scene_package_review_candidate_contracts.py
 ```
 
 Run scene-specific tests as needed.

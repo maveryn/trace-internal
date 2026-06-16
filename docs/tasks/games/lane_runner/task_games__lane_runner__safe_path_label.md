@@ -5,6 +5,7 @@
 2. Scene id: `lane_runner`
 3. Public task id: `task_games__lane_runner__safe_path_label`
 4. Supported `query_id` values: `single`
+5. Annotation schema: `bbox`
 
 ## Program Contract
 `select_unique(label(path) where no_hazard_collision(path, hazards)); scene=lane_runner; scope=safe_path_label`

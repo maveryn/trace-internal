@@ -46,6 +46,16 @@ EXPECTED_ANNOTATION_KEYS_BY_TASK = {
 }
 
 
+def _assert_bbox_inside(bbox, *, width: int, height: int) -> None:
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    assert 0.0 <= x0 <= float(width)
+    assert 0.0 <= y0 <= float(height)
+    assert 0.0 <= x1 <= float(width)
+    assert 0.0 <= y1 <= float(height)
+    assert x0 <= x1
+    assert y0 <= y1
+
+
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
 def test_curvilinear_tasks_emit_public_contract(task_cls) -> None:
     task = task_cls()
@@ -112,6 +122,46 @@ def test_curvilinear_annotation_stays_inside_canvas(task_cls) -> None:
         for x, y in out.annotation_gt.value.values():
             assert 0.0 <= x <= float(width)
             assert 0.0 <= y <= float(height)
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_curvilinear_tasks_support_forced_scene_rotation(task_cls) -> None:
+    task = task_cls()
+    base_params = {
+        "scene_rotation_degrees": 35,
+        "width_units": 10,
+        "height_units": 12,
+        "radius_units": 3,
+        "theta_degrees": 80,
+    }
+    for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
+        out = task.generate(
+            54051 + index,
+            params={**base_params, "query_id": query_id},
+            max_attempts=20,
+        )
+        width, height = out.image.size
+        rotation = out.trace_payload["render_spec"]["single_object_scene_rotation"]
+
+        assert rotation["enabled"] is True
+        assert rotation["applied"] is True
+        assert rotation["angle_degrees"] == pytest.approx(35.0)
+        assert rotation["applied_before_annotation_projection"] is True
+        assert set(out.annotation_gt.value) == EXPECTED_ANNOTATION_KEYS_BY_TASK[task_cls]
+        for x, y in out.annotation_gt.value.values():
+            assert 0.0 <= x <= float(width)
+            assert 0.0 <= y <= float(height)
+
+        render_map = out.trace_payload["render_map"]
+        for bbox_key in ("target_bbox", "curved_component_bbox", "sector_bbox", "center_marker_bbox"):
+            if bbox_key in render_map:
+                _assert_bbox_inside(render_map[bbox_key], width=width, height=height)
+        for bbox_list_key in ("support_bboxes",):
+            for bbox in render_map.get(bbox_list_key, []):
+                _assert_bbox_inside(bbox, width=width, height=height)
+        for bbox_map_key in ("point_label_bboxes", "visual_notation_bboxes"):
+            for bbox in render_map.get(bbox_map_key, {}).values():
+                _assert_bbox_inside(bbox, width=width, height=height)
 
 
 def test_curvilinear_tasks_reject_unknown_query_id() -> None:

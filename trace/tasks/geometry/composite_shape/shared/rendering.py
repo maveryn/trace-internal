@@ -230,6 +230,55 @@ def _draw_polygon(
     return bbox_from_points(points, width=ctx.width, height=ctx.height, pad=line_width + 2)
 
 
+def _arc_points(
+    center: Point,
+    radius: float,
+    *,
+    start_degrees: float,
+    end_degrees: float,
+    steps: int | None = None,
+) -> tuple[Point, ...]:
+    """Sample an arc in PIL/screen coordinates so it can be transformed as geometry."""
+
+    span = float(end_degrees) - float(start_degrees)
+    sample_count = int(steps) if steps is not None else max(12, int(abs(span) / 4.0) + 1)
+    if sample_count <= 1:
+        sample_count = 2
+    points: list[Point] = []
+    for index in range(sample_count):
+        t = float(index) / float(sample_count - 1)
+        angle = math.radians(float(start_degrees) + (span * t))
+        points.append(
+            (
+                float(center[0]) + float(radius) * math.cos(angle),
+                float(center[1]) + float(radius) * math.sin(angle),
+            )
+        )
+    return tuple(points)
+
+
+def _draw_polyline(
+    ctx: CompositeRenderContext,
+    points: Sequence[Point],
+    *,
+    fill: Color | None = None,
+    width: int | None = None,
+) -> BBox:
+    line_width = int(width if width is not None else ctx.line_width)
+    line_fill = fill if fill is not None else ctx.line_color
+    pts = [(float(x), float(y)) for x, y in points]
+    if len(pts) >= 2:
+        ctx.draw.line(pts, fill=line_fill, width=line_width, joint="curve")
+    return bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=line_width + 2)
+
+
+def _fill_polygon(ctx: CompositeRenderContext, points: Sequence[Point], *, fill: Color) -> BBox:
+    pts = [(float(x), float(y)) for x, y in points]
+    if len(pts) >= 3:
+        ctx.draw.polygon(pts, fill=fill)
+    return bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=2.0)
+
+
 def _draw_dimension(
     ctx: CompositeRenderContext,
     start: Point,
@@ -640,76 +689,105 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
     mid_y = (top + bottom) / 2.0
     cap_start_y = mid_y - radius_px
     cap_end_y = mid_y + radius_px
-    arc_box = (right - radius_px, mid_y - radius_px, right + radius_px, mid_y + radius_px)
-    target_right = right if cutout else right + radius_px
-    target_bbox = pad_bbox((left, top, target_right, bottom), 8.0, width=ctx.width, height=ctx.height)
-    ctx.draw.rectangle((left, top, right, bottom), fill=ctx.fill_color)
+    arc_start, arc_end = (90.0, 270.0) if cutout else (-90.0, 90.0)
+    raw_center = (right, mid_y)
+    raw_arc = _arc_points(raw_center, radius_px, start_degrees=arc_start, end_degrees=arc_end)
+    raw_rect = ((left, top), (right, top), (right, bottom), (left, bottom))
+    raw_cap_start = (right, cap_start_y)
+    raw_cap_end = (right, cap_end_y)
+    fit_points = (*raw_rect, *raw_arc)
+    if ctx.scene_transform is not None:
+        ctx.scene_transform.resolve(fit_points)
+    rect = list(_place_points(ctx, raw_rect))
+    p_left_top, p_right_top, p_right_bottom, p_left_bottom = rect
+    center = _place_point(ctx, raw_center)
+    arc = list(_place_points(ctx, raw_arc))
+    cap_start = _place_point(ctx, raw_cap_start)
+    cap_end = _place_point(ctx, raw_cap_end)
+    _fill_polygon(ctx, rect, fill=ctx.fill_color)
     if cutout:
-        ctx.draw.pieslice(arc_box, start=90, end=270, fill=ctx.background_color)
-        arc_start, arc_end = 90, 270
+        _fill_polygon(ctx, [center, *arc], fill=ctx.background_color)
     else:
-        ctx.draw.pieslice(arc_box, start=-90, end=90, fill=ctx.fill_color)
-        arc_start, arc_end = -90, 90
-    ctx.draw.line([(left, top), (right, top)], fill=ctx.line_color, width=ctx.line_width)
-    ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
-    ctx.draw.line([(left, top), (left, bottom)], fill=ctx.line_color, width=ctx.line_width)
+        _fill_polygon(ctx, [center, *arc], fill=ctx.fill_color)
+    _draw_polyline(ctx, [p_left_top, p_right_top])
+    _draw_polyline(ctx, [p_left_bottom, p_right_bottom])
+    _draw_polyline(ctx, [p_left_top, p_left_bottom])
     if cap_start_y > top + 1.0:
-        ctx.draw.line([(right, top), (right, cap_start_y)], fill=ctx.line_color, width=ctx.line_width)
+        _draw_polyline(ctx, [p_right_top, cap_start])
     if cap_end_y < bottom - 1.0:
-        ctx.draw.line([(right, cap_end_y), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
-    ctx.draw.arc(arc_box, start=arc_start, end=arc_end, fill=ctx.line_color, width=ctx.line_width)
-    top_right_reference = (right, cap_start_y) if cap_start_y > top + 1.0 else (right, bottom)
-    bottom_right_reference = (right, cap_end_y) if cap_end_y < bottom - 1.0 else (right, top)
+        _draw_polyline(ctx, [cap_end, p_right_bottom])
+    _draw_polyline(ctx, arc)
+    top_right_reference = cap_start if cap_start_y > top + 1.0 else p_right_bottom
+    bottom_right_reference = cap_end if cap_end_y < bottom - 1.0 else p_right_top
     notation_bboxes = {
-        "top_left_right_angle": _draw_right_angle_notation(ctx, (left, top), (right, top), (left, bottom)),
-        "bottom_left_right_angle": _draw_right_angle_notation(ctx, (left, bottom), (left, top), (right, bottom)),
-        "top_right_right_angle": _draw_right_angle_notation(ctx, (right, top), (left, top), top_right_reference),
-        "bottom_right_right_angle": _draw_right_angle_notation(ctx, (right, bottom), bottom_right_reference, (left, bottom)),
+        "top_left_right_angle": _draw_right_angle_notation(ctx, p_left_top, p_right_top, p_left_bottom),
+        "bottom_left_right_angle": _draw_right_angle_notation(ctx, p_left_bottom, p_left_top, p_right_bottom),
+        "top_right_right_angle": _draw_right_angle_notation(ctx, p_right_top, p_left_top, top_right_reference),
+        "bottom_right_right_angle": _draw_right_angle_notation(ctx, p_right_bottom, bottom_right_reference, p_left_bottom),
     }
     if problem.metric_kind == "perimeter":
         highlight_width = _boundary_width(ctx)
-        ctx.draw.line([(left, top), (right, top)], fill=ctx.accent_color, width=highlight_width)
-        ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
-        ctx.draw.line([(left, top), (left, bottom)], fill=ctx.accent_color, width=highlight_width)
+        _draw_polyline(ctx, [p_left_top, p_right_top], fill=ctx.accent_color, width=highlight_width)
+        _draw_polyline(ctx, [p_left_bottom, p_right_bottom], fill=ctx.accent_color, width=highlight_width)
+        _draw_polyline(ctx, [p_left_top, p_left_bottom], fill=ctx.accent_color, width=highlight_width)
         if cap_start_y > top + 1.0:
-            ctx.draw.line([(right, top), (right, cap_start_y)], fill=ctx.accent_color, width=highlight_width)
+            _draw_polyline(ctx, [p_right_top, cap_start], fill=ctx.accent_color, width=highlight_width)
         if cap_end_y < bottom - 1.0:
-            ctx.draw.line([(right, cap_end_y), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
-        ctx.draw.arc(arc_box, start=arc_start, end=arc_end, fill=ctx.accent_color, width=highlight_width)
+            _draw_polyline(ctx, [cap_end, p_right_bottom], fill=ctx.accent_color, width=highlight_width)
+        _draw_polyline(ctx, arc, fill=ctx.accent_color, width=highlight_width)
     width_dim_y = min(bottom + 34.0, float(ctx.height) - 46.0)
     width_label_offset_y = -22.0 if width_dim_y >= float(ctx.height) - 54.0 else 20.0
     width_label = "?" if problem.metric_kind == "missing_width" else fmt_measure(width_units)
-    width_bbox = _draw_dimension(ctx, (left, width_dim_y), (right, width_dim_y), width_label, label_offset=(0.0, width_label_offset_y))
-    height_bbox = _draw_dimension(ctx, (left - 34.0, top), (left - 34.0, bottom), fmt_measure(height_units), label_offset=(-26.0, 0.0))
-    radius_bbox = _draw_dimension(ctx, (right, mid_y), (right, mid_y - radius_px), f"r={fmt_measure(radius_units)}", label_offset=(44.0 if cutout else 54.0, 0.0))
+    width_bbox = _draw_dimension(
+        ctx,
+        _place_point(ctx, (left, width_dim_y)),
+        _place_point(ctx, (right, width_dim_y)),
+        width_label,
+        label_offset=(0.0, width_label_offset_y),
+    )
+    height_bbox = _draw_dimension(
+        ctx,
+        _place_point(ctx, (left - 34.0, top)),
+        _place_point(ctx, (left - 34.0, bottom)),
+        fmt_measure(height_units),
+        label_offset=(-26.0, 0.0),
+    )
+    radius_bbox = _draw_dimension(
+        ctx,
+        center,
+        _place_point(ctx, (right, mid_y - radius_px)),
+        f"r={fmt_measure(radius_units)}",
+        label_offset=(44.0 if cutout else 54.0, 0.0),
+    )
     support_roles = ["width_label", "height_label", "radius_label"]
     support_bboxes = [width_bbox, height_bbox, radius_bbox]
-    center_marker_bbox = _draw_point_marker(ctx, (right, mid_y))
+    center_marker_bbox = _draw_point_marker(ctx, center)
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
         {
-            "A": (left, top),
-            "B": (right, top),
-            "C": (right, bottom),
-            "D": (left, bottom),
-            "O": (right, mid_y),
+            "A": p_left_top,
+            "B": p_right_top,
+            "C": p_right_bottom,
+            "D": p_left_bottom,
+            "O": center,
         },
-        center=((left + right) / 2.0, (top + bottom) / 2.0),
+        center=_place_point(ctx, ((left + right) / 2.0, (top + bottom) / 2.0)),
         distance=24.0,
     )
-    curved_component_bbox = pad_bbox(
-        (right - radius_px, mid_y - radius_px, right, mid_y + radius_px)
-        if cutout
-        else (right, mid_y - radius_px, right + radius_px, mid_y + radius_px),
-        6.0,
-        width=ctx.width,
-        height=ctx.height,
-    )
+    target_points = [*rect, *arc] if not cutout else rect
+    target_bbox = bbox_from_points(target_points, width=ctx.width, height=ctx.height, pad=8.0)
+    curved_component_bbox = bbox_from_points([center, *arc], width=ctx.width, height=ctx.height, pad=6.0)
     annotation_roles = tuple(annotation_points)
     if problem.metric_kind == "perimeter":
         annotation_roles = tuple(annotation_points)
     elif problem.metric_kind == "missing_width":
-        total_bbox = draw_label(ctx, f"Area={float(values['total_area']):.1f}", ((left + target_right) / 2.0, top - 42.0), small=True)
+        target_center_x = (left + (right if cutout else right + radius_px)) / 2.0
+        total_bbox = draw_label(
+            ctx,
+            f"Area={float(values['total_area']):.1f}",
+            _place_point(ctx, (target_center_x, top - 42.0)),
+            small=True,
+        )
         support_bboxes.append(total_bbox)
         support_roles.append("total_area_label")
     return RenderedCompositeShape(
@@ -767,53 +845,76 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
     top = max(112.0, (float(ctx.height) - rect_h) / 2.0)
     right = left + rect_w
     bottom = top + rect_h
-    center = (right, top)
-    arc_box = (right - radius_px, top - radius_px, right + radius_px, top + radius_px)
-    target_bbox = pad_bbox((left, top, right, bottom), 8.0, width=ctx.width, height=ctx.height)
-    ctx.draw.rectangle((left, top, right, bottom), fill=ctx.secondary_fill_color)
-    ctx.draw.pieslice(arc_box, start=90, end=180, fill=ctx.background_color)
-    ctx.draw.line([(left, top), (left, bottom)], fill=ctx.line_color, width=ctx.line_width)
-    ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
-    ctx.draw.line([(right, top + radius_px), (right, bottom)], fill=ctx.line_color, width=ctx.line_width)
-    ctx.draw.line([(right - radius_px, top), (left, top)], fill=ctx.line_color, width=ctx.line_width)
-    ctx.draw.arc(arc_box, start=90, end=180, fill=ctx.line_color, width=ctx.line_width)
+    raw_center = (right, top)
+    raw_arc = _arc_points(raw_center, radius_px, start_degrees=90.0, end_degrees=180.0)
+    raw_a = (left, top)
+    raw_b = raw_center
+    raw_c = (right, bottom)
+    raw_d = (left, bottom)
+    raw_e = (right - radius_px, top)
+    raw_f = (right, top + radius_px)
+    fit_points = (raw_a, raw_b, raw_c, raw_d, *raw_arc)
+    if ctx.scene_transform is not None:
+        ctx.scene_transform.resolve(fit_points)
+    a, b, c, d, e, f = _place_points(ctx, (raw_a, raw_b, raw_c, raw_d, raw_e, raw_f))
+    arc = list(_place_points(ctx, raw_arc))
+    _fill_polygon(ctx, [a, b, c, d], fill=ctx.secondary_fill_color)
+    _fill_polygon(ctx, [b, *arc], fill=ctx.background_color)
+    _draw_polyline(ctx, [a, d])
+    _draw_polyline(ctx, [d, c])
+    _draw_polyline(ctx, [f, c])
+    _draw_polyline(ctx, [e, a])
+    _draw_polyline(ctx, arc)
     if problem.metric_kind == "perimeter":
         highlight_width = _boundary_width(ctx)
-        ctx.draw.line([(left, top), (right - radius_px, top)], fill=ctx.accent_color, width=highlight_width)
-        ctx.draw.line([(left, top), (left, bottom)], fill=ctx.accent_color, width=highlight_width)
-        ctx.draw.line([(left, bottom), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
-        ctx.draw.line([(right, top + radius_px), (right, bottom)], fill=ctx.accent_color, width=highlight_width)
-        ctx.draw.arc(arc_box, start=90, end=180, fill=ctx.accent_color, width=highlight_width)
+        _draw_polyline(ctx, [a, e], fill=ctx.accent_color, width=highlight_width)
+        _draw_polyline(ctx, [a, d], fill=ctx.accent_color, width=highlight_width)
+        _draw_polyline(ctx, [d, c], fill=ctx.accent_color, width=highlight_width)
+        _draw_polyline(ctx, [f, c], fill=ctx.accent_color, width=highlight_width)
+        _draw_polyline(ctx, arc, fill=ctx.accent_color, width=highlight_width)
     notation_bboxes = {
-        "top_left_right_angle": _draw_right_angle_notation(ctx, (left, top), (right - radius_px, top), (left, bottom)),
-        "bottom_left_right_angle": _draw_right_angle_notation(ctx, (left, bottom), (left, top), (right, bottom)),
-        "bottom_right_right_angle": _draw_right_angle_notation(ctx, (right, bottom), (right, top + radius_px), (left, bottom)),
+        "top_left_right_angle": _draw_right_angle_notation(ctx, a, e, d),
+        "bottom_left_right_angle": _draw_right_angle_notation(ctx, d, a, c),
+        "bottom_right_right_angle": _draw_right_angle_notation(ctx, c, f, d),
         "quarter_sector_right_angle": _draw_right_angle_notation(
             ctx,
-            center,
-            (right - radius_px, top),
-            (right, top + radius_px),
+            b,
+            e,
+            f,
         ),
     }
     width_dim_y = min(bottom + 34.0, float(ctx.height) - 46.0)
-    width_bbox = _draw_dimension(ctx, (left, width_dim_y), (right, width_dim_y), fmt_measure(width_units), label_offset=(0.0, 20.0))
-    height_bbox = _draw_dimension(ctx, (left - 34.0, top), (left - 34.0, bottom), fmt_measure(height_units), label_offset=(-26.0, 0.0))
-    radius_bbox = _draw_dimension(ctx, center, (right - radius_px, top), f"r={fmt_measure(radius_units)}", label_offset=(0.0, -26.0))
-    center_marker_bbox = _draw_point_marker(ctx, center)
+    width_bbox = _draw_dimension(
+        ctx,
+        _place_point(ctx, (left, width_dim_y)),
+        _place_point(ctx, (right, width_dim_y)),
+        fmt_measure(width_units),
+        label_offset=(0.0, 20.0),
+    )
+    height_bbox = _draw_dimension(
+        ctx,
+        _place_point(ctx, (left - 34.0, top)),
+        _place_point(ctx, (left - 34.0, bottom)),
+        fmt_measure(height_units),
+        label_offset=(-26.0, 0.0),
+    )
+    radius_bbox = _draw_dimension(ctx, b, e, f"r={fmt_measure(radius_units)}", label_offset=(0.0, -26.0))
+    center_marker_bbox = _draw_point_marker(ctx, b)
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
         {
-            "A": (left, top),
-            "B": center,
-            "C": (right, bottom),
-            "D": (left, bottom),
-            "E": (right - radius_px, top),
-            "F": (right, top + radius_px),
+            "A": a,
+            "B": b,
+            "C": c,
+            "D": d,
+            "E": e,
+            "F": f,
         },
-        center=((left + right) / 2.0, (top + bottom) / 2.0),
+        center=_place_point(ctx, ((left + right) / 2.0, (top + bottom) / 2.0)),
         distance=24.0,
     )
-    curved_component_bbox = pad_bbox((right - radius_px, top, right, top + radius_px), 6.0, width=ctx.width, height=ctx.height)
+    target_bbox = bbox_from_points((a, b, c, d), width=ctx.width, height=ctx.height, pad=8.0)
+    curved_component_bbox = bbox_from_points((b, *arc), width=ctx.width, height=ctx.height, pad=6.0)
     return RenderedCompositeShape(
         image=ctx.image,
         answer_value=problem.answer_value,
@@ -852,20 +953,30 @@ def _render_sector(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
     theta = int(values["theta_degrees"])
     radius_units = int(values["radius_units"])
     radius_px = 180.0
-    center = (310.0, 310.0)
+    raw_center = (310.0, 310.0)
     start_deg = -135.0
     end_deg = start_deg + float(theta)
-    arc_box = (center[0] - radius_px, center[1] - radius_px, center[0] + radius_px, center[1] + radius_px)
-    ctx.draw.pieslice(arc_box, start=start_deg, end=end_deg, fill=ctx.fill_color, outline=ctx.line_color, width=ctx.line_width)
     start_rad = math.radians(start_deg)
     end_rad = math.radians(end_deg)
-    p0 = (center[0] + radius_px * math.cos(start_rad), center[1] + radius_px * math.sin(start_rad))
-    p1 = (center[0] + radius_px * math.cos(end_rad), center[1] + radius_px * math.sin(end_rad))
-    ctx.draw.line([center, p0], fill=ctx.line_color, width=ctx.line_width)
-    ctx.draw.line([center, p1], fill=ctx.line_color, width=ctx.line_width)
+    raw_p0 = (raw_center[0] + radius_px * math.cos(start_rad), raw_center[1] + radius_px * math.sin(start_rad))
+    raw_p1 = (raw_center[0] + radius_px * math.cos(end_rad), raw_center[1] + radius_px * math.sin(end_rad))
+    raw_arc = _arc_points(raw_center, radius_px, start_degrees=start_deg, end_degrees=end_deg)
+    if ctx.scene_transform is not None:
+        ctx.scene_transform.resolve((raw_center, raw_p0, raw_p1, *raw_arc))
+    center, p0, p1 = _place_points(ctx, (raw_center, raw_p0, raw_p1))
+    arc = list(_place_points(ctx, raw_arc))
+    _fill_polygon(ctx, [center, *arc], fill=ctx.fill_color)
+    _draw_polyline(ctx, [center, p0])
+    _draw_polyline(ctx, arc)
+    _draw_polyline(ctx, [center, p1])
     center_marker_bbox = _draw_point_marker(ctx, center)
     mid_rad = math.radians((start_deg + end_deg) / 2.0)
-    target_bbox = draw_label(ctx, "?", (center[0] + 54.0 * math.cos(mid_rad), center[1] + 54.0 * math.sin(mid_rad)), small=False)
+    target_bbox = draw_label(
+        ctx,
+        "?",
+        _place_point(ctx, (raw_center[0] + 54.0 * math.cos(mid_rad), raw_center[1] + 54.0 * math.sin(mid_rad))),
+        small=False,
+    )
     radius_bbox = _draw_dimension(ctx, center, p0, f"r={fmt_measure(radius_units)}", label_offset=(-18.0, 22.0))
     if problem.metric_kind == "sector_from_arc":
         measure_text = f"arc={float(values['arc_length']):.1f}"
@@ -874,7 +985,7 @@ def _render_sector(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
         measure_text = f"Area={float(values['sector_area']):.1f}"
         measure_role = "sector_area_label"
     measure_bbox = draw_label(ctx, measure_text, (560.0, 210.0), small=True)
-    sector_bbox = pad_bbox(arc_box, 8.0, width=ctx.width, height=ctx.height)
+    sector_bbox = bbox_from_points((center, *arc), width=ctx.width, height=ctx.height, pad=8.0)
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
         {"O": center, "A": p0, "B": p1},

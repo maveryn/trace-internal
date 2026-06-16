@@ -1,36 +1,34 @@
-"""Cylinder wrapped-surface path length task."""
+"""Compute a cylinder side path length from its unwrapped rectangular net."""
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any, Dict, Mapping, Tuple
 
-from ....core.scene_config import get_scene_defaults
-from ....core.types import TypedValue
-from ....core.visual.noise import apply_post_image_noise
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
+from trace.core.scene_config import get_scene_defaults
+from trace.core.types import TypedValue
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.base import TaskOutput
+from trace.tasks.geometry.shared.pythagorean import IntegerRightTriangle, integer_right_triangles
+from trace.tasks.registry import register_task
+from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from trace.tasks.shared.fixed_query import select_task_query_id
+from trace.tasks.shared.output_metadata import default_task_versions
 
-from .shared.runtime import (
-    POST_IMAGE_NOISE_DEFAULTS,
-    SCENE_ID,
-    _ResolvedProblem,
-    _RenderedCylinderScene,
-    _make_context,
-    _projected_annotation,
-    _resolve_problem,
-    _render_surface_path_scene,
-    round1,
-)
+from ._lifecycle import build_trace_payload, render_with_attempts
+from .shared.defaults import DOMAIN, POST_IMAGE_NOISE_DEFAULTS, SCENE_ID
+from .shared.prompts import resolve_cylinder_wrap_prompt
+from .shared.rendering import render_surface_path_scene
+from .shared.state import SurfacePathProblem
 
-DOMAIN = "geometry"
 TASK_ID = "task_geometry__cylinder_wrap__surface_path_length_value"
-QUERY_ID = "surface_path_length_value"
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("single",)
 SCENE_VARIANT = "surface_net_path"
+FORMULA_SCHEMA = "surface_path_pythagorean_length"
 PROMPT_FIELD_PREFIX = "surface_path"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
+
 _SCENE_DEFAULTS = get_scene_defaults(DOMAIN, SCENE_ID)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
     _SCENE_DEFAULTS,
@@ -38,131 +36,101 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rende
 )
 
 
+@dataclass(frozen=True)
+class _SurfacePathRequest:
+    """Task-owned path-length sampling and answer binding."""
+
+    selected_query: str
+    query_probabilities: Mapping[str, float]
+    params: Mapping[str, Any]
+    problem: SurfacePathProblem
+    answer_support: Tuple[int, ...]
+    path_length_probabilities: Mapping[str, float]
+    case_key: str
 
 
-def _prompt_artifacts(*, rendered: _RenderedCylinderScene, instance_seed: int) -> tuple[Dict[str, Any], Any]:
-    prompt_defaults = required_group_defaults(
-        _PROMPT_DEFAULTS,
-        (
-            "bundle_id",
-            "scene_key",
-            "task_key",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            f"{PROMPT_FIELD_PREFIX}_object_description",
-            f"{PROMPT_FIELD_PREFIX}_annotation_hint",
-            f"{PROMPT_FIELD_PREFIX}_answer_hint",
-            f"{PROMPT_FIELD_PREFIX}_json_example",
-            f"{PROMPT_FIELD_PREFIX}_json_example_answer_only",
-        ),
-        context=f"prompt defaults for {TASK_ID}",
-    )
-    prompt_selection = render_scene_prompt_variants(
-        domain=DOMAIN,
-        scene_id=SCENE_ID,
-        bundle_id=str(prompt_defaults["bundle_id"]),
-        scene_key=str(prompt_defaults["scene_key"]),
-        task_key=str(prompt_defaults["task_key"]),
-        query_key=None,
-        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(prompt_defaults[f"{PROMPT_FIELD_PREFIX}_object_description"]),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults[f"{PROMPT_FIELD_PREFIX}_annotation_hint"]),
-            "answer_hint": str(prompt_defaults[f"{PROMPT_FIELD_PREFIX}_answer_hint"]),
-            "json_example": str(prompt_defaults[f"{PROMPT_FIELD_PREFIX}_json_example"]),
-            "json_example_answer_only": str(prompt_defaults[f"{PROMPT_FIELD_PREFIX}_json_example_answer_only"]),
-        },
-        instance_seed=int(instance_seed),
-    )
-    return dict(prompt_defaults), build_prompt_trace_artifacts(prompt_selection)
+@lru_cache(maxsize=1)
+def _cases_by_path_length() -> Mapping[int, Tuple[IntegerRightTriangle, ...]]:
+    """Group readable integer right-triangle cases by path length."""
 
-
-def _answer_value_and_gt(rendered: _RenderedCylinderScene) -> tuple[int | float | str, TypedValue]:
-    if rendered.answer_type == "number":
-        rounded_answer = float(round1(float(rendered.answer)))
-        answer_value: int | float | str = rounded_answer
-        if abs(rounded_answer - round(rounded_answer)) <= 1e-9:
-            answer_value = int(round(rounded_answer))
-        return answer_value, TypedValue(type="number", value=answer_value)
-    answer_value = str(rendered.answer)
-    return answer_value, TypedValue(type="option_letter", value=str(answer_value))
-
-
-def _trace_payload(
-    *,
-    problem: _ResolvedProblem,
-    rendered: _RenderedCylinderScene,
-    prompt_defaults: Mapping[str, Any],
-    prompt_artifacts: Any,
-    render_meta: Mapping[str, Any],
-    noise_meta: Mapping[str, Any],
-    image_size: tuple[int, int],
-    answer_value: int | float | str,
-) -> Dict[str, Any]:
-    query_params: Dict[str, Any] = {
-        "scene_id": SCENE_ID,
-        "scene_variant": SCENE_VARIANT,
-        "query_id": QUERY_ID,
-        "query_id_probabilities": {QUERY_ID: 1.0},
-        **dict(rendered.witness),
-    }
-    if QUERY_ID == "wrapped_mark_position_label":
-        query_params["target_index_probabilities"] = dict(problem.answer_probabilities)
-        query_params["option_count_probabilities"] = dict(problem.option_count_probabilities)
-    else:
-        query_params["target_support_probabilities"] = dict(problem.answer_probabilities)
+    grouped: dict[int, list[IntegerRightTriangle]] = {}
+    for triangle in integer_right_triangles(
+        min_leg=5,
+        max_leg=110,
+        max_hypotenuse=160,
+        include_swapped=True,
+    ):
+        leg_ratio = float(triangle.leg_b) / float(triangle.leg_a)
+        if not (0.4 <= leg_ratio <= 2.5):
+            continue
+        grouped.setdefault(int(triangle.hypotenuse), []).append(triangle)
+    if len(grouped) < 50:
+        raise RuntimeError("cylinder surface-path support unexpectedly small")
     return {
-        "scene_ir": {
-            "scene_kind": "geometry_cylinder_wrap",
-            "scene_id": SCENE_ID,
-            "entities": [dict(entity) for entity in rendered.scene_entities],
-            "relations": {
-                "scene_variant": SCENE_VARIANT,
-                "query_id": QUERY_ID,
-                "answer_value": answer_value,
-                "annotation_roles": list(rendered.annotation_roles),
-            },
-        },
-        "query_spec": {
-            "scene_id": SCENE_ID,
-            "query_id": QUERY_ID,
-            "template_id": str(prompt_defaults["bundle_id"]),
-            "prompt_variant": dict(prompt_artifacts.prompt_variant),
-            "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-            "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-            "params": dict(query_params),
-        },
-        "render_spec": {
-            "canvas_size": [int(image_size[0]), int(image_size[1])],
-            "coord_space": "pixel",
-            "post_image_noise": dict(noise_meta),
-            **dict(render_meta),
-        },
-        "render_map": dict(rendered.render_map),
-        "execution_trace": {
-            "scene_id": SCENE_ID,
-            "scene_variant": SCENE_VARIANT,
-            "query_id": QUERY_ID,
-            "answer_type": str(rendered.answer_type),
-            "answer_value": answer_value,
-            "annotation_roles": list(rendered.annotation_roles),
-            "reasoning_steps": 2,
-            **dict(rendered.witness),
-        },
-        "witness_symbolic": {
-            "type": "cylinder_wrap_measurement",
-            "scene_id": SCENE_ID,
-            "scene_variant": SCENE_VARIANT,
-            "query_id": QUERY_ID,
-            "source_witness_type": str(rendered.annotation_type),
-            "original_annotation_value": list(rendered.annotation_roles),
-            "answer_value": answer_value,
-            **dict(rendered.witness),
-        },
-        "projected_annotation": _projected_annotation(str(rendered.annotation_type), dict(rendered.annotation_value)),
+        int(path_length): tuple(cases)
+        for path_length, cases in sorted(grouped.items(), key=lambda item: int(item[0]))
     }
+
+
+def _answer_support() -> Tuple[int, ...]:
+    return tuple(int(value) for value in _cases_by_path_length().keys())
+
+
+def _resolve_public_branch(*, instance_seed: int, params: Mapping[str, Any]) -> tuple[str, Mapping[str, float], Mapping[str, Any]]:
+    selected_query, query_probabilities, task_params = select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=SUPPORTED_QUERY_IDS,
+        default_query_id="single",
+        task_id=TASK_ID,
+    )
+    return str(selected_query), dict(query_probabilities), dict(task_params)
+
+
+def _resolve_surface_path_request(*, instance_seed: int, params: Mapping[str, Any]) -> _SurfacePathRequest:
+    """Choose the answer value first, then bind one compatible net."""
+
+    selected_query, query_probabilities, task_params = _resolve_public_branch(
+        instance_seed=int(instance_seed),
+        params=params,
+    )
+    cases_by_answer = _cases_by_path_length()
+    support = _answer_support()
+    explicit = task_params.get("target_path_length")
+    if explicit is not None:
+        path_length = int(explicit)
+        if path_length not in cases_by_answer:
+            raise ValueError(f"target_path_length={path_length} is not supported by {TASK_ID}")
+        probabilities = uniform_probability_map(support, selected=path_length)
+    else:
+        support_index = resolve_selection_index(
+            params=task_params,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.path_length",
+        )
+        path_length = int(support[int(support_index) % len(support)])
+        probabilities = uniform_probability_map(support)
+    compatible_cases = tuple(cases_by_answer[int(path_length)])
+    case_index = resolve_selection_index(
+        params=task_params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.case.{path_length}",
+    )
+    triangle = compatible_cases[int(case_index) % len(compatible_cases)]
+    problem = SurfacePathProblem(
+        circumference=int(triangle.leg_a),
+        height=int(triangle.leg_b),
+        path_length=int(triangle.hypotenuse),
+    )
+    return _SurfacePathRequest(
+        selected_query=selected_query,
+        query_probabilities=query_probabilities,
+        params=task_params,
+        problem=problem,
+        answer_support=support,
+        path_length_probabilities=probabilities,
+        case_key=str(triangle.key),
+    )
 
 
 @register_task
@@ -171,48 +139,39 @@ class GeometryCylinderWrapSurfacePathLengthValueTask:
 
     task_id = TASK_ID
     domain = DOMAIN
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
     reasoning_kind = "cylinder_wrap"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        problem = _resolve_problem(
-            runtime_key=TASK_ID,
-            query_id=QUERY_ID,
+        """Generate one path-length instance; this file owns output binding."""
+
+        request = _resolve_surface_path_request(
             instance_seed=int(instance_seed),
             params=params,
-            gen_defaults=_GEN_DEFAULTS,
         )
-        rendered: _RenderedCylinderScene | None = None
-        render_meta: Dict[str, Any] | None = None
-        last_error: Exception | None = None
-        for attempt in range(max(1, int(max_attempts))):
-            try:
-                ctx, render_meta_attempt = _make_context(
-                    instance_seed=int(instance_seed) + int(attempt),
-                    params=params,
-                    render_defaults=_RENDER_DEFAULTS,
-                    runtime_key=TASK_ID,
-                )
-                rendered = _render_surface_path_scene(ctx, problem)
-                render_meta = dict(render_meta_attempt)
-                break
-            except Exception as exc:
-                last_error = exc
-                continue
-        if rendered is None or render_meta is None:
-            raise RuntimeError(f"failed to generate {TASK_ID}") from last_error
+        rendered, render_meta = render_with_attempts(
+            instance_seed=int(instance_seed),
+            params=request.params,
+            render_defaults=_RENDER_DEFAULTS,
+            max_attempts=int(max_attempts),
+            problem=request.problem,
+            render_scene=render_surface_path_scene,
+        )
 
         image, noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
-            params=params,
+            params=request.params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        prompt_defaults, prompt_artifacts = _prompt_artifacts(rendered=rendered, instance_seed=int(instance_seed))
-        answer_value, answer_gt = _answer_value_and_gt(rendered)
+        prompt_defaults, prompt_artifacts = resolve_cylinder_wrap_prompt(
+            prompt_defaults=_PROMPT_DEFAULTS,
+            field_prefix=PROMPT_FIELD_PREFIX,
+            instance_seed=int(instance_seed),
+        )
         annotation_value = dict(rendered.annotation_value)
+        answer_gt = TypedValue(type="integer", value=int(rendered.answer))
         annotation_gt = TypedValue(type=str(rendered.annotation_type), value=dict(annotation_value))
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -220,19 +179,28 @@ class GeometryCylinderWrapSurfacePathLengthValueTask:
             annotation_gt=annotation_gt,
             image=image,
             image_id="img0",
-            trace_payload=_trace_payload(
-                problem=problem,
+            trace_payload=build_trace_payload(
+                scene_variant=SCENE_VARIANT,
+                formula_schema=FORMULA_SCHEMA,
+                selected_query=str(request.selected_query),
+                query_probabilities=dict(request.query_probabilities),
                 rendered=rendered,
                 prompt_defaults=prompt_defaults,
                 prompt_artifacts=prompt_artifacts,
                 render_meta=dict(render_meta),
                 noise_meta=dict(noise_meta),
                 image_size=(int(image.size[0]), int(image.size[1])),
-                answer_value=answer_value,
+                annotation_value=annotation_value,
+                answer_value=int(rendered.answer),
+                query_params={
+                    "answer_support": [int(value) for value in request.answer_support],
+                    "path_length_probabilities": dict(request.path_length_probabilities),
+                    "case_key": str(request.case_key),
+                },
             ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
-            query_id=QUERY_ID,
+            query_id=str(request.selected_query),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

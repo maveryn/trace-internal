@@ -3,12 +3,12 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `cylinder_wrap`
-5. Query id: `surface_path_length_value`
-6. Answer schema: `decimal_value_1dp`
+5. Query id: `single`
+6. Answer schema: `integer`
 7. Annotation schema: `keyed_bbox_map`
 
 ## Program Contract
-- `solve_formula(visible_cylinder_wrap_measurements, unknown_role=length_measure, formula_schema=surface_path_length_value); scene=cylinder_wrap; scope=surface_path_length_value`
+- `solve_formula(visible_cylinder_wrap_measurements, unknown_role=marked_surface_path_length, formula_schema=surface_path_pythagorean_length); scene=cylinder_wrap; scope=surface_path_length_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `cylinder_wrap`.
@@ -16,6 +16,8 @@
 
 ## Annotation
 Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+
+Scalar annotation review: this task intentionally stays `keyed_bbox_map` because it binds three non-homogeneous visual roles: the marked path, circumference dimension, and height dimension.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

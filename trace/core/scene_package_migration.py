@@ -33,6 +33,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
             "coordinate_panels",
             "coordinate_plane",
             "cuboid_views",
+            "cylinder_wrap",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
@@ -60,6 +61,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
             "coordinate_panels",
             "coordinate_plane",
             "cuboid_views",
+            "cylinder_wrap",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),

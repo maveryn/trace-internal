@@ -17,12 +17,12 @@ TASK_CLASSES = (
 )
 
 QUERY_ID_BY_TASK = {
-    GeometryCylinderWrapSurfacePathLengthValueTask: "surface_path_length_value",
-    GeometryCylinderWrapWrappedMarkPositionLabelTask: "wrapped_mark_position_label",
+    GeometryCylinderWrapSurfacePathLengthValueTask: "single",
+    GeometryCylinderWrapWrappedMarkPositionLabelTask: "single",
 }
 
 ANSWER_TYPE_BY_TASK = {
-    GeometryCylinderWrapSurfacePathLengthValueTask: "number",
+    GeometryCylinderWrapSurfacePathLengthValueTask: "integer",
     GeometryCylinderWrapWrappedMarkPositionLabelTask: "option_letter",
 }
 

@@ -1,225 +1,35 @@
-"""Cylinder wrapping and unwrapped-surface measurement tasks."""
+"""Identity-free rendering primitives for cylinder-wrap diagrams."""
 
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Dict, Mapping, Sequence
 
 from PIL import Image, ImageDraw
 
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
-
-SCENE_ID = "cylinder_wrap"
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
-from trace.tasks.shared.labeling import LABEL_POOL_SAFE_UPPER, assign_random_shuffled_labels
-from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.geometry.shared.diagram_style import (
     geometry_diagram_style_metadata,
     prepare_geometry_diagram_style_and_background,
 )
-from trace.tasks.shared.fixed_query import geometry_selected_probability_map as _probability_map
-from trace.tasks.geometry.shared.measurement_rendering import bbox_from_points, bbox_to_list, pad_bbox, round1
-from trace.tasks.geometry.shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
-from trace.tasks.geometry.shared.option_count import resolve_geometry_option_count
+from trace.tasks.geometry.shared.measurement_rendering import bbox_from_points, bbox_to_list, pad_bbox
 
-Point = Tuple[float, float]
-BBox = Tuple[float, float, float, float]
-Color = Tuple[int, int, int]
-
-_PATH_CASES: Tuple[Tuple[int, int, int], ...] = (
-    (6, 8, 10),
-    (5, 12, 13),
-    (9, 12, 15),
-    (8, 15, 17),
-    (12, 16, 20),
-    (7, 24, 25),
-    (10, 24, 26),
-    (20, 21, 29),
-    (16, 30, 34),
-    (12, 35, 37),
-    (15, 36, 39),
-    (9, 40, 41),
-)
-_WRAP_STYLE_IDS: Tuple[str, ...] = ("split_net", "drafting_strip", "rim_projection", "workshop_sheet")
-_MARKER_STYLES: Tuple[str, ...] = ("ring", "target", "diamond", "square")
+from .defaults import MARKER_STYLE_IDS, SCENE_ID, WRAP_STYLE_IDS
+from .state import BBox, Color, Point, RenderContext, RenderedCylinderWrapScene, SurfacePathProblem, WrappedMarkProblem
 
 
-@dataclass(frozen=True)
-class _ResolvedProblem:
-    """Sampled cylinder-wrap problem parameters."""
-
-    query_id: str
-    answer: int | str
-    answer_type: str
-    circumference: int | None
-    height: int | None
-    path_length: int | None
-    option_count: int | None
-    target_index: int | None
-    option_labels: Tuple[str, ...]
-    answer_probabilities: Dict[str, float]
-    option_count_probabilities: Dict[str, float]
-
-
-@dataclass
-class _RenderContext:
-    """Rendering context shared by cylinder-wrap scene drawers."""
-
-    image: Image.Image
-    draw: ImageDraw.ImageDraw
-    width: int
-    height: int
-    line_color: Color
-    secondary_color: Color
-    guide_color: Color
-    label_color: Color
-    label_stroke_color: Color
-    panel_fill: Color
-    panel_alt_fill: Color
-    panel_border: Color
-    accent_color: Color
-    secondary_accent_color: Color
-    line_width: int
-    font: Any
-    small_font: Any
-    tiny_font: Any
-    font_family: str
-    wrap_style_id: str
-    marker_style: str
-
-
-@dataclass(frozen=True)
-class _RenderedCylinderScene:
-    """Rendered cylinder-wrap scene plus verifier payload fragments."""
-
-    image: Image.Image
-    answer: int | str
-    answer_type: str
-    annotation_type: str
-    annotation_value: Any
-    annotation_roles: Tuple[str, ...]
-    scene_entities: Tuple[Dict[str, Any], ...]
-    render_map: Dict[str, Any]
-    witness: Dict[str, Any]
-
-
-def _resolve_path_case(
-    *,
-    task_id: str,
-    params: Mapping[str, Any],
-    instance_seed: int,
-) -> tuple[int, int, int, Dict[str, float]]:
-    explicit = params.get("target_path_length")
-    if explicit is not None:
-        selected_length = int(explicit)
-        for circumference, height, path_length in _PATH_CASES:
-            if int(path_length) == selected_length:
-                return (
-                    int(circumference),
-                    int(height),
-                    int(path_length),
-                    _probability_map([case[2] for case in _PATH_CASES], selected_length),
-                )
-        raise ValueError(f"target_path_length={selected_length} is not supported by {task_id}")
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{task_id}.path_case",
-    )
-    circumference, height, path_length = _PATH_CASES[int(index) % len(_PATH_CASES)]
-    return (
-        int(circumference),
-        int(height),
-        int(path_length),
-        _probability_map([case[2] for case in _PATH_CASES]),
-    )
-
-
-def _resolve_problem(
-    *,
-    runtime_key: str,
-    query_id: str,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    gen_defaults: Mapping[str, Any],
-) -> _ResolvedProblem:
-    """Resolve one cylinder-wrap problem."""
-
-    if query_id == "surface_path_length_value":
-        circumference, height, path_length, probabilities = _resolve_path_case(
-            task_id=runtime_key,
-            params=params,
-            instance_seed=int(instance_seed),
-        )
-        return _ResolvedProblem(
-            query_id=query_id,
-            answer=int(path_length),
-            answer_type="number",
-            circumference=int(circumference),
-            height=int(height),
-            path_length=int(path_length),
-            option_count=None,
-            target_index=None,
-            option_labels=(),
-            answer_probabilities=probabilities,
-            option_count_probabilities={},
-        )
-    if query_id == "wrapped_mark_position_label":
-        option_count, option_count_probabilities = resolve_geometry_option_count(
-            params=params,
-            gen_defaults=gen_defaults,
-            field_name="option_count",
-            supported_counts=(4, 6),
-            task_id=runtime_key,
-            instance_seed=int(instance_seed),
-        )
-        if option_count < 4:
-            raise ValueError("wrapped mark task requires at least four candidate positions")
-        if option_count > len(LABEL_POOL_SAFE_UPPER):
-            raise ValueError("option_count exceeds safe label pool")
-        explicit = params.get("target_index")
-        if explicit is not None:
-            target_index = int(explicit)
-            if target_index < 0 or target_index >= option_count:
-                raise ValueError("target_index is outside option count")
-        else:
-            index = resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=f"{runtime_key}.target_index",
-            )
-            target_index = int(index) % int(option_count)
-        label_rng = spawn_rng(int(instance_seed), f"{runtime_key}.labels")
-        labels = assign_random_shuffled_labels(label_rng, object_count=option_count)
-        answer_label = str(labels[target_index])
-        return _ResolvedProblem(
-            query_id=query_id,
-            answer=answer_label,
-            answer_type="option_letter",
-            circumference=None,
-            height=None,
-            path_length=None,
-            option_count=int(option_count),
-            target_index=int(target_index),
-            option_labels=tuple(labels),
-            answer_probabilities=_probability_map(tuple(range(option_count))),
-            option_count_probabilities=dict(option_count_probabilities),
-        )
-    raise ValueError(f"unsupported cylinder-wrap query_id: {query_id}")
-
-
-def _make_context(
+def make_render_context(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
-    runtime_key: str,
-) -> tuple[_RenderContext, Dict[str, Any]]:
-    """Create one styled rendering context."""
+) -> tuple[RenderContext, Dict[str, Any]]:
+    """Create one deterministic scene drawing context."""
 
     width = int(params.get("canvas_width", group_default(render_defaults, "canvas_width", 820)))
     height = int(params.get("canvas_height", group_default(render_defaults, "canvas_height", 580)))
@@ -237,7 +47,7 @@ def _make_context(
     font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
-        namespace=f"geometry.{SCENE_ID}.{SCENE_ID}.font_family",
+        namespace=f"geometry.{SCENE_ID}.font_family",
         params=params,
     )
     font_record = get_font_family_record(str(font_family))
@@ -247,15 +57,15 @@ def _make_context(
     style_index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{runtime_key}.wrap_style_id",
+        namespace=f"{SCENE_ID}.wrap_style",
     )
     marker_index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{runtime_key}.marker_style",
+        namespace=f"{SCENE_ID}.marker_style",
     )
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 4)))
-    ctx = _RenderContext(
+    ctx = RenderContext(
         image=image,
         draw=ImageDraw.Draw(image),
         width=width,
@@ -275,8 +85,8 @@ def _make_context(
         small_font=load_font(max(10, small_font_size), bold=True, font_family=font_family),
         tiny_font=load_font(max(8, tiny_font_size), bold=True, font_family=font_family),
         font_family=str(font_family),
-        wrap_style_id=str(_WRAP_STYLE_IDS[int(style_index) % len(_WRAP_STYLE_IDS)]),
-        marker_style=str(_MARKER_STYLES[int(marker_index) % len(_MARKER_STYLES)]),
+        wrap_style_id=str(WRAP_STYLE_IDS[int(style_index) % len(WRAP_STYLE_IDS)]),
+        marker_style_id=str(MARKER_STYLE_IDS[int(marker_index) % len(MARKER_STYLE_IDS)]),
     )
     render_meta = {
         "background_style": dict(background_meta),
@@ -285,18 +95,17 @@ def _make_context(
         "font_asset_version": font_asset_version(),
         "font_family": font_record.to_trace(),
         "wrap_style_id": str(ctx.wrap_style_id),
-        "marker_style": str(ctx.marker_style),
+        "marker_style_id": str(ctx.marker_style_id),
         "line_width": int(ctx.line_width),
         "label_font_size": int(font_size),
         "small_label_font_size": int(small_font_size),
         "tiny_label_font_size": int(tiny_font_size),
-        "task_style_namespace": str(runtime_key),
     }
     return ctx, render_meta
 
 
 def _draw_text(
-    ctx: _RenderContext,
+    ctx: RenderContext,
     text: str,
     center: Point,
     *,
@@ -311,14 +120,17 @@ def _draw_text(
     text_h = float(bbox[3] - bbox[1])
     left = float(center[0]) - (text_w / 2.0)
     top = float(center[1]) - (text_h / 2.0)
-    draw_text_traced(ctx.draw,
+    draw_text_traced(
+        ctx.draw,
         (left, top),
         str(text),
         font=active_font,
         fill=active_fill,
         stroke_width=int(stroke_width),
         stroke_fill=ctx.label_stroke_color,
-     role="readout", required=False,)
+        role="readout",
+        required=False,
+    )
     return pad_bbox((left, top, left + text_w, top + text_h), 3.0, width=ctx.width, height=ctx.height)
 
 
@@ -371,7 +183,7 @@ def _draw_arrow_line(
 
 
 def _draw_arc_arrow(
-    ctx: _RenderContext,
+    ctx: RenderContext,
     center: Point,
     *,
     radius: float,
@@ -384,31 +196,50 @@ def _draw_arc_arrow(
     for step in range(20):
         t = float(step) / 19.0
         angle = math.radians(float(start_angle_degrees) + ((float(end_angle_degrees) - float(start_angle_degrees)) * t))
-        points.append((float(center[0]) + (float(radius) * math.cos(angle)), float(center[1]) - (float(radius) * math.sin(angle))))
+        points.append(
+            (
+                float(center[0]) + (float(radius) * math.cos(angle)),
+                float(center[1]) - (float(radius) * math.sin(angle)),
+            )
+        )
     ctx.draw.line(points, fill=fill, width=max(1, int(width)), joint="curve")
     if len(points) >= 2:
         _draw_arrow_line(ctx.draw, points[-2], points[-1], fill=fill, width=max(1, int(width)), arrow_size=9.0)
 
 
-def _draw_marker(ctx: _RenderContext, center: Point, *, radius: float, color: Color) -> BBox:
+def _draw_marker(ctx: RenderContext, center: Point, *, radius: float, color: Color) -> BBox:
     x, y = float(center[0]), float(center[1])
     r = float(radius)
-    if ctx.marker_style == "diamond":
+    if ctx.marker_style_id == "diamond":
         points = [(x, y - r), (x + r, y), (x, y + r), (x - r, y)]
         ctx.draw.polygon(points, fill=ctx.panel_fill, outline=color)
         ctx.draw.line(points + [points[0]], fill=color, width=max(2, ctx.line_width))
-    elif ctx.marker_style == "square":
-        ctx.draw.rectangle((x - r, y - r, x + r, y + r), fill=ctx.panel_fill, outline=color, width=max(2, ctx.line_width))
+    elif ctx.marker_style_id == "square":
+        ctx.draw.rectangle(
+            (x - r, y - r, x + r, y + r),
+            fill=ctx.panel_fill,
+            outline=color,
+            width=max(2, ctx.line_width),
+        )
     else:
-        ctx.draw.ellipse((x - r, y - r, x + r, y + r), fill=ctx.panel_fill, outline=color, width=max(2, ctx.line_width))
-        if ctx.marker_style == "target":
-            ctx.draw.ellipse((x - (r * 0.45), y - (r * 0.45), x + (r * 0.45), y + (r * 0.45)), outline=color, width=2)
+        ctx.draw.ellipse(
+            (x - r, y - r, x + r, y + r),
+            fill=ctx.panel_fill,
+            outline=color,
+            width=max(2, ctx.line_width),
+        )
+        if ctx.marker_style_id == "target":
+            ctx.draw.ellipse(
+                (x - (r * 0.45), y - (r * 0.45), x + (r * 0.45), y + (r * 0.45)),
+                outline=color,
+                width=2,
+            )
     ctx.draw.line([(x - r * 0.6, y), (x + r * 0.6, y)], fill=color, width=2)
     ctx.draw.line([(x, y - r * 0.6), (x, y + r * 0.6)], fill=color, width=2)
     return pad_bbox((x - r, y - r, x + r, y + r), 4.0, width=ctx.width, height=ctx.height)
 
 
-def _draw_panel(ctx: _RenderContext, bbox: BBox, *, fill: Color | None = None, width: int = 3) -> BBox:
+def _draw_panel(ctx: RenderContext, bbox: BBox, *, fill: Color | None = None, width: int = 3) -> BBox:
     ctx.draw.rounded_rectangle(
         tuple(float(v) for v in bbox),
         radius=8,
@@ -420,8 +251,6 @@ def _draw_panel(ctx: _RenderContext, bbox: BBox, *, fill: Color | None = None, w
 
 
 def _union_bbox(*bboxes: Sequence[float]) -> BBox:
-    """Return one bbox enclosing all non-empty bboxes."""
-
     valid = [tuple(float(v) for v in bbox) for bbox in bboxes if len(tuple(bbox)) == 4]
     if not valid:
         raise ValueError("cannot union empty bbox set")
@@ -433,7 +262,7 @@ def _union_bbox(*bboxes: Sequence[float]) -> BBox:
     )
 
 
-def _draw_cylinder_illustration(ctx: _RenderContext, bbox: BBox) -> BBox:
+def _draw_cylinder_illustration(ctx: RenderContext, bbox: BBox) -> BBox:
     left, top, right, bottom = (float(v) for v in bbox)
     cx = (left + right) / 2.0
     rx = (right - left) / 2.0
@@ -458,10 +287,15 @@ def _draw_cylinder_illustration(ctx: _RenderContext, bbox: BBox) -> BBox:
     return pad_bbox((left, top, right, bottom), 5.0, width=ctx.width, height=ctx.height)
 
 
-def _render_surface_path_scene(ctx: _RenderContext, problem: _ResolvedProblem) -> _RenderedCylinderScene:
-    if problem.circumference is None or problem.height is None or problem.path_length is None:
-        raise ValueError("surface path scene requires path dimensions")
-    layout_rng = spawn_rng(int(problem.path_length), f"{SCENE_ID}.surface_layout")
+def render_surface_path_scene(
+    ctx: RenderContext,
+    problem: SurfacePathProblem,
+    *,
+    layout_seed: int,
+) -> RenderedCylinderWrapScene:
+    """Render an unwrapped cylinder side with a marked diagonal path."""
+
+    layout_rng = spawn_rng(int(layout_seed), f"{SCENE_ID}.surface_layout")
     jitter_x = float(layout_rng.randint(-18, 18))
     jitter_y = float(layout_rng.randint(-10, 12))
     cylinder_bbox = (
@@ -562,10 +396,10 @@ def _render_surface_path_scene(ctx: _RenderContext, problem: _ResolvedProblem) -
             "bbox": bbox_to_list(path_bbox),
         },
     )
-    return _RenderedCylinderScene(
+    return RenderedCylinderWrapScene(
         image=ctx.image,
         answer=int(problem.path_length),
-        answer_type="number",
+        answer_type="integer",
         annotation_type="keyed_bbox_map",
         annotation_value={
             "marked_surface_path": bbox_to_list(path_bbox),
@@ -604,10 +438,15 @@ def _candidate_point(center: Point, radius: float, index: int, option_count: int
     )
 
 
-def _render_wrapped_mark_scene(ctx: _RenderContext, problem: _ResolvedProblem) -> _RenderedCylinderScene:
-    if problem.option_count is None or problem.target_index is None:
-        raise ValueError("wrapped mark scene requires candidate options")
-    layout_rng = spawn_rng(int(problem.target_index), f"{SCENE_ID}.mark_layout")
+def render_wrapped_mark_scene(
+    ctx: RenderContext,
+    problem: WrappedMarkProblem,
+    *,
+    layout_seed: int,
+) -> RenderedCylinderWrapScene:
+    """Render an unwrapped strip and top-view rim candidate positions."""
+
+    layout_rng = spawn_rng(int(layout_seed), f"{SCENE_ID}.mark_layout")
     jitter_x = float(layout_rng.randint(-20, 18))
     jitter_y = float(layout_rng.randint(-12, 12))
     strip_left = 82.0 + jitter_x
@@ -617,7 +456,13 @@ def _render_wrapped_mark_scene(ctx: _RenderContext, problem: _ResolvedProblem) -
     strip_bbox = (strip_left, strip_top, strip_left + strip_width, strip_top + strip_height)
     strip_panel_bbox = _draw_panel(ctx, strip_bbox, fill=ctx.panel_fill)
     seam_x = strip_left
-    _draw_dashed_line(ctx.draw, (seam_x, strip_top - 10.0), (seam_x, strip_top + strip_height + 10.0), fill=ctx.secondary_color, width=2)
+    _draw_dashed_line(
+        ctx.draw,
+        (seam_x, strip_top - 10.0),
+        (seam_x, strip_top + strip_height + 10.0),
+        fill=ctx.secondary_color,
+        width=2,
+    )
     _draw_text(ctx, "seam", (seam_x + 32.0, strip_top - 18.0), font=ctx.tiny_font, stroke_width=1)
     _draw_arrow_line(
         ctx.draw,
@@ -659,7 +504,6 @@ def _render_wrapped_mark_scene(ctx: _RenderContext, problem: _ResolvedProblem) -
         width=2,
     )
     option_entities: list[Dict[str, Any]] = []
-    selected_bbox: BBox | None = None
     selected_center: Point | None = None
     for idx, label in enumerate(problem.option_labels):
         point = _candidate_point(circle_center, radius, idx, int(problem.option_count))
@@ -683,9 +527,8 @@ def _render_wrapped_mark_scene(ctx: _RenderContext, problem: _ResolvedProblem) -
             }
         )
         if int(idx) == int(problem.target_index):
-            selected_bbox = combined_bbox
             selected_center = point
-    if selected_bbox is None or selected_center is None:
+    if selected_center is None:
         raise ValueError("selected rim candidate was not rendered")
     circle_visible_bbox = pad_bbox(circle_bbox, 55.0, width=ctx.width, height=ctx.height)
     scene_entities = (
@@ -708,9 +551,9 @@ def _render_wrapped_mark_scene(ctx: _RenderContext, problem: _ResolvedProblem) -
         },
         *tuple(option_entities),
     )
-    return _RenderedCylinderScene(
+    return RenderedCylinderWrapScene(
         image=ctx.image,
-        answer=str(problem.answer),
+        answer=str(problem.answer_label),
         answer_type="option_letter",
         annotation_type="keyed_point_map",
         annotation_value={
@@ -731,46 +574,13 @@ def _render_wrapped_mark_scene(ctx: _RenderContext, problem: _ResolvedProblem) -
             "option_count": int(problem.option_count),
             "target_index": int(problem.target_index),
             "option_labels": list(problem.option_labels),
-            "answer_value": str(problem.answer),
+            "answer_value": str(problem.answer_label),
         },
     )
 
 
-def _bbox_centers(bboxes: Sequence[Sequence[float]]) -> list[list[float]]:
-    return [
-        [
-            round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
-            round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
-        ]
-        for bbox in bboxes
-    ]
-
-
-def _projected_annotation(annotation_type: str, annotation_value: Mapping[str, Any]) -> Dict[str, Any]:
-    if str(annotation_type) == "keyed_bbox_map":
-        return {
-            "type": "keyed_bbox_map",
-            "keyed_bbox_map": dict(annotation_value),
-            "pixel_keyed_bbox_map": dict(annotation_value),
-        }
-    if str(annotation_type) == "keyed_point_map":
-        return {
-            "type": "keyed_point_map",
-            "keyed_point_map": dict(annotation_value),
-            "pixel_keyed_point_map": dict(annotation_value),
-        }
-    raise ValueError(f"unsupported cylinder-wrap annotation type: {annotation_type}")
-
-
 __all__ = [
-    "SCENE_ID",
-    "POST_IMAGE_NOISE_DEFAULTS",
-    "_ResolvedProblem",
-    "_RenderedCylinderScene",
-    "_resolve_problem",
-    "_make_context",
-    "_render_surface_path_scene",
-    "_render_wrapped_mark_scene",
-    "_projected_annotation",
-    "round1",
+    "make_render_context",
+    "render_surface_path_scene",
+    "render_wrapped_mark_scene",
 ]

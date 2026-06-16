@@ -158,6 +158,7 @@ class _DoorSpec:
     state: str
     orientation: str
     tile_xy: tuple[int, int]
+    span_tiles: int
 
 
 @dataclass(frozen=True)
@@ -366,8 +367,9 @@ def _make_layout_specs(
             state=str(door_states.get(door_id, "closed")),
             orientation=orientation,
             tile_xy=tile_xy,
+            span_tiles=span_tiles,
         )
-        for door_id, room_a, room_b, orientation, tile_xy in base_doors
+        for door_id, room_a, room_b, orientation, tile_xy, span_tiles in base_doors
     ]
     return rooms, doors, "bsp_partition"
 
@@ -413,10 +415,10 @@ def _split_house_rectangles(rng: random.Random, root: TileBox, room_count: int) 
 def _adjacent_door_specs(
     rng: random.Random,
     rooms: Sequence[_RoomSpec],
-) -> list[tuple[str, str, str, str, tuple[int, int]]]:
+) -> list[tuple[str, str, str, str, tuple[int, int], int]]:
     """Place one door on every shared wall between partitioned rooms."""
 
-    doors: list[tuple[str, str, str, str, tuple[int, int]]] = []
+    doors: list[tuple[str, str, str, str, tuple[int, int], int]] = []
     for index, room_a in enumerate(rooms):
         ax, ay, aw, ah = room_a.tile_xywh
         for room_b in rooms[index + 1 :]:
@@ -426,17 +428,19 @@ def _adjacent_door_specs(
                 overlap0 = max(ay, by)
                 overlap1 = min(ay + ah, by + bh)
                 if overlap1 - overlap0 >= 2:
-                    door_y = int(rng.randint(overlap0, overlap1 - 1))
+                    span_tiles = 2 if overlap1 - overlap0 >= 3 else 1
+                    door_y = int(rng.randint(overlap0, overlap1 - span_tiles))
                     room_0, room_1 = sorted((room_a.room_id, room_b.room_id))
-                    doors.append((f"{room_0}_{room_1}", room_a.room_id, room_b.room_id, "vertical", (boundary_x, door_y)))
+                    doors.append((f"{room_0}_{room_1}", room_a.room_id, room_b.room_id, "vertical", (boundary_x, door_y), span_tiles))
             if ay + ah == by or by + bh == ay:
                 boundary_y = ay + ah if ay + ah == by else by + bh
                 overlap0 = max(ax, bx)
                 overlap1 = min(ax + aw, bx + bw)
                 if overlap1 - overlap0 >= 2:
-                    door_x = int(rng.randint(overlap0, overlap1 - 1))
+                    span_tiles = 2 if overlap1 - overlap0 >= 3 else 1
+                    door_x = int(rng.randint(overlap0, overlap1 - span_tiles))
                     room_0, room_1 = sorted((room_a.room_id, room_b.room_id))
-                    doors.append((f"{room_0}_{room_1}", room_a.room_id, room_b.room_id, "horizontal", (door_x, boundary_y)))
+                    doors.append((f"{room_0}_{room_1}", room_a.room_id, room_b.room_id, "horizontal", (door_x, boundary_y), span_tiles))
     return sorted(doors, key=lambda item: item[0])
 
 
@@ -583,19 +587,20 @@ def _draw_door(draw: ImageDraw.ImageDraw, door: _DoorSpec, *, theme: Mapping[str
     x, y = door.tile_xy
     px = int(x) * CANONICAL_TILE_PX
     py = int(y) * CANONICAL_TILE_PX
+    span_px = max(CANONICAL_TILE_PX, int(door.span_tiles) * CANONICAL_TILE_PX)
     shadow_half = CANONICAL_WALL_SHADOW_THICKNESS // 2 + 2
     slab_half = CANONICAL_WALL_THICKNESS // 2 + 2
     margin = CANONICAL_DOOR_CLEARANCE
     threshold_rgb = _shade(theme["wall_rgb"], 42)
     threshold_dark = _shade(theme["wall_dark_rgb"], 12)
     if door.orientation == "vertical":
-        gap = (px - shadow_half, py + margin, px + shadow_half, py + CANONICAL_TILE_PX - margin - 1)
-        closed = (px - slab_half, py + margin + 2, px + slab_half, py + CANONICAL_TILE_PX - margin - 3)
-        knob = (px + slab_half - 2, py + CANONICAL_TILE_PX // 2)
+        gap = (px - shadow_half, py + margin, px + shadow_half, py + span_px - margin - 1)
+        closed = (px - slab_half, py + margin + 3, px + slab_half, py + span_px - margin - 4)
+        knob = (px + slab_half - 2, py + span_px // 2)
     elif door.orientation == "horizontal":
-        gap = (px + margin, py - shadow_half, px + CANONICAL_TILE_PX - margin - 1, py + shadow_half)
-        closed = (px + margin + 2, py - slab_half, px + CANONICAL_TILE_PX - margin - 3, py + slab_half)
-        knob = (px + CANONICAL_TILE_PX // 2, py + slab_half - 2)
+        gap = (px + margin, py - shadow_half, px + span_px - margin - 1, py + shadow_half)
+        closed = (px + margin + 3, py - slab_half, px + span_px - margin - 4, py + slab_half)
+        knob = (px + span_px // 2, py + slab_half - 2)
     else:
         raise ValueError(f"unsupported RPG house door orientation: {door.orientation}")
     draw.rectangle(gap, fill=_rgba(threshold_rgb))
@@ -703,7 +708,7 @@ def _make_door(spec: _DoorSpec, layout: RpgHouseLayout) -> RpgHouseDoor:
         orientation=spec.orientation,
         tile_xy=spec.tile_xy,
         bbox_xyxy=_door_bbox(layout, spec),
-        metadata={"passable": spec.state in PASSABLE_DOOR_STATES},
+        metadata={"passable": spec.state in PASSABLE_DOOR_STATES, "span_tiles": int(spec.span_tiles)},
     )
 
 
@@ -723,6 +728,7 @@ def _door_bbox(layout: RpgHouseLayout, spec: _DoorSpec) -> BBox:
     ox, oy = layout.display_offset_xy
     px = ox + int(x) * int(layout.tile_px)
     py = oy + int(y) * int(layout.tile_px)
+    span_px = max(int(layout.tile_px), int(spec.span_tiles) * int(layout.tile_px))
     cross_half = max(7, int(round(layout.tile_px * (CANONICAL_WALL_SHADOW_THICKNESS + 4) / (2 * CANONICAL_TILE_PX))))
     margin = max(2, int(round(layout.tile_px * CANONICAL_DOOR_CLEARANCE / CANONICAL_TILE_PX)))
     if spec.orientation == "vertical":
@@ -730,13 +736,13 @@ def _door_bbox(layout: RpgHouseLayout, spec: _DoorSpec) -> BBox:
             float(px - cross_half),
             float(py + margin),
             float(px + cross_half),
-            float(py + layout.tile_px - margin),
+            float(py + span_px - margin),
         )
     if spec.orientation == "horizontal":
         return (
             float(px + margin),
             float(py - cross_half),
-            float(px + layout.tile_px - margin),
+            float(px + span_px - margin),
             float(py + cross_half),
         )
     raise ValueError(f"unsupported RPG house door orientation: {spec.orientation}")

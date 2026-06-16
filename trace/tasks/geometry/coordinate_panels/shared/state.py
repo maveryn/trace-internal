@@ -28,6 +28,7 @@ class PanelDefaults:
 class PanelSpec:
     label: str
     points: Tuple[GraphPoint, GraphPoint, GraphPoint, GraphPoint]
+    points_px: Tuple[PixelPoint, PixelPoint, PixelPoint, PixelPoint]
     classified_kind: str
     panel_bbox: List[int]
     plot_bbox: List[int]

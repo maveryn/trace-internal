@@ -9,7 +9,6 @@ from trace.core.scene_config import get_scene_defaults
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.geometry.shared.noise_defaults import load_geometry_noise_defaults
-from trace.tasks.geometry.shared.option_count import resolve_geometry_option_count
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
@@ -51,6 +50,7 @@ TARGET_SHAPE_NAME: Dict[str, str] = {
     "other": "other",
 }
 DEFAULT_PANEL_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
+FIXED_PANEL_COUNT = 6
 
 SHAPE_MATCH_TASK_ID = TASK_ID
 SHAPE_MATCH_QUERY_IDS = QUERY_IDS
@@ -123,14 +123,6 @@ def _resolve_query(
         instance_seed=int(instance_seed),
         label_pool=label_pool,
     )
-    panel_count, panel_count_probabilities = resolve_geometry_option_count(
-        params=params,
-        gen_defaults=generation_defaults,
-        field_name="panel_count",
-        supported_counts=(4, 6),
-        task_id=TASK_ID,
-        instance_seed=int(instance_seed),
-    )
     target_kind = str(QUERY_TARGET_KIND[str(query_id)])
     return _ResolvedQuery(
         query_id=str(query_id),
@@ -140,8 +132,8 @@ def _resolve_query(
         winner_label=str(winner_label),
         winner_label_probabilities=dict(winner_probabilities),
         label_pool=tuple(str(label) for label in label_pool),
-        panel_count=int(panel_count),
-        panel_count_probabilities=dict(panel_count_probabilities),
+        panel_count=FIXED_PANEL_COUNT,
+        panel_count_probabilities={str(FIXED_PANEL_COUNT): 1.0},
     )
 
 
@@ -149,7 +141,7 @@ def _prompt_artifacts(
     *,
     prompt_defaults_all: Mapping[str, Any],
     query: _ResolvedQuery,
-    annotation_value: Sequence[int],
+    annotation_value: Sequence[Sequence[float]],
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> Any:
@@ -164,7 +156,7 @@ def _prompt_artifacts(
             "json_output_contract",
             "json_output_contract_answer_only",
             "object_description",
-            "annotation_hint_selected_panel_bbox",
+            "annotation_hint_selected_panel_point_set",
             "answer_hint_option_letter",
         ),
         context=f"prompt defaults for {TASK_ID}",
@@ -186,7 +178,7 @@ def _prompt_artifacts(
             "object_description": str(prompt_defaults["object_description"]),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults["annotation_hint_selected_panel_bbox"]),
+            "annotation_hint": str(prompt_defaults["annotation_hint_selected_panel_point_set"]),
             "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
@@ -202,7 +194,7 @@ def _panel_trace_payload(
     query: _ResolvedQuery,
     rendered: PanelScene,
     prompt_artifacts: Any,
-    annotation_value: Sequence[int],
+    annotation_value: Sequence[Sequence[float]],
 ) -> Dict[str, Any]:
     """Build verifier payload from the same rendered scene used for answer binding."""
 
@@ -210,6 +202,7 @@ def _panel_trace_payload(
         str(label): {
             "label": str(label),
             "points_graph": [[int(value) for value in point] for point in spec.points],
+            "points_px": [[float(value) for value in point] for point in spec.points_px],
             "classified_kind": str(spec.classified_kind),
             "panel_bbox": list(spec.panel_bbox),
             "plot_bbox": list(spec.plot_bbox),
@@ -217,7 +210,7 @@ def _panel_trace_payload(
         }
         for label, spec in rendered.panels_by_label.items()
     }
-    annotation_bbox = [int(value) for value in annotation_value]
+    annotation_points = [[float(point[0]), float(point[1])] for point in annotation_value]
     return {
         "scene_id": SCENE_ID,
         "query_id": str(query.query_id),
@@ -272,6 +265,10 @@ def _panel_trace_payload(
                 str(label): [[int(value) for value in point] for point in spec.points]
                 for label, spec in rendered.panels_by_label.items()
             },
+            "points_px_by_label": {
+                str(label): [[float(value) for value in point] for point in spec.points_px]
+                for label, spec in rendered.panels_by_label.items()
+            },
         },
         "execution_trace": {
             "scene_id": SCENE_ID,
@@ -291,9 +288,13 @@ def _panel_trace_payload(
             "panels_by_label": dict(panels_trace),
         },
         "projected_annotation": {
-            "type": "bbox",
-            "bbox": list(annotation_bbox),
-            "pixel_bbox": list(annotation_bbox),
+            "type": "point_set",
+            "point_set": [list(point) for point in annotation_points],
+            "pixel_point_set": [list(point) for point in annotation_points],
+            "points_px_by_label": {
+                str(label): [[float(value) for value in point] for point in spec.points_px]
+                for label, spec in rendered.panels_by_label.items()
+            },
             "panel_bbox_by_label": {str(label): list(spec.panel_bbox) for label, spec in rendered.panels_by_label.items()},
         },
         "prompt": {
@@ -335,7 +336,10 @@ class GeometryCoordinateQuadrilateralShapeMatchLabelTask:
             option_count_probabilities=query.panel_count_probabilities,
             noise_defaults=_NOISE_DEFAULTS,
         )
-        annotation_value = list(rendered.panels_by_label[str(query.winner_label)].panel_bbox)
+        annotation_value = [
+            [float(point[0]), float(point[1])]
+            for point in rendered.panels_by_label[str(query.winner_label)].points_px
+        ]
         prompt_artifacts = _prompt_artifacts(
             prompt_defaults_all=prompt_defaults_all,
             query=query,
@@ -346,7 +350,7 @@ class GeometryCoordinateQuadrilateralShapeMatchLabelTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="option_letter", value=str(query.winner_label)),
-            annotation_gt=TypedValue(type="bbox", value=list(annotation_value)),
+            annotation_gt=TypedValue(type="point_set", value=[list(point) for point in annotation_value]),
             image=rendered.image,
             image_id=f"{TASK_ID}:{int(instance_seed)}",
             trace_payload=_panel_trace_payload(

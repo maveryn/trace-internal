@@ -1,9 +1,7 @@
 generation:
   shared:
     panel_graph_abs_max: 4
-    panel_count_weights:
-      '4': 1.0
-      '6': 1.0
+    panel_count: 6
     panel_labels:
     - A
     - B

@@ -92,11 +92,11 @@
       "answer_hint": "set \"answer\" to the selected panel label as a capital letter"
     },
     "answer_or_annotation:answer_and_annotation": {
-      "annotation_hint_selected_panel_bbox": "set \"annotation\" to one bounding box [x0,y0,x1,y1] around the selected panel",
+      "annotation_hint_selected_panel_point_set": "set \"annotation\" to an array of the four pixel points [x,y] plotted inside the selected panel",
       "answer_hint_option_letter": "set \"answer\" to the selected panel label as a capital letter",
-      "json_example": "{\"annotation\":[361,32,661,344],\"answer\":\"B\"}",
+      "json_example": "{\"annotation\":[[420,116],[485,116],[485,181],[420,181]],\"answer\":\"B\"}",
       "answer_hint": "set \"answer\" to the selected panel label as a capital letter",
-      "annotation_hint": "set \"annotation\" to one bounding box [x0,y0,x1,y1] around the selected panel"
+      "annotation_hint": "set \"annotation\" to an array of the four pixel points [x,y] plotted inside the selected panel"
     }
   }
 }

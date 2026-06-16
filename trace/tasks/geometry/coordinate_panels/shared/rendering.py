@@ -224,8 +224,11 @@ def render_panel_scene(
             raise RuntimeError(f"panel {label} sampled as {kind_by_label[str(label)]} but classified {classified_kind}")
         if str(label) != str(winner_label) and is_ambiguous_for_prompt(str(classified_kind), str(target_kind)):
             raise RuntimeError("sampled ambiguous distractor panel")
-        for point in points:
-            point_px = graph_point_to_panel_pixel(point, plot_bbox=plot_bbox, config=panel_config)
+        points_px = tuple(
+            graph_point_to_panel_pixel(point, plot_bbox=plot_bbox, config=panel_config)
+            for point in points
+        )
+        for point_px in points_px:
             _draw_marker(
                 draw,
                 point_px,
@@ -237,6 +240,7 @@ def render_panel_scene(
         panels_by_label[str(label)] = PanelSpec(
             label=str(label),
             points=tuple(points),
+            points_px=tuple((float(point[0]), float(point[1])) for point in points_px),
             classified_kind=str(classified_kind),
             panel_bbox=[int(value) for value in panel_bbox],
             plot_bbox=[int(value) for value in plot_bbox],

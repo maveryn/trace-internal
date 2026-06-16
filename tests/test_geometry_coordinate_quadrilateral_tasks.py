@@ -60,12 +60,14 @@ def test_quadrilateral_panel_match_has_unique_panel_answer(query_id: str) -> Non
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "D"
-    assert out.annotation_gt.type == "bbox"
-    assert out.annotation_gt.value == panels["D"]["panel_bbox"]
-    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
-    assert 4 <= len(panels) <= 6
+    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.value == panels["D"]["points_px"]
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    assert len(panels) == 6
     assert "D" in panels
     assert all(len(panel["points_graph"]) == 4 for panel in panels.values())
+    assert all(len(panel["points_px"]) == 4 for panel in panels.values())
 
     target_kind = execution["target_kind"]
     matching_labels = [

@@ -6,7 +6,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from .....core.query_ids import SINGLE_QUERY_ID
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index
+from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ....shared.fixed_query import select_task_query_id
 from ...shared.object_library import STYLE_IDS
 from ...shared.task_support import (
@@ -183,6 +183,44 @@ def sample_people_total(
     )
 
 
+def sample_option_answer_index(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    seed_scope: str,
+    option_labels: Sequence[str],
+    namespace_suffix: str = "answer",
+    explicit_index_key: str = "correct_index",
+    explicit_label_key: str = "answer_label",
+) -> Tuple[int, Dict[str, float]]:
+    """Sample a visible option-label index with common explicit overrides."""
+
+    labels = tuple(str(label) for label in option_labels)
+    if len(labels) < 2:
+        raise ValueError("option_labels must contain at least two labels")
+    if params.get(str(explicit_index_key)) is not None:
+        value = int(params[str(explicit_index_key)])
+        if value < 0 or value >= len(labels):
+            raise ValueError(f"{explicit_index_key} outside option label support")
+        return int(value), {str(value): 1.0}
+    if params.get(str(explicit_label_key)) is not None:
+        label = str(params[str(explicit_label_key)])
+        if label not in set(labels):
+            raise ValueError(f"{explicit_label_key} outside option label support")
+        value = int(labels.index(label))
+        return int(value), {str(value): 1.0}
+    if params.get("_sample_cursor") is not None:
+        value = abs(int(params["_sample_cursor"])) % len(labels)
+        return int(value), dict(uniform_probability_map(tuple(range(len(labels)))))
+    index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{seed_scope}:{namespace_suffix}",
+    )
+    value = int(index) % len(labels)
+    return int(value), dict(uniform_probability_map(tuple(range(len(labels)))))
+
+
 def sample_equipment_items(
     *,
     instance_seed: int,
@@ -297,6 +335,7 @@ __all__ = [
     "render_params",
     "sample_equipment_items",
     "sample_count",
+    "sample_option_answer_index",
     "sample_people_total",
     "setting_weights",
     "spawned_task_rng",

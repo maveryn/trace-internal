@@ -89,7 +89,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_charts__combo_mark__series_threshold_crossing_label": _entry("charts", "combo_mark", "charts", "combo_mark"),
     "task_charts__contour_density__density_extremum_region_label": _entry("charts", "contour_density", "charts", "contour_density"),
     "task_charts__contour_density__density_threshold_region_count": _entry("charts", "contour_density", "charts", "contour_density"),
-    "task_charts__contour_density__nearest_region_option_label": _entry("charts", "contour_density", "charts", "contour_density"),
     "task_charts__contour_density__reference_distance_extremum_label": _entry("charts", "contour_density", "charts", "contour_density"),
     "task_charts__contour_density__spread_extremum_region_label": _entry("charts", "contour_density", "charts", "contour_density"),
     "task_charts__curve_panels__cross_panel_delta_extremum_label": _entry("charts", "curve_panels", "charts", "scientific"),
@@ -109,6 +108,10 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_charts__style_legend__x_position_extremum_series_label": _entry("charts", "style_legend", "charts", "scientific"),
     "task_charts__dashboard__category_panel_condition_count": _entry("charts", "dashboard", "charts", "dashboard"),
     "task_charts__dashboard__category_extremum_panel_label": _entry("charts", "dashboard", "charts", "dashboard"),
+    "task_charts__dashboard__category_total_extremum_label": _entry("charts", "dashboard", "charts", "dashboard"),
+    "task_charts__dashboard__global_value_extremum_category_label": _entry("charts", "dashboard", "charts", "dashboard"),
+    "task_charts__dashboard__panel_total_extremum_label": _entry("charts", "dashboard", "charts", "dashboard"),
+    "task_charts__dashboard__panel_value_range_extremum_label": _entry("charts", "dashboard", "charts", "dashboard"),
     "task_charts__dashboard__panel_value_range_value": _entry("charts", "dashboard", "charts", "dashboard"),
     "task_charts__dashboard__source_rank_target_value": _entry("charts", "dashboard", "charts", "dashboard"),
     "task_charts__dashboard__statement_option_selection_label": _entry("charts", "dashboard", "charts", "dashboard"),
@@ -120,7 +123,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_charts__error_interval__reference_exclusion_side_count": _entry("charts", "error_interval", "charts", "error_interval"),
     "task_charts__errorbar_series__bound_extremum_x_label": _entry("charts", "errorbar_series", "charts", "errorbar_series"),
     "task_charts__errorbar_series__same_x_interval_overlap_count": _entry("charts", "errorbar_series", "charts", "errorbar_series"),
-    "task_charts__errorbar_series__threshold_support_count": _entry("charts", "errorbar_series", "charts", "errorbar_series"),
     "task_charts__heatmap__axis_cell_extremum_label": _entry("charts", "heatmap", "charts", "heatmap"),
     "task_charts__heatmap__axis_condition_extremum_label": _entry("charts", "heatmap", "charts", "heatmap"),
     "task_charts__heatmap__colorbar_interval_cell_count": _entry("charts", "heatmap", "charts", "heatmap"),
@@ -863,6 +865,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__park_playground__playground_equipment_count": _entry(
         "illustrations", "park_playground", "illustrations", "park_playground"
     ),
+    "task_illustrations__park_playground__swapped_tile_pair_label": _entry(
+        "illustrations", "park_playground", "illustrations", "park_playground"
+    ),
     "task_illustrations__pixel_village__object_type_count": _entry(
         "illustrations", "pixel_village", "illustrations", "pixel_village"
     ),
@@ -1005,6 +1010,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_three_d__object_cluster__type_union_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
     "task_three_d__object_cluster__total_object_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
     "task_three_d__surface_fixture__color_count_after_operations_value": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
+    "task_three_d__surface_fixture__color_frequency_option_label": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
     "task_three_d__surface_fixture__colored_element_count": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
     "task_three_d__surface_fixture__element_count_extremum_label": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
     "task_three_d__surface_fixture__recolor_board_match_label": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),

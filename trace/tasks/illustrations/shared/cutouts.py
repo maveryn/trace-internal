@@ -115,6 +115,16 @@ FRAMELESS_ILLUSTRATION_ROTATED_GRID_STYLE: Dict[str, Any] = {
     "grid_width_px": 3,
 }
 
+FRAMELESS_ILLUSTRATION_SWAPPED_GRID_STYLE: Dict[str, Any] = {
+    "canvas_rgb": (255, 255, 255),
+    "grid_rgb": (34, 39, 46),
+    "badge_fill_rgb": (255, 255, 255),
+    "badge_outline_rgb": (34, 39, 46),
+    "option_fill_rgb": (255, 255, 255),
+    "option_outline_rgb": (44, 52, 65),
+    "grid_width_px": 3,
+}
+
 FRAMELESS_ILLUSTRATION_PATCH_STYLE: Dict[str, Any] = {
     "canvas_rgb": (255, 255, 255),
     "panel_outline_rgb": (34, 39, 46),
@@ -129,6 +139,8 @@ PATCH_MODE_IRREGULAR = "irregular"
 PATCH_MODES: Tuple[str, ...] = (PATCH_MODE_PLAIN, PATCH_MODE_IRREGULAR)
 DEFAULT_OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 ROTATED_TILE_LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(9))
+SWAPPED_TILE_PAIR_OPTION_LABELS: Tuple[str, ...] = DEFAULT_OPTION_LABELS[:4]
+SWAPPED_TILE_CELL_LABELS: Tuple[str, ...] = tuple(str(index + 1) for index in range(9))
 
 
 @dataclass(frozen=True)
@@ -165,6 +177,22 @@ class RotatedTileArtifacts:
     selected_label: str
     selected_index: int
     rotation_degrees: int
+    grid_shape: Tuple[int, int]
+    output_scale_xy: Tuple[float, float] = (1.0, 1.0)
+    pre_downscale_canvas_size: Tuple[int, int] = (0, 0)
+
+
+@dataclass(frozen=True)
+class SwappedTilePairArtifacts:
+    image: Image.Image
+    tile_bboxes: Dict[str, list[float]]
+    option_bboxes: Dict[str, list[float]]
+    swapped_cell_bboxes: Tuple[list[float], list[float]]
+    selected_label: str
+    selected_index: int
+    swapped_pair: Tuple[int, int]
+    option_pairs: Tuple[Tuple[int, int], ...]
+    tile_source_boxes: Tuple[Tuple[int, int, int, int], ...]
     grid_shape: Tuple[int, int]
     output_scale_xy: Tuple[float, float] = (1.0, 1.0)
     pre_downscale_canvas_size: Tuple[int, int] = (0, 0)
@@ -620,6 +648,220 @@ def compose_rotated_tile_grid(
     )
 
 
+def swapped_tile_pair_candidates(
+    source_image: Image.Image,
+    *,
+    rows: int = 3,
+    cols: int = 3,
+    min_tile_detail_score: float = 180.0,
+    min_pair_difference: float = 8.0,
+) -> Tuple[Tuple[int, int], ...]:
+    """Return visually usable unordered tile pairs for a swapped-tile task."""
+
+    pieces = piece_crops(source_image.convert("RGB"), rows=int(rows), cols=int(cols))
+    details = tuple(float(image_detail_score(piece)) for piece, _box in pieces)
+    pairs: list[Tuple[int, int]] = []
+    for left in range(len(pieces)):
+        if details[left] < float(min_tile_detail_score):
+            continue
+        for right in range(left + 1, len(pieces)):
+            if details[right] < float(min_tile_detail_score):
+                continue
+            if patch_difference_score(pieces[left][0], pieces[right][0]) < float(min_pair_difference):
+                continue
+            pairs.append((int(left), int(right)))
+    return tuple(pairs)
+
+
+def _normalize_tile_pair(pair: Sequence[int]) -> Tuple[int, int]:
+    values = tuple(sorted(int(value) for value in pair[:2]))
+    if len(values) != 2 or values[0] == values[1]:
+        raise ValueError("tile pair must contain two distinct indices")
+    return int(values[0]), int(values[1])
+
+
+def _pair_display_text(pair: Sequence[int]) -> str:
+    left, right = _normalize_tile_pair(pair)
+    return f"{left + 1} and {right + 1}"
+
+
+def compose_swapped_tile_pair_mcq(
+    *,
+    source_image: Image.Image,
+    swapped_pair: Sequence[int],
+    correct_index: int,
+    rng: Any,
+    grid_style: Mapping[str, Any],
+    label_font_family: str,
+    candidate_pairs: Sequence[Sequence[int]] | None = None,
+    rows: int = 3,
+    cols: int = 3,
+    option_labels: Sequence[str] = SWAPPED_TILE_PAIR_OPTION_LABELS,
+    cell_labels: Sequence[str] = SWAPPED_TILE_CELL_LABELS,
+    source_option_gap: int = 42,
+    option_gap: int = 26,
+    option_card_size: Tuple[int, int] = (250, 54),
+    bottom_margin: int = 26,
+) -> SwappedTilePairArtifacts:
+    """Compose one corrupted numbered grid plus four pair-choice options."""
+
+    row_count = int(rows)
+    col_count = int(cols)
+    if row_count != 3 or col_count != 3:
+        raise ValueError("swapped tile pair task currently requires a fixed 3x3 grid")
+    piece_count = row_count * col_count
+    labels = tuple(str(value) for value in option_labels)
+    if len(labels) != 4:
+        raise ValueError("swapped tile pair task requires exactly four option labels")
+    visible_cell_labels = tuple(str(value) for value in cell_labels)
+    if len(visible_cell_labels) != piece_count:
+        raise ValueError("cell label count must match rows * cols")
+    if int(correct_index) < 0 or int(correct_index) >= len(labels):
+        raise ValueError("correct_index outside option support")
+
+    source_rgb = source_image.convert("RGB")
+    pieces = piece_crops(source_rgb, rows=row_count, cols=col_count)
+    widths = {int(box[2] - box[0]) for _piece, box in pieces}
+    heights = {int(box[3] - box[1]) for _piece, box in pieces}
+    if len(widths) != 1 or len(heights) != 1:
+        raise ValueError("source image dimensions must divide evenly into a 3x3 grid")
+
+    correct_pair = _normalize_tile_pair(swapped_pair)
+    if correct_pair[0] < 0 or correct_pair[1] >= piece_count:
+        raise ValueError("swapped_pair outside tile index support")
+    raw_candidates = candidate_pairs if candidate_pairs is not None else tuple(
+        (left, right)
+        for left in range(piece_count)
+        for right in range(left + 1, piece_count)
+    )
+    candidate_set = {
+        _normalize_tile_pair(pair)
+        for pair in raw_candidates
+        if len(tuple(pair)) >= 2
+    }
+    distractor_pool = sorted(pair for pair in candidate_set if pair != correct_pair)
+    if len(distractor_pool) < len(labels) - 1:
+        raise ValueError("not enough unique swapped tile pair distractors")
+    rng.shuffle(distractor_pool)
+
+    option_pairs: list[Tuple[int, int]] = []
+    distractor_index = 0
+    for option_index in range(len(labels)):
+        if int(option_index) == int(correct_index):
+            option_pairs.append(correct_pair)
+        else:
+            option_pairs.append(tuple(distractor_pool[distractor_index]))
+            distractor_index += 1
+
+    source_w, source_h = int(source_rgb.width), int(source_rgb.height)
+    option_w, option_h = int(option_card_size[0]), int(option_card_size[1])
+    option_cols = 2
+    option_rows = 2
+    option_grid_w = option_cols * option_w + (option_cols - 1) * int(option_gap)
+    option_grid_h = option_rows * option_h + (option_rows - 1) * int(option_gap)
+    canvas_w = max(source_w, option_grid_w + 2 * int(option_gap))
+    canvas_h = source_h + int(source_option_gap) + option_grid_h + int(bottom_margin)
+    canvas = Image.new("RGB", (int(canvas_w), int(canvas_h)), rgb(grid_style, "canvas_rgb"))
+    draw = ImageDraw.Draw(canvas)
+    source_x = int((canvas_w - source_w) // 2)
+    source_y = 0
+
+    left_index, right_index = correct_pair
+    tile_bboxes: Dict[str, list[float]] = {}
+    for slot_index, (_piece, slot_box) in enumerate(pieces):
+        content_index = int(slot_index)
+        if slot_index == left_index:
+            content_index = right_index
+        elif slot_index == right_index:
+            content_index = left_index
+        slot_x0, slot_y0, slot_x1, slot_y1 = [int(value) for value in slot_box]
+        paste_x = int(source_x + slot_x0)
+        paste_y = int(source_y + slot_y0)
+        canvas.paste(pieces[content_index][0].convert("RGB"), (paste_x, paste_y))
+        label = str(visible_cell_labels[slot_index])
+        tile_bboxes[label] = bbox_list(
+            (slot_x0, slot_y0, slot_x1, slot_y1),
+            dx=source_x,
+            dy=source_y,
+        )
+
+    grid_width = int(grid_style.get("grid_width_px", 3))
+    for grid_col in range(col_count + 1):
+        x = int(source_x + grid_col * source_w / col_count)
+        draw.line((x, source_y, x, source_y + source_h), fill=rgb(grid_style, "grid_rgb"), width=grid_width)
+    for grid_row in range(row_count + 1):
+        y = int(source_y + grid_row * source_h / row_count)
+        draw.line((source_x, y, source_x + source_w, y), fill=rgb(grid_style, "grid_rgb"), width=grid_width)
+
+    tile_w = int(next(iter(widths)))
+    tile_h = int(next(iter(heights)))
+    badge_w = max(30, min(46, int(round(tile_w * 0.16))))
+    badge_h = max(26, min(40, int(round(tile_h * 0.15))))
+    for slot_index, (_piece, slot_box) in enumerate(pieces):
+        x0, y0, _x1, _y1 = [int(value) for value in slot_box]
+        draw_label_badge(
+            draw,
+            str(visible_cell_labels[slot_index]),
+            (source_x + x0 + 9, source_y + y0 + 9, source_x + x0 + 9 + badge_w, source_y + y0 + 9 + badge_h),
+            font_family=label_font_family,
+            fill=rgb(grid_style, "badge_fill_rgb"),
+            outline=rgb(grid_style, "badge_outline_rgb"),
+        )
+
+    option_bboxes: Dict[str, list[float]] = {}
+    options_x0 = int((canvas_w - option_grid_w) // 2)
+    options_y0 = int(source_h + int(source_option_gap))
+    for option_index, pair in enumerate(option_pairs):
+        option_row = int(option_index // option_cols)
+        option_col = int(option_index % option_cols)
+        x0 = int(options_x0 + option_col * (option_w + int(option_gap)))
+        y0 = int(options_y0 + option_row * (option_h + int(option_gap)))
+        x1 = int(x0 + option_w)
+        y1 = int(y0 + option_h)
+        draw.rounded_rectangle(
+            (x0, y0, x1, y1),
+            radius=7,
+            fill=rgb(grid_style, "option_fill_rgb"),
+            outline=rgb(grid_style, "option_outline_rgb"),
+            width=2,
+        )
+        draw_label_badge(
+            draw,
+            labels[option_index],
+            (x0 + 10, y0 + 10, x0 + 50, y0 + option_h - 10),
+            font_family=label_font_family,
+            fill=rgb(grid_style, "badge_fill_rgb"),
+            outline=rgb(grid_style, "badge_outline_rgb"),
+        )
+        draw_label_badge(
+            draw,
+            _pair_display_text(pair),
+            (x0 + 62, y0 + 10, x1 - 10, y0 + option_h - 10),
+            font_family=label_font_family,
+            fill=rgb(grid_style, "badge_fill_rgb"),
+            outline=rgb(grid_style, "badge_outline_rgb"),
+        )
+        option_bboxes[labels[option_index]] = bbox_list((x0, y0, x1, y1))
+
+    selected_label = labels[int(correct_index)]
+    swapped_cell_bboxes = (
+        list(tile_bboxes[str(visible_cell_labels[left_index])]),
+        list(tile_bboxes[str(visible_cell_labels[right_index])]),
+    )
+    return SwappedTilePairArtifacts(
+        image=canvas,
+        tile_bboxes=tile_bboxes,
+        option_bboxes=option_bboxes,
+        swapped_cell_bboxes=swapped_cell_bboxes,
+        selected_label=str(selected_label),
+        selected_index=int(correct_index),
+        swapped_pair=correct_pair,
+        option_pairs=tuple(tuple(int(value) for value in pair) for pair in option_pairs),
+        tile_source_boxes=tuple(tuple(int(coord) for coord in box) for _piece, box in pieces),
+        grid_shape=(row_count, col_count),
+    )
+
+
 def select_crop_box(
     source: Image.Image,
     rng: Any,
@@ -996,6 +1238,51 @@ def downscale_rotated_tile_artifacts(
     )
 
 
+def downscale_swapped_tile_pair_artifacts(
+    artifacts: SwappedTilePairArtifacts,
+    *,
+    max_pixels: int,
+) -> SwappedTilePairArtifacts:
+    """Return swapped-tile-pair artifacts scaled under a final pixel cap."""
+
+    image, scale_x, scale_y = resize_to_max_pixels(artifacts.image, max_pixels=int(max_pixels))
+    if scale_x == 1.0 and scale_y == 1.0:
+        return SwappedTilePairArtifacts(
+            image=artifacts.image,
+            tile_bboxes=dict(artifacts.tile_bboxes),
+            option_bboxes=dict(artifacts.option_bboxes),
+            swapped_cell_bboxes=tuple(list(bbox) for bbox in artifacts.swapped_cell_bboxes),  # type: ignore[arg-type]
+            selected_label=str(artifacts.selected_label),
+            selected_index=int(artifacts.selected_index),
+            swapped_pair=tuple(int(value) for value in artifacts.swapped_pair),
+            option_pairs=tuple(tuple(int(value) for value in pair) for pair in artifacts.option_pairs),
+            tile_source_boxes=tuple(tuple(int(coord) for coord in box) for box in artifacts.tile_source_boxes),
+            grid_shape=tuple(int(value) for value in artifacts.grid_shape),
+            output_scale_xy=(1.0, 1.0),
+            pre_downscale_canvas_size=(int(artifacts.image.width), int(artifacts.image.height)),
+        )
+    tile_bboxes = scale_bbox_map(artifacts.tile_bboxes, scale_x=scale_x, scale_y=scale_y)
+    option_bboxes = scale_bbox_map(artifacts.option_bboxes, scale_x=scale_x, scale_y=scale_y)
+    swapped_cell_bboxes = tuple(
+        scale_bbox(bbox, scale_x=scale_x, scale_y=scale_y)
+        for bbox in artifacts.swapped_cell_bboxes
+    )
+    return SwappedTilePairArtifacts(
+        image=image,
+        tile_bboxes=tile_bboxes,
+        option_bboxes=option_bboxes,
+        swapped_cell_bboxes=swapped_cell_bboxes,  # type: ignore[arg-type]
+        selected_label=str(artifacts.selected_label),
+        selected_index=int(artifacts.selected_index),
+        swapped_pair=tuple(int(value) for value in artifacts.swapped_pair),
+        option_pairs=tuple(tuple(int(value) for value in pair) for pair in artifacts.option_pairs),
+        tile_source_boxes=tuple(tuple(int(coord) for coord in box) for box in artifacts.tile_source_boxes),
+        grid_shape=tuple(int(value) for value in artifacts.grid_shape),
+        output_scale_xy=(float(scale_x), float(scale_y)),
+        pre_downscale_canvas_size=(int(artifacts.image.width), int(artifacts.image.height)),
+    )
+
+
 def downscale_patch_option_artifacts(
     artifacts: PatchOptionArtifacts,
     *,
@@ -1043,6 +1330,7 @@ __all__ = [
     "FRAMELESS_ILLUSTRATION_JIGSAW_STYLE",
     "FRAMELESS_ILLUSTRATION_PATCH_STYLE",
     "FRAMELESS_ILLUSTRATION_ROTATED_GRID_STYLE",
+    "FRAMELESS_ILLUSTRATION_SWAPPED_GRID_STYLE",
     "JIGSAW_BOARD_STYLES",
     "PATCH_FRAME_STYLES",
     "PATCH_MODE_IRREGULAR",
@@ -1050,17 +1338,22 @@ __all__ = [
     "PATCH_MODES",
     "ROTATED_GRID_STYLES",
     "ROTATED_TILE_LABELS",
+    "SWAPPED_TILE_CELL_LABELS",
+    "SWAPPED_TILE_PAIR_OPTION_LABELS",
     "JigsawArtifacts",
     "JigsawArrangementArtifacts",
     "PatchOptionArtifacts",
     "RotatedTileArtifacts",
+    "SwappedTilePairArtifacts",
     "compose_jigsaw_arrangement_options",
     "compose_jigsaw_board",
     "compose_patch_options",
     "compose_rotated_tile_grid",
+    "compose_swapped_tile_pair_mcq",
     "downscale_jigsaw_arrangement_artifacts",
     "downscale_patch_option_artifacts",
     "downscale_rotated_tile_artifacts",
+    "downscale_swapped_tile_pair_artifacts",
     "draw_source_hole",
     "non_identity_permutation",
     "option_content_order",
@@ -1072,6 +1365,7 @@ __all__ = [
     "sample_style",
     "select_crop_box",
     "style_trace",
+    "swapped_tile_pair_candidates",
     "tile_is_usable",
     "transform_patch",
 ]

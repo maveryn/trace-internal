@@ -102,7 +102,7 @@ Domain-shared modules that should generally remain domain-shared:
 | `render_geometry.py` | Scene-neutral bbox/point geometry helpers. |
 | `scene_objects.py` | Extraction of normalized object records from scene outputs. |
 | `option_rendering.py` | Scene-neutral option-label, panel-label, bbox, font-trace, image-fit, and crop-detail helpers. |
-| `cutouts.py` | Scene-neutral visual-reconstruction mechanics for jigsaw boards, rotated grids, and patch-option layouts. |
+| `cutouts.py` | Scene-neutral visual-reconstruction mechanics for jigsaw boards, rotated grids, swapped-tile grids, and patch-option layouts. |
 | `canvas_profiles.py` | Shared render-only canvas profiles, profile-aware reconstruction grids, and final-output downscale helpers for illustration tasks. |
 | `bounds.py` | Shared canvas-bound checks and clamping helpers for profile-safe foreground bboxes. |
 

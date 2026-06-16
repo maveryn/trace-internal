@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Dict, Mapping, Tuple
 
 from PIL import Image
 
@@ -13,7 +13,6 @@ from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults, required_group_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.output_metadata import default_task_versions
 from ..shared.cutouts import (
@@ -41,7 +40,7 @@ from .shared.rendering import (
     ParkPersonSpec,
     render_park_playground_scene,
 )
-from .shared.sampling import activity_support, bounds, equipment_support, render_params, sample_count, setting_weights, spawned_task_rng, style_weights
+from .shared.sampling import activity_support, bounds, equipment_support, render_params, sample_count, sample_option_answer_index, setting_weights, spawned_task_rng, style_weights
 
 
 TASK_ID = "task_illustrations__park_playground__jigsaw_arrangement_label"
@@ -106,31 +105,6 @@ def _float_value(params: Mapping[str, Any], defaults: Mapping[str, Any], key: st
     return float(params.get(str(key), group_default(defaults, str(key), float(fallback))))
 
 
-def _sample_correct_index(*, params: Mapping[str, Any], instance_seed: int, option_labels: Sequence[str]) -> Tuple[int, Dict[str, float]]:
-    labels = tuple(str(label) for label in option_labels)
-    if params.get("correct_index") is not None:
-        value = int(params["correct_index"])
-        if value < 0 or value >= len(labels):
-            raise ValueError("correct_index outside option label support")
-        return int(value), {str(value): 1.0}
-    if params.get("answer_label") is not None:
-        label = str(params["answer_label"])
-        if label not in set(labels):
-            raise ValueError("answer_label outside option label support")
-        value = int(labels.index(label))
-        return int(value), {str(value): 1.0}
-    if params.get("_sample_cursor") is not None:
-        value = abs(int(params["_sample_cursor"])) % len(labels)
-        return int(value), dict(uniform_probability_map(tuple(range(len(labels)))))
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}:answer",
-    )
-    value = int(index) % len(labels)
-    return int(value), dict(uniform_probability_map(tuple(range(len(labels)))))
-
-
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
     """Sample a dense source park scene and one correct MCQ option position."""
 
@@ -186,9 +160,10 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         namespace=f"{TASK_ID}:source_profile",
     )
     grid_rows, grid_cols = reconstruction_grid_for_size(int(source_profile.width), int(source_profile.height))
-    correct_index, correct_index_probabilities = _sample_correct_index(
+    correct_index, correct_index_probabilities = sample_option_answer_index(
         params=params,
         instance_seed=int(instance_seed),
+        seed_scope=TASK_ID,
         option_labels=OPTION_LABELS,
     )
     return _SampleSpec(

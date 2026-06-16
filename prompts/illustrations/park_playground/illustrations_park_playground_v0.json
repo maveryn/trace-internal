@@ -36,6 +36,13 @@
       "",
       "",
       ""
+    ],
+    "swapped_tile_pair_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -51,6 +58,8 @@
     "query:plain_patch_label": [
     ],
     "query:rotated_tile_label": [
+    ],
+    "query:swapped_tile_pair_label": [
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -124,6 +133,13 @@
       "Which tile is turned the wrong way?",
       "Find the rotated tile in the park playground grid.",
       "Which letter marks the tile with the incorrect orientation?"
+    ],
+    "swapped_tile_pair_label": [
+      "The image is divided into 9 numbered cells. Exactly two cells have been swapped. Which option gives the two swapped cell numbers?",
+      "Exactly two numbered cells in the park playground grid were swapped. Select the option naming those two cells.",
+      "Which lettered option identifies the two numbered cells that changed places?",
+      "Find the pair of numbered cells that were swapped in the park playground image.",
+      "Choose the option that names the two grid cells whose patches were exchanged."
     ]
   },
   "allow_empty_task_templates": true

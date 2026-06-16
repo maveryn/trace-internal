@@ -60,6 +60,15 @@ generation:
       rotation_degrees_support:
         - 90
         - 270
+    task_illustrations__park_playground__swapped_tile_pair_label:
+      source_person_count_min: 8
+      source_person_count_max: 13
+      source_equipment_count_min: 4
+      source_equipment_count_max: 7
+      source_width: 1200
+      source_height: 798
+      min_tile_detail_score: 180
+      min_pair_difference: 8
 
 rendering:
   shared:
@@ -164,6 +173,21 @@ rendering:
         soft_shadow: 1.0
         ink_sketch: 1.0
         watercolor_wash: 1.0
+    task_illustrations__park_playground__swapped_tile_pair_label:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
 
 prompt:
   task_overrides:
@@ -209,3 +233,11 @@ prompt:
         y1] box around the rotated tile in pixel coordinates
       json_example_rotated_tile: '{"annotation":[438,168,756,436],"answer":"B"}'
       json_example_answer_only_rotated_tile: '{"answer":"B"}'
+    task_illustrations__park_playground__swapped_tile_pair_label:
+      bundle_id: illustrations_park_playground_v0
+      scene_key: park_playground_canvas
+      task_key: swapped_tile_pair_label_task
+      answer_hint_swapped_tile_pair: set "answer" to the selected option letter
+      annotation_hint_swapped_tile_pair: set "annotation" to a JSON array containing two [x0, y0, x1, y1] boxes around the two swapped numbered cells
+      json_example_swapped_tile_pair: '{"annotation":[[0,0,400,266],[800,532,1200,798]],"answer":"C"}'
+      json_example_answer_only_swapped_tile_pair: '{"answer":"C"}'

@@ -22,6 +22,9 @@ from trace.tasks.illustrations.park_playground.playground_equipment_count import
 from trace.tasks.illustrations.park_playground.rotated_tile_label import (
     _sample_spec as _sample_rotated_tile_spec,
 )
+from trace.tasks.illustrations.park_playground.swapped_tile_pair_label import (
+    _sample_spec as _sample_swapped_tile_pair_spec,
+)
 
 
 def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
@@ -294,6 +297,65 @@ def test_rotated_tile_seeded_sampler_covers_rotation_support() -> None:
     equipment_counts = Counter(sample.source_equipment_count for sample in samples)
 
     _assert_hash_balanced_counts(rotation_counts, {90, 270})
+    assert set(person_counts) <= set(range(8, 14))
+    assert set(equipment_counts) <= set(range(4, 8))
+    assert person_counts
+    assert equipment_counts
+
+
+def test_swapped_tile_pair_label_contract() -> None:
+    out = create_task("task_illustrations__park_playground__swapped_tile_pair_label").generate(
+        hash64(2026061603, "park-swapped-tile-pair", 0),
+        params={"correct_index": 2, "source_person_count": 10, "source_equipment_count": 6},
+        max_attempts=300,
+    )
+    trace = out.trace_payload
+    answer_label = str(out.answer_gt.value)
+    render_map = trace["render_map"]
+    option_pairs = render_map["option_pairs_by_label"]
+    option_pair_indices = render_map["option_pair_indices_by_label"]
+    swapped_indices = render_map["swapped_pair_indices"]
+    swapped_cell_bboxes = render_map["swapped_cell_bboxes_px"]
+
+    assert out.scene_id == "park_playground"
+    assert out.query_id == SINGLE_QUERY_ID
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "bbox_set"
+    assert answer_label == "C"
+    assert sorted(option_pairs) == ["A", "B", "C", "D"]
+    assert len({tuple(value) for value in option_pair_indices.values()}) == 4
+    assert option_pair_indices[answer_label] == swapped_indices
+    assert option_pairs[answer_label] == [swapped_indices[0] + 1, swapped_indices[1] + 1]
+    assert len(out.annotation_gt.value) == 2
+    assert sorted(out.annotation_gt.value) == sorted(swapped_cell_bboxes)
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert sorted(trace["projected_annotation"]["bbox_set"]) == sorted(out.annotation_gt.value)
+    assert trace["query_spec"]["params"]["grid_shape"] == [3, 3]
+    assert trace["query_spec"]["params"]["source_size"][0] % 3 == 0
+    assert trace["query_spec"]["params"]["source_size"][1] % 3 == 0
+    assert trace["query_spec"]["params"]["candidate_pair_count"] >= 4
+    assert trace["render_spec"]["canvas_size"][0] * trace["render_spec"]["canvas_size"][1] <= MAX_RECONSTRUCTION_OUTPUT_PIXELS
+    assert "10 people" not in out.prompt
+    _assert_annotation_inside_canvas(out)
+
+
+def test_swapped_tile_pair_seeded_sampler_covers_answer_labels_and_profiles() -> None:
+    samples = [
+        _sample_swapped_tile_pair_spec(
+            instance_seed=hash64(2026061603, "park-swapped-tile-pair-sampling", index),
+            params={"_sample_cursor": index},
+            attempt_index=0,
+        )
+        for index in range(100)
+    ]
+    answer_counts = Counter(sample.correct_index for sample in samples)
+    profile_counts = Counter(sample.source_profile_trace["canvas_profile"] for sample in samples)
+    person_counts = Counter(sample.source_person_count for sample in samples)
+    equipment_counts = Counter(sample.source_equipment_count for sample in samples)
+
+    assert answer_counts == Counter({0: 25, 1: 25, 2: 25, 3: 25})
+    assert set(profile_counts) == {"landscape", "square", "portrait"}
+    assert all(sample.source_size[0] % 3 == 0 and sample.source_size[1] % 3 == 0 for sample in samples)
     assert set(person_counts) <= set(range(8, 14))
     assert set(equipment_counts) <= set(range(4, 8))
     assert person_counts

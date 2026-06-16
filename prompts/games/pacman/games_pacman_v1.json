@@ -119,13 +119,13 @@
   "code_prompt_defaults": {
     "object_description_compact_maze": "a Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, bonus items, and a highlighted route",
     "object_description_wide_maze": "a wider Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, bonus items, and a highlighted route",
-    "annotation_hint_path_pellet_count": "set \"annotation\" to [x, y] pixel points at the centers of the normal pellets that lie on the highlighted route",
+    "annotation_hint_path_pellet_count": "set \"annotation\" to [[x, y], ...] point coordinates at the centers of the normal pellets that lie on the highlighted route",
     "answer_hint_path_pellet_count": "set \"answer\" to the number of normal pellets on the highlighted route",
-    "annotation_hint_next_item_label": "set \"annotation\" to one [x, y] pixel point at the center of the first labeled bonus item reached along the highlighted route",
+    "annotation_hint_next_item_label": "set \"annotation\" to one [x, y] point coordinate at the center of the first labeled bonus item reached along the highlighted route",
     "answer_hint_next_item_label": "set \"answer\" to the single option letter of the first labeled bonus item reached along the highlighted route",
-    "annotation_hint_pellet_count_before_ghost": "set \"annotation\" to [x, y] pixel points at the centers of the counted normal pellets before the first ghost on the highlighted route, plus the center of that first route ghost",
+    "annotation_hint_pellet_count_before_ghost": "set \"annotation\" to {\"counted_pellets\":[[x, y], ...], \"first_ghost\":[[x, y]]}, with pellet centers before the ghost and the first route ghost center",
     "answer_hint_pellet_count_before_ghost": "set \"answer\" to the number of normal pellets reached before the first ghost on the highlighted route",
-    "annotation_hint_route_score_value": "set \"annotation\" to [x, y] pixel points at the centers of every normal pellet and printed-value bonus item included in the highlighted-route score",
+    "annotation_hint_route_score_value": "set \"annotation\" to [[x, y], ...] point coordinates at the centers of every normal pellet and printed-value bonus item included in the highlighted-route score",
     "answer_hint_route_score_value": "set \"answer\" to the integer total score from collectibles on the highlighted route",
     "score_rule_text": "Pellets score 1; bonus items score their printed value."
   }

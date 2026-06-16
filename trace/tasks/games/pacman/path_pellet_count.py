@@ -1,86 +1,138 @@
-"""Count pellets on the highlighted Pac-Man route."""
+"""Count normal pellets on the highlighted Pac-Man route."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
+import json
+from typing import Any, Dict, Mapping
 
-from trace.core.seed import spawn_rng
+from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
-from .shared.scene import SCENE_ID, build_components, resolve_axes, sample_scene
+from ._lifecycle import AttemptPacmanResult, ObjectivePacmanPlan, run_pacman_lifecycle
+from .shared.annotations import point_set_for_entity_ids
+from .shared.defaults import DEFAULTS, SCENE_ID
+from .shared.sampling import (
+    resolve_pacman_integer_target,
+    sample_route_pellet_scene_parts,
+    wall_cells,
+)
+from .shared.state import PacmanSceneState, pellet_entity_id
 
 
 TASK_ID = "task_games__pacman__path_pellet_count"
-QUERY_ID = "path_pellet_count"
+QUERY_ID = DEFAULT_QUERY_ID
+PROMPT_QUERY_KEY = "path_pellet_count"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
     "games",
     SCENE_ID,
     task_id=TASK_ID,
 )
 
 
+def _json_examples() -> tuple[str, str]:
+    """Return valid format examples for route pellet-count output."""
+
+    answer_value = 5
+    annotation_value = [[315, 209], [369, 209]]
+    return (
+        json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
+    )
+
+
+def _prepare_path_pellet_count_objective(
+    instance_seed: int,
+    params: Mapping[str, Any],
+    query_probabilities: Mapping[str, float],
+    _query_id: str,
+) -> ObjectivePacmanPlan:
+    """Resolve the target route-pellet count and bind the attempt constructor."""
+
+    target_axis = resolve_pacman_integer_target(
+        int(instance_seed),
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        support_key="path_pellet_count_support",
+        fallback_support=DEFAULTS.path_pellet_count_support,
+        namespace=f"{TASK_ID}.target_answer",
+    )
+    target = int(target_axis.target_answer)
+
+    def construct_attempt(rng: Any, axes: Any) -> AttemptPacmanResult:
+        return _construct_path_pellet_count_attempt(rng=rng, axes=axes, target=target)
+
+    json_example, json_example_answer_only = _json_examples()
+    return ObjectivePacmanPlan(
+        attempt_namespace="games.pacman.path_pellet_count",
+        prompt_query_key=PROMPT_QUERY_KEY,
+        answer_hint='set "answer" to the number of normal pellets on the highlighted route',
+        annotation_hint='set "annotation" to [[x, y], ...] point coordinates at the centers of the normal pellets on the highlighted route',
+        json_example=json_example,
+        json_example_answer_only=json_example_answer_only,
+        query_params={
+            "query_id_probabilities": dict(query_probabilities),
+            "target_answer": int(target_axis.target_answer),
+            "target_answer_support": [int(value) for value in target_axis.target_answer_support],
+            "target_answer_probabilities": dict(target_axis.target_answer_probabilities),
+        },
+        construct_attempt=construct_attempt,
+    )
+
+
+def _construct_path_pellet_count_attempt(*, rng: Any, axes: Any, target: int) -> AttemptPacmanResult:
+    """Construct a maze where exactly target normal pellets lie on the route."""
+
+    rows, cols = int(axes.row_count), int(axes.col_count)
+    parts = sample_route_pellet_scene_parts(rng=rng, axes=axes, counted_pellet_count=int(target))
+    annotation_ids = tuple(pellet_entity_id(coord) for coord in parts.counted_pellets)
+    scene = PacmanSceneState(
+        row_count=rows,
+        col_count=cols,
+        scene_variant=str(axes.scene_variant),
+        style_variant=str(axes.style_variant),
+        open_cells=tuple(parts.open_cells),
+        wall_cells=wall_cells(rows=rows, cols=cols, open_cells=parts.open_cells),
+        pacman_coord=tuple(parts.route[0]),
+        route_coords=tuple(parts.route),
+        pellets=tuple(parts.pellets),
+        items=tuple(),
+        ghosts=tuple(parts.ghosts),
+        construction_mode="count_visible_route_pellets",
+    )
+    return AttemptPacmanResult(
+        scene=scene,
+        answer_gt=TypedValue(type="integer", value=int(target)),
+        annotation_entity_ids=annotation_ids,
+        build_annotation=lambda rendered: point_set_for_entity_ids(rendered.rendered_scene, annotation_ids),
+        execution_extra={"target_answer": int(target)},
+    )
+
+
 @register_task
 class GamesPacmanPathPelletCountTask:
-    """Count pellets on the highlighted route."""
+    """Count normal pellets on the highlighted Pac-Man route."""
 
     task_id = TASK_ID
     domain = "games"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
+        return run_pacman_lifecycle(
+            task_id=TASK_ID,
+            domain=self.domain,
             supported_query_ids=SUPPORTED_QUERY_IDS,
             default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        axes = resolve_axes(
-            int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
-            namespace=f"{SCENE_ID}.{str(query_id)}",
-            params=task_params,
-            query_id=str(query_id),
-            query_id_probabilities=query_probabilities,
-        )
-        sampled = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            rng = spawn_rng(int(instance_seed), f"games.{SCENE_ID}.{TASK_ID}.attempt.{int(attempt_index)}")
-            try:
-                sampled = sample_scene(rng=rng, axes=axes)
-            except ValueError:
-                continue
-            break
-        if sampled is None:
-            raise RuntimeError(f"{TASK_ID} failed to generate a valid Pac-Man maze after {max_attempts} attempts")
-        components = build_components(
-            sampled_scene=sampled,
-            axes=axes,
-            instance_seed=int(instance_seed),
-            params=task_params,
             render_defaults=_RENDER_DEFAULTS,
-            prompt_defaults=_PROMPT_DEFAULTS,
-            namespace=f"{SCENE_ID}.{str(query_id)}",
-        )
-        return TaskOutput(
-            prompt=components.prompt,
-            prompt_variants=components.prompt_variants,
-            answer_gt=components.answer_gt,
-            annotation_gt=components.annotation_gt,
-            image=components.image,
-            image_id="img0",
-            trace_payload=components.trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+            prepare_objective=_prepare_path_pellet_count_objective,
         )
 
 

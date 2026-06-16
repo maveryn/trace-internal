@@ -8,10 +8,23 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text import draw_centered_game_text as draw_centered_text
-from ....shared.text_rendering import load_font
-from ...shared.layout import apply_games_layout_jitter_to_bbox
-from .common import (
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.games.shared.layout import (
+    apply_games_layout_jitter_to_bbox,
+    attach_games_unit_size_jitter,
+    resolve_games_layout_jitter,
+    resolve_games_unit_size_scale,
+    scale_games_px,
+)
+from trace.tasks.games.shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from trace.tasks.games.shared.text import draw_centered_game_text as draw_centered_text
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.font_assets import get_font_family_record, sample_font_family
+from trace.tasks.shared.text_rendering import load_font
+
+from .defaults import DEFAULTS, POST_IMAGE_NOISE_DEFAULTS
+from .sampling import PacmanVisualAxes
+from .state import (
     Coord,
     PacmanGhost,
     PacmanItem,
@@ -74,6 +87,176 @@ class RenderedPacmanScene:
     image: Image.Image
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
+
+
+@dataclass(frozen=True)
+class RenderedPacmanTaskContext:
+    """Rendered Pac-Man image plus shared style metadata for trace output."""
+
+    image: Image.Image
+    rendered_scene: RenderedPacmanScene
+    panel_style_meta: Dict[str, Any]
+    text_style_meta: Dict[str, Any]
+    background_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+
+
+def resolve_pacman_render_params(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    namespace: str,
+    instance_seed: int,
+) -> PacmanRenderParams:
+    """Resolve Pac-Man rendering parameters from config/defaults."""
+
+    unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
+        params,
+        render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.unit_size",
+    )
+    layout_jitter = attach_games_unit_size_jitter(
+        resolve_games_layout_jitter(
+            params,
+            render_defaults,
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.layout",
+        ),
+        unit_scale_meta,
+    )
+    maze_width_px = scale_games_px(
+        params.get("maze_width_px", group_default(render_defaults, "maze_width_px", DEFAULTS.maze_width_px)),
+        unit_scale,
+        min_px=420,
+    )
+    maze_height_px = scale_games_px(
+        params.get("maze_height_px", group_default(render_defaults, "maze_height_px", DEFAULTS.maze_height_px)),
+        unit_scale,
+        min_px=310,
+    )
+    default_canvas_width = int(group_default(render_defaults, "canvas_width", DEFAULTS.canvas_width))
+    default_canvas_height = int(group_default(render_defaults, "canvas_height", DEFAULTS.canvas_height))
+    canvas_width = int(max(620, min(default_canvas_width, int(maze_width_px) + 220)))
+    canvas_height = int(max(500, min(default_canvas_height, int(maze_height_px) + 180)))
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.font_family",
+        params=params,
+    )
+    return PacmanRenderParams(
+        canvas_width=int(params.get("canvas_width", canvas_width)),
+        canvas_height=int(params.get("canvas_height", canvas_height)),
+        panel_margin_px=scale_games_px(
+            params.get("panel_margin_px", group_default(render_defaults, "panel_margin_px", DEFAULTS.panel_margin_px)),
+            unit_scale,
+            min_px=18,
+        ),
+        maze_width_px=int(maze_width_px),
+        maze_height_px=int(maze_height_px),
+        wall_gap_px=scale_games_px(
+            params.get("wall_gap_px", group_default(render_defaults, "wall_gap_px", DEFAULTS.wall_gap_px)),
+            unit_scale,
+            min_px=1,
+        ),
+        wall_outline_width_px=scale_games_px(
+            params.get("wall_outline_width_px", group_default(render_defaults, "wall_outline_width_px", DEFAULTS.wall_outline_width_px)),
+            unit_scale,
+            min_px=1,
+        ),
+        pellet_radius_px=scale_games_px(
+            params.get("pellet_radius_px", group_default(render_defaults, "pellet_radius_px", DEFAULTS.pellet_radius_px)),
+            unit_scale,
+            min_px=7,
+        ),
+        item_radius_px=scale_games_px(
+            params.get("item_radius_px", group_default(render_defaults, "item_radius_px", DEFAULTS.item_radius_px)),
+            unit_scale,
+            min_px=9,
+        ),
+        ghost_radius_px=scale_games_px(
+            params.get("ghost_radius_px", group_default(render_defaults, "ghost_radius_px", DEFAULTS.ghost_radius_px)),
+            unit_scale,
+            min_px=9,
+        ),
+        route_width_px=scale_games_px(
+            params.get("route_width_px", group_default(render_defaults, "route_width_px", DEFAULTS.route_width_px)),
+            unit_scale,
+            min_px=4,
+        ),
+        item_label_font_size_px=scale_games_px(
+            params.get("item_label_font_size_px", group_default(render_defaults, "item_label_font_size_px", DEFAULTS.item_label_font_size_px)),
+            unit_scale,
+            min_px=12,
+        ),
+        font_family=str(font_family),
+        layout_jitter_meta=layout_jitter,
+    )
+
+
+def render_pacman_task_context(
+    *,
+    axes: PacmanVisualAxes,
+    scene,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    namespace: str,
+    instance_seed: int,
+) -> RenderedPacmanTaskContext:
+    """Render the maze inside the shared games canvas treatment."""
+
+    render_params = resolve_pacman_render_params(
+        params,
+        render_defaults=render_defaults,
+        namespace=str(namespace),
+        instance_seed=int(instance_seed),
+    )
+    panel_style, panel_style_meta = resolve_game_panel_scene_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.panel_scene_style",
+        treatment_weights=params.get("panel_scene_treatment_weights", group_default(render_defaults, "panel_scene_treatment_weights", None)),
+        palette_weights=params.get("panel_scene_palette_weights", group_default(render_defaults, "panel_scene_palette_weights", None)),
+    )
+    background, background_meta = make_panel_scene_background(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        style=panel_style,
+    )
+    rendered_scene = render_pacman_scene(
+        row_count=int(scene.row_count),
+        col_count=int(scene.col_count),
+        open_cells=scene.open_cells,
+        wall_cells=scene.wall_cells,
+        pacman_coord=scene.pacman_coord,
+        route_coords=scene.route_coords,
+        pellets=scene.pellets,
+        items=scene.items,
+        ghosts=scene.ghosts,
+        background=background,
+        scene_variant=str(axes.scene_variant),
+        style_variant=str(axes.style_variant),
+        params=render_params,
+        panel_style=panel_style,
+    )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    text_style_meta = {
+        "font_family": str(render_params.font_family),
+        "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+    }
+    return RenderedPacmanTaskContext(
+        image=image,
+        rendered_scene=rendered_scene,
+        panel_style_meta=dict(panel_style_meta),
+        text_style_meta=dict(text_style_meta),
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
+    )
 
 
 def build_games_pacman_theme(*, style_variant: str) -> PacmanTheme:
@@ -364,7 +547,7 @@ def _draw_ghost(
     fill: Tuple[int, int, int],
     theme: PacmanTheme,
 ) -> Tuple[float, float, float, float]:
-    """Draw a compact ghost marker."""
+    """Draw a compact ghost marker with a body, skirt, and eye geometry."""
 
     cx, cy = float(center[0]), float(center[1])
     r = float(radius)
@@ -645,6 +828,9 @@ __all__ = [
     "PacmanRenderParams",
     "PacmanTheme",
     "RenderedPacmanScene",
+    "RenderedPacmanTaskContext",
     "build_games_pacman_theme",
     "render_pacman_scene",
+    "render_pacman_task_context",
+    "resolve_pacman_render_params",
 ]

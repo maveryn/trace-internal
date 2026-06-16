@@ -6,17 +6,19 @@ from pathlib import Path
 
 import pytest
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
+from trace.tasks.games.pacman.next_item_label import GamesPacmanNextItemLabelTask
+from trace.tasks.games.pacman.pellet_count_before_ghost import GamesPacmanPelletCountBeforeGhostTask
 from trace.tasks.games.pacman.path_pellet_count import (
-    GamesPacmanMazeTask,
-    GamesPacmanNextItemLabelTask,
     GamesPacmanPathPelletCountTask,
-    GamesPacmanPelletCountBeforeGhostTask,
-    GamesPacmanRouteScoreValueTask,
 )
-from trace.tasks.games.pacman.shared.common import (
+from trace.tasks.games.pacman.route_score_value import GamesPacmanRouteScoreValueTask
+from trace.tasks.games.pacman.shared.defaults import (
     PACMAN_ITEM_LABELS,
+)
+from trace.tasks.games.pacman.shared.state import (
     coord_from_entity_id,
     item_entity_id,
 )
@@ -26,14 +28,14 @@ from tests.helpers import read_jsonl
 @pytest.mark.parametrize(
     ("task_cls", "params", "expected_query", "answer_type"),
     (
-        (GamesPacmanPathPelletCountTask, {"query_id": "path_pellet_count", "target_answer": 5, "row_count": 8, "col_count": 11}, "path_pellet_count", "integer"),
-        (GamesPacmanNextItemLabelTask, {"target_label": "E", "item_count": 6}, "next_item_label", "string"),
-        (GamesPacmanPelletCountBeforeGhostTask, {"query_id": "pellet_count_before_ghost", "target_answer": 4, "row_count": 9, "col_count": 13}, "pellet_count_before_ghost", "integer"),
-        (GamesPacmanRouteScoreValueTask, {"query_id": "route_score_value", "row_count": 9, "col_count": 13}, "route_score_value", "integer"),
+        (GamesPacmanPathPelletCountTask, {"target_answer": 5, "row_count": 8, "col_count": 11}, SINGLE_QUERY_ID, "integer"),
+        (GamesPacmanNextItemLabelTask, {"target_label": "E", "item_count": 6}, SINGLE_QUERY_ID, "string"),
+        (GamesPacmanPelletCountBeforeGhostTask, {"target_answer": 4, "row_count": 9, "col_count": 13}, SINGLE_QUERY_ID, "integer"),
+        (GamesPacmanRouteScoreValueTask, {"row_count": 9, "col_count": 13}, SINGLE_QUERY_ID, "integer"),
     ),
 )
 def test_games_pacman_public_tasks_emit_expected_contract(
-    task_cls: type[GamesPacmanMazeTask],
+    task_cls: type,
     params: dict[str, int | str],
     expected_query: str,
     answer_type: str,
@@ -43,24 +45,31 @@ def test_games_pacman_public_tasks_emit_expected_contract(
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == answer_type
-    assert out.annotation_gt.type == "point_set"
     assert out.query_id == expected_query
     assert out.scene_id == "pacman"
     assert trace["query_spec"]["query_id"] == expected_query
     assert trace["query_spec"]["params"]["query_id"] == expected_query
     assert execution["query_id"] == expected_query
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == out.annotation_gt.type
     assert "panel_scene_style" in trace["render_spec"]
     assert "text_style" in trace["render_spec"]
-    assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
+    if out.annotation_gt.type == "point":
+        assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_point"] == out.annotation_gt.value
+        assert len(execution["annotation_entity_ids"]) == 1
+    elif out.annotation_gt.type == "keyed_point_set_map":
+        assert trace["projected_annotation"]["keyed_point_set_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_keyed_point_set_map"] == out.annotation_gt.value
+    else:
+        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+        assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
 
 
 def test_games_pacman_path_pellet_count_annotation_is_on_route() -> None:
     out = GamesPacmanPathPelletCountTask().generate(
         120010,
-        params={"query_id": "path_pellet_count", "target_answer": 5, "row_count": 9, "col_count": 13},
+        params={"target_answer": 5, "row_count": 9, "col_count": 13},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
@@ -91,6 +100,7 @@ def test_games_pacman_next_item_label_is_first_route_item() -> None:
     ]
 
     assert out.answer_gt.value == "F"
+    assert out.annotation_gt.type == "point"
     assert execution["annotation_entity_ids"] == [item_entity_id("F")]
     assert min(item_steps)[1] == "F"
 
@@ -98,7 +108,7 @@ def test_games_pacman_next_item_label_is_first_route_item() -> None:
 def test_games_pacman_pellet_count_before_ghost_stops_at_first_route_ghost() -> None:
     out = GamesPacmanPelletCountBeforeGhostTask().generate(
         120030,
-        params={"query_id": "pellet_count_before_ghost", "target_answer": 5, "row_count": 9, "col_count": 13},
+        params={"target_answer": 5, "row_count": 9, "col_count": 13},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
@@ -114,6 +124,8 @@ def test_games_pacman_pellet_count_before_ghost_stops_at_first_route_ghost() -> 
     assert int(out.answer_gt.value) == 5
     assert len(stop_ghosts) == 1
     assert annotation_ghosts == [stop_ghosts[0]["entity_id"]]
+    assert out.annotation_gt.type == "keyed_point_set_map"
+    assert set(out.annotation_gt.value) == {"counted_pellets", "first_ghost"}
     stop_index = route_order[tuple(stop_ghosts[0]["coord"])]
     assert len(annotation_coords) == 5
     assert all(route_order[coord] < stop_index for coord in annotation_coords)
@@ -179,7 +191,7 @@ def test_games_pacman_query_cycle_covers_support() -> None:
         cols.add(int(execution["col_count"]))
         counts.add(int(out.answer_gt.value))
 
-    assert queries == {"path_pellet_count", "pellet_count_before_ghost"}
+    assert queries == {SINGLE_QUERY_ID}
     assert rows == {7, 8, 9}
     assert cols == {9, 11, 13}
     assert counts == {1, 2, 3, 4, 5}

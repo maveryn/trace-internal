@@ -20,7 +20,8 @@ region.
 Generation uses a homogeneous cluster: all visible objects are countable
 instances from one sampled object type. The sampled object type is render
 variety metadata only and is not named in the prompt. There are no unrelated
-distractor objects in this task.
+distractor objects in this task. The default generated object-count support is
+`6-20`.
 
 The answer is the integer count of finalized visible objects with
 `is_countable_object = true`. Pixels are render output, not verifier source of

@@ -100,6 +100,9 @@ def test_object_cluster_total_object_count_answer_and_annotation() -> None:
     assert output.scene_id == "object_cluster"
     assert output.query_id == "single"
     assert trace["internal_query_id"] == "total_object_count"
+    object_count_support = {int(value) for value in output.trace_payload["query_spec"]["params"]["object_count_probabilities"]}
+    assert min(object_count_support) == 6
+    assert max(object_count_support) == 20
     assert trace["cluster_composition_mode"] == "single_type_cluster"
     assert trace["object_count"] == 14
     assert trace["distractor_count"] == 0

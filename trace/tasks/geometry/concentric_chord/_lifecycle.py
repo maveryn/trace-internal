@@ -28,7 +28,7 @@ def _concentric_chord_trace_payload(
     query_id: str,
     query_probabilities: Mapping[str, float],
     internal_query_id: str,
-    answer_value: float,
+    answer_value: int,
     case_index: int,
     target_support_probabilities: Mapping[str, float],
     render_meta: Mapping[str, Any],
@@ -63,7 +63,7 @@ def _concentric_chord_trace_payload(
                 "query_id": str(query_id),
                 "internal_query_id": str(internal_query_id),
                 "scene_variant": SCENE_VARIANT,
-                "answer_value": float(answer_value),
+                "answer_value": int(answer_value),
                 "annotation_roles": list(annotation_roles),
             },
         },
@@ -81,9 +81,8 @@ def _concentric_chord_trace_payload(
             "query_id": str(query_id),
             "internal_query_id": str(internal_query_id),
             "query_id_probabilities": dict(query_probabilities),
-            "answer_type": "number",
-            "answer_value": float(answer_value),
-            "answer_rounding": "nearest_tenth",
+            "answer_type": "integer",
+            "answer_value": int(answer_value),
             "annotation_roles": list(annotation_roles),
             "reasoning_steps": 1,
             **dict(measurement_fields),
@@ -93,7 +92,7 @@ def _concentric_chord_trace_payload(
             "scene_id": SCENE_ID,
             "query_id": str(query_id),
             "internal_query_id": str(internal_query_id),
-            "answer_value": float(answer_value),
+            "answer_value": int(answer_value),
             "source_witness_type": annotation_artifacts.annotation_type,
             "original_annotation_value": annotation_artifacts.value,
             **dict(measurement_fields),
@@ -155,8 +154,8 @@ def prepare_concentric_chord_task_parts(
     if target_support_probabilities is None:
         support_probabilities = geometry_selected_probability_map(
             support_values,
-            float(spec.answer),
-            is_selected=lambda value, selected: float(value) == float(selected),
+            int(spec.answer),
+            is_selected=lambda value, selected: int(value) == int(selected),
         )
     else:
         support_probabilities = {str(key): float(value) for key, value in target_support_probabilities.items()}
@@ -168,7 +167,7 @@ def prepare_concentric_chord_task_parts(
         "half_chord": int(spec.half_chord),
         "chord_length": int(spec.chord_length),
         "pythagorean_relation": "R^2 = r^2 + (c/2)^2",
-        "answer_value": float(spec.answer),
+        "answer_value": int(spec.answer),
     }
     trace_payload = _concentric_chord_trace_payload(
         rendered=rendered,
@@ -177,7 +176,7 @@ def prepare_concentric_chord_task_parts(
         query_id=str(selected_query),
         query_probabilities=query_probabilities,
         internal_query_id=str(internal_query_id),
-        answer_value=float(spec.answer),
+        answer_value=int(spec.answer),
         case_index=int(case_index),
         target_support_probabilities=support_probabilities,
         render_meta=render_meta,

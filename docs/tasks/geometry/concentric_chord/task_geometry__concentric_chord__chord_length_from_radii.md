@@ -5,7 +5,7 @@
 2. Scene id: `concentric_chord`
 3. Query id: `single`
 4. Internal query id: `chord_length_from_radii`
-5. Answer schema: `decimal_value_1dp`
+5. Answer schema: `integer`
 6. Annotation schema: `keyed_point_map` with keys `O`, `A`, `B`, `T`
 
 ## Program Contract

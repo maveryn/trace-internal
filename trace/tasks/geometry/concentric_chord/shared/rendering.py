@@ -270,7 +270,7 @@ def render_concentric_chord_scene(
             "chord_length": int(spec.chord_length),
             "formula_family": str(spec.formula_family),
             "unknown_measure": str(spec.unknown_measure),
-            "answer_value": float(spec.answer),
+            "answer_value": int(spec.answer),
         },
     )
 

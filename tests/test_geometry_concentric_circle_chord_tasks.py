@@ -38,7 +38,8 @@ def test_concentric_circle_chord_task_emits_public_contract(task_cls) -> None:
 
     assert out.scene_id == SCENE_ID
     assert out.query_id
-    assert out.answer_gt.type == "number"
+    assert out.answer_gt.type == "integer"
+    assert isinstance(out.answer_gt.value, int)
     assert out.annotation_gt.type == "keyed_point_map"
     assert set(out.annotation_gt.value) == {"O", "A", "B", "T"}
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
@@ -84,7 +85,7 @@ def test_concentric_circle_chord_task_supports_every_explicit_query(task_cls) ->
             max_attempts=20,
         )
         assert out.query_id == query_id
-        assert out.answer_gt.type == "number"
+        assert out.answer_gt.type == "integer"
         assert out.trace_payload["query_spec"]["params"]["internal_query_id"] == INTERNAL_QUERY_ID_BY_TASK[task_cls]
         assert out.trace_payload["query_spec"]["params"][
             "query_id_probabilities"
@@ -154,10 +155,10 @@ def test_concentric_circle_chord_case_pool_has_visible_separation_and_answer_div
 )
 def test_concentric_circle_chord_review_sample_spreads_answers(task_cls) -> None:
     task = task_cls()
-    counts: dict[float, int] = {}
+    counts: dict[int, int] = {}
     for seed in range(56200, 56300):
         out = task.generate(seed, params={}, max_attempts=20)
-        answer = float(out.answer_gt.value)
+        answer = int(out.answer_gt.value)
         counts[answer] = counts.get(answer, 0) + 1
 
     assert len(counts) >= 50

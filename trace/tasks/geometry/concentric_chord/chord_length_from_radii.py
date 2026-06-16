@@ -78,7 +78,7 @@ class GeometryConcentricChordLengthFromRadiiTask:
         )
         return TaskOutput(
             parts.prompt,
-            TypedValue(type="number", value=float(spec.answer)),
+            TypedValue(type="integer", value=int(spec.answer)),
             TypedValue(type=parts.annotation_artifacts.annotation_type, value=parts.annotation_artifacts.value),
             parts.image,
             "img0",

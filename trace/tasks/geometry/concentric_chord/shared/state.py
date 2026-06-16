@@ -31,7 +31,7 @@ class ConcentricChordCase:
 class ConcentricChordDiagramSpec:
     """Task-bound labels and measurements for one rendered diagram."""
 
-    answer: float
+    answer: int
     outer_radius: int
     inner_radius: int
     half_chord: int

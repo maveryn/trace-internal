@@ -30,11 +30,11 @@
         "Report the number of visible balls in the {current_player_group} group."
       ],
       "blocking_ball_count": [
-        "{marked_shot_rule_text} How many balls block either marked segment?",
-        "{marked_shot_rule_text} Count the balls lying on either marked segment.",
-        "How many balls block the cue-to-ball or ball-to-pocket segment? {marked_shot_rule_text}",
-        "{marked_shot_rule_text} Determine the number of blockers on the two marked segments.",
-        "Count every ball obstructing either marked shot segment. {marked_shot_rule_text}"
+        "{marked_shot_rule_text} How many other balls block either part of that shot?",
+        "{marked_shot_rule_text} Count the other balls lying on either straight shot segment.",
+        "{marked_shot_rule_text} How many balls block the cue-to-target or target-to-pocket segment?",
+        "{marked_shot_rule_text} Determine the number of other balls blocking the two marked shot segments.",
+        "{marked_shot_rule_text} Count every other ball obstructing either part of the planned shot."
       ]
     },
     "output": {
@@ -107,10 +107,10 @@
   },
   "code_prompt_defaults": {
     "object_description_standard_table": "a pool table with a cue ball, numbered object balls, and six pockets",
-    "marked_shot_rule_text": "The marked shot has two straight segments: cue ball to marked ball, then marked ball to marked pocket.",
+    "marked_shot_rule_text": "The shown shot has two straight segments: cue ball to the marked target ball, then the marked target ball to the marked pocket.",
     "annotation_hint_current_group_ball_count": "set \"annotation\" to one pixel point [x,y] at the center of every visible ball in the current player's group",
-    "annotation_hint_blocking_ball_count": "set \"annotation\" to one pixel point [x,y] at the center of every ball on either marked shot segment",
+    "annotation_hint_blocking_ball_count": "set \"annotation\" to one pixel point [x,y] at the center of every other ball blocking either shot segment",
     "answer_hint_current_group_ball_count": "set \"answer\" to the number of visible balls in the current player's group",
-    "answer_hint_blocking_ball_count": "set \"answer\" to the number of balls blocking either marked shot segment"
+    "answer_hint_blocking_ball_count": "set \"answer\" to the number of other balls blocking either shot segment"
   }
 }

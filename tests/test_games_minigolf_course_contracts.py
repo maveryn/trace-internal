@@ -70,7 +70,7 @@ def test_games_minigolf_public_tasks_emit_expected_contract(
 def test_games_minigolf_first_obstacle_matches_first_ray_hit() -> None:
     out = GamesMinigolfFirstObstacleLabelTask().generate(
         97010,
-        params={"target_obstacle_label": "H", "obstacle_count": 6},
+        params={"target_obstacle_label": "F", "obstacle_count": 6},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
@@ -97,6 +97,7 @@ def test_games_minigolf_first_obstacle_matches_first_ray_hit() -> None:
     assert str(out.answer_gt.value) == str(execution["target_obstacle_label"])
     assert list(execution["annotation_entity_ids"]) == [target_id]
     assert len(execution["obstacles"]) in {4, 6}
+    assert [str(obstacle["label"]) for obstacle in execution["obstacles"]] == list("ABCDEF")
 
 
 @pytest.mark.parametrize(
@@ -119,6 +120,7 @@ def test_games_minigolf_obstacles_stay_clear_of_hole_and_ball(
         ball = tuple(float(value) for value in execution["ball_xy_norm"])
         hole = tuple(float(value) for value in execution["hole_xy_norm"])
         assert len(execution["obstacles"]) in {4, 6}
+        assert [str(obstacle["label"]) for obstacle in execution["obstacles"]] == list("ABCDEF")[: len(execution["obstacles"])]
         for obstacle in execution["obstacles"]:
             center = (float(obstacle["x_norm"]), float(obstacle["y_norm"]))
             assert distance(center, hole) >= MIN_OBSTACLE_POINT_CLEARANCE_NORM - 1e-9

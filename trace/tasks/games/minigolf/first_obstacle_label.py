@@ -11,10 +11,8 @@ from .shared.sampling import resolve_minigolf_axes, resolve_minigolf_label_choic
 
 
 TASK_ID = "task_games__minigolf__first_obstacle_label"
-QUERY_ID = DEFAULT_BRANCH_ID
 PROMPT_QUERY_KEY = "first_obstacle_label"
-SUPPORTED_QUERY_IDS = (QUERY_ID,)
-TARGET_OBSTACLE_LABEL_SUPPORT_KEY = "target_obstacle_label_support"
+SUPPORTED_QUERY_IDS = (DEFAULT_BRANCH_ID,)
 
 
 def _prepare_first_obstacle_objective(
@@ -32,13 +30,14 @@ def _prepare_first_obstacle_objective(
         namespace="games.minigolf.first_obstacle",
         params=task_params,
     )
+    visible_label_support = tuple(str(label) for label in OBSTACLE_LABELS[: int(axes.obstacle_count)])
     target_label, target_label_probabilities = resolve_minigolf_label_choice(
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
         params=task_params,
-        support_key=TARGET_OBSTACLE_LABEL_SUPPORT_KEY,
+        support_key="target_obstacle_label_support",
         explicit_key="target_obstacle_label",
-        fallback_support=OBSTACLE_LABELS,
+        fallback_support=visible_label_support,
         namespace="games.minigolf.first_obstacle.target_label",
         balanced_flag_key="balanced_target_obstacle_label_sampling",
     )
@@ -85,13 +84,11 @@ class GamesMinigolfFirstObstacleLabelTask:
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
-    _default_branch = QUERY_ID
+    _default_branch = DEFAULT_BRANCH_ID
     _namespace = "games.minigolf.first_obstacle"
     _prepare_objective = staticmethod(_prepare_first_obstacle_objective)
 
     def generate(self, instance_seed, *, params=None, max_attempts=100):
-        """Generate a first-obstacle Mini-golf task instance."""
-
         return run_minigolf_registered_task(
             self,
             int(instance_seed),

@@ -11,9 +11,8 @@ from .shared.sampling import resolve_minigolf_axes, resolve_minigolf_integer_cho
 
 
 TASK_ID = "task_games__minigolf__shot_path_label"
-QUERY_ID = DEFAULT_BRANCH_ID
 PROMPT_QUERY_KEY = "shot_path_label"
-SUPPORTED_QUERY_IDS = (QUERY_ID,)
+SUPPORTED_QUERY_IDS = (DEFAULT_BRANCH_ID,)
 PATH_OPTION_COUNT_SUPPORT_KEY = "path_option_count_support"
 PATH_OPTION_COUNT_FALLBACK_SUPPORT = (4, 5, 6)
 TARGET_PATH_INDEX_SUPPORT_KEY = "target_path_index_support"
@@ -103,13 +102,11 @@ class GamesMinigolfShotPathLabelTask:
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
-    _default_branch = QUERY_ID
+    _default_branch = DEFAULT_BRANCH_ID
     _namespace = "games.minigolf.shot_path"
     _prepare_objective = staticmethod(_prepare_shot_path_objective)
 
     def generate(self, instance_seed, *, params=None, max_attempts=100):
-        """Generate a Mini-golf shot-path option task instance."""
-
         return run_minigolf_registered_task(
             self,
             int(instance_seed),

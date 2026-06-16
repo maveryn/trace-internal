@@ -21,7 +21,7 @@ def test_games_minigolf_course_defaults_present() -> None:
     assert set(generation["scene_variant_weights"].keys()) == set(SCENE_VARIANTS)
     assert set(generation["style_variant_weights"].keys()) == set(STYLE_VARIANTS)
     assert list(generation["obstacle_count_support"]) == [4, 6]
-    assert list(generation["target_obstacle_label_support"]) == list("ABCDEFGH")
+    assert "target_obstacle_label_support" not in generation
     assert int(rendering["canvas_width"]) == 1000
     assert int(rendering["canvas_height"]) == 740
     assert int(rendering["obstacle_radius_px"]) > 0

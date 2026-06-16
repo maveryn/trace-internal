@@ -17,15 +17,6 @@ generation:
   task_overrides:
     task_games__minigolf__first_obstacle_label:
       balanced_target_obstacle_label_sampling: true
-      target_obstacle_label_support:
-      - A
-      - B
-      - C
-      - D
-      - E
-      - F
-      - G
-      - H
     task_games__minigolf__shot_path_label:
       balanced_path_option_count_sampling: true
       balanced_target_path_sampling: true

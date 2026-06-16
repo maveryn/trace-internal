@@ -417,10 +417,9 @@ def _obstacles_with_target_label(
 ) -> Tuple[MinigolfObstacle, ...] | None:
     """Create obstacle set with the target label on the first-hit obstacle."""
 
-    other_labels = [str(label) for label in OBSTACLE_LABELS if str(label) != str(target_label)]
-    rng.shuffle(other_labels)
-    labels = [str(target_label)] + other_labels[: max(0, int(obstacle_count) - 1)]
-    rng.shuffle(labels)
+    labels = [str(label) for label in OBSTACLE_LABELS[: int(obstacle_count)]]
+    if str(target_label) not in labels:
+        return None
     target_index = labels.index(str(target_label))
     if any(distance(target_center, avoid_point) < MIN_OBSTACLE_POINT_CLEARANCE_NORM for avoid_point in avoid_points):
         return None

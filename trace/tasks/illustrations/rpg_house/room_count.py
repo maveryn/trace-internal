@@ -111,6 +111,7 @@ class IllustrationsRpgHouseRoomCountTask:
             height=int(render_params["canvas_height"]),
             tile_px=int(task_params.get("tile_px", group_default(_RENDER_DEFAULTS, "rpg_house_tile_px", DEFAULT_TILE_PX))),
             room_count=int(room_count),
+            sample_mixed_door_states=True,
             render_metadata={
                 "canvas_profile": str(render_params.get("canvas_profile", "")),
                 "canvas_profile_size": list(render_params.get("canvas_profile_size", [])),

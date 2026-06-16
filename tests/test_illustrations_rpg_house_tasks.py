@@ -17,6 +17,14 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
     assert 0 <= float(bbox[1]) < float(bbox[3]) <= float(height)
 
 
+def _shared_wall_overlap(room_a: tuple[int, int, int, int], room_b: tuple[int, int, int, int], *, orientation: str) -> tuple[int, int]:
+    ax, ay, aw, ah = room_a
+    bx, by, bw, bh = room_b
+    if orientation == "vertical":
+        return max(ay, by), min(ay + ah, by + bh)
+    return max(ax, bx), min(ax + aw, bx + bw)
+
+
 def test_rpg_house_renderer_is_deterministic_and_profile_safe() -> None:
     for width, height in ((1200, 800), (960, 960), (800, 1200)):
         first = render_rpg_house_scene(
@@ -38,6 +46,7 @@ def test_rpg_house_renderer_is_deterministic_and_profile_safe() -> None:
         assert MIN_ROOM_COUNT <= len(first.rooms) <= MAX_ROOM_COUNT
         assert len(first.doors) >= len(first.rooms) - 1
         assert len(first.entities) >= len(first.rooms)
+        rooms_by_id = {room.room_id: room for room in first.rooms}
         for room in first.rooms:
             _assert_bbox_inside_canvas(list(room.bbox_xyxy), width=width, height=height)
         wide_door_seen = False
@@ -45,8 +54,21 @@ def test_rpg_house_renderer_is_deterministic_and_profile_safe() -> None:
             _assert_bbox_inside_canvas(list(door.bbox_xyxy), width=width, height=height)
             door_width = float(door.bbox_xyxy[2]) - float(door.bbox_xyxy[0])
             door_height = float(door.bbox_xyxy[3]) - float(door.bbox_xyxy[1])
+            if door.orientation == "vertical":
+                assert door_width <= first.trace["tile_px"] * 1.05
+            else:
+                assert door_height <= first.trace["tile_px"] * 1.05
             assert min(door_width, door_height) >= first.trace["tile_px"] * 0.25
             assert max(door_width, door_height) >= first.trace["tile_px"] * 0.70
+            overlap0, overlap1 = _shared_wall_overlap(
+                rooms_by_id[door.room_a_id].tile_xywh,
+                rooms_by_id[door.room_b_id].tile_xywh,
+                orientation=door.orientation,
+            )
+            along_start = door.tile_xy[1] if door.orientation == "vertical" else door.tile_xy[0]
+            span_tiles = int(door.metadata.get("span_tiles", 1))
+            assert along_start > overlap0
+            assert along_start + span_tiles < overlap1
             if int(door.metadata.get("span_tiles", 1)) >= 2:
                 wide_door_seen = True
                 assert max(door_width, door_height) >= first.trace["tile_px"] * 1.70
@@ -127,6 +149,8 @@ def test_rpg_house_room_count_contract() -> None:
     assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 7
+    assert "red-outlined" not in out.prompt
+    assert "lettered candidate" not in out.prompt
     assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == 7
     width, height = out.image.size
@@ -140,6 +164,9 @@ def test_rpg_house_room_count_contract() -> None:
     assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert trace["render_map"]["counted_room_count"] == 7
     assert len(trace["render_map"]["counted_room_ids"]) == 7
+    door_states = {str(door["state"]) for door in trace["execution_trace"]["renderer"]["doors"]}
+    assert trace["execution_trace"]["renderer"]["door_state_policy"] == "mixed"
+    assert {"open", "closed"}.issubset(door_states)
 
 
 def test_rpg_house_reachable_room_support_is_sampled() -> None:

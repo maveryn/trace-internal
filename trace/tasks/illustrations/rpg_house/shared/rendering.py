@@ -182,6 +182,7 @@ def render_rpg_house_scene(
     start_room_id: str | None = None,
     room_labels: Mapping[str, str] | None = None,
     door_states: Mapping[str, str] | None = None,
+    sample_mixed_door_states: bool = False,
     label_font_family: str | None = None,
     label_font_trace: Mapping[str, Any] | None = None,
     render_metadata: Mapping[str, Any] | None = None,
@@ -199,6 +200,7 @@ def render_rpg_house_scene(
         theme=theme,
         room_count=resolved_room_count,
         door_states=door_states or {},
+        sample_mixed_door_states=bool(sample_mixed_door_states),
     )
     entity_specs = _make_entity_specs(room_specs, theme_id=theme_id, rng=rng)
     canvas, draw = _render_base(layout, room_specs=room_specs, door_specs=door_specs, theme=theme)
@@ -242,6 +244,7 @@ def render_rpg_house_scene(
         "candidate_room_labels": dict(room_labels),
         "start_room_id": None if start_room_id is None else str(start_room_id),
         "doors": [door.as_dict() for door in doors],
+        "door_state_policy": "mixed" if sample_mixed_door_states else "explicit_or_closed",
         "room_graph": room_graph(doors),
         "label_font": dict(label_font_trace or {}),
         **dict(render_metadata or {}),
@@ -340,6 +343,7 @@ def _make_layout_specs(
     theme: Mapping[str, Any],
     room_count: int,
     door_states: Mapping[str, str],
+    sample_mixed_door_states: bool,
 ) -> tuple[list[_RoomSpec], list[_DoorSpec], str]:
     """Build an irregular room partition and its connecting doors."""
 
@@ -359,12 +363,16 @@ def _make_layout_specs(
         for room_id, box in zip(selected_ids, sorted_boxes)
     ]
     base_doors = _adjacent_door_specs(rng, rooms)
+    sampled_open_door_ids = _sample_open_door_ids(
+        rng,
+        tuple(str(door_id) for door_id, *_rest in base_doors),
+    ) if sample_mixed_door_states else frozenset()
     doors = [
         _DoorSpec(
             door_id=door_id,
             room_a_id=room_a,
             room_b_id=room_b,
-            state=str(door_states.get(door_id, "closed")),
+            state=str(door_states.get(door_id, "open" if door_id in sampled_open_door_ids else "closed")),
             orientation=orientation,
             tile_xy=tile_xy,
             span_tiles=span_tiles,
@@ -416,7 +424,7 @@ def _adjacent_door_specs(
     rng: random.Random,
     rooms: Sequence[_RoomSpec],
 ) -> list[tuple[str, str, str, str, tuple[int, int], int]]:
-    """Place one door on every shared wall between partitioned rooms."""
+    """Place doors away from shared-wall endpoints and T-junctions."""
 
     doors: list[tuple[str, str, str, str, tuple[int, int], int]] = []
     for index, room_a in enumerate(rooms):
@@ -427,21 +435,57 @@ def _adjacent_door_specs(
                 boundary_x = ax + aw if ax + aw == bx else bx + bw
                 overlap0 = max(ay, by)
                 overlap1 = min(ay + ah, by + bh)
-                if overlap1 - overlap0 >= 2:
-                    span_tiles = 2 if overlap1 - overlap0 >= 3 else 1
-                    door_y = int(rng.randint(overlap0, overlap1 - span_tiles))
+                span_tiles = _door_span_for_overlap(overlap1 - overlap0)
+                if span_tiles:
+                    door_y = _sample_door_start(rng, overlap0=overlap0, overlap1=overlap1, span_tiles=span_tiles)
                     room_0, room_1 = sorted((room_a.room_id, room_b.room_id))
                     doors.append((f"{room_0}_{room_1}", room_a.room_id, room_b.room_id, "vertical", (boundary_x, door_y), span_tiles))
             if ay + ah == by or by + bh == ay:
                 boundary_y = ay + ah if ay + ah == by else by + bh
                 overlap0 = max(ax, bx)
                 overlap1 = min(ax + aw, bx + bw)
-                if overlap1 - overlap0 >= 2:
-                    span_tiles = 2 if overlap1 - overlap0 >= 3 else 1
-                    door_x = int(rng.randint(overlap0, overlap1 - span_tiles))
+                span_tiles = _door_span_for_overlap(overlap1 - overlap0)
+                if span_tiles:
+                    door_x = _sample_door_start(rng, overlap0=overlap0, overlap1=overlap1, span_tiles=span_tiles)
                     room_0, room_1 = sorted((room_a.room_id, room_b.room_id))
                     doors.append((f"{room_0}_{room_1}", room_a.room_id, room_b.room_id, "horizontal", (door_x, boundary_y), span_tiles))
     return sorted(doors, key=lambda item: item[0])
+
+
+def _door_span_for_overlap(overlap_len: int) -> int:
+    """Return a door span that leaves wall material on both ends."""
+
+    if int(overlap_len) >= 4:
+        return 2
+    if int(overlap_len) >= 3:
+        return 1
+    return 0
+
+
+def _sample_door_start(
+    rng: random.Random,
+    *,
+    overlap0: int,
+    overlap1: int,
+    span_tiles: int,
+) -> int:
+    start_min = int(overlap0) + 1
+    start_max = int(overlap1) - int(span_tiles) - 1
+    if start_max < start_min:
+        return start_min
+    return int(rng.randint(start_min, start_max))
+
+
+def _sample_open_door_ids(rng: random.Random, door_ids: Sequence[str]) -> frozenset[str]:
+    """Sample visible open doors for non-reachability scenes."""
+
+    unique_ids = tuple(str(door_id) for door_id in door_ids)
+    if not unique_ids:
+        return frozenset()
+    if len(unique_ids) == 1:
+        return frozenset(unique_ids)
+    open_count = max(1, min(len(unique_ids) - 1, int(round(len(unique_ids) * 0.35))))
+    return frozenset(rng.sample(list(unique_ids), open_count))
 
 
 def _make_entity_specs(
@@ -588,8 +632,8 @@ def _draw_door(draw: ImageDraw.ImageDraw, door: _DoorSpec, *, theme: Mapping[str
     px = int(x) * CANONICAL_TILE_PX
     py = int(y) * CANONICAL_TILE_PX
     span_px = max(CANONICAL_TILE_PX, int(door.span_tiles) * CANONICAL_TILE_PX)
-    shadow_half = CANONICAL_WALL_SHADOW_THICKNESS // 2 + 2
-    slab_half = CANONICAL_WALL_THICKNESS // 2 + 2
+    shadow_half = CANONICAL_WALL_SHADOW_THICKNESS // 2
+    slab_half = CANONICAL_WALL_THICKNESS // 2
     margin = CANONICAL_DOOR_CLEARANCE
     threshold_rgb = _shade(theme["wall_rgb"], 42)
     threshold_dark = _shade(theme["wall_dark_rgb"], 12)
@@ -729,7 +773,7 @@ def _door_bbox(layout: RpgHouseLayout, spec: _DoorSpec) -> BBox:
     px = ox + int(x) * int(layout.tile_px)
     py = oy + int(y) * int(layout.tile_px)
     span_px = max(int(layout.tile_px), int(spec.span_tiles) * int(layout.tile_px))
-    cross_half = max(7, int(round(layout.tile_px * (CANONICAL_WALL_SHADOW_THICKNESS + 4) / (2 * CANONICAL_TILE_PX))))
+    cross_half = max(6, int(round(layout.tile_px * CANONICAL_WALL_SHADOW_THICKNESS / (2 * CANONICAL_TILE_PX))))
     margin = max(2, int(round(layout.tile_px * CANONICAL_DOOR_CLEARANCE / CANONICAL_TILE_PX)))
     if spec.orientation == "vertical":
         return (

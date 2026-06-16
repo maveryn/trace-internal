@@ -8,7 +8,6 @@ from .defaults import (
     HEIGHT_CONDITION_AT_LEAST,
     HEIGHT_CONDITION_EXACT,
     SAMPLE_KIND_HEIGHT_FILTER,
-    SAMPLE_KIND_REACHABLE_RESOURCE,
     SAMPLE_KIND_ROUTE_COST,
     SAMPLE_KIND_TOP_RESOURCE,
     STYLE_VARIANTS,
@@ -50,18 +49,6 @@ def require_contiguous_stack_levels(blocks: Sequence[MinecraftBlock]) -> None:
         expected = set(range(max(z_values) + 1))
         if z_values != expected:
             raise ValueError(f"block stack at {coord} must use contiguous z levels")
-
-
-def reachable_prefix_length_for_heights(heights: Sequence[int]) -> int:
-    """Return how far a left-to-right path can move under the one-cube climb rule."""
-
-    prefix_length = 1
-    for previous_height, next_height in zip(heights, heights[1:]):
-        if int(next_height) <= int(previous_height) + 1:
-            prefix_length += 1
-        else:
-            break
-    return int(prefix_length)
 
 
 def stack_ids_with_top_kind(blocks: Sequence[MinecraftBlock], target_kind: str) -> set[str]:
@@ -123,8 +110,6 @@ def validate_minecraft_sample(sample: MinecraftSceneSample) -> None:
 
     if str(sample.sample_kind) == SAMPLE_KIND_TOP_RESOURCE:
         _validate_top_resource_sample(sample)
-    elif str(sample.sample_kind) == SAMPLE_KIND_REACHABLE_RESOURCE:
-        _validate_reachable_resource_sample(sample)
     elif str(sample.sample_kind) == SAMPLE_KIND_ROUTE_COST:
         _validate_route_cost_sample(sample)
     elif str(sample.sample_kind) == SAMPLE_KIND_HEIGHT_FILTER:
@@ -144,73 +129,23 @@ def _validate_top_resource_sample(sample: MinecraftSceneSample) -> None:
         raise ValueError("top-resource annotation must be exactly the counted stack witnesses")
 
 
-def _validate_reachable_resource_sample(sample: MinecraftSceneSample) -> None:
-    """Validate a left-to-right reachable resource stack construction."""
-
-    target_kind = str(sample.counted_resource_kind)
-    line_cells = tuple((int(x), int(y)) for x, y in sample.stack_line_cells)
-    if not (6 <= len(line_cells) <= 10):
-        raise ValueError("reachable-resource line length must be 6..10")
-    row_y = int(line_cells[0][1])
-    for index, (x, y) in enumerate(line_cells):
-        if int(y) != row_y:
-            raise ValueError("reachable-resource line must stay in one row")
-        if index and int(x) != int(line_cells[index - 1][0]) + 1:
-            raise ValueError("reachable-resource line cells must be consecutive left-to-right cells")
-
-    require_contiguous_stack_levels(sample.blocks)
-    heights_by_coord = stack_heights_by_coord(sample.blocks)
-    top_by_coord = top_block_by_coord(sample.blocks)
-    for coord in line_cells:
-        if coord not in heights_by_coord:
-            raise ValueError(f"reachable-resource line cell {coord} has no stack")
-
-    heights = [len(heights_by_coord[coord]) for coord in line_cells]
-    for previous_height, next_height in zip(heights, heights[1:]):
-        if int(next_height) < int(previous_height):
-            raise ValueError("reachable-resource stack heights must be nondecreasing left to right")
-    reachable_prefix_length = reachable_prefix_length_for_heights(heights)
-    if reachable_prefix_length >= len(line_cells):
-        raise ValueError("reachable-resource sample must include an unreachable suffix")
-    if int(sample.reachable_prefix_length) != int(reachable_prefix_length):
-        raise ValueError("reachable-resource prefix length does not match stack heights")
-
-    reachable_coords = set(line_cells[:reachable_prefix_length])
-    counted_ids = {
-        stack_entity_id(int(x), int(y))
-        for x, y in reachable_coords
-        if str(top_by_coord[(int(x), int(y))][1]) == target_kind
-    }
-    unreachable_target_ids = {
-        stack_entity_id(int(x), int(y))
-        for x, y in line_cells[reachable_prefix_length:]
-        if str(top_by_coord[(int(x), int(y))][1]) == target_kind
-    }
-    if not unreachable_target_ids:
-        raise ValueError("reachable-resource sample must include a target stack after the blocker")
-    if int(sample.answer) != len(counted_ids):
-        raise ValueError("reachable-resource answer must equal reachable target stack count")
-    if set(sample.annotation_entity_ids) != counted_ids:
-        raise ValueError("reachable-resource annotation must be exactly the reachable target witnesses")
-
-
 def _validate_route_cost_sample(sample: MinecraftSceneSample) -> None:
-    """Validate a route-cost construction using selected raised blocks."""
+    """Validate a route-cost construction using one visible track."""
 
-    route_costs = [(str(label), int(cost)) for label, cost in sample.route_costs]
-    if not route_costs:
-        raise ValueError("route sample requires route costs")
-    selected_label = str(sample.selected_route_label)
-    route_cost_by_label = {label: int(cost) for label, cost in route_costs}
-    if selected_label not in route_cost_by_label:
-        raise ValueError("selected route label must be present in route costs")
-    if int(sample.answer) != int(route_cost_by_label[selected_label]):
-        raise ValueError("answer must equal selected route cost")
+    track_cells = {(int(x), int(y)) for x, y in sample.track_cells}
+    if len(track_cells) < 4:
+        raise ValueError("route sample requires one visible track")
+    block_by_id = {str(block.block_id): block for block in sample.blocks}
+    annotation_ids = {str(entity_id) for entity_id in sample.annotation_entity_ids}
     if len(sample.annotation_entity_ids) != int(sample.answer):
-        raise ValueError("route annotation count must match selected route cost")
-    route_prefix = f"route_{selected_label.lower()}_obstacle_"
-    if not all(str(entity_id).startswith(route_prefix) for entity_id in sample.annotation_entity_ids):
-        raise ValueError("route annotation must include only selected-route obstacle witnesses")
+        raise ValueError("route annotation count must match raised track-block cost")
+    if annotation_ids != set(block_by_id):
+        raise ValueError("route annotation must include every raised track block and no other blocks")
+    for block in block_by_id.values():
+        if (int(block.x), int(block.y)) not in track_cells:
+            raise ValueError("raised route block must sit on the visible track")
+        if str(block.kind) not in {"stone", "dirt"}:
+            raise ValueError("raised route blocks must be stone or dirt")
 
 
 def _validate_height_filter_sample(sample: MinecraftSceneSample) -> None:
@@ -232,7 +167,6 @@ def _validate_height_filter_sample(sample: MinecraftSceneSample) -> None:
 
 
 __all__ = [
-    "reachable_prefix_length_for_heights",
     "stack_heights_by_coord",
     "stack_ids_matching_height",
     "stack_ids_with_top_kind",

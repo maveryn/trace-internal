@@ -13,6 +13,6 @@
 
 ## Generation Notes
 1. The scene shows visible cube stacks in an isometric Minecraft-like block world.
-2. The target ore type is sampled from iron ore, gold ore, or diamond ore.
+2. The target ore type is sampled from gold ore or diamond ore.
 3. The answer counts stacks whose top cube is the named ore, not ore blocks hidden below the top.
 4. Annotation points mark the top-cube centers of every counted stack.

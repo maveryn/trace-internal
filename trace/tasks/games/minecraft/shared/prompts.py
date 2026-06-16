@@ -27,7 +27,6 @@ class MinecraftPromptSlots:
     annotation_hint_key: str
     example_annotation: list[Any]
     example_answer: Any
-    selected_route_label: str = ""
     counted_resource_kind: str = ""
     target_stack_height: int = 0
 
@@ -80,7 +79,6 @@ def build_minecraft_prompt_artifacts(
         dynamic_slots={
             "object_description": str(resolved_defaults[str(slots.object_description_key)]),
             "minecraft_route_cost_rule_text": str(resolved_defaults["minecraft_route_cost_rule_text"]),
-            "queried_route_label": str(slots.selected_route_label),
             "target_resource_name": resource_prompt_name(slots.counted_resource_kind),
             "counted_resource_name": resource_prompt_name(slots.counted_resource_kind),
             "target_stack_height": str(int(slots.target_stack_height)),

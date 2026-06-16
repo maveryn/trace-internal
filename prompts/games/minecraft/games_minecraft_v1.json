@@ -29,19 +29,12 @@
         "Among the visible stacks, how many show {counted_resource_name} as their top cube?",
         "How many stacks have a top cube of {counted_resource_name}?"
       ],
-      "reachable_ore_stack_count": [
-        "Start from the leftmost stack and move right. You can step to the next stack only if it is at most 1 cube taller than the current stack. How many reachable stacks have {counted_resource_name} on top?",
-        "Beginning with the leftmost stack, move right until the next stack is more than 1 cube taller. How many reachable stacks have {counted_resource_name} on top?",
-        "Scan the stack line from left to right. A step is allowed only when the next stack is no more than 1 cube higher. Count the reachable stacks topped with {counted_resource_name}.",
-        "Use the stack line from left to right. Stop before the first next stack that is 2 or more cubes taller. How many reachable stacks show {counted_resource_name} on top?",
-        "Starting at the leftmost stack, continue right while each next stack rises by at most 1 cube. How many reachable stack tops are {counted_resource_name}?"
-      ],
       "resource_route_cost": [
-        "{minecraft_route_cost_rule_text} What is the cost of Route {queried_route_label}?",
-        "Use Route {queried_route_label} only. {minecraft_route_cost_rule_text} Return that route's cost.",
-        "For Route {queried_route_label}, count the raised stone or dirt blocks on that route. What is the cost?",
-        "{minecraft_route_cost_rule_text} Ignore routes other than Route {queried_route_label}. What cost do you get?",
-        "Find the block cost along Route {queried_route_label} only. {minecraft_route_cost_rule_text}"
+        "{minecraft_route_cost_rule_text} How many raised blocks are on the track?",
+        "Count the raised stone or dirt blocks sitting on the visible track.",
+        "{minecraft_route_cost_rule_text} Return the number of raised blocks on that track.",
+        "Along the visible track, how many stone or dirt blocks are raised?",
+        "How many raised stone or dirt blocks lie on the shown track?"
       ],
       "exact_height_count": [
         "How many visible cube stacks are exactly {target_stack_height} cubes tall?",
@@ -82,12 +75,8 @@
     "query:top_ore_stack_count": [
       "counted_resource_name"
     ],
-    "query:reachable_ore_stack_count": [
-      "counted_resource_name"
-    ],
     "query:resource_route_cost": [
-      "minecraft_route_cost_rule_text",
-      "queried_route_label"
+      "minecraft_route_cost_rule_text"
     ],
     "query:exact_height_count": [
       "target_stack_height"
@@ -135,9 +124,6 @@
     "object_description": {
       "type": "string"
     },
-    "queried_route_label": {
-      "type": "label"
-    },
     "target_stack_height": {
       "type": "string"
     },
@@ -146,15 +132,12 @@
     }
   },
   "code_prompt_defaults": {
-    "object_description_block_world": "a Minecraft-like isometric block world with cube terrain, visible cube stacks, resource blocks, and any marked paths or mining routes needed for the question",
-    "object_description_reachable_stack_line": "a Minecraft-like isometric block world with one highlighted line of cube stacks arranged from left to right",
-    "minecraft_route_cost_rule_text": "For the named labeled route only, each raised stone or dirt block sitting on that route costs 1, and empty route cells cost 0. Ignore all other routes.",
+    "object_description_block_world": "a Minecraft-like isometric block world with cube terrain, visible cube stacks or raised blocks, and any marked track needed for the question",
+    "minecraft_route_cost_rule_text": "Each raised stone or dirt block sitting on the visible track counts 1; empty track cells count 0.",
     "annotation_hint_top_ore_stack_count": "set \"annotation\" to [x, y] pixel points at the centers of the top cubes of every visible stack whose top cube is the named ore",
     "answer_hint_top_ore_stack_count": "set \"answer\" to the integer number of stacks whose top cube is the named ore",
-    "annotation_hint_reachable_ore_stack_count": "set \"annotation\" to [x, y] pixel points at the centers of the top cubes of every reachable stack whose top cube is the named ore; use an empty array if none qualify",
-    "answer_hint_reachable_ore_stack_count": "set \"answer\" to the integer number of reachable stacks whose top cube is the named ore",
-    "annotation_hint_resource_route_cost": "set \"annotation\" to [x, y] pixel points at the centers of the raised stone or dirt blocks on the named route only; use an empty array if the cost is 0",
-    "answer_hint_resource_route_cost": "set \"answer\" to the integer cost of the named route",
+    "annotation_hint_resource_route_cost": "set \"annotation\" to [x, y] pixel points at the centers of the raised stone or dirt blocks on the visible track; use an empty array if the count is 0",
+    "answer_hint_resource_route_cost": "set \"answer\" to the integer number of raised blocks on the track",
     "annotation_hint_exact_height_count": "set \"annotation\" to [x, y] pixel points at the centers of the top cubes of every visible stack that is exactly the named height",
     "answer_hint_exact_height_count": "set \"answer\" to the integer number of stacks that are exactly the named height",
     "annotation_hint_at_least_height_count": "set \"annotation\" to [x, y] pixel points at the centers of the top cubes of every visible stack that is at least the named height",

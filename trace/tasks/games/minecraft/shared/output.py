@@ -2,20 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Sequence
+from typing import Any, Dict, Mapping
 
 from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts
 
-from .rules import stack_heights_by_coord
 from .sampling import MinecraftAxes
-from .state import MinecraftBlock, MinecraftSceneSample, RenderedMinecraftScene
-
-
-def stack_heights_for_cells(blocks: Sequence[MinecraftBlock], cells: Sequence[tuple[int, int]]) -> list[int]:
-    """Return visible stack heights for an ordered stack line."""
-
-    grouped = stack_heights_by_coord(blocks)
-    return [int(len(grouped.get((int(x), int(y)), set()))) for x, y in cells]
+from .state import MinecraftSceneSample, RenderedMinecraftScene
 
 
 def build_minecraft_common_trace_params(
@@ -79,12 +71,6 @@ def build_minecraft_trace_payload(
         }
         for cell in sample.terrain_cells
     ]
-    stack_heights = stack_heights_for_cells(sample.blocks, sample.stack_line_cells)
-    first_blocker_index = (
-        int(sample.reachable_prefix_length)
-        if int(sample.reachable_prefix_length) < int(len(sample.stack_line_cells))
-        else -1
-    )
     return {
         "scene_ir": {
             "scene_kind": "games_minecraft_block_world",
@@ -95,15 +81,10 @@ def build_minecraft_trace_payload(
                 "grid_depth": int(sample.grid_depth),
                 "river_width": int(sample.river_width),
                 "scaffold_cost": int(sample.scaffold_cost),
-                "route_costs": [[str(label), int(cost)] for label, cost in sample.route_costs],
-                "route_option_count": int(len(sample.route_costs)),
-                "selected_route_label": str(sample.selected_route_label),
                 "target_stack_height": int(sample.target_stack_height),
                 "stack_height_condition": str(sample.stack_height_condition),
-                "stack_line_cells": [list(cell) for cell in sample.stack_line_cells],
-                "reachable_prefix_length": int(sample.reachable_prefix_length),
-                "stack_heights": list(stack_heights),
-                "first_blocker_index": int(first_blocker_index),
+                "track_cells": [list(cell) for cell in sample.track_cells],
+                "track_raised_block_count": int(sample.answer) if sample.track_cells else 0,
                 "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
             },
         },
@@ -126,16 +107,10 @@ def build_minecraft_trace_payload(
             "scaffold_cost": int(sample.scaffold_cost),
             "ladder_present": bool(sample.ladder_present),
             "ladder_columns": [list(column) for column in sample.ladder_columns],
-            "route_costs": [[str(label), int(cost)] for label, cost in sample.route_costs],
-            "route_option_count": int(len(sample.route_costs)),
-            "selected_route_label": str(sample.selected_route_label),
             "target_stack_height": int(sample.target_stack_height),
             "stack_height_condition": str(sample.stack_height_condition),
-            "line_length": int(len(sample.stack_line_cells)),
-            "stack_line_cells": [list(cell) for cell in sample.stack_line_cells],
-            "reachable_prefix_length": int(sample.reachable_prefix_length),
-            "stack_heights": list(stack_heights),
-            "first_blocker_index": int(first_blocker_index),
+            "track_cells": [list(cell) for cell in sample.track_cells],
+            "track_raised_block_count": int(sample.answer) if sample.track_cells else 0,
             "target_resource_kind": str(sample.target_resource_kind),
             "counted_resource_kind": str(sample.counted_resource_kind),
             "player_cell": list(sample.player_cell) if sample.player_cell is not None else None,
@@ -161,5 +136,4 @@ def build_minecraft_trace_payload(
 __all__ = [
     "build_minecraft_common_trace_params",
     "build_minecraft_trace_payload",
-    "stack_heights_for_cells",
 ]

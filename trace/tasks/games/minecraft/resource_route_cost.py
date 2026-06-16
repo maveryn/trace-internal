@@ -1,4 +1,4 @@
-"""Compute the block cost along a named Minecraft-like route."""
+"""Count raised blocks along one visible Minecraft-like track."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ def _prepare_route_cost_objective(
     _branch_probabilities,
     gen_defaults,
 ) -> MinecraftObjectivePlan:
-    """Resolve route axes and bind selected-route cost construction."""
+    """Resolve route axes and bind single-track cost construction."""
 
     axes = resolve_route_cost_axes(
         int(instance_seed),
@@ -41,13 +41,10 @@ def _prepare_route_cost_objective(
             annotation_hint_key=f"annotation_hint_{PROMPT_QUERY_KEY}",
             example_annotation=[[315, 316], [344, 287], [523, 212], [552, 240]],
             example_answer=4,
-            selected_route_label=str(sample.selected_route_label),
             extra_query_params={
                 "prompt_query_key": PROMPT_QUERY_KEY,
-                "route_costs": [[str(label), int(cost)] for label, cost in sample.route_costs],
-                "route_option_count": int(len(sample.route_costs)),
-                "selected_route_label": str(sample.selected_route_label),
-                "route_option_count_probabilities": dict(resolved_axes.route_option_count_probabilities),
+                "track_cells": [list(cell) for cell in sample.track_cells],
+                "track_raised_block_count": int(sample.answer),
             },
         )
 
@@ -60,7 +57,7 @@ def _prepare_route_cost_objective(
 
 @register_task
 class GamesMinecraftResourceRouteCostTask:
-    """Compute the block cost along a named Minecraft-like mining route."""
+    """Count raised stone or dirt blocks along one Minecraft-like track."""
 
     task_id = TASK_ID
     domain = "games"
@@ -77,7 +74,7 @@ class GamesMinecraftResourceRouteCostTask:
         params=None,
         max_attempts=100,
     ):
-        """Generate a route cost task instance."""
+        """Generate a single-track route cost task instance."""
 
         return run_minecraft_registered_task(
             self,

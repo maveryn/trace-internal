@@ -49,7 +49,6 @@ def build_games_minecraft_theme(*, style_variant: str) -> MinecraftTheme:
             outline_rgb=(94, 82, 59),
             support_rgb=(167, 120, 72),
             stone_rgb=(137, 133, 119),
-            iron_rgb=(206, 176, 142),
             gold_rgb=(224, 181, 43),
             diamond_rgb=(78, 211, 219),
             ladder_rgb=(114, 71, 35),
@@ -65,7 +64,6 @@ def build_games_minecraft_theme(*, style_variant: str) -> MinecraftTheme:
             outline_rgb=(78, 91, 101),
             support_rgb=(145, 125, 92),
             stone_rgb=(139, 150, 156),
-            iron_rgb=(205, 183, 154),
             gold_rgb=(224, 185, 55),
             diamond_rgb=(85, 219, 226),
             ladder_rgb=(135, 87, 46),
@@ -81,7 +79,6 @@ def build_games_minecraft_theme(*, style_variant: str) -> MinecraftTheme:
             outline_rgb=(32, 35, 37),
             support_rgb=(111, 92, 72),
             stone_rgb=(109, 114, 117),
-            iron_rgb=(191, 166, 136),
             gold_rgb=(214, 173, 50),
             diamond_rgb=(70, 195, 203),
             ladder_rgb=(156, 101, 49),
@@ -97,7 +94,6 @@ def build_games_minecraft_theme(*, style_variant: str) -> MinecraftTheme:
             outline_rgb=(88, 51, 42),
             support_rgb=(156, 91, 65),
             stone_rgb=(124, 113, 105),
-            iron_rgb=(201, 169, 137),
             gold_rgb=(227, 181, 52),
             diamond_rgb=(69, 205, 212),
             ladder_rgb=(111, 66, 37),
@@ -112,7 +108,6 @@ def build_games_minecraft_theme(*, style_variant: str) -> MinecraftTheme:
         outline_rgb=(52, 89, 51),
         support_rgb=(132, 97, 65),
         stone_rgb=(129, 133, 126),
-        iron_rgb=(203, 177, 146),
         gold_rgb=(224, 184, 45),
         diamond_rgb=(73, 210, 220),
         ladder_rgb=(118, 72, 36),
@@ -304,8 +299,6 @@ def _draw_tile(
 
 
 def _block_fill(theme: MinecraftTheme, kind: str) -> Tuple[int, int, int]:
-    if str(kind) == "iron_ore":
-        return tuple(theme.stone_rgb)
     if str(kind) == "gold_ore":
         return tuple(theme.stone_rgb)
     if str(kind) == "diamond_ore":
@@ -337,18 +330,7 @@ def _draw_block(
     draw.polygon(left_face, fill=_shade(fill, 0.66), outline=tuple(theme.outline_rgb))
     draw.polygon(top, fill=_tint(fill, 0.18), outline=tuple(theme.outline_rgb))
 
-    if str(block.kind) == "iron_ore":
-        cx = sum(point[0] for point in top) / 4.0
-        cy = sum(point[1] for point in top) / 4.0
-        for dx, dy in ((-9, -4), (4, -1), (9, -8), (-2, -10)):
-            draw.rounded_rectangle(
-                (cx + dx - 4, cy + dy - 3, cx + dx + 4, cy + dy + 3),
-                radius=2,
-                fill=tuple(theme.iron_rgb),
-                outline=tuple(theme.outline_rgb),
-                width=1,
-            )
-    elif str(block.kind) == "gold_ore":
+    if str(block.kind) == "gold_ore":
         cx = sum(point[0] for point in top) / 4.0
         cy = sum(point[1] for point in top) / 4.0
         for dx, dy in ((-8, -2), (5, 2), (0, -8), (9, -6)):
@@ -500,6 +482,23 @@ def _draw_route_overlay(
     ]
     color = tuple(int(v) for v in route.rgb)
     if len(centers) >= 2:
+        for index, center in enumerate(centers):
+            left = centers[max(0, index - 1)]
+            right = centers[min(len(centers) - 1, index + 1)]
+            dx = float(right[0] - left[0])
+            dy = float(right[1] - left[1])
+            length = max(1.0, (dx * dx + dy * dy) ** 0.5)
+            px = -dy / length
+            py = dx / length
+            tie_half = 12.0
+            draw.line(
+                (
+                    (float(center[0]) - px * tie_half, float(center[1]) - py * tie_half),
+                    (float(center[0]) + px * tie_half, float(center[1]) + py * tie_half),
+                ),
+                fill=tuple(theme.outline_rgb),
+                width=3,
+            )
         draw.line(centers, fill=tuple(theme.outline_rgb), width=11, joint="curve")
         draw.line(centers, fill=color, width=7, joint="curve")
     else:

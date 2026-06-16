@@ -19,14 +19,12 @@ STYLE_VARIANTS: Tuple[str, ...] = (
     "mesa",
 )
 RESOURCE_KINDS: Tuple[str, ...] = (
-    "iron_ore",
     "diamond_ore",
     "gold_ore",
 )
-ORE_KINDS: Tuple[str, ...] = ("iron_ore", "gold_ore", "diamond_ore")
+ORE_KINDS: Tuple[str, ...] = ("gold_ore", "diamond_ore")
 
 SAMPLE_KIND_TOP_RESOURCE = "top_resource"
-SAMPLE_KIND_REACHABLE_RESOURCE = "reachable_resource"
 SAMPLE_KIND_ROUTE_COST = "route_cost"
 SAMPLE_KIND_HEIGHT_FILTER = "height_filter"
 
@@ -41,18 +39,13 @@ class MinecraftDefaults:
     grid_width_support: Tuple[int, ...] = (8, 9, 10)
     grid_depth_support: Tuple[int, ...] = (8, 9, 10)
     top_resource_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
-    reachable_resource_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
-    reachable_line_length_support: Tuple[int, ...] = (6, 7, 8, 9, 10)
-    reachable_grid_width_support: Tuple[int, ...] = (8, 9, 10, 11, 12)
-    reachable_grid_depth_support: Tuple[int, ...] = (5,)
     route_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-    height_filter_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
+    height_filter_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     exact_target_height_support: Tuple[int, ...] = (2, 3, 4, 5)
     at_least_target_height_support: Tuple[int, ...] = (2, 3, 4)
     stack_height_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     route_grid_width_support: Tuple[int, ...] = (11,)
     route_grid_depth_support: Tuple[int, ...] = (8, 9, 10)
-    route_option_count_support: Tuple[int, ...] = (2, 3)
     canvas_width: int = 840
     canvas_height: int = 680
     tile_width_px: int = 58
@@ -70,7 +63,6 @@ def resource_prompt_name(kind: str) -> str:
     """Return the prompt-facing resource name for one block kind."""
 
     names = {
-        "iron_ore": "iron ore",
         "diamond_ore": "diamond ore",
         "gold_ore": "gold ore",
     }
@@ -87,7 +79,6 @@ __all__ = [
     "POST_IMAGE_NOISE_DEFAULTS",
     "RESOURCE_KINDS",
     "SAMPLE_KIND_HEIGHT_FILTER",
-    "SAMPLE_KIND_REACHABLE_RESOURCE",
     "SAMPLE_KIND_ROUTE_COST",
     "SAMPLE_KIND_TOP_RESOURCE",
     "SCENE_ID",

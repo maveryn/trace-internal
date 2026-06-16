@@ -9,10 +9,10 @@
 6. Annotation schema: `point_set`
 
 ## Program Contract
-`sum(values(route_blocks, metric=resource_cost)); scene=minecraft; scope=resource_route_cost`
+`count(filter(track_cells, has_raised_stone_or_dirt_block=true)); scene=minecraft; scope=resource_route_cost`
 
 ## Generation Notes
-1. The scene shows labeled colored routes across an isometric block world.
-2. For the named route only, each raised stone or dirt block on that route costs 1.
-3. Empty route cells and blocks on other routes do not count.
-4. Annotation points mark the centers of the counted raised blocks on the queried route.
+1. The scene shows one visible track across an isometric block world.
+2. Each raised stone or dirt block sitting on the track counts 1.
+3. Empty track cells do not count.
+4. Annotation points mark the centers of every counted raised block on the track.

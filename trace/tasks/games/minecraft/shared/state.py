@@ -57,15 +57,12 @@ class MinecraftSceneSample:
     annotation_entity_ids: Tuple[str, ...]
     construction_mode: str
     route_overlays: Tuple[MinecraftRouteOverlay, ...] = ()
-    route_costs: Tuple[Tuple[str, int], ...] = ()
-    selected_route_label: str = ""
     target_resource_kind: str = ""
     counted_resource_kind: str = ""
     ladder_columns: Tuple[Tuple[int, int, int], ...] = ()
     target_stack_height: int = 0
     stack_height_condition: str = ""
-    stack_line_cells: Tuple[Tuple[int, int], ...] = ()
-    reachable_prefix_length: int = 0
+    track_cells: Tuple[Tuple[int, int], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -96,7 +93,6 @@ class MinecraftTheme:
     outline_rgb: Tuple[int, int, int]
     support_rgb: Tuple[int, int, int]
     stone_rgb: Tuple[int, int, int]
-    iron_rgb: Tuple[int, int, int]
     gold_rgb: Tuple[int, int, int]
     diamond_rgb: Tuple[int, int, int]
     ladder_rgb: Tuple[int, int, int]
@@ -125,10 +121,10 @@ def water_cell_entity_id(x: int, y: int) -> str:
     return f"water_{int(x):02d}_{int(y):02d}"
 
 
-def route_obstacle_entity_id(route_label: str, index: int) -> str:
-    """Return a stable route-obstacle block id."""
+def track_block_entity_id(index: int) -> str:
+    """Return a stable raised track-block id."""
 
-    return f"route_{str(route_label).lower()}_obstacle_{int(index):02d}"
+    return f"track_raised_block_{int(index):02d}"
 
 
 def stack_entity_id(x: int, y: int) -> str:
@@ -159,8 +155,8 @@ __all__ = [
     "RenderedMinecraftScene",
     "ladder_entity_id",
     "player_entity_id",
-    "route_obstacle_entity_id",
     "stack_entity_id",
     "terrain_cell_entity_id",
+    "track_block_entity_id",
     "water_cell_entity_id",
 ]

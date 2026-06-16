@@ -16,3 +16,4 @@
 2. `exact_height_count` asks for stacks exactly the target height.
 3. `at_least_height_count` asks for stacks at least the target height.
 4. Annotation points mark the top-cube centers of every qualifying visible stack.
+5. The generated answer support is capped at 5.

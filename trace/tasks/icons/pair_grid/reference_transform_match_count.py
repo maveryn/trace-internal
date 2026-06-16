@@ -30,7 +30,7 @@ from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_style import sample_single_icon_tint
 from ..shared.icon_task_rendering import sample_icon_instance_noise
 from ..shared.icon_transform import IDENTITY_TRANSFORM_ID, NON_IDENTITY_TRANSFORM_IDS
-from ..shared.annotation import matching_scene_cell_point_annotation
+from ..shared.annotation import matching_scene_cell_bbox_annotation
 
 from .shared.rendering import panel_geometry_to_trace, render_two_panel_icon_pair_grid_scene
 from .shared.state import IconPairSpec
@@ -461,7 +461,7 @@ class IconsPairGridReferenceTransformMatchCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         annotation_labels = list(scene_payload.matching_labels)
-        annotation_artifacts = matching_scene_cell_point_annotation(
+        annotation_artifacts = matching_scene_cell_bbox_annotation(
             scene_cells=scene_payload.scene_cells,
             matching_labels=annotation_labels,
         )

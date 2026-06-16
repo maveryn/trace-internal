@@ -28,7 +28,7 @@ from ...shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.annotation import matching_scene_cell_point_annotation
+from ..shared.annotation import matching_scene_cell_bbox_annotation
 from ..shared.icon_assets import resolve_icon_pool
 from ..shared.icon_style import sample_icon_palette
 from ..shared.icon_task_rendering import sample_icon_instance_noise
@@ -567,7 +567,7 @@ class IconsPairGridAttributeDeltaPairCountTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        annotation_artifacts = matching_scene_cell_point_annotation(
+        annotation_artifacts = matching_scene_cell_bbox_annotation(
             scene_cells=scene_payload.scene_cells,
             matching_labels=list(scene_payload.matching_labels),
         )

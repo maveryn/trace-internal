@@ -69,9 +69,9 @@
   "code_prompt_defaults": {
     "object_description": "a Reference pair beside a labeled Scene grid",
     "question_text": "How many labeled Scene cells show the same before-to-after relation as the Reference pair?",
-    "annotation_hint": "set \"annotation\" to a JSON array of [x, y] center points in image pixel coordinates for all matching Scene cells",
+    "annotation_hint": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around all matching Scene cells",
     "answer_hint": "set \"answer\" to the count as an integer",
-    "json_example": "{\"annotation\":[[421,189],[617,189],[813,189]],\"answer\":3}",
+    "json_example": "{\"annotation\":[[336,104,506,274],[532,104,702,274],[728,104,898,274]],\"answer\":3}",
     "json_example_answer_only": "{\"answer\":3}"
   }
 }

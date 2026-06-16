@@ -13,9 +13,6 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     payload = str(prompt).split(marker, 1)[1].strip()
     return json.loads(payload)
 
-def _bbox_center(bbox: list[int]) -> list[float]:
-    return [round((float(bbox[0]) + float(bbox[2])) / 2.0, 3), round((float(bbox[1]) + float(bbox[3])) / 2.0, 3)]
-
 def test_icons_transformation_pair_count_contract_matches_scene() -> None:
     task = IconsPairGridReferenceTransformMatchCountTask()
     out = task.generate(14210, params={'object_count': 6, 'target_count': 3, 'transform_ids': ['rot90', 'rot180', 'flip_h', 'flip_diag_main']}, max_attempts=200)
@@ -24,9 +21,9 @@ def test_icons_transformation_pair_count_contract_matches_scene() -> None:
     scene_entities = [entity for entity in trace['scene_ir']['entities'] if str(entity.get('panel')) == 'scene']
     assert out.answer_gt.type == 'integer'
     assert int(out.answer_gt.value) == 3
-    assert out.annotation_gt.type == 'point_set'
+    assert out.annotation_gt.type == 'bbox_set'
     assert len(out.annotation_gt.value) == 3
-    assert all((len(point) == 2 for point in out.annotation_gt.value))
+    assert all((len(bbox) == 4 for bbox in out.annotation_gt.value))
     assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
     assert trace['query_spec']['prompt_variant_active_key'] == 'answer_and_annotation'
     assert trace['scene_ir']['scene_kind'] == 'icons_reference_pair_transformation_count'
@@ -47,11 +44,11 @@ def test_icons_transformation_pair_count_contract_matches_scene() -> None:
     assert len(set((str(entity['label']) for entity in scene_entities))) == 6
     assert trace['witness_symbolic']['matching_cell_labels'] == execution['matching_cell_labels']
     annotation_by_label = {str(entity['label']): list(entity['cell_bbox_xyxy']) for entity in scene_entities}
-    expected_annotation = [_bbox_center(annotation_by_label[str(label)]) for label in trace['witness_symbolic']['matching_cell_labels_top_left']]
+    expected_annotation = [annotation_by_label[str(label)] for label in trace['witness_symbolic']['matching_cell_labels_top_left']]
     assert out.annotation_gt.value == expected_annotation
-    assert trace['projected_annotation']['type'] == 'point_set'
-    assert trace['projected_annotation']['point_set'] == out.annotation_gt.value
-    assert trace['projected_annotation']['pixel_point_set'] == out.annotation_gt.value
+    assert trace['projected_annotation']['type'] == 'bbox_set'
+    assert trace['projected_annotation']['bbox_set'] == out.annotation_gt.value
+    assert trace['projected_annotation']['pixel_bbox_set'] == out.annotation_gt.value
     style = trace['render_spec']['style']
     assert int(style['text_legibility']['failure_count']) == 0
     assert {str(record['role']) for record in style['text_legibility']['records']} >= {'icon_panel_header_text', 'icon_cell_label_text'}
@@ -93,7 +90,7 @@ def test_icons_transformation_pair_count_prompt_example_matches_contract() -> No
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
     assert answer_only == {'answer': 3}
     assert list(answer_and_annotation.keys()) == ['annotation', 'answer']
-    assert answer_and_annotation['annotation'] == [[421, 189], [617, 189], [813, 189]]
+    assert answer_and_annotation['annotation'] == [[336, 104, 506, 274], [532, 104, 702, 274], [728, 104, 898, 274]]
     assert answer_and_annotation['answer'] == 3
 
 def test_icons_transformation_pair_count_balanced_sampling_defaults() -> None:

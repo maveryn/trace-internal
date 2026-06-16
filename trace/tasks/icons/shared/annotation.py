@@ -70,32 +70,6 @@ def matching_scene_cell_bbox_annotation(
     }
 
 
-def matching_scene_cell_point_annotation(
-    *,
-    scene_cells: Sequence[Mapping[str, Any]],
-    matching_labels: Sequence[str],
-) -> Dict[str, Any]:
-    """Return point-set annotation for matching labeled Scene cell centers."""
-
-    bbox_artifacts = matching_scene_cell_bbox_annotation(
-        scene_cells=scene_cells,
-        matching_labels=matching_labels,
-    )
-    bboxes = bbox_artifacts["annotation_value"]
-    points = [_bbox_center(bbox) for bbox in bboxes]
-    return {
-        "annotation_type": "point_set",
-        "annotation_value": [list(point) for point in points],
-        "labels_top_left": list(bbox_artifacts["labels_top_left"]),
-        "witness_symbolic": dict(bbox_artifacts["witness_symbolic"]),
-        "projected_annotation": {
-            "type": "point_set",
-            "point_set": [list(point) for point in points],
-            "pixel_point_set": [list(point) for point in points],
-        },
-    }
-
-
 def point_set_annotation(
     points: Sequence[Sequence[int | float]],
 ) -> Dict[str, Any]:
@@ -261,7 +235,6 @@ __all__ = [
     "keyed_point_map_annotation",
     "keyed_point_map_from_bboxes",
     "matching_scene_cell_bbox_annotation",
-    "matching_scene_cell_point_annotation",
     "point_annotation",
     "point_from_bbox",
     "point_set_annotation",

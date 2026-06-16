@@ -23,6 +23,8 @@ from trace.tasks.three_d.object_cluster.shared.defaults import (
     COLOR_READOUT_CLUSTER_SHAPE_TYPES,
     COLOR_SAFE_CLUSTER_SHAPE_TYPES,
     COUNTABLE_SHAPE_TYPES,
+    MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION,
+    MAX_RENDERED_PAIRWISE_OVERLAP_PX,
     PROMPT_COLOR_RGB,
 )
 from trace.tasks.three_d.object_cluster.shared.relations import semantic_color_label
@@ -110,6 +112,32 @@ def _renderer_fill_load_count(function_name: str) -> int:
                     for item in ast.walk(node)
                 )
     raise AssertionError(f"could not find renderer function {function_name}")
+
+
+def _max_pairwise_render_overlap(object_bboxes_px: dict[str, list[float]]) -> tuple[float, float]:
+    """Return max bbox overlap as fraction of smaller box and absolute pixels."""
+
+    def area(box: list[float]) -> float:
+        return max(0.0, float(box[2]) - float(box[0])) * max(0.0, float(box[3]) - float(box[1]))
+
+    def intersection(left: list[float], right: list[float]) -> float:
+        x0 = max(float(left[0]), float(right[0]))
+        y0 = max(float(left[1]), float(right[1]))
+        x1 = min(float(left[2]), float(right[2]))
+        y1 = min(float(left[3]), float(right[3]))
+        return max(0.0, x1 - x0) * max(0.0, y1 - y0)
+
+    boxes = [list(box) for box in object_bboxes_px.values()]
+    max_fraction = 0.0
+    max_pixels = 0.0
+    for index, left in enumerate(boxes):
+        left_area = area(left)
+        for right in boxes[index + 1 :]:
+            overlap = intersection(left, right)
+            max_pixels = max(max_pixels, float(overlap))
+            smaller_area = max(1.0, min(left_area, area(right)))
+            max_fraction = max(max_fraction, float(overlap) / smaller_area)
+    return float(max_fraction), float(max_pixels)
 
 
 def test_object_cluster_prompt_colors_use_canonical_palette() -> None:
@@ -420,6 +448,9 @@ def test_object_cluster_color_membership_count_answer_and_annotation() -> None:
     assert semantic_color_label("blue") in output.prompt
     assert not any(str(spec["color_name"]) in {"cyan", "purple"} for spec in object_specs if str(spec["color_name"]) != "blue")
     assert all(str(spec["shape_type"]) in set(COLOR_READOUT_CLUSTER_SHAPE_TYPES) for spec in object_specs)
+    max_overlap_fraction, max_overlap_pixels = _max_pairwise_render_overlap(render_map["object_bboxes_px"])
+    assert max_overlap_fraction <= float(MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION)
+    assert max_overlap_pixels <= float(MAX_RENDERED_PAIRWISE_OVERLAP_PX)
 
 
 def test_object_cluster_multi_attribute_or_count_counts_overlap_once() -> None:

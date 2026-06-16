@@ -26,6 +26,7 @@ from trace.tasks.three_d.shared.object_scene import (
 )
 
 from .shared.defaults import PROMPT_COLOR_RGB, SCENE_ID
+from .shared.objects import rendered_bboxes_are_valid
 from .shared.relations import semantic_color_label
 from .shared.state import BuildRequest
 
@@ -114,6 +115,12 @@ def _run_once(
         draw_candidate_labels=False,
         compute_single_annotation=False,
     )
+    if not rendered_bboxes_are_valid(
+        rendered.object_bboxes_px,
+        width=int(rendered.image.width),
+        height=int(rendered.image.height),
+    ):
+        raise ValueError("rendered object cluster has too much object overlap")
     image, post_noise_meta = apply_post_image_noise(
         rendered.image,
         instance_seed=int(instance_seed),

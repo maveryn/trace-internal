@@ -26,7 +26,10 @@ from .defaults import (
     CLUSTER_DIMENSION_SCALE,
     MAX_PAIRWISE_OVERLAP_FRACTION,
     MAX_PAIRWISE_OVERLAP_PX,
+    MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION,
+    MAX_RENDERED_PAIRWISE_OVERLAP_PX,
     MIN_PROJECTED_OBJECT_AREA_PX,
+    PLACEMENT_FOOTPRINT_SEPARATION_FACTOR,
     PROMPT_COLOR_RGB,
     cluster_dimensions,
     object_name_for_shape,
@@ -139,7 +142,9 @@ def can_place_cluster(candidate: Mapping[str, Any], placed: Sequence[Mapping[str
     cx, cy, _cz = (float(value) for value in candidate["world_xyz"])
     for item in placed:
         ix, iy, _iz = (float(value) for value in item["world_xyz"])
-        min_distance = 0.46 * (float(candidate["footprint_radius"]) + float(item["footprint_radius"]))
+        min_distance = float(PLACEMENT_FOOTPRINT_SEPARATION_FACTOR) * (
+            float(candidate["footprint_radius"]) + float(item["footprint_radius"])
+        )
         if math.hypot(float(cx - ix), float(cy - iy)) < float(min_distance):
             return False
     return True
@@ -153,11 +158,11 @@ def place_cluster_objects(
 ) -> List[Dict[str, Any]]:
     """Place every semantic object item into a dense but separable 3D cluster."""
 
-    cluster_radius = {"tabletop_pile": 2.42, "shallow_tray": 2.24, "cluster_mat": 2.56}.get(str(scene_variant), 2.42)
-    y_scale = {"tabletop_pile": 0.76, "shallow_tray": 0.70, "cluster_mat": 0.82}.get(str(scene_variant), 0.76)
+    cluster_radius = {"tabletop_pile": 2.96, "shallow_tray": 2.78, "cluster_mat": 3.12}.get(str(scene_variant), 2.96)
+    y_scale = {"tabletop_pile": 0.88, "shallow_tray": 0.82, "cluster_mat": 0.94}.get(str(scene_variant), 0.88)
     placed: List[Dict[str, Any]] = []
     for index, item in enumerate(sequence):
-        for _ in range(180):
+        for _ in range(360):
             candidate = make_cluster_object(
                 rng=rng,
                 object_id=f"cluster_object_{int(index):02d}",
@@ -224,6 +229,35 @@ def view_is_valid(
             if overlap > MAX_PAIRWISE_OVERLAP_PX:
                 return False
             if overlap > float(MAX_PAIRWISE_OVERLAP_FRACTION) * min(area_a, bbox_area(bbox_b)):
+                return False
+    return True
+
+
+def rendered_bboxes_are_valid(
+    object_bboxes_px: Mapping[str, Sequence[float]],
+    *,
+    width: int,
+    height: int,
+) -> bool:
+    """Validate the final rendered object boxes that reviewers actually inspect."""
+
+    bboxes = [list(bbox) for bbox in object_bboxes_px.values()]
+    if any(
+        not bbox_is_readable(
+            bbox,
+            width=int(width),
+            height=int(height),
+        )
+        for bbox in bboxes
+    ):
+        return False
+    for index, bbox_a in enumerate(bboxes):
+        area_a = bbox_area(bbox_a)
+        for bbox_b in bboxes[index + 1 :]:
+            overlap = _bbox_intersection_area(bbox_a, bbox_b)
+            if overlap > float(MAX_RENDERED_PAIRWISE_OVERLAP_PX):
+                return False
+            if overlap > float(MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION) * min(area_a, bbox_area(bbox_b)):
                 return False
     return True
 
@@ -362,4 +396,5 @@ def build_dataset_from_sequence(
 
 __all__ = [
     "build_dataset_from_sequence",
+    "rendered_bboxes_are_valid",
 ]

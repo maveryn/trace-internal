@@ -70,13 +70,6 @@
         "In {scope_phrase}, what is the number of {target_color_label} {target_element_plural}?",
         "Looking only at {scope_phrase}, how many {target_element_plural} are {target_color_label}?",
         "How many {target_color_label} {target_element_plural} appear within {scope_phrase}?"
-      ],
-      "empty_or_missing_cell_count": [
-        "How many missing {target_element_plural} positions are on the fixture?",
-        "Count the empty positions where {target_element_plural} are missing. How many are there?",
-        "What is the number of missing {target_element_plural} positions?",
-        "Looking across the fixture grid, how many {target_element_plural} spaces are empty?",
-        "How many visible fixture positions are missing a {target_element_name}?"
       ]
     },
     "output": {
@@ -138,12 +131,6 @@
       "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted colored surface element in the requested row or column",
       "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
-    },
-    "query:empty_or_missing_cell_count": {
-      "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each missing fixture position",
-      "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
     }
   },
   "dynamic_slots": {
@@ -166,7 +153,6 @@
     "query:element_color_count": ["target_color_label", "target_element_plural"],
     "query:color_count_after_operations": ["operation_phrase", "target_color_label", "target_element_plural"],
     "query:recolor_board_match": ["recolor_phrase"],
-    "query:scoped_element_color_count": ["target_color_label", "target_element_plural", "scope_phrase"],
-    "query:empty_or_missing_cell_count": ["target_element_plural", "target_element_name"]
+    "query:scoped_element_color_count": ["target_color_label", "target_element_plural", "scope_phrase"]
   }
 }

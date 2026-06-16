@@ -1007,7 +1007,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_three_d__surface_fixture__color_count_after_operations_value": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
     "task_three_d__surface_fixture__colored_element_count": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
     "task_three_d__surface_fixture__element_count_extremum_label": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
-    "task_three_d__surface_fixture__empty_or_missing_cell_count": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
     "task_three_d__surface_fixture__recolor_board_match_label": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
     "task_three_d__surface_fixture__repeated_element_count": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),
     "task_three_d__surface_fixture__scoped_colored_element_count": _entry("three_d", "surface_fixture", "three_d", "surface_fixture"),

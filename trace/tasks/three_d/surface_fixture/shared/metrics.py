@@ -1378,88 +1378,10 @@ def build_scoped_color_surface_data(
     return dataset, dict(target_probabilities)
 
 
-def build_missing_surface_data(
-    *,
-    namespace: str,
-    scene_variant: str,
-    element_type: str,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    gen_defaults: Mapping[str, Any],
-) -> Tuple[Dict[str, Any], Dict[str, float]]:
-    """Create a fixture grid with absent positions as the counted set."""
-
-    missing_count, probabilities = resolve_int_support(
-        params=params,
-        gen_defaults=gen_defaults,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.missing_count",
-        min_key="missing_count_min",
-        max_key="missing_count_max",
-        default_min=1,
-        default_max=6,
-        explicit_keys=("missing_count", "target_count", "answer_count"),
-        lower_bound=1,
-        upper_bound=12,
-    )
-    total_slots, _ = resolve_int_support(
-        params=params,
-        gen_defaults=gen_defaults,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.total_slots",
-        min_key="total_slot_count_min",
-        max_key="total_slot_count_max",
-        default_min=12,
-        default_max=24,
-        explicit_keys=("total_slots", "cell_count"),
-        lower_bound=int(missing_count) + 2,
-        upper_bound=36,
-    )
-    rows, cols = grid_for_total(int(total_slots))
-    total_grid_slots = int(rows) * int(cols)
-    rng = spawn_rng(int(instance_seed), f"{namespace}.cells")
-    all_indices = list(range(total_grid_slots))
-    missing_indices = sample_indices(rng, all_indices, int(missing_count))
-    present_indices = [index for index in all_indices if index not in set(missing_indices)]
-    color_by_index = {int(index): str(SEMANTIC_COLOR_SUPPORT[int(rng.randrange(len(SEMANTIC_COLOR_SUPPORT)))]) for index in present_indices}
-    layout_style = "brick_grid" if str(scene_variant) == "brick_wall" else "uniform_grid"
-    cells = layout_cells(
-        scene_variant=str(scene_variant),
-        element_type=str(element_type),
-        rows=int(rows),
-        cols=int(cols),
-        present_indices=present_indices,
-        target_indices=missing_indices,
-        rng=rng,
-        layout_style=layout_style,
-        color_by_index=color_by_index,
-        include_absent=True,
-    )
-    dataset = base_surface_data(
-        scene_variant=str(scene_variant),
-        element_type=str(element_type),
-        answer_value=int(missing_count),
-        target_element_ids=target_ids_from_indices(cells, missing_indices),
-        surface_cells=cells,
-        rows=int(rows),
-        cols=int(cols),
-        layout_style=layout_style,
-        solver_trace={
-            "count_predicate": "present == false",
-            "missing_count": int(missing_count),
-            "total_slot_count": int(total_grid_slots),
-            "unique_integer_answer": True,
-        },
-        extra={"missing_count": int(missing_count), "total_slot_count": int(total_grid_slots)},
-    )
-    return dataset, dict(probabilities)
-
-
 __all__ = [
     "base_surface_data",
     "build_color_operation_surface_data",
     "build_color_surface_data",
-    "build_missing_surface_data",
     "build_recolor_board_match_surface_data",
     "build_repeated_surface_data",
     "build_scoped_color_surface_data",

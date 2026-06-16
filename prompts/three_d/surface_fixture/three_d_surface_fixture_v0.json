@@ -22,13 +22,6 @@
       "",
       "",
       ""
-    ],
-    "surface_fixture_empty_or_missing_cell_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
     ]
   },
   "required_slots_by_key": {
@@ -93,13 +86,6 @@
       "In {scope_phrase}, what is the number of {target_color_name} {target_element_plural}?",
       "Looking only at {scope_phrase}, how many {target_element_plural} are {target_color_name}?",
       "How many {target_color_name} {target_element_plural} appear within {scope_phrase}?"
-    ],
-    "empty_or_missing_cell_count": [
-      "How many missing {target_element_plural} positions are on the fixture?",
-      "Count the empty positions where {target_element_plural} are missing. How many are there?",
-      "What is the number of missing {target_element_plural} positions?",
-      "Looking across the fixture grid, how many {target_element_plural} spaces are empty?",
-      "How many visible fixture positions are missing a {target_element_name}?"
     ]
   },
   "allow_empty_task_templates": true

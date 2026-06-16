@@ -20,7 +20,6 @@ from trace.tasks.three_d.surface_fixture.element_count_extremum_label import (
     LOWEST_QUERY_ID as EXTREMUM_LOWEST_QUERY_ID,
     TASK_ID as EXTREMUM_TASK_ID,
 )
-from trace.tasks.three_d.surface_fixture.empty_or_missing_cell_count import TASK_ID as EMPTY_MISSING_TASK_ID
 from trace.tasks.three_d.surface_fixture.recolor_board_match_label import TASK_ID as RECOLOR_MATCH_TASK_ID
 from trace.tasks.three_d.surface_fixture.repeated_element_count import TASK_ID
 from trace.tasks.three_d.surface_fixture.repeated_element_count import TASK_ID as REPEATED_TASK_ID
@@ -45,7 +44,6 @@ SURFACE_FIXTURE_TASK_IDS = (
     COLOR_OPERATIONS_TASK_ID,
     RECOLOR_MATCH_TASK_ID,
     SCOPED_COLORED_TASK_ID,
-    EMPTY_MISSING_TASK_ID,
 )
 
 
@@ -167,16 +165,6 @@ def test_surface_fixture_predicate_count_tasks() -> None:
                 "scope_index": 1,
                 "layout_rows": 4,
                 "layout_columns": 5,
-                "post_image_noise_apply_prob": 0.0,
-            },
-        ),
-        (
-            EMPTY_MISSING_TASK_ID,
-            {
-                "query_id": "single",
-                "scene_variant": "brick_wall",
-                "missing_count": 5,
-                "total_slots": 16,
                 "post_image_noise_apply_prob": 0.0,
             },
         ),
@@ -428,22 +416,6 @@ def test_surface_fixture_recolor_drive_bay_uses_visible_fill_rgb() -> None:
     assert original_brown[1] > original_brown[2] + 20.0
     assert recolored_green[1] > recolored_green[0] + 50.0
     assert recolored_green[1] > recolored_green[2] + 50.0
-
-
-def test_surface_fixture_missing_cell_default_answer_range() -> None:
-    task = create_task(EMPTY_MISSING_TASK_ID)
-
-    for seed in range(20260710, 20260730):
-        output = task.generate(
-            seed,
-            params={
-                "query_id": "single",
-                "post_image_noise_apply_prob": 0.0,
-            },
-            max_attempts=30,
-        )
-
-        assert 1 <= int(output.answer_gt.value) <= 6
 
 
 def test_surface_fixture_task_registered_in_three_d_taxonomy() -> None:

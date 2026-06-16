@@ -25,6 +25,9 @@ RENDERER_ID = "rpg_house_top_down_v0"
 DEFAULT_TILE_PX = 48
 DEFAULT_CANVAS_WIDTH = 960
 DEFAULT_CANVAS_HEIGHT = 720
+CANONICAL_WALL_THICKNESS = 12
+CANONICAL_WALL_SHADOW_THICKNESS = 16
+CANONICAL_DOOR_CLEARANCE = 2
 MIN_ROOM_COUNT = 4
 MAX_ROOM_COUNT = 8
 ROOM_IDS: tuple[str, ...] = (
@@ -497,48 +500,123 @@ def _render_base(
 ) -> tuple[Image.Image, ImageDraw.ImageDraw]:
     image = Image.new("RGBA", (layout.canonical_width_px, layout.canonical_height_px), _rgba(theme["background_rgb"]))
     draw = ImageDraw.Draw(image)
-    wall = theme["wall_rgb"]
-    wall_dark = theme["wall_dark_rgb"]
     for room in room_specs:
-        x0, y0, x1, y1 = _canonical_rect(room.tile_xywh)
-        draw.rectangle((x0, y0, x1, y1), fill=_rgba(room.floor_rgb), outline=_rgba(wall_dark), width=2)
-        draw.rectangle((x0 + 1, y0 + 1, x1 - 1, y1 - 1), outline=_rgba(wall), width=1)
+        _draw_room_floor(draw, room, theme=theme)
         _draw_floor_lines(draw, room.tile_xywh, room.floor_rgb)
+    _draw_room_walls(draw, room_specs=room_specs, theme=theme)
     for door in door_specs:
         _draw_door(draw, door, theme=theme)
     return image, draw
 
 
+def _draw_room_floor(draw: ImageDraw.ImageDraw, room: _RoomSpec, *, theme: Mapping[str, Any]) -> None:
+    x0, y0, x1, y1 = _canonical_rect(room.tile_xywh)
+    inset = CANONICAL_WALL_THICKNESS // 2 + 1
+    draw.rectangle((x0 + inset, y0 + inset, x1 - inset, y1 - inset), fill=_rgba(room.floor_rgb))
+    draw.rectangle(
+        (x0 + inset, y0 + inset, x1 - inset, y1 - inset),
+        outline=_rgba(_shade(theme["wall_rgb"], 30), 120),
+        width=1,
+    )
+
+
 def _draw_floor_lines(draw: ImageDraw.ImageDraw, tile_xywh: TileBox, floor_rgb: RGB) -> None:
     x, y, w, h = tile_xywh
+    x0, y0, x1, y1 = _canonical_rect(tile_xywh)
+    inset = CANONICAL_WALL_THICKNESS // 2 + 4
     for yy in range(int(y), int(y) + int(h)):
         py = yy * CANONICAL_TILE_PX + CANONICAL_TILE_PX // 2
+        if py <= y0 + inset or py >= y1 - inset:
+            continue
         draw.line(
-            (int(x) * CANONICAL_TILE_PX + 2, py, (int(x) + int(w)) * CANONICAL_TILE_PX - 3, py),
+            (int(x0) + inset, py, int(x1) - inset, py),
             fill=_rgba(_shade(floor_rgb, -20), 105),
         )
+
+
+def _draw_room_walls(
+    draw: ImageDraw.ImageDraw,
+    *,
+    room_specs: Sequence[_RoomSpec],
+    theme: Mapping[str, Any],
+) -> None:
+    for room in room_specs:
+        x, y, w, h = room.tile_xywh
+        left = int(x) * CANONICAL_TILE_PX
+        top = int(y) * CANONICAL_TILE_PX
+        right = (int(x) + int(w)) * CANONICAL_TILE_PX
+        bottom = (int(y) + int(h)) * CANONICAL_TILE_PX
+        _draw_wall_band(draw, "vertical", left, top, bottom, theme=theme)
+        _draw_wall_band(draw, "vertical", right, top, bottom, theme=theme)
+        _draw_wall_band(draw, "horizontal", top, left, right, theme=theme)
+        _draw_wall_band(draw, "horizontal", bottom, left, right, theme=theme)
+
+
+def _draw_wall_band(
+    draw: ImageDraw.ImageDraw,
+    orientation: str,
+    center: int,
+    start: int,
+    end: int,
+    *,
+    theme: Mapping[str, Any],
+) -> None:
+    half = CANONICAL_WALL_THICKNESS // 2
+    shadow_half = CANONICAL_WALL_SHADOW_THICKNESS // 2
+    wall = theme["wall_rgb"]
+    wall_dark = theme["wall_dark_rgb"]
+    wall_light = _shade(wall, 34)
+    if orientation == "vertical":
+        draw.rectangle((center - shadow_half, start - shadow_half, center + shadow_half, end + shadow_half), fill=_rgba(wall_dark))
+        draw.rectangle((center - half, start - half, center + half, end + half), fill=_rgba(wall))
+        draw.line((center - half + 1, start - half + 2, center - half + 1, end + half - 2), fill=_rgba(wall_light, 150))
+        return
+    if orientation == "horizontal":
+        draw.rectangle((start - shadow_half, center - shadow_half, end + shadow_half, center + shadow_half), fill=_rgba(wall_dark))
+        draw.rectangle((start - half, center - half, end + half, center + half), fill=_rgba(wall))
+        draw.line((start - half + 2, center - half + 1, end + half - 2, center - half + 1), fill=_rgba(wall_light, 150))
+        return
+    raise ValueError(f"unsupported RPG house wall orientation: {orientation}")
 
 
 def _draw_door(draw: ImageDraw.ImageDraw, door: _DoorSpec, *, theme: Mapping[str, Any]) -> None:
     x, y = door.tile_xy
     px = int(x) * CANONICAL_TILE_PX
     py = int(y) * CANONICAL_TILE_PX
+    shadow_half = CANONICAL_WALL_SHADOW_THICKNESS // 2 + 2
+    slab_half = CANONICAL_WALL_THICKNESS // 2 + 2
+    margin = CANONICAL_DOOR_CLEARANCE
+    threshold_rgb = _shade(theme["wall_rgb"], 42)
+    threshold_dark = _shade(theme["wall_dark_rgb"], 12)
     if door.orientation == "vertical":
-        gap = (px - 3, py + 6, px + 3, py + CANONICAL_TILE_PX - 7)
-        closed = (px - 3, py + 4, px + 3, py + CANONICAL_TILE_PX - 5)
-        knob = (px + 1, py + CANONICAL_TILE_PX // 2)
+        gap = (px - shadow_half, py + margin, px + shadow_half, py + CANONICAL_TILE_PX - margin - 1)
+        closed = (px - slab_half, py + margin + 2, px + slab_half, py + CANONICAL_TILE_PX - margin - 3)
+        knob = (px + slab_half - 2, py + CANONICAL_TILE_PX // 2)
     elif door.orientation == "horizontal":
-        gap = (px + 6, py - 3, px + CANONICAL_TILE_PX - 7, py + 3)
-        closed = (px + 4, py - 3, px + CANONICAL_TILE_PX - 5, py + 3)
-        knob = (px + CANONICAL_TILE_PX // 2, py + 1)
+        gap = (px + margin, py - shadow_half, px + CANONICAL_TILE_PX - margin - 1, py + shadow_half)
+        closed = (px + margin + 2, py - slab_half, px + CANONICAL_TILE_PX - margin - 3, py + slab_half)
+        knob = (px + CANONICAL_TILE_PX // 2, py + slab_half - 2)
     else:
         raise ValueError(f"unsupported RPG house door orientation: {door.orientation}")
+    draw.rectangle(gap, fill=_rgba(threshold_rgb))
+    draw.rectangle(gap, outline=_rgba(threshold_dark), width=1)
     if door.state == "open":
-        draw.rectangle(gap, fill=_rgba(_shade(theme["background_rgb"], 36)))
-        draw.rectangle(gap, outline=_rgba(theme["wall_dark_rgb"]))
+        if door.orientation == "vertical":
+            draw.line((px, gap[1] + 2, px, gap[3] - 2), fill=_rgba(_shade(threshold_rgb, 24), 160))
+        else:
+            draw.line((gap[0] + 2, py, gap[2] - 2, py), fill=_rgba(_shade(threshold_rgb, 24), 160))
         return
     draw.rectangle(closed, fill=_rgba(theme["door_rgb"]), outline=_rgba(_shade(theme["door_rgb"], -42)))
-    draw.point(knob, fill=_rgba((230, 188, 82)))
+    if door.orientation == "vertical":
+        panel_x = px - slab_half + 3
+        draw.line((panel_x, closed[1] + 3, panel_x, closed[3] - 3), fill=_rgba(_shade(theme["door_rgb"], 28), 150))
+        draw.line((px + slab_half - 3, closed[1] + 3, px + slab_half - 3, closed[3] - 3), fill=_rgba(_shade(theme["door_rgb"], -28), 150))
+    else:
+        panel_y = py - slab_half + 3
+        draw.line((closed[0] + 3, panel_y, closed[2] - 3, panel_y), fill=_rgba(_shade(theme["door_rgb"], 28), 150))
+        draw.line((closed[0] + 3, py + slab_half - 3, closed[2] - 3, py + slab_half - 3), fill=_rgba(_shade(theme["door_rgb"], -28), 150))
+    knob_x, knob_y = knob
+    draw.rectangle((knob_x - 1, knob_y - 1, knob_x + 1, knob_y + 1), fill=_rgba((230, 188, 82)))
 
 
 def _render_entities(
@@ -645,19 +723,21 @@ def _door_bbox(layout: RpgHouseLayout, spec: _DoorSpec) -> BBox:
     ox, oy = layout.display_offset_xy
     px = ox + int(x) * int(layout.tile_px)
     py = oy + int(y) * int(layout.tile_px)
+    cross_half = max(7, int(round(layout.tile_px * (CANONICAL_WALL_SHADOW_THICKNESS + 4) / (2 * CANONICAL_TILE_PX))))
+    margin = max(2, int(round(layout.tile_px * CANONICAL_DOOR_CLEARANCE / CANONICAL_TILE_PX)))
     if spec.orientation == "vertical":
         return (
-            float(px - max(3, layout.tile_px // 12)),
-            float(py + max(3, layout.tile_px // 12)),
-            float(px + max(3, layout.tile_px // 12)),
-            float(py + layout.tile_px - max(3, layout.tile_px // 12)),
+            float(px - cross_half),
+            float(py + margin),
+            float(px + cross_half),
+            float(py + layout.tile_px - margin),
         )
     if spec.orientation == "horizontal":
         return (
-            float(px + max(3, layout.tile_px // 12)),
-            float(py - max(3, layout.tile_px // 12)),
-            float(px + layout.tile_px - max(3, layout.tile_px // 12)),
-            float(py + max(3, layout.tile_px // 12)),
+            float(px + margin),
+            float(py - cross_half),
+            float(px + layout.tile_px - margin),
+            float(py + cross_half),
         )
     raise ValueError(f"unsupported RPG house door orientation: {spec.orientation}")
 

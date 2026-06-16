@@ -42,6 +42,10 @@ def test_rpg_house_renderer_is_deterministic_and_profile_safe() -> None:
             _assert_bbox_inside_canvas(list(room.bbox_xyxy), width=width, height=height)
         for door in first.doors:
             _assert_bbox_inside_canvas(list(door.bbox_xyxy), width=width, height=height)
+            door_width = float(door.bbox_xyxy[2]) - float(door.bbox_xyxy[0])
+            door_height = float(door.bbox_xyxy[3]) - float(door.bbox_xyxy[1])
+            assert min(door_width, door_height) >= first.trace["tile_px"] * 0.25
+            assert max(door_width, door_height) >= first.trace["tile_px"] * 0.70
         for entity in first.entities:
             _assert_bbox_inside_canvas(list(entity.bbox_xyxy), width=width, height=height)
 

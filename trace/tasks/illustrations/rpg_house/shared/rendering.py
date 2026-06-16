@@ -180,6 +180,7 @@ def render_rpg_house_scene(
     tile_px: int = DEFAULT_TILE_PX,
     room_count: int | None = None,
     start_room_id: str | None = None,
+    player_room_id: str | None = None,
     room_labels: Mapping[str, str] | None = None,
     door_states: Mapping[str, str] | None = None,
     sample_mixed_door_states: bool = False,
@@ -203,6 +204,8 @@ def render_rpg_house_scene(
         sample_mixed_door_states=bool(sample_mixed_door_states),
     )
     entity_specs = _make_entity_specs(room_specs, theme_id=theme_id, rng=rng)
+    if player_room_id is not None:
+        entity_specs.append(_make_player_entity_spec(room_specs, player_room_id=str(player_room_id)))
     canvas, draw = _render_base(layout, room_specs=room_specs, door_specs=door_specs, theme=theme)
     entities = _render_entities(draw, entity_specs=entity_specs, layout=layout, theme=theme, theme_id=theme_id)
 
@@ -243,6 +246,7 @@ def render_rpg_house_scene(
         "room_ids": [room.room_id for room in rooms],
         "candidate_room_labels": dict(room_labels),
         "start_room_id": None if start_room_id is None else str(start_room_id),
+        "player_room_id": None if player_room_id is None else str(player_room_id),
         "doors": [door.as_dict() for door in doors],
         "door_state_policy": "mixed" if sample_mixed_door_states else "explicit_or_closed",
         "room_graph": room_graph(doors),
@@ -539,6 +543,37 @@ def _make_entity_specs(
     return entities
 
 
+def _make_player_entity_spec(room_specs: Sequence[_RoomSpec], *, player_room_id: str) -> _EntitySpec:
+    """Return the visible player marker for reachability count tasks."""
+
+    rooms_by_id = {str(room.room_id): room for room in room_specs}
+    if str(player_room_id) not in rooms_by_id:
+        raise ValueError(f"player_room_id must name a rendered room, got {player_room_id!r}")
+    room = rooms_by_id[str(player_room_id)]
+    x, y, w, h = room.tile_xywh
+    inner_x = int(x) + 1
+    inner_y = int(y) + 1
+    inner_w = max(1, int(w) - 2)
+    inner_h = max(1, int(h) - 2)
+    player_x = inner_x + max(0, (inner_w - 1) // 2)
+    player_y = inner_y + max(0, (inner_h - 1) // 2)
+    return _EntitySpec(
+        entity_id="player_00",
+        object_type="person",
+        public_name="player",
+        room_id=str(player_room_id),
+        tile_xywh=(int(player_x), int(player_y), 1, 1),
+        layer="marker",
+        visual={
+            "role": "player_marker",
+            "person_variant_id": "adult",
+            "gender_id": "female",
+            "primary_color_rgb": (52, 94, 196),
+            "accent_color_rgb": (247, 205, 72),
+        },
+    )
+
+
 def _render_base(
     layout: RpgHouseLayout,
     *,
@@ -683,6 +718,7 @@ def _render_entities(
         bbox = _tile_bbox(layout, spec.tile_xywh)
         visual = {"theme_id": theme_id, "renderer_style": RENDERER_STYLE_TOP_DOWN_PIXEL_RPG}
         visual.update(dict(spec.visual or {}))
+        entity_role = "reference" if str(spec.layer) == "marker" else "context"
         rendered = render_illustration_object(
             IllustrationObjectSpec(
                 object_id=spec.entity_id,
@@ -692,9 +728,13 @@ def _render_entities(
                 tile_xywh=spec.tile_xywh,
                 renderer_id=RENDERER_ID,
                 renderer_variant_id=f"top_down:{theme_id}",
-                semantic_attributes={"room_id": spec.room_id, "layout_context": True},
+                semantic_attributes={
+                    "room_id": spec.room_id,
+                    "layout_context": str(spec.layer) != "marker",
+                    "role": str(visual.get("role", entity_role)),
+                },
                 visual_attributes=visual,
-                role="context",
+                role=entity_role,
                 source_entity_type="rpg_house_entity",
             ),
             RenderContext(renderer_style=RENDERER_STYLE_TOP_DOWN_PIXEL_RPG, draw=draw),
@@ -710,7 +750,7 @@ def _render_entities(
                 bbox_xyxy=bbox,
                 point_xy=point,
                 layer=spec.layer,
-                metadata={"visual_attributes": visual, "object_record": rendered.object_record},
+                metadata={"role": entity_role, "visual_attributes": visual, "object_record": rendered.object_record},
             )
         )
     return entities

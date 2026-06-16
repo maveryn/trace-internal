@@ -2,7 +2,21 @@
   "bundle_id": "illustrations_rpg_house_v0",
   "schema_version": "v0",
   "task_templates": {
+    "rpg_house_door_state_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "rpg_house_reachable_room_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "rpg_house_reachable_room_count_task": [
       "",
       "",
       "",
@@ -19,7 +33,10 @@
   },
   "required_slots_by_key": {
     "scene:rpg_house_canvas": [],
+    "query:closed_door_count": [],
+    "query:open_door_count": [],
     "query:reachable_room_label": [],
+    "query:reachable_room_count": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -58,12 +75,33 @@
     ]
   },
   "query_templates": {
+    "closed_door_count": [
+      "How many closed doors are shown in the house layout?",
+      "Count the doors that are closed. How many closed doors are there?",
+      "What is the total number of closed doors in this RPG house?",
+      "How many doorways have a closed door across them?",
+      "Count each closed door once. What is the total?"
+    ],
+    "open_door_count": [
+      "How many open doors are shown in the house layout?",
+      "Count the doorways that are open. How many open doors are there?",
+      "What is the total number of open doors in this RPG house?",
+      "How many doors are open enough for a player to pass through?",
+      "Count each open doorway once. What is the total?"
+    ],
     "reachable_room_label": [
       "Starting from the red-outlined room, which lettered room can be reached without going through a closed door?",
       "Which lettered room is reachable from the red-outlined starting room using only open doorways?",
       "From the red-outlined starting room, choose the letter of the room that can be reached without crossing a closed door.",
       "The red outline marks the starting room. Which lettered room is connected to it through open doorways?",
       "Follow only open doorways from the red-outlined room. Which lettered room can be reached?"
+    ],
+    "reachable_room_count": [
+      "Starting from the room with the player, how many other rooms can the player reach by passing only through open doors?",
+      "The player is standing in one room. How many different other rooms are reachable using only open doorways?",
+      "From the player's current room, count the other rooms that can be reached without crossing a closed door. What is the count?",
+      "How many rooms besides the player's room are connected to the player through open doors?",
+      "Follow paths through open doors from the player. How many other rooms can be reached?"
     ],
     "room_count": [
       "How many enclosed rooms are shown in the house layout?",

@@ -85,6 +85,55 @@ def rpg_house_room_count_render_map(*, scene: RpgHouseScene) -> dict[str, Any]:
     }
 
 
+def rpg_house_reachable_room_count_render_map(
+    *,
+    scene: RpgHouseScene,
+    player_room_id: str,
+    reachable_room_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Return task render-map fields for reachable-room counting."""
+
+    room_points = room_point_map(scene)
+    player = player_entity(scene)
+    if player is None:
+        raise ValueError("reachable-room count render map requires a player entity")
+    reachable_ids = [str(room_id) for room_id in reachable_room_ids]
+    return {
+        "image_id": "img0",
+        "room_bboxes_px": room_bbox_map(scene),
+        "room_points_px": room_points,
+        "door_bboxes_px": door_bbox_map(scene),
+        "door_points_px": door_point_map(scene),
+        "player_room_id": str(player_room_id),
+        "player_point_px": [round(float(value), 3) for value in player.point_xy],
+        "reachable_room_ids": reachable_ids,
+        "reachable_room_points_px": {room_id: room_points[room_id] for room_id in reachable_ids},
+        "reachable_count": len(reachable_ids),
+    }
+
+
+def rpg_house_door_state_count_render_map(
+    *,
+    scene: RpgHouseScene,
+    target_state: str,
+    matching_door_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Return task render-map fields for open/closed door counting."""
+
+    door_boxes = door_bbox_map(scene)
+    door_points = door_point_map(scene)
+    matching_ids = [str(door_id) for door_id in matching_door_ids]
+    return {
+        "image_id": "img0",
+        "door_bboxes_px": door_boxes,
+        "door_points_px": door_points,
+        "target_state": str(target_state),
+        "matching_door_ids": matching_ids,
+        "matching_door_points_px": {door_id: door_points[door_id] for door_id in matching_ids},
+        "matching_door_count": len(matching_ids),
+    }
+
+
 def room_bbox_map(scene: RpgHouseScene) -> dict[str, list[float]]:
     return {
         str(room.room_id): [round(float(value), 3) for value in room.bbox_xyxy]
@@ -109,6 +158,23 @@ def door_bbox_map(scene: RpgHouseScene) -> dict[str, list[float]]:
     }
 
 
+def door_point_map(scene: RpgHouseScene) -> dict[str, list[float]]:
+    return {
+        str(door.door_id): [
+            round((float(door.bbox_xyxy[0]) + float(door.bbox_xyxy[2])) * 0.5, 3),
+            round((float(door.bbox_xyxy[1]) + float(door.bbox_xyxy[3])) * 0.5, 3),
+        ]
+        for door in scene.doors
+    }
+
+
+def player_entity(scene: RpgHouseScene) -> Any | None:
+    for entity in scene.entities:
+        if str(entity.public_name) == "player" and str(entity.metadata.get("role", "")) == "reference":
+            return entity
+    return None
+
+
 def bbox_projection(bbox: Sequence[float]) -> dict[str, Any]:
     values = [round(float(value), 3) for value in bbox[:4]]
     return {"type": "bbox", "bbox": values, "pixel_bbox": values}
@@ -119,12 +185,25 @@ def point_set_projection(points: Sequence[Sequence[float]]) -> dict[str, Any]:
     return {"type": "point_set", "point_set": values, "pixel_point_set": values}
 
 
+def keyed_point_set_map_projection(keyed_points: Mapping[str, Sequence[Sequence[float]]]) -> dict[str, Any]:
+    values = {
+        str(key): [[round(float(point[0]), 3), round(float(point[1]), 3)] for point in points]
+        for key, points in keyed_points.items()
+    }
+    return {"type": "keyed_point_set_map", "keyed_point_set_map": values, "pixel_keyed_point_set_map": values}
+
+
 __all__ = [
     "bbox_projection",
+    "door_point_map",
     "door_bbox_map",
+    "keyed_point_set_map_projection",
+    "player_entity",
     "point_set_projection",
     "room_bbox_map",
     "room_point_map",
+    "rpg_house_door_state_count_render_map",
+    "rpg_house_reachable_room_count_render_map",
     "rpg_house_room_count_render_map",
     "rpg_house_reachability_render_map",
     "rpg_house_render_spec",

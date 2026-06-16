@@ -26,6 +26,7 @@ from trace.tasks.three_d.shared.object_scene import (
 )
 
 from .shared.defaults import PROMPT_COLOR_RGB, SCENE_ID
+from .shared.relations import semantic_color_label
 from .shared.state import BuildRequest
 
 
@@ -160,17 +161,20 @@ def _run_once(
         ),
         context=f"prompt defaults for {task_identifier}",
     )
+    target_spec = dict(dataset.get("target_spec", {}))
+    target_color_name = str(dataset.get("target_color_name") or "")
+    target_color_names = [str(color) for color in dataset.get("target_color_names", [])]
     prompt_slots = {
         "target_shape_type": str(dataset.get("target_shape_type") or ""),
         "target_object_name": str(dataset.get("target_object_name") or ""),
         "target_object_plural": str(dataset.get("target_object_plural") or ""),
         "target_object_union_phrase": str(dataset.get("target_object_union_phrase") or ""),
-        "target_color_name": str(dataset.get("target_color_name") or ""),
-        "target_color_names": ", ".join(str(color) for color in dataset.get("target_color_names", [])),
-        "target_property_phrase": str(dataset.get("target_property_phrase") or ""),
+        "target_color_name": semantic_color_label(target_color_name) if target_color_name in PROMPT_COLOR_RGB else target_color_name,
+        "target_color_names": ", ".join(semantic_color_label(color) if color in PROMPT_COLOR_RGB else color for color in target_color_names),
+        "target_property_phrase": str(target_spec.get("target_property_prompt_phrase") or dataset.get("target_property_phrase") or ""),
         "target_property_singular": str(dataset.get("target_property_singular") or ""),
-        "left_operand_phrase": str(dataset.get("left_operand_phrase") or ""),
-        "right_operand_phrase": str(dataset.get("right_operand_phrase") or ""),
+        "left_operand_phrase": str(target_spec.get("left_operand_prompt_phrase") or dataset.get("left_operand_phrase") or ""),
+        "right_operand_phrase": str(target_spec.get("right_operand_prompt_phrase") or dataset.get("right_operand_phrase") or ""),
         **dict(request.prompt_slots),
     }
     prompt_selection = render_scene_prompt_variants(

@@ -12,9 +12,9 @@
 `count(filter(object_cluster_objects, color_name = target_color_name)); scene=object_cluster; scope=color_membership_count`
 
 ## Contract
-The image shows a dense synthetic perspective 3D cluster of colored small objects on a plain surface. The prompt asks how many objects match one semantic color, such as blue objects or red objects.
+The image shows a dense synthetic perspective 3D cluster of colored small objects on a plain surface. The prompt asks how many objects match one semantic color, such as blue objects or red objects. Prompt-facing semantic colors include the canonical color hex label, for example `blue [#2D75E6]`, while verifier metadata keeps the raw color name.
 
-The answer is the integer count of finalized clustered objects whose recorded `color_name` equals the sampled target color. Semantic color is recorded in verifier metadata as `color_name`, `prompt_color_name`, and `fill_rgb`; pixels are render output, not verifier source of truth.
+The answer is the integer count of finalized clustered objects whose recorded `color_name` equals the sampled target color. Semantic color is recorded in verifier metadata as `color_name`, `prompt_color_name`, and `fill_rgb`; pixels are render output, not verifier source of truth. Generated color distractors avoid near-color named pairs such as blue/cyan/purple and red/maroon/magenta.
 
 ## Annotation Contract
 Annotation is a `point_set` containing one center point for each counted object matching the requested color. The annotation set is unordered because all witnesses have the same role and annotation cardinality matches the answer.

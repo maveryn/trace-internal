@@ -7,7 +7,7 @@ from typing import Any, Dict, Mapping
 from trace.core.seed import spawn_rng
 from trace.tasks.three_d.shared.object_scene import ObjectSceneRenderParams
 
-from .defaults import CLUSTER_SCENE_VARIANTS, COLOR_SAFE_CLUSTER_SHAPE_TYPES, COUNTABLE_SHAPE_TYPES, PROMPT_COLOR_RGB
+from .defaults import CLUSTER_SCENE_VARIANTS, COLOR_READOUT_CLUSTER_SHAPE_TYPES, COLOR_SAFE_CLUSTER_SHAPE_TYPES, COUNTABLE_SHAPE_TYPES, PROMPT_COLOR_RGB
 from .objects import build_dataset_from_sequence
 from .relations import (
     build_arithmetic_sequence,
@@ -116,7 +116,7 @@ def build_count_request(
             sequence, target = build_type_union_sequence(shape_types=target_shapes, target_count=int(target_count), object_count=int(object_count), rng=rng)
             color_probabilities = {}
         else:
-            target_shape, shape_probabilities = resolve_shape_choice(params=params, key="target_shape_type", instance_seed=int(instance_seed), namespace=f"{namespace}.target_shape_type", support=COLOR_SAFE_CLUSTER_SHAPE_TYPES)
+            target_shape, shape_probabilities = resolve_shape_choice(params=params, key="target_shape_type", instance_seed=int(instance_seed), namespace=f"{namespace}.target_shape_type", support=COLOR_READOUT_CLUSTER_SHAPE_TYPES)
             target_color, color_probabilities = resolve_color_choice(params=params, key="target_color_name", instance_seed=int(instance_seed), namespace=f"{namespace}.target_color_name")
             if str(mode) == "type_color":
                 sequence, target = build_type_and_color_sequence(shape_type=str(target_shape), color_name=str(target_color), target_count=int(target_count), object_count=int(object_count), rng=rng)
@@ -127,8 +127,9 @@ def build_count_request(
         answer_value = int(target_count)
         expected_annotation_count = int(target_count)
         scene_kind = f"three_d_object_cluster_{mode}"
-        extra_trace = {"cluster_object_pool_size": len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)}
-        count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": dict(target_probabilities), "target_shape_probabilities": dict(shape_probabilities), "target_color_probabilities": dict(color_probabilities)})
+        pool_size = len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) if str(mode) in {"type_color", "color_membership", "type_or_color", "type_without_color", "color_without_type"} else len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)
+        extra_trace = {"cluster_object_pool_size": int(pool_size)}
+        count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": dict(target_probabilities), "target_shape_probabilities": dict(shape_probabilities), "target_color_probabilities": dict(color_probabilities), "cluster_object_pool_size": int(pool_size)})
     elif str(mode).startswith("arithmetic_"):
         operand_min = max(1, int(gen_defaults.get("operand_count_min", 1)))
         operand_max = max(int(operand_min), int(gen_defaults.get("operand_count_max", 7)))
@@ -164,9 +165,10 @@ def build_count_request(
         sequence, target = build_arithmetic_sequence(operand_kind=operand_kind, operation=operation, left_value=str(operands[0]), right_value=str(operands[1]), left_count=int(left_count), right_count=int(right_count), object_count=int(object_count), rng=rng)
         expected_annotation_count = int(operand_total)
         scene_kind = "three_d_object_cluster_count_arithmetic"
-        extra_trace = {"cluster_object_pool_size": len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)}
+        pool_size = len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) if str(operand_kind) == "color" else len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)
+        extra_trace = {"cluster_object_pool_size": int(pool_size)}
         keyed_annotation = True
-        count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": {"derived_from_operands": 1.0}, "left_operand_count": int(left_count), "left_operand_count_probabilities": dict(left_probabilities), "right_operand_count": int(right_count), "right_operand_count_probabilities": dict(right_probabilities), "target_shape_probabilities": shape_probabilities, "target_color_probabilities": color_probabilities})
+        count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": {"derived_from_operands": 1.0}, "left_operand_count": int(left_count), "left_operand_count_probabilities": dict(left_probabilities), "right_operand_count": int(right_count), "right_operand_count_probabilities": dict(right_probabilities), "target_shape_probabilities": shape_probabilities, "target_color_probabilities": color_probabilities, "cluster_object_pool_size": int(pool_size)})
     else:
         object_count, object_probabilities = resolve_uniform_count(params=params, explicit_key="object_count", minimum=int(gen_defaults.get("object_count_min", 16)), maximum=int(gen_defaults.get("object_count_max", 30)), instance_seed=int(instance_seed), namespace=f"{namespace}.object_count")
         if str(mode) == "frequency_max":

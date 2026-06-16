@@ -17,10 +17,12 @@ from trace.tasks.three_d.object_cluster.multi_attribute_exclusion_count import (
 )
 from trace.tasks.three_d.object_cluster.multi_attribute_or_count import TASK_ID as MULTI_ATTRIBUTE_OR_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.shared.defaults import (
+    COLOR_READOUT_CLUSTER_SHAPE_TYPES,
     COLOR_SAFE_CLUSTER_SHAPE_TYPES,
     COUNTABLE_SHAPE_TYPES,
     PROMPT_COLOR_RGB,
 )
+from trace.tasks.three_d.object_cluster.shared.relations import semantic_color_label
 from trace.tasks.three_d.object_cluster.single_attribute_membership_count import TASK_ID
 from trace.tasks.three_d.object_cluster.total_object_count import TASK_ID as TOTAL_OBJECT_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.type_frequency_count import TASK_ID as TYPE_FREQUENCY_COUNT_TASK_ID
@@ -236,7 +238,7 @@ def test_object_cluster_multi_attribute_and_count_answer_and_annotation() -> Non
             "scene_variant": "tabletop_pile",
             "object_count": 18,
             "target_count": 4,
-            "target_shape_type": "button",
+            "target_shape_type": "cube",
             "target_color_name": "red",
             "post_image_noise_apply_prob": 0.0,
         },
@@ -250,7 +252,7 @@ def test_object_cluster_multi_attribute_and_count_answer_and_annotation() -> Non
     expected_ids = [
         str(spec["object_id"])
         for spec in sorted(object_specs, key=lambda item: str(item["object_id"]))
-        if str(spec["shape_type"]) == "button" and str(spec["color_name"]) == "red"
+        if str(spec["shape_type"]) == "cube" and str(spec["color_name"]) == "red"
     ]
 
     assert output.scene_id == "object_cluster"
@@ -264,13 +266,15 @@ def test_object_cluster_multi_attribute_and_count_answer_and_annotation() -> Non
     assert output.annotation_gt.value == [render_map["object_centers_px"][object_id] for object_id in target_object_ids]
     assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
     assert output.trace_payload["projected_annotation"]["pixel_point_set"] == output.annotation_gt.value
-    assert trace["target_property_phrase"] == "red buttons"
-    assert trace["property_counts"]["red_button"] == 4
+    assert trace["target_property_phrase"] == "red cubes"
+    assert trace["target_spec"]["target_property_prompt_phrase"] == f"{semantic_color_label('red')} cubes"
+    assert semantic_color_label("red") in output.prompt
+    assert trace["property_counts"]["red_cube"] == 4
     assert all("color_name" in spec and "prompt_color_name" in spec and "fill_rgb" in spec for spec in object_specs)
     assert all(spec["fill_rgb"] == list(PROMPT_COLOR_RGB[str(spec["color_name"])]) for spec in object_specs)
     assert any(str(spec["count_role"]) == "same_type_wrong_color" for spec in object_specs)
     assert any(str(spec["count_role"]) == "same_color_wrong_type" for spec in object_specs)
-    assert all(bool(spec["matches_query"]) == (str(spec["shape_type"]) == "button" and str(spec["color_name"]) == "red") for spec in object_specs)
+    assert all(bool(spec["matches_query"]) == (str(spec["shape_type"]) == "cube" and str(spec["color_name"]) == "red") for spec in object_specs)
     assert_three_d_canvas_contract(output)
 
 
@@ -283,6 +287,31 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
     assert taxonomy.scene_id == "object_cluster"
     assert not taxonomy.source_scene_id
     assert len(COLOR_SAFE_CLUSTER_SHAPE_TYPES) >= 12
+    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 59
+    assert {
+        "sphere",
+        "cube",
+        "cylinder",
+        "puzzle_piece",
+        "cup",
+        "mini_chair",
+        "shield",
+        "lantern",
+        "flask",
+        "calculator",
+        "light_bulb",
+        "tomato",
+    }.issubset(set(COLOR_READOUT_CLUSTER_SHAPE_TYPES))
+    assert {
+        "button",
+        "marble",
+        "bead",
+        "dot",
+        "straw",
+        "ticket",
+        "coaster",
+        "tape_roll",
+    }.isdisjoint(set(COLOR_READOUT_CLUSTER_SHAPE_TYPES))
     assert {
         "straw",
         "ticket",
@@ -333,6 +362,9 @@ def test_object_cluster_color_membership_count_answer_and_annotation() -> None:
     assert target_object_ids == expected_ids
     assert output.annotation_gt.value == [render_map["object_centers_px"][object_id] for object_id in target_object_ids]
     assert all(bool(spec["matches_query"]) == (str(spec["color_name"]) == "blue") for spec in object_specs)
+    assert semantic_color_label("blue") in output.prompt
+    assert not any(str(spec["color_name"]) in {"cyan", "purple"} for spec in object_specs if str(spec["color_name"]) != "blue")
+    assert all(str(spec["shape_type"]) in set(COLOR_READOUT_CLUSTER_SHAPE_TYPES) for spec in object_specs)
 
 
 def test_object_cluster_multi_attribute_or_count_counts_overlap_once() -> None:
@@ -344,7 +376,7 @@ def test_object_cluster_multi_attribute_or_count_counts_overlap_once() -> None:
             "scene_variant": "tabletop_pile",
             "object_count": 20,
             "target_count": 6,
-            "target_shape_type": "button",
+            "target_shape_type": "cube",
             "target_color_name": "red",
             "post_image_noise_apply_prob": 0.0,
         },
@@ -357,7 +389,7 @@ def test_object_cluster_multi_attribute_or_count_counts_overlap_once() -> None:
     expected_ids = [
         str(spec["object_id"])
         for spec in sorted(object_specs, key=lambda item: str(item["object_id"]))
-        if str(spec["shape_type"]) == "button" or str(spec["color_name"]) == "red"
+        if str(spec["shape_type"]) == "cube" or str(spec["color_name"]) == "red"
     ]
 
     assert output.query_id == "single"
@@ -365,7 +397,8 @@ def test_object_cluster_multi_attribute_or_count_counts_overlap_once() -> None:
     assert output.answer_gt.value == len(expected_ids) == 6
     assert target_object_ids == expected_ids
     assert len(target_object_ids) == len(set(target_object_ids))
-    assert any(str(spec["shape_type"]) == "button" and str(spec["color_name"]) == "red" for spec in object_specs)
+    assert semantic_color_label("red") in output.prompt
+    assert any(str(spec["shape_type"]) == "cube" and str(spec["color_name"]) == "red" for spec in object_specs)
 
 
 def test_object_cluster_multi_attribute_exclusion_count_answer_and_annotation() -> None:
@@ -377,7 +410,7 @@ def test_object_cluster_multi_attribute_exclusion_count_answer_and_annotation() 
             "scene_variant": "cluster_mat",
             "object_count": 19,
             "target_count": 5,
-            "target_shape_type": "button",
+            "target_shape_type": "cube",
             "target_color_name": "red",
             "post_image_noise_apply_prob": 0.0,
         },
@@ -390,14 +423,15 @@ def test_object_cluster_multi_attribute_exclusion_count_answer_and_annotation() 
     expected_ids = [
         str(spec["object_id"])
         for spec in sorted(object_specs, key=lambda item: str(item["object_id"]))
-        if str(spec["shape_type"]) == "button" and str(spec["color_name"]) != "red"
+        if str(spec["shape_type"]) == "cube" and str(spec["color_name"]) != "red"
     ]
 
     assert output.query_id == "type_and_not_color_count"
     assert output.answer_gt.value == 5
     assert target_object_ids == expected_ids
     assert output.annotation_gt.type == "point_set"
-    assert any(str(spec["shape_type"]) == "button" and str(spec["color_name"]) == "red" for spec in object_specs)
+    assert semantic_color_label("red") in output.prompt
+    assert any(str(spec["shape_type"]) == "cube" and str(spec["color_name"]) == "red" for spec in object_specs)
 
 
 def test_object_cluster_type_union_count_answer_and_annotation() -> None:

@@ -5,10 +5,13 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
+from trace.tasks.shared.color_format import format_named_color_with_hex
 from trace.tasks.three_d.shared.task_support import resolve_axis_variant_for_namespace
 
 from .defaults import (
     CLUSTER_COMPOSITION_MODES,
+    COLOR_CONFUSION_EXCLUSIONS,
+    COLOR_READOUT_CLUSTER_SHAPE_TYPES,
     COLOR_SAFE_CLUSTER_SHAPE_TYPES,
     COUNTABLE_SHAPE_TYPES,
     PROMPT_COLOR_RGB,
@@ -37,10 +40,69 @@ def color_support() -> Tuple[str, ...]:
     return tuple(str(color) for color in PROMPT_COLOR_RGB)
 
 
+def semantic_color_label(color_name: str) -> str:
+    """Return the visible prompt label for one semantic color."""
+
+    rgb = PROMPT_COLOR_RGB[str(color_name)]
+    return format_named_color_with_hex(str(color_name), rgb)
+
+
+def _confusable_color_names(color_name: str) -> Tuple[str, ...]:
+    """Return generated color distractors too close to one semantic target."""
+
+    return tuple(str(color) for color in COLOR_CONFUSION_EXCLUSIONS.get(str(color_name), ()))
+
+
+def _colors_conflict(left: str, right: str) -> bool:
+    """Return whether two semantic colors are too visually close for readout."""
+
+    return (
+        str(right) in set(_confusable_color_names(str(left)))
+        or str(left) in set(_confusable_color_names(str(right)))
+    )
+
+
+def readout_color_support(*, anchors: Sequence[str] = (), exclude: Sequence[str] = ()) -> Tuple[str, ...]:
+    """Return semantic colors after removing target-confusable distractors."""
+
+    blocked = {str(color) for color in exclude}
+    for anchor in anchors:
+        blocked.add(str(anchor))
+        blocked.update(_confusable_color_names(str(anchor)))
+    pool = tuple(str(color) for color in color_support() if str(color) not in blocked)
+    if not pool:
+        raise ValueError("object-cluster color readout needs at least one compatible color")
+    return pool
+
+
+def _sample_nonconflicting_readout_colors(*, instance_seed: int, namespace: str, count: int) -> Tuple[str, ...]:
+    """Sample generated semantic colors with no pairwise near-color conflicts."""
+
+    if int(count) < 1:
+        raise ValueError("color readout needs at least one color")
+    rng = spawn_rng(int(instance_seed), f"{namespace}.nonconflicting_colors")
+    candidates = list(color_support())
+    for _attempt in range(96):
+        rng.shuffle(candidates)
+        selected: list[str] = []
+        for color in candidates:
+            if all(not _colors_conflict(str(color), chosen) for chosen in selected):
+                selected.append(str(color))
+            if len(selected) >= int(count):
+                return tuple(selected[: int(count)])
+    raise ValueError("could not sample enough non-conflicting semantic colors")
+
+
 def safe_shape_support() -> Tuple[str, ...]:
     """Return shapes with renderers that support explicit semantic colors."""
 
     return tuple(str(shape) for shape in COLOR_SAFE_CLUSTER_SHAPE_TYPES)
+
+
+def color_readout_shape_support() -> Tuple[str, ...]:
+    """Return object shapes suitable for generated semantic-color questions."""
+
+    return tuple(str(shape) for shape in COLOR_READOUT_CLUSTER_SHAPE_TYPES)
 
 
 def random_color(rng) -> str:
@@ -381,8 +443,8 @@ def build_type_and_color_sequence(
         ClusterSequenceItem(str(shape_type), str(color_name), True, "target")
         for _ in range(int(target_count))
     ]
-    wrong_colors = [color for color in color_support() if str(color) != str(color_name)]
-    wrong_shapes = [shape for shape in safe_shape_support() if str(shape) != str(shape_type)]
+    wrong_colors = list(readout_color_support(anchors=(str(color_name),)))
+    wrong_shapes = [shape for shape in color_readout_shape_support() if str(shape) != str(shape_type)]
     rng.shuffle(wrong_colors)
     rng.shuffle(wrong_shapes)
     if len(sequence) < int(object_count):
@@ -395,14 +457,17 @@ def build_type_and_color_sequence(
         sequence.append(ClusterSequenceItem(shape, color, False, "distractor"))
     rng.shuffle(sequence)
     name = object_name_for_shape(str(shape_type))
-    phrase = f"{color_name} {object_plural(str(name))}"
+    plural = object_plural(str(name))
+    phrase = f"{color_name} {plural}"
+    prompt_phrase = f"{semantic_color_label(str(color_name))} {plural}"
     return sequence, PredicateTarget(
         mode="by_type_and_color",
         target_shape_type=str(shape_type),
         target_color_name=str(color_name),
         target_object_name=str(name),
-        target_object_plural=object_plural(str(name)),
+        target_object_plural=str(plural),
         target_property_phrase=str(phrase),
+        extras={"target_property_prompt_phrase": str(prompt_phrase)},
     )
 
 
@@ -415,8 +480,8 @@ def build_color_membership_sequence(
 ) -> tuple[list[ClusterSequenceItem], PredicateTarget]:
     """Build a cluster where color alone determines membership."""
 
-    shapes = list(safe_shape_support())
-    wrong_colors = [color for color in color_support() if str(color) != str(color_name)]
+    shapes = list(color_readout_shape_support())
+    wrong_colors = list(readout_color_support(anchors=(str(color_name),)))
     sequence = [
         ClusterSequenceItem(str(rng.choice(shapes)), str(color_name), True, "target")
         for _ in range(int(target_count))
@@ -428,6 +493,7 @@ def build_color_membership_sequence(
         mode="by_color",
         target_color_name=str(color_name),
         target_property_phrase=f"{color_name} objects",
+        extras={"target_property_prompt_phrase": f"{semantic_color_label(str(color_name))} objects"},
     )
 
 
@@ -443,8 +509,8 @@ def build_or_sequence(
 
     if int(target_count) < 1:
         raise ValueError("inclusive OR count needs at least one target")
-    wrong_shapes = [shape for shape in safe_shape_support() if str(shape) != str(shape_type)]
-    wrong_colors = [color for color in color_support() if str(color) != str(color_name)]
+    wrong_shapes = [shape for shape in color_readout_shape_support() if str(shape) != str(shape_type)]
+    wrong_colors = list(readout_color_support(anchors=(str(color_name),)))
     sequence = [ClusterSequenceItem(str(shape_type), str(color_name), True, "target")]
     while len(sequence) < int(target_count):
         if len(sequence) % 2 == 0:
@@ -463,6 +529,7 @@ def build_or_sequence(
         target_object_name=str(name),
         target_object_plural=str(plural),
         target_property_phrase=f"{plural} or {color_name} objects",
+        extras={"target_property_prompt_phrase": f"{plural} or {semantic_color_label(str(color_name))} objects"},
     )
 
 
@@ -477,8 +544,8 @@ def build_exclusion_sequence(
 ) -> tuple[list[ClusterSequenceItem], PredicateTarget]:
     """Build a count set that matches one attribute while excluding another."""
 
-    wrong_shapes = [shape for shape in safe_shape_support() if str(shape) != str(shape_type)]
-    wrong_colors = [color for color in color_support() if str(color) != str(color_name)]
+    wrong_shapes = [shape for shape in color_readout_shape_support() if str(shape) != str(shape_type)]
+    wrong_colors = list(readout_color_support(anchors=(str(color_name),)))
     sequence: list[ClusterSequenceItem] = []
     if str(mode) == "type_without_color":
         for _ in range(int(target_count)):
@@ -486,8 +553,9 @@ def build_exclusion_sequence(
         if len(sequence) < int(object_count):
             sequence.append(ClusterSequenceItem(str(shape_type), str(color_name), False, "excluded_intersection"))
         while len(sequence) < int(object_count):
-            sequence.append(ClusterSequenceItem(str(rng.choice(wrong_shapes)), str(rng.choice(color_support())), False, "distractor"))
+            sequence.append(ClusterSequenceItem(str(rng.choice(wrong_shapes)), str(rng.choice(wrong_colors)), False, "distractor"))
         phrase = f"{shape_plural(str(shape_type))} that are not {color_name}"
+        prompt_phrase = f"{shape_plural(str(shape_type))} that are not {semantic_color_label(str(color_name))}"
     else:
         for _ in range(int(target_count)):
             sequence.append(ClusterSequenceItem(str(rng.choice(wrong_shapes)), str(color_name), True, "target"))
@@ -496,6 +564,7 @@ def build_exclusion_sequence(
         while len(sequence) < int(object_count):
             sequence.append(ClusterSequenceItem(str(shape_type), str(rng.choice(wrong_colors)), False, "distractor"))
         phrase = f"{color_name} objects that are not {shape_plural(str(shape_type))}"
+        prompt_phrase = f"{semantic_color_label(str(color_name))} objects that are not {shape_plural(str(shape_type))}"
     rng.shuffle(sequence)
     name = object_name_for_shape(str(shape_type))
     return sequence, PredicateTarget(
@@ -505,6 +574,7 @@ def build_exclusion_sequence(
         target_object_name=str(name),
         target_object_plural=object_plural(str(name)),
         target_property_phrase=str(phrase),
+        extras={"target_property_prompt_phrase": str(prompt_phrase)},
     )
 
 
@@ -552,7 +622,6 @@ def build_arithmetic_sequence(
 
     sequence: list[ClusterSequenceItem] = []
     shapes = list(safe_shape_support())
-    colors = list(color_support())
     if str(operand_kind) == "shape":
         left_phrase = shape_plural(str(left_value))
         right_phrase = shape_plural(str(right_value))
@@ -567,14 +636,22 @@ def build_arithmetic_sequence(
     else:
         left_phrase = f"{left_value} objects"
         right_phrase = f"{right_value} objects"
+        left_prompt_phrase = f"{semantic_color_label(str(left_value))} objects"
+        right_prompt_phrase = f"{semantic_color_label(str(right_value))} objects"
+        color_distractor_pool = list(readout_color_support(anchors=(str(left_value), str(right_value))))
+        shapes = list(color_readout_shape_support())
         for _ in range(int(left_count)):
             sequence.append(ClusterSequenceItem(str(rng.choice(shapes)), str(left_value), True, "left_operand"))
         for _ in range(int(right_count)):
             sequence.append(ClusterSequenceItem(str(rng.choice(shapes)), str(right_value), True, "right_operand"))
-        distractor_colors = [color for color in colors if str(color) not in {str(left_value), str(right_value)}]
         while len(sequence) < int(object_count):
-            sequence.append(ClusterSequenceItem(str(rng.choice(shapes)), str(rng.choice(distractor_colors)), False, "distractor"))
-        extras = {"target_color_names": [str(left_value), str(right_value)]}
+            sequence.append(ClusterSequenceItem(str(rng.choice(shapes)), str(rng.choice(color_distractor_pool)), False, "distractor"))
+        extras = {
+            "target_color_names": [str(left_value), str(right_value)],
+            "left_operand_prompt_phrase": str(left_prompt_phrase),
+            "right_operand_prompt_phrase": str(right_prompt_phrase),
+            "target_property_prompt_phrase": f"{left_prompt_phrase} and {right_prompt_phrase}",
+        }
     rng.shuffle(sequence)
     return sequence, PredicateTarget(
         mode="operand_arithmetic",
@@ -726,14 +803,22 @@ def resolve_two_colors(
 ) -> tuple[list[str], Dict[str, float]]:
     """Resolve two distinct semantic colors for arithmetic contracts."""
 
-    return resolve_string_subset(
-        params=params,
-        key=str(key),
-        support=color_support(),
+    explicit_value = params.get(str(key))
+    if explicit_value is not None:
+        return resolve_string_subset(
+            params=params,
+            key=str(key),
+            support=color_support(),
+            instance_seed=int(instance_seed),
+            namespace=str(namespace),
+            count=2,
+        )
+    selected = _sample_nonconflicting_readout_colors(
         instance_seed=int(instance_seed),
         namespace=str(namespace),
         count=2,
     )
+    return list(selected), selected_probability_map(color_support(), selected)
 
 
 __all__ = [
@@ -746,6 +831,7 @@ __all__ = [
     "build_type_and_color_sequence",
     "build_type_membership_sequence",
     "build_type_union_sequence",
+    "color_readout_shape_support",
     "resolve_color_choice",
     "resolve_composition_mode",
     "resolve_membership_counts",
@@ -753,6 +839,7 @@ __all__ = [
     "resolve_two_colors",
     "resolve_two_shapes",
     "safe_shape_support",
+    "semantic_color_label",
     "selected_probability_map",
     "target_mapping",
 ]

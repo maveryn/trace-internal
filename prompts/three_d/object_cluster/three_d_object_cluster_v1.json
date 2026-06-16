@@ -63,7 +63,7 @@
         "How many {target_object_plural} in the cluster are not {target_color_name}?",
         "Count the clustered {target_object_plural} that are any color except {target_color_name}. How many are there?",
         "What is the number of visible {target_object_plural} in the cluster that are not {target_color_name}?",
-        "How many {target_object_plural} are non-{target_color_name}?",
+        "How many {target_object_plural} are not {target_color_name}?",
         "How many clustered objects are {target_object_plural} and not {target_color_name}?"
       ],
       "color_and_not_type_count": [

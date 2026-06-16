@@ -37,11 +37,11 @@
         "{minesweeper_rule_text} Use the outlined opened clue cell(s). How many covered cells are guaranteed not to contain mines?"
       ],
       "forced_mine_cell_label": [
-        "{minesweeper_rule_text} Use the outlined opened clue cell(s). Among the labeled hidden cells A-D, which one is guaranteed to be a mine?",
-        "{minesweeper_rule_text} Use the outlined opened clue cell(s). Which labeled hidden cell A-D must contain a mine?",
-        "{minesweeper_rule_text} Use the outlined opened clue cell(s) and nearby flags. Which labeled covered cell is certainly a mine?",
-        "{minesweeper_rule_text} Use the outlined clue information. Choose the labeled hidden cell that is forced to be a mine.",
-        "{minesweeper_rule_text} Based on the outlined opened clue cell(s), which labeled hidden cell is guaranteed to contain a mine?"
+        "{minesweeper_rule_text} Among the labeled hidden cells A-D, which one is guaranteed to be a mine?",
+        "{minesweeper_rule_text} Which labeled hidden cell A-D must contain a mine?",
+        "{minesweeper_rule_text} Using the visible numbers and nearby flags, which labeled covered cell is certainly a mine?",
+        "{minesweeper_rule_text} Choose the labeled hidden cell that is forced to be a mine.",
+        "{minesweeper_rule_text} Which labeled hidden cell is guaranteed to contain a mine?"
       ],
       "remaining_mine_count": [
         "{minesweeper_rule_text} Use the outlined opened clue cell. How many more mines must be adjacent to that marked number?",

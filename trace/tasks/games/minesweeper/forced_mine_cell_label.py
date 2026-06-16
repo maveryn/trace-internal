@@ -63,7 +63,6 @@ def _prepare_forced_mine_cell_label_objective(
             example_annotation=[245, 255],
             example_answer="B",
             coord=correct_coord,
-            highlighted_clue_coords=tuple(sample.forcing_clue_coords),
             extra_query_params={"prompt_query_key": PROMPT_QUERY_KEY},
             execution_extra={
                 "option_labels": [str(label) for label in OPTION_LABELS],

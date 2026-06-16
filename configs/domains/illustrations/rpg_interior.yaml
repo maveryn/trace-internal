@@ -25,7 +25,7 @@ rendering:
     task_illustrations__rpg_interior__object_zone_count:
       rpg_interior_canvas_width: 960
       rpg_interior_canvas_height: 720
-      rpg_interior_tile_px: 40
+      rpg_interior_tile_px: 48
       rpg_interior_type: auto
       distractor_count_min: 7
       distractor_count_max: 13

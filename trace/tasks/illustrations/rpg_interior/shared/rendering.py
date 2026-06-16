@@ -21,7 +21,7 @@ from .state import BBox, RpgInteriorEntity, RpgInteriorRegion, RpgInteriorScene,
 
 SCENE_ID = "rpg_interior"
 RENDERER_ID = "rpg_interior_top_down_v0"
-DEFAULT_TILE_PX = 40
+DEFAULT_TILE_PX = 48
 DEFAULT_CANVAS_WIDTH = 960
 DEFAULT_CANVAS_HEIGHT = 720
 INTERIOR_TYPES: tuple[str, ...] = ("shop", "home", "inn")

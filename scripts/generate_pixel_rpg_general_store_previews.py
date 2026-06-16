@@ -151,7 +151,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=20260608)
     parser.add_argument("--width", type=int, default=960)
     parser.add_argument("--height", type=int, default=720)
-    parser.add_argument("--tile-px", type=int, default=40)
+    parser.add_argument("--tile-px", type=int, default=48)
     args = parser.parse_args()
     generate_previews(
         out_dir=args.out_dir,

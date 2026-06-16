@@ -1,13 +1,13 @@
 # `task_games__pinball_table__first_hit_object_label`
 
-## Contract
+## Program Contract
 1. Domain: `games`
 2. Scene package: `trace/tasks/games/pinball_table/`
 3. Scene id: `pinball_table`
 4. Public task id: `task_games__pinball_table__first_hit_object_label`
-5. Supported `query_id` values: `first_hit_object_label`
+5. Supported `query_id` values: `single`
 6. Answer schema: `string_label`
-7. Annotation schema: `point_set`
+7. Annotation schema: `point`
 8. Program schema: `label(first_collision(straight_launch_path, labeled_pinball_objects)); scene=pinball_table; scope=first_hit_object_label`
 
 ## Generation Notes

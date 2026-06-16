@@ -7,19 +7,19 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.pinball_table.first_hit_object_label import (
-    GamesPinballFirstHitObjectLabelTask,
-    _first_hit_object_id,
-    _turn_angle_degrees,
-)
+from trace.core.query_ids import NO_BRANCH_QUERY_IDS
+from trace.tasks.games.pinball_table.first_hit_object_label import GamesPinballFirstHitObjectLabelTask
 from trace.tasks.games.pinball_table.path_score_value import GamesPinballPathScoreValueTask
-from trace.tasks.games.pinball_table.shared.common import (
-    SUPPORTED_PINBALL_QUERY_IDS,
+from trace.tasks.games.pinball_table.shared.sampling import (
+    first_hit_object_id,
+    pinball_turn_angle_degrees,
+)
+from trace.tasks.games.pinball_table.shared.state import (
     SUPPORTED_PINBALL_SCENE_VARIANTS,
     SUPPORTED_PINBALL_STYLE_VARIANTS,
     PinballObject,
 )
-from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults, required_group_defaults
 from tests.helpers import read_jsonl
 
 
@@ -32,8 +32,7 @@ def test_games_pinball_table_scene_package_source_layout() -> None:
     for task_cls, relative_path in expected_sources.items():
         source_path = Path(inspect.getsourcefile(task_cls) or "").resolve()
         assert source_path == (Path.cwd() / relative_path).resolve()
-        assert getattr(task_cls, "scene_id", "")
-        assert getattr(task_cls, "scene_id") == "pinball_table"
+        assert not hasattr(task_cls, "scene_id")
 
 
 def test_games_pinball_table_defaults_present() -> None:
@@ -44,16 +43,27 @@ def test_games_pinball_table_defaults_present() -> None:
     )
 
     assert set(generation["scene_variant_weights"].keys()) == set(SUPPORTED_PINBALL_SCENE_VARIANTS)
-    assert set(generation["query_id_weights"].keys()) == set(SUPPORTED_PINBALL_QUERY_IDS)
+    assert "query_id_weights" not in generation
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_PINBALL_STYLE_VARIANTS)
     assert len(SUPPORTED_PINBALL_STYLE_VARIANTS) >= 5
-    assert str(prompt["bundle_id"]) == "games_pinball_table_v0"
-    assert "straight path" in str(prompt["pinball_motion_rule_text"]).lower()
-    assert "full drawn ball path" in str(prompt["object_description_score_path"]).lower()
-    assert "[x, y] pixel point" in str(prompt["annotation_hint_first_hit_object_label"])
-    assert "add it twice" in str(prompt["pinball_score_rule_text"]).lower()
-    assert "ordered json array" in str(prompt["annotation_hint_path_score_value"]).lower()
-    assert "[x, y] pixel point" in str(prompt["annotation_hint_path_score_value"])
+    assert str(prompt["bundle_id"]) == "games_pinball_table_v1"
+    prompt_defaults = required_group_defaults(
+        prompt,
+        (
+            "pinball_motion_rule_text",
+            "object_description_score_path",
+            "annotation_hint_first_hit_object_label",
+            "pinball_score_rule_text",
+            "annotation_hint_path_score_value",
+        ),
+        context="pinball prompt asset defaults",
+    )
+    assert "straight path" in str(prompt_defaults["pinball_motion_rule_text"]).lower()
+    assert "full drawn ball path" in str(prompt_defaults["object_description_score_path"]).lower()
+    assert "[x, y] pixel point" in str(prompt_defaults["annotation_hint_first_hit_object_label"])
+    assert "add it twice" in str(prompt_defaults["pinball_score_rule_text"]).lower()
+    assert "ordered json array" in str(prompt_defaults["annotation_hint_path_score_value"]).lower()
+    assert "[x, y] pixel point" in str(prompt_defaults["annotation_hint_path_score_value"])
 
 
 def test_games_pinball_first_hit_emits_expected_contract() -> None:
@@ -66,16 +76,15 @@ def test_games_pinball_first_hit_emits_expected_contract() -> None:
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == 1
-    assert out.query_id == "first_hit_object_label"
+    assert out.annotation_gt.type == "point"
+    assert len(out.annotation_gt.value) == 2
+    assert out.query_id in NO_BRANCH_QUERY_IDS
     assert out.scene_id == "pinball_table"
-    assert trace["query_spec"]["query_id"] == "first_hit_object_label"
-    assert trace["query_spec"]["params"]["query_id"] == "first_hit_object_label"
-    assert execution["query_id"] == "first_hit_object_label"
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    assert trace["query_spec"]["query_id"] in NO_BRANCH_QUERY_IDS
+    assert execution["query_id"] in NO_BRANCH_QUERY_IDS
+    assert trace["projected_annotation"]["type"] == "point"
+    assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point"] == out.annotation_gt.value
     assert trace["render_map"]["playfield_projection"]["kind"] == "trapezoid_isometric"
     assert trace["render_map"]["decorative_entities"]
     assert "panel_scene_style" in trace["render_spec"]
@@ -109,7 +118,7 @@ def test_games_pinball_first_hit_matches_recomputed_ray_hit() -> None:
         for obj in execution["objects"]
     )
 
-    first_hit = _first_hit_object_id(
+    first_hit = first_hit_object_id(
         origin=ball,
         angle_rad=float(execution["cue_angle_rad"]),
         objects=objects,
@@ -118,7 +127,7 @@ def test_games_pinball_first_hit_matches_recomputed_ray_hit() -> None:
     assert str(out.answer_gt.value) == str(execution["target_object_label"])
     assert list(execution["annotation_entity_ids"]) == [target_id]
     assert 5 <= len(execution["objects"]) <= 8
-    assert out.annotation_gt.value == [out.trace_payload["render_map"]["entity_points_px"][target_id]]
+    assert out.annotation_gt.value == out.trace_payload["render_map"]["entity_points_px"][target_id]
 
 
 def test_games_pinball_path_score_emits_expected_contract() -> None:
@@ -142,11 +151,10 @@ def test_games_pinball_path_score_emits_expected_contract() -> None:
 
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "point_sequence"
-    assert out.query_id == "path_score_value"
+    assert out.query_id in NO_BRANCH_QUERY_IDS
     assert out.scene_id == "pinball_table"
-    assert trace["query_spec"]["query_id"] == "path_score_value"
-    assert trace["query_spec"]["params"]["query_id"] == "path_score_value"
-    assert execution["query_id"] == "path_score_value"
+    assert trace["query_spec"]["query_id"] in NO_BRANCH_QUERY_IDS
+    assert execution["query_id"] in NO_BRANCH_QUERY_IDS
     assert execution["path_shape"] == "one_ricochet"
     assert execution["path_hit_count"] == 3
     assert len(annotation_entity_ids) == 3
@@ -154,10 +162,10 @@ def test_games_pinball_path_score_emits_expected_contract() -> None:
     assert len(trace["render_map"]["motion_paths_px"]["shown_path"]["points"]) >= 3
     assert len(path_points_norm) - 1 == 3
     turn_angles = [
-        _turn_angle_degrees(
-            tuple(float(value) for value in path_points_norm[index - 1]),
-            tuple(float(value) for value in path_points_norm[index]),
-            tuple(float(value) for value in path_points_norm[index + 1]),
+            pinball_turn_angle_degrees(
+                tuple(float(value) for value in path_points_norm[index - 1]),
+                tuple(float(value) for value in path_points_norm[index]),
+                tuple(float(value) for value in path_points_norm[index + 1]),
         )
         for index in range(1, len(path_points_norm) - 1)
     ]

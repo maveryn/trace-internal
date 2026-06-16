@@ -8,15 +8,22 @@ from typing import Any, Dict, Mapping, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.font_assets import get_font_family_record, sample_font_family
 from ....shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
 from ....shared.drawing import draw_arrow
 from ....shared.text_rendering import fit_font_to_box, resolve_text_stroke_fill
 from ...shared.layout import apply_games_layout_jitter_to_bbox
-from .common import PinballObject
+from ...shared.layout import resolve_games_layout_jitter
+from .defaults import DEFAULTS, POST_IMAGE_NOISE_DEFAULTS
+from .state import PinballObject, PinballSceneState
 from ...shared.scene_style import (
     GamePanelSceneStyle,
     game_panel_contrast_anchor_colors,
     game_panel_scene_style_metadata,
+    make_panel_scene_background,
+    resolve_game_panel_scene_style,
 )
 from ...shared.text import draw_game_text_traced as draw_text_traced
 
@@ -71,8 +78,58 @@ class RenderedPinballScene:
     render_map: Dict[str, Any]
 
 
+@dataclass(frozen=True)
+class RenderedPinballTaskContext:
+    """Rendered image and metadata needed for task output assembly."""
+
+    image: Image.Image
+    rendered_scene: RenderedPinballScene
+    panel_style_meta: Dict[str, Any]
+    background_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+    text_style_meta: Dict[str, Any]
+
+
+def resolve_pinball_render_params(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    namespace: str,
+    instance_seed: int,
+) -> PinballRenderParams:
+    """Resolve pinball rendering parameters from config/defaults."""
+
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{str(namespace)}.font_family",
+        params=params,
+    )
+    return PinballRenderParams(
+        canvas_width=int(params.get("canvas_width", group_default(render_defaults, "canvas_width", DEFAULTS.canvas_width))),
+        canvas_height=int(params.get("canvas_height", group_default(render_defaults, "canvas_height", DEFAULTS.canvas_height))),
+        panel_margin_px=int(params.get("panel_margin_px", group_default(render_defaults, "panel_margin_px", DEFAULTS.panel_margin_px))),
+        table_width_px=int(params.get("table_width_px", group_default(render_defaults, "table_width_px", DEFAULTS.table_width_px))),
+        table_height_px=int(params.get("table_height_px", group_default(render_defaults, "table_height_px", DEFAULTS.table_height_px))),
+        table_border_width_px=int(params.get("table_border_width_px", group_default(render_defaults, "table_border_width_px", DEFAULTS.table_border_width_px))),
+        ball_radius_px=int(params.get("ball_radius_px", group_default(render_defaults, "ball_radius_px", DEFAULTS.ball_radius_px))),
+        bumper_radius_px=int(params.get("bumper_radius_px", group_default(render_defaults, "bumper_radius_px", DEFAULTS.bumper_radius_px))),
+        target_width_px=int(params.get("target_width_px", group_default(render_defaults, "target_width_px", DEFAULTS.target_width_px))),
+        target_height_px=int(params.get("target_height_px", group_default(render_defaults, "target_height_px", DEFAULTS.target_height_px))),
+        cue_width_px=int(params.get("cue_width_px", group_default(render_defaults, "cue_width_px", DEFAULTS.cue_width_px))),
+        label_font_size_px=int(params.get("label_font_size_px", group_default(render_defaults, "label_font_size_px", DEFAULTS.label_font_size_px))),
+        font_family=str(font_family),
+        layout_jitter_meta=resolve_games_layout_jitter(
+            params,
+            render_defaults,
+            instance_seed=int(instance_seed),
+            namespace=f"{str(namespace)}.layout",
+        ),
+    )
+
+
 def build_games_pinball_theme(*, style_variant: str) -> PinballTheme:
-    """Return one pinball table theme."""
+    """Return one complete readable pinball table palette."""
 
     style = str(style_variant)
     if style == "blueprint":
@@ -571,7 +628,7 @@ def render_pinball_scene(
     params: PinballRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedPinballScene:
-    """Render one pinball first-hit scene."""
+    """Render the shared projected pinball playfield and all visible objects."""
 
     image = background.convert("RGB").copy()
     draw = ImageDraw.Draw(image)
@@ -769,9 +826,86 @@ def render_pinball_scene(
     return RenderedPinballScene(image=image, scene_entities=tuple(scene_entities), render_map=render_map)
 
 
+def render_pinball_task_context(
+    *,
+    scene: PinballSceneState,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    namespace: str,
+    instance_seed: int,
+) -> RenderedPinballTaskContext:
+    """Render one pinball scene with panel style, layout jitter, and post noise."""
+
+    render_params = resolve_pinball_render_params(
+        params,
+        render_defaults=render_defaults,
+        namespace=str(namespace),
+        instance_seed=int(instance_seed),
+    )
+    allowed_panel_treatments_raw = params.get(
+        "panel_scene_treatments",
+        group_default(render_defaults, "panel_scene_treatments", None),
+    )
+    if isinstance(allowed_panel_treatments_raw, str):
+        allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+    elif allowed_panel_treatments_raw is None:
+        allowed_panel_treatments = None
+    else:
+        allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+    panel_style, panel_style_meta = resolve_game_panel_scene_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{str(namespace)}.panel_scene_style",
+        treatments=allowed_panel_treatments,
+        treatment_weights=params.get(
+            "panel_scene_treatment_weights",
+            group_default(render_defaults, "panel_scene_treatment_weights", None),
+        ),
+        palette_weights=params.get(
+            "panel_scene_palette_weights",
+            group_default(render_defaults, "panel_scene_palette_weights", None),
+        ),
+    )
+    background, background_meta = make_panel_scene_background(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        style=panel_style,
+    )
+    rendered_scene = render_pinball_scene(
+        objects=scene.objects,
+        ball_xy_norm=(float(scene.ball_x_norm), float(scene.ball_y_norm)),
+        hidden_path_norm=scene.hidden_path_norm,
+        cue_visible_fraction=float(scene.cue_visible_fraction),
+        background=background,
+        style_variant=str(scene.style_variant),
+        params=render_params,
+        panel_style=panel_style,
+    )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    text_style_meta = {
+        "font_family": str(render_params.font_family),
+        "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+    }
+    return RenderedPinballTaskContext(
+        image=image,
+        rendered_scene=rendered_scene,
+        panel_style_meta=dict(panel_style_meta),
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
+        text_style_meta=dict(text_style_meta),
+    )
+
+
 __all__ = [
     "PinballRenderParams",
+    "RenderedPinballTaskContext",
     "RenderedPinballScene",
     "build_games_pinball_theme",
     "render_pinball_scene",
+    "render_pinball_task_context",
+    "resolve_pinball_render_params",
 ]

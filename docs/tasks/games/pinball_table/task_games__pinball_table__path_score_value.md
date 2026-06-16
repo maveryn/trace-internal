@@ -1,11 +1,11 @@
 # `task_games__pinball_table__path_score_value`
 
-## Contract
+## Program Contract
 1. Domain: `games`
 2. Scene package: `trace/tasks/games/pinball_table/`
 3. Scene id: `pinball_table`
 4. Public task id: `task_games__pinball_table__path_score_value`
-5. Supported `query_id` values: `path_score_value`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer`
 7. Annotation schema: `point_sequence`
 8. Program schema: `sum(score(hit_object) for hit_object in ordered_scoring_hits_along_visible_path); scene=pinball_table; scope=path_score_value`

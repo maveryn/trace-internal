@@ -156,6 +156,42 @@ def _draw_flag(
     )
 
 
+def _draw_option_label(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox_px: Tuple[float, float, float, float],
+    label: str,
+    cell_size: float,
+    font_family: str = "",
+) -> list[float]:
+    """Draw a readable in-cell option badge and return its center point."""
+
+    left, top, right, bottom = [float(value) for value in bbox_px]
+    cx = 0.5 * (left + right)
+    cy = 0.5 * (top + bottom)
+    radius = 0.30 * min(float(right - left), float(bottom - top), float(cell_size))
+    badge_bbox = (cx - radius, cy - radius, cx + radius, cy + radius)
+    draw.ellipse(badge_bbox, fill=(255, 249, 226, 242), outline=(172, 45, 45, 255), width=max(2, int(round(0.055 * cell_size))))
+    font = fit_font_to_box(
+        draw,
+        text=str(label),
+        max_width=float(1.25 * radius),
+        max_height=float(1.20 * radius),
+        bold=True,
+        min_size_px=12,
+        max_size_px=max(14, int(round(0.52 * float(cell_size)))),
+        fill_ratio=0.95,
+        font_family=str(font_family) or None,
+    )
+    text_bbox = draw.textbbox((0, 0), str(label), font=font)
+    text_w = float(text_bbox[2] - text_bbox[0])
+    text_h = float(text_bbox[3] - text_bbox[1])
+    text_x = float(cx - (0.5 * text_w) - float(text_bbox[0]))
+    text_y = float(cy - (0.5 * text_h) - float(text_bbox[1]))
+    draw_text_traced(draw, (text_x, text_y), str(label), fill=(45, 31, 30), font=font, role="option_label", required=True)
+    return [round(float(cx), 3), round(float(cy), 3)]
+
+
 def resolve_minesweeper_render_params(
     params: Mapping[str, Any],
     *,
@@ -236,6 +272,7 @@ def render_minesweeper_grid_scene(
     style_variant: str,
     params: MinesweeperRenderParams,
     highlighted_clue_coords: Sequence[Coord] | None = None,
+    option_label_coords: Sequence[Tuple[str, Coord]] | None = None,
 ) -> RenderedMinesweeperScene:
     """Render one Minesweeper grid with hidden, flagged, and revealed cells."""
 
@@ -275,6 +312,7 @@ def render_minesweeper_grid_scene(
     flagged = {(int(row), int(col)) for row, col in flagged_coords}
     hidden = {(int(row), int(col)) for row, col in hidden_coords}
     highlighted_clues = {(int(row), int(col)) for row, col in (highlighted_clue_coords or ())}
+    option_labels = tuple((str(label), (int(coord[0]), int(coord[1]))) for label, coord in (option_label_coords or ()))
 
     cell_bboxes_px: Dict[str, List[float]] = {}
     full_cell_bboxes_px: Dict[str, List[float]] = {}
@@ -400,6 +438,34 @@ def render_minesweeper_grid_scene(
             marker_kind="minesweeper_highlighted_clue_outline",
             extra_metadata={"cell_id": str(cell_id)},
             )
+
+    option_label_points_px: Dict[str, List[float]] = {}
+    option_label_cell_ids: Dict[str, str] = {}
+    for label, coord in option_labels:
+        cell_id = coord_to_cell_id(coord)
+        if cell_id not in full_cell_bboxes_px:
+            continue
+        point = _draw_option_label(
+            draw,
+            bbox_px=tuple(float(value) for value in full_cell_bboxes_px[cell_id]),
+            label=str(label),
+            cell_size=float(cell_size),
+            font_family=str(params.font_family),
+        )
+        option_label_points_px[str(label)] = list(point)
+        option_label_cell_ids[str(label)] = str(cell_id)
+        scene_entities.append(
+            {
+                "entity_id": f"option_{str(label)}",
+                "entity_type": "minesweeper_option_label",
+                "label": str(label),
+                "cell_id": str(cell_id),
+                "row": int(coord[0]),
+                "col": int(coord[1]),
+                "point_px": list(point),
+                "bbox_px": list(full_cell_bboxes_px[cell_id]),
+            }
+        )
     draw.rectangle(
         board_bbox,
         outline=tuple(int(v) for v in theme.board_border_rgb),
@@ -413,6 +479,8 @@ def render_minesweeper_grid_scene(
         "flagged_cell_ids": [coord_to_cell_id(coord) for coord in sorted(flagged)],
         "hidden_cell_ids": [coord_to_cell_id(coord) for coord in sorted(hidden)],
         "highlighted_clue_cell_ids": [coord_to_cell_id(coord) for coord in sorted(highlighted_clues)],
+        "option_label_points_px": dict(option_label_points_px),
+        "option_label_cell_ids": dict(option_label_cell_ids),
         "style_variant": str(style_variant),
         "text_style": {"font_family": str(params.font_family)},
         "layout_jitter": dict(layout_jitter),

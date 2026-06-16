@@ -31,6 +31,17 @@ generation:
       - 3
       - 4
       - 5
+    task_games__minesweeper__forced_mine_cell_label:
+      balanced_board_size_sampling: true
+      balanced_target_answer_sampling: true
+      forced_mine_cell_label_board_size_support:
+      - 4
+      - 5
+      forced_mine_cell_label_support:
+      - 0
+      - 1
+      - 2
+      - 3
     task_games__minesweeper__remaining_mine_count_value:
       balanced_board_size_sampling: true
       balanced_target_answer_sampling: true

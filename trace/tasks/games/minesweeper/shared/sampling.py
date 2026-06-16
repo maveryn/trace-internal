@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
@@ -408,9 +408,55 @@ def sample_remaining_adjacent_mine_scene(*, rng, axes: MinesweeperAxes, target_c
     raise ValueError("failed to construct Minesweeper remaining-adjacent-mine board")
 
 
+def sample_forced_mine_option_scene(
+    *,
+    rng,
+    axes: MinesweeperAxes,
+    target_label_index: int,
+    option_labels: Sequence[str],
+) -> MinesweeperSample:
+    """Construct four labeled hidden cells with exactly one forced mine option."""
+
+    labels = tuple(str(label) for label in option_labels)
+    if len(labels) < 2:
+        raise ValueError("Minesweeper option-label construction requires at least two labels")
+    target_index = int(target_label_index)
+    if target_index < 0 or target_index >= len(labels):
+        raise ValueError(f"unsupported Minesweeper forced-mine option index: {target_index}")
+    base = sample_forced_cell_scene(
+        rng=rng,
+        axes=axes,
+        force_kind="mine",
+        target_count=1,
+    )
+    if len(base.forced_mine_coords) != 1:
+        raise ValueError("forced-mine option scene requires exactly one forced mine")
+    correct_coord = tuple(base.forced_mine_coords[0])
+    forced_mines = {tuple(coord) for coord in base.forced_mine_coords}
+    distractor_pool = [tuple(coord) for coord in base.hidden_coords if tuple(coord) not in forced_mines]
+    rng.shuffle(distractor_pool)
+    if len(distractor_pool) < len(labels) - 1:
+        raise ValueError("not enough non-forced hidden cells for Minesweeper option labels")
+
+    option_pairs: list[tuple[str, Coord]] = []
+    distractor_iter = iter(distractor_pool)
+    for label_index, label in enumerate(labels):
+        coord = correct_coord if int(label_index) == target_index else tuple(next(distractor_iter))
+        option_pairs.append((str(label), coord))
+    return replace(
+        base,
+        answer=str(labels[target_index]),
+        annotation_coords=(correct_coord,),
+        target_answer=int(target_index),
+        candidate_option_coords=tuple(option_pairs),
+        construction_mode="local_forced_mine_option_label",
+    )
+
+
 __all__ = [
     "MinesweeperAxes",
     "resolve_minesweeper_axes",
     "sample_forced_cell_scene",
+    "sample_forced_mine_option_scene",
     "sample_remaining_adjacent_mine_scene",
 ]

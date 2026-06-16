@@ -40,3 +40,10 @@ def test_games_minesweeper_task_override_defaults_expose_specific_supports() -> 
     )
     assert list(remaining_generation["board_size_support"]) == [4, 5, 6, 7, 8]
     assert list(remaining_generation["remaining_mine_count_support"]) == [0, 1, 2, 3, 4, 5]
+
+    label_generation, _, _ = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_games__minesweeper__forced_mine_cell_label",
+    )
+    assert list(label_generation["forced_mine_cell_label_board_size_support"]) == [4, 5]
+    assert list(label_generation["forced_mine_cell_label_support"]) == [0, 1, 2, 3]

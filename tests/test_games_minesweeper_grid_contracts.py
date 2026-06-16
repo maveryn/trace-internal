@@ -10,6 +10,7 @@ import pytest
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.minesweeper.forced_cell_count import GamesMinesweeperForcedCellCountTask
+from trace.tasks.games.minesweeper.forced_mine_cell_label import GamesMinesweeperForcedMineCellLabelTask
 from trace.tasks.games.minesweeper.remaining_mine_count_value import GamesMinesweeperRemainingMineCountValueTask
 from trace.tasks.games.minesweeper.shared.rules import (
     adjacent_flag_count,
@@ -44,6 +45,13 @@ def _coords(values: list[list[int]]) -> tuple[tuple[int, int], ...]:
             "forced_safe_count",
             "integer",
             "point_set",
+        ),
+        (
+            GamesMinesweeperForcedMineCellLabelTask,
+            {"target_answer": 2, "scene_variant": "mixed_grid", "board_size": 5},
+            "single",
+            "option_letter",
+            "point",
         ),
         (
             GamesMinesweeperRemainingMineCountValueTask,
@@ -143,6 +151,34 @@ def test_games_minesweeper_forced_safe_count_matches_basic_rule_supports() -> No
     assert set(_coords(execution["annotation_coords"])) == set(supports)
 
 
+@pytest.mark.parametrize("target_answer", (0, 1, 2, 3))
+def test_games_minesweeper_forced_mine_cell_label_options_are_well_formed(target_answer: int) -> None:
+    out = GamesMinesweeperForcedMineCellLabelTask().generate(
+        51231 + int(target_answer),
+        params={"target_answer": int(target_answer), "scene_variant": "mixed_grid", "board_size": 5},
+        max_attempts=128,
+    )
+    execution = out.trace_payload["execution_trace"]
+    option_rows = list(execution["candidate_option_coords"])
+    option_map = {str(row["label"]): (int(row["coord"][0]), int(row["coord"][1])) for row in option_rows}
+    forced_mines = set(_coords(execution["forced_mine_coords"]))
+    hidden_coords = set(_coords(execution["hidden_coords"]))
+    annotation_coords = _coords(execution["annotation_coords"])
+
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "point"
+    assert str(out.answer_gt.value) == "ABCD"[int(target_answer)]
+    assert set(option_map.keys()) == {"A", "B", "C", "D"}
+    assert len(set(option_map.values())) == 4
+    assert set(option_map.values()) <= hidden_coords
+    assert int(execution["target_answer"]) == int(target_answer)
+    correct_coord = option_map[str(out.answer_gt.value)]
+    assert annotation_coords == (correct_coord,)
+    assert correct_coord in forced_mines
+    assert all(coord not in forced_mines for label, coord in option_map.items() if str(label) != str(out.answer_gt.value))
+    assert execution["candidate_option_cell_ids"][str(out.answer_gt.value)] in execution["annotation_entity_ids"]
+
+
 @pytest.mark.parametrize("target_answer", (0, 1, 2, 3, 4, 5))
 def test_games_minesweeper_remaining_mine_count_matches_marked_clue(target_answer: int) -> None:
     out = GamesMinesweeperRemainingMineCountValueTask().generate(
@@ -199,6 +235,12 @@ def test_games_minesweeper_task_sampling_covers_supports() -> None:
     }
     assert remaining_answers == {0, 1, 2, 3, 4, 5}
 
+    label_answers = {
+        str(GamesMinesweeperForcedMineCellLabelTask().generate(51501 + i, params={}, max_attempts=128).answer_gt.value)
+        for i in range(80)
+    }
+    assert label_answers == {"A", "B", "C", "D"}
+
 
 def test_games_minesweeper_style_sampling_covers_supported_variants() -> None:
     styles: set[str] = set()
@@ -230,6 +272,7 @@ def test_games_minesweeper_grid_prompt_bundle_requires_rule_texts() -> None:
     required = bundle["required_slots_by_key"]
     assert required["query:forced_mine_count"] == ["minesweeper_rule_text"]
     assert required["query:forced_safe_count"] == ["minesweeper_rule_text"]
+    assert required["query:forced_mine_cell_label"] == ["minesweeper_rule_text"]
     assert required["query:remaining_mine_count"] == ["minesweeper_rule_text"]
 
 

@@ -18,6 +18,15 @@ def _coord_rows(coords: Sequence[tuple[int, int]]) -> list[list[int]]:
     return [[int(row), int(col)] for row, col in coords]
 
 
+def _option_coord_rows(options: Sequence[tuple[str, tuple[int, int]]]) -> list[dict[str, Any]]:
+    """Return in-board option-label coordinates as JSON-friendly rows."""
+
+    return [
+        {"label": str(label), "coord": [int(coord[0]), int(coord[1])]}
+        for label, coord in options
+    ]
+
+
 def build_minesweeper_common_trace_params(
     *,
     axes: MinesweeperAxes,
@@ -82,6 +91,10 @@ def build_minesweeper_trace_payload(
             str(key): [str(entity_id) for entity_id in value]
             for key, value in keyed_annotation_entity_ids.items()
         },
+        "candidate_option_cell_ids": {
+            str(label): cell_ids_for_coords((coord,))[0]
+            for label, coord in sample.candidate_option_coords
+        },
     }
     execution = {
         "scene_variant": str(axes.scene_variant),
@@ -97,6 +110,11 @@ def build_minesweeper_trace_payload(
         "forced_safe_coords": _coord_rows(sample.forced_safe_coords),
         "forcing_clue_coords": _coord_rows(sample.forcing_clue_coords),
         "annotation_coords": _coord_rows(sample.annotation_coords),
+        "candidate_option_coords": _option_coord_rows(sample.candidate_option_coords),
+        "candidate_option_cell_ids": {
+            str(label): cell_ids_for_coords((coord,))[0]
+            for label, coord in sample.candidate_option_coords
+        },
         "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
         "keyed_annotation_entity_ids": {
             str(key): [str(entity_id) for entity_id in value]

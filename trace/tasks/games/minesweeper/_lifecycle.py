@@ -98,6 +98,41 @@ def minesweeper_integer_point_attempt(
     )
 
 
+def minesweeper_option_letter_point_attempt(
+    *,
+    sample: MinesweeperSample,
+    prompt_key: str,
+    object_description_key: str,
+    answer_hint_key: str,
+    annotation_hint_key: str,
+    example_annotation: Any,
+    example_answer: str,
+    coord: Coord,
+    highlighted_clue_coords: Sequence[Coord] = tuple(),
+    execution_extra: Mapping[str, Any] | None = None,
+    extra_query_params: Mapping[str, Any] | None = None,
+) -> MinesweeperAttemptResult:
+    """Package an option-letter answer whose annotation is one board cell point."""
+
+    return MinesweeperAttemptResult(
+        answer_gt=TypedValue(type="option_letter", value=str(sample.answer)),
+        sample=sample,
+        prompt_slots=MinesweeperPromptSlots(
+            prompt_query_key=str(prompt_key),
+            object_description_key=str(object_description_key),
+            answer_hint_key=str(answer_hint_key),
+            annotation_hint_key=str(annotation_hint_key),
+            example_annotation=example_annotation,
+            example_answer=str(example_answer),
+        ),
+        bind_annotation=lambda rendered: minesweeper_point_annotation(rendered=rendered, coord=coord),
+        annotation_entity_ids=cell_ids_for_coords((coord,)),
+        highlighted_clue_coords=tuple(highlighted_clue_coords),
+        extra_query_params=dict(extra_query_params or {}),
+        execution_extra=dict(execution_extra or {}),
+    )
+
+
 def minesweeper_integer_point_set_attempt(
     *,
     sample: MinesweeperSample,
@@ -364,6 +399,7 @@ def _render_scene(
         style_variant=str(axes.style_variant),
         params=render_params,
         highlighted_clue_coords=tuple(highlighted_clue_coords),
+        option_label_coords=tuple(sample.candidate_option_coords),
     )
     return rendered_scene, dict(background_meta), dict(panel_style_meta), render_params
 
@@ -373,6 +409,7 @@ __all__ = [
     "MinesweeperObjectivePlan",
     "minesweeper_integer_point_attempt",
     "minesweeper_integer_point_set_attempt",
+    "minesweeper_option_letter_point_attempt",
     "run_minesweeper_lifecycle",
     "run_minesweeper_registered_task",
 ]

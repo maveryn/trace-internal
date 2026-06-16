@@ -26,6 +26,7 @@ class MinesweeperSample:
     target_answer: int | None
     distractor_hidden_count: int
     construction_mode: str
+    candidate_option_coords: Tuple[Tuple[str, Coord], ...] = tuple()
 
 
 def coord_to_cell_id(coord: Coord) -> str:

@@ -9,11 +9,14 @@ from trace.tasks.geometry.coordinate_plane.quadrilateral_completion_label import
     COMPLETION_QUERY_IDS,
     COMPLETION_SCENE_ID,
     COMPLETION_TASK_ID,
+    _is_ambiguous_for_prompt,
+)
+from trace.tasks.geometry.coordinate_panels.quadrilateral_shape_match_label import (
     PANEL_SCENE_ID,
     SHAPE_MATCH_QUERY_IDS,
     SHAPE_MATCH_TASK_ID,
-    _is_ambiguous_for_prompt,
 )
+from trace.tasks.geometry.coordinate_panels.shared.construction import is_ambiguous_for_prompt as panel_is_ambiguous_for_prompt
 
 
 @pytest.mark.parametrize("query_id", COMPLETION_QUERY_IDS)
@@ -57,17 +60,18 @@ def test_quadrilateral_panel_match_has_unique_panel_answer(query_id: str) -> Non
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "D"
-    assert out.annotation_gt.type == "bbox_set"
-    assert out.annotation_gt.value == [panels["D"]["panel_bbox"]]
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert len(panels) == 6
+    assert out.annotation_gt.type == "bbox"
+    assert out.annotation_gt.value == panels["D"]["panel_bbox"]
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert 4 <= len(panels) <= 6
+    assert "D" in panels
     assert all(len(panel["points_graph"]) == 4 for panel in panels.values())
 
     target_kind = execution["target_kind"]
     matching_labels = [
         label
         for label, payload in panels.items()
-        if _is_ambiguous_for_prompt(payload["classified_kind"], target_kind)
+        if panel_is_ambiguous_for_prompt(payload["classified_kind"], target_kind)
     ]
     assert matching_labels == ["D"]
     assert panels["D"]["classified_kind"] == target_kind

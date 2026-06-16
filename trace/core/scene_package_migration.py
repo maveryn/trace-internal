@@ -30,6 +30,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
             "cone_net",
             "container_volume_transfer",
             "coordinate_composite",
+            "coordinate_panels",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
@@ -54,6 +55,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
             "cone_net",
             "container_volume_transfer",
             "coordinate_composite",
+            "coordinate_panels",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),

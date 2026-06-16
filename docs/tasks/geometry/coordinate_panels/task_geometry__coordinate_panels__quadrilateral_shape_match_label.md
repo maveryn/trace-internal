@@ -5,7 +5,7 @@
 2. Scene id: `coordinate_panels`
 5. Query id: `parallelogram_shape_match_label`, `rectangle_shape_match_label`, `rhombus_shape_match_label`, `square_shape_match_label`
 6. Answer schema: `option_letter`
-7. Annotation schema: `bbox_set`
+7. Annotation schema: `bbox`
 
 ## Program Contract
 - `label(select_panel(candidate_coordinate_panels, quadrilateral_type)); scene=coordinate_panels; scope=quadrilateral_shape_match_label`
@@ -15,7 +15,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+Prompt-facing annotation uses one pixel-space bounding box around the selected panel. Graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

@@ -10,12 +10,14 @@ from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
+from ...shared.annotation_artifacts import point_set_annotation_artifacts
 from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from .shared.annotations import (
     construction_equipment_bbox_map,
     construction_worker_bbox_map,
+    sort_construction_bbox_centers,
     sort_construction_bboxes,
 )
 from .shared.labels import construction_zone_display_name
@@ -302,7 +304,11 @@ class IllustrationsCountingEquipmentInZoneCountTask:
         counted_equipment_ids = _equipment_ids_in_target_zone(scene, sample)
         if len(counted_equipment_ids) != int(sample.target_count):
             raise RuntimeError("rendered equipment count did not match sample target")
-        annotation_value = sort_construction_bboxes(construction_equipment_bbox_map(scene), counted_equipment_ids)
+        equipment_bbox_map = construction_equipment_bbox_map(scene)
+        counted_equipment_bboxes = sort_construction_bboxes(equipment_bbox_map, counted_equipment_ids)
+        annotation_artifacts = point_set_annotation_artifacts(
+            sort_construction_bbox_centers(equipment_bbox_map, counted_equipment_ids)
+        )
         serialized_scene, bbox_map = serialize_construction_scene(scene)
 
         prompt_defaults = required_construction_prompt_defaults(
@@ -353,9 +359,11 @@ class IllustrationsCountingEquipmentInZoneCountTask:
                 },
                 render_map={
                     "bboxes_px": bbox_map,
-                    "equipment_bboxes_px": construction_equipment_bbox_map(scene),
+                    "equipment_bboxes_px": equipment_bbox_map,
                     "worker_bboxes_px": construction_worker_bbox_map(scene),
                     "counted_equipment_ids": list(counted_equipment_ids),
+                    "counted_equipment_bboxes_px": counted_equipment_bboxes,
+                    "counted_equipment_points_px": list(annotation_artifacts.value),
                 },
                 execution_trace={
                     "query_id": str(sample.query_id),
@@ -369,7 +377,7 @@ class IllustrationsCountingEquipmentInZoneCountTask:
                     "scene": serialized_scene[0],
                 },
                 witness_symbolic={"counted_equipment_ids": list(counted_equipment_ids), "answer": int(sample.target_count)},
-                annotation_value=annotation_value,
+                projected_annotation=annotation_artifacts.projected_annotation,
             ),
             "query_spec": {
                 "task_id": self.task_id,
@@ -384,7 +392,7 @@ class IllustrationsCountingEquipmentInZoneCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
+            annotation_gt=annotation_artifacts.annotation_gt,
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

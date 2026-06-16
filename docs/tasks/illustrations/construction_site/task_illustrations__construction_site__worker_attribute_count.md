@@ -13,7 +13,7 @@
 4. Supported `query_id` values: `hard_hat_color_worker_count`, `vest_color_worker_count`
 5. Query ids: `hard_hat_color_worker_count`, `vest_color_worker_count`
 6. Answer schema: `integer_count`
-7. Annotation schema: `bbox_set`
+7. Annotation schema: `point_set`
 8. Program schema: `count(filter(workers, worker_selector(worker, target_attribute, target_attribute_value))); scene=construction_site; scope=worker_attribute_count`
 
 ## Program Contract
@@ -48,9 +48,9 @@ Counts visible workers matching one sampled safety-gear color attribute.
 - The answer value is a non-negative integer derived from the same execution trace as the annotation.
 
 ## Annotation Contract
-- Annotation schema: `bbox_set`
-- Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel boxes, one per counted/selected visual witness; use an empty set when the answer is `0`. Do not include labels, numeric annotations, or context-only regions.
+- Annotation schema: `point_set`
+- Generator `annotation_gt.type`: `point_set`
+- Annotation is an unordered set of final-image pixel points, one near the center of each counted worker; use an empty set when the answer is `0`. Do not include labels, numeric annotations, or context-only regions.
 - Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
 
 ## Prompt And Trace Requirements

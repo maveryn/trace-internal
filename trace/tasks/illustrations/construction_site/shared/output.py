@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Tuple
 
 from ...shared.object_rendering import make_vector_scene_object_record
 
@@ -249,7 +249,7 @@ def construction_count_trace_sections(
     render_map: Mapping[str, Any],
     execution_trace: Mapping[str, Any],
     witness_symbolic: Mapping[str, Any],
-    annotation_value: Iterable[Sequence[float]],
+    projected_annotation: Mapping[str, Any],
 ) -> Dict[str, Any]:
     """Assemble non-identity trace sections for construction count tasks."""
 
@@ -274,9 +274,7 @@ def construction_count_trace_sections(
         "render_map": safe_json_value(dict(render_map)),
         "execution_trace": safe_json_value(dict(execution_trace)),
         "witness_symbolic": safe_json_value(dict(witness_symbolic)),
-        "projected_annotation": {
-            "bbox_set": [[round(float(v), 3) for v in box] for box in annotation_value],
-        },
+        "projected_annotation": safe_json_value(dict(projected_annotation)),
     }
 
 

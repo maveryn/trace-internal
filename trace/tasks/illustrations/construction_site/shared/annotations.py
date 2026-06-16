@@ -39,10 +39,26 @@ def sort_construction_bboxes(bbox_map: Mapping[str, Sequence[float]], ids: Itera
     return [[round(float(v), 3) for v in box] for box in boxes]
 
 
+def sort_construction_bbox_centers(bbox_map: Mapping[str, Sequence[float]], ids: Iterable[str]) -> List[List[float]]:
+    """Return bbox center points sorted by the source bbox top-left position."""
+
+    points: List[tuple[List[float], List[float]]] = []
+    for item_id in ids:
+        box = [float(v) for v in bbox_map[str(item_id)]]
+        point = [
+            round((float(box[0]) + float(box[2])) / 2.0, 3),
+            round((float(box[1]) + float(box[3])) / 2.0, 3),
+        ]
+        points.append((box, point))
+    points.sort(key=lambda item: (float(item[0][1]), float(item[0][0]), float(item[0][3]), float(item[0][2])))
+    return [list(point) for _, point in points]
+
+
 __all__ = [
     "construction_equipment_bbox_map",
     "construction_material_bbox_map",
     "construction_worker_bbox_map",
     "construction_zone_bbox_map",
+    "sort_construction_bbox_centers",
     "sort_construction_bboxes",
 ]

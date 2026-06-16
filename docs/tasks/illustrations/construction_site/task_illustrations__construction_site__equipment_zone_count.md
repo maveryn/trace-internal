@@ -13,7 +13,7 @@
 4. Supported `query_id` values: `single`
 5. Query ids: `single`
 6. Answer schema: `integer_count`
-7. Annotation schema: `bbox_set`
+7. Annotation schema: `point_set`
 8. Program schema: `count(filter(construction_vehicles, zone(vehicle)=target_zone)); scene=construction_site; scope=equipment_zone_count`
 
 ## Program Contract
@@ -47,10 +47,10 @@ Counts visible construction vehicles assigned to one named construction-zone sco
 - The answer value is a non-negative integer derived from the same execution trace as the annotation.
 
 ## Annotation Contract
-- Annotation schema: `bbox_set`
-- Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel boxes, one per counted/selected visual witness. Do not include labels, numeric annotations, or context-only regions.
-- When the answer is `0`, annotation is an empty bbox set.
+- Annotation schema: `point_set`
+- Generator `annotation_gt.type`: `point_set`
+- Annotation is an unordered set of final-image pixel points, one near the center of each counted construction vehicle. Do not include labels, numeric annotations, or context-only regions.
+- When the answer is `0`, annotation is an empty point set.
 - Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
 
 ## Prompt And Trace Requirements

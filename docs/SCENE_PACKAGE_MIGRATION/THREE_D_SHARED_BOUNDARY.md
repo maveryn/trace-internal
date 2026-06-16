@@ -109,14 +109,15 @@ Domain-shared modules that should generally remain domain-shared:
 All `three_d` scene renderers should resolve source canvas dimensions through
 `trace/tasks/three_d/shared/canvas.py` unless a task has an explicit documented
 override. The default source presets are `1200x800` landscape, `800x1200`
-portrait, and `960x960` square.
+portrait, and `960x960` square. The final composed image cap is `1,280,000`
+pixels.
 
 Canvas preset is render metadata only. It must not become a public task id,
 query id, or answer-bearing axis. Multi-panel tasks should render each source
 scene/panel with the sampled canonical preset, compose panels in the
-task-specific layout, then downscale the final image if needed to respect the
-domain pixel cap. Any downscale or panel placement must transform projected
-bboxes, points, segments, and entity geometry before writing final
+task-specific layout, then expand or downscale the final image if needed to
+respect the domain pixel cap. Any resize or panel placement must transform
+projected bboxes, points, segments, and entity geometry before writing final
 `annotation_gt`, `render_map`, and `scene_ir` coordinates.
 
 ## Legacy Shared File Guidance

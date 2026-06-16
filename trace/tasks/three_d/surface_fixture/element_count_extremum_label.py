@@ -17,6 +17,7 @@ from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import probability_map, select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
+from trace.tasks.three_d.shared.canvas import expand_canvas_size_to_pixel_cap
 from trace.tasks.three_d.shared.object_scene import _resolve_render_params
 
 from .shared.metrics import build_repeated_surface_data
@@ -236,9 +237,13 @@ class ThreeDSurfaceFixtureElementCountExtremumLabelTask:
                     instance_seed=int(attempt_seed),
                     namespace=f"{TASK_ID}.canvas",
                 )
+                composite_width, composite_height = expand_canvas_size_to_pixel_cap(
+                    int(render_params.canvas_width),
+                    int(render_params.canvas_height),
+                )
                 background, background_meta = make_background_canvas(
-                    canvas_width=int(render_params.canvas_width),
-                    canvas_height=int(render_params.canvas_height),
+                    canvas_width=int(composite_width),
+                    canvas_height=int(composite_height),
                     instance_seed=int(attempt_seed),
                     params=clean_params,
                     default_config=_BACKGROUND_DEFAULTS,

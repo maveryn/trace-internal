@@ -11,7 +11,7 @@ from PIL import Image
 from trace.core.seed import spawn_rng
 
 
-MAX_FINAL_PIXELS = 1_000_000
+MAX_FINAL_PIXELS = 1_280_000
 
 
 CANONICAL_CANVAS_PRESETS: Mapping[str, Tuple[int, int]] = {
@@ -276,6 +276,35 @@ def resize_image_to_fit_pixel_cap(
     )
 
 
+def expand_canvas_size_to_pixel_cap(
+    width: int,
+    height: int,
+    *,
+    max_pixels: int = MAX_FINAL_PIXELS,
+) -> Tuple[int, int]:
+    """Scale a composite canvas up without exceeding the final pixel cap."""
+
+    source_width = int(width)
+    source_height = int(height)
+    if source_width <= 0 or source_height <= 0:
+        raise ValueError("canvas dimensions must be positive")
+    source_pixels = int(source_width) * int(source_height)
+    if source_pixels >= int(max_pixels):
+        image = Image.new("RGB", (int(source_width), int(source_height)))
+        resized, _scale = resize_image_to_fit_pixel_cap(image, max_pixels=int(max_pixels))
+        return int(resized.width), int(resized.height)
+
+    scale = math.sqrt(float(max_pixels) / float(source_pixels))
+    output_width = max(1, int(math.floor(float(source_width) * float(scale))))
+    output_height = max(1, int(math.floor(float(source_height) * float(scale))))
+    while int(output_width) * int(output_height) > int(max_pixels):
+        if output_width >= output_height:
+            output_width -= 1
+        else:
+            output_height -= 1
+    return int(output_width), int(output_height)
+
+
 def render_params_canvas_metadata(render_params: Any) -> Dict[str, Any]:
     return {
         "scene_canvas_preset": str(getattr(render_params, "canvas_preset", "unknown")),
@@ -302,6 +331,7 @@ __all__ = [
     "bbox_dict_transform",
     "bbox_transform",
     "entities_transform",
+    "expand_canvas_size_to_pixel_cap",
     "final_canvas_metadata",
     "point_dict_transform",
     "point_transform",

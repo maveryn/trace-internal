@@ -19,7 +19,7 @@ rendering:
       landscape: 1.0
       portrait: 1.0
       square: 1.0
-    max_final_pixels: 1000000
+    max_final_pixels: 1280000
 
 visual:
   background:

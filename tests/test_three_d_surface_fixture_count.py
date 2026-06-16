@@ -65,6 +65,16 @@ def _mean_rgb_for_bbox(image, bbox):
     return tuple(float(mean(pixel[channel] for pixel in pixels)) for channel in range(3))
 
 
+def _assert_composite_canvas_expanded(output) -> None:
+    render_spec = output.trace_payload["render_spec"]
+    source_pixels = int(render_spec["scene_canvas_width"]) * int(render_spec["scene_canvas_height"])
+    final_pixels = int(render_spec["final_canvas_pixels"])
+
+    assert final_pixels > source_pixels
+    assert int(output.image.width) == int(render_spec["final_canvas_width"])
+    assert int(output.image.height) == int(render_spec["final_canvas_height"])
+
+
 def test_surface_fixture_semantic_colors_use_canonical_palette() -> None:
     canonical = {
         str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
@@ -214,6 +224,7 @@ def test_surface_fixture_element_count_extremum_label_queries() -> None:
         assert "{target_" not in output.prompt
         assert "{object_" not in output.prompt
         assert_three_d_canvas_contract(output)
+        _assert_composite_canvas_expanded(output)
 
 
 def test_surface_fixture_scoped_color_query_ids_bind_scope_axis() -> None:
@@ -356,6 +367,7 @@ def test_surface_fixture_recolor_board_match_selects_matching_option() -> None:
     assert output.annotation_gt.value == render_map["option_panel_bboxes_px"]["C"]
     assert output.trace_payload["projected_annotation"]["bbox"] == output.annotation_gt.value
     assert_three_d_canvas_contract(output)
+    _assert_composite_canvas_expanded(output)
     assert "{recolor_" not in output.prompt
     assert "{source_" not in output.prompt
     assert "{destination_" not in output.prompt

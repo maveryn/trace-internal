@@ -152,23 +152,53 @@ def sample_top_resource_scene(
     height_support = tuple(sorted(set(_stack_height_support(params, gen_defaults=gen_defaults))))
     if not height_support:
         raise ValueError("top-resource stack count requires stack height support")
-    distractor_count = int(rng.randrange(4, 8))
-    total_stacks = int(answer) + int(distractor_count)
-    stack_cells = _sample_distinct_cells(
+    distractor_count = int(rng.randrange(1, 4))
+    target_specs = _sample_spaced_stack_specs(
         rng=rng,
         grid_width=int(axes.grid_width),
         grid_depth=int(axes.grid_depth),
-        count=total_stacks,
+        count=int(answer),
+        height_support=height_support,
         min_x=1,
         max_x_exclusive=int(axes.grid_width) - 1,
         min_y=1,
         max_y_exclusive=int(axes.grid_depth) - 1,
+        min_chebyshev_distance=2,
+    )
+    target_cells = tuple((int(x), int(y)) for x, y, _height in target_specs)
+    distractor_avoid = _expand_cells(target_cells, radius=1)
+    try:
+        distractor_cells = _sample_distinct_cells(
+            rng=rng,
+            grid_width=int(axes.grid_width),
+            grid_depth=int(axes.grid_depth),
+            count=distractor_count,
+            avoid=distractor_avoid,
+            min_x=1,
+            max_x_exclusive=int(axes.grid_width) - 1,
+            min_y=1,
+            max_y_exclusive=int(axes.grid_depth) - 1,
+        )
+    except ValueError:
+        distractor_cells = _sample_distinct_cells(
+            rng=rng,
+            grid_width=int(axes.grid_width),
+            grid_depth=int(axes.grid_depth),
+            count=distractor_count,
+            avoid=target_cells,
+            min_x=1,
+            max_x_exclusive=int(axes.grid_width) - 1,
+            min_y=1,
+            max_y_exclusive=int(axes.grid_depth) - 1,
+        )
+    stack_specs = tuple(target_specs) + tuple(
+        (int(x), int(y), int(rng.choice(height_support)))
+        for x, y in distractor_cells
     )
     blocks: list[MinecraftBlock] = []
     annotation_ids: list[str] = []
-    for stack_index, (x, y) in enumerate(stack_cells):
+    for stack_index, (x, y, height) in enumerate(stack_specs):
         qualifies = int(stack_index) < int(answer)
-        height = int(rng.choice(height_support))
         top_kind = str(target_kind) if qualifies else str(rng.choice(("stone", "dirt", *distractor_ore_kinds)))
         if qualifies:
             annotation_ids.append(stack_entity_id(int(x), int(y)))
@@ -511,6 +541,103 @@ def _sample_distinct_cells(
     if len(candidates) < int(count):
         raise ValueError("not enough minecraft cells to sample")
     return tuple(rng.sample(candidates, int(count)))
+
+
+def _sample_spaced_cells(
+    *,
+    rng: Any,
+    grid_width: int,
+    grid_depth: int,
+    count: int,
+    min_x: int = 1,
+    max_x_exclusive: int | None = None,
+    min_y: int = 1,
+    max_y_exclusive: int | None = None,
+    min_chebyshev_distance: int = 2,
+) -> Tuple[Tuple[int, int], ...]:
+    """Sample cells whose grid centers remain visually separated."""
+
+    max_x = int(max_x_exclusive) if max_x_exclusive is not None else int(grid_width) - 1
+    max_y = int(max_y_exclusive) if max_y_exclusive is not None else int(grid_depth) - 1
+    candidates = [
+        (int(x), int(y))
+        for y in range(int(min_y), int(max_y))
+        for x in range(int(min_x), int(max_x))
+    ]
+    for _attempt in range(128):
+        remaining = list(candidates)
+        rng.shuffle(remaining)
+        selected: list[Tuple[int, int]] = []
+        while remaining and len(selected) < int(count):
+            cell = remaining.pop()
+            if all(
+                max(abs(int(cell[0]) - int(other[0])), abs(int(cell[1]) - int(other[1])))
+                >= int(min_chebyshev_distance)
+                for other in selected
+            ):
+                selected.append((int(cell[0]), int(cell[1])))
+        if len(selected) == int(count):
+            return tuple(selected)
+    raise ValueError("not enough separated minecraft cells to sample")
+
+
+def _sample_spaced_stack_specs(
+    *,
+    rng: Any,
+    grid_width: int,
+    grid_depth: int,
+    count: int,
+    height_support: Sequence[int],
+    min_x: int = 1,
+    max_x_exclusive: int | None = None,
+    min_y: int = 1,
+    max_y_exclusive: int | None = None,
+    min_chebyshev_distance: int = 2,
+) -> Tuple[Tuple[int, int, int], ...]:
+    """Sample stack cells and heights with distinct isometric top projections."""
+
+    heights = tuple(int(height) for height in height_support)
+    if not heights:
+        raise ValueError("spaced stack specs require height support")
+    for _attempt in range(256):
+        cells = _sample_spaced_cells(
+            rng=rng,
+            grid_width=int(grid_width),
+            grid_depth=int(grid_depth),
+            count=int(count),
+            min_x=int(min_x),
+            max_x_exclusive=max_x_exclusive,
+            min_y=int(min_y),
+            max_y_exclusive=max_y_exclusive,
+            min_chebyshev_distance=int(min_chebyshev_distance),
+        )
+        specs = tuple((int(x), int(y), int(rng.choice(heights))) for x, y in cells)
+        if _stack_top_projection_keys_are_unique(specs):
+            return specs
+    raise ValueError("not enough separated minecraft stack projections to sample")
+
+
+def _stack_top_projection_keys_are_unique(specs: Sequence[Tuple[int, int, int]]) -> bool:
+    """Approximate top-center projection uniqueness for isometric stacks."""
+
+    keys: set[Tuple[int, int]] = set()
+    for x, y, height in specs:
+        key = (int(x) - int(y), int(x) + int(y) - (2 * (int(height) - 1)))
+        if key in keys:
+            return False
+        keys.add(key)
+    return True
+
+
+def _expand_cells(cells: Sequence[Tuple[int, int]], *, radius: int) -> Tuple[Tuple[int, int], ...]:
+    """Return the Chebyshev neighborhood around cells for visual de-crowding."""
+
+    expanded: set[Tuple[int, int]] = set()
+    for x, y in cells:
+        for dy in range(-int(radius), int(radius) + 1):
+            for dx in range(-int(radius), int(radius) + 1):
+                expanded.add((int(x) + int(dx), int(y) + int(dy)))
+    return tuple(sorted(expanded))
 
 
 def _sample_track_cells(*, rng: Any, grid_width: int, grid_depth: int) -> Tuple[Tuple[int, int], ...]:

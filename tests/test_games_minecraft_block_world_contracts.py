@@ -83,11 +83,39 @@ def test_games_minecraft_top_ore_stack_annotation_matches_target_kind(resource_k
         for (x, y), (_z, kind) in top_by_coord.items()
         if str(kind) == target_kind
     }
+    target_coords = [
+        (int(entity_id.split("_")[1]), int(entity_id.split("_")[2]))
+        for entity_id in counted_ids
+    ]
+    distractor_coords = [
+        coord
+        for coord, (_z, kind) in top_by_coord.items()
+        if str(kind) != target_kind
+    ]
 
     assert target_kind == str(resource_kind)
     assert int(out.answer_gt.value) == 5
     assert annotation_ids == counted_ids
     assert all(entity_id.startswith("stack_") for entity_id in annotation_ids)
+    assert len({tuple(point) for point in out.annotation_gt.value}) == len(out.annotation_gt.value)
+    assert len(distractor_coords) <= 3
+    assert max((int(top_z) + 1 for top_z, _kind in top_by_coord.values()), default=0) <= 3
+    assert all(
+        max(abs(ax - bx), abs(ay - by)) >= 2
+        for index, (ax, ay) in enumerate(target_coords)
+        for bx, by in target_coords[index + 1 :]
+    )
+
+
+def test_games_minecraft_top_ore_issue_seed_has_unique_visible_points() -> None:
+    out = GamesMinecraftTopOreStackCountTask().generate(
+        45545150419015,
+        params={},
+        max_attempts=512,
+    )
+
+    assert int(out.answer_gt.value) == len(out.annotation_gt.value)
+    assert len({tuple(point) for point in out.annotation_gt.value}) == len(out.annotation_gt.value)
 
 
 def test_games_minecraft_top_ore_stack_rejects_removed_iron_ore() -> None:

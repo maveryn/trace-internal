@@ -31,8 +31,6 @@ generation:
       - 1
       - 2
       - 3
-      - 4
-      - 5
     task_games__minecraft__resource_route_cost:
       balanced_grid_width_sampling: true
       balanced_grid_depth_sampling: true

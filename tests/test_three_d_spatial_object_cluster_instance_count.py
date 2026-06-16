@@ -290,7 +290,7 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
     assert taxonomy.scene_id == "object_cluster"
     assert not taxonomy.source_scene_id
     assert len(COLOR_SAFE_CLUSTER_SHAPE_TYPES) >= 12
-    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 59
+    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 58
     assert {
         "sphere",
         "cube",
@@ -314,6 +314,7 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
         "ticket",
         "coaster",
         "tape_roll",
+        "open_book",
     }.isdisjoint(set(COLOR_READOUT_CLUSTER_SHAPE_TYPES))
     assert {
         "straw",

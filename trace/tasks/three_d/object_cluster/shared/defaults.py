@@ -124,7 +124,6 @@ COLOR_READOUT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
         "gear",
         "bell",
         "trophy",
-        "open_book",
         "mushroom",
         "lantern",
         "candle",

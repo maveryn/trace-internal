@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, Mapping, Tuple
 
 from ...base import TaskOutput
+from ...shared.annotation_artifacts import point_set_annotation_artifacts
 from ...shared.output_metadata import default_task_versions
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
@@ -118,6 +119,7 @@ def run_environment_count_lifecycle(
     feature_bboxes = feature_bbox_map(scene)
     feature_paths = feature_path_map(scene)
     dynamic_slots = plan.prompt_slots(prompt_defaults, choice, bound_result, scene)
+    annotation_artifacts = point_set_annotation_artifacts(bound_result.annotation_value)
     prompt_artifacts = render_environment_prompt(
         domain=str(domain),
         scene_id=SCENE_ID,
@@ -186,7 +188,7 @@ def run_environment_count_lifecycle(
             **dict(bound_result.execution_extra),
         },
         "witness_symbolic": dict(bound_result.witness_symbolic),
-        "projected_annotation": {"bbox_set": list(bound_result.annotation_value)},
+        "projected_annotation": dict(annotation_artifacts.projected_annotation),
     }
     if serialized_objects:
         trace_payload["execution_trace"]["objects"] = serialized_objects
@@ -194,7 +196,7 @@ def run_environment_count_lifecycle(
         prompt=str(prompt_artifacts.prompt),
         prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
         answer_gt=TypedValue(type="integer", value=int(answer)),
-        annotation_gt=TypedValue(type="bbox_set", value=list(bound_result.annotation_value)),
+        annotation_gt=annotation_artifacts.annotation_gt,
         image=scene.image,
         image_id="img0",
         trace_payload=trace_payload,

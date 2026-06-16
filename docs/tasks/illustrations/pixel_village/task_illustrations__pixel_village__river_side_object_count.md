@@ -38,9 +38,9 @@ Counts visible target entities that lie strictly on one named side of the river.
 - Tree-count instances suppress cemetery territory so cemetery dead-tree decor is not an ambiguous non-counted witness.
 
 ## Annotation Contract
-- Annotation schema: `bbox_set`
-- Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel boxes, one per counted entity.
+- Annotation schema: `point_set`
+- Generator `annotation_gt.type`: `point_set`
+- Annotation is an unordered set of final-image pixel points, one near the center of each counted entity.
 - Annotation must not include the river, bridge, paths, whole territories, or context-only regions.
 
 ## Prompt And Trace Requirements
@@ -49,4 +49,4 @@ Counts visible target entities that lie strictly on one named side of the river.
 - For `left`/`right`, the renderer forces a vertical river; for `above`/`below`, it forces a horizontal river.
 - An entity counts only when its full tile footprint lies strictly on the requested side of the river bounds.
 - Render-only attributes such as gender, facing, tree subtype, door state, roof style, season, and territory styling must not be queried.
-- Counted entity ids, target object, target public name, river side, river orientation, river bounds, renderer metadata, and projected bboxes must be recorded in the trace.
+- Counted entity ids, target object, target public name, river side, river orientation, river bounds, renderer metadata, projected points, and diagnostic bboxes must be recorded in the trace.

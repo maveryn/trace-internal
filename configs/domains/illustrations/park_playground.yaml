@@ -196,16 +196,16 @@ prompt:
       scene_key: park_playground_canvas
       task_key: person_count_task
       answer_hint_person_count: set "answer" to the total count of visible people as an integer
-      annotation_hint_person_count: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every visible person
-      json_example_person_count: '{"annotation":[[178,512,234,610],[486,594,546,692],[824,456,884,554]],"answer":3}'
+      annotation_hint_person_count: set "annotation" to a JSON array of [x, y] points in image pixel coordinates, one point near the center of each visible person
+      json_example_person_count: '{"annotation":[[206,561],[516,643],[854,505]],"answer":3}'
       json_example_answer_only_person_count: '{"answer":3}'
     task_illustrations__park_playground__playground_equipment_count:
       bundle_id: illustrations_park_playground_v0
       scene_key: park_playground_canvas
       task_key: playground_equipment_count_task
       answer_hint_playground_equipment: set "answer" to the count of {equipment_name} as an integer
-      annotation_hint_playground_equipment: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every counted {equipment_name}
-      json_example_playground_equipment: '{"annotation":[[158,326,286,424],[430,344,558,446],[704,318,832,420]],"answer":3}'
+      annotation_hint_playground_equipment: set "annotation" to a JSON array of [x, y] points in image pixel coordinates, one point near the center of each counted {equipment_name}
+      json_example_playground_equipment: '{"annotation":[[222,375],[494,395],[768,369]],"answer":3}'
       json_example_answer_only_playground_equipment: '{"answer":3}'
     task_illustrations__park_playground__jigsaw_arrangement_label:
       bundle_id: illustrations_park_playground_v0

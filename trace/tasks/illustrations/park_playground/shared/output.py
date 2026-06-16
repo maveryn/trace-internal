@@ -6,7 +6,14 @@ from collections import Counter
 from typing import Any, Dict, Mapping
 
 from ....shared.config_defaults import required_group_defaults
-from .annotations import park_decor_bbox_map, park_person_bbox_map, park_scene_entities, serialize_park_scene, sort_park_bboxes
+from .annotations import (
+    park_decor_bbox_map,
+    park_person_bbox_map,
+    park_scene_entities,
+    serialize_park_scene,
+    sort_park_bbox_centers,
+    sort_park_bboxes,
+)
 from .state import EquipmentSampleSpec, ParkCountBinding, PersonCountSampleSpec
 
 
@@ -52,7 +59,9 @@ def bind_people_total(scene: Any, sample: PersonCountSampleSpec, prompt_defaults
     counted_person_ids = tuple(str(person.person_id) for person in scene.persons)
     if len(counted_person_ids) != int(sample.person_count):
         raise RuntimeError("rendered person count did not match sampled person count")
-    annotation_value = sort_park_bboxes(park_person_bbox_map(scene), counted_person_ids)
+    person_bbox_map = park_person_bbox_map(scene)
+    counted_person_bboxes = sort_park_bboxes(person_bbox_map, counted_person_ids)
+    counted_person_points = sort_park_bbox_centers(person_bbox_map, counted_person_ids)
     required_defaults = required_group_defaults(
         prompt_defaults,
         [
@@ -80,8 +89,13 @@ def bind_people_total(scene: Any, sample: PersonCountSampleSpec, prompt_defaults
         prompt_defaults=required_defaults,
         slots=slots,
         answer=int(sample.person_count),
-        annotation_value=annotation_value,
-        render_map={"person_bboxes_px": person_bboxes, "counted_person_ids": list(counted_person_ids)},
+        annotation_value=counted_person_points,
+        render_map={
+            "person_bboxes_px": person_bboxes,
+            "counted_person_ids": list(counted_person_ids),
+            "counted_person_bboxes_px": counted_person_bboxes,
+            "counted_person_points_px": counted_person_points,
+        },
         scene_relations={"branch_id": str(sample.branch_id), "counted_role": "visible_people"},
         branch_params={
             "branch_id": str(sample.branch_id),
@@ -120,7 +134,8 @@ def bind_equipment_items(scene: Any, sample: EquipmentSampleSpec, prompt_default
     )
     if len(counted_equipment_ids) != int(sample.target_count):
         raise RuntimeError("rendered equipment count did not match sampled target count")
-    annotation_value = sort_park_bboxes(decor_bboxes, counted_equipment_ids)
+    counted_equipment_bboxes = sort_park_bboxes(decor_bboxes, counted_equipment_ids)
+    counted_equipment_points = sort_park_bbox_centers(decor_bboxes, counted_equipment_ids)
     required_defaults = required_group_defaults(
         prompt_defaults,
         [
@@ -149,8 +164,13 @@ def bind_equipment_items(scene: Any, sample: EquipmentSampleSpec, prompt_default
         prompt_defaults=required_defaults,
         slots=slots,
         answer=int(sample.target_count),
-        annotation_value=annotation_value,
-        render_map={"decor_bboxes_px": decor_bboxes, "counted_equipment_ids": list(counted_equipment_ids)},
+        annotation_value=counted_equipment_points,
+        render_map={
+            "decor_bboxes_px": decor_bboxes,
+            "counted_equipment_ids": list(counted_equipment_ids),
+            "counted_equipment_bboxes_px": counted_equipment_bboxes,
+            "counted_equipment_points_px": counted_equipment_points,
+        },
         scene_relations={"branch_id": str(sample.branch_id), "target_equipment_type": str(sample.target_equipment_type)},
         branch_params={
             "branch_id": str(sample.branch_id),

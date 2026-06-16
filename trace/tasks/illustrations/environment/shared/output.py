@@ -6,7 +6,7 @@ from typing import Any, Dict, Mapping, Tuple
 
 from ...shared.object_rendering import serialize_rendered_illustration_object
 
-from .annotations import sort_bboxes_by_ids, target_feature
+from .annotations import sort_bbox_centers_by_ids, sort_bboxes_by_ids, target_feature
 from .labels import CROSSED_FEATURE_NAMES, CROSSING_NAMES, feature_name, feature_relation_phrase
 from .rendering import RenderedEnvironmentObjectScene
 from .state import BoundCountResult, EnvironmentChoice
@@ -60,12 +60,18 @@ def bind_feature_relation_result(
             feature_id=str(feature.feature_id),
             relation=str(choice.relation),
         )
-    annotation_value = sort_bboxes_by_ids(object_bboxes, counted_object_ids)
+    counted_object_bboxes = sort_bboxes_by_ids(object_bboxes, counted_object_ids)
+    counted_object_points = sort_bbox_centers_by_ids(object_bboxes, counted_object_ids)
     phrase = feature_relation_phrase(choice.feature_type, choice.relation)
     return BoundCountResult(
         answer=int(len(counted_object_ids)),
-        annotation_value=list(annotation_value),
-        render_map_extra={"counted_object_ids": list(counted_object_ids), "target_feature_id": str(feature.feature_id)},
+        annotation_value=list(counted_object_points),
+        render_map_extra={
+            "counted_object_ids": list(counted_object_ids),
+            "counted_object_bboxes_px": list(counted_object_bboxes),
+            "counted_object_points_px": list(counted_object_points),
+            "target_feature_id": str(feature.feature_id),
+        },
         scene_relations={"feature_type": str(choice.feature_type), "feature_id": str(feature.feature_id), "relation": str(choice.relation)},
         execution_extra={
             "feature_type": str(choice.feature_type),
@@ -113,8 +119,12 @@ def bind_crossing_result(
     crossed_feature_name = CROSSED_FEATURE_NAMES[str(choice.crossing_type)]
     return BoundCountResult(
         answer=int(len(counted_feature_ids)),
-        annotation_value=sort_bboxes_by_ids(feature_bboxes, counted_feature_ids),
-        render_map_extra={"counted_feature_ids": list(counted_feature_ids)},
+        annotation_value=sort_bbox_centers_by_ids(feature_bboxes, counted_feature_ids),
+        render_map_extra={
+            "counted_feature_ids": list(counted_feature_ids),
+            "counted_feature_bboxes_px": sort_bboxes_by_ids(feature_bboxes, counted_feature_ids),
+            "counted_feature_points_px": sort_bbox_centers_by_ids(feature_bboxes, counted_feature_ids),
+        },
         scene_relations={"crossing_type": str(choice.crossing_type)},
         execution_extra={"crossing_type": str(choice.crossing_type), "counted_feature_ids": list(counted_feature_ids)},
         witness_symbolic={
@@ -157,8 +167,13 @@ def bind_window_result(
     counted_window_ids = tuple(item_id for item_id, _bbox in window_items)
     return BoundCountResult(
         answer=int(len(counted_window_ids)),
-        annotation_value=sort_bboxes_by_ids(window_bbox_map, counted_window_ids),
-        render_map_extra={"window_bboxes_px": dict(window_bbox_map), "counted_window_ids": list(counted_window_ids)},
+        annotation_value=sort_bbox_centers_by_ids(window_bbox_map, counted_window_ids),
+        render_map_extra={
+            "window_bboxes_px": dict(window_bbox_map),
+            "counted_window_ids": list(counted_window_ids),
+            "counted_window_bboxes_px": sort_bboxes_by_ids(window_bbox_map, counted_window_ids),
+            "counted_window_points_px": sort_bbox_centers_by_ids(window_bbox_map, counted_window_ids),
+        },
         scene_relations={"window_mode": str(choice.window_mode)},
         execution_extra={
             "window_mode": str(choice.window_mode),

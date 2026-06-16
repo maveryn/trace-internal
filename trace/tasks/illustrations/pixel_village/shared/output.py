@@ -70,10 +70,14 @@ def pixel_village_render_map(
 ) -> dict[str, Any]:
     """Return the common render-map fragment with optional task fields."""
 
+    counted_bboxes = _bbox_values(entity_bboxes, counted_entity_ids)
+    counted_points = _annotation_values(entity_bboxes, counted_entity_ids)
     payload = {
         "image_id": "img0",
         "entity_bboxes_px": {str(key): [round(float(v), 3) for v in value] for key, value in entity_bboxes.items()},
         "counted_entity_ids": [str(entity_id) for entity_id in counted_entity_ids],
+        "counted_entity_bboxes_px": counted_bboxes,
+        "counted_entity_points_px": counted_points,
     }
     if extra:
         payload.update(dict(extra))
@@ -90,8 +94,24 @@ def renderer_execution_fields(scene: PixelVillageScene) -> dict[str, Any]:
     }
 
 
-def _annotation_values(entity_bboxes: Mapping[str, Sequence[float]], counted_entity_ids: Sequence[str]) -> list[list[float]]:
+def _bbox_values(entity_bboxes: Mapping[str, Sequence[float]], counted_entity_ids: Sequence[str]) -> list[list[float]]:
     return [[round(float(value), 3) for value in entity_bboxes[str(entity_id)]] for entity_id in counted_entity_ids]
+
+
+def _annotation_values(entity_bboxes: Mapping[str, Sequence[float]], counted_entity_ids: Sequence[str]) -> list[list[float]]:
+    bboxes = _bbox_values(entity_bboxes, counted_entity_ids)
+    return [
+        [
+            round((float(box[0]) + float(box[2])) / 2.0, 3),
+            round((float(box[1]) + float(box[3])) / 2.0, 3),
+        ]
+        for box in bboxes
+    ]
+
+
+def _point_set_projection(annotation_value: Sequence[Sequence[float]]) -> dict[str, Any]:
+    points = [[round(float(value), 3) for value in point[:2]] for point in annotation_value]
+    return {"type": "point_set", "point_set": points, "pixel_point_set": points}
 
 
 def bind_category_result(
@@ -208,7 +228,7 @@ def bind_category_result(
             "count": answer,
             "answer": answer,
         },
-        projected_annotation={"bbox_set": list(annotation_value)},
+        projected_annotation=_point_set_projection(annotation_value),
     )
 
 
@@ -317,7 +337,7 @@ def bind_path_result(
             "count": answer,
             "answer": answer,
         },
-        projected_annotation={"bbox_set": list(annotation_value)},
+        projected_annotation=_point_set_projection(annotation_value),
     )
 
 
@@ -442,7 +462,7 @@ def bind_territory_result(
             "count": answer,
             "answer": answer,
         },
-        projected_annotation={"bbox_set": list(annotation_value)},
+        projected_annotation=_point_set_projection(annotation_value),
     )
 
 
@@ -594,7 +614,7 @@ def bind_river_side_result(
             "count": answer,
             "answer": answer,
         },
-        projected_annotation={"bbox_set": list(annotation_value)},
+        projected_annotation=_point_set_projection(annotation_value),
     )
 
 

@@ -37,9 +37,9 @@ Counts visible village entities for one approved public target category.
 - Tree-count instances suppress cemetery territory so cemetery dead-tree decor is not an ambiguous non-counted witness.
 
 ## Annotation Contract
-- Annotation schema: `bbox_set`
-- Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel boxes, one per counted entity.
+- Annotation schema: `point_set`
+- Generator `annotation_gt.type`: `point_set`
+- Annotation is an unordered set of final-image pixel points, one near the center of each counted entity.
 - Annotation must not include paths, labels, whole territories, or context-only regions.
 
 ## Prompt And Trace Requirements
@@ -48,4 +48,4 @@ Counts visible village entities for one approved public target category.
 - Render-only attributes such as gender, facing, tree subtype, door state, roof style, season, and territory styling must not be queried.
 - Landmark building variants are optional scene variety; the renderer must not force all building types into each instance.
 - When `target_object == "tree"`, the trace records the task-layer render constraint that disables cemetery territory.
-- Counted entity ids, target object, target public name, renderer metadata, and projected bboxes must be recorded in the trace.
+- Counted entity ids, target object, target public name, renderer metadata, projected points, and diagnostic bboxes must be recorded in the trace.

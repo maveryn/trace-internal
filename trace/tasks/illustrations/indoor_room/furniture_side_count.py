@@ -10,13 +10,14 @@ from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
+from ...shared.annotation_artifacts import point_set_annotation_artifacts
 from ...shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import build_prompt_query_spec
 from ..shared.task_support import sample_count as _shared_sample_count
 from ..shared.task_support import bounds as _shared_bounds
-from .shared.annotations import serialize_indoor_scene, sort_bboxes_by_ids
+from .shared.annotations import serialize_indoor_scene, sort_bbox_centers_by_ids, sort_bboxes_by_ids
 from .shared.output import (
     indoor_base_render_map,
     indoor_render_spec,
@@ -327,7 +328,8 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
         if len(counted_ids) != int(sample.target_count):
             raise RuntimeError("rendered furniture-side count did not match sample target")
         query_id = str(sample.query_id)
-        annotation_value = sort_bboxes_by_ids(object_bboxes, counted_ids)
+        counted_bboxes = sort_bboxes_by_ids(object_bboxes, counted_ids)
+        annotation_artifacts = point_set_annotation_artifacts(sort_bbox_centers_by_ids(object_bboxes, counted_ids))
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             [
@@ -406,6 +408,8 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
         render_map = indoor_base_render_map(scene, object_bboxes=object_bboxes, part_bboxes=part_bboxes)
         render_map["target_furniture_id"] = str(furniture_id)
         render_map["counted_object_ids"] = list(counted_ids)
+        render_map["counted_object_bboxes_px"] = list(counted_bboxes)
+        render_map["counted_object_points_px"] = list(annotation_artifacts.value)
         trace_payload = {
             "scene_ir": {
                 "domain": self.domain,
@@ -444,13 +448,13 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
                 "object_type": str(sample.object_type),
                 "answer": int(sample.target_count),
             },
-            "projected_annotation": {"bbox_set": list(annotation_value)},
+            "projected_annotation": dict(annotation_artifacts.projected_annotation),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-            annotation_gt=TypedValue(type="bbox_set", value=list(annotation_value)),
+            annotation_gt=annotation_artifacts.annotation_gt,
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

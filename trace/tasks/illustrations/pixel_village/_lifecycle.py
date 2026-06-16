@@ -113,7 +113,7 @@ def run_pixel_village_count_lifecycle(
         prompt=str(prompt_artifacts.prompt),
         prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
         answer_gt=TypedValue(type="integer", value=int(binding.answer)),
-        annotation_gt=TypedValue(type="bbox_set", value=list(binding.annotation_value)),
+        annotation_gt=TypedValue(type="point_set", value=list(binding.annotation_value)),
         image=binding.scene.image,
         image_id="img0",
         trace_payload=trace_payload,

@@ -39,9 +39,24 @@ def sort_bboxes_by_ids(bbox_map: Mapping[str, Sequence[float]], ids: Sequence[st
     return [box for _item_id, box in ordered]
 
 
+def sort_bbox_centers_by_ids(bbox_map: Mapping[str, Sequence[float]], ids: Sequence[str]) -> list[list[float]]:
+    """Return bbox center points sorted with the same order as sorted bboxes."""
+
+    boxes = [(str(item_id), [float(v) for v in bbox_map[str(item_id)]]) for item_id in ids]
+    ordered = sorted(boxes, key=lambda item: (float(item[1][1]), float(item[1][0]), str(item[0])))
+    return [
+        [
+            round((float(box[0]) + float(box[2])) / 2.0, 3),
+            round((float(box[1]) + float(box[3])) / 2.0, 3),
+        ]
+        for _item_id, box in ordered
+    ]
+
+
 __all__ = [
     "feature_bbox_map",
     "feature_path_map",
+    "sort_bbox_centers_by_ids",
     "sort_bboxes_by_ids",
     "target_feature",
 ]

@@ -34,9 +34,9 @@ Counts lit windows in rendered environment buildings.
 - The answer value is an integer in the default range `1..6`, derived from the same execution trace as the annotation.
 
 ## Annotation Contract
-- Annotation schema: `bbox_set`
-- Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel boxes, one per counted/selected visual witness. Do not include labels, numeric annotations, or context-only regions.
+- Annotation schema: `point_set`
+- Generator `annotation_gt.type`: `point_set`
+- Annotation is an unordered set of final-image pixel points, one near the center of each counted/selected visual witness. Do not include labels, numeric annotations, or context-only regions.
 - Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
 
 ## Prompt And Trace Requirements

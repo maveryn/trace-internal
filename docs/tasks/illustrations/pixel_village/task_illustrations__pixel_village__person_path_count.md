@@ -36,13 +36,13 @@ Counts people whose occupied tile footprint intersects a visible path tile in a 
 - Non-counted background people must be rendered outside the configured one-tile path clearance neighborhood.
 
 ## Annotation Contract
-- Annotation schema: `bbox_set`
-- Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel boxes, one per counted person on a path.
+- Annotation schema: `point_set`
+- Generator `annotation_gt.type`: `point_set`
+- Annotation is an unordered set of final-image pixel points, one near the center of each counted person on a path.
 - Annotation must not include the path tiles themselves or context-only village regions.
 
 ## Prompt And Trace Requirements
 - Prompt text must come from the illustrations counting prompt bundle.
 - Public prompts use `people` or `person`, not the internal renderer label `villager`.
 - Path membership is defined by metadata tile-footprint intersection, not pixel-color inference.
-- Counted person ids, path tiles, background-person path clearance, renderer metadata, and projected bboxes must be recorded in the trace.
+- Counted person ids, path tiles, background-person path clearance, renderer metadata, projected points, and diagnostic bboxes must be recorded in the trace.

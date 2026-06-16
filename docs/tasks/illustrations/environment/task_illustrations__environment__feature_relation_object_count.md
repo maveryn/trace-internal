@@ -39,9 +39,9 @@ Counts foreground objects in a queried relation to a road or river feature.
 - Default answer support is `1..18` for `above_feature` and `below_feature`; `on_feature` uses `2..5` so road/river placements remain visually separated across all supported canvas profiles.
 
 ## Annotation Contract
-- Annotation schema: `bbox_set`
-- Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel boxes, one per counted foreground object. Do not include the queried road/river feature, labels, numeric annotations, or context-only regions.
+- Annotation schema: `point_set`
+- Generator `annotation_gt.type`: `point_set`
+- Annotation is an unordered set of final-image pixel points, one near the center of each counted foreground object. Do not include the queried road/river feature, labels, numeric annotations, or context-only regions.
 - Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
 
 ## Prompt And Trace Requirements

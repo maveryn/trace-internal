@@ -43,6 +43,16 @@ def _expected_bboxes(trace: dict, ids: list[str]) -> list[list[float]]:
     return [boxes[object_id] for object_id in ids]
 
 
+def _expected_points(trace: dict, ids: list[str]) -> list[list[float]]:
+    return [
+        [
+            round((float(box[0]) + float(box[2])) / 2.0, 3),
+            round((float(box[1]) + float(box[3])) / 2.0, 3),
+        ]
+        for box in _expected_bboxes(trace, ids)
+    ]
+
+
 def _assert_objects_rest_on_surface(trace: dict, ids: list[str], surface_type: str) -> None:
     placements = trace["render_map"]["placements"]
     for object_id in ids:
@@ -81,7 +91,11 @@ def test_object_type_on_surface_count_contract() -> None:
         for object_id in execution["counted_object_ids"]
     )
     _assert_objects_rest_on_surface(trace, execution["counted_object_ids"], "shelf")
-    assert sorted(out.annotation_gt.value) == sorted(_expected_bboxes(trace, execution["counted_object_ids"]))
+    assert out.annotation_gt.type == "point_set"
+    assert sorted(out.annotation_gt.value) == sorted(_expected_points(trace, execution["counted_object_ids"]))
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
 
 
 def test_object_type_on_surface_count_answer_range() -> None:
@@ -175,7 +189,11 @@ def test_furniture_side_count_contract() -> None:
         placements[object_id]["relations"][furniture_id]["left"] and placements[object_id]["object_type"] == "mug"
         for object_id in execution["counted_object_ids"]
     )
-    assert sorted(out.annotation_gt.value) == sorted(_expected_bboxes(trace, execution["counted_object_ids"]))
+    assert out.annotation_gt.type == "point_set"
+    assert sorted(out.annotation_gt.value) == sorted(_expected_points(trace, execution["counted_object_ids"]))
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
 
 
 def test_furniture_side_count_calibration_sampling_is_decoupled() -> None:

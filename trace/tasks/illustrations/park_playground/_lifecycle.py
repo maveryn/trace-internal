@@ -8,6 +8,7 @@ from typing import Any, Callable, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
+from ...shared.annotation_artifacts import point_set_annotation_artifacts
 from ...shared.config_defaults import required_group_defaults
 from ...shared.output_metadata import default_task_versions
 from .shared.output import park_render_spec, park_scene_ir
@@ -111,6 +112,7 @@ def compose_count_result(
         slots=dict(slots),
         instance_seed=int(instance_seed),
     )
+    annotation_artifacts = point_set_annotation_artifacts(annotation_value)
     branch_metadata = dict(branch_params)
     public_query_id = str(branch_metadata.pop("branch_id", "single"))
     public_scene_relations = dict(scene_relations)
@@ -139,13 +141,13 @@ def compose_count_result(
         "render_map": dict(render_map),
         "execution_trace": public_execution_trace,
         "witness_symbolic": dict(witness_symbolic),
-        "projected_annotation": {"bbox_set": [list(box) for box in annotation_value]},
+        "projected_annotation": dict(annotation_artifacts.projected_annotation),
     }
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
         prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
         answer_gt=TypedValue(type="integer", value=int(answer)),
-        annotation_gt=TypedValue(type="bbox_set", value=[list(box) for box in annotation_value]),
+        annotation_gt=annotation_artifacts.annotation_gt,
         image=scene.image,
         image_id="img0",
         trace_payload=trace_payload,

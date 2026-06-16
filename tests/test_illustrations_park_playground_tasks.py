@@ -41,6 +41,13 @@ def _assert_annotation_inside_canvas(out) -> None:
         assert 0 <= y0 < y1 <= height
 
 
+def _assert_point_annotation_inside_canvas(out) -> None:
+    width, height = out.trace_payload["render_spec"]["canvas_size"]
+    for x, y in out.annotation_gt.value:
+        assert 0 <= float(x) <= width
+        assert 0 <= float(y) <= height
+
+
 def _assert_keyed_annotation_inside_canvas(out) -> None:
     width, height = out.trace_payload["render_spec"]["canvas_size"]
     for x0, y0, x1, y1 in out.annotation_gt.value.values():
@@ -71,14 +78,17 @@ def test_person_count_contract() -> None:
     assert trace["query_spec"]["query_id"] == SINGLE_QUERY_ID
     assert trace["query_spec"]["task_id"] == "task_illustrations__park_playground__person_count"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 8
     assert len(counted_person_ids) == 8
     assert len(execution["persons"]) == 8
-    assert sorted(out.annotation_gt.value) == sorted(person_bboxes[person_id] for person_id in counted_person_ids)
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert sorted(out.annotation_gt.value) == sorted(trace["render_map"]["counted_person_points_px"])
+    assert len(trace["render_map"]["counted_person_bboxes_px"]) == len(counted_person_ids)
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
     assert "8 people" not in out.prompt
-    _assert_annotation_inside_canvas(out)
+    _assert_point_annotation_inside_canvas(out)
 
 
 def test_person_count_seeded_sampler_covers_answer_range() -> None:
@@ -112,12 +122,15 @@ def test_playground_equipment_count_contract() -> None:
     assert out.query_id == SINGLE_QUERY_ID
     assert trace["query_spec"]["query_id"] == SINGLE_QUERY_ID
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == 3
     assert len(counted_equipment_ids) == 3
     assert execution["target_equipment_type"] == "slide"
-    assert sorted(out.annotation_gt.value) == sorted(decor_bboxes[equipment_id] for equipment_id in counted_equipment_ids)
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert sorted(out.annotation_gt.value) == sorted(trace["render_map"]["counted_equipment_points_px"])
+    assert len(trace["render_map"]["counted_equipment_bboxes_px"]) == len(counted_equipment_ids)
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
     assert "6 people" not in out.prompt
     for decor in execution["decor"]:
         if str(decor["decor_id"]).startswith("equipment_"):

@@ -116,7 +116,8 @@ default: landscape `1200x800`, square `960x960`, and portrait `800x1200`.
 Canvas profile must remain render metadata, not a public task split or query
 id. Reconstruction tasks should render the source scene directly at the chosen
 profile, use profile-aware source grids, and downscale only the final composed
-option image when needed, scaling annotations with the final image. Rotated-tile
+option image when needed to stay under the 1,280,000-pixel review cap, scaling
+annotations with the final image. Rotated-tile
 tasks that use quarter-turn rotations must use square source cells: landscape
 `2x3`, square `2x2`, and portrait `3x2`. Jigsaw-arrangement tasks may use the
 same profile-aware source grids while keeping the answer options fixed at

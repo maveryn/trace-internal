@@ -10,6 +10,7 @@ from trace.tasks import create_task
 from trace.tasks.illustrations.park_playground.jigsaw_arrangement_label import (
     _sample_spec as _sample_jigsaw_arrangement_spec,
 )
+from trace.tasks.illustrations.shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS
 from trace.tasks.illustrations.park_playground.missing_patch_label import (
     PLAIN_QUERY_ID,
     _sample_spec as _sample_missing_patch_spec,
@@ -173,7 +174,7 @@ def test_jigsaw_arrangement_label_contract() -> None:
     assert trace["query_spec"]["params"]["grid_shape"] in ([2, 2], [2, 3], [3, 2])
     assert trace["render_map"]["option_layout_shape"] == [2, 2]
     assert min(trace["query_spec"]["params"]["tile_detail_scores"]) >= 600
-    assert trace["render_spec"]["canvas_size"][0] * trace["render_spec"]["canvas_size"][1] <= 1_000_000
+    assert trace["render_spec"]["canvas_size"][0] * trace["render_spec"]["canvas_size"][1] <= MAX_RECONSTRUCTION_OUTPUT_PIXELS
     assert "9 people" not in out.prompt
     _assert_bbox_inside_canvas(out)
 

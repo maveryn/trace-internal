@@ -55,7 +55,7 @@ default: landscape `1200x800`, square `960x960`, and portrait `800x1200`.
 Canvas profile is a render/style axis, not a query id or public task split.
 Derived reconstruction tasks should render their source scene directly at the
 selected profile and then downscale the final option layout only if needed to
-stay under the review pixel cap, scaling annotation coordinates with the image.
+stay under the 1,280,000-pixel review cap, scaling annotation coordinates with the image.
 For quarter-turn rotated-tile tasks, choose profile-aware square-cell grids:
 landscape `2x3`, square `2x2`, and portrait `3x2`.
 

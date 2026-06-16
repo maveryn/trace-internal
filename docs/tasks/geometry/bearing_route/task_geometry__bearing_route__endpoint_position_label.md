@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `bearing_route`
-5. Query id: `endpoint_position_label`
+5. Query id: `single`
 6. Answer schema: `option_letter`
 7. Annotation schema: `keyed_point_map`
 

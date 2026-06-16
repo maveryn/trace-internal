@@ -3,8 +3,8 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `bearing_route`
-5. Query id: `final_bearing_value`
-6. Answer schema: `decimal_value_1dp`
+5. Query id: `single`
+6. Answer schema: `integer`
 7. Annotation schema: `keyed_point_map`
 
 ## Program Contract

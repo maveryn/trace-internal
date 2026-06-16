@@ -72,7 +72,7 @@ class GeometryBearingRouteFinalBearingValueTask:
         )
         rendered = prepared.runtime.rendered
         answer_value = int(route_case.final_bearing)
-        answer_gt = TypedValue(type="number", value=answer_value)
+        answer_gt = TypedValue(type="integer", value=answer_value)
         annotation_gt = TypedValue(
             type="keyed_point_map", value=dict(prepared.annotation_keyed_points)
         )
@@ -91,7 +91,7 @@ class GeometryBearingRouteFinalBearingValueTask:
             branch_name=str(selected_query),
             branch_params=query_params,
             scene_variant=SCENE_VARIANT,
-            answer_type="number",
+            answer_type="integer",
             answer_value=answer_value,
             witness_kind="bearing_route_final_bearing",
             annotation_bboxes=prepared.annotation_bboxes,

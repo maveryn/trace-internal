@@ -15,12 +15,12 @@ TASK_CLASSES = (
 )
 
 QUERY_ID_BY_TASK = {
-    GeometryBearingRouteFinalBearingValueTask: "final_bearing_value",
-    GeometryBearingRouteEndpointPositionLabelTask: "endpoint_position_label",
+    GeometryBearingRouteFinalBearingValueTask: "single",
+    GeometryBearingRouteEndpointPositionLabelTask: "single",
 }
 
 ANSWER_TYPE_BY_TASK = {
-    GeometryBearingRouteFinalBearingValueTask: "number",
+    GeometryBearingRouteFinalBearingValueTask: "integer",
     GeometryBearingRouteEndpointPositionLabelTask: "option_letter",
 }
 

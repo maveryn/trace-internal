@@ -369,7 +369,7 @@ def render_final_bearing_scene(ctx: RenderContext, route_case: RouteCase) -> Ren
     return RenderedBearingScene(
         image=ctx.image,
         answer=int(route_case.final_bearing),
-        answer_type="number",
+        answer_type="integer",
         annotation_bboxes=(start_bbox, end_bbox),
         annotation_roles=("S", "F"),
         annotation_points=(start, end),

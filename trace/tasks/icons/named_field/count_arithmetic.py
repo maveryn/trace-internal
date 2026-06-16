@@ -18,7 +18,6 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.weighted_sampling import sample_weighted_value, weighted_probability_map
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.annotation import keyed_bbox_set_map_annotation
 from ..shared.icon_task_rendering import resolve_icon_render_params, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
     SCENE_ID,
@@ -40,6 +39,7 @@ from ..shared.procedural_named_icons import (
     validate_procedural_named_icon_fill_style_support,
 )
 from .shared.defaults import PAIR_ARITHMETIC_DEFAULTS as _DEFAULTS
+from .shared.annotations import bbox_set_from_bboxes
 from .shared.metrics import pair_arithmetic_counted_instance_ids, pair_arithmetic_role_by_instance_id
 from .shared.sampling import color_support as _shared_color_support
 from .shared.sampling import sample_pair_arithmetic_spec, shape_support as _shared_shape_support
@@ -102,31 +102,23 @@ def _instance_bbox_sort_key(instance: Any) -> tuple[int, int, int, int]:
     return (bbox[1], bbox[0], bbox[3], bbox[2])
 
 
-def _operand_annotation_role_maps(
+def _counted_annotation_maps(
     *,
     instances: Sequence[Any],
-    left_instance_ids: Sequence[str],
-    right_instance_ids: Sequence[str],
-) -> tuple[Dict[str, list[list[int]]], Dict[str, list[str]]]:
-    left_ids = {str(instance_id) for instance_id in left_instance_ids}
-    right_ids = {str(instance_id) for instance_id in right_instance_ids}
-    left_instances = sorted(
-        [instance for instance in instances if str(instance.instance_id) in left_ids],
+    counted_instance_ids: Sequence[str],
+) -> tuple[list[list[int]], list[str]]:
+    counted_ids = {str(instance_id) for instance_id in counted_instance_ids}
+    counted_instances = sorted(
+        [instance for instance in instances if str(instance.instance_id) in counted_ids],
         key=_instance_bbox_sort_key,
     )
-    right_instances = sorted(
-        [instance for instance in instances if str(instance.instance_id) in right_ids],
-        key=_instance_bbox_sort_key,
+    missing_ids = sorted(counted_ids - {str(instance.instance_id) for instance in counted_instances})
+    if missing_ids:
+        raise RuntimeError(f"missing rendered counted instances for annotation: {missing_ids}")
+    return (
+        [[int(value) for value in instance.bbox_xyxy] for instance in counted_instances],
+        [str(instance.instance_id) for instance in counted_instances],
     )
-    role_bboxes: Dict[str, list[list[int]]] = {
-        "left_operand": [[int(value) for value in instance.bbox_xyxy] for instance in left_instances],
-        "right_operand": [[int(value) for value in instance.bbox_xyxy] for instance in right_instances],
-    }
-    role_instance_ids: Dict[str, list[str]] = {
-        "left_operand": [str(instance.instance_id) for instance in left_instances],
-        "right_operand": [str(instance.instance_id) for instance in right_instances],
-    }
-    return role_bboxes, role_instance_ids
 
 
 
@@ -288,15 +280,14 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
         )
         if len(left_instance_ids) != int(sample.left_count) or len(right_instance_ids) != int(sample.right_count):
             raise RuntimeError("operand role counts do not match sampled counts")
-        annotation_role_bboxes, annotation_role_instance_ids = _operand_annotation_role_maps(
+        annotation_bboxes, annotation_instance_ids = _counted_annotation_maps(
             instances=scene.instances,
-            left_instance_ids=left_instance_ids,
-            right_instance_ids=right_instance_ids,
+            counted_instance_ids=counted_instance_ids,
         )
-        annotation_bbox_count = sum(len(bboxes) for bboxes in annotation_role_bboxes.values())
+        annotation_bbox_count = len(annotation_bboxes)
         if annotation_bbox_count != int(sample.left_count) + int(sample.right_count):
             raise RuntimeError("rendered named-icon pair arithmetic annotation did not match operand counts")
-        annotation_artifacts = keyed_bbox_set_map_annotation(annotation_role_bboxes)
+        annotation_artifacts = bbox_set_from_bboxes(annotation_bboxes)
         trace_payload = build_pair_arithmetic_trace_payload(
             sample=sample,
             scene=scene,
@@ -309,7 +300,7 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
             left_instance_ids=left_instance_ids,
             right_instance_ids=right_instance_ids,
             role_by_instance_id=role_by_instance_id,
-            annotation_role_instance_ids=annotation_role_instance_ids,
+            annotation_instance_ids=tuple(annotation_instance_ids),
             query_ids=tuple(self.query_ids),
             shape_support=_shape_support(task_params),
             color_support=_color_support(task_params),
@@ -323,7 +314,7 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
             answer_gt=TypedValue(type="integer", value=int(sample.target_answer)),
             annotation_gt=TypedValue(
                 type=str(annotation_artifacts["annotation_type"]),
-                value=dict(annotation_artifacts["annotation_value"]),
+                value=list(annotation_artifacts["annotation_value"]),
             ),
             image=scene.image,
             image_id="img0",

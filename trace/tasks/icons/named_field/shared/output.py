@@ -641,7 +641,7 @@ def build_pair_arithmetic_trace_payload(
     left_instance_ids: Tuple[str, ...],
     right_instance_ids: Tuple[str, ...],
     role_by_instance_id: Mapping[str, str],
-    annotation_role_instance_ids: Mapping[str, Sequence[str]],
+    annotation_instance_ids: Tuple[str, ...],
     query_ids: Sequence[str],
     shape_support: Sequence[str],
     color_support: Sequence[Any],
@@ -794,7 +794,11 @@ def build_pair_arithmetic_trace_payload(
             "counted_instance_ids": list(counted_instance_ids),
             "left_operand_instance_ids": list(left_instance_ids),
             "right_operand_instance_ids": list(right_instance_ids),
-            "annotation_roles": dict(annotation_role_instance_ids),
+            "annotation_instance_ids": list(annotation_instance_ids),
+            "operand_role_instance_ids": {
+                "left_operand": list(left_instance_ids),
+                "right_operand": list(right_instance_ids),
+            },
         },
         "projected_annotation": {**dict(annotation_artifacts["projected_annotation"])},
     }

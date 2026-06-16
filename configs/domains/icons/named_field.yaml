@@ -800,10 +800,10 @@ prompt:
         "{right_shape_name}" icons?
       question_text_two_bound_color_difference_count: What is the difference between the number of {left_operand_label} icons
         and {right_operand_label} icons?
-      annotation_hint: set "annotation" to a JSON object with keys "left_operand" and "right_operand"; each key maps to a
-        list of [x0, y0, x1, y1] boxes in image pixel coordinates for that operand group
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every icon
+        counted in either operand group
       answer_hint: set "answer" to the requested count as an integer
-      json_example: '{"annotation":{"left_operand":[[116,128,168,180],[238,128,290,180]],"right_operand":[[634,302,686,354]]},"answer":3}'
+      json_example: '{"annotation":[[116,128,168,180],[238,128,290,180],[634,302,686,354]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
       bundle_id: icons_named_field_v1
       task_key: counting_query

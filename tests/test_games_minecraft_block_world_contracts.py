@@ -161,6 +161,10 @@ def test_games_minecraft_resource_route_cost_matches_single_track_blocks() -> No
     assert not (annotation_cells & endpoint_cells)
     assert len(distractor_cells) >= 2
     assert not (distractor_cells & track_cells)
+    assert all(
+        min(max(abs(dx - tx), abs(dy - ty)) for tx, ty in track_cells) >= 3
+        for dx, dy in distractor_cells
+    )
     assert all(str(block["kind"]) in {"stone", "dirt"} for block in block_by_id.values())
     assert "route_option_count" not in execution
     assert "route_costs" not in execution

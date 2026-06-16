@@ -7,6 +7,7 @@ from typing import Sequence, Tuple
 from .defaults import (
     HEIGHT_CONDITION_AT_LEAST,
     HEIGHT_CONDITION_EXACT,
+    ROUTE_DISTRACTOR_MIN_TRACK_DISTANCE,
     SAMPLE_KIND_HEIGHT_FILTER,
     SAMPLE_KIND_ROUTE_COST,
     SAMPLE_KIND_TOP_RESOURCE,
@@ -153,6 +154,9 @@ def _validate_route_cost_sample(sample: MinecraftSceneSample) -> None:
         if not is_annotated and block_cell in track_cells:
             raise ValueError("distractor route block must not sit on the visible track")
         if not is_annotated:
+            distance_to_track = _min_chebyshev_distance_to_cells(block_cell, sample.track_cells)
+            if int(distance_to_track) < ROUTE_DISTRACTOR_MIN_TRACK_DISTANCE:
+                raise ValueError("distractor route block must be far from the visible track")
             distractor_count += 1
         if str(block.kind) not in {"stone", "dirt"}:
             raise ValueError("raised route blocks must be stone or dirt")
@@ -176,6 +180,15 @@ def _validate_height_filter_sample(sample: MinecraftSceneSample) -> None:
         raise ValueError("height-filter answer must equal qualifying stack count")
     if set(sample.annotation_entity_ids) != counted_ids:
         raise ValueError("height-filter annotation must be exactly the qualifying stack witnesses")
+
+
+def _min_chebyshev_distance_to_cells(cell: Tuple[int, int], cells: Sequence[Tuple[int, int]]) -> int:
+    """Return the nearest Chebyshev grid distance from one cell to a cell set."""
+
+    if not cells:
+        raise ValueError("distance requires at least one reference cell")
+    cx, cy = int(cell[0]), int(cell[1])
+    return min(max(abs(cx - int(x)), abs(cy - int(y))) for x, y in cells)
 
 
 __all__ = [

@@ -17,3 +17,4 @@
 3. Empty track cells and raised blocks away from the track do not count.
 4. Annotation points mark the centers of every counted raised block on the track.
 5. Counted raised blocks are never placed on the first or last track cell.
+6. Off-track distractor blocks are sampled at least 3 grid cells away from the visible track.

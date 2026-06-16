@@ -14,6 +14,7 @@ from .defaults import (
     HEIGHT_CONDITION_EXACT,
     ORE_KINDS,
     RESOURCE_KINDS,
+    ROUTE_DISTRACTOR_MIN_TRACK_DISTANCE,
     SAMPLE_KIND_HEIGHT_FILTER,
     SAMPLE_KIND_ROUTE_COST,
     SAMPLE_KIND_TOP_RESOURCE,
@@ -242,10 +243,26 @@ def sample_route_cost_scene(*, rng: Any, axes: MinecraftAxes) -> MinecraftSceneS
     answer = int(axes.target_answer)
     grid_width = int(axes.grid_width)
     grid_depth = int(axes.grid_depth)
-    track_cells = _sample_track_cells(rng=rng, grid_width=grid_width, grid_depth=grid_depth)
-    countable_track_cells = tuple(track_cells[1:-1])
-    if int(answer) > len(countable_track_cells):
-        raise ValueError("track path too short for requested route cost")
+    distractor_count = int(rng.randrange(2, 6))
+    for _track_attempt in range(128):
+        track_cells = _sample_track_cells(rng=rng, grid_width=grid_width, grid_depth=grid_depth)
+        countable_track_cells = tuple(track_cells[1:-1])
+        if int(answer) > len(countable_track_cells):
+            continue
+        try:
+            distractor_cells = _sample_off_track_distractor_cells(
+                rng=rng,
+                grid_width=grid_width,
+                grid_depth=grid_depth,
+                track_cells=track_cells,
+                count=distractor_count,
+                min_track_distance=ROUTE_DISTRACTOR_MIN_TRACK_DISTANCE,
+            )
+        except ValueError:
+            continue
+        break
+    else:
+        raise ValueError("could not sample route distractors far enough from track")
 
     cell_kinds: dict[Tuple[int, int], str] = {cell: "route_path" for cell in track_cells}
     blocks: list[MinecraftBlock] = []
@@ -264,14 +281,6 @@ def sample_route_cost_scene(*, rng: Any, axes: MinecraftAxes) -> MinecraftSceneS
         )
         annotation_ids.append(block_id)
 
-    distractor_count = int(rng.randrange(2, 6))
-    distractor_cells = _sample_off_track_distractor_cells(
-        rng=rng,
-        grid_width=grid_width,
-        grid_depth=grid_depth,
-        track_cells=track_cells,
-        count=distractor_count,
-    )
     for distractor_index, (x, y) in enumerate(distractor_cells):
         blocks.append(
             MinecraftBlock(
@@ -676,25 +685,33 @@ def _sample_off_track_distractor_cells(
     grid_depth: int,
     track_cells: Sequence[Tuple[int, int]],
     count: int,
+    min_track_distance: int,
 ) -> Tuple[Tuple[int, int], ...]:
-    """Sample raised-block distractor cells away from the visible track when possible."""
+    """Sample raised-block distractor cells far from the visible track."""
 
     track_set = {(int(x), int(y)) for x, y in track_cells}
-    interior_cells = [
+    candidates = [
         (int(x), int(y))
         for y in range(1, int(grid_depth) - 1)
         for x in range(1, int(grid_width) - 1)
         if (int(x), int(y)) not in track_set
+        and _min_chebyshev_distance_to_cells((int(x), int(y)), track_cells) >= int(min_track_distance)
     ]
-    separated_cells = [
-        cell
-        for cell in interior_cells
-        if all(max(abs(int(cell[0]) - tx), abs(int(cell[1]) - ty)) > 1 for tx, ty in track_set)
-    ]
-    candidates = separated_cells if len(separated_cells) >= int(count) else interior_cells
     if len(candidates) < int(count):
         raise ValueError("not enough off-track cells for route distractors")
     return tuple(rng.sample(candidates, int(count)))
+
+
+def _min_chebyshev_distance_to_cells(
+    cell: Tuple[int, int],
+    cells: Sequence[Tuple[int, int]],
+) -> int:
+    """Return the nearest Chebyshev grid distance from one cell to a cell set."""
+
+    if not cells:
+        raise ValueError("distance requires at least one reference cell")
+    cx, cy = int(cell[0]), int(cell[1])
+    return min(max(abs(cx - int(x)), abs(cy - int(y))) for x, y in cells)
 
 
 def _stack_height_support(params: Mapping[str, Any], *, gen_defaults: Mapping[str, Any]) -> Tuple[int, ...]:

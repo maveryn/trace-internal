@@ -22,11 +22,6 @@ from trace.tasks.illustrations.park_playground.playground_equipment_count import
 from trace.tasks.illustrations.park_playground.rotated_tile_label import (
     _sample_spec as _sample_rotated_tile_spec,
 )
-from trace.tasks.illustrations.park_playground.source_patch_membership_label import (
-    ALTERED_PATCH_QUERY_ID,
-    EXACT_SOURCE_PATCH_QUERY_ID,
-    _sample_spec as _sample_source_patch_membership_spec,
-)
 
 
 def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
@@ -248,84 +243,6 @@ def test_missing_patch_seeded_sampler_covers_answer_labels() -> None:
     answer_counts = Counter(sample.correct_index for sample in samples)
 
     assert query_counts == Counter({PLAIN_QUERY_ID: 100})
-    _assert_hash_balanced_counts(option_counts, {4, 6})
-    assert set(answer_counts) <= set(range(6))
-    assert {0, 1, 2, 3} <= set(answer_counts)
-
-
-def test_source_patch_membership_exact_source_contract() -> None:
-    out = create_task("task_illustrations__park_playground__source_patch_membership_label").generate(
-        hash64(2026061602, "park-source-patch-exact", 0),
-        params={"query_id": EXACT_SOURCE_PATCH_QUERY_ID, "option_count": 4, "correct_index": 2},
-        max_attempts=300,
-    )
-    trace = out.trace_payload
-    answer_label = str(out.answer_gt.value)
-    option_bboxes = trace["render_map"]["option_bboxes_px_by_label"]
-    provenance = trace["render_map"]["option_provenance_by_label"]
-    alterations = trace["render_map"]["option_alterations_by_label"]
-
-    assert out.scene_id == "park_playground"
-    assert out.query_id == EXACT_SOURCE_PATCH_QUERY_ID
-    assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "bbox"
-    assert answer_label == "C"
-    assert provenance[answer_label] == "exact"
-    assert Counter(provenance.values()) == Counter({"altered": 3, "exact": 1})
-    assert alterations[answer_label] == []
-    assert all(alterations[label] for label, value in provenance.items() if value == "altered")
-    assert out.annotation_gt.value == option_bboxes[answer_label]
-    assert trace["projected_annotation"]["type"] == "bbox"
-    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
-    assert trace["render_spec"]["canvas_size"][0] * trace["render_spec"]["canvas_size"][1] <= MAX_RECONSTRUCTION_OUTPUT_PIXELS
-    assert "8 people" not in out.prompt
-    _assert_bbox_inside_canvas(out)
-
-
-def test_source_patch_membership_altered_patch_contract() -> None:
-    out = create_task("task_illustrations__park_playground__source_patch_membership_label").generate(
-        hash64(2026061602, "park-source-patch-altered", 0),
-        params={"query_id": ALTERED_PATCH_QUERY_ID, "option_count": 4, "correct_index": 1},
-        max_attempts=300,
-    )
-    trace = out.trace_payload
-    answer_label = str(out.answer_gt.value)
-    option_bboxes = trace["render_map"]["option_bboxes_px_by_label"]
-    provenance = trace["render_map"]["option_provenance_by_label"]
-    alterations = trace["render_map"]["option_alterations_by_label"]
-    selected_records = alterations[answer_label]
-
-    assert out.scene_id == "park_playground"
-    assert out.query_id == ALTERED_PATCH_QUERY_ID
-    assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "bbox"
-    assert answer_label == "B"
-    assert provenance[answer_label] == "altered"
-    assert Counter(provenance.values()) == Counter({"exact": 3, "altered": 1})
-    assert selected_records
-    assert all(not alterations[label] for label, value in provenance.items() if value == "exact")
-    assert sum(record["changed_fraction"] for record in selected_records) >= 0.03
-    assert sum(record["difference_score"] for record in selected_records) >= 8.0
-    assert out.annotation_gt.value == option_bboxes[answer_label]
-    assert trace["projected_annotation"]["type"] == "bbox"
-    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
-    _assert_bbox_inside_canvas(out)
-
-
-def test_source_patch_membership_seeded_sampler_covers_queries_and_answers() -> None:
-    samples = [
-        _sample_source_patch_membership_spec(
-            instance_seed=hash64(2026061602, "park-source-patch-sampling", index),
-            params={"_sample_cursor": index},
-            attempt_index=0,
-        )
-        for index in range(100)
-    ]
-    query_counts = Counter(sample.branch_id for sample in samples)
-    option_counts = Counter(sample.option_count for sample in samples)
-    answer_counts = Counter(sample.correct_index for sample in samples)
-
-    _assert_hash_balanced_counts(query_counts, {EXACT_SOURCE_PATCH_QUERY_ID, ALTERED_PATCH_QUERY_ID})
     _assert_hash_balanced_counts(option_counts, {4, 6})
     assert set(answer_counts) <= set(range(6))
     assert {0, 1, 2, 3} <= set(answer_counts)

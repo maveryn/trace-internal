@@ -4,7 +4,7 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query id: `closest_to_camera|farthest_from_camera`
+- Query id: `single`
 - Answer type: `option_letter`
 - Annotation type: one-box `bbox_set`
 

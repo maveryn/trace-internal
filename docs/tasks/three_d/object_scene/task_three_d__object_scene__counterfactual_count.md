@@ -4,7 +4,7 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query id: `attribute_count_after_edits`
+- Query id: `single`
 - Answer type: `integer`
 - Annotation type: unordered `bbox_set`
 

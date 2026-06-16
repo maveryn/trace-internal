@@ -4,7 +4,7 @@
 - Domain: `three_d`
 - Scene id: `warehouse`
 - Scene: `warehouse`
-- Query id: `first_object_ahead`
+- Query id: `single`
 - Answer type: `option_letter`
 - Annotation type: one-box `bbox_set`
 

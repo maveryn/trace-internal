@@ -85,7 +85,12 @@ def _run_once(
     """Build a request, render its scene, project annotation, and return TaskOutput."""
 
     gen_defaults, render_defaults, prompt_defaults_config = _task_defaults(str(task_identifier))
-    render_params = resolve_object_scene_render_params(params, render_defaults=render_defaults)
+    render_params = resolve_object_scene_render_params(
+        params,
+        render_defaults=render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_identifier}.canvas",
+    )
     request = build_request(
         int(instance_seed),
         params,
@@ -249,6 +254,13 @@ def _run_once(
         "render_spec": {
             "canvas_width": int(render_params.canvas_width),
             "canvas_height": int(render_params.canvas_height),
+            "scene_canvas_preset": str(render_params.canvas_preset),
+            "scene_canvas_width": int(render_params.canvas_width),
+            "scene_canvas_height": int(render_params.canvas_height),
+            "scene_canvas_policy": str(render_params.canvas_policy),
+            "final_canvas_width": int(image.width),
+            "final_canvas_height": int(image.height),
+            "final_canvas_pixels": int(image.width) * int(image.height),
             "coord_space": "pixel",
             "scene_variant": str(request.scene_variant),
             "background_style": dict(background_meta),

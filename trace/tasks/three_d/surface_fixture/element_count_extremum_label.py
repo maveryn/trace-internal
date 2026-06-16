@@ -11,7 +11,7 @@ from trace.core.visual.background import make_background_canvas
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.annotation_artifacts import bbox_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import bbox_annotation_artifacts
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import probability_map, select_task_query_id
@@ -230,7 +230,12 @@ class ThreeDSurfaceFixtureElementCountExtremumLabelTask:
                     instance_seed=int(attempt_seed),
                     params=clean_params,
                 )
-                render_params = _resolve_render_params(clean_params, render_defaults=_RENDER_DEFAULTS)
+                render_params = _resolve_render_params(
+                    clean_params,
+                    render_defaults=_RENDER_DEFAULTS,
+                    instance_seed=int(attempt_seed),
+                    namespace=f"{TASK_ID}.canvas",
+                )
                 background, background_meta = make_background_canvas(
                     canvas_width=int(render_params.canvas_width),
                     canvas_height=int(render_params.canvas_height),
@@ -251,7 +256,7 @@ class ThreeDSurfaceFixtureElementCountExtremumLabelTask:
                 )
                 answer_count = int(rendered.option_counts_by_label[str(answer_label)])
                 selected_panel_bbox = list(rendered.option_panel_bboxes_px[str(answer_label)])
-                annotation_artifacts = bbox_set_annotation_artifacts([selected_panel_bbox])
+                annotation_artifacts = bbox_annotation_artifacts(selected_panel_bbox)
                 first_dataset = dict(option_datasets[OPTION_LABELS[0]])
                 prompt_query_key = str(PROMPT_QUERY_KEY_BY_QUERY_ID[str(selected_query)])
                 _prompt_defaults, prompt_artifacts = build_prompt_artifacts(
@@ -302,6 +307,13 @@ class ThreeDSurfaceFixtureElementCountExtremumLabelTask:
                     "render_spec": {
                         "canvas_width": int(image.width),
                         "canvas_height": int(image.height),
+                        "scene_canvas_preset": str(render_params.canvas_preset),
+                        "scene_canvas_width": int(render_params.canvas_width),
+                        "scene_canvas_height": int(render_params.canvas_height),
+                        "scene_canvas_policy": str(render_params.canvas_policy),
+                        "final_canvas_width": int(image.width),
+                        "final_canvas_height": int(image.height),
+                        "final_canvas_pixels": int(image.width) * int(image.height),
                         "coord_space": "pixel",
                         "scene_variant": str(axes.scene_variant),
                         "background_style": dict(background_meta),

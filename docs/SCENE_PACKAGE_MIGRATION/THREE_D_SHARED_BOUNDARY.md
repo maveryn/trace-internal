@@ -72,6 +72,7 @@ Approved domain-shared categories:
   and mounting metadata;
 - normalized 3D object records and renderer-neutral placement/style specs;
 - renderer-neutral reusable object dispatch and serialization;
+- canonical source-canvas preset selection and final image downscale helpers;
 - projected loose-object glyphs used by object-scene and object-cluster style
   scenes;
 - reusable room wall/floor object renderers;
@@ -89,6 +90,7 @@ Domain-shared modules that should generally remain domain-shared:
 | `object_resources.py` | Canonical 3D object resource registry and scene-role profiles. |
 | `object_schema.py` | Normalized `ThreeDObjectRecord` payload. |
 | `scene_schema.py` | Renderer-neutral placement/style specs. |
+| `canvas.py` | Canonical three_d source-canvas presets, deterministic preset resolution, bbox/point/entity coordinate transforms, and final pixel-cap downscale helpers. |
 | `object_variants.py` | Renderer-style and render-only variant metadata. |
 | `projected_object_geometry.py` | Scene-neutral object reference points, projected bbox, and bbox-overlap geometry. |
 | `object_rendering.py` | Shared object renderer dispatch and object-record construction. |
@@ -101,6 +103,21 @@ Domain-shared modules that should generally remain domain-shared:
 | `room_wall_object_rendering.py`, `room_floor_object_rendering.py` | Reusable room object renderers. |
 | `street_*_object_rendering*.py` | Reusable street object renderers and object geometry helpers. |
 | `warehouse_object_rendering.py` | Reusable loose warehouse object renderer. |
+
+## Canvas Policy
+
+All `three_d` scene renderers should resolve source canvas dimensions through
+`trace/tasks/three_d/shared/canvas.py` unless a task has an explicit documented
+override. The default source presets are `1200x800` landscape, `800x1200`
+portrait, and `960x960` square.
+
+Canvas preset is render metadata only. It must not become a public task id,
+query id, or answer-bearing axis. Multi-panel tasks should render each source
+scene/panel with the sampled canonical preset, compose panels in the
+task-specific layout, then downscale the final image if needed to respect the
+domain pixel cap. Any downscale or panel placement must transform projected
+bboxes, points, segments, and entity geometry before writing final
+`annotation_gt`, `render_map`, and `scene_ir` coordinates.
 
 ## Legacy Shared File Guidance
 

@@ -4,9 +4,9 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query id: `between_references`
+- Query id: `single`
 - Answer type: `option_letter`
-- Annotation type: one-box `bbox_set`
+- Annotation type: `bbox`
 
 ## Contract
 The image shows the shared open synthetic perspective 3D object scene: a gridded floor or platform, perspective camera cues, two unlettered reference props named in the question, `6` unlettered answer candidates, and a below-scene text option panel.

@@ -35,6 +35,16 @@ from .camera_projection import (
     vec_norm as _vec_norm,
     vec_sub as _vec_sub,
 )
+from .canvas import (
+    bbox_dict_transform,
+    bbox_transform,
+    entities_transform,
+    final_canvas_metadata,
+    point_dict_transform,
+    render_params_canvas_metadata,
+    resize_image_to_fit_pixel_cap,
+    resolve_three_d_canvas_spec,
+)
 from .object_rendering import ThreeDObjectSpec, ThreeDRenderContext, render_three_d_object
 from .scene_schema import ThreeDPlacementSpec
 from .object_scene_rendering import _bbox_union, _draw_line, _draw_option_label
@@ -138,6 +148,8 @@ class _RenderParams:
     text_stroke_rgb: Tuple[int, int, int]
     full_bleed_floor: bool
     full_bleed_floor_extent_multiplier: float
+    canvas_preset: str = "explicit"
+    canvas_policy: str = "explicit_dimensions"
 
 
 ObjectSceneRenderParams = _RenderParams
@@ -174,12 +186,28 @@ def _bool_value(mapping: Mapping[str, Any], key: str, default: bool) -> bool:
     return bool(value)
 
 
-def _resolve_render_params(params: Mapping[str, Any], *, render_defaults: Mapping[str, Any]) -> _RenderParams:
+def _resolve_render_params(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    instance_seed: int = 0,
+    namespace: str = "three_d.object_scene.canvas",
+) -> _RenderParams:
     merged = dict(render_defaults)
     merged.update(dict(params))
+    canvas = resolve_three_d_canvas_spec(
+        params,
+        render_defaults=render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+        fallback_width=_int_value(merged, "canvas_width", 1200),
+        fallback_height=_int_value(merged, "canvas_height", 800),
+    )
     return _RenderParams(
-        canvas_width=_int_value(merged, "canvas_width", 1180),
-        canvas_height=_int_value(merged, "canvas_height", 900),
+        canvas_width=int(canvas.canvas_width),
+        canvas_height=int(canvas.canvas_height),
+        canvas_preset=str(canvas.preset_id),
+        canvas_policy=str(canvas.policy),
         scene_margin_left_px=_int_value(merged, "scene_margin_left_px", 70),
         scene_margin_right_px=_int_value(merged, "scene_margin_right_px", 70),
         scene_margin_top_px=_int_value(merged, "scene_margin_top_px", 54),
@@ -204,10 +232,17 @@ def resolve_object_scene_render_params(
     params: Mapping[str, Any],
     *,
     render_defaults: Mapping[str, Any],
+    instance_seed: int = 0,
+    namespace: str = "three_d.object_scene.canvas",
 ) -> ObjectSceneRenderParams:
     """Resolve shared object-scene render parameters for scene-family renderers."""
 
-    return _resolve_render_params(params, render_defaults=render_defaults)
+    return _resolve_render_params(
+        params,
+        render_defaults=render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
 
 
 def _camera_yaw_band_for_instance(instance_seed: int) -> Tuple[float, float]:
@@ -657,6 +692,33 @@ def render_object_scene_3d(
             stroke_rgb=render_params.text_stroke_rgb,
         )
         entities.extend(option_entities)
+    image, image_scale = resize_image_to_fit_pixel_cap(image)
+    if image_scale.changed:
+        scale_x = float(image_scale.scale_x)
+        scale_y = float(image_scale.scale_y)
+        scene_bbox = bbox_transform(scene_bbox, scale_x=scale_x, scale_y=scale_y)
+        point_bboxes = bbox_dict_transform(point_bboxes, scale_x=scale_x, scale_y=scale_y)
+        point_centers = point_dict_transform(point_centers, scale_x=scale_x, scale_y=scale_y)
+        object_bboxes = bbox_dict_transform(object_bboxes, scale_x=scale_x, scale_y=scale_y)
+        object_centers = point_dict_transform(object_centers, scale_x=scale_x, scale_y=scale_y)
+        context_object_bboxes = bbox_dict_transform(context_object_bboxes, scale_x=scale_x, scale_y=scale_y)
+        context_object_centers = point_dict_transform(context_object_centers, scale_x=scale_x, scale_y=scale_y)
+        room_bbox = bbox_transform(room_bbox, scale_x=scale_x, scale_y=scale_y)
+        annotation_bboxes = [bbox_transform(bbox, scale_x=scale_x, scale_y=scale_y) for bbox in annotation_bboxes]
+        option_metadata = dict(option_metadata)
+        if option_metadata.get("option_panel_bbox_px"):
+            option_metadata["option_panel_bbox_px"] = bbox_transform(
+                option_metadata["option_panel_bbox_px"],
+                scale_x=scale_x,
+                scale_y=scale_y,
+            )
+        option_metadata["option_choice_bboxes_px"] = bbox_dict_transform(
+            option_metadata.get("option_choice_bboxes_px", {}),
+            scale_x=scale_x,
+            scale_y=scale_y,
+        )
+        option_metadata["option_panel_height_px"] = int(round(float(option_metadata.get("option_panel_height_px", 0)) * scale_y))
+        entities = entities_transform(entities, scale_x=scale_x, scale_y=scale_y)
     return _RenderedScene(
         image=image,
         entities=list(entities),

@@ -4,9 +4,9 @@
 - Domain: `three_d`
 - Scene id: `street`
 - Scene: `street`
-- Query id: `closest_to_intersection`
+- Query id: `single`
 - Answer type: `option_letter`
-- Annotation type: one-box `bbox_set`
+- Annotation type: `bbox`
 
 ## Contract
 The image shows a synthetic perspective 3D street intersection or T intersection with roads, sidewalks, crosswalk markings, unlettered street context, unlettered street-object candidates, and a below-scene text option panel. The street surface renders full-bleed: sidewalk ground fills the canvas and road strips are clipped to the visible floor-plane polygon, so the roads continue to the image edges rather than ending at a finite stage boundary. The prompt asks which option describes the street object closest to the center of the intersection.

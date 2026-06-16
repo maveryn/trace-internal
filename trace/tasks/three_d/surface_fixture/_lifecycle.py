@@ -92,6 +92,7 @@ def _build_surface_trace_payload(
     prompt_artifacts: Any,
     query_spec: Mapping[str, Any],
     render_params: Any,
+    image: Any,
     background_meta: Mapping[str, Any],
     post_noise_meta: Mapping[str, Any],
 ) -> Dict[str, Any]:
@@ -163,6 +164,13 @@ def _build_surface_trace_payload(
         "render_spec": {
             "canvas_width": int(render_params.canvas_width),
             "canvas_height": int(render_params.canvas_height),
+            "scene_canvas_preset": str(render_params.canvas_preset),
+            "scene_canvas_width": int(render_params.canvas_width),
+            "scene_canvas_height": int(render_params.canvas_height),
+            "scene_canvas_policy": str(render_params.canvas_policy),
+            "final_canvas_width": int(image.width),
+            "final_canvas_height": int(image.height),
+            "final_canvas_pixels": int(image.width) * int(image.height),
             "coord_space": "pixel",
             "scene_variant": str(axes.scene_variant),
             "background_style": dict(background_meta),
@@ -228,7 +236,12 @@ def run_surface_fixture_lifecycle(
         attempt_seed = _attempt_seed(int(instance_seed), public_name=str(public_name), attempt_index=int(attempt_index))
         try:
             plan = prepare_objective(int(attempt_seed), clean_params, axes, branch_probabilities, selected_branch)
-            render_params = _resolve_render_params(clean_params, render_defaults=render_defaults)
+            render_params = _resolve_render_params(
+                clean_params,
+                render_defaults=render_defaults,
+                instance_seed=int(attempt_seed),
+                namespace=f"{public_name}.canvas",
+            )
             background, background_meta = make_background_canvas(
                 canvas_width=int(render_params.canvas_width),
                 canvas_height=int(render_params.canvas_height),
@@ -271,6 +284,7 @@ def run_surface_fixture_lifecycle(
                 prompt_artifacts=prompt_artifacts,
                 query_spec=query_spec,
                 render_params=render_params,
+                image=image,
                 background_meta=background_meta,
                 post_noise_meta=post_noise_meta,
             )

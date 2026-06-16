@@ -16,6 +16,7 @@ from trace.tasks.three_d.warehouse.shelf_level_object_count import (
     SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
 @pytest.mark.parametrize(
@@ -93,7 +94,7 @@ def test_warehouse_shelf_level_count_answer_annotation_and_geometry(
     assert "option" not in output.prompt.lower()
     assert "red-boxed" not in output.prompt
     assert "clear prompt colors" not in output.prompt
-    assert output.image.size == (1180, 920)
+    assert_three_d_canvas_contract(output)
 
 
 def test_warehouse_shelf_level_count_registered() -> None:

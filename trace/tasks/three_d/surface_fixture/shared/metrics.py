@@ -260,7 +260,7 @@ def _resolve_initial_color_counts(
     namespace: str,
     rng: Any,
 ) -> Tuple[Dict[str, int], Dict[str, float]]:
-    """Bind the visible starting multicolor state while preserving target evidence.
+    """Bind the visible starting multicolor state while preserving target annotation.
 
     The key invariant for operation tasks is that `target_color` has a known
     positive initial count and every active distractor color is visible at least

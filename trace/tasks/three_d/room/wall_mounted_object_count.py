@@ -100,7 +100,12 @@ class ThreeDRoomMultiAttributeAndCountTask:
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
         )
-        render_params = resolve_object_scene_render_params(params, render_defaults=_RENDER_DEFAULTS)
+        render_params = resolve_object_scene_render_params(
+            params,
+            render_defaults=_RENDER_DEFAULTS,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.canvas",
+        )
         dataset = _build_room_dataset(
             query_id=str(query_id),
             scene_variant=str(scene_variant),
@@ -213,6 +218,13 @@ class ThreeDRoomMultiAttributeAndCountTask:
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
                 "canvas_height": int(render_params.canvas_height),
+                "scene_canvas_preset": str(render_params.canvas_preset),
+                "scene_canvas_width": int(render_params.canvas_width),
+                "scene_canvas_height": int(render_params.canvas_height),
+                "scene_canvas_policy": str(render_params.canvas_policy),
+                "final_canvas_width": int(image.width),
+                "final_canvas_height": int(image.height),
+                "final_canvas_pixels": int(image.width) * int(image.height),
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),

@@ -8,6 +8,7 @@ from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.shared.named_colors import available_named_colors
 from trace.tasks.three_d.object_scene.counterfactual_count import PROMPT_COLOR_RGB, TASK_ID
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
 def _spec_matches_predicate(spec: dict, predicate: dict) -> bool:
@@ -81,7 +82,7 @@ def test_counterfactual_attribute_count_answer_and_annotation() -> None:
     for spec in trace["object_specs"]:
         is_initial_target = str(spec["object_id"]) in initial_target_set
         assert is_initial_target == _spec_matches_predicate(spec, trace["target_predicate"])
-    assert output.image.size == (1180, 900)
+    assert_three_d_canvas_contract(output)
 
 
 def test_counterfactual_attribute_count_generates_object_only_target_with_two_steps() -> None:

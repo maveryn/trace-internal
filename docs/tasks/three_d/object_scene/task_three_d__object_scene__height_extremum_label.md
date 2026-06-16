@@ -6,7 +6,7 @@
 - Package: `trace/tasks/three_d/object_scene/`
 - Query ids: `highest_above_floor`, `lowest_above_floor`
 - Answer type: `option_letter`
-- Annotation type: one-box `bbox_set`
+- Annotation type: `bbox`
 
 ## Contract
 The image shows the shared open synthetic perspective 3D object scene: a gridded floor or platform, perspective camera cues, larger support props, `5` unlettered small answer candidates placed at distinct heights above the floor, and a below-scene text option panel.

@@ -7,6 +7,7 @@ from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.object_scene.shared.logical_predicate_count import SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID as TASK_ID
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
 def test_named_object_count_answer_and_annotation() -> None:
@@ -41,7 +42,7 @@ def test_named_object_count_answer_and_annotation() -> None:
     assert all(not bool(spec.get("is_answer_candidate", False)) for spec in object_specs)
     assert all(bool(spec.get("is_countable_object", False)) for spec in object_specs)
     assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
-    assert output.image.size == (1180, 900)
+    assert_three_d_canvas_contract(output)
 
 
 def test_named_object_count_task_registered_in_three_d_taxonomy() -> None:

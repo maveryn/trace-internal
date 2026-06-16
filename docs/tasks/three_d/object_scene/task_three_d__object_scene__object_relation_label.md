@@ -4,9 +4,9 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query id: `on_top_of_prop|under_prop|inside_prop`
+- Query id: `single`
 - Answer type: `option_letter`
-- Annotation type: one-box `bbox_set`
+- Annotation type: `bbox`
 
 ## Contract
 The image shows the same open synthetic perspective 3D object scene as the camera-distance task: a gridded floor or platform, unlettered small answer-candidate objects, larger unlettered props, and a text option panel below the scene. The prompt asks which option describes the small object that has a spatial relation to a named prop.

@@ -11,6 +11,7 @@ from trace.tasks.three_d.object_scene.multiview_object_match_label import (
     REFERENCE_VIEW_KEY,
     TASK_ID,
 )
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
 def test_multiview_object_match_answer_and_annotation() -> None:
@@ -56,7 +57,7 @@ def test_multiview_object_match_answer_and_annotation() -> None:
         for entity in output.trace_payload["scene_ir"]["entities"]
         if str(entity["entity_id"]).startswith(f"{REFERENCE_VIEW_KEY}:")
     )
-    assert output.image.size == (1480, 900)
+    assert_three_d_canvas_contract(output)
 
 
 def test_multiview_object_match_task_registered_in_three_d_taxonomy() -> None:

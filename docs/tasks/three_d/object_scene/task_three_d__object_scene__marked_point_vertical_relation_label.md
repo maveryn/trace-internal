@@ -4,7 +4,7 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query id: `directly_above_reference`
+- Query id: `single`
 - Answer type: `option_letter`
 - Annotation type: role-keyed `keyed_point_map`
 

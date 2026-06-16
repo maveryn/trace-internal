@@ -963,10 +963,10 @@ prompt:
       task_key: object_relation_query
       object_description: an open perspective setup with a gridded floor or platform,
         small candidate objects, larger props, and an option list below the scene
-      annotation_hint: set "annotation" to an array containing one bounding box [x0,
-        y0, x1, y1] around the selected small object in the scene
+      annotation_hint: set "annotation" to the bounding box [x0, y0, x1, y1] around
+        the selected small object in the scene
       answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":[[318,260,366,308]],"answer":"C"}'
+      json_example: '{"annotation":[318,260,366,308],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__object_scene__reference_nearest_label:
       scene_key: object_scene
@@ -983,20 +983,20 @@ prompt:
       task_key: between_references_query
       object_description: a gridded platform with perspective depth cues, two named
         reference objects, candidate objects, and an option list below the scene
-      annotation_hint: set "annotation" to an array containing one bounding box [x0,
-        y0, x1, y1] around the selected object in the scene
+      annotation_hint: set "annotation" to the bounding box [x0, y0, x1, y1] around
+        the selected object in the scene
       answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":[[318,260,366,308]],"answer":"C"}'
+      json_example: '{"annotation":[318,260,366,308],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__object_scene__occlusion_order_label:
       scene_key: object_scene
       task_key: occlusion_order_query
       object_description: a gridded platform with perspective depth cues, one named
         reference object, candidate objects, and an option list below the scene
-      annotation_hint: set "annotation" to an array containing one bounding box [x0,
-        y0, x1, y1] around the selected object in the scene
+      annotation_hint: set "annotation" to the bounding box [x0, y0, x1, y1] around
+        the selected object in the scene
       answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":[[318,260,366,308]],"answer":"C"}'
+      json_example: '{"annotation":[318,260,366,308],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__object_scene__height_extremum_label:
       scene_key: object_scene
@@ -1004,10 +1004,10 @@ prompt:
       object_description: a gridded platform with perspective depth cues, larger support
         props, small candidate objects at different heights above the floor, and an
         option list below the scene
-      annotation_hint: set "annotation" to an array containing one bounding box [x0,
-        y0, x1, y1] around the selected object in the scene
+      annotation_hint: set "annotation" to the bounding box [x0, y0, x1, y1] around
+        the selected object in the scene
       answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":[[318,260,366,308]],"answer":"C"}'
+      json_example: '{"annotation":[318,260,366,308],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__object_scene__landmark_correspondence_label:
       scene_key: object_scene

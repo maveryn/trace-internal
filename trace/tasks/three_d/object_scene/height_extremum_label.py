@@ -16,6 +16,7 @@ from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
+from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -491,7 +492,12 @@ class ThreeDSpatialHeightExtremumLabelTask:
             instance_seed=int(answer_seed) if answer_seed is not None else int(instance_seed),
             namespace=f"{TASK_ID}.answer_label",
         )
-        render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
+        render_params = _resolve_render_params(
+            params,
+            render_defaults=_RENDER_DEFAULTS,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.canvas",
+        )
         dataset = _build_height_scene_dataset(
             query_id=str(query_id),
             scene_variant=str(scene_variant),
@@ -568,7 +574,10 @@ class ThreeDSpatialHeightExtremumLabelTask:
         answer_label = str(dataset["answer_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
         annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
-        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
+        if len(annotation_bboxes) != 1:
+            raise RuntimeError(f"{TASK_ID} expected exactly one annotation bbox")
+        annotation_payload = bbox_annotation_artifacts(annotation_bboxes[0])
+        annotation_gt = annotation_payload.annotation_gt
         solver_trace = dict(dataset["solver_trace"])
 
         trace_payload = {
@@ -614,7 +623,13 @@ class ThreeDSpatialHeightExtremumLabelTask:
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
                 "canvas_height": int(image.height),
+                "scene_canvas_preset": str(render_params.canvas_preset),
+                "scene_canvas_width": int(render_params.canvas_width),
                 "scene_canvas_height": int(render_params.canvas_height),
+                "scene_canvas_policy": str(render_params.canvas_policy),
+                "final_canvas_width": int(image.width),
+                "final_canvas_height": int(image.height),
+                "final_canvas_pixels": int(image.width) * int(image.height),
                 "option_panel_height_px": int(rendered_scene.option_panel_height_px),
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
@@ -668,12 +683,10 @@ class ThreeDSpatialHeightExtremumLabelTask:
                 "solver_trace": dict(solver_trace),
             },
             "witness_symbolic": {
-                "type": "object_set",
+                "type": "object",
                 "ids": [str(item) for item in rendered_scene.annotation_entity_ids],
             },
-            "projected_annotation": {
-                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
-            },
+            "projected_annotation": dict(annotation_payload.projected_annotation),
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
         }

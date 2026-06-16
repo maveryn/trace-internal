@@ -23,6 +23,7 @@ from ..shared.object_resources import (
     WAREHOUSE_SHELF_RACK_STYLES,
 )
 from ..shared.object_scene import _CameraSpec, _ProjectionFrame, _project_screen
+from ..shared.canvas import resolve_three_d_canvas_spec
 from ..shared.task_support import float_value as _float_value
 from ..shared.task_support import int_value as _int_value
 
@@ -72,14 +73,32 @@ class _WarehouseRenderParams:
     path_rgb: Tuple[int, int, int]
     text_rgb: Tuple[int, int, int]
     text_stroke_rgb: Tuple[int, int, int]
+    canvas_preset: str = "explicit"
+    canvas_policy: str = "explicit_dimensions"
 
 
-def _resolve_render_params(params: Mapping[str, Any], *, render_defaults: Mapping[str, Any]) -> _WarehouseRenderParams:
+def _resolve_render_params(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    instance_seed: int = 0,
+    namespace: str = "three_d.warehouse.canvas",
+) -> _WarehouseRenderParams:
     merged = dict(render_defaults)
     merged.update(dict(params))
+    canvas = resolve_three_d_canvas_spec(
+        params,
+        render_defaults=render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+        fallback_width=_int_value(merged, "canvas_width", 1200),
+        fallback_height=_int_value(merged, "canvas_height", 800),
+    )
     return _WarehouseRenderParams(
-        canvas_width=_int_value(merged, "canvas_width", 1180),
-        canvas_height=_int_value(merged, "canvas_height", 920),
+        canvas_width=int(canvas.canvas_width),
+        canvas_height=int(canvas.canvas_height),
+        canvas_preset=str(canvas.preset_id),
+        canvas_policy=str(canvas.policy),
         scene_margin_left_px=_int_value(merged, "scene_margin_left_px", 48),
         scene_margin_right_px=_int_value(merged, "scene_margin_right_px", 48),
         scene_margin_top_px=_int_value(merged, "scene_margin_top_px", 42),

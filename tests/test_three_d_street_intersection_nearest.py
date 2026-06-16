@@ -92,7 +92,9 @@ def test_street_intersection_nearest_answer_annotation_and_geometry(scene_varian
     assert answer_record["visual_attributes"]["renderer_id"] == "street_object"
     assert answer_record["visual_attributes"]["renderer_style"] == "projected_3d"
     assert render_map["candidate_bboxes_px"][answer_label] == expected_bbox
-    assert render_map["street_bbox_px"] == [0.0, 0.0, 1180.0, 920.0]
+    image_width, _image_height = output.image.size
+    panel_bbox = render_map["option_panel_bbox_px"]
+    assert render_map["street_bbox_px"] == [0.0, 0.0, float(image_width), panel_bbox[1]]
     assert surface_entity["attrs"]["render_full_bleed_surface"] is True
     assert surface_entity["attrs"]["floor_polygon_mode"] == "canvas_ray_polygon"
     assert "{object_description}" not in output.prompt

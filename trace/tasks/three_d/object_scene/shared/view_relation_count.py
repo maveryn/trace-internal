@@ -543,7 +543,12 @@ class _ThreeDSpatialViewRelationCountBase:
             upper=max(1, min(6, int(object_count) - 3)),
         )
 
-        render_params = _resolve_render_params(params, render_defaults=render_defaults)
+        render_params = _resolve_render_params(
+            params,
+            render_defaults=render_defaults,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.canvas",
+        )
         dataset = _build_view_relation_count_scene_dataset(
             query_id=str(query_id),
             scene_variant=str(scene_variant),
@@ -659,6 +664,13 @@ class _ThreeDSpatialViewRelationCountBase:
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
                 "canvas_height": int(render_params.canvas_height),
+                "scene_canvas_preset": str(render_params.canvas_preset),
+                "scene_canvas_width": int(render_params.canvas_width),
+                "scene_canvas_height": int(render_params.canvas_height),
+                "scene_canvas_policy": str(render_params.canvas_policy),
+                "final_canvas_width": int(image.width),
+                "final_canvas_height": int(image.height),
+                "final_canvas_pixels": int(image.width) * int(image.height),
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),

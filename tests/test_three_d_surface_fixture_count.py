@@ -35,6 +35,7 @@ from trace.tasks.three_d.surface_fixture.shared.state import (
     SEMANTIC_COLOR_SUPPORT,
 )
 from trace.tasks.three_d.surface_fixture.shared.layout import VALID_LAYOUT_FAMILIES, VALID_LAYOUT_STYLES
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
 SURFACE_FIXTURE_TASK_IDS = (
@@ -115,7 +116,7 @@ def test_surface_fixture_repeated_element_count_variants() -> None:
         assert any(entity["entity_id"] == "surface_fixture_panel" for entity in output.trace_payload["scene_ir"]["entities"])
         assert "{target_" not in output.prompt
         assert "repeated" not in output.prompt.lower()
-        assert output.image.size == (1180, 900)
+        assert_three_d_canvas_contract(output)
 
 
 def test_surface_fixture_predicate_count_tasks() -> None:
@@ -207,12 +208,12 @@ def test_surface_fixture_element_count_extremum_label_queries() -> None:
         assert counts_by_label["C"] == expected_count
         assert set(counts_by_label) == {"A", "B", "C", "D"}
         assert len(set(counts_by_label.values())) == 4
-        assert output.annotation_gt.type == "bbox_set"
-        assert output.annotation_gt.value == [render_map["option_panel_bboxes_px"]["C"]]
-        assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
+        assert output.annotation_gt.type == "bbox"
+        assert output.annotation_gt.value == render_map["option_panel_bboxes_px"]["C"]
+        assert output.trace_payload["projected_annotation"]["bbox"] == output.annotation_gt.value
         assert "{target_" not in output.prompt
         assert "{object_" not in output.prompt
-        assert output.image.size == (1180, 900)
+        assert_three_d_canvas_contract(output)
 
 
 def test_surface_fixture_scoped_color_query_ids_bind_scope_axis() -> None:
@@ -351,10 +352,10 @@ def test_surface_fixture_recolor_board_match_selects_matching_option() -> None:
             assert option_cell["u1"] == original_cell["u1"]
             assert option_cell["v0"] == original_cell["v0"]
             assert option_cell["v1"] == original_cell["v1"]
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.annotation_gt.value == [render_map["option_panel_bboxes_px"]["C"]]
-    assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
-    assert output.image.size == (1180, 900)
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == render_map["option_panel_bboxes_px"]["C"]
+    assert output.trace_payload["projected_annotation"]["bbox"] == output.annotation_gt.value
+    assert_three_d_canvas_contract(output)
     assert "{recolor_" not in output.prompt
     assert "{source_" not in output.prompt
     assert "{destination_" not in output.prompt

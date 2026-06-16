@@ -10,6 +10,13 @@ from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font
 from ..shared.camera_projection import project_xy as _project_xy
+from ..shared.canvas import (
+    bbox_dict_transform,
+    bbox_transform,
+    entities_transform,
+    point_dict_transform,
+    resize_image_to_fit_pixel_cap,
+)
 from ..shared.object_rendering import (
     ThreeDObjectSpec,
     ThreeDRenderContext,
@@ -290,6 +297,33 @@ def render_street_intersection_scene_3d(
             stroke_rgb=render_params.text_stroke_rgb,
         )
         entities.extend(option_entities)
+    image, image_scale = resize_image_to_fit_pixel_cap(image)
+    if image_scale.changed:
+        scale_x = float(image_scale.scale_x)
+        scale_y = float(image_scale.scale_y)
+        scene_bbox = bbox_transform(scene_bbox, scale_x=scale_x, scale_y=scale_y)
+        street_bbox = bbox_transform(street_bbox, scale_x=scale_x, scale_y=scale_y)
+        object_bboxes = bbox_dict_transform(object_bboxes, scale_x=scale_x, scale_y=scale_y)
+        object_centers = point_dict_transform(object_centers, scale_x=scale_x, scale_y=scale_y)
+        candidate_bboxes = bbox_dict_transform(candidate_bboxes, scale_x=scale_x, scale_y=scale_y)
+        candidate_centers = point_dict_transform(candidate_centers, scale_x=scale_x, scale_y=scale_y)
+        context_bboxes = bbox_dict_transform(context_bboxes, scale_x=scale_x, scale_y=scale_y)
+        context_centers = point_dict_transform(context_centers, scale_x=scale_x, scale_y=scale_y)
+        annotation_bboxes = [bbox_transform(bbox, scale_x=scale_x, scale_y=scale_y) for bbox in annotation_bboxes]
+        option_metadata = dict(option_metadata)
+        if option_metadata.get("option_panel_bbox_px"):
+            option_metadata["option_panel_bbox_px"] = bbox_transform(
+                option_metadata["option_panel_bbox_px"],
+                scale_x=scale_x,
+                scale_y=scale_y,
+            )
+        option_metadata["option_choice_bboxes_px"] = bbox_dict_transform(
+            option_metadata.get("option_choice_bboxes_px", {}),
+            scale_x=scale_x,
+            scale_y=scale_y,
+        )
+        option_metadata["option_panel_height_px"] = int(round(float(option_metadata.get("option_panel_height_px", 0)) * scale_y))
+        entities = entities_transform(entities, scale_x=scale_x, scale_y=scale_y)
     return _RenderedStreetScene(
         image=image,
         entities=list(entities),

@@ -17,6 +17,7 @@ from trace.tasks.three_d.object_scene.shared.logical_predicate_count import (
     PROMPT_COLOR_RGB,
     SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID,
 )
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 TASK_ID_BY_QUERY_ID = {
     "object_type_count": SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID,
@@ -123,7 +124,7 @@ def test_logical_predicate_count_answer_and_annotation(query_id: str, params: di
     assert "clear prompt colors" not in output.prompt
     prompt_lower = str(output.prompt).lower()
     assert "how many" in prompt_lower or "count" in prompt_lower or "what is the number" in prompt_lower
-    assert output.image.size == (1180, 900)
+    assert_three_d_canvas_contract(output)
 
 
 @pytest.mark.parametrize("task_id", sorted(set(TASK_ID_BY_QUERY_ID.values())))

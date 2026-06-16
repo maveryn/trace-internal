@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
+
 
 def assert_option_panel_matches_candidates(
     output: Any,
@@ -11,7 +13,7 @@ def assert_option_panel_matches_candidates(
     *,
     answer_label: str,
     answer_object_id: str,
-    expected_image_size: tuple[int, int],
+    expected_image_size: tuple[int, int] | None = None,
 ) -> None:
     """Assert option-panel metadata maps letters to scene objects.
 
@@ -27,10 +29,11 @@ def assert_option_panel_matches_candidates(
     option_bboxes = dict(render_map["option_choice_bboxes_px"])
     panel_bbox = [float(value) for value in render_map["option_panel_bbox_px"]]
     annotation_bbox = [float(value) for value in output.annotation_gt.value[0]]
+    image_width, image_height = output.image.size
 
-    assert output.image.size == expected_image_size
-    assert int(render_map["option_panel_height_px"]) == int(expected_image_size[1] - panel_bbox[1])
-    assert panel_bbox == [0.0, panel_bbox[1], float(expected_image_size[0]), float(expected_image_size[1])]
+    assert_three_d_canvas_contract(output)
+    assert int(render_map["option_panel_height_px"]) == int(image_height - panel_bbox[1])
+    assert panel_bbox == [0.0, panel_bbox[1], float(image_width), float(image_height)]
     assert panel_bbox[1] > 0.0
     assert sorted(option_bboxes) == labels
     assert sorted(choice_by_label) == labels

@@ -4,9 +4,9 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query id: `in_front_of_reference`
+- Query id: `single`
 - Answer type: `option_letter`
-- Annotation type: one-box `bbox_set`
+- Annotation type: `bbox`
 
 ## Contract
 The image shows the shared open synthetic perspective 3D object scene: a gridded floor or platform, perspective camera cues, one unlettered reference prop named in the question, `6` unlettered answer candidates, and a below-scene text option panel. The reference prop is sampled from visually nameable occlusion targets such as an arch, bridge, table, shelf, or stand; open boxes are excluded here to avoid confusing "in front of" with the separate inside-container relation task.

@@ -49,6 +49,14 @@ should expose stable projected bboxes or point markers. Semantic color, size,
 height, depth, support, and relation predicates must be recorded in trace
 metadata when queried.
 
+Three_d scenes should render from one of the canonical source-canvas presets by
+default: `1200x800` landscape, `800x1200` portrait, or `960x960` square. The
+sampled preset is render metadata, not a query axis or task split. If a task
+composes multiple panels/options, each source panel should use the same sampled
+canonical preset unless the task has a documented reason to override it; the
+final composed image may be downscaled to stay under the domain pixel cap while
+projecting all answer/evidence coordinates after final placement.
+
 Prompt-facing named colors must use the repo-wide canonical 10-color palette
 from `trace.tasks.shared.named_colors` and should be rendered in prompts as
 `<color name> [#RRGGBB]`. Scene-specific palettes are acceptable only for

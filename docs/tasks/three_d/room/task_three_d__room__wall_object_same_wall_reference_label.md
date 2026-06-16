@@ -4,9 +4,9 @@
 - Domain: `three_d`
 - Scene id: `room`
 - Scene: `room`
-- Query id: `same_wall_as_reference`
+- Query id: `single`
 - Answer type: `option_letter`
-- Annotation type: one-box `bbox_set`
+- Annotation type: `bbox`
 
 ## Contract
 The image shows a synthetic perspective 3D indoor room with a floor, back/side walls, furniture, unlettered room context, one unlettered named wall reference object, unlettered wall-mounted candidate objects, and a below-scene text option panel. The prompt asks which option describes the wall-mounted object on the same wall as the named reference object.

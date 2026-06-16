@@ -72,7 +72,9 @@ def test_camera_distance_extremum_answer_and_annotation(query_id: str) -> None:
     assert stage_entity["attrs"]["full_bleed_floor"] is True
     assert stage_entity["attrs"]["grid_mode"] == "screen_ray_floor_plane"
     assert isinstance(stage_entity["attrs"]["grid_world_bbox"], list)
-    assert output.trace_payload["render_map"]["room_bbox_px"] == [0.0, 0.0, 1180.0, 900.0]
+    image_width, _image_height = output.image.size
+    panel_bbox = output.trace_payload["render_map"]["option_panel_bbox_px"]
+    assert output.trace_payload["render_map"]["room_bbox_px"] == [0.0, 0.0, float(image_width), panel_bbox[1]]
     assert not any(entity["entity_id"] == "room_shell" for entity in entities)
     assert all(0.86 <= float(spec["dimension_scale"]) <= 1.16 for spec in point_specs)
     assert all(0.96 <= float(spec["dimension_scale"]) <= 1.20 for spec in context_specs)

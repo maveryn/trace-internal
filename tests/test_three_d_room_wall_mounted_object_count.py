@@ -15,6 +15,7 @@ from trace.tasks.three_d.room.wall_mounted_object_count import (
     SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
 @pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
@@ -82,7 +83,7 @@ def test_wall_mounted_object_count_answer_and_annotation(query_id: str) -> None:
     assert float(room_shell["attrs"]["render_side_wall_front_y"]) < float(room_shell["attrs"]["semantic_front_y"])
     assert float(room_shell["attrs"]["render_side_wall_front_y"]) >= float(room_shell["attrs"]["render_front_y"])
     assert 9.0 <= float(trace["camera"]["pitch_degrees"]) <= 18.0
-    assert output.image.size == (1180, 900)
+    assert_three_d_canvas_contract(output)
 
 
 def test_wall_mounted_object_count_allows_zero_targets() -> None:

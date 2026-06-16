@@ -14,6 +14,7 @@ from trace.tasks.three_d.object_scene.shared.view_relation_count import (
     MIN_REFERENCE_DEPTH_MARGIN,
     MIN_REFERENCE_X_MARGIN_PX,
 )
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 TASK_ID_BY_QUERY_ID = {
     "left_of_reference_in_view_count": IMAGE_PLANE_LATERAL_RELATION_COUNT_TASK_ID,
@@ -66,7 +67,7 @@ def test_view_relation_count_answer_and_annotation() -> None:
         assert abs(dx) >= MIN_REFERENCE_X_MARGIN_PX
         assert (object_id in target_set) == (dx < 0.0)
         assert bool(trace["view_relation_status_by_object_id"][object_id]) == (object_id in target_set)
-    assert output.image.size == (1180, 900)
+    assert_three_d_canvas_contract(output)
 
 
 def test_view_relation_count_query_variants_generate() -> None:

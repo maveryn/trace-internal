@@ -230,10 +230,10 @@ prompt:
       object_description: a perspective indoor room with floor, walls, furniture,
         one named reference object on a wall, wall-mounted candidate objects, and
         an option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected wall-mounted
-        object in the scene
+      annotation_hint: set "annotation" to the bounding box [x0, y0, x1, y1] around
+        the selected wall-mounted object in the scene
       answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
+      json_example: '{"annotation":[142,118,238,178],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__room__wall_object_side_relation_label:
       scene_key: room
@@ -241,8 +241,8 @@ prompt:
       object_description: a perspective indoor room with floor, walls, furniture,
         one TV on a wall, wall-mounted candidate objects on that same wall, and an
         option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected wall-mounted
-        object in the scene
+      annotation_hint: set "annotation" to the bounding box [x0, y0, x1, y1] around
+        the selected wall-mounted object in the scene
       answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
+      json_example: '{"annotation":[142,118,238,178],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'

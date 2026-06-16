@@ -12,6 +12,7 @@ from trace.tasks.three_d.object_scene.landmark_correspondence_label import (
     REFERENCE_VIEW_KEY,
     TASK_ID,
 )
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
 def test_landmark_correspondence_answer_and_annotation() -> None:
@@ -63,7 +64,7 @@ def test_landmark_correspondence_answer_and_annotation() -> None:
         for entity in output.trace_payload["scene_ir"]["entities"]
     )
     assert "REF" in output.prompt
-    assert output.image.size == (1480, 900)
+    assert_three_d_canvas_contract(output)
 
 
 def test_landmark_correspondence_task_registered_in_three_d_taxonomy() -> None:

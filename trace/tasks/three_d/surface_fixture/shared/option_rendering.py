@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
 from trace.tasks.shared.text_rendering import load_font
+from trace.tasks.three_d.shared.canvas import (
+    bbox_transform,
+    entities_transform,
+    point_transform,
+)
 
 from .rendering import RenderedSurfaceFixture, bbox_union, render_surface_fixture
 
@@ -43,22 +48,6 @@ class RenderedSurfaceFixtureRecolorBoardMatch:
     element_bboxes_px: Dict[str, List[float]]
     element_centers_px: Dict[str, List[float]]
     option_records: List[Dict[str, Any]]
-
-
-def _offset_bbox(bbox: Sequence[float], dx: float, dy: float) -> List[float]:
-    return [
-        round(float(bbox[0]) + float(dx), 3),
-        round(float(bbox[1]) + float(dy), 3),
-        round(float(bbox[2]) + float(dx), 3),
-        round(float(bbox[3]) + float(dy), 3),
-    ]
-
-
-def _offset_point(point: Sequence[float], dx: float, dy: float) -> List[float]:
-    return [
-        round(float(point[0]) + float(dx), 3),
-        round(float(point[1]) + float(dy), 3),
-    ]
 
 
 def _panel_positions(width: int, height: int) -> Dict[str, List[int]]:
@@ -159,20 +148,60 @@ def _offset_entities(
     rendered: RenderedSurfaceFixture,
     *,
     label: str,
+    scale_x: float,
+    scale_y: float,
     dx: float,
     dy: float,
 ) -> List[Dict[str, Any]]:
     entities: List[Dict[str, Any]] = []
-    for entity in rendered.entities:
+    for entity in entities_transform(
+        rendered.entities,
+        scale_x=float(scale_x),
+        scale_y=float(scale_y),
+        offset_x=float(dx),
+        offset_y=float(dy),
+    ):
         updated = dict(entity)
         entity_id = str(updated.get("entity_id", "entity"))
         updated["entity_id"] = f"option_{label}.{entity_id}"
-        updated["bbox_px"] = _offset_bbox(updated.get("bbox_px", [0, 0, 0, 0]), dx, dy)
         attrs = dict(updated.get("attrs", {}))
         attrs["option_label"] = str(label)
         updated["attrs"] = attrs
         entities.append(updated)
     return entities
+
+
+def _render_source_panel_into_bbox(
+    image: Image.Image,
+    *,
+    dataset: Mapping[str, Any],
+    render_params: Any,
+    panel_bbox: Sequence[int],
+) -> Tuple[RenderedSurfaceFixture, float, float, int, int]:
+    """Render a canonical fixture panel and downsample it into a composite panel."""
+
+    x0, y0, x1, y1 = [int(value) for value in panel_bbox]
+    panel_w = int(x1 - x0)
+    panel_h = int(y1 - y0)
+    source_background = Image.new(
+        "RGB",
+        (int(render_params.canvas_width), int(render_params.canvas_height)),
+        (246, 249, 250),
+    )
+    rendered_panel = render_surface_fixture(
+        source_background,
+        dataset=dict(dataset),
+        render_params=render_params,
+    )
+    resized_panel = rendered_panel.image.resize((int(panel_w), int(panel_h)), Image.Resampling.LANCZOS)
+    image.paste(resized_panel, (x0, y0))
+    return (
+        rendered_panel,
+        float(panel_w) / float(render_params.canvas_width),
+        float(panel_h) / float(render_params.canvas_height),
+        int(x0),
+        int(y0),
+    )
 
 
 def render_surface_fixture_option_grid(
@@ -205,19 +234,12 @@ def render_surface_fixture_option_grid(
         x0, y0, x1, y1 = [int(value) for value in panel_bbox]
         panel_w = int(x1 - x0)
         panel_h = int(y1 - y0)
-        panel_background = Image.new("RGB", (panel_w, panel_h), (246, 249, 250))
-        panel_render_params = replace(
-            render_params,
-            canvas_width=int(panel_w),
-            canvas_height=int(panel_h),
-            label_font_size_px=max(16, int(round(float(render_params.label_font_size_px) * 0.78))),
-        )
-        rendered_panel = render_surface_fixture(
-            panel_background,
+        rendered_panel, scale_x, scale_y, x0, y0 = _render_source_panel_into_bbox(
+            image,
             dataset=dict(option_datasets[str(label)]),
-            render_params=panel_render_params,
+            render_params=render_params,
+            panel_bbox=panel_bbox,
         )
-        image.paste(rendered_panel.image, (x0, y0))
 
         panel_bbox_float = [float(x0), float(y0), float(x1), float(y1)]
         draw.rounded_rectangle(tuple(panel_bbox_float), radius=8, outline=(59, 72, 86), width=3)
@@ -243,16 +265,25 @@ def render_surface_fixture_option_grid(
                 },
             }
         )
-        entities.extend(_offset_entities(rendered_panel, label=str(label), dx=float(x0), dy=float(y0)))
+        entities.extend(
+            _offset_entities(
+                rendered_panel,
+                label=str(label),
+                scale_x=float(scale_x),
+                scale_y=float(scale_y),
+                dx=float(x0),
+                dy=float(y0),
+            )
+        )
 
         for element_id, bbox in rendered_panel.element_bboxes_px.items():
             key = f"{label}:{element_id}"
-            element_bboxes[key] = _offset_bbox(bbox, x0, y0)
+            element_bboxes[key] = bbox_transform(bbox, scale_x=scale_x, scale_y=scale_y, offset_x=x0, offset_y=y0)
         for element_id, center in rendered_panel.element_centers_px.items():
             key = f"{label}:{element_id}"
-            element_centers[key] = _offset_point(center, x0, y0)
+            element_centers[key] = point_transform(center, scale_x=scale_x, scale_y=scale_y, offset_x=x0, offset_y=y0)
 
-        scene_bbox = _offset_bbox(rendered_panel.scene_bbox_px, x0, y0)
+        scene_bbox = bbox_transform(rendered_panel.scene_bbox_px, scale_x=scale_x, scale_y=scale_y, offset_x=x0, offset_y=y0)
         scene_bboxes.append(list(scene_bbox))
         option_records.append(
             {
@@ -261,6 +292,11 @@ def render_surface_fixture_option_grid(
                 "option_label_bbox_px": list(option_label_bboxes[str(label)]),
                 "visible_element_count": int(option_counts_by_label[str(label)]),
                 "scene_bbox_px": list(scene_bbox),
+                "source_canvas_preset": str(getattr(render_params, "canvas_preset", "unknown")),
+                "source_canvas_width": int(render_params.canvas_width),
+                "source_canvas_height": int(render_params.canvas_height),
+                "panel_scale_x": round(float(scale_x), 8),
+                "panel_scale_y": round(float(scale_y), 8),
                 "element_ids": [f"{label}:{element_id}" for element_id in rendered_panel.element_bboxes_px.keys()],
             }
         )
@@ -289,25 +325,18 @@ def _paste_rendered_panel(
     label_text: str,
     element_prefix: str,
     badge_fill: Sequence[int] = (28, 36, 50),
-) -> Tuple[RenderedSurfaceFixture, List[float], List[float]]:
+) -> Tuple[RenderedSurfaceFixture, List[float], List[float], float, float]:
     """Render one fixture panel into a precomputed composite-scene rectangle."""
 
     x0, y0, x1, y1 = [int(value) for value in panel_bbox]
     panel_w = int(x1 - x0)
     panel_h = int(y1 - y0)
-    panel_background = Image.new("RGB", (panel_w, panel_h), (246, 249, 250))
-    panel_render_params = replace(
-        render_params,
-        canvas_width=int(panel_w),
-        canvas_height=int(panel_h),
-        label_font_size_px=max(15, int(round(float(render_params.label_font_size_px) * 0.70))),
-    )
-    rendered_panel = render_surface_fixture(
-        panel_background,
+    rendered_panel, scale_x, scale_y, x0, y0 = _render_source_panel_into_bbox(
+        image,
         dataset=dict(dataset),
-        render_params=panel_render_params,
+        render_params=render_params,
+        panel_bbox=panel_bbox,
     )
-    image.paste(rendered_panel.image, (x0, y0))
     panel_bbox_float = [float(x0), float(y0), float(x1), float(y1)]
     draw.rounded_rectangle(tuple(panel_bbox_float), radius=8, outline=(59, 72, 86), width=3)
     draw.rounded_rectangle(
@@ -320,7 +349,7 @@ def _paste_rendered_panel(
         label_bbox = _draw_option_label(draw, label=str(label_text), panel_bbox=panel_bbox_float)
     else:
         label_bbox = _draw_panel_badge(draw, text=str(label_text), panel_bbox=panel_bbox_float, fill=badge_fill)
-    return rendered_panel, [round(float(value), 3) for value in panel_bbox_float], list(label_bbox)
+    return rendered_panel, [round(float(value), 3) for value in panel_bbox_float], list(label_bbox), float(scale_x), float(scale_y)
 
 
 def render_surface_fixture_recolor_board_match(
@@ -349,7 +378,7 @@ def render_surface_fixture_recolor_board_match(
     option_records: List[Dict[str, Any]] = []
     scene_bboxes: List[List[float]] = []
 
-    original_rendered, original_panel_bbox, original_label_bbox = _paste_rendered_panel(
+    original_rendered, original_panel_bbox, original_label_bbox, original_scale_x, original_scale_y = _paste_rendered_panel(
         image,
         draw,
         dataset=original_dataset,
@@ -361,7 +390,13 @@ def render_surface_fixture_recolor_board_match(
         badge_fill=(82, 94, 108),
     )
     ox0, oy0 = int(original_position[0]), int(original_position[1])
-    original_scene_bbox = _offset_bbox(original_rendered.scene_bbox_px, ox0, oy0)
+    original_scene_bbox = bbox_transform(
+        original_rendered.scene_bbox_px,
+        scale_x=original_scale_x,
+        scale_y=original_scale_y,
+        offset_x=ox0,
+        offset_y=oy0,
+    )
     scene_bboxes.append(list(original_scene_bbox))
     entities.append(
         {
@@ -371,15 +406,36 @@ def render_surface_fixture_recolor_board_match(
             "attrs": {"color_counts": dict(original_dataset.get("color_counts", {}))},
         }
     )
-    entities.extend(_offset_entities(original_rendered, label="original", dx=float(ox0), dy=float(oy0)))
+    entities.extend(
+        _offset_entities(
+            original_rendered,
+            label="original",
+            scale_x=float(original_scale_x),
+            scale_y=float(original_scale_y),
+            dx=float(ox0),
+            dy=float(oy0),
+        )
+    )
     for element_id, bbox in original_rendered.element_bboxes_px.items():
-        element_bboxes[f"original:{element_id}"] = _offset_bbox(bbox, ox0, oy0)
+        element_bboxes[f"original:{element_id}"] = bbox_transform(
+            bbox,
+            scale_x=original_scale_x,
+            scale_y=original_scale_y,
+            offset_x=ox0,
+            offset_y=oy0,
+        )
     for element_id, center in original_rendered.element_centers_px.items():
-        element_centers[f"original:{element_id}"] = _offset_point(center, ox0, oy0)
+        element_centers[f"original:{element_id}"] = point_transform(
+            center,
+            scale_x=original_scale_x,
+            scale_y=original_scale_y,
+            offset_x=ox0,
+            offset_y=oy0,
+        )
 
     for label in labels:
         panel_position = option_positions[str(label)]
-        rendered_panel, panel_bbox, label_bbox = _paste_rendered_panel(
+        rendered_panel, panel_bbox, label_bbox, scale_x, scale_y = _paste_rendered_panel(
             image,
             draw,
             dataset=dict(option_datasets[str(label)]),
@@ -405,13 +461,34 @@ def render_surface_fixture_recolor_board_match(
                 },
             }
         )
-        entities.extend(_offset_entities(rendered_panel, label=str(label), dx=float(x0), dy=float(y0)))
+        entities.extend(
+            _offset_entities(
+                rendered_panel,
+                label=str(label),
+                scale_x=float(scale_x),
+                scale_y=float(scale_y),
+                dx=float(x0),
+                dy=float(y0),
+            )
+        )
         for element_id, bbox in rendered_panel.element_bboxes_px.items():
-            element_bboxes[f"{label}:{element_id}"] = _offset_bbox(bbox, x0, y0)
+            element_bboxes[f"{label}:{element_id}"] = bbox_transform(
+                bbox,
+                scale_x=scale_x,
+                scale_y=scale_y,
+                offset_x=x0,
+                offset_y=y0,
+            )
         for element_id, center in rendered_panel.element_centers_px.items():
-            element_centers[f"{label}:{element_id}"] = _offset_point(center, x0, y0)
+            element_centers[f"{label}:{element_id}"] = point_transform(
+                center,
+                scale_x=scale_x,
+                scale_y=scale_y,
+                offset_x=x0,
+                offset_y=y0,
+            )
 
-        scene_bbox = _offset_bbox(rendered_panel.scene_bbox_px, x0, y0)
+        scene_bbox = bbox_transform(rendered_panel.scene_bbox_px, scale_x=scale_x, scale_y=scale_y, offset_x=x0, offset_y=y0)
         scene_bboxes.append(list(scene_bbox))
         option_records.append(
             {
@@ -420,6 +497,11 @@ def render_surface_fixture_recolor_board_match(
                 "option_label_bbox_px": list(label_bbox),
                 "color_counts": dict(option_counts),
                 "scene_bbox_px": list(scene_bbox),
+                "source_canvas_preset": str(getattr(render_params, "canvas_preset", "unknown")),
+                "source_canvas_width": int(render_params.canvas_width),
+                "source_canvas_height": int(render_params.canvas_height),
+                "panel_scale_x": round(float(scale_x), 8),
+                "panel_scale_y": round(float(scale_y), 8),
                 "element_ids": [f"{label}:{element_id}" for element_id in rendered_panel.element_bboxes_px.keys()],
             }
         )

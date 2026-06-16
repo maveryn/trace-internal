@@ -13,6 +13,7 @@ from trace.tasks.three_d.object_scene.marked_point_vertical_relation_label impor
     REFERENCE_SHAPE_TYPES,
     TASK_ID,
 )
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
 def test_marked_point_vertical_relation_answer_and_annotation() -> None:
@@ -40,7 +41,7 @@ def test_marked_point_vertical_relation_answer_and_annotation() -> None:
 
     assert output.scene_id == "object_scene"
     assert output.query_id == "directly_above_reference"
-    assert output.image.size == (1180, 900)
+    assert_three_d_canvas_contract(output)
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
     assert output.annotation_gt.type == "keyed_point_map"

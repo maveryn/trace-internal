@@ -6,7 +6,7 @@
 - Scene package: `surface_fixture`
 - Query ids: `highest_element_count`, `lowest_element_count`
 - Answer type: `option_letter`
-- Annotation type: one-box `bbox_set`
+- Annotation type: `bbox`
 
 ## Contract
 The image shows four labeled option panels, `A` through `D`, arranged in a 2x2
@@ -24,9 +24,9 @@ The `highest_element_count` query binds `extremum_kind=highest`; the
 `lowest_element_count` query binds `extremum_kind=lowest`.
 
 ## Annotation Contract
-Annotation is a one-item `bbox_set` containing the pixel box around the selected
-option panel. Individual repeated elements and the option label badge are trace
-metadata but are not prompt-facing annotation.
+Annotation is the pixel box around the selected option panel. Individual
+repeated elements and the option label badge are trace metadata but are not
+prompt-facing annotation.
 
 ## Prompt Bundle
 - Prompt text is loaded from `prompts/three_d/surface_fixture/three_d_surface_fixture_v1.json`.

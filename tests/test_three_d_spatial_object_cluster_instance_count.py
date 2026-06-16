@@ -25,6 +25,7 @@ from trace.tasks.three_d.object_cluster.single_attribute_membership_count import
 from trace.tasks.three_d.object_cluster.total_object_count import TASK_ID as TOTAL_OBJECT_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.type_frequency_count import TASK_ID as TYPE_FREQUENCY_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.type_union_count import TASK_ID as TYPE_UNION_COUNT_TASK_ID
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
 COUNTQA_CLUSTER_ADDITIONS = {
@@ -111,7 +112,7 @@ def test_object_cluster_total_object_count_answer_and_annotation() -> None:
     assert all(bool(spec.get("matches_query", False)) for spec in object_specs)
     assert all(bool(spec.get("is_countable_object", False)) for spec in object_specs)
     assert "button" not in output.prompt.lower()
-    assert output.image.size == (1180, 900)
+    assert_three_d_canvas_contract(output)
 
 
 def test_object_cluster_instance_count_answer_and_annotation() -> None:
@@ -149,7 +150,7 @@ def test_object_cluster_instance_count_answer_and_annotation() -> None:
     assert all(bool(spec.get("is_countable_object", False)) for spec in object_specs)
     assert trace["solver_trace"]["cluster_object_pool_size"] == len(COUNTABLE_SHAPE_TYPES)
     assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
-    assert output.image.size == (1180, 900)
+    assert_three_d_canvas_contract(output)
 
 
 def test_object_cluster_single_type_mode_counts_every_object() -> None:
@@ -267,7 +268,7 @@ def test_object_cluster_multi_attribute_and_count_answer_and_annotation() -> Non
     assert any(str(spec["count_role"]) == "same_type_wrong_color" for spec in object_specs)
     assert any(str(spec["count_role"]) == "same_color_wrong_type" for spec in object_specs)
     assert all(bool(spec["matches_query"]) == (str(spec["shape_type"]) == "button" and str(spec["color_name"]) == "red") for spec in object_specs)
-    assert output.image.size == (1180, 900)
+    assert_three_d_canvas_contract(output)
 
 
 def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy() -> None:

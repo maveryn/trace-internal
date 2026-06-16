@@ -10,6 +10,7 @@ from ...shared.color_distance import coerce_rgb as _rgb
 from ...shared.config_defaults import group_default
 from ..shared.task_support import float_value as _float_value
 from ..shared.task_support import int_value as _int_value
+from ..shared.canvas import resolve_three_d_canvas_spec
 from ..shared.object_resources import (
     BUILDING_STYLE_DIMENSION_FACTORS,
     BUILDING_STYLE_POOLS,
@@ -87,6 +88,8 @@ class _StreetRenderParams:
     curb_rgb: Tuple[int, int, int]
     text_rgb: Tuple[int, int, int]
     text_stroke_rgb: Tuple[int, int, int]
+    canvas_preset: str = "explicit"
+    canvas_policy: str = "explicit_dimensions"
 
 
 def _min_pairwise(values: Sequence[float]) -> float:
@@ -136,13 +139,25 @@ def _resolve_render_params(
     params: Mapping[str, Any],
     *,
     render_defaults: Mapping[str, Any],
+    instance_seed: int = 0,
+    namespace: str = "three_d.street.canvas",
 ) -> _StreetRenderParams:
     merged = dict(render_defaults)
     merged.update(dict(params))
+    canvas = resolve_three_d_canvas_spec(
+        params,
+        render_defaults=render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+        fallback_width=_int_value(merged, "canvas_width", 1200),
+        fallback_height=_int_value(merged, "canvas_height", 800),
+    )
     street_extent = _float_value(merged, "street_extent", 4.45)
     return _StreetRenderParams(
-        canvas_width=_int_value(merged, "canvas_width", 1180),
-        canvas_height=_int_value(merged, "canvas_height", 920),
+        canvas_width=int(canvas.canvas_width),
+        canvas_height=int(canvas.canvas_height),
+        canvas_preset=str(canvas.preset_id),
+        canvas_policy=str(canvas.policy),
         scene_margin_left_px=_int_value(merged, "scene_margin_left_px", 48),
         scene_margin_right_px=_int_value(merged, "scene_margin_right_px", 48),
         scene_margin_top_px=_int_value(merged, "scene_margin_top_px", 42),

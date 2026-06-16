@@ -202,10 +202,10 @@ prompt:
       object_description: a perspective street intersection or T intersection with
         roads, sidewalks, crosswalk markings, street context, candidate street objects,
         and an option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected street
-        object in the scene
+      annotation_hint: set "annotation" to the bounding box [x0, y0, x1, y1] around
+        the selected street object in the scene
       answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
+      json_example: '{"annotation":[142,118,238,178],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__street__lane_ahead_object_label:
       scene_key: street
@@ -214,10 +214,10 @@ prompt:
         roads, sidewalks, crosswalk markings, street context, one red-boxed reference
         street object with a red travel-direction arrow, candidate street objects,
         and an option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected street
-        object in the scene
+      annotation_hint: set "annotation" to the bounding box [x0, y0, x1, y1] around
+        the selected street object in the scene
       answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
+      json_example: '{"annotation":[142,118,238,178],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     task_three_d__street__same_road_arm_reference_label:
       scene_key: street
@@ -225,8 +225,8 @@ prompt:
       object_description: a perspective street intersection or T intersection with
         roads, sidewalks, crosswalk markings, street context, one red-boxed reference
         street object, candidate street objects, and an option list below the scene
-      annotation_hint: set "annotation" to one bounding box around the selected street
-        object in the scene
+      annotation_hint: set "annotation" to the bounding box [x0, y0, x1, y1] around
+        the selected street object in the scene
       answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":[[142,118,238,178]],"answer":"C"}'
+      json_example: '{"annotation":[142,118,238,178],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'

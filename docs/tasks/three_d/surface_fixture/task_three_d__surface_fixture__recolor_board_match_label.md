@@ -6,7 +6,7 @@
 - Scene package: `surface_fixture`
 - Query id: `single`
 - Answer type: `option_letter`
-- Annotation type: unordered `bbox_set`
+- Annotation type: `bbox`
 
 ## Program Contract
 - `match(option_board where fixed_position_color_state == recolor(original_fixed_position_color_state, source_color, destination_color)); scene=surface_fixture; scope=recolor_board_match_label`
@@ -25,8 +25,8 @@ The answer is the single capital letter of the unique candidate board whose
 fixed-position color state matches the final recolored original board.
 
 ## Annotation Contract
-Annotation is a `bbox_set` containing one box around the selected candidate
-board. Individual objects, the original board, option labels alone, and
+Annotation is the bounding box around the selected candidate board.
+Individual objects, the original board, option labels alone, and
 decorative context are not annotation.
 
 ## Prompt And Trace

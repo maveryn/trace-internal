@@ -7,6 +7,7 @@ from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.object_scene.relation_attribute_count import TASK_ID
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
 def test_spatial_relation_count_answer_and_annotation() -> None:
@@ -41,7 +42,7 @@ def test_spatial_relation_count_answer_and_annotation() -> None:
     assert trace["reference_shape_type"] == "table"
     assert render_map["reference_object_bbox_px"] == render_map["object_bboxes_px"][trace["reference_object_id"]]
     assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
-    assert output.image.size == (1180, 900)
+    assert_three_d_canvas_contract(output)
 
 
 def test_spatial_relation_count_query_variants_generate() -> None:

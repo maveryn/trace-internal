@@ -9,6 +9,7 @@ from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.object_scene.marked_point_depth_extremum_label import TASK_ID
+from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
 @pytest.mark.parametrize("query_id", ["closest_marked_point", "farthest_marked_point"])
@@ -35,7 +36,7 @@ def test_marked_point_depth_answer_and_annotation(query_id: str) -> None:
 
     assert output.scene_id == "object_scene"
     assert output.query_id == query_id
-    assert output.image.size == (1180, 900)
+    assert_three_d_canvas_contract(output)
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == expected_label
     assert output.annotation_gt.type == "keyed_point_map"

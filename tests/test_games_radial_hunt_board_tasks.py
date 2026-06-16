@@ -8,17 +8,17 @@ import json
 import trace.tasks  # noqa: F401
 from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.radial_hunt_board.marked_piece_destination_count import (
-    CAPTURE_MOVE_TASK_ID,
-    MARKED_DESTINATION_TASK_ID,
+from trace.tasks.games.radial_hunt_board.capture_move_count import TASK_ID as CAPTURE_MOVE_TASK_ID
+from trace.tasks.games.radial_hunt_board.marked_piece_destination_count import TASK_ID as MARKED_DESTINATION_TASK_ID
+from trace.tasks.games.radial_hunt_board.shared.rules import (
     CENTER,
-    _all_coords,
-    _all_possible_edges,
-    _capture_destinations,
-    _capture_paths,
-    _edge,
-    _legal_destinations,
-    _neighbors,
+    all_coords,
+    all_possible_edges,
+    capture_destinations,
+    capture_paths,
+    edge,
+    legal_destinations,
+    neighbors,
 )
 from trace.tasks.registry import create_task, list_default_task_ids
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
@@ -42,14 +42,15 @@ def test_games_radial_hunt_board_defaults_and_prompt_bundle() -> None:
     }
     assert list(generation["target_answer_support"]) == list(range(7))
     assert int(rendering["max_board_size_px"]) == 560
-    assert str(prompt["bundle_id"]) == "games_radial_hunt_board_v0"
+    assert str(prompt["bundle_id"]) == "games_radial_hunt_board_v1"
 
 
 def test_games_radial_hunt_board_prompt_bundle_has_queries() -> None:
     bundle = json.loads(
-        Path("prompts/games/radial_hunt_board/games_radial_hunt_board_v0.json").read_text(encoding="utf-8")
+        Path("prompts/games/radial_hunt_board/games_radial_hunt_board_v1.json").read_text(encoding="utf-8")
     )
-    assert set(bundle["query_templates"].keys()) == {
+    assert bundle["schema_version"] == "v1"
+    assert set(bundle["templates"]["query"].keys()) == {
         "marked_piece_destination_count",
         "capture_move_count",
     }
@@ -57,20 +58,20 @@ def test_games_radial_hunt_board_prompt_bundle_has_queries() -> None:
 
 
 def test_games_radial_hunt_board_graph_shape() -> None:
-    assert len(_all_coords()) == 19
-    assert len(_all_possible_edges()) == 36
-    assert len(_neighbors(CENTER)) == 6
+    assert len(all_coords()) == 19
+    assert len(all_possible_edges()) == 36
+    assert len(neighbors(CENTER)) == 6
 
     for ring in (1, 2):
         for spoke in range(6):
-            assert len(_neighbors((ring, spoke))) == 4
+            assert len(neighbors((ring, spoke))) == 4
     for spoke in range(6):
-        assert len(_neighbors((3, spoke))) == 3
+        assert len(neighbors((3, spoke))) == 3
 
-    assert _edge(CENTER, (1, 0)) in set(_all_possible_edges())
-    assert _edge((1, 0), (1, 1)) in set(_all_possible_edges())
-    assert _edge((2, 4), (3, 4)) in set(_all_possible_edges())
-    assert len(_capture_paths(CENTER)) == 6
+    assert edge(CENTER, (1, 0)) in set(all_possible_edges())
+    assert edge((1, 0), (1, 1)) in set(all_possible_edges())
+    assert edge((2, 4), (3, 4)) in set(all_possible_edges())
+    assert len(capture_paths(CENTER)) == 6
 
 
 def test_games_radial_hunt_board_registry_and_taxonomy() -> None:
@@ -81,7 +82,7 @@ def test_games_radial_hunt_board_registry_and_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "radial_hunt_board"
-        assert taxonomy.source_scene_id == "radial_hunt_board"
+        assert taxonomy.source_scene_id == ""
 
 
 def test_games_radial_hunt_board_destination_answer_matches_trace() -> None:
@@ -93,13 +94,13 @@ def test_games_radial_hunt_board_destination_answer_matches_trace() -> None:
     trace = out.trace_payload["execution_trace"]
     marked = tuple(trace["marked_coord"])
     occupied = tuple(tuple(coord) for coord in trace["occupied_coords"])
-    expected = _legal_destinations(
+    expected = legal_destinations(
         marked_coord=marked,  # type: ignore[arg-type]
         occupied_coords=occupied,  # type: ignore[arg-type]
     )
 
     assert out.scene_id == "radial_hunt_board"
-    assert out.query_id == "marked_piece_destination_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 5
     assert len(out.annotation_gt.value) == 5
@@ -116,13 +117,13 @@ def test_games_radial_hunt_board_capture_answer_matches_trace() -> None:
     trace = out.trace_payload["execution_trace"]
     marked = tuple(trace["marked_coord"])
     occupied = tuple(tuple(coord) for coord in trace["occupied_coords"])
-    expected = _capture_destinations(
+    expected = capture_destinations(
         marked_coord=marked,  # type: ignore[arg-type]
         occupied_coords=occupied,  # type: ignore[arg-type]
     )
 
     assert out.scene_id == "radial_hunt_board"
-    assert out.query_id == "capture_move_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 5
     assert len(out.annotation_gt.value) == 5
@@ -134,7 +135,7 @@ def test_games_radial_hunt_board_capture_answer_matches_trace() -> None:
     for destination in expected:
         matching = [
             captured
-            for path_destination, captured in _capture_paths(marked)  # type: ignore[arg-type]
+            for path_destination, captured in capture_paths(marked)  # type: ignore[arg-type]
             if tuple(path_destination) == tuple(destination)
         ]
         assert any(captured in occupied_set for captured in matching)

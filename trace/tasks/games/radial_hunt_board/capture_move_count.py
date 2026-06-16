@@ -1,78 +1,90 @@
-"""Count legal capture moves for a marked radial hunt-board piece."""
-
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Mapping
 
-from trace.core.seed import spawn_rng
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
-from .shared.scene import (
-    CAPTURE_MOVE_QUERY_ID,
+from ._lifecycle import ObjectiveRadialHuntBoardPlan, run_radial_hunt_board_lifecycle
+from .shared.sampling import (
+    resolve_radial_hunt_board_target_axis,
+    sample_capture_scene,
+)
+from .shared.state import (
     SCENE_ID,
-    build_radial_hunt_board_output_parts,
-    resolve_radial_hunt_board_axes,
-    sample_radial_hunt_board_capture_scene,
+    SCENE_NAMESPACE,
 )
 
 
 TASK_ID = "task_games__radial_hunt_board__capture_move_count"
-SUPPORTED_QUERY_IDS = (CAPTURE_MOVE_QUERY_ID,)
+QUERY_ID = DEFAULT_QUERY_ID
+PROMPT_QUERY_KEY = "capture_move_count"
+SUPPORTED_QUERY_IDS = (QUERY_ID,)
+
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    "games",
+    SCENE_ID,
+    task_id=TASK_ID,
+)
+
+
+def _prepare_capture_objective(
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+) -> ObjectiveRadialHuntBoardPlan:
+    """Prepare a board constructor with a fixed capture-move answer."""
+
+    target_axis = resolve_radial_hunt_board_target_axis(
+        int(instance_seed),
+        params=params,
+        gen_defaults=gen_defaults,
+        namespace=f"{SCENE_NAMESPACE}.capture.target_answer",
+    )
+    target = int(target_axis.target_answer)
+    if target < 0 or target > 6:
+        raise ValueError("radial hunt capture target answer must be in 0..6")
+
+    return ObjectiveRadialHuntBoardPlan(
+        attempt_namespace=f"{SCENE_NAMESPACE}.capture",
+        prompt_query_key=PROMPT_QUERY_KEY,
+        rule_slot_name="capture_rule_text",
+        annotation_trace_key="capture_destinations",
+        common_params={
+            "target_answer": int(target),
+            "target_answer_support": [int(value) for value in target_axis.target_answer_support],
+            "target_answer_probabilities": dict(target_axis.target_answer_probabilities),
+        },
+        construct_attempt=lambda rng, axes: sample_capture_scene(
+            rng=rng,
+            axes=axes,
+            target_axis=target_axis,
+            gen_defaults=gen_defaults,
+        ),
+    )
 
 
 @register_task
 class GamesRadialHuntBoardCaptureMoveCountTask:
-    """Count legal jump-over capture moves for one marked piece on a radial board."""
-
     task_id = TASK_ID
     domain = "games"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any] | None = None, max_attempts: int = 100) -> TaskOutput:
-        query_id, _query_probabilities, task_params = select_task_query_id(
+        return run_radial_hunt_board_lifecycle(
+            task_id=TASK_ID,
+            domain=self.domain,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
+            default_query_id=QUERY_ID,
+            gen_defaults=_GEN_DEFAULTS,
+            render_defaults=_RENDER_DEFAULTS,
+            prompt_defaults=_PROMPT_DEFAULTS,
             instance_seed=int(instance_seed),
             params=dict(params or {}),
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=CAPTURE_MOVE_QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
+            max_attempts=int(max_attempts),
+            prepare_objective=_prepare_capture_objective,
+            namespace=f"{SCENE_NAMESPACE}.capture",
         )
-        axes = resolve_radial_hunt_board_axes(int(instance_seed), params=task_params)
-        sampled = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            rng = spawn_rng(int(instance_seed), f"{TASK_ID}.attempt.{int(attempt_index)}")
-            try:
-                sampled = sample_radial_hunt_board_capture_scene(rng=rng, axes=axes)
-            except ValueError:
-                continue
-            break
-        if sampled is None:
-            raise RuntimeError(f"{self.task_id} failed to generate after {max_attempts} attempts")
-
-        parts = build_radial_hunt_board_output_parts(
-            query_id=str(query_id),
-            sampled=sampled,
-            axes=axes,
-            instance_seed=int(instance_seed),
-            params=task_params,
-        )
-        return TaskOutput(
-            prompt=str(parts.prompt),
-            prompt_variants=dict(parts.prompt_variants),
-            answer_gt=parts.answer_gt,
-            annotation_gt=parts.annotation_gt,
-            image=parts.image,
-            image_id="img0",
-            trace_payload=dict(parts.trace_payload),
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
-        )
-
-
-__all__ = ["GamesRadialHuntBoardCaptureMoveCountTask"]

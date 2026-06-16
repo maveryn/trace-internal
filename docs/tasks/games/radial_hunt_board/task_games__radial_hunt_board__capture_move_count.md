@@ -5,10 +5,13 @@
 2. Scene: `radial_hunt_board`
 3. Scene id: `radial_hunt_board`
 4. Public task id: `task_games__radial_hunt_board__capture_move_count`
-5. Supported `query_id` values: `capture_move_count`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `point_set`
 8. Program schema: `count(empty_landing_points(capture_jump_from(x_marked_piece))); scene=radial_hunt_board; scope=capture_move_count`
+
+## Program Contract
+`count(empty_landing_points(capture_jump_from(x_marked_piece))); scene=radial_hunt_board; scope=capture_move_count`
 
 ## Generation Notes
 1. The board is a Pretwa-inspired radial graph with three concentric circles and three diameters, producing 19 playable points.

@@ -25,7 +25,7 @@ def test_icons_pair_grid_reference_transform_match_label_contract_matches_scene(
         14210,
         params={
             "answer_label": "C",
-            "transform_ids": ["rot90", "rot180", "flip_h", "flip_diag_main"],
+            "transform_ids": ["rot90", "rot180", "rot270", "flip_h", "flip_v"],
         },
         max_attempts=200,
     )

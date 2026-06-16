@@ -26,9 +26,9 @@ Annotation schema: scalar `bbox` around the selected Scene cell.
 
 ## Notes
 The geometric transform id is sampled from
-`rot90|rot180|rot270|flip_h|flip_v|flip_diag_main|flip_diag_anti` and recorded
-as trace metadata, not as a public query id. The task uses asymmetric icons so
-distractor transforms remain visually distinct from the Reference transform.
+`rot90|rot180|rot270|flip_h|flip_v` and recorded as trace metadata, not as a
+public query id. The task uses asymmetric icons so distractor transforms remain
+visually distinct from the Reference transform.
 
 Renderer metadata records sampled palette/style, panel-header and cell-label
 text-legibility metadata, and per-icon noise edits.

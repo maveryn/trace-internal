@@ -324,7 +324,7 @@ def test_icons_pair_grid_scene_defaults_loaded() -> None:
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__pair_grid__reference_transform_match_label')
     assert str(generation['pool_manifest']).strip() == 'non_symmetry.txt'
     assert int(generation['option_count']) == 4
-    assert list(generation['transform_ids']) == ['rot90', 'rot180', 'rot270', 'flip_h', 'flip_v', 'flip_diag_main', 'flip_diag_anti']
+    assert list(generation['transform_ids']) == ['rot90', 'rot180', 'rot270', 'flip_h', 'flip_v']
     assert int(generation['transform_check_size_px']) > 0
     assert int(rendering['canvas_width']) > 0
     assert int(rendering['reference_panel_width_px']) > 0

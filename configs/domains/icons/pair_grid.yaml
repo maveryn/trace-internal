@@ -14,8 +14,6 @@ generation:
       - rot270
       - flip_h
       - flip_v
-      - flip_diag_main
-      - flip_diag_anti
       transform_check_size_px: 72
 rendering:
   shared:

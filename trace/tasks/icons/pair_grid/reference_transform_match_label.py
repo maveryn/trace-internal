@@ -27,7 +27,7 @@ from ..shared.annotation import bbox_annotation
 from ..shared.icon_assets import icon_transform_signature, resolve_icon_pool
 from ..shared.icon_style import sample_single_icon_tint
 from ..shared.icon_task_rendering import sample_icon_instance_noise
-from ..shared.icon_transform import IDENTITY_TRANSFORM_ID, NON_IDENTITY_TRANSFORM_IDS
+from ..shared.icon_transform import IDENTITY_TRANSFORM_ID
 
 from .shared.defaults import PairGridTaskDefaults
 from .shared.output import render_pair_grid_payload, selected_scene_cell_bbox
@@ -52,13 +52,16 @@ class _ScenePayload:
     scene_cells: Tuple[Dict[str, Any], ...]
 
 
+_SUPPORTED_TRANSFORM_IDS: Tuple[str, ...] = ("rot90", "rot180", "rot270", "flip_h", "flip_v")
+
+
 _DEFAULTS = PairGridTaskDefaults(
     option_count=4,
     pool_manifest="non_symmetry.txt",
     palette_size_min=1,
     palette_size_max=1,
     min_color_distance=40.0,
-    transform_ids=NON_IDENTITY_TRANSFORM_IDS,
+    transform_ids=_SUPPORTED_TRANSFORM_IDS,
 )
 TASK_ID = "task_icons__pair_grid__reference_transform_match_label"
 DOMAIN = "icons"
@@ -117,7 +120,7 @@ def _resolve_transform_ids(params: Mapping[str, Any]) -> Tuple[str, ...]:
     transform_ids = tuple(str(value).strip() for value in raw if str(value).strip())
     if not transform_ids:
         raise ValueError("transform_ids resolved no transforms")
-    unsupported = [value for value in transform_ids if value not in set(NON_IDENTITY_TRANSFORM_IDS)]
+    unsupported = [value for value in transform_ids if value not in set(_SUPPORTED_TRANSFORM_IDS)]
     if unsupported:
         raise ValueError(f"unsupported transform_ids: {unsupported}")
     return transform_ids

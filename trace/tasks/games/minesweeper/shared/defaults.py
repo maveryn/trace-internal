@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Tuple
+from typing import Tuple
 
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.games.shared.visual_defaults import load_games_scene_noise_defaults
@@ -12,19 +12,6 @@ from trace.tasks.games.shared.visual_defaults import load_games_scene_noise_defa
 SCENE_ID = "minesweeper"
 DEFAULT_BRANCH_ID = SINGLE_QUERY_ID
 SCENE_VARIANTS: Tuple[str, ...] = ("open_grid", "mixed_grid")
-REVEAL_OUTCOME_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
-REVEAL_OUTCOME_VOCAB: Tuple[str, ...] = ("mine", "empty", "1", "2", "3", "4", "5", "6", "7", "8")
-REVEAL_OUTCOME_BY_CODE: Dict[int, str] = {
-    0: "mine",
-    1: "empty",
-    2: "1",
-    3: "2",
-    4: "3",
-    5: "4",
-    6: "5",
-    7: "6",
-    8: "7",
-}
 
 
 @dataclass(frozen=True)
@@ -54,9 +41,6 @@ __all__ = [
     "DEFAULT_BRANCH_ID",
     "MinesweeperDefaults",
     "POST_IMAGE_NOISE_DEFAULTS",
-    "REVEAL_OUTCOME_BY_CODE",
-    "REVEAL_OUTCOME_LABELS",
-    "REVEAL_OUTCOME_VOCAB",
     "SCENE_ID",
     "SCENE_VARIANTS",
 ]

@@ -72,10 +72,6 @@ def build_minesweeper_trace_payload(
 ) -> Dict[str, Any]:
     """Assemble trace sections after a public task binds answer and annotation."""
 
-    answer_options = [
-        {"label": str(label), "outcome": str(outcome)}
-        for label, outcome in sample.answer_options
-    ]
     relation_map = {
         "scene_variant": str(axes.scene_variant),
         "style_variant": str(axes.style_variant),
@@ -86,9 +82,6 @@ def build_minesweeper_trace_payload(
             str(key): [str(entity_id) for entity_id in value]
             for key, value in keyed_annotation_entity_ids.items()
         },
-        "reveal_outcome": str(sample.reveal_outcome),
-        "option_count": int(len(sample.answer_options)),
-        "answer_options": list(answer_options),
     }
     execution = {
         "scene_variant": str(axes.scene_variant),
@@ -102,8 +95,6 @@ def build_minesweeper_trace_payload(
         "hidden_coords": _coord_rows(sample.hidden_coords),
         "forced_mine_coords": _coord_rows(sample.forced_mine_coords),
         "forced_safe_coords": _coord_rows(sample.forced_safe_coords),
-        "satisfied_clue_coords": _coord_rows(sample.satisfied_clue_coords),
-        "unsatisfied_clue_coords": _coord_rows(sample.unsatisfied_clue_coords),
         "forcing_clue_coords": _coord_rows(sample.forcing_clue_coords),
         "annotation_coords": _coord_rows(sample.annotation_coords),
         "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
@@ -111,16 +102,6 @@ def build_minesweeper_trace_payload(
             str(key): [str(entity_id) for entity_id in value]
             for key, value in keyed_annotation_entity_ids.items()
         },
-        "target_cell_coord": (
-            [int(sample.target_cell_coord[0]), int(sample.target_cell_coord[1])]
-            if sample.target_cell_coord is not None
-            else None
-        ),
-        "supporting_clue_coords": _coord_rows(sample.supporting_clue_coords),
-        "supporting_flag_coords": _coord_rows(sample.supporting_flag_coords),
-        "reveal_outcome": str(sample.reveal_outcome),
-        "option_count": int(len(sample.answer_options)),
-        "answer_options": list(answer_options),
         "answer": answer_value,
         "distractor_hidden_count": int(sample.distractor_hidden_count),
         "construction_mode": str(sample.construction_mode),

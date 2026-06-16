@@ -42,20 +42,6 @@
         "{minesweeper_rule_text} Use the outlined opened clue cell and nearby flags. How many more adjacent mines does that number require?",
         "{minesweeper_rule_text} For the outlined opened clue cell, how many adjacent mines are still unaccounted for?",
         "{minesweeper_rule_text} Use the marked opened number cell. How many more mines must touch it?"
-      ],
-      "reveal_outcome_label": [
-        "{minesweeper_rule_text} Use the red outlined hidden cell and the visible clues. If the marked hidden cell is revealed, which option shows the result?",
-        "{minesweeper_rule_text} Use the marked hidden cell, nearby flags, and opened clues. Which option is the reveal result for that cell?",
-        "{minesweeper_rule_text} Determine what would appear when the red outlined hidden cell is opened. Which option letter matches it?",
-        "{minesweeper_rule_text} Use the visible Minesweeper constraints around the marked hidden cell. Which option matches its reveal outcome?",
-        "{minesweeper_rule_text} For the red outlined hidden cell, choose the option showing whether it is a mine, empty, or a number."
-      ],
-      "satisfied_clue_count": [
-        "{minesweeper_rule_text} Some opened number cells are not yet satisfied. How many opened number cells are exactly satisfied by adjacent flags?",
-        "{minesweeper_rule_text} Count only the opened number cells whose number equals the count of adjacent flags.",
-        "{minesweeper_rule_text} Ignoring numbered cells with too few adjacent flags, how many opened clues already have exactly that many neighboring flags?",
-        "{minesweeper_rule_text} Using the opened numbers and flags, count the clue cells that are exactly satisfied.",
-        "{minesweeper_rule_text} How many visible number cells have a clue value equal to their adjacent flag count?"
       ]
     },
     "output": {
@@ -86,12 +72,6 @@
       "minesweeper_rule_text"
     ],
     "query:remaining_mine_count": [
-      "minesweeper_rule_text"
-    ],
-    "query:reveal_outcome_label": [
-      "minesweeper_rule_text"
-    ],
-    "query:satisfied_clue_count": [
       "minesweeper_rule_text"
     ],
     "answer_or_annotation:answer_only": [
@@ -141,10 +121,6 @@
     "annotation_hint_forced_safe_count": "set \"annotation\" to [x, y] pixel points at the centers of the hidden cells forced to be safe",
     "answer_hint_forced_safe_count": "set \"answer\" to the count of hidden cells that must be safe",
     "annotation_hint_remaining_mine_count": "set \"annotation\" to the [x, y] pixel point at the center of the marked opened number cell",
-    "answer_hint_remaining_mine_count": "set \"answer\" to the number of additional mines that must be adjacent to the marked opened number cell",
-    "annotation_hint_reveal_outcome_label": "set \"annotation\" to a JSON object with keys \"target_cell\", \"supporting_clues\", and \"supporting_flags\"; each key maps to [x, y] pixel points at the centers of the marked hidden cell and the visible cells used to infer the reveal result",
-    "answer_hint_reveal_outcome_label": "set \"answer\" to the single option letter shown beside the reveal result",
-    "annotation_hint_satisfied_clue_count": "set \"annotation\" to [x, y] pixel points at the centers of the opened number cells whose clue equals the count of adjacent flags",
-    "answer_hint_satisfied_clue_count": "set \"answer\" to the count of opened number cells whose clue equals the count of adjacent flags; do not count numbered cells with too few adjacent flags"
+    "answer_hint_remaining_mine_count": "set \"answer\" to the number of additional mines that must be adjacent to the marked opened number cell"
   }
 }

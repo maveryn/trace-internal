@@ -40,18 +40,3 @@ def test_games_minesweeper_task_override_defaults_expose_specific_supports() -> 
     )
     assert list(remaining_generation["board_size_support"]) == [4, 5, 6, 7, 8]
     assert list(remaining_generation["remaining_mine_count_support"]) == [0, 1, 2, 3, 4, 5]
-
-    reveal_generation, _, _ = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_games__minesweeper__reveal_outcome_label",
-    )
-    assert bool(reveal_generation["balanced_option_count_sampling"]) is True
-    assert list(reveal_generation["reveal_outcome_board_size_support"]) == [5, 6, 7, 8]
-    assert list(reveal_generation["reveal_outcome_support"]) == [0, 1, 2, 3, 4, 5, 6, 7, 8]
-    assert list(reveal_generation["reveal_outcome_option_count_support"]) == [4, 6]
-
-    satisfied_generation, _, _ = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_games__minesweeper__satisfied_clue_count",
-    )
-    assert list(satisfied_generation["satisfied_clue_count_support"]) == [1, 2, 3, 4, 5]

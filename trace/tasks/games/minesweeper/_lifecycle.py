@@ -52,8 +52,6 @@ class MinesweeperAttemptResult:
     annotation_entity_ids: tuple[str, ...]
     keyed_annotation_entity_ids: Mapping[str, Sequence[str]] = field(default_factory=dict)
     highlighted_clue_coords: tuple[Coord, ...] = tuple()
-    highlighted_target_coords: tuple[Coord, ...] = tuple()
-    reveal_options: tuple[tuple[str, str], ...] = tuple()
     extra_query_params: Mapping[str, Any] = field(default_factory=dict)
     execution_extra: Mapping[str, Any] = field(default_factory=dict)
 
@@ -271,8 +269,6 @@ def render_minesweeper_lifecycle(
         instance_seed=int(instance_seed),
         namespace=str(namespace),
         highlighted_clue_coords=attempt.highlighted_clue_coords,
-        highlighted_target_coords=attempt.highlighted_target_coords,
-        reveal_options=attempt.reveal_options,
     )
     annotation_artifacts = attempt.bind_annotation(rendered_scene)
     image, post_noise_meta = apply_post_image_noise(
@@ -338,8 +334,6 @@ def _render_scene(
     instance_seed: int,
     namespace: str,
     highlighted_clue_coords: Sequence[Coord],
-    highlighted_target_coords: Sequence[Coord],
-    reveal_options: Sequence[tuple[str, str]],
 ) -> tuple[RenderedMinesweeperScene, Mapping[str, Any], Mapping[str, Any], Any]:
     """Resolve panel styling and render one Minesweeper sample."""
 
@@ -370,8 +364,6 @@ def _render_scene(
         style_variant=str(axes.style_variant),
         params=render_params,
         highlighted_clue_coords=tuple(highlighted_clue_coords),
-        highlighted_target_coords=tuple(highlighted_target_coords),
-        reveal_outcome_options=tuple(reveal_options),
     )
     return rendered_scene, dict(background_meta), dict(panel_style_meta), render_params
 

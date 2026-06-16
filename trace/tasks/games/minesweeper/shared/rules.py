@@ -115,54 +115,6 @@ def adjacent_flag_count(coord: Coord, *, flagged_coords: Iterable[Coord], size: 
     return sum(1 for item in neighbor_coords(coord, size=int(size)) if item in flags)
 
 
-def satisfied_clue_coords(
-    *,
-    size: int,
-    mine_coords: Iterable[Coord],
-    revealed_coords: Iterable[Coord],
-    flagged_coords: Iterable[Coord],
-) -> Tuple[Coord, ...]:
-    """Return opened number cells whose clue exactly matches adjacent flags."""
-
-    satisfied: list[Coord] = []
-    for coord in sorted_coords(revealed_coords):
-        clue = clue_number(coord, mine_coords=mine_coords, size=int(size))
-        if int(clue) <= 0:
-            continue
-        if adjacent_flag_count(coord, flagged_coords=flagged_coords, size=int(size)) == int(clue):
-            satisfied.append(coord)
-    return tuple(satisfied)
-
-
-def unsatisfied_clue_coords(
-    *,
-    size: int,
-    mine_coords: Iterable[Coord],
-    revealed_coords: Iterable[Coord],
-    flagged_coords: Iterable[Coord],
-) -> Tuple[Coord, ...]:
-    """Return opened number cells whose clue still needs more adjacent flags."""
-
-    unsatisfied: list[Coord] = []
-    for coord in sorted_coords(revealed_coords):
-        clue = clue_number(coord, mine_coords=mine_coords, size=int(size))
-        if int(clue) <= 0:
-            continue
-        if adjacent_flag_count(coord, flagged_coords=flagged_coords, size=int(size)) < int(clue):
-            unsatisfied.append(coord)
-    return tuple(unsatisfied)
-
-
-def clue_context_flags(*, clue_coords: Iterable[Coord], flagged_coords: Iterable[Coord], size: int) -> Tuple[Coord, ...]:
-    """Return flagged cells adjacent to any supporting clue."""
-
-    flags = {(int(row), int(col)) for row, col in flagged_coords}
-    context: set[Coord] = set()
-    for clue in clue_coords:
-        context.update(set(neighbor_coords(clue, size=int(size))) & flags)
-    return tuple(sorted(context))
-
-
 def validate_board_contract(
     *,
     size: int,
@@ -192,13 +144,10 @@ def validate_board_contract(
 
 __all__ = [
     "adjacent_flag_count",
-    "clue_context_flags",
     "clue_number",
     "forced_cell_supports",
     "forced_mine_supports",
     "forced_safe_supports",
     "neighbor_coords",
-    "satisfied_clue_coords",
-    "unsatisfied_clue_coords",
     "validate_board_contract",
 ]

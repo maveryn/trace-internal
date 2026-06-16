@@ -23,7 +23,6 @@ from ...shared.marking import draw_semantic_bbox_marker, resolve_semantic_marker
 from .defaults import DEFAULTS
 from .rules import clue_number
 from .state import Coord, all_coords, coord_to_cell_id
-from ...shared.option_layout import balanced_option_grid_spec, option_grid_position
 from ...shared.style import MinesweeperTheme, build_games_minesweeper_theme
 
 
@@ -83,13 +82,6 @@ def _cell_bbox(
     right = float(board_left + ((int(col) + 1) * float(cell_size)) - float(padding_px))
     bottom = float(board_top + ((int(row) + 1) * float(cell_size)) - float(padding_px))
     return (round(left, 3), round(top, 3), round(right, 3), round(bottom, 3))
-
-
-def _relative_luminance(rgb: Sequence[int]) -> float:
-    """Return approximate sRGB luminance for contrast decisions."""
-
-    r, g, b = (float(value) / 255.0 for value in tuple(rgb)[:3])
-    return (0.2126 * r) + (0.7152 * g) + (0.0722 * b)
 
 
 def _draw_number(
@@ -162,95 +154,6 @@ def _draw_flag(
         fill=tuple(int(v) for v in theme.flag_pole_rgb),
         width=max(2, int(round(0.05 * width))),
     )
-
-
-def _draw_reveal_outcome_options(
-    draw: ImageDraw.ImageDraw,
-    *,
-    canvas_width: int,
-    canvas_height: int,
-    option_panel_top: float,
-    options: Sequence[Tuple[str, str]],
-    theme: MinesweeperTheme,
-    font_family: str = "",
-) -> Dict[str, List[float]]:
-    """Draw reveal-outcome option cards and return bboxes keyed by label."""
-
-    option_bboxes: Dict[str, List[float]] = {}
-    if not options:
-        return option_bboxes
-    panel_margin = max(28.0, 0.055 * float(canvas_width))
-    gap_x = max(12.0, 0.018 * float(canvas_width))
-    gap_y = max(10.0, 0.015 * float(canvas_height))
-    panel_bottom = float(canvas_height) - max(22.0, 0.03 * float(canvas_height))
-    available_w = float(canvas_width) - (2.0 * panel_margin)
-    available_h = max(92.0, panel_bottom - float(option_panel_top))
-    grid_spec = balanced_option_grid_spec(len(options))
-    card_w = (available_w - (float(grid_spec.columns - 1) * gap_x)) / float(grid_spec.columns)
-    card_h = (available_h - (float(grid_spec.rows - 1) * gap_y)) / float(grid_spec.rows)
-    card_fill = tuple(int(v) for v in theme.revealed_cell_fill_rgb) + (238,)
-    dark_text = (34, 40, 48)
-    light_text = (246, 248, 252)
-    text_fill = light_text if _relative_luminance(theme.revealed_cell_fill_rgb) < 0.45 else dark_text
-    label_fill = text_fill
-    card_outline = tuple(int(v) for v in theme.board_border_rgb)
-    for index, (label, outcome) in enumerate(options):
-        _row, _col, left, top = option_grid_position(
-            index,
-            len(options),
-            left=panel_margin,
-            top=option_panel_top,
-            item_width=card_w,
-            item_height=card_h,
-            gap_x=gap_x,
-            gap_y=gap_y,
-            columns=grid_spec.columns,
-        )
-        right = float(left + card_w)
-        bottom = float(top + card_h)
-        bbox = [round(left, 3), round(top, 3), round(right, 3), round(bottom, 3)]
-        option_bboxes[str(label)] = bbox
-        radius = max(5, int(round(0.04 * min(card_w, card_h))))
-        draw.rounded_rectangle(
-            (left, top, right, bottom),
-            radius=radius,
-            fill=card_fill,
-            outline=card_outline,
-            width=max(2, int(round(0.012 * float(canvas_width)))),
-        )
-        label_text = f"{label})"
-        label_font = fit_font_to_box(
-            draw,
-            text=label_text,
-            max_width=0.27 * float(card_w),
-            max_height=0.62 * float(card_h),
-            bold=True,
-            min_size_px=14,
-            max_size_px=max(18, int(round(0.34 * float(card_h)))),
-            fill_ratio=0.86,
-            font_family=str(font_family) or None,
-        )
-        outcome_text = str(outcome)
-        outcome_font = fit_font_to_box(
-            draw,
-            text=outcome_text,
-            max_width=0.58 * float(card_w),
-            max_height=0.62 * float(card_h),
-            bold=True,
-            min_size_px=14,
-            max_size_px=max(18, int(round(0.36 * float(card_h)))),
-            fill_ratio=0.86,
-            font_family=str(font_family) or None,
-        )
-        label_bbox = draw.textbbox((0, 0), label_text, font=label_font)
-        outcome_bbox = draw.textbbox((0, 0), outcome_text, font=outcome_font)
-        label_x = float(left + 0.12 * float(card_w) - float(label_bbox[0]))
-        label_y = float(top + 0.5 * (float(card_h) - (label_bbox[3] - label_bbox[1])) - float(label_bbox[1]))
-        outcome_x = float(left + 0.44 * float(card_w) - float(outcome_bbox[0]))
-        outcome_y = float(top + 0.5 * (float(card_h) - (outcome_bbox[3] - outcome_bbox[1])) - float(outcome_bbox[1]))
-        draw_text_traced(draw, (label_x, label_y), label_text, fill=label_fill, font=label_font, role="option_label", required=False)
-        draw_text_traced(draw, (outcome_x, outcome_y), outcome_text, fill=text_fill, font=outcome_font, role="option_text", required=False)
-    return option_bboxes
 
 
 def resolve_minesweeper_render_params(
@@ -333,8 +236,6 @@ def render_minesweeper_grid_scene(
     style_variant: str,
     params: MinesweeperRenderParams,
     highlighted_clue_coords: Sequence[Coord] | None = None,
-    highlighted_target_coords: Sequence[Coord] | None = None,
-    reveal_outcome_options: Sequence[Tuple[str, str]] | None = None,
 ) -> RenderedMinesweeperScene:
     """Render one Minesweeper grid with hidden, flagged, and revealed cells."""
 
@@ -342,10 +243,7 @@ def render_minesweeper_grid_scene(
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")
     theme = build_games_minesweeper_theme(style_variant=str(style_variant))
-    options = tuple((str(label), str(outcome)) for label, outcome in (reveal_outcome_options or ()))
-    option_panel_height = max(0, int(round(0.24 * int(params.canvas_height)))) if options else 0
-    board_canvas_height = int(params.canvas_height) - int(option_panel_height)
-    board_canvas_height = max(int(params.panel_margin_px) * 2 + 120, int(board_canvas_height))
+    board_canvas_height = int(params.canvas_height)
 
     max_board_size = min(
         int(params.max_board_size_px),
@@ -377,7 +275,6 @@ def render_minesweeper_grid_scene(
     flagged = {(int(row), int(col)) for row, col in flagged_coords}
     hidden = {(int(row), int(col)) for row, col in hidden_coords}
     highlighted_clues = {(int(row), int(col)) for row, col in (highlighted_clue_coords or ())}
-    highlighted_targets = {(int(row), int(col)) for row, col in (highlighted_target_coords or ())}
 
     cell_bboxes_px: Dict[str, List[float]] = {}
     full_cell_bboxes_px: Dict[str, List[float]] = {}
@@ -447,7 +344,6 @@ def render_minesweeper_grid_scene(
                 "has_mine": bool(coord in mines),
                 "adjacent_mine_count": int(adjacent),
                 "is_highlighted_clue": bool(coord in highlighted_clues),
-                "is_highlighted_target": bool(coord in highlighted_targets),
                 "bbox_px": list(bbox_px),
             }
         )
@@ -509,39 +405,6 @@ def render_minesweeper_grid_scene(
         outline=tuple(int(v) for v in theme.board_border_rgb),
         width=int(params.board_border_width_px),
     )
-    for coord in sorted(highlighted_targets):
-        cell_id = coord_to_cell_id(coord)
-        if cell_id not in full_cell_bboxes_px:
-            continue
-        left, top, right, bottom = [float(value) for value in full_cell_bboxes_px[cell_id]]
-        inset = max(2.0, 0.075 * float(cell_size))
-        target_bbox = (left + inset, top + inset, right - inset, bottom - inset)
-        marker_style = resolve_semantic_marker_style(
-            instance_seed=int(params.instance_seed),
-            namespace=f"games.minesweeper.reveal_target.{cell_id}",
-            role="minesweeper_reveal_target",
-            surface_rgbs=(tuple(int(v) for v in theme.hidden_cell_fill_rgb),),
-            preferred_rgbs=((220, 32, 32),),
-        )
-        draw_semantic_bbox_marker(
-            draw,
-            target_bbox,
-            style=marker_style,
-            width=max(4, int(round(0.085 * float(cell_size)))),
-            marker_kind="minesweeper_reveal_target_outline",
-            extra_metadata={"cell_id": str(cell_id)},
-        )
-
-    option_panel_top = float(board_canvas_height) + max(6.0, 0.012 * float(params.canvas_height))
-    option_bboxes = _draw_reveal_outcome_options(
-        draw,
-        canvas_width=int(params.canvas_width),
-        canvas_height=int(params.canvas_height),
-        option_panel_top=float(option_panel_top),
-        options=options,
-        theme=theme,
-        font_family=str(params.font_family),
-    )
 
     render_map = {
         "board_bbox_px": list(board_bbox),
@@ -550,12 +413,6 @@ def render_minesweeper_grid_scene(
         "flagged_cell_ids": [coord_to_cell_id(coord) for coord in sorted(flagged)],
         "hidden_cell_ids": [coord_to_cell_id(coord) for coord in sorted(hidden)],
         "highlighted_clue_cell_ids": [coord_to_cell_id(coord) for coord in sorted(highlighted_clues)],
-        "highlighted_target_cell_ids": [coord_to_cell_id(coord) for coord in sorted(highlighted_targets)],
-        "reveal_outcome_options": [
-            {"label": str(label), "outcome": str(outcome), "display": str(outcome)}
-            for label, outcome in options
-        ],
-        "reveal_outcome_option_bboxes_px": dict(option_bboxes),
         "style_variant": str(style_variant),
         "text_style": {"font_family": str(params.font_family)},
         "layout_jitter": dict(layout_jitter),

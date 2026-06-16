@@ -21,18 +21,11 @@ class MinesweeperSample:
     hidden_coords: Tuple[Coord, ...]
     forced_mine_coords: Tuple[Coord, ...]
     forced_safe_coords: Tuple[Coord, ...]
-    satisfied_clue_coords: Tuple[Coord, ...]
-    unsatisfied_clue_coords: Tuple[Coord, ...]
     forcing_clue_coords: Tuple[Coord, ...]
     annotation_coords: Tuple[Coord, ...]
     target_answer: int | None
     distractor_hidden_count: int
     construction_mode: str
-    target_cell_coord: Coord | None = None
-    supporting_clue_coords: Tuple[Coord, ...] = ()
-    supporting_flag_coords: Tuple[Coord, ...] = ()
-    reveal_outcome: str = ""
-    answer_options: Tuple[Tuple[str, str], ...] = ()
 
 
 def coord_to_cell_id(coord: Coord) -> str:

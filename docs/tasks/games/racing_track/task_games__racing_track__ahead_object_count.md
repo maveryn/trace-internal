@@ -8,8 +8,11 @@
 ## Objective
 Count other cars ahead of the marked car before the finish line, following the track direction.
 
+## Program Contract
+Program schema: `count(filter(racing_cars, progress_after(marked_car) and before_finish)); scene=racing_track; scope=ahead_object_count`.
+
 ## Query IDs
-- `car_ahead_count`
+- `single`
 
 ## Answer
 Integer count.

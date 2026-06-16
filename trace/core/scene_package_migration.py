@@ -15,7 +15,7 @@ import re
 MIGRATED_SCENE_PACKAGE_DOMAINS: frozenset[str] = frozenset()
 MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
     "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap", "hexbin_density", "histogram"}),
-    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes", "go", "hex", "irregular_link_board", "lane_runner", "ludo_board", "mancala_pit_board", "marble_chain", "match3", "minecraft", "minesweeper", "minigolf", "nine_mens_morris", "pacman", "pinball_table", "platformer", "pool"}),
+    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes", "go", "hex", "irregular_link_board", "lane_runner", "ludo_board", "mancala_pit_board", "marble_chain", "match3", "minecraft", "minesweeper", "minigolf", "nine_mens_morris", "pacman", "pinball_table", "platformer", "pool", "racing_track"}),
     "geometry": frozenset(
         {
             "angle_relations",
@@ -41,7 +41,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
     "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap", "hexbin_density", "histogram"}),
-    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes", "go", "hex", "irregular_link_board", "lane_runner", "ludo_board", "mancala_pit_board", "marble_chain", "match3", "minecraft", "minesweeper", "minigolf", "nine_mens_morris", "pacman", "pinball_table", "platformer", "pool"}),
+    "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes", "go", "hex", "irregular_link_board", "lane_runner", "ludo_board", "mancala_pit_board", "marble_chain", "match3", "minecraft", "minesweeper", "minigolf", "nine_mens_morris", "pacman", "pinball_table", "platformer", "pool", "racing_track"}),
     "geometry": frozenset(
         {
             "angle_relations",

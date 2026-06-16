@@ -124,9 +124,9 @@
     "object_description_kidney_loop_ahead_count": "a curved loop racing track with a checkered finish line, a direction arrow, a marked car, and other labeled cars",
     "distance_rule_text": "Measure distance along the track in the arrow direction.",
     "ahead_rule_text": "Follow the arrow direction from the marked car to the finish line. Do not count the marked car.",
-    "annotation_hint_closest_to_finish_label": "set \"annotation\" to one [x, y] pixel point at the center of the selected car",
+    "annotation_hint_closest_to_finish_label": "set \"annotation\" to [x, y], the pixel center of the selected car",
     "answer_hint_closest_to_finish_label": "set \"answer\" to the selected car label as a capital letter",
-    "annotation_hint_farthest_from_finish_label": "set \"annotation\" to one [x, y] pixel point at the center of the selected car",
+    "annotation_hint_farthest_from_finish_label": "set \"annotation\" to [x, y], the pixel center of the selected car",
     "answer_hint_farthest_from_finish_label": "set \"answer\" to the selected car label as a capital letter",
     "annotation_hint_car_ahead_count": "set \"annotation\" to [x, y] pixel points at the centers of every counted car; use an empty array when none qualify",
     "answer_hint_car_ahead_count": "set \"answer\" to the integer count of other cars ahead of the marked car before the finish line"

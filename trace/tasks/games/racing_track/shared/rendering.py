@@ -4,13 +4,19 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, Sequence, Tuple
+from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.core.visual.noise import apply_post_image_noise
 from ....shared.text_rendering import load_font
-from ...shared.layout import apply_games_layout_jitter_to_bbox
-from .common import Point, RacingTrackCar
+from trace.tasks.games.shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from trace.tasks.games.shared.visual_defaults import load_games_scene_noise_defaults
+from trace.tasks.shared.config_defaults import group_default
+
+from ...shared.layout import apply_games_layout_jitter_to_bbox, resolve_games_layout_jitter
+from .defaults import DEFAULTS, SCENE_ID
+from .state import Point, RacingTrackCar, RacingTrackSceneState
 from ...shared.scene_style import (
     GamePanelSceneStyle,
     draw_panel_scene_chrome,
@@ -69,8 +75,53 @@ class RenderedRacingTrackScene:
     render_map: Dict[str, Any]
 
 
+@dataclass(frozen=True)
+class RenderedRacingTrackTaskContext:
+    """Rendered racing-track image plus background/noise metadata."""
+
+    image: Image.Image
+    rendered_scene: RenderedRacingTrackScene
+    background_meta: Dict[str, Any]
+    panel_style_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+
+
+POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.5)
+
+
+def resolve_racing_track_render_params(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    instance_seed: int,
+    font_family: str,
+    namespace: str = "games.racing_track.layout_jitter",
+) -> RacingTrackRenderParams:
+    """Resolve canvas, track, car, text, and layout-jitter render controls."""
+
+    return RacingTrackRenderParams(
+        canvas_width=int(params.get("canvas_width", group_default(render_defaults, "canvas_width", DEFAULTS.canvas_width))),
+        canvas_height=int(params.get("canvas_height", group_default(render_defaults, "canvas_height", DEFAULTS.canvas_height))),
+        track_width_px=int(params.get("track_width_px", group_default(render_defaults, "track_width_px", DEFAULTS.track_width_px))),
+        track_height_px=int(params.get("track_height_px", group_default(render_defaults, "track_height_px", DEFAULTS.track_height_px))),
+        road_width_px=int(params.get("road_width_px", group_default(render_defaults, "road_width_px", DEFAULTS.road_width_px))),
+        road_border_width_px=int(params.get("road_border_width_px", group_default(render_defaults, "road_border_width_px", DEFAULTS.road_border_width_px))),
+        car_length_px=int(params.get("car_length_px", group_default(render_defaults, "car_length_px", DEFAULTS.car_length_px))),
+        car_width_px=int(params.get("car_width_px", group_default(render_defaults, "car_width_px", DEFAULTS.car_width_px))),
+        marked_outline_width_px=int(params.get("marked_outline_width_px", group_default(render_defaults, "marked_outline_width_px", DEFAULTS.marked_outline_width_px))),
+        label_font_size_px=int(params.get("label_font_size_px", group_default(render_defaults, "label_font_size_px", DEFAULTS.label_font_size_px))),
+        font_family=str(font_family),
+        layout_jitter_meta=resolve_games_layout_jitter(
+            params,
+            render_defaults,
+            instance_seed=int(instance_seed),
+            namespace=str(namespace),
+        ),
+    )
+
+
 def build_games_racing_track_theme(*, style_variant: str) -> RacingTrackTheme:
-    """Return one racing-track visual theme."""
+    """Return one racing-track theme with road, car, label, and terrain colors."""
 
     style = str(style_variant)
     if style == "rally_sand":
@@ -264,6 +315,8 @@ def _draw_car(
     theme: RacingTrackTheme,
     color: Color,
 ) -> BBox:
+    """Draw one oriented car body and centered label while preserving its bbox."""
+
     cx, cy = float(car.center_px[0]), float(car.center_px[1])
     tx, ty = float(car.tangent_px[0]), float(car.tangent_px[1])
     nx, ny = -ty, tx
@@ -348,7 +401,7 @@ def render_racing_track_scene(
     panel_style: GamePanelSceneStyle | None = None,
     marked_car_id: str | None = None,
 ) -> RenderedRacingTrackScene:
-    """Render one racing-track scene."""
+    """Render the track, finish, direction arrow, cars, markers, and trace geometry."""
 
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
@@ -469,10 +522,68 @@ def render_racing_track_scene(
     )
 
 
+def render_racing_track_task_context(
+    *,
+    state: RacingTrackSceneState,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    render_params: RacingTrackRenderParams,
+    instance_seed: int,
+    namespace: str,
+    marked_car_id: str | None = None,
+) -> RenderedRacingTrackTaskContext:
+    """Render one racing-track state with shared game-panel styling and noise."""
+
+    panel_style, panel_style_meta = resolve_game_panel_scene_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{str(namespace)}.panel_scene_style",
+        treatment_weights=params.get(
+            "panel_scene_treatment_weights",
+            group_default(render_defaults, "panel_scene_treatment_weights", None),
+        ),
+        palette_weights=params.get(
+            "panel_scene_palette_weights",
+            group_default(render_defaults, "panel_scene_palette_weights", None),
+        ),
+    )
+    background, background_meta = make_panel_scene_background(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        style=panel_style,
+    )
+    rendered_scene = render_racing_track_scene(
+        centerline_points_px=state.centerline_points_px,
+        finish_point_px=state.finish_point_px,
+        finish_tangent_px=state.finish_tangent_px,
+        cars=state.cars,
+        background=background,
+        style_variant=str(state.style_variant),
+        params=render_params,
+        panel_style=panel_style,
+        marked_car_id=marked_car_id,
+    )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    return RenderedRacingTrackTaskContext(
+        image=image,
+        rendered_scene=rendered_scene,
+        background_meta=dict(background_meta),
+        panel_style_meta=dict(panel_style_meta),
+        post_noise_meta=dict(post_noise_meta),
+    )
+
+
 __all__ = [
     "RacingTrackRenderParams",
     "RacingTrackTheme",
+    "RenderedRacingTrackTaskContext",
     "RenderedRacingTrackScene",
     "build_games_racing_track_theme",
     "render_racing_track_scene",
+    "render_racing_track_task_context",
+    "resolve_racing_track_render_params",
 ]

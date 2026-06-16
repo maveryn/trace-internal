@@ -22,13 +22,13 @@ def test_games_racing_track_defaults_expose_axes_and_prompt_bundle() -> None:
         cfg,
         task_id=TASK_ID,
     )
+    ahead_generation, _ahead_rendering, _ahead_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id=AHEAD_TASK_ID,
+    )
 
     assert set(generation["scene_variant_weights"].keys()) == {"oval_loop", "rounded_loop", "kidney_loop"}
-    assert set(generation["query_id_weights"].keys()) == {
-        "closest_to_finish_label",
-        "farthest_from_finish_label",
-        "car_ahead_count",
-    }
+    assert "query_id_weights" not in generation
     assert set(generation["style_variant_weights"].keys()) == {
         "asphalt_day",
         "rally_sand",
@@ -37,16 +37,15 @@ def test_games_racing_track_defaults_expose_axes_and_prompt_bundle() -> None:
         "paper_race",
     }
     assert list(generation["car_count_support"]) == [4, 5, 6, 7]
-    assert list(generation["ahead_car_count_support"]) == [5, 6, 7]
-    assert list(generation["target_answer_support"]) == [0, 1, 2, 3, 4]
+    assert list(ahead_generation["ahead_car_count_support"]) == [5, 6, 7]
+    assert list(ahead_generation["target_answer_support"]) == [0, 1, 2, 3, 4]
     assert int(rendering["track_width_px"]) > 0
-    assert str(prompt["bundle_id"]) == "games_racing_track_v0"
-    assert "track in the arrow direction" in str(prompt["distance_rule_text"])
+    assert str(prompt["bundle_id"]) == "games_racing_track_v1"
 
 
 def test_games_racing_track_prompt_bundle_has_queries() -> None:
-    bundle = json.loads(Path("prompts/games/racing_track/games_racing_track_v0.json").read_text(encoding="utf-8"))
-    assert set(bundle["query_templates"].keys()) == {
+    bundle = json.loads(Path("prompts/games/racing_track/games_racing_track_v1.json").read_text(encoding="utf-8"))
+    assert set(bundle["templates"]["query"].keys()) == {
         "closest_to_finish_label",
         "farthest_from_finish_label",
         "car_ahead_count",
@@ -54,6 +53,7 @@ def test_games_racing_track_prompt_bundle_has_queries() -> None:
     assert bundle["required_slots_by_key"]["query:closest_to_finish_label"] == ["distance_rule_text"]
     assert bundle["required_slots_by_key"]["query:farthest_from_finish_label"] == ["distance_rule_text"]
     assert bundle["required_slots_by_key"]["query:car_ahead_count"] == ["ahead_rule_text"]
+    assert "track in the arrow direction" in str(bundle["code_prompt_defaults"]["distance_rule_text"])
 
 
 def test_games_racing_track_closest_answer_matches_remaining_distance_trace() -> None:
@@ -70,9 +70,9 @@ def test_games_racing_track_closest_answer_matches_remaining_distance_trace() ->
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == expected["label"]
     assert out.trace_payload["execution_trace"]["answer_entity_id"] == expected["car_id"]
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == 1
-    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "point"
+    assert len(out.annotation_gt.value) == 2
+    assert out.trace_payload["projected_annotation"]["point"] == out.annotation_gt.value
 
 
 def test_games_racing_track_farthest_answer_matches_remaining_distance_trace() -> None:
@@ -89,9 +89,9 @@ def test_games_racing_track_farthest_answer_matches_remaining_distance_trace() -
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == expected["label"]
     assert out.trace_payload["execution_trace"]["answer_entity_id"] == expected["car_id"]
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == 1
-    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "point"
+    assert len(out.annotation_gt.value) == 2
+    assert out.trace_payload["projected_annotation"]["point"] == out.annotation_gt.value
 
 
 def test_games_racing_track_taxonomy_mapping() -> None:
@@ -99,14 +99,10 @@ def test_games_racing_track_taxonomy_mapping() -> None:
 
     assert taxonomy.domain == "games"
     assert taxonomy.scene_id == "racing_track"
-    assert taxonomy.source_domain == "games"
-    assert taxonomy.source_scene_id == "racing_track"
 
     ahead_taxonomy = resolve_task_taxonomy(AHEAD_TASK_ID)
     assert ahead_taxonomy.domain == "games"
     assert ahead_taxonomy.scene_id == "racing_track"
-    assert ahead_taxonomy.source_domain == "games"
-    assert ahead_taxonomy.source_scene_id == "racing_track"
 
 
 def _ahead_expected_ids(out) -> list[str]:
@@ -114,26 +110,23 @@ def _ahead_expected_ids(out) -> list[str]:
     reference_id = str(execution["reference_car_id"])
     reference = next(car for car in execution["cars"] if str(car["car_id"]) == reference_id)
     reference_progress = float(reference["progress"])
-    query_id = str(execution["query_id"])
-    if query_id == "car_ahead_count":
-        return [
-            str(car["car_id"])
-            for car in sorted(execution["cars"], key=lambda item: float(item["progress"]))
-            if str(car["car_id"]) != reference_id and float(car["progress"]) > reference_progress
-        ]
-    raise AssertionError(f"unexpected racing-track ahead query: {query_id}")
+    return [
+        str(car["car_id"])
+        for car in sorted(execution["cars"], key=lambda item: float(item["progress"]))
+        if str(car["car_id"]) != reference_id and float(car["progress"]) > reference_progress
+    ]
 
 
 def test_games_racing_track_ahead_car_answer_matches_trace() -> None:
     out = create_task(AHEAD_TASK_ID).generate(
         81911,
-        params={"query_id": "car_ahead_count", "target_answer": 3},
+        params={"target_answer": 3},
         max_attempts=500,
     )
     expected_ids = _ahead_expected_ids(out)
 
     assert out.scene_id == "racing_track"
-    assert out.query_id == "car_ahead_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
     assert len(out.annotation_gt.value) == 3
@@ -146,12 +139,12 @@ def test_games_racing_track_ahead_car_answer_matches_trace() -> None:
 def test_games_racing_track_ahead_zero_answer_uses_empty_annotation() -> None:
     out = create_task(AHEAD_TASK_ID).generate(
         81912,
-        params={"query_id": "car_ahead_count", "target_answer": 0},
+        params={"target_answer": 0},
         max_attempts=500,
     )
     expected_ids = _ahead_expected_ids(out)
 
-    assert out.query_id == "car_ahead_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 0
     assert expected_ids == []

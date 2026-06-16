@@ -6,7 +6,7 @@
 - Package: `trace/tasks/three_d/object_cluster/`
 - Supported `query_id`: `single`
 - Answer type: `integer`
-- Annotation type: unordered `bbox_set`
+- Annotation type: unordered `point_set`
 
 ## Program Contract
 `count(filter(object_cluster_objects, is_countable_object = true)); scene=object_cluster; scope=total_object_count`
@@ -27,9 +27,9 @@ The answer is the integer count of finalized visible objects with
 truth.
 
 ## Annotation Contract
-Annotation is a `bbox_set` containing one whole-object bounding box for each
-counted object. The annotation set is unordered because all witnesses have the
-same semantic role and annotation cardinality matches the answer.
+Annotation is a `point_set` containing one center point for each counted object.
+The annotation set is unordered because all witnesses have the same semantic
+role and annotation cardinality matches the answer.
 
 ## Prompt And Trace
 The prompt bundle is `three_d_object_cluster_v1` under `prompts/three_d/object_cluster/`.

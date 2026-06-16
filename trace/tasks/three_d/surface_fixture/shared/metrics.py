@@ -298,6 +298,227 @@ def build_color_surface_data(
     return dataset, dict(target_probabilities)
 
 
+COLOR_FREQUENCY_OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
+
+
+def _resolve_color_option_names(
+    *,
+    params: Mapping[str, Any],
+    answer_label: str,
+    rng: Any,
+) -> Tuple[str, ...]:
+    raw_options = params.get("option_color_names", params.get("color_option_names"))
+    if raw_options is not None:
+        if not isinstance(raw_options, Sequence) or isinstance(raw_options, (str, bytes)):
+            raise ValueError("option_color_names must be a sequence of six color names")
+        colors = tuple(str(color) for color in raw_options)
+        if len(colors) != len(COLOR_FREQUENCY_OPTION_LABELS):
+            raise ValueError("option_color_names must contain exactly six colors")
+        if len(colors) != len(set(colors)):
+            raise ValueError("option_color_names must be unique")
+        unsupported = [color for color in colors if color not in set(SEMANTIC_COLOR_SUPPORT)]
+        if unsupported:
+            raise ValueError(f"unsupported option color names: {unsupported}")
+        return tuple(colors)
+
+    answer_color = params.get("answer_color_name")
+    if answer_color is not None:
+        answer = str(answer_color)
+        if answer not in set(SEMANTIC_COLOR_SUPPORT):
+            raise ValueError(f"unsupported answer_color_name: {answer}")
+        colors = [str(color) for color in SEMANTIC_COLOR_SUPPORT if str(color) != answer]
+        rng.shuffle(colors)
+        option_colors = colors[: len(COLOR_FREQUENCY_OPTION_LABELS)]
+        option_colors[int(COLOR_FREQUENCY_OPTION_LABELS.index(str(answer_label)))] = str(answer)
+        return tuple(option_colors)
+
+    colors = list(str(color) for color in SEMANTIC_COLOR_SUPPORT)
+    rng.shuffle(colors)
+    return tuple(colors[: len(COLOR_FREQUENCY_OPTION_LABELS)])
+
+
+def _resolve_option_color_counts(
+    *,
+    frequency_program: str,
+    option_colors: Sequence[str],
+    answer_label: str,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+    rng: Any,
+) -> Tuple[Dict[str, int], Dict[str, float]]:
+    labels = COLOR_FREQUENCY_OPTION_LABELS
+    answer_color = str(option_colors[int(labels.index(str(answer_label)))])
+    raw_counts = params.get("color_counts_by_name", params.get("color_counts"))
+    if raw_counts is not None:
+        if not isinstance(raw_counts, Mapping):
+            raise ValueError("color_counts_by_name must be a mapping from option color name to count")
+        counts = {str(color): int(raw_counts.get(str(color), 0)) for color in option_colors}
+        if str(frequency_program) == "absent_color":
+            if int(counts[str(answer_color)]) != 0:
+                raise ValueError("answer color must have zero count for absent_color")
+            if sum(1 for count in counts.values() if int(count) == 0) != 1:
+                raise ValueError("absent_color requires exactly one zero-count option color")
+        else:
+            max_count = max(int(count) for count in counts.values())
+            if int(counts[str(answer_color)]) != int(max_count):
+                raise ValueError("answer color must be the unique maximum for most_frequent_color")
+            if sum(1 for count in counts.values() if int(count) == int(max_count)) != 1:
+                raise ValueError("most_frequent_color requires a unique maximum color count")
+            if any(int(count) <= 0 for count in counts.values()):
+                raise ValueError("most_frequent_color requires every option color to appear")
+        total = int(sum(int(count) for count in counts.values()))
+        return counts, uniform_int_probability_map(range(max(1, total), max(1, total) + 1), selected=total)
+
+    total_count, total_probabilities = resolve_int_support(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.total_count",
+        min_key="total_count_min",
+        max_key="total_count_max",
+        default_min=15,
+        default_max=24,
+        explicit_keys=("total_count",),
+        lower_bound=8,
+        upper_bound=36,
+    )
+    counts = {str(color): 0 for color in option_colors}
+    if str(frequency_program) == "absent_color":
+        present_colors = [str(color) for color in option_colors if str(color) != str(answer_color)]
+        if int(total_count) < len(present_colors):
+            raise ValueError("total_count too small for absent_color present colors")
+        for color in present_colors:
+            counts[color] = 1
+        remaining = int(total_count) - len(present_colors)
+        for _ in range(int(remaining)):
+            color = present_colors[int(rng.randrange(len(present_colors)))]
+            counts[str(color)] += 1
+        counts[str(answer_color)] = 0
+        return counts, dict(total_probabilities)
+
+    target_min = max(4, configured_int(params, gen_defaults, "max_color_count_min", 5))
+    target_max = max(target_min, configured_int(params, gen_defaults, "max_color_count_max", 9))
+    target_max = min(int(target_max), int(total_count) - len(option_colors) + 1)
+    if target_max < target_min:
+        raise ValueError("total_count too small for most_frequent_color maximum support")
+    max_count = int(target_min + int(rng.randrange(int(target_max - target_min + 1))))
+    other_colors = [str(color) for color in option_colors if str(color) != str(answer_color)]
+    counts[str(answer_color)] = int(max_count)
+    for color in other_colors:
+        counts[color] = 1
+    remaining = int(total_count) - int(max_count) - len(other_colors)
+    for _ in range(max(0, int(remaining))):
+        eligible = [color for color in other_colors if int(counts[str(color)]) < int(max_count) - 1]
+        if not eligible:
+            raise ValueError("could not allocate most_frequent_color counts with unique maximum")
+        color = str(eligible[int(rng.randrange(len(eligible)))])
+        counts[color] += 1
+    if int(counts[str(answer_color)]) <= max(int(counts[color]) for color in other_colors):
+        raise ValueError("failed to construct unique most frequent color")
+    return counts, dict(total_probabilities)
+
+
+def build_color_frequency_option_surface_data(
+    *,
+    namespace: str,
+    scene_variant: str,
+    element_type: str,
+    frequency_program: str,
+    answer_label: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+) -> Tuple[Dict[str, Any], Dict[str, float]]:
+    """Create one colored fixture plus six visual color-answer options."""
+
+    if str(frequency_program) not in {"most_frequent_color", "absent_color"}:
+        raise ValueError(f"unsupported color-frequency program: {frequency_program}")
+    if str(answer_label) not in set(COLOR_FREQUENCY_OPTION_LABELS):
+        raise ValueError(f"unsupported answer_label: {answer_label}")
+    rng = spawn_rng(int(instance_seed), f"{namespace}.cells")
+    option_colors = _resolve_color_option_names(
+        params=params,
+        answer_label=str(answer_label),
+        rng=rng,
+    )
+    color_counts, answer_probabilities = _resolve_option_color_counts(
+        frequency_program=str(frequency_program),
+        option_colors=option_colors,
+        answer_label=str(answer_label),
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+        rng=rng,
+    )
+    total = int(sum(int(count) for count in color_counts.values()))
+    rows, cols = grid_for_total(total)
+    total_slots = int(rows) * int(cols)
+    present_indices = sample_indices(rng, list(range(total_slots)), total)
+    answer_color = str(option_colors[int(COLOR_FREQUENCY_OPTION_LABELS.index(str(answer_label)))])
+    color_sequence: list[str] = []
+    for color in option_colors:
+        color_sequence.extend([str(color)] * int(color_counts[str(color)]))
+    if len(color_sequence) != len(present_indices):
+        raise ValueError("color-frequency count vector does not match present indices")
+    rng.shuffle(color_sequence)
+    color_by_index = {int(index): str(color_sequence[offset]) for offset, index in enumerate(present_indices)}
+    target_indices = [int(index) for index in present_indices if str(color_by_index[int(index)]) == str(answer_color)]
+    layout_style = "variable_grid" if str(scene_variant) in {"brick_wall", "paver_floor", "mailbox_bank"} else "uniform_grid"
+    cells = layout_cells(
+        scene_variant=str(scene_variant),
+        element_type=str(element_type),
+        rows=int(rows),
+        cols=int(cols),
+        present_indices=present_indices,
+        target_indices=target_indices,
+        rng=rng,
+        layout_style=layout_style,
+        color_by_index=color_by_index,
+    )
+    option_records = [
+        {
+            "label": str(label),
+            "color_name": str(color),
+            "fill_rgb": list(SEMANTIC_COLOR_RGB[str(color)]),
+            "visible_count": int(color_counts[str(color)]),
+        }
+        for label, color in zip(COLOR_FREQUENCY_OPTION_LABELS, option_colors)
+    ]
+    dataset = base_surface_data(
+        scene_variant=str(scene_variant),
+        element_type=str(element_type),
+        answer_value=int(color_counts[str(answer_color)]),
+        target_element_ids=target_ids_from_indices(cells, target_indices),
+        surface_cells=cells,
+        rows=int(rows),
+        cols=int(cols),
+        layout_style=layout_style,
+        solver_trace={
+            "program": str(frequency_program),
+            "option_color_counts": dict(color_counts),
+            "answer_label": str(answer_label),
+            "answer_color_name": str(answer_color),
+            "answer_color_count": int(color_counts[str(answer_color)]),
+            "unique_answer": True,
+        },
+        extra={
+            "option_labels": list(COLOR_FREQUENCY_OPTION_LABELS),
+            "option_records": list(option_records),
+            "option_color_names": [str(color) for color in option_colors],
+            "option_color_counts": dict(color_counts),
+            "answer_label": str(answer_label),
+            "answer_color_name": str(answer_color),
+            "answer_color_count": int(color_counts[str(answer_color)]),
+            "target_color_name": str(answer_color),
+            "frequency_program": str(frequency_program),
+        },
+    )
+    return dataset, dict(answer_probabilities)
+
+
 def _resolve_active_colors(
     *,
     params: Mapping[str, Any],
@@ -1380,9 +1601,11 @@ def build_scoped_color_surface_data(
 
 __all__ = [
     "base_surface_data",
+    "build_color_frequency_option_surface_data",
     "build_color_operation_surface_data",
     "build_color_surface_data",
     "build_recolor_board_match_surface_data",
     "build_repeated_surface_data",
     "build_scoped_color_surface_data",
+    "COLOR_FREQUENCY_OPTION_LABELS",
 ]

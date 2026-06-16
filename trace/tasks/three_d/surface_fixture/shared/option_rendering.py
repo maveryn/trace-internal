@@ -50,6 +50,21 @@ class RenderedSurfaceFixtureRecolorBoardMatch:
     option_records: List[Dict[str, Any]]
 
 
+@dataclass(frozen=True)
+class RenderedSurfaceFixtureColorFrequencyOptions:
+    """Rendered single fixture panel plus six color-option swatches."""
+
+    image: Image.Image
+    entities: List[Dict[str, Any]]
+    scene_bbox_px: List[float]
+    fixture_panel_bbox_px: List[float]
+    option_bboxes_px: Dict[str, List[float]]
+    option_label_bboxes_px: Dict[str, List[float]]
+    element_bboxes_px: Dict[str, List[float]]
+    element_centers_px: Dict[str, List[float]]
+    option_records: List[Dict[str, Any]]
+
+
 def _panel_positions(width: int, height: int) -> Dict[str, List[int]]:
     margin_x = max(42, int(round(float(width) * 0.048)))
     margin_y = max(34, int(round(float(height) * 0.045)))
@@ -98,6 +113,30 @@ def _recolor_board_positions(width: int, height: int) -> Tuple[List[int], Dict[s
     }
 
 
+def _color_frequency_positions(width: int, height: int) -> Tuple[List[int], Dict[str, List[int]]]:
+    margin_x = max(42, int(round(float(width) * 0.050)))
+    margin_y = max(30, int(round(float(height) * 0.040)))
+    gap_y = max(24, int(round(float(height) * 0.030)))
+    option_gap_x = max(14, int(round(float(width) * 0.018)))
+    option_gap_y = max(14, int(round(float(height) * 0.020)))
+    option_area_h = max(150, int(round(float(height) * 0.245)))
+    panel_bottom = int(height - margin_y - option_area_h - gap_y)
+    fixture_bbox = [margin_x, margin_y, int(width - margin_x), int(panel_bottom)]
+    option_top = int(panel_bottom + gap_y)
+    option_bottom = int(height - margin_y)
+    option_w = int((int(width) - 2 * margin_x - 2 * option_gap_x) // 3)
+    option_h = int((option_bottom - option_top - option_gap_y) // 2)
+    labels = ("A", "B", "C", "D", "E", "F")
+    bboxes: Dict[str, List[int]] = {}
+    for index, label in enumerate(labels):
+        row = int(index // 3)
+        col = int(index % 3)
+        x0 = int(margin_x + col * (option_w + option_gap_x))
+        y0 = int(option_top + row * (option_h + option_gap_y))
+        bboxes[str(label)] = [x0, y0, x0 + option_w, y0 + option_h]
+    return fixture_bbox, bboxes
+
+
 def _draw_option_label(draw: ImageDraw.ImageDraw, *, label: str, panel_bbox: Sequence[float]) -> List[float]:
     badge_size = 38
     x0 = float(panel_bbox[0]) + 12.0
@@ -118,6 +157,31 @@ def _draw_option_label(draw: ImageDraw.ImageDraw, *, label: str, panel_bbox: Seq
         fill=(255, 255, 255),
     )
     return [round(float(value), 3) for value in badge]
+
+
+def _draw_color_option(
+    draw: ImageDraw.ImageDraw,
+    *,
+    label: str,
+    color_name: str,
+    fill_rgb: Sequence[int],
+    option_bbox: Sequence[int],
+) -> Tuple[List[float], List[float]]:
+    x0, y0, x1, y1 = [int(value) for value in option_bbox]
+    bbox = [float(x0), float(y0), float(x1), float(y1)]
+    draw.rounded_rectangle(tuple(bbox), radius=8, fill=(245, 247, 248), outline=(72, 84, 96), width=2)
+    swatch_pad = max(10, int(round(float(y1 - y0) * 0.15)))
+    swatch = [
+        float(x0 + swatch_pad + 42),
+        float(y0 + swatch_pad),
+        float(x1 - swatch_pad),
+        float(y1 - swatch_pad),
+    ]
+    shadow = [swatch[0] + 3.0, swatch[1] + 3.0, swatch[2] + 3.0, swatch[3] + 3.0]
+    draw.rounded_rectangle(tuple(shadow), radius=7, fill=(183, 190, 196))
+    draw.rounded_rectangle(tuple(swatch), radius=7, fill=tuple(int(value) for value in fill_rgb), outline=(38, 45, 54), width=2)
+    label_bbox = _draw_option_label(draw, label=str(label), panel_bbox=bbox)
+    return [round(float(value), 3) for value in bbox], list(label_bbox)
 
 
 def _draw_panel_badge(
@@ -522,9 +586,130 @@ def render_surface_fixture_recolor_board_match(
     )
 
 
+def render_surface_fixture_color_frequency_options(
+    background: Image.Image,
+    *,
+    dataset: Mapping[str, Any],
+    render_params: Any,
+) -> RenderedSurfaceFixtureColorFrequencyOptions:
+    """Render one colored fixture and six labeled color swatch options."""
+
+    image = background.convert("RGB")
+    draw = ImageDraw.Draw(image)
+    width, height = image.size
+    fixture_position, option_positions = _color_frequency_positions(int(width), int(height))
+    rendered_panel, fixture_bbox, fixture_label_bbox, scale_x, scale_y = _paste_rendered_panel(
+        image,
+        draw,
+        dataset=dict(dataset),
+        render_params=render_params,
+        panel_bbox=fixture_position,
+        label="fixture",
+        label_text="Fixture",
+        element_prefix="fixture",
+        badge_fill=(82, 94, 108),
+    )
+    x0, y0 = int(fixture_position[0]), int(fixture_position[1])
+    option_records: List[Dict[str, Any]] = []
+    option_bboxes: Dict[str, List[float]] = {}
+    option_label_bboxes: Dict[str, List[float]] = {}
+    entities: List[Dict[str, Any]] = []
+    element_bboxes: Dict[str, List[float]] = {}
+    element_centers: Dict[str, List[float]] = {}
+
+    scene_bbox = bbox_transform(
+        rendered_panel.scene_bbox_px,
+        scale_x=float(scale_x),
+        scale_y=float(scale_y),
+        offset_x=float(x0),
+        offset_y=float(y0),
+    )
+    entities.append(
+        {
+            "entity_id": "fixture_panel",
+            "entity_type": "three_d_surface_fixture_color_frequency_panel",
+            "bbox_px": list(fixture_bbox),
+            "attrs": {
+                "option_color_counts": dict(dataset.get("option_color_counts", {})),
+            },
+        }
+    )
+    entities.extend(
+        _offset_entities(
+            rendered_panel,
+            label="fixture",
+            scale_x=float(scale_x),
+            scale_y=float(scale_y),
+            dx=float(x0),
+            dy=float(y0),
+        )
+    )
+    for element_id, bbox in rendered_panel.element_bboxes_px.items():
+        element_bboxes[str(element_id)] = bbox_transform(
+            bbox,
+            scale_x=float(scale_x),
+            scale_y=float(scale_y),
+            offset_x=float(x0),
+            offset_y=float(y0),
+        )
+    for element_id, center in rendered_panel.element_centers_px.items():
+        element_centers[str(element_id)] = point_transform(
+            center,
+            scale_x=float(scale_x),
+            scale_y=float(scale_y),
+            offset_x=float(x0),
+            offset_y=float(y0),
+        )
+
+    records = [dict(record) for record in dataset.get("option_records", [])]
+    if len(records) != 6:
+        raise ValueError("color-frequency option renderer requires six option records")
+    for record in records:
+        label = str(record["label"])
+        option_bbox, label_bbox = _draw_color_option(
+            draw,
+            label=str(label),
+            color_name=str(record["color_name"]),
+            fill_rgb=record["fill_rgb"],
+            option_bbox=option_positions[str(label)],
+        )
+        option_bboxes[str(label)] = list(option_bbox)
+        option_label_bboxes[str(label)] = list(label_bbox)
+        option_record = dict(record)
+        option_record["option_bbox_px"] = list(option_bbox)
+        option_record["option_label_bbox_px"] = list(label_bbox)
+        option_records.append(option_record)
+        entities.append(
+            {
+                "entity_id": f"color_option_{label}",
+                "entity_type": "three_d_surface_fixture_color_option",
+                "bbox_px": list(option_bbox),
+                "attrs": {
+                    "option_label": str(label),
+                    "color_name": str(record["color_name"]),
+                    "visible_count": int(record["visible_count"]),
+                },
+            }
+        )
+    all_bboxes = [list(scene_bbox), list(fixture_bbox), *[list(bbox) for bbox in option_bboxes.values()]]
+    return RenderedSurfaceFixtureColorFrequencyOptions(
+        image=image,
+        entities=entities,
+        scene_bbox_px=bbox_union(*all_bboxes),
+        fixture_panel_bbox_px=list(fixture_bbox),
+        option_bboxes_px=dict(option_bboxes),
+        option_label_bboxes_px=dict(option_label_bboxes),
+        element_bboxes_px=dict(element_bboxes),
+        element_centers_px=dict(element_centers),
+        option_records=list(option_records),
+    )
+
+
 __all__ = [
+    "RenderedSurfaceFixtureColorFrequencyOptions",
     "RenderedSurfaceFixtureOptionGrid",
     "RenderedSurfaceFixtureRecolorBoardMatch",
+    "render_surface_fixture_color_frequency_options",
     "render_surface_fixture_option_grid",
     "render_surface_fixture_recolor_board_match",
 ]

@@ -14,6 +14,11 @@ from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
 from trace.tasks.shared.named_colors import available_named_colors
 from trace.tasks.three_d.shared.object_resources import object_profiles
 from trace.tasks.three_d.surface_fixture.color_count_after_operations_value import TASK_ID as COLOR_OPERATIONS_TASK_ID
+from trace.tasks.three_d.surface_fixture.color_frequency_option_label import (
+    ABSENT_QUERY_ID as COLOR_FREQUENCY_ABSENT_QUERY_ID,
+    MOST_QUERY_ID as COLOR_FREQUENCY_MOST_QUERY_ID,
+    TASK_ID as COLOR_FREQUENCY_TASK_ID,
+)
 from trace.tasks.three_d.surface_fixture.colored_element_count import TASK_ID as COLORED_TASK_ID
 from trace.tasks.three_d.surface_fixture.element_count_extremum_label import (
     HIGHEST_QUERY_ID as EXTREMUM_HIGHEST_QUERY_ID,
@@ -40,6 +45,7 @@ from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 SURFACE_FIXTURE_TASK_IDS = (
     REPEATED_TASK_ID,
     EXTREMUM_TASK_ID,
+    COLOR_FREQUENCY_TASK_ID,
     COLORED_TASK_ID,
     COLOR_OPERATIONS_TASK_ID,
     RECOLOR_MATCH_TASK_ID,
@@ -233,6 +239,87 @@ def test_surface_fixture_element_count_extremum_label_queries() -> None:
         assert "{object_" not in output.prompt
         assert_three_d_canvas_contract(output)
         _assert_composite_canvas_expanded(output)
+
+
+def test_surface_fixture_color_frequency_option_label_queries() -> None:
+    cases = (
+        (
+            COLOR_FREQUENCY_MOST_QUERY_ID,
+            {
+                "query_id": COLOR_FREQUENCY_MOST_QUERY_ID,
+                "scene_variant": "control_panel",
+                "answer_label": "D",
+                "option_color_names": ["red", "blue", "green", "yellow", "magenta", "cyan"],
+                "color_counts_by_name": {
+                    "red": 2,
+                    "blue": 3,
+                    "green": 1,
+                    "yellow": 6,
+                    "magenta": 4,
+                    "cyan": 2,
+                },
+                "post_image_noise_apply_prob": 0.0,
+            },
+        ),
+        (
+            COLOR_FREQUENCY_ABSENT_QUERY_ID,
+            {
+                "query_id": COLOR_FREQUENCY_ABSENT_QUERY_ID,
+                "scene_variant": "socket_bank",
+                "answer_label": "B",
+                "option_color_names": ["red", "blue", "green", "yellow", "magenta", "cyan"],
+                "color_counts_by_name": {
+                    "red": 2,
+                    "blue": 0,
+                    "green": 3,
+                    "yellow": 4,
+                    "magenta": 2,
+                    "cyan": 1,
+                },
+                "post_image_noise_apply_prob": 0.0,
+            },
+        ),
+    )
+
+    for offset, (query_id, params) in enumerate(cases):
+        output = create_task(COLOR_FREQUENCY_TASK_ID).generate(
+            20260930 + offset,
+            params=params,
+            max_attempts=20,
+        )
+
+        trace = output.trace_payload["execution_trace"]
+        render_map = output.trace_payload["render_map"]
+        counts = {str(color): int(count) for color, count in trace["option_color_counts"].items()}
+        records = {str(record["label"]): dict(record) for record in trace["option_records"]}
+        answer_label = str(params["answer_label"])
+        answer_color = str(records[answer_label]["color_name"])
+
+        assert output.scene_id == "surface_fixture"
+        assert output.query_id == query_id
+        assert output.answer_gt.type == "option_letter"
+        assert output.answer_gt.value == answer_label
+        assert trace["answer_label"] == answer_label
+        assert trace["answer_color_name"] == answer_color
+        assert trace["answer_color_count"] == counts[answer_color]
+        assert set(records) == {"A", "B", "C", "D", "E", "F"}
+        assert all(str(record["color_name"]) in set(SEMANTIC_COLOR_SUPPORT) for record in records.values())
+        assert output.annotation_gt.type == "bbox"
+        assert output.annotation_gt.value == render_map["option_bboxes_px"][answer_label]
+        assert output.trace_payload["projected_annotation"]["bbox"] == output.annotation_gt.value
+        if query_id == COLOR_FREQUENCY_MOST_QUERY_ID:
+            max_count = max(counts.values())
+            assert counts[answer_color] == max_count
+            assert sum(1 for count in counts.values() if count == max_count) == 1
+            assert all(count > 0 for count in counts.values())
+            assert len(trace["target_element_ids"]) == max_count
+        else:
+            assert counts[answer_color] == 0
+            assert sum(1 for count in counts.values() if count == 0) == 1
+            assert len(trace["target_element_ids"]) == 0
+        assert "{target_" not in output.prompt
+        assert "{scope_" not in output.prompt
+        assert_three_d_canvas_contract(output)
 
 
 def test_surface_fixture_scoped_color_query_ids_bind_scope_axis() -> None:

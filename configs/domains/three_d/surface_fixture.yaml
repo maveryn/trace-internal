@@ -180,6 +180,35 @@ generation:
       target_count_min: 1
       target_count_max: 6
       balanced_scene_variant_sampling: true
+    task_three_d__surface_fixture__color_frequency_option_label:
+      scene_variant_weights:
+        wall_tile_panel: 1.0
+        compartment_tray: 1.0
+        vent_panel: 1.0
+        window_grid: 1.0
+        door_bank: 1.0
+        drawer_pull_panel: 1.0
+        brick_wall: 1.0
+        paver_floor: 1.0
+        locker_bank: 1.0
+        mailbox_bank: 1.0
+        server_rack: 1.0
+        control_panel: 1.0
+        solar_panel_array: 1.0
+        screw_plate: 1.0
+        hex_nut_plate: 1.0
+        washer_plate: 1.0
+        socket_bank: 1.0
+        hook_board: 1.0
+        indicator_light_panel: 1.0
+        bracket_panel: 1.0
+        u_bolt_plate: 1.0
+        pipe_rack: 1.0
+      total_count_min: 15
+      total_count_max: 24
+      max_color_count_min: 5
+      max_color_count_max: 9
+      balanced_scene_variant_sampling: true
 rendering:
   task_overrides:
     task_three_d__surface_fixture__repeated_element_count:
@@ -392,6 +421,41 @@ rendering:
       - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__surface_fixture__color_frequency_option_label:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 44
+      scene_margin_right_px: 44
+      scene_margin_top_px: 36
+      scene_margin_bottom_px: 42
+      room_extent: 2.85
+      room_height: 3.0
+      grid_step: 0.0
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb:
+      - 232
+      - 239
+      - 242
+      grid_rgb:
+      - 184
+      - 197
+      - 207
+      edge_rgb:
+      - 93
+      - 108
+      - 124
+      text_rgb:
+      - 30
+      - 34
+      - 42
+      text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
 prompt:
   shared:
     bundle_id: three_d_surface_fixture_v1
@@ -414,5 +478,8 @@ prompt:
       scene_key: surface_fixture
       task_key: surface_fixture_count_query
     task_three_d__surface_fixture__scoped_colored_element_count:
+      scene_key: surface_fixture
+      task_key: surface_fixture_count_query
+    task_three_d__surface_fixture__color_frequency_option_label:
       scene_key: surface_fixture
       task_key: surface_fixture_count_query

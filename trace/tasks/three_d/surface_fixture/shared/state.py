@@ -182,29 +182,6 @@ COLORABLE_SCENE_VARIANTS: Tuple[str, ...] = (
     "pipe_rack",
 )
 
-MISSING_SCENE_VARIANTS: Tuple[str, ...] = (
-    "wall_tile_panel",
-    "compartment_tray",
-    "window_grid",
-    "door_bank",
-    "brick_wall",
-    "paver_floor",
-    "locker_bank",
-    "mailbox_bank",
-    "server_rack",
-    "control_panel",
-    "solar_panel_array",
-    "screw_plate",
-    "hex_nut_plate",
-    "washer_plate",
-    "socket_bank",
-    "hook_board",
-    "indicator_light_panel",
-    "bracket_panel",
-    "u_bolt_plate",
-    "pipe_rack",
-)
-
 SURFACE_FIXTURE_OBJECT_TYPES: Tuple[str, ...] = SUPPORTED_SCENE_VARIANTS
 
 
@@ -220,7 +197,6 @@ __all__ = [
     "ELEMENT_DISPLAY_NAME",
     "ELEMENT_PLURAL",
     "ELEMENT_TYPE_BY_SCENE_VARIANT",
-    "MISSING_SCENE_VARIANTS",
     "SCENE_ID",
     "SCENE_VARIANT_BY_ELEMENT_TYPE",
     "SEMANTIC_COLOR_RGB",

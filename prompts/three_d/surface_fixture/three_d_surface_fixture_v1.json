@@ -70,6 +70,20 @@
         "In {scope_phrase}, what is the number of {target_color_label} {target_element_plural}?",
         "Looking only at {scope_phrase}, how many {target_element_plural} are {target_color_label}?",
         "How many {target_color_label} {target_element_plural} appear within {scope_phrase}?"
+      ],
+      "most_frequent_color_option": [
+        "Which labeled color option appears most often among the visible {target_element_plural}?",
+        "Choose the option label for the color used by the most visible {target_element_plural}.",
+        "Which color option has the highest count on the fixture?",
+        "Among the labeled color options, which one appears the most on the fixture?",
+        "What letter labels the color that appears most often on the fixture?"
+      ],
+      "absent_color_option": [
+        "Which labeled color option does not appear on the fixture?",
+        "Choose the option label for the color absent from the visible {target_element_plural}.",
+        "Which color option has zero visible {target_element_plural} on the fixture?",
+        "Among the labeled color options, which one is not present on the fixture?",
+        "What letter labels the color that does not appear on the fixture?"
       ]
     },
     "output": {
@@ -131,6 +145,18 @@
       "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted colored surface element in the requested row or column",
       "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:most_frequent_color_option": {
+      "answer_hint": "set \"answer\" to the selected color option label as a single capital letter",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] pixel box around the selected color option",
+      "json_example": "{\"annotation\":[620,710,890,790],\"answer\":\"D\"}",
+      "json_example_answer_only": "{\"answer\":\"D\"}"
+    },
+    "query:absent_color_option": {
+      "answer_hint": "set \"answer\" to the selected color option label as a single capital letter",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] pixel box around the selected color option",
+      "json_example": "{\"annotation\":[620,710,890,790],\"answer\":\"D\"}",
+      "json_example_answer_only": "{\"answer\":\"D\"}"
     }
   },
   "dynamic_slots": {
@@ -153,6 +179,8 @@
     "query:element_color_count": ["target_color_label", "target_element_plural"],
     "query:color_count_after_operations": ["operation_phrase", "target_color_label", "target_element_plural"],
     "query:recolor_board_match": ["recolor_phrase"],
-    "query:scoped_element_color_count": ["target_color_label", "target_element_plural", "scope_phrase"]
+    "query:scoped_element_color_count": ["target_color_label", "target_element_plural", "scope_phrase"],
+    "query:most_frequent_color_option": ["target_element_plural"],
+    "query:absent_color_option": ["target_element_plural"]
   }
 }

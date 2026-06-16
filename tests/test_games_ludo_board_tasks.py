@@ -133,10 +133,10 @@ def test_games_ludo_board_winning_roll_answer_matches_trace() -> None:
         assert execution["winning_roll"] == roll
         assert execution["query_color"] == "blue"
         assert execution["token_coords_by_color"]["blue"] == list(HOME_LANES["blue"][5 - roll])
-        assert out.annotation_gt.type == "point_set"
-        assert len(out.annotation_gt.value) == 1
-        assert out.trace_payload["projected_annotation"]["type"] == "point_set"
-        assert out.trace_payload["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+        assert out.annotation_gt.type == "point"
+        assert len(out.annotation_gt.value) == 2
+        assert out.trace_payload["projected_annotation"]["type"] == "point"
+        assert out.trace_payload["projected_annotation"]["pixel_point"] == out.annotation_gt.value
         assert out.trace_payload["scene_ir"]["relations"]["annotation_entity_ids"] == {"point_0": "token_blue"}
         assert len(out.trace_payload["render_map"]["flow_arrow_markers_px"]) == len(FLOW_ARROW_SPECS)
         assert set(out.trace_payload["render_map"]["flow_arrow_markers_px"][0]) >= {"start_coord", "end_coord", "role"}
@@ -212,11 +212,10 @@ def test_games_ludo_board_move_result_answer_matches_trace() -> None:
         assert len(destination_options) == len(execution["destination_options"])
         assert len(set(destination_options.values())) == len(execution["destination_options"])
         assert not set(destination_options.values()) & token_coords
-        assert set(out.annotation_gt.value.keys()) == {"moving_token", "roll_sequence", "destination_cell"}
+        assert set(out.annotation_gt.value.keys()) == {"moving_token", "destination_cell"}
         assert out.annotation_gt.type == "keyed_point_map"
         assert set(out.trace_payload["projected_annotation"]["pixel_keyed_point_map"].keys()) == {
             "moving_token",
-            "roll_sequence",
             "destination_cell",
         }
         assert set(out.trace_payload["render_map"]["destination_option_cell_bboxes_px"].keys()) == set(destination_options)

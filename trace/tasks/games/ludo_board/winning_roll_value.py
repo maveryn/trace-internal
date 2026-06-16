@@ -10,7 +10,7 @@ from trace.tasks.registry import register_task
 
 from ._lifecycle import LudoObjectivePlan, LudoSingleQueryTaskBase, build_ludo_attempt_result, run_ludo_registered_task
 from .shared.prompts import make_ludo_prompt_slots_from_keys
-from .shared.annotations import point_set_ludo_render_map_annotation
+from .shared.annotations import point_ludo_render_map_annotation
 from .shared.rendering import make_ludo_render_state
 from .shared.rules import roll_sequence_for_total
 from .shared.sampling import resolve_ludo_integer_axis, sample_other_token_coords
@@ -20,7 +20,7 @@ from .shared.state import DEFAULTS, HOME_LANES, PLAYER_COLORS, SCENE_NAMESPACE, 
 TASK_ID = "task_games__ludo_board__winning_roll_value"
 _PROMPT_SLOTS = make_ludo_prompt_slots_from_keys(
     keys=("winning_roll_value", "exact_finish_rule_text", "answer_hint_winning_roll_value", "annotation_hint_winning_roll_value"),
-    example_annotation=[[115, 215]],
+    example_annotation=[115, 215],
     example_answer=4,
 )
 
@@ -94,10 +94,10 @@ def _prepare_winning_roll_objective(
                 token_coords=sample.token_coords,
                 query_color=str(sample.query_color),
             ),
-            build_annotation=lambda rendered: point_set_ludo_render_map_annotation(
+            build_annotation=lambda rendered: point_ludo_render_map_annotation(
                 rendered=rendered,
-                point_sources=(("token_centers_px", f"token_{sample.query_color}"),),
-                point_entity_ids=(f"token_{sample.query_color}",),
+                point_source=("token_centers_px", f"token_{sample.query_color}"),
+                point_entity_id=f"token_{sample.query_color}",
             ),
             selected_query_id=str(selected_query_id),
             axes=axes,

@@ -109,7 +109,6 @@ def build_marble_prompt_artifacts(
             "annotation_hint": str(resolved_defaults[str(context.annotation_hint_key)]),
             "json_example": str(context.json_example),
             "json_example_answer_only": str(context.json_example_answer_only),
-            "target_pop_count": 0 if context.target_pop_count is None else int(context.target_pop_count),
         },
         instance_seed=int(instance_seed),
     )

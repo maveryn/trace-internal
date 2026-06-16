@@ -434,7 +434,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__ludo_board__move_result_option_label": _entry("games", "ludo_board", "games", "ludo_board"),
     "task_games__ludo_board__winning_roll_value": _entry("games", "ludo_board", "games", "ludo_board"),
     "task_games__marble_chain__max_pop_direction_label": _entry("games", "marble_chain", "games", "marble_chain"),
-    "task_games__marble_chain__target_pop_direction_label": _entry("games", "marble_chain", "games", "marble_chain"),
     "task_games__marble_chain__shot_effect_value": _entry("games", "marble_chain", "games", "marble_chain"),
     "task_games__mancala_pit_board__post_sow_pit_count_value": _entry("games", "mancala_pit_board", "games", "mancala_pit_board"),
     "task_games__mancala_pit_board__sowing_landing_option_label": _entry("games", "mancala_pit_board", "games", "mancala_pit_board"),

@@ -113,7 +113,7 @@
     "answer_hint_path_coin_count": "set \"answer\" to the number of coins collected by the shown path",
     "object_description_two_lane_track_safe_path": "labeled candidate path cards, each showing a two-lane track with hazard cells and one candidate path",
     "safe_path_rule_text": "Each path moves one row toward the finish. A safe path never enters a hazard cell.",
-    "annotation_hint_safe_path_label": "set \"annotation\" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected path card",
+    "annotation_hint_safe_path_label": "set \"annotation\" to one bounding box [x0,y0,x1,y1] around the selected path card",
     "answer_hint_safe_path_label": "set \"answer\" to the selected path label as a capital letter"
   }
 }

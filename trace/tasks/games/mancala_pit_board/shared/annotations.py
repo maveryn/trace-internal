@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 from trace.core.types import TypedValue
+from trace.tasks.shared.annotation_artifacts import bbox_annotation_artifacts
 
 from .state import RenderedMancalaScene
 
@@ -46,6 +47,24 @@ def pit_bbox_set_annotation(
     )
 
 
+def pit_bbox_annotation(
+    *,
+    rendered: RenderedMancalaScene,
+    pit_id: str,
+    role_name: str,
+) -> MancalaAnnotationBundle:
+    """Project one selected visible pit to a scalar bbox annotation."""
+
+    pit_bbox = _round_bbox(rendered.render_map["pit_bboxes_px"][str(pit_id)])
+    artifacts = bbox_annotation_artifacts(pit_bbox)
+    return MancalaAnnotationBundle(
+        annotation_gt=artifacts.annotation_gt,
+        projected_annotation=dict(artifacts.projected_annotation),
+        witness_symbolic={"type": artifacts.annotation_type, "ids": [str(pit_id)]},
+        entity_ids={str(role_name): str(pit_id)},
+    )
+
+
 def keyed_pit_bbox_annotation(
     *,
     rendered: RenderedMancalaScene,
@@ -74,5 +93,6 @@ def keyed_pit_bbox_annotation(
 __all__ = [
     "MancalaAnnotationBundle",
     "keyed_pit_bbox_annotation",
+    "pit_bbox_annotation",
     "pit_bbox_set_annotation",
 ]

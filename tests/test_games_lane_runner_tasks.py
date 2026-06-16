@@ -175,12 +175,12 @@ def test_games_lane_runner_safe_path_answer_matches_trace() -> None:
     assert safe_labels == [answer] == ["C"]
     assert execution["answer_entity_id"] == answer_entity_id
     assert execution["annotation_entity_ids"] == [answer_entity_id]
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 1
-    assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
-    assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert out.trace_payload["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
-    assert out.trace_payload["render_map"]["path_options_px"][answer]["card_bbox_px"] == out.annotation_gt.value[0]
+    assert out.annotation_gt.type == "bbox"
+    assert len(out.annotation_gt.value) == 4
+    assert out.trace_payload["projected_annotation"]["type"] == "bbox"
+    assert out.trace_payload["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert out.trace_payload["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
+    assert out.trace_payload["render_map"]["path_options_px"][answer]["card_bbox_px"] == out.annotation_gt.value
     assert out.trace_payload["render_map"]["show_board"] is False
     assert out.trace_payload["render_map"]["cell_bboxes_px"] == {}
     assert out.trace_payload["render_map"]["hazard_bboxes_px"] == {}

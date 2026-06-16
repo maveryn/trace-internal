@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping as MappingABC
 from dataclasses import dataclass
 from typing import Any, Mapping
 
@@ -38,11 +39,12 @@ class LudoPromptSlots:
     json_example_answer_only: str
 
 
-def format_ludo_json_examples(*, annotation: Mapping[str, Any], answer: Any) -> tuple[str, str]:
+def format_ludo_json_examples(*, annotation: Any, answer: Any) -> tuple[str, str]:
     """Format task-owned annotation and answer examples for prompt slots."""
 
+    annotation_value = dict(annotation) if isinstance(annotation, MappingABC) else annotation
     return (
-        json.dumps({"annotation": dict(annotation), "answer": answer}, separators=(",", ":"), ensure_ascii=True),
+        json.dumps({"annotation": annotation_value, "answer": answer}, separators=(",", ":"), ensure_ascii=True),
         json.dumps({"answer": answer}, separators=(",", ":"), ensure_ascii=True),
     )
 
@@ -53,7 +55,7 @@ def make_ludo_prompt_slots(
     rule_slot_name: str,
     answer_hint_key: str,
     annotation_hint_key: str,
-    example_annotation: Mapping[str, Any],
+    example_annotation: Any,
     example_answer: Any,
 ) -> LudoPromptSlots:
     """Build prompt slots from task-owned keys and a format-only JSON example."""
@@ -75,7 +77,7 @@ def make_ludo_prompt_slots(
 def make_ludo_prompt_slots_from_keys(
     *,
     keys: tuple[str, str, str, str],
-    example_annotation: Mapping[str, Any],
+    example_annotation: Any,
     example_answer: Any,
 ) -> LudoPromptSlots:
     """Build prompt slots from ordered task keys plus a format-only JSON example."""

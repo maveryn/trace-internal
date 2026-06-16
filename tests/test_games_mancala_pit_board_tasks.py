@@ -92,9 +92,10 @@ def test_games_mancala_pit_board_landing_answer_matches_trace() -> None:
     assert trace["answer_option_label"] == "C"
     assert trace["option_pits_by_label"]["C"] == "G"
     assert trace["sowing_path_labels"][-1] == "G"
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 1
-    assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
+    assert out.annotation_gt.type == "bbox"
+    assert len(out.annotation_gt.value) == 4
+    assert out.trace_payload["projected_annotation"]["type"] == "bbox"
+    assert out.trace_payload["projected_annotation"]["bbox"] == out.annotation_gt.value
     assert len(out.trace_payload["render_map"]["landing_option_marker_bboxes_px"]) == 4
     assert set(out.trace_payload["render_map"]["landing_option_marker_pit_ids"].keys()) == set(OPTION_LABELS)
 

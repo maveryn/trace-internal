@@ -9,7 +9,7 @@ from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 
 from ._lifecycle import MancalaAttemptResult, MancalaObjectivePlan, MancalaSingleQueryTaskBase, build_mancala_attempt_result, run_mancala_registered_task
-from .shared.annotations import pit_bbox_set_annotation
+from .shared.annotations import pit_bbox_annotation
 from .shared.prompts import make_mancala_prompt_slots
 from .shared.rules import pit_index, pit_label, sow_counts
 from .shared.sampling import random_initial_counts, resolve_mancala_label_axis
@@ -21,7 +21,7 @@ PROMPT_SLOTS = make_mancala_prompt_slots(
     prompt_query_key="sowing_landing_option_label",
     answer_hint_key="answer_hint_sowing_landing_option_label",
     annotation_hint_key="annotation_hint_sowing_landing_option_label",
-    example_annotation=[[420, 140, 520, 204]],
+    example_annotation=[420, 140, 520, 204],
     example_answer="B",
 )
 
@@ -155,9 +155,9 @@ def _prepare_landing_objective(
             answer_gt=TypedValue(type="option_letter", value=str(answer_option_axis.value)),
             sample=sample,
             prompt_slots=PROMPT_SLOTS,
-            build_annotation=lambda rendered: pit_bbox_set_annotation(
+            build_annotation=lambda rendered: pit_bbox_annotation(
                 rendered=rendered,
-                pit_ids=[landing_pit_id],
+                pit_id=landing_pit_id,
                 role_name="landing_pit",
             ),
             selected_query_id=str(selected_query_id),

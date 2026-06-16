@@ -107,7 +107,7 @@
     "object_description_mixed_seed": "a two-row pit board with visible seeds and an arrow direction",
     "object_description_busy_seed": "a two-row pit board with visible seeds and an arrow direction",
     "sowing_rule_text": "Pick up all seeds from the X-marked pit and sow one seed at a time in the arrow direction.",
-    "annotation_hint_sowing_landing_option_label": "set \"annotation\" to a JSON array containing the selected landing pit bounding box as [x0,y0,x1,y1] in pixels",
+    "annotation_hint_sowing_landing_option_label": "set \"annotation\" to one bounding box [x0,y0,x1,y1] around the selected landing pit",
     "answer_hint_sowing_landing_option_label": "set \"answer\" to the option letter marking the final landing pit",
     "annotation_hint_post_sow_pit_count_value": "set \"annotation\" to an object with keys \"source_pit\" and \"target_pit\", each mapped to that pit bounding box as [x0,y0,x1,y1] in pixels",
     "answer_hint_post_sow_pit_count_value": "set \"answer\" to the integer number of seeds in the target-marked pit after the move"

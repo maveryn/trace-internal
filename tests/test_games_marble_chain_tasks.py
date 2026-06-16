@@ -57,16 +57,14 @@ def test_games_marble_chain_defaults_expose_axes_and_prompt_bundle() -> None:
     assert str(prompt["bundle_id"]) == "games_marble_chain_v1"
 
 
-def test_games_marble_chain_prompt_bundle_has_three_queries() -> None:
+def test_games_marble_chain_prompt_bundle_has_two_queries() -> None:
     bundle = json.loads(Path("prompts/games/marble_chain/games_marble_chain_v1.json").read_text(encoding="utf-8"))
     assert str(bundle["schema_version"]) == "v1"
     assert set(bundle["templates"]["query"].keys()) == {
         "max_pop_direction_label",
-        "target_pop_direction_label",
         "pop_count_after_marked_shot",
     }
     assert "cascade" in str(bundle["code_prompt_defaults"]["marble_chain_rule_text"])
-    assert "target_pop_count" in bundle["required_slots_by_key"]["query:target_pop_direction_label"]
 
 
 def test_games_marble_chain_max_pop_direction_has_unique_answer() -> None:
@@ -90,26 +88,6 @@ def test_games_marble_chain_max_pop_direction_has_unique_answer() -> None:
     for spec in out.trace_payload["scene_ir"]["entities"]:
         if spec.get("entity_type") == "shot_direction_arrow":
             assert "label_center_px" in spec
-    _assert_shot_labels_are_separated_from_marbles(out)
-
-
-def test_games_marble_chain_target_pop_direction_has_unique_answer() -> None:
-    out = create_task("task_games__marble_chain__target_pop_direction_label").generate(
-        91241,
-        params={"target_pop_count": 3, "option_count": 4},
-        max_attempts=300,
-    )
-    execution = out.trace_payload["execution_trace"]
-    options = execution["shot_options"]
-    answers = [str(option["label"]) for option in options if int(option["pop_count"]) == 3]
-
-    assert out.answer_gt.type == "option_letter"
-    assert answers == [str(out.answer_gt.value)]
-    assert execution["target_pop_count"] == 3
-    assert out.query_id == "single"
-    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "target_pop_direction_label"
-    assert out.annotation_gt.type == "point"
-    assert out.trace_payload["projected_annotation"]["point"] == out.annotation_gt.value
     _assert_shot_labels_are_separated_from_marbles(out)
 
 

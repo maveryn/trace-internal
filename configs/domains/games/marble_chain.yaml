@@ -37,19 +37,6 @@ generation:
       - 5
       - 6
       balanced_option_count_sampling: true
-    task_games__marble_chain__target_pop_direction_label:
-      option_count_support:
-      - 4
-      - 5
-      - 6
-      target_pop_count_support:
-      - 0
-      - 2
-      - 3
-      - 4
-      - 5
-      balanced_option_count_sampling: true
-      balanced_target_answer_sampling: true
     task_games__marble_chain__shot_effect_value:
       target_pop_count_support:
       - 0

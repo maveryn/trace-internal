@@ -16,6 +16,6 @@
 
 ## Answer And Annotation
 1. `answer_gt.type`: `option_letter`.
-2. `annotation_gt.type`: `bbox_set`.
-3. Annotation is one bounding box around the selected path card.
+2. `annotation_gt.type`: `bbox`.
+3. Annotation is the bounding box around the selected path card.
 4. The sampler uses only four-option or six-option sets and rejects instances unless exactly one displayed path avoids all hazards.

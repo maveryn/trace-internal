@@ -10,7 +10,7 @@ The scene renders a Ludo-style cross board with one visible token for each playe
 
 Answer schema: `integer` in `1..5`.
 
-Annotation schema: `point_set` containing exactly one point at the named token center.
+Annotation schema: `point` at the named token center.
 
 Supported `query_id`: `single`.
 

@@ -10,7 +10,7 @@ The scene renders a simplified two-row pit board with 10 unlabeled pits, visible
 
 Answer schema: `option_letter`.
 
-Annotation schema: `bbox_set` containing the final landing pit bounding box.
+Annotation schema: `bbox` for the final landing pit.
 
 Supported `query_id`: `single`.
 

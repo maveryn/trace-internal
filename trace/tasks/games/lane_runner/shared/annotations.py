@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts, point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_annotation_artifacts, point_set_annotation_artifacts
 
 from .rendering import RenderedLaneRunnerScene
 
@@ -29,7 +29,7 @@ def lane_runner_path_card_bbox_annotation(
     """Project one selected path card label to its bbox annotation."""
 
     card = dict(rendered_scene.render_map["path_options_px"][str(label)])
-    return bbox_set_annotation_artifacts([list(card["card_bbox_px"])])
+    return bbox_annotation_artifacts(list(card["card_bbox_px"]))
 
 
 __all__ = [

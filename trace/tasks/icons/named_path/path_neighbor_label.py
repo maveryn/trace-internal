@@ -22,7 +22,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
-from ..shared.annotation import keyed_point_map_from_bboxes
+from ..shared.annotation import point_from_bbox
 from ..shared.icon_task_rendering import icon_render_style_trace
 
 from .shared.defaults import NamedPathDefaults, OPTION_LABELS, SCENE_ID
@@ -395,17 +395,12 @@ class IconsNamedPathPathNeighborLabelTask:
         answer_icon = icons_by_position[int(scene_payload.answer_position_index)]
         if str(answer_icon.label) != str(scene_payload.answer_label):
             raise RuntimeError("rendered answer icon label does not match answer label")
-        annotation_artifacts = keyed_point_map_from_bboxes(
-            {
-                "queried_icon": queried_icon.bbox_xyxy,
-                "selected_neighbor": answer_icon.bbox_xyxy,
-            }
-        )
+        annotation_artifacts = point_from_bbox(answer_icon.bbox_xyxy)
         serialized_icons = [serialize_path_icon(icon) for icon in scene_payload.icons]
         answer_gt = TypedValue(type="option_letter", value=str(scene_payload.answer_label))
         annotation_gt = TypedValue(
             type=str(annotation_artifacts["annotation_type"]),
-            value=dict(annotation_artifacts["annotation_value"]),
+            value=list(annotation_artifacts["annotation_value"]),
         )
 
         query_spec = build_prompt_query_spec(
@@ -514,19 +509,11 @@ class IconsNamedPathPathNeighborLabelTask:
                 "answer_instance_id": str(answer_icon.instance_id),
                 "answer_position_index": int(scene_payload.answer_position_index),
                 "answer_label": str(scene_payload.answer_label),
-                "annotation_roles": {
-                    "queried_icon": str(queried_icon.instance_id),
-                    "selected_neighbor": str(answer_icon.instance_id),
-                },
+                "annotation_target_instance_id": str(answer_icon.instance_id),
             },
             "projected_annotation": {
                 **dict(annotation_artifacts["projected_annotation"]),
                 "items": [
-                    {
-                        "role": "query_occurrence",
-                        "instance_id": str(queried_icon.instance_id),
-                        "bbox_xyxy": list(queried_icon.bbox_xyxy),
-                    },
                     {
                         "role": "answer_option",
                         "instance_id": str(answer_icon.instance_id),

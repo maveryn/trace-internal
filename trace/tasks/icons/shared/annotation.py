@@ -116,6 +116,29 @@ def point_set_annotation(
     }
 
 
+def point_annotation(point: Sequence[int | float]) -> Dict[str, Any]:
+    """Return typed scalar point annotation for one icon witness."""
+
+    normalized_point = _normalize_point(point, context="point")
+    return {
+        "annotation_type": "point",
+        "annotation_value": list(normalized_point),
+        "projected_annotation": {
+            "type": "point",
+            "point": list(normalized_point),
+            "pixel_point": list(normalized_point),
+        },
+    }
+
+
+def point_from_bbox(bbox: Sequence[int | float]) -> Dict[str, Any]:
+    """Return scalar point annotation using one bbox center as witness."""
+
+    if not isinstance(bbox, Sequence) or len(bbox) != 4:
+        raise RuntimeError(f"invalid source bbox for point annotation: {bbox}")
+    return point_annotation(_bbox_center(bbox))
+
+
 def point_set_from_bboxes(
     bboxes: Sequence[Sequence[int | float]],
 ) -> Dict[str, Any]:
@@ -239,6 +262,8 @@ __all__ = [
     "keyed_point_map_from_bboxes",
     "matching_scene_cell_bbox_annotation",
     "matching_scene_cell_point_annotation",
+    "point_annotation",
+    "point_from_bbox",
     "point_set_annotation",
     "point_set_from_bboxes",
 ]

@@ -12,7 +12,8 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.games.minigolf.first_obstacle_label import GamesMinigolfFirstObstacleLabelTask
 from trace.tasks.games.minigolf.shot_path_label import GamesMinigolfShotPathLabelTask
-from trace.tasks.games.minigolf.shared.rules import first_hit_obstacle_id, trace_shot_path
+from trace.tasks.games.minigolf.shared.rules import distance, first_hit_obstacle_id, trace_shot_path
+from trace.tasks.games.minigolf.shared.sampling import MIN_OBSTACLE_POINT_CLEARANCE_NORM
 from trace.tasks.games.minigolf.shared.state import MinigolfObstacle
 from tests.helpers import read_jsonl
 
@@ -96,6 +97,31 @@ def test_games_minigolf_first_obstacle_matches_first_ray_hit() -> None:
     assert str(out.answer_gt.value) == str(execution["target_obstacle_label"])
     assert list(execution["annotation_entity_ids"]) == [target_id]
     assert 4 <= len(execution["obstacles"]) <= 8
+
+
+@pytest.mark.parametrize(
+    ("task_cls", "params"),
+    (
+        (GamesMinigolfFirstObstacleLabelTask, {"obstacle_count": 8}),
+        (GamesMinigolfShotPathLabelTask, {"path_option_count": 6, "target_path_index": 4}),
+    ),
+)
+def test_games_minigolf_obstacles_stay_clear_of_hole_and_ball(
+    task_cls: type[GamesMinigolfFirstObstacleLabelTask | GamesMinigolfShotPathLabelTask],
+    params: dict[str, int],
+) -> None:
+    """Guard against course objects visually overlapping the cup or ball."""
+
+    seeds = (13980958204946, 97030, 97031, 97032, 97033, 97034)
+    for seed in seeds:
+        out = task_cls().generate(int(seed), params=dict(params), max_attempts=512)
+        execution = out.trace_payload["execution_trace"]
+        ball = tuple(float(value) for value in execution["ball_xy_norm"])
+        hole = tuple(float(value) for value in execution["hole_xy_norm"])
+        for obstacle in execution["obstacles"]:
+            center = (float(obstacle["x_norm"]), float(obstacle["y_norm"]))
+            assert distance(center, hole) >= MIN_OBSTACLE_POINT_CLEARANCE_NORM - 1e-9
+            assert distance(center, ball) >= MIN_OBSTACLE_POINT_CLEARANCE_NORM - 1e-9
 
 
 def test_games_minigolf_shot_path_has_one_hole_reaching_option() -> None:

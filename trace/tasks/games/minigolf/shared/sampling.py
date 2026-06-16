@@ -34,6 +34,11 @@ from .state import (
 )
 
 
+MIN_OBSTACLE_POINT_CLEARANCE_NORM = 0.15
+MIN_OBSTACLE_OBSTACLE_CLEARANCE_NORM = 0.15
+MIN_OBSTACLE_PATH_CLEARANCE_NORM = 0.12
+
+
 @dataclass(frozen=True)
 class MinigolfAxes:
     """Resolved scene and visual axes shared by Mini-golf objectives."""
@@ -167,11 +172,14 @@ def sample_first_obstacle_scene(
     obstacle_count = int(axes.obstacle_count)
     for _attempt in range(128):
         ball = (float(rng.uniform(0.34, 0.66)), float(rng.uniform(0.78, 0.88)))
+        hole = (float(rng.uniform(0.36, 0.64)), float(rng.uniform(0.12, 0.24)))
         angle = float(rng.uniform(-2.42, -1.10))
         direction = unit_from_angle(angle)
         travel_distance = float(rng.uniform(0.42, 0.64))
         target = (ball[0] + (direction[0] * travel_distance), ball[1] + (direction[1] * travel_distance))
         if not (0.14 <= target[0] <= 0.86 and 0.14 <= target[1] <= 0.72):
+            continue
+        if distance(target, hole) < MIN_OBSTACLE_POINT_CLEARANCE_NORM:
             continue
         shown_path = (ball, target)
         obstacles = _obstacles_with_target_label(
@@ -180,7 +188,7 @@ def sample_first_obstacle_scene(
             target_center=target,
             obstacle_count=obstacle_count,
             avoid_paths=(shown_path,),
-            avoid_points=(ball,),
+            avoid_points=(ball, hole),
         )
         if obstacles is None:
             continue
@@ -195,8 +203,8 @@ def sample_first_obstacle_scene(
             answer=str(target_obstacle.label),
             ball_x_norm=float(ball[0]),
             ball_y_norm=float(ball[1]),
-            hole_x_norm=float(rng.uniform(0.36, 0.64)),
-            hole_y_norm=float(rng.uniform(0.12, 0.24)),
+            hole_x_norm=float(hole[0]),
+            hole_y_norm=float(hole[1]),
             obstacles=obstacles,
             shot_options=tuple(),
             target_obstacle_id=str(target_obstacle.obstacle_id),
@@ -369,9 +377,12 @@ def _safe_obstacle_position(
         x = float(rng.uniform(0.14, 0.86))
         y = float(rng.uniform(0.16, 0.76))
         point = (x, y)
-        if any(distance(point, other) < 0.15 for other in avoid_points):
+        if any(distance(point, other) < MIN_OBSTACLE_POINT_CLEARANCE_NORM for other in avoid_points):
             continue
-        if any(distance(point, (float(obs.x_norm), float(obs.y_norm))) < 0.15 for obs in existing):
+        if any(
+            distance(point, (float(obs.x_norm), float(obs.y_norm))) < MIN_OBSTACLE_OBSTACLE_CLEARANCE_NORM
+            for obs in existing
+        ):
             continue
         too_close_to_path = False
         for path in avoid_paths:
@@ -384,7 +395,7 @@ def _safe_obstacle_position(
                     continue
                 t = max(0.0, min(1.0, (((x - ax) * vx) + ((y - ay) * vy)) / denom))
                 closest = (ax + (t * vx), ay + (t * vy))
-                if distance(point, closest) < 0.12:
+                if distance(point, closest) < MIN_OBSTACLE_PATH_CLEARANCE_NORM:
                     too_close_to_path = True
                     break
             if too_close_to_path:
@@ -411,10 +422,17 @@ def _obstacles_with_target_label(
     labels = [str(target_label)] + other_labels[: max(0, int(obstacle_count) - 1)]
     rng.shuffle(labels)
     target_index = labels.index(str(target_label))
+    if any(distance(target_center, avoid_point) < MIN_OBSTACLE_POINT_CLEARANCE_NORM for avoid_point in avoid_points):
+        return None
     obstacles: list[MinigolfObstacle] = []
     for index, label in enumerate(labels):
         if int(index) == int(target_index):
             center = (float(target_center[0]), float(target_center[1]))
+            if any(
+                distance(center, (float(obs.x_norm), float(obs.y_norm))) < MIN_OBSTACLE_OBSTACLE_CLEARANCE_NORM
+                for obs in obstacles
+            ):
+                return None
         else:
             maybe = _safe_obstacle_position(
                 rng=rng,
@@ -486,6 +504,9 @@ def _make_shot_options(
 
 
 __all__ = [
+    "MIN_OBSTACLE_OBSTACLE_CLEARANCE_NORM",
+    "MIN_OBSTACLE_PATH_CLEARANCE_NORM",
+    "MIN_OBSTACLE_POINT_CLEARANCE_NORM",
     "MinigolfAxes",
     "resolve_minigolf_axes",
     "resolve_minigolf_integer_choice",

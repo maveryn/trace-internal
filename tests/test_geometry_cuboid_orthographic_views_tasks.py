@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from trace.tasks.geometry.cuboid_views.cuboid_projection_surface_area_value import (
+    QUERY_ID,
     SCENE_ID,
     GeometryCuboidProjectionSurfaceAreaValueTask,
 )
@@ -12,9 +13,7 @@ from trace.tasks.geometry.cuboid_views.cuboid_projection_surface_area_value impo
 TASK_CLASSES = (GeometryCuboidProjectionSurfaceAreaValueTask,)
 
 QUERY_IDS_BY_TASK = {
-    GeometryCuboidProjectionSurfaceAreaValueTask: (
-        "surface_area_from_orthographic_views",
-    ),
+    GeometryCuboidProjectionSurfaceAreaValueTask: (QUERY_ID,),
 }
 
 
@@ -25,7 +24,8 @@ def test_cuboid_orthographic_tasks_emit_public_contract(task_cls) -> None:
 
     assert out.scene_id == SCENE_ID
     assert out.query_id
-    assert out.answer_gt.type == "number"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "keyed_bbox_map"
     assert set(out.annotation_gt.value) == {"top_view", "front_view", "right_view"}
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
@@ -51,10 +51,8 @@ def test_cuboid_orthographic_tasks_emit_public_contract(task_cls) -> None:
     assert trace["execution_trace"]["top_view_perimeter"] == 2 * (length + width)
     assert trace["execution_trace"]["front_view_perimeter"] == 2 * (length + height)
     assert trace["execution_trace"]["right_view_perimeter"] == 2 * (width + height)
-    assert out.query_id == "surface_area_from_orthographic_views"
-    assert out.answer_gt.value == pytest.approx(
-        2 * ((length * width) + (length * height) + (width * height))
-    )
+    assert trace["execution_trace"]["formula_schema"] == "surface_area_from_orthographic_views"
+    assert out.answer_gt.value == 2 * ((length * width) + (length * height) + (width * height))
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -83,7 +81,7 @@ def test_cuboid_orthographic_tasks_support_every_explicit_query(task_cls) -> Non
             max_attempts=20,
         )
         assert out.query_id == query_id
-        assert out.answer_gt.type == "number"
+        assert out.answer_gt.type == "integer"
         assert out.trace_payload["query_spec"]["params"][
             "query_id_probabilities"
         ] == {query_id: 1.0}

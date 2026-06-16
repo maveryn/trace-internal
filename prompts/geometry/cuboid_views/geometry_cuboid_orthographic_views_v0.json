@@ -21,7 +21,7 @@
     "scene:cuboid_orthographic_views_scene": [
       "object_description"
     ],
-    "query:surface_area_from_orthographic_views": [],
+    "query:single": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -60,7 +60,7 @@
     ]
   },
   "query_templates": {
-    "surface_area_from_orthographic_views": [
+    "single": [
       "What is the cuboid's total surface area?",
       "Find the total surface area of the cuboid.",
       "Determine the cuboid surface area.",

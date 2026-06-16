@@ -21,7 +21,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.illustrations.shared.canvas_profiles import resolve_profile_render_params
 from trace.tasks.illustrations.shared.option_rendering import sample_visual_label_font_trace
-from trace.tasks.illustrations.shared.task_support import string_support, uniform_string_probability_map
+from trace.tasks.illustrations.shared.task_support import uniform_string_probability_map
 
 from .shared.output import (
     bbox_projection,
@@ -35,8 +35,6 @@ from .shared.rendering import (
     DEFAULT_CANVAS_HEIGHT,
     DEFAULT_CANVAS_WIDTH,
     DEFAULT_TILE_PX,
-    HALL_ROOM_ID,
-    ROOM_IDS,
     SCENE_ID,
     reachable_room_ids,
     render_rpg_house_scene,
@@ -65,7 +63,7 @@ class _ReachableRoomSample:
     answer_room_probabilities: Mapping[str, float]
 
 
-def _select_string(
+def _select_string_from_support(
     *,
     params: Mapping[str, Any],
     support: Tuple[str, ...],
@@ -90,46 +88,44 @@ def _select_string(
 def _sample_reachability_query(
     *,
     params: Mapping[str, Any],
-    generation_defaults: Mapping[str, Any],
+    rooms: Tuple[Any, ...],
+    doors: Tuple[Any, ...],
     instance_seed: int,
 ) -> _ReachableRoomSample:
-    """Resolve one start room and one reachable candidate room."""
+    """Resolve one start room and one directly reachable candidate room."""
 
-    start_support = string_support(
-        params,
-        generation_defaults,
-        "start_room_id_support",
-        ROOM_IDS,
-        valid_values=ROOM_IDS,
-        min_count=2,
-    )
-    start_room_id, start_probabilities = _select_string(
+    room_ids = tuple(str(room.room_id) for room in rooms)
+    neighbor_map: dict[str, set[str]] = {room_id: set() for room_id in room_ids}
+    door_by_pair: dict[tuple[str, str], str] = {}
+    for door in doors:
+        room_a = str(door.room_a_id)
+        room_b = str(door.room_b_id)
+        neighbor_map.setdefault(room_a, set()).add(room_b)
+        neighbor_map.setdefault(room_b, set()).add(room_a)
+        door_by_pair[tuple(sorted((room_a, room_b)))] = str(door.door_id)
+    start_support = tuple(room_id for room_id in room_ids if neighbor_map.get(room_id))
+    start_room_id, start_probabilities = _select_string_from_support(
         params=params,
         support=start_support,
         explicit_key="start_room_id",
         namespace=f"{TASK_ID}:start_room_id",
         instance_seed=int(instance_seed),
     )
-    candidate_room_ids = tuple(room_id for room_id in ROOM_IDS if room_id != start_room_id)
-    answer_support = string_support(
-        params,
-        generation_defaults,
-        "answer_room_id_support",
-        candidate_room_ids,
-        valid_values=candidate_room_ids,
-        min_count=1,
-    )
-    answer_room_id, answer_probabilities = _select_string(
+    candidate_room_ids = tuple(room_id for room_id in room_ids if room_id != start_room_id)
+    answer_support = tuple(sorted(neighbor_map[str(start_room_id)]))
+    answer_room_id, answer_probabilities = _select_string_from_support(
         params=params,
         support=answer_support,
         explicit_key="answer_room_id",
         namespace=f"{TASK_ID}:answer_room_id",
         instance_seed=int(instance_seed),
     )
+    if len(candidate_room_ids) > len(OPTION_LABELS):
+        raise ValueError(f"reachable-room label task supports at most {len(OPTION_LABELS)} candidates")
     room_labels = {room_id: OPTION_LABELS[index] for index, room_id in enumerate(candidate_room_ids)}
-    door_states = {f"{room_id}_hall": "closed" for room_id in ROOM_IDS}
-    door_states[f"{start_room_id}_hall"] = "open"
-    door_states[f"{answer_room_id}_hall"] = "open"
+    door_states = {str(door.door_id): "closed" for door in doors}
+    selected_door_id = door_by_pair[tuple(sorted((str(start_room_id), str(answer_room_id))))]
+    door_states[str(selected_door_id)] = "open"
     return _ReachableRoomSample(
         start_room_id=str(start_room_id),
         answer_room_id=str(answer_room_id),
@@ -160,11 +156,6 @@ class IllustrationsRpgHouseReachableRoomLabelTask:
             default_query_id=SINGLE_QUERY_ID,
             task_id=TASK_ID,
             namespace=f"{TASK_ID}:query",
-        )
-        sample = _sample_reachability_query(
-            params=task_params,
-            generation_defaults=_GEN_DEFAULTS,
-            instance_seed=int(instance_seed),
         )
         render_params = resolve_profile_render_params(
             task_params,
@@ -203,13 +194,40 @@ class IllustrationsRpgHouseReachableRoomLabelTask:
         scene = None
         reachable_candidates: tuple[str, ...] = ()
         last_error: Exception | None = None
+        sample: _ReachableRoomSample | None = None
         for attempt in range(max(1, int(max_attempts))):
+            render_seed = hash64(int(instance_seed), f"{TASK_ID}:render", int(attempt))
+            room_count = int(
+                task_params.get(
+                    "room_count",
+                    group_default(_RENDER_DEFAULTS, "rpg_house_reachable_room_count", 5),
+                )
+            )
             try:
-                scene = render_rpg_house_scene(
-                    hash64(int(instance_seed), f"{TASK_ID}:render", int(attempt)),
+                probe_scene = render_rpg_house_scene(
+                    render_seed,
                     width=int(render_params["canvas_width"]),
                     height=int(render_params["canvas_height"]),
                     tile_px=int(task_params.get("tile_px", group_default(_RENDER_DEFAULTS, "rpg_house_tile_px", DEFAULT_TILE_PX))),
+                    room_count=room_count,
+                    render_metadata={
+                        "canvas_profile": str(render_params.get("canvas_profile", "")),
+                        "canvas_profile_size": list(render_params.get("canvas_profile_size", [])),
+                        "canvas_profile_probabilities": dict(render_params.get("canvas_profile_probabilities", {})),
+                    },
+                )
+                sample = _sample_reachability_query(
+                    params=task_params,
+                    rooms=probe_scene.rooms,
+                    doors=probe_scene.doors,
+                    instance_seed=int(instance_seed),
+                )
+                scene = render_rpg_house_scene(
+                    render_seed,
+                    width=int(render_params["canvas_width"]),
+                    height=int(render_params["canvas_height"]),
+                    tile_px=int(task_params.get("tile_px", group_default(_RENDER_DEFAULTS, "rpg_house_tile_px", DEFAULT_TILE_PX))),
+                    room_count=room_count,
                     start_room_id=sample.start_room_id,
                     room_labels=sample.room_labels,
                     door_states=sample.door_states,
@@ -236,6 +254,8 @@ class IllustrationsRpgHouseReachableRoomLabelTask:
                 scene = None
         if scene is None:
             raise RuntimeError(f"could not generate RPG house reachable-room label: {last_error}") from last_error
+        if sample is None:
+            raise RuntimeError("could not sample RPG house reachable-room query")
 
         room_boxes = room_bbox_map(scene)
         annotation_value = room_boxes[sample.answer_room_id]
@@ -282,7 +302,6 @@ class IllustrationsRpgHouseReachableRoomLabelTask:
                     "start_room_id": sample.start_room_id,
                     "candidate_room_ids": list(sample.candidate_room_ids),
                     "answer_room_id": sample.answer_room_id,
-                    "hall_room_id": HALL_ROOM_ID,
                 },
             ),
             "query_spec": {

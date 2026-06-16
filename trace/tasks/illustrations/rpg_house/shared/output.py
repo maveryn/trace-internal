@@ -73,9 +73,31 @@ def rpg_house_reachability_render_map(
     }
 
 
+def rpg_house_room_count_render_map(*, scene: RpgHouseScene) -> dict[str, Any]:
+    """Return task render-map fields for total-room counting."""
+
+    return {
+        "image_id": "img0",
+        "room_bboxes_px": room_bbox_map(scene),
+        "room_points_px": room_point_map(scene),
+        "counted_room_ids": [str(room.room_id) for room in scene.rooms],
+        "counted_room_count": len(scene.rooms),
+    }
+
+
 def room_bbox_map(scene: RpgHouseScene) -> dict[str, list[float]]:
     return {
         str(room.room_id): [round(float(value), 3) for value in room.bbox_xyxy]
+        for room in scene.rooms
+    }
+
+
+def room_point_map(scene: RpgHouseScene) -> dict[str, list[float]]:
+    return {
+        str(room.room_id): [
+            round((float(room.bbox_xyxy[0]) + float(room.bbox_xyxy[2])) * 0.5, 3),
+            round((float(room.bbox_xyxy[1]) + float(room.bbox_xyxy[3])) * 0.5, 3),
+        ]
         for room in scene.rooms
     }
 
@@ -92,10 +114,18 @@ def bbox_projection(bbox: Sequence[float]) -> dict[str, Any]:
     return {"type": "bbox", "bbox": values, "pixel_bbox": values}
 
 
+def point_set_projection(points: Sequence[Sequence[float]]) -> dict[str, Any]:
+    values = [[round(float(point[0]), 3), round(float(point[1]), 3)] for point in points]
+    return {"type": "point_set", "point_set": values, "pixel_point_set": values}
+
+
 __all__ = [
     "bbox_projection",
     "door_bbox_map",
+    "point_set_projection",
     "room_bbox_map",
+    "room_point_map",
+    "rpg_house_room_count_render_map",
     "rpg_house_reachability_render_map",
     "rpg_house_render_spec",
     "rpg_house_scene_ir",

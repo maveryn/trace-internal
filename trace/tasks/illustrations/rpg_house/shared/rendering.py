@@ -25,8 +25,19 @@ RENDERER_ID = "rpg_house_top_down_v0"
 DEFAULT_TILE_PX = 48
 DEFAULT_CANVAS_WIDTH = 960
 DEFAULT_CANVAS_HEIGHT = 720
-ROOM_IDS: tuple[str, ...] = ("bedroom", "kitchen", "storage", "study", "parlor")
-HALL_ROOM_ID = "hall"
+MIN_ROOM_COUNT = 4
+MAX_ROOM_COUNT = 8
+ROOM_IDS: tuple[str, ...] = (
+    "bedroom",
+    "kitchen",
+    "storage",
+    "study",
+    "parlor",
+    "dining_room",
+    "workshop",
+    "pantry",
+)
+HALL_ROOM_ID = ""
 PASSABLE_DOOR_STATES: frozenset[str] = frozenset({"open"})
 
 ROOM_PUBLIC_NAMES: Mapping[str, str] = {
@@ -35,7 +46,9 @@ ROOM_PUBLIC_NAMES: Mapping[str, str] = {
     "storage": "storage room",
     "study": "study",
     "parlor": "parlor",
-    "hall": "hallway",
+    "dining_room": "dining room",
+    "workshop": "workshop",
+    "pantry": "pantry",
 }
 
 RGB = tuple[int, int, int]
@@ -52,7 +65,9 @@ THEMES: Mapping[str, Mapping[str, Any]] = {
             "storage": (135, 106, 76),
             "study": (146, 112, 73),
             "parlor": (174, 134, 86),
-            "hall": (158, 112, 67),
+            "dining_room": (164, 119, 73),
+            "workshop": (137, 112, 83),
+            "pantry": (151, 115, 78),
         },
         "wood_rgb": (132, 78, 42),
         "rug_rgb": (150, 67, 82),
@@ -68,7 +83,9 @@ THEMES: Mapping[str, Mapping[str, Any]] = {
             "storage": (119, 101, 78),
             "study": (130, 101, 73),
             "parlor": (154, 118, 76),
-            "hall": (132, 103, 69),
+            "dining_room": (138, 108, 74),
+            "workshop": (112, 111, 105),
+            "pantry": (124, 104, 79),
         },
         "wood_rgb": (118, 75, 45),
         "rug_rgb": (74, 126, 153),
@@ -84,7 +101,9 @@ THEMES: Mapping[str, Mapping[str, Any]] = {
             "storage": (107, 103, 93),
             "study": (124, 106, 82),
             "parlor": (138, 120, 92),
-            "hall": (122, 111, 93),
+            "dining_room": (132, 113, 86),
+            "workshop": (112, 108, 99),
+            "pantry": (118, 105, 88),
         },
         "wood_rgb": (122, 75, 44),
         "rug_rgb": (126, 76, 112),
@@ -155,6 +174,7 @@ def render_rpg_house_scene(
     width: int = DEFAULT_CANVAS_WIDTH,
     height: int = DEFAULT_CANVAS_HEIGHT,
     tile_px: int = DEFAULT_TILE_PX,
+    room_count: int | None = None,
     start_room_id: str | None = None,
     room_labels: Mapping[str, str] | None = None,
     door_states: Mapping[str, str] | None = None,
@@ -168,8 +188,15 @@ def render_rpg_house_scene(
     layout = _sample_layout(width=int(width), height=int(height), tile_px=int(tile_px))
     theme_id = str(_choose(rng, tuple(THEMES)))
     theme = THEMES[theme_id]
-    room_specs, door_specs = _make_layout_specs(layout, theme=theme, door_states=door_states or {})
-    entity_specs = _make_entity_specs(layout, theme_id=theme_id)
+    resolved_room_count = _resolve_room_count(rng, room_count)
+    room_specs, door_specs, layout_pattern_id = _make_layout_specs(
+        layout,
+        rng=rng,
+        theme=theme,
+        room_count=resolved_room_count,
+        door_states=door_states or {},
+    )
+    entity_specs = _make_entity_specs(room_specs, theme_id=theme_id, rng=rng)
     canvas, draw = _render_base(layout, room_specs=room_specs, door_specs=door_specs, theme=theme)
     entities = _render_entities(draw, entity_specs=entity_specs, layout=layout, theme=theme, theme_id=theme_id)
 
@@ -205,6 +232,8 @@ def render_rpg_house_scene(
         "grid_cols": int(layout.cols),
         "grid_rows": int(layout.rows),
         "tile_px": int(layout.tile_px),
+        "room_total": len(rooms),
+        "layout_pattern_id": str(layout_pattern_id),
         "room_ids": [room.room_id for room in rooms],
         "candidate_room_labels": dict(room_labels),
         "start_room_id": None if start_room_id is None else str(start_room_id),
@@ -289,44 +318,43 @@ def _sample_layout(*, width: int, height: int, tile_px: int) -> RpgHouseLayout:
     )
 
 
+def _resolve_room_count(rng: random.Random, room_count: int | None) -> int:
+    """Resolve the number of enclosed rooms to render."""
+
+    if room_count is None:
+        return int(rng.randint(MIN_ROOM_COUNT, MAX_ROOM_COUNT))
+    value = int(room_count)
+    if not MIN_ROOM_COUNT <= value <= MAX_ROOM_COUNT:
+        raise ValueError(f"room_count must be in [{MIN_ROOM_COUNT}, {MAX_ROOM_COUNT}], got {value}")
+    return value
+
+
 def _make_layout_specs(
     layout: RpgHouseLayout,
     *,
+    rng: random.Random,
     theme: Mapping[str, Any],
+    room_count: int,
     door_states: Mapping[str, str],
-) -> tuple[list[_RoomSpec], list[_DoorSpec]]:
-    """Build the fixed room graph around a central hallway."""
+) -> tuple[list[_RoomSpec], list[_DoorSpec], str]:
+    """Build an irregular room partition and its connecting doors."""
 
-    usable_w = int(layout.cols) - 2
-    usable_h = int(layout.rows) - 2
-    hall_w = max(3, min(5, usable_w // 4))
-    left_w = max(4, (usable_w - hall_w) // 2)
-    right_w = max(4, usable_w - hall_w - left_w)
-    top_h = max(3, usable_h // 3)
-    mid_h = max(3, usable_h // 3)
-    bottom_h = max(3, usable_h - top_h - mid_h)
-    x_left = 1
-    x_hall = x_left + left_w
-    x_right = x_hall + hall_w
-    y_top = 1
-    y_mid = y_top + top_h
-    y_bottom = y_mid + mid_h
+    room_boxes = _split_house_rectangles(rng, (1, 1, int(layout.cols) - 2, int(layout.rows) - 2), int(room_count))
+    room_ids = list(ROOM_IDS)
+    rng.shuffle(room_ids)
+    selected_ids = tuple(room_ids[: int(room_count)])
     floors = theme["floor_rgbs"]
+    sorted_boxes = sorted(room_boxes, key=lambda box: (box[1], box[0], box[3], box[2]))
     rooms = [
-        _RoomSpec("bedroom", ROOM_PUBLIC_NAMES["bedroom"], (x_left, y_top, left_w, top_h), floors["bedroom"]),
-        _RoomSpec("kitchen", ROOM_PUBLIC_NAMES["kitchen"], (x_left, y_mid, left_w, mid_h), floors["kitchen"]),
-        _RoomSpec("storage", ROOM_PUBLIC_NAMES["storage"], (x_left, y_bottom, left_w, bottom_h), floors["storage"]),
-        _RoomSpec("hall", ROOM_PUBLIC_NAMES["hall"], (x_hall, y_top, hall_w, usable_h), floors["hall"]),
-        _RoomSpec("study", ROOM_PUBLIC_NAMES["study"], (x_right, y_top, right_w, top_h), floors["study"]),
-        _RoomSpec("parlor", ROOM_PUBLIC_NAMES["parlor"], (x_right, y_mid, right_w, mid_h + bottom_h), floors["parlor"]),
+        _RoomSpec(
+            room_id=room_id,
+            public_name=ROOM_PUBLIC_NAMES[room_id],
+            tile_xywh=box,
+            floor_rgb=floors.get(room_id, (146, 112, 73)),
+        )
+        for room_id, box in zip(selected_ids, sorted_boxes)
     ]
-    base_doors = [
-        ("bedroom_hall", "bedroom", "hall", "vertical", (x_hall, y_top + top_h // 2)),
-        ("kitchen_hall", "kitchen", "hall", "vertical", (x_hall, y_mid + mid_h // 2)),
-        ("storage_hall", "storage", "hall", "vertical", (x_hall, y_bottom + bottom_h // 2)),
-        ("study_hall", "study", "hall", "vertical", (x_right, y_top + top_h // 2)),
-        ("parlor_hall", "parlor", "hall", "vertical", (x_right, y_mid + (mid_h + bottom_h) // 2)),
-    ]
+    base_doors = _adjacent_door_specs(rng, rooms)
     doors = [
         _DoorSpec(
             door_id=door_id,
@@ -338,12 +366,85 @@ def _make_layout_specs(
         )
         for door_id, room_a, room_b, orientation, tile_xy in base_doors
     ]
-    return rooms, doors
+    return rooms, doors, "bsp_partition"
 
 
-def _make_entity_specs(layout: RpgHouseLayout, *, theme_id: str) -> list[_EntitySpec]:
-    room_specs, _doors = _make_layout_specs(layout, theme=THEMES[theme_id], door_states={})
-    by_id = {room.room_id: room.tile_xywh for room in room_specs}
+def _split_house_rectangles(rng: random.Random, root: TileBox, room_count: int) -> list[TileBox]:
+    """Split one house footprint into connected rectangular rooms."""
+
+    min_w = 4
+    min_h = 3
+    boxes: list[TileBox] = [root]
+    while len(boxes) < int(room_count):
+        candidates: list[tuple[int, int, tuple[str, ...]]] = []
+        for index, box in enumerate(boxes):
+            _x, _y, w, h = box
+            orientations: list[str] = []
+            if int(w) >= min_w * 2:
+                orientations.append("vertical")
+            if int(h) >= min_h * 2:
+                orientations.append("horizontal")
+            if orientations:
+                candidates.append((int(w) * int(h), index, tuple(orientations)))
+        if not candidates:
+            raise ValueError(f"could not split RPG house into {room_count} rooms")
+        _area, index, orientations = sorted(candidates, reverse=True)[0]
+        x, y, w, h = boxes.pop(index)
+        if len(orientations) == 1:
+            orientation = orientations[0]
+        elif int(w) > int(h) + 2:
+            orientation = "vertical"
+        elif int(h) > int(w) + 2:
+            orientation = "horizontal"
+        else:
+            orientation = str(_choose(rng, orientations))
+        if orientation == "vertical":
+            cut = int(rng.randint(min_w, int(w) - min_w))
+            boxes.extend([(x, y, cut, h), (x + cut, y, int(w) - cut, h)])
+        else:
+            cut = int(rng.randint(min_h, int(h) - min_h))
+            boxes.extend([(x, y, w, cut), (x, y + cut, w, int(h) - cut)])
+    return boxes
+
+
+def _adjacent_door_specs(
+    rng: random.Random,
+    rooms: Sequence[_RoomSpec],
+) -> list[tuple[str, str, str, str, tuple[int, int]]]:
+    """Place one door on every shared wall between partitioned rooms."""
+
+    doors: list[tuple[str, str, str, str, tuple[int, int]]] = []
+    for index, room_a in enumerate(rooms):
+        ax, ay, aw, ah = room_a.tile_xywh
+        for room_b in rooms[index + 1 :]:
+            bx, by, bw, bh = room_b.tile_xywh
+            if ax + aw == bx or bx + bw == ax:
+                boundary_x = ax + aw if ax + aw == bx else bx + bw
+                overlap0 = max(ay, by)
+                overlap1 = min(ay + ah, by + bh)
+                if overlap1 - overlap0 >= 2:
+                    door_y = int(rng.randint(overlap0, overlap1 - 1))
+                    room_0, room_1 = sorted((room_a.room_id, room_b.room_id))
+                    doors.append((f"{room_0}_{room_1}", room_a.room_id, room_b.room_id, "vertical", (boundary_x, door_y)))
+            if ay + ah == by or by + bh == ay:
+                boundary_y = ay + ah if ay + ah == by else by + bh
+                overlap0 = max(ax, bx)
+                overlap1 = min(ax + aw, bx + bw)
+                if overlap1 - overlap0 >= 2:
+                    door_x = int(rng.randint(overlap0, overlap1 - 1))
+                    room_0, room_1 = sorted((room_a.room_id, room_b.room_id))
+                    doors.append((f"{room_0}_{room_1}", room_a.room_id, room_b.room_id, "horizontal", (door_x, boundary_y)))
+    return sorted(doors, key=lambda item: item[0])
+
+
+def _make_entity_specs(
+    room_specs: Sequence[_RoomSpec],
+    *,
+    theme_id: str,
+    rng: random.Random,
+) -> list[_EntitySpec]:
+    """Place large context fixtures while preserving room-count independence."""
+
     wood = THEMES[theme_id]["wood_rgb"]
     rug = THEMES[theme_id]["rug_rgb"]
     entities: list[_EntitySpec] = []
@@ -351,23 +452,39 @@ def _make_entity_specs(layout: RpgHouseLayout, *, theme_id: str) -> list[_Entity
     def add(entity_id: str, object_type: str, public_name: str, room_id: str, box: TileBox, **visual: Any) -> None:
         entities.append(_EntitySpec(entity_id, object_type, public_name, room_id, box, "fixture", visual))
 
-    bx, by, bw, bh = by_id["bedroom"]
-    add("bed_00", "bed", "bed", "bedroom", (bx + 1, by + 1, max(3, bw - 2), min(2, max(1, bh - 2))), bed_size="single", wood_rgb=wood, blanket_rgb=(96, 132, 174))
-    add("rug_bedroom", "rug", "rug", "bedroom", (bx + 1, max(by + 2, by + bh - 2), max(2, bw - 2), 1), cloth_rgb=rug)
-    kx, ky, kw, kh = by_id["kitchen"]
-    add("counter_00", "counter", "counter", "kitchen", (kx + 1, ky + 1, max(3, kw - 2), 1), wood_rgb=wood, top_rgb=_shade(wood, 46))
-    add("fireplace_00", "fireplace", "hearth", "kitchen", (kx + 1, max(ky + 2, ky + kh - 2), max(2, kw - 2), 1), fire_state="lit")
-    sx, sy, sw, sh = by_id["storage"]
-    add("shelf_storage", "shelf", "shelf", "storage", (sx + 1, sy + 1, max(3, sw - 2), 1), wood_rgb=wood, goods_type="mixed")
-    add("chest_00", "chest", "chest", "storage", (sx + 1, max(sy + 2, sy + sh - 2), max(2, min(3, sw - 2)), 1), wood_rgb=wood)
-    tx, ty, tw, th = by_id["study"]
-    add("shelf_study", "shelf", "shelf", "study", (tx + 1, ty + 1, max(3, tw - 2), 1), wood_rgb=wood, goods_type="books")
-    add("table_study", "table", "table", "study", (tx + 1, max(ty + 2, ty + th - 3), max(2, tw - 2), 2), table_shape="long", wood_rgb=wood)
-    px, py, pw, ph = by_id["parlor"]
-    add("rug_parlor", "rug", "rug", "parlor", (px + 1, py + 1, max(3, pw - 2), max(2, ph - 2)), cloth_rgb=rug)
-    add("table_parlor", "table", "table", "parlor", (px + 1, py + max(1, ph // 2), max(3, pw - 2), 2), table_shape="long", wood_rgb=wood)
-    hx, hy, hw, hh = by_id["hall"]
-    add("stairs_00", "stairs", "stairs", "hall", (hx + 1, hy + hh - 3, max(2, hw - 2), 2), stone_rgb=(122, 119, 109), stair_direction="down")
+    for index, room in enumerate(room_specs):
+        x, y, w, h = room.tile_xywh
+        inner_x = int(x) + 1
+        inner_y = int(y) + 1
+        inner_w = max(1, int(w) - 2)
+        inner_h = max(1, int(h) - 2)
+        room_id = str(room.room_id)
+        suffix = f"{index:02d}"
+        if room_id == "bedroom":
+            if inner_h >= 2:
+                add(f"bed_{suffix}", "bed", "bed", room_id, (inner_x, inner_y, inner_w, 2), bed_size="single", wood_rgb=wood, blanket_rgb=(96, 132, 174))
+            else:
+                add(f"rug_{suffix}", "rug", "rug", room_id, (inner_x, inner_y, inner_w, inner_h), cloth_rgb=rug)
+        elif room_id == "kitchen":
+            add(f"counter_{suffix}", "counter", "counter", room_id, (inner_x, inner_y, inner_w, 1), wood_rgb=wood, top_rgb=_shade(wood, 46))
+            if inner_h >= 3:
+                add(f"fireplace_{suffix}", "fireplace", "hearth", room_id, (inner_x, inner_y + inner_h - 1, inner_w, 1), fire_state="lit")
+        elif room_id in {"storage", "pantry"}:
+            add(f"shelf_{suffix}", "shelf", "shelf", room_id, (inner_x, inner_y, inner_w, 1), wood_rgb=wood, goods_type="mixed")
+            add(f"chest_{suffix}", "chest", "chest", room_id, (inner_x, inner_y + inner_h - 1, max(1, min(3, inner_w)), 1), wood_rgb=wood)
+        elif room_id == "study":
+            add(f"shelf_{suffix}", "shelf", "shelf", room_id, (inner_x, inner_y, inner_w, 1), wood_rgb=wood, goods_type="books")
+            if inner_h >= 3:
+                add(f"table_{suffix}", "table", "table", room_id, (inner_x, inner_y + inner_h - 2, inner_w, 2), table_shape="long", wood_rgb=wood)
+        elif room_id == "workshop":
+            add(f"counter_{suffix}", "counter", "workbench", room_id, (inner_x, inner_y, inner_w, 1), wood_rgb=_shade(wood, -10), top_rgb=_shade(wood, 32))
+            if inner_w >= 3:
+                add(f"chest_{suffix}", "chest", "tool chest", room_id, (inner_x, inner_y + inner_h - 1, min(3, inner_w), 1), wood_rgb=wood)
+        else:
+            add(f"rug_{suffix}", "rug", "rug", room_id, (inner_x, inner_y, inner_w, inner_h), cloth_rgb=rug)
+            if inner_h >= 3:
+                table_y = inner_y + int(rng.randrange(max(1, inner_h - 2)))
+                add(f"table_{suffix}", "table", "table", room_id, (inner_x, table_y, inner_w, 2), table_shape="long", wood_rgb=wood)
     return entities
 
 
@@ -406,16 +523,22 @@ def _draw_door(draw: ImageDraw.ImageDraw, door: _DoorSpec, *, theme: Mapping[str
     x, y = door.tile_xy
     px = int(x) * CANONICAL_TILE_PX
     py = int(y) * CANONICAL_TILE_PX
-    if door.orientation != "vertical":
+    if door.orientation == "vertical":
+        gap = (px - 3, py + 6, px + 3, py + CANONICAL_TILE_PX - 7)
+        closed = (px - 3, py + 4, px + 3, py + CANONICAL_TILE_PX - 5)
+        knob = (px + 1, py + CANONICAL_TILE_PX // 2)
+    elif door.orientation == "horizontal":
+        gap = (px + 6, py - 3, px + CANONICAL_TILE_PX - 7, py + 3)
+        closed = (px + 4, py - 3, px + CANONICAL_TILE_PX - 5, py + 3)
+        knob = (px + CANONICAL_TILE_PX // 2, py + 1)
+    else:
         raise ValueError(f"unsupported RPG house door orientation: {door.orientation}")
-    gap = (px - 2, py + 2, px + 2, py + CANONICAL_TILE_PX - 3)
     if door.state == "open":
-        draw.rectangle(gap, fill=_rgba(_shade(theme["floor_rgbs"]["hall"], 8)))
-        draw.line((px - 2, py + 2, px + 2, py + 2), fill=_rgba(theme["wall_dark_rgb"]))
-        draw.line((px - 2, py + CANONICAL_TILE_PX - 3, px + 2, py + CANONICAL_TILE_PX - 3), fill=_rgba(theme["wall_dark_rgb"]))
+        draw.rectangle(gap, fill=_rgba(_shade(theme["background_rgb"], 36)))
+        draw.rectangle(gap, outline=_rgba(theme["wall_dark_rgb"]))
         return
-    draw.rectangle((px - 2, py + 1, px + 2, py + CANONICAL_TILE_PX - 2), fill=_rgba(theme["door_rgb"]), outline=_rgba(_shade(theme["door_rgb"], -42)))
-    draw.point((px + 1, py + CANONICAL_TILE_PX // 2), fill=_rgba((230, 188, 82)))
+    draw.rectangle(closed, fill=_rgba(theme["door_rgb"]), outline=_rgba(_shade(theme["door_rgb"], -42)))
+    draw.point(knob, fill=_rgba((230, 188, 82)))
 
 
 def _render_entities(
@@ -529,6 +652,13 @@ def _door_bbox(layout: RpgHouseLayout, spec: _DoorSpec) -> BBox:
             float(px + max(3, layout.tile_px // 12)),
             float(py + layout.tile_px - max(3, layout.tile_px // 12)),
         )
+    if spec.orientation == "horizontal":
+        return (
+            float(px + max(3, layout.tile_px // 12)),
+            float(py - max(3, layout.tile_px // 12)),
+            float(px + layout.tile_px - max(3, layout.tile_px // 12)),
+            float(py + max(3, layout.tile_px // 12)),
+        )
     raise ValueError(f"unsupported RPG house door orientation: {spec.orientation}")
 
 
@@ -562,6 +692,8 @@ __all__ = [
     "DEFAULT_CANVAS_WIDTH",
     "DEFAULT_TILE_PX",
     "HALL_ROOM_ID",
+    "MAX_ROOM_COUNT",
+    "MIN_ROOM_COUNT",
     "PASSABLE_DOOR_STATES",
     "RENDERER_ID",
     "ROOM_IDS",

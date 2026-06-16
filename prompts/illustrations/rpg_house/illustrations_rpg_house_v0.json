@@ -8,6 +8,13 @@
       "",
       "",
       ""
+    ],
+    "rpg_house_room_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -57,6 +64,13 @@
       "From the red-outlined starting room, choose the letter of the room that can be reached without crossing a closed door.",
       "The red outline marks the starting room. Which lettered room is connected to it through open doorways?",
       "Follow only open doorways from the red-outlined room. Which lettered room can be reached?"
+    ],
+    "room_count": [
+      "How many enclosed rooms are shown in the house layout?",
+      "Count the distinct rooms enclosed by walls in the house. How many rooms are there?",
+      "What is the total number of separate rooms in this top-down house interior?",
+      "How many distinct rooms can be seen inside the RPG house floor plan?",
+      "Count each enclosed room once. What is the total number of rooms?"
     ]
   },
   "allow_empty_task_templates": true

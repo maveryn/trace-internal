@@ -22,7 +22,7 @@ from .state import BBox, RpgHouseDoor, RpgHouseEntity, RpgHouseRoom, RpgHouseSce
 
 SCENE_ID = "rpg_house"
 RENDERER_ID = "rpg_house_top_down_v0"
-DEFAULT_TILE_PX = 48
+DEFAULT_TILE_PX = 40
 DEFAULT_CANVAS_WIDTH = 960
 DEFAULT_CANVAS_HEIGHT = 720
 CANONICAL_WALL_THICKNESS = 12

@@ -61,6 +61,7 @@ class _ReachableRoomSample:
     door_states: Mapping[str, str]
     start_room_probabilities: Mapping[str, float]
     answer_room_probabilities: Mapping[str, float]
+    answer_label_probabilities: Mapping[str, float]
 
 
 def _select_string_from_support(
@@ -122,10 +123,19 @@ def _sample_reachability_query(
     )
     if len(candidate_room_ids) > len(OPTION_LABELS):
         raise ValueError(f"reachable-room label task supports at most {len(OPTION_LABELS)} candidates")
+    answer_label_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}:answer_label",
+    ) % len(candidate_room_ids)
+    ordered_candidate_room_ids = [room_id for room_id in candidate_room_ids if room_id != answer_room_id]
+    ordered_candidate_room_ids.insert(int(answer_label_index), str(answer_room_id))
+    candidate_room_ids = tuple(ordered_candidate_room_ids)
     room_labels = {room_id: OPTION_LABELS[index] for index, room_id in enumerate(candidate_room_ids)}
     door_states = {str(door.door_id): "closed" for door in doors}
     selected_door_id = door_by_pair[tuple(sorted((str(start_room_id), str(answer_room_id))))]
     door_states[str(selected_door_id)] = "open"
+    answer_label = str(room_labels[str(answer_room_id)])
     return _ReachableRoomSample(
         start_room_id=str(start_room_id),
         answer_room_id=str(answer_room_id),
@@ -134,6 +144,7 @@ def _sample_reachability_query(
         door_states=door_states,
         start_room_probabilities=dict(start_probabilities),
         answer_room_probabilities=dict(answer_probabilities),
+        answer_label_probabilities=uniform_string_probability_map(OPTION_LABELS[: len(candidate_room_ids)], selected=answer_label),
     )
 
 
@@ -288,6 +299,7 @@ class IllustrationsRpgHouseReachableRoomLabelTask:
             "reachable_candidate_room_ids": list(reachable_candidates),
             "start_room_probabilities": dict(sample.start_room_probabilities),
             "answer_room_probabilities": dict(sample.answer_room_probabilities),
+            "answer_label_probabilities": dict(sample.answer_label_probabilities),
             "canvas_profile": str(render_params.get("canvas_profile", "")),
             "canvas_profile_probabilities": dict(render_params.get("canvas_profile_probabilities", {})),
         }

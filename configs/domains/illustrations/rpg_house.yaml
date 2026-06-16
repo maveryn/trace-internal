@@ -20,12 +20,12 @@ rendering:
     task_illustrations__rpg_house__reachable_room_label:
       rpg_house_canvas_width: 960
       rpg_house_canvas_height: 720
-      rpg_house_tile_px: 48
+      rpg_house_tile_px: 40
       rpg_house_reachable_room_count: 5
     task_illustrations__rpg_house__room_count:
       rpg_house_canvas_width: 960
       rpg_house_canvas_height: 720
-      rpg_house_tile_px: 48
+      rpg_house_tile_px: 40
 
 prompt:
   task_overrides:

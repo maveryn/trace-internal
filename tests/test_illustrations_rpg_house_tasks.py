@@ -172,14 +172,17 @@ def test_rpg_house_room_count_contract() -> None:
 def test_rpg_house_reachable_room_support_is_sampled() -> None:
     seen_starts: set[str] = set()
     seen_answers: set[str] = set()
+    seen_answer_labels: set[str] = set()
     task = create_task(REACHABLE_TASK_ID)
     for seed in range(20):
         out = task.generate(1000 + seed, params={"canvas_profile": "square"}, max_attempts=20)
         params = out.trace_payload["query_spec"]["params"]
         seen_starts.add(params["start_room_id"])
         seen_answers.add(params["answer_room_id"])
+        seen_answer_labels.add(out.answer_gt.value)
         assert params["answer_room_id"] in params["candidate_room_ids"]
         assert params["start_room_id"] not in params["candidate_room_ids"]
         assert params["reachable_candidate_room_ids"] == [params["answer_room_id"]]
     assert len(seen_starts) >= 4
     assert len(seen_answers) >= 4
+    assert seen_answer_labels == {"A", "B", "C", "D"}

@@ -15,7 +15,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Annotation is a keyed bbox map with `source_container_bbox`, `target_container_bbox`, `source_dimension_region_bbox`, `target_base_dimension_region_bbox`, `transfer_count_bbox`, and `fill_mark_bbox`. Numeric dimensions and the visible pour-count label are operand witnesses; the target liquid-height value itself remains the answer.
+Prompt-facing annotation uses pixel-space witnesses only. Annotation is a keyed bbox map with `source_container_bbox` and `target_container_bbox`. Numeric dimensions, the visible pour-count label, and the fill mark remain visible in the image plus private verifier metadata; the target liquid-height value itself remains the answer.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

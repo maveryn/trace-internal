@@ -10,6 +10,7 @@ from ._lifecycle import (
     resolve_container_volume_problem,
 )
 from .shared.defaults import DOMAIN
+from .shared.annotations import CONTAINER_BBOX_ANNOTATION_KEYS
 from .shared.measurements import json_answer_value, resolve_target_capacity
 from .shared.sampling import TARGET_CAPACITY_CASES, select_target_capacity_case
 
@@ -17,13 +18,7 @@ TASK_ID = "task_geometry__container_volume_transfer__target_capacity_value"
 TASK_ID_TARGET_CAPACITY = TASK_ID
 QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT = "target_capacity_from_source_and_count"
 SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
-TARGET_CAPACITY_ANNOTATION_KEYS = (
-    "source_container_bbox",
-    "target_container_bbox",
-    "source_dimension_region_bbox",
-    "transfer_count_bbox",
-    "transfer_arrow_bbox",
-)
+TARGET_CAPACITY_ANNOTATION_KEYS = CONTAINER_BBOX_ANNOTATION_KEYS
 TASK_BINDING = ContainerVolumeTaskBinding("target_capacity_value_query", TARGET_CAPACITY_ANNOTATION_KEYS, "answer_hint_integer", "integer")
 QUERY_PROGRAM = ContainerVolumeQueryProgram(
     select_target_capacity_case,

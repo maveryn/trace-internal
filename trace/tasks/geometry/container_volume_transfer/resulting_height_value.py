@@ -9,6 +9,7 @@ from ._lifecycle import (
     resolve_container_volume_problem,
 )
 from .shared.defaults import DOMAIN
+from .shared.annotations import CONTAINER_BBOX_ANNOTATION_KEYS
 from .shared.measurements import json_answer_value, resolve_cone_resulting_height, resolve_cylinder_resulting_height
 from .shared.sampling import CONE_HEIGHT_CASES, CYLINDER_HEIGHT_CASES, select_cone_height_case, select_cylinder_height_case
 
@@ -17,14 +18,7 @@ TASK_ID_RESULTING_HEIGHT = TASK_ID
 QUERY_ID_CONE_POURS_TO_CYLINDER_HEIGHT = "cone_pours_to_cylinder_height"
 QUERY_ID_CYLINDER_POURS_TO_CUBOID_HEIGHT = "cylinder_pours_to_cuboid_height"
 SUPPORTED_QUERY_IDS = (QUERY_ID_CONE_POURS_TO_CYLINDER_HEIGHT, QUERY_ID_CYLINDER_POURS_TO_CUBOID_HEIGHT)
-RESULTING_HEIGHT_ANNOTATION_KEYS = (
-    "source_container_bbox",
-    "target_container_bbox",
-    "source_dimension_region_bbox",
-    "target_base_dimension_region_bbox",
-    "transfer_count_bbox",
-    "fill_mark_bbox",
-)
+RESULTING_HEIGHT_ANNOTATION_KEYS = CONTAINER_BBOX_ANNOTATION_KEYS
 TASK_BINDING = ContainerVolumeTaskBinding("resulting_height_value_query", RESULTING_HEIGHT_ANNOTATION_KEYS, "answer_hint_decimal", "number")
 QUERY_PROGRAMS = {
     QUERY_ID_CONE_POURS_TO_CYLINDER_HEIGHT: ContainerVolumeQueryProgram(

@@ -9,6 +9,7 @@ from ._lifecycle import (
     resolve_container_volume_problem,
 )
 from .shared.defaults import DOMAIN
+from .shared.annotations import CONTAINER_BBOX_ANNOTATION_KEYS
 from .shared.measurements import json_answer_value, resolve_cone_fill_count, resolve_cylinder_fill_count
 from .shared.sampling import CONE_FILL_CASES, CYLINDER_FILL_CASES, select_cone_fill_case, select_cylinder_fill_case
 
@@ -17,13 +18,7 @@ TASK_ID_FILL_COUNT = TASK_ID
 QUERY_ID_CONE_TO_CYLINDER_FILL_COUNT = "cone_to_cylinder_fill_count"
 QUERY_ID_CYLINDER_TO_CUBOID_FILL_COUNT = "cylinder_to_cuboid_fill_count"
 SUPPORTED_QUERY_IDS = (QUERY_ID_CONE_TO_CYLINDER_FILL_COUNT, QUERY_ID_CYLINDER_TO_CUBOID_FILL_COUNT)
-FILL_COUNT_ANNOTATION_KEYS = (
-    "source_container_bbox",
-    "target_container_bbox",
-    "source_dimension_region_bbox",
-    "target_dimension_region_bbox",
-    "transfer_arrow_bbox",
-)
+FILL_COUNT_ANNOTATION_KEYS = CONTAINER_BBOX_ANNOTATION_KEYS
 ANNOTATION_KEYS = FILL_COUNT_ANNOTATION_KEYS
 TASK_BINDING = ContainerVolumeTaskBinding("fill_count_value_query", ANNOTATION_KEYS, "answer_hint_integer", "integer")
 QUERY_PROGRAMS = {

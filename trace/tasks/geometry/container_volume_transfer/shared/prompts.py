@@ -16,12 +16,6 @@ def _example_bbox_for_key(key: str) -> list[int]:
     examples = {
         "source_container_bbox": [145, 190, 285, 420],
         "target_container_bbox": [505, 180, 685, 426],
-        "source_dimension_region_bbox": [75, 246, 286, 458],
-        "target_dimension_region_bbox": [505, 338, 758, 432],
-        "target_base_dimension_region_bbox": [505, 338, 706, 432],
-        "transfer_arrow_bbox": [305, 286, 485, 322],
-        "transfer_count_bbox": [350, 50, 470, 105],
-        "fill_mark_bbox": [505, 245, 746, 285],
     }
     return list(examples[str(key)])
 

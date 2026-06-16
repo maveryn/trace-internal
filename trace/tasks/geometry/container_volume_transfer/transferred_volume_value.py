@@ -9,6 +9,7 @@ from ._lifecycle import (
     resolve_container_volume_problem,
 )
 from .shared.defaults import DOMAIN
+from .shared.annotations import CONTAINER_BBOX_ANNOTATION_KEYS
 from .shared.measurements import json_answer_value, resolve_transferred_volume
 from .shared.sampling import TRANSFERRED_VOLUME_CASES, select_repeated_cone_volume_case, select_repeated_cylinder_volume_case
 
@@ -17,13 +18,7 @@ TASK_ID_TRANSFERRED_VOLUME = TASK_ID
 QUERY_ID_REPEATED_CONE_POURS_TOTAL_VOLUME = "repeated_cone_pours_total_volume"
 QUERY_ID_REPEATED_CYLINDER_POURS_TOTAL_VOLUME = "repeated_cylinder_pours_total_volume"
 SUPPORTED_QUERY_IDS = (QUERY_ID_REPEATED_CONE_POURS_TOTAL_VOLUME, QUERY_ID_REPEATED_CYLINDER_POURS_TOTAL_VOLUME)
-TRANSFERRED_VOLUME_ANNOTATION_KEYS = (
-    "source_container_bbox",
-    "target_container_bbox",
-    "source_dimension_region_bbox",
-    "transfer_count_bbox",
-    "transfer_arrow_bbox",
-)
+TRANSFERRED_VOLUME_ANNOTATION_KEYS = CONTAINER_BBOX_ANNOTATION_KEYS
 TASK_BINDING = ContainerVolumeTaskBinding("transferred_volume_value_query", TRANSFERRED_VOLUME_ANNOTATION_KEYS, "answer_hint_integer", "integer")
 QUERY_PROGRAMS = {
     QUERY_ID_REPEATED_CONE_POURS_TOTAL_VOLUME: ContainerVolumeQueryProgram(

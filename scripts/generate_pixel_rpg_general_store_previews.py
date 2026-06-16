@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate procedural pixel RPG general-store interior previews for review."""
+"""Generate procedural pixel RPG interior previews for review."""
 
 from __future__ import annotations
 
@@ -30,17 +30,15 @@ def _install_trace_tasks_namespace() -> None:
 
 _install_trace_tasks_namespace()
 
-from trace.tasks.illustrations.shared.pixel_rpg_interior_rendering import (  # noqa: E402
-    REFERENCE_SOURCES,
+from trace.tasks.illustrations.rpg_interior.shared.rendering import (  # noqa: E402
     RENDERER_ID,
     SCENE_ID,
-    draw_pixel_rpg_general_store_debug_overlay,
-    render_pixel_rpg_general_store,
+    draw_rpg_interior_debug_overlay,
+    render_rpg_interior_scene,
 )
 
 
-DEFAULT_OUT_DIR = Path("review/task-reviews/assets/illustrations/pixel_rpg_general_store")
-PROJECTIONS = ("top_down", "isometric")
+DEFAULT_OUT_DIR = Path("review/task-reviews/assets/illustrations/rpg_interior")
 
 
 def _fit(image: Image.Image, *, max_w: int, max_h: int) -> Image.Image:
@@ -66,12 +64,8 @@ def _make_contact_sheet(image_paths: Sequence[Path], output_path: Path, *, colum
         y = row * tile_h
         draw.rectangle((x + 8, y + 8, x + tile_w - 8, y + tile_h - 8), fill=(255, 255, 238), outline=(190, 190, 174))
         sheet.paste(thumb, (x + (tile_w - thumb.width) // 2, y + 16))
-        draw.text((x + 16, y + tile_h - 26), path_label(image_paths[index]), fill=(45, 48, 54))
+        draw.text((x + 16, y + tile_h - 26), image_paths[index].stem.replace("_", " "), fill=(45, 48, 54))
     sheet.save(output_path)
-
-
-def path_label(path: Path) -> str:
-    return path.stem.replace("_", " ")
 
 
 def generate_previews(*, out_dir: Path, count: int, seed: int, width: int, height: int, tile_px: int) -> None:
@@ -86,77 +80,68 @@ def generate_previews(*, out_dir: Path, count: int, seed: int, width: int, heigh
     records: list[dict] = []
     for index in range(int(count)):
         scene_seed = int(seed) + index
-        for projection in PROJECTIONS:
-            scene = render_pixel_rpg_general_store(
-                scene_seed,
-                width=int(width),
-                height=int(height),
-                projection=projection,
-                tile_px=int(tile_px),
-            )
-            stem = f"{index:04d}_{projection}"
-            image_path = images_dir / f"{stem}.png"
-            overlay_path = overlays_dir / f"{stem}_overlay.png"
-            data_path = data_dir / f"{stem}.json"
-            scene.image.save(image_path)
-            draw_pixel_rpg_general_store_debug_overlay(scene).save(overlay_path)
-            data_path.write_text(json.dumps(scene.trace, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-            image_paths.append(image_path)
-            overlay_paths.append(overlay_path)
-            records.append(
-                {
-                    "index": int(index),
-                    "seed": int(scene_seed),
-                    "projection": projection,
-                    "image": str(image_path),
-                    "overlay": str(overlay_path),
-                    "data": str(data_path),
-                    "grid_cols": int(scene.trace["grid_cols"]),
-                    "grid_rows": int(scene.trace["grid_rows"]),
-                    "theme_id": str(scene.trace["theme_id"]),
-                    "floor_pattern": str(scene.trace["floor_pattern"]),
-                    "entity_count": int(scene.trace["entity_count"]),
-                    "region_count": int(scene.trace["region_count"]),
-                    "category_counts": dict(scene.trace["category_counts"]),
-                    "object_type_counts": dict(scene.trace["object_type_counts"]),
-                    "shelf_goods": list(scene.trace["shelf_goods"]),
-                    "produce_goods": str(scene.trace["produce_goods"]),
-                }
-            )
+        scene = render_rpg_interior_scene(
+            scene_seed,
+            width=int(width),
+            height=int(height),
+            tile_px=int(tile_px),
+            required_zone_object_counts={"counter": {"bottle": 3}},
+        )
+        stem = f"{index:04d}"
+        image_path = images_dir / f"{stem}.png"
+        overlay_path = overlays_dir / f"{stem}_overlay.png"
+        data_path = data_dir / f"{stem}.json"
+        scene.image.save(image_path)
+        draw_rpg_interior_debug_overlay(scene).save(overlay_path)
+        data_path.write_text(json.dumps(scene.trace, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        image_paths.append(image_path)
+        overlay_paths.append(overlay_path)
+        records.append(
+            {
+                "index": int(index),
+                "seed": int(scene_seed),
+                "image": str(image_path),
+                "overlay": str(overlay_path),
+                "data": str(data_path),
+                "grid_cols": int(scene.trace["grid_cols"]),
+                "grid_rows": int(scene.trace["grid_rows"]),
+                "theme_id": str(scene.trace["theme_id"]),
+                "interior_type": str(scene.trace["interior_type"]),
+                "floor_pattern": str(scene.trace["floor_pattern"]),
+                "entity_count": int(scene.trace["entity_count"]),
+                "region_count": int(scene.trace["region_count"]),
+                "category_counts": dict(scene.trace["category_counts"]),
+                "object_type_counts": dict(scene.trace["object_type_counts"]),
+            }
+        )
     _make_contact_sheet(image_paths, out_dir / "scene_contact_sheet.png")
     _make_contact_sheet(overlay_paths, out_dir / "overlay_contact_sheet.png")
     manifest = {
         "scene_id": SCENE_ID,
         "renderer_id": RENDERER_ID,
         "count": int(count),
-        "projection_count": len(PROJECTIONS),
         "base_seed": int(seed),
         "width": int(width),
         "height": int(height),
         "tile_px": int(tile_px),
-        "reference_sources": dict(REFERENCE_SOURCES),
         "records": records,
     }
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     readme = [
-        "# Pixel RPG General Store Prototype",
+        "# Pixel RPG Interior",
         "",
-        "Generated review scenes for a procedural old-school RPG general-store interior renderer.",
+        "Generated review scenes for the top-down RPG interior renderer.",
         "",
-        "- `images/`: original top-down and isometric scene renders",
+        "- `images/`: scene renders",
         "- `overlays/`: debug renders with semantic zones and entity bboxes",
         "- `data/`: per-scene trace metadata",
         "- `scene_contact_sheet.png`: original scene overview",
         "- `overlay_contact_sheet.png`: bbox/debug overview",
         "",
-        "The renderer uses no external sprites. Kenney Roguelike/RPG and RPG Urban Pack assets are visual references only.",
-        "Each seed samples one logical store layout and renders it in both top-down and isometric projections.",
-        "Required objects include a counter, vendor, shelves, produce bin, crates/barrels, jars/pots/baskets, and a notice board.",
-        "Reusable interior props route through the shared illustration object renderer and expose normalized object records.",
-        "No public TRACE task is registered for this prototype yet.",
+        "The renderer uses no external sprites.",
     ]
     (out_dir / "README.md").write_text("\n".join(readme) + "\n", encoding="utf-8")
-    print(f"[done] wrote {count} general-store seeds ({len(PROJECTIONS)} projections each) to {out_dir}")
+    print(f"[done] wrote {count} RPG interior seeds to {out_dir}")
 
 
 def main() -> None:
@@ -166,7 +151,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=20260608)
     parser.add_argument("--width", type=int, default=960)
     parser.add_argument("--height", type=int, default=720)
-    parser.add_argument("--tile-px", type=int, default=32)
+    parser.add_argument("--tile-px", type=int, default=40)
     args = parser.parse_args()
     generate_previews(
         out_dir=args.out_dir,

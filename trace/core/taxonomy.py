@@ -888,6 +888,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__pixel_village__swapped_tile_pair_label": _entry(
         "illustrations", "pixel_village", "illustrations", "pixel_village"
     ),
+    "task_illustrations__rpg_interior__object_zone_count": _entry(
+        "illustrations", "rpg_interior", "illustrations", "rpg_interior"
+    ),
     "task_illustrations__transit_terminal__person_in_boarding_area_count": _entry(
         "illustrations", "transit_terminal", "illustrations", "counting"
     ),

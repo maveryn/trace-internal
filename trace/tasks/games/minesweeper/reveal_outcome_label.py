@@ -6,7 +6,7 @@ from trace.core.types import TypedValue
 from trace.tasks.registry import register_task
 
 from ._lifecycle import MinesweeperAttemptResult, MinesweeperObjectivePlan, run_minesweeper_registered_task
-from .shared.annotations import keyed_cell_ids_for_coords, minesweeper_keyed_bbox_sets_annotation
+from .shared.annotations import keyed_cell_ids_for_coords, minesweeper_keyed_point_sets_annotation
 from .shared.defaults import DEFAULT_BRANCH_ID
 from .shared.prompts import MinesweeperPromptSlots
 from .shared.sampling import resolve_minesweeper_axes, sample_reveal_cell_scene
@@ -70,13 +70,13 @@ def _prepare_reveal_outcome_objective(
                 answer_hint_key=f"answer_hint_{PROMPT_QUERY_KEY}",
                 annotation_hint_key=f"annotation_hint_{PROMPT_QUERY_KEY}",
                 example_annotation={
-                    "target_cell": [[210, 220, 280, 290]],
-                    "supporting_clues": [[140, 220, 210, 290]],
-                    "supporting_flags": [[140, 150, 210, 220]],
+                    "target_cell": [[245, 255]],
+                    "supporting_clues": [[175, 255]],
+                    "supporting_flags": [[175, 185]],
                 },
                 example_answer="C",
             ),
-            bind_annotation=lambda rendered: minesweeper_keyed_bbox_sets_annotation(
+            bind_annotation=lambda rendered: minesweeper_keyed_point_sets_annotation(
                 rendered=rendered,
                 coords_by_role=coords_by_role,
             ),

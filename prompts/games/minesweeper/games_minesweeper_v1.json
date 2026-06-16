@@ -136,15 +136,15 @@
     "object_description_open_grid": "a Minesweeper grid with opened number cells, hidden cells, and a few flags",
     "object_description_mixed_grid": "a Minesweeper grid with opened number cells, hidden cells, flags, and extra hidden distractor cells",
     "minesweeper_rule_text": "In Minesweeper, each opened number tells how many mines are in its eight neighboring cells, and each flag marks a known mine. If a number already has that many adjacent flags, its other hidden neighbors are safe. If the number still needs exactly all remaining hidden neighbors, those hidden neighbors are mines.",
-    "annotation_hint_forced_mine_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for the hidden cells forced to be mines",
+    "annotation_hint_forced_mine_count": "set \"annotation\" to [x, y] pixel points at the centers of the hidden cells forced to be mines",
     "answer_hint_forced_mine_count": "set \"answer\" to the count of hidden cells that must be mines",
-    "annotation_hint_forced_safe_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for the hidden cells forced to be safe",
+    "annotation_hint_forced_safe_count": "set \"annotation\" to [x, y] pixel points at the centers of the hidden cells forced to be safe",
     "answer_hint_forced_safe_count": "set \"answer\" to the count of hidden cells that must be safe",
-    "annotation_hint_remaining_mine_count": "set \"annotation\" to a JSON array containing one bounding box [x0, y0, x1, y1] for the marked opened number cell",
+    "annotation_hint_remaining_mine_count": "set \"annotation\" to the [x, y] pixel point at the center of the marked opened number cell",
     "answer_hint_remaining_mine_count": "set \"answer\" to the number of additional mines that must be adjacent to the marked opened number cell",
-    "annotation_hint_reveal_outcome_label": "set \"annotation\" to a JSON object with keys \"target_cell\", \"supporting_clues\", and \"supporting_flags\"; each key maps to an array of bounding boxes [x0, y0, x1, y1] for the marked hidden cell and the visible cells used to infer the reveal result",
+    "annotation_hint_reveal_outcome_label": "set \"annotation\" to a JSON object with keys \"target_cell\", \"supporting_clues\", and \"supporting_flags\"; each key maps to [x, y] pixel points at the centers of the marked hidden cell and the visible cells used to infer the reveal result",
     "answer_hint_reveal_outcome_label": "set \"answer\" to the single option letter shown beside the reveal result",
-    "annotation_hint_satisfied_clue_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for the opened number cells whose clue equals the count of adjacent flags",
+    "annotation_hint_satisfied_clue_count": "set \"annotation\" to [x, y] pixel points at the centers of the opened number cells whose clue equals the count of adjacent flags",
     "answer_hint_satisfied_clue_count": "set \"answer\" to the count of opened number cells whose clue equals the count of adjacent flags; do not count numbered cells with too few adjacent flags"
   }
 }

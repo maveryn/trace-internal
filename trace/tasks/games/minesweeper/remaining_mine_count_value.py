@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from trace.tasks.registry import register_task
 
-from ._lifecycle import MinesweeperObjectivePlan, minesweeper_integer_bbox_attempt, run_minesweeper_registered_task
+from ._lifecycle import MinesweeperObjectivePlan, minesweeper_integer_point_attempt, run_minesweeper_registered_task
 from .shared.defaults import DEFAULT_BRANCH_ID
 from .shared.sampling import resolve_minesweeper_axes, sample_remaining_adjacent_mine_scene
 
@@ -47,13 +47,13 @@ def _prepare_remaining_mine_objective(
             target_count=int(resolved_axes.target_answer or 0),
         )
         marked_coord = sample.annotation_coords[0]
-        return minesweeper_integer_bbox_attempt(
+        return minesweeper_integer_point_attempt(
             sample=sample,
             prompt_key=PROMPT_QUERY_KEY,
             object_description_key=f"object_description_{str(resolved_axes.scene_variant)}",
             answer_hint_key=f"answer_hint_{PROMPT_QUERY_KEY}",
             annotation_hint_key=f"annotation_hint_{PROMPT_QUERY_KEY}",
-            example_annotation=[210, 220, 280, 290],
+            example_annotation=[245, 255],
             example_answer=2,
             coord=marked_coord,
             highlighted_clue_coords=tuple(sample.forcing_clue_coords),

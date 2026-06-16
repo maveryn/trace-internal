@@ -2,76 +2,67 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Sequence
+from typing import Mapping, Sequence
 
 from trace.core.types import TypedValue
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_annotation_artifacts, point_set_annotation_artifacts
 
 from .state import Coord, coord_to_cell_id
 from .rendering import RenderedMinesweeperScene
 
 
-def _bbox_for_cell(rendered: RenderedMinesweeperScene, coord: Coord) -> list[float]:
-    """Project one board coordinate to its inset cell bbox."""
+def _point_for_cell(rendered: RenderedMinesweeperScene, coord: Coord) -> list[float]:
+    """Project one board coordinate to the center of its inset cell bbox."""
 
     entity_id = coord_to_cell_id(coord)
-    return [float(value) for value in rendered.render_map["cell_bboxes_px"][str(entity_id)]]
+    left, top, right, bottom = [float(value) for value in rendered.render_map["cell_bboxes_px"][str(entity_id)]]
+    return [0.5 * (left + right), 0.5 * (top + bottom)]
 
 
-def minesweeper_bbox_set_annotation(
+def minesweeper_point_set_annotation(
     *,
     rendered: RenderedMinesweeperScene,
     coords: Sequence[Coord],
 ) -> AnnotationArtifacts:
-    """Project homogeneous cell witnesses to a public bbox-set annotation."""
+    """Project homogeneous cell witnesses to a public point-set annotation."""
 
-    return bbox_set_annotation_artifacts([_bbox_for_cell(rendered, coord) for coord in coords])
+    return point_set_annotation_artifacts([_point_for_cell(rendered, coord) for coord in coords])
 
 
-def minesweeper_bbox_annotation(
+def minesweeper_point_annotation(
     *,
     rendered: RenderedMinesweeperScene,
     coord: Coord,
 ) -> AnnotationArtifacts:
-    """Project one guaranteed cell witness to a scalar bbox annotation."""
+    """Project one guaranteed cell witness to a scalar point annotation."""
 
-    value = [round(float(v), 3) for v in _bbox_for_cell(rendered, coord)]
-    return AnnotationArtifacts(
-        annotation_type="bbox",
-        value=list(value),
-        annotation_gt=TypedValue(type="bbox", value=list(value)),
-        projected_annotation={
-            "type": "bbox",
-            "bbox": list(value),
-            "pixel_bbox": list(value),
-        },
-    )
+    return point_annotation_artifacts(_point_for_cell(rendered, coord))
 
 
-def minesweeper_keyed_bbox_sets_annotation(
+def minesweeper_keyed_point_sets_annotation(
     *,
     rendered: RenderedMinesweeperScene,
     coords_by_role: Mapping[str, Sequence[Coord]],
 ) -> AnnotationArtifacts:
-    """Project role-bound cell witness groups to keyed bbox-set annotation."""
+    """Project role-bound cell witness groups to keyed point-set annotation."""
 
     value: dict[str, list[list[float]]] = {}
     for role, coords in sorted(coords_by_role.items()):
         value[str(role)] = [
-            [round(float(v), 3) for v in _bbox_for_cell(rendered, coord)]
+            [round(float(v), 3) for v in _point_for_cell(rendered, coord)]
             for coord in coords
         ]
     return AnnotationArtifacts(
-        annotation_type="keyed_bbox_set_map",
-        value={str(role): [list(bbox) for bbox in bboxes] for role, bboxes in value.items()},
+        annotation_type="keyed_point_set_map",
+        value={str(role): [list(point) for point in points] for role, points in value.items()},
         annotation_gt=TypedValue(
-            type="keyed_bbox_set_map",
-            value={str(role): [list(bbox) for bbox in bboxes] for role, bboxes in value.items()},
+            type="keyed_point_set_map",
+            value={str(role): [list(point) for point in points] for role, points in value.items()},
         ),
         projected_annotation={
-            "type": "keyed_bbox_set_map",
-            "keyed_bbox_set_map": {str(role): [list(bbox) for bbox in bboxes] for role, bboxes in value.items()},
-            "pixel_keyed_bbox_set_map": {str(role): [list(bbox) for bbox in bboxes] for role, bboxes in value.items()},
+            "type": "keyed_point_set_map",
+            "keyed_point_set_map": {str(role): [list(point) for point in points] for role, points in value.items()},
+            "pixel_keyed_point_set_map": {str(role): [list(point) for point in points] for role, points in value.items()},
         },
     )
 
@@ -91,7 +82,7 @@ def keyed_cell_ids_for_coords(coords_by_role: Mapping[str, Sequence[Coord]]) -> 
 __all__ = [
     "cell_ids_for_coords",
     "keyed_cell_ids_for_coords",
-    "minesweeper_bbox_annotation",
-    "minesweeper_bbox_set_annotation",
-    "minesweeper_keyed_bbox_sets_annotation",
+    "minesweeper_keyed_point_sets_annotation",
+    "minesweeper_point_annotation",
+    "minesweeper_point_set_annotation",
 ]

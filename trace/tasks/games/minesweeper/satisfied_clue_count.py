@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from trace.tasks.registry import register_task
 
-from ._lifecycle import MinesweeperObjectivePlan, minesweeper_integer_bbox_set_attempt, run_minesweeper_registered_task
+from ._lifecycle import MinesweeperObjectivePlan, minesweeper_integer_point_set_attempt, run_minesweeper_registered_task
 from .shared.defaults import DEFAULT_BRANCH_ID
 from .shared.sampling import resolve_minesweeper_axes, sample_satisfied_number_scene
 
@@ -46,13 +46,13 @@ def _prepare_satisfied_clue_objective(
             axes=resolved_axes,
             target_count=int(resolved_axes.target_answer or 1),
         )
-        return minesweeper_integer_bbox_set_attempt(
+        return minesweeper_integer_point_set_attempt(
             sample=sample,
             prompt_key=PROMPT_QUERY_KEY,
             object_description_key=f"object_description_{str(resolved_axes.scene_variant)}",
             answer_hint_key=f"answer_hint_{PROMPT_QUERY_KEY}",
             annotation_hint_key=f"annotation_hint_{PROMPT_QUERY_KEY}",
-            example_annotation=[[140, 220, 210, 290], [210, 220, 280, 290], [280, 220, 350, 290]],
+            example_annotation=[[175, 255], [245, 255], [315, 255]],
             example_answer=3,
             coords=sample.annotation_coords,
             extra_query_params={"prompt_query_key": PROMPT_QUERY_KEY},

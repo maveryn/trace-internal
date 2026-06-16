@@ -51,35 +51,35 @@ def _bbox_row_counts(bboxes: dict[str, list[float]], *, tolerance_px: float = 4.
             {"query_id": "forced_mine_count", "target_answer": 3, "scene_variant": "mixed_grid", "board_size": 5},
             "forced_mine_count",
             "integer",
-            "bbox_set",
+            "point_set",
         ),
         (
             GamesMinesweeperForcedCellCountTask,
             {"query_id": "forced_safe_count", "target_answer": 4, "scene_variant": "open_grid", "board_size": 5},
             "forced_safe_count",
             "integer",
-            "bbox_set",
+            "point_set",
         ),
         (
             GamesMinesweeperSatisfiedClueCountTask,
             {"target_answer": 5, "scene_variant": "mixed_grid", "board_size": 7},
             "single",
             "integer",
-            "bbox_set",
+            "point_set",
         ),
         (
             GamesMinesweeperRemainingMineCountValueTask,
             {"target_answer": 3, "scene_variant": "mixed_grid", "board_size": 6},
             "single",
             "integer",
-            "bbox",
+            "point",
         ),
         (
             GamesMinesweeperRevealOutcomeLabelTask,
             {"target_answer": 4, "scene_variant": "mixed_grid", "board_size": 6},
             "single",
             "option_letter",
-            "keyed_bbox_set_map",
+            "keyed_point_set_map",
         ),
     ),
 )
@@ -100,15 +100,15 @@ def test_games_minesweeper_grid_emits_expected_contract(
     assert trace["query_spec"]["query_id"] == str(expected_query)
     assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
     assert execution["query_id"] == str(expected_query)
-    if str(expected_annotation_type) == "keyed_bbox_set_map":
-        assert trace["projected_annotation"]["keyed_bbox_set_map"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_keyed_bbox_set_map"] == out.annotation_gt.value
+    if str(expected_annotation_type) == "keyed_point_set_map":
+        assert trace["projected_annotation"]["keyed_point_set_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_keyed_point_set_map"] == out.annotation_gt.value
         assert set(out.annotation_gt.value) == {"target_cell", "supporting_clues", "supporting_flags"}
-    elif str(expected_annotation_type) == "bbox":
-        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    elif str(expected_annotation_type) == "point":
+        assert trace["projected_annotation"]["point"] == out.annotation_gt.value
         assert len(execution["annotation_entity_ids"]) == 1
     else:
-        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
         assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
     assert "panel_scene_style" in trace["render_spec"]
     assert trace["render_spec"]["text_style"]["font_family"]
@@ -237,7 +237,7 @@ def test_games_minesweeper_remaining_mine_count_matches_marked_clue(target_answe
         hidden_coords=hidden_coords,
     )
     assert out.query_id == "single"
-    assert out.annotation_gt.type == "bbox"
+    assert out.annotation_gt.type == "point"
     assert int(out.answer_gt.value) == int(target_answer)
     assert len(forcing_clues) == 1
     assert annotation_coords == forcing_clues
@@ -293,7 +293,7 @@ def test_games_minesweeper_reveal_outcome_matches_marked_hidden_cell(target_answ
     assert str(execution["reveal_outcome"]) == expected_outcome
     assert target in set(hidden_coords)
     assert target not in set(flagged_coords)
-    assert out.annotation_gt.type == "keyed_bbox_set_map"
+    assert out.annotation_gt.type == "keyed_point_set_map"
     assert len(out.annotation_gt.value["target_cell"]) == 1
     assert len(out.annotation_gt.value["supporting_clues"]) >= 1
     assert set(out.annotation_gt.value) == {"target_cell", "supporting_clues", "supporting_flags"}

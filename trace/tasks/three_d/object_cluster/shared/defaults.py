@@ -91,6 +91,9 @@ COLOR_SAFE_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
     )
     if shape in set(OBJECT_CLUSTER_SHAPE_TYPES)
 )
+# Semantic-color tasks only use shapes whose projected renderer makes ``fill_rgb``
+# a visible body color. Canonical-color glyphs such as books, apples, dice, and
+# clocks stay available for non-color object-cluster tasks.
 COLOR_READOUT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
     shape
     for shape in (
@@ -108,10 +111,7 @@ COLOR_READOUT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
         "puzzle_piece",
         "cup",
         "bowl",
-        "mini_chair",
-        "mini_table",
         "stool",
-        "heater",
         "flower",
         "can",
         "bucket",
@@ -120,38 +120,9 @@ COLOR_READOUT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
         "chess_piece",
         "arrow",
         "shield",
-        "crown",
         "gear",
-        "bell",
-        "trophy",
-        "mushroom",
-        "lantern",
-        "candle",
-        "goblet",
-        "mail_envelope",
-        "compass",
         "flask",
-        "clock",
-        "apple",
-        "fish",
-        "glove",
-        "hat",
-        "helmet",
-        "bottle",
-        "umbrella",
-        "calculator",
-        "dice",
-        "kite",
-        "cactus",
-        "drum",
-        "remote_control",
-        "plug",
         "half_cylinder",
-        "basket",
-        "light_bulb",
-        "egg",
-        "rose",
-        "tomato",
     )
     if shape in set(OBJECT_CLUSTER_SHAPE_TYPES)
 )

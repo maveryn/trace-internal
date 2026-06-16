@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import ast
+from pathlib import Path
+
 import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
@@ -67,6 +70,46 @@ COUNTQA_CLUSTER_ADDITIONS = {
     "tape_roll",
     "bag",
 }
+
+
+def _renderer_function_for_shape(shape_type: str) -> str:
+    """Return the projected-object renderer dispatch target for one shape."""
+
+    if str(shape_type) == "cube":
+        return "_draw_box_object"
+    lines = Path("trace/tasks/three_d/shared/object_rendering.py").read_text().splitlines()
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        matches_direct = f'shape_type == "{shape_type}"' in stripped
+        matches_group = "shape_type in {" in stripped and f'"{shape_type}"' in stripped
+        if not (matches_direct or matches_group):
+            continue
+        block = "\n".join(lines[index : index + 12])
+        if "scene_rendering." not in block:
+            break
+        return block.split("scene_rendering.", 1)[1].split("(", 1)[0]
+    raise AssertionError(f"could not resolve renderer dispatch for {shape_type}")
+
+
+def _renderer_fill_load_count(function_name: str) -> int:
+    """Count runtime reads of the semantic ``fill`` argument in one renderer."""
+
+    for path in (
+        Path("trace/tasks/three_d/shared/object_scene_primitives.py"),
+        Path("trace/tasks/three_d/shared/object_scene_glyphs_symbolic.py"),
+        Path("trace/tasks/three_d/shared/object_scene_glyphs_household.py"),
+        Path("trace/tasks/three_d/shared/object_scene_glyphs_nature_apparel.py"),
+        Path("trace/tasks/three_d/shared/object_scene_glyphs_tools_devices.py"),
+    ):
+        text = path.read_text()
+        tree = ast.parse(text)
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name == str(function_name):
+                return sum(
+                    isinstance(item, ast.Name) and item.id == "fill" and isinstance(item.ctx, ast.Load)
+                    for item in ast.walk(node)
+                )
+    raise AssertionError(f"could not find renderer function {function_name}")
 
 
 def test_object_cluster_prompt_colors_use_canonical_palette() -> None:
@@ -290,20 +333,16 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
     assert taxonomy.scene_id == "object_cluster"
     assert not taxonomy.source_scene_id
     assert len(COLOR_SAFE_CLUSTER_SHAPE_TYPES) >= 12
-    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 58
+    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 26
     assert {
         "sphere",
         "cube",
         "cylinder",
         "puzzle_piece",
         "cup",
-        "mini_chair",
         "shield",
-        "lantern",
         "flask",
-        "calculator",
-        "light_bulb",
-        "tomato",
+        "half_cylinder",
     }.issubset(set(COLOR_READOUT_CLUSTER_SHAPE_TYPES))
     assert {
         "button",
@@ -315,6 +354,15 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
         "coaster",
         "tape_roll",
         "open_book",
+        "apple",
+        "dice",
+        "clock",
+        "calculator",
+        "light_bulb",
+        "tomato",
+        "mini_chair",
+        "lantern",
+        "trophy",
     }.isdisjoint(set(COLOR_READOUT_CLUSTER_SHAPE_TYPES))
     assert {
         "straw",
@@ -332,6 +380,9 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
         "tape_roll",
         "bag",
     }.issubset(set(COLOR_SAFE_CLUSTER_SHAPE_TYPES))
+    for shape_type in COLOR_READOUT_CLUSTER_SHAPE_TYPES:
+        renderer_function = _renderer_function_for_shape(str(shape_type))
+        assert _renderer_fill_load_count(renderer_function) > 0, (shape_type, renderer_function)
 
 
 def test_object_cluster_color_membership_count_answer_and_annotation() -> None:

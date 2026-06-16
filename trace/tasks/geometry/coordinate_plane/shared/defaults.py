@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from .....shared.config_defaults import group_default
+from trace.tasks.shared.config_defaults import group_default
 
 
 def resolve_int_param(params: Mapping[str, Any], defaults: Mapping[str, Any], key: str, fallback: int) -> int:

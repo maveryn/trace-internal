@@ -2,20 +2,31 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Mapping
 
-from ....core.types import TypedValue
-from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
 
-from .shared.coordinate.relation_common import COUNT_QUERY_IDS, _SCENE_DEFAULTS
-from .shared.coordinate.relation_runtime import build_relation_artifacts, relation_query
+from ._lifecycle import CoordinateRelationObjective, run_coordinate_relation_entry
 
 TASK_ID = "task_geometry__coordinate_plane__point_in_polygon_count"
-SCENE_ID = "coordinate_plane"
-SUPPORTED_QUERY_IDS = ("point_in_shape_count",)
+SUPPORTED_QUERY_IDS = ("single",)
 SCENE_VARIANT = "polygon_lattice"
+PROMPT_QUERY_KEY = "point_in_shape_count"
+SEMANTIC_OPERATION = "polygon_interior"
+
+
+def _prepare_point_in_polygon_objective(
+    _selected_query: str,
+    _query_probabilities: Mapping[str, float],
+    _task_params: Mapping[str, Any],
+) -> CoordinateRelationObjective:
+    """Bind the no-branch public query to interior lattice-point counting."""
+
+    return CoordinateRelationObjective(
+        scene_variant=SCENE_VARIANT,
+        semantic_operation=SEMANTIC_OPERATION,
+        prompt_query_key=PROMPT_QUERY_KEY,
+    )
 
 
 @register_task
@@ -24,44 +35,11 @@ class GeometryCoordinatePointInPolygonCountTask:
 
     task_id = TASK_ID
     domain = "geometry"
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True
+    prepare_objective = staticmethod(_prepare_point_in_polygon_objective)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=SUPPORTED_QUERY_IDS[0],
-            task_id=TASK_ID,
-        )
-        query = relation_query(
-            instance_seed=int(instance_seed),
-            params=task_params,
-            query_id=str(query_id),
-            query_id_probabilities=query_probabilities,
-            scene_variant=SCENE_VARIANT,
-            scene_variant_probabilities={SCENE_VARIANT: 1.0},
-        )
-        artifacts = build_relation_artifacts(
-            instance_seed=int(instance_seed),
-            params=task_params,
-            query=query,
-            max_attempts=int(max_attempts),
-        )
-        return TaskOutput(
-            prompt=str(artifacts.prompt_artifacts.prompt),
-            answer_gt=TypedValue(type="integer", value=artifacts.rendered_scene.answer_value),
-            annotation_gt=TypedValue(
-                type=str(artifacts.rendered_scene.annotation_type),
-                value=artifacts.rendered_scene.annotation_value,
-            ),
-            image=artifacts.image,
-            image_id="img0",
-            trace_payload=artifacts.trace_payload,
-            task_versions=artifacts.task_versions,
-            query_id=str(query.query_id),
-            prompt_variants=dict(artifacts.prompt_artifacts.prompt_variants),
-        )
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        """Generate an interior lattice-point count scene."""
+
+        return run_coordinate_relation_entry(self, instance_seed, params=params, max_attempts=max_attempts)

@@ -5,28 +5,26 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping
 
-from .....shared.config_defaults import group_default, required_group_defaults
-from .....shared.output_metadata import default_task_versions
-from .....shared.prompt_json_example import build_prompt_json_examples
-from .....shared.prompt_variants import (
+from trace.tasks.shared.config_defaults import group_default, required_group_defaults
+from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.prompt_json_example import build_prompt_json_examples
+from trace.tasks.shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
-from .....shared.text_rendering import resolve_scene_label_font_size_px
-from ....shared.graph_rendering import graph_paper_grid_from_frame
-from ....shared.render_variation import sample_int_render_param
-from ....shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
-from ....shared.single_object_scene import (
+from trace.tasks.shared.text_rendering import resolve_scene_label_font_size_px
+from trace.tasks.geometry.shared.graph_rendering import graph_paper_grid_from_frame
+from trace.tasks.geometry.shared.render_variation import sample_int_render_param
+from trace.tasks.geometry.shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
+from trace.tasks.geometry.shared.single_object_scene import (
     finalize_graph_scene_image,
     make_graph_scene_canvas,
     resolve_graph_scene_context,
 )
-from ......core.seed import spawn_rng
+from trace.core.seed import spawn_rng
 
-from .relation_common import (
-    COUNT_QUERY_IDS,
-    SEGMENT_COUNT_QUERY_IDS,
+from .state import (
     _DEFAULTS,
     _GEN_DEFAULTS,
     _PROMPT_DEFAULTS,
@@ -36,9 +34,9 @@ from .relation_common import (
     _ResolvedQuery,
     _RenderedCoordinateScene,
 )
-from .relation_scene import (
+from .relations import (
     _execution_trace_for_trace,
-    _query_params_for_trace,
+    _selection_params_for_trace,
     _resolve_count_target,
     _resolve_scene_render_params,
     _sample_collinear_count_scene,
@@ -67,8 +65,8 @@ def relation_query(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_id: str,
-    query_id_probabilities: Mapping[str, float],
+    operation_key: str,
+    operation_key_probabilities: Mapping[str, float],
     scene_variant: str,
     scene_variant_probabilities: Mapping[str, float],
 ) -> _ResolvedQuery:
@@ -79,7 +77,7 @@ def relation_query(
         count_rng,
         instance_seed=int(instance_seed),
         scene_variant=str(scene_variant),
-        query_id=str(query_id),
+        operation_key=str(operation_key),
         params=params,
     )
     label_pool = tuple()
@@ -93,9 +91,9 @@ def relation_query(
         )
     return _ResolvedQuery(
         scene_variant=str(scene_variant),
-        query_id=str(query_id),
+        operation_key=str(operation_key),
         scene_variant_probabilities={str(key): float(value) for key, value in scene_variant_probabilities.items()},
-        query_id_probabilities={str(key): float(value) for key, value in query_id_probabilities.items()},
+        operation_key_probabilities={str(key): float(value) for key, value in operation_key_probabilities.items()},
         target_count=int(target_count),
         target_count_probabilities=dict(target_probabilities),
         label_pool=tuple(label_pool),
@@ -109,6 +107,8 @@ def _render_relation_scene(
     query: _ResolvedQuery,
     max_attempts: int,
 ) -> tuple[Any, Any, Dict[str, Any], Dict[str, Any], Any, _RenderedCoordinateScene, int, int, int, int]:
+    """Render the selected relation-count scene after target-count resolution."""
+
     scene_rng = spawn_rng(int(instance_seed), f"coordinate_plane_relation.{query.scene_variant}.scene")
     last_error: Exception | None = None
 
@@ -264,6 +264,9 @@ def build_relation_artifacts(
     instance_seed: int,
     params: Mapping[str, Any],
     query: _ResolvedQuery,
+    output_operation_key: str,
+    output_query_probabilities: Mapping[str, float],
+    prompt_query_key: str,
     max_attempts: int,
 ) -> RelationArtifacts:
     """Render one relation-count scene and build prompt/trace artifacts."""
@@ -322,11 +325,11 @@ def build_relation_artifacts(
         "quadrant_points": str(prompt_defaults["object_description_quadrant_points"]),
         "polygon_lattice": str(prompt_defaults["object_description_polygon_lattice"]),
     }[str(query.scene_variant)]
-    if str(query.query_id) in SEGMENT_COUNT_QUERY_IDS:
+    if str(query.scene_variant) == "segment_set":
         annotation_hint = str(prompt_defaults["annotation_hint_segment_endpoints"])
-    elif str(query.query_id) == "collinear_count":
+    elif str(query.operation_key) == "collinear":
         annotation_hint = str(prompt_defaults["annotation_hint_collinear_pixel_point_set"])
-    elif str(query.query_id) == "same_quadrant_count":
+    elif str(query.operation_key) == "same_quadrant":
         annotation_hint = str(prompt_defaults["annotation_hint_quadrant_pixel_point_set"])
     else:
         annotation_hint = str(prompt_defaults["annotation_hint_pixel_point_set"])
@@ -348,7 +351,7 @@ def build_relation_artifacts(
         bundle_id=str(prompt_defaults["bundle_id"]),
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
-        query_key=str(query.query_id),
+        query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots={
             "object_description": str(object_description),
@@ -363,9 +366,19 @@ def build_relation_artifacts(
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-    query_params = _query_params_for_trace(query)
+    selection_params = _selection_params_for_trace(query)
+    selection_params["semantic_operation"] = str(query.operation_key)
+    selection_params["operation_key"] = str(output_operation_key)
+    selection_params["operation_key_probabilities"] = {
+        str(key): float(value) for key, value in output_query_probabilities.items()
+    }
     execution_trace = _execution_trace_for_trace(query, rendered_scene)
+    execution_trace["semantic_operation"] = str(query.operation_key)
+    execution_trace["operation_key"] = str(output_operation_key)
+    execution_trace["operation_key_probabilities"] = dict(selection_params["operation_key_probabilities"])
     scene_relations = _scene_relations_for_trace(query, rendered_scene)
+    scene_relations["semantic_operation"] = str(query.operation_key)
+    scene_relations["operation_key"] = str(output_operation_key)
     trace_payload = {
         "scene_ir": {
             "scene_kind": "geometry_coordinate_relation",
@@ -373,12 +386,12 @@ def build_relation_artifacts(
             "relations": dict(scene_relations),
         },
         "query_spec": {
-            "query_id": str(query.query_id),
+            "operation_key": str(output_operation_key),
             "template_id": str(prompt_defaults["bundle_id"]),
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
             "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
             "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-            "params": dict(query_params),
+            "params": dict(selection_params),
         },
         "render_spec": {
             "canvas_size": int(context.canvas_size),

@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `coordinate_plane`
-5. Query id: `point_in_shape_count`
+5. Query id: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `point_set`
 

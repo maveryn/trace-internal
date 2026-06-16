@@ -2,22 +2,36 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Mapping
 
-from ....core.types import TypedValue
-from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.output_metadata import default_task_versions
 
-from .shared.coordinate.algebra_runtime import (
-    SECTION_POINT_QUERY_IDS,
-    build_algebra_artifacts,
-)
+from ._lifecycle import CoordinateAlgebraObjective, run_coordinate_algebra_entry
 
+SECTION_POINT_TASK_ID = "task_geometry__coordinate_plane__section_point_label"
 TASK_ID = "task_geometry__coordinate_plane__section_point_label"
 SCENE_ID = "coordinate_plane"
+SECTION_POINT_QUERY_IDS = ("one_third_from_p_to_q", "two_thirds_from_p_to_q")
 SUPPORTED_QUERY_IDS = SECTION_POINT_QUERY_IDS
 SCENE_KEY = "coordinate_algebra_section_scene"
+SEMANTIC_OPERATION_BY_ID = {
+    "one_third_from_p_to_q": "section_one_third",
+    "two_thirds_from_p_to_q": "section_two_thirds",
+}
+
+
+def _prepare_section_point_objective(
+    selected_query: str,
+    _query_probabilities: Mapping[str, float],
+    _task_params: Mapping[str, Any],
+) -> CoordinateAlgebraObjective:
+    """Bind the selected section-ratio query to coordinate section semantics."""
+
+    return CoordinateAlgebraObjective(
+        semantic_operation=str(SEMANTIC_OPERATION_BY_ID[str(selected_query)]),
+        prompt_query_key=str(selected_query),
+        scene_key=SCENE_KEY,
+    )
 
 
 @register_task
@@ -26,35 +40,11 @@ class GeometryCoordinateSectionPointLabelTask:
 
     task_id = TASK_ID
     domain = "geometry"
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True
+    prepare_objective = staticmethod(_prepare_section_point_objective)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        del max_attempts
-        artifacts = build_algebra_artifacts(
-            namespace=TASK_ID,
-            config_key=TASK_ID,
-            query_ids=SUPPORTED_QUERY_IDS,
-            scene_key=SCENE_KEY,
-            instance_seed=int(instance_seed),
-            params=params,
-        )
-        trace_payload = dict(artifacts.trace_payload)
-        trace_payload["witness_symbolic"] = {
-            **dict(trace_payload.get("witness_symbolic", {})),
-            "task_id": TASK_ID,
-        }
-        return TaskOutput(
-            prompt=str(artifacts.prompt_artifacts.prompt),
-            answer_gt=TypedValue(type="option_letter", value=str(artifacts.query.winner_label)),
-            annotation_gt=TypedValue(type="point_set", value=artifacts.annotation_value),
-            image=artifacts.rendered.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(artifacts.query.query_id),
-            prompt_variants=dict(artifacts.prompt_artifacts.prompt_variants),
-        )
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        """Generate a segment-section candidate selection scene."""
+
+        return run_coordinate_algebra_entry(self, instance_seed, params=params, max_attempts=max_attempts)

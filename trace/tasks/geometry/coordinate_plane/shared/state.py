@@ -1,23 +1,14 @@
-"""Shared constants and records for coordinate-relation geometry tasks."""
+"""Scene-local state records for coordinate-plane task primitives."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Tuple
 
-from ......core.scene_config import get_scene_defaults
-from .....shared.config_defaults import split_scene_generation_rendering_prompt_defaults
-from ....shared.background_defaults import load_geometry_background_defaults
-from ....shared.noise_defaults import load_geometry_noise_defaults
-
-SEGMENT_COUNT_QUERY_IDS = {"parallel_count", "perpendicular_count"}
-COUNT_QUERY_IDS = {
-    "parallel_count",
-    "perpendicular_count",
-    "collinear_count",
-    "same_quadrant_count",
-    "point_in_shape_count",
-}
+from trace.core.scene_config import get_scene_defaults
+from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
+from trace.tasks.geometry.shared.background_defaults import load_geometry_background_defaults
+from trace.tasks.geometry.shared.noise_defaults import load_geometry_noise_defaults
 
 POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id="coordinate")
 POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id="coordinate")
@@ -83,12 +74,12 @@ class _TaskDefaults:
 
 @dataclass(frozen=True)
 class _ResolvedQuery:
-    """Resolved scene/query axes and answer support for one coordinate scene."""
+    """Resolved semantic operation and answer support for one coordinate scene."""
 
     scene_variant: str
-    query_id: str
+    operation_key: str
     scene_variant_probabilities: Dict[str, float]
-    query_id_probabilities: Dict[str, float]
+    operation_key_probabilities: Dict[str, float]
     target_count: int | None = None
     target_count_probabilities: Dict[str, float] = field(default_factory=dict)
     label_pool: Tuple[str, ...] = field(default_factory=tuple)
@@ -117,8 +108,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rende
 )
 
 __all__ = [
-    "SEGMENT_COUNT_QUERY_IDS",
-    "COUNT_QUERY_IDS",
     "POST_IMAGE_BACKGROUND_DEFAULTS",
     "POST_IMAGE_NOISE_DEFAULTS",
     "GraphPoint",

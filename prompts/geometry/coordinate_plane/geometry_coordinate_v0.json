@@ -6,12 +6,12 @@
     "object_description_line_points": "labeled points A and B plus unlabeled dot points",
     "object_description_quadrant_points": "one X-marked reference point and unlabeled dot points",
     "object_description_polygon_lattice": "one polygon drawn on graph paper",
-    "annotation_hint_segment_endpoints": "set \"annotation\" to an array containing both endpoint pixel points [x,y] for each non-AB segment satisfying the question",
+    "annotation_hint_segment_endpoints": "set \"annotation\" to an array of segments, where each segment is [[x0,y0],[x1,y1]] for one non-AB segment satisfying the question",
     "annotation_hint_collinear_pixel_point_set": "set \"annotation\" to an array of every pixel point [x,y] for the dot points that lie on the same line as A and B",
     "annotation_hint_quadrant_pixel_point_set": "set \"annotation\" to an array of every pixel point [x,y] that lies in the same quadrant as the marked point",
     "annotation_hint_pixel_point_set": "set \"annotation\" to an array containing every pixel point [x,y] for each integer lattice point that lies strictly inside the polygon",
     "answer_hint_integer": "set \"answer\" to the integer count requested by the question",
-    "json_example_segment_count": "{\"annotation\":[[120,120],[180,120],[240,180],[300,180]],\"answer\":2}",
+    "json_example_segment_count": "{\"annotation\":[[[120,120],[180,120]],[[240,180],[300,180]]],\"answer\":2}",
     "json_example_segment_count_answer_only": "{\"answer\":2}"
   },
   "task_templates": {

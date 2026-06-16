@@ -7,23 +7,21 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
-from ......core.sampling import normalize_positive_weights, weighted_choice
-from .....shared.config_defaults import group_default
-from .....shared.deterministic_sampling import uniform_probability_map
-from .....shared.variant_sampling import has_non_null_param, is_uniform_probability_map
-from ....shared.graph_rendering import graph_units_to_pixel, scale_point
-from ....shared.labeled_point_annotation import (
+from trace.core.sampling import normalize_positive_weights, weighted_choice
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.deterministic_sampling import uniform_probability_map
+from trace.tasks.shared.variant_sampling import has_non_null_param, is_uniform_probability_map
+from trace.tasks.geometry.shared.graph_rendering import graph_units_to_pixel, scale_point
+from trace.tasks.geometry.shared.labeled_point_annotation import (
     empty_graph_point_set_annotation_artifacts,
     graph_point_set_annotation_artifacts,
 )
-from ....shared.point_labels import draw_labeled_points
-from ....shared.polygon_transformations import apply_rigid_transform_recipe, translate_polygon
-from ....shared.render_variation import sample_int_render_param
-from ....shared.single_object_scene import GraphSceneContext
+from trace.tasks.geometry.shared.point_labels import draw_labeled_points
+from trace.tasks.geometry.shared.polygon_transformations import apply_rigid_transform_recipe, translate_polygon
+from trace.tasks.geometry.shared.render_variation import sample_int_render_param
+from trace.tasks.geometry.shared.single_object_scene import GraphSceneContext
 
-from .relation_common import (
-    COUNT_QUERY_IDS,
-    SEGMENT_COUNT_QUERY_IDS,
+from .state import (
     GraphPoint,
     PixelSegment,
     PixelPoint,
@@ -181,28 +179,28 @@ def _segments_intersect(segment_a: Segment, segment_b: Segment) -> bool:
     return bool((o1 > 0) != (o2 > 0) and (o3 > 0) != (o4 > 0))
 
 
-def _count_target_support(*, query_id: str, params: Mapping[str, Any]) -> Tuple[int, ...]:
+def _count_target_support(*, operation_key: str, params: Mapping[str, Any]) -> Tuple[int, ...]:
     """Resolve the supported answer counts for one count-style coordinate variant."""
 
-    normalized_query = str(query_id).strip().lower()
-    if normalized_query in SEGMENT_COUNT_QUERY_IDS:
+    normalized_query = str(operation_key).strip().lower()
+    if normalized_query in {"parallel", "perpendicular"}:
         support_key = "segment_target_support"
         fallback_support = _DEFAULTS.segment_target_support
         max_supported = 6
-    elif normalized_query == "collinear_count":
+    elif normalized_query == "collinear":
         support_key = "collinear_target_support"
         fallback_support = _DEFAULTS.collinear_target_support
         max_supported = 6
-    elif normalized_query == "same_quadrant_count":
+    elif normalized_query == "same_quadrant":
         support_key = "same_quadrant_target_support"
         fallback_support = _DEFAULTS.same_quadrant_target_support
         max_supported = 6
-    elif normalized_query == "point_in_shape_count":
+    elif normalized_query == "polygon_interior":
         support_key = "point_in_shape_target_support"
         fallback_support = _DEFAULTS.point_in_shape_target_support
         max_supported = 8
     else:
-        raise ValueError(f"unsupported coordinate count query_id: {query_id}")
+        raise ValueError(f"unsupported coordinate count operation_key: {operation_key}")
 
     raw_support = params.get(
         support_key,
@@ -223,12 +221,12 @@ def _resolve_count_target(
     *,
     instance_seed: int,
     scene_variant: str,
-    query_id: str,
+    operation_key: str,
     params: Mapping[str, Any],
 ) -> Tuple[int, Dict[str, float]]:
     """Resolve a balanced target count for one count-style coordinate variant."""
 
-    support = _count_target_support(query_id=query_id, params=params)
+    support = _count_target_support(operation_key=operation_key, params=params)
     explicit = params.get("target_count")
     if explicit is not None:
         selected = int(explicit)
@@ -421,7 +419,7 @@ def _sample_segment_count_scene(
     params: Mapping[str, Any],
     render_canvas_size: int,
 ) -> _RenderedCoordinateScene:
-    """Render one segment-count coordinate scene."""
+    """Render reference segment AB and relation-matching candidate segments."""
 
     half_vectors = tuple(
         (int(value[0]), int(value[1]))
@@ -457,7 +455,7 @@ def _sample_segment_count_scene(
         for vector in half_vectors
         if (
             _is_parallel(reference_half_vector, vector)
-            if str(query.query_id) == "parallel_count"
+            if str(query.operation_key) == "parallel"
             else _is_perpendicular(reference_half_vector, vector)
         )
     ]
@@ -466,7 +464,7 @@ def _sample_segment_count_scene(
         for vector in half_vectors
         if (
             not _is_parallel(reference_half_vector, vector)
-            if str(query.query_id) == "parallel_count"
+            if str(query.operation_key) == "parallel"
             else not _is_perpendicular(reference_half_vector, vector)
         )
     ]
@@ -549,25 +547,27 @@ def _sample_segment_count_scene(
         canvas_size=int(render_canvas_size),
     )
 
-    annotation = (
-        graph_point_set_annotation_artifacts(
-            points_by_label={
-                f"{segment_id}_endpoint_{int(index) + 1}": candidate_segment_px_by_id[str(segment_id)][int(index)]
-                for segment_id in matching_ids
-                for index in range(2)
-            },
-            graph_origin=context.graph_origin,
-            graph_spacing=int(context.graph_spacing),
-            witness_type="matching_segment_endpoints",
-            ordered_labels=tuple(
-                f"{segment_id}_endpoint_{int(index) + 1}"
-                for segment_id in matching_ids
-                for index in range(2)
-            ),
-        )
-        if matching_ids
-        else empty_graph_point_set_annotation_artifacts(witness_type="matching_segment_endpoints")
-    )
+    annotation_value = [
+        [
+            [float(candidate_segment_px_by_id[str(segment_id)][0][0]), float(candidate_segment_px_by_id[str(segment_id)][0][1])],
+            [float(candidate_segment_px_by_id[str(segment_id)][1][0]), float(candidate_segment_px_by_id[str(segment_id)][1][1])],
+        ]
+        for segment_id in matching_ids
+    ]
+    projected_annotation = {
+        "type": "segment_set",
+        "segment_set": list(annotation_value),
+        "pixel_segment_set": list(annotation_value),
+    }
+    witness_symbolic = {
+        "type": "matching_segments",
+        "matching_segment_ids": list(matching_ids),
+        "reference_segment_graph": [list(reference_segment[0]), list(reference_segment[1])],
+        "candidate_segments_graph": {
+            str(segment_id): [list(segment_graph_by_id[str(segment_id)][0]), list(segment_graph_by_id[str(segment_id)][1])]
+            for segment_id in candidate_ids
+        },
+    }
 
     scene_entities: List[Dict[str, Any]] = [
         {
@@ -600,11 +600,11 @@ def _sample_segment_count_scene(
             "matching_segment_ids": list(matching_ids),
         },
         answer_value=int(len(matching_ids)),
-        annotation_type=str(annotation["annotation_type"]),
-        annotation_value=list(annotation["annotation_value"]),
-        projected_annotation=dict(annotation["projected_annotation"]),
-        witness_symbolic=dict(annotation["witness_symbolic"]),
-        required_annotation_labels=list(annotation["required_labels"]),
+        annotation_type="segment_set",
+        annotation_value=list(annotation_value),
+        projected_annotation=dict(projected_annotation),
+        witness_symbolic=dict(witness_symbolic),
+        required_annotation_labels=list(matching_ids),
         object_count=len(candidate_ids),
         matching_labels=tuple(matching_ids),
     )
@@ -1138,11 +1138,11 @@ def _sample_point_in_shape_scene(
     )
 
 
-def _query_params_for_trace(query: _ResolvedQuery) -> Dict[str, Any]:
+def _selection_params_for_trace(query: _ResolvedQuery) -> Dict[str, Any]:
     params: Dict[str, Any] = {
         "scene_variant": str(query.scene_variant),
-        "query_id": str(query.query_id),
-        "query_id_probabilities": dict(query.query_id_probabilities),
+        "operation_key": str(query.operation_key),
+        "operation_key_probabilities": dict(query.operation_key_probabilities),
         "scene_variant_probabilities": dict(query.scene_variant_probabilities),
     }
     if query.target_count is not None:
@@ -1175,9 +1175,9 @@ def _matching_label_fields(scene_variant: str, labels: Sequence[str]) -> Dict[st
 def _execution_trace_for_trace(query: _ResolvedQuery, rendered_scene: _RenderedCoordinateScene) -> Dict[str, Any]:
     execution_trace: Dict[str, Any] = {
         "scene_variant": str(query.scene_variant),
-        "query_id": str(query.query_id),
+        "operation_key": str(query.operation_key),
         "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-        "query_id_probabilities": dict(query.query_id_probabilities),
+        "operation_key_probabilities": dict(query.operation_key_probabilities),
         "required_annotation_labels": list(rendered_scene.required_annotation_labels),
         "question_format": _question_format_for_scene_variant(str(query.scene_variant)),
     }
@@ -1191,7 +1191,7 @@ def _execution_trace_for_trace(query: _ResolvedQuery, rendered_scene: _RenderedC
 def _scene_relations_for_trace(query: _ResolvedQuery, rendered_scene: _RenderedCoordinateScene) -> Dict[str, Any]:
     relations: Dict[str, Any] = {
         "scene_variant": str(query.scene_variant),
-        "query_id": str(query.query_id),
+        "operation_key": str(query.operation_key),
     }
     relations.update(_matching_label_fields(str(query.scene_variant), rendered_scene.matching_labels))
     return dict(relations)
@@ -1202,7 +1202,7 @@ __all__ = [
     "_sample_collinear_count_scene",
     "_sample_quadrant_count_scene",
     "_sample_point_in_shape_scene",
-    "_query_params_for_trace",
+    "_selection_params_for_trace",
     "_execution_trace_for_trace",
     "_scene_relations_for_trace",
     "_segments_intersect",

@@ -7,18 +7,18 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ......core.seed import spawn_rng
-from ......core.scene_config import get_scene_defaults
-from ......core.visual.background import make_background_canvas
-from ......core.visual.noise import apply_post_image_noise
-from .....shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from .....shared.deterministic_sampling import resolve_selection_index
-from .....shared.prompt_json_example import resolve_prompt_json_examples
-from .....shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
-from .....shared.text_rendering import load_font
-from .....shared.text_legibility import draw_text_traced
-from ....shared.background_defaults import load_geometry_background_defaults
-from ....shared.coordinate_panel_grid import (
+from trace.core.seed import spawn_rng
+from trace.core.scene_config import get_scene_defaults
+from trace.core.visual.background import make_background_canvas
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.tasks.shared.prompt_json_example import resolve_prompt_json_examples
+from trace.tasks.shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
+from trace.tasks.shared.text_rendering import load_font
+from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.geometry.shared.background_defaults import load_geometry_background_defaults
+from trace.tasks.geometry.shared.coordinate_panel_grid import (
     CoordinatePanelConfig,
     CoordinatePanelStyle,
     coordinate_panel_layout,
@@ -29,13 +29,12 @@ from ....shared.coordinate_panel_grid import (
 )
 
 SCENE_ID = "coordinate_plane"
-from trace.tasks.shared.fixed_query import select_geometry_query_id
-from ....shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
-from ....shared.noise_defaults import load_geometry_noise_defaults
-from ....shared.option_count import panel_grid_shape_for_option_count, resolve_geometry_option_count
-from ....shared.point_labels import draw_labeled_points
-from ....shared.single_object_scene import finalize_graph_scene_image, make_graph_scene_canvas, resolve_graph_scene_context
-from .quadrilateral import (
+from trace.tasks.geometry.shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
+from trace.tasks.geometry.shared.noise_defaults import load_geometry_noise_defaults
+from trace.tasks.geometry.shared.option_count import panel_grid_shape_for_option_count, resolve_geometry_option_count
+from trace.tasks.geometry.shared.point_labels import draw_labeled_points
+from trace.tasks.geometry.shared.single_object_scene import finalize_graph_scene_image, make_graph_scene_canvas, resolve_graph_scene_context
+from .spatial_primitives import (
     _draw_marker,
     _marker_bbox,
     _probability_map,
@@ -43,7 +42,7 @@ from .quadrilateral import (
     _resolve_marker_colors,
     _sample_marker_style,
 )
-from .params import resolve_int_param as _resolve_int_param
+from .defaults import resolve_int_param as _resolve_int_param
 
 
 GraphPoint = Tuple[int, int]
@@ -51,17 +50,17 @@ PixelPoint = Tuple[float, float]
 Color = Tuple[int, int, int]
 BBox = Tuple[int, int, int, int]
 
-POINT_QUERY_IDS: Tuple[str, ...] = (
-    "circle_region_point",
-    "annulus_region_point",
-    "vertical_strip_region_point",
-    "half_plane_intersection_region_point",
+POINT_REGION_FAMILIES: Tuple[str, ...] = (
+    "circle_region",
+    "annulus_region",
+    "vertical_strip_region",
+    "half_plane_intersection_region",
 )
-PANEL_QUERY_IDS: Tuple[str, ...] = (
-    "circle_inequality_panel_match",
-    "vertical_strip_panel_match",
-    "horizontal_halfplane_panel_match",
-    "two_inequality_panel_match",
+PANEL_REGION_FAMILIES: Tuple[str, ...] = (
+    "circle_panel",
+    "vertical_strip_panel",
+    "horizontal_halfplane_panel",
+    "two_inequality_panel",
 )
 DEFAULT_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 
@@ -121,7 +120,7 @@ class _RegionSpec:
 
 @dataclass(frozen=True)
 class _ResolvedQuery:
-    query_id: str
+    operation_key: str
     query_probabilities: Dict[str, float]
     winner_label: str
     winner_label_probabilities: Dict[str, float]
@@ -194,10 +193,10 @@ _PANEL_STYLES: Tuple[CoordinatePanelStyle, ...] = (
 )
 
 
-def _split_defaults_for_task(task_id: str) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+def _split_defaults_for_task(config_key: str) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
     return split_scene_generation_rendering_prompt_defaults(
         _SCENE_DEFAULTS if isinstance(_SCENE_DEFAULTS, Mapping) else {},
-        task_id=str(task_id),
+        task_id=str(config_key),
     )
 
 
@@ -205,7 +204,7 @@ def _select_winner_label(
     *,
     params: Mapping[str, Any],
     instance_seed: int,
-    task_id: str,
+    namespace: str,
     label_pool: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
     labels = tuple(str(label) for label in label_pool)
@@ -218,41 +217,12 @@ def _select_winner_label(
     selection_index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.winner_label",
+        namespace=f"{namespace}.winner_label",
     )
     return str(labels[int(selection_index) % len(labels)]), _probability_map(labels)
 
 
-def _resolve_query(
-    *,
-    task_id: str,
-    query_ids: Sequence[str],
-    label_pool: Sequence[str],
-    instance_seed: int,
-    params: Mapping[str, Any],
-) -> _ResolvedQuery:
-    query_id, query_probabilities = select_geometry_query_id(
-        params,
-        query_ids=tuple(query_ids),
-        task_id=str(task_id),
-        instance_seed=int(instance_seed),
-    )
-    winner_label, winner_probabilities = _select_winner_label(
-        params=params,
-        instance_seed=int(instance_seed),
-        task_id=str(task_id),
-        label_pool=tuple(label_pool),
-    )
-    return _ResolvedQuery(
-        query_id=str(query_id),
-        query_probabilities=dict(query_probabilities),
-        winner_label=str(winner_label),
-        winner_label_probabilities=dict(winner_probabilities),
-        label_pool=tuple(str(label) for label in label_pool),
-    )
-
-
-def _candidate_labels_for_query(query: _ResolvedQuery, *, candidate_count: int) -> Tuple[str, ...]:
+def _candidate_labels_for_selection(query: _ResolvedQuery, *, candidate_count: int) -> Tuple[str, ...]:
     labels = tuple(query.label_pool[: int(candidate_count)])
     if str(query.winner_label) not in set(labels):
         labels = tuple([str(query.winner_label), *[label for label in labels if label != str(query.winner_label)]])
@@ -303,7 +273,7 @@ def _region_boundary_point(region: _RegionSpec, point: GraphPoint) -> bool:
     )
 
 
-def _sample_region_for_point_query(query_id: str, rng, *, max_abs: int) -> _RegionSpec:
+def _sample_region_for_point_query(operation_key: str, rng, *, max_abs: int) -> _RegionSpec:
     circle_cases = (
         _RegionSpec("circle", {"cx": 0, "cy": 0, "r": 4}, "inside circle centered at O"),
         _RegionSpec("circle", {"cx": 1, "cy": -1, "r": 3}, "inside circle centered at O"),
@@ -325,15 +295,15 @@ def _sample_region_for_point_query(query_id: str, rng, *, max_abs: int) -> _Regi
         _RegionSpec("half_plane_intersection", {"x_min": 1, "y_max": 1}, "x >= 1 and y <= 1"),
         _RegionSpec("half_plane_intersection", {"x_min": -2, "y_max": 0}, "x >= -2 and y <= 0"),
     )
-    if str(query_id) == "circle_region_point":
+    if str(operation_key) == "circle_region":
         return rng.choice(circle_cases)
-    if str(query_id) == "annulus_region_point":
+    if str(operation_key) == "annulus_region":
         return rng.choice(annulus_cases)
-    if str(query_id) == "vertical_strip_region_point":
+    if str(operation_key) == "vertical_strip_region":
         return rng.choice(strip_cases)
-    if str(query_id) == "half_plane_intersection_region_point":
+    if str(operation_key) == "half_plane_intersection_region":
         return rng.choice(intersection_cases)
-    raise ValueError(f"unsupported locus point query: {query_id}")
+    raise ValueError(f"unsupported locus point query: {operation_key}")
 
 
 def _grid_points(max_abs: int) -> Tuple[GraphPoint, ...]:
@@ -436,6 +406,8 @@ def _draw_single_region(
     context: Any,
     max_abs: int,
 ) -> None:
+    """Draw one locus region on the resolved graph-paper canvas."""
+
     scale = int(context.scene_scale)
     clip = _scaled_bbox(context.graph_panel_layout.content_bbox_px, int(scale))
     mask = Image.new("L", image.size, 0)
@@ -497,6 +469,8 @@ def _draw_center_marker(
     label_stroke_width: int,
     color: Color,
 ) -> PixelPoint | None:
+    """Mark circle centers only when the visible condition uses them."""
+
     if str(region.kind) not in {"circle", "annulus"}:
         return None
     center = (int(region.params.get("cx", 0)), int(region.params.get("cy", 0)))
@@ -537,6 +511,8 @@ def _render_point_scene(
     generation_defaults: Mapping[str, Any],
     rendering_defaults: Mapping[str, Any],
 ) -> _PointScene:
+    """Render one locus region and lettered candidate points after sampling."""
+
     rng = spawn_rng(int(instance_seed), f"{namespace}.render")
     max_abs = _resolve_int_param(params, generation_defaults, "locus_graph_abs_max", _DEFAULTS.graph_abs_max)
     candidate_count, option_count_probabilities = resolve_geometry_option_count(
@@ -549,8 +525,8 @@ def _render_point_scene(
     )
     if int(candidate_count) > len(query.label_pool):
         raise ValueError("locus_candidate_count cannot exceed candidate label pool length")
-    candidate_labels = _candidate_labels_for_query(query, candidate_count=int(candidate_count))
-    region = _sample_region_for_point_query(str(query.query_id), rng, max_abs=int(max_abs))
+    candidate_labels = _candidate_labels_for_selection(query, candidate_count=int(candidate_count))
+    region = _sample_region_for_point_query(str(query.operation_key), rng, max_abs=int(max_abs))
     candidate_points_by_label = _sample_candidate_points(
         region=region,
         query=query,
@@ -697,20 +673,20 @@ def _panel_style(rng) -> Tuple[CoordinatePanelStyle, Dict[str, Any]]:
     return style, {"style_index": int(index), "style": style.to_trace_dict()}
 
 
-def _panel_target_region(query_id: str) -> _RegionSpec:
-    if str(query_id) == "circle_inequality_panel_match":
+def _panel_target_region(operation_key: str) -> _RegionSpec:
+    if str(operation_key) == "circle_panel":
         return _RegionSpec("circle", {"cx": 0, "cy": 0, "r": 4}, "x^2 + y^2 <= 16")
-    if str(query_id) == "vertical_strip_panel_match":
+    if str(operation_key) == "vertical_strip_panel":
         return _RegionSpec("vertical_strip", {"x_min": -2, "x_max": 2}, "-2 <= x <= 2")
-    if str(query_id) == "horizontal_halfplane_panel_match":
+    if str(operation_key) == "horizontal_halfplane_panel":
         return _RegionSpec("upper_halfplane", {"y_min": -1}, "y >= -1")
-    if str(query_id) == "two_inequality_panel_match":
+    if str(operation_key) == "two_inequality_panel":
         return _RegionSpec("half_plane_intersection", {"x_min": -1, "y_max": 3}, "x >= -1 and y <= 3")
-    raise ValueError(f"unsupported locus panel query: {query_id}")
+    raise ValueError(f"unsupported locus panel query: {operation_key}")
 
 
-def _panel_distractor_regions(query_id: str) -> Tuple[_RegionSpec, ...]:
-    if str(query_id) == "circle_inequality_panel_match":
+def _panel_distractor_regions(operation_key: str) -> Tuple[_RegionSpec, ...]:
+    if str(operation_key) == "circle_panel":
         return (
             _RegionSpec("circle", {"cx": 0, "cy": 0, "r": 3}, "x^2 + y^2 <= 9"),
             _RegionSpec("circle", {"cx": 1, "cy": 0, "r": 4}, "(x - 1)^2 + y^2 <= 16"),
@@ -718,7 +694,7 @@ def _panel_distractor_regions(query_id: str) -> Tuple[_RegionSpec, ...]:
             _RegionSpec("vertical_strip", {"x_min": -2, "x_max": 2}, "-2 <= x <= 2"),
             _RegionSpec("horizontal_strip", {"y_min": -2, "y_max": 2}, "-2 <= y <= 2"),
         )
-    if str(query_id) == "vertical_strip_panel_match":
+    if str(operation_key) == "vertical_strip_panel":
         return (
             _RegionSpec("horizontal_strip", {"y_min": -2, "y_max": 2}, "-2 <= y <= 2"),
             _RegionSpec("vertical_strip", {"x_min": -3, "x_max": 1}, "-3 <= x <= 1"),
@@ -726,7 +702,7 @@ def _panel_distractor_regions(query_id: str) -> Tuple[_RegionSpec, ...]:
             _RegionSpec("left_halfplane", {"x_max": 2}, "x <= 2"),
             _RegionSpec("circle", {"cx": 0, "cy": 0, "r": 3}, "x^2 + y^2 <= 9"),
         )
-    if str(query_id) == "horizontal_halfplane_panel_match":
+    if str(operation_key) == "horizontal_halfplane_panel":
         return (
             _RegionSpec("lower_halfplane", {"y_max": -1}, "y <= -1"),
             _RegionSpec("right_halfplane", {"x_min": -1}, "x >= -1"),
@@ -734,7 +710,7 @@ def _panel_distractor_regions(query_id: str) -> Tuple[_RegionSpec, ...]:
             _RegionSpec("horizontal_strip", {"y_min": -1, "y_max": 3}, "-1 <= y <= 3"),
             _RegionSpec("vertical_strip", {"x_min": -2, "x_max": 2}, "-2 <= x <= 2"),
         )
-    if str(query_id) == "two_inequality_panel_match":
+    if str(operation_key) == "two_inequality_panel":
         return (
             _RegionSpec("half_plane_intersection", {"x_max": -1, "y_max": 3}, "x <= -1 and y <= 3"),
             _RegionSpec("half_plane_intersection", {"x_min": -1, "y_min": 3}, "x >= -1 and y >= 3"),
@@ -742,7 +718,7 @@ def _panel_distractor_regions(query_id: str) -> Tuple[_RegionSpec, ...]:
             _RegionSpec("half_plane_intersection", {"x_min": -1, "y_max": 1}, "x >= -1 and y <= 1"),
             _RegionSpec("vertical_strip", {"x_min": -1, "x_max": 3}, "-1 <= x <= 3"),
         )
-    raise ValueError(f"unsupported locus panel query: {query_id}")
+    raise ValueError(f"unsupported locus panel query: {operation_key}")
 
 
 def _panel_region_bbox(
@@ -774,6 +750,8 @@ def _draw_panel_region(
     plot_bbox: BBox,
     config: CoordinatePanelConfig,
 ) -> None:
+    """Draw a locus region inside one already laid-out panel plot."""
+
     clip = tuple(int(value) for value in plot_bbox)
     mask = Image.new("L", image.size, 0)
     mask_draw = ImageDraw.Draw(mask)
@@ -851,6 +829,8 @@ def _render_panel_scene(
     generation_defaults: Mapping[str, Any],
     rendering_defaults: Mapping[str, Any],
 ) -> _PanelScene:
+    """Render the option panel grid and unique matching condition panel."""
+
     rng = spawn_rng(int(instance_seed), f"{namespace}.render")
     panel_count, option_count_probabilities = resolve_geometry_option_count(
         params=params,
@@ -867,8 +847,8 @@ def _render_panel_scene(
         label_pool = tuple([str(query.winner_label), *[label for label in label_pool if label != str(query.winner_label)]])
         label_pool = label_pool[: int(panel_count)]
 
-    target_region = _panel_target_region(str(query.query_id))
-    distractors = list(_panel_distractor_regions(str(query.query_id)))
+    target_region = _panel_target_region(str(query.operation_key))
+    distractors = list(_panel_distractor_regions(str(query.operation_key)))
     rng.shuffle(distractors)
     region_by_label: Dict[str, _RegionSpec] = {}
     distractor_iter = iter(distractors)
@@ -973,8 +953,10 @@ def _point_trace_payload(
     rendered: _PointScene,
     prompt_defaults: Mapping[str, Any],
     prompt_artifacts: Any,
-    annotation_value: List[List[float]],
+    annotation_value: List[float],
 ) -> Dict[str, Any]:
+    """Assemble trace payload for a scalar point locus answer."""
+
     candidate_trace = {
         str(label): {
             "point_graph": [int(value) for value in rendered.candidate_points_by_label[str(label)]],
@@ -998,22 +980,22 @@ def _point_trace_payload(
             ],
             "relations": {
                 "scene_id": SCENE_ID,
-                "query_id": str(query.query_id),
-                "query_id_probabilities": dict(query.query_probabilities),
+                "operation_key": str(query.operation_key),
+                "operation_key_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "region": _region_trace(rendered.region),
             },
         },
         "query_spec": {
-            "query_id": str(query.query_id),
+            "operation_key": str(query.operation_key),
             "template_id": str(prompt_defaults["bundle_id"]),
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
             "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
             "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
             "params": {
                 "scene_id": SCENE_ID,
-                "query_id": str(query.query_id),
-                "query_id_probabilities": dict(query.query_probabilities),
+                "operation_key": str(query.operation_key),
+                "operation_key_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "candidate_label_pool": list(rendered.candidate_points_by_label.keys()),
@@ -1040,13 +1022,13 @@ def _point_trace_payload(
         },
         "execution_trace": {
             "scene_id": SCENE_ID,
-            "query_id": str(query.query_id),
+            "operation_key": str(query.operation_key),
             "answer_type": "option_letter",
             "answer_value": str(query.winner_label),
             "region": _region_trace(rendered.region),
             "center_point_px": list(rendered.center_point_px) if rendered.center_point_px is not None else None,
             "candidate_points_by_label": dict(candidate_trace),
-            "query_id_probabilities": dict(query.query_probabilities),
+            "operation_key_probabilities": dict(query.query_probabilities),
             "locus_candidate_count_probabilities": dict(rendered.option_count_probabilities),
         },
         "witness_symbolic": {
@@ -1056,9 +1038,9 @@ def _point_trace_payload(
             "candidate_points_by_label": dict(candidate_trace),
         },
         "projected_annotation": {
-            "type": "point_set",
-            "point_set": list(annotation_value),
-            "pixel_point_set": list(annotation_value),
+            "type": "point",
+            "point": list(annotation_value),
+            "pixel_point": list(annotation_value),
             "candidate_points_px_by_label": {
                 str(label): [float(value) for value in point]
                 for label, point in rendered.candidate_points_px_by_label.items()
@@ -1073,8 +1055,10 @@ def _panel_trace_payload(
     rendered: _PanelScene,
     prompt_defaults: Mapping[str, Any],
     prompt_artifacts: Any,
-    annotation_value: List[List[int]],
+    annotation_value: List[int],
 ) -> Dict[str, Any]:
+    """Assemble trace payload for a scalar panel bounding-box answer."""
+
     panels_trace = {
         str(label): {
             "label": str(label),
@@ -1092,22 +1076,22 @@ def _panel_trace_payload(
             "entities": [dict(panels_trace[str(label)]) for label in sorted(panels_trace)],
             "relations": {
                 "scene_id": SCENE_ID,
-                "query_id": str(query.query_id),
-                "query_id_probabilities": dict(query.query_probabilities),
+                "operation_key": str(query.operation_key),
+                "operation_key_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "condition_text": str(rendered.condition_text),
             },
         },
         "query_spec": {
-            "query_id": str(query.query_id),
+            "operation_key": str(query.operation_key),
             "template_id": str(prompt_defaults["bundle_id"]),
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
             "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
             "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
             "params": {
                 "scene_id": SCENE_ID,
-                "query_id": str(query.query_id),
-                "query_id_probabilities": dict(query.query_probabilities),
+                "operation_key": str(query.operation_key),
+                "operation_key_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "candidate_label_pool": list(rendered.panels_by_label.keys()),
@@ -1134,12 +1118,12 @@ def _panel_trace_payload(
         },
         "execution_trace": {
             "scene_id": SCENE_ID,
-            "query_id": str(query.query_id),
+            "operation_key": str(query.operation_key),
             "answer_type": "option_letter",
             "answer_value": str(query.winner_label),
             "condition_text": str(rendered.condition_text),
             "panels_by_label": dict(panels_trace),
-            "query_id_probabilities": dict(query.query_probabilities),
+            "operation_key_probabilities": dict(query.query_probabilities),
             "locus_panel_count_probabilities": dict(rendered.option_count_probabilities),
         },
         "witness_symbolic": {
@@ -1149,16 +1133,16 @@ def _panel_trace_payload(
             "panels_by_label": dict(panels_trace),
         },
         "projected_annotation": {
-            "type": "bbox_set",
-            "bbox_set": list(annotation_value),
+            "type": "bbox",
+            "bbox": list(annotation_value),
             "panel_bbox_by_label": {str(label): list(spec.panel_bbox) for label, spec in rendered.panels_by_label.items()},
         },
     }
 
 
-def _candidate_point_annotation(rendered: _PointScene, label: str) -> List[List[float]]:
+def _candidate_point_annotation(rendered: _PointScene, label: str) -> List[float]:
     point = rendered.candidate_points_px_by_label[str(label)]
-    return [[float(point[0]), float(point[1])]]
+    return [float(point[0]), float(point[1])]
 
 
 @dataclass(frozen=True)
@@ -1166,7 +1150,7 @@ class LocusPointArtifacts:
     query: _ResolvedQuery
     rendered: _PointScene
     prompt_artifacts: Any
-    annotation_value: List[List[float]]
+    annotation_value: List[float]
     trace_payload: Dict[str, Any]
 
 
@@ -1175,7 +1159,7 @@ class LocusPanelArtifacts:
     query: _ResolvedQuery
     rendered: _PanelScene
     prompt_artifacts: Any
-    annotation_value: List[List[int]]
+    annotation_value: List[int]
     trace_payload: Dict[str, Any]
 
 
@@ -1183,17 +1167,26 @@ def build_locus_point_artifacts(
     *,
     namespace: str,
     config_key: str,
+    semantic_operation_key: str,
+    semantic_query_probabilities: Mapping[str, float],
+    output_operation_key: str,
+    output_query_probabilities: Mapping[str, float],
+    prompt_query_key: str,
+    winner_label: str,
+    winner_label_probabilities: Mapping[str, float],
+    label_pool: Sequence[str],
     instance_seed: int,
     params: Dict[str, Any],
 ) -> LocusPointArtifacts:
+    """Resolve render, prompt, scalar annotation, and trace for point selection."""
+
     generation_defaults, rendering_defaults, prompt_defaults_all = _split_defaults_for_task(str(config_key))
-    label_pool = _resolve_label_pool(params, generation_defaults, "locus_candidate_labels", DEFAULT_LABEL_POOL)
-    query = _resolve_query(
-        task_id=str(namespace),
-        query_ids=POINT_QUERY_IDS,
-        label_pool=label_pool,
-        instance_seed=int(instance_seed),
-        params=params,
+    query = _ResolvedQuery(
+        operation_key=str(semantic_operation_key),
+        query_probabilities={str(key): float(value) for key, value in semantic_query_probabilities.items()},
+        winner_label=str(winner_label),
+        winner_label_probabilities={str(key): float(value) for key, value in winner_label_probabilities.items()},
+        label_pool=tuple(str(label) for label in label_pool),
     )
     rendered = _render_point_scene(
         query,
@@ -1229,7 +1222,7 @@ def build_locus_point_artifacts(
         bundle_id=str(prompt_defaults["bundle_id"]),
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
-        query_key=str(query.query_id),
+        query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots={
             "object_description": str(prompt_defaults["object_description"]),
@@ -1243,18 +1236,32 @@ def build_locus_point_artifacts(
         instance_seed=int(instance_seed),
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
+    trace_payload = _point_trace_payload(
+        query=query,
+        rendered=rendered,
+        prompt_defaults=prompt_defaults,
+        prompt_artifacts=prompt_artifacts,
+        annotation_value=annotation_value,
+    )
+    trace_payload["query_spec"]["operation_key"] = str(output_operation_key)
+    trace_payload["query_spec"]["params"]["operation_key"] = str(output_operation_key)
+    trace_payload["query_spec"]["params"]["operation_key_probabilities"] = {
+        str(key): float(value) for key, value in output_query_probabilities.items()
+    }
+    trace_payload["query_spec"]["params"]["semantic_operation"] = str(semantic_operation_key)
+    trace_payload["execution_trace"]["operation_key"] = str(output_operation_key)
+    trace_payload["execution_trace"]["operation_key_probabilities"] = dict(
+        trace_payload["query_spec"]["params"]["operation_key_probabilities"]
+    )
+    trace_payload["execution_trace"]["semantic_operation"] = str(semantic_operation_key)
+    trace_payload["scene_ir"]["relations"]["operation_key"] = str(output_operation_key)
+    trace_payload["scene_ir"]["relations"]["semantic_operation"] = str(semantic_operation_key)
     return LocusPointArtifacts(
         query=query,
         rendered=rendered,
         prompt_artifacts=prompt_artifacts,
         annotation_value=annotation_value,
-        trace_payload=_point_trace_payload(
-            query=query,
-            rendered=rendered,
-            prompt_defaults=prompt_defaults,
-            prompt_artifacts=prompt_artifacts,
-            annotation_value=annotation_value,
-        ),
+        trace_payload=trace_payload,
     )
 
 
@@ -1262,17 +1269,26 @@ def build_locus_panel_artifacts(
     *,
     namespace: str,
     config_key: str,
+    semantic_operation_key: str,
+    semantic_query_probabilities: Mapping[str, float],
+    output_operation_key: str,
+    output_query_probabilities: Mapping[str, float],
+    prompt_query_key: str,
+    winner_label: str,
+    winner_label_probabilities: Mapping[str, float],
+    label_pool: Sequence[str],
     instance_seed: int,
     params: Dict[str, Any],
 ) -> LocusPanelArtifacts:
+    """Resolve render, prompt, scalar bbox annotation, and trace for panel matching."""
+
     generation_defaults, rendering_defaults, prompt_defaults_all = _split_defaults_for_task(str(config_key))
-    label_pool = _resolve_label_pool(params, generation_defaults, "locus_panel_labels", DEFAULT_LABEL_POOL)
-    query = _resolve_query(
-        task_id=str(namespace),
-        query_ids=PANEL_QUERY_IDS,
-        label_pool=label_pool,
-        instance_seed=int(instance_seed),
-        params=params,
+    query = _ResolvedQuery(
+        operation_key=str(semantic_operation_key),
+        query_probabilities={str(key): float(value) for key, value in semantic_query_probabilities.items()},
+        winner_label=str(winner_label),
+        winner_label_probabilities={str(key): float(value) for key, value in winner_label_probabilities.items()},
+        label_pool=tuple(str(label) for label in label_pool),
     )
     rendered = _render_panel_scene(
         query,
@@ -1296,7 +1312,7 @@ def build_locus_panel_artifacts(
         ),
         context=f"prompt defaults for {config_key}",
     )
-    annotation_value = [list(rendered.panels_by_label[str(query.winner_label)].panel_bbox)]
+    annotation_value = list(rendered.panels_by_label[str(query.winner_label)].panel_bbox)
     json_example, json_example_answer_only = resolve_prompt_json_examples(
         prompt_defaults_all,
         annotation_value=annotation_value,
@@ -1308,7 +1324,7 @@ def build_locus_panel_artifacts(
         bundle_id=str(prompt_defaults["bundle_id"]),
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
-        query_key=str(query.query_id),
+        query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots={
             "object_description": str(prompt_defaults["object_description"]),
@@ -1322,20 +1338,30 @@ def build_locus_panel_artifacts(
         instance_seed=int(instance_seed),
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
+    trace_payload = _panel_trace_payload(
+        query=query,
+        rendered=rendered,
+        prompt_defaults=prompt_defaults,
+        prompt_artifacts=prompt_artifacts,
+        annotation_value=annotation_value,
+    )
+    trace_payload["query_spec"]["operation_key"] = str(output_operation_key)
+    trace_payload["query_spec"]["params"]["operation_key"] = str(output_operation_key)
+    trace_payload["query_spec"]["params"]["operation_key_probabilities"] = {
+        str(key): float(value) for key, value in output_query_probabilities.items()
+    }
+    trace_payload["query_spec"]["params"]["semantic_operation"] = str(semantic_operation_key)
+    trace_payload["execution_trace"]["operation_key"] = str(output_operation_key)
+    trace_payload["execution_trace"]["operation_key_probabilities"] = dict(
+        trace_payload["query_spec"]["params"]["operation_key_probabilities"]
+    )
+    trace_payload["execution_trace"]["semantic_operation"] = str(semantic_operation_key)
+    trace_payload["scene_ir"]["relations"]["operation_key"] = str(output_operation_key)
+    trace_payload["scene_ir"]["relations"]["semantic_operation"] = str(semantic_operation_key)
     return LocusPanelArtifacts(
         query=query,
         rendered=rendered,
         prompt_artifacts=prompt_artifacts,
         annotation_value=annotation_value,
-        trace_payload=_panel_trace_payload(
-            query=query,
-            rendered=rendered,
-            prompt_defaults=prompt_defaults,
-            prompt_artifacts=prompt_artifacts,
-            annotation_value=annotation_value,
-        ),
+        trace_payload=trace_payload,
     )
-
-
-
-

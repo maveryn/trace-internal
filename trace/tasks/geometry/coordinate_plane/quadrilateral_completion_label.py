@@ -28,8 +28,8 @@ from ..shared.option_count import resolve_geometry_option_count
 from ..shared.point_labels import draw_labeled_points
 from ..shared.quadrilateral_prototypes import classify_quadrilateral_kind
 from ..shared.single_object_scene import finalize_graph_scene_image, make_graph_scene_canvas, resolve_graph_scene_context
-from .shared.coordinate.params import resolve_int_param as _resolve_int_param
-from .shared.coordinate.quadrilateral import (
+from .shared.defaults import resolve_int_param as _resolve_int_param
+from .shared.spatial_primitives import (
     _draw_marker,
     _marker_bbox,
     _probability_map,
@@ -384,6 +384,8 @@ def _render_completion_scene(
     generation_defaults: Mapping[str, Any],
     rendering_defaults: Mapping[str, Any],
 ) -> _CompletionScene:
+    """Render known vertices and candidate missing points for one quadrilateral."""
+
     rng = spawn_rng(int(instance_seed), f"{COMPLETION_TASK_ID}.render")
     max_abs = _resolve_int_param(
         params, generation_defaults, "completion_graph_abs_max", _DEFAULTS.completion_graph_abs_max
@@ -579,8 +581,10 @@ def _completion_trace_payload(
     rendered: _CompletionScene,
     prompt_defaults: Mapping[str, Any],
     prompt_artifacts: Any,
-    annotation_value: List[List[float]],
+    annotation_value: List[float],
 ) -> Dict[str, Any]:
+    """Assemble trace payload and scalar annotation for completion options."""
+
     candidate_trace = {
         str(label): {
             "point_graph": [int(value) for value in rendered.candidate_points_by_label[str(label)]],
@@ -680,9 +684,9 @@ def _completion_trace_payload(
             "missing_point_graph": [int(value) for value in rendered.missing_point],
         },
         "projected_annotation": {
-            "type": "point_set",
-            "point_set": list(annotation_value),
-            "pixel_point_set": list(annotation_value),
+            "type": "point",
+            "point": list(annotation_value),
+            "pixel_point": list(annotation_value),
             "candidate_points_px_by_label": {
                 str(label): [float(value) for value in point]
                 for label, point in rendered.candidate_points_px_by_label.items()
@@ -691,9 +695,9 @@ def _completion_trace_payload(
     }
 
 
-def _completion_point_annotation(rendered: _CompletionScene, label: str) -> List[List[float]]:
+def _completion_point_annotation(rendered: _CompletionScene, label: str) -> List[float]:
     point = rendered.candidate_points_px_by_label[str(label)]
-    return [[float(point[0]), float(point[1])]]
+    return [float(point[0]), float(point[1])]
 
 
 @register_task
@@ -703,11 +707,11 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
     task_id = COMPLETION_TASK_ID
     domain = "geometry"
     default_dataset_enabled = True
-    scene_id = COMPLETION_SCENE_ID
-    public_scene_id = COMPLETION_SCENE_ID
     supported_query_ids = COMPLETION_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Generate one quadrilateral completion instance with lettered candidates."""
+
         del max_attempts
         generation_defaults, rendering_defaults, prompt_defaults_all = _prompt_defaults(self.task_id)
         label_pool = _resolve_label_pool(
@@ -780,7 +784,7 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="option_letter", value=str(query.winner_label)),
-            annotation_gt=TypedValue(type="point_set", value=annotation_value),
+            annotation_gt=TypedValue(type="point", value=annotation_value),
             image=rendered.image,
             image_id="img0",
             trace_payload=trace_payload,

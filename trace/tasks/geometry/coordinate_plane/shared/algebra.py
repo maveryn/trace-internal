@@ -8,22 +8,21 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ......core.seed import spawn_rng
-from ......core.scene_config import get_scene_defaults
-from .....shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from .....shared.deterministic_sampling import resolve_selection_index
-from .....shared.prompt_json_example import resolve_prompt_json_examples
-from .....shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
-from .....shared.text_rendering import load_font, resolve_scene_label_font_size_px
-from .....shared.text_legibility import draw_text_traced
-from ....shared.background_defaults import load_geometry_background_defaults
-from trace.tasks.shared.fixed_query import select_geometry_query_id
-from ....shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
-from ....shared.noise_defaults import load_geometry_noise_defaults
-from ....shared.option_count import resolve_geometry_option_count
-from ....shared.point_labels import draw_labeled_points
-from ....shared.single_object_scene import finalize_graph_scene_image, make_graph_scene_canvas, resolve_graph_scene_context
-from .quadrilateral import (
+from trace.core.seed import spawn_rng
+from trace.core.scene_config import get_scene_defaults
+from trace.tasks.shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.tasks.shared.prompt_json_example import resolve_prompt_json_examples
+from trace.tasks.shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
+from trace.tasks.shared.text_rendering import load_font, resolve_scene_label_font_size_px
+from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.geometry.shared.background_defaults import load_geometry_background_defaults
+from trace.tasks.geometry.shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
+from trace.tasks.geometry.shared.noise_defaults import load_geometry_noise_defaults
+from trace.tasks.geometry.shared.option_count import resolve_geometry_option_count
+from trace.tasks.geometry.shared.point_labels import draw_labeled_points
+from trace.tasks.geometry.shared.single_object_scene import finalize_graph_scene_image, make_graph_scene_canvas, resolve_graph_scene_context
+from .spatial_primitives import (
     _draw_marker,
     _marker_bbox,
     _probability_map,
@@ -33,7 +32,7 @@ from .quadrilateral import (
 )
 
 SCENE_ID = "coordinate_plane"
-from .params import resolve_int_param as _resolve_int_param
+from .defaults import resolve_int_param as _resolve_int_param
 
 
 GraphPoint = Tuple[int, int]
@@ -41,29 +40,29 @@ PixelPoint = Tuple[float, float]
 Color = Tuple[int, int, int]
 GuideSegment = Tuple[str, str, str]
 
-MISSING_ENDPOINT_QUERY_IDS: Tuple[str, ...] = (
-    "missing_endpoint_from_midpoint",
-    "missing_startpoint_from_midpoint",
+MIDPOINT_OPERATIONS: Tuple[str, ...] = (
+    "midpoint_missing_q",
+    "midpoint_missing_p",
 )
-SECTION_POINT_QUERY_IDS: Tuple[str, ...] = (
-    "one_third_from_p_to_q",
-    "two_thirds_from_p_to_q",
+SECTION_OPERATIONS: Tuple[str, ...] = (
+    "section_one_third",
+    "section_two_thirds",
 )
-TRANSFORMED_POINT_QUERY_IDS: Tuple[str, ...] = (
-    "translate_point",
-    "translate_by_reference_vector",
-    "reflect_over_vertical_line",
-    "reflect_over_horizontal_line",
-    "rotate_90_about_marked_center",
+TRANSFORM_OPERATIONS: Tuple[str, ...] = (
+    "translate_direct",
+    "translate_reference",
+    "reflect_vertical",
+    "reflect_horizontal",
+    "rotate_quarter_turn",
 )
-REFLECTED_POINT_QUERY_IDS: Tuple[str, ...] = (
-    "reflect_over_vertical_line",
-    "reflect_over_horizontal_line",
+REFLECTION_OPERATIONS: Tuple[str, ...] = (
+    "reflect_vertical",
+    "reflect_horizontal",
 )
-ROTATED_POINT_QUERY_IDS: Tuple[str, ...] = ("rotate_90_about_marked_center",)
-TRANSLATED_POINT_QUERY_IDS: Tuple[str, ...] = (
-    "translate_point",
-    "translate_by_reference_vector",
+ROTATION_OPERATIONS: Tuple[str, ...] = ("rotate_quarter_turn",)
+TRANSLATION_OPERATIONS: Tuple[str, ...] = (
+    "translate_direct",
+    "translate_reference",
 )
 DEFAULT_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 
@@ -92,7 +91,7 @@ class _TaskDefaults:
 
 @dataclass(frozen=True)
 class _ResolvedQuery:
-    query_id: str
+    operation_key: str
     query_probabilities: Dict[str, float]
     winner_label: str
     winner_label_probabilities: Dict[str, float]
@@ -101,7 +100,7 @@ class _ResolvedQuery:
 
 @dataclass(frozen=True)
 class _AlgebraProblem:
-    query_id: str
+    operation_key: str
     known_points_by_label: Dict[str, GraphPoint]
     target_label_name: str
     target_point: GraphPoint
@@ -132,7 +131,7 @@ class AlgebraArtifacts:
     query: _ResolvedQuery
     rendered: _RenderedScene
     prompt_artifacts: Any
-    annotation_value: List[List[float]]
+    annotation_value: List[float]
     trace_payload: Dict[str, Any]
 
 
@@ -244,43 +243,14 @@ def _select_winner_label(
     return str(labels[int(selection_index) % len(labels)]), _probability_map(labels)
 
 
-def _resolve_query(
-    *,
-    namespace: str,
-    query_ids: Sequence[str],
-    label_pool: Sequence[str],
-    instance_seed: int,
-    params: Mapping[str, Any],
-) -> _ResolvedQuery:
-    query_id, query_probabilities = select_geometry_query_id(
-        params,
-        query_ids=tuple(query_ids),
-        task_id=str(namespace),
-        instance_seed=int(instance_seed),
-    )
-    winner_label, winner_probabilities = _select_winner_label(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-        label_pool=tuple(label_pool),
-    )
-    return _ResolvedQuery(
-        query_id=str(query_id),
-        query_probabilities=dict(query_probabilities),
-        winner_label=str(winner_label),
-        winner_label_probabilities=dict(winner_probabilities),
-        label_pool=tuple(str(label) for label in label_pool),
-    )
-
-
-def _case_index(*, params: Mapping[str, Any], instance_seed: int, namespace: str, query_id: str, count: int) -> int:
+def _case_index(*, params: Mapping[str, Any], instance_seed: int, namespace: str, operation_key: str, count: int) -> int:
     explicit = params.get("case_index")
     if explicit is not None:
         return int(explicit) % int(count)
     selection_index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{namespace}.{query_id}.case",
+        namespace=f"{namespace}.{operation_key}.case",
     )
     return int(selection_index) % int(count)
 
@@ -307,23 +277,25 @@ def _add_candidate(
 def _sample_problem(
     *,
     namespace: str,
-    query_id: str,
+    operation_key: str,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> _AlgebraProblem:
-    if str(query_id) in set(MISSING_ENDPOINT_QUERY_IDS):
+    """Construct the graph-space algebra problem for one semantic operation."""
+
+    if str(operation_key) in set(MIDPOINT_OPERATIONS):
         index = _case_index(
             params=params,
             instance_seed=int(instance_seed),
             namespace=str(namespace),
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             count=len(_MIDPOINT_CASES),
         )
         endpoint, midpoint = _MIDPOINT_CASES[int(index)]
         missing = ((2 * int(midpoint[0])) - int(endpoint[0]), (2 * int(midpoint[1])) - int(endpoint[1]))
-        if str(query_id) == "missing_endpoint_from_midpoint":
+        if str(operation_key) == "midpoint_missing_q":
             return _AlgebraProblem(
-                query_id=str(query_id),
+                operation_key=str(operation_key),
                 known_points_by_label={"P": endpoint, "M": midpoint},
                 target_label_name="Q",
                 target_point=tuple(missing),
@@ -332,7 +304,7 @@ def _sample_problem(
                 guide_segments=(("P", "M", "solid"),),
             )
         return _AlgebraProblem(
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             known_points_by_label={"Q": endpoint, "M": midpoint},
             target_label_name="P",
             target_point=tuple(missing),
@@ -341,12 +313,12 @@ def _sample_problem(
             guide_segments=(("Q", "M", "solid"),),
         )
 
-    if str(query_id) in set(SECTION_POINT_QUERY_IDS):
+    if str(operation_key) in set(SECTION_OPERATIONS):
         index = _case_index(
             params=params,
             instance_seed=int(instance_seed),
             namespace=str(namespace),
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             count=len(_SECTION_CASES),
         )
         point_p, point_q = _SECTION_CASES[int(index)]
@@ -354,10 +326,10 @@ def _sample_problem(
         dy = int(point_q[1]) - int(point_p[1])
         if int(dx) % 3 != 0 or int(dy) % 3 != 0:
             raise RuntimeError("section point case must have displacement divisible by 3")
-        step = 1 if str(query_id) == "one_third_from_p_to_q" else 2
+        step = 1 if str(operation_key) == "section_one_third" else 2
         target = (int(point_p[0]) + (int(step) * int(dx) // 3), int(point_p[1]) + (int(step) * int(dy) // 3))
         return _AlgebraProblem(
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             known_points_by_label={"P": point_p, "Q": point_q},
             target_label_name="R",
             target_point=tuple(target),
@@ -365,18 +337,18 @@ def _sample_problem(
             guide_segments=(("P", "Q", "solid"),),
         )
 
-    if str(query_id) == "translate_point":
+    if str(operation_key) == "translate_direct":
         index = _case_index(
             params=params,
             instance_seed=int(instance_seed),
             namespace=str(namespace),
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             count=len(_TRANSLATION_CASES),
         )
         source, vector = _TRANSLATION_CASES[int(index)]
         target = (int(source[0]) + int(vector[0]), int(source[1]) + int(vector[1]))
         return _AlgebraProblem(
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             known_points_by_label={"P": source},
             target_label_name="P'",
             target_point=tuple(target),
@@ -384,19 +356,19 @@ def _sample_problem(
             transform_text=f"translate P by ({int(vector[0])}, {int(vector[1])})",
         )
 
-    if str(query_id) == "translate_by_reference_vector":
+    if str(operation_key) == "translate_reference":
         index = _case_index(
             params=params,
             instance_seed=int(instance_seed),
             namespace=str(namespace),
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             count=len(_REFERENCE_VECTOR_CASES),
         )
         point_r, point_s, source = _REFERENCE_VECTOR_CASES[int(index)]
         vector = (int(point_s[0]) - int(point_r[0]), int(point_s[1]) - int(point_r[1]))
         target = (int(source[0]) + int(vector[0]), int(source[1]) + int(vector[1]))
         return _AlgebraProblem(
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             known_points_by_label={"R": point_r, "S": point_s, "P": source},
             target_label_name="P'",
             target_point=tuple(target),
@@ -405,18 +377,18 @@ def _sample_problem(
             guide_segments=(("R", "S", "arrow"),),
         )
 
-    if str(query_id) == "reflect_over_vertical_line":
+    if str(operation_key) == "reflect_vertical":
         index = _case_index(
             params=params,
             instance_seed=int(instance_seed),
             namespace=str(namespace),
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             count=len(_VERTICAL_REFLECTION_CASES),
         )
         source, x_value = _VERTICAL_REFLECTION_CASES[int(index)]
         target = ((2 * int(x_value)) - int(source[0]), int(source[1]))
         return _AlgebraProblem(
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             known_points_by_label={"P": source},
             target_label_name="P'",
             target_point=tuple(target),
@@ -425,18 +397,18 @@ def _sample_problem(
             transform_line={"axis": "x", "value": int(x_value)},
         )
 
-    if str(query_id) == "reflect_over_horizontal_line":
+    if str(operation_key) == "reflect_horizontal":
         index = _case_index(
             params=params,
             instance_seed=int(instance_seed),
             namespace=str(namespace),
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             count=len(_HORIZONTAL_REFLECTION_CASES),
         )
         source, y_value = _HORIZONTAL_REFLECTION_CASES[int(index)]
         target = (int(source[0]), (2 * int(y_value)) - int(source[1]))
         return _AlgebraProblem(
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             known_points_by_label={"P": source},
             target_label_name="P'",
             target_point=tuple(target),
@@ -445,12 +417,12 @@ def _sample_problem(
             transform_line={"axis": "y", "value": int(y_value)},
         )
 
-    if str(query_id) == "rotate_90_about_marked_center":
+    if str(operation_key) == "rotate_quarter_turn":
         index = _case_index(
             params=params,
             instance_seed=int(instance_seed),
             namespace=str(namespace),
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             count=len(_ROTATION_CASES),
         )
         center, source, direction = _ROTATION_CASES[int(index)]
@@ -462,7 +434,7 @@ def _sample_problem(
             rotated = (-int(dy), int(dx))
         target = (int(center[0]) + int(rotated[0]), int(center[1]) + int(rotated[1]))
         return _AlgebraProblem(
-            query_id=str(query_id),
+            operation_key=str(operation_key),
             known_points_by_label={"O": center, "P": source},
             target_label_name="P'",
             target_point=tuple(target),
@@ -471,10 +443,10 @@ def _sample_problem(
             guide_segments=(("O", "P", "solid"),),
         )
 
-    raise ValueError(f"unsupported coordinate algebra query: {query_id}")
+    raise ValueError(f"unsupported coordinate algebra query: {operation_key}")
 
 
-def _candidate_labels_for_query(query: _ResolvedQuery, *, candidate_count: int) -> Tuple[str, ...]:
+def _candidate_labels_for_selection(query: _ResolvedQuery, *, candidate_count: int) -> Tuple[str, ...]:
     labels = tuple(query.label_pool[: int(candidate_count)])
     if str(query.winner_label) not in set(labels):
         labels = tuple([str(query.winner_label), *[label for label in labels if label != str(query.winner_label)]])
@@ -483,18 +455,20 @@ def _candidate_labels_for_query(query: _ResolvedQuery, *, candidate_count: int) 
 
 
 def _common_distractors(problem: _AlgebraProblem, *, max_abs: int) -> Tuple[GraphPoint, ...]:
+    """Create plausible wrong graph points while preserving one unique target."""
+
     target = tuple(problem.target_point)
     known_points = dict(problem.known_points_by_label)
     distractors: List[GraphPoint] = []
 
-    if str(problem.query_id) in set(MISSING_ENDPOINT_QUERY_IDS):
+    if str(problem.operation_key) in set(MIDPOINT_OPERATIONS):
         endpoint = next(point for label, point in known_points.items() if str(label) != "M")
         midpoint = known_points["M"]
         _add_candidate(distractors, midpoint, occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(endpoint[0]) + int(midpoint[0]), int(endpoint[1]) + int(midpoint[1])), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(endpoint[0]) - int(midpoint[0]), int(endpoint[1]) - int(midpoint[1])), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, ((2 * int(endpoint[0])) - int(midpoint[0]), (2 * int(endpoint[1])) - int(midpoint[1])), occupied=set(), max_abs=int(max_abs))
-    elif str(problem.query_id) in set(SECTION_POINT_QUERY_IDS):
+    elif str(problem.operation_key) in set(SECTION_OPERATIONS):
         point_p = known_points["P"]
         point_q = known_points["Q"]
         dx = int(point_q[0]) - int(point_p[0])
@@ -507,7 +481,7 @@ def _common_distractors(problem: _AlgebraProblem, *, max_abs: int) -> Tuple[Grap
             _add_candidate(distractors, point, occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(target[0]) + (int(dx) // 3), int(target[1]) + (int(dy) // 3)), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(target[0]) - (int(dx) // 3), int(target[1]) - (int(dy) // 3)), occupied=set(), max_abs=int(max_abs))
-    elif str(problem.query_id) == "translate_point":
+    elif str(problem.operation_key) == "translate_direct":
         source = known_points["P"]
         dx = int(target[0]) - int(source[0])
         dy = int(target[1]) - int(source[1])
@@ -515,7 +489,7 @@ def _common_distractors(problem: _AlgebraProblem, *, max_abs: int) -> Tuple[Grap
         _add_candidate(distractors, (int(source[0]), int(source[1]) + dy), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(source[0]) - dx, int(source[1]) - dy), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(source[0]) + dy, int(source[1]) + dx), occupied=set(), max_abs=int(max_abs))
-    elif str(problem.query_id) == "translate_by_reference_vector":
+    elif str(problem.operation_key) == "translate_reference":
         source = known_points["P"]
         point_r = known_points["R"]
         point_s = known_points["S"]
@@ -526,7 +500,7 @@ def _common_distractors(problem: _AlgebraProblem, *, max_abs: int) -> Tuple[Grap
         _add_candidate(distractors, (int(source[0]) - dx, int(source[1]) - dy), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(source[0]) + dy, int(source[1]) + dx), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(point_r[0]) + int(source[0]) - int(point_s[0]), int(point_r[1]) + int(source[1]) - int(point_s[1])), occupied=set(), max_abs=int(max_abs))
-    elif str(problem.query_id) == "reflect_over_vertical_line":
+    elif str(problem.operation_key) == "reflect_vertical":
         source = known_points["P"]
         line_value = int(problem.transform_line["value"]) if problem.transform_line else 0
         _add_candidate(distractors, (-int(source[0]), int(source[1])), occupied=set(), max_abs=int(max_abs))
@@ -534,7 +508,7 @@ def _common_distractors(problem: _AlgebraProblem, *, max_abs: int) -> Tuple[Grap
         _add_candidate(distractors, (int(source[0]), (2 * line_value) - int(source[1])), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(target[0]) + 1, int(target[1])), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(target[0]) - 1, int(target[1])), occupied=set(), max_abs=int(max_abs))
-    elif str(problem.query_id) == "reflect_over_horizontal_line":
+    elif str(problem.operation_key) == "reflect_horizontal":
         source = known_points["P"]
         line_value = int(problem.transform_line["value"]) if problem.transform_line else 0
         _add_candidate(distractors, (int(source[0]), -int(source[1])), occupied=set(), max_abs=int(max_abs))
@@ -542,7 +516,7 @@ def _common_distractors(problem: _AlgebraProblem, *, max_abs: int) -> Tuple[Grap
         _add_candidate(distractors, ((2 * line_value) - int(source[0]), int(source[1])), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(target[0]), int(target[1]) + 1), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(target[0]), int(target[1]) - 1), occupied=set(), max_abs=int(max_abs))
-    elif str(problem.query_id) == "rotate_90_about_marked_center":
+    elif str(problem.operation_key) == "rotate_quarter_turn":
         center = known_points["O"]
         source = known_points["P"]
         dx = int(source[0]) - int(center[0])
@@ -711,6 +685,8 @@ def _render_scene(
     generation_defaults: Mapping[str, Any],
     rendering_defaults: Mapping[str, Any],
 ) -> _RenderedScene:
+    """Render known points, guides, and lettered candidates after layout."""
+
     rng = spawn_rng(int(instance_seed), f"{namespace}.render")
     max_abs = _resolve_int_param(params, generation_defaults, "algebra_graph_abs_max", _DEFAULTS.graph_abs_max)
     candidate_count, option_count_probabilities = resolve_geometry_option_count(
@@ -723,10 +699,10 @@ def _render_scene(
     )
     if int(candidate_count) > len(query.label_pool):
         raise ValueError("algebra_candidate_count cannot exceed candidate label pool length")
-    candidate_labels = _candidate_labels_for_query(query, candidate_count=int(candidate_count))
+    candidate_labels = _candidate_labels_for_selection(query, candidate_count=int(candidate_count))
     problem = _sample_problem(
         namespace=str(namespace),
-        query_id=str(query.query_id),
+        operation_key=str(query.operation_key),
         instance_seed=int(instance_seed),
         params=params,
     )
@@ -938,8 +914,10 @@ def _trace_payload(
     rendered: _RenderedScene,
     prompt_defaults: Mapping[str, Any],
     prompt_artifacts: Any,
-    annotation_value: List[List[float]],
+    annotation_value: List[float],
 ) -> Dict[str, Any]:
+    """Assemble trace, render map, and scalar annotation projection fields."""
+
     candidate_trace = {
         str(label): {
             "point_graph": [int(value) for value in rendered.candidate_points_by_label[str(label)]],
@@ -958,8 +936,8 @@ def _trace_payload(
     }
     relations = {
         "scene_id": SCENE_ID,
-        "query_id": str(query.query_id),
-        "query_id_probabilities": dict(query.query_probabilities),
+        "operation_key": str(query.operation_key),
+        "operation_key_probabilities": dict(query.query_probabilities),
         "winner_label": str(query.winner_label),
         "target_label_name": str(rendered.problem.target_label_name),
         "target_point_graph": [int(value) for value in rendered.problem.target_point],
@@ -985,15 +963,15 @@ def _trace_payload(
             "relations": dict(relations),
         },
         "query_spec": {
-            "query_id": str(query.query_id),
+            "operation_key": str(query.operation_key),
             "template_id": str(prompt_defaults["bundle_id"]),
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
             "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
             "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
             "params": {
                 "scene_id": SCENE_ID,
-                "query_id": str(query.query_id),
-                "query_id_probabilities": dict(query.query_probabilities),
+                "operation_key": str(query.operation_key),
+                "operation_key_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "candidate_label_pool": list(rendered.candidate_points_by_label.keys()),
@@ -1028,7 +1006,7 @@ def _trace_payload(
         },
         "execution_trace": {
             "scene_id": SCENE_ID,
-            "query_id": str(query.query_id),
+            "operation_key": str(query.operation_key),
             "answer_type": "option_letter",
             "answer_value": str(query.winner_label),
             "target_label_name": str(rendered.problem.target_label_name),
@@ -1039,12 +1017,12 @@ def _trace_payload(
             "guide_segments": [list(segment) for segment in rendered.problem.guide_segments],
             "known_points_by_label": dict(known_trace),
             "candidate_points_by_label": dict(candidate_trace),
-            "query_id_probabilities": dict(query.query_probabilities),
+            "operation_key_probabilities": dict(query.query_probabilities),
             "algebra_candidate_count_probabilities": dict(rendered.option_count_probabilities),
         },
         "witness_symbolic": {
             "type": "coordinate_algebra_candidate_point",
-            "query_id": str(query.query_id),
+            "operation_key": str(query.operation_key),
             "answer_label": str(query.winner_label),
             "target_label_name": str(rendered.problem.target_label_name),
             "target_point_graph": [int(value) for value in rendered.problem.target_point],
@@ -1054,9 +1032,9 @@ def _trace_payload(
             "formula": str(rendered.problem.formula),
         },
         "projected_annotation": {
-            "type": "point_set",
-            "point_set": list(annotation_value),
-            "pixel_point_set": list(annotation_value),
+            "type": "point",
+            "point": list(annotation_value),
+            "pixel_point": list(annotation_value),
             "candidate_points_px_by_label": {
                 str(label): [float(value) for value in point]
                 for label, point in rendered.candidate_points_px_by_label.items()
@@ -1065,28 +1043,36 @@ def _trace_payload(
     }
 
 
-def _candidate_point_annotation(rendered: _RenderedScene, label: str) -> List[List[float]]:
+def _candidate_point_annotation(rendered: _RenderedScene, label: str) -> List[float]:
     point = rendered.candidate_points_px_by_label[str(label)]
-    return [[float(point[0]), float(point[1])]]
+    return [float(point[0]), float(point[1])]
 
 
 def build_algebra_artifacts(
     *,
     namespace: str,
     config_key: str,
-    query_ids: Sequence[str],
+    semantic_operation_key: str,
+    semantic_query_probabilities: Mapping[str, float],
+    output_operation_key: str,
+    output_query_probabilities: Mapping[str, float],
+    prompt_query_key: str,
+    winner_label: str,
+    winner_label_probabilities: Mapping[str, float],
+    label_pool: Sequence[str],
     scene_key: str,
     instance_seed: int,
     params: Dict[str, Any],
 ) -> AlgebraArtifacts:
+    """Resolve prompt, render, annotation, and trace artifacts for algebra tasks."""
+
     generation_defaults, rendering_defaults, prompt_defaults_all = _split_defaults_for_task(str(config_key))
-    label_pool = _resolve_label_pool(params, generation_defaults, "algebra_candidate_labels", DEFAULT_LABEL_POOL)
-    query = _resolve_query(
-        namespace=str(namespace),
-        query_ids=tuple(query_ids),
-        label_pool=label_pool,
-        instance_seed=int(instance_seed),
-        params=params,
+    query = _ResolvedQuery(
+        operation_key=str(semantic_operation_key),
+        query_probabilities={str(key): float(value) for key, value in semantic_query_probabilities.items()},
+        winner_label=str(winner_label),
+        winner_label_probabilities={str(key): float(value) for key, value in winner_label_probabilities.items()},
+        label_pool=tuple(str(label) for label in label_pool),
     )
     rendered = _render_scene(
         namespace=str(namespace),
@@ -1122,7 +1108,7 @@ def build_algebra_artifacts(
         bundle_id=str(prompt_defaults["bundle_id"]),
         scene_key=str(prompt_defaults.get("scene_key", scene_key)),
         task_key=str(prompt_defaults["task_key"]),
-        query_key=str(query.query_id),
+        query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         slots={
             "object_description": str(prompt_defaults["object_description"]),
@@ -1144,4 +1130,23 @@ def build_algebra_artifacts(
         prompt_artifacts=prompt_artifacts,
         annotation_value=annotation_value,
     )
-
+    trace_payload["query_spec"]["operation_key"] = str(output_operation_key)
+    trace_payload["query_spec"]["params"]["operation_key"] = str(output_operation_key)
+    trace_payload["query_spec"]["params"]["operation_key_probabilities"] = {
+        str(key): float(value) for key, value in output_query_probabilities.items()
+    }
+    trace_payload["query_spec"]["params"]["semantic_operation"] = str(semantic_operation_key)
+    trace_payload["execution_trace"]["operation_key"] = str(output_operation_key)
+    trace_payload["execution_trace"]["operation_key_probabilities"] = dict(
+        trace_payload["query_spec"]["params"]["operation_key_probabilities"]
+    )
+    trace_payload["execution_trace"]["semantic_operation"] = str(semantic_operation_key)
+    trace_payload["scene_ir"]["relations"]["operation_key"] = str(output_operation_key)
+    trace_payload["scene_ir"]["relations"]["semantic_operation"] = str(semantic_operation_key)
+    return AlgebraArtifacts(
+        query=query,
+        rendered=rendered,
+        prompt_artifacts=prompt_artifacts,
+        annotation_value=annotation_value,
+        trace_payload=trace_payload,
+    )

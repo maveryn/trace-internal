@@ -2,21 +2,48 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Mapping
 
-from ....core.types import TypedValue
-from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.output_metadata import default_task_versions
 
-from .shared.coordinate.locus_runtime import (
-    POINT_QUERY_IDS,
-    build_locus_point_artifacts,
+from ._lifecycle import CoordinateLocusObjective, run_coordinate_locus_point_entry
+
+POINT_TASK_ID = "task_geometry__coordinate_plane__locus_point_label"
+PANEL_TASK_ID = "task_geometry__coordinate_plane__locus_panel_match_label"
+PANEL_QUERY_IDS = (
+    "circle_inequality_panel_match",
+    "vertical_strip_panel_match",
+    "horizontal_halfplane_panel_match",
+    "two_inequality_panel_match",
 )
-
 TASK_ID = "task_geometry__coordinate_plane__locus_point_label"
 SCENE_ID = "coordinate_plane"
+POINT_QUERY_IDS = (
+    "circle_region_point",
+    "annulus_region_point",
+    "vertical_strip_region_point",
+    "half_plane_intersection_region_point",
+)
 SUPPORTED_QUERY_IDS = POINT_QUERY_IDS
+SEMANTIC_OPERATION_BY_ID = {
+    "circle_region_point": "circle_region",
+    "annulus_region_point": "annulus_region",
+    "vertical_strip_region_point": "vertical_strip_region",
+    "half_plane_intersection_region_point": "half_plane_intersection_region",
+}
+
+
+def _prepare_locus_point_objective(
+    selected_query: str,
+    _query_probabilities: Mapping[str, float],
+    _task_params: Mapping[str, Any],
+) -> CoordinateLocusObjective:
+    """Bind the selected locus-family query to candidate-point selection."""
+
+    return CoordinateLocusObjective(
+        semantic_operation=str(SEMANTIC_OPERATION_BY_ID[str(selected_query)]),
+        prompt_query_key=str(selected_query),
+    )
 
 
 @register_task
@@ -25,33 +52,11 @@ class GeometryCoordinateLocusPointLabelTask:
 
     task_id = TASK_ID
     domain = "geometry"
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True
+    prepare_objective = staticmethod(_prepare_locus_point_objective)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        del max_attempts
-        artifacts = build_locus_point_artifacts(
-            namespace=TASK_ID,
-            config_key=TASK_ID,
-            instance_seed=int(instance_seed),
-            params=params,
-        )
-        trace_payload = dict(artifacts.trace_payload)
-        trace_payload["witness_symbolic"] = {
-            **dict(trace_payload.get("witness_symbolic", {})),
-            "task_id": TASK_ID,
-        }
-        return TaskOutput(
-            prompt=str(artifacts.prompt_artifacts.prompt),
-            answer_gt=TypedValue(type="option_letter", value=str(artifacts.query.winner_label)),
-            annotation_gt=TypedValue(type="point_set", value=artifacts.annotation_value),
-            image=artifacts.rendered.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(artifacts.query.query_id),
-            prompt_variants=dict(artifacts.prompt_artifacts.prompt_variants),
-        )
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        """Generate a shaded-locus candidate point scene."""
+
+        return run_coordinate_locus_point_entry(self, instance_seed, params=params, max_attempts=max_attempts)

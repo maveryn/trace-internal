@@ -3,9 +3,9 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `coordinate_plane`
-5. Query id: `rotate_90_about_marked_center`
+5. Query id: `single`
 6. Answer schema: `option_letter`
-7. Annotation schema: `point_set`
+7. Annotation schema: `point`
 
 ## Program Contract
 - `label(select_candidate_point(candidate_points, coordinate_rule=rotation_about_marked_center, rotation_rule)); scene=coordinate_plane; scope=rotated_point_label`
@@ -15,7 +15,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+Prompt-facing annotation is the scalar pixel point `[x,y]` at the center of the selected candidate rotated point. Graph coordinates, formulas, labels, and construction metadata remain private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

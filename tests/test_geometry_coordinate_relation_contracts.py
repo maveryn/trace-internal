@@ -5,60 +5,63 @@ from __future__ import annotations
 import pytest
 from PIL import Image, ImageDraw
 
-from trace.tasks.geometry.coordinate_plane.segment_relation_count import (
-    GeometryCoordinateRelationTask,
-    _segments_intersect,
-)
+from trace.tasks import create_task
+from trace.tasks.geometry.coordinate_plane.collinear_point_count import TASK_ID as COLLINEAR_TASK_ID
+from trace.tasks.geometry.coordinate_plane.point_in_polygon_count import TASK_ID as POINT_IN_POLYGON_TASK_ID
+from trace.tasks.geometry.coordinate_plane.same_quadrant_point_count import TASK_ID as SAME_QUADRANT_TASK_ID
+from trace.tasks.geometry.coordinate_plane.segment_relation_count import TASK_ID as SEGMENT_RELATION_TASK_ID
+from trace.tasks.geometry.coordinate_plane.segment_relation_count import _segments_intersect
 from trace.tasks.shared.text_rendering import load_font, resolve_text_label_center
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_answer_type", "expected_annotation_type", "expected_annotation_count"),
+    ("task_id", "params", "expected_answer_type", "expected_annotation_type", "expected_annotation_count"),
     (
-        ({"scene_variant": "segment_set", "query_id": "parallel_count", "target_count": 2}, "integer", "point_set", 4),
-        ({"scene_variant": "segment_set", "query_id": "perpendicular_count", "target_count": 1}, "integer", "point_set", 2),
-        ({"scene_variant": "line_points", "query_id": "collinear_count", "target_count": 3}, "integer", "point_set", 3),
-        ({"scene_variant": "quadrant_points", "query_id": "same_quadrant_count", "target_count": 3}, "integer", "point_set", 3),
-        ({"scene_variant": "polygon_lattice", "query_id": "point_in_shape_count", "target_count": 2}, "integer", "point_set", 2),
-        ({"scene_variant": "polygon_lattice", "query_id": "point_in_shape_count", "target_count": 8}, "integer", "point_set", 8),
+        (SEGMENT_RELATION_TASK_ID, {"query_id": "parallel_count", "target_count": 2}, "integer", "segment_set", 2),
+        (SEGMENT_RELATION_TASK_ID, {"query_id": "perpendicular_count", "target_count": 1}, "integer", "segment_set", 1),
+        (COLLINEAR_TASK_ID, {"query_id": "single", "target_count": 3}, "integer", "point_set", 3),
+        (SAME_QUADRANT_TASK_ID, {"query_id": "single", "target_count": 3}, "integer", "point_set", 3),
+        (POINT_IN_POLYGON_TASK_ID, {"query_id": "single", "target_count": 2}, "integer", "point_set", 2),
+        (POINT_IN_POLYGON_TASK_ID, {"query_id": "single", "target_count": 8}, "integer", "point_set", 8),
     ),
 )
 def test_geometry_coordinate_relation_emits_expected_contract(
+    task_id: str,
     params: dict[str, int | str],
     expected_answer_type: str,
     expected_annotation_type: str,
     expected_annotation_count: int,
 ) -> None:
-    out = GeometryCoordinateRelationTask().generate(23301, params=params, max_attempts=25)
+    out = create_task(task_id).generate(23301, params=params, max_attempts=25)
     assert out.answer_gt.type == expected_answer_type
     assert out.annotation_gt.type == expected_annotation_type
     assert len(out.annotation_gt.value) == int(expected_annotation_count)
-    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert out.trace_payload["projected_annotation"][expected_annotation_type] == out.annotation_gt.value
     assert out.trace_payload["query_spec"]["params"]["query_id"] == out.query_id
 
 
-def test_geometry_coordinate_relation_rejects_unsupported_scene_variant() -> None:
+def test_geometry_coordinate_relation_rejects_unsupported_public_query() -> None:
     with pytest.raises(ValueError):
-        GeometryCoordinateRelationTask().generate(
+        create_task(SEGMENT_RELATION_TASK_ID).generate(
             23311,
-            params={"scene_variant": "triangle", "query_id": "parallel_count"},
+            params={"query_id": "same_quadrant_count"},
             max_attempts=20,
         )
 
 
-def test_geometry_coordinate_relation_rejects_incompatible_scene_query_pair() -> None:
+def test_geometry_coordinate_single_query_task_rejects_legacy_internal_query() -> None:
     with pytest.raises(ValueError):
-        GeometryCoordinateRelationTask().generate(
+        create_task(SAME_QUADRANT_TASK_ID).generate(
             23312,
-            params={"scene_variant": "segment_set", "query_id": "same_quadrant_count"},
+            params={"query_id": "same_quadrant_count"},
             max_attempts=20,
         )
 
 
 def test_geometry_coordinate_relation_uses_centered_segment_window_and_quadrant_point_annotation() -> None:
-    segment_out = GeometryCoordinateRelationTask().generate(
+    segment_out = create_task(SEGMENT_RELATION_TASK_ID).generate(
         23313,
-        params={"scene_variant": "segment_set", "query_id": "parallel_count", "target_count": 2},
+        params={"query_id": "parallel_count", "target_count": 2},
         max_attempts=20,
     )
     segment_frame = segment_out.trace_payload["render_spec"]["graph_coordinate_frame"]
@@ -78,9 +81,9 @@ def test_geometry_coordinate_relation_uses_centered_segment_window_and_quadrant_
         for other in all_segments[index + 1 :]:
             assert not _segments_intersect(segment, other)
 
-    quadrant_out = GeometryCoordinateRelationTask().generate(
+    quadrant_out = create_task(SAME_QUADRANT_TASK_ID).generate(
         23314,
-        params={"scene_variant": "quadrant_points", "query_id": "same_quadrant_count", "target_count": 2},
+        params={"query_id": "single", "target_count": 2},
         max_attempts=20,
     )
     quadrant_frame = quadrant_out.trace_payload["render_spec"]["graph_coordinate_frame"]
@@ -91,9 +94,9 @@ def test_geometry_coordinate_relation_uses_centered_segment_window_and_quadrant_
 
 
 def test_geometry_coordinate_relation_collinear_scene_keeps_reference_and_candidates_inside_centered_board() -> None:
-    out = GeometryCoordinateRelationTask().generate(
+    out = create_task(COLLINEAR_TASK_ID).generate(
         23315,
-        params={"scene_variant": "line_points", "query_id": "collinear_count", "target_count": 4},
+        params={"query_id": "single", "target_count": 4},
         max_attempts=20,
     )
     frame = out.trace_payload["render_spec"]["graph_coordinate_frame"]

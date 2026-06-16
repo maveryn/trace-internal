@@ -31,9 +31,9 @@ def test_quadrilateral_completion_has_unique_candidate_answer(query_id: str) -> 
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.annotation_gt.type == "point_set"
-    assert out.annotation_gt.value == [candidates["C"]["point_px"]]
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "point"
+    assert out.annotation_gt.value == candidates["C"]["point_px"]
+    assert trace["projected_annotation"]["point"] == out.annotation_gt.value
     assert len(execution["known_points_graph"]) == 3
     assert 4 <= len(candidates) <= 6
     assert "C" in candidates

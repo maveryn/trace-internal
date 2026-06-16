@@ -26,9 +26,9 @@ def test_locus_point_task_has_unique_region_member(query_id: str) -> None:
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.annotation_gt.type == "point_set"
-    assert out.annotation_gt.value == [candidates["C"]["point_px"]]
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "point"
+    assert out.annotation_gt.value == candidates["C"]["point_px"]
+    assert trace["projected_annotation"]["point"] == out.annotation_gt.value
     assert len(candidates) == 6
     assert candidates["C"]["inside_region"] is True
     assert sum(1 for payload in candidates.values() if payload["inside_region"]) == 1
@@ -46,9 +46,9 @@ def test_locus_panel_task_has_unique_matching_panel(query_id: str) -> None:
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "D"
-    assert out.annotation_gt.type == "bbox_set"
-    assert out.annotation_gt.value == [panels["D"]["panel_bbox"]]
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "bbox"
+    assert out.annotation_gt.value == panels["D"]["panel_bbox"]
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
     assert len(panels) == 6
     assert panels["D"]["is_answer"] is True
     assert sum(1 for payload in panels.values() if payload["is_answer"]) == 1

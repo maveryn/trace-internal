@@ -9,12 +9,14 @@ from trace.tasks.geometry.coordinate_plane.missing_endpoint_label import (
     MISSING_ENDPOINT_QUERY_IDS,
     MISSING_ENDPOINT_TASK_ID,
     REFLECTED_POINT_TASK_ID,
+    REFLECTED_POINT_QUERY_IDS,
     ROTATED_POINT_TASK_ID,
+    ROTATED_POINT_QUERY_IDS,
     SCENE_ID,
     SECTION_POINT_QUERY_IDS,
     SECTION_POINT_TASK_ID,
     TRANSLATED_POINT_TASK_ID,
-    TRANSFORMED_POINT_QUERY_IDS,
+    TRANSLATED_POINT_QUERY_IDS,
 )
 
 
@@ -30,9 +32,9 @@ def test_missing_endpoint_task_has_unique_candidate_answer(query_id: str) -> Non
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.annotation_gt.type == "point_set"
-    assert out.annotation_gt.value == [candidates["C"]["point_px"]]
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "point"
+    assert out.annotation_gt.value == candidates["C"]["point_px"]
+    assert trace["projected_annotation"]["point"] == out.annotation_gt.value
     assert execution["target_point_graph"] == candidates["C"]["point_graph"]
     assert len(candidates) == 6
     assert sum(1 for payload in candidates.values() if payload["point_graph"] == execution["target_point_graph"]) == 1
@@ -57,9 +59,9 @@ def test_section_point_task_has_unique_candidate_answer(query_id: str) -> None:
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "D"
-    assert out.annotation_gt.type == "point_set"
-    assert out.annotation_gt.value == [candidates["D"]["point_px"]]
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "point"
+    assert out.annotation_gt.value == candidates["D"]["point_px"]
+    assert trace["projected_annotation"]["point"] == out.annotation_gt.value
     assert execution["target_point_graph"] == candidates["D"]["point_graph"]
     assert len(candidates) == 6
     assert sum(1 for payload in candidates.values() if payload["point_graph"] == execution["target_point_graph"]) == 1
@@ -75,14 +77,15 @@ def test_section_point_task_has_unique_candidate_answer(query_id: str) -> None:
     assert execution["target_point_graph"] == expected
 
 
-@pytest.mark.parametrize("query_id", TRANSFORMED_POINT_QUERY_IDS)
-def test_transformed_point_task_has_unique_candidate_answer(query_id: str) -> None:
-    if query_id.startswith("reflect"):
-        task_id = REFLECTED_POINT_TASK_ID
-    elif query_id.startswith("rotate"):
-        task_id = ROTATED_POINT_TASK_ID
-    else:
-        task_id = TRANSLATED_POINT_TASK_ID
+@pytest.mark.parametrize(
+    ("task_id", "query_id"),
+    (
+        *((TRANSLATED_POINT_TASK_ID, query_id) for query_id in TRANSLATED_POINT_QUERY_IDS),
+        *((REFLECTED_POINT_TASK_ID, query_id) for query_id in REFLECTED_POINT_QUERY_IDS),
+        *((ROTATED_POINT_TASK_ID, query_id) for query_id in ROTATED_POINT_QUERY_IDS),
+    ),
+)
+def test_transformed_point_task_has_unique_candidate_answer(task_id: str, query_id: str) -> None:
     task = create_task(task_id)
     out = task.generate(77911, params={"query_id": query_id, "winner_label": "E"}, max_attempts=50)
     trace = out.trace_payload
@@ -93,9 +96,9 @@ def test_transformed_point_task_has_unique_candidate_answer(query_id: str) -> No
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "E"
-    assert out.annotation_gt.type == "point_set"
-    assert out.annotation_gt.value == [candidates["E"]["point_px"]]
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "point"
+    assert out.annotation_gt.value == candidates["E"]["point_px"]
+    assert trace["projected_annotation"]["point"] == out.annotation_gt.value
     assert execution["target_point_graph"] == candidates["E"]["point_graph"]
     assert 4 <= len(candidates) <= 6
     assert "E" in candidates
@@ -119,7 +122,7 @@ def test_transformed_point_task_has_unique_candidate_answer(query_id: str) -> No
         line_value = int(execution["transform_line"]["value"])
         assert execution["transform_line"]["axis"] == "y"
         assert target == [source[0], (2 * line_value) - source[1]]
-    else:
+    elif query_id == "single":
         center = execution["known_points_by_label"]["O"]["point_graph"]
         dx = source[0] - center[0]
         dy = source[1] - center[1]
@@ -128,6 +131,8 @@ def test_transformed_point_task_has_unique_candidate_answer(query_id: str) -> No
         else:
             expected = [center[0] - dy, center[1] + dx]
         assert target == expected
+    else:
+        raise AssertionError(f"unhandled transform query {query_id}")
 
 
 @pytest.mark.parametrize(
@@ -136,7 +141,7 @@ def test_transformed_point_task_has_unique_candidate_answer(query_id: str) -> No
         (MISSING_ENDPOINT_TASK_ID, "missing_endpoint_from_midpoint"),
         (SECTION_POINT_TASK_ID, "two_thirds_from_p_to_q"),
         (REFLECTED_POINT_TASK_ID, "reflect_over_vertical_line"),
-        (ROTATED_POINT_TASK_ID, "rotate_90_about_marked_center"),
+        (ROTATED_POINT_TASK_ID, "single"),
         (TRANSLATED_POINT_TASK_ID, "translate_point"),
     ),
 )

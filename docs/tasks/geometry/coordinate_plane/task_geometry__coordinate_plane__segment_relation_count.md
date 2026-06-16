@@ -5,7 +5,7 @@
 2. Scene id: `coordinate_plane`
 5. Query id: `parallel_count`, `perpendicular_count`
 6. Answer schema: `integer_count`
-7. Annotation schema: `point_set`
+7. Annotation schema: `segment_set`
 
 ## Program Contract
 - `count(filter(coordinate_plane_segment_pairs, segment_relation(pair)=target_segment_relation)); scene=coordinate_plane; scope=segment_relation_count`
@@ -15,7 +15,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation is the unordered `point_set` of segment-pair witness points for every counted parallel or perpendicular relation. If the answer is `0`, annotation is an empty array. Segment endpoints, graph coordinates, labels, and relation metadata remain private verifier metadata.
+Prompt-facing annotation is the unordered `segment_set` of counted non-AB segments. Each witness segment is `[[x0,y0],[x1,y1]]` in pixel coordinates; endpoint order is not semantically meaningful. If the answer is `0`, annotation is an empty array. Graph coordinates, labels, and relation metadata remain private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

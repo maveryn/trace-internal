@@ -142,6 +142,8 @@
       <tr>
         <th>Preview</th>
         <th>Task</th>
+        <th>Answer Schema</th>
+        <th>Annotation Schema</th>
         <th>Audit Status</th>
         <th>Queries</th>
         <th>Issues</th>
@@ -169,6 +171,8 @@
               <p class="muted">{{ sample.prompt|excerpt(180) }}</p>
             {% endif %}
           </td>
+          <td><code>{{ task.taxonomy_summary.get('answer_schema') or 'n/a' }}</code></td>
+          <td><code>{{ task.taxonomy_summary.get('annotation_schema') or 'n/a' }}</code></td>
           <td class="audit-cell">
             <div class="task-state-row">
               <span class="{% if task_status.review_pass %}status ok{% else %}status warn{% endif %}">

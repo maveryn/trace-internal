@@ -61,10 +61,12 @@ def test_named_field_counterfactual_current_queries_generate() -> None:
     assert attribute_out.trace_payload["query_spec"]["internal_query_id"] == "target_count_after_shape_replacement"
     assert attribute_out.answer_gt.type == "integer"
     assert attribute_out.answer_gt.value == 3
+    assert attribute_out.annotation_gt.type == "point_set"
     assert len(attribute_out.annotation_gt.value) == 3
 
     assert total_out.query_id == "single"
     assert total_out.trace_payload["query_spec"]["internal_query_id"] == "total_count_after_shape_removal"
     assert total_out.answer_gt.type == "integer"
     assert total_out.answer_gt.value == 4
+    assert total_out.annotation_gt.type == "point_set"
     assert len(total_out.annotation_gt.value) == 4

@@ -43,9 +43,9 @@ answered by attribute filtering rather than row/column stack arithmetic.
   keep the generated answer distribution stable
 
 ## Annotation Contract
-- `annotation_gt.type = bbox_set`
-- one `[x0, y0, x1, y1]` pixel bbox for each counted icon
-- annotation boxes are sorted in reading order
+- `annotation_gt.type = point_set`
+- one `[x, y]` pixel center point for each counted icon
+- annotation points are sorted by the witnesses in reading order
 
 ## Trace Contract
 - `scene_ir.entities` contains one entity for each rendered procedural icon.
@@ -60,7 +60,7 @@ answered by attribute filtering rather than row/column stack arithmetic.
   partitions: `both`, `shape_only`, `attribute_only`, and `neither`.
 - `execution_trace.target_answer` equals the integer answer.
 - `render_map.counted_instance_ids`, `witness_symbolic.counted_instance_ids`,
-  and `projected_annotation.bbox_set` are derived from the same rendered
+  and `projected_annotation.point_set` are derived from the same rendered
   instances.
 
 ## Prompt Contract

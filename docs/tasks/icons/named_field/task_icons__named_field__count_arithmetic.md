@@ -20,8 +20,8 @@ Query ids:
 - `two_bound_color_difference_count`
 
 Answer schema: integer.
-Annotation schema: `bbox_set`. The set contains one `[x0, y0, x1, y1]`
-pixel bbox for every icon counted in either operand group, sorted in
+Annotation schema: `point_set`. The set contains one `[x, y]`
+pixel center point for every icon counted in either operand group, sorted in
 reading order. Operand-role instance ids remain in trace metadata, but the
 public annotation is a homogeneous witness set because both supported
 operators are symmetric over the two operand groups.

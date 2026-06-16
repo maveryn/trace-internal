@@ -30,8 +30,8 @@ query-id split.
 - default total target-icon support is `4..8`
 
 ## Annotation Contract
-- `annotation_gt.type = bbox_set`
-- annotation contains one bbox for every counted target-shape icon
+- `annotation_gt.type = point_set`
+- annotation contains one `[x, y]` pixel center point for every counted target-shape icon
 - reference icons are recorded in trace metadata but are not included in the
   counting annotation
 
@@ -42,7 +42,7 @@ query-id split.
 - `query_spec.params.closer_count_by_reference` stores both `A` and `B` counts,
   including zero values.
 - `render_map.counted_instance_ids`, `witness_symbolic.counted_instance_ids`,
-  and `projected_annotation.bbox_set` are derived from the same rendered target
+  and `projected_annotation.point_set` are derived from the same rendered target
   entities.
 - The reference icons are not visibly letter-labeled; internal `A`/`B` keys are
   used only for trace bookkeeping.

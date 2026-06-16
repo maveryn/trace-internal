@@ -16,11 +16,9 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.weighted_sampling import sample_weighted_value, weighted_probability_map
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_scene import (
     BBox,
     resolve_single_panel_layout,
-    sort_bboxes_reading_order,
 )
 from ..shared.icon_style import sample_icon_palette
 from ..shared.icon_task_rendering import resolve_icon_render_params
@@ -43,6 +41,7 @@ from .shared.layout import (
     sample_shelf_region as _sample_shelf_region,
 )
 from .shared.output import build_scoped_region_trace_payload
+from .shared.annotations import point_set_from_bboxes
 from .shared.rendering import (
     render_scoped_region_scene as _render_scoped_region_scene,
 )
@@ -450,10 +449,10 @@ class IconsCountingNamedShapeRegionCountTask:
         if scene is None:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
-        annotation_bboxes = sort_bboxes_reading_order(tuple(instance.bbox_xyxy for instance in scene.instances if instance.counted))
+        annotation_bboxes = tuple(instance.bbox_xyxy for instance in scene.instances if instance.counted)
         if len(annotation_bboxes) != int(scene.target_count):
             raise RuntimeError("projected region annotation did not match target answer")
-        annotation_artifacts = bbox_set_annotation(annotation_bboxes)
+        annotation_artifacts = point_set_from_bboxes(annotation_bboxes)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,

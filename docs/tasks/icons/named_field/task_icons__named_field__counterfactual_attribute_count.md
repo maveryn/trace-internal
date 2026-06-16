@@ -34,12 +34,12 @@ the hypothetical edit semantics.
 - value is the final count after applying the stated hypothetical edit
 
 ## Annotation Contract
-- `annotation_gt.type = bbox_set`
-- one `[x0, y0, x1, y1]` pixel bbox for every visible icon that contributes to
+- `annotation_gt.type = point_set`
+- one `[x, y]` pixel center point for every visible icon that contributes to
   the final count
-- annotation boxes are sorted in reading order
+- annotation points are sorted by the witnesses in reading order
 - hypothetical additions are intentionally not sampled because they would not
-  have visible bbox annotation
+  have visible point annotation
 
 ## Trace Contract
 - `scene_ir.entities` contains one entity for each rendered procedural icon,
@@ -50,7 +50,7 @@ the hypothetical edit semantics.
 - `query_spec.params.internal_query_id` records the fixed hypothetical branch.
 - `execution_trace.target_answer` equals the integer answer.
 - `render_map.counted_instance_ids`, `witness_symbolic.counted_instance_ids`,
-  and `projected_annotation.bbox_set` are derived from the same rendered
+  and `projected_annotation.point_set` are derived from the same rendered
   instances.
 
 ## Prompt Contract

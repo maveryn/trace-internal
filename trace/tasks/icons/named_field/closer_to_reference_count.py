@@ -22,9 +22,8 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.weighted_sampling import sample_weighted_value, weighted_probability_map
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_noise import serialize_icon_noise_edits
-from ..shared.icon_scene import BBox, draw_single_panel, resolve_single_panel_layout, single_panel_geometry_to_trace, sort_bboxes_reading_order
+from ..shared.icon_scene import BBox, draw_single_panel, resolve_single_panel_layout, single_panel_geometry_to_trace
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
     SCENE_ID,
@@ -50,6 +49,7 @@ from ..shared.procedural_named_icons import (
     validate_procedural_named_icon_fill_style_support,
 )
 from .shared.output import serialize_closer_reference_icon as _serialize_icon
+from .shared.annotations import point_set_from_bboxes
 from .shared.rendering import (
     render_closer_reference_scene as _render_scene,
 )
@@ -480,8 +480,8 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        annotation_bboxes = sort_bboxes_reading_order(tuple(icon.bbox_xyxy for icon in counted_icons))
-        annotation_artifacts = bbox_set_annotation(annotation_bboxes)
+        annotation_bboxes = tuple(icon.bbox_xyxy for icon in counted_icons)
+        annotation_artifacts = point_set_from_bboxes(annotation_bboxes)
         counted_instance_ids = tuple(str(icon.instance_id) for icon in counted_icons)
         reference_by_label = {str(icon.label): icon for icon in reference_icons}
         closer_counts = Counter(str(icon.closer_reference_label) for icon in target_icons)

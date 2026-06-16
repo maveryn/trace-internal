@@ -40,9 +40,9 @@ that same stack, with no additional distractor stacks.
   counts, and stack layouts are capped at moderate row/column counts
 
 ## Annotation Contract
-- `annotation_gt.type = bbox_set`
-- one `[x0, y0, x1, y1]` pixel bbox for each counted target-shape icon
-- annotation boxes are sorted in reading order
+- `annotation_gt.type = point_set`
+- one `[x, y]` pixel center point for each counted target-shape icon
+- annotation points are sorted by the witnesses in reading order
 
 ## Trace Contract
 - `scene_ir.entities` contains one entity for each rendered procedural icon.
@@ -54,7 +54,7 @@ that same stack, with no additional distractor stacks.
   applicable.
 - `execution_trace.shape_counts[target_shape_id]` equals the integer answer.
 - `render_map.counted_instance_ids`, `witness_symbolic.counted_instance_ids`,
-  and `projected_annotation.bbox_set` are derived from the same rendered
+  and `projected_annotation.point_set` are derived from the same rendered
   instances.
 
 ## Prompt Contract

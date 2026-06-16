@@ -32,9 +32,9 @@ included in the distance-rank candidate set.
   distance rank from the named reference icon
 
 ## Annotation Contract
-- `annotation_gt.type = keyed_bbox_map`
-- annotation contains `reference_icon` for the named reference icon and
-  `selected_candidate` for the selected labeled candidate icon
+- `annotation_gt.type = keyed_point_map`
+- annotation contains `reference_icon` for the named reference icon center and
+  `selected_candidate` for the selected labeled candidate icon center
 - candidate distance ranks are separated from adjacent ranks by the configured
   `distance_rank_margin_px`
 
@@ -44,8 +44,8 @@ included in the distance-rank candidate set.
   `distance_rank`.
 - `execution_trace.sorted_candidate_labels_by_distance` records the verifier
   order used to derive the answer.
-- `projected_annotation.keyed_bbox_map` is derived from the same rendered
-  reference and selected candidate bboxes.
+- `projected_annotation.keyed_point_map` is derived from the same rendered
+  reference and selected candidate center points.
 - `render_spec.style.text_legibility` records validated panel-header and
   candidate-label text roles for the visible `A`..`F` option labels.
 

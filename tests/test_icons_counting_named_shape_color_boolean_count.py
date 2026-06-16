@@ -53,6 +53,13 @@ SUPPORTED_QUERY_IDS_BY_TASK_ID = {
 }
 
 
+def _center_from_bbox(bbox: list[int] | tuple[int, int, int, int]) -> list[float]:
+    return [
+        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
+        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
+    ]
+
+
 def _predicate(query_id: str, *, is_shape: bool, is_attribute: bool) -> bool:
     if query_id == "shape_and_color_count":
         return is_shape and is_attribute
@@ -106,17 +113,17 @@ def test_icons_counting_named_shape_color_boolean_contract_all_queries() -> None
         assert trace["query_spec"]["internal_query_id"] == query_id
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == 4
-        assert out.annotation_gt.type == "bbox_set"
+        assert out.annotation_gt.type == "point_set"
         assert len(out.annotation_gt.value) == 4
         assert len(counted_entities) == 4
         assert "star" in out.prompt
         assert "red [#E63232]" in out.prompt
         assert all("color_name" in entity for entity in entities)
-        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["type"] == "bbox_set"
-        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "point_set"
+        assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
         assert set(trace["render_map"]["counted_instance_ids"]) == {str(entity["instance_id"]) for entity in counted_entities}
-        assert sorted(out.annotation_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted_entities)
+        assert sorted(out.annotation_gt.value) == sorted(_center_from_bbox(entity["bbox_xyxy"]) for entity in counted_entities)
 
 
 def test_icons_counting_named_shape_color_boolean_rejects_fill_style_axis() -> None:

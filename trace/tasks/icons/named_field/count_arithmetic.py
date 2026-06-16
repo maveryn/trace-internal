@@ -39,7 +39,7 @@ from ..shared.procedural_named_icons import (
     validate_procedural_named_icon_fill_style_support,
 )
 from .shared.defaults import PAIR_ARITHMETIC_DEFAULTS as _DEFAULTS
-from .shared.annotations import bbox_set_from_bboxes
+from .shared.annotations import point_set_from_bboxes
 from .shared.metrics import pair_arithmetic_counted_instance_ids, pair_arithmetic_role_by_instance_id
 from .shared.sampling import color_support as _shared_color_support
 from .shared.sampling import sample_pair_arithmetic_spec, shape_support as _shared_shape_support
@@ -287,7 +287,7 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
         annotation_bbox_count = len(annotation_bboxes)
         if annotation_bbox_count != int(sample.left_count) + int(sample.right_count):
             raise RuntimeError("rendered named-icon pair arithmetic annotation did not match operand counts")
-        annotation_artifacts = bbox_set_from_bboxes(annotation_bboxes)
+        annotation_artifacts = point_set_from_bboxes(annotation_bboxes)
         trace_payload = build_pair_arithmetic_trace_payload(
             sample=sample,
             scene=scene,

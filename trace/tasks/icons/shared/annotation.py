@@ -12,6 +12,12 @@ def _bbox_center(bbox: Sequence[int | float]) -> list[float]:
     ]
 
 
+def _normalize_point(point: Sequence[int | float], *, context: str) -> list[float]:
+    if not isinstance(point, Sequence) or len(point) != 2:
+        raise RuntimeError(f"invalid point annotation for {context}: {point}")
+    return [round(float(point[0]), 3), round(float(point[1]), 3)]
+
+
 def matching_scene_cell_bbox_annotation(
     *,
     scene_cells: Sequence[Mapping[str, Any]],
@@ -64,6 +70,26 @@ def matching_scene_cell_bbox_annotation(
     }
 
 
+def point_set_annotation(
+    points: Sequence[Sequence[int | float]],
+) -> Dict[str, Any]:
+    """Return typed point-set annotation for homogeneous icon witnesses."""
+
+    normalized_points = [
+        _normalize_point(point, context=f"point_set index {index}")
+        for index, point in enumerate(points)
+    ]
+    return {
+        "annotation_type": "point_set",
+        "annotation_value": [list(point) for point in normalized_points],
+        "projected_annotation": {
+            "type": "point_set",
+            "point_set": [list(point) for point in normalized_points],
+            "pixel_point_set": [list(point) for point in normalized_points],
+        },
+    }
+
+
 def bbox_set_annotation(
     bboxes: Sequence[Sequence[int | float]],
 ) -> Dict[str, Any]:
@@ -82,6 +108,26 @@ def bbox_set_annotation(
             "bbox_set": [list(bbox) for bbox in normalized_bboxes],
             "pixel_bbox_set": [list(bbox) for bbox in normalized_bboxes],
             "pixel_point_set": [_bbox_center(bbox) for bbox in normalized_bboxes],
+        },
+    }
+
+
+def keyed_point_map_annotation(
+    role_points: Mapping[str, Sequence[int | float]],
+) -> Dict[str, Any]:
+    """Return keyed-point annotation for role-bound icon witnesses."""
+
+    keyed_points = {
+        str(role): _normalize_point(point, context=f"role {role!r}")
+        for role, point in role_points.items()
+    }
+    return {
+        "annotation_type": "keyed_point_map",
+        "annotation_value": {str(key): list(value) for key, value in keyed_points.items()},
+        "projected_annotation": {
+            "type": "keyed_point_map",
+            "keyed_point_map": {str(key): list(value) for key, value in keyed_points.items()},
+            "pixel_keyed_point_map": {str(key): list(value) for key, value in keyed_points.items()},
         },
     }
 
@@ -137,5 +183,7 @@ __all__ = [
     "bbox_set_annotation",
     "keyed_bbox_map_annotation",
     "keyed_bbox_set_map_annotation",
+    "keyed_point_map_annotation",
     "matching_scene_cell_bbox_annotation",
+    "point_set_annotation",
 ]

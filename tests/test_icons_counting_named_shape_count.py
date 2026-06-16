@@ -12,6 +12,13 @@ from trace.tasks.icons.shared.procedural_named_icons import PROCEDURAL_NAMED_ICO
 TASK_ID = "task_icons__named_field__single_attribute_membership_count"
 
 
+def _center_from_bbox(bbox: list[int] | tuple[int, int, int, int]) -> list[float]:
+    return [
+        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
+        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
+    ]
+
+
 def test_icons_counting_named_shape_count_contract() -> None:
     task = create_task(TASK_ID)
     out = task.generate(
@@ -30,21 +37,21 @@ def test_icons_counting_named_shape_count_contract() -> None:
     assert trace["query_spec"]["internal_query_id"] == "named_shape_count"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 3
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == 3
     assert '"star" icons' in out.prompt
     assert trace["execution_trace"]["target_shape_id"] == "star"
     assert trace["execution_trace"]["target_shape_name"] == "star"
     assert trace["execution_trace"]["shape_counts"]["star"] == 3
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["type"] == "bbox_set"
-    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "point_set"
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
     counted_ids = set(trace["render_map"]["counted_instance_ids"])
     entity_by_id = {str(entity["instance_id"]): entity for entity in trace["scene_ir"]["entities"]}
     assert len(entity_by_id) == 22
     assert all(entity_by_id[instance_id]["shape_id"] == "star" for instance_id in counted_ids)
-    annotation_boxes = sorted(entity_by_id[instance_id]["bbox_xyxy"] for instance_id in counted_ids)
-    assert sorted(out.annotation_gt.value) == annotation_boxes
+    annotation_points = sorted(_center_from_bbox(entity_by_id[instance_id]["bbox_xyxy"]) for instance_id in counted_ids)
+    assert sorted(out.annotation_gt.value) == annotation_points
 
 
 def test_icons_counting_named_shape_count_targeted_generation_supports_all_shapes() -> None:

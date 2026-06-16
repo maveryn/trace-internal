@@ -716,6 +716,8 @@ def _draw_activity_support(
     scale: int,
     style_id: str,
 ) -> Tuple[ParkDecor, ...]:
+    """Draw small activity-linked support props while preserving person-owned decor ids."""
+
     x0, y0, x1, y1 = bbox
     decor: List[ParkDecor] = []
     if str(activity) == "sitting":

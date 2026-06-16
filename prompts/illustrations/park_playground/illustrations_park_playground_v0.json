@@ -30,6 +30,13 @@
       "",
       ""
     ],
+    "source_patch_membership_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "rotated_tile_label_task": [
       "",
       "",
@@ -49,6 +56,10 @@
     "query:jigsaw_arrangement_label": [
     ],
     "query:plain_patch_label": [
+    ],
+    "query:exact_source_patch_label": [
+    ],
+    "query:altered_patch_label": [
     ],
     "query:rotated_tile_label": [
     ],
@@ -117,6 +128,20 @@
       "Which lettered patch belongs in the blank region?",
       "Find the option that completes the missing part of the park scene.",
       "Which option matches the removed region of the park playground?"
+    ],
+    "exact_source_patch_label": [
+      "Which lettered patch option is an exact crop from the full park playground image?",
+      "Select the patch option that appears exactly in the complete park playground image.",
+      "Which option is copied directly from the full park playground scene?",
+      "Find the lettered patch that matches a region of the full image exactly.",
+      "Which patch option comes unchanged from the park playground illustration?"
+    ],
+    "altered_patch_label": [
+      "Which lettered patch option has been altered and does not appear exactly in the full park playground image?",
+      "Select the patch option that is not an exact crop from the complete park playground image.",
+      "Which option has visual changes compared with the full park playground scene?",
+      "Find the lettered patch that does not match any region of the full image exactly.",
+      "Which patch option was changed before being shown below the park playground illustration?"
     ],
     "rotated_tile_label": [
       "Which lettered tile has been rotated?",

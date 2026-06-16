@@ -58,4 +58,4 @@ def test_icons_relation_named_original_attribute_taxonomy() -> None:
     taxonomy = resolve_task_taxonomy(TASK_ID)
     assert taxonomy.domain == "icons"
     assert taxonomy.scene_id == "paired_canvas"
-    assert taxonomy.source_scene_id == "paired_canvas"
+    assert taxonomy.source_scene_id == ""

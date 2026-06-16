@@ -3,10 +3,16 @@
 ## Identity
 - domain: `icons`
 - scene_id: `paired_canvas`
-- task: `named_original_attribute_label`
+- task_id: `task_icons__paired_canvas__original_attribute_label`
 - scene package: `paired_canvas`
 - module: `trace/tasks/icons/paired_canvas/original_attribute_label.py`
 - prompt bundle: `prompts/icons/paired_canvas/icons_paired_canvas_v0.json`
+
+## Program Contract
+`selection.direct_label(scene=paired_canvas, scope=right_option_icons_with_original_panel_reference, predicate=original_shape|original_color_shape, output=option_letter)`
+
+The program selects one labeled Right-panel option by matching its Original-panel
+state to the named shape or color+shape descriptor in the prompt.
 
 ## Scene And Query
 The task renders two open icon panels labeled `Original` and `Right`. The
@@ -35,6 +41,8 @@ panels, but it is not a queried semantic descriptor for this task.
   Right panel
 - `projected_annotation` mirrors this as typed keyed-bbox-map annotation with
   `keyed_bbox_map` and `pixel_keyed_bbox_map`
+- Scalar annotation checked: not applicable. Two non-homogeneous witness roles
+  are required, so `keyed_bbox_map` is the stable annotation schema.
 
 ## Trace Contract
 - `scene_ir.entities` contains serialized Original-panel and Right-panel icon

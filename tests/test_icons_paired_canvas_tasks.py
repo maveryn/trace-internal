@@ -1,7 +1,6 @@
 """Tests for paired-canvas icon tasks."""
 from __future__ import annotations
 import json
-from collections import Counter
 from trace.core.seed import hash64
 from trace.tasks import create_task
 PAIRED_TASKS = ('task_icons__paired_canvas__panel_set_relation_count', 'task_icons__paired_canvas__panel_attribute_change_count', 'task_icons__paired_canvas__panel_movement_direction_count')
@@ -83,10 +82,15 @@ def test_icons_paired_canvas_prompt_examples_and_balanced_queries() -> None:
     assert isinstance(answer_and_annotation['answer'], int)
     expected_queries = {'task_icons__paired_canvas__panel_set_relation_count': {'right_exact_match_count', 'added_in_right_count', 'missing_from_right_count'}, 'task_icons__paired_canvas__panel_attribute_change_count': {'color_changed_count', 'size_changed_count', 'rotation_changed_count'}, 'task_icons__paired_canvas__panel_movement_direction_count': {'moved_left_count', 'moved_right_count', 'moved_up_count', 'moved_down_count'}}
     for task_id, expected in expected_queries.items():
-        counts: Counter[str] = Counter()
-        for index in range(24):
-            out = create_task(task_id).generate(hash64(20260519006, task_id, index), params={}, max_attempts=200)
-            counts[str(out.query_id)] += 1
+        observed: set[str] = set()
+        for index, query_id in enumerate(sorted(expected)):
+            out = create_task(task_id).generate(
+                hash64(20260519006, f'{task_id}:{query_id}', index),
+                params={'query_id': query_id},
+                max_attempts=200,
+            )
+            observed.add(str(out.query_id))
             assert out.scene_id == 'paired_canvas'
-        assert set(counts) == expected
-        assert sum(counts.values()) == 24
+            assert out.trace_payload['query_spec']['query_id'] == query_id
+            assert out.trace_payload['query_spec']['params']['query_id'] == query_id
+        assert observed == expected

@@ -2,13 +2,10 @@
 
 from __future__ import annotations
 
-from random import Random
-
 import pytest
 
 from trace.tasks.shared.fixed_query import merged_query_params
 from trace.tasks.games.shared.sampling import resolve_games_query_id
-from trace.tasks.icons.paired_canvas.shared.common import choose_query_id
 from trace.tasks.shared.fixed_query import (
     force_query_id_params,
     normalize_query_id_params,
@@ -180,21 +177,6 @@ def test_merged_chart_params_honor_legacy_query_variant_without_leaking_it() -> 
             {"query_id": "first", "query_variant": "second"},
             allowed_query_ids=("first", "second"),
         )
-
-
-def test_paired_canvas_query_resolver_honors_legacy_query_variant() -> None:
-    query_id, probabilities = choose_query_id(
-        Random(0),
-        params={"query_variant": "second"},
-        gen_defaults={},
-        instance_seed=123,
-        task_id="test_icons_query_alias",
-        query_ids=("first", "second"),
-        weight_key="query_id_weights",
-    )
-
-    assert query_id == "second"
-    assert probabilities == {"first": 0.0, "second": 1.0}
 
 
 def test_three_d_axis_resolver_honors_legacy_query_variant() -> None:

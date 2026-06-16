@@ -387,6 +387,9 @@ def test_icons_paired_canvas_scene_defaults_loaded() -> None:
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__paired_canvas__panel_attribute_change_count')
     assert int(generation['object_count_min']) == 5
     assert int(generation['object_count_max']) == 10
+    assert 'query_id_weights' not in generation
+    assert 'attribute_change_query_weights' not in generation
+    assert 'variant_generation_params' not in generation
     assert int(rendering['reference_panel_width_px']) == 516
     assert str(prompt['scene_key']) == 'paired_canvas_attribute_change'
     assert str(prompt['question_text_color_changed_count']).strip()

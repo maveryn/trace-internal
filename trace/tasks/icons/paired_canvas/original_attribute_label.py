@@ -14,6 +14,7 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.color_format import format_named_color_with_hex
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.fixed_query import select_task_query_id
 from ...shared.labeling import LABEL_POOL_A_L
 from ...shared.named_colors import available_named_colors, named_color
 from ...shared.output_metadata import default_task_versions
@@ -44,12 +45,10 @@ from ..shared.procedural_named_icons import (
     sample_procedural_named_icon_fill_style,
     validate_procedural_named_icon_fill_style_support,
 )
-from ..shared.public_query_task import rewrite_icons_query_output
 
 
 TASK_ID = "task_icons__paired_canvas__original_attribute_label"
 SCENE_ID = "paired_canvas"
-PUBLIC_QUERY_ID = "named_original_attribute_label"
 
 QUERY_IDS: Tuple[str, ...] = (
     "original_shape_label",
@@ -182,36 +181,17 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 
 
-def _sample_weighted(rng, weights: Mapping[str, Any], support: Sequence[str]) -> Tuple[str, Dict[str, float]]:
-    raw = {str(value): max(0.0, float(weights.get(str(value), 0.0))) for value in support}
-    total = sum(float(value) for value in raw.values())
-    if total <= 0.0:
-        prob = 1.0 / float(len(support))
-        probs = {str(value): prob for value in support}
-    else:
-        probs = {str(key): float(value) / float(total) for key, value in raw.items()}
-    threshold = float(rng.random())
-    cumulative = 0.0
-    for value in support:
-        cumulative += float(probs[str(value)])
-        if threshold <= cumulative:
-            return str(value), probs
-    return str(support[-1]), probs
+def _select_query(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float], Dict[str, Any]]:
+    """Select and validate one semantic original-attribute query branch."""
 
-
-def _resolve_query(rng, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    raw = params.get(
-        "original_attribute_query_weights",
-        group_default(_GEN_DEFAULTS, "original_attribute_query_weights", {query_id: 1.0 for query_id in QUERY_IDS}),
+    return select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=QUERY_IDS,
+        default_query_id=QUERY_IDS[0],
+        task_id=TASK_ID,
+        namespace=f"{TASK_ID}.query",
     )
-    if not isinstance(raw, Mapping):
-        raw = {query_id: 1.0 for query_id in QUERY_IDS}
-    explicit = str(params.get("query_id", "") or params.get("original_attribute_query", "")).strip()
-    if explicit:
-        if explicit not in QUERY_IDS:
-            raise ValueError(f"unsupported original-attribute query id: {explicit}")
-        return explicit, {query_id: (1.0 if query_id == explicit else 0.0) for query_id in QUERY_IDS}
-    return _sample_weighted(rng, raw, QUERY_IDS)
 
 
 def _resolve_answer_label(rng, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
@@ -281,6 +261,8 @@ def _fill_style_support(params: Mapping[str, Any]) -> Tuple[str, ...]:
 
 
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> Dict[str, Any]:
+    """Resolve scene render knobs and candidate-label legibility metadata."""
+
     render_params = resolve_icon_render_params(
         params=params,
         render_defaults=_RENDER_DEFAULTS,
@@ -495,6 +477,8 @@ def _sample_pairs(
     answer_label: str,
     distractor_count: int,
 ) -> Tuple[Tuple[_PairPlan, ...], Dict[str, Any]]:
+    """Create one-to-one icon pair plans with a unique original-state answer."""
+
     shapes = _shape_support(params)
     colors = _color_support(params)
     fill_support = _fill_style_support(params)
@@ -631,6 +615,8 @@ def _place_pairs(
     right_jitter_px: int,
     attempts: int,
 ) -> Tuple[_PairPlan, ...]:
+    """Place linked Original/Right icon pairs without overlap in either panel."""
+
     for _ in range(max(1, int(attempts))):
         placed: List[_PairPlan] = []
         left_bboxes: List[BBox] = []
@@ -692,6 +678,8 @@ def _draw_label_badge(
     label_bounds: BBox,
     render_params: Mapping[str, Any],
 ) -> None:
+    """Draw a right-panel option label near the icon without covering it."""
+
     draw = ImageDraw.Draw(image)
     font = load_font(int(render_params["candidate_label_font_size_px"]), bold=True)
     text_bbox = draw.textbbox((0, 0), str(label), font=font, stroke_width=0)
@@ -820,6 +808,8 @@ def _render_scene(
     params: Mapping[str, Any],
     render_params: Mapping[str, Any],
 ) -> Tuple[_ScenePayload, Image.Image]:
+    """Render the paired original/current icon panels from task-owned pair plans."""
+
     pairs, meta = _sample_pairs(
         rng,
         instance_seed=int(instance_seed),
@@ -972,11 +962,13 @@ class IconsRelationNamedOriginalAttributeLabelTask:
     supported_query_ids = QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Generate one original-attribute option-label instance and verifier payload."""
+
         sample_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:sample")
-        query_id, query_probabilities = _resolve_query(sample_rng, params=params)
-        answer_label, answer_label_probabilities = _resolve_answer_label(sample_rng, params=params)
-        distractor_count, distractor_count_probabilities = _resolve_distractor_count(sample_rng, params=params)
-        render_params = _render_params(params, instance_seed=int(instance_seed))
+        query_id, query_probabilities, task_params = _select_query(int(instance_seed), params)
+        answer_label, answer_label_probabilities = _resolve_answer_label(sample_rng, params=task_params)
+        distractor_count, distractor_count_probabilities = _resolve_distractor_count(sample_rng, params=task_params)
+        render_params = _render_params(task_params, instance_seed=int(instance_seed))
 
         scene_payload = None
         image = None
@@ -990,7 +982,7 @@ class IconsRelationNamedOriginalAttributeLabelTask:
                     query_id=str(query_id),
                     answer_label=str(answer_label),
                     distractor_count=int(distractor_count),
-                    params=params,
+                    params=task_params,
                     render_params=render_params,
                 )
                 break
@@ -1095,12 +1087,14 @@ class IconsRelationNamedOriginalAttributeLabelTask:
                 },
             },
             "query_spec": {
-                "query_id": str(PUBLIC_QUERY_ID),
+                "query_id": str(scene_payload.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
+                    "query_id": str(scene_payload.query_id),
+                    "query_id_probabilities": dict(query_probabilities),
                     "original_attribute_query": str(scene_payload.query_id),
                     "original_attribute_query_probabilities": dict(query_probabilities),
                     "answer_label": str(scene_payload.answer_label),
@@ -1185,14 +1179,10 @@ class IconsRelationNamedOriginalAttributeLabelTask:
             image_id="img0",
             trace_payload=trace_payload,
             task_versions=default_task_versions(),
-            query_id=str(PUBLIC_QUERY_ID),
-        )
-        return rewrite_icons_query_output(
-            output,
-            query_id=str(scene_payload.query_id),
             scene_id=SCENE_ID,
-            query_probabilities=query_probabilities,
+            query_id=str(scene_payload.query_id),
         )
+        return output
 
 
 __all__ = [

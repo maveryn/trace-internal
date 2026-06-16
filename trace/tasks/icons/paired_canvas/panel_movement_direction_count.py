@@ -2,46 +2,97 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from ....core.scene_config import get_scene_defaults
-from ....core.seed import hash64
+from ....core.seed import hash64, spawn_rng
+from ....core.types import TypedValue
+from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import group_default, split_generation_rendering_prompt_defaults
+from ...shared.config_defaults import (
+    group_default,
+    load_scene_generation_rendering_prompt_defaults,
+)
+from ...shared.fixed_query import select_task_query_id
+from ...shared.output_metadata import default_task_versions
+from ...shared.prompt_variants import build_prompt_query_spec
+from ..shared.annotation import bbox_set_annotation
 from ..shared.icon_task_rendering import resolve_icon_render_params
-from .shared.common import (
-    PANEL_SCENE_ID,
-    PairedCanvasDefaults,
-    PairedCanvasPayload,
-    build_paired_prompt,
-    choose_query_id,
-    annotation_from_indices,
+
+from .shared.annotations import bboxes_from_icon_indices
+from .shared.defaults import SCENE_ID, PairedCanvasDefaults
+from .shared.output import build_paired_canvas_trace_payload
+from .shared.prompts import build_paired_prompt, required_paired_prompt_defaults
+from .shared.rendering import render_paired_canvas
+from .shared.sampling import (
+    load_icon_pool_from_params,
     make_icon_spec,
-    paired_task_output,
-    render_paired_canvas,
-    required_paired_prompt_defaults,
-    resolve_icon_pool,
     resolve_paired_counts,
     sample_base_attributes,
     sample_palette,
-    spawn_rng,
 )
 
 
+DOMAIN = "icons"
 TASK_ID = "task_icons__paired_canvas__panel_movement_direction_count"
-QUERY_IDS = ("moved_left_count", "moved_right_count", "moved_up_count", "moved_down_count")
+QUERY_IDS: Tuple[str, ...] = ("moved_left_count", "moved_right_count", "moved_up_count", "moved_down_count")
 _QUERY_TO_DIRECTION = {
     "moved_left_count": "left",
     "moved_right_count": "right",
     "moved_up_count": "up",
     "moved_down_count": "down",
 }
+
 _DEFAULTS = PairedCanvasDefaults()
-_SCENE_DEFAULTS = get_scene_defaults("icons", PANEL_SCENE_ID)
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _SCENE_DEFAULTS if isinstance(_SCENE_DEFAULTS, Mapping) else {},
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    DOMAIN,
+    SCENE_ID,
     task_id=TASK_ID,
 )
+
+
+@dataclass(frozen=True)
+class _MovementScene:
+    """Task-owned symbolic payload for one movement-direction count instance."""
+
+    image: Any
+    panel_geometry: Dict[str, Any]
+    left_icons: Tuple[Dict[str, Any], ...]
+    right_icons: Tuple[Dict[str, Any], ...]
+    matching_right_indices: Tuple[int, ...]
+    matching_left_indices: Tuple[int, ...]
+    target_count: int
+    object_count: int
+    distractor_count: int
+    query_id: str
+    query_probabilities: Dict[str, float]
+    sampled_palette_rgb: Tuple[Tuple[int, int, int], ...]
+    object_count_probabilities: Dict[str, float]
+    target_count_probabilities: Dict[str, float]
+    distractor_count_probabilities: Dict[str, float]
+    question_format: str
+    trace_relation: Dict[str, Any]
+
+
+def _select_query(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float], Dict[str, Any]]:
+    """Select and validate one semantic movement-direction query branch."""
+
+    return select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=QUERY_IDS,
+        default_query_id=QUERY_IDS[0],
+        task_id=TASK_ID,
+        namespace=f"{TASK_ID}.query",
+    )
+
+
+def _rotation_candidates(params: Mapping[str, Any]) -> Tuple[int, ...]:
+    raw = params.get(
+        "rotation_candidates_degrees",
+        group_default(_GEN_DEFAULTS, "rotation_candidates_degrees", _DEFAULTS.rotation_candidates_degrees),
+    )
+    return tuple(int(value) for value in raw)
 
 
 def _direction_delta(direction: str, delta: float) -> Tuple[float, float]:
@@ -79,6 +130,8 @@ def _sample_movement_positions(
     delta_max: float,
     gap: float,
 ) -> Tuple[Tuple[Tuple[float, float], Tuple[float, float]], ...]:
+    """Sample paired normalized positions with the requested movement directions."""
+
     placed: list[Tuple[Tuple[float, float], Tuple[float, float]]] = []
     for direction in directions:
         placed_one = False
@@ -111,19 +164,18 @@ def _sample_movement_positions(
     return tuple(placed)
 
 
-def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params: Mapping[str, Any]) -> PairedCanvasPayload:
+def _make_scene(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    render_params: Mapping[str, Any],
+    query_id: str,
+    query_probabilities: Mapping[str, float],
+) -> _MovementScene:
+    """Render a paired-panel scene with controlled movement directions."""
+
     rng = spawn_rng(int(instance_seed), "scene")
-    query_id, query_probabilities = choose_query_id(
-        rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        instance_seed=int(instance_seed),
-        task_id=TASK_ID,
-        query_ids=QUERY_IDS,
-        weight_key="movement_direction_query_weights",
-    )
     active_direction = _QUERY_TO_DIRECTION[str(query_id)]
-    counting_params = dict(params)
     (
         object_count,
         object_count_probabilities,
@@ -134,27 +186,20 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
     ) = resolve_paired_counts(
         rng,
         instance_seed=int(instance_seed),
-        params=counting_params,
+        params=params,
         gen_defaults=_GEN_DEFAULTS,
         defaults=_DEFAULTS,
     )
-    pool = list(resolve_icon_pool(str(params.get("pool_manifest", group_default(_GEN_DEFAULTS, "pool_manifest", _DEFAULTS.pool_manifest)))))
+    pool = list(load_icon_pool_from_params(params=params, gen_defaults=_GEN_DEFAULTS, defaults=_DEFAULTS))
     rng.shuffle(pool)
     palette = sample_palette(rng, render_params=render_params)
-    rotation_candidates = tuple(
-        int(value)
-        for value in params.get(
-            "rotation_candidates_degrees",
-            group_default(_GEN_DEFAULTS, "rotation_candidates_degrees", _DEFAULTS.rotation_candidates_degrees),
-        )
-    )
     attrs = sample_base_attributes(
         rng,
         pool=pool,
         palette=palette,
         count=int(object_count),
         render_params=render_params,
-        rotation_candidates=rotation_candidates,
+        rotation_candidates=_rotation_candidates(params),
     )
     match_indices = set(rng.sample(list(range(int(object_count))), int(target_count)))
     other_directions = [value for value in ("left", "right", "up", "down") if value != active_direction]
@@ -166,9 +211,25 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
         else:
             directions.append(str(other_directions[int(distractor_index) % len(other_directions)]))
             distractor_index += 1
-    delta_min = float(params.get("movement_delta_min", group_default(_GEN_DEFAULTS, "movement_delta_min", _DEFAULTS.movement_delta_min)))
-    delta_max = float(params.get("movement_delta_max", group_default(_GEN_DEFAULTS, "movement_delta_max", _DEFAULTS.movement_delta_max)))
-    gap = float(params.get("min_center_gap_frac", group_default(_RENDER_DEFAULTS, "min_center_gap_frac", _DEFAULTS.min_center_gap_frac)))
+
+    delta_min = float(
+        params.get(
+            "movement_delta_min",
+            group_default(_GEN_DEFAULTS, "movement_delta_min", _DEFAULTS.movement_delta_min),
+        )
+    )
+    delta_max = float(
+        params.get(
+            "movement_delta_max",
+            group_default(_GEN_DEFAULTS, "movement_delta_max", _DEFAULTS.movement_delta_max),
+        )
+    )
+    gap = float(
+        params.get(
+            "min_center_gap_frac",
+            group_default(_RENDER_DEFAULTS, "min_center_gap_frac", _DEFAULTS.min_center_gap_frac),
+        )
+    )
     position_pairs = _sample_movement_positions(
         rng,
         directions=directions,
@@ -210,27 +271,24 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
                 rotation_degrees=int(attr["rotation_degrees"]),
             )
         )
-    image, panel_geometry, left_icons_raw, right_icons_raw = render_paired_canvas(
-        left_icons=left_specs,
-        right_icons=right_specs,
-        render_params=render_params,
-    )
+    rendered = render_paired_canvas(left_icons=left_specs, right_icons=right_specs, render_params=render_params)
     left_icons = []
     right_icons = []
-    for index, icon in enumerate(left_icons_raw):
+    for index, icon in enumerate(rendered.left_icons):
         item = dict(icon)
         item["pair_index"] = int(index)
         item["movement_direction"] = str(directions[int(index)])
         left_icons.append(item)
-    for index, icon in enumerate(right_icons_raw):
+    for index, icon in enumerate(rendered.right_icons):
         item = dict(icon)
         item["pair_index"] = int(index)
         item["movement_direction"] = str(directions[int(index)])
         item["is_match"] = bool(int(index) in match_indices)
         right_icons.append(item)
-    return PairedCanvasPayload(
-        image=image,
-        panel_geometry=panel_geometry,
+
+    return _MovementScene(
+        image=rendered.image,
+        panel_geometry=dict(rendered.panel_geometry),
         left_icons=tuple(left_icons),
         right_icons=tuple(right_icons),
         matching_right_indices=tuple(sorted(int(index) for index in match_indices)),
@@ -259,49 +317,121 @@ class IconsRelationPanelMovementDirectionCountTask:
     """Count icons that moved in the requested direction from Left to Right."""
 
     task_id = TASK_ID
-    domain = "icons"
+    domain = DOMAIN
+    supported_query_ids = QUERY_IDS
+    default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int):
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Generate one deterministic paired-panel movement count instance."""
+
+        query_id, query_probabilities, task_params = _select_query(int(instance_seed), params)
         render_params = resolve_icon_render_params(
-            params=params,
+            params=task_params,
             render_defaults=_RENDER_DEFAULTS,
             fallback_defaults=_DEFAULTS,
             instance_seed=int(instance_seed),
         )
-        payload = None
+        scene = None
         last_error: Exception | None = None
         for attempt_index in range(max(1, int(max_attempts))):
             try:
-                attempt_seed = int(hash64(int(instance_seed), self.task_id, int(attempt_index)))
-                payload = _make_scene(instance_seed=attempt_seed, params=params, render_params=render_params)
+                attempt_seed = int(hash64(int(instance_seed), TASK_ID, int(attempt_index)))
+                scene = _make_scene(
+                    instance_seed=attempt_seed,
+                    params=task_params,
+                    render_params=render_params,
+                    query_id=str(query_id),
+                    query_probabilities=query_probabilities,
+                )
                 break
             except Exception as exc:
                 last_error = exc
                 continue
-        if payload is None:
+        if scene is None:
             raise RuntimeError(f"failed to generate {TASK_ID} instance") from last_error
 
-        prompt_defaults = required_paired_prompt_defaults(_PROMPT_DEFAULTS, task_id=self.task_id)
-        question_text = str(prompt_defaults[f"question_text_{payload.query_id}"])
+        prompt_defaults = required_paired_prompt_defaults(
+            _PROMPT_DEFAULTS,
+            run_namespace=TASK_ID,
+            extra_required_keys=(f"question_text_{scene.query_id}",),
+        )
+        annotation_bboxes = bboxes_from_icon_indices(
+            panel_icons=scene.right_icons,
+            indices=scene.matching_right_indices,
+        )
+        query_params = {
+            "query_id": str(scene.query_id),
+            "query_id_probabilities": dict(scene.query_probabilities),
+            "object_count": int(scene.object_count),
+            "object_count_probabilities": dict(scene.object_count_probabilities),
+            "target_count": int(scene.target_count),
+            "target_count_probabilities": dict(scene.target_count_probabilities),
+            "distractor_count": int(scene.distractor_count),
+            "distractor_count_probabilities": dict(scene.distractor_count_probabilities),
+            "annotation_panel": "right",
+        }
+        execution_trace = {
+            "scene_variant": SCENE_ID,
+            "query_id": str(scene.query_id),
+            "query_id_probabilities": dict(scene.query_probabilities),
+            "question_format": str(scene.question_format),
+            "object_count": int(scene.object_count),
+            "object_count_probabilities": dict(scene.object_count_probabilities),
+            "target_count": int(scene.target_count),
+            "target_count_probabilities": dict(scene.target_count_probabilities),
+            "distractor_count": int(scene.distractor_count),
+            "distractor_count_probabilities": dict(scene.distractor_count_probabilities),
+            "matching_right_indices": list(scene.matching_right_indices),
+            "matching_left_indices": list(scene.matching_left_indices),
+            "annotation_panel": "right",
+            **dict(scene.trace_relation),
+        }
         prompt_artifacts = build_paired_prompt(
             domain=self.domain,
-            scene_id=PANEL_SCENE_ID,
             prompt_defaults=prompt_defaults,
-            question_text=question_text,
+            question_text=str(prompt_defaults[f"question_text_{scene.query_id}"]),
             instance_seed=int(instance_seed),
         )
-        annotation = annotation_from_indices(panel_icons=payload.right_icons, indices=payload.matching_right_indices)
-        return paired_task_output(
-            task_id=self.task_id,
-            domain=self.domain,
-            payload=payload,
+        annotation_artifacts = bbox_set_annotation(annotation_bboxes)
+        query_spec = build_prompt_query_spec(
             prompt_artifacts=prompt_artifacts,
-            prompt_defaults=prompt_defaults,
+            query_id=str(scene.query_id),
+            params=query_params,
+        )
+        trace_payload = build_paired_canvas_trace_payload(
+            scene_kind=f"icons_{SCENE_ID}",
+            panel_geometry=scene.panel_geometry,
+            left_icons=scene.left_icons,
+            right_icons=scene.right_icons,
+            relations=scene.trace_relation,
+            query_spec=query_spec,
             render_params=render_params,
-            annotation_panel="right",
-            answer_value=int(payload.target_count),
-            annotation_bboxes=annotation,
+            sampled_palette_rgb=scene.sampled_palette_rgb,
+            render_map_extra=None,
+            execution_trace=execution_trace,
+            witness_symbolic={
+                "query_id": str(scene.query_id),
+                "matching_right_indices": list(scene.matching_right_indices),
+                "matching_left_indices": list(scene.matching_left_indices),
+                "annotation_panel": "right",
+            },
+            annotation_payload=annotation_artifacts,
+        )
+        return TaskOutput(
+            prompt=str(prompt_artifacts.prompt),
+            answer_gt=TypedValue(type="integer", value=int(scene.target_count)),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts["annotation_type"]),
+                value=[list(bbox) for bbox in annotation_artifacts["annotation_value"]],
+            ),
+            image=scene.image,
+            image_id="img0",
+            trace_payload=trace_payload,
+            task_versions=default_task_versions(),
+            scene_id=SCENE_ID,
+            query_id=str(scene.query_id),
+            prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
 
-__all__ = ["IconsRelationPanelMovementDirectionCountTask"]
+__all__ = ["IconsRelationPanelMovementDirectionCountTask", "QUERY_IDS", "TASK_ID"]

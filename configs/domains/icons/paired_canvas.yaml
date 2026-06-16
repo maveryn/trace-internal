@@ -12,35 +12,6 @@ generation:
     task_icons__paired_canvas__panel_set_relation_count:
       common_count_min: 3
       common_count_max: 6
-      query_id_weights:
-        right_exact_match_count: 1.0
-        added_in_right_count: 1.0
-        missing_from_right_count: 1.0
-      change_query_weights:
-        added_in_right_count: 1.0
-        missing_from_right_count: 1.0
-      variant_generation_params:
-        right_exact_match_count:
-          object_count_min: 5
-          object_count_max: 10
-          target_count_min: 1
-          target_count_max: 5
-          distractor_count_min: 2
-          distractor_count_max: 5
-        added_in_right_count:
-          object_count_min: 4
-          object_count_max: 10
-          target_count_min: 1
-          target_count_max: 5
-          distractor_count_min: 1
-          distractor_count_max: 5
-        missing_from_right_count:
-          object_count_min: 4
-          object_count_max: 10
-          target_count_min: 1
-          target_count_max: 5
-          distractor_count_min: 1
-          distractor_count_max: 5
       rotation_candidates_degrees:
       - 0
       - 90
@@ -50,10 +21,6 @@ generation:
       object_count_min: 5
       object_count_max: 10
       distractor_count_min: 2
-      attribute_change_query_weights:
-        color_changed_count: 1.0
-        size_changed_count: 1.0
-        rotation_changed_count: 1.0
       size_scale_small: 0.74
       size_scale_large: 1.18
       rotation_candidates_degrees:
@@ -65,11 +32,6 @@ generation:
       object_count_min: 5
       object_count_max: 10
       distractor_count_min: 2
-      movement_direction_query_weights:
-        moved_left_count: 1.0
-        moved_right_count: 1.0
-        moved_up_count: 1.0
-        moved_down_count: 1.0
       movement_delta_min: 0.22
       movement_delta_max: 0.34
       rotation_candidates_degrees:
@@ -81,9 +43,6 @@ generation:
       tracked_count: 6
       distractor_count_min: 4
       distractor_count_max: 8
-      original_attribute_query_weights:
-        original_shape_label: 1.0
-        original_color_shape_label: 1.0
       named_color_support:
       - red
       - blue

@@ -7,15 +7,19 @@
 4. Task id: `task_icons__paired_canvas__panel_movement_direction_count`
 5. Objective: count icons that moved in the requested direction from the Left panel to the Right panel.
 
+## Program Contract
+`count.pairwise_comparison(scene=paired_canvas, scope=aligned_left_right_icon_pairs, predicate=moved_left|moved_right|moved_up|moved_down, output=count)`
+
 ## 2) Scene + task contract
 1. Entities/relations: two large icon panels labeled `Left` and `Right`; the same icon identities appear in both panels with changed positions.
 2. Branch metadata: `query_id`
-3. Query id: `moved_left_count|moved_right_count|moved_up_count|moved_down_count`.
+3. Query ids: `moved_left_count`, `moved_right_count`, `moved_up_count`, `moved_down_count`.
 4. Answer type: `answer_gt.type = integer`.
 5. Annotation type: `annotation_gt.type = bbox_set` over every counted Right-panel destination icon.
    `projected_annotation` mirrors this as typed bbox-set annotation with
    `bbox_set`, `pixel_bbox_set`, and bbox-center `pixel_point_set`.
 6. Unique-answer policy: target pairs move in the queried direction; distractor pairs move in other cardinal directions with a configured minimum displacement.
+7. Scalar annotation checked: not applicable. The count can have zero or multiple visual witnesses, so `bbox_set` is the stable annotation schema.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `icons_paired_canvas_v0`

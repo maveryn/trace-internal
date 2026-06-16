@@ -304,6 +304,8 @@ def test_surface_fixture_color_frequency_option_label_queries() -> None:
         assert trace["answer_color_count"] == counts[answer_color]
         assert set(records) == {"A", "B", "C", "D", "E", "F"}
         assert all(str(record["color_name"]) in set(SEMANTIC_COLOR_SUPPORT) for record in records.values())
+        assert set(render_map["option_text_bboxes_px"]) == {"A", "B", "C", "D", "E", "F"}
+        assert all("option_text_bbox_px" in record for record in records.values())
         assert output.annotation_gt.type == "bbox"
         assert output.annotation_gt.value == render_map["option_bboxes_px"][answer_label]
         assert output.trace_payload["projected_annotation"]["bbox"] == output.annotation_gt.value
@@ -319,6 +321,8 @@ def test_surface_fixture_color_frequency_option_label_queries() -> None:
             assert len(trace["target_element_ids"]) == 0
         assert "{target_" not in output.prompt
         assert "{scope_" not in output.prompt
+        assert "color option" not in output.prompt.lower()
+        assert "swatch" not in output.prompt.lower()
         assert_three_d_canvas_contract(output)
 
 

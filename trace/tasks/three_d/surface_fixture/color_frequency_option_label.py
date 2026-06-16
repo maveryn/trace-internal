@@ -1,4 +1,4 @@
-"""Select the color option that is most frequent or absent on one fixture."""
+"""Select the text option naming the most frequent or absent fixture color."""
 
 from __future__ import annotations
 
@@ -164,7 +164,7 @@ def _color_frequency_trace_payload(
             "scene_variant": str(axes.scene_variant),
             "background_style": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
-            "projection_model": "synthetic_perspective_panel_with_color_options_v0",
+            "projection_model": "synthetic_perspective_panel_with_color_name_options_v0",
         },
         "render_map": {
             "image_id": "img0",
@@ -172,6 +172,7 @@ def _color_frequency_trace_payload(
             "fixture_panel_bbox_px": list(rendered.fixture_panel_bbox_px),
             "option_bboxes_px": dict(rendered.option_bboxes_px),
             "option_label_bboxes_px": dict(rendered.option_label_bboxes_px),
+            "option_text_bboxes_px": dict(rendered.option_text_bboxes_px),
             "selected_option_bbox_px": list(selected_option_bbox),
             "element_bboxes_px": dict(rendered.element_bboxes_px),
             "element_centers_px": dict(rendered.element_centers_px),
@@ -202,7 +203,7 @@ def _color_frequency_trace_payload(
             "solver_trace": dict(dataset["solver_trace"]),
         },
         "witness_symbolic": {
-            "type": "selected_surface_fixture_color_option",
+            "type": "selected_surface_fixture_color_text_option",
             "option_label": str(answer_label),
             "option_color_name": str(answer_color_name),
             "option_bbox_px": list(selected_option_bbox),
@@ -215,7 +216,7 @@ def _color_frequency_trace_payload(
 
 @register_task
 class ThreeDSurfaceFixtureColorFrequencyOptionLabelTask:
-    """Select the labeled color swatch matching a frequency condition."""
+    """Select the labeled text option naming a color frequency condition."""
 
     task_id = TASK_ID
     domain = "three_d"
@@ -287,7 +288,10 @@ class ThreeDSurfaceFixtureColorFrequencyOptionLabelTask:
                     prompt_query_key=prompt_query_key,
                     dynamic_slot_values=dynamic_slots_for_surface(
                         dataset,
-                        object_description=f"a fixture surface with colored {dataset['target_element_plural']} and six labeled color options",
+                        object_description=(
+                            f"a fixture surface with colored {dataset['target_element_plural']} "
+                            "and six labeled text options naming colors"
+                        ),
                     ),
                     instance_seed=int(attempt_seed),
                 )

@@ -52,7 +52,7 @@ class RenderedSurfaceFixtureRecolorBoardMatch:
 
 @dataclass(frozen=True)
 class RenderedSurfaceFixtureColorFrequencyOptions:
-    """Rendered single fixture panel plus six color-option swatches."""
+    """Rendered single fixture panel plus six text options naming colors."""
 
     image: Image.Image
     entities: List[Dict[str, Any]]
@@ -60,6 +60,7 @@ class RenderedSurfaceFixtureColorFrequencyOptions:
     fixture_panel_bbox_px: List[float]
     option_bboxes_px: Dict[str, List[float]]
     option_label_bboxes_px: Dict[str, List[float]]
+    option_text_bboxes_px: Dict[str, List[float]]
     element_bboxes_px: Dict[str, List[float]]
     element_centers_px: Dict[str, List[float]]
     option_records: List[Dict[str, Any]]
@@ -159,29 +160,34 @@ def _draw_option_label(draw: ImageDraw.ImageDraw, *, label: str, panel_bbox: Seq
     return [round(float(value), 3) for value in badge]
 
 
-def _draw_color_option(
+def _draw_color_text_option(
     draw: ImageDraw.ImageDraw,
     *,
     label: str,
     color_name: str,
-    fill_rgb: Sequence[int],
     option_bbox: Sequence[int],
-) -> Tuple[List[float], List[float]]:
+) -> Tuple[List[float], List[float], List[float]]:
     x0, y0, x1, y1 = [int(value) for value in option_bbox]
     bbox = [float(x0), float(y0), float(x1), float(y1)]
-    draw.rounded_rectangle(tuple(bbox), radius=8, fill=(245, 247, 248), outline=(72, 84, 96), width=2)
-    swatch_pad = max(10, int(round(float(y1 - y0) * 0.15)))
-    swatch = [
-        float(x0 + swatch_pad + 42),
-        float(y0 + swatch_pad),
-        float(x1 - swatch_pad),
-        float(y1 - swatch_pad),
-    ]
-    shadow = [swatch[0] + 3.0, swatch[1] + 3.0, swatch[2] + 3.0, swatch[3] + 3.0]
-    draw.rounded_rectangle(tuple(shadow), radius=7, fill=(183, 190, 196))
-    draw.rounded_rectangle(tuple(swatch), radius=7, fill=tuple(int(value) for value in fill_rgb), outline=(38, 45, 54), width=2)
+    draw.rounded_rectangle(tuple(bbox), radius=8, fill=(248, 250, 251), outline=(72, 84, 96), width=2)
     label_bbox = _draw_option_label(draw, label=str(label), panel_bbox=bbox)
-    return [round(float(value), 3) for value in bbox], list(label_bbox)
+    font = load_font(30, bold=True)
+    color_text = str(color_name).replace("_", " ")
+    text_bbox = draw.textbbox((0, 0), color_text, font=font, stroke_width=0)
+    text_w = float(text_bbox[2] - text_bbox[0])
+    text_h = float(text_bbox[3] - text_bbox[1])
+    text_x = float(label_bbox[2]) + max(18.0, float(x1 - x0) * 0.065)
+    max_text_x = float(x1) - 16.0 - text_w
+    text_x = min(text_x, max_text_x)
+    text_y = float(y0 + y1) * 0.5 - text_h * 0.5 - 1.0
+    draw.text((text_x, text_y), color_text, font=font, fill=(24, 30, 38))
+    option_text_bbox = [
+        round(float(text_x), 3),
+        round(float(text_y), 3),
+        round(float(text_x + text_w), 3),
+        round(float(text_y + text_h), 3),
+    ]
+    return [round(float(value), 3) for value in bbox], list(label_bbox), option_text_bbox
 
 
 def _draw_panel_badge(
@@ -592,7 +598,7 @@ def render_surface_fixture_color_frequency_options(
     dataset: Mapping[str, Any],
     render_params: Any,
 ) -> RenderedSurfaceFixtureColorFrequencyOptions:
-    """Render one colored fixture and six labeled color swatch options."""
+    """Render one colored fixture and six labeled text options naming colors."""
 
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
@@ -613,6 +619,7 @@ def render_surface_fixture_color_frequency_options(
     option_records: List[Dict[str, Any]] = []
     option_bboxes: Dict[str, List[float]] = {}
     option_label_bboxes: Dict[str, List[float]] = {}
+    option_text_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
     element_bboxes: Dict[str, List[float]] = {}
     element_centers: Dict[str, List[float]] = {}
@@ -666,27 +673,29 @@ def render_surface_fixture_color_frequency_options(
         raise ValueError("color-frequency option renderer requires six option records")
     for record in records:
         label = str(record["label"])
-        option_bbox, label_bbox = _draw_color_option(
+        option_bbox, label_bbox, text_bbox = _draw_color_text_option(
             draw,
             label=str(label),
             color_name=str(record["color_name"]),
-            fill_rgb=record["fill_rgb"],
             option_bbox=option_positions[str(label)],
         )
         option_bboxes[str(label)] = list(option_bbox)
         option_label_bboxes[str(label)] = list(label_bbox)
+        option_text_bboxes[str(label)] = list(text_bbox)
         option_record = dict(record)
         option_record["option_bbox_px"] = list(option_bbox)
         option_record["option_label_bbox_px"] = list(label_bbox)
+        option_record["option_text_bbox_px"] = list(text_bbox)
         option_records.append(option_record)
         entities.append(
             {
-                "entity_id": f"color_option_{label}",
-                "entity_type": "three_d_surface_fixture_color_option",
+                "entity_id": f"text_option_{label}",
+                "entity_type": "three_d_surface_fixture_text_option",
                 "bbox_px": list(option_bbox),
                 "attrs": {
                     "option_label": str(label),
                     "color_name": str(record["color_name"]),
+                    "option_text": str(record["color_name"]).replace("_", " "),
                     "visible_count": int(record["visible_count"]),
                 },
             }
@@ -699,6 +708,7 @@ def render_surface_fixture_color_frequency_options(
         fixture_panel_bbox_px=list(fixture_bbox),
         option_bboxes_px=dict(option_bboxes),
         option_label_bboxes_px=dict(option_label_bboxes),
+        option_text_bboxes_px=dict(option_text_bboxes),
         element_bboxes_px=dict(element_bboxes),
         element_centers_px=dict(element_centers),
         option_records=list(option_records),

@@ -72,18 +72,18 @@
         "How many {target_color_label} {target_element_plural} appear within {scope_phrase}?"
       ],
       "most_frequent_color_option": [
-        "Which labeled color option appears most often among the visible {target_element_plural}?",
-        "Choose the option label for the color used by the most visible {target_element_plural}.",
-        "Which color option has the highest count on the fixture?",
-        "Among the labeled color options, which one appears the most on the fixture?",
-        "What letter labels the color that appears most often on the fixture?"
+        "Which labeled option names the color that appears most often among the visible {target_element_plural}?",
+        "Choose the option label that names the color used by the most visible {target_element_plural}.",
+        "Which text option names the color with the highest count on the fixture?",
+        "Among the labeled text options, which one names the color that appears the most on the fixture?",
+        "What letter labels the option naming the color that appears most often on the fixture?"
       ],
       "absent_color_option": [
-        "Which labeled color option does not appear on the fixture?",
-        "Choose the option label for the color absent from the visible {target_element_plural}.",
-        "Which color option has zero visible {target_element_plural} on the fixture?",
-        "Among the labeled color options, which one is not present on the fixture?",
-        "What letter labels the color that does not appear on the fixture?"
+        "Which labeled option names a color that does not appear on the fixture?",
+        "Choose the option label that names the color absent from the visible {target_element_plural}.",
+        "Which text option names a color with zero visible {target_element_plural} on the fixture?",
+        "Among the labeled text options, which one names a color that is not present on the fixture?",
+        "What letter labels the option naming the color that does not appear on the fixture?"
       ]
     },
     "output": {
@@ -147,14 +147,14 @@
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:most_frequent_color_option": {
-      "answer_hint": "set \"answer\" to the selected color option label as a single capital letter",
-      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] pixel box around the selected color option",
+      "answer_hint": "set \"answer\" to the selected option label as a single capital letter",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] pixel box around the selected text option card",
       "json_example": "{\"annotation\":[620,710,890,790],\"answer\":\"D\"}",
       "json_example_answer_only": "{\"answer\":\"D\"}"
     },
     "query:absent_color_option": {
-      "answer_hint": "set \"answer\" to the selected color option label as a single capital letter",
-      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] pixel box around the selected color option",
+      "answer_hint": "set \"answer\" to the selected option label as a single capital letter",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] pixel box around the selected text option card",
       "json_example": "{\"annotation\":[620,710,890,790],\"answer\":\"D\"}",
       "json_example_answer_only": "{\"answer\":\"D\"}"
     }

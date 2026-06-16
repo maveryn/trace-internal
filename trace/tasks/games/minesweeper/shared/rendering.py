@@ -84,6 +84,48 @@ def _cell_bbox(
     return (round(left, 3), round(top, 3), round(right, 3), round(bottom, 3))
 
 
+def _mix_rgb(rgb: Tuple[int, int, int], target_rgb: Tuple[int, int, int], amount: float) -> Tuple[int, int, int]:
+    """Blend one RGB color toward a target color by a fixed amount."""
+
+    weight = max(0.0, min(1.0, float(amount)))
+    return tuple(
+        int(round((float(channel) * (1.0 - weight)) + (float(target) * weight)))
+        for channel, target in zip(rgb, target_rgb)
+    )
+
+
+def _draw_hidden_tile(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox_px: Tuple[float, float, float, float],
+    theme: MinesweeperTheme,
+    cell_size: float,
+) -> None:
+    """Draw one covered Minesweeper cell as a raised tile."""
+
+    left, top, right, bottom = [float(value) for value in bbox_px]
+    fill_rgb = tuple(int(value) for value in theme.hidden_cell_fill_rgb)
+    light_rgb = _mix_rgb(fill_rgb, (255, 255, 255), 0.42)
+    dark_rgb = _mix_rgb(fill_rgb, (0, 0, 0), 0.34)
+    border_rgb = tuple(int(value) for value in theme.hidden_cell_border_rgb)
+    bevel_width = max(2, int(round(0.055 * float(cell_size))))
+    inset = max(1.0, 0.055 * float(cell_size))
+    inner = (left + inset, top + inset, right - inset, bottom - inset)
+    draw.rectangle((left, top, right, bottom), fill=fill_rgb)
+    draw.line([(inner[0], inner[3]), (inner[2], inner[3]), (inner[2], inner[1])], fill=dark_rgb, width=bevel_width)
+    draw.line([(inner[0], inner[3]), (inner[0], inner[1]), (inner[2], inner[1])], fill=light_rgb, width=bevel_width)
+    draw.rectangle(
+        (
+            inner[0] + (0.5 * bevel_width),
+            inner[1] + (0.5 * bevel_width),
+            inner[2] - (0.5 * bevel_width),
+            inner[3] - (0.5 * bevel_width),
+        ),
+        outline=border_rgb,
+        width=max(1, int(round(0.022 * float(cell_size)))),
+    )
+
+
 def _draw_number(
     draw: ImageDraw.ImageDraw,
     *,
@@ -339,21 +381,9 @@ def render_minesweeper_grid_scene(
         cell_bboxes_px[cell_id] = list(bbox_px)
         full_cell_bboxes_px[cell_id] = list(full_bbox)
         if coord in revealed:
-            fill = theme.revealed_cell_alt_fill_rgb if (int(row) + int(col)) % 2 else theme.revealed_cell_fill_rgb
-            draw.rectangle(full_bbox, fill=tuple(int(v) for v in fill))
+            draw.rectangle(full_bbox, fill=tuple(int(v) for v in theme.revealed_cell_fill_rgb))
         else:
-            draw.rectangle(full_bbox, fill=tuple(int(v) for v in theme.hidden_cell_fill_rgb))
-            inset = max(1.0, 0.08 * float(cell_size))
-            draw.rectangle(
-                (
-                    full_bbox[0] + inset,
-                    full_bbox[1] + inset,
-                    full_bbox[2] - inset,
-                    full_bbox[3] - inset,
-                ),
-                outline=tuple(int(v) for v in theme.hidden_cell_border_rgb),
-                width=max(1, int(round(0.04 * float(cell_size)))),
-            )
+            _draw_hidden_tile(draw, bbox_px=full_bbox, theme=theme, cell_size=float(cell_size))
         if coord in flagged:
             _draw_flag(draw, bbox_px=bbox_px, theme=theme)
         elif coord in revealed:
@@ -418,11 +448,7 @@ def render_minesweeper_grid_scene(
         inset = max(2.0, 0.055 * float(cell_size))
         highlight_bbox = (left + inset, top + inset, right - inset, bottom - inset)
         width = max(4, int(round(0.075 * float(cell_size))))
-        coord_surface_rgb = (
-            theme.revealed_cell_alt_fill_rgb
-            if (int(coord[0]) + int(coord[1])) % 2
-            else theme.revealed_cell_fill_rgb
-        )
+        coord_surface_rgb = theme.revealed_cell_fill_rgb
         marker_style = resolve_semantic_marker_style(
             instance_seed=int(params.instance_seed),
             namespace=f"games.minesweeper.highlighted_clue.{cell_id}",

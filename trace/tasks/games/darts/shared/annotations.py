@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_annotation_artifacts, point_set_annotation_artifacts
 
 from .rendering import RenderedDartsTaskContext
 
@@ -27,4 +27,20 @@ def dart_center_point_set_annotation(
     )
 
 
-__all__ = ["dart_center_point_set_annotation"]
+def dart_center_point_annotation(
+    rendered_context: RenderedDartsTaskContext,
+    dart_id: str,
+) -> AnnotationArtifacts:
+    """Project one selected dart id to a center-point annotation artifact."""
+
+    centers = rendered_context.rendered_scene.render_map["dart_centers_px"]
+    center = centers[str(dart_id)]
+    return point_annotation_artifacts(
+        [
+            round(float(center[0]), 3),
+            round(float(center[1]), 3),
+        ]
+    )
+
+
+__all__ = ["dart_center_point_annotation", "dart_center_point_set_annotation"]

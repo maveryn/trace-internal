@@ -38,7 +38,7 @@ def darts_single_point_json_examples() -> tuple[str, str]:
     """Return generic JSON examples for single-dart score tasks."""
 
     return (
-        json.dumps({"annotation": [[411, 219]], "answer": 17}, separators=(",", ":")),
+        json.dumps({"annotation": [411, 219], "answer": 17}, separators=(",", ":")),
         json.dumps({"answer": 17}, separators=(",", ":")),
     )
 

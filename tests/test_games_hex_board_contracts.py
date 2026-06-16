@@ -40,17 +40,17 @@ def test_games_hex_winning_move_cell_label_emits_expected_contract() -> None:
 
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "D"
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "point"
     assert out.query_id == "single"
     assert out.scene_id == "hex"
     assert trace["query_spec"]["params"]["query_id"] == "single"
     assert execution["query_id"] == "single"
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "point"
+    assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point"] == out.annotation_gt.value
     assert trace["render_spec"]["panel_scene_style"]["treatment"]
     assert trace["render_spec"]["text_style"]["font_family"]
-    assert len(out.annotation_gt.value) == 1
+    assert len(out.annotation_gt.value) == 2
     assert len(execution["annotation_entity_ids"]) == 1
 
 

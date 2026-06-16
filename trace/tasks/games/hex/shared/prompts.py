@@ -32,7 +32,7 @@ def build_hex_prompt_json_examples(*, answer_type: str) -> Tuple[str, str]:
 
     if str(answer_type) == "string":
         answer_value: str | int = "C"
-        annotation_value = [[210, 250]]
+        annotation_value = [210, 250]
     else:
         answer_value = 3
         annotation_value = [[150, 220], [210, 250], [270, 280]]

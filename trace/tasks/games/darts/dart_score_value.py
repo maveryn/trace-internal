@@ -6,7 +6,7 @@ from trace.core.types import TypedValue
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 
-from ._lifecycle import DartsObjectivePlan, dart_point_set_attempt, run_darts_lifecycle
+from ._lifecycle import DartsObjectivePlan, dart_point_attempt, run_darts_lifecycle
 from .shared.defaults import SCENE_ID
 from .shared.prompts import darts_output_slots, darts_single_point_json_examples
 from .shared.sampling import (
@@ -58,7 +58,7 @@ def _prepare_score_value_objective(
             target_score=int(score_axis.value),
             render_params=render_params,
         )
-        return dart_point_set_attempt(
+        return dart_point_attempt(
             sample=sample,
             answer_gt=TypedValue(type="integer", value=int(score_axis.value)),
             execution_extra={"target_score": int(score_axis.value)},

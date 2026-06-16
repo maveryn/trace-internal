@@ -13,7 +13,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import dart_center_point_set_annotation
+from .shared.annotations import dart_center_point_annotation, dart_center_point_set_annotation
 from .shared.defaults import DEFAULTS, SCENE_ID
 from .shared.output import build_darts_common_trace_params, build_darts_trace_payload
 from .shared.prompts import build_darts_prompt_artifacts
@@ -81,6 +81,40 @@ def dart_point_set_attempt(
         build_annotation=lambda rendered_context: dart_center_point_set_annotation(
             rendered_context,
             resolved_entity_ids,
+        ),
+        query_params=dict(query_params or {}),
+        execution_extra=dict(execution_extra or {}),
+    )
+
+
+def dart_point_attempt(
+    *,
+    sample: DartsSampledScene,
+    answer_gt: TypedValue,
+    annotation_entity_id: str | None = None,
+    query_params: Mapping[str, Any] | None = None,
+    execution_extra: Mapping[str, Any] | None = None,
+) -> DartsAttemptResult:
+    """Package an answer whose annotation is one selected dart center point."""
+
+    resolved_entity_ids = tuple(
+        str(entity_id)
+        for entity_id in (
+            sample.annotation_dart_ids
+            if annotation_entity_id is None
+            else (annotation_entity_id,)
+        )
+    )
+    if len(resolved_entity_ids) != 1:
+        raise ValueError("dart scalar point annotation requires exactly one dart id")
+    entity_id = str(resolved_entity_ids[0])
+    return DartsAttemptResult(
+        sample=sample,
+        answer_gt=answer_gt,
+        annotation_entity_ids=(entity_id,),
+        build_annotation=lambda rendered_context: dart_center_point_annotation(
+            rendered_context,
+            entity_id,
         ),
         query_params=dict(query_params or {}),
         execution_extra=dict(execution_extra or {}),
@@ -266,6 +300,7 @@ def run_darts_lifecycle(
 __all__ = [
     "DartsAttemptResult",
     "DartsObjectivePlan",
+    "dart_point_attempt",
     "dart_point_set_attempt",
     "prepare_darts_exact_count_objective",
     "run_darts_lifecycle",

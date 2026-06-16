@@ -28,14 +28,14 @@ def test_games_darts_score_value_uses_only_visible_dart_as_annotation() -> None:
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 50
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == 1
+    assert out.annotation_gt.type == "point"
+    assert len(out.annotation_gt.value) == 2
     assert len(visible_darts) == 1
     assert not marked
     assert visible_darts[0]["area_kind"] == "bullseye"
     assert int(visible_darts[0]["score"]) == int(out.answer_gt.value)
     assert execution["annotation_entity_ids"] == [str(visible_darts[0]["dart_id"])]
-    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert out.trace_payload["projected_annotation"]["point"] == out.annotation_gt.value
 
 
 @pytest.mark.parametrize(

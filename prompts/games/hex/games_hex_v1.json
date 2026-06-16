@@ -159,7 +159,7 @@
     "hex_rule_text": "In Hex, adjacent cells are the six cells sharing an edge.",
     "red_goal_text": "Red connects the left and right red sides.",
     "blue_goal_text": "Blue connects the top and bottom blue sides.",
-    "annotation_hint_winning_move_cell_label": "set \"annotation\" to a JSON array containing one pixel-space point [x, y] at the center of the chosen winning cell",
+    "annotation_hint_winning_move_cell_label": "set \"annotation\" to one pixel-space point [x, y] at the center of the chosen winning cell",
     "answer_hint_winning_move_cell_label": "set \"answer\" to the single candidate letter of the empty cell that lets {query_player} win immediately",
     "annotation_hint_connection_gap_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of the empty cells in the unique minimum connection gap for {query_player}",
     "answer_hint_connection_gap_count": "set \"answer\" to the minimum number of empty cells {query_player} must fill to connect the required sides",

@@ -17,7 +17,7 @@ from trace.tasks.shared.font_assets import get_font_family_record
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import hex_cell_point_set_annotation
+from .shared.annotations import hex_cell_point_annotation, hex_cell_point_set_annotation
 from .shared.output import build_hex_common_trace_params, build_hex_trace_payload
 from .shared.prompts import HexPromptContext, build_hex_prompt_artifacts
 from .shared.rendering import render_hex_board_scene
@@ -40,6 +40,7 @@ class HexAttemptResult:
 
     sample: HexSample
     annotation_coords: Sequence[Coord]
+    annotation_contract: str = "point_set"
     execution_extra: Mapping[str, Any] = field(default_factory=dict)
 
 
@@ -149,10 +150,21 @@ def run_hex_lifecycle(
             else tuple(),
             panel_style=panel_style,
         )
-        annotation_entity_ids, annotation_artifacts = hex_cell_point_set_annotation(
-            rendered_scene,
-            tuple(attempt.annotation_coords),
-        )
+        if str(attempt.annotation_contract) == "point":
+            if len(tuple(attempt.annotation_coords)) != 1:
+                raise ValueError("scalar Hex point annotation requires exactly one coordinate")
+            annotation_entity_id, annotation_artifacts = hex_cell_point_annotation(
+                rendered_scene,
+                tuple(attempt.annotation_coords)[0],
+            )
+            annotation_entity_ids = (str(annotation_entity_id),)
+        elif str(attempt.annotation_contract) == "point_set":
+            annotation_entity_ids, annotation_artifacts = hex_cell_point_set_annotation(
+                rendered_scene,
+                tuple(attempt.annotation_coords),
+            )
+        else:
+            raise ValueError(f"unsupported Hex annotation contract: {attempt.annotation_contract!r}")
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),

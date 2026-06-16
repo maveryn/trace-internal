@@ -65,6 +65,7 @@ def _prepare_winning_move_objective(
         return HexAttemptResult(
             sample=sample,
             annotation_coords=(tuple(sample.winning_move_coord),),
+            annotation_contract="point",
         )
 
     return HexObjectivePlan(

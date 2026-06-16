@@ -7,7 +7,7 @@
 4. Public task id: `task_games__darts__dart_score_value`
 5. Supported `query_id` values: `single`
 6. Answer schema: `integer_value`
-7. Annotation schema: `point_set`
+7. Annotation schema: `point`
 8. Program schema: `value(score(sole_visible_dart)); scene=darts; scope=dart_score_value`
 
 ## Program Contract

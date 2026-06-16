@@ -77,6 +77,14 @@ def _as_rgb(value: Any, default: Sequence[int]) -> Tuple[int, int, int]:
     return (int(default[0]), int(default[1]), int(default[2]))
 
 
+def _semantic_outline(fill: Sequence[int], alpha: float = 0.58) -> Tuple[int, int, int]:
+    return _mix(fill, (18, 22, 28), float(alpha))
+
+
+def _semantic_highlight(fill: Sequence[int], alpha: float = 0.18) -> Tuple[int, int, int]:
+    return _mix(fill, (255, 255, 255), float(alpha))
+
+
 def layout_surface_element_grid(count: int) -> Tuple[int, int]:
     cols = max(2, int(math.ceil(math.sqrt(float(count) * 1.35))))
     rows = int(math.ceil(float(count) / float(cols)))
@@ -400,6 +408,7 @@ def _draw_element(
     bbox = bbox_from_points(cell)
     center = quad_point(quad, (u0 + u1) * 0.5, (v0 + v1) * 0.5)
     fill = _as_rgb(cell_record.get("fill_rgb"), _mix(_panel_fill(str(scene_variant)), (255, 255, 255), 0.16))
+    semantic_color = bool(cell_record.get("semantic_color", False))
     index = int(cell_record.get("flat_index", 0))
 
     if not bool(cell_record.get("present", True)):
@@ -413,13 +422,13 @@ def _draw_element(
             outline = (62, 74, 70)
         else:
             shade = fill if cell_record.get("fill_rgb") is not None else _mix(fill, (245, 245, 238), 0.12 + (index % 3) * 0.05)
-            grout = (235, 238, 232) if element_type != "brick" else (218, 197, 184)
-            outline = (108, 116, 119) if element_type != "brick" else (107, 70, 59)
+            grout = _semantic_outline(fill, 0.42) if semantic_color else ((235, 238, 232) if element_type != "brick" else (218, 197, 184))
+            outline = _semantic_outline(fill, 0.58) if semantic_color else ((108, 116, 119) if element_type != "brick" else (107, 70, 59))
         draw.polygon(cell, fill=shade, outline=outline)
         draw.line([(float(x), float(y)) for x, y in [*cell, cell[0]]], fill=grout, width=3 if element_type != "paver" else 2)
         if element_type == "tile":
             inner = shrink_polygon(cell, 0.84)
-            draw.line(inner + [inner[0]], fill=_mix(shade, (255, 255, 255), 0.24), width=1)
+            draw.line(inner + [inner[0]], fill=_semantic_highlight(shade, 0.14 if semantic_color else 0.24), width=1)
         if element_type == "brick":
             top = quad_point(cell, 0.18, 0.18)
             bot = quad_point(cell, 0.82, 0.78)
@@ -443,11 +452,11 @@ def _draw_element(
         rim = shrink_polygon(cell, 0.94)
         opening = shrink_polygon(cell, 0.70)
         draw.polygon(rim, fill=fill, outline=(87, 101, 103))
-        draw.polygon(opening, fill=_mix(fill, (38, 48, 50), 0.42), outline=(47, 59, 62))
+        draw.polygon(opening, fill=_mix(fill, (38, 48, 50), 0.24 if semantic_color else 0.42), outline=_semantic_outline(fill, 0.58) if semantic_color else (47, 59, 62))
         shadow = shrink_polygon(opening, 0.78)
-        draw.polygon(shadow, fill=_mix(fill, (20, 28, 30), 0.58))
+        draw.polygon(shadow, fill=_mix(fill, (20, 28, 30), 0.34 if semantic_color else 0.58))
         lip = shrink_polygon(cell, 0.80)
-        draw.line(lip + [lip[0]], fill=(242, 246, 244), width=2)
+        draw.line(lip + [lip[0]], fill=_semantic_highlight(fill, 0.16) if semantic_color else (242, 246, 244), width=2)
         bbox = bbox_from_points(opening)
     elif element_type == "vent":
         w = max(14.0, (float(bbox[2]) - float(bbox[0])) * 0.82)
@@ -506,16 +515,16 @@ def _draw_element(
         bbox = list(pull_bbox)
     elif element_type == "drive_bay":
         bay = shrink_polygon(cell, 0.88)
-        bay_fill = _mix(fill, (28, 34, 40), 0.12)
-        draw.polygon(bay, fill=bay_fill, outline=(16, 20, 24))
+        bay_fill = _mix(fill, (28, 34, 40), 0.04 if semantic_color else 0.12)
+        draw.polygon(bay, fill=bay_fill, outline=_semantic_outline(fill, 0.64) if semantic_color else (16, 20, 24))
         inset = shrink_polygon(bay, 0.78)
-        draw.polygon(inset, fill=_mix(bay_fill, (255, 255, 255), 0.10), outline=_mix(bay_fill, (14, 18, 22), 0.35))
+        draw.polygon(inset, fill=_semantic_highlight(bay_fill, 0.07 if semantic_color else 0.10), outline=_mix(bay_fill, (14, 18, 22), 0.46 if semantic_color else 0.35))
         for vv in (0.28, 0.50, 0.72):
             a = quad_point(inset, 0.14, vv)
             b = quad_point(inset, 0.86, vv)
             draw.line([a, b], fill=_mix(bay_fill, (15, 20, 25), 0.42), width=1)
         led = quad_point(bay, 0.86, 0.28)
-        draw.ellipse([led[0] - 3, led[1] - 3, led[0] + 3, led[1] + 3], fill=_mix(fill, (255, 255, 255), 0.20), outline=(18, 22, 24))
+        draw.ellipse([led[0] - 3, led[1] - 3, led[0] + 3, led[1] + 3], fill=_semantic_highlight(fill, 0.12 if semantic_color else 0.20), outline=_semantic_outline(fill, 0.66) if semantic_color else (18, 22, 24))
         bbox = bbox_from_points(bay)
     elif element_type == "button":
         button = shrink_polygon(cell, 0.76)
@@ -523,7 +532,7 @@ def _draw_element(
         button_fill = fill
         draw.ellipse(button_bbox, fill=button_fill, outline=(28, 32, 37), width=2)
         highlight = [button_bbox[0] + 4, button_bbox[1] + 3, button_bbox[0] + (button_bbox[2] - button_bbox[0]) * 0.52, button_bbox[1] + (button_bbox[3] - button_bbox[1]) * 0.34]
-        draw.ellipse(highlight, fill=_mix(button_fill, (255, 255, 255), 0.34))
+        draw.ellipse(highlight, fill=_semantic_highlight(button_fill, 0.20 if semantic_color else 0.34))
         bbox = list(button_bbox)
     elif element_type == "screw":
         screw_bbox = _mounted_bbox(bbox, center, 0.56, 0.56, min_width=13.0, min_height=13.0)
@@ -572,8 +581,8 @@ def _draw_element(
         bbox = list(washer_bbox)
     elif element_type == "socket":
         socket_bbox = _mounted_bbox(bbox, center, 0.78, 0.68, min_width=22.0, min_height=18.0)
-        socket_fill = _mix(fill, (243, 243, 236), 0.48)
-        draw.rounded_rectangle(socket_bbox, radius=max(3, int((socket_bbox[3] - socket_bbox[1]) * 0.16)), fill=socket_fill, outline=(91, 96, 94), width=2)
+        socket_fill = _mix(fill, (243, 243, 236), 0.10 if semantic_color else 0.48)
+        draw.rounded_rectangle(socket_bbox, radius=max(3, int((socket_bbox[3] - socket_bbox[1]) * 0.16)), fill=socket_fill, outline=_semantic_outline(fill, 0.62) if semantic_color else (91, 96, 94), width=2)
         sw = socket_bbox[2] - socket_bbox[0]
         sh = socket_bbox[3] - socket_bbox[1]
         for offset in (0.38, 0.62):
@@ -679,7 +688,7 @@ def _draw_element(
         glow_bbox = _mounted_bbox(bbox, center, 0.78, 0.78, min_width=18.0, min_height=18.0)
         light_bbox = _mounted_bbox(bbox, center, 0.56, 0.56, min_width=13.0, min_height=13.0)
         lens_fill = fill
-        draw.ellipse(glow_bbox, fill=_mix(fill, (255, 255, 255), 0.54))
+        draw.ellipse(glow_bbox, fill=_semantic_highlight(fill, 0.30 if semantic_color else 0.54))
         draw.ellipse(light_bbox, fill=lens_fill, outline=(24, 29, 34), width=2)
         highlight = [
             light_bbox[0] + (light_bbox[2] - light_bbox[0]) * 0.18,
@@ -687,20 +696,21 @@ def _draw_element(
             light_bbox[0] + (light_bbox[2] - light_bbox[0]) * 0.52,
             light_bbox[1] + (light_bbox[3] - light_bbox[1]) * 0.42,
         ]
-        draw.ellipse(highlight, fill=_mix(lens_fill, (255, 255, 255), 0.46))
+        draw.ellipse(highlight, fill=_semantic_highlight(lens_fill, 0.26 if semantic_color else 0.46))
         bbox = list(glow_bbox)
     elif element_type == "solar_panel":
         panel = shrink_polygon(cell, 0.88)
         panel_fill = fill if cell_record.get("fill_rgb") is not None else (35, 76, 126)
         draw.polygon(panel, fill=panel_fill, outline=(18, 30, 42))
+        grid_fill = _semantic_highlight(panel_fill, 0.24) if semantic_color else (96, 140, 178)
         for uu in (0.33, 0.66):
             a = quad_point(panel, uu, 0.10)
             b = quad_point(panel, uu, 0.90)
-            draw.line([a, b], fill=(96, 140, 178), width=1)
+            draw.line([a, b], fill=grid_fill, width=1)
         for vv in (0.36, 0.68):
             a = quad_point(panel, 0.10, vv)
             b = quad_point(panel, 0.90, vv)
-            draw.line([a, b], fill=(96, 140, 178), width=1)
+            draw.line([a, b], fill=grid_fill, width=1)
         bbox = bbox_from_points(panel)
     else:
         raise ValueError(f"unsupported surface element type: {element_type}")

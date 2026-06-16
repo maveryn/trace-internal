@@ -16,6 +16,8 @@ The image shows one projected fixture surface with repeated colored elements.
 The prompt gives exactly three hypothetical add/remove operations over the same
 element family and asks for the final number of elements of the requested target
 color after all operations are applied.
+Generated named-color instances use readout-safe fixture variants and avoid
+near-color distractors among the active semantic colors.
 
 The answer is the integer final count:
 

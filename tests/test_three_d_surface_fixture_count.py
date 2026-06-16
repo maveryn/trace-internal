@@ -6,6 +6,7 @@ import inspect
 from pathlib import Path
 from statistics import mean
 
+import pytest
 import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.scene_package_migration import parse_public_task_id
 from trace.core.taxonomy import resolve_task_taxonomy
@@ -33,7 +34,9 @@ from trace.tasks.three_d.surface_fixture.scoped_colored_element_count import (
     ROW_QUERY_ID as SCOPED_COLORED_ROW_QUERY_ID,
     TASK_ID as SCOPED_COLORED_TASK_ID,
 )
+from trace.tasks.three_d.surface_fixture.shared.metrics import COLOR_CONFUSION_EXCLUSIONS
 from trace.tasks.three_d.surface_fixture.shared.state import (
+    COLOR_READOUT_SCENE_VARIANTS,
     ELEMENT_TYPE_BY_SCENE_VARIANT,
     SEMANTIC_COLOR_RGB,
     SEMANTIC_COLOR_SUPPORT,
@@ -51,6 +54,31 @@ SURFACE_FIXTURE_TASK_IDS = (
     RECOLOR_MATCH_TASK_ID,
     SCOPED_COLORED_TASK_ID,
 )
+
+COLOR_READOUT_TASK_CASES = (
+    (COLORED_TASK_ID, {"query_id": "single"}),
+    (COLOR_OPERATIONS_TASK_ID, {"query_id": "single"}),
+    (RECOLOR_MATCH_TASK_ID, {"query_id": "single"}),
+    (SCOPED_COLORED_TASK_ID, {"query_id": SCOPED_COLORED_ROW_QUERY_ID}),
+    (SCOPED_COLORED_TASK_ID, {"query_id": SCOPED_COLORED_COLUMN_QUERY_ID}),
+    (COLOR_FREQUENCY_TASK_ID, {"query_id": COLOR_FREQUENCY_MOST_QUERY_ID}),
+    (COLOR_FREQUENCY_TASK_ID, {"query_id": COLOR_FREQUENCY_ABSENT_QUERY_ID}),
+)
+
+
+def _confusable_colors(color_name: str) -> set[str]:
+    return set(COLOR_CONFUSION_EXCLUSIONS.get(str(color_name), ()))
+
+
+def _assert_no_color_conflicts(colors, *, anchor: str | None = None) -> None:
+    color_list = [str(color) for color in colors]
+    if anchor is not None:
+        assert not (_confusable_colors(str(anchor)) & set(color_list))
+        return
+    for left_index, left in enumerate(color_list):
+        for right in color_list[left_index + 1 :]:
+            assert right not in _confusable_colors(left)
+            assert left not in _confusable_colors(right)
 
 
 def _mean_rgb_for_bbox(image, bbox):
@@ -98,6 +126,91 @@ def test_surface_fixture_semantic_colors_use_canonical_palette() -> None:
 
     assert dict(SEMANTIC_COLOR_RGB) == canonical
     assert tuple(SEMANTIC_COLOR_SUPPORT) == tuple(canonical)
+
+
+def test_surface_fixture_color_tasks_use_readout_scene_variants() -> None:
+    readout_scenes = set(COLOR_READOUT_SCENE_VARIANTS)
+    excluded_scene = "pipe_rack"
+
+    assert excluded_scene not in readout_scenes
+    assert {"server_rack", "solar_panel_array", "socket_bank", "indicator_light_panel"}.issubset(readout_scenes)
+
+    for offset, (task_id, params) in enumerate(COLOR_READOUT_TASK_CASES):
+        task = create_task(task_id)
+        for sample_index in range(5):
+            output = task.generate(
+                20261120 + offset * 100 + sample_index,
+                params={**params, "post_image_noise_apply_prob": 0.0},
+                max_attempts=120,
+            )
+            assert output.trace_payload["execution_trace"]["scene_variant"] in readout_scenes
+
+        with pytest.raises(ValueError):
+            task.generate(
+                20261220 + offset,
+                params={**params, "scene_variant": excluded_scene, "post_image_noise_apply_prob": 0.0},
+                max_attempts=10,
+            )
+
+
+def test_surface_fixture_generated_color_readout_avoids_confusable_colors() -> None:
+    colored = create_task(COLORED_TASK_ID).generate(
+        20261240,
+        params={
+            "query_id": "single",
+            "scene_variant": "wall_tile_panel",
+            "target_color_name": "blue",
+            "target_count": 4,
+            "distractor_count": 8,
+            "post_image_noise_apply_prob": 0.0,
+        },
+        max_attempts=20,
+    )
+    colored_trace = colored.trace_payload["execution_trace"]
+    colored_colors = {
+        str(cell["color_name"])
+        for cell in colored_trace["surface_cells"]
+        if bool(cell.get("present", True)) and str(cell["color_name"]) != "blue"
+    }
+    _assert_no_color_conflicts(colored_colors, anchor="blue")
+    assert all(bool(cell.get("semantic_color", False)) for cell in colored_trace["surface_cells"] if bool(cell.get("present", True)))
+
+    operations = create_task(COLOR_OPERATIONS_TASK_ID).generate(
+        20261241,
+        params={
+            "query_id": "single",
+            "scene_variant": "control_panel",
+            "target_color_name": "red",
+            "post_image_noise_apply_prob": 0.0,
+        },
+        max_attempts=60,
+    )
+    operation_colors = tuple(operations.trace_payload["execution_trace"]["initial_color_counts"].keys())
+    assert "red" in set(operation_colors)
+    _assert_no_color_conflicts(operation_colors)
+
+    recolor = create_task(RECOLOR_MATCH_TASK_ID).generate(
+        20261242,
+        params={"query_id": "single", "scene_variant": "socket_bank", "post_image_noise_apply_prob": 0.0},
+        max_attempts=80,
+    )
+    recolor_colors = recolor.trace_payload["execution_trace"]["active_color_names"]
+    _assert_no_color_conflicts(recolor_colors)
+
+    color_frequency = create_task(COLOR_FREQUENCY_TASK_ID).generate(
+        20261243,
+        params={
+            "query_id": COLOR_FREQUENCY_MOST_QUERY_ID,
+            "scene_variant": "control_panel",
+            "answer_color_name": "yellow",
+            "post_image_noise_apply_prob": 0.0,
+        },
+        max_attempts=80,
+    )
+    frequency_trace = color_frequency.trace_payload["execution_trace"]
+    option_colors = set(str(color) for color in frequency_trace["option_color_names"])
+    assert "yellow" in option_colors
+    _assert_no_color_conflicts(option_colors - {"yellow"}, anchor="yellow")
 
 
 def test_surface_fixture_repeated_element_count_variants() -> None:
@@ -480,6 +593,15 @@ def test_surface_fixture_recolor_drive_bay_uses_visible_fill_rgb() -> None:
         158141830484107,
         params={
             "query_id": "single",
+            "scene_variant": "server_rack",
+            "active_color_names": ["brown", "green", "blue"],
+            "source_color_name": "brown",
+            "destination_color_name": "green",
+            "initial_color_counts": {
+                "brown": 3,
+                "green": 2,
+                "blue": 4,
+            },
             "post_image_noise_apply_prob": 0.0,
         },
         max_attempts=80,
@@ -500,8 +622,14 @@ def test_surface_fixture_recolor_drive_bay_uses_visible_fill_rgb() -> None:
         for cell in dataset["surface_cells"]
     )
 
-    original_brown = _mean_rgb_for_bbox(output.image, render_map["element_bboxes_px"]["original:drive_bay_01"])
-    recolored_green = _mean_rgb_for_bbox(output.image, render_map["element_bboxes_px"][f"{answer_label}:drive_bay_01"])
+    source_cell = next(
+        cell
+        for cell in trace["surface_original_dataset"]["surface_cells"]
+        if cell["present"] and cell["color_name"] == "brown"
+    )
+    element_id = str(source_cell["element_id"])
+    original_brown = _mean_rgb_for_bbox(output.image, render_map["element_bboxes_px"][f"original:{element_id}"])
+    recolored_green = _mean_rgb_for_bbox(output.image, render_map["element_bboxes_px"][f"{answer_label}:{element_id}"])
 
     assert original_brown[0] > original_brown[2] + 30.0
     assert original_brown[1] > original_brown[2] + 20.0

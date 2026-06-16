@@ -182,6 +182,24 @@ COLORABLE_SCENE_VARIANTS: Tuple[str, ...] = (
     "pipe_rack",
 )
 
+COLOR_READOUT_SCENE_VARIANTS: Tuple[str, ...] = (
+    "wall_tile_panel",
+    "compartment_tray",
+    "vent_panel",
+    "window_grid",
+    "door_bank",
+    "drawer_pull_panel",
+    "brick_wall",
+    "paver_floor",
+    "locker_bank",
+    "mailbox_bank",
+    "server_rack",
+    "control_panel",
+    "solar_panel_array",
+    "socket_bank",
+    "indicator_light_panel",
+)
+
 SURFACE_FIXTURE_OBJECT_TYPES: Tuple[str, ...] = SUPPORTED_SCENE_VARIANTS
 
 
@@ -194,6 +212,7 @@ def semantic_color_label(color_name: str) -> str:
 
 __all__ = [
     "COLORABLE_SCENE_VARIANTS",
+    "COLOR_READOUT_SCENE_VARIANTS",
     "ELEMENT_DISPLAY_NAME",
     "ELEMENT_PLURAL",
     "ELEMENT_TYPE_BY_SCENE_VARIANT",

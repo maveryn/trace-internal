@@ -12,7 +12,7 @@ from trace.tasks.shared.fixed_query import explicit_query_id_param
 
 from ._lifecycle import ResolvedSurfaceFixtureAxes, SurfaceFixturePlan, run_surface_fixture_lifecycle
 from .shared.metrics import build_scoped_color_surface_data
-from .shared.state import COLORABLE_SCENE_VARIANTS, SCENE_ID
+from .shared.state import COLOR_READOUT_SCENE_VARIANTS, SCENE_ID
 
 
 TASK_ID = "task_three_d__surface_fixture__scoped_colored_element_count"
@@ -111,7 +111,7 @@ class ThreeDSurfaceFixtureScopedColoredElementCountTask:
             prompt_query_key=PROMPT_QUERY_KEY,
             supported_branches=SUPPORTED_QUERY_IDS,
             default_branch=DEFAULT_QUERY_ID,
-            supported_scenes=COLORABLE_SCENE_VARIANTS,
+            supported_scenes=COLOR_READOUT_SCENE_VARIANTS,
             gen_defaults=_GEN_DEFAULTS,
             render_defaults=_RENDER_DEFAULTS,
             instance_seed=int(instance_seed),

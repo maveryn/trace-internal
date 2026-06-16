@@ -24,7 +24,7 @@ from .shared.metrics import build_recolor_board_match_surface_data
 from .shared.option_rendering import render_surface_fixture_recolor_board_match
 from .shared.prompts import build_prompt_artifacts, dynamic_slots_for_surface
 from .shared.sampling import one_hot_probability_map, resolve_scene_and_element
-from .shared.state import COLORABLE_SCENE_VARIANTS, SCENE_ID
+from .shared.state import COLOR_READOUT_SCENE_VARIANTS, SCENE_ID
 
 
 TASK_ID = "task_three_d__surface_fixture__recolor_board_match_label"
@@ -94,7 +94,7 @@ class ThreeDSurfaceFixtureRecolorBoardMatchLabelTask:
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
             namespace=TASK_ID,
-            supported_scenes=COLORABLE_SCENE_VARIANTS,
+            supported_scenes=COLOR_READOUT_SCENE_VARIANTS,
         )
         last_error: Exception | None = None
         for attempt_index in range(max(1, int(max_attempts))):

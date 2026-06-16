@@ -15,6 +15,8 @@
 The image shows one projected fixture surface with repeated colored elements.
 The prompt asks for the number of elements of the sampled family that have the
 requested semantic color.
+Generated named-color instances use readout-safe fixture variants and avoid
+near-color distractors for the requested semantic color.
 
 The answer is the integer count of finalized present cells whose
 `element_type == target_element_type` and `color_name == target_color_name`.

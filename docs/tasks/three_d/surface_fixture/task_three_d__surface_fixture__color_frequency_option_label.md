@@ -17,6 +17,8 @@ The image shows one projected fixture surface containing repeated colored
 surface elements, plus six labeled text option cards `A` through `F`. Each
 option card names one candidate color using neutral text; the cards are not
 filled with that candidate color.
+Generated named-color instances use readout-safe fixture variants. Generated
+option sets avoid near-color distractors for the answer color.
 
 For `most_frequent_color`, every option color appears on the fixture and
 exactly one option color has the highest visible element count.

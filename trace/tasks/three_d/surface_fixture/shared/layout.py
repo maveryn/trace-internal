@@ -202,6 +202,7 @@ def layout_cells(
     color_by_index: Mapping[int, str] | None = None,
     reference_index: int | None = None,
     include_absent: bool = False,
+    semantic_color: bool = False,
 ) -> List[Dict[str, Any]]:
     """Create projected-cell records before pixel rendering."""
 
@@ -287,6 +288,7 @@ def layout_cells(
                 "present": bool(is_present),
                 "color_name": str(color_name),
                 "fill_rgb": list(SEMANTIC_COLOR_RGB[color_name]) if color_name else None,
+                "semantic_color": bool(semantic_color and color_name),
                 "count_role": str(count_role),
                 "layout_style": str(layout_style),
             }

@@ -18,6 +18,76 @@ from .state import (
     semantic_color_label,
 )
 
+COLOR_CONFUSION_EXCLUSIONS: Mapping[str, Tuple[str, ...]] = {
+    "blue": ("cyan", "purple"),
+    "red": ("maroon", "magenta"),
+    "yellow": ("orange", "brown"),
+    "orange": ("yellow", "brown"),
+    "cyan": ("blue",),
+    "maroon": ("red", "magenta"),
+    "magenta": ("red", "maroon"),
+    "brown": ("yellow", "orange"),
+}
+
+
+def _confusable_color_names(color_name: str) -> Tuple[str, ...]:
+    """Return named colors that should not distract from a semantic target."""
+
+    return tuple(str(color) for color in COLOR_CONFUSION_EXCLUSIONS.get(str(color_name), ()))
+
+
+def _colors_conflict(left: str, right: str) -> bool:
+    """Return whether two semantic colors are too close for generated color readout."""
+
+    return (
+        str(right) in set(_confusable_color_names(str(left)))
+        or str(left) in set(_confusable_color_names(str(right)))
+    )
+
+
+def _readout_color_support(
+    *,
+    anchors: Sequence[str] = (),
+    exclude: Sequence[str] = (),
+) -> Tuple[str, ...]:
+    """Resolve generated color choices after removing target-confusable names."""
+
+    blocked = {str(color) for color in exclude}
+    for anchor in anchors:
+        blocked.add(str(anchor))
+        blocked.update(_confusable_color_names(str(anchor)))
+    return tuple(str(color) for color in SEMANTIC_COLOR_SUPPORT if str(color) not in blocked)
+
+
+def _sample_nonconflicting_readout_colors(
+    *,
+    rng: Any,
+    count: int,
+    required: Sequence[str] = (),
+) -> Tuple[str, ...]:
+    """Sample a small active palette with no pairwise close-color conflicts."""
+
+    selected: list[str] = []
+    for color in required:
+        color_name = str(color)
+        if color_name not in set(SEMANTIC_COLOR_SUPPORT):
+            raise ValueError(f"unsupported required color: {color_name}")
+        if color_name in selected:
+            continue
+        if any(_colors_conflict(color_name, existing) for existing in selected):
+            raise ValueError(f"required colors are visually confusable: {required}")
+        selected.append(color_name)
+
+    pool = [str(color) for color in SEMANTIC_COLOR_SUPPORT if str(color) not in set(selected)]
+    rng.shuffle(pool)
+    for color in pool:
+        if any(_colors_conflict(str(color), existing) for existing in selected):
+            continue
+        selected.append(str(color))
+        if len(selected) >= int(count):
+            return tuple(selected[: int(count)])
+    raise ValueError(f"could not sample {count} non-conflicting semantic colors")
+
 
 def base_surface_data(
     *,
@@ -260,7 +330,7 @@ def build_color_surface_data(
         namespace=f"{namespace}.target_color",
         explicit_key="target_color_name",
     )
-    other_colors = [color for color in SEMANTIC_COLOR_SUPPORT if color != target_color]
+    other_colors = list(_readout_color_support(anchors=(target_color,)))
     color_by_index: Dict[int, str] = {}
     target_set = set(target_indices)
     for index in present_indices:
@@ -276,6 +346,7 @@ def build_color_surface_data(
         rng=rng,
         layout_style=layout_style,
         color_by_index=color_by_index,
+        semantic_color=True,
     )
     dataset = base_surface_data(
         scene_variant=str(scene_variant),
@@ -299,6 +370,8 @@ def build_color_surface_data(
 
 
 COLOR_FREQUENCY_OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
+COLOR_FREQUENCY_MAXIMUM_PROGRAM = "option_color_count_maximum"
+COLOR_FREQUENCY_ZERO_PROGRAM = "option_color_count_zero"
 
 
 def _resolve_color_option_names(
@@ -326,15 +399,20 @@ def _resolve_color_option_names(
         answer = str(answer_color)
         if answer not in set(SEMANTIC_COLOR_SUPPORT):
             raise ValueError(f"unsupported answer_color_name: {answer}")
-        colors = [str(color) for color in SEMANTIC_COLOR_SUPPORT if str(color) != answer]
+        colors = list(_readout_color_support(anchors=(answer,)))
         rng.shuffle(colors)
-        option_colors = colors[: len(COLOR_FREQUENCY_OPTION_LABELS)]
-        option_colors[int(COLOR_FREQUENCY_OPTION_LABELS.index(str(answer_label)))] = str(answer)
+        option_colors = colors[: len(COLOR_FREQUENCY_OPTION_LABELS) - 1]
+        option_colors.insert(int(COLOR_FREQUENCY_OPTION_LABELS.index(str(answer_label))), str(answer))
         return tuple(option_colors)
 
     colors = list(str(color) for color in SEMANTIC_COLOR_SUPPORT)
     rng.shuffle(colors)
-    return tuple(colors[: len(COLOR_FREQUENCY_OPTION_LABELS)])
+    answer = str(colors[0])
+    option_colors = list(_readout_color_support(anchors=(answer,)))
+    rng.shuffle(option_colors)
+    option_colors = option_colors[: len(COLOR_FREQUENCY_OPTION_LABELS) - 1]
+    option_colors.insert(int(COLOR_FREQUENCY_OPTION_LABELS.index(str(answer_label))), str(answer))
+    return tuple(option_colors)
 
 
 def _resolve_option_color_counts(
@@ -348,6 +426,14 @@ def _resolve_option_color_counts(
     namespace: str,
     rng: Any,
 ) -> Tuple[Dict[str, int], Dict[str, float]]:
+    """Construct option-color counts for the text-option frequency program.
+
+    The shared metric layer deliberately works with internal program names
+    instead of public query ids. The invariant is one unique answer option:
+    either exactly one visible color has the maximum count, or exactly one
+    listed color is absent from the fixture.
+    """
+
     labels = COLOR_FREQUENCY_OPTION_LABELS
     answer_color = str(option_colors[int(labels.index(str(answer_label)))])
     raw_counts = params.get("color_counts_by_name", params.get("color_counts"))
@@ -355,19 +441,19 @@ def _resolve_option_color_counts(
         if not isinstance(raw_counts, Mapping):
             raise ValueError("color_counts_by_name must be a mapping from option color name to count")
         counts = {str(color): int(raw_counts.get(str(color), 0)) for color in option_colors}
-        if str(frequency_program) == "absent_color":
+        if str(frequency_program) == COLOR_FREQUENCY_ZERO_PROGRAM:
             if int(counts[str(answer_color)]) != 0:
-                raise ValueError("answer color must have zero count for absent_color")
+                raise ValueError("answer color must have zero count for zero-count option program")
             if sum(1 for count in counts.values() if int(count) == 0) != 1:
-                raise ValueError("absent_color requires exactly one zero-count option color")
+                raise ValueError("zero-count option program requires exactly one zero-count option color")
         else:
             max_count = max(int(count) for count in counts.values())
             if int(counts[str(answer_color)]) != int(max_count):
-                raise ValueError("answer color must be the unique maximum for most_frequent_color")
+                raise ValueError("answer color must be the unique maximum for maximum-count option program")
             if sum(1 for count in counts.values() if int(count) == int(max_count)) != 1:
-                raise ValueError("most_frequent_color requires a unique maximum color count")
+                raise ValueError("maximum-count option program requires a unique maximum color count")
             if any(int(count) <= 0 for count in counts.values()):
-                raise ValueError("most_frequent_color requires every option color to appear")
+                raise ValueError("maximum-count option program requires every option color to appear")
         total = int(sum(int(count) for count in counts.values()))
         return counts, uniform_int_probability_map(range(max(1, total), max(1, total) + 1), selected=total)
 
@@ -385,10 +471,10 @@ def _resolve_option_color_counts(
         upper_bound=36,
     )
     counts = {str(color): 0 for color in option_colors}
-    if str(frequency_program) == "absent_color":
+    if str(frequency_program) == COLOR_FREQUENCY_ZERO_PROGRAM:
         present_colors = [str(color) for color in option_colors if str(color) != str(answer_color)]
         if int(total_count) < len(present_colors):
-            raise ValueError("total_count too small for absent_color present colors")
+            raise ValueError("total_count too small for zero-count option present colors")
         for color in present_colors:
             counts[color] = 1
         remaining = int(total_count) - len(present_colors)
@@ -402,7 +488,7 @@ def _resolve_option_color_counts(
     target_max = max(target_min, configured_int(params, gen_defaults, "max_color_count_max", 9))
     target_max = min(int(target_max), int(total_count) - len(option_colors) + 1)
     if target_max < target_min:
-        raise ValueError("total_count too small for most_frequent_color maximum support")
+        raise ValueError("total_count too small for maximum-count option support")
     max_count = int(target_min + int(rng.randrange(int(target_max - target_min + 1))))
     other_colors = [str(color) for color in option_colors if str(color) != str(answer_color)]
     counts[str(answer_color)] = int(max_count)
@@ -412,7 +498,7 @@ def _resolve_option_color_counts(
     for _ in range(max(0, int(remaining))):
         eligible = [color for color in other_colors if int(counts[str(color)]) < int(max_count) - 1]
         if not eligible:
-            raise ValueError("could not allocate most_frequent_color counts with unique maximum")
+            raise ValueError("could not allocate option counts with a unique maximum")
         color = str(eligible[int(rng.randrange(len(eligible)))])
         counts[color] += 1
     if int(counts[str(answer_color)]) <= max(int(counts[color]) for color in other_colors):
@@ -433,7 +519,7 @@ def build_color_frequency_option_surface_data(
 ) -> Tuple[Dict[str, Any], Dict[str, float]]:
     """Create one colored fixture plus six visual color-answer options."""
 
-    if str(frequency_program) not in {"most_frequent_color", "absent_color"}:
+    if str(frequency_program) not in {COLOR_FREQUENCY_MAXIMUM_PROGRAM, COLOR_FREQUENCY_ZERO_PROGRAM}:
         raise ValueError(f"unsupported color-frequency program: {frequency_program}")
     if str(answer_label) not in set(COLOR_FREQUENCY_OPTION_LABELS):
         raise ValueError(f"unsupported answer_label: {answer_label}")
@@ -477,6 +563,7 @@ def build_color_frequency_option_surface_data(
         rng=rng,
         layout_style=layout_style,
         color_by_index=color_by_index,
+        semantic_color=True,
     )
     option_records = [
         {
@@ -544,9 +631,11 @@ def _resolve_active_colors(
     color_count = int(params.get("active_color_count", params.get("color_count", 2 + int(rng.randrange(3)))))
     if color_count < 2 or color_count > 4:
         raise ValueError(f"active_color_count must be in 2..4, got {color_count}")
-    other_colors = [color for color in SEMANTIC_COLOR_SUPPORT if str(color) != str(target_color)]
-    rng.shuffle(other_colors)
-    return tuple([str(target_color), *[str(color) for color in other_colors[: color_count - 1]]])
+    return _sample_nonconflicting_readout_colors(
+        rng=rng,
+        count=int(color_count),
+        required=(str(target_color),),
+    )
 
 
 def _resolve_initial_color_counts(
@@ -808,6 +897,7 @@ def build_color_operation_surface_data(
         rng=rng,
         layout_style=layout_style,
         color_by_index=color_by_index,
+        semantic_color=True,
     )
     initial_target_count = int(initial_counts[str(target_color)])
     final_target_count = int(final_counts[str(target_color)])
@@ -884,9 +974,7 @@ def _resolve_recolor_active_colors(
         rng_count = spawn_rng(int(instance_seed), f"{namespace}.active_color_count")
         color_count = int(minimum + int(rng_count.randrange(int(maximum - minimum + 1))))
     rng = spawn_rng(int(instance_seed), f"{namespace}.active_colors")
-    colors = list(SEMANTIC_COLOR_SUPPORT)
-    rng.shuffle(colors)
-    return tuple(str(color) for color in colors[: int(color_count)])
+    return _sample_nonconflicting_readout_colors(rng=rng, count=int(color_count))
 
 
 def _resolve_recolor_rule(
@@ -1151,6 +1239,7 @@ def _colored_dataset_from_counts(
         rng=rng,
         layout_style=str(layout_style),
         color_by_index=color_by_index,
+        semantic_color=True,
     )
     extra: Dict[str, Any] = {
         "color_counts": {str(color): int(count) for color, count in color_counts.items()},
@@ -1354,6 +1443,7 @@ def _fixed_position_dataset_from_color_map(
             color = str(color_by_index[index])
             updated["color_name"] = str(color)
             updated["fill_rgb"] = list(SEMANTIC_COLOR_RGB[str(color)])
+            updated["semantic_color"] = True
             updated["count_role"] = "distractor"
         cells.append(updated)
     color_counts = _counts_from_color_by_index(color_by_index, active_colors=active_colors)
@@ -1547,7 +1637,7 @@ def build_scoped_color_surface_data(
         namespace=f"{namespace}.target_color",
         explicit_key="target_color_name",
     )
-    other_colors = [color for color in SEMANTIC_COLOR_SUPPORT if color != target_color]
+    other_colors = list(_readout_color_support(anchors=(target_color,)))
     outside_same_color_count = min(int(rng.randrange(1, 4)), max(0, total_slots - len(scope_indices)))
     outside_indices = [index for index in all_indices if index not in set(scope_indices)]
     outside_same_color = set(sample_indices(rng, outside_indices, outside_same_color_count))
@@ -1569,6 +1659,7 @@ def build_scoped_color_surface_data(
         rng=rng,
         layout_style=layout_style,
         color_by_index=color_by_index,
+        semantic_color=True,
     )
     dataset = base_surface_data(
         scene_variant=str(scene_variant),
@@ -1607,5 +1698,8 @@ __all__ = [
     "build_recolor_board_match_surface_data",
     "build_repeated_surface_data",
     "build_scoped_color_surface_data",
+    "COLOR_CONFUSION_EXCLUSIONS",
+    "COLOR_FREQUENCY_MAXIMUM_PROGRAM",
     "COLOR_FREQUENCY_OPTION_LABELS",
+    "COLOR_FREQUENCY_ZERO_PROGRAM",
 ]

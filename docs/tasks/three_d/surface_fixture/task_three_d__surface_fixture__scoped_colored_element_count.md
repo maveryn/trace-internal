@@ -15,6 +15,8 @@
 The image shows one projected fixture surface arranged in rows and columns with
 repeated colored elements. The prompt asks for the number of elements of the
 requested color within one sampled row or column.
+Generated named-color instances use readout-safe fixture variants and avoid
+near-color distractors for the requested semantic color.
 
 The answer is the integer count of finalized present cells matching both the
 requested scope and `color_name == target_color_name`.

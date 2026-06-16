@@ -11,7 +11,7 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 
 from ._lifecycle import ResolvedSurfaceFixtureAxes, SurfaceFixturePlan, run_surface_fixture_lifecycle
 from .shared.metrics import build_color_operation_surface_data
-from .shared.state import COLORABLE_SCENE_VARIANTS, SCENE_ID, semantic_color_label
+from .shared.state import COLOR_READOUT_SCENE_VARIANTS, SCENE_ID, semantic_color_label
 
 
 TASK_ID = "task_three_d__surface_fixture__color_count_after_operations_value"
@@ -83,7 +83,7 @@ class ThreeDSurfaceFixtureColorCountAfterOperationsValueTask:
             prompt_query_key=PROMPT_QUERY_KEY,
             supported_branches=SUPPORTED_QUERY_IDS,
             default_branch=QUERY_ID,
-            supported_scenes=COLORABLE_SCENE_VARIANTS,
+            supported_scenes=COLOR_READOUT_SCENE_VARIANTS,
             gen_defaults=_GEN_DEFAULTS,
             render_defaults=_RENDER_DEFAULTS,
             instance_seed=int(instance_seed),

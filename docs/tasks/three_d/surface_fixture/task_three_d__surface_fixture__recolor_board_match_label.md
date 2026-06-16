@@ -20,6 +20,8 @@ the result.
 All objects of the source color on the original board become the destination
 color. Other colors are unchanged. Candidate boards keep the same visible cell
 positions as the original board; only object colors change.
+Generated named-color instances use readout-safe fixture variants and avoid
+near-color distractors among the active semantic colors.
 
 The answer is the single capital letter of the unique candidate board whose
 fixed-position color state matches the final recolored original board.

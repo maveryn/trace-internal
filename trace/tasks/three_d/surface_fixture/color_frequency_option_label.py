@@ -19,11 +19,16 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.three_d.shared.object_scene import _resolve_render_params
 
-from .shared.metrics import COLOR_FREQUENCY_OPTION_LABELS, build_color_frequency_option_surface_data
+from .shared.metrics import (
+    COLOR_FREQUENCY_MAXIMUM_PROGRAM,
+    COLOR_FREQUENCY_OPTION_LABELS,
+    COLOR_FREQUENCY_ZERO_PROGRAM,
+    build_color_frequency_option_surface_data,
+)
 from .shared.option_rendering import render_surface_fixture_color_frequency_options
 from .shared.prompts import build_prompt_artifacts, dynamic_slots_for_surface
 from .shared.sampling import one_hot_probability_map, resolve_scene_and_element
-from .shared.state import COLORABLE_SCENE_VARIANTS, SCENE_ID
+from .shared.state import COLOR_READOUT_SCENE_VARIANTS, SCENE_ID
 
 
 TASK_ID = "task_three_d__surface_fixture__color_frequency_option_label"
@@ -34,6 +39,10 @@ SUPPORTED_QUERY_IDS = (MOST_QUERY_ID, ABSENT_QUERY_ID)
 PROMPT_QUERY_KEY_BY_QUERY_ID = {
     MOST_QUERY_ID: "most_frequent_color_option",
     ABSENT_QUERY_ID: "absent_color_option",
+}
+FREQUENCY_PROGRAM_BY_QUERY_ID = {
+    MOST_QUERY_ID: COLOR_FREQUENCY_MAXIMUM_PROGRAM,
+    ABSENT_QUERY_ID: COLOR_FREQUENCY_ZERO_PROGRAM,
 }
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
     "three_d",
@@ -95,6 +104,8 @@ def _query_params_for_color_frequency(
     answer_label_probabilities: Mapping[str, float],
     total_count_probabilities: Mapping[int, float],
 ) -> Dict[str, Any]:
+    """Record prompt/query parameters without leaking generation-only state."""
+
     return {
         "query_id_probabilities": dict(query_probabilities),
         "scene_variant": str(axes.scene_variant),
@@ -132,6 +143,13 @@ def _color_frequency_trace_payload(
     background_meta: Mapping[str, Any],
     post_noise_meta: Mapping[str, Any],
 ) -> Dict[str, Any]:
+    """Assemble the full verifier trace for one color-frequency MCQ.
+
+    This wrapper owns public query identity and prompt-facing option labels.
+    The invariant is that the selected text option bbox, typed answer, and
+    counted/absent color state all come from the same finalized render trace.
+    """
+
     return {
         "scene_ir": {
             "scene_kind": "three_d_surface_fixture_color_frequency_option_label",
@@ -224,6 +242,13 @@ class ThreeDSurfaceFixtureColorFrequencyOptionLabelTask:
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Generate one color-frequency option instance with one stable answer schema.
+
+        The public task wrapper resolves query id, scene axes, prompt text, and
+        annotation. Shared metrics receive only internal frequency-program names
+        so reusable scene code is not coupled to public query identities.
+        """
+
         selected_query, query_probabilities, clean_params = select_task_query_id(
             instance_seed=int(instance_seed),
             params=params,
@@ -237,7 +262,7 @@ class ThreeDSurfaceFixtureColorFrequencyOptionLabelTask:
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
             namespace=TASK_ID,
-            supported_scenes=COLORABLE_SCENE_VARIANTS,
+            supported_scenes=COLOR_READOUT_SCENE_VARIANTS,
         )
         last_error: Exception | None = None
         for attempt_index in range(max(1, int(max_attempts))):
@@ -251,7 +276,7 @@ class ThreeDSurfaceFixtureColorFrequencyOptionLabelTask:
                     namespace=f"{TASK_ID}.objective",
                     scene_variant=axes.scene_variant,
                     element_type=axes.element_type,
-                    frequency_program=str(selected_query),
+                    frequency_program=str(FREQUENCY_PROGRAM_BY_QUERY_ID[str(selected_query)]),
                     answer_label=str(answer_label),
                     instance_seed=int(attempt_seed),
                     params=clean_params,

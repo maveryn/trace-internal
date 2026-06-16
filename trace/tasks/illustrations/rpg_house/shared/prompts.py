@@ -1,4 +1,4 @@
-"""Prompt rendering helpers for RPG interior illustration tasks."""
+"""Prompt rendering helpers for RPG house illustration tasks."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from trace.tasks.shared.prompt_variants import (
 )
 
 
-def build_rpg_interior_prompt_artifacts(
+def build_rpg_house_prompt_artifacts(
     *,
     domain: str,
     scene_id: str,
@@ -20,7 +20,7 @@ def build_rpg_interior_prompt_artifacts(
     slots: Mapping[str, Any],
     instance_seed: int,
 ) -> Any:
-    """Render external prompt templates for one RPG interior task."""
+    """Render external prompt templates for one RPG house task."""
 
     selection = render_scene_prompt_variants(
         domain=str(domain),
@@ -37,4 +37,4 @@ def build_rpg_interior_prompt_artifacts(
     return build_prompt_trace_artifacts(selection)
 
 
-__all__ = ["build_rpg_interior_prompt_artifacts"]
+__all__ = ["build_rpg_house_prompt_artifacts"]

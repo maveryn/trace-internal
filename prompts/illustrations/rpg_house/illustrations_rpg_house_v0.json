@@ -1,8 +1,8 @@
 {
-  "bundle_id": "illustrations_rpg_interior_v0",
+  "bundle_id": "illustrations_rpg_house_v0",
   "schema_version": "v0",
   "task_templates": {
-    "rpg_interior_object_zone_count_task": [
+    "rpg_house_reachable_room_label_task": [
       "",
       "",
       "",
@@ -11,13 +11,8 @@
     ]
   },
   "required_slots_by_key": {
-    "scene:rpg_interior_canvas": [],
-    "query:object_zone_count": [
-      "target_plural",
-      "target_unit",
-      "zone_relation",
-      "zone_name"
-    ],
+    "scene:rpg_house_canvas": [],
+    "query:reachable_room_label": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -47,21 +42,21 @@
     ]
   },
   "scene_templates": {
-    "rpg_interior_canvas": [
-      "The image shows a top-down pixel RPG interior.",
-      "The scene shows a top-down RPG-style room interior.",
-      "The picture shows a pixel-art RPG interior from above.",
-      "The canvas contains a top-down RPG interior scene.",
-      "This illustration shows an RPG-style indoor room from above."
+    "rpg_house_canvas": [
+      "The image shows a top-down pixel RPG house floor plan with multiple rooms and doors.",
+      "The scene shows a top-down RPG-style house layout with rooms connected by doorways.",
+      "The picture shows a pixel-art house interior from above, including rooms, walls, and doors.",
+      "The canvas contains a top-down RPG house map with a red-outlined starting room and lettered candidate rooms.",
+      "This illustration shows an RPG-style indoor house layout from above."
     ]
   },
   "query_templates": {
-    "object_zone_count": [
-      "How many {target_plural} are {zone_relation} the {zone_name}?",
-      "Count the visible {target_plural} {zone_relation} the {zone_name}.",
-      "What is the number of visible {target_plural} {zone_relation} the {zone_name}?",
-      "How many {target_plural} can be seen {zone_relation} the {zone_name}?",
-      "Find every visible {target_unit} {zone_relation} the {zone_name}. What is the count?"
+    "reachable_room_label": [
+      "Starting from the red-outlined room, which lettered room can be reached without going through a closed door?",
+      "Which lettered room is reachable from the red-outlined starting room using only open doorways?",
+      "From the red-outlined starting room, choose the letter of the room that can be reached without crossing a closed door.",
+      "The red outline marks the starting room. Which lettered room is connected to it through open doorways?",
+      "Follow only open doorways from the red-outlined room. Which lettered room can be reached?"
     ]
   },
   "allow_empty_task_templates": true

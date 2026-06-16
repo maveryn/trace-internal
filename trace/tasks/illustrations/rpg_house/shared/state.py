@@ -1,4 +1,4 @@
-"""State containers for the RPG interior scene package."""
+"""State containers for the RPG house scene package."""
 
 from __future__ import annotations
 
@@ -12,23 +12,21 @@ TileBox = tuple[int, int, int, int]
 
 
 @dataclass(frozen=True)
-class RpgInteriorRegion:
-    """One named region or support zone in the interior."""
+class RpgHouseRoom:
+    """One room in the top-down house layout."""
 
-    region_id: str
+    room_id: str
     public_name: str
-    relation_phrase: str
-    region_type: str
+    label: str | None
     tile_xywh: TileBox
     bbox_xyxy: BBox
     metadata: Mapping[str, Any]
 
     def as_dict(self) -> dict[str, Any]:
         return {
-            "region_id": str(self.region_id),
+            "room_id": str(self.room_id),
             "public_name": str(self.public_name),
-            "relation_phrase": str(self.relation_phrase),
-            "region_type": str(self.region_type),
+            "label": None if self.label is None else str(self.label),
             "tile_xywh": [int(value) for value in self.tile_xywh],
             "bbox": [round(float(value), 3) for value in self.bbox_xyxy],
             "metadata": dict(self.metadata),
@@ -36,19 +34,43 @@ class RpgInteriorRegion:
 
 
 @dataclass(frozen=True)
-class RpgInteriorEntity:
-    """One rendered entity in the interior."""
+class RpgHouseDoor:
+    """One doorway connecting two rooms."""
+
+    door_id: str
+    room_a_id: str
+    room_b_id: str
+    state: str
+    orientation: str
+    tile_xy: tuple[int, int]
+    bbox_xyxy: BBox
+    metadata: Mapping[str, Any]
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "door_id": str(self.door_id),
+            "room_a_id": str(self.room_a_id),
+            "room_b_id": str(self.room_b_id),
+            "state": str(self.state),
+            "orientation": str(self.orientation),
+            "tile_xy": [int(value) for value in self.tile_xy],
+            "bbox": [round(float(value), 3) for value in self.bbox_xyxy],
+            "metadata": dict(self.metadata),
+        }
+
+
+@dataclass(frozen=True)
+class RpgHouseEntity:
+    """One large fixture or context object in a room."""
 
     entity_id: str
     public_name: str
     object_type: str
-    category: str
-    zone_id: str
+    room_id: str
     tile_xywh: TileBox
     bbox_xyxy: BBox
     point_xy: Point
     layer: str
-    countable: bool
     metadata: Mapping[str, Any]
 
     def as_dict(self) -> dict[str, Any]:
@@ -61,13 +83,11 @@ class RpgInteriorEntity:
             "entity_id": str(self.entity_id),
             "public_name": str(self.public_name),
             "object_type": str(self.object_type),
-            "category": str(self.category),
-            "zone_id": str(self.zone_id),
+            "room_id": str(self.room_id),
             "tile_xywh": [int(value) for value in self.tile_xywh],
             "bbox": [round(float(value), 3) for value in self.bbox_xyxy],
             "point": [round(float(value), 3) for value in self.point_xy],
             "layer": str(self.layer),
-            "countable": bool(self.countable),
             "metadata": metadata,
         }
         if "object_record" in self.metadata:
@@ -76,20 +96,22 @@ class RpgInteriorEntity:
 
 
 @dataclass(frozen=True)
-class RpgInteriorScene:
-    """Rendered RPG interior plus metadata used by tasks."""
+class RpgHouseScene:
+    """Rendered RPG house plus verifier metadata."""
 
     image: Any
-    entities: tuple[RpgInteriorEntity, ...]
-    regions: tuple[RpgInteriorRegion, ...]
+    rooms: tuple[RpgHouseRoom, ...]
+    doors: tuple[RpgHouseDoor, ...]
+    entities: tuple[RpgHouseEntity, ...]
     trace: Mapping[str, Any]
 
 
 __all__ = [
     "BBox",
     "Point",
-    "RpgInteriorEntity",
-    "RpgInteriorRegion",
-    "RpgInteriorScene",
+    "RpgHouseDoor",
+    "RpgHouseEntity",
+    "RpgHouseRoom",
+    "RpgHouseScene",
     "TileBox",
 ]

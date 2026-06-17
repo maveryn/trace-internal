@@ -6,6 +6,7 @@ from typing import Sequence
 
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
+    bbox_set_annotation_artifacts,
     point_annotation_artifacts,
     point_set_annotation_artifacts,
 )
@@ -42,7 +43,23 @@ def point_set_for_entity_ids(
     return point_set_annotation_artifacts(points)
 
 
+def bbox_set_for_entity_ids(
+    rendered_scene: RenderedRacingTrackScene,
+    entity_ids: Sequence[str],
+) -> AnnotationArtifacts:
+    """Build unordered bbox-set annotation for selected racing-track entities."""
+
+    bbox_map = rendered_scene.render_map.get("entity_bboxes_px", {})
+    bboxes = []
+    for entity_id in entity_ids:
+        if str(entity_id) not in bbox_map:
+            raise ValueError(f"missing racing-track rendered entity bbox for {entity_id!r}")
+        bboxes.append([round(float(value), 3) for value in bbox_map[str(entity_id)][:4]])
+    return bbox_set_annotation_artifacts(bboxes)
+
+
 __all__ = [
+    "bbox_set_for_entity_ids",
     "point_annotation_for_entity_id",
     "point_for_entity_id",
     "point_set_for_entity_ids",

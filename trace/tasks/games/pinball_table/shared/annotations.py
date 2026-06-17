@@ -7,6 +7,7 @@ from typing import Sequence
 from trace.core.types import TypedValue
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
+    bbox_set_annotation_artifacts,
     point_annotation_artifacts,
     point_set_annotation_artifacts,
 )
@@ -61,7 +62,19 @@ def point_set_for_entity_ids(
     )
 
 
+def bbox_set_for_entity_ids(
+    rendered_scene: RenderedPinballScene,
+    entity_ids: Sequence[str],
+) -> AnnotationArtifacts:
+    """Build unordered bbox-set annotation for selected pinball objects."""
+
+    entity_bboxes = rendered_scene.render_map["entity_bboxes_px"]
+    bboxes = [list(entity_bboxes[str(entity_id)]) for entity_id in entity_ids]
+    return bbox_set_annotation_artifacts(bboxes)
+
+
 __all__ = [
+    "bbox_set_for_entity_ids",
     "point_for_entity_id",
     "point_set_for_entity_ids",
     "point_sequence_for_entity_ids",

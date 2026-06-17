@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts, point_set_annotation_artifacts
 
 from .rendering import RenderedGoScene
 
@@ -27,4 +27,14 @@ def go_point_set_annotation(
     )
 
 
-__all__ = ["go_point_set_annotation"]
+def go_stone_bbox_set_annotation(
+    rendered_scene: RenderedGoScene,
+    stone_ids: Sequence[str],
+) -> AnnotationArtifacts:
+    """Project selected Go stone ids to stone-bbox annotations."""
+
+    bboxes = rendered_scene.render_map["stone_bboxes_px"]
+    return bbox_set_annotation_artifacts([bboxes[str(stone_id)] for stone_id in stone_ids])
+
+
+__all__ = ["go_point_set_annotation", "go_stone_bbox_set_annotation"]

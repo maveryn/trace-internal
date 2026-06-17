@@ -19,7 +19,7 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.games.shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 
-from .shared.annotations import minecraft_point_set_annotation
+from .shared.annotations import minecraft_bbox_set_annotation
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS, SCENE_ID
 from .shared.output import build_minecraft_common_trace_params, build_minecraft_trace_payload
 from .shared.prompts import MinecraftPromptSlots, build_minecraft_prompt_artifacts
@@ -69,7 +69,7 @@ def minecraft_integer_attempt(
     target_stack_height: int = 0,
     extra_query_params: Mapping[str, Any] | None = None,
 ) -> MinecraftAttemptResult:
-    """Package a task-owned integer answer with point-set annotation witnesses."""
+    """Package a task-owned integer answer with bbox-set annotation witnesses."""
 
     return MinecraftAttemptResult(
         answer_gt=TypedValue(type="integer", value=int(sample.answer)),
@@ -200,7 +200,7 @@ def render_minecraft_lifecycle(
         instance_seed=int(instance_seed),
         namespace=str(namespace),
     )
-    annotation_artifacts = minecraft_point_set_annotation(
+    annotation_artifacts = minecraft_bbox_set_annotation(
         rendered=rendered_scene,
         entity_ids=attempt.annotation_entity_ids,
     )

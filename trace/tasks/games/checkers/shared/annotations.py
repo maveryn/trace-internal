@@ -6,7 +6,7 @@ from typing import Sequence
 
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
-    point_set_annotation_artifacts,
+    bbox_set_annotation_artifacts,
 )
 
 from .rendering import RenderedCheckersScene
@@ -56,10 +56,10 @@ def checkers_annotation_artifacts(
     """Build public annotation artifacts from rendered Checkers witnesses."""
 
     if str(annotation_kind) == "piece_point":
-        return point_set_annotation_artifacts(piece_points_for_ids(rendered_scene, entity_ids))
+        return bbox_set_annotation_artifacts(piece_bboxes_for_ids(rendered_scene, entity_ids))
     if str(annotation_kind) == "piece":
-        return point_set_annotation_artifacts(piece_points_for_ids(rendered_scene, entity_ids))
-    return point_set_annotation_artifacts(cell_points_for_ids(rendered_scene, entity_ids))
+        return bbox_set_annotation_artifacts(piece_bboxes_for_ids(rendered_scene, entity_ids))
+    return bbox_set_annotation_artifacts(cell_bboxes_for_ids(rendered_scene, entity_ids))
 
 
 __all__ = [

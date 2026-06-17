@@ -10,7 +10,7 @@ from trace.tasks.registry import register_task
 from trace.tasks.shared.color_format import format_named_color_with_hex, rgb_to_hex
 from trace.tasks.shared.config_defaults import group_default
 
-from ._lifecycle import Match3ObjectivePlan, match3_point_set_attempt, run_match3_registered_task
+from ._lifecycle import Match3ObjectivePlan, match3_bbox_set_attempt, run_match3_registered_task
 from .shared.defaults import DEFAULTS, GEM_RGB, SCENE_ID
 from .shared.prompts import make_match3_prompt_slots
 from .shared.rules import cell_entity_id, gem_count_matches
@@ -43,7 +43,7 @@ def _prompt_slots_for_branch(selected_branch: str):
         object_description_key="object_description_match3_count_grid",
         answer_hint_key=f"answer_hint_{str(selected_branch)}",
         annotation_hint_key=f"annotation_hint_{str(selected_branch)}",
-        example_annotation=[[252, 338], [318, 338], [384, 338], [450, 338]],
+        example_annotation=[[224, 310, 280, 366], [290, 310, 346, 366], [356, 310, 412, 366], [422, 310, 478, 366]],
         example_answer=4,
     )
 
@@ -157,7 +157,7 @@ def _prepare_gem_count_objective(
                 "answer_support": [int(value) for value in answer_support],
             },
         )
-        return match3_point_set_attempt(
+        return match3_bbox_set_attempt(
             answer_gt=TypedValue(type="integer", value=int(sample.answer)),
             sample=sample,
             prompt_slots=prompt_slots,

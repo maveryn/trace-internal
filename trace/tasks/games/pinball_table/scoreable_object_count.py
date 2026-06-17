@@ -13,7 +13,7 @@ from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 
 from ._lifecycle import AttemptPinballResult, ObjectivePinballPlan, run_pinball_lifecycle
-from .shared.annotations import point_set_for_entity_ids
+from .shared.annotations import bbox_set_for_entity_ids
 from .shared.defaults import PATH_SCORE_VALUES, SCENE_ID
 from .shared.sampling import (
     PinballVisualAxes,
@@ -37,7 +37,11 @@ def _json_examples() -> tuple[str, str]:
     """Return valid format examples for pinball scoreable-count output."""
 
     return (
-        json.dumps({"annotation": [[260, 180], [420, 310], [570, 240]], "answer": 3}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps(
+            {"annotation": [[238, 158, 282, 202], [398, 288, 442, 332], [548, 218, 592, 262]], "answer": 3},
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ),
         json.dumps({"answer": 3}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -104,7 +108,7 @@ def _prepare_scoreable_count_objective(
         prompt_query_key=PROMPT_QUERY_KEY,
         object_description_key="object_description_scoreable_count",
         answer_hint='set "answer" to the integer count of scoreable objects',
-        annotation_hint='set "annotation" to a JSON array of [x, y] pixel points at the centers of all objects that show numeric score labels',
+        annotation_hint='set "annotation" to bounding boxes [x0, y0, x1, y1], one around each object that shows a numeric score label',
         json_example=json_example,
         json_example_answer_only=json_example_answer_only,
         query_params={
@@ -161,7 +165,7 @@ def _construct_scoreable_count_attempt(
         scene=construction.scene,
         answer_gt=TypedValue(type="integer", value=int(construction.scoreable_count)),
         annotation_entity_ids=scoreable_ids,
-        build_annotation=lambda rendered: point_set_for_entity_ids(rendered.rendered_scene, scoreable_ids),
+        build_annotation=lambda rendered: bbox_set_for_entity_ids(rendered.rendered_scene, scoreable_ids),
         witness_type="object_set",
         relations_extra=trace_fields,
         execution_extra={

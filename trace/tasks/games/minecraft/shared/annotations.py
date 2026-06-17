@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts, point_set_annotation_artifacts
 
 from .state import RenderedMinecraftScene
 
@@ -23,4 +23,18 @@ def minecraft_point_set_annotation(
     return point_set_annotation_artifacts(points)
 
 
-__all__ = ["minecraft_point_set_annotation"]
+def minecraft_bbox_set_annotation(
+    *,
+    rendered: RenderedMinecraftScene,
+    entity_ids: Sequence[str],
+) -> AnnotationArtifacts:
+    """Project entity ids to the public unordered bbox-set annotation."""
+
+    bboxes = [
+        list(rendered.render_map["entity_bboxes_px"][str(entity_id)])
+        for entity_id in tuple(str(value) for value in entity_ids)
+    ]
+    return bbox_set_annotation_artifacts(bboxes)
+
+
+__all__ = ["minecraft_bbox_set_annotation", "minecraft_point_set_annotation"]

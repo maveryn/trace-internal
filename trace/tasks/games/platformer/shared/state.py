@@ -1,24 +1,11 @@
-"""Shared Platformer helpers for games-domain tasks."""
+"""Passive state records for platformer game scenes."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Tuple
 
-
-SUPPORTED_PLATFORMER_QUERY_IDS: Tuple[str, ...] = (
-    "jump_landing_label",
-    "collectible_count",
-    "jump_collectible_score_value",
-)
-SUPPORTED_PLATFORMER_SCENE_VARIANTS: Tuple[str, ...] = ("side_scroller",)
-SUPPORTED_PLATFORMER_STYLE_VARIANTS: Tuple[str, ...] = (
-    "day",
-    "cave",
-    "neon",
-    "snow",
-    "sunset",
-)
+from .defaults import SUPPORTED_PLATFORMER_SCENE_VARIANTS, SUPPORTED_PLATFORMER_STYLE_VARIANTS
 
 
 @dataclass(frozen=True)
@@ -50,7 +37,7 @@ class PlatformerHazard:
 
 @dataclass(frozen=True)
 class PlatformerCollectible:
-    """One visible collectible coin/gem."""
+    """One visible collectible coin or bonus item."""
 
     collectible_id: str
     x_norm: float
@@ -103,7 +90,7 @@ def collectible_entity_id(index: int) -> str:
 
 
 def validate_platformer_sample(sample: PlatformerSample) -> None:
-    """Validate answer and annotation for one Platformer sample."""
+    """Validate shared structural invariants for one platformer sample."""
 
     platform_ids = [str(platform.platform_id) for platform in sample.platforms]
     platform_labels = [str(platform.label) for platform in sample.platforms if str(platform.label)]
@@ -120,56 +107,25 @@ def validate_platformer_sample(sample: PlatformerSample) -> None:
         raise ValueError("hazard labels must be unique")
     if len(collectible_ids) != len(set(collectible_ids)):
         raise ValueError("collectible ids must be unique")
+    if str(sample.scene_variant) not in SUPPORTED_PLATFORMER_SCENE_VARIANTS:
+        raise ValueError("unsupported platformer scene variant")
+    if str(sample.style_variant) not in SUPPORTED_PLATFORMER_STYLE_VARIANTS:
+        raise ValueError("unsupported platformer style variant")
 
     known_entities = set(platform_ids) | set(hazard_ids) | set(collectible_ids) | {"player"}
     if not set(sample.annotation_entity_ids) <= known_entities:
         raise ValueError("platformer annotation references unknown entities")
-
-    query = str(sample.mode)
-    if query == "jump_landing_label":
-        if sample.target_platform_id is None or sample.target_platform_label is None:
-            raise ValueError("jump_landing_label requires a target platform")
-        expected_answer: str | int = str(sample.target_platform_label)
-        expected_annotation = {str(sample.target_platform_id)}
-    elif query == "collectible_count":
-        expected_answer = int(len(sample.target_collectible_ids))
-        expected_annotation = set(str(value) for value in sample.target_collectible_ids)
-    elif query == "jump_collectible_score_value":
-        collectible_by_id = {str(collectible.collectible_id): collectible for collectible in sample.collectibles}
-        expected_annotation = set(str(value) for value in sample.target_collectible_ids)
-        if not expected_annotation:
-            raise ValueError("jump_collectible_score_value requires scored collectibles")
-        saw_coin = False
-        saw_bonus = False
-        score_total = 0
-        for collectible_id in expected_annotation:
-            collectible = collectible_by_id.get(str(collectible_id))
-            if collectible is None:
-                raise ValueError("jump_collectible_score_value target references unknown collectible")
-            if not bool(collectible.on_path):
-                raise ValueError("jump_collectible_score_value target collectibles must lie on the jump arc")
-            if collectible.score_value is None:
-                score_total += 1
-                saw_coin = True
-            else:
-                if int(collectible.score_value) <= 0:
-                    raise ValueError("jump_collectible_score_value bonus scores must be positive")
-                score_total += int(collectible.score_value)
-                saw_bonus = True
-        if not saw_coin or not saw_bonus:
-            raise ValueError("jump_collectible_score_value requires at least one coin and one bonus item")
-        expected_answer = int(score_total)
-    else:
-        raise ValueError(f"unsupported platformer mode: {sample.mode}")
-
-    if sample.answer != expected_answer:
-        raise ValueError("platformer answer does not match active query")
-    if set(sample.annotation_entity_ids) != expected_annotation:
-        raise ValueError("platformer annotation ids do not match active query")
+    if sample.target_platform_id is not None and str(sample.target_platform_id) not in platform_ids:
+        raise ValueError("target platform id is not present in the scene")
+    if sample.target_platform_label is not None and str(sample.target_platform_label) not in platform_labels:
+        raise ValueError("target platform label is not present in the scene")
+    if not set(str(value) for value in sample.target_collectible_ids) <= set(collectible_ids):
+        raise ValueError("target collectible ids must be present in the scene")
+    if len(sample.path_points_norm) < 2:
+        raise ValueError("platformer sample requires a visible path")
 
 
 __all__ = [
-    "SUPPORTED_PLATFORMER_QUERY_IDS",
     "SUPPORTED_PLATFORMER_SCENE_VARIANTS",
     "SUPPORTED_PLATFORMER_STYLE_VARIANTS",
     "PlatformerCollectible",

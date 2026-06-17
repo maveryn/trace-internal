@@ -12,7 +12,7 @@ from trace.tasks.shared.config_defaults import group_default, load_scene_generat
 
 from ._lifecycle import (
     BubbleShooterObjectivePlan,
-    point_set_attempt,
+    bbox_set_attempt,
     resolve_bubble_shooter_board_axis_specs,
     run_bubble_shooter_lifecycle,
 )
@@ -140,7 +140,7 @@ def _prepare_pop_color_label_objective(
         if len(answer_options) != 1 or str(answer_options[0].label) != str(target_label):
             raise ValueError("Bubble-shooter color-option state has ambiguous answer")
         annotation_entity_ids = bubble_entity_ids_for_coords(state.outcome.popped_coords)
-        return point_set_attempt(
+        return bbox_set_attempt(
             state=state,
             answer_gt=TypedValue(type="string", value=str(target_label)),
             annotation_entity_ids=annotation_entity_ids,

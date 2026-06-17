@@ -163,11 +163,11 @@
     "marked_stone_rule_text": "The red outlined {player_color} stone marks the group to inspect.",
     "annotation_hint_marked_group_liberty_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at every liberty of the marked {player_color} group",
     "answer_hint_marked_group_liberty_count": "set \"answer\" to the number of liberties of the marked {player_color} group",
-    "annotation_hint_marked_group_adjacent_enemy_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at every opponent stone directly adjacent to the marked {player_color} group",
+    "annotation_hint_marked_group_adjacent_enemy_count": "set \"annotation\" to a JSON array of pixel-space stone boxes [x1, y1, x2, y2] for every opponent stone directly adjacent to the marked {player_color} group",
     "answer_hint_marked_group_adjacent_enemy_count": "set \"answer\" to the number of opponent stones directly adjacent to the marked {player_color} group",
     "annotation_hint_marked_group_shared_liberty_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at every shared liberty of the marked {player_color} group",
     "answer_hint_marked_group_shared_liberty_count": "set \"answer\" to the number of shared liberties of the marked {player_color} group",
-    "annotation_hint_marked_group_stone_count": "set \"annotation\" to a JSON array of pixel-space points [x, y] at every stone in the connected group containing the marked {player_color} stone",
+    "annotation_hint_marked_group_stone_count": "set \"annotation\" to a JSON array of pixel-space stone boxes [x1, y1, x2, y2] for every stone in the connected group containing the marked {player_color} stone",
     "answer_hint_marked_group_stone_count": "set \"answer\" to the number of stones in the connected group containing the marked {player_color} stone"
   }
 }

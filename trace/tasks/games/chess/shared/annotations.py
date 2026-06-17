@@ -25,6 +25,14 @@ def point_set_for_entities(rendered_scene: RenderedChessScene, *, entity_ids: Tu
     return [_bbox_center(mapping[str(entity_id)]) for entity_id in entity_ids]
 
 
+def bbox_set_for_entities(rendered_scene: RenderedChessScene, *, entity_ids: Tuple[str, ...], annotation_kind: str) -> list[list[float]]:
+    """Project cell or piece entity ids into bbox-set annotation."""
+
+    key = "cell_bboxes_px" if str(annotation_kind) == "cell" else "piece_bboxes_px"
+    mapping = rendered_scene.render_map[str(key)]
+    return [list(mapping[str(entity_id)]) for entity_id in entity_ids]
+
+
 def keyed_move_points(
     rendered_scene: RenderedChessScene,
     *,
@@ -52,6 +60,16 @@ def projected_point_payload(annotation_points: list[list[float]]) -> dict[str, A
     }
 
 
+def projected_bbox_payload(annotation_bboxes: list[list[float]]) -> dict[str, Any]:
+    """Return projected bbox-set trace payload."""
+
+    return {
+        "type": "bbox_set",
+        "bbox_set": [list(bbox) for bbox in annotation_bboxes],
+        "pixel_bbox_set": [list(bbox) for bbox in annotation_bboxes],
+    }
+
+
 def projected_keyed_point_payload(annotation_map: Mapping[str, list[float]]) -> dict[str, Any]:
     """Return projected keyed-point trace payload."""
 
@@ -59,8 +77,10 @@ def projected_keyed_point_payload(annotation_map: Mapping[str, list[float]]) -> 
     return {"type": "keyed_point_map", "keyed_point_map": value, "pixel_keyed_point_map": value}
 
 __all__ = [
+    "bbox_set_for_entities",
     "keyed_move_points",
     "point_set_for_entities",
+    "projected_bbox_payload",
     "projected_keyed_point_payload",
     "projected_point_payload",
 ]

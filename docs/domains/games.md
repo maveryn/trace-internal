@@ -39,6 +39,16 @@ move paths, merge pairs, captured groups, option boards, score/status readouts,
 or rule-table entries. Use keyed annotation when source and destination, before
 and after, or reference and candidate roles must be bound correctly.
 
+For games counting tasks, prefer `bbox` / `bbox_set` / keyed bbox maps when the
+counted witnesses are selectable area-like objects: grid cells, tiles, board
+squares, cards, bricks, gems, bubbles, blocks, discs, tokens, pellets, balls, or
+scoreable objects. Prefer `point` / `point_set` for localization-style tasks and
+compact feature witnesses where the answer is a specific center/location rather
+than a collection of counted objects, such as a selected option cell, first-hit
+object, impact point, endpoint, graph-like node, empty liberty, or completion
+point. Use `segment` / `segment_set` for row/column spans, merge links, paths,
+and shot trajectories.
+
 Selected option bboxes are valid only when the option itself is a visual
 candidate board/panel or complete candidate artifact.
 

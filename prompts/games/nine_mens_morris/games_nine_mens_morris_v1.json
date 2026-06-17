@@ -118,7 +118,7 @@
   "code_prompt_defaults": {
     "object_description_single_board": "a Nine Men's Morris board with light and dark pieces placed on intersections",
     "mill_rule_text": "A mill is three same-color pieces on one straight line. Count each piece only once even if it belongs to more than one mill.",
-    "annotation_hint_all_pieces_in_mill_count": "set \"annotation\" to [x, y] pixel points at the centers of every piece that belongs to at least one mill",
+    "annotation_hint_all_pieces_in_mill_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one around each piece that belongs to at least one mill",
     "annotation_hint_white_mill_completion_point_count": "set \"annotation\" to [x, y] pixel points at the centers of every empty point where placing one white piece would complete a mill",
     "annotation_hint_black_mill_completion_point_count": "set \"annotation\" to [x, y] pixel points at the centers of every empty point where placing one black piece would complete a mill",
     "answer_hint_all_pieces_in_mill_count": "set \"answer\" to the total number of pieces that belong to at least one mill",

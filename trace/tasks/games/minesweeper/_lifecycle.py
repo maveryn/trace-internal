@@ -20,7 +20,12 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.games.shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 
-from .shared.annotations import cell_ids_for_coords, minesweeper_point_annotation, minesweeper_point_set_annotation
+from .shared.annotations import (
+    cell_ids_for_coords,
+    minesweeper_bbox_set_annotation,
+    minesweeper_point_annotation,
+    minesweeper_point_set_annotation,
+)
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS, SCENE_ID
 from .shared.output import build_minesweeper_common_trace_params, build_minesweeper_trace_payload
 from .shared.prompts import MinesweeperPromptSlots, build_minesweeper_prompt_artifacts
@@ -161,6 +166,41 @@ def minesweeper_integer_point_set_attempt(
             example_answer=int(example_answer),
         ),
         bind_annotation=lambda rendered: minesweeper_point_set_annotation(rendered=rendered, coords=tuple(coords)),
+        annotation_entity_ids=cell_ids_for_coords(tuple(coords)),
+        highlighted_clue_coords=tuple(highlighted_clue_coords),
+        extra_query_params=dict(extra_query_params or {}),
+        execution_extra=dict(execution_extra or {}),
+    )
+
+
+def minesweeper_integer_bbox_set_attempt(
+    *,
+    sample: MinesweeperSample,
+    prompt_key: str,
+    object_description_key: str,
+    answer_hint_key: str,
+    annotation_hint_key: str,
+    example_annotation: Any,
+    example_answer: int,
+    coords: Sequence[Coord],
+    highlighted_clue_coords: Sequence[Coord] = tuple(),
+    execution_extra: Mapping[str, Any] | None = None,
+    extra_query_params: Mapping[str, Any] | None = None,
+) -> MinesweeperAttemptResult:
+    """Package an integer answer whose annotation is a homogeneous bbox set."""
+
+    return MinesweeperAttemptResult(
+        answer_gt=TypedValue(type="integer", value=int(sample.answer)),
+        sample=sample,
+        prompt_slots=MinesweeperPromptSlots(
+            prompt_query_key=str(prompt_key),
+            object_description_key=str(object_description_key),
+            answer_hint_key=str(answer_hint_key),
+            annotation_hint_key=str(annotation_hint_key),
+            example_annotation=example_annotation,
+            example_answer=int(example_answer),
+        ),
+        bind_annotation=lambda rendered: minesweeper_bbox_set_annotation(rendered=rendered, coords=tuple(coords)),
         annotation_entity_ids=cell_ids_for_coords(tuple(coords)),
         highlighted_clue_coords=tuple(highlighted_clue_coords),
         extra_query_params=dict(extra_query_params or {}),
@@ -407,6 +447,7 @@ def _render_scene(
 __all__ = [
     "MinesweeperAttemptResult",
     "MinesweeperObjectivePlan",
+    "minesweeper_integer_bbox_set_attempt",
     "minesweeper_integer_point_attempt",
     "minesweeper_integer_point_set_attempt",
     "minesweeper_option_letter_point_attempt",

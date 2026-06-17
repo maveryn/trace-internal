@@ -139,11 +139,11 @@
     "match3_rule_text": "Swap only the two adjacent gems connected by the arrow. After the swap, immediately clear every horizontal or vertical run of three or more matching gems. Count only this immediate clear; do not apply falling, refill, special effects, or cascades.",
     "annotation_hint_max_clear_swap_label": "set \"annotation\" to the [x,y] pixel point on the selected swap arrow",
     "answer_hint_max_clear_swap_label": "set \"answer\" to only the selected swap-arrow letter",
-    "annotation_hint_grid_color_gem_count": "set \"annotation\" to a JSON array of [x,y] pixel points at the centers of every matching gem",
+    "annotation_hint_grid_color_gem_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one for each matching gem",
     "answer_hint_grid_color_gem_count": "set \"answer\" to the exact count as an integer",
-    "annotation_hint_row_color_gem_count": "set \"annotation\" to a JSON array of [x,y] pixel points at the centers of every matching gem in the row",
+    "annotation_hint_row_color_gem_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one for each matching gem in the row",
     "answer_hint_row_color_gem_count": "set \"answer\" to the exact count as an integer",
-    "annotation_hint_column_color_gem_count": "set \"annotation\" to a JSON array of [x,y] pixel points at the centers of every matching gem in the column",
+    "annotation_hint_column_color_gem_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one for each matching gem in the column",
     "answer_hint_column_color_gem_count": "set \"answer\" to the exact count as an integer"
   }
 }

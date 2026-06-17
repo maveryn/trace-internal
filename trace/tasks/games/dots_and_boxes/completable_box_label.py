@@ -91,7 +91,7 @@ def _prepare_completable_box_objective(
         )
         return DotsAndBoxesAttemptResult(
             board_state=board_state,
-            annotation_kind="box",
+            annotation_kind="single_box",
             annotation_entity_ids=(str(board_state.answer_box_id),),
             execution_extra={
                 "answer_label": str(answer_label),
@@ -102,7 +102,7 @@ def _prepare_completable_box_objective(
 
     return DotsAndBoxesObjectivePlan(
         prompt_query_key=PROMPT_QUERY_KEY,
-        annotation_example_shape="single_bbox_set",
+        annotation_example_shape="bbox",
         answer_gt=TypedValue(type="option_letter", value=str(answer_label)),
         query_params={
             "answer_label": str(answer_label),

@@ -26,7 +26,7 @@ def build_go_prompt_json_examples(*, annotation_points: Sequence[Sequence[int]],
 
     answer_value = int(answer)
     answer_and_annotation = {
-        "annotation": [[int(x), int(y)] for x, y in annotation_points],
+        "annotation": [[int(value) for value in item] for item in annotation_points],
         "answer": answer_value,
     }
     answer_only = {"answer": answer_value}

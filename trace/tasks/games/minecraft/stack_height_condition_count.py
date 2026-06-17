@@ -51,7 +51,7 @@ def _prepare_height_filter_objective(
             object_description_key="object_description_block_world",
             answer_hint_key=f"answer_hint_{str(selected_branch)}",
             annotation_hint_key=f"annotation_hint_{str(selected_branch)}",
-            example_annotation=[[290, 250], [423, 206], [542, 282]],
+            example_annotation=[[265, 218, 315, 274], [398, 174, 448, 230], [517, 250, 567, 306]],
             example_answer=3,
             target_stack_height=int(sample.target_stack_height),
             extra_query_params={

@@ -13,7 +13,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import dart_center_point_annotation, dart_center_point_set_annotation
+from .shared.annotations import dart_bbox_set_annotation, dart_center_point_annotation, dart_center_point_set_annotation
 from .shared.defaults import DEFAULTS, SCENE_ID
 from .shared.output import build_darts_common_trace_params, build_darts_trace_payload
 from .shared.prompts import build_darts_prompt_artifacts
@@ -79,6 +79,30 @@ def dart_point_set_attempt(
         answer_gt=answer_gt,
         annotation_entity_ids=resolved_entity_ids,
         build_annotation=lambda rendered_context: dart_center_point_set_annotation(
+            rendered_context,
+            resolved_entity_ids,
+        ),
+        query_params=dict(query_params or {}),
+        execution_extra=dict(execution_extra or {}),
+    )
+
+
+def dart_bbox_set_attempt(
+    *,
+    sample: DartsSampledScene,
+    answer_gt: TypedValue,
+    annotation_entity_ids: Sequence[str] | None = None,
+    query_params: Mapping[str, Any] | None = None,
+    execution_extra: Mapping[str, Any] | None = None,
+) -> DartsAttemptResult:
+    """Package an answer whose annotation is the selected dart bbox set."""
+
+    resolved_entity_ids = tuple(str(entity_id) for entity_id in (annotation_entity_ids or sample.annotation_dart_ids))
+    return DartsAttemptResult(
+        sample=sample,
+        answer_gt=answer_gt,
+        annotation_entity_ids=resolved_entity_ids,
+        build_annotation=lambda rendered_context: dart_bbox_set_annotation(
             rendered_context,
             resolved_entity_ids,
         ),
@@ -174,7 +198,7 @@ def prepare_darts_exact_count_objective(
             qualifying_slots=qualifying_slots,
             nonqualifying_slots=nonqualifying_slots,
         )
-        return dart_point_set_attempt(
+        return dart_bbox_set_attempt(
             sample=sample,
             answer_gt=TypedValue(type="integer", value=int(target_axis.value)),
             execution_extra={

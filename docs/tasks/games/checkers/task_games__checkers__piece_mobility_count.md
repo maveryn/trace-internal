@@ -7,7 +7,7 @@
 4. Public task id: `task_games__checkers__piece_mobility_count`
 5. Supported `query_id` values: `piece_with_legal_move_count`, `piece_with_capture_move_count`
 6. Answer schema: `integer_count`
-7. Annotation schema: `point_set`
+7. Annotation schema: `bbox_set`
 8. Program schema: `count(unique(origins(filter(legal_moves(current_player), move_filter)))); scene=checkers; scope=piece_mobility_count`
 
 ## Program Contract
@@ -15,4 +15,4 @@
 
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation marks the centers of current-player source pieces that have at least one qualifying move.
+3. Annotation marks the current-player source-piece boxes that have at least one qualifying move.

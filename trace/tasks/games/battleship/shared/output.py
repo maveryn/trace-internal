@@ -84,6 +84,24 @@ def projected_annotation_payload(
             "point_set": [list(point) for point in annotation_projection.annotation_points],
             "pixel_point_set": [list(point) for point in annotation_projection.annotation_points],
         }
+    if str(annotation_gt.type) == "bbox_set":
+        return {
+            "type": "bbox_set",
+            "bbox_set": [list(bbox) for bbox in annotation_projection.annotation_bboxes],
+            "pixel_bbox_set": [list(bbox) for bbox in annotation_projection.annotation_bboxes],
+        }
+    if str(annotation_gt.type) == "point":
+        return {
+            "type": "point",
+            "point": list(annotation_gt.value),
+            "pixel_point": list(annotation_gt.value),
+        }
+    if str(annotation_gt.type) == "keyed_bbox_set_map":
+        return {
+            "type": "keyed_bbox_set_map",
+            "keyed_bbox_set_map": dict(annotation_projection.annotation_keyed_bbox_sets),
+            "pixel_keyed_bbox_set_map": dict(annotation_projection.annotation_keyed_bbox_sets),
+        }
     return {
         "type": "keyed_point_set_map",
         "keyed_point_set_map": dict(annotation_projection.annotation_keyed_point_sets),
@@ -98,7 +116,7 @@ def witness_symbolic_payload(
 ) -> dict[str, Any]:
     """Return symbolic witness ids for an already-bound annotation."""
 
-    if str(annotation_gt.type) == "point_set":
+    if str(annotation_gt.type) in {"point", "point_set", "bbox_set"}:
         return {
             "type": "cell_set",
             "ids": [str(cell_id) for cell_id in annotation_projection.annotation_cell_ids],

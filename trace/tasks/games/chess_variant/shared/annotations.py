@@ -14,6 +14,12 @@ def _bbox_center(bbox: list[float]) -> list[float]:
     ]
 
 
+def _bbox_value(bbox: list[float]) -> list[float]:
+    """Return one rendered bbox as public pixel coordinates."""
+
+    return [round(float(value), 3) for value in bbox[:4]]
+
+
 def annotation_from_evaluation(
     *,
     evaluation: ChessVariantEvaluation,
@@ -25,11 +31,11 @@ def annotation_from_evaluation(
         bbox_map = render_map["cell_bboxes_px"]
     else:
         bbox_map = render_map["piece_bboxes_px"]
-    points = [_bbox_center(list(bbox_map[str(entity_id)])) for entity_id in evaluation.annotation_entity_ids]
-    return "point_set", points, {
-        "type": "point_set",
-        "point_set": [list(point) for point in points],
-        "pixel_point_set": [list(point) for point in points],
+    bboxes = [_bbox_value(list(bbox_map[str(entity_id)])) for entity_id in evaluation.annotation_entity_ids]
+    return "bbox_set", bboxes, {
+        "type": "bbox_set",
+        "bbox_set": [list(bbox) for bbox in bboxes],
+        "pixel_bbox_set": [list(bbox) for bbox in bboxes],
     }
 
 

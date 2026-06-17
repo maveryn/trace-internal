@@ -5,7 +5,7 @@ from typing import Any, Dict, Mapping, Tuple
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.games.battleship.shared.annotations import project_point_set_annotation
+from trace.tasks.games.battleship.shared.annotations import project_bbox_set_annotation
 from trace.tasks.games.battleship.shared.rules import cell_status_answer_support_for_ship, fleet_shape_by_id, ship_size_for_shape_id
 from trace.tasks.games.battleship.shared.output import common_trace_sections, projected_annotation_payload, target_ship_cell_ids, witness_symbolic_payload
 from trace.tasks.games.battleship.shared.rendering import render_battleship_sample
@@ -137,7 +137,7 @@ def _sample_ship_cell_status_instance(*, rng: Any, axes: ResolvedBattleshipScene
 def _build_task_output(*, instance: ShipCellStatusInstance, rendered_context: Any, annotation_projection: Any, prompt_defaults: Mapping[str, Any], prompt_artifacts: Any) -> TaskOutput:
     """Build final TaskOutput for this public task."""
     answer_gt = TypedValue(type='integer', value=int(instance.answer))
-    annotation_gt = TypedValue(type='point_set', value=[list(point) for point in annotation_projection.annotation_points])
+    annotation_gt = TypedValue(type='bbox_set', value=[list(bbox) for bbox in annotation_projection.annotation_bboxes])
     trace_payload = common_trace_sections(axes=instance.axes, sample=instance.sample, rendered_context=rendered_context, annotation_projection=annotation_projection)
     trace_payload['scene_ir']['relations'].update({'query_id': str(instance.query_id), 'target_answer': int(instance.target_answer), 'target_ship_id': str(instance.target_ship_id), 'target_ship_display_name': str(instance.target_ship_display_name), 'target_ship_shape_id': str(instance.target_ship_shape_id), 'target_cell_status': str(instance.target_cell_status), 'target_missing_coord': None})
     trace_payload['query_spec'] = build_prompt_query_spec(prompt_artifacts=prompt_artifacts, query_id=str(instance.query_id), params={'scene_variant': str(instance.axes.scene_variant), 'query_id': str(instance.query_id), 'style_variant': str(instance.axes.style_variant), 'board_size': int(instance.sample.board_size), 'scene_variant_probabilities': dict(instance.axes.scene_variant_probabilities), 'query_id_probabilities': dict(instance.query_id_probabilities), 'style_variant_probabilities': dict(instance.axes.style_variant_probabilities), 'board_size_probabilities': dict(instance.axes.board_size_probabilities), 'target_answer': int(instance.target_answer), 'target_answer_support': [int(value) for value in instance.target_answer_support], 'target_answer_probabilities': dict(instance.target_answer_probabilities), 'target_ship_id': str(instance.target_ship_id), 'target_ship_display_name': str(instance.target_ship_display_name), 'target_ship_shape_id': str(instance.target_ship_shape_id), 'target_ship_id_probabilities': dict(instance.target_ship_id_probabilities), 'target_cell_status': str(instance.target_cell_status), 'target_missing_coord': None, 'candidate_labels': [], 'last_ship_cell_option_count': 0, 'last_ship_cell_option_count_support': [], 'last_ship_cell_option_count_probabilities': {}, 'hit_count': len(instance.sample.hit_coords), 'miss_count': len(instance.sample.miss_coords), 'sunk_ship_count': int(instance.sample.sunk_ship_count), 'partial_ship_count': int(instance.sample.partial_ship_count), 'untouched_ship_count': int(instance.sample.untouched_ship_count)})
@@ -171,7 +171,7 @@ class GamesBattleshipShipCellStatusCountTask:
         if instance is None:
             raise RuntimeError(f'{self.task_id} failed to generate a valid Battleship ship-cell-status scene after {max_attempts} attempts')
         rendered_context = render_battleship_sample(sample=instance.sample, style_variant=str(instance.axes.style_variant), params=task_params, instance_seed=int(instance_seed))
-        annotation_projection = project_point_set_annotation(annotation_coords=instance.annotation_coords, rendered_scene=rendered_context.rendered_scene)
+        annotation_projection = project_bbox_set_annotation(annotation_coords=instance.annotation_coords, rendered_scene=rendered_context.rendered_scene)
         prompt_defaults, prompt_artifacts = build_battleship_prompt_artifacts(domain=self.domain, instance_seed=int(instance_seed), prompt_query_key=str(instance.query_id), dynamic_slots={'target_ship_name': str(instance.target_ship_display_name)})
         return _build_task_output(instance=instance, rendered_context=rendered_context, annotation_projection=annotation_projection, prompt_defaults=prompt_defaults, prompt_artifacts=prompt_artifacts)
 __all__ = ['GamesBattleshipShipCellStatusCountTask', 'SHIP_CELL_STATUS_COUNT_QUERY_IDS']

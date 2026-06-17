@@ -134,9 +134,9 @@
     "object_description_crowded_board": "a Connect Four board in a crowded late-game position with red and yellow discs",
     "legal_drop_rule_text": "A legal drop chooses one non-full column and lands in its lowest empty square.",
     "winning_rule_text": "A horizontal, vertical, or diagonal line of four matching discs wins.",
-    "annotation_hint_winning_move_count": "set \"annotation\" to a JSON array of point coordinates [x, y] at the center of every immediate-winning landing square",
+    "annotation_hint_winning_move_count": "set \"annotation\" to a JSON array of pixel-space cell boxes [x1, y1, x2, y2] for every immediate-winning landing square",
     "annotation_hint_winning_move_column_label": "set \"annotation\" to one point [x, y] at the center of the landing square in the selected winning column",
-    "annotation_hint_column_disc_profile_label": "set \"annotation\" to a JSON array of point coordinates [x, y] at the centers of the discs in the selected column",
+    "annotation_hint_column_disc_profile_label": "set \"annotation\" to a JSON array of pixel-space cell boxes [x1, y1, x2, y2] for the occupied cells in the selected column",
     "answer_hint_winning_move_count": "set \"answer\" to the number of legal drop columns that win immediately",
     "answer_hint_winning_move_column_label": "set \"answer\" to the selected column label as a capital letter shown below the board",
     "answer_hint_column_disc_profile_label": "set \"answer\" to the selected column label as a capital letter shown below the board"

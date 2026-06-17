@@ -7,6 +7,7 @@ from typing import Mapping, Sequence
 from trace.core.types import TypedValue
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
+    bbox_set_annotation_artifacts,
     point_annotation_artifacts,
     point_set_annotation_artifacts,
 )
@@ -19,10 +20,23 @@ def entity_points_for_ids(rendered_scene, entity_ids: Sequence[str]) -> list[lis
     return [list(entity_points[str(entity_id)]) for entity_id in entity_ids]
 
 
+def entity_bboxes_for_ids(rendered_scene, entity_ids: Sequence[str]) -> list[list[float]]:
+    """Return rendered entity bboxes for the requested ids."""
+
+    entity_bboxes = rendered_scene.render_map["entity_bboxes_px"]
+    return [list(entity_bboxes[str(entity_id)]) for entity_id in entity_ids]
+
+
 def point_set_for_entity_ids(rendered_scene, entity_ids: Sequence[str]) -> AnnotationArtifacts:
     """Project entity ids to an unordered point-set annotation."""
 
     return point_set_annotation_artifacts(entity_points_for_ids(rendered_scene, entity_ids))
+
+
+def bbox_set_for_entity_ids(rendered_scene, entity_ids: Sequence[str]) -> AnnotationArtifacts:
+    """Project entity ids to an unordered bbox-set annotation."""
+
+    return bbox_set_annotation_artifacts(entity_bboxes_for_ids(rendered_scene, entity_ids))
 
 
 def point_for_entity_id(rendered_scene, entity_id: str) -> AnnotationArtifacts:
@@ -56,8 +70,35 @@ def keyed_point_set_for_entity_ids(
     )
 
 
+def keyed_bbox_set_for_entity_ids(
+    rendered_scene,
+    keyed_entity_ids: Mapping[str, Sequence[str]],
+) -> AnnotationArtifacts:
+    """Project keyed semantic witness roles to keyed bbox sets."""
+
+    keyed_bboxes = {
+        str(key): entity_bboxes_for_ids(rendered_scene, tuple(str(entity_id) for entity_id in entity_ids))
+        for key, entity_ids in keyed_entity_ids.items()
+    }
+    value = {key: [list(bbox) for bbox in bboxes] for key, bboxes in keyed_bboxes.items()}
+    projected = {
+        "type": "keyed_bbox_set_map",
+        "keyed_bbox_set_map": {key: [list(bbox) for bbox in bboxes] for key, bboxes in value.items()},
+        "pixel_keyed_bbox_set_map": {key: [list(bbox) for bbox in bboxes] for key, bboxes in value.items()},
+    }
+    return AnnotationArtifacts(
+        annotation_type="keyed_bbox_set_map",
+        value=value,
+        annotation_gt=TypedValue(type="keyed_bbox_set_map", value=value),
+        projected_annotation=projected,
+    )
+
+
 __all__ = [
+    "bbox_set_for_entity_ids",
+    "entity_bboxes_for_ids",
     "entity_points_for_ids",
+    "keyed_bbox_set_for_entity_ids",
     "keyed_point_set_for_entity_ids",
     "point_for_entity_id",
     "point_set_for_entity_ids",

@@ -112,7 +112,7 @@
     "pinball_scoreable_rule_text": "Objects with a number are scoreable; objects without a number are not scoreable.",
     "annotation_hint_first_hit_object_label": "set \"annotation\" to one [x, y] pixel point at the center of the first labeled object hit by the path",
     "answer_hint_first_hit_object_label": "set \"answer\" to the selected object label as a string",
-    "annotation_hint_scoreable_object_count": "set \"annotation\" to a JSON array of [x, y] pixel points at the centers of all objects that show numeric score labels",
+    "annotation_hint_scoreable_object_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one around each object that shows a numeric score label",
     "answer_hint_scoreable_object_count": "set \"answer\" to the integer count of scoreable objects"
   }
 }

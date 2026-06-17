@@ -10,7 +10,7 @@ The scene renders a Zuma-like marble chain with a central shooter marble and one
 
 Answer schema: `integer`.
 
-Annotation schema: `point_set` containing centers of existing chain marbles that pop; empty when no existing chain marble pops.
+Annotation schema: `bbox_set` containing boxes around existing chain marbles that pop; empty when no existing chain marble pops.
 
 Supported `query_id`: `single`.
 

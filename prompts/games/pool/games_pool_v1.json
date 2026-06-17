@@ -108,8 +108,8 @@
   "code_prompt_defaults": {
     "object_description_standard_table": "a pool table with a cue ball, numbered object balls, and six pockets",
     "marked_shot_rule_text": "The shown shot has two straight segments: cue ball to the marked target ball, then the marked target ball to the marked pocket.",
-    "annotation_hint_current_group_ball_count": "set \"annotation\" to one pixel point [x,y] at the center of every visible ball in the current player's group",
-    "annotation_hint_blocking_ball_count": "set \"annotation\" to one pixel point [x,y] at the center of every other ball blocking either shot segment",
+    "annotation_hint_current_group_ball_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one around each visible ball in the current player's group",
+    "annotation_hint_blocking_ball_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one around each other ball blocking either shot segment",
     "answer_hint_current_group_ball_count": "set \"answer\" to the number of visible balls in the current player's group",
     "answer_hint_blocking_ball_count": "set \"answer\" to the number of other balls blocking either shot segment"
   }

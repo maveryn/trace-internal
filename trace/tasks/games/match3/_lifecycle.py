@@ -18,7 +18,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import match3_point_annotation, match3_point_set_annotation
+from .shared.annotations import match3_bbox_set_annotation, match3_point_annotation, match3_point_set_annotation
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS, SCENE_ID
 from .shared.output import build_match3_common_trace_params, build_match3_trace_payload
 from .shared.prompts import (
@@ -145,6 +145,36 @@ def match3_point_set_attempt(
         sample=sample,
         prompt_slots=prompt_slots,
         build_annotation=lambda rendered: match3_point_set_annotation(
+            rendered=rendered,
+            entity_ids=entity_ids,
+        ),
+        target_color_label=str(target_color_label),
+        row_index=row_index,
+        col_index=col_index,
+        execution_extra=dict(execution_extra or {}),
+        extra_query_params=dict(extra_query_params or {}),
+    )
+
+
+def match3_bbox_set_attempt(
+    *,
+    answer_gt: TypedValue,
+    sample: Match3Sample,
+    prompt_slots: Match3PromptSlots,
+    target_color_label: str = "",
+    row_index: int | None = None,
+    col_index: int | None = None,
+    execution_extra: Mapping[str, Any] | None = None,
+    extra_query_params: Mapping[str, Any] | None = None,
+) -> Match3AttemptResult:
+    """Package a match-3 result whose annotation is selected entity boxes."""
+
+    entity_ids = tuple(str(entity_id) for entity_id in sample.annotation_entity_ids)
+    return Match3AttemptResult(
+        answer_gt=answer_gt,
+        sample=sample,
+        prompt_slots=prompt_slots,
+        build_annotation=lambda rendered: match3_bbox_set_annotation(
             rendered=rendered,
             entity_ids=entity_ids,
         ),
@@ -448,6 +478,7 @@ __all__ = [
     "Match3LifecycleResult",
     "Match3ObjectivePlan",
     "Match3SingleQueryTaskBase",
+    "match3_bbox_set_attempt",
     "match3_point_attempt",
     "match3_point_set_attempt",
     "prepare_match3_swap_option_plan",

@@ -109,7 +109,7 @@
     "object_description_two_lane_track": "a two-lane runner track with a start marker, a finish band, and visible coins in lane cells",
     "object_description_two_lane_track_path_coin": "a two-lane runner track with a start marker, a finish band, visible coins in lane cells, and one shown path",
     "lane_runner_path_rule_text": "Follow the shown path from start to finish. Each step moves one row toward the finish; the path may stay in the same lane or switch diagonally to the other lane.",
-    "annotation_hint_path_coin_count": "set \"annotation\" to [x, y] pixel points at the centers of every coin collected by the shown path",
+    "annotation_hint_path_coin_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one for each coin collected by the shown path",
     "answer_hint_path_coin_count": "set \"answer\" to the number of coins collected by the shown path",
     "object_description_two_lane_track_safe_path": "labeled candidate path cards, each showing a two-lane track with hazard cells and one candidate path",
     "safe_path_rule_text": "Each path moves one row toward the finish. A safe path never enters a hazard cell.",

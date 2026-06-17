@@ -81,37 +81,37 @@
     },
     "query:sunk_ship_count": {
       "battleship_rule_text": "Each fleet ship is placed exactly once on the board. A ship is sunk only when every cell of that ship has a red hit marker.",
-      "annotation_hint": "set \"annotation\" to a JSON object mapping each sunk ship's displayed fleet-shape name to a list of pixel-space points [x, y] at the centers of every red hit-marker cell on that ship; use an empty object if no ship is sunk",
+      "annotation_hint": "set \"annotation\" to a JSON object mapping each sunk ship's displayed fleet-shape name to a list of pixel-space cell boxes [x1, y1, x2, y2] for every red hit-marker cell on that ship; use an empty object if no ship is sunk",
       "answer_hint": "set \"answer\" to the number of ships whose every cell has a red hit marker",
-      "json_example": "{\"annotation\":{\"Line 5\":[[210,220],[240,220],[270,220],[300,220],[330,220]],\"Line 3\":[[210,340],[240,340],[270,340]]},\"answer\":2}",
+      "json_example": "{\"annotation\":{\"Line 5\":[[195,205,225,235],[225,205,255,235]],\"Line 3\":[[195,325,225,355]]},\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:partial_ship_count": {
       "battleship_rule_text": "Each fleet ship is placed exactly once on the board. A ship is sunk only when every cell of that ship has a red hit marker.",
-      "annotation_hint": "set \"annotation\" to a JSON object mapping each partially hit ship's displayed fleet-shape name to a list of pixel-space points [x, y] at the centers of every red hit-marker cell on that ship; use an empty object if no ship is partially hit",
+      "annotation_hint": "set \"annotation\" to a JSON object mapping each partially hit ship's displayed fleet-shape name to a list of pixel-space cell boxes [x1, y1, x2, y2] for every red hit-marker cell on that ship; use an empty object if no ship is partially hit",
       "answer_hint": "set \"answer\" to the number of ships that have at least one red hit marker but are not sunk",
-      "json_example": "{\"annotation\":{\"Line 4\":[[210,280],[240,280]],\"L 3\":[[210,490]]},\"answer\":2}",
+      "json_example": "{\"annotation\":{\"Line 4\":[[195,265,225,295],[225,265,255,295]],\"L 3\":[[195,475,225,505]]},\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:named_ship_hit_cell_count": {
       "battleship_rule_text": "Each fleet ship is placed exactly once on the board. A ship is sunk only when every cell of that ship has a red hit marker.",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of the red hit-marker cells on the named ship; use an empty array if none of that ship's cells are hit",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space cell boxes [x1, y1, x2, y2] for the red hit-marker cells on the named ship; use an empty array if none of that ship's cells are hit",
       "answer_hint": "set \"answer\" to the number of cells on the named ship that have red hit markers",
-      "json_example": "{\"annotation\":[[210,220],[240,220],[270,220]],\"answer\":3}",
+      "json_example": "{\"annotation\":[[195,205,225,235],[225,205,255,235],[255,205,285,235]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:named_ship_unhit_cell_count": {
       "battleship_rule_text": "Each fleet ship is placed exactly once on the board. A ship is sunk only when every cell of that ship has a red hit marker.",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of the named ship's intact cells; use an empty array if every cell of that ship is hit",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space cell boxes [x1, y1, x2, y2] for the named ship's intact cells; use an empty array if every cell of that ship is hit",
       "answer_hint": "set \"answer\" to the number of cells on the named ship that do not have red hit markers",
-      "json_example": "{\"annotation\":[[300,220],[330,220]],\"answer\":2}",
+      "json_example": "{\"annotation\":[[285,205,315,235],[315,205,345,235]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:last_ship_cell_label": {
       "battleship_rule_text": "Each fleet ship is placed exactly once on the board. A ship is sunk only when every cell of that ship has a red hit marker.",
-      "annotation_hint": "set \"annotation\" to a JSON array containing one pixel-space point [x, y] at the center of the selected labeled cell",
+      "annotation_hint": "set \"annotation\" to one pixel-space point [x, y] at the center of the selected labeled cell",
       "answer_hint": "set \"answer\" to the single selected option label shown on the board",
-      "json_example": "{\"annotation\":[[315,405]],\"answer\":\"D\"}",
+      "json_example": "{\"annotation\":[315,405],\"answer\":\"D\"}",
       "json_example_answer_only": "{\"answer\":\"D\"}"
     }
   },

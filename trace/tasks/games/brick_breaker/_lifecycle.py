@@ -10,6 +10,7 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
+    bbox_set_annotation_artifacts,
     point_annotation_artifacts,
     point_set_annotation_artifacts,
 )
@@ -180,6 +181,32 @@ def point_set_attempt(
     )
 
 
+def bbox_set_attempt(
+    *,
+    sample: BrickBreakerSample,
+    answer_gt: TypedValue,
+    annotation_entity_ids: tuple[str, ...] | None = None,
+    execution_extra: Mapping[str, Any] | None = None,
+) -> BrickBreakerAttemptResult:
+    """Package an answer whose annotation is the bbox set for scene entities."""
+
+    resolved_entity_ids = tuple(str(entity_id) for entity_id in (annotation_entity_ids or sample.annotation_entity_ids))
+
+    def build_annotation(rendered_context: RenderedBrickBreakerTaskContext) -> AnnotationArtifacts:
+        entity_bboxes = rendered_context.rendered_scene.render_map["entity_bboxes_px"]
+        return bbox_set_annotation_artifacts(
+            [entity_bboxes[str(entity_id)] for entity_id in resolved_entity_ids]
+        )
+
+    return BrickBreakerAttemptResult(
+        sample=sample,
+        answer_gt=answer_gt,
+        annotation_entity_ids=resolved_entity_ids,
+        build_annotation=build_annotation,
+        execution_extra=dict(execution_extra or {}),
+    )
+
+
 def point_attempt(
     *,
     sample: BrickBreakerSample,
@@ -328,6 +355,7 @@ __all__ = [
     "BrickBreakerAttemptResult",
     "BrickBreakerIntegerAxisSpec",
     "BrickBreakerObjectivePlan",
+    "bbox_set_attempt",
     "brick_breaker_integer_axis_spec",
     "point_attempt",
     "point_set_attempt",

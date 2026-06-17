@@ -20,7 +20,7 @@ def _prepare_called_number_objective(instance_seed, task_params, _query_id, _que
         annotation_cell_ids = called_number_cell_ids(card_state)
         visible_numbers = {int(value) for row in card_state.numbers_grid for value in row}
         absent_numbers = tuple(int(value) for value in card_state.called_numbers if int(value) not in visible_numbers)
-        return BingoAttemptResult(card_state=card_state, answer_value=int(target_axis.target_answer), annotation_cell_ids=annotation_cell_ids, annotation_type='point_set', execution_extra={'called_number_count': int(called_count_axis.target_answer), 'called_absent_numbers': [int(value) for value in absent_numbers]})
+        return BingoAttemptResult(card_state=card_state, answer_value=int(target_axis.target_answer), annotation_cell_ids=annotation_cell_ids, annotation_type='bbox_set', execution_extra={'called_number_count': int(called_count_axis.target_answer), 'called_absent_numbers': [int(value) for value in absent_numbers]})
     return BingoObjectivePlan(attempt_namespace=f'games.bingo.{TASK_ID}', prompt_query_key=QUERY_ID, show_called_panel=True, query_params={**bingo_target_trace_params(target_axis), **bingo_named_count_trace_params('called_number_count', called_count_axis)}, construct_attempt=construct_attempt)
 
 @register_task

@@ -21,7 +21,7 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 
-from .shared.annotations import morris_node_point_set_annotation, morris_piece_point_set_annotation
+from .shared.annotations import morris_node_point_set_annotation, morris_piece_bbox_set_annotation
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS, SCENE_ID
 from .shared.output import build_morris_common_trace_params, build_morris_trace_payload
 from .shared.prompts import NineMensMorrisPromptSlots, build_morris_prompt_artifacts
@@ -138,10 +138,10 @@ def morris_piece_count_attempt(
             prompt_query_key=str(prompt_key),
             answer_hint_key=f"answer_hint_{prompt_key}",
             annotation_hint_key=f"annotation_hint_{prompt_key}",
-            example_annotation=[[202, 242], [362, 242], [522, 242]],
+            example_annotation=[[180, 220, 224, 264], [340, 220, 384, 264], [500, 220, 544, 264]],
             example_answer=3,
         ),
-        bind_annotation=lambda rendered: morris_piece_point_set_annotation(
+        bind_annotation=lambda rendered: morris_piece_bbox_set_annotation(
             rendered=rendered,
             piece_ids=piece_ids,
         ),
@@ -154,7 +154,7 @@ def morris_piece_count_attempt(
             **dict(extra_query_params or {}),
         },
         execution_extra={
-            "annotation_map_key": "piece_centers_px",
+            "annotation_map_key": "piece_bboxes_px",
         },
     )
 

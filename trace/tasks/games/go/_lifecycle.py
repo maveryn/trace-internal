@@ -16,7 +16,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import go_point_set_annotation
+from .shared.annotations import go_point_set_annotation, go_stone_bbox_set_annotation
 from .shared.output import build_go_common_trace_params, build_go_trace_payload
 from .shared.prompts import build_go_prompt_artifacts
 from .shared.rendering import render_go_board_scene
@@ -27,11 +27,14 @@ from .shared.rules import (
     build_go_board_state,
     color_name,
     coord_to_point_id,
+    coord_to_stone_id,
 )
 from .shared.sampling import (
     resolve_go_board_size_axis,
+    resolve_go_player_color_axis,
     resolve_go_render_params,
     resolve_go_scene_axes,
+    resolve_go_target_axis,
 )
 from .shared.state import GO_NAMESPACE, SCENE_ID, GoIntegerAxis, GoPlayerColorAxis, GoSceneAxes
 
@@ -52,7 +55,8 @@ class GoAttemptResult:
     stone_specs: Sequence[GoStoneSpec]
     marked_group_coords: Sequence[Coord]
     liberty_coords: Sequence[Coord]
-    annotation_point_ids: Sequence[str]
+    annotation_entity_ids: Sequence[str]
+    annotation_kind: str = "point_set"
     visual_marked_coords: Sequence[Coord] = field(default_factory=tuple)
     execution_extra: Mapping[str, Any] = field(default_factory=dict)
 
@@ -82,6 +86,7 @@ def make_go_marked_group_objective(
     board_size_axis: GoIntegerAxis,
     scene_axes: GoSceneAxes,
     annotation_coord_attr: str,
+    annotation_kind: str = "point_set",
     attempt_namespace: str,
     mark_reference_stone_only: bool = False,
     prompt_example_annotation_points: Sequence[Sequence[int]] = ((343, 315), (417, 389), (491, 389), (565, 463)),
@@ -107,12 +112,17 @@ def make_go_marked_group_objective(
                 raise ValueError("cannot mark one reference stone without a marked group")
             reference_coord = marked_coords[int(rng.randrange(len(marked_coords)))]
             visual_marked_coords = (reference_coord,)
+        if str(annotation_kind) == "stone_bbox_set":
+            annotation_entity_ids = tuple(coord_to_stone_id(coord) for coord in annotation_coords)
+        else:
+            annotation_entity_ids = tuple(coord_to_point_id(coord) for coord in annotation_coords)
         return GoAttemptResult(
             board=board_state.board,
             stone_specs=board_state.stone_specs,
             marked_group_coords=board_state.marked_group_coords,
             liberty_coords=board_state.liberty_coords,
-            annotation_point_ids=tuple(coord_to_point_id(coord) for coord in annotation_coords),
+            annotation_entity_ids=annotation_entity_ids,
+            annotation_kind=str(annotation_kind),
             visual_marked_coords=visual_marked_coords,
             execution_extra={
                 "marked_group_color": str(color_name(board_state.marked_group_color).lower()),
@@ -139,6 +149,56 @@ def make_go_marked_group_objective(
         },
         attempt_namespace=str(attempt_namespace),
         construct_attempt=construct_attempt,
+    )
+
+
+def prepare_go_marked_group_count_objective(
+    *,
+    instance_seed: int,
+    task_params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    prompt_query_key: str,
+    rule_mode: str,
+    support_key: str,
+    fallback_support: Sequence[int],
+    target_namespace: str,
+    annotation_coord_attr: str,
+    attempt_namespace: str,
+    scene_axes: GoSceneAxes,
+    board_size_axis: GoIntegerAxis,
+    annotation_kind: str = "point_set",
+    mark_reference_stone_only: bool = False,
+    prompt_example_annotation_points: Sequence[Sequence[int]] = ((343, 315), (417, 389), (491, 389), (565, 463)),
+    prompt_example_answer: int = 4,
+) -> GoObjectivePlan:
+    """Resolve common marked-group count axes and build the objective plan."""
+
+    player_color_axis = resolve_go_player_color_axis(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        gen_defaults=gen_defaults,
+    )
+    target_axis = resolve_go_target_axis(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        gen_defaults=gen_defaults,
+        support_key=str(support_key),
+        fallback_support=tuple(int(value) for value in fallback_support),
+        namespace=str(target_namespace),
+    )
+    return make_go_marked_group_objective(
+        prompt_query_key=str(prompt_query_key),
+        rule_mode=str(rule_mode),
+        target_axis=target_axis,
+        player_color_axis=player_color_axis,
+        board_size_axis=board_size_axis,
+        scene_axes=scene_axes,
+        annotation_coord_attr=str(annotation_coord_attr),
+        annotation_kind=str(annotation_kind),
+        attempt_namespace=str(attempt_namespace),
+        mark_reference_stone_only=bool(mark_reference_stone_only),
+        prompt_example_annotation_points=tuple(tuple(int(value) for value in point) for point in prompt_example_annotation_points),
+        prompt_example_answer=int(prompt_example_answer),
     )
 
 
@@ -233,10 +293,16 @@ def run_go_lifecycle(
             params=render_params,
             panel_style=panel_style,
         )
-        annotation_artifacts = go_point_set_annotation(
-            rendered_scene,
-            tuple(str(point_id) for point_id in attempt.annotation_point_ids),
-        )
+        if str(attempt.annotation_kind) == "stone_bbox_set":
+            annotation_artifacts = go_stone_bbox_set_annotation(
+                rendered_scene,
+                tuple(str(entity_id) for entity_id in attempt.annotation_entity_ids),
+            )
+        else:
+            annotation_artifacts = go_point_set_annotation(
+                rendered_scene,
+                tuple(str(entity_id) for entity_id in attempt.annotation_entity_ids),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -268,7 +334,7 @@ def run_go_lifecycle(
         )
         trace_payload = build_go_trace_payload(
             annotation_artifacts=annotation_artifacts,
-            annotation_entity_ids=tuple(str(point_id) for point_id in attempt.annotation_point_ids),
+            annotation_entity_ids=tuple(str(entity_id) for entity_id in attempt.annotation_entity_ids),
             scene_axes=scene_axes,
             player_color=str(objective.player_color),
             board_size_axis=board_size_axis,
@@ -312,5 +378,6 @@ __all__ = [
     "GoAttemptResult",
     "GoObjectivePlan",
     "make_go_marked_group_objective",
+    "prepare_go_marked_group_count_objective",
     "run_go_lifecycle",
 ]

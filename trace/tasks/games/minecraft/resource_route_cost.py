@@ -39,7 +39,7 @@ def _prepare_route_cost_objective(
             object_description_key="object_description_block_world",
             answer_hint_key=f"answer_hint_{PROMPT_QUERY_KEY}",
             annotation_hint_key=f"annotation_hint_{PROMPT_QUERY_KEY}",
-            example_annotation=[[315, 316], [344, 287], [523, 212], [552, 240]],
+            example_annotation=[[290, 286, 340, 342], [319, 257, 369, 313], [498, 182, 548, 238], [527, 210, 577, 266]],
             example_answer=4,
             extra_query_params={
                 "prompt_query_key": PROMPT_QUERY_KEY,

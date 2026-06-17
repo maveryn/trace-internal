@@ -18,7 +18,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import marble_point_annotation, marble_point_set_annotation
+from .shared.annotations import marble_bbox_set_annotation, marble_point_annotation, marble_point_set_annotation
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS, SCENE_ID
 from .shared.output import build_marble_common_trace_params, build_marble_trace_payload
 from .shared.prompts import (
@@ -138,6 +138,30 @@ def marble_point_set_attempt(
         sample=sample,
         prompt_slots=prompt_slots,
         build_annotation=lambda rendered: marble_point_set_annotation(
+            rendered=rendered,
+            entity_ids=entity_ids,
+        ),
+        execution_extra=dict(execution_extra or {}),
+        extra_query_params=dict(extra_query_params or {}),
+    )
+
+
+def marble_bbox_set_attempt(
+    *,
+    answer_gt: TypedValue,
+    sample: MarbleSample,
+    prompt_slots: MarblePromptSlots,
+    execution_extra: Mapping[str, Any] | None = None,
+    extra_query_params: Mapping[str, Any] | None = None,
+) -> MarbleAttemptResult:
+    """Package a marble-chain result whose annotation is selected marble boxes."""
+
+    entity_ids = tuple(str(entity_id) for entity_id in sample.annotation_entity_ids)
+    return MarbleAttemptResult(
+        answer_gt=answer_gt,
+        sample=sample,
+        prompt_slots=prompt_slots,
+        build_annotation=lambda rendered: marble_bbox_set_annotation(
             rendered=rendered,
             entity_ids=entity_ids,
         ),
@@ -441,6 +465,7 @@ __all__ = [
     "MarbleLifecycleResult",
     "MarbleObjectivePlan",
     "MarbleSingleQueryTaskBase",
+    "marble_bbox_set_attempt",
     "marble_point_attempt",
     "marble_point_set_attempt",
     "prepare_marble_direction_option_plan",

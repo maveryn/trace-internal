@@ -8,12 +8,12 @@ from typing import Any, Callable, Mapping, Sequence
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.shared.annotation_artifacts import point_annotation_artifacts, point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import bbox_set_annotation_artifacts, point_annotation_artifacts, point_set_annotation_artifacts
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import cell_points_for_coords
+from .shared.annotations import cell_bboxes_for_coords, cell_points_for_coords
 from .shared.defaults import SCENE_ID
 from .shared.output import common_trace_params, common_trace_sections
 from .shared.prompts import (
@@ -141,7 +141,7 @@ def prepare_count_objective_from_spec(
         prompt_dynamic_slots=prompt_slots,
         answer_gt=lambda sample: TypedValue(type="integer", value=int(sample.evaluation.answer)),
         annotation_coords=lambda sample: sample.evaluation.annotation_coords,
-        annotation_type="point_set",
+        annotation_type="bbox_set",
         render_marked_square=lambda _sample: None,
         render_column_labels=lambda _sample: None,
         query_spec_params=query_spec_params,
@@ -215,12 +215,18 @@ def run_connect_four_lifecycle(
         rendered_context.rendered_scene,
         objective.annotation_coords(sample),
     )
+    annotation_bboxes = cell_bboxes_for_coords(
+        rendered_context.rendered_scene,
+        objective.annotation_coords(sample),
+    )
     if str(objective.annotation_type) == "point":
         if len(annotation_points) != 1:
             raise ValueError("scalar Connect Four point annotation requires exactly one cell")
         annotation_artifacts = point_annotation_artifacts(annotation_points[0])
     elif str(objective.annotation_type) == "point_set":
         annotation_artifacts = point_set_annotation_artifacts(annotation_points)
+    elif str(objective.annotation_type) == "bbox_set":
+        annotation_artifacts = bbox_set_annotation_artifacts(annotation_bboxes)
     else:
         raise ValueError(f"unsupported Connect Four annotation type: {objective.annotation_type}")
     _prompt_defaults, prompt_artifacts = build_connect_four_prompt_artifacts(

@@ -6,7 +6,7 @@
 3. Public task id: `task_games__connect_four__winning_move_count`
 4. Supported `query_id` values: `single`
 5. Answer schema: `integer_count`
-6. Annotation schema: `point_set`
+6. Annotation schema: `bbox_set`
 7. Program schema: `count(filter(legal_columns, move_result=win_for_current_player)); scene=connect_four; scope=winning_move_count`
 
 ## Program Contract

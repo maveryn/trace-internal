@@ -128,7 +128,7 @@
     "answer_hint_closest_to_finish_label": "set \"answer\" to the selected car label as a capital letter",
     "annotation_hint_farthest_from_finish_label": "set \"annotation\" to [x, y], the pixel center of the selected car",
     "answer_hint_farthest_from_finish_label": "set \"answer\" to the selected car label as a capital letter",
-    "annotation_hint_car_ahead_count": "set \"annotation\" to [x, y] pixel points at the centers of every counted car; use an empty array when none qualify",
+    "annotation_hint_car_ahead_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one around each counted car; use an empty array when none qualify",
     "answer_hint_car_ahead_count": "set \"answer\" to the integer count of other cars ahead of the marked car before the finish line"
   }
 }

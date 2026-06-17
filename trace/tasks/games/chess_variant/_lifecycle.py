@@ -235,7 +235,7 @@ def run_chess_variant_lifecycle(
         rule_family=str(axes.rule_family),
         range_k=int(axes.range_k),
         target_color=str(objective.target_color),
-        point_annotation=True,
+        point_annotation=False,
         example_answer=int(objective.example_answer),
         instance_seed=int(instance_seed),
     )

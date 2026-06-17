@@ -68,22 +68,22 @@
     "query:pop_count": {
       "bubble_shooter_rule_text": "A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three. Do not count the shot bubble or the marked target itself.",
       "answer_hint": "set \"answer\" to the number of existing board bubbles that pop",
-      "annotation_hint": "set \"annotation\" to an array of pixel-space center points [x, y] for the existing board bubbles that pop",
-      "json_example": "{\"annotation\":[[373,237],[419,237],[396,277],[442,277],[488,277]],\"answer\":5}",
+      "annotation_hint": "set \"annotation\" to an array of pixel-space bubble boxes [x1, y1, x2, y2] for the existing board bubbles that pop",
+      "json_example": "{\"annotation\":[[352,216,394,258],[398,216,440,258],[375,256,417,298]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":5}"
     },
     "query:drop_count": {
       "bubble_shooter_rule_text": "A shot bubble attaches at the marked target. Same-color connected bubbles pop when the placed bubble makes that group size at least three; then bubbles no longer connected to the top drop.",
       "answer_hint": "set \"answer\" to the number of bubbles that drop after the shot is resolved",
-      "annotation_hint": "set \"annotation\" to an array of pixel-space center points [x, y] for the bubbles that drop",
-      "json_example": "{\"annotation\":[[483,373],[529,373],[506,413],[552,413]],\"answer\":4}",
+      "annotation_hint": "set \"annotation\" to an array of pixel-space bubble boxes [x1, y1, x2, y2] for the bubbles that drop",
+      "json_example": "{\"annotation\":[[462,352,504,394],[508,352,550,394],[485,392,527,434],[531,392,573,434]],\"answer\":4}",
       "json_example_answer_only": "{\"answer\":4}"
     },
     "query:pop_color_label": {
       "bubble_shooter_rule_text": "A shot bubble attaches at the marked target. A same-color connected group pops when the placed bubble makes that group size at least three.",
       "answer_hint": "set \"answer\" to the single option label whose color would make bubbles pop",
-      "annotation_hint": "set \"annotation\" to an array of pixel-space center points [x, y] for the existing board bubbles that would pop for the selected option",
-      "json_example": "{\"annotation\":[[403,279],[449,279]],\"answer\":\"C\"}",
+      "annotation_hint": "set \"annotation\" to an array of pixel-space bubble boxes [x1, y1, x2, y2] for the existing board bubbles that would pop for the selected option",
+      "json_example": "{\"annotation\":[[382,258,424,300],[428,258,470,300]],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     }
   },

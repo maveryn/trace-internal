@@ -8,13 +8,13 @@ from typing import Any, Callable, Mapping, Sequence
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.shared.annotation_artifacts import point_annotation_artifacts, point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import bbox_set_annotation_artifacts, point_annotation_artifacts, point_set_annotation_artifacts
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 
-from .shared.annotations import entity_points_for_ids
+from .shared.annotations import entity_bboxes_for_ids, entity_points_for_ids
 from .shared.defaults import SCENE_ID, VEHICLE_OPTION_LABELS
 from .shared.output import common_trace_params, common_trace_sections
 from .shared.prompts import (
@@ -202,7 +202,7 @@ def prepare_count_objective_from_spec(
         prompt_dynamic_slots=prompt_slots,
         answer_gt=lambda sample: TypedValue(type="integer", value=int(sample.answer)),
         annotation_entity_ids=lambda sample: sample.annotation_entity_ids,
-        annotation_type="point_set",
+        annotation_type="bbox_set",
         query_spec_params=query_spec_params,
         execution_updates=lambda _sample: {"target_answer": int(target_answer)},
     )
@@ -352,12 +352,18 @@ def run_crossing_lifecycle(
         rendered_context.rendered_scene,
         objective.annotation_entity_ids(sample),
     )
+    annotation_bboxes = entity_bboxes_for_ids(
+        rendered_context.rendered_scene,
+        objective.annotation_entity_ids(sample),
+    )
     if str(objective.annotation_type) == "point":
         if len(annotation_points) != 1:
             raise ValueError("scalar Crossing point annotation requires exactly one entity")
         annotation_artifacts = point_annotation_artifacts(annotation_points[0])
     elif str(objective.annotation_type) == "point_set":
         annotation_artifacts = point_set_annotation_artifacts(annotation_points)
+    elif str(objective.annotation_type) == "bbox_set":
+        annotation_artifacts = bbox_set_annotation_artifacts(annotation_bboxes)
     else:
         raise ValueError(f"unsupported Crossing annotation type: {objective.annotation_type}")
     _prompt_defaults, prompt_artifacts = build_crossing_prompt_artifacts(

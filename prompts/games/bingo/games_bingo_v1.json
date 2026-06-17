@@ -108,8 +108,8 @@
     "query:called_number_match_count": {
       "called_number_match_rule_text": "Some CALLED-list numbers may not appear on the card.",
       "answer_hint": "set \"answer\" to the number of CALLED-list numbers that appear on the card",
-      "annotation_hint": "set \"annotation\" to an array of pixel-space points [x, y] for the card cells whose printed numbers are in the CALLED list",
-      "json_example": "{\"annotation\":[[125,105],[245,265]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array of pixel-space cell boxes [x1, y1, x2, y2] for the card cells whose printed numbers are in the CALLED list",
+      "json_example": "{\"annotation\":[[100,80,150,130],[220,240,270,290]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     }
   },

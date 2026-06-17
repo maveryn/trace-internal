@@ -107,7 +107,7 @@
     "marble_chain_rule_text": "Fire the shooter marble straight along the chosen arrow. It inserts at the chain gap indicated by that arrow. If the inserted marble's same-color contiguous run has at least three marbles, the existing marbles in that run are removed and the chain closes once. Do not apply any later cascade.",
     "annotation_hint_max_pop_direction_label": "set \"annotation\" to one pixel-space point [x, y] at the insertion gap indicated by the selected arrow",
     "answer_hint_max_pop_direction_label": "set \"answer\" to only the selected shot-arrow letter",
-    "annotation_hint_pop_count_after_marked_shot": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of the existing chain marbles that would pop; use an empty array if none pop",
+    "annotation_hint_pop_count_after_marked_shot": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one for each existing chain marble that would pop; use an empty array if none pop",
     "answer_hint_pop_count_after_marked_shot": "set \"answer\" to the number of existing chain marbles removed by the marked shot, excluding the shooter marble"
   }
 }

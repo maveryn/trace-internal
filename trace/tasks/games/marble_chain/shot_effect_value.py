@@ -8,7 +8,7 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 
-from ._lifecycle import MarbleObjectivePlan, MarbleSingleQueryTaskBase, marble_point_set_attempt, run_marble_registered_task
+from ._lifecycle import MarbleObjectivePlan, MarbleSingleQueryTaskBase, marble_bbox_set_attempt, run_marble_registered_task
 from .shared.defaults import SCENE_ID
 from .shared.prompts import make_marble_prompt_slots
 from .shared.rules import popped_marble_annotation_ids
@@ -26,7 +26,7 @@ PROMPT_SLOTS = make_marble_prompt_slots(
     prompt_query_key="pop_count_after_marked_shot",
     answer_hint_key="answer_hint_pop_count_after_marked_shot",
     annotation_hint_key="annotation_hint_pop_count_after_marked_shot",
-    example_annotation=[[448, 224], [502, 242], [551, 276], [590, 322]],
+    example_annotation=[[430, 206, 466, 242], [484, 224, 520, 260], [533, 258, 569, 294], [572, 304, 608, 340]],
     example_answer=4,
 )
 
@@ -129,7 +129,7 @@ def _prepare_shot_effect_objective(
             target_answer=int(target_axis.value),
             metadata=query_params,
         )
-        return marble_point_set_attempt(
+        return marble_bbox_set_attempt(
             answer_gt=TypedValue(type="integer", value=int(sample.answer)),
             sample=sample,
             prompt_slots=PROMPT_SLOTS,

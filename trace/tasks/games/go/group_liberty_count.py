@@ -8,12 +8,8 @@ from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 
-from ._lifecycle import GoObjectivePlan, make_go_marked_group_objective, run_go_lifecycle
+from ._lifecycle import GoObjectivePlan, prepare_go_marked_group_count_objective, run_go_lifecycle
 from .shared.rules import GO_RULE_GROUP_LIBERTIES, GO_RULE_SHARED_LIBERTIES
-from .shared.sampling import (
-    resolve_go_player_color_axis,
-    resolve_go_target_axis,
-)
 from .shared.state import DEFAULTS, GoIntegerAxis, GoSceneAxes, SCENE_ID
 
 
@@ -53,25 +49,15 @@ def _prepare_liberty_objective(
     """Bind the selected liberty query to a marked Go group construction."""
 
     selected_query = str(query_id)
-    player_color_axis = resolve_go_player_color_axis(
+    return prepare_go_marked_group_count_objective(
         instance_seed=int(instance_seed),
-        params=task_params,
+        task_params=task_params,
         gen_defaults=_GEN_DEFAULTS,
-    )
-    target_axis = resolve_go_target_axis(
-        instance_seed=int(instance_seed),
-        params=task_params,
-        gen_defaults=_GEN_DEFAULTS,
-        support_key=str(TARGET_SUPPORT_KEY_BY_QUERY_ID[selected_query]),
-        fallback_support=FALLBACK_SUPPORT_BY_QUERY_ID[selected_query],
-        namespace=f"{selected_query}.target_answer",
-    )
-
-    return make_go_marked_group_objective(
         prompt_query_key=selected_query,
         rule_mode=str(RULE_MODE_BY_QUERY_ID[selected_query]),
-        target_axis=target_axis,
-        player_color_axis=player_color_axis,
+        support_key=str(TARGET_SUPPORT_KEY_BY_QUERY_ID[selected_query]),
+        fallback_support=FALLBACK_SUPPORT_BY_QUERY_ID[selected_query],
+        target_namespace=f"{selected_query}.target_answer",
         board_size_axis=board_size_axis,
         scene_axes=scene_axes,
         annotation_coord_attr=str(ANNOTATION_COORD_ATTR_BY_QUERY_ID[selected_query]),

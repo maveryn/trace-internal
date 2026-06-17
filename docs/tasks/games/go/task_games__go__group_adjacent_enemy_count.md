@@ -7,7 +7,7 @@
 3. Public task id: `task_games__go__group_adjacent_enemy_count`
 4. Supported `query_id` values: `single`
 5. Answer schema: `integer_count`
-6. Annotation schema: `point_set`
+6. Annotation schema: `bbox_set`
 7. Program schema: `count(filter(stones, adjacent_to_group(stone, marked_group) and stone_color=opponent_color)); scene=go; scope=group_adjacent_enemy_count`
 
 ## Program Contract
@@ -16,4 +16,4 @@
 ## Generation Notes
 1. The task samples a marked black or white connected group and asks for opponent stones touching it orthogonally.
 2. `query_id=single` is the public no-branch query id; the prompt query key remains the semantic prompt template.
-3. Annotation is projected from the same generated game state used for answer verification.
+3. Annotation marks the opponent-stone boxes directly adjacent to the marked group.

@@ -6,7 +6,7 @@
 3. Public task id: `task_games__dots_and_boxes__completable_box_label`
 4. Supported `query_id` values: `single`
 5. Answer schema: `option_letter`
-6. Annotation schema: `bbox_set`
+6. Annotation schema: `bbox`
 7. Program schema: `label(filter(candidate_boxes, drawn_side_count(box)=3)); scene=dots_and_boxes; scope=completable_box_label`
 
 ## Program Contract

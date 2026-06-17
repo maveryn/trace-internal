@@ -6,7 +6,7 @@
 3. Public task id: `task_games__bubble_shooter__pop_color_label`
 4. Supported `query_id` values: `single`
 5. Answer schema: `string_label`
-6. Annotation schema: `point_set`
+6. Annotation schema: `bbox_set`
 7. Program schema: `label(color(inserted_group(marked_shot))); scene=bubble_shooter; scope=pop_color_label`
 
 ## Program Contract

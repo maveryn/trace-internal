@@ -8,13 +8,29 @@ from typing import Any, Dict, Mapping, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.games.shared.layout import (
+    apply_games_layout_jitter_to_bbox,
+    attach_games_unit_size_jitter,
+    resolve_games_layout_jitter,
+    resolve_games_unit_size_scale,
+    scale_games_px,
+)
+from trace.tasks.games.shared.scene_style import (
+    GamePanelSceneStyle,
+    draw_panel_scene_chrome,
+    game_panel_scene_style_metadata,
+    make_panel_scene_background,
+    resolve_game_panel_scene_style,
+)
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.font_assets import get_font_family_record, sample_font_family
+
 from ....shared.drawing import draw_dashed_line
 from ....shared.text_rendering import fit_font_to_box
-from ...shared.text import draw_centered_game_text
-from ...shared.text import draw_game_text_traced as draw_text_traced
-from ...shared.layout import apply_games_layout_jitter_to_bbox
-from .common import PlatformerCollectible, PlatformerHazard, PlatformerPlatform
-from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
+from ...shared.text import draw_centered_game_text, draw_game_text_traced as draw_text_traced
+from .defaults import DEFAULTS, POST_IMAGE_NOISE_DEFAULTS
+from .state import PlatformerCollectible, PlatformerHazard, PlatformerPlatform, PlatformerSample
 
 
 @dataclass(frozen=True)
@@ -69,8 +85,84 @@ class RenderedPlatformerScene:
     render_map: Dict[str, Any]
 
 
+@dataclass(frozen=True)
+class RenderedPlatformerTaskContext:
+    """Rendered Platformer image plus style and noise metadata."""
+
+    image: Image.Image
+    rendered_scene: RenderedPlatformerScene
+    render_params: PlatformerRenderParams
+    background_meta: Dict[str, Any]
+    panel_style_meta: Dict[str, Any]
+    text_style_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+
+
+def resolve_platformer_render_params(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    namespace: str,
+    instance_seed: int,
+) -> PlatformerRenderParams:
+    """Resolve Platformer rendering parameters from config/defaults."""
+
+    unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
+        params,
+        render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{str(namespace)}.unit_size",
+    )
+    layout_jitter = attach_games_unit_size_jitter(
+        resolve_games_layout_jitter(
+            params,
+            render_defaults,
+            instance_seed=int(instance_seed),
+            namespace=f"{str(namespace)}.layout",
+        ),
+        unit_scale_meta,
+    )
+    level_width_px = scale_games_px(
+        params.get("level_width_px", group_default(render_defaults, "level_width_px", DEFAULTS.level_width_px)),
+        unit_scale,
+        min_px=430,
+    )
+    level_height_px = scale_games_px(
+        params.get("level_height_px", group_default(render_defaults, "level_height_px", DEFAULTS.level_height_px)),
+        unit_scale,
+        min_px=305,
+    )
+    default_canvas_width = int(group_default(render_defaults, "canvas_width", DEFAULTS.canvas_width))
+    default_canvas_height = int(group_default(render_defaults, "canvas_height", DEFAULTS.canvas_height))
+    canvas_width = int(max(640, min(default_canvas_width, int(level_width_px) + 190)))
+    canvas_height = int(max(500, min(default_canvas_height, int(level_height_px) + 160)))
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{str(namespace)}.font_family",
+        params=params,
+    )
+    return PlatformerRenderParams(
+        canvas_width=int(params.get("canvas_width", canvas_width)),
+        canvas_height=int(params.get("canvas_height", canvas_height)),
+        level_width_px=int(level_width_px),
+        level_height_px=int(level_height_px),
+        level_border_width_px=scale_games_px(params.get("level_border_width_px", group_default(render_defaults, "level_border_width_px", DEFAULTS.level_border_width_px)), unit_scale, min_px=2),
+        platform_height_px=scale_games_px(params.get("platform_height_px", group_default(render_defaults, "platform_height_px", DEFAULTS.platform_height_px)), unit_scale, min_px=17),
+        player_width_px=scale_games_px(params.get("player_width_px", group_default(render_defaults, "player_width_px", DEFAULTS.player_width_px)), unit_scale, min_px=19),
+        player_height_px=scale_games_px(params.get("player_height_px", group_default(render_defaults, "player_height_px", DEFAULTS.player_height_px)), unit_scale, min_px=29),
+        hazard_width_px=scale_games_px(params.get("hazard_width_px", group_default(render_defaults, "hazard_width_px", DEFAULTS.hazard_width_px)), unit_scale, min_px=27),
+        hazard_height_px=scale_games_px(params.get("hazard_height_px", group_default(render_defaults, "hazard_height_px", DEFAULTS.hazard_height_px)), unit_scale, min_px=27),
+        collectible_radius_px=scale_games_px(params.get("collectible_radius_px", group_default(render_defaults, "collectible_radius_px", DEFAULTS.collectible_radius_px)), unit_scale, min_px=9),
+        path_width_px=scale_games_px(params.get("path_width_px", group_default(render_defaults, "path_width_px", DEFAULTS.path_width_px)), unit_scale, min_px=3),
+        label_font_size_px=scale_games_px(params.get("label_font_size_px", group_default(render_defaults, "label_font_size_px", DEFAULTS.label_font_size_px)), unit_scale, min_px=12),
+        font_family=str(font_family),
+        layout_jitter_meta=layout_jitter,
+    )
+
+
 def build_games_platformer_theme(*, style_variant: str) -> PlatformerTheme:
-    """Return one platformer visual theme."""
+    """Return one complete platformer palette for the requested style variant."""
 
     style = str(style_variant)
     if style == "cave":
@@ -503,7 +595,7 @@ def render_platformer_scene(
     params: PlatformerRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedPlatformerScene:
-    """Render one side-scroller platformer level."""
+    """Render one side-scroller level and record every entity projection."""
 
     image = background.convert("RGB").copy()
     draw = ImageDraw.Draw(image)
@@ -615,9 +707,79 @@ def render_platformer_scene(
     return RenderedPlatformerScene(image=image, scene_entities=tuple(scene_entities), render_map=render_map)
 
 
+def render_platformer_task_context(
+    *,
+    sample: PlatformerSample,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    namespace: str,
+    instance_seed: int,
+) -> RenderedPlatformerTaskContext:
+    """Render one platformer sample and attach shared style/noise metadata."""
+
+    render_params = resolve_platformer_render_params(
+        params,
+        render_defaults=render_defaults,
+        namespace=str(namespace),
+        instance_seed=int(instance_seed),
+    )
+    panel_style, panel_style_meta = resolve_game_panel_scene_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{str(namespace)}.panel_scene_style",
+        treatment_weights=params.get(
+            "panel_scene_treatment_weights",
+            group_default(render_defaults, "panel_scene_treatment_weights", None),
+        ),
+        palette_weights=params.get(
+            "panel_scene_palette_weights",
+            group_default(render_defaults, "panel_scene_palette_weights", None),
+        ),
+    )
+    background, background_meta = make_panel_scene_background(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        style=panel_style,
+    )
+    rendered_scene = render_platformer_scene(
+        platforms=sample.platforms,
+        hazards=sample.hazards,
+        collectibles=sample.collectibles,
+        mode=str(sample.mode),
+        player_xy_norm=(float(sample.player_x_norm), float(sample.player_y_norm)),
+        path_points_norm=tuple(sample.path_points_norm),
+        visible_path_fraction=float(sample.visible_path_fraction),
+        background=background,
+        style_variant=str(sample.style_variant),
+        params=render_params,
+        panel_style=panel_style,
+    )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    text_style_meta = {
+        "font_family": str(render_params.font_family),
+        "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+    }
+    return RenderedPlatformerTaskContext(
+        image=image,
+        rendered_scene=rendered_scene,
+        render_params=render_params,
+        background_meta=dict(background_meta),
+        panel_style_meta=dict(panel_style_meta),
+        text_style_meta=dict(text_style_meta),
+        post_noise_meta=dict(post_noise_meta),
+    )
+
+
 __all__ = [
     "PlatformerRenderParams",
     "RenderedPlatformerScene",
+    "RenderedPlatformerTaskContext",
     "build_games_platformer_theme",
+    "render_platformer_task_context",
     "render_platformer_scene",
+    "resolve_platformer_render_params",
 ]

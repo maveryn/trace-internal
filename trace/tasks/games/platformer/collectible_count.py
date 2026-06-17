@@ -2,26 +2,117 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+import json
+from typing import Any, Dict, Mapping
 
-from trace.core.seed import spawn_rng
+from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
-from .shared.scene import COLLECTIBLE_COUNT_QUERY_ID, SCENE_ID, build_components, resolve_axes, sample_scene
+from ._lifecycle import AttemptPlatformerResult, ObjectivePlatformerPlan, run_platformer_lifecycle
+from .shared.annotations import bbox_set_for_entity_ids
+from .shared.defaults import DEFAULTS, SCENE_ID
+from .shared.sampling import (
+    PlatformerVisualAxes,
+    resolve_platformer_integer_axis,
+    sample_collectible_path_scene,
+)
+from .shared.state import PlatformerSample
 
 
 TASK_ID = "task_games__platformer__collectible_count"
-QUERY_ID = COLLECTIBLE_COUNT_QUERY_ID
+QUERY_ID = DEFAULT_QUERY_ID
+PROMPT_QUERY_KEY = "collectible_count"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
     "games",
     SCENE_ID,
     task_id=TASK_ID,
 )
+
+
+def _json_examples() -> tuple[str, str]:
+    """Return valid format examples for platformer collectible-count output."""
+
+    return (
+        json.dumps(
+            {"annotation": [[328, 210, 364, 246], [430, 182, 466, 218], [536, 198, 572, 234], [641, 254, 677, 290]], "answer": 4},
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ),
+        json.dumps({"answer": 4}, separators=(",", ":"), ensure_ascii=False),
+    )
+
+
+def _validate_count_sample(sample: PlatformerSample, *, target_count: int) -> None:
+    """Verify the collected coin count and annotation ids are consistent."""
+
+    on_path_ids = tuple(str(coin.collectible_id) for coin in sample.collectibles if bool(coin.on_path))
+    if int(sample.answer) != int(target_count):
+        raise ValueError("path collectible answer does not match target count")
+    if len(on_path_ids) != int(target_count):
+        raise ValueError("path collectible construction did not preserve target count")
+    if tuple(sample.annotation_entity_ids) != on_path_ids:
+        raise ValueError("path collectible annotation ids must match all on-path coins")
+
+
+def _prepare_count_objective(
+    instance_seed: int,
+    params: Mapping[str, Any],
+    query_probabilities: Mapping[str, float],
+    _query_id: str,
+    axes: PlatformerVisualAxes,
+) -> ObjectivePlatformerPlan:
+    """Resolve the target collectible count and bind the path constructor."""
+
+    target_axis = resolve_platformer_integer_axis(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        support_key="target_collectible_count_support",
+        explicit_key="target_collectible_count",
+        fallback_support=DEFAULTS.target_collectible_count_support,
+        namespace=f"{TASK_ID}.target_collectible_count",
+        balanced_flag_key="balanced_target_collectible_count_sampling",
+    )
+
+    def construct_attempt(rng: Any, attempt_axes: PlatformerVisualAxes) -> AttemptPlatformerResult:
+        sample = sample_collectible_path_scene(
+            rng=rng,
+            axes=attempt_axes,
+            target_collectible_count=int(target_axis.target_value),
+            mode=PROMPT_QUERY_KEY,
+        )
+        _validate_count_sample(sample, target_count=int(target_axis.target_value))
+        annotation_ids = tuple(str(entity_id) for entity_id in sample.annotation_entity_ids)
+        return AttemptPlatformerResult(
+            sample=sample,
+            answer_gt=TypedValue(type="integer", value=int(sample.answer)),
+            annotation_entity_ids=annotation_ids,
+            build_annotation=lambda rendered: bbox_set_for_entity_ids(rendered.rendered_scene, annotation_ids),
+            witness_type="object_set",
+            relations_extra={"target_collectible_count": int(target_axis.target_value)},
+            execution_extra={"target_collectible_count": int(target_axis.target_value)},
+        )
+
+    json_example, json_example_answer_only = _json_examples()
+    return ObjectivePlatformerPlan(
+        attempt_namespace="games.platformer.path_collectible_total",
+        prompt_query_key=PROMPT_QUERY_KEY,
+        answer_hint='set "answer" to the number of coins lying on the dashed jump arc as an integer',
+        annotation_hint='set "annotation" to bounding boxes [x0, y0, x1, y1], one around each coin lying on the dashed jump arc',
+        json_example=json_example,
+        json_example_answer_only=json_example_answer_only,
+        query_params={
+            "query_id_probabilities": dict(query_probabilities),
+            "target_collectible_count": int(target_axis.target_value),
+            "target_collectible_count_support": [int(value) for value in target_axis.target_value_support],
+            "target_collectible_count_probabilities": dict(target_axis.target_value_probabilities),
+        },
+        construct_attempt=construct_attempt,
+    )
 
 
 @register_task
@@ -30,58 +121,21 @@ class GamesPlatformerCollectibleCountTask:
 
     task_id = TASK_ID
     domain = "games"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
+        return run_platformer_lifecycle(
+            task_id=TASK_ID,
+            domain=self.domain,
             supported_query_ids=SUPPORTED_QUERY_IDS,
             default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        namespace = f"{SCENE_ID}.{str(query_id)}"
-        axes = resolve_axes(
-            int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
-            namespace=namespace,
-            params=task_params,
-            query_id=str(query_id),
-            query_id_probabilities=query_probabilities,
-        )
-        sampled = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            rng = spawn_rng(int(instance_seed), f"{TASK_ID}.attempt.{int(attempt_index)}")
-            try:
-                sampled = sample_scene(rng=rng, axes=axes)
-            except ValueError:
-                continue
-            break
-        if sampled is None:
-            raise RuntimeError(f"{TASK_ID} failed to generate a valid platformer scene after {max_attempts} attempts")
-        components = build_components(
-            sampled_scene=sampled,
-            axes=axes,
-            instance_seed=int(instance_seed),
-            params=task_params,
             render_defaults=_RENDER_DEFAULTS,
-            prompt_defaults=_PROMPT_DEFAULTS,
-            namespace=namespace,
-        )
-        return TaskOutput(
-            prompt=components.prompt,
-            prompt_variants=components.prompt_variants,
-            answer_gt=components.answer_gt,
-            annotation_gt=components.annotation_gt,
-            image=components.image,
-            image_id="img0",
-            trace_payload=components.trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+            prepare_objective=_prepare_count_objective,
         )
 
 

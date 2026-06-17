@@ -6,6 +6,7 @@ from typing import Any, Mapping, Sequence
 
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
+    bbox_annotation_artifacts,
     bbox_set_annotation_artifacts,
     segment_set_annotation_artifacts,
 )
@@ -25,6 +26,11 @@ def dots_and_boxes_annotation_artifacts(
             for box_id in annotation_entity_ids
         ]
         return bbox_set_annotation_artifacts(bboxes)
+    if str(annotation_kind) == "single_box":
+        if len(tuple(annotation_entity_ids)) != 1:
+            raise ValueError("single_box annotation requires exactly one box id")
+        bbox = list(render_map["box_bboxes_px"][str(tuple(annotation_entity_ids)[0])])
+        return bbox_annotation_artifacts(bbox)
     if str(annotation_kind) == "edge_point_pair":
         point_pairs = [
             [list(point) for point in render_map["edge_point_pairs_px"][str(edge_id)]]

@@ -7,10 +7,17 @@ from typing import Any, Dict, List, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.font_assets import get_font_family_record, sample_font_family
 from ....shared.text_rendering import fit_font_to_box
-from .common import POOL_POCKETS, PoolBall, PoolPocket, ball_group
+from .defaults import DEFAULTS, POST_IMAGE_NOISE_DEFAULTS
+from .rules import ball_group
+from .state import POOL_POCKETS, PoolBall, PoolPocket, PoolSceneState
 from ...shared.layout import apply_games_layout_jitter_to_bbox
+from ...shared.layout import resolve_games_layout_jitter
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
+from ...shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ...shared.style import PoolTheme, build_games_pool_theme
 from ...shared.text import draw_game_text_traced as draw_text_traced
 
@@ -40,6 +47,18 @@ class RenderedPoolScene:
     image: Image.Image
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
+
+
+@dataclass(frozen=True)
+class RenderedPoolTaskContext:
+    """Rendered image and metadata needed for final pool task output."""
+
+    image: Image.Image
+    rendered_scene: RenderedPoolScene
+    background_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+    panel_style_meta: Dict[str, Any]
+    text_style_meta: Dict[str, Any]
 
 
 _BALL_COLORS: Dict[int, Tuple[int, int, int]] = {
@@ -406,8 +425,116 @@ def render_pool_table_scene(
     )
 
 
+def resolve_pool_render_params(
+    params: Dict[str, Any] | Any,
+    *,
+    render_defaults: Dict[str, Any] | Any,
+    namespace: str,
+    instance_seed: int,
+) -> PoolRenderParams:
+    """Resolve Pool rendering parameters from config/defaults."""
+
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{str(namespace)}.font_family",
+        params=params,
+    )
+    return PoolRenderParams(
+        canvas_width=int(params.get("canvas_width", group_default(render_defaults, "canvas_width", DEFAULTS.canvas_width))),
+        canvas_height=int(params.get("canvas_height", group_default(render_defaults, "canvas_height", DEFAULTS.canvas_height))),
+        panel_margin_px=int(params.get("panel_margin_px", group_default(render_defaults, "panel_margin_px", DEFAULTS.panel_margin_px))),
+        table_width_px=int(params.get("table_width_px", group_default(render_defaults, "table_width_px", DEFAULTS.table_width_px))),
+        table_height_px=int(params.get("table_height_px", group_default(render_defaults, "table_height_px", DEFAULTS.table_height_px))),
+        rail_width_px=int(params.get("rail_width_px", group_default(render_defaults, "rail_width_px", DEFAULTS.rail_width_px))),
+        pocket_radius_px=int(params.get("pocket_radius_px", group_default(render_defaults, "pocket_radius_px", DEFAULTS.pocket_radius_px))),
+        ball_radius_px=int(params.get("ball_radius_px", group_default(render_defaults, "ball_radius_px", DEFAULTS.ball_radius_px))),
+        ball_number_font_size_px=int(params.get("ball_number_font_size_px", group_default(render_defaults, "ball_number_font_size_px", DEFAULTS.ball_number_font_size_px))),
+        badge_font_size_px=int(params.get("badge_font_size_px", group_default(render_defaults, "badge_font_size_px", DEFAULTS.badge_font_size_px))),
+        font_family=str(font_family),
+        layout_jitter_meta=resolve_games_layout_jitter(
+            params,
+            render_defaults,
+            instance_seed=int(instance_seed),
+            namespace=f"{str(namespace)}.layout",
+        ),
+    )
+
+
+def render_pool_task_context(
+    *,
+    state: PoolSceneState,
+    params: Dict[str, Any] | Any,
+    render_defaults: Dict[str, Any] | Any,
+    namespace: str,
+    instance_seed: int,
+    style_variant: str,
+    badge_text: str = "",
+    show_shot_path: bool = False,
+) -> RenderedPoolTaskContext:
+    """Render a pool scene and attach reusable style, font, and noise metadata."""
+
+    render_params = resolve_pool_render_params(
+        params,
+        render_defaults=render_defaults,
+        namespace=str(namespace),
+        instance_seed=int(instance_seed),
+    )
+    panel_style, panel_style_meta = resolve_game_panel_scene_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{str(namespace)}.panel_scene_style",
+        treatment_weights=params.get(
+            "panel_scene_treatment_weights",
+            group_default(render_defaults, "panel_scene_treatment_weights", None),
+        ),
+        palette_weights=params.get(
+            "panel_scene_palette_weights",
+            group_default(render_defaults, "panel_scene_palette_weights", None),
+        ),
+    )
+    background, background_meta = make_panel_scene_background(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        style=panel_style,
+    )
+    rendered_scene = render_pool_table_scene(
+        balls=state.balls,
+        pockets=state.pockets,
+        background=background,
+        style_variant=str(style_variant),
+        badge_text=str(badge_text),
+        marked_ball_id=state.marked_ball_id,
+        marked_pocket_id=state.marked_pocket_id,
+        shot_path_ball_id=state.marked_ball_id if bool(show_shot_path) else None,
+        shot_path_pocket_id=state.marked_pocket_id if bool(show_shot_path) else None,
+        params=render_params,
+        panel_style=panel_style,
+    )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    text_style_meta = {
+        "font_family": str(render_params.font_family),
+        "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+    }
+    return RenderedPoolTaskContext(
+        image=image,
+        rendered_scene=rendered_scene,
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
+        panel_style_meta=dict(panel_style_meta),
+        text_style_meta=dict(text_style_meta),
+    )
+
+
 __all__ = [
     "PoolRenderParams",
     "RenderedPoolScene",
+    "RenderedPoolTaskContext",
     "render_pool_table_scene",
+    "render_pool_task_context",
+    "resolve_pool_render_params",
 ]

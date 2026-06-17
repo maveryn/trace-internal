@@ -18,9 +18,9 @@ Program schema: `count(filter(racing_cars, progress_after(marked_car) and before
 Integer count.
 
 ## Annotation
-Annotation schema: `point_set`.
+Annotation schema: `bbox_set`.
 
-`point_set` containing centers of every counted car. Empty annotation is valid when the answer is `0`.
+`bbox_set` containing every counted car. Empty annotation is valid when the answer is `0`.
 
 ## Notes
 The marked car is not counted.

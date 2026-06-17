@@ -139,88 +139,88 @@
       "standard_rule_text": "Use normal chess piece movement. Do not use castling, en passant, or promotion.",
       "marked_piece_rule_text": "The red outlined square contains the marked piece.",
       "answer_hint": "set \"answer\" to the count of destination squares for the marked piece",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every destination square the marked piece can move to; use an empty array if none are available",
-      "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space square boxes [x1, y1, x2, y2] for every destination square the marked piece can move to; use an empty array if none are available",
+      "json_example": "{\"annotation\":[[108,108,172,172],[268,108,332,172]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:marked_piece_capture_count": {
       "standard_rule_text": "Use normal chess piece movement. Do not use castling, en passant, or promotion.",
       "marked_piece_rule_text": "The red outlined square contains the marked piece.",
       "answer_hint": "set \"answer\" to the count of opponent pieces the marked piece can capture in one move",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every capturable destination square occupied by an opponent piece; use an empty array if none are available",
-      "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space square boxes [x1, y1, x2, y2] for every capturable destination square occupied by an opponent piece; use an empty array if none are available",
+      "json_example": "{\"annotation\":[[108,108,172,172],[268,108,332,172]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:player_capture_piece_count": {
       "standard_rule_text": "Use normal chess piece movement. Do not use castling, en passant, or promotion.",
       "answer_hint": "set \"answer\" to the count of opponent pieces capturable in one move by the named side",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every capturable opponent piece; use an empty array if none are available",
-      "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every capturable opponent piece; use an empty array if none are available",
+      "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:king_square_attacker_count": {
       "standard_rule_text": "Use normal chess piece movement. Do not use castling, en passant, or promotion.",
       "king_square_attacker_rule_text": "The red outlined square contains the marked king.",
       "answer_hint": "set \"answer\" to the count of opponent pieces attacking the marked king",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every attacking opponent piece; use an empty array if none are attacking",
-      "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every attacking opponent piece; use an empty array if none are attacking",
+      "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:white_piece_attacks_target_square_count": {
       "standard_rule_text": "Use normal chess piece movement. Do not use castling, en passant, or promotion.",
       "target_square_rule_text": "The red outlined square marks the target square.",
       "answer_hint": "set \"answer\" to the count of white pieces attacking the marked target square",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every white attacking piece; use an empty array if none are attacking",
-      "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every white attacking piece; use an empty array if none are attacking",
+      "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:black_piece_attacks_target_square_count": {
       "standard_rule_text": "Use normal chess piece movement. Do not use castling, en passant, or promotion.",
       "target_square_rule_text": "The red outlined square marks the target square.",
       "answer_hint": "set \"answer\" to the count of black pieces attacking the marked target square",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every black attacking piece; use an empty array if none are attacking",
-      "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every black attacking piece; use an empty array if none are attacking",
+      "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:rook_line_blocker_count": {
       "blocker_rule_text": "The red outlined square contains the source piece. The blue outlined square is the target square. Count only pieces on the intervening squares along the rook's row or column movement line.",
       "answer_hint": "set \"answer\" to the count of pieces on the intervening squares along the marked rook's movement line to the target square",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every intervening piece on that rook movement line; use an empty array if none are on the path",
-      "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every intervening piece on that rook movement line; use an empty array if none are on the path",
+      "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:bishop_diagonal_blocker_count": {
       "blocker_rule_text": "The red outlined square contains the source piece. The blue outlined square is the target square. Count only pieces on the intervening squares along the bishop's diagonal movement line.",
       "answer_hint": "set \"answer\" to the count of pieces on the intervening squares along the marked bishop's diagonal to the target square",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every intervening piece on that bishop diagonal; use an empty array if none are on the path",
-      "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every intervening piece on that bishop diagonal; use an empty array if none are on the path",
+      "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:queen_line_blocker_count": {
       "blocker_rule_text": "The red outlined square contains the source piece. The blue outlined square is the target square. Count only pieces on the intervening squares along the queen's row, column, or diagonal movement line.",
       "answer_hint": "set \"answer\" to the count of pieces on the intervening squares along the marked queen's movement line to the target square",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every intervening piece on that queen movement line; use an empty array if none are on the path",
-      "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every intervening piece on that queen movement line; use an empty array if none are on the path",
+      "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:king_escape_square_count": {
       "standard_rule_text": "Use normal chess piece movement. Do not use castling, en passant, or promotion.",
       "king_escape_rule_text": "The red outlined square contains the marked king. Count one-step king destinations that are empty or capturable and are not attacked after the king moves there.",
       "answer_hint": "set \"answer\" to the count of safe one-step destination squares for the marked king",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every safe destination square; use an empty array if there are none",
-      "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space square boxes [x1, y1, x2, y2] for every safe destination square; use an empty array if there are none",
+      "json_example": "{\"annotation\":[[108,108,172,172],[268,108,332,172]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:piece_kind_count": {
       "answer_hint": "set \"answer\" to the count of matching visible pieces",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every matching visible piece; use an empty array if none are shown",
-      "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every matching visible piece; use an empty array if none are shown",
+      "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:colored_piece_kind_count": {
       "answer_hint": "set \"answer\" to the count of matching visible pieces",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space points [x, y] at the centers of every matching visible piece; use an empty array if none are shown",
-      "json_example": "{\"annotation\":[[140,140],[300,140]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every matching visible piece; use an empty array if none are shown",
+      "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:checkmate_move_label": {

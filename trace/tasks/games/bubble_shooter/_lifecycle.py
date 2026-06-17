@@ -8,7 +8,7 @@ from typing import Any, Callable, Mapping, Sequence
 from trace.core.seed import hash64, spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
@@ -93,23 +93,23 @@ def resolve_bubble_shooter_board_axis_specs(
     }
 
 
-def point_set_attempt(
+def bbox_set_attempt(
     *,
     state: BubbleShooterState,
     answer_gt: TypedValue,
     annotation_entity_ids: tuple[str, ...],
     execution_extra: Mapping[str, Any] | None = None,
 ) -> BubbleShooterAttemptResult:
-    """Package an answer whose annotation is the point set for scene entities."""
+    """Package an answer whose annotation is the bbox set for scene entities."""
 
     resolved_entity_ids = tuple(str(entity_id) for entity_id in annotation_entity_ids)
     return BubbleShooterAttemptResult(
         state=state,
         answer_gt=answer_gt,
         annotation_entity_ids=resolved_entity_ids,
-        build_annotation=lambda rendered_context: point_set_annotation_artifacts(
+        build_annotation=lambda rendered_context: bbox_set_annotation_artifacts(
             [
-                rendered_context.rendered_scene.render_map["entity_centers_px"][str(entity_id)]
+                rendered_context.rendered_scene.render_map["entity_bboxes_px"][str(entity_id)]
                 for entity_id in resolved_entity_ids
             ]
         ),
@@ -166,7 +166,7 @@ def prepare_integer_outcome_objective(
         if state.shooter_color_key != state.outcome.color_key:
             raise ValueError("Bubble-shooter count state has mismatched shooter color")
         coords = tuple(outcome_coords(state))
-        return point_set_attempt(
+        return bbox_set_attempt(
             state=state,
             answer_gt=TypedValue(type="integer", value=int(len(coords))),
             annotation_entity_ids=bubble_entity_ids_for_coords(coords),
@@ -284,7 +284,7 @@ def run_bubble_shooter_lifecycle(
 __all__ = [
     "BubbleShooterAttemptResult",
     "BubbleShooterObjectivePlan",
-    "point_set_attempt",
+    "bbox_set_attempt",
     "prepare_integer_outcome_objective",
     "resolve_bubble_shooter_board_axis_specs",
     "run_bubble_shooter_lifecycle",

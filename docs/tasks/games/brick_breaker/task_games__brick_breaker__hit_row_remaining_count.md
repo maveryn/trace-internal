@@ -7,7 +7,7 @@
 4. Public task id: `task_games__brick_breaker__hit_row_remaining_count`
 5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
-7. Annotation schema: `point_set`
+7. Annotation schema: `bbox_set`
 8. Program schema: `count(filter(bricks_in_hit_row, state=remaining_after_marked_hit)); scene=brick_breaker; scope=hit_row_remaining_count`
 
 ## Program Contract

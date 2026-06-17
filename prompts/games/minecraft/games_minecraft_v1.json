@@ -134,13 +134,13 @@
   "code_prompt_defaults": {
     "object_description_block_world": "a Minecraft-like isometric block world with cube terrain, visible cube stacks or raised blocks, and any marked track needed for the question",
     "minecraft_route_cost_rule_text": "Each raised stone or dirt block sitting on the visible track counts 1; empty track cells and raised blocks away from the track count 0.",
-    "annotation_hint_top_ore_stack_count": "set \"annotation\" to [x, y] pixel points at the centers of the top cubes of every visible stack whose top cube is the named ore",
+    "annotation_hint_top_ore_stack_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one around each visible stack whose top cube is the named ore",
     "answer_hint_top_ore_stack_count": "set \"answer\" to the integer number of stacks whose top cube is the named ore",
-    "annotation_hint_resource_route_cost": "set \"annotation\" to [x, y] pixel points at the centers of the raised stone or dirt blocks on the visible track; use an empty array if the count is 0",
+    "annotation_hint_resource_route_cost": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one around each raised stone or dirt block on the visible track; use an empty array if the count is 0",
     "answer_hint_resource_route_cost": "set \"answer\" to the integer number of raised blocks on the track",
-    "annotation_hint_exact_height_count": "set \"annotation\" to [x, y] pixel points at the centers of the top cubes of every visible stack that is exactly the named height",
+    "annotation_hint_exact_height_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one around each visible stack that is exactly the named height",
     "answer_hint_exact_height_count": "set \"answer\" to the integer number of stacks that are exactly the named height",
-    "annotation_hint_at_least_height_count": "set \"annotation\" to [x, y] pixel points at the centers of the top cubes of every visible stack that is at least the named height",
+    "annotation_hint_at_least_height_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one around each visible stack that is at least the named height",
     "answer_hint_at_least_height_count": "set \"answer\" to the integer number of stacks that are at least the named height"
   }
 }

@@ -14,7 +14,7 @@ from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 
 from ._lifecycle import AttemptRacingTrackResult, ObjectiveRacingTrackPlan, run_racing_track_lifecycle
-from .shared.annotations import point_set_for_entity_ids
+from .shared.annotations import bbox_set_for_entity_ids
 from .shared.defaults import DEFAULTS, SCENE_ID
 from .shared.rendering import RacingTrackRenderParams
 from .shared.rules import circular_progress_gap, progress_is_ahead_of_reference
@@ -206,7 +206,7 @@ def _json_examples() -> tuple[str, str]:
     """Return valid format examples for racing-track ahead-count output."""
 
     return (
-        json.dumps({"annotation": [[486, 214], [612, 331]], "answer": 2}, separators=(",", ":"), ensure_ascii=False),
+        json.dumps({"annotation": [[462, 200, 510, 228], [588, 317, 636, 345]], "answer": 2}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": 2}, separators=(",", ":"), ensure_ascii=False),
     )
 
@@ -245,7 +245,7 @@ def _prepare_ahead_objective(
             state=state,
             answer_gt=TypedValue(type="integer", value=len(annotation_ids)),
             annotation_entity_ids=tuple(annotation_ids),
-            build_annotation=lambda rendered: point_set_for_entity_ids(rendered.rendered_scene, annotation_ids),
+            build_annotation=lambda rendered: bbox_set_for_entity_ids(rendered.rendered_scene, annotation_ids),
             witness_type="object_set",
             marked_car_id=str(reference_car_id),
             query_params={

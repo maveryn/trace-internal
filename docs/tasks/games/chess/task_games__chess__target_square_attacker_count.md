@@ -6,7 +6,7 @@
 3. Public task id: `task_games__chess__target_square_attacker_count`
 4. Supported `query_id` values: `king_square_attacker_count`, `white_piece_attacks_target_square_count`, `black_piece_attacks_target_square_count`
 5. Answer schema: `integer_count`
-6. Annotation schema: `point_set`
+6. Annotation schema: `bbox_set`
 7. Program schema: `count(attackers(marked_target_square, queried_side)); scene=chess; scope=target_square_attacker_count`
 
 ## Program Contract

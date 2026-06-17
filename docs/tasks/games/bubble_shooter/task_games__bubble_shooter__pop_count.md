@@ -6,7 +6,7 @@
 3. Public task id: `task_games__bubble_shooter__pop_count`
 4. Supported `query_id` values: `single`
 5. Answer schema: `integer_count`
-6. Annotation schema: `point_set`
+6. Annotation schema: `bbox_set`
 7. Program schema: `count(existing_same_color_component_adjacent_to(marked_landing_slot, shooter_color)) if component_size_plus_shooter >= 3 else 0; scene=bubble_shooter; scope=pop_count`
 
 ## Program Contract

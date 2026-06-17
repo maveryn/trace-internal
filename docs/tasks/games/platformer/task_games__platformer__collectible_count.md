@@ -4,10 +4,13 @@
 1. Domain: `games`
 2. Scene id: `platformer`
 3. Public task id: `task_games__platformer__collectible_count`
-4. Supported `query_id` values: `collectible_count`
+4. Supported `query_id` values: `single`
 5. Answer schema: `integer_count`
-6. Annotation schema: `point_set`
+6. Annotation schema: `bbox_set`
 7. Program schema: `count(filter(collectibles, collected_by_route=True)); scene=platformer; scope=collectible_count`
+
+## Program Contract
+`scene=platformer; scope=collectible_count; program=count(collectibles_on_shown_jump_arc)`
 
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.

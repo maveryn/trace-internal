@@ -44,7 +44,13 @@ def _prepare_top_resource_objective(
             object_description_key="object_description_block_world",
             answer_hint_key=f"answer_hint_{PROMPT_QUERY_KEY}",
             annotation_hint_key=f"annotation_hint_{PROMPT_QUERY_KEY}",
-            example_annotation=[[339, 310], [397, 281], [455, 252], [484, 223], [368, 194]],
+            example_annotation=[
+                [314, 278, 364, 334],
+                [372, 249, 422, 305],
+                [430, 220, 480, 276],
+                [459, 191, 509, 247],
+                [343, 162, 393, 218],
+            ],
             example_answer=5,
             counted_resource_kind=str(sample.counted_resource_kind),
             extra_query_params={

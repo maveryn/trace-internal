@@ -5,7 +5,12 @@ from __future__ import annotations
 from typing import Mapping, Sequence
 
 from trace.core.types import TypedValue
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, point_annotation_artifacts, point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import (
+    AnnotationArtifacts,
+    bbox_set_annotation_artifacts,
+    point_annotation_artifacts,
+    point_set_annotation_artifacts,
+)
 
 from .state import Coord, coord_to_cell_id
 from .rendering import RenderedMinesweeperScene
@@ -27,6 +32,20 @@ def minesweeper_point_set_annotation(
     """Project homogeneous cell witnesses to a public point-set annotation."""
 
     return point_set_annotation_artifacts([_point_for_cell(rendered, coord) for coord in coords])
+
+
+def minesweeper_bbox_set_annotation(
+    *,
+    rendered: RenderedMinesweeperScene,
+    coords: Sequence[Coord],
+) -> AnnotationArtifacts:
+    """Project homogeneous cell witnesses to a public bbox-set annotation."""
+
+    bboxes = [
+        list(rendered.render_map["cell_bboxes_px"][coord_to_cell_id(coord)])
+        for coord in coords
+    ]
+    return bbox_set_annotation_artifacts(bboxes)
 
 
 def minesweeper_point_annotation(
@@ -82,6 +101,7 @@ def keyed_cell_ids_for_coords(coords_by_role: Mapping[str, Sequence[Coord]]) -> 
 __all__ = [
     "cell_ids_for_coords",
     "keyed_cell_ids_for_coords",
+    "minesweeper_bbox_set_annotation",
     "minesweeper_keyed_point_sets_annotation",
     "minesweeper_point_annotation",
     "minesweeper_point_set_annotation",

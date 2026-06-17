@@ -3,24 +3,29 @@
 ## Identity
 - domain: `icons`
 - scene_id: `pattern_grid`
-- scene_id: `pattern`
-- module: `trace/tasks/icons/pattern/grid_color_violation.py`
+- module: `trace/tasks/icons/pattern_grid/attribute_pattern_violation_index.py`
 - prompt bundle: `icons_pattern_v0`
+
+## Program Contract
+`selection.attribute_pattern_violation(scene=pattern_grid, scope=numbered_grid_cells, attribute=color|size, output=cell_index)`
+
+scene=pattern_grid
+scope=numbered_grid_cells
 
 ## Contract
 Renders a numbered `3 x 3` icon grid where one numbered box violates a visible
-attribute pattern.
+attribute pattern. The public task asks for the number of the single violating
+box.
 
-Query ids:
-- `grid_color_violation`
-- `grid_size_violation`
+Supported query ids:
+- `grid_color_violation`: the violating cell breaks the color pattern.
+- `grid_size_violation`: the violating cell breaks the size pattern.
 
 Answer schema: integer numbered-box index.
-Annotation schema: one-box `bbox_set` around the violating numbered box.
-Projected annotation uses the shared icon bbox annotation shape with `type`,
-`bbox_set`, `pixel_bbox_set`, and `pixel_point_set`.
+Annotation schema: scalar `bbox` around the violating numbered box.
 
 ## Notes
-Color and size use separate internal generation/rendering branches, but share
-the same public objective: identify the single attribute-pattern violation.
-Renderer metadata records panel-header and numbered-cell text legibility.
+Color and size are semantic query branches of the same objective contract:
+identify the single visible attribute-pattern violation in a numbered grid.
+The sampled icon, row/column pattern steps, palette, canvas style, and exact
+violating index are recorded as trace metadata.

@@ -628,7 +628,7 @@ def test_icons_pattern_defaults_loaded() -> None:
     assert int(generation_shared['answer_index_min']) == 1
     assert int(generation_shared['answer_index_max']) == 9
     assert bool(generation_shared['balanced_sampling']) is True
-    assert 'task_icons__pattern_grid__attribute_pattern_violation_index' in cfg['generation']['task_overrides']
+    assert 'task_icons__pattern_grid__attribute_pattern_violation_index' not in cfg['generation']['task_overrides']
     assert 'task_icons__sequence_strip__rotation_sequence_violation_index' in cfg['generation']['task_overrides']
     render_shared = cfg['rendering']['shared']
     assert int(render_shared['scene_icon_size_min_px']) == 48
@@ -656,39 +656,37 @@ def test_icons_pattern_defaults_loaded() -> None:
     assert int(rendering['scene_icon_size_max_px']) == 92
     assert str(prompt['object_description']).strip()
     assert str(prompt['question_text']).strip()
-    generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__pattern_grid__attribute_pattern_violation_index')
-    assert sorted(generation['query_id_weights'].keys()) == ['grid_color_violation', 'grid_size_violation']
-    color_generation = generation['variant_generation_params']['grid_color_violation']
-    assert str(color_generation['pool_manifest']).strip() == 'all_icons.txt'
-    assert list(color_generation['color_levels']) == [0, 1, 2, 3, 4, 5, 6, 7]
-    assert list(color_generation['base_color_level_candidates']) == [0, 1, 2, 3, 4, 5, 6, 7]
-    assert list(color_generation['row_step_color_candidates']) == [-2, -1, 0, 1, 2]
-    assert list(color_generation['col_step_color_candidates']) == [-2, -1, 0, 1, 2]
-    assert list(color_generation['shared_rotation_candidates_degrees']) == [0, 90, 180, 270]
-    color_rendering = rendering['variant_render_params']['grid_color_violation']
-    assert int(color_rendering['scene_icon_size_min_px']) == 66
-    assert int(color_rendering['scene_icon_size_max_px']) == 84
-    assert int(color_rendering['palette_size_min']) == 8
-    assert int(color_rendering['palette_size_max']) == 8
-    assert list(color_rendering['icon_noise_edit_count_range']) == [0, 0]
-    size_generation = generation['variant_generation_params']['grid_size_violation']
-    assert str(size_generation['pool_manifest']).strip() == 'all_icons.txt'
-    assert list(size_generation['size_levels']) == [1, 2, 3, 4, 5]
-    assert list(size_generation['base_level_candidates']) == [1, 2, 3, 4, 5]
-    assert list(size_generation['row_step_candidates']) == [-1, 0, 1]
-    assert list(size_generation['col_step_candidates']) == [-1, 0, 1]
-    assert list(size_generation['shared_rotation_candidates_degrees']) == [0, 90, 180, 270]
-    size_rendering = rendering['variant_render_params']['grid_size_violation']
-    assert int(size_rendering['scene_icon_size_min_px']) == 34
-    assert int(size_rendering['scene_icon_size_max_px']) == 82
-    assert int(size_rendering['cell_box_width_min_px']) == 116
-    assert int(size_rendering['cell_box_width_max_px']) == 152
-    assert int(size_rendering['cell_box_height_min_px']) == 116
-    assert int(size_rendering['cell_box_height_max_px']) == 152
-    assert int(size_rendering['size_level_gap_px']) == 10
-    assert list(size_rendering['icon_noise_edit_count_range']) == [0, 0]
+
+def test_icons_pattern_grid_defaults_loaded() -> None:
+    cfg = get_scene_defaults('icons', 'pattern_grid')
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id='task_icons__pattern_grid__attribute_pattern_violation_index',
+    )
+    assert str(generation['pool_manifest']).strip() == 'all_icons.txt'
+    assert list(generation['color_levels']) == [0, 1, 2, 3, 4, 5, 6, 7]
+    assert list(generation['base_color_level_candidates']) == [0, 1, 2, 3, 4, 5, 6, 7]
+    assert list(generation['row_step_color_candidates']) == [-2, -1, 0, 1, 2]
+    assert list(generation['col_step_color_candidates']) == [-2, -1, 0, 1, 2]
+    assert list(generation['size_levels']) == [1, 2, 3, 4, 5]
+    assert list(generation['base_size_level_candidates']) == [1, 2, 3, 4, 5]
+    assert list(generation['row_step_size_candidates']) == [-1, 0, 1]
+    assert list(generation['col_step_size_candidates']) == [-1, 0, 1]
+    assert list(generation['shared_rotation_candidates_degrees']) == [0, 90, 180, 270]
+    assert 'query_id_weights' not in generation
+    assert int(rendering['color_icon_size_min_px']) == 66
+    assert int(rendering['color_icon_size_max_px']) == 84
+    assert int(rendering['size_icon_size_min_px']) == 34
+    assert int(rendering['size_icon_size_max_px']) == 82
+    assert int(rendering['cell_box_width_min_px']) == 116
+    assert int(rendering['cell_box_width_max_px']) == 152
+    assert int(rendering['cell_box_height_min_px']) == 116
+    assert int(rendering['cell_box_height_max_px']) == 152
+    assert int(rendering['size_level_gap_px']) == 10
+    assert list(rendering['icon_noise_edit_count_range']) == [0, 0]
     assert str(prompt['object_description']).strip()
-    assert str(prompt['question_text']).strip()
+    assert str(prompt['question_text_grid_color_violation']).strip()
+    assert str(prompt['question_text_grid_size_violation']).strip()
     assert str(prompt['annotation_hint']).strip()
     assert str(prompt['answer_hint']).strip()
     assert str(prompt['json_example']).strip()

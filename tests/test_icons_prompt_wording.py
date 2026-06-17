@@ -40,7 +40,7 @@ def _prompt_strings(value: Any) -> list[str]:
 
 
 def test_icons_prompt_defaults_avoid_generator_facing_scene_phrases() -> None:
-    configs = [get_scene_defaults("icons", group) for group in ("counting", "relation", "pattern", "sequence")]
+    configs = [get_scene_defaults("icons", group) for group in ("counting", "relation", "pattern", "pattern_grid", "sequence")]
     configs.append(get_scene_defaults("icons", "named_field"))
     configs.append(get_scene_defaults("icons", "named_grid"))
     configs.append(get_scene_defaults("icons", "paired_canvas"))

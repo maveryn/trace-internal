@@ -8,9 +8,8 @@ from collections import Counter
 import pytest
 
 from trace.core.seed import hash64
-from trace.tasks.icons.pattern.grid_color_violation import IconsPatternGridColorViolationTask
-from trace.tasks.icons.pattern.grid_size_violation import IconsPatternGridSizeViolationTask
 from trace.tasks.icons.pattern.sequence_rotation_violation import IconsPatternSequenceRotationViolationTask
+from trace.tasks.icons.pattern_grid.attribute_pattern_violation_index import IconsPatternGridAttributePatternViolationTask
 
 
 def _extract_prompt_json_example(prompt: str) -> dict:
@@ -121,10 +120,11 @@ def test_icons_pattern_structured_violation_row_rotation_contract_matches_scene(
 
 
 def test_icons_pattern_structured_violation_grid_size_contract_matches_scene() -> None:
-    task = IconsPatternGridSizeViolationTask()
+    task = IconsPatternGridAttributePatternViolationTask()
     out = task.generate(
         24112,
         params={
+            "query_id": "grid_size_violation",
             "answer_index": 5,
             "base_size_level": 3,
             "row_step_levels": 1,
@@ -145,9 +145,9 @@ def test_icons_pattern_structured_violation_grid_size_contract_matches_scene() -
     assert execution["scene_variant"] == "numbered_grid"
     assert execution["query_id"] == "grid_size_violation"
     assert int(out.answer_gt.value) == 5
-    assert out.annotation_gt.type == "bbox_set"
-    assert trace["projected_annotation"]["type"] == "bbox_set"
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "bbox"
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
     style = trace["render_spec"]["style"]
     assert int(style["text_legibility"]["failure_count"]) == 0
     assert {
@@ -164,10 +164,11 @@ def test_icons_pattern_structured_violation_grid_size_contract_matches_scene() -
 
 
 def test_icons_pattern_grid_color_violation_contract_matches_scene() -> None:
-    task = IconsPatternGridColorViolationTask()
+    task = IconsPatternGridAttributePatternViolationTask()
     out = task.generate(
         24115,
         params={
+            "query_id": "grid_color_violation",
             "answer_index": 5,
             "base_color_level": 3,
             "row_step_color_levels": 1,
@@ -186,9 +187,9 @@ def test_icons_pattern_grid_color_violation_contract_matches_scene() -> None:
     assert execution["scene_variant"] == "numbered_grid"
     assert execution["query_id"] == "grid_color_violation"
     assert int(out.answer_gt.value) == 5
-    assert out.annotation_gt.type == "bbox_set"
-    assert trace["projected_annotation"]["type"] == "bbox_set"
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "bbox"
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
     style = trace["render_spec"]["style"]
     assert int(style["text_legibility"]["failure_count"]) == 0
     assert {
@@ -205,32 +206,32 @@ def test_icons_pattern_grid_color_violation_contract_matches_scene() -> None:
 
 
 def test_icons_pattern_structured_violation_prompt_example_matches_contract() -> None:
-    task = IconsPatternGridSizeViolationTask()
-    out = task.generate(24113, params={"answer_index": 5}, max_attempts=200)
+    task = IconsPatternGridAttributePatternViolationTask()
+    out = task.generate(24113, params={"query_id": "grid_size_violation", "answer_index": 5}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 5}
     assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
     assert isinstance(answer_and_annotation["annotation"], list)
-    assert len(answer_and_annotation["annotation"]) == 1
+    assert len(answer_and_annotation["annotation"]) == 4
     assert answer_and_annotation["answer"] == 5
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "expected_answers"),
+    ("task_cls", "params", "expected_answers"),
     (
-        (IconsPatternSequenceRotationViolationTask, set(range(2, 7))),
-        (IconsPatternGridSizeViolationTask, set(range(1, 10))),
-        (IconsPatternGridColorViolationTask, set(range(1, 10))),
+        (IconsPatternSequenceRotationViolationTask, {}, set(range(2, 7))),
+        (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_size_violation"}, set(range(1, 10))),
+        (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_color_violation"}, set(range(1, 10))),
     ),
 )
-def test_icons_pattern_violation_balances_answers_by_default(task_cls, expected_answers: set[int]) -> None:
+def test_icons_pattern_violation_balances_answers_by_default(task_cls, params: dict, expected_answers: set[int]) -> None:
     task = task_cls()
     counts: Counter[int] = Counter()
     for index in range(90):
         out = task.generate(
             hash64(24114, task.task_id, index),
-            params={},
+            params=dict(params),
             max_attempts=200,
         )
         assert out.query_id

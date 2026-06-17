@@ -1,11 +1,8 @@
-"""Shared constants, defaults, and helpers for matrix chart tasks."""
+"""Matrix scene defaults, style resolution, and neutral data helpers."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
-
-from PIL import Image
 
 from .....core.seed import spawn_rng
 from .....core.scene_config import get_scene_defaults
@@ -17,8 +14,9 @@ from ....shared.deterministic_sampling import resolve_selection_index
 from ....shared.font_assets import sample_font_family
 from ....shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
 from ...shared.label_assets import resolve_chart_entity_labels
-from ...shared.labeled_chart_common import resolve_chart_axis_variant
+from ...shared.labeled_chart_common import resolve_chart_axis_variant_for_namespace
 from ...shared.visual_defaults import load_chart_scene_background_defaults, load_chart_scene_noise_defaults
+from .state import MatrixRenderParams, MatrixVisualSelection
 
 
 SCENE_ID = "matrix"
@@ -58,23 +56,9 @@ SUPPORTED_SCENE_VARIANTS = _SUPPORTED_SCENE_VARIANTS
 _TASK_GROUP_DEFAULTS = get_scene_defaults("charts", SCENE_ID)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    **{"task" "_id": SCENE_NAMESPACE},
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_scene_background_defaults(scene_id=SCENE_ID)
 POST_IMAGE_NOISE_DEFAULTS = load_chart_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.0)
-
-_SCENE_LOAD_BY_VARIANT: Dict[str, float] = {
-    "confusion_matrix_counts": 0.60,
-    "annotated_heatmap_table": 0.50,
-    "correlation_matrix_signed": 0.70,
-    "triangular_pairwise_matrix": 0.68,
-    "clustered_block_matrix": 0.76,
-}
-_REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
-    "axis_extremum_label": 0.74,
-    "off_diagonal_confusion_label": 0.74,
-    "threshold_cell_count": 0.62,
-}
 
 _SCENE_TITLES: Dict[str, Tuple[str, ...]] = {
     "confusion_matrix_counts": ("Model Confusion Matrix", "Actual vs Predicted Counts"),
@@ -83,52 +67,6 @@ _SCENE_TITLES: Dict[str, Tuple[str, ...]] = {
     "triangular_pairwise_matrix": ("Pairwise Distance Matrix", "Lower-Triangle Comparison Matrix"),
     "clustered_block_matrix": ("Clustered Block Matrix", "Grouped Response Matrix"),
 }
-
-BBox = Tuple[float, float, float, float]
-
-
-@dataclass(frozen=True)
-class _MatrixRenderParams:
-    canvas_width: int
-    canvas_height: int
-    outer_margin_px: int
-    panel_padding_px: int
-    title_band_height_px: int
-    legend_height_px: int
-    row_label_width_px: int
-    col_label_height_px: int
-    cell_gap_px: int
-    cell_border_width_px: int
-    title_font_size_px: int
-    header_font_size_px: int
-    cell_font_size_px: int
-    legend_font_size_px: int
-    panel_fill_rgb: Tuple[int, int, int]
-    panel_border_rgb: Tuple[int, int, int]
-    title_rgb: Tuple[int, int, int]
-    header_text_rgb: Tuple[int, int, int]
-    grid_rgb: Tuple[int, int, int]
-    inactive_cell_rgb: Tuple[int, int, int]
-    highlight_rgb: Tuple[int, int, int]
-    legend_text_rgb: Tuple[int, int, int]
-    layout_offset_x_px: int
-    layout_offset_y_px: int
-    layout_jitter_meta: Dict[str, Any]
-    font_family: str
-
-
-@dataclass(frozen=True)
-class _RenderedMatrix:
-    image: Image.Image
-    entities: Tuple[Dict[str, Any], ...]
-    panel_bbox_px: List[float]
-    title_bbox_px: List[float]
-    matrix_bbox_px: List[float]
-    legend_bbox_px: List[float]
-    cell_bbox_map: Dict[str, List[float]]
-    row_label_bbox_map: Dict[str, List[float]]
-    column_label_bbox_map: Dict[str, List[float]]
-
 
 def _render_style_seed(params: Mapping[str, Any]) -> int:
     try:
@@ -144,7 +82,7 @@ def _rgb_param(params: Mapping[str, Any], key: str, fallback: Tuple[int, int, in
         str(key),
         fallback,
         instance_seed=_render_style_seed(params),
-            namespace=SCENE_NAMESPACE,
+        namespace=SCENE_NAMESPACE,
     )
 
 
@@ -152,7 +90,9 @@ def _int_param(params: Mapping[str, Any], key: str, fallback: int) -> int:
     return int(params.get(str(key), _RENDER_DEFAULTS.get(str(key), int(fallback))))
 
 
-def _resolve_render_params(params: Mapping[str, Any]) -> _MatrixRenderParams:
+def resolve_render_params(params: Mapping[str, Any]) -> MatrixRenderParams:
+    """Resolve canvas/layout/text style params used by the matrix renderer."""
+
     outer = _int_param(params, "outer_margin_px", 44)
     jitter_left, _jitter_right, jitter_top, _jitter_bottom, layout_jitter_meta = apply_layout_jitter_to_margins(
         left_px=int(outer),
@@ -164,9 +104,9 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _MatrixRenderParams:
         instance_seed=_render_style_seed(params),
         namespace=f"{SCENE_NAMESPACE}.layout",
     )
-    return _MatrixRenderParams(
-        canvas_width=_int_param(params, "canvas_width", 1500),
-        canvas_height=_int_param(params, "canvas_height", 1050),
+    return MatrixRenderParams(
+        canvas_width=_int_param(params, "canvas_width", 1368),
+        canvas_height=_int_param(params, "canvas_height", 928),
         outer_margin_px=int(outer),
         panel_padding_px=_int_param(params, "panel_padding_px", 30),
         title_band_height_px=_int_param(params, "title_band_height_px", 66),
@@ -235,36 +175,28 @@ def _resolve_axis_variant(
     balance_flag_key: str,
     axis_namespace: str,
 ) -> Tuple[str, Dict[str, float]]:
-    return resolve_chart_axis_variant(
+    return resolve_chart_axis_variant_for_namespace(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         supported_variants=supported_variants,
-        **{"task" "_id": SCENE_NAMESPACE},
+        namespace=f"{SCENE_NAMESPACE}.{axis_namespace}",
         explicit_key=explicit_key,
         weights_key=weights_key,
         balance_flag_key=balance_flag_key,
-        axis_namespace=axis_namespace,
     )
 
 
-def _compatible_scene_variants(objective_contract: str) -> Tuple[str, ...]:
-    if str(objective_contract) == "off_diagonal_confusion_label":
-        return ("confusion_matrix_counts",)
-    return _SUPPORTED_SCENE_VARIANTS
-
-
-def _resolve_scene_variant(
+def resolve_scene_variant(
     params: Mapping[str, Any],
     *,
-    objective_contract: str,
     instance_seed: int,
+    supported_variants: Sequence[str] = _SUPPORTED_SCENE_VARIANTS,
 ) -> Tuple[str, Dict[str, float]]:
-    supported = _compatible_scene_variants(str(objective_contract))
     return _resolve_axis_variant(
         params,
         instance_seed=int(instance_seed),
-        supported_variants=supported,
+        supported_variants=tuple(str(value) for value in supported_variants),
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
         balance_flag_key="balanced_scene_variant_sampling",
@@ -272,7 +204,7 @@ def _resolve_scene_variant(
     )
 
 
-def _resolve_palette_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def resolve_palette_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return _resolve_axis_variant(
         params,
         instance_seed=int(instance_seed),
@@ -284,7 +216,7 @@ def _resolve_palette_variant(params: Mapping[str, Any], *, instance_seed: int) -
     )
 
 
-def _resolve_header_layout(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def resolve_header_layout(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return _resolve_axis_variant(
         params,
         instance_seed=int(instance_seed),
@@ -296,7 +228,7 @@ def _resolve_header_layout(params: Mapping[str, Any], *, instance_seed: int) -> 
     )
 
 
-def _resolve_grid_style(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def resolve_grid_style(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return _resolve_axis_variant(
         params,
         instance_seed=int(instance_seed),
@@ -308,40 +240,51 @@ def _resolve_grid_style(params: Mapping[str, Any], *, instance_seed: int) -> Tup
     )
 
 
-def _resolve_query_axis(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    return _resolve_axis_variant(
-        params,
+def resolve_visual_selection(
+    params: Mapping[str, Any],
+    *,
+    instance_seed: int,
+    supported_scene_variants: Sequence[str] = _SUPPORTED_SCENE_VARIANTS,
+) -> MatrixVisualSelection:
+    """Resolve scene visual variants without knowing the public objective."""
+
+    scene_params = _decoupled_sampling_params(params, divisor=2, explicit_keys=("scene_variant", "scene_variant_weights"))
+    scene_variant, scene_variant_probabilities = resolve_scene_variant(
+        scene_params,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_AXES,
-        explicit_key="query_axis",
-        weights_key="query_axis_weights",
-        balance_flag_key="balanced_query_axis_sampling",
-        axis_namespace="query_axis",
+        supported_variants=tuple(str(value) for value in supported_scene_variants),
+    )
+    palette_params = _decoupled_sampling_params(params, divisor=3, explicit_keys=("palette_variant", "palette_variant_weights"))
+    palette_variant, palette_variant_probabilities = resolve_palette_variant(palette_params, instance_seed=int(instance_seed))
+    header_params = _decoupled_sampling_params(params, divisor=5, explicit_keys=("header_layout", "header_layout_weights"))
+    header_layout, header_layout_probabilities = resolve_header_layout(header_params, instance_seed=int(instance_seed))
+    grid_params = _decoupled_sampling_params(params, divisor=7, explicit_keys=("grid_style", "grid_style_weights"))
+    grid_style, grid_style_probabilities = resolve_grid_style(grid_params, instance_seed=int(instance_seed))
+    return MatrixVisualSelection(
+        scene_variant=str(scene_variant),
+        scene_variant_probabilities=dict(scene_variant_probabilities),
+        palette_variant=str(palette_variant),
+        palette_variant_probabilities=dict(palette_variant_probabilities),
+        header_layout=str(header_layout),
+        header_layout_probabilities=dict(header_layout_probabilities),
+        grid_style=str(grid_style),
+        grid_style_probabilities=dict(grid_style_probabilities),
     )
 
 
-def _resolve_extremum_direction(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    return _resolve_axis_variant(
-        params,
-        instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_EXTREMUM_DIRECTIONS,
-        explicit_key="extremum_direction",
-        weights_key="extremum_direction_weights",
-        balance_flag_key="balanced_extremum_direction_sampling",
-        axis_namespace="extremum_direction",
-    )
+def attach_visual_selection(dataset: Mapping[str, Any], visual: MatrixVisualSelection) -> Dict[str, Any]:
+    """Attach resolved visual metadata to a sampled matrix dataset."""
 
-
-def _resolve_comparison(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    return _resolve_axis_variant(
-        params,
-        instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_COMPARISONS,
-        explicit_key="comparison",
-        weights_key="comparison_weights",
-        balance_flag_key="balanced_comparison_sampling",
-        axis_namespace="comparison",
-    )
+    resolved = dict(dataset)
+    resolved["_scene_variant"] = str(visual.scene_variant)
+    resolved["_scene_variant_probabilities"] = dict(visual.scene_variant_probabilities)
+    resolved["_palette_variant"] = str(visual.palette_variant)
+    resolved["_palette_variant_probabilities"] = dict(visual.palette_variant_probabilities)
+    resolved["_header_layout"] = str(visual.header_layout)
+    resolved["_header_layout_probabilities"] = dict(visual.header_layout_probabilities)
+    resolved["_grid_style"] = str(visual.grid_style)
+    resolved["_grid_style_probabilities"] = dict(visual.grid_style_probabilities)
+    return resolved
 
 
 def _matrix_size_support(params: Mapping[str, Any]) -> Tuple[int, int]:
@@ -472,6 +415,8 @@ def _generate_values(
     column_count: int,
     instance_seed: int,
 ) -> Tuple[List[List[int | None]], Dict[str, Any]]:
+    """Generate active/inactive cell values for one matrix visual grammar."""
+
     rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.values.{scene_variant}")
     values: List[List[int | None]] = [[None for _ in range(int(column_count))] for _ in range(int(row_count))]
     meta: Dict[str, Any] = {}

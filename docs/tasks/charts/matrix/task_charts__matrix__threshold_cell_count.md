@@ -3,24 +3,30 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `matrix`
-3. Source implementation domain/group: `charts/matrix`
-4. Query id: `threshold_cell_count`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Source implementation scene package: `charts/matrix`
+4. Supported `query_id` values: `row_at_least_threshold_cell_count`, `row_at_most_threshold_cell_count`, `column_at_least_threshold_cell_count`, `column_at_most_threshold_cell_count`
+5. Query ids bind the prompt-visible row/column axis and at-least/at-most comparison. The threshold value and selected row/column label are sampled generation metadata.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.matrix.cell_query.ChartsMatrixThresholdCellCountTask`
-2. Prompt lookup domain/group: `charts/matrix`
+1. Registered class: `trace.tasks.charts.matrix.threshold_cell_count.ChartsMatrixThresholdCellCountTask`
+2. Prompt lookup domain/scene: `charts/matrix`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `bbox_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+3. Annotation marks exactly the cells in the selected row or column that satisfy the threshold condition.
+4. Matrix headers, legends, titles, and distractor text are context unless the task explicitly asks for them as annotation.
+
+## Program Contract
+- `count(filter(line_cells(axis={row,column}, axis_label), compare(value(cell), threshold, relation={at_least,at_most}))); output=integer_count; annotation=bbox_set(counted_cells); scene=matrix; scope=threshold_cell_count`
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `threshold_cell_count` | `count.one_bound_threshold` | `integer_count` | `bbox_set` |
+| `row_at_least_threshold_cell_count` | `count.matrix_axis_threshold(axis=row,relation=at_least)` | `integer_count` | `bbox_set` |
+| `row_at_most_threshold_cell_count` | `count.matrix_axis_threshold(axis=row,relation=at_most)` | `integer_count` | `bbox_set` |
+| `column_at_least_threshold_cell_count` | `count.matrix_axis_threshold(axis=column,relation=at_least)` | `integer_count` | `bbox_set` |
+| `column_at_most_threshold_cell_count` | `count.matrix_axis_threshold(axis=column,relation=at_most)` | `integer_count` | `bbox_set` |

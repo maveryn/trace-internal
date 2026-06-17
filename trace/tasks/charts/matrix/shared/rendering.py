@@ -6,17 +6,22 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 
+from .....core.visual.background import make_background_canvas
+from .....core.visual.noise import apply_post_image_noise
 from ....shared.bbox_projection import round_bbox as _round_bbox
+from ....shared.font_assets import font_asset_version
 from ....shared.text_rendering import fit_font_to_box, load_font
 from ....shared.text_legibility import draw_text_traced
-from .cell_common import (
-    _MatrixRenderParams,
-    _RenderedMatrix,
+from .defaults import (
+    POST_IMAGE_BACKGROUND_DEFAULTS,
+    POST_IMAGE_NOISE_DEFAULTS,
     _cell_fill_rgb,
     _column_header_key,
+    resolve_render_params,
     _row_header_key,
     _text_rgb_for_fill,
 )
+from .state import MatrixRenderParams, MatrixRenderResult, RenderedMatrix
 
 
 def _text_bbox(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont) -> Tuple[float, float]:
@@ -85,8 +90,10 @@ def _render_matrix(
     value_min: int,
     value_max: int,
     scene_meta: Mapping[str, Any],
-    render_params: _MatrixRenderParams,
-) -> _RenderedMatrix:
+    render_params: MatrixRenderParams,
+) -> RenderedMatrix:
+    """Draw the complete matrix view and record cell/header projection maps."""
+
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image)
     p = render_params
@@ -276,7 +283,7 @@ def _render_matrix(
     legend_font = load_font(p.legend_font_size_px, bold=False, font_family=p.font_family)
     legend_text = "Cell color encodes the printed value; use the printed numbers as the source of truth."
     _draw_centered_text(draw, box=legend_bbox, text=legend_text, font=legend_font, fill=p.legend_text_rgb)
-    return _RenderedMatrix(
+    return RenderedMatrix(
         image=image.convert("RGB"),
         entities=tuple(entities),
         panel_bbox_px=_round_bbox(panel_bbox),
@@ -287,3 +294,64 @@ def _render_matrix(
         row_label_bbox_map=dict(row_label_bbox_map),
         column_label_bbox_map=dict(column_label_bbox_map),
     )
+
+
+def render_matrix_scene(
+    *,
+    dataset: Mapping[str, Any],
+    scene_variant: str,
+    palette_variant: str,
+    header_layout: str,
+    grid_style: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> MatrixRenderResult:
+    """Render one matrix scene from neutral sampled data and visual variants."""
+
+    render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
+    render_params = resolve_render_params(render_style_params)
+    background, background_meta = make_background_canvas(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+    )
+    rendered_scene = _render_matrix(
+        background,
+        scene_title=str(dataset["scene_title"]),
+        scene_variant=str(scene_variant),
+        palette_variant=str(palette_variant),
+        header_layout=str(header_layout),
+        grid_style=str(grid_style),
+        row_labels=list(dataset["row_labels"]),
+        column_labels=list(dataset["column_labels"]),
+        cells=list(dataset["cells"]),
+        value_min=int(dataset["value_min"]),
+        value_max=int(dataset["value_max"]),
+        scene_meta=dict(dataset["scene_meta"]),
+        render_params=render_params,
+    )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    return MatrixRenderResult(
+        image=image,
+        rendered_scene=rendered_scene,
+        render_params=render_params,
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
+    )
+
+
+def font_assets_payload(render_params: MatrixRenderParams) -> Dict[str, str]:
+    return {
+        "asset_version": font_asset_version(),
+        "chart_font_family": str(render_params.font_family),
+    }
+
+
+__all__ = ["MatrixRenderResult", "font_assets_payload", "render_matrix_scene"]

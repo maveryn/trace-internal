@@ -3,18 +3,27 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `matrix`
-3. Source implementation domain/group: `charts/matrix`
-4. Query id: `off_diagonal_confusion_label`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Source implementation scene package: `charts/matrix`
+4. Supported `query_id` values: `single`
+5. The task always asks for the largest off-diagonal predicted column for one actual-class row.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.matrix.cell_query.ChartsMatrixOffDiagonalConfusionLabelTask`
-2. Prompt lookup domain/group: `charts/matrix`
+1. Registered class: `trace.tasks.charts.matrix.off_diagonal_confusion_label.ChartsMatrixOffDiagonalConfusionLabelTask`
+2. Prompt lookup domain/scene: `charts/matrix`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
 1. Answer schema: `string_label`.
 2. Annotation schema: `bbox_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+3. Annotation marks the off-diagonal candidate cells in the selected actual-class row.
+4. Matrix headers, diagonal cells, legends, titles, and distractor text are context unless the task explicitly asks for them as annotation.
+
+## Program Contract
+- `select_label(argmax(filter(row_cells(actual_label), column_label != actual_label), value(cell))); output=string_label; annotation=bbox_set(off_diagonal_candidate_cells); scene=matrix; scope=off_diagonal_confusion_label`
+
+## Query Details
+
+| Query id | Program signature | Answer schema | Annotation schema |
+|---|---|---|---|
+| `single` | `selection.matrix_off_diagonal_argmax` | `string_label` | `bbox_set` |

@@ -12,7 +12,7 @@ from ...shared.unanswerable import (
     choose_missing_label,
     should_use_unanswerable_branch,
 )
-from .cell_common import (
+from .defaults import (
     SCENE_NAMESPACE,
     _SCENE_TITLES,
     _active_values,
@@ -39,6 +39,8 @@ def _choose_axis_extremum(
     extremum_direction: str,
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Choose one row/column whose ranked extremum answer is unique."""
+
     target_rank = 2
     line_count = len(values) if str(query_axis) == "row" else len(values[0])
     candidates: List[Tuple[int, List[str], int]] = []
@@ -98,6 +100,8 @@ def _choose_unanswerable_axis_extremum(
     extremum_direction: str,
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Construct a missing row/column query with a recorded absence proof."""
+
     if str(query_axis) == "row":
         missing_label = choose_missing_label(
             visible_labels=row_labels,
@@ -210,6 +214,8 @@ def _choose_threshold_count(
     comparison: str,
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Choose one row/column threshold query with a bounded nontrivial count."""
+
     line_count = len(values) if str(query_axis) == "row" else len(values[0])
     candidates: List[Tuple[int, int, int, List[str]]] = []
     for axis_index in range(int(line_count)):
@@ -253,6 +259,8 @@ def _base_matrix_dataset(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Sample the matrix labels, dimensions, cell values, and cell records."""
+
     row_min, row_max = _matrix_size_support(params)
     col_min, col_max = _column_size_support(params)
     size_params = _decoupled_sampling_params(params, divisor=2, explicit_keys=("row_count_min", "row_count_max"))
@@ -337,7 +345,7 @@ def _finalize_dataset(
     }
 
 
-def construct_axis_extremum_dataset(
+def construct_axis_ranked_dataset(
     *,
     scene_variant: str,
     query_axis: str,
@@ -346,6 +354,8 @@ def construct_axis_extremum_dataset(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Build matrix data for a ranked-extreme cell selection over one axis."""
+
     base = _base_matrix_dataset(scene_variant=str(scene_variant), params=params, instance_seed=int(instance_seed))
     values = [list(row) for row in base["values"]]
     row_labels = list(base["row_labels"])
@@ -353,7 +363,7 @@ def construct_axis_extremum_dataset(
     if should_use_unanswerable_branch(
         params,
         instance_seed=int(instance_seed),
-        namespace=f"{SCENE_NAMESPACE}.axis_extremum_label",
+        namespace=f"{SCENE_NAMESPACE}.axis_ranked_extreme",
         enabled=bool(supports_unanswerable),
     ):
         query = _choose_unanswerable_axis_extremum(
@@ -383,7 +393,7 @@ def construct_axis_extremum_dataset(
     )
 
 
-def construct_off_diagonal_confusion_dataset(
+def construct_confusion_off_diagonal_dataset(
     *,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -412,7 +422,7 @@ def construct_off_diagonal_confusion_dataset(
     )
 
 
-def construct_threshold_cell_count_dataset(
+def construct_threshold_dataset(
     *,
     scene_variant: str,
     query_axis: str,

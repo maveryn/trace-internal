@@ -26,26 +26,14 @@ generation:
       gapped_tiles: 1.0
       heavy_block_lines: 1.0
       minimal_grid: 1.0
-    query_axis_weights:
-      row: 1.0
-      column: 1.0
-    extremum_direction_weights:
-      highest: 1.0
-      lowest: 1.0
-    comparison_weights:
-      at_least: 1.0
-      at_most: 1.0
     balanced_scene_variant_sampling: true
     balanced_palette_variant_sampling: true
     balanced_header_layout_sampling: true
     balanced_grid_style_sampling: true
-    balanced_query_axis_sampling: true
-    balanced_extremum_direction_sampling: true
-    balanced_comparison_sampling: true
 rendering:
   shared:
-    canvas_width: 1376
-    canvas_height: 936
+    canvas_width: 1368
+    canvas_height: 928
     outer_margin_px: 38
     panel_padding_px: 26
     title_band_height_px: 60

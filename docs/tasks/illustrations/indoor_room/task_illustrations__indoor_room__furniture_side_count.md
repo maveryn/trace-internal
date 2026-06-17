@@ -37,8 +37,8 @@ Counts visible small indoor objects of a sampled object type that lie to the lef
 - The answer value is a non-negative integer derived from the same execution trace as the annotation.
 
 ## Annotation Contract
-- Annotation schema: `point_set`
-- Generator `annotation_gt.type`: `point_set`
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
 - Annotation is an unordered set of final-image pixel points, one near the center of each counted object satisfying the target type and side relation.
 - Annotation excludes the reference furniture, labels, numeric annotations, and distractor/context objects.
 

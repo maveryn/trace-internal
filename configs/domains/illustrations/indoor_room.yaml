@@ -266,16 +266,16 @@ prompt:
       scene_key: indoor_room_canvas
       task_key: object_type_on_surface_count_task
       answer_hint_object_type_on_surface: set "answer" to the count of {object_name} objects on the {surface_name} as an integer
-      annotation_hint_object_type_on_surface: set "annotation" to a JSON array of [x, y] points in image pixel coordinates, one point near the center of each counted {object_name} object on the {surface_name}
-      json_example_object_type_on_surface: '{"annotation":[[492,377],[628,374]],"answer":2}'
+      annotation_hint_object_type_on_surface: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted {object_name} object on the {surface_name}
+      json_example_object_type_on_surface: '{"annotation":[[462,347,522,407],[596,344,660,404]],"answer":2}'
       json_example_answer_only_object_type_on_surface: '{"answer":2}'
     task_illustrations__indoor_room__furniture_side_count:
       bundle_id: illustrations_indoor_room_v0
       scene_key: indoor_room_canvas
       task_key: furniture_side_count_task
       answer_hint_furniture_side: set "answer" to the count of {object_name} objects {relation_word} the {furniture_name} as an integer
-      annotation_hint_furniture_side: set "annotation" to a JSON array of [x, y] points in image pixel coordinates, one point near the center of each counted {object_name} object {relation_word} the {furniture_name}
-      json_example_furniture_side: '{"annotation":[[177,491],[284,534],[361,461]],"answer":3}'
+      annotation_hint_furniture_side: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted {object_name} object {relation_word} the {furniture_name}
+      json_example_furniture_side: '{"annotation":[[147,461,207,521],[254,504,314,564],[331,431,391,491]],"answer":3}'
       json_example_answer_only_furniture_side: '{"answer":3}'
     task_illustrations__indoor_room__rotated_tile_label:
       bundle_id: illustrations_indoor_room_v0

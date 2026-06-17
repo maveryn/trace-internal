@@ -10,7 +10,7 @@ from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.annotation_artifacts import point_set_annotation_artifacts
+from ...shared.annotation_artifacts import bbox_set_annotation_artifacts
 from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
@@ -319,9 +319,8 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
             raise RuntimeError("rendered worker count did not match sample target")
         worker_bbox_map = construction_worker_bbox_map(scene)
         counted_worker_bboxes = sort_construction_bboxes(worker_bbox_map, counted_worker_ids)
-        annotation_artifacts = point_set_annotation_artifacts(
-            sort_construction_bbox_centers(worker_bbox_map, counted_worker_ids)
-        )
+        counted_worker_points = sort_construction_bbox_centers(worker_bbox_map, counted_worker_ids)
+        annotation_artifacts = bbox_set_annotation_artifacts(counted_worker_bboxes)
         serialized_scene, bbox_map = serialize_construction_scene(scene)
 
         prompt_defaults = required_construction_prompt_defaults(
@@ -363,7 +362,7 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                     "worker_bboxes_px": worker_bbox_map,
                     "counted_worker_ids": list(counted_worker_ids),
                     "counted_worker_bboxes_px": counted_worker_bboxes,
-                    "counted_worker_points_px": list(annotation_artifacts.value),
+                    "counted_worker_points_px": counted_worker_points,
                 },
                 execution_trace={
                     "query_id": str(sample.query_id),

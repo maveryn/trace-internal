@@ -10,7 +10,7 @@ from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.annotation_artifacts import point_set_annotation_artifacts
+from ...shared.annotation_artifacts import bbox_set_annotation_artifacts
 from ...shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
@@ -329,7 +329,8 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
             raise RuntimeError("rendered furniture-side count did not match sample target")
         query_id = str(sample.query_id)
         counted_bboxes = sort_bboxes_by_ids(object_bboxes, counted_ids)
-        annotation_artifacts = point_set_annotation_artifacts(sort_bbox_centers_by_ids(object_bboxes, counted_ids))
+        counted_points = sort_bbox_centers_by_ids(object_bboxes, counted_ids)
+        annotation_artifacts = bbox_set_annotation_artifacts(counted_bboxes)
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             [
@@ -409,7 +410,7 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
         render_map["target_furniture_id"] = str(furniture_id)
         render_map["counted_object_ids"] = list(counted_ids)
         render_map["counted_object_bboxes_px"] = list(counted_bboxes)
-        render_map["counted_object_points_px"] = list(annotation_artifacts.value)
+        render_map["counted_object_points_px"] = list(counted_points)
         trace_payload = {
             "scene_ir": {
                 "domain": self.domain,

@@ -37,8 +37,8 @@ Counts visible village entities for one approved public target category.
 - Tree-count instances suppress cemetery territory so cemetery dead-tree decor is not an ambiguous non-counted witness.
 
 ## Annotation Contract
-- Annotation schema: `point_set`
-- Generator `annotation_gt.type`: `point_set`
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
 - Annotation is an unordered set of final-image pixel points, one near the center of each counted entity.
 - Annotation must not include paths, labels, whole territories, or context-only regions.
 

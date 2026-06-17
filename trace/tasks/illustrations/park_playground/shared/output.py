@@ -89,7 +89,7 @@ def bind_people_total(scene: Any, sample: PersonCountSampleSpec, prompt_defaults
         prompt_defaults=required_defaults,
         slots=slots,
         answer=int(sample.person_count),
-        annotation_value=counted_person_points,
+        annotation_value=counted_person_bboxes,
         render_map={
             "person_bboxes_px": person_bboxes,
             "counted_person_ids": list(counted_person_ids),
@@ -164,7 +164,7 @@ def bind_equipment_items(scene: Any, sample: EquipmentSampleSpec, prompt_default
         prompt_defaults=required_defaults,
         slots=slots,
         answer=int(sample.target_count),
-        annotation_value=counted_equipment_points,
+        annotation_value=counted_equipment_bboxes,
         render_map={
             "decor_bboxes_px": decor_bboxes,
             "counted_equipment_ids": list(counted_equipment_ids),

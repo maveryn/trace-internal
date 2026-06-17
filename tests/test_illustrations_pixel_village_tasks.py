@@ -305,14 +305,14 @@ def test_pixel_village_object_type_count_targets_are_metadata_grounded() -> None
         assert out.query_id == "single"
         assert params["target_object"] == target
         assert out.answer_gt.type == "integer"
-        assert out.annotation_gt.type == "point_set"
+        assert out.annotation_gt.type == "bbox_set"
         assert int(out.answer_gt.value) == len(counted_ids) == len(out.annotation_gt.value)
         assert int(out.answer_gt.value) > 0
-        assert sorted(out.annotation_gt.value) == sorted(trace["render_map"]["counted_entity_points_px"])
+        assert sorted(out.annotation_gt.value) == sorted(trace["render_map"]["counted_entity_bboxes_px"])
         assert len(trace["render_map"]["counted_entity_bboxes_px"]) == len(counted_ids)
-        assert trace["projected_annotation"]["type"] == "point_set"
-        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
         assert "villager" not in out.prompt.lower()
         if target == "tree":
             assert trace["query_spec"]["params"]["render_constraints"]["cemetery_mode"] == "none"
@@ -349,15 +349,15 @@ def test_pixel_village_person_path_count_uses_path_tile_intersection() -> None:
     assert out.query_id == "single"
     assert trace["query_spec"]["params"]["path_person_count"] == 4
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == 4
     assert len(counted_ids) == 4
     assert path_clearance == 1
-    assert sorted(out.annotation_gt.value) == sorted(trace["render_map"]["counted_entity_points_px"])
+    assert sorted(out.annotation_gt.value) == sorted(trace["render_map"]["counted_entity_bboxes_px"])
     assert len(trace["render_map"]["counted_entity_bboxes_px"]) == len(counted_ids)
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
     assert "villager" not in out.prompt.lower()
     assert "path tiles" not in out.prompt.lower()
 
@@ -393,14 +393,14 @@ def test_pixel_village_territory_object_count_targets_are_metadata_grounded() ->
         assert params["territory_object"] == target
         assert params["territory_id"] == territory_id
         assert out.answer_gt.type == "integer"
-        assert out.annotation_gt.type == "point_set"
+        assert out.annotation_gt.type == "bbox_set"
         assert 0 < int(out.answer_gt.value) <= 9
         assert int(out.answer_gt.value) == len(counted_ids) == len(out.annotation_gt.value)
-        assert sorted(out.annotation_gt.value) == sorted(trace["render_map"]["counted_entity_points_px"])
+        assert sorted(out.annotation_gt.value) == sorted(trace["render_map"]["counted_entity_bboxes_px"])
         assert len(trace["render_map"]["counted_entity_bboxes_px"]) == len(counted_ids)
-        assert trace["projected_annotation"]["type"] == "point_set"
-        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
 
         for entity_id in counted_ids:
             entity = entities[entity_id]
@@ -436,14 +436,14 @@ def test_pixel_village_river_side_object_count_uses_strict_tile_side_membership(
         assert trace["query_spec"]["params"]["renderer"]["river_present"] is True
         assert trace["query_spec"]["params"]["renderer"]["river_orientation"] == RIVER_SIDE_ORIENTATION[side]
         assert out.answer_gt.type == "integer"
-        assert out.annotation_gt.type == "point_set"
+        assert out.annotation_gt.type == "bbox_set"
         assert 0 < int(out.answer_gt.value) <= 8
         assert int(out.answer_gt.value) == len(counted_ids) == len(out.annotation_gt.value)
-        assert sorted(out.annotation_gt.value) == sorted(trace["render_map"]["counted_entity_points_px"])
+        assert sorted(out.annotation_gt.value) == sorted(trace["render_map"]["counted_entity_bboxes_px"])
         assert len(trace["render_map"]["counted_entity_bboxes_px"]) == len(counted_ids)
-        assert trace["projected_annotation"]["type"] == "point_set"
-        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
         assert "villager" not in out.prompt.lower()
         assert "tile" not in out.prompt.lower()
         assert "water" not in out.prompt.lower()

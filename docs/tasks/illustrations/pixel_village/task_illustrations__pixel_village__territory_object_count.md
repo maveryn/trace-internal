@@ -33,8 +33,8 @@ Counts target entities inside one semantic pixel-village territory.
 - Generated instances must keep the selected target count at or below the configured cap, currently `9`.
 
 ## Annotation Contract
-- Annotation schema: `point_set`
-- Generator `annotation_gt.type`: `point_set`
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
 - Annotation is an unordered set of final-image pixel points, one near the center of each counted entity in the target territory.
 - Annotation must not include whole territories, fences, paths, or context-only regions.
 

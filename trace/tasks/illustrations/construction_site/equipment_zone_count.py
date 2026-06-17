@@ -10,7 +10,7 @@ from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.annotation_artifacts import point_set_annotation_artifacts
+from ...shared.annotation_artifacts import bbox_set_annotation_artifacts
 from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
@@ -306,9 +306,8 @@ class IllustrationsCountingEquipmentInZoneCountTask:
             raise RuntimeError("rendered equipment count did not match sample target")
         equipment_bbox_map = construction_equipment_bbox_map(scene)
         counted_equipment_bboxes = sort_construction_bboxes(equipment_bbox_map, counted_equipment_ids)
-        annotation_artifacts = point_set_annotation_artifacts(
-            sort_construction_bbox_centers(equipment_bbox_map, counted_equipment_ids)
-        )
+        counted_equipment_points = sort_construction_bbox_centers(equipment_bbox_map, counted_equipment_ids)
+        annotation_artifacts = bbox_set_annotation_artifacts(counted_equipment_bboxes)
         serialized_scene, bbox_map = serialize_construction_scene(scene)
 
         prompt_defaults = required_construction_prompt_defaults(
@@ -363,7 +362,7 @@ class IllustrationsCountingEquipmentInZoneCountTask:
                     "worker_bboxes_px": construction_worker_bbox_map(scene),
                     "counted_equipment_ids": list(counted_equipment_ids),
                     "counted_equipment_bboxes_px": counted_equipment_bboxes,
-                    "counted_equipment_points_px": list(annotation_artifacts.value),
+                    "counted_equipment_points_px": counted_equipment_points,
                 },
                 execution_trace={
                     "query_id": str(sample.query_id),

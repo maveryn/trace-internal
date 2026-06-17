@@ -21,8 +21,8 @@ Count every visible person in one rendered park/playground illustration.
 - The answer is the number of rendered people in the scene.
 
 ## Annotation Contract
-- Annotation schema: `point_set`
-- Generator `annotation_gt.type`: `point_set`
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
 - Annotation is an unordered set of final-image pixel points, one near the center of each visible person.
 - Annotation and answer are projected from the same generated scene trace.
 

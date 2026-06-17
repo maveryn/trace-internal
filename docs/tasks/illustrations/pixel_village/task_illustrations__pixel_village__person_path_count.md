@@ -36,8 +36,8 @@ Counts people whose occupied tile footprint intersects a visible path tile in a 
 - Non-counted background people must be rendered outside the configured one-tile path clearance neighborhood.
 
 ## Annotation Contract
-- Annotation schema: `point_set`
-- Generator `annotation_gt.type`: `point_set`
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
 - Annotation is an unordered set of final-image pixel points, one near the center of each counted person on a path.
 - Annotation must not include the path tiles themselves or context-only village regions.
 

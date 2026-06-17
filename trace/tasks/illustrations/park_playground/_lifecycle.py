@@ -8,7 +8,7 @@ from typing import Any, Callable, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...shared.annotation_artifacts import point_set_annotation_artifacts
+from ...shared.annotation_artifacts import bbox_set_annotation_artifacts
 from ...shared.config_defaults import required_group_defaults
 from ...shared.output_metadata import default_task_versions
 from .shared.output import park_render_spec, park_scene_ir
@@ -112,7 +112,7 @@ def compose_count_result(
         slots=dict(slots),
         instance_seed=int(instance_seed),
     )
-    annotation_artifacts = point_set_annotation_artifacts(annotation_value)
+    annotation_artifacts = bbox_set_annotation_artifacts(annotation_value)
     branch_metadata = dict(branch_params)
     public_query_id = str(branch_metadata.pop("branch_id", "single"))
     public_scene_relations = dict(scene_relations)

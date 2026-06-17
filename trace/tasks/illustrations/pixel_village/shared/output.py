@@ -109,9 +109,9 @@ def _annotation_values(entity_bboxes: Mapping[str, Sequence[float]], counted_ent
     ]
 
 
-def _point_set_projection(annotation_value: Sequence[Sequence[float]]) -> dict[str, Any]:
-    points = [[round(float(value), 3) for value in point[:2]] for point in annotation_value]
-    return {"type": "point_set", "point_set": points, "pixel_point_set": points}
+def _bbox_set_projection(annotation_value: Sequence[Sequence[float]]) -> dict[str, Any]:
+    bboxes = [[round(float(value), 3) for value in bbox[:4]] for bbox in annotation_value]
+    return {"type": "bbox_set", "bbox_set": bboxes, "pixel_bbox_set": bboxes}
 
 
 def bind_category_result(
@@ -169,7 +169,7 @@ def bind_category_result(
     pad = float(params.get("annotation_padding_px", group_default(rendering_defaults, "annotation_padding_px", _DEFAULTS.annotation_padding_px)))
     entity_bboxes = _entity_bbox_map(scene, pad=pad)
     counted_entity_ids = tuple(sorted(str(entity.entity_id) for entity in counted_entities))
-    annotation_value = _annotation_values(entity_bboxes, counted_entity_ids)
+    annotation_value = _bbox_values(entity_bboxes, counted_entity_ids)
     answer = int(len(counted_entity_ids))
     required_defaults = required_group_defaults(
         prompt_defaults,
@@ -228,7 +228,7 @@ def bind_category_result(
             "count": answer,
             "answer": answer,
         },
-        projected_annotation=_point_set_projection(annotation_value),
+        projected_annotation=_bbox_set_projection(annotation_value),
     )
 
 
@@ -283,7 +283,7 @@ def bind_path_result(
     pad = float(params.get("annotation_padding_px", group_default(rendering_defaults, "annotation_padding_px", _DEFAULTS.annotation_padding_px)))
     entity_bboxes = _entity_bbox_map(scene, pad=pad)
     counted_entity_ids = tuple(sorted(str(entity.entity_id) for entity in counted_entities))
-    annotation_value = _annotation_values(entity_bboxes, counted_entity_ids)
+    annotation_value = _bbox_values(entity_bboxes, counted_entity_ids)
     answer = int(len(counted_entity_ids))
     required_defaults = required_group_defaults(
         prompt_defaults,
@@ -337,7 +337,7 @@ def bind_path_result(
             "count": answer,
             "answer": answer,
         },
-        projected_annotation=_point_set_projection(annotation_value),
+        projected_annotation=_bbox_set_projection(annotation_value),
     )
 
 
@@ -393,7 +393,7 @@ def bind_territory_result(
     pad = float(params.get("annotation_padding_px", group_default(rendering_defaults, "annotation_padding_px", _DEFAULTS.annotation_padding_px)))
     entity_bboxes = _entity_bbox_map(scene, pad=pad)
     counted_entity_ids = tuple(sorted(str(entity.entity_id) for entity in counted_entities))
-    annotation_value = _annotation_values(entity_bboxes, counted_entity_ids)
+    annotation_value = _bbox_values(entity_bboxes, counted_entity_ids)
     answer = int(len(counted_entity_ids))
     required_defaults = required_group_defaults(
         prompt_defaults,
@@ -462,7 +462,7 @@ def bind_territory_result(
             "count": answer,
             "answer": answer,
         },
-        projected_annotation=_point_set_projection(annotation_value),
+        projected_annotation=_bbox_set_projection(annotation_value),
     )
 
 
@@ -528,7 +528,7 @@ def bind_river_side_result(
     pad = float(params.get("annotation_padding_px", group_default(rendering_defaults, "annotation_padding_px", _DEFAULTS.annotation_padding_px)))
     entity_bboxes = _entity_bbox_map(scene, pad=pad)
     counted_entity_ids = tuple(sorted(str(entity.entity_id) for entity in counted_entities))
-    annotation_value = _annotation_values(entity_bboxes, counted_entity_ids)
+    annotation_value = _bbox_values(entity_bboxes, counted_entity_ids)
     answer = int(len(counted_entity_ids))
     river_bounds = _river_bounds(scene)
     required_defaults = required_group_defaults(
@@ -614,7 +614,7 @@ def bind_river_side_result(
             "count": answer,
             "answer": answer,
         },
-        projected_annotation=_point_set_projection(annotation_value),
+        projected_annotation=_bbox_set_projection(annotation_value),
     )
 
 

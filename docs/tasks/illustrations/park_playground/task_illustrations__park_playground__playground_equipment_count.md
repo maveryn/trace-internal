@@ -23,8 +23,8 @@ Count visible playground equipment items of one sampled type.
 - The answer is the count of equipment items whose rendered equipment type equals `target_equipment_type`.
 
 ## Annotation Contract
-- Annotation schema: `point_set`
-- Generator `annotation_gt.type`: `point_set`
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
 - Annotation is an unordered set of final-image pixel points, one near the center of each counted equipment item.
 - Annotation and answer are projected from the same generated scene trace.
 

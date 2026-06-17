@@ -65,7 +65,7 @@ def bind_feature_relation_result(
     phrase = feature_relation_phrase(choice.feature_type, choice.relation)
     return BoundCountResult(
         answer=int(len(counted_object_ids)),
-        annotation_value=list(counted_object_points),
+        annotation_value=list(counted_object_bboxes),
         render_map_extra={
             "counted_object_ids": list(counted_object_ids),
             "counted_object_bboxes_px": list(counted_object_bboxes),
@@ -117,13 +117,15 @@ def bind_crossing_result(
         raise ValueError(f"crossing count {len(counted_feature_ids)} did not match target {target_count}")
     crossing_name = CROSSING_NAMES[str(choice.crossing_type)]
     crossed_feature_name = CROSSED_FEATURE_NAMES[str(choice.crossing_type)]
+    counted_feature_bboxes = sort_bboxes_by_ids(feature_bboxes, counted_feature_ids)
+    counted_feature_points = sort_bbox_centers_by_ids(feature_bboxes, counted_feature_ids)
     return BoundCountResult(
         answer=int(len(counted_feature_ids)),
-        annotation_value=sort_bbox_centers_by_ids(feature_bboxes, counted_feature_ids),
+        annotation_value=list(counted_feature_bboxes),
         render_map_extra={
             "counted_feature_ids": list(counted_feature_ids),
-            "counted_feature_bboxes_px": sort_bboxes_by_ids(feature_bboxes, counted_feature_ids),
-            "counted_feature_points_px": sort_bbox_centers_by_ids(feature_bboxes, counted_feature_ids),
+            "counted_feature_bboxes_px": list(counted_feature_bboxes),
+            "counted_feature_points_px": list(counted_feature_points),
         },
         scene_relations={"crossing_type": str(choice.crossing_type)},
         execution_extra={"crossing_type": str(choice.crossing_type), "counted_feature_ids": list(counted_feature_ids)},
@@ -165,14 +167,16 @@ def bind_window_result(
         raise ValueError(f"rendered {len(window_items)} lit windows, expected {target_count}")
     window_bbox_map = {item_id: bbox for item_id, bbox in window_items}
     counted_window_ids = tuple(item_id for item_id, _bbox in window_items)
+    counted_window_bboxes = sort_bboxes_by_ids(window_bbox_map, counted_window_ids)
+    counted_window_points = sort_bbox_centers_by_ids(window_bbox_map, counted_window_ids)
     return BoundCountResult(
         answer=int(len(counted_window_ids)),
-        annotation_value=sort_bbox_centers_by_ids(window_bbox_map, counted_window_ids),
+        annotation_value=list(counted_window_bboxes),
         render_map_extra={
             "window_bboxes_px": dict(window_bbox_map),
             "counted_window_ids": list(counted_window_ids),
-            "counted_window_bboxes_px": sort_bboxes_by_ids(window_bbox_map, counted_window_ids),
-            "counted_window_points_px": sort_bbox_centers_by_ids(window_bbox_map, counted_window_ids),
+            "counted_window_bboxes_px": list(counted_window_bboxes),
+            "counted_window_points_px": list(counted_window_points),
         },
         scene_relations={"window_mode": str(choice.window_mode)},
         execution_extra={

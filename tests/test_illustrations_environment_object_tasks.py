@@ -68,16 +68,16 @@ def test_feature_relation_object_count_contracts() -> None:
         else:
             assert target_feature["attributes"]["river_style_id"] in RIVER_STYLE_IDS
         assert int(out.answer_gt.value) == len(execution["counted_object_ids"])
-        assert out.annotation_gt.type == "point_set"
+        assert out.annotation_gt.type == "bbox_set"
         assert len(out.annotation_gt.value) == int(out.answer_gt.value)
         assert execution["feature_id"] in render_map["feature_bboxes_px"]
         assert execution["feature_id"] in render_map["feature_paths_px"]
         assert render_map["counted_object_ids"] == execution["counted_object_ids"]
-        expected = [_bbox_center(render_map["object_bboxes_px"][object_id]) for object_id in execution["counted_object_ids"]]
+        expected = [render_map["object_bboxes_px"][object_id] for object_id in execution["counted_object_ids"]]
         assert sorted(out.annotation_gt.value) == sorted(expected)
-        assert trace["projected_annotation"]["type"] == "point_set"
-        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
 
 
 def test_crossing_feature_count_contract() -> None:
@@ -100,10 +100,10 @@ def test_crossing_feature_count_contract() -> None:
     assert bridge_features
     assert all(feature["attributes"]["bridge_style_id"] in BRIDGE_STYLE_IDS for feature in bridge_features)
     assert int(out.answer_gt.value) == len(execution["counted_feature_ids"])
-    assert out.annotation_gt.type == "point_set"
-    expected = [_bbox_center(render_map["feature_bboxes_px"][feature_id]) for feature_id in execution["counted_feature_ids"]]
+    assert out.annotation_gt.type == "bbox_set"
+    expected = [render_map["feature_bboxes_px"][feature_id] for feature_id in execution["counted_feature_ids"]]
     assert sorted(out.annotation_gt.value) == sorted(expected)
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
 
 
 def test_building_window_count_contract() -> None:
@@ -123,10 +123,10 @@ def test_building_window_count_contract() -> None:
     buildings = [entity for entity in trace["scene_ir"]["entities"] if entity["entity_type"] == "environment_building"]
     assert buildings
     assert all(building["attributes"]["building_style_id"] in BUILDING_STYLE_IDS for building in buildings)
-    assert out.annotation_gt.type == "point_set"
-    expected = [_bbox_center(render_map["window_bboxes_px"][window_id]) for window_id in execution["counted_window_ids"]]
+    assert out.annotation_gt.type == "bbox_set"
+    expected = [render_map["window_bboxes_px"][window_id] for window_id in execution["counted_window_ids"]]
     assert sorted(out.annotation_gt.value) == sorted(expected)
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
 
 
 def test_building_window_default_answer_range_is_capped_at_six() -> None:

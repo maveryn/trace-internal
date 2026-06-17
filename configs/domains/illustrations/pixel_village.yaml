@@ -160,16 +160,16 @@ prompt:
       scene_key: pixel_village_canvas
       task_key: pixel_village_object_type_count_task
       answer_hint_pixel_village_object_type: set "answer" to the count of visible {target_plural} as an integer
-      annotation_hint_pixel_village_object_type: set "annotation" to a JSON array of [x, y] points in image pixel coordinates, one point near the center of each counted {target_unit}
-      json_example_pixel_village_object_type: '{"annotation":[[192,272],[448,240],[704,400]],"answer":3}'
+      annotation_hint_pixel_village_object_type: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted {target_unit}
+      json_example_pixel_village_object_type: '{"annotation":[[160,240,224,304],[416,208,480,272],[672,368,736,432]],"answer":3}'
       json_example_answer_only_pixel_village_object_type: '{"answer":3}'
     task_illustrations__pixel_village__person_path_count:
       bundle_id: illustrations_pixel_village_v0
       scene_key: pixel_village_canvas
       task_key: pixel_village_person_path_count_task
       answer_hint_pixel_village_person_path: set "answer" to the count of people on the paths as an integer
-      annotation_hint_pixel_village_person_path: set "annotation" to a JSON array of [x, y] points in image pixel coordinates, one point near the center of each counted person on a path
-      json_example_pixel_village_person_path: '{"annotation":[[320,352],[480,288],[608,416]],"answer":3}'
+      annotation_hint_pixel_village_person_path: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted person on a path
+      json_example_pixel_village_person_path: '{"annotation":[[288,320,352,384],[448,256,512,320],[576,384,640,448]],"answer":3}'
       json_example_answer_only_pixel_village_person_path: '{"answer":3}'
     task_illustrations__pixel_village__rotated_tile_label:
       bundle_id: illustrations_pixel_village_v0
@@ -192,14 +192,14 @@ prompt:
       scene_key: pixel_village_canvas
       task_key: pixel_village_territory_object_count_task
       answer_hint_pixel_village_territory_object: set "answer" to the count of {target_plural} in the {territory_name} as an integer
-      annotation_hint_pixel_village_territory_object: set "annotation" to a JSON array of [x, y] points in image pixel coordinates, one point near the center of each counted {target_unit} in the {territory_name}
-      json_example_pixel_village_territory_object: '{"annotation":[[144,240],[208,240],[272,240]],"answer":3}'
+      annotation_hint_pixel_village_territory_object: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted {target_unit} in the {territory_name}
+      json_example_pixel_village_territory_object: '{"annotation":[[112,208,176,272],[176,208,240,272],[240,208,304,272]],"answer":3}'
       json_example_answer_only_pixel_village_territory_object: '{"answer":3}'
     task_illustrations__pixel_village__river_side_object_count:
       bundle_id: illustrations_pixel_village_v0
       scene_key: pixel_village_canvas
       task_key: pixel_village_river_side_object_count_task
       answer_hint_pixel_village_river_side_object: set "answer" to the count of visible {target_plural} {river_relation} the river as an integer
-      annotation_hint_pixel_village_river_side_object: set "annotation" to a JSON array of [x, y] points in image pixel coordinates, one point near the center of each counted {target_unit} {river_relation} the river
-      json_example_pixel_village_river_side_object: '{"annotation":[[192,272],[448,240],[704,400]],"answer":3}'
+      annotation_hint_pixel_village_river_side_object: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted {target_unit} {river_relation} the river
+      json_example_pixel_village_river_side_object: '{"annotation":[[160,240,224,304],[416,208,480,272],[672,368,736,432]],"answer":3}'
       json_example_answer_only_pixel_village_river_side_object: '{"answer":3}'

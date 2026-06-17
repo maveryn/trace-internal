@@ -56,14 +56,14 @@ def test_construction_site_tasks_record_zone_label_font_and_projected_annotation
     assert zone_fonts
     assert all(zone_font == font_trace for zone_font in zone_fonts)
 
-    assert out.annotation_gt.type == "point_set"
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "bbox_set"
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
     canvas_width, canvas_height = trace["render_spec"]["canvas_size"]
-    for x, y in out.annotation_gt.value:
-        assert 0.0 <= float(x) <= float(canvas_width)
-        assert 0.0 <= float(y) <= float(canvas_height)
+    for x0, y0, x1, y1 in out.annotation_gt.value:
+        assert 0.0 <= float(x0) < float(x1) <= float(canvas_width)
+        assert 0.0 <= float(y0) < float(y1) <= float(canvas_height)
 
     if task_id == "task_illustrations__construction_site__worker_attribute_count":
         params = trace["query_spec"]["params"]
@@ -143,10 +143,10 @@ def test_construction_site_equipment_zone_count_allows_zero_with_empty_annotatio
 
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 0
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert out.annotation_gt.value == []
-    assert out.trace_payload["projected_annotation"]["point_set"] == []
-    assert out.trace_payload["projected_annotation"]["pixel_point_set"] == []
+    assert out.trace_payload["projected_annotation"]["bbox_set"] == []
+    assert out.trace_payload["projected_annotation"]["pixel_bbox_set"] == []
     assert out.trace_payload["render_map"]["counted_equipment_ids"] == []
     assert "0" in out.prompt
 
@@ -159,7 +159,7 @@ def test_construction_site_worker_attribute_count_supports_zero_and_max_five() -
     )
     assert zero.answer_gt.type == "integer"
     assert zero.answer_gt.value == 0
-    assert zero.annotation_gt.type == "point_set"
+    assert zero.annotation_gt.type == "bbox_set"
     assert zero.annotation_gt.value == []
     assert zero.trace_payload["render_map"]["counted_worker_ids"] == []
     assert "0" in zero.prompt
@@ -182,7 +182,7 @@ def test_construction_site_equipment_zone_count_target_boxes_do_not_overlap() ->
         max_attempts=300,
     )
 
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert len(out.annotation_gt.value) == 4
     boxes = [list(map(float, bbox)) for bbox in out.trace_payload["render_map"]["counted_equipment_bboxes_px"]]
     assert len(boxes) == 4

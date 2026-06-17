@@ -1,7 +1,7 @@
 generation:
   task_overrides:
     task_geometry__circle_polygon_composite__tangential_quadrilateral_side_length_value: {}
-    task_geometry__circle_polygon_composite__square_circle_tangent_angle_value: {}
+    task_geometry__circle_polygon_composite__tangent_angle_value: {}
 rendering:
   shared:
     single_object_scene_rotation:
@@ -19,7 +19,7 @@ rendering:
       line_width: 3
       label_font_size: 22
       small_label_font_size: 18
-    task_geometry__circle_polygon_composite__square_circle_tangent_angle_value:
+    task_geometry__circle_polygon_composite__tangent_angle_value:
       canvas_width: 820
       canvas_height: 600
       line_width: 3
@@ -32,5 +32,5 @@ prompt:
   task_overrides:
     task_geometry__circle_polygon_composite__tangential_quadrilateral_side_length_value:
       task_key: tangential_quadrilateral_side_length_value_query
-    task_geometry__circle_polygon_composite__square_circle_tangent_angle_value:
-      task_key: square_circle_tangent_angle_value_query
+    task_geometry__circle_polygon_composite__tangent_angle_value:
+      task_key: tangent_angle_value_query

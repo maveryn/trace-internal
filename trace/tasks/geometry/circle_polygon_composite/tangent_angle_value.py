@@ -1,4 +1,4 @@
-"""Compute a tangent angle in a square/incircle or rectangle/semicircle construction."""
+"""Compute a tangent angle in a circle-polygon construction."""
 
 from __future__ import annotations
 
@@ -18,20 +18,28 @@ from trace.tasks.geometry.shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 
 from ._lifecycle import projected_keyed_point_payload, render_spec_payload, render_with_layout_retry
 from .shared.annotations import keyed_point_annotation
-from .shared.construction import select_angle_degrees, select_side_sign, validate_construction_kind
+from .shared.construction import select_angle_degrees, select_construction_kind, select_side_sign
 from .shared.prompts import tangent_angle_prompt_artifacts
 from .shared.rendering import create_circle_polygon_render_context, render_angle_scene
 from .shared.state import ANGLE_ANNOTATION_KEYS, SCENE_ID, AngleDiagramSpec, RenderedAngleScene
 
 
-TASK_ID = "task_geometry__circle_polygon_composite__square_circle_tangent_angle_value"
-QUERY_ID_INCIRCLE = "square_incircle_tangent_angle"
-QUERY_ID_SEMICIRCLE = "rectangle_semicircle_tangent_angle"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID_INCIRCLE, QUERY_ID_SEMICIRCLE)
-
-_CONSTRUCTION_BY_QUERY = {
-    QUERY_ID_INCIRCLE: "incircle",
-    QUERY_ID_SEMICIRCLE: "semicircle",
+TASK_ID = "task_geometry__circle_polygon_composite__tangent_angle_value"
+QUERY_ID_TANGENT_ANGLE = "tangent_angle_from_radius_perpendicular"
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID_TANGENT_ANGLE,)
+_PROMPT_DESCRIPTION_BY_CONSTRUCTION = {
+    "incircle": (
+        "It includes a square with an incircle, a tangent line touching the circle at T, "
+        "radius OT, one known angle, and one target angle marked ?."
+    ),
+    "semicircle": (
+        "It includes a rectangle with a semicircle, a tangent line touching the semicircle at T, "
+        "radius OT, one known angle, and one target angle marked ?."
+    ),
+}
+_ROUND_SHAPE_BY_CONSTRUCTION = {
+    "incircle": "incircle",
+    "semicircle": "semicircle",
 }
 _SCENE_DEFAULTS = get_scene_defaults("geometry", SCENE_ID)
 _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
@@ -47,11 +55,12 @@ class _AngleTransferProblem:
     diagram_spec: AngleDiagramSpec
     answer: int
     angle_probabilities: dict[str, float]
+    construction_probabilities: dict[str, float]
     side_probabilities: dict[str, float]
 
 
 @register_task
-class GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask:
+class GeometryCirclePolygonCompositeTangentAngleValueTask:
     """Compute an angle from a tangent-radius construction."""
 
     task_id = TASK_ID
@@ -66,9 +75,13 @@ class GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask:
         params: Mapping[str, Any],
         selected_query: str,
     ) -> _AngleTransferProblem:
-        """Resolve the query branch to a construction kind and integer angle answer."""
+        """Resolve construction, answer, and trace facts for one tangent-angle instance."""
 
-        construction_kind = validate_construction_kind(_CONSTRUCTION_BY_QUERY[str(selected_query)])
+        construction_kind, construction_probabilities = select_construction_kind(
+            instance_seed=int(instance_seed),
+            params=params,
+            namespace=f"{TASK_ID}.{selected_query}.construction_kind",
+        )
         angle_degrees, angle_probabilities = select_angle_degrees(
             instance_seed=int(instance_seed),
             params=params,
@@ -87,6 +100,7 @@ class GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask:
             ),
             answer=int(angle_degrees),
             angle_probabilities=dict(angle_probabilities),
+            construction_probabilities=dict(construction_probabilities),
             side_probabilities=dict(side_probabilities),
         )
 
@@ -145,6 +159,7 @@ class GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask:
                 "query_id": query,
                 "query_id_probabilities": dict(query_probabilities),
                 "answer_support_probabilities": dict(problem.angle_probabilities),
+                "construction_kind_probabilities": dict(problem.construction_probabilities),
                 "side_probabilities": dict(problem.side_probabilities),
                 "construction_kind": construction,
             },
@@ -163,7 +178,7 @@ class GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask:
                 "tangent_point": list(rendered.render_map["tangent_point"]),
             },
             "relations": {
-                "type": "square_circle_tangent_angle_transfer",
+                "type": "circle_polygon_tangent_angle_transfer",
                 "construction_kind": construction,
                 "known_angle_degrees": answer_degrees,
                 "target_angle_degrees": answer_degrees,
@@ -216,7 +231,7 @@ class GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask:
             instance_seed=int(instance_seed),
             params=params,
             supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=QUERY_ID_INCIRCLE,
+            default_query_id=QUERY_ID_TANGENT_ANGLE,
             task_id=TASK_ID,
         )
         problem = self._prepare_tangent_angle_problem(
@@ -240,6 +255,10 @@ class GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask:
         _prompt_defaults, prompt_artifacts = tangent_angle_prompt_artifacts(
             prompt_defaults=_PROMPT_DEFAULTS,
             prompt_query_key=str(selected_query),
+            angle_object_description=_PROMPT_DESCRIPTION_BY_CONSTRUCTION[
+                str(problem.diagram_spec.construction_kind)
+            ],
+            round_shape=_ROUND_SHAPE_BY_CONSTRUCTION[str(problem.diagram_spec.construction_kind)],
             answer_value=int(problem.answer),
             annotation_keys=ANGLE_ANNOTATION_KEYS,
             instance_seed=int(instance_seed),
@@ -272,9 +291,8 @@ class GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask:
 
 
 __all__ = [
-    "GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask",
-    "QUERY_ID_INCIRCLE",
-    "QUERY_ID_SEMICIRCLE",
+    "GeometryCirclePolygonCompositeTangentAngleValueTask",
+    "QUERY_ID_TANGENT_ANGLE",
     "SUPPORTED_QUERY_IDS",
     "TASK_ID",
 ]

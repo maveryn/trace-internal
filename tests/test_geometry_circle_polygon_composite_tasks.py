@@ -9,10 +9,10 @@ import pytest
 
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.geometry.circle_polygon_composite.square_circle_tangent_angle_value import (
-    SUPPORTED_QUERY_IDS as SQUARE_CIRCLE_TANGENT_ANGLE_QUERY_IDS,
-    TASK_ID as SQUARE_CIRCLE_TANGENT_ANGLE_TASK_ID,
-    GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask,
+from trace.tasks.geometry.circle_polygon_composite.tangent_angle_value import (
+    QUERY_ID_TANGENT_ANGLE,
+    TASK_ID as TANGENT_ANGLE_TASK_ID,
+    GeometryCirclePolygonCompositeTangentAngleValueTask,
 )
 from trace.tasks.geometry.circle_polygon_composite.tangential_quadrilateral_side_length_value import (
     TASK_ID,
@@ -26,15 +26,15 @@ def _generate(seed: int, **params):
 
 
 def _generate_angle(seed: int, **params):
-    task = GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask()
+    task = GeometryCirclePolygonCompositeTangentAngleValueTask()
     return task.generate(seed, params=dict(params), max_attempts=80)
 
 
 def test_circle_polygon_composite_registered_public_task() -> None:
     assert TASK_ID in TASK_REGISTRY
     assert TASK_REGISTRY[TASK_ID] is GeometryCirclePolygonCompositeTangentialQuadrilateralSideLengthValueTask
-    assert SQUARE_CIRCLE_TANGENT_ANGLE_TASK_ID in TASK_REGISTRY
-    assert TASK_REGISTRY[SQUARE_CIRCLE_TANGENT_ANGLE_TASK_ID] is GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask
+    assert TANGENT_ANGLE_TASK_ID in TASK_REGISTRY
+    assert TASK_REGISTRY[TANGENT_ANGLE_TASK_ID] is GeometryCirclePolygonCompositeTangentAngleValueTask
 
 
 @pytest.mark.parametrize(
@@ -100,12 +100,13 @@ def test_tangential_quadrilateral_rejects_invalid_params() -> None:
         task.generate(1, params={"tangent_lengths": (3, 4, 5)}, max_attempts=1)
 
 
-@pytest.mark.parametrize("query_id", SQUARE_CIRCLE_TANGENT_ANGLE_QUERY_IDS)
+@pytest.mark.parametrize("construction_kind", ["incircle", "semicircle"])
 @pytest.mark.parametrize("side_sign", [-1, 1])
-def test_square_circle_tangent_angle_contract(query_id: str, side_sign: int) -> None:
+def test_circle_polygon_tangent_angle_contract(construction_kind: str, side_sign: int) -> None:
     out = _generate_angle(
         20260606,
-        query_id=query_id,
+        query_id=SINGLE_QUERY_ID,
+        construction_kind=construction_kind,
         target_angle=45,
         side_sign=side_sign,
     )
@@ -113,11 +114,14 @@ def test_square_circle_tangent_angle_contract(query_id: str, side_sign: int) -> 
     execution = trace["execution_trace"]
 
     assert out.scene_id == "circle_polygon_composite"
-    assert out.query_id == query_id
+    assert out.query_id == SINGLE_QUERY_ID
+    assert execution["internal_query_id"] == QUERY_ID_TANGENT_ANGLE
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 45 == execution["answer"]
     assert execution["known_angle_degrees"] == execution["target_angle_degrees"] == 45
     assert execution["side_sign"] == side_sign
+    assert execution["construction_kind"] == construction_kind
+    assert trace["query_spec"]["params"]["construction_kind"] == construction_kind
 
     assert out.annotation_gt.type == "keyed_point_map"
     annotation = out.annotation_gt.value
@@ -139,9 +143,10 @@ def test_square_circle_tangent_angle_contract(query_id: str, side_sign: int) -> 
     assert "task_variant" not in json.dumps(trace)
 
 
-def test_square_circle_tangent_angle_generation_is_deterministic() -> None:
+def test_circle_polygon_tangent_angle_generation_is_deterministic() -> None:
     params = {
-        "query_id": "rectangle_semicircle_tangent_angle",
+        "query_id": SINGLE_QUERY_ID,
+        "construction_kind": "semicircle",
         "target_angle": 60,
         "side_sign": 1,
     }
@@ -154,10 +159,12 @@ def test_square_circle_tangent_angle_generation_is_deterministic() -> None:
     assert first.trace_payload["execution_trace"] == second.trace_payload["execution_trace"]
 
 
-def test_square_circle_tangent_angle_rejects_invalid_params() -> None:
-    task = GeometryCirclePolygonCompositeSquareCircleTangentAngleValueTask()
+def test_circle_polygon_tangent_angle_rejects_invalid_params() -> None:
+    task = GeometryCirclePolygonCompositeTangentAngleValueTask()
     with pytest.raises(ValueError):
         task.generate(1, params={"query_id": "bad_query"}, max_attempts=1)
+    with pytest.raises(ValueError):
+        task.generate(1, params={"construction_kind": "bad_construction"}, max_attempts=1)
     with pytest.raises(ValueError):
         task.generate(1, params={"target_angle": 17}, max_attempts=1)
     with pytest.raises(ValueError):

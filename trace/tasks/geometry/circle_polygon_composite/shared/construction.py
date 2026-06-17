@@ -209,6 +209,27 @@ def select_side_sign(
     return side_sign, geometry_selected_probability_map(SIDE_SIGN_SUPPORT)
 
 
+def select_construction_kind(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    namespace: str,
+) -> tuple[str, dict[str, float]]:
+    """Select which tangent-angle construction is drawn without making it a query id."""
+
+    explicit = params.get("construction_kind")
+    if explicit is not None:
+        construction_kind = validate_construction_kind(str(explicit))
+        return construction_kind, geometry_selected_probability_map(CONSTRUCTION_KINDS, selected=construction_kind)
+    index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
+    construction_kind = str(CONSTRUCTION_KINDS[int(index) % len(CONSTRUCTION_KINDS)])
+    return construction_kind, geometry_selected_probability_map(CONSTRUCTION_KINDS)
+
+
 def validate_construction_kind(construction_kind: str) -> str:
     """Return a validated construction kind for angle-transfer diagrams."""
 

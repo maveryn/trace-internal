@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
 
 from trace.tasks.shared.config_defaults import required_group_defaults
 from trace.tasks.shared.prompt_json_example import dump_prompt_json_examples
@@ -22,7 +22,6 @@ def circle_centerline_prompt_artifacts(
     target_name: str,
     label_mode: str,
     answer_value: int,
-    annotation_keys: Sequence[str],
     instance_seed: int,
 ) -> tuple[dict[str, Any], Any]:
     """Render prompt variants for a task-owned circle-centerline query."""
@@ -36,11 +35,7 @@ def circle_centerline_prompt_artifacts(
         ),
         context="prompt defaults for circle_centerline_overlap",
     )
-    annotation_key_text = ", ".join(f'"{key}"' for key in annotation_keys)
-    annotation_example = {
-        str(key): [120 + index * 34, 220 + (index % 2) * 28]
-        for index, key in enumerate(annotation_keys)
-    }
+    annotation_example = [[120, 220], [260, 220]]
     json_example, json_example_answer_only = dump_prompt_json_examples(
         annotation=annotation_example,
         answer=int(answer_value),
@@ -56,7 +51,6 @@ def circle_centerline_prompt_artifacts(
         dynamic_slots={
             "measure_label_kind": "diameter" if str(label_mode) == "diameter" else "radius",
             "target_name": str(target_name),
-            "annotation_keys": str(annotation_key_text),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
         },

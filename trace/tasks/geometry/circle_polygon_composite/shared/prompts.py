@@ -64,6 +64,8 @@ def tangent_angle_prompt_artifacts(
     *,
     prompt_defaults: Mapping[str, Any],
     prompt_query_key: str,
+    angle_object_description: str,
+    round_shape: str,
     answer_value: int,
     annotation_keys: Sequence[str],
     instance_seed: int,
@@ -93,6 +95,8 @@ def tangent_angle_prompt_artifacts(
         query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         dynamic_slots={
+            "angle_object_description": str(angle_object_description),
+            "round_shape": str(round_shape),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
         },

@@ -543,7 +543,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__circle_theorem__tangent_secant_length_value": _entry("geometry", "circle_theorem", "geometry", "circle"),
     "task_geometry__circle_centerline_overlap__segment_length_value": _entry("geometry", "circle_centerline_overlap", "geometry", "measurement"),
     "task_geometry__circle_pair_tangents__external_tangent_segment_length_value": _entry("geometry", "circle_pair_tangents", "geometry", "measurement"),
-    "task_geometry__circle_polygon_composite__square_circle_tangent_angle_value": _entry("geometry", "circle_polygon_composite", "geometry", "measurement"),
+    "task_geometry__circle_polygon_composite__tangent_angle_value": _entry("geometry", "circle_polygon_composite", "geometry", "measurement"),
     "task_geometry__circle_polygon_composite__tangential_quadrilateral_side_length_value": _entry("geometry", "circle_polygon_composite", "geometry", "measurement"),
     "task_geometry__composite_shape__house_outline_perimeter": _entry("geometry", "composite_shape", "geometry", "measurement"),
     "task_geometry__composite_shape__l_profile_area": _entry("geometry", "composite_shape", "geometry", "measurement"),

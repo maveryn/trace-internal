@@ -5,7 +5,7 @@
 2. Scene id: `circle_centerline_overlap`
 4. Query id: `center_distance_from_overlap` or `boundary_segment_from_overlap`
 5. Answer schema: `integer_value`
-6. Annotation schema: `keyed_point_map`
+6. Annotation schema: `segment`
 
 ## Program Contract
 - `solve_formula(visible_collinear_circle_overlap_measurements, unknown_role=target_centerline_segment, formula_schema=circle_centerline_overlap_segment_length); scene=circle_centerline_overlap; scope=segment_length_value`
@@ -15,7 +15,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses keyed pixel points for the endpoints of the requested segment only. Keys are the visible point labels in the diagram, not generic endpoint roles. For example, `AC` asks for `A` and `C`, while `AY` asks for `A` and `Y`. Numeric labels, point labels, radius/diameter readouts, and known segments remain visible context plus private verifier metadata.
+Prompt-facing annotation uses one pixel-space segment for the requested target segment only: `[[x0,y0],[x1,y1]]`. For example, if the prompt asks for `AC`, the segment endpoints are the visible points `A` and `C`; if it asks for `AY`, the endpoints are `A` and `Y`. Numeric labels, point labels, radius/diameter readouts, and known segments remain visible context plus private verifier metadata.
 
 ## Sampling
 Default generation samples circle radii and adjacent overlap lengths from deterministic constrained integer ranges instead of a small fixed case bank. The constraints preserve proper adjacent circle overlaps, keep non-adjacent circles separated, and ensure boundary-segment answers remain at least 3.

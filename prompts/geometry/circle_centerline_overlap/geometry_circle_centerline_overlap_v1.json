@@ -46,11 +46,11 @@
         "Use JSON only.\nFinal answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "Return a JSON object with \"annotation\" and \"answer\" fields.\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point.\nAnswer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
-        "Return only JSON with \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point.\nRequired answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
-        "Respond with JSON only.\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point.\nFormat for the \"answer\" field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
-        "Return a JSON object.\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point.\nAnswer field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
-        "Use JSON only.\nFinal answer format: set \"answer\" to the requested segment length as an integer.\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_keys}; each value must be the pixel point [x,y] at that labeled point.\nExample JSON:\n{json_example}"
+        "Return a JSON object with \"annotation\" and \"answer\" fields.\nAnnotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nAnswer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Return only JSON with \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nRequired answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Respond with JSON only.\nAnnotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nFormat for the \"answer\" field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Return a JSON object.\nAnnotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nAnswer field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Use JSON only.\nFinal answer format: set \"answer\" to the requested segment length as an integer.\nAnnotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nExample JSON:\n{json_example}"
       ]
     }
   },
@@ -60,9 +60,6 @@
       "type": "string"
     },
     "target_name": {
-      "type": "string"
-    },
-    "annotation_keys": {
       "type": "string"
     },
     "json_example": {
@@ -86,7 +83,7 @@
       "json_example_answer_only"
     ],
     "output:answer_and_annotation": [
-      "annotation_keys",
+      "target_name",
       "json_example"
     ]
   }

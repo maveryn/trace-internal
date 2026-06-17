@@ -37,7 +37,7 @@ def test_circle_centerline_overlap_task_registered() -> None:
 
 
 @pytest.mark.parametrize("query_id", [QUERY_ID_CENTER_DISTANCE, QUERY_ID_BOUNDARY_SEGMENT])
-def test_circle_centerline_overlap_queries_emit_keyed_point_annotation(query_id: str) -> None:
+def test_circle_centerline_overlap_queries_emit_segment_annotation(query_id: str) -> None:
     out = _generate(20260701, query_id=query_id)
     trace = out.trace_payload
     execution = trace["execution_trace"]
@@ -46,9 +46,9 @@ def test_circle_centerline_overlap_queries_emit_keyed_point_annotation(query_id:
     assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == execution["answer"]
-    assert out.annotation_gt.type == "keyed_point_map"
-    assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
+    assert out.annotation_gt.type == "segment"
+    assert trace["projected_annotation"]["segment"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_segment"] == out.annotation_gt.value
     assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_circle_centerline_overlap_v1"
     technical_style = trace["render_spec"]["style"]["technical_diagram"]
     background_style = trace["render_spec"]["style"]["background"]["style_spec"]["background_style"]
@@ -56,7 +56,7 @@ def test_circle_centerline_overlap_queries_emit_keyed_point_annotation(query_id:
     assert technical_style["grid_style"]["kind"] == "none"
     assert background_style["kind"] != "graph_paper"
     assert "task_variant" not in json.dumps(trace)
-    _assert_point_map_inside_image(out.annotation_gt.value, out.image.size)
+    _assert_segment_inside_image(out.annotation_gt.value, out.image.size)
 
 
 def test_circle_centerline_overlap_center_distance_formula() -> None:
@@ -72,7 +72,10 @@ def test_circle_centerline_overlap_center_distance_formula() -> None:
     assert execution["distance_ab"] == execution["radius_a"] + execution["radius_b"] - execution["overlap_ab"]
     assert execution["distance_bc"] == execution["radius_b"] + execution["radius_c"] - execution["overlap_bc"]
     assert execution["answer"] == execution["distance_ac"] == execution["distance_ab"] + execution["distance_bc"]
-    assert tuple(out.annotation_gt.value.keys()) == ("A", "C")
+    assert out.annotation_gt.value == [
+        out.trace_payload["render_map"]["centers"]["A"],
+        out.trace_payload["render_map"]["centers"]["C"],
+    ]
     assert "diameter labels" in out.prompt
     assert "radius or diameter" not in out.prompt
 
@@ -94,13 +97,16 @@ def test_circle_centerline_overlap_boundary_segment_formula(boundary_pair: str, 
     assert execution["answer"] == expected
     assert execution["boundary_pair"] == boundary_pair
     assert execution["boundary_target_role"] == boundary_target_role
-    expected_keys = {
+    expected_segments = {
         ("AB", "left_center_to_right_boundary"): ("A", "Y"),
         ("AB", "left_boundary_to_right_center"): ("X", "B"),
         ("BC", "left_center_to_right_boundary"): ("B", "V"),
         ("BC", "left_boundary_to_right_center"): ("U", "C"),
     }
-    assert tuple(out.annotation_gt.value.keys()) == expected_keys[(boundary_pair, boundary_target_role)]
+    start_key, end_key = expected_segments[(boundary_pair, boundary_target_role)]
+    render_map = out.trace_payload["render_map"]
+    points = {**render_map["centers"], **render_map["boundary_points"]}
+    assert out.annotation_gt.value == [points[start_key], points[end_key]]
 
 
 def test_circle_centerline_overlap_prompt_describes_selected_measure_label_mode() -> None:
@@ -211,9 +217,10 @@ def test_circle_centerline_overlap_rejects_invalid_params() -> None:
         task.generate(1, params={"overlap_case": (4, 13, 9, 3, 2)}, max_attempts=1)
 
 
-def _assert_point_map_inside_image(annotation: dict[str, list[float]], image_size: tuple[int, int]) -> None:
+def _assert_segment_inside_image(annotation: list[list[float]], image_size: tuple[int, int]) -> None:
     width, height = image_size
-    for point in annotation.values():
+    assert len(annotation) == 2
+    for point in annotation:
         assert isinstance(point, list)
         assert len(point) == 2
         x, y = [float(value) for value in point]

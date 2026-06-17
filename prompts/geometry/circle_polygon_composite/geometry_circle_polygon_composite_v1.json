@@ -20,12 +20,12 @@
         "{object_description}",
         "{object_description}"
       ],
-      "square_circle_tangent_angle_value_query": [
-        "{object_description}",
-        "{object_description}",
-        "{object_description}",
-        "{object_description}",
-        "{object_description}"
+      "tangent_angle_value_query": [
+        "{angle_object_description}",
+        "{angle_object_description}",
+        "{angle_object_description}",
+        "{angle_object_description}",
+        "{angle_object_description}"
       ]
     },
     "query": {
@@ -36,15 +36,8 @@
         "Use the three labeled side lengths to determine side {target_side}.",
         "In the tangential quadrilateral, what is the value of {target_side}?"
       ],
-      "square_incircle_tangent_angle": [
-        "A tangent touches the incircle at T. What is the angle marked ?",
-        "Use the tangent-radius construction to find angle ?.",
-        "The radius to T is perpendicular to the tangent line. What is the angle marked ?",
-        "Determine the angle marked ?.",
-        "Find angle ? using the tangent angle."
-      ],
-      "rectangle_semicircle_tangent_angle": [
-        "A tangent touches the semicircle at T. What is the angle marked ?",
+      "tangent_angle_from_radius_perpendicular": [
+        "A tangent touches the {round_shape} at T. What is the angle marked ?",
         "Use the tangent-radius construction to find angle ?.",
         "The radius to T is perpendicular to the tangent line. What is the angle marked ?",
         "Determine the angle marked ?.",
@@ -74,19 +67,18 @@
       "annotation_hint": "set \"annotation\" to a JSON object with exactly these keys: \"A\", \"B\", \"C\", and \"D\"; each value must be the pixel point [x,y] at that labeled vertex",
       "answer_hint": "set \"answer\" to the missing side length as an integer"
     },
-    "task:square_circle_tangent_angle_value_query": {
-      "object_description": "It includes a square or rectangle, a circle or semicircle, a tangent line, radius to T, one known angle, and one target angle marked ?.",
+    "task:tangent_angle_value_query": {
       "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible point-label keys: \"A\", \"B\", \"C\", \"D\", \"O\", and \"T\"; each value must be that labeled construction point's pixel point [x,y]",
       "answer_hint": "set \"answer\" to the target angle in degrees as an integer"
-    },
-    "query:square_incircle_tangent_angle": {
-      "object_description": "It includes a square with an incircle, a tangent line touching the circle at T, radius OT, one known angle, and one target angle marked ?."
-    },
-    "query:rectangle_semicircle_tangent_angle": {
-      "object_description": "It includes a rectangle with a semicircle, a tangent line touching the semicircle at T, radius OT, one known angle, and one target angle marked ?."
     }
   },
   "dynamic_slots": {
+    "angle_object_description": {
+      "type": "string"
+    },
+    "round_shape": {
+      "type": "string"
+    },
     "target_side": {
       "type": "string"
     },
@@ -104,15 +96,16 @@
     "task:tangential_quadrilateral_side_length_value_query": [
       "object_description"
     ],
-    "task:square_circle_tangent_angle_value_query": [
-      "object_description"
+    "task:tangent_angle_value_query": [
+      "angle_object_description"
     ],
     "query:missing_side_from_tangent_quadrilateral": [
       "target_side",
       "visible_sides"
     ],
-    "query:square_incircle_tangent_angle": [],
-    "query:rectangle_semicircle_tangent_angle": [],
+    "query:tangent_angle_from_radius_perpendicular": [
+      "round_shape"
+    ],
     "output:answer_only": [
       "answer_hint",
       "json_example_answer_only"

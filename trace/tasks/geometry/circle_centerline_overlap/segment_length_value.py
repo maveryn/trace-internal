@@ -18,7 +18,7 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.geometry.shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 
-from .shared.annotations import keyed_point_annotation
+from .shared.annotations import segment_annotation
 from .shared.construction import (
     boundary_names,
     boundary_segment_answer_support,
@@ -182,7 +182,7 @@ def _trace_payload(
     query_probabilities: Mapping[str, float],
     prompt_artifacts: Any,
     problem: _ResolvedSegmentProblem,
-    annotation_value: Mapping[str, list[float]],
+    annotation_value: list[list[float]],
 ) -> dict[str, Any]:
     """Serialize task-owned answer and annotation facts into trace metadata."""
 
@@ -303,9 +303,9 @@ def _trace_payload(
             "answer_value": int(problem.answer),
         },
         "projected_annotation": {
-            "type": "keyed_point_map",
-            "keyed_point_map": dict(annotation_value),
-            "pixel_keyed_point_map": dict(annotation_value),
+            "type": "segment",
+            "segment": list(annotation_value),
+            "pixel_segment": list(annotation_value),
         },
     }
 
@@ -415,10 +415,12 @@ class GeometryCircleCenterlineOverlapSegmentLengthValueTask:
             target_name=str(problem.target_name),
             label_mode=str(problem.label_mode),
             answer_value=int(problem.answer),
-            annotation_keys=rendered.annotation_roles,
             instance_seed=int(instance_seed),
         )
-        annotation_value = keyed_point_annotation(rendered)
+        annotation_value = segment_annotation(
+            rendered,
+            problem.diagram_spec.target_segment_points,
+        )
         trace_payload = _trace_payload(
             rendered=rendered,
             image_size=image.size,
@@ -433,9 +435,7 @@ class GeometryCircleCenterlineOverlapSegmentLengthValueTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(problem.answer)),
-            annotation_gt=TypedValue(
-                type="keyed_point_map", value=dict(annotation_value)
-            ),
+            annotation_gt=TypedValue(type="segment", value=list(annotation_value)),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

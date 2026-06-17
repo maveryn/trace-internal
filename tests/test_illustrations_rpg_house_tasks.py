@@ -73,11 +73,16 @@ def test_rpg_house_renderer_is_deterministic_and_profile_safe() -> None:
             )
             along_start = door.tile_xy[1] if door.orientation == "vertical" else door.tile_xy[0]
             span_tiles = int(door.metadata.get("span_tiles", 1))
+            overlap_tiles = overlap1 - overlap0
+            assert 2 <= span_tiles <= 3
+            assert overlap_tiles >= 4
+            assert span_tiles / overlap_tiles <= 0.5
+            if overlap_tiles <= 6:
+                assert span_tiles == 2
             assert along_start > overlap0
             assert along_start + span_tiles < overlap1
-            if int(door.metadata.get("span_tiles", 1)) >= 2:
-                wide_door_seen = True
-                assert max(door_width, door_height) >= first.trace["tile_px"] * 1.70
+            wide_door_seen = True
+            assert max(door_width, door_height) >= first.trace["tile_px"] * 1.70
         assert wide_door_seen
         for entity in first.entities:
             _assert_bbox_inside_canvas(list(entity.bbox_xyxy), width=width, height=height)

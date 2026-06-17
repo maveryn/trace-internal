@@ -439,7 +439,7 @@ def _adjacent_door_specs(
                 boundary_x = ax + aw if ax + aw == bx else bx + bw
                 overlap0 = max(ay, by)
                 overlap1 = min(ay + ah, by + bh)
-                span_tiles = _door_span_for_overlap(overlap1 - overlap0)
+                span_tiles = _door_span_for_overlap(overlap1 - overlap0, rng=rng)
                 if span_tiles:
                     door_y = _sample_door_start(rng, overlap0=overlap0, overlap1=overlap1, span_tiles=span_tiles)
                     room_0, room_1 = sorted((room_a.room_id, room_b.room_id))
@@ -448,7 +448,7 @@ def _adjacent_door_specs(
                 boundary_y = ay + ah if ay + ah == by else by + bh
                 overlap0 = max(ax, bx)
                 overlap1 = min(ax + aw, bx + bw)
-                span_tiles = _door_span_for_overlap(overlap1 - overlap0)
+                span_tiles = _door_span_for_overlap(overlap1 - overlap0, rng=rng)
                 if span_tiles:
                     door_x = _sample_door_start(rng, overlap0=overlap0, overlap1=overlap1, span_tiles=span_tiles)
                     room_0, room_1 = sorted((room_a.room_id, room_b.room_id))
@@ -456,14 +456,14 @@ def _adjacent_door_specs(
     return sorted(doors, key=lambda item: item[0])
 
 
-def _door_span_for_overlap(overlap_len: int) -> int:
+def _door_span_for_overlap(overlap_len: int, *, rng: random.Random) -> int:
     """Return a door span that leaves wall material on both ends."""
 
-    if int(overlap_len) >= 4:
+    if int(overlap_len) < 4:
+        return 0
+    if int(overlap_len) <= 6:
         return 2
-    if int(overlap_len) >= 3:
-        return 1
-    return 0
+    return int(rng.choice((2, 3)))
 
 
 def _sample_door_start(

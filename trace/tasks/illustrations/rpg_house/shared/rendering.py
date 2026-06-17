@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 import random
 from typing import Any, Mapping, Sequence
 
@@ -332,12 +333,10 @@ def draw_rpg_house_debug_overlay(scene: RpgHouseScene) -> Image.Image:
 
 def _sample_layout(*, width: int, height: int, tile_px: int) -> RpgHouseLayout:
     resolved_tile_px = max(40, min(56, int(tile_px)))
-    cols = max(14, int(width) // resolved_tile_px)
-    rows = max(12, int(height) // resolved_tile_px)
+    cols = max(14, int(math.ceil(float(width) / float(resolved_tile_px))))
+    rows = max(12, int(math.ceil(float(height) / float(resolved_tile_px))))
     grid_w = int(cols) * resolved_tile_px
     grid_h = int(rows) * resolved_tile_px
-    if grid_w > int(width) or grid_h > int(height):
-        raise ValueError(f"RPG house grid {cols}x{rows} does not fit in {width}x{height}")
     return RpgHouseLayout(
         cols=int(cols),
         rows=int(rows),
@@ -370,7 +369,7 @@ def _make_layout_specs(
 ) -> tuple[list[_RoomSpec], list[_DoorSpec], str]:
     """Build an irregular room partition and its connecting doors."""
 
-    room_boxes = _split_house_rectangles(rng, (1, 1, int(layout.cols) - 2, int(layout.rows) - 2), int(room_count))
+    room_boxes = _split_house_rectangles(rng, (0, 0, int(layout.cols), int(layout.rows)), int(room_count))
     room_ids = list(ROOM_IDS)
     rng.shuffle(room_ids)
     selected_ids = tuple(room_ids[: int(room_count)])
@@ -823,11 +822,15 @@ def _make_door(spec: _DoorSpec, layout: RpgHouseLayout) -> RpgHouseDoor:
 def _tile_bbox(layout: RpgHouseLayout, tile_xywh: TileBox) -> BBox:
     x, y, w, h = tile_xywh
     ox, oy = layout.display_offset_xy
-    return (
-        float(ox + int(x) * int(layout.tile_px)),
-        float(oy + int(y) * int(layout.tile_px)),
-        float(ox + (int(x) + int(w)) * int(layout.tile_px)),
-        float(oy + (int(y) + int(h)) * int(layout.tile_px)),
+    return _clip_bbox(
+        (
+            float(ox + int(x) * int(layout.tile_px)),
+            float(oy + int(y) * int(layout.tile_px)),
+            float(ox + (int(x) + int(w)) * int(layout.tile_px)),
+            float(oy + (int(y) + int(h)) * int(layout.tile_px)),
+        ),
+        width=int(layout.width_px),
+        height=int(layout.height_px),
     )
 
 
@@ -840,20 +843,41 @@ def _door_bbox(layout: RpgHouseLayout, spec: _DoorSpec) -> BBox:
     cross_half = max(6, int(round(layout.tile_px * CANONICAL_WALL_SHADOW_THICKNESS / (2 * CANONICAL_TILE_PX))))
     margin = max(2, int(round(layout.tile_px * CANONICAL_DOOR_CLEARANCE / CANONICAL_TILE_PX)))
     if spec.orientation == "vertical":
-        return (
-            float(px - cross_half),
-            float(py + margin),
-            float(px + cross_half),
-            float(py + span_px - margin),
+        return _clip_bbox(
+            (
+                float(px - cross_half),
+                float(py + margin),
+                float(px + cross_half),
+                float(py + span_px - margin),
+            ),
+            width=int(layout.width_px),
+            height=int(layout.height_px),
         )
     if spec.orientation == "horizontal":
-        return (
-            float(px + margin),
-            float(py - cross_half),
-            float(px + span_px - margin),
-            float(py + cross_half),
+        return _clip_bbox(
+            (
+                float(px + margin),
+                float(py - cross_half),
+                float(px + span_px - margin),
+                float(py + cross_half),
+            ),
+            width=int(layout.width_px),
+            height=int(layout.height_px),
         )
     raise ValueError(f"unsupported RPG house door orientation: {spec.orientation}")
+
+
+def _clip_bbox(bbox: BBox, *, width: int, height: int) -> BBox:
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    clipped = (
+        max(0.0, min(float(width), x0)),
+        max(0.0, min(float(height), y0)),
+        max(0.0, min(float(width), x1)),
+        max(0.0, min(float(height), y1)),
+    )
+    if clipped[0] >= clipped[2] or clipped[1] >= clipped[3]:
+        raise ValueError(f"RPG house bbox clipped outside the canvas: {bbox}")
+    return clipped
 
 
 def _canonical_rect(tile_xywh: TileBox) -> tuple[int, int, int, int]:

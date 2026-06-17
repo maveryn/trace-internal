@@ -68,6 +68,10 @@ def test_rpg_house_renderer_is_deterministic_and_profile_safe() -> None:
         assert MIN_ROOM_COUNT <= len(first.rooms) <= MAX_ROOM_COUNT
         assert len(first.doors) >= len(first.rooms) - 1
         assert len(first.entities) >= len(first.rooms)
+        assert min(float(room.bbox_xyxy[0]) for room in first.rooms) == 0.0
+        assert min(float(room.bbox_xyxy[1]) for room in first.rooms) == 0.0
+        assert max(float(room.bbox_xyxy[2]) for room in first.rooms) == float(width)
+        assert max(float(room.bbox_xyxy[3]) for room in first.rooms) == float(height)
         rooms_by_id = {room.room_id: room for room in first.rooms}
         for room in first.rooms:
             _assert_bbox_inside_canvas(list(room.bbox_xyxy), width=width, height=height)

@@ -185,7 +185,7 @@ def draw_coordinate_panel_grid(
         line_fill = resolved_style.axis_color if value == 0 else resolved_style.grid_color
         draw.line([(x0, plot_bbox[1]), (x0, plot_bbox[3])], fill=line_fill, width=line_width)
         draw.line([(plot_bbox[0], y0), (plot_bbox[2], y0)], fill=line_fill, width=line_width)
-        if value in {-4, -2, 2, 4}:
+        if value in {-4, -2, 0, 2, 4}:
             draw_text_traced(draw,(x0 - 5, plot_bbox[3] + 3), str(value), font=tick_font, fill=resolved_style.tick_color, role="readout", required=False)
             draw_text_traced(draw,(plot_bbox[0] - 21, y0 - 6), str(value), font=tick_font, fill=resolved_style.tick_color, role="readout", required=False)
 

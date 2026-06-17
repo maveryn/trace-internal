@@ -9,6 +9,7 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.geometry.shared.option_count import resolve_geometry_option_count
 
 from .shared.algebra import (
     DEFAULT_LABEL_POOL as ALGEBRA_LABEL_POOL,
@@ -170,6 +171,7 @@ def _resolve_label_choice(
     params: Mapping[str, Any],
     generation_defaults: Mapping[str, Any],
     label_key: str,
+    option_count_field: str,
     label_pool: Sequence[str],
     instance_seed: int,
     namespace: str,
@@ -179,6 +181,17 @@ def _resolve_label_choice(
     """Resolve option labels and the answer label for one candidate task."""
 
     labels = resolver(params, generation_defaults, str(label_key), tuple(label_pool))
+    option_count, _ = resolve_geometry_option_count(
+        params=params,
+        gen_defaults=generation_defaults,
+        field_name=str(option_count_field),
+        supported_counts=(4, 6),
+        task_id=str(namespace),
+        instance_seed=int(instance_seed),
+    )
+    if int(option_count) > len(labels):
+        raise ValueError(f"{option_count_field} cannot exceed label pool length")
+    labels = tuple(str(label) for label in labels[: int(option_count)])
     winner_label, winner_probabilities = selector(
         params=params,
         instance_seed=int(instance_seed),
@@ -213,6 +226,7 @@ def run_coordinate_algebra_entry(
         params=task_params,
         generation_defaults=generation_defaults,
         label_key="algebra_candidate_labels",
+        option_count_field="algebra_candidate_count",
         label_pool=ALGEBRA_LABEL_POOL,
         instance_seed=int(instance_seed),
         namespace=str(task.task_id),
@@ -283,6 +297,7 @@ def run_coordinate_locus_point_entry(
         params=task_params,
         generation_defaults=generation_defaults,
         label_key="locus_candidate_labels",
+        option_count_field="locus_candidate_count",
         label_pool=LOCUS_LABEL_POOL,
         instance_seed=int(instance_seed),
         namespace=str(task.task_id),
@@ -352,6 +367,7 @@ def run_coordinate_locus_panel_entry(
         params=task_params,
         generation_defaults=generation_defaults,
         label_key="locus_panel_labels",
+        option_count_field="locus_panel_count",
         label_pool=LOCUS_LABEL_POOL,
         instance_seed=int(instance_seed),
         namespace=str(task.task_id),

@@ -199,20 +199,38 @@ def _resolve_query(
     task_id: str,
     query_ids: Sequence[str],
     scene_label_pool: Sequence[str],
+    generation_defaults: Mapping[str, Any],
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> _ResolvedQuery:
+    """Resolve the quadrilateral-completion branch and active option labels.
+
+    The invariant is that the public task owns query selection, candidate count,
+    and winner binding before scene rendering, so the rendered options remain a
+    contiguous prefix of the scene label pool with one answer label.
+    """
     query_id, query_probabilities = select_geometry_query_id(
         params,
         query_ids=tuple(query_ids),
         task_id=str(task_id),
         instance_seed=int(instance_seed),
     )
+    candidate_count, _ = resolve_geometry_option_count(
+        params=params,
+        gen_defaults=generation_defaults,
+        field_name="completion_candidate_count",
+        supported_counts=(4, 6),
+        task_id=str(task_id),
+        instance_seed=int(instance_seed),
+    )
+    if int(candidate_count) > len(tuple(scene_label_pool)):
+        raise ValueError("completion_candidate_count cannot exceed candidate label pool length")
+    active_label_pool = tuple(str(label) for label in tuple(scene_label_pool)[: int(candidate_count)])
     winner_label, winner_probabilities = _select_winner_label(
         params=params,
         instance_seed=int(instance_seed),
         task_id=str(task_id),
-        label_pool=tuple(scene_label_pool),
+        label_pool=active_label_pool,
         query_id_count=len(tuple(query_ids)),
     )
     target_kind = str(QUERY_TARGET_KIND[str(query_id)])
@@ -223,7 +241,7 @@ def _resolve_query(
         query_probabilities=dict(query_probabilities),
         winner_label=str(winner_label),
         winner_label_probabilities=dict(winner_probabilities),
-        label_pool=tuple(str(label) for label in scene_label_pool),
+        label_pool=active_label_pool,
     )
 
 
@@ -408,8 +426,7 @@ def _render_completion_scene(
 
     candidate_labels = tuple(query.label_pool[: int(candidate_count)])
     if str(query.winner_label) not in set(candidate_labels):
-        candidate_labels = tuple([str(query.winner_label), *[label for label in candidate_labels if label != str(query.winner_label)]])
-        candidate_labels = candidate_labels[: int(candidate_count)]
+        raise ValueError("winner_label must be inside the active contiguous candidate label set")
     occupied = set(known_points) | {missing_point}
     candidate_points_by_label: Dict[str, GraphPoint] = {str(query.winner_label): tuple(missing_point)}
     for label in candidate_labels:
@@ -639,7 +656,7 @@ def _completion_trace_payload(
                 "target_shape_name": str(query.target_shape_name),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
-                "candidate_label_pool": list(rendered.candidate_points_by_label.keys()),
+                "candidate_label_pool": list(query.label_pool),
                 "completion_candidate_count_probabilities": dict(rendered.option_count_probabilities),
             },
         },
@@ -724,6 +741,7 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
             task_id=self.task_id,
             query_ids=COMPLETION_QUERY_IDS,
             scene_label_pool=label_pool,
+            generation_defaults=generation_defaults,
             instance_seed=int(instance_seed),
             params=params,
         )

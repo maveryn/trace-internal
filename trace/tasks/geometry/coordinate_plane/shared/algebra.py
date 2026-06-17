@@ -449,8 +449,7 @@ def _sample_problem(
 def _candidate_labels_for_selection(query: _ResolvedQuery, *, candidate_count: int) -> Tuple[str, ...]:
     labels = tuple(query.label_pool[: int(candidate_count)])
     if str(query.winner_label) not in set(labels):
-        labels = tuple([str(query.winner_label), *[label for label in labels if label != str(query.winner_label)]])
-        labels = labels[: int(candidate_count)]
+        raise ValueError("winner_label must be inside the active contiguous candidate label set")
     return labels
 
 
@@ -974,7 +973,7 @@ def _trace_payload(
                 "operation_key_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
-                "candidate_label_pool": list(rendered.candidate_points_by_label.keys()),
+                "candidate_label_pool": list(query.label_pool),
                 "algebra_candidate_count_probabilities": dict(rendered.option_count_probabilities),
                 "target_label_name": str(rendered.problem.target_label_name),
             },

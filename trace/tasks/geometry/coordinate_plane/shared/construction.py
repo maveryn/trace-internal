@@ -95,12 +95,20 @@ class _TaskDefaults:
     marker_radius_px: int = 7
     marker_radius_px_min: int = 6
     marker_radius_px_max: int = 9
+    locus_marker_radius_px: int = 11
+    locus_marker_radius_px_min: int = 10
+    locus_marker_radius_px_max: int = 14
+    locus_label_font_size_min: int = 28
+    locus_label_font_size_max: int = 42
+    locus_label_offset_px: int = 24
     label_font_size_min: int = 16
     label_font_size_max: int = 28
     label_stroke_width: int = 1
     label_offset_px: int = 15
     panel_canvas_width: int = 1040
     panel_canvas_height: int = 760
+    panel_canvas_width_4: int = 900
+    panel_canvas_height_4: int = 840
     panel_grid_min: int = -6
     panel_grid_max: int = 6
     panel_count: int = 6
@@ -193,6 +201,45 @@ _PANEL_STYLES: Tuple[CoordinatePanelStyle, ...] = (
 )
 
 
+def _squared_term(variable: str, center: int) -> str:
+    """Return a readable squared coordinate term for a shifted center."""
+
+    if int(center) == 0:
+        return f"{variable}²"
+    sign = "-" if int(center) > 0 else "+"
+    return f"({variable} {sign} {abs(int(center))})²"
+
+
+def _circle_condition_text(*, cx: int, cy: int, radius: int) -> str:
+    return f"{_squared_term('x', int(cx))} + {_squared_term('y', int(cy))} ≤ {int(radius) ** 2}"
+
+
+def _annulus_condition_text(*, cx: int, cy: int, inner_radius: int, outer_radius: int) -> str:
+    center_expr = f"{_squared_term('x', int(cx))} + {_squared_term('y', int(cy))}"
+    return f"{int(inner_radius) ** 2} ≤ {center_expr} ≤ {int(outer_radius) ** 2}"
+
+
+def _interval_condition_text(*, variable: str, lower: int, upper: int) -> str:
+    return f"{int(lower)} ≤ {variable} ≤ {int(upper)}"
+
+
+def _halfplane_condition_text(*, variable: str, op: str, value: int) -> str:
+    return f"{variable} {op} {int(value)}"
+
+
+def _intersection_condition_text(params: Mapping[str, int]) -> str:
+    parts: list[str] = []
+    if "x_min" in params:
+        parts.append(_halfplane_condition_text(variable="x", op="≥", value=int(params["x_min"])))
+    if "x_max" in params:
+        parts.append(_halfplane_condition_text(variable="x", op="≤", value=int(params["x_max"])))
+    if "y_min" in params:
+        parts.append(_halfplane_condition_text(variable="y", op="≥", value=int(params["y_min"])))
+    if "y_max" in params:
+        parts.append(_halfplane_condition_text(variable="y", op="≤", value=int(params["y_max"])))
+    return " and ".join(parts)
+
+
 def _split_defaults_for_task(config_key: str) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
     return split_scene_generation_rendering_prompt_defaults(
         _SCENE_DEFAULTS if isinstance(_SCENE_DEFAULTS, Mapping) else {},
@@ -225,8 +272,7 @@ def _select_winner_label(
 def _candidate_labels_for_selection(query: _ResolvedQuery, *, candidate_count: int) -> Tuple[str, ...]:
     labels = tuple(query.label_pool[: int(candidate_count)])
     if str(query.winner_label) not in set(labels):
-        labels = tuple([str(query.winner_label), *[label for label in labels if label != str(query.winner_label)]])
-        labels = labels[: int(candidate_count)]
+        raise ValueError("winner_label must be inside the active contiguous candidate label set")
     return labels
 
 
@@ -561,21 +607,44 @@ def _render_point_scene(
     )
     _draw_single_region(image, draw, region=region, context=context, max_abs=int(max_abs))
 
-    marker_radius = _resolve_int_param(params, rendering_defaults, "marker_radius_px", _DEFAULTS.marker_radius_px)
+    generic_marker_radius = _resolve_int_param(params, rendering_defaults, "marker_radius_px", _DEFAULTS.marker_radius_px)
+    marker_radius = _resolve_int_param(params, rendering_defaults, "locus_marker_radius_px", _DEFAULTS.locus_marker_radius_px)
     marker_radius = max(
-        _resolve_int_param(params, rendering_defaults, "marker_radius_px_min", _DEFAULTS.marker_radius_px_min),
-        min(_resolve_int_param(params, rendering_defaults, "marker_radius_px_max", _DEFAULTS.marker_radius_px_max), int(marker_radius)),
+        _resolve_int_param(
+            params,
+            rendering_defaults,
+            "locus_marker_radius_px_min",
+            max(_DEFAULTS.locus_marker_radius_px_min, int(generic_marker_radius)),
+        ),
+        min(
+            _resolve_int_param(params, rendering_defaults, "locus_marker_radius_px_max", _DEFAULTS.locus_marker_radius_px_max),
+            int(marker_radius),
+        ),
+    )
+    generic_label_min = _resolve_int_param(params, rendering_defaults, "label_font_size_min", _DEFAULTS.label_font_size_min)
+    generic_label_max = _resolve_int_param(params, rendering_defaults, "label_font_size_max", _DEFAULTS.label_font_size_max)
+    label_min = _resolve_int_param(
+        params,
+        rendering_defaults,
+        "locus_label_font_size_min",
+        max(_DEFAULTS.locus_label_font_size_min, int(generic_label_min)),
+    )
+    label_max = _resolve_int_param(
+        params,
+        rendering_defaults,
+        "locus_label_font_size_max",
+        max(_DEFAULTS.locus_label_font_size_max, int(generic_label_max)),
     )
     label_font_size_px = int(
         max(
-            _resolve_int_param(params, rendering_defaults, "label_font_size_min", _DEFAULTS.label_font_size_min),
+            int(label_min),
             min(
-                _resolve_int_param(params, rendering_defaults, "label_font_size_max", _DEFAULTS.label_font_size_max),
-                int(round(float(context.graph_spacing) * 0.75)),
+                int(label_max),
+                int(round(float(context.graph_spacing) * 1.12)),
             ),
         )
     )
-    label_offset_px = _resolve_int_param(params, rendering_defaults, "label_offset_px", _DEFAULTS.label_offset_px)
+    label_offset_px = _resolve_int_param(params, rendering_defaults, "locus_label_offset_px", _DEFAULTS.locus_label_offset_px)
     label_stroke_width = _resolve_int_param(params, rendering_defaults, "label_stroke_width", _DEFAULTS.label_stroke_width)
     center_color, candidate_color, color_meta = _resolve_marker_colors(rng)
     candidate_style = _sample_marker_style(rng, params=params, defaults=rendering_defaults, key="candidate_marker_style")
@@ -611,7 +680,7 @@ def _render_point_scene(
         points=[scale_point(candidate_points_px_by_label[str(label)], int(context.scene_scale)) for label in candidate_labels],
         labels=list(candidate_labels),
         label_offset_px=float(label_offset_px) * float(context.scene_scale),
-        font_size_px=int(label_font_size_px),
+        font_size_px=int(label_font_size_px) * int(context.scene_scale),
         text_stroke_width=int(label_stroke_width) * int(context.scene_scale),
         blocked_points=blocked_points,
         blocked_point_clearance_px=float(render_radius + 7),
@@ -673,50 +742,161 @@ def _panel_style(rng) -> Tuple[CoordinatePanelStyle, Dict[str, Any]]:
     return style, {"style_index": int(index), "style": style.to_trace_dict()}
 
 
-def _panel_target_region(operation_key: str) -> _RegionSpec:
+def _circle_region(cx: int, cy: int, radius: int) -> _RegionSpec:
+    return _RegionSpec(
+        "circle",
+        {"cx": int(cx), "cy": int(cy), "r": int(radius)},
+        _circle_condition_text(cx=int(cx), cy=int(cy), radius=int(radius)),
+    )
+
+
+def _annulus_region(cx: int, cy: int, inner_radius: int, outer_radius: int) -> _RegionSpec:
+    return _RegionSpec(
+        "annulus",
+        {"cx": int(cx), "cy": int(cy), "inner_r": int(inner_radius), "outer_r": int(outer_radius)},
+        _annulus_condition_text(
+            cx=int(cx),
+            cy=int(cy),
+            inner_radius=int(inner_radius),
+            outer_radius=int(outer_radius),
+        ),
+    )
+
+
+def _vertical_strip_region(x_min: int, x_max: int) -> _RegionSpec:
+    return _RegionSpec(
+        "vertical_strip",
+        {"x_min": int(x_min), "x_max": int(x_max)},
+        _interval_condition_text(variable="x", lower=int(x_min), upper=int(x_max)),
+    )
+
+
+def _horizontal_strip_region(y_min: int, y_max: int) -> _RegionSpec:
+    return _RegionSpec(
+        "horizontal_strip",
+        {"y_min": int(y_min), "y_max": int(y_max)},
+        _interval_condition_text(variable="y", lower=int(y_min), upper=int(y_max)),
+    )
+
+
+def _halfplane_region(kind: str, params: Mapping[str, int], *, variable: str, op: str, value: int) -> _RegionSpec:
+    return _RegionSpec(
+        str(kind),
+        {str(key): int(val) for key, val in params.items()},
+        _halfplane_condition_text(variable=str(variable), op=str(op), value=int(value)),
+    )
+
+
+def _intersection_region(params: Mapping[str, int]) -> _RegionSpec:
+    return _RegionSpec(
+        "half_plane_intersection",
+        {str(key): int(value) for key, value in params.items()},
+        _intersection_condition_text({str(key): int(value) for key, value in params.items()}),
+    )
+
+
+def _same_region(left: _RegionSpec, right: _RegionSpec) -> bool:
+    return str(left.kind) == str(right.kind) and dict(left.params) == dict(right.params)
+
+
+def _panel_target_region(operation_key: str, rng) -> _RegionSpec:
+    """Sample the correct locus panel shape for a semantic panel query.
+
+    The helper returns only identity-free region geometry; the public task has
+    already chosen the query and answer label, and this function never handles
+    task ids, query ids, or final answer construction.
+    """
     if str(operation_key) == "circle_panel":
-        return _RegionSpec("circle", {"cx": 0, "cy": 0, "r": 4}, "x^2 + y^2 <= 16")
+        return rng.choice(
+            (
+                _circle_region(0, 0, 4),
+                _circle_region(1, -1, 3),
+                _circle_region(-1, 1, 3),
+                _circle_region(2, 0, 3),
+                _circle_region(0, -2, 3),
+            )
+        )
     if str(operation_key) == "vertical_strip_panel":
-        return _RegionSpec("vertical_strip", {"x_min": -2, "x_max": 2}, "-2 <= x <= 2")
+        return rng.choice(
+            (
+                _vertical_strip_region(-2, 2),
+                _vertical_strip_region(-4, -1),
+                _vertical_strip_region(-3, 1),
+                _vertical_strip_region(1, 4),
+                _vertical_strip_region(0, 3),
+            )
+        )
     if str(operation_key) == "horizontal_halfplane_panel":
-        return _RegionSpec("upper_halfplane", {"y_min": -1}, "y >= -1")
+        return rng.choice(
+            (
+                _halfplane_region("upper_halfplane", {"y_min": -1}, variable="y", op="≥", value=-1),
+                _halfplane_region("upper_halfplane", {"y_min": 1}, variable="y", op="≥", value=1),
+                _halfplane_region("upper_halfplane", {"y_min": -3}, variable="y", op="≥", value=-3),
+                _halfplane_region("lower_halfplane", {"y_max": 2}, variable="y", op="≤", value=2),
+                _halfplane_region("lower_halfplane", {"y_max": 0}, variable="y", op="≤", value=0),
+            )
+        )
     if str(operation_key) == "two_inequality_panel":
-        return _RegionSpec("half_plane_intersection", {"x_min": -1, "y_max": 3}, "x >= -1 and y <= 3")
+        return rng.choice(
+            (
+                _intersection_region({"x_min": -1, "y_max": 3}),
+                _intersection_region({"x_max": -1, "y_max": 2}),
+                _intersection_region({"x_min": 1, "y_min": -2}),
+                _intersection_region({"x_max": 2, "y_min": 1}),
+                _intersection_region({"x_min": -3, "y_max": 0}),
+            )
+        )
     raise ValueError(f"unsupported locus panel query: {operation_key}")
 
 
 def _panel_distractor_regions(operation_key: str) -> Tuple[_RegionSpec, ...]:
+    """Return reusable distractor region families for the selected panel grammar.
+
+    Distractors are geometry primitives compatible with the visual panel layout;
+    winner placement, option count, and annotation binding stay outside this
+    shared helper.
+    """
     if str(operation_key) == "circle_panel":
         return (
-            _RegionSpec("circle", {"cx": 0, "cy": 0, "r": 3}, "x^2 + y^2 <= 9"),
-            _RegionSpec("circle", {"cx": 1, "cy": 0, "r": 4}, "(x - 1)^2 + y^2 <= 16"),
-            _RegionSpec("annulus", {"cx": 0, "cy": 0, "inner_r": 2, "outer_r": 4}, "4 <= x^2 + y^2 <= 16"),
-            _RegionSpec("vertical_strip", {"x_min": -2, "x_max": 2}, "-2 <= x <= 2"),
-            _RegionSpec("horizontal_strip", {"y_min": -2, "y_max": 2}, "-2 <= y <= 2"),
+            _circle_region(0, 0, 3),
+            _circle_region(1, 0, 4),
+            _circle_region(-1, 2, 3),
+            _annulus_region(0, 0, 2, 4),
+            _annulus_region(1, -1, 1, 4),
+            _vertical_strip_region(-2, 2),
+            _horizontal_strip_region(-2, 2),
+            _halfplane_region("upper_halfplane", {"y_min": -1}, variable="y", op="≥", value=-1),
         )
     if str(operation_key) == "vertical_strip_panel":
         return (
-            _RegionSpec("horizontal_strip", {"y_min": -2, "y_max": 2}, "-2 <= y <= 2"),
-            _RegionSpec("vertical_strip", {"x_min": -3, "x_max": 1}, "-3 <= x <= 1"),
-            _RegionSpec("right_halfplane", {"x_min": -2}, "x >= -2"),
-            _RegionSpec("left_halfplane", {"x_max": 2}, "x <= 2"),
-            _RegionSpec("circle", {"cx": 0, "cy": 0, "r": 3}, "x^2 + y^2 <= 9"),
+            _horizontal_strip_region(-2, 2),
+            _vertical_strip_region(-3, 1),
+            _vertical_strip_region(0, 4),
+            _halfplane_region("right_halfplane", {"x_min": -2}, variable="x", op="≥", value=-2),
+            _halfplane_region("left_halfplane", {"x_max": 2}, variable="x", op="≤", value=2),
+            _circle_region(0, 0, 3),
+            _intersection_region({"x_min": -1, "y_max": 3}),
         )
     if str(operation_key) == "horizontal_halfplane_panel":
         return (
-            _RegionSpec("lower_halfplane", {"y_max": -1}, "y <= -1"),
-            _RegionSpec("right_halfplane", {"x_min": -1}, "x >= -1"),
-            _RegionSpec("left_halfplane", {"x_max": -1}, "x <= -1"),
-            _RegionSpec("horizontal_strip", {"y_min": -1, "y_max": 3}, "-1 <= y <= 3"),
-            _RegionSpec("vertical_strip", {"x_min": -2, "x_max": 2}, "-2 <= x <= 2"),
+            _halfplane_region("lower_halfplane", {"y_max": -1}, variable="y", op="≤", value=-1),
+            _halfplane_region("upper_halfplane", {"y_min": 2}, variable="y", op="≥", value=2),
+            _halfplane_region("right_halfplane", {"x_min": -1}, variable="x", op="≥", value=-1),
+            _halfplane_region("left_halfplane", {"x_max": -1}, variable="x", op="≤", value=-1),
+            _horizontal_strip_region(-1, 3),
+            _vertical_strip_region(-2, 2),
+            _circle_region(0, 0, 3),
         )
     if str(operation_key) == "two_inequality_panel":
         return (
-            _RegionSpec("half_plane_intersection", {"x_max": -1, "y_max": 3}, "x <= -1 and y <= 3"),
-            _RegionSpec("half_plane_intersection", {"x_min": -1, "y_min": 3}, "x >= -1 and y >= 3"),
-            _RegionSpec("half_plane_intersection", {"x_min": 1, "y_max": 3}, "x >= 1 and y <= 3"),
-            _RegionSpec("half_plane_intersection", {"x_min": -1, "y_max": 1}, "x >= -1 and y <= 1"),
-            _RegionSpec("vertical_strip", {"x_min": -1, "x_max": 3}, "-1 <= x <= 3"),
+            _intersection_region({"x_max": -1, "y_max": 3}),
+            _intersection_region({"x_min": -1, "y_min": 3}),
+            _intersection_region({"x_min": 1, "y_max": 3}),
+            _intersection_region({"x_min": -1, "y_max": 1}),
+            _intersection_region({"x_max": 2, "y_min": -2}),
+            _vertical_strip_region(-1, 3),
+            _horizontal_strip_region(-2, 2),
+            _circle_region(0, 0, 3),
         )
     raise ValueError(f"unsupported locus panel query: {operation_key}")
 
@@ -844,11 +1024,16 @@ def _render_panel_scene(
         raise ValueError("locus_panel_count cannot exceed panel label pool length")
     label_pool = tuple(query.label_pool[: int(panel_count)])
     if str(query.winner_label) not in set(label_pool):
-        label_pool = tuple([str(query.winner_label), *[label for label in label_pool if label != str(query.winner_label)]])
-        label_pool = label_pool[: int(panel_count)]
+        raise ValueError("winner_label must be inside the active contiguous panel label set")
 
-    target_region = _panel_target_region(str(query.operation_key))
-    distractors = list(_panel_distractor_regions(str(query.operation_key)))
+    target_region = _panel_target_region(str(query.operation_key), rng)
+    distractors = [
+        region
+        for region in _panel_distractor_regions(str(query.operation_key))
+        if not _same_region(region, target_region)
+    ]
+    if len(distractors) < int(panel_count) - 1:
+        raise RuntimeError("locus panel distractor bank is too small for the selected panel count")
     rng.shuffle(distractors)
     region_by_label: Dict[str, _RegionSpec] = {}
     distractor_iter = iter(distractors)
@@ -862,8 +1047,22 @@ def _render_panel_scene(
         columns=int(columns),
         rows=int(rows),
     )
-    canvas_width = _resolve_int_param(params, rendering_defaults, "locus_panel_canvas_width", _DEFAULTS.panel_canvas_width)
-    canvas_height = _resolve_int_param(params, rendering_defaults, "locus_panel_canvas_height", _DEFAULTS.panel_canvas_height)
+    if int(panel_count) == 4:
+        canvas_width = _resolve_int_param(
+            params,
+            rendering_defaults,
+            "locus_panel_canvas_width_4",
+            _DEFAULTS.panel_canvas_width_4,
+        )
+        canvas_height = _resolve_int_param(
+            params,
+            rendering_defaults,
+            "locus_panel_canvas_height_4",
+            _DEFAULTS.panel_canvas_height_4,
+        )
+    else:
+        canvas_width = _resolve_int_param(params, rendering_defaults, "locus_panel_canvas_width", _DEFAULTS.panel_canvas_width)
+        canvas_height = _resolve_int_param(params, rendering_defaults, "locus_panel_canvas_height", _DEFAULTS.panel_canvas_height)
     top_reserved = _resolve_int_param(params, rendering_defaults, "locus_panel_top_reserved_px", _DEFAULTS.panel_top_reserved_px)
     image, background_meta = make_background_canvas(
         canvas_width=int(canvas_width),
@@ -998,7 +1197,7 @@ def _point_trace_payload(
                 "operation_key_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
-                "candidate_label_pool": list(rendered.candidate_points_by_label.keys()),
+                "candidate_label_pool": list(query.label_pool),
                 "locus_candidate_count_probabilities": dict(rendered.option_count_probabilities),
             },
         },
@@ -1094,7 +1293,7 @@ def _panel_trace_payload(
                 "operation_key_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
-                "candidate_label_pool": list(rendered.panels_by_label.keys()),
+                "candidate_label_pool": list(query.label_pool),
                 "locus_panel_count_probabilities": dict(rendered.option_count_probabilities),
             },
         },

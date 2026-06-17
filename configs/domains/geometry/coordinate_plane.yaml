@@ -180,8 +180,16 @@ rendering:
     locus_canvas_size_max: 760
     locus_graph_cells_min: 18
     locus_graph_cells_max: 20
+    locus_marker_radius_px: 11
+    locus_marker_radius_px_min: 10
+    locus_marker_radius_px_max: 14
+    locus_label_font_size_min: 28
+    locus_label_font_size_max: 42
+    locus_label_offset_px: 24
     locus_panel_canvas_width: 1040
     locus_panel_canvas_height: 760
+    locus_panel_canvas_width_4: 900
+    locus_panel_canvas_height_4: 840
     locus_panel_grid_min: -6
     locus_panel_grid_max: 6
     locus_panel_top_reserved_px: 58

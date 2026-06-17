@@ -11,14 +11,11 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import (
-    group_default,
     required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from trace.tasks.illustrations.shared.canvas_profiles import resolve_profile_render_params
 
 from .shared.output import (
@@ -32,12 +29,13 @@ from .shared.prompts import build_rpg_house_prompt_artifacts
 from .shared.rendering import (
     DEFAULT_CANVAS_HEIGHT,
     DEFAULT_CANVAS_WIDTH,
-    DEFAULT_TILE_PX,
     MAX_ROOM_COUNT,
     MIN_ROOM_COUNT,
     SCENE_ID,
-    render_rpg_house_scene,
+    render_rpg_house_profile_scene,
+    resolve_rpg_house_tile_px,
 )
+from .shared.sampling import select_count_from_support, select_feasible_count_from_support
 
 
 TASK_ID = "task_illustrations__rpg_house__door_state_count"
@@ -51,55 +49,23 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rende
 )
 
 
-def _select_room_count(
-    *,
-    instance_seed: int,
-    params: Mapping[str, Any],
-) -> tuple[int, Mapping[str, float]]:
-    return resolve_integer_choice(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        support_key="room_count_support",
-        explicit_key="room_count",
-        fallback_support=tuple(range(MIN_ROOM_COUNT, MAX_ROOM_COUNT + 1)),
-        namespace=f"{TASK_ID}:room_count",
-        balanced_flag_key="balanced_sampling",
-        use_instance_seed_cycle=True,
-    )
-
-
 def _select_target_count(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
     total_doors: int,
 ) -> tuple[int, Mapping[str, float]]:
-    configured = resolve_integer_support(
-        params,
+    return select_feasible_count_from_support(
+        instance_seed=int(instance_seed),
+        params=params,
         gen_defaults=_GEN_DEFAULTS,
-        key="door_state_count_support",
-        fallback=tuple(range(1, MAX_ROOM_COUNT + 1)),
+        support_key="door_state_count_support",
+        explicit_key="door_state_count",
+        fallback_support=tuple(range(1, MAX_ROOM_COUNT + 1)),
+        feasible=lambda value: 1 <= int(value) <= max(1, int(total_doors) - 1),
+        namespace=f"{TASK_ID}:door_state_count",
+        empty_context=f"total_doors={total_doors}",
     )
-    support = tuple(value for value in configured if 1 <= int(value) <= max(1, int(total_doors) - 1))
-    if not support:
-        raise ValueError(f"door_state_count_support has no feasible values for total_doors={total_doors}")
-    explicit = params.get("door_state_count")
-    if explicit is not None:
-        selected = int(explicit)
-        if selected not in set(support):
-            raise ValueError(f"door_state_count must be in {support}, got {selected}")
-        return selected, uniform_probability_map(support, selected=selected)
-    if params.get("_sample_cursor") is not None:
-        index = abs(int(params["_sample_cursor"]))
-    else:
-        index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:door_state_count",
-        )
-    selected = int(support[int(index) % len(support)])
-    return selected, uniform_probability_map(support)
 
 
 def _door_states_for_query(
@@ -141,9 +107,14 @@ class IllustrationsRpgHouseDoorStateCountTask:
             task_id=TASK_ID,
             namespace=f"{TASK_ID}:query",
         )
-        room_count, room_count_probabilities = _select_room_count(
+        room_count, room_count_probabilities = select_count_from_support(
             instance_seed=int(instance_seed),
             params=task_params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key="room_count_support",
+            explicit_key="room_count",
+            fallback_support=tuple(range(MIN_ROOM_COUNT, MAX_ROOM_COUNT + 1)),
+            namespace=f"{TASK_ID}:room_count",
         )
         render_params = resolve_profile_render_params(
             task_params,
@@ -155,6 +126,7 @@ class IllustrationsRpgHouseDoorStateCountTask:
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}:canvas_profile",
         )
+        tile_px = resolve_rpg_house_tile_px(task_params, _RENDER_DEFAULTS)
         required_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             [
@@ -180,17 +152,11 @@ class IllustrationsRpgHouseDoorStateCountTask:
         for attempt in range(max(1, int(max_attempts))):
             render_seed = hash64(int(instance_seed), f"{TASK_ID}:render", int(attempt))
             try:
-                probe_scene = render_rpg_house_scene(
+                probe_scene = render_rpg_house_profile_scene(
                     render_seed,
-                    width=int(render_params["canvas_width"]),
-                    height=int(render_params["canvas_height"]),
-                    tile_px=int(task_params.get("tile_px", group_default(_RENDER_DEFAULTS, "rpg_house_tile_px", DEFAULT_TILE_PX))),
+                    render_params=render_params,
+                    tile_px=tile_px,
                     room_count=int(room_count),
-                    render_metadata={
-                        "canvas_profile": str(render_params.get("canvas_profile", "")),
-                        "canvas_profile_size": list(render_params.get("canvas_profile_size", [])),
-                        "canvas_profile_probabilities": dict(render_params.get("canvas_profile_probabilities", {})),
-                    },
                 )
                 target_count, target_count_probabilities = _select_target_count(
                     instance_seed=int(hash64(int(instance_seed), "target_count", int(attempt))),
@@ -203,18 +169,12 @@ class IllustrationsRpgHouseDoorStateCountTask:
                     target_count=int(target_count),
                     instance_seed=int(hash64(int(instance_seed), "door_states", int(attempt))),
                 )
-                scene = render_rpg_house_scene(
+                scene = render_rpg_house_profile_scene(
                     render_seed,
-                    width=int(render_params["canvas_width"]),
-                    height=int(render_params["canvas_height"]),
-                    tile_px=int(task_params.get("tile_px", group_default(_RENDER_DEFAULTS, "rpg_house_tile_px", DEFAULT_TILE_PX))),
+                    render_params=render_params,
+                    tile_px=tile_px,
                     room_count=int(room_count),
                     door_states=door_states,
-                    render_metadata={
-                        "canvas_profile": str(render_params.get("canvas_profile", "")),
-                        "canvas_profile_size": list(render_params.get("canvas_profile_size", [])),
-                        "canvas_profile_probabilities": dict(render_params.get("canvas_profile_probabilities", {})),
-                    },
                 )
                 actual_matching = tuple(sorted(str(door.door_id) for door in scene.doors if str(door.state) == str(target_state)))
                 if actual_matching == matching_door_ids:

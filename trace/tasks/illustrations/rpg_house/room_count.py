@@ -10,13 +10,11 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import (
-    group_default,
     required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.support_sampling import resolve_integer_choice
 from trace.tasks.illustrations.shared.canvas_profiles import resolve_profile_render_params
 
 from .shared.output import (
@@ -30,12 +28,13 @@ from .shared.prompts import build_rpg_house_prompt_artifacts
 from .shared.rendering import (
     DEFAULT_CANVAS_HEIGHT,
     DEFAULT_CANVAS_WIDTH,
-    DEFAULT_TILE_PX,
     MAX_ROOM_COUNT,
     MIN_ROOM_COUNT,
     SCENE_ID,
-    render_rpg_house_scene,
+    render_rpg_house_profile_scene,
+    resolve_rpg_house_tile_px,
 )
+from .shared.sampling import select_count_from_support
 
 
 TASK_ID = "task_illustrations__rpg_house__room_count"
@@ -68,7 +67,7 @@ class IllustrationsRpgHouseRoomCountTask:
             task_id=TASK_ID,
             namespace=f"{TASK_ID}:query",
         )
-        room_count, room_count_probabilities = resolve_integer_choice(
+        room_count, room_count_probabilities = select_count_from_support(
             instance_seed=int(instance_seed),
             params=task_params,
             gen_defaults=_GEN_DEFAULTS,
@@ -76,8 +75,6 @@ class IllustrationsRpgHouseRoomCountTask:
             explicit_key="room_count",
             fallback_support=tuple(range(MIN_ROOM_COUNT, MAX_ROOM_COUNT + 1)),
             namespace=f"{TASK_ID}:room_count",
-            balanced_flag_key="balanced_sampling",
-            use_instance_seed_cycle=True,
         )
         render_params = resolve_profile_render_params(
             task_params,
@@ -89,6 +86,7 @@ class IllustrationsRpgHouseRoomCountTask:
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}:canvas_profile",
         )
+        tile_px = resolve_rpg_house_tile_px(task_params, _RENDER_DEFAULTS)
         required_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             [
@@ -105,18 +103,12 @@ class IllustrationsRpgHouseRoomCountTask:
             context="prompt defaults for RPG house room-count task",
         )
 
-        scene = render_rpg_house_scene(
+        scene = render_rpg_house_profile_scene(
             int(instance_seed),
-            width=int(render_params["canvas_width"]),
-            height=int(render_params["canvas_height"]),
-            tile_px=int(task_params.get("tile_px", group_default(_RENDER_DEFAULTS, "rpg_house_tile_px", DEFAULT_TILE_PX))),
+            render_params=render_params,
+            tile_px=tile_px,
             room_count=int(room_count),
             sample_mixed_door_states=True,
-            render_metadata={
-                "canvas_profile": str(render_params.get("canvas_profile", "")),
-                "canvas_profile_size": list(render_params.get("canvas_profile_size", [])),
-                "canvas_profile_probabilities": dict(render_params.get("canvas_profile_probabilities", {})),
-            },
         )
         room_points_by_id = room_point_map(scene)
         annotation_value = [room_points_by_id[str(room.room_id)] for room in scene.rooms]

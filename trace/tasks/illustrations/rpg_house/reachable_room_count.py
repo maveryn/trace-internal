@@ -13,16 +13,12 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import (
-    group_default,
     required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from trace.tasks.illustrations.shared.canvas_profiles import resolve_profile_render_params
-from trace.tasks.illustrations.shared.task_support import uniform_string_probability_map
 
 from .shared.output import (
     keyed_point_set_map_projection,
@@ -33,16 +29,17 @@ from .shared.output import (
     rpg_house_scene_ir,
 )
 from .shared.prompts import build_rpg_house_prompt_artifacts
+from .shared.relations import connected_component, door_edges, grow_reachable_subset, reachable_room_ids
 from .shared.rendering import (
     DEFAULT_CANVAS_HEIGHT,
     DEFAULT_CANVAS_WIDTH,
-    DEFAULT_TILE_PX,
     MAX_ROOM_COUNT,
     MIN_ROOM_COUNT,
     SCENE_ID,
-    reachable_room_ids,
-    render_rpg_house_scene,
+    render_rpg_house_profile_scene,
+    resolve_rpg_house_tile_px,
 )
+from .shared.sampling import select_count_from_support, select_feasible_count_from_support, select_string_from_support
 
 
 TASK_ID = "task_illustrations__rpg_house__reachable_room_count"
@@ -64,79 +61,23 @@ class _ReachableCountSample:
     start_room_probabilities: Mapping[str, float]
 
 
-def _select_room_count(
-    *,
-    instance_seed: int,
-    params: Mapping[str, Any],
-) -> tuple[int, Mapping[str, float]]:
-    return resolve_integer_choice(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        support_key="room_count_support",
-        explicit_key="room_count",
-        fallback_support=tuple(range(MIN_ROOM_COUNT, MAX_ROOM_COUNT + 1)),
-        namespace=f"{TASK_ID}:room_count",
-        balanced_flag_key="balanced_sampling",
-        use_instance_seed_cycle=True,
-    )
-
-
 def _select_reachable_count(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
     max_count: int,
 ) -> tuple[int, Mapping[str, float]]:
-    configured = resolve_integer_support(
-        params,
+    return select_feasible_count_from_support(
+        instance_seed=int(instance_seed),
+        params=params,
         gen_defaults=_GEN_DEFAULTS,
-        key="reachable_room_count_support",
-        fallback=tuple(range(0, MAX_ROOM_COUNT)),
+        support_key="reachable_room_count_support",
+        explicit_key="reachable_room_count",
+        fallback_support=tuple(range(0, MAX_ROOM_COUNT)),
+        feasible=lambda value: 0 <= int(value) <= int(max_count),
+        namespace=f"{TASK_ID}:reachable_room_count",
+        empty_context=f"max_count={max_count}",
     )
-    support = tuple(value for value in configured if 0 <= int(value) <= int(max_count))
-    if not support:
-        raise ValueError(f"reachable_room_count_support has no feasible values for max_count={max_count}")
-    explicit = params.get("reachable_room_count")
-    if explicit is not None:
-        selected = int(explicit)
-        if selected not in set(support):
-            raise ValueError(f"reachable_room_count must be in {support}, got {selected}")
-        return selected, uniform_probability_map(support, selected=selected)
-    if params.get("_sample_cursor") is not None:
-        index = abs(int(params["_sample_cursor"]))
-    else:
-        index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:reachable_room_count",
-        )
-    selected = int(support[int(index) % len(support)])
-    return selected, uniform_probability_map(support)
-
-
-def _door_edges(doors: Sequence[Any]) -> dict[str, list[tuple[str, str]]]:
-    edges: dict[str, list[tuple[str, str]]] = {}
-    for door in doors:
-        room_a = str(door.room_a_id)
-        room_b = str(door.room_b_id)
-        door_id = str(door.door_id)
-        edges.setdefault(room_a, []).append((room_b, door_id))
-        edges.setdefault(room_b, []).append((room_a, door_id))
-    return {room_id: sorted(values) for room_id, values in edges.items()}
-
-
-def _connected_component(edges: Mapping[str, Sequence[tuple[str, str]]], *, start_room_id: str) -> set[str]:
-    seen = {str(start_room_id)}
-    queue = [str(start_room_id)]
-    while queue:
-        room_id = queue.pop(0)
-        for other_room_id, _door_id in edges.get(room_id, ()):
-            if str(other_room_id) in seen:
-                continue
-            seen.add(str(other_room_id))
-            queue.append(str(other_room_id))
-    return seen
 
 
 def _select_start_room(
@@ -150,48 +91,17 @@ def _select_start_room(
     support = tuple(
         room_id
         for room_id in sorted(str(room_id) for room_id in room_ids)
-        if len(_connected_component(edges, start_room_id=room_id)) >= int(target_count) + 1
+        if len(connected_component(edges, start_room_id=room_id)) >= int(target_count) + 1
     )
     if not support:
         raise ValueError(f"no start room can support reachable count {target_count}")
-    explicit = params.get("start_room_id")
-    if explicit is not None:
-        selected = str(explicit)
-        if selected not in set(support):
-            raise ValueError(f"start_room_id must be one of {support}")
-        return selected, uniform_string_probability_map(support, selected=selected)
-    index = resolve_selection_index(
+    return select_string_from_support(
         params=params,
-        instance_seed=int(instance_seed),
+        support=support,
+        explicit_key="start_room_id",
         namespace=f"{TASK_ID}:start_room_id:{target_count}",
+        instance_seed=int(instance_seed),
     )
-    selected = support[int(index) % len(support)]
-    return str(selected), uniform_string_probability_map(support)
-
-
-def _grow_reachable_subset(
-    *,
-    edges: Mapping[str, Sequence[tuple[str, str]]],
-    start_room_id: str,
-    target_count: int,
-    instance_seed: int,
-) -> tuple[tuple[str, ...], frozenset[str]]:
-    selected_rooms = {str(start_room_id)}
-    open_door_ids: set[str] = set()
-    rng = random.Random(hash64(int(instance_seed), f"{TASK_ID}:{start_room_id}:{target_count}"))
-    while len(selected_rooms) < int(target_count) + 1:
-        frontier = sorted(
-            (str(room_id), str(other_room_id), str(door_id))
-            for room_id in selected_rooms
-            for other_room_id, door_id in edges.get(room_id, ())
-            if str(other_room_id) not in selected_rooms
-        )
-        if not frontier:
-            raise ValueError(f"could not grow reachable subset to count {target_count}")
-        _room_id, other_room_id, door_id = frontier[int(rng.randrange(len(frontier)))]
-        selected_rooms.add(str(other_room_id))
-        open_door_ids.add(str(door_id))
-    return tuple(sorted(room_id for room_id in selected_rooms if room_id != str(start_room_id))), frozenset(open_door_ids)
 
 
 def _sample_reachable_room_count(
@@ -207,7 +117,7 @@ def _sample_reachable_room_count(
         params=params,
         max_count=len(room_ids) - 1,
     )
-    edges = _door_edges(doors)
+    edges = door_edges(doors)
     start_room_id, start_probabilities = _select_start_room(
         params=params,
         room_ids=room_ids,
@@ -215,11 +125,11 @@ def _sample_reachable_room_count(
         target_count=int(target_count),
         instance_seed=int(instance_seed),
     )
-    reachable_ids, open_door_ids = _grow_reachable_subset(
+    reachable_ids, open_door_ids = grow_reachable_subset(
         edges=edges,
         start_room_id=start_room_id,
         target_count=int(target_count),
-        instance_seed=int(instance_seed),
+        rng=random.Random(hash64(int(instance_seed), f"{TASK_ID}:{start_room_id}:{target_count}")),
     )
     door_states = {str(door.door_id): ("open" if str(door.door_id) in open_door_ids else "closed") for door in doors}
     return _ReachableCountSample(
@@ -251,9 +161,14 @@ class IllustrationsRpgHouseReachableRoomCountTask:
             task_id=TASK_ID,
             namespace=f"{TASK_ID}:query",
         )
-        room_count, room_count_probabilities = _select_room_count(
+        room_count, room_count_probabilities = select_count_from_support(
             instance_seed=int(instance_seed),
             params=task_params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key="room_count_support",
+            explicit_key="room_count",
+            fallback_support=tuple(range(MIN_ROOM_COUNT, MAX_ROOM_COUNT + 1)),
+            namespace=f"{TASK_ID}:room_count",
         )
         render_params = resolve_profile_render_params(
             task_params,
@@ -265,6 +180,7 @@ class IllustrationsRpgHouseReachableRoomCountTask:
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}:canvas_profile",
         )
+        tile_px = resolve_rpg_house_tile_px(task_params, _RENDER_DEFAULTS)
         required_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             [
@@ -287,17 +203,11 @@ class IllustrationsRpgHouseReachableRoomCountTask:
         for attempt in range(max(1, int(max_attempts))):
             render_seed = hash64(int(instance_seed), f"{TASK_ID}:render", int(attempt))
             try:
-                probe_scene = render_rpg_house_scene(
+                probe_scene = render_rpg_house_profile_scene(
                     render_seed,
-                    width=int(render_params["canvas_width"]),
-                    height=int(render_params["canvas_height"]),
-                    tile_px=int(task_params.get("tile_px", group_default(_RENDER_DEFAULTS, "rpg_house_tile_px", DEFAULT_TILE_PX))),
+                    render_params=render_params,
+                    tile_px=tile_px,
                     room_count=int(room_count),
-                    render_metadata={
-                        "canvas_profile": str(render_params.get("canvas_profile", "")),
-                        "canvas_profile_size": list(render_params.get("canvas_profile_size", [])),
-                        "canvas_profile_probabilities": dict(render_params.get("canvas_profile_probabilities", {})),
-                    },
                 )
                 sample = _sample_reachable_room_count(
                     params=task_params,
@@ -305,19 +215,13 @@ class IllustrationsRpgHouseReachableRoomCountTask:
                     doors=probe_scene.doors,
                     instance_seed=int(hash64(int(instance_seed), "sample", int(attempt))),
                 )
-                scene = render_rpg_house_scene(
+                scene = render_rpg_house_profile_scene(
                     render_seed,
-                    width=int(render_params["canvas_width"]),
-                    height=int(render_params["canvas_height"]),
-                    tile_px=int(task_params.get("tile_px", group_default(_RENDER_DEFAULTS, "rpg_house_tile_px", DEFAULT_TILE_PX))),
+                    render_params=render_params,
+                    tile_px=tile_px,
                     room_count=int(room_count),
                     player_room_id=sample.start_room_id,
                     door_states=sample.door_states,
-                    render_metadata={
-                        "canvas_profile": str(render_params.get("canvas_profile", "")),
-                        "canvas_profile_size": list(render_params.get("canvas_profile_size", [])),
-                        "canvas_profile_probabilities": dict(render_params.get("canvas_profile_probabilities", {})),
-                    },
                 )
                 actual_reachable_ids = tuple(
                     room_id

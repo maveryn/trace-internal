@@ -9,12 +9,12 @@ from trace.tasks.illustrations.rpg_house.door_state_count import (
 from trace.tasks.illustrations.rpg_house.reachable_room_label import TASK_ID as REACHABLE_TASK_ID
 from trace.tasks.illustrations.rpg_house.reachable_room_count import TASK_ID as REACHABLE_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_house.room_count import TASK_ID as ROOM_COUNT_TASK_ID
+from trace.tasks.illustrations.rpg_house.shared.relations import reachable_room_ids
 from trace.tasks.illustrations.rpg_house.shared.rendering import (
     MAX_ROOM_COUNT,
     MIN_ROOM_COUNT,
     THEMES,
     draw_rpg_house_debug_overlay,
-    reachable_room_ids,
     render_rpg_house_scene,
 )
 

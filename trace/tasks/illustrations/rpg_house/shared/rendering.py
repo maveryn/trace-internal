@@ -8,6 +8,7 @@ from typing import Any, Mapping, Sequence
 
 from PIL import Image, ImageDraw
 
+from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.illustrations.shared.object_rendering import (
     IllustrationObjectSpec,
     RenderContext,
@@ -17,6 +18,7 @@ from trace.tasks.illustrations.shared.object_variants import RENDERER_STYLE_TOP_
 from trace.tasks.illustrations.shared.option_rendering import draw_label_badge
 from trace.tasks.illustrations.shared.pixel_world_objects import CANONICAL_TILE_PX
 
+from .relations import room_graph
 from .state import BBox, RpgHouseDoor, RpgHouseEntity, RpgHouseRoom, RpgHouseScene, TileBox
 
 
@@ -271,6 +273,47 @@ def render_rpg_house_scene(
     )
 
 
+def resolve_rpg_house_tile_px(params: Mapping[str, Any], render_defaults: Mapping[str, Any]) -> int:
+    """Resolve the scene tile size from task params or scene render defaults."""
+
+    return int(params.get("tile_px", group_default(render_defaults, "rpg_house_tile_px", DEFAULT_TILE_PX)))
+
+
+def rpg_house_profile_metadata(render_params: Mapping[str, Any]) -> dict[str, Any]:
+    """Return render trace metadata for the selected shared canvas profile."""
+
+    return {
+        "canvas_profile": str(render_params.get("canvas_profile", "")),
+        "canvas_profile_size": list(render_params.get("canvas_profile_size", [])),
+        "canvas_profile_probabilities": dict(render_params.get("canvas_profile_probabilities", {})),
+    }
+
+
+def render_rpg_house_profile_scene(
+    seed: int,
+    *,
+    render_params: Mapping[str, Any],
+    tile_px: int,
+    room_count: int,
+    render_metadata: Mapping[str, Any] | None = None,
+    **scene_kwargs: Any,
+) -> RpgHouseScene:
+    """Render an RPG house using resolved canvas-profile parameters."""
+
+    metadata = rpg_house_profile_metadata(render_params)
+    if render_metadata:
+        metadata.update({str(key): value for key, value in render_metadata.items()})
+    return render_rpg_house_scene(
+        int(seed),
+        width=int(render_params["canvas_width"]),
+        height=int(render_params["canvas_height"]),
+        tile_px=int(tile_px),
+        room_count=int(room_count),
+        render_metadata=metadata,
+        **scene_kwargs,
+    )
+
+
 def draw_rpg_house_debug_overlay(scene: RpgHouseScene) -> Image.Image:
     """Return an overlay image with room, door, and fixture bboxes."""
 
@@ -285,39 +328,6 @@ def draw_rpg_house_debug_overlay(scene: RpgHouseScene) -> Image.Image:
     for entity in scene.entities:
         draw.rectangle(entity.bbox_xyxy, outline=(239, 173, 42, 220), width=2)
     return Image.alpha_composite(image, overlay).convert("RGB")
-
-
-def room_graph(doors: Sequence[RpgHouseDoor]) -> dict[str, list[dict[str, str]]]:
-    """Return an adjacency map with door states."""
-
-    graph: dict[str, list[dict[str, str]]] = {}
-    for door in doors:
-        graph.setdefault(str(door.room_a_id), []).append(
-            {"room_id": str(door.room_b_id), "door_id": str(door.door_id), "state": str(door.state)}
-        )
-        graph.setdefault(str(door.room_b_id), []).append(
-            {"room_id": str(door.room_a_id), "door_id": str(door.door_id), "state": str(door.state)}
-        )
-    return {key: sorted(values, key=lambda item: (item["room_id"], item["door_id"])) for key, values in graph.items()}
-
-
-def reachable_room_ids(doors: Sequence[RpgHouseDoor], *, start_room_id: str) -> tuple[str, ...]:
-    """Return rooms reachable through open doors from ``start_room_id``."""
-
-    graph = room_graph(doors)
-    seen = {str(start_room_id)}
-    queue = [str(start_room_id)]
-    while queue:
-        room_id = queue.pop(0)
-        for edge in graph.get(room_id, []):
-            if str(edge["state"]) not in PASSABLE_DOOR_STATES:
-                continue
-            other = str(edge["room_id"])
-            if other in seen:
-                continue
-            seen.add(other)
-            queue.append(other)
-    return tuple(sorted(seen))
 
 
 def _sample_layout(*, width: int, height: int, tile_px: int) -> RpgHouseLayout:
@@ -885,7 +895,8 @@ __all__ = [
     "SCENE_ID",
     "THEMES",
     "draw_rpg_house_debug_overlay",
-    "reachable_room_ids",
+    "render_rpg_house_profile_scene",
     "render_rpg_house_scene",
-    "room_graph",
+    "resolve_rpg_house_tile_px",
+    "rpg_house_profile_metadata",
 ]

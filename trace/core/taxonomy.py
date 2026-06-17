@@ -129,7 +129,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_charts__heatmap__colorbar_threshold_cell_count": _entry("charts", "heatmap", "charts", "heatmap"),
     "task_charts__heatmap__condition_run_extremum_label": _entry("charts", "heatmap", "charts", "heatmap"),
     "task_charts__hexbin_density__threshold_bin_count": _entry("charts", "hexbin_density", "charts", "hexbin_density"),
-    "task_charts__histogram__bin_count_between_values": _entry("charts", "histogram", "charts", "histogram"),
     "task_charts__histogram__cumulative_rank_bin_label": _entry("charts", "histogram", "charts", "histogram"),
     "task_charts__histogram__interval_mass": _entry("charts", "histogram", "charts", "histogram"),
     "task_charts__marker_map__marker_region_extremum_label": _entry("charts", "marker_map", "charts", "marker_map"),
@@ -889,9 +888,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "illustrations", "pixel_village", "illustrations", "pixel_village"
     ),
     "task_illustrations__rpg_house__door_state_count": _entry(
-        "illustrations", "rpg_house", "illustrations", "rpg_house"
-    ),
-    "task_illustrations__rpg_house__reachable_room_label": _entry(
         "illustrations", "rpg_house", "illustrations", "rpg_house"
     ),
     "task_illustrations__rpg_house__reachable_room_count": _entry(

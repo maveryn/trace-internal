@@ -21,9 +21,6 @@ generation:
         - 6
         - 7
         - 8
-    task_illustrations__rpg_house__reachable_room_label:
-      query_id_support:
-        - single
     task_illustrations__rpg_house__reachable_room_count:
       query_id_support:
         - single
@@ -58,11 +55,6 @@ rendering:
       rpg_house_canvas_width: 960
       rpg_house_canvas_height: 720
       rpg_house_tile_px: 40
-    task_illustrations__rpg_house__reachable_room_label:
-      rpg_house_canvas_width: 960
-      rpg_house_canvas_height: 720
-      rpg_house_tile_px: 40
-      rpg_house_reachable_room_count: 5
     task_illustrations__rpg_house__reachable_room_count:
       rpg_house_canvas_width: 960
       rpg_house_canvas_height: 720
@@ -84,16 +76,6 @@ prompt:
       annotation_hint_rpg_house_door_state_count: set "annotation" to one [x, y] point on each counted door in image pixel coordinates
       json_example_rpg_house_door_state_count: '{"annotation":[[320,246],[480,486],[640,246]],"answer":3}'
       json_example_answer_only_rpg_house_door_state_count: '{"answer":3}'
-    task_illustrations__rpg_house__reachable_room_label:
-      bundle_id: illustrations_rpg_house_v0
-      scene_key: rpg_house_canvas
-      task_key: rpg_house_reachable_room_label_task
-      json_output_contract: 'Return JSON with keys "annotation" and "answer".'
-      json_output_contract_answer_only: 'Return JSON with key "answer".'
-      answer_hint_rpg_house_reachable_room: set "answer" to the selected room letter
-      annotation_hint_rpg_house_reachable_room: set "annotation" to the [x0, y0, x1, y1] box around the selected room in image pixel coordinates
-      json_example_rpg_house_reachable_room: '{"annotation":[612,96,948,384],"answer":"C"}'
-      json_example_answer_only_rpg_house_reachable_room: '{"answer":"C"}'
     task_illustrations__rpg_house__reachable_room_count:
       bundle_id: illustrations_rpg_house_v0
       scene_key: rpg_house_canvas

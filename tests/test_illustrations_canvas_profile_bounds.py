@@ -41,7 +41,6 @@ MIGRATED_ILLUSTRATION_TASK_IDS: tuple[str, ...] = (
     "task_illustrations__pixel_village__rotated_tile_label",
     "task_illustrations__pixel_village__swapped_tile_pair_label",
     "task_illustrations__pixel_village__territory_object_count",
-    "task_illustrations__rpg_house__reachable_room_label",
     "task_illustrations__rpg_house__room_count",
 )
 

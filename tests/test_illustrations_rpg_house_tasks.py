@@ -6,7 +6,6 @@ from trace.tasks.illustrations.rpg_house.door_state_count import (
     OPEN_DOOR_COUNT_QUERY_ID,
     TASK_ID as DOOR_STATE_COUNT_TASK_ID,
 )
-from trace.tasks.illustrations.rpg_house.reachable_room_label import TASK_ID as REACHABLE_TASK_ID
 from trace.tasks.illustrations.rpg_house.reachable_room_count import TASK_ID as REACHABLE_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_house.room_count import TASK_ID as ROOM_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_house.shared.relations import reachable_room_ids
@@ -121,55 +120,6 @@ def test_rpg_house_renderer_samples_room_count_range() -> None:
         seen_counts.add(len(scene.rooms))
         assert MIN_ROOM_COUNT <= len(scene.rooms) <= MAX_ROOM_COUNT
     assert seen_counts == set(range(MIN_ROOM_COUNT, MAX_ROOM_COUNT + 1))
-
-
-def test_rpg_house_reachable_room_label_contract() -> None:
-    task = create_task(REACHABLE_TASK_ID)
-    out = task.generate(
-        2026061601,
-        params={
-            "canvas_profile": "landscape",
-        },
-        max_attempts=20,
-    )
-    assert out.scene_id == "rpg_house"
-    assert out.query_id == "single"
-    assert out.answer_gt.type == "string"
-    assert out.answer_gt.value in {"A", "B", "C", "D"}
-    assert out.annotation_gt.type == "bbox"
-    width, height = out.image.size
-    _assert_bbox_inside_canvas(out.annotation_gt.value, width=width, height=height)
-    trace = out.trace_payload
-    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_house_v0"
-    assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_house"
-    assert trace["projected_annotation"]["type"] == "bbox"
-    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
-    render_map = trace["render_map"]
-    assert render_map["answer_room_id"] == trace["query_spec"]["params"]["answer_room_id"]
-    assert render_map["answer_room_bbox_px"] == out.annotation_gt.value
-    assert len(render_map["candidate_room_ids"]) == 4
-    rooms = {room["room_id"]: room for room in trace["scene_ir"]["rooms"]}
-    assert rooms[render_map["answer_room_id"]]["label"] == out.answer_gt.value
-    assert rooms[render_map["start_room_id"]]["label"] is None
-    doors = trace["scene_ir"]["doors"]
-    reachable = reachable_room_ids(
-        tuple(
-            type(
-                "Door",
-                (),
-                {
-                    "room_a_id": door["room_a_id"],
-                    "room_b_id": door["room_b_id"],
-                    "door_id": door["door_id"],
-                    "state": door["state"],
-                },
-            )()
-            for door in doors
-        ),
-        start_room_id=render_map["start_room_id"],
-    )
-    reachable_candidates = [room_id for room_id in render_map["candidate_room_ids"] if room_id in set(reachable)]
-    assert reachable_candidates == [render_map["answer_room_id"]]
 
 
 def test_rpg_house_room_count_contract() -> None:
@@ -304,22 +254,3 @@ def test_rpg_house_door_state_count_contract() -> None:
             trace["render_map"]["matching_door_ids"]
         )
         assert set(states.values()) == {"open", "closed"}
-
-
-def test_rpg_house_reachable_room_support_is_sampled() -> None:
-    seen_starts: set[str] = set()
-    seen_answers: set[str] = set()
-    seen_answer_labels: set[str] = set()
-    task = create_task(REACHABLE_TASK_ID)
-    for seed in range(20):
-        out = task.generate(1000 + seed, params={"canvas_profile": "square"}, max_attempts=20)
-        params = out.trace_payload["query_spec"]["params"]
-        seen_starts.add(params["start_room_id"])
-        seen_answers.add(params["answer_room_id"])
-        seen_answer_labels.add(out.answer_gt.value)
-        assert params["answer_room_id"] in params["candidate_room_ids"]
-        assert params["start_room_id"] not in params["candidate_room_ids"]
-        assert params["reachable_candidate_room_ids"] == [params["answer_room_id"]]
-    assert len(seen_starts) >= 4
-    assert len(seen_answers) >= 4
-    assert seen_answer_labels == {"A", "B", "C", "D"}

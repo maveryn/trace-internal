@@ -44,6 +44,12 @@ def rounded_bboxes(bboxes: Sequence[Sequence[float]]) -> list[list[float]]:
     return [[round(float(value), 3) for value in bbox] for bbox in bboxes]
 
 
+def rounded_points(points: Sequence[Sequence[float]]) -> list[list[float]]:
+    """Return JSON-stable rounded point coordinates."""
+
+    return [[round(float(value), 3) for value in point] for point in points]
+
+
 def keyed_bboxes_for_roles(
     *,
     roles: Sequence[str],
@@ -98,4 +104,5 @@ __all__ = [
     "role_to_label_map",
     "roles_by_label",
     "rounded_bboxes",
+    "rounded_points",
 ]

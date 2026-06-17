@@ -4865,18 +4865,18 @@ prompt:
         of all nodes in the connected component containing the asked node, including
         the asked node itself
       answer_hint: set "answer" to that edge label as a lowercase string
-      json_example: '{"annotation":[[274,202]],"answer":"feeds"}'
+      json_example: '{"annotation":[248,190,300,214],"answer":"feeds"}'
       json_example_answer_only: '{"answer":"feeds"}'
       object_description_undirected: a graph with text labels on its edges
-      annotation_hint_edge_between_nodes_label: set "annotation" to an array containing
-        one [x,y] pixel point at the center of the visible text label on the edge
-        between {source_label} and {target_label}
-      annotation_hint_directed_edge_between_nodes_label: set "annotation" to an array
-        containing one [x,y] pixel point at the center of the visible text label
-        on the arrow from {source_label} to {target_label}
-      annotation_hint_shortest_path_first_edge_label: set "annotation" to an array
-        containing one [x0,y0,x1,y1] box around the visible text label on the first
-        {path_edge_term} along the unique shortest path from {source_label} to {target_label}{path_follow_clause}
+      annotation_hint_edge_between_nodes_label: set "annotation" to one [x0,y0,x1,y1]
+        pixel box around the visible text label on the edge between {source_label}
+        and {target_label}
+      annotation_hint_directed_edge_between_nodes_label: set "annotation" to one
+        [x0,y0,x1,y1] pixel box around the visible text label on the arrow from
+        {source_label} to {target_label}
+      annotation_hint_shortest_path_first_edge_label: set "annotation" to one [x0,y0,x1,y1]
+        pixel box around the visible text label on the first {path_edge_term} along
+        the unique shortest path from {source_label} to {target_label}{path_follow_clause}
     graph_node_link_reachable_count_after_edge_edit_internal:
       bundle_id: graph_relation_v0
       scene_key: single_graph_relation
@@ -5597,18 +5597,18 @@ prompt:
         of all nodes in the connected component containing the asked node, including
         the asked node itself
       answer_hint: set "answer" to that edge label as a lowercase string
-      json_example: '{"annotation":[[274,202]],"answer":"feeds"}'
+      json_example: '{"annotation":[248,190,300,214],"answer":"feeds"}'
       json_example_answer_only: '{"answer":"feeds"}'
       object_description_undirected: a graph with text labels on its edges
-      annotation_hint_edge_between_nodes_label: set "annotation" to an array containing
-        one [x,y] pixel point at the center of the visible text label on the edge
-        between {source_label} and {target_label}
-      annotation_hint_directed_edge_between_nodes_label: set "annotation" to an array
-        containing one [x,y] pixel point at the center of the visible text label
-        on the arrow from {source_label} to {target_label}
-      annotation_hint_shortest_path_first_edge_label: set "annotation" to an array
-        containing one [x0,y0,x1,y1] box around the visible text label on the first
-        {path_edge_term} along the unique shortest path from {source_label} to {target_label}{path_follow_clause}
+      annotation_hint_edge_between_nodes_label: set "annotation" to one [x0,y0,x1,y1]
+        pixel box around the visible text label on the edge between {source_label}
+        and {target_label}
+      annotation_hint_directed_edge_between_nodes_label: set "annotation" to one
+        [x0,y0,x1,y1] pixel box around the visible text label on the arrow from
+        {source_label} to {target_label}
+      annotation_hint_shortest_path_first_edge_label: set "annotation" to one [x0,y0,x1,y1]
+        pixel box around the visible text label on the first {path_edge_term} along
+        the unique shortest path from {source_label} to {target_label}{path_follow_clause}
     task_graph__node_link__edge_color_count:
       bundle_id: graph_counting_v0
       scene_key: single_graph_counting
@@ -5663,10 +5663,10 @@ prompt:
         points at the centers of all nodes with out-degree {query_degree}; use an
         empty array when the answer is zero
       answer_hint: set "answer" to the count of matching edge labels as an integer
-      json_example: '{"annotation":[[274,202],[446,250]],"answer":2}'
+      json_example: '{"annotation":[[248,190,300,214],[420,238,472,262]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      annotation_hint: set "annotation" to an array of [x,y] pixel points at the
-        centers of every visible edge-label text box that reads "{target_edge_label}"
+      annotation_hint: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes
+        around every visible edge-label text box that reads "{target_edge_label}"
     task_graph__node_link__hamiltonian_cycle_neighbor_label:
       bundle_id: graph_relation_v0
       scene_key: single_graph_relation
@@ -5905,18 +5905,18 @@ prompt:
         of all nodes in the connected component containing the asked node, including
         the asked node itself
       answer_hint: set "answer" to that edge label as a lowercase string
-      json_example: '{"annotation":[[274,202]],"answer":"feeds"}'
+      json_example: '{"annotation":[248,190,300,214],"answer":"feeds"}'
       json_example_answer_only: '{"answer":"feeds"}'
       object_description_undirected: a graph with text labels on its edges
-      annotation_hint_edge_between_nodes_label: set "annotation" to an array containing
-        one [x,y] pixel point at the center of the visible text label on the edge
-        between {source_label} and {target_label}
-      annotation_hint_directed_edge_between_nodes_label: set "annotation" to an array
-        containing one [x,y] pixel point at the center of the visible text label
-        on the arrow from {source_label} to {target_label}
-      annotation_hint_shortest_path_first_edge_label: set "annotation" to an array
-        containing one [x0,y0,x1,y1] box around the visible text label on the first
-        {path_edge_term} along the unique shortest path from {source_label} to {target_label}{path_follow_clause}
+      annotation_hint_edge_between_nodes_label: set "annotation" to one [x0,y0,x1,y1]
+        pixel box around the visible text label on the edge between {source_label}
+        and {target_label}
+      annotation_hint_directed_edge_between_nodes_label: set "annotation" to one
+        [x0,y0,x1,y1] pixel box around the visible text label on the arrow from
+        {source_label} to {target_label}
+      annotation_hint_shortest_path_first_edge_label: set "annotation" to one [x0,y0,x1,y1]
+        pixel box around the visible text label on the first {path_edge_term} along
+        the unique shortest path from {source_label} to {target_label}{path_follow_clause}
     task_graph__node_link__unique_cycle_size:
       bundle_id: graph_relation_v0
       scene_key: single_graph_relation
@@ -5952,17 +5952,15 @@ prompt:
         of all nodes in the connected component containing the asked node, including
         the asked node itself
       answer_hint: set "answer" to the answer node label as a string exactly as shown
-      json_example: '{"annotation":[[303,187]],"answer":"B"}'
+      json_example: '{"annotation":[303,187],"answer":"B"}'
       json_example_answer_only: '{"answer":"B"}'
       object_description_undirected: a labeled undirected graph
-      annotation_hint_unique_neighbor_label: set "annotation" to an array containing
-        one [x,y] pixel point at the center of the only node adjacent to {query_label}
-      annotation_hint_unique_successor_label: set "annotation" to an array containing
-        one [x,y] pixel point at the center of the only node reached by an outgoing
-        arrow from {query_label}
-      annotation_hint_unique_predecessor_label: set "annotation" to an array containing
-        one [x,y] pixel point at the center of the only node with an arrow pointing
-        into {query_label}
+      annotation_hint_unique_neighbor_label: set "annotation" to one [x,y] pixel
+        point at the center of the only node adjacent to {query_label}
+      annotation_hint_unique_successor_label: set "annotation" to one [x,y] pixel
+        point at the center of the only node reached by an outgoing arrow from {query_label}
+      annotation_hint_unique_predecessor_label: set "annotation" to one [x,y] pixel
+        point at the center of the only node with an arrow pointing into {query_label}
     task_graph__pipe_network__bridge_count:
       bundle_id: graph_counting_v0
       scene_key: single_graph_counting

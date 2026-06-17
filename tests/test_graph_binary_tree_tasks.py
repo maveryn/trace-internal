@@ -64,6 +64,7 @@ def test_graph_counting_binary_tree_node_count_contracts() -> None:
         }
         if target_depth is not None:
             params["target_depth"] = target_depth
+            params.pop("query_id")
         task = depth_task if query_id == "depth_level_node_count" else child_task
         out = task.generate(23000 + offset, params=params, max_attempts=300)
         trace = out.trace_payload
@@ -71,13 +72,13 @@ def test_graph_counting_binary_tree_node_count_contracts() -> None:
         edges = _binary_tree_edges(trace)
 
         assert out.scene_id == "binary_tree"
-        assert out.query_id == query_id
+        assert out.query_id == ("single" if query_id == "depth_level_node_count" else query_id)
         assert out.answer_gt.type == "integer"
-        assert out.annotation_gt.type == "bbox_set"
+        assert out.annotation_gt.type == "point_set"
         assert int(out.answer_gt.value) == target_count
         assert len(out.annotation_gt.value) == target_count
         assert trace["scene_ir"]["scene_kind"] == "binary_tree"
-        assert trace["execution_trace"]["query_id"] == query_id
+        assert trace["execution_trace"]["query_id"] == ("single" if query_id == "depth_level_node_count" else query_id)
         assert trace["execution_trace"]["internal_query_id"] == query_id
         assert len(nodes) == int(trace["execution_trace"]["node_count"])
         assert len(edges) == len(nodes) - 1
@@ -85,10 +86,10 @@ def test_graph_counting_binary_tree_node_count_contracts() -> None:
             node["left_label"] is not None or node["right_label"] is not None
             for node in nodes
         )
-        assert trace["projected_annotation"]["type"] == "bbox_set"
-        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "point_set"
+        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
         assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
-        assert "[x0,y0,x1,y1]" in out.prompt_variants["answer_and_annotation"]
+        assert "[x,y]" in out.prompt_variants["answer_and_annotation"]
 
 
 def test_graph_order_binary_tree_traversal_label_contracts() -> None:
@@ -120,13 +121,13 @@ def test_graph_order_binary_tree_traversal_label_contracts() -> None:
         assert out.scene_id == "binary_tree"
         assert out.query_id == query_id
         assert out.answer_gt.type == "string"
-        assert out.annotation_gt.type == "bbox_sequence"
+        assert out.annotation_gt.type == "point_sequence"
         assert str(out.answer_gt.value) == str(traversal_labels[3])
         assert len(out.annotation_gt.value) == 4
         assert len(nodes) == int(trace["execution_trace"]["node_count"])
         assert len(edges) == len(nodes) - 1
-        assert trace["projected_annotation"]["type"] == "bbox_sequence"
-        assert trace["projected_annotation"]["bbox_sequence"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "point_sequence"
+        assert trace["projected_annotation"]["point_sequence"] == out.annotation_gt.value
         assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
         assert "ordered JSON array" in out.prompt_variants["answer_and_annotation"]
 
@@ -146,13 +147,15 @@ def test_graph_relation_binary_tree_node_label_contracts() -> None:
     assert "task_graph__binary_tree__lowest_common_ancestor_label" in TASK_REGISTRY
     for offset, query_id in enumerate(expected_role_keys):
         task = lca_task if query_id == "lowest_common_ancestor_label" else local_task
+        params = {
+            "label_variant": "letters",
+            "scene_variant": "boxed_tree",
+        }
+        if query_id != "lowest_common_ancestor_label":
+            params["query_id"] = query_id
         out = task.generate(
             23200 + offset,
-            params={
-                "query_id": query_id,
-                "label_variant": "letters",
-                "scene_variant": "boxed_tree",
-            },
+            params=params,
             max_attempts=300,
         )
         trace = out.trace_payload
@@ -161,9 +164,9 @@ def test_graph_relation_binary_tree_node_label_contracts() -> None:
         execution = trace["execution_trace"]
 
         assert out.scene_id == "binary_tree"
-        assert out.query_id == query_id
+        assert out.query_id == ("single" if query_id == "lowest_common_ancestor_label" else query_id)
         assert out.answer_gt.type == "string"
-        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert out.annotation_gt.type == "keyed_point_map"
         assert str(out.answer_gt.value) == str(execution["answer_label"])
         assert set(out.annotation_gt.value) == expected_role_keys[query_id]
         assert set(execution["annotation_role_to_label"]) == expected_role_keys[query_id]
@@ -172,15 +175,15 @@ def test_graph_relation_binary_tree_node_label_contracts() -> None:
         )
         assert len(nodes) == int(execution["node_count"])
         assert len(edges) == len(nodes) - 1
-        assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-        assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "keyed_point_map"
+        assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
         assert (
-            trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+            trace["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
         )
         assert sum(1 for node in nodes if node["is_answer_node"]) == 1
         assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
         assert "JSON object" in out.prompt_variants["answer_and_annotation"]
-        assert "[x0,y0,x1,y1]" in out.prompt_variants["answer_and_annotation"]
+        assert "[x,y]" in out.prompt_variants["answer_and_annotation"]
 
 
 def test_graph_relation_bst_path_operation_label_contracts() -> None:
@@ -209,14 +212,14 @@ def test_graph_relation_bst_path_operation_label_contracts() -> None:
         assert out.scene_id == "binary_tree"
         assert out.query_id == query_id
         assert out.answer_gt.type == "string"
-        assert out.annotation_gt.type == "bbox_sequence"
+        assert out.annotation_gt.type == "point_sequence"
         assert str(out.answer_gt.value) == str(execution["answer_label"])
         assert len(out.annotation_gt.value) >= 2
         assert len(nodes) == int(execution["node_count"])
         assert len(edges) == len(nodes) - 1
         assert trace["scene_ir"]["scene_kind"] == "search_tree_operation_diagram"
-        assert trace["projected_annotation"]["type"] == "bbox_sequence"
-        assert trace["projected_annotation"]["bbox_sequence"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "point_sequence"
+        assert trace["projected_annotation"]["point_sequence"] == out.annotation_gt.value
         assert sum(1 for node in nodes if node["is_answer_node"]) == 1
         assert execution["target_key"] is not None
         assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
@@ -230,7 +233,6 @@ def test_graph_relation_heap_property_violation_label_contracts() -> None:
     out = task.generate(
         23350,
         params={
-            "query_id": "heap_property_violation_label",
             "node_count": 9,
             "scene_variant": "classic_tree",
         },
@@ -242,17 +244,17 @@ def test_graph_relation_heap_property_violation_label_contracts() -> None:
     execution = trace["execution_trace"]
 
     assert out.scene_id == "binary_tree"
-    assert out.query_id == "heap_property_violation_label"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "keyed_point_map"
     assert str(out.answer_gt.value) == str(execution["answer_label"])
     assert set(out.annotation_gt.value) == {"parent", "child"}
     assert len(out.annotation_gt.value) == 2
     assert len(nodes) == int(execution["node_count"])
     assert len(edges) == len(nodes) - 1
     assert trace["scene_ir"]["scene_kind"] == "search_tree_operation_diagram"
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "keyed_point_map"
+    assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
     assert execution["annotation_role_to_label"]["child"] == str(out.answer_gt.value)
     assert sum(1 for node in nodes if node["is_answer_node"]) == 1
     assert execution["target_key"] is None

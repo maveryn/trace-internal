@@ -1,5 +1,8 @@
 # `task_graph__binary_tree__child_structure_node_count`
 
+## Program Contract
+- `count(filter(nodes(binary_tree), child_structure=target_structure)); scene=binary_tree; scope=child_structure_node_count`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `binary_tree`
@@ -13,8 +16,8 @@
 
 ## Answer And Annotation
 1. Answer type: `integer`.
-2. Annotation type: `bbox_set`.
-3. Annotation marks minimal pixel-space visual witnesses for the answer, not answer labels or non-witness annotations.
+2. Annotation type: `point_set`.
+3. Annotation marks node-center pixel points for every matching binary-tree node.
 4. Count tasks require `answer_gt.value == len(annotation_gt.value)` unless the annotation schema is keyed or sequence based.
 
 ## Rendering Contract

@@ -91,9 +91,9 @@ prompt:
       object_description: a numeric-key binary search tree
       object_description_bst: a numeric-key binary search tree
       answer_hint: set "answer" to the answer node label as a string exactly as shown
-      annotation_hint_bst_search_terminal_label: set "annotation" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the visited binary-search path from the root through the answer node
-      annotation_hint_bst_insert_parent_label: set "annotation" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the visited insertion path from the root through the parent node where the new key would attach
-      json_example: '{"annotation":[[156,124,204,172],[250,250,298,298]],"answer":"42"}'
+      annotation_hint_bst_search_terminal_label: set "annotation" to an ordered JSON array of [x,y] pixel points at node centers for the visited binary-search path from the root through the answer node
+      annotation_hint_bst_insert_parent_label: set "annotation" to an ordered JSON array of [x,y] pixel points at node centers for the visited insertion path from the root through the parent node where the new key would attach
+      json_example: '{"annotation":[[180,148],[274,274]],"answer":"42"}'
       json_example_answer_only: '{"answer":"42"}'
     task_graph__binary_tree__child_structure_node_count:
       bundle_id: graph_counting_v0
@@ -101,11 +101,11 @@ prompt:
       task_key: binary_tree_node_count_query
       object_description: a labeled binary tree with the root at the top and left/right children shown by position
       answer_hint: set "answer" to the count of matching nodes as an integer
-      annotation_hint_leaf_node_count: set "annotation" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around every leaf node
-      annotation_hint_internal_node_count: set "annotation" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around every internal node, meaning every non-leaf node
-      annotation_hint_single_child_node_count: set "annotation" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around every node with exactly one child
-      annotation_hint_two_child_node_count: set "annotation" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around every node with both left and right children
-      json_example: '{"annotation":[[156,124,204,172],[470,430,520,480]],"answer":2}'
+      annotation_hint_leaf_node_count: set "annotation" to a JSON array of [x,y] pixel points at the centers of every leaf node
+      annotation_hint_internal_node_count: set "annotation" to a JSON array of [x,y] pixel points at the centers of every internal node, meaning every non-leaf node
+      annotation_hint_single_child_node_count: set "annotation" to a JSON array of [x,y] pixel points at the centers of every node with exactly one child
+      annotation_hint_two_child_node_count: set "annotation" to a JSON array of [x,y] pixel points at the centers of every node with both left and right children
+      json_example: '{"annotation":[[180,148],[495,455]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_graph__binary_tree__depth_level_node_count:
       bundle_id: graph_counting_v0
@@ -113,8 +113,8 @@ prompt:
       task_key: binary_tree_node_count_query
       object_description: a labeled binary tree with the root at the top and left/right children shown by position
       answer_hint: set "answer" to the count of matching nodes as an integer
-      annotation_hint_depth_level_node_count: set "annotation" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around every node at depth {target_depth}
-      json_example: '{"annotation":[[156,124,204,172],[470,430,520,480]],"answer":2}'
+      annotation_hint_depth_level_node_count: set "annotation" to a JSON array of [x,y] pixel points at the centers of every node at depth {target_depth}
+      json_example: '{"annotation":[[180,148],[495,455]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_graph__binary_tree__heap_property_violation_label:
       bundle_id: graph_relation_v0
@@ -123,8 +123,8 @@ prompt:
       object_description: a numeric-key binary tree intended to be a min-heap
       object_description_heap: a numeric-key binary tree intended to be a min-heap
       answer_hint: set "answer" to the violating child node label as a string exactly as shown
-      annotation_hint: set "annotation" to a JSON object with keys "parent" and "child"; each value is a [x0,y0,x1,y1] pixel box around that node
-      json_example: '{"annotation":{"parent":[156,124,204,172],"child":[250,250,298,298]},"answer":"42"}'
+      annotation_hint: set "annotation" to a JSON object with keys "parent" and "child"; each value is a [x,y] pixel point at that node center
+      json_example: '{"annotation":{"parent":[180,148],"child":[274,274]},"answer":"42"}'
       json_example_answer_only: '{"answer":"42"}'
     task_graph__binary_tree__local_relative_node_label:
       bundle_id: graph_relation_v0
@@ -132,11 +132,11 @@ prompt:
       task_key: binary_tree_node_label_query
       object_description: a labeled binary tree with the root at the top and left/right children shown by position
       answer_hint: set "answer" to the answer node label as a string exactly as shown
-      annotation_hint_parent_label: set "annotation" to a JSON object with keys "child" and "parent"; each value is a [x0,y0,x1,y1] pixel box around that node
-      annotation_hint_left_child_label: set "annotation" to a JSON object with keys "parent" and "left_child"; each value is a [x0,y0,x1,y1] pixel box around that node
-      annotation_hint_right_child_label: set "annotation" to a JSON object with keys "parent" and "right_child"; each value is a [x0,y0,x1,y1] pixel box around that node
-      annotation_hint_sibling_label: set "annotation" to a JSON object with keys "node" and "sibling"; each value is a [x0,y0,x1,y1] pixel box around that node
-      json_example: '{"annotation":{"child":[156,124,204,172],"parent":[470,430,520,480]},"answer":"M"}'
+      annotation_hint_parent_label: set "annotation" to a JSON object with keys "child" and "parent"; each value is a [x,y] pixel point at that node center
+      annotation_hint_left_child_label: set "annotation" to a JSON object with keys "parent" and "left_child"; each value is a [x,y] pixel point at that node center
+      annotation_hint_right_child_label: set "annotation" to a JSON object with keys "parent" and "right_child"; each value is a [x,y] pixel point at that node center
+      annotation_hint_sibling_label: set "annotation" to a JSON object with keys "node" and "sibling"; each value is a [x,y] pixel point at that node center
+      json_example: '{"annotation":{"child":[180,148],"parent":[495,455]},"answer":"M"}'
       json_example_answer_only: '{"answer":"M"}'
     task_graph__binary_tree__lowest_common_ancestor_label:
       bundle_id: graph_relation_v0
@@ -144,8 +144,8 @@ prompt:
       task_key: binary_tree_node_label_query
       object_description: a labeled binary tree with the root at the top and left/right children shown by position
       answer_hint: set "answer" to the answer node label as a string exactly as shown
-      annotation_hint_lowest_common_ancestor_label: set "annotation" to a JSON object with keys "node_a", "node_b", and "lowest_common_ancestor"; each value is a [x0,y0,x1,y1] pixel box around that node
-      json_example: '{"annotation":{"node_a":[156,124,204,172],"node_b":[470,430,520,480],"lowest_common_ancestor":[250,250,298,298]},"answer":"M"}'
+      annotation_hint_lowest_common_ancestor_label: set "annotation" to a JSON object with keys "node_a", "node_b", and "lowest_common_ancestor"; each value is a [x,y] pixel point at that node center
+      json_example: '{"annotation":{"node_a":[180,148],"node_b":[495,455],"lowest_common_ancestor":[274,274]},"answer":"M"}'
       json_example_answer_only: '{"answer":"M"}'
     task_graph__binary_tree__traversal_kth_label:
       bundle_id: graph_order_v0
@@ -153,9 +153,9 @@ prompt:
       task_key: binary_tree_traversal_label_query
       object_description: a labeled binary tree with the root at the top and left/right children shown by position
       answer_hint: set "answer" to the node label at the requested traversal position as a string
-      annotation_hint_preorder_kth_node_label: set "annotation" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the preorder traversal nodes from the first visited node through the answer node
-      annotation_hint_inorder_kth_node_label: set "annotation" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the inorder traversal nodes from the first visited node through the answer node
-      annotation_hint_postorder_kth_node_label: set "annotation" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the postorder traversal nodes from the first visited node through the answer node
-      annotation_hint_level_order_kth_node_label: set "annotation" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the level-order traversal nodes from the first visited node through the answer node
-      json_example: '{"annotation":[[156,124,204,172],[250,250,298,298],[470,430,520,480]],"answer":"M"}'
+      annotation_hint_preorder_kth_node_label: set "annotation" to an ordered JSON array of [x,y] pixel points at node centers for the preorder traversal nodes from the first visited node through the answer node
+      annotation_hint_inorder_kth_node_label: set "annotation" to an ordered JSON array of [x,y] pixel points at node centers for the inorder traversal nodes from the first visited node through the answer node
+      annotation_hint_postorder_kth_node_label: set "annotation" to an ordered JSON array of [x,y] pixel points at node centers for the postorder traversal nodes from the first visited node through the answer node
+      annotation_hint_level_order_kth_node_label: set "annotation" to an ordered JSON array of [x,y] pixel points at node centers for the level-order traversal nodes from the first visited node through the answer node
+      json_example: '{"annotation":[[180,148],[274,274],[495,455]],"answer":"M"}'
       json_example_answer_only: '{"answer":"M"}'

@@ -10,7 +10,7 @@ def count_prompt_json_examples() -> Tuple[str, str]:
     """Return JSON examples for count tasks."""
 
     return (
-        json.dumps({"annotation": [[156, 124, 204, 172], [470, 430, 520, 480]], "answer": 2}, separators=(",", ":")),
+        json.dumps({"annotation": [[180, 148], [495, 455]], "answer": 2}, separators=(",", ":")),
         json.dumps({"answer": 2}, separators=(",", ":")),
     )
 
@@ -21,7 +21,7 @@ def traversal_prompt_json_examples() -> Tuple[str, str]:
     return (
         json.dumps(
             {
-                "annotation": [[156, 124, 204, 172], [250, 250, 298, 298], [470, 430, 520, 480]],
+                "annotation": [[180, 148], [274, 274], [495, 455]],
                 "answer": "M",
             },
             separators=(",", ":"),
@@ -33,14 +33,14 @@ def traversal_prompt_json_examples() -> Tuple[str, str]:
 def keyed_node_prompt_json_examples(roles: Sequence[str]) -> Tuple[str, str]:
     """Return JSON examples for keyed node-label tasks."""
 
-    example_boxes = (
-        [156, 124, 204, 172],
-        [470, 430, 520, 480],
-        [250, 250, 298, 298],
+    example_points = (
+        [180, 148],
+        [495, 455],
+        [274, 274],
     )
     annotation = {
-        str(role): list(box)
-        for role, box in zip(tuple(str(role) for role in roles), example_boxes)
+        str(role): list(point)
+        for role, point in zip(tuple(str(role) for role in roles), example_points)
     }
     return (
         json.dumps({"annotation": annotation, "answer": "M"}, separators=(",", ":")),
@@ -52,7 +52,7 @@ def operation_path_prompt_json_examples() -> Tuple[str, str]:
     """Return JSON examples for ordered BST path tasks."""
 
     return (
-        json.dumps({"annotation": [[156, 124, 204, 172], [250, 250, 298, 298]], "answer": "42"}, separators=(",", ":")),
+        json.dumps({"annotation": [[180, 148], [274, 274]], "answer": "42"}, separators=(",", ":")),
         json.dumps({"answer": "42"}, separators=(",", ":")),
     )
 
@@ -64,8 +64,8 @@ def heap_violation_prompt_json_examples() -> Tuple[str, str]:
         json.dumps(
             {
                 "annotation": {
-                    "parent": [156, 124, 204, 172],
-                    "child": [250, 250, 298, 298],
+                    "parent": [180, 148],
+                    "child": [274, 274],
                 },
                 "answer": "42",
             },

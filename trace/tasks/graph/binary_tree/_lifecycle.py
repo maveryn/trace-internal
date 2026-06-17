@@ -31,7 +31,7 @@ from .shared.annotations import (
     project_node_label_bboxes,
     role_to_label_map,
     roles_by_label,
-    rounded_bboxes,
+    rounded_points,
 )
 from .shared.defaults import BinaryTreeDefaults, BinaryTreeVisualAxes, resolve_visual_axes
 from .shared.output import common_execution_fields, common_query_params, edge_entities, node_entities, rendered_trace_sections, scene_ir
@@ -453,7 +453,7 @@ def run_binary_tree_count_plan(
         noise_defaults=noise_defaults,
     )
     annotation_projection = project_node_label_bboxes(rendered.rendered_scene, target_labels)
-    annotation_bboxes = rounded_bboxes(annotation_projection["bbox_set"])
+    annotation_points = rounded_points(annotation_projection["pixel_point_set"])
     prompt_defaults_map = dict(prompt_defaults)
     json_example, json_example_answer_only = count_prompt_json_examples()
     annotation_hint = str(prompt_defaults_map[f"annotation_hint_{branch_name}"])
@@ -521,17 +521,17 @@ def run_binary_tree_count_plan(
             "count_mode": str(count_mode),
         },
         projected_annotation={
-            "type": "bbox_set",
-            "bbox_set": list(annotation_bboxes),
-            "pixel_bbox_set": list(annotation_bboxes),
-            "pixel_point_set": list(annotation_projection["pixel_point_set"]),
+            "type": "point_set",
+            "point_set": list(annotation_points),
+            "pixel_point_set": list(annotation_points),
+            "pixel_bbox_set": list(annotation_projection["pixel_bbox_set"]),
         },
         extra_style={"node_color_name": str(frame.visual_axes.node_color_name)},
     )
     return binary_tree_task_output(
         prompt_artifacts=prompt_artifacts,
         answer_gt=TypedValue(type="integer", value=int(len(target_labels))),
-        annotation_gt=TypedValue(type="bbox_set", value=list(annotation_bboxes)),
+        annotation_gt=TypedValue(type="point_set", value=list(annotation_points)),
         rendered=rendered,
         trace_payload=trace_payload,
         branch_name=str(branch_name),
@@ -602,7 +602,7 @@ def run_binary_tree_traversal_plan(
         noise_defaults=noise_defaults,
     )
     annotation_projection = project_node_label_bboxes(rendered.rendered_scene, annotation_labels)
-    annotation_bboxes = rounded_bboxes(annotation_projection["bbox_sequence"])
+    annotation_points = rounded_points(annotation_projection["pixel_point_sequence"])
     prompt_defaults_map = dict(prompt_defaults)
     json_example, json_example_answer_only = traversal_prompt_json_examples()
     prompt_artifacts = render_binary_tree_prompt_artifacts(
@@ -669,17 +669,17 @@ def run_binary_tree_traversal_plan(
             "answer_label": str(answer_value),
         },
         projected_annotation={
-            "type": "bbox_sequence",
-            "bbox_sequence": list(annotation_bboxes),
-            "pixel_bbox_sequence": list(annotation_bboxes),
-            "pixel_point_sequence": list(annotation_projection["pixel_point_sequence"]),
+            "type": "point_sequence",
+            "point_sequence": list(annotation_points),
+            "pixel_point_sequence": list(annotation_points),
+            "pixel_bbox_sequence": list(annotation_projection["pixel_bbox_sequence"]),
         },
         extra_style={"node_color_name": str(frame.visual_axes.node_color_name)},
     )
     return binary_tree_task_output(
         prompt_artifacts=prompt_artifacts,
         answer_gt=TypedValue(type="string", value=str(answer_value)),
-        annotation_gt=TypedValue(type="bbox_sequence", value=list(annotation_bboxes)),
+        annotation_gt=TypedValue(type="point_sequence", value=list(annotation_points)),
         rendered=rendered,
         trace_payload=trace_payload,
         branch_name=str(branch_name),
@@ -817,11 +817,11 @@ def run_binary_tree_relation_plan(
             "annotation_role_to_label": dict(annotation_role_to_label),
         },
         projected_annotation={
-            "type": "keyed_bbox_map",
-            "keyed_bbox_map": dict(annotation_keyed_bboxes),
-            "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
+            "type": "keyed_point_map",
             "keyed_point_map": dict(annotation_keyed_points),
             "pixel_keyed_point_map": dict(annotation_keyed_points),
+            "keyed_bbox_map": dict(annotation_keyed_bboxes),
+            "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
             "bbox_sequence": list(annotation_keyed_bboxes.values()),
             "pixel_bbox_sequence": list(annotation_keyed_bboxes.values()),
             "pixel_point_sequence": list(annotation_projection["pixel_point_set"]),
@@ -831,7 +831,7 @@ def run_binary_tree_relation_plan(
     return binary_tree_task_output(
         prompt_artifacts=prompt_artifacts,
         answer_gt=TypedValue(type="string", value=str(relation.answer_label)),
-        annotation_gt=TypedValue(type="keyed_bbox_map", value=dict(annotation_keyed_bboxes)),
+        annotation_gt=TypedValue(type="keyed_point_map", value=dict(annotation_keyed_points)),
         rendered=rendered,
         trace_payload=trace_payload,
         branch_name=str(branch_name),
@@ -906,14 +906,14 @@ def run_binary_tree_operation_plan(
         annotation_keyed_points = keyed_points_for_roles(roles=annotation_roles, projection=annotation_projection)
         annotation_role_to_label = role_to_label_map(roles=annotation_roles, labels=operation.annotation_labels)
         annotation_roles_by_label = roles_by_label(annotation_role_to_label)
-        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_keyed_bboxes))
+        annotation_gt = TypedValue(type="keyed_point_map", value=dict(annotation_keyed_points))
         projected_annotation = {
-            "type": "keyed_bbox_map",
+            "type": "keyed_point_map",
+            "keyed_point_map": dict(annotation_keyed_points),
+            "pixel_keyed_point_map": dict(annotation_keyed_points),
             "keyed_bbox_map": dict(annotation_keyed_bboxes),
             "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
             "pixel_bbox_map": dict(annotation_keyed_bboxes),
-            "keyed_point_map": dict(annotation_keyed_points),
-            "pixel_keyed_point_map": dict(annotation_keyed_points),
             "pixel_point_sequence": list(annotation_projection["pixel_point_sequence"]),
         }
         annotation_labels_for_entities = operation.annotation_labels
@@ -921,13 +921,13 @@ def run_binary_tree_operation_plan(
         json_example, json_example_answer_only = operation_path_prompt_json_examples()
         annotation_role_to_label = {}
         annotation_roles_by_label = {}
-        annotation_bboxes = rounded_bboxes(annotation_projection["bbox_sequence"])
-        annotation_gt = TypedValue(type="bbox_sequence", value=list(annotation_bboxes))
+        annotation_points = rounded_points(annotation_projection["pixel_point_sequence"])
+        annotation_gt = TypedValue(type="point_sequence", value=list(annotation_points))
         projected_annotation = {
-            "type": "bbox_sequence",
-            "bbox_sequence": list(annotation_bboxes),
-            "pixel_bbox_sequence": list(annotation_bboxes),
-            "pixel_point_sequence": list(annotation_projection["pixel_point_sequence"]),
+            "type": "point_sequence",
+            "point_sequence": list(annotation_points),
+            "pixel_point_sequence": list(annotation_points),
+            "pixel_bbox_sequence": list(annotation_projection["pixel_bbox_sequence"]),
         }
         annotation_labels_for_entities = operation.annotation_labels
     target_key = "" if operation.target_key is None else str(operation.target_key)

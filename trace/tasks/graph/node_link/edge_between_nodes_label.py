@@ -34,7 +34,7 @@ def _sample_graph(rng, axes, attempts):
     )
 
 def _edge_label_plan():
-    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphRelationEdgeBetweenNodesLabelTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='string', answer_field='target_edge_label', annotation_type='point_set', annotation_kind='edge_label_point_set', annotation_field='query_edge', prompt_query_key=lambda axes: str(axes.query_id), annotation_hint_key=lambda axes: 'annotation_hint_' + str(axes.query_id), graph_directionality=lambda axes: 'directed' if str(axes.query_id).startswith('directed') else 'undirected', scene_kind='graph_edge_label_lookup', question_format=lambda axes: str(axes.query_id), value_ranges={'target_edge_label_index': (0, EDGE_LABEL_SUPPORT_SIZE - 1)}, annotation_example=[[205, 232]], answer_example='alpha', strict_edge_label_placement=True)
+    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphRelationEdgeBetweenNodesLabelTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='string', answer_field='target_edge_label', annotation_type='bbox', annotation_kind='edge_label_bbox', annotation_field='query_edge', prompt_query_key=lambda axes: str(axes.query_id), annotation_hint_key=lambda axes: 'annotation_hint_' + str(axes.query_id), graph_directionality=lambda axes: 'directed' if str(axes.query_id).startswith('directed') else 'undirected', scene_kind='graph_edge_label_lookup', question_format=lambda axes: str(axes.query_id), value_ranges={'target_edge_label_index': (0, EDGE_LABEL_SUPPORT_SIZE - 1)}, annotation_example=[180, 220, 230, 245], answer_example='alpha', strict_edge_label_placement=True)
 
 @register_task
 class GraphRelationEdgeBetweenNodesLabelTask:

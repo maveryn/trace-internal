@@ -16,8 +16,8 @@
 
 ## Answer And Annotation
 1. Answer type: `string`.
-2. Annotation type: `point_set`.
-3. Annotation marks the pixel-space center point of the queried visible edge-label text box.
+2. Annotation type: `bbox`.
+3. Annotation marks the pixel-space box around the queried visible edge-label text.
 4. Count tasks require `answer_gt.value == len(annotation_gt.value)` unless the annotation schema is keyed or sequence based.
 
 ## Rendering Contract

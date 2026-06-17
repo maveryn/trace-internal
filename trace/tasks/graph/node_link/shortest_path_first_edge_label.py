@@ -33,7 +33,7 @@ def _sample_graph(rng, axes, attempts):
 
 def _build_objective_plan() -> NodeLinkObjectivePlan:
     """Bind query ids, sampler, answer, and annotation for this objective."""
-    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphRelationShortestPathFirstEdgeLabelTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='string', answer_field='target_edge_label', annotation_type='bbox_set', annotation_kind='edge_label_bbox_set', annotation_field='query_edge', prompt_query_key='shortest_path_first_edge_label', annotation_hint_key='annotation_hint_shortest_path_first_edge_label', scene_kind='graph_shortest_path_edge_label_lookup', question_format='shortest_path_first_edge_label', value_ranges={'target_shortest_path_length': (2, 3), 'target_edge_label_index': (0, EDGE_LABEL_SUPPORT_SIZE - 1)}, annotation_example=[[180, 220, 230, 245]], answer_example='alpha', strict_edge_label_placement=True)
+    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphRelationShortestPathFirstEdgeLabelTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='string', answer_field='target_edge_label', annotation_type='bbox', annotation_kind='edge_label_bbox', annotation_field='query_edge', prompt_query_key='shortest_path_first_edge_label', annotation_hint_key='annotation_hint_shortest_path_first_edge_label', scene_kind='graph_shortest_path_edge_label_lookup', question_format='shortest_path_first_edge_label', value_ranges={'target_shortest_path_length': (2, 3), 'target_edge_label_index': (0, EDGE_LABEL_SUPPORT_SIZE - 1)}, annotation_example=[180, 220, 230, 245], answer_example='alpha', strict_edge_label_placement=True)
 
 @register_task
 class GraphRelationShortestPathFirstEdgeLabelTask:

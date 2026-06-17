@@ -16,7 +16,7 @@ def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
 
 def _build_objective_plan() -> NodeLinkObjectivePlan:
     """Bind query ids, sampler, answer, and annotation for this objective."""
-    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphRelationUniqueNodeLabelTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='string', answer_field='answer_label', annotation_type='point_set', annotation_kind='node_point_set', annotation_field='target_labels', prompt_query_key=lambda axes: str(axes.query_id), annotation_hint_key=lambda axes: 'annotation_hint_' + str(axes.query_id), graph_directionality=lambda axes: 'directed' if str(axes.query_id) != 'unique_neighbor_label' else 'undirected', scene_kind='graph_unique_related_node_label', question_format=lambda axes: str(axes.query_id), answer_example='B')
+    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphRelationUniqueNodeLabelTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='string', answer_field='answer_label', annotation_type='point', annotation_kind='node_point', annotation_field='target_labels', prompt_query_key=lambda axes: str(axes.query_id), annotation_hint_key=lambda axes: 'annotation_hint_' + str(axes.query_id), graph_directionality=lambda axes: 'directed' if str(axes.query_id) != 'unique_neighbor_label' else 'undirected', scene_kind='graph_unique_related_node_label', question_format=lambda axes: str(axes.query_id), annotation_example=[303, 187], answer_example='B')
 
 @register_task
 class GraphRelationUniqueNodeLabelTask:

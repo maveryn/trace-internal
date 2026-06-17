@@ -1,5 +1,8 @@
 # `task_graph__binary_tree__bst_path_operation_label`
 
+## Program Contract
+- `label(path_terminal(binary_search_tree_operation(tree, operation, key))); scene=binary_tree; scope=bst_path_operation_label`
+
 ## Summary
 1. Domain: `graph`
 2. Scene: `binary_tree`
@@ -13,8 +16,8 @@
 
 ## Annotation
 1. Answer type: `string`.
-2. Annotation type: `bbox_sequence`.
-3. Annotation boxes are the ordered search or insertion path from the root through the answer node.
+2. Annotation type: `point_sequence`.
+3. Annotation points are the ordered node-center search or insertion path from the root through the answer node.
 
 ## Generation Notes
 1. Instances render numeric keys in a bounded-depth binary search tree.

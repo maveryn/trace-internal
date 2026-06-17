@@ -1,5 +1,8 @@
 # `task_graph__binary_tree__lowest_common_ancestor_label`
 
+## Program Contract
+- `label(lowest_common_ancestor(binary_tree, node_a, node_b)); scene=binary_tree; scope=lowest_common_ancestor_label`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `binary_tree`
@@ -13,8 +16,8 @@
 
 ## Answer And Annotation
 1. Answer type: `string`.
-2. Annotation type: `keyed_bbox_map`.
-3. Annotation marks minimal pixel-space visual witnesses for the answer, not answer labels or non-witness annotations.
+2. Annotation type: `keyed_point_map`.
+3. Annotation marks role-bound node-center pixel points for `node_a`, `node_b`, and `lowest_common_ancestor`.
 4. Count tasks require `answer_gt.value == len(annotation_gt.value)` unless the annotation schema is keyed or sequence based.
 
 ## Rendering Contract

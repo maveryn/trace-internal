@@ -1,5 +1,8 @@
 # `task_graph__binary_tree__heap_property_violation_label`
 
+## Program Contract
+- `label(child_node(heap_property_violation(binary_tree))); scene=binary_tree; scope=heap_property_violation_label`
+
 ## Summary
 1. Domain: `graph`
 2. Scene: `binary_tree`
@@ -12,8 +15,8 @@
 
 ## Annotation
 1. Answer type: `string`.
-2. Annotation type: `keyed_bbox_map`.
-3. Annotation uses keys `parent` and `child`, with each value a `[x0,y0,x1,y1]` pixel box around that node.
+2. Annotation type: `keyed_point_map`.
+3. Annotation uses keys `parent` and `child`, with each value a node-center `[x,y]` pixel point.
 
 ## Generation Notes
 1. Instances render a complete numeric-key binary tree with exactly one min-heap violation.

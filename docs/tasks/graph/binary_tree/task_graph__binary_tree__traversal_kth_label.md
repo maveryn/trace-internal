@@ -1,5 +1,8 @@
 # `task_graph__binary_tree__traversal_kth_label`
 
+## Program Contract
+- `label(kth_node(traversal(binary_tree, traversal_order), k)); scene=binary_tree; scope=traversal_kth_label`
+
 ## Summary
 1. Domain: `graph`
 2. Scene: `binary_tree`
@@ -15,8 +18,8 @@
 
 ## Annotation
 1. Answer type: `string`.
-2. Annotation type: `bbox_sequence`.
-3. Annotation boxes are an ordered prefix of `[x0,y0,x1,y1]` pixel boxes, from the first visited node through the answer node.
+2. Annotation type: `point_sequence`.
+3. Annotation points are an ordered prefix of node-center `[x,y]` pixel points, from the first visited node through the answer node.
 
 ## Generation Notes
 1. The renderer is a top-down ordered binary tree; left and right children are determined by visible position.

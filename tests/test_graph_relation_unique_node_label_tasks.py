@@ -7,7 +7,7 @@ from collections import Counter
 
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.relation.unique_node_label import GraphRelationUniqueNodeLabelTask
+from trace.tasks.graph.node_link.unique_related_node_label import GraphRelationUniqueNodeLabelTask
 
 
 def _extract_prompt_json_example(prompt: str) -> dict:
@@ -40,38 +40,39 @@ def test_graph_relation_unique_node_label_contract_matches_trace() -> None:
     assert out.scene_id == "node_link"
     assert out.query_id == "unique_successor_label"
     assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == 1
-    assert trace["scene_ir"]["scene_kind"] == "graph_unique_node_label_relation"
+    assert out.annotation_gt.type == "point"
+    assert trace["scene_ir"]["scene_kind"] == "graph_unique_related_node_label"
     assert execution["query_id"] == "unique_successor_label"
     assert execution["graph_directionality"] == "directed"
-    assert execution["relation_rule"] == "only_outgoing_arrow_target"
-    assert execution["layout_variant_requested"] == "shell"
+    assert execution["relation_mode"] == "directed_unique_successor"
     assert execution["edge_routing_variant"] == "mixed_arc"
     assert execution["label_variant"] == "named"
     assert 'node "' in str(out.prompt)
 
     query_label = str(execution["query_label"])
     answer_label = str(execution["answer_label"])
-    assert tuple(execution["successors_by_label"][query_label]) == (answer_label,)
+    assert query_label
+    assert tuple(execution["target_labels"]) == (answer_label,)
+    assert tuple(execution["matching_labels"]) == (answer_label,)
     assert out.answer_gt.value == answer_label
-    assert trace["witness_symbolic"]["answer_label"] == answer_label
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert sum(1 for node in node_entities if bool(node["is_answer_node"])) == 1
-    answer_entity = [node for node in node_entities if bool(node["is_answer_node"])][0]
-    assert answer_entity["center_px"] == out.annotation_gt.value[0]
+    assert trace["witness_symbolic"]["labels"] == [answer_label]
+    assert trace["projected_annotation"]["type"] == "point"
+    assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+    answer_nodes = [node for node in node_entities if str(node["label"]) == answer_label]
+    assert len(answer_nodes) == 1
+    answer_entity = answer_nodes[0]
+    assert answer_entity["center_px"] == out.annotation_gt.value
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 def test_graph_relation_unique_node_label_all_query_contracts() -> None:
     task = GraphRelationUniqueNodeLabelTask()
     cases = (
-        ("unique_neighbor_label", "adjacency_by_label", "undirected"),
-        ("unique_successor_label", "successors_by_label", "directed"),
-        ("unique_predecessor_label", "predecessors_by_label", "directed"),
+        ("unique_neighbor_label", "undirected"),
+        ("unique_successor_label", "directed"),
+        ("unique_predecessor_label", "directed"),
     )
-    for offset, (query_id, relation_key, directionality) in enumerate(cases):
+    for offset, (query_id, directionality) in enumerate(cases):
         out = task.generate(
             21010 + offset,
             params={"query_id": query_id, "label_variant": "letters"},
@@ -82,9 +83,12 @@ def test_graph_relation_unique_node_label_all_query_contracts() -> None:
         answer_label = str(execution["answer_label"])
         assert out.query_id == query_id
         assert execution["graph_directionality"] == directionality
-        assert tuple(execution[relation_key][query_label]) == (answer_label,)
+        assert query_label
+        assert tuple(execution["target_labels"]) == (answer_label,)
+        assert tuple(execution["matching_labels"]) == (answer_label,)
         assert out.answer_gt.value == answer_label
-        assert len(out.annotation_gt.value) == 1
+        assert out.annotation_gt.type == "point"
+        assert len(out.annotation_gt.value) == 2
 
 
 def test_graph_relation_unique_node_label_prompt_example_contract() -> None:
@@ -99,7 +103,7 @@ def test_graph_relation_unique_node_label_prompt_example_contract() -> None:
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": "B"}
     assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
-    assert answer_and_annotation["annotation"] == [[303, 187]]
+    assert answer_and_annotation["annotation"] == [303, 187]
     assert answer_and_annotation["answer"] == "B"
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert "[x,y]" in out.prompt_variants["answer_and_annotation"]
@@ -125,7 +129,8 @@ def test_graph_relation_unique_node_label_balanced_sampling_covers_queries() -> 
         edge_routing_variants[str(execution["edge_routing_variant"])] += 1
         answers[str(out.answer_gt.value)] += 1
         assert str(out.answer_gt.value) == str(execution["answer_label"])
-        assert len(out.annotation_gt.value) == 1
+        assert out.annotation_gt.type == "point"
+        assert len(out.annotation_gt.value) == 2
 
     assert set(query_ids) == set(("unique_neighbor_label", "unique_successor_label", "unique_predecessor_label"))
     assert all(20 <= count <= 60 for count in query_ids.values())

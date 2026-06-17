@@ -23,13 +23,6 @@
       "",
       ""
     ],
-    "rpg_house_rotated_tile_label_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "rpg_house_room_count_task": [
       "",
       "",
@@ -51,7 +44,6 @@
     "query:missing_patch_label": [],
     "query:open_door_count": [],
     "query:reachable_room_count": [],
-    "query:rotated_tile_label": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -118,13 +110,6 @@
       "From the player's current room, count the other rooms that can be reached without crossing a closed door. What is the count?",
       "How many rooms besides the player's room are connected to the player through open doors?",
       "Follow paths through open doors from the player. How many other rooms can be reached?"
-    ],
-    "rotated_tile_label": [
-      "The house image is split into lettered tiles, and exactly one tile has been rotated. Which tile is rotated?",
-      "Which letter marks the tile that is turned the wrong way?",
-      "Find the single rotated tile in the RPG house grid. What is its letter?",
-      "One lettered tile in the house layout has been rotated. Which letter identifies it?",
-      "Which tile should be turned back to restore the house image?"
     ],
     "room_count": [
       "How many enclosed rooms are shown in the house layout?",

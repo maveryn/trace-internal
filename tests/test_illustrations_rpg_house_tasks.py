@@ -8,7 +8,6 @@ from trace.tasks.illustrations.rpg_house.door_state_count import (
 )
 from trace.tasks.illustrations.rpg_house.missing_patch_label import TASK_ID as MISSING_PATCH_TASK_ID
 from trace.tasks.illustrations.rpg_house.reachable_room_count import TASK_ID as REACHABLE_COUNT_TASK_ID
-from trace.tasks.illustrations.rpg_house.rotated_tile_label import TASK_ID as ROTATED_TILE_TASK_ID
 from trace.tasks.illustrations.rpg_house.room_count import TASK_ID as ROOM_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_house.swapped_tile_pair_label import TASK_ID as SWAPPED_TILE_PAIR_TASK_ID
 from trace.tasks.illustrations.rpg_house.shared.relations import reachable_room_ids
@@ -291,32 +290,6 @@ def test_rpg_house_missing_patch_label_contract() -> None:
     assert trace["render_map"]["selected_option_bbox_px"] == out.annotation_gt.value["selected_option"]
     assert trace["render_map"]["missing_region_bbox_px"] == out.annotation_gt.value["missing_region"]
     assert trace["render_map"]["candidate_crop_count"] > 0
-
-
-def test_rpg_house_rotated_tile_label_contract() -> None:
-    task = create_task(ROTATED_TILE_TASK_ID)
-    out = task.generate(
-        2026061712,
-        params={
-            "canvas_profile": "portrait",
-            "source_room_count": 8,
-            "rotation_degrees": 90,
-        },
-        max_attempts=200,
-    )
-    assert out.scene_id == "rpg_house"
-    assert out.query_id == "single"
-    assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "bbox"
-    width, height = out.image.size
-    _assert_bbox_inside_canvas(out.annotation_gt.value, width=width, height=height)
-    trace = out.trace_payload
-    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_house_v0"
-    assert trace["projected_annotation"]["type"] == "bbox"
-    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
-    assert trace["render_map"]["selected_tile_bbox_px"] == out.annotation_gt.value
-    assert out.answer_gt.value in trace["query_spec"]["params"]["option_labels"]
-    assert trace["query_spec"]["params"]["grid_shape"] in ([2, 3], [3, 2], [2, 2])
 
 
 def test_rpg_house_swapped_tile_pair_label_contract() -> None:

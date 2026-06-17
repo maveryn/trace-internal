@@ -646,18 +646,9 @@ def _render_point_scene(
     )
     label_offset_px = _resolve_int_param(params, rendering_defaults, "locus_label_offset_px", _DEFAULTS.locus_label_offset_px)
     label_stroke_width = _resolve_int_param(params, rendering_defaults, "label_stroke_width", _DEFAULTS.label_stroke_width)
-    center_color, candidate_color, color_meta = _resolve_marker_colors(rng)
+    _, candidate_color, color_meta = _resolve_marker_colors(rng)
     candidate_style = _sample_marker_style(rng, params=params, defaults=rendering_defaults, key="candidate_marker_style")
-    center_point_px = _draw_center_marker(
-        draw,
-        context=context,
-        region=region,
-        marker_radius=int(marker_radius),
-        label_font_size_px=int(label_font_size_px),
-        label_offset_px=int(label_offset_px),
-        label_stroke_width=int(label_stroke_width),
-        color=center_color,
-    )
+    center_point_px: PixelPoint | None = None
     candidate_points_px_by_label = {
         str(label): graph_units_to_pixel(point, graph_origin=context.graph_origin, spacing=int(context.graph_spacing))
         for label, point in candidate_points_by_label.items()
@@ -673,8 +664,6 @@ def _render_point_scene(
             width=max(2, int(context.scene_scale) * 2),
         )
     blocked_points = [scale_point(candidate_points_px_by_label[str(label)], int(context.scene_scale)) for label in candidate_labels]
-    if center_point_px is not None:
-        blocked_points.append(scale_point(center_point_px, int(context.scene_scale)))
     draw_labeled_points(
         draw,
         points=[scale_point(candidate_points_px_by_label[str(label)], int(context.scene_scale)) for label in candidate_labels],

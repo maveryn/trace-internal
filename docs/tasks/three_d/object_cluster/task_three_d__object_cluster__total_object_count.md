@@ -6,8 +6,8 @@
 - Package: `trace/tasks/three_d/object_cluster/`
 - Supported `query_id`: `single`
 - Answer type: `integer`
-- Annotation type: unordered `point_set`
-- Annotation schema: `point_set`
+- Annotation type: unordered `bbox_set`
+- Annotation schema: `bbox_set`
 
 ## Program Contract
 `count(filter(object_cluster_objects, is_countable_object = true)); scene=object_cluster; scope=total_object_count`
@@ -31,7 +31,8 @@ The answer is the integer count of finalized visible objects with
 truth.
 
 ## Annotation Contract
-Annotation is a `point_set` containing one center point for each counted object.
+Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around
+each counted object.
 The annotation set is unordered because all witnesses have the same semantic
 role and annotation cardinality matches the answer.
 

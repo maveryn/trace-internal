@@ -144,13 +144,13 @@
     "global": {
       "object_description": "many small 3D objects arranged on a plain surface",
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one center point [x,y] for each counted object",
-      "json_example": "{\"annotation\":[[147,472],[420,345],[730,550]],\"answer\":3}",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted object",
+      "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370],[704,520,756,580]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "task:object_cluster_count_arithmetic_query": {
-      "annotation_hint": "set \"annotation\" to an object with keys \"left_operand\" and \"right_operand\"; each value is an array of center points [x,y] for that operand group",
-      "json_example": "{\"annotation\":{\"left_operand\":[[147,472],[420,345]],\"right_operand\":[[730,550]]},\"answer\":1}"
+      "annotation_hint": "set \"annotation\" to an object with keys \"left_operand\" and \"right_operand\"; each value is an array of [x0, y0, x1, y1] pixel boxes around the objects in that operand group",
+      "json_example": "{\"annotation\":{\"left_operand\":[[120,450,174,494],[390,320,450,370]],\"right_operand\":[[704,520,756,580]]},\"answer\":1}"
     }
   },
   "dynamic_slots": {

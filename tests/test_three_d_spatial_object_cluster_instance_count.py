@@ -196,12 +196,12 @@ def test_object_cluster_total_object_count_answer_and_annotation() -> None:
     assert trace["distractor_count"] == 0
     assert output.answer_gt.type == "integer"
     assert output.answer_gt.value == 14
-    assert output.annotation_gt.type == "point_set"
+    assert output.annotation_gt.type == "bbox_set"
     assert len(output.annotation_gt.value) == int(output.answer_gt.value)
     assert counted_object_ids == [str(spec["object_id"]) for spec in sorted(object_specs, key=lambda item: str(item["object_id"]))]
-    assert output.annotation_gt.value == [render_map["object_centers_px"][object_id] for object_id in counted_object_ids]
-    assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
-    assert output.trace_payload["projected_annotation"]["pixel_point_set"] == output.annotation_gt.value
+    assert output.annotation_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in counted_object_ids]
+    assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["pixel_bbox_set"] == output.annotation_gt.value
     assert trace["cluster_count"] in {1, 2, 3}
     assert 0.0 <= float(trace["cluster_compactness"]) <= 1.0
     assert len(trace["cluster_layout"]["centers"]) == int(trace["cluster_count"])
@@ -256,16 +256,16 @@ def test_object_cluster_instance_count_answer_and_annotation() -> None:
     assert trace["cluster_composition_mode"] == "mixed_type_cluster"
     assert output.answer_gt.type == "integer"
     assert output.answer_gt.value == 6
-    assert output.annotation_gt.type == "point_set"
+    assert output.annotation_gt.type == "bbox_set"
     assert len(output.annotation_gt.value) == int(output.answer_gt.value)
-    assert output.annotation_gt.value == [render_map["object_centers_px"][object_id] for object_id in target_object_ids]
+    assert output.annotation_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in target_object_ids]
     assert trace["shape_counts"]["pencil"] == 6
     assert all(str(spec["shape_type"]) == "pencil" for spec in object_specs if str(spec["object_id"]) in set(target_object_ids))
     assert all(not bool(spec.get("is_answer_candidate", False)) for spec in object_specs)
     assert all(bool(spec.get("is_countable_object", False)) for spec in object_specs)
     assert trace["solver_trace"]["cluster_object_pool_size"] == len(COUNTABLE_SHAPE_TYPES)
-    assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
-    assert output.trace_payload["projected_annotation"]["pixel_point_set"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["pixel_bbox_set"] == output.annotation_gt.value
     assert_three_d_canvas_contract(output)
 
 
@@ -374,12 +374,12 @@ def test_object_cluster_multi_attribute_and_count_answer_and_annotation() -> Non
     assert trace["internal_query_id"] == "type_and_color_count"
     assert output.answer_gt.type == "integer"
     assert output.answer_gt.value == 4
-    assert output.annotation_gt.type == "point_set"
+    assert output.annotation_gt.type == "bbox_set"
     assert target_object_ids == expected_ids
     assert len(output.annotation_gt.value) == int(output.answer_gt.value)
-    assert output.annotation_gt.value == [render_map["object_centers_px"][object_id] for object_id in target_object_ids]
-    assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
-    assert output.trace_payload["projected_annotation"]["pixel_point_set"] == output.annotation_gt.value
+    assert output.annotation_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in target_object_ids]
+    assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["pixel_bbox_set"] == output.annotation_gt.value
     assert trace["target_property_phrase"] == "red cubes"
     assert trace["target_spec"]["target_property_prompt_phrase"] == f"{semantic_color_label('red')} cubes"
     assert semantic_color_label("red") in output.prompt
@@ -481,9 +481,9 @@ def test_object_cluster_color_membership_count_answer_and_annotation() -> None:
     assert output.query_id == "single"
     assert trace["internal_query_id"] == "color_count"
     assert output.answer_gt.value == 5
-    assert output.annotation_gt.type == "point_set"
+    assert output.annotation_gt.type == "bbox_set"
     assert target_object_ids == expected_ids
-    assert output.annotation_gt.value == [render_map["object_centers_px"][object_id] for object_id in target_object_ids]
+    assert output.annotation_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in target_object_ids]
     assert all(bool(spec["matches_query"]) == (str(spec["color_name"]) == "blue") for spec in object_specs)
     assert semantic_color_label("blue") in output.prompt
     assert not any(str(spec["color_name"]) in {"cyan", "purple"} for spec in object_specs if str(spec["color_name"]) != "blue")
@@ -555,7 +555,7 @@ def test_object_cluster_multi_attribute_exclusion_count_answer_and_annotation() 
     assert output.query_id == "type_and_not_color_count"
     assert output.answer_gt.value == 5
     assert target_object_ids == expected_ids
-    assert output.annotation_gt.type == "point_set"
+    assert output.annotation_gt.type == "bbox_set"
     assert semantic_color_label("red") in output.prompt
     assert any(str(spec["shape_type"]) == "cube" and str(spec["color_name"]) == "red" for spec in object_specs)
 
@@ -588,7 +588,7 @@ def test_object_cluster_type_union_count_answer_and_annotation() -> None:
     assert trace["internal_query_id"] == "two_type_union_count"
     assert output.answer_gt.value == 7
     assert target_object_ids == expected_ids
-    assert output.annotation_gt.type == "point_set"
+    assert output.annotation_gt.type == "bbox_set"
     assert set(trace["target_shape_types"]) == {"button", "marble"}
 
 
@@ -617,14 +617,14 @@ def test_object_cluster_count_arithmetic_keyed_operand_annotation() -> None:
 
     assert output.query_id == "two_type_difference_count"
     assert output.answer_gt.value == 4
-    assert output.annotation_gt.type == "keyed_point_set_map"
+    assert output.annotation_gt.type == "keyed_bbox_set_map"
     assert set(output.annotation_gt.value) == {"left_operand", "right_operand"}
     assert len(output.annotation_gt.value["left_operand"]) == 6
     assert len(output.annotation_gt.value["right_operand"]) == 2
-    assert output.annotation_gt.value["left_operand"] == [render_map["object_centers_px"][object_id] for object_id in left_ids]
-    assert output.annotation_gt.value["right_operand"] == [render_map["object_centers_px"][object_id] for object_id in right_ids]
-    assert output.trace_payload["projected_annotation"]["keyed_point_set_map"] == output.annotation_gt.value
-    assert output.trace_payload["projected_annotation"]["pixel_keyed_point_set_map"] == output.annotation_gt.value
+    assert output.annotation_gt.value["left_operand"] == [render_map["object_bboxes_px"][object_id] for object_id in left_ids]
+    assert output.annotation_gt.value["right_operand"] == [render_map["object_bboxes_px"][object_id] for object_id in right_ids]
+    assert output.trace_payload["projected_annotation"]["keyed_bbox_set_map"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["pixel_keyed_bbox_set_map"] == output.annotation_gt.value
 
 
 def test_object_cluster_type_frequency_singleton_count_answer_and_annotation() -> None:
@@ -655,7 +655,7 @@ def test_object_cluster_type_frequency_singleton_count_answer_and_annotation() -
     assert output.query_id == "singleton_type_count"
     assert output.answer_gt.value == 4
     assert target_object_ids == expected_ids
-    assert output.annotation_gt.type == "point_set"
+    assert output.annotation_gt.type == "bbox_set"
     assert len(output.annotation_gt.value) == 4
 
 

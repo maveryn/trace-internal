@@ -137,33 +137,33 @@ def _run_once(
     )
 
     target_object_ids = [str(object_id) for object_id in dataset["target_object_ids"]]
-    target_points = [list(rendered.object_centers_px[str(object_id)]) for object_id in target_object_ids]
+    target_bboxes = [list(rendered.object_bboxes_px[str(object_id)]) for object_id in target_object_ids]
     if bool(request.keyed_annotation):
         role_object_ids = dataset.get("role_object_ids", {})
         left_ids = [str(object_id) for object_id in role_object_ids.get("left_operand", [])]
         right_ids = [str(object_id) for object_id in role_object_ids.get("right_operand", [])]
         annotation_value = {
-            "left_operand": [list(rendered.object_centers_px[str(object_id)]) for object_id in left_ids],
-            "right_operand": [list(rendered.object_centers_px[str(object_id)]) for object_id in right_ids],
+            "left_operand": [list(rendered.object_bboxes_px[str(object_id)]) for object_id in left_ids],
+            "right_operand": [list(rendered.object_bboxes_px[str(object_id)]) for object_id in right_ids],
         }
-        annotation_gt = TypedValue(type="keyed_point_set_map", value=dict(annotation_value))
+        annotation_gt = TypedValue(type="keyed_bbox_set_map", value=dict(annotation_value))
         projected_annotation = {
-            "type": "keyed_point_set_map",
-            "keyed_point_set_map": dict(annotation_value),
-            "pixel_keyed_point_set_map": dict(annotation_value),
+            "type": "keyed_bbox_set_map",
+            "keyed_bbox_set_map": dict(annotation_value),
+            "pixel_keyed_bbox_set_map": dict(annotation_value),
         }
         annotation_render_map = {
-            "operand_object_centers_px": {
-                "left_operand": {str(object_id): list(rendered.object_centers_px[str(object_id)]) for object_id in left_ids},
-                "right_operand": {str(object_id): list(rendered.object_centers_px[str(object_id)]) for object_id in right_ids},
+            "operand_object_bboxes_px": {
+                "left_operand": {str(object_id): list(rendered.object_bboxes_px[str(object_id)]) for object_id in left_ids},
+                "right_operand": {str(object_id): list(rendered.object_bboxes_px[str(object_id)]) for object_id in right_ids},
             }
         }
     else:
-        annotation_gt = TypedValue(type="point_set", value=[list(point) for point in target_points])
+        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in target_bboxes])
         projected_annotation = {
-            "type": "point_set",
-            "point_set": [list(point) for point in target_points],
-            "pixel_point_set": [list(point) for point in target_points],
+            "type": "bbox_set",
+            "bbox_set": [list(bbox) for bbox in target_bboxes],
+            "pixel_bbox_set": [list(bbox) for bbox in target_bboxes],
         }
         annotation_render_map = {}
 

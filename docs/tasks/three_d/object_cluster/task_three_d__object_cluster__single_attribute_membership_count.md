@@ -6,8 +6,8 @@
 - Package: `trace/tasks/three_d/object_cluster/`
 - Supported `query_id`: `single`
 - Answer type: `integer`
-- Annotation type: unordered `point_set`
-- Annotation schema: `point_set`
+- Annotation type: unordered `bbox_set`
+- Annotation schema: `bbox_set`
 
 ## Program Contract
 `count(filter(object_cluster_objects, shape_type = target_shape_type)); scene=object_cluster; scope=single_attribute_membership_count`
@@ -34,7 +34,7 @@ Prompt-facing wording must not mention absent labels, missing letters, or other 
 The answer is the integer count of finalized objects whose `shape_type` equals the sampled target shape. Pixels are render output, not verifier source of truth.
 
 ## Annotation Contract
-Annotation is a `point_set` containing one center point for each counted target object. The annotation set is unordered because all witnesses have the same semantic role and annotation cardinality matches the answer.
+Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around each counted target object. The annotation set is unordered because all witnesses have the same semantic role and annotation cardinality matches the answer.
 
 ## Prompt And Trace
 The prompt bundle is `three_d_object_cluster_v1` under `prompts/three_d/object_cluster/`. The trace records camera pose, projection frame, object world coordinates, sampled dimensions, prompt-facing object names, target shape, target object ids, per-shape counts, projected object boxes, and the solver count predicate.

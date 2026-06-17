@@ -6,8 +6,8 @@
 - Package: `trace/tasks/three_d/object_cluster/`
 - Supported `query_id`s: `type_and_not_color_count`, `color_and_not_type_count`
 - Answer type: `integer`
-- Annotation type: unordered `point_set`
-- Annotation schema: `point_set`
+- Annotation type: unordered `bbox_set`
+- Annotation schema: `bbox_set`
 
 ## Program Contract
 `count(filter(object_cluster_objects, positive_attribute = target_value and excluded_attribute != excluded_value)); scene=object_cluster; scope=multi_attribute_exclusion_count`
@@ -18,7 +18,7 @@ The image shows many small synthetic perspective 3D colored objects arranged on 
 The answer is the integer count of finalized clustered objects satisfying the requested exclusion predicate. Generation includes structured excluded-overlap distractors, such as red cubes when the prompt asks for cubes that are not red. Generated color distractors avoid near-color named pairs such as blue/cyan/purple and red/maroon/magenta.
 
 ## Annotation Contract
-Annotation is a `point_set` containing one center point for each counted object satisfying the requested exclusion predicate. The annotation set is unordered because all witnesses have the same role and annotation cardinality matches the answer.
+Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around each counted object satisfying the requested exclusion predicate. The annotation set is unordered because all witnesses have the same role and annotation cardinality matches the answer.
 
 ## Prompt And Trace
 The prompt bundle is `three_d_object_cluster_v1` under `prompts/three_d/object_cluster/`. The trace records camera pose, projection frame, object world coordinates, sampled dimensions, prompt-facing object names, semantic colors, target type/color, target object ids, shape/color/property counts, projected object boxes, and the solver count predicate.

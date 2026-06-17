@@ -13,7 +13,7 @@
 `count(filter(object_cluster_objects, shape_type = target_shape_type)); scene=object_cluster; scope=single_attribute_membership_count`
 
 ## Contract
-The image shows a dense synthetic perspective 3D cluster of small objects on a plain surface. This scene is a bare clustered-counting surface: it does not use option labels, named reference objects, relation prompts, or grid-based spatial cues.
+The image shows many small synthetic perspective 3D objects arranged on a plain surface. This scene is a bare clustered-counting surface: it does not use option labels, named reference objects, relation prompts, or grid-based spatial cues.
 
 The prompt asks how many objects of one named type are present. The target type
 is sampled from the full cluster object pool: the prompt-safe object-scene small

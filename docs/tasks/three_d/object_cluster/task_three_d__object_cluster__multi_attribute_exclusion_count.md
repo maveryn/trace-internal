@@ -13,7 +13,7 @@
 `count(filter(object_cluster_objects, positive_attribute = target_value and excluded_attribute != excluded_value)); scene=object_cluster; scope=multi_attribute_exclusion_count`
 
 ## Contract
-The image shows a dense synthetic perspective 3D cluster of colored small objects on a plain surface. The prompt asks for a count under one positive attribute while excluding a second attribute: either named type but not named color, or named color but not named type. Prompt-facing semantic colors include the canonical color hex label, for example `red [#E63232]`.
+The image shows many small synthetic perspective 3D colored objects arranged on a plain surface. The prompt asks for a count under one positive attribute while excluding a second attribute: either named type but not named color, or named color but not named type. Prompt-facing semantic colors include the canonical color hex label, for example `red [#E63232]`.
 
 The answer is the integer count of finalized clustered objects satisfying the requested exclusion predicate. Generation includes structured excluded-overlap distractors, such as red cubes when the prompt asks for cubes that are not red. Generated color distractors avoid near-color named pairs such as blue/cyan/purple and red/maroon/magenta.
 

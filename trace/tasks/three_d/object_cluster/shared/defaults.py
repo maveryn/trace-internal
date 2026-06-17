@@ -19,7 +19,12 @@ CLUSTER_COMPOSITION_MODES: Tuple[str, ...] = (
     "near_homogeneous_cluster",
     "mixed_type_cluster",
 )
-COUNTABLE_SHAPE_TYPES: Tuple[str, ...] = tuple(str(shape) for shape in OBJECT_CLUSTER_SHAPE_TYPES)
+OBJECT_CLUSTER_EXCLUDED_SHAPE_TYPES: Tuple[str, ...] = ("stick",)
+COUNTABLE_SHAPE_TYPES: Tuple[str, ...] = tuple(
+    str(shape)
+    for shape in OBJECT_CLUSTER_SHAPE_TYPES
+    if str(shape) not in set(OBJECT_CLUSTER_EXCLUDED_SHAPE_TYPES)
+)
 CLUSTER_DIMENSION_SCALE = 0.96
 MIN_PROJECTED_OBJECT_AREA_PX = 320.0
 MAX_PAIRWISE_OVERLAP_FRACTION = 0.55
@@ -98,7 +103,7 @@ COLOR_SAFE_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
         "bead",
         "dot",
     )
-    if shape in set(OBJECT_CLUSTER_SHAPE_TYPES)
+    if shape in set(COUNTABLE_SHAPE_TYPES)
 )
 # Semantic-color tasks only use shapes whose projected renderer makes ``fill_rgb``
 # a visible body color. Canonical-color glyphs such as books, apples, dice, and
@@ -133,7 +138,7 @@ COLOR_READOUT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
         "flask",
         "half_cylinder",
     )
-    if shape in set(OBJECT_CLUSTER_SHAPE_TYPES)
+    if shape in set(COUNTABLE_SHAPE_TYPES)
 )
 
 COLOR_CONFUSION_EXCLUSIONS: Mapping[str, Tuple[str, ...]] = {
@@ -226,6 +231,7 @@ __all__ = [
     "MAX_RENDERED_PAIRWISE_OVERLAP_PX",
     "MIN_RENDERED_VISIBLE_BBOX_FRACTION",
     "MIN_PROJECTED_OBJECT_AREA_PX",
+    "OBJECT_CLUSTER_EXCLUDED_SHAPE_TYPES",
     "PLACEMENT_FOOTPRINT_SEPARATION_FACTOR",
     "PROMPT_COLOR_RGB",
     "SCENE_ID",

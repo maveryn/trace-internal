@@ -13,7 +13,7 @@
 `operation(count(filter(object_cluster_objects, operand = left_operand)), count(filter(object_cluster_objects, operand = right_operand))); scene=object_cluster; scope=count_arithmetic`
 
 ## Contract
-The image shows a dense synthetic perspective 3D cluster of colored small objects on a plain surface. The prompt names two disjoint operand groups, either two object types or two colors, and asks for their total count or the absolute difference between their counts. Prompt-facing semantic colors include the canonical color hex label, for example `blue [#2D75E6]`.
+The image shows many small synthetic perspective 3D colored objects arranged on a plain surface. The prompt names two disjoint operand groups, either two object types or two colors, and asks for their total count or the absolute difference between their counts. Prompt-facing semantic colors include the canonical color hex label, for example `blue [#2D75E6]`.
 
 The answer is the requested integer total or absolute count difference. Operand membership is derived from finalized metadata, not pixels. Generated two-color operand branches choose non-confusable color pairs and avoid near-color distractors.
 

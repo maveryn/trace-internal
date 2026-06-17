@@ -13,7 +13,7 @@
 `count(filter(object_cluster_objects, shape_type = target_shape_type and color_name = target_color_name)); scene=object_cluster; scope=multi_attribute_and_count`
 
 ## Contract
-The image shows a dense synthetic perspective 3D cluster of colored small objects on a plain surface. The prompt asks how many objects match both a named object type and a semantic color, such as red cubes or blue puzzle pieces. Prompt-facing semantic colors include the canonical color hex label, for example `red [#E63232]`, while verifier metadata keeps the raw color name.
+The image shows many small synthetic perspective 3D colored objects arranged on a plain surface. The prompt asks how many objects match both a named object type and a semantic color, such as red cubes or blue puzzle pieces. Prompt-facing semantic colors include the canonical color hex label, for example `red [#E63232]`, while verifier metadata keeps the raw color name.
 
 This task is distinct from `task_three_d__object_cluster__single_attribute_membership_count`, which counts one object type regardless of color. Generation includes structured partial-match distractors: target-type objects in other colors, target-color objects of other types, and unrelated distractors.
 

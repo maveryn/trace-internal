@@ -13,7 +13,7 @@
 `count(filter(object_cluster_objects, shape_type in target_shape_types)); scene=object_cluster; scope=type_union_count`
 
 ## Contract
-The image shows a dense synthetic perspective 3D cluster of small objects on a plain surface. The prompt asks how many objects belong to either of two named object types.
+The image shows many small synthetic perspective 3D objects arranged on a plain surface. The prompt asks how many objects belong to either of two named object types.
 
 The answer is the integer count of finalized clustered objects whose recorded `shape_type` is one of the two sampled target types. The two target type sets are disjoint by construction, so each object is counted at most once.
 

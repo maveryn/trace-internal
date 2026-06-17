@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 from collections import Counter
+from dataclasses import replace
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
@@ -303,6 +304,57 @@ def finalize_specs(
     return list(finalized_specs)
 
 
+def sample_composition_offset(rng, *, render_params: ObjectSceneRenderParams) -> Dict[str, Any]:
+    """Sample a screen-space composition offset so clusters are not always centered."""
+
+    roll = float(rng.random())
+    if roll < 0.35:
+        offset_kind = "horizontal_edge"
+        dx_frac = float(rng.choice([-1.0, 1.0]) * rng.uniform(0.18, 0.30))
+        dy_frac = float(rng.uniform(-0.16, 0.16))
+    elif roll < 0.60:
+        offset_kind = "vertical_edge"
+        dx_frac = float(rng.uniform(-0.20, 0.20))
+        dy_frac = float(rng.choice([-1.0, 1.0]) * rng.uniform(0.15, 0.26))
+    elif roll < 0.75:
+        offset_kind = "corner_bias"
+        dx_frac = float(rng.choice([-1.0, 1.0]) * rng.uniform(0.16, 0.27))
+        dy_frac = float(rng.choice([-1.0, 1.0]) * rng.uniform(0.13, 0.23))
+    else:
+        offset_kind = "mild"
+        dx_frac = float(rng.uniform(-0.16, 0.16))
+        dy_frac = float(rng.uniform(-0.12, 0.12))
+    usable_width = float(
+        int(render_params.canvas_width)
+        - int(render_params.scene_margin_left_px)
+        - int(render_params.scene_margin_right_px)
+    )
+    usable_height = float(
+        int(render_params.canvas_height)
+        - int(render_params.scene_margin_top_px)
+        - int(render_params.scene_margin_bottom_px)
+    )
+    dx_px = float(dx_frac * usable_width)
+    dy_px = float(dy_frac * usable_height)
+    return {
+        "offset_kind": str(offset_kind),
+        "dx_frac": round(float(dx_frac), 5),
+        "dy_frac": round(float(dy_frac), 5),
+        "dx_px": round(float(dx_px), 3),
+        "dy_px": round(float(dy_px), 3),
+    }
+
+
+def apply_composition_offset(frame, composition_offset: Mapping[str, Any]):
+    """Shift the projection frame center by one sampled screen-space offset."""
+
+    return replace(
+        frame,
+        center_x=float(frame.center_x) + float(composition_offset["dx_px"]),
+        center_y=float(frame.center_y) + float(composition_offset["dy_px"]),
+    )
+
+
 def view_is_valid(
     *,
     specs: Sequence[Mapping[str, Any]],
@@ -484,6 +536,8 @@ def build_dataset_from_sequence(
         object_specs, cluster_layout = place_cluster_objects(rng=rng, sequence=sequence, scene_variant=str(scene_variant))
         reference_points = [point for spec in object_specs for point in _object_reference_points(spec)]
         frame = _build_projection_frame(camera=camera, render_params=render_params, point_worlds=reference_points)
+        composition_offset = sample_composition_offset(rng, render_params=render_params)
+        frame = apply_composition_offset(frame, composition_offset)
         if not view_is_valid(specs=object_specs, camera=camera, frame=frame, render_params=render_params):
             continue
         finalized_specs = finalize_specs(object_specs, camera=camera, frame=frame)
@@ -531,6 +585,7 @@ def build_dataset_from_sequence(
             "cluster_layout": dict(cluster_layout),
             "cluster_count": int(cluster_layout["cluster_count"]),
             "cluster_compactness": float(cluster_layout["compactness"]),
+            "composition_offset": dict(composition_offset),
             "object_specs": sorted(finalized_specs, key=lambda spec: str(spec["object_id"])),
             "point_specs": sorted(finalized_specs, key=lambda spec: str(spec["object_id"])),
             "context_object_specs": [],
@@ -554,6 +609,7 @@ def build_dataset_from_sequence(
                 "cluster_layout": dict(cluster_layout),
                 "cluster_count": int(cluster_layout["cluster_count"]),
                 "cluster_compactness": float(cluster_layout["compactness"]),
+                "composition_offset": dict(composition_offset),
                 "shape_counts": {str(key): int(value) for key, value in sorted(shape_counts.items())},
                 "color_counts": {str(key): int(value) for key, value in sorted(color_counts.items())},
                 "property_counts": {
@@ -573,7 +629,9 @@ def build_dataset_from_sequence(
 
 __all__ = [
     "build_dataset_from_sequence",
+    "apply_composition_offset",
     "rendered_bboxes_are_valid",
     "rendered_layout_stats",
+    "sample_composition_offset",
     "screen_span_requirements",
 ]

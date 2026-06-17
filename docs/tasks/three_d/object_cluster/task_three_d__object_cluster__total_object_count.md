@@ -39,8 +39,8 @@ role and annotation cardinality matches the answer.
 The prompt bundle is `three_d_object_cluster_v1` under `prompts/three_d/object_cluster/`.
 The trace records camera pose, projection frame, object world coordinates,
 sampled dimensions, primary object type metadata, cluster layout metadata,
-rendered readability stats, all counted object ids, projected object boxes, and
-the solver count predicate.
+composition offset metadata, rendered readability stats, all counted object ids,
+projected object boxes, and the solver count predicate.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config

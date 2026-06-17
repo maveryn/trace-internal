@@ -13,7 +13,7 @@
 `count(unique(filter(object_cluster_objects, shape_type = target_shape_type) union filter(object_cluster_objects, color_name = target_color_name))); scene=object_cluster; scope=multi_attribute_or_count`
 
 ## Contract
-The image shows a dense synthetic perspective 3D cluster of colored small objects on a plain surface. The prompt asks how many objects match an inclusive OR predicate: the object is the named type or the object has the named color. Prompt-facing semantic colors include the canonical color hex label, for example `red [#E63232]`. Objects matching both conditions are counted once.
+The image shows many small synthetic perspective 3D colored objects arranged on a plain surface. The prompt asks how many objects match an inclusive OR predicate: the object is the named type or the object has the named color. Prompt-facing semantic colors include the canonical color hex label, for example `red [#E63232]`. Objects matching both conditions are counted once.
 
 The answer is the integer count of finalized clustered objects whose recorded `shape_type` equals the sampled target type or whose `color_name` equals the sampled target color. Generated color distractors avoid near-color named pairs such as blue/cyan/purple and red/maroon/magenta.
 

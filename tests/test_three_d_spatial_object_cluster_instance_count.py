@@ -54,7 +54,6 @@ COUNTQA_CLUSTER_ADDITIONS = {
     "egg",
     "chili",
     "paint_brush",
-    "stick",
     "straw",
     "ticket",
     "marble",
@@ -206,6 +205,10 @@ def test_object_cluster_total_object_count_answer_and_annotation() -> None:
     assert trace["cluster_count"] in {1, 2, 3}
     assert 0.0 <= float(trace["cluster_compactness"]) <= 1.0
     assert len(trace["cluster_layout"]["centers"]) == int(trace["cluster_count"])
+    composition_offset = trace["composition_offset"]
+    assert str(composition_offset["offset_kind"]) in {"horizontal_edge", "vertical_edge", "corner_bias", "mild"}
+    assert -0.30 <= float(composition_offset["dx_frac"]) <= 0.30
+    assert -0.26 <= float(composition_offset["dy_frac"]) <= 0.26
     rendered_stats = trace["rendered_layout_stats"]
     assert int(rendered_stats["object_count"]) == 14
     assert int(rendered_stats["center_inside_canvas_count"]) == 14
@@ -317,6 +320,8 @@ def test_object_cluster_total_object_count_registered_in_three_d_taxonomy() -> N
 def test_object_cluster_countqa_additions_have_profiles_and_render() -> None:
     assert COUNTQA_CLUSTER_ADDITIONS.issubset(set(OBJECT_CLUSTER_EXTRA_SHAPE_TYPES))
     assert COUNTQA_CLUSTER_ADDITIONS.issubset(set(COUNTABLE_SHAPE_TYPES))
+    assert "stick" not in set(COUNTABLE_SHAPE_TYPES)
+    assert "stick" not in set(COLOR_SAFE_CLUSTER_SHAPE_TYPES)
     profiles = {
         str(profile.object_type): profile
         for profile in object_profiles(source_scene="object_cluster", role="cluster_small_shape")

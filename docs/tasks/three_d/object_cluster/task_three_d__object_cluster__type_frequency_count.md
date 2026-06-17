@@ -13,7 +13,7 @@
 `count(filter(object_cluster_objects, frequency_rule = selected_frequency_rule)); scene=object_cluster; scope=type_frequency_count`
 
 ## Contract
-The image shows a dense synthetic perspective 3D cluster of small objects on a plain surface. The prompt asks for a count derived from object-type frequencies: either the count of the unique most frequent object type, or the number of objects whose type appears exactly once.
+The image shows many small synthetic perspective 3D objects arranged on a plain surface. The prompt asks for a count derived from object-type frequencies: either the count of the unique most frequent object type, or the number of objects whose type appears exactly once.
 
 The answer is the integer count derived from finalized `shape_type` frequencies. Generation enforces a unique most-frequent type for `most_frequent_type_count` and exact singleton membership for `singleton_type_count`.
 

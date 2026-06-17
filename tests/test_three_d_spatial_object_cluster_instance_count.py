@@ -25,8 +25,10 @@ from trace.tasks.three_d.object_cluster.shared.defaults import (
     COUNTABLE_SHAPE_TYPES,
     MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION,
     MAX_RENDERED_PAIRWISE_OVERLAP_PX,
+    MIN_RENDERED_VISIBLE_BBOX_FRACTION,
     PROMPT_COLOR_RGB,
 )
+from trace.tasks.three_d.object_cluster.shared.objects import screen_span_requirements
 from trace.tasks.three_d.object_cluster.shared.relations import semantic_color_label
 from trace.tasks.three_d.object_cluster.single_attribute_membership_count import TASK_ID
 from trace.tasks.three_d.object_cluster.total_object_count import TASK_ID as TOTAL_OBJECT_COUNT_TASK_ID
@@ -140,6 +142,22 @@ def _max_pairwise_render_overlap(object_bboxes_px: dict[str, list[float]]) -> tu
     return float(max_fraction), float(max_pixels)
 
 
+def _min_visible_render_fraction(object_bboxes_px: dict[str, list[float]], *, width: int, height: int) -> float:
+    def area(box: list[float]) -> float:
+        return max(0.0, float(box[2]) - float(box[0])) * max(0.0, float(box[3]) - float(box[1]))
+
+    fractions = []
+    for box in object_bboxes_px.values():
+        full = max(1.0, area(list(box)))
+        x0 = max(0.0, float(box[0]))
+        y0 = max(0.0, float(box[1]))
+        x1 = min(float(width), float(box[2]))
+        y1 = min(float(height), float(box[3]))
+        visible = max(0.0, x1 - x0) * max(0.0, y1 - y0)
+        fractions.append(float(visible) / float(full))
+    return float(min(fractions)) if fractions else 1.0
+
+
 def test_object_cluster_prompt_colors_use_canonical_palette() -> None:
     canonical = {
         str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
@@ -185,6 +203,23 @@ def test_object_cluster_total_object_count_answer_and_annotation() -> None:
     assert output.annotation_gt.value == [render_map["object_centers_px"][object_id] for object_id in counted_object_ids]
     assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
     assert output.trace_payload["projected_annotation"]["pixel_point_set"] == output.annotation_gt.value
+    assert trace["cluster_count"] in {1, 2, 3}
+    assert 0.0 <= float(trace["cluster_compactness"]) <= 1.0
+    assert len(trace["cluster_layout"]["centers"]) == int(trace["cluster_count"])
+    rendered_stats = trace["rendered_layout_stats"]
+    assert int(rendered_stats["object_count"]) == 14
+    assert int(rendered_stats["center_inside_canvas_count"]) == 14
+    canvas_width = int(output.trace_payload["render_spec"]["final_canvas_width"])
+    canvas_height = int(output.trace_payload["render_spec"]["final_canvas_height"])
+    min_x_span, min_y_span = screen_span_requirements(14, width=canvas_width, height=canvas_height)
+    assert float(rendered_stats["center_x_span_px"]) >= min_x_span
+    assert float(rendered_stats["center_y_span_px"]) >= min_y_span
+    assert _min_visible_render_fraction(render_map["object_bboxes_px"], width=canvas_width, height=canvas_height) >= float(
+        MIN_RENDERED_VISIBLE_BBOX_FRACTION
+    )
+    max_overlap_fraction, max_overlap_pixels = _max_pairwise_render_overlap(render_map["object_bboxes_px"])
+    assert max_overlap_fraction <= float(MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION)
+    assert max_overlap_pixels <= float(MAX_RENDERED_PAIRWISE_OVERLAP_PX)
     assert all(str(spec["shape_type"]) == "button" for spec in object_specs)
     assert all(bool(spec.get("matches_query", False)) for spec in object_specs)
     assert all(bool(spec.get("is_countable_object", False)) for spec in object_specs)

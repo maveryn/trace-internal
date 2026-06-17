@@ -7,6 +7,7 @@
 - Supported `query_id`s: `type_and_not_color_count`, `color_and_not_type_count`
 - Answer type: `integer`
 - Annotation type: unordered `point_set`
+- Annotation schema: `point_set`
 
 ## Program Contract
 `count(filter(object_cluster_objects, positive_attribute = target_value and excluded_attribute != excluded_value)); scene=object_cluster; scope=multi_attribute_exclusion_count`

@@ -7,6 +7,7 @@
 - Supported `query_id`s: `two_type_total_count`, `two_type_difference_count`, `two_color_total_count`, `two_color_difference_count`
 - Answer type: `integer`
 - Annotation type: `keyed_point_set_map`
+- Annotation schema: `keyed_point_set_map`
 
 ## Program Contract
 `operation(count(filter(object_cluster_objects, operand = left_operand)), count(filter(object_cluster_objects, operand = right_operand))); scene=object_cluster; scope=count_arithmetic`

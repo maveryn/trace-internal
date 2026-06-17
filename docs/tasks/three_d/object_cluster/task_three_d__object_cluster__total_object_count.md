@@ -7,21 +7,24 @@
 - Supported `query_id`: `single`
 - Answer type: `integer`
 - Annotation type: unordered `point_set`
+- Annotation schema: `point_set`
 
 ## Program Contract
 `count(filter(object_cluster_objects, is_countable_object = true)); scene=object_cluster; scope=total_object_count`
 
 ## Contract
-The image shows a dense synthetic perspective 3D cluster of small objects on a
-plain surface. This level-0 cluster task asks for the total number of visible
-objects in the cluster, without filtering by object type, color, relation, or
+The image shows many small synthetic perspective 3D objects arranged on a plain
+surface. The objects remain visually clustered, but generation may use one or
+more local centers with continuous compactness variation so scenes range from
+more compact to more spread out. This level-0 cluster task asks for the total
+number of visible objects, without filtering by object type, color, relation, or
 region.
 
-Generation uses a homogeneous cluster: all visible objects are countable
-instances from one sampled object type. The sampled object type is render
-variety metadata only and is not named in the prompt. There are no unrelated
-distractor objects in this task. The default generated object-count support is
-`6-20`.
+Generation uses a homogeneous object set: all visible objects are countable
+instances from one sampled object type. The sampled object type, cluster count,
+and compactness are render variety metadata only and are not named in the
+prompt. There are no unrelated distractor objects in this task. The default
+generated object-count support is `6-20`.
 
 The answer is the integer count of finalized visible objects with
 `is_countable_object = true`. Pixels are render output, not verifier source of
@@ -35,8 +38,9 @@ role and annotation cardinality matches the answer.
 ## Prompt And Trace
 The prompt bundle is `three_d_object_cluster_v1` under `prompts/three_d/object_cluster/`.
 The trace records camera pose, projection frame, object world coordinates,
-sampled dimensions, primary object type metadata, all counted object ids,
-projected object boxes, and the solver count predicate.
+sampled dimensions, primary object type metadata, cluster layout metadata,
+rendered readability stats, all counted object ids, projected object boxes, and
+the solver count predicate.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config

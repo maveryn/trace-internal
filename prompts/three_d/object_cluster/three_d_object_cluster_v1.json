@@ -25,10 +25,10 @@
     },
     "query": {
       "total_object_count": [
-        "How many objects are in the cluster?",
-        "Count every object in the cluster. How many are there?",
-        "What is the total number of visible objects in the cluster?",
-        "How many objects are present in the cluster?",
+        "How many objects are in the scene?",
+        "Count every object shown. How many are there?",
+        "What is the total number of visible objects?",
+        "How many objects are present?",
         "How many small objects are visible?"
       ],
       "type_count": [
@@ -142,7 +142,7 @@
   },
   "static_slots_by_key": {
     "global": {
-      "object_description": "a dense cluster of small objects",
+      "object_description": "many small 3D objects arranged on a plain surface",
       "answer_hint": "set \"answer\" to the count as an integer",
       "annotation_hint": "set \"annotation\" to an array containing one center point [x,y] for each counted object",
       "json_example": "{\"annotation\":[[147,472],[420,345],[730,550]],\"answer\":3}",

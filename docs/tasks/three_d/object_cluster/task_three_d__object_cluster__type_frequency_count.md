@@ -7,6 +7,7 @@
 - Supported `query_id`s: `most_frequent_type_count`, `singleton_type_count`
 - Answer type: `integer`
 - Annotation type: unordered `point_set`
+- Annotation schema: `point_set`
 
 ## Program Contract
 `count(filter(object_cluster_objects, frequency_rule = selected_frequency_rule)); scene=object_cluster; scope=type_frequency_count`

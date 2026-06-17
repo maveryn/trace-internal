@@ -26,7 +26,7 @@ from trace.tasks.three_d.shared.object_scene import (
 )
 
 from .shared.defaults import PROMPT_COLOR_RGB, SCENE_ID
-from .shared.objects import rendered_bboxes_are_valid
+from .shared.objects import rendered_bboxes_are_valid, rendered_layout_stats
 from .shared.relations import semantic_color_label
 from .shared.state import BuildRequest
 
@@ -115,12 +115,20 @@ def _run_once(
         draw_candidate_labels=False,
         compute_single_annotation=False,
     )
-    if not rendered_bboxes_are_valid(
-        rendered.object_bboxes_px,
+    layout_stats = rendered_layout_stats(
+        object_bboxes_px=rendered.object_bboxes_px,
+        object_centers_px=rendered.object_centers_px,
         width=int(rendered.image.width),
         height=int(rendered.image.height),
+    )
+    if not rendered_bboxes_are_valid(
+        rendered.object_bboxes_px,
+        rendered.object_centers_px,
+        width=int(rendered.image.width),
+        height=int(rendered.image.height),
+        object_count=int(dataset["object_count"]),
     ):
-        raise ValueError("rendered object cluster has too much object overlap")
+        raise ValueError("rendered object cluster failed readability constraints")
     image, post_noise_meta = apply_post_image_noise(
         rendered.image,
         instance_seed=int(instance_seed),
@@ -229,6 +237,8 @@ def _run_once(
                 "answer_value": int(answer_value),
                 "target_object_ids": list(target_object_ids),
                 "role_object_ids": dict(dataset["role_object_ids"]),
+                "cluster_count": int(dataset["cluster_count"]),
+                "cluster_compactness": float(dataset["cluster_compactness"]),
             },
         },
         "query_spec": {
@@ -281,6 +291,8 @@ def _run_once(
             "room_extent": float(render_params.room_extent),
             "full_bleed_floor": bool(render_params.full_bleed_floor),
             "semantic_color_palette": {str(key): list(value) for key, value in sorted(PROMPT_COLOR_RGB.items())},
+            "cluster_layout": dict(dataset["cluster_layout"]),
+            "rendered_layout_stats": dict(layout_stats),
         },
         "render_map": dict(render_map),
         "execution_trace": {
@@ -292,6 +304,10 @@ def _run_once(
             "target_count": int(dataset["target_count"]),
             "distractor_count": int(dataset.get("distractor_count", max(0, int(dataset["object_count"]) - int(dataset["target_count"])))),
             "cluster_composition_mode": dataset.get("cluster_composition_mode"),
+            "cluster_count": int(dataset["cluster_count"]),
+            "cluster_compactness": float(dataset["cluster_compactness"]),
+            "cluster_layout": dict(dataset["cluster_layout"]),
+            "rendered_layout_stats": dict(layout_stats),
             "answer_value": int(answer_value),
             "target_spec": dict(dataset["target_spec"]),
             "target_shape_type": dataset.get("target_shape_type"),

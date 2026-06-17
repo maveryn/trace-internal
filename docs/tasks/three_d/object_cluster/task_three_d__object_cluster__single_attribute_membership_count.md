@@ -7,6 +7,7 @@
 - Supported `query_id`: `single`
 - Answer type: `integer`
 - Annotation type: unordered `point_set`
+- Annotation schema: `point_set`
 
 ## Program Contract
 `count(filter(object_cluster_objects, shape_type = target_shape_type)); scene=object_cluster; scope=single_attribute_membership_count`

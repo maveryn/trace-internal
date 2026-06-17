@@ -23,11 +23,13 @@ from trace.tasks.three_d.shared.object_scene import (
 )
 
 from .defaults import (
+    CLUSTER_COUNT_WEIGHTS,
     CLUSTER_DIMENSION_SCALE,
     MAX_PAIRWISE_OVERLAP_FRACTION,
     MAX_PAIRWISE_OVERLAP_PX,
     MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION,
     MAX_RENDERED_PAIRWISE_OVERLAP_PX,
+    MIN_RENDERED_VISIBLE_BBOX_FRACTION,
     MIN_PROJECTED_OBJECT_AREA_PX,
     PLACEMENT_FOOTPRINT_SEPARATION_FACTOR,
     PROMPT_COLOR_RGB,
@@ -47,6 +49,22 @@ def bbox_area(bbox: Sequence[float]) -> float:
     """Return the pixel area of one projected object box."""
 
     return max(0.0, float(bbox[2]) - float(bbox[0])) * max(0.0, float(bbox[3]) - float(bbox[1]))
+
+
+def bbox_visible_fraction(
+    bbox: Sequence[float],
+    *,
+    width: int,
+    height: int,
+) -> float:
+    """Return the fraction of one object bbox that remains inside the canvas."""
+
+    full_area = max(1.0, bbox_area(bbox))
+    visible = _bbox_intersection_area(
+        list(bbox),
+        [0.0, 0.0, float(width), float(height)],
+    )
+    return float(visible) / float(full_area)
 
 
 def bbox_is_readable(
@@ -125,14 +143,99 @@ def make_cluster_object(
     return spec
 
 
-def sample_cluster_xy(rng, *, cluster_radius: float, y_scale: float) -> Tuple[float, float]:
-    """Sample an elliptical dense-cluster floor coordinate."""
+def _weighted_cluster_count(rng) -> int:
+    """Sample how many local centers compose this cluster scene."""
 
+    roll = float(rng.random())
+    cumulative = 0.0
+    for count, weight in sorted(CLUSTER_COUNT_WEIGHTS.items()):
+        cumulative += float(weight)
+        if roll <= cumulative:
+            return int(count)
+    return int(max(CLUSTER_COUNT_WEIGHTS))
+
+
+def sample_cluster_layout(
+    rng,
+    *,
+    scene_variant: str,
+    object_count: int,
+) -> Dict[str, Any]:
+    """Sample continuous cluster compactness and one or more local centers."""
+
+    count = max(1, int(object_count))
+    count_t = max(0.0, min(1.0, (float(count) - 6.0) / 14.0))
+    compactness = float(rng.random())
+    cluster_count = _weighted_cluster_count(rng)
+    variant_base_radius = {"tabletop_pile": 2.70, "shallow_tray": 2.52, "cluster_mat": 2.84}.get(str(scene_variant), 2.70)
+    variant_y_scale = {"tabletop_pile": 0.88, "shallow_tray": 0.82, "cluster_mat": 0.94}.get(str(scene_variant), 0.88)
+    count_radius_factor = 1.0 + 0.15 * count_t
+    compact_radius_factor = 1.12 - 0.17 * compactness
+    cluster_count_radius_factor = 1.0 + 0.12 * float(cluster_count - 1)
+    local_radius = float(variant_base_radius * count_radius_factor * compact_radius_factor / cluster_count_radius_factor)
+    y_scale = float(variant_y_scale * (1.04 - 0.08 * compactness))
+    radius_exponent = float(0.72 + 0.34 * compactness)
+
+    center_spread = 0.0
+    centers: List[Dict[str, Any]] = []
+    if cluster_count == 1:
+        centers.append(
+            {
+                "center_xy": [round(float(rng.uniform(-0.22, 0.22)), 4), round(float(rng.uniform(-0.18, 0.18)), 4)],
+                "weight": 1.0,
+            }
+        )
+    else:
+        center_spread = float(variant_base_radius * (0.40 + 0.24 * (1.0 - compactness)) * (1.0 + 0.12 * count_t))
+        start_angle = float(rng.uniform(0.0, 2.0 * math.pi))
+        raw_weights = [float(rng.uniform(0.82, 1.18)) for _ in range(cluster_count)]
+        weight_total = max(1e-9, sum(raw_weights))
+        for index in range(cluster_count):
+            angle = float(start_angle + (2.0 * math.pi * float(index) / float(cluster_count)) + rng.uniform(-0.34, 0.34))
+            radius = float(center_spread * rng.uniform(0.84, 1.08))
+            centers.append(
+                {
+                    "center_xy": [
+                        round(float(radius * math.cos(angle)), 4),
+                        round(float(radius * math.sin(angle) * 0.82), 4),
+                    ],
+                    "weight": round(float(raw_weights[index] / weight_total), 5),
+                }
+            )
+
+    return {
+        "cluster_count": int(cluster_count),
+        "compactness": round(float(compactness), 5),
+        "local_radius": round(float(local_radius), 5),
+        "y_scale": round(float(y_scale), 5),
+        "radius_exponent": round(float(radius_exponent), 5),
+        "center_spread": round(float(center_spread), 5),
+        "centers": list(centers),
+    }
+
+
+def _select_cluster_center(rng, centers: Sequence[Mapping[str, Any]]) -> Mapping[str, Any]:
+    """Select one local center using layout weights."""
+
+    roll = float(rng.random())
+    cumulative = 0.0
+    for center in centers:
+        cumulative += float(center.get("weight", 0.0))
+        if roll <= cumulative:
+            return center
+    return centers[-1]
+
+
+def sample_cluster_xy(rng, *, layout: Mapping[str, Any]) -> Tuple[float, float]:
+    """Sample an elliptical floor coordinate from the current cluster layout."""
+
+    center = _select_cluster_center(rng, list(layout["centers"]))
+    center_x, center_y = (float(value) for value in center["center_xy"])
     angle = float(rng.uniform(0.0, 2.0 * math.pi))
-    radius = float(rng.random() ** 0.64) * float(cluster_radius)
+    radius = float(rng.random() ** float(layout["radius_exponent"])) * float(layout["local_radius"])
     return (
-        float(radius * math.cos(angle) + rng.uniform(-0.12, 0.12)),
-        float(radius * math.sin(angle) * float(y_scale) + rng.uniform(-0.10, 0.10)),
+        float(center_x + radius * math.cos(angle) + rng.uniform(-0.14, 0.14)),
+        float(center_y + radius * math.sin(angle) * float(layout["y_scale"]) + rng.uniform(-0.12, 0.12)),
     )
 
 
@@ -155,19 +258,18 @@ def place_cluster_objects(
     rng,
     sequence: Sequence[ClusterSequenceItem],
     scene_variant: str,
-) -> List[Dict[str, Any]]:
+) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     """Place every semantic object item into a dense but separable 3D cluster."""
 
-    cluster_radius = {"tabletop_pile": 2.96, "shallow_tray": 2.78, "cluster_mat": 3.12}.get(str(scene_variant), 2.96)
-    y_scale = {"tabletop_pile": 0.88, "shallow_tray": 0.82, "cluster_mat": 0.94}.get(str(scene_variant), 0.88)
+    layout = sample_cluster_layout(rng, scene_variant=str(scene_variant), object_count=len(sequence))
     placed: List[Dict[str, Any]] = []
     for index, item in enumerate(sequence):
-        for _ in range(360):
+        for _ in range(520):
             candidate = make_cluster_object(
                 rng=rng,
                 object_id=f"cluster_object_{int(index):02d}",
                 item=item,
-                xy=sample_cluster_xy(rng, cluster_radius=float(cluster_radius), y_scale=float(y_scale)),
+                xy=sample_cluster_xy(rng, layout=layout),
             )
             if can_place_cluster(candidate, placed):
                 candidate["render_order_bias"] = round(float(rng.uniform(-0.035, 0.035)), 5)
@@ -175,7 +277,7 @@ def place_cluster_objects(
                 break
         else:
             raise ValueError("could not place enough clustered 3D objects")
-    return list(placed)
+    return list(placed), dict(layout)
 
 
 def finalize_specs(
@@ -235,11 +337,27 @@ def view_is_valid(
 
 def rendered_bboxes_are_valid(
     object_bboxes_px: Mapping[str, Sequence[float]],
+    object_centers_px: Mapping[str, Sequence[float]],
     *,
     width: int,
     height: int,
+    object_count: int,
 ) -> bool:
     """Validate the final rendered object boxes that reviewers actually inspect."""
+
+    stats = rendered_layout_stats(
+        object_bboxes_px=object_bboxes_px,
+        object_centers_px=object_centers_px,
+        width=int(width),
+        height=int(height),
+    )
+    if float(stats["min_visible_bbox_fraction"]) < float(MIN_RENDERED_VISIBLE_BBOX_FRACTION):
+        return False
+    if int(stats["center_inside_canvas_count"]) != int(stats["object_count"]):
+        return False
+    min_x_span, min_y_span = screen_span_requirements(int(object_count), width=int(width), height=int(height))
+    if float(stats["center_x_span_px"]) < float(min_x_span) or float(stats["center_y_span_px"]) < float(min_y_span):
+        return False
 
     bboxes = [list(bbox) for bbox in object_bboxes_px.values()]
     if any(
@@ -260,6 +378,59 @@ def rendered_bboxes_are_valid(
             if overlap > float(MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION) * min(area_a, bbox_area(bbox_b)):
                 return False
     return True
+
+
+def screen_span_requirements(object_count: int, *, width: int, height: int) -> Tuple[float, float]:
+    """Return minimum screen-space center spread for a rendered cluster."""
+
+    count = int(object_count)
+    if count <= 8:
+        return float(0.24 * float(width)), float(0.16 * float(height))
+    if count <= 14:
+        return float(0.32 * float(width)), float(0.22 * float(height))
+    return float(0.40 * float(width)), float(0.28 * float(height))
+
+
+def rendered_layout_stats(
+    object_bboxes_px: Mapping[str, Sequence[float]],
+    object_centers_px: Mapping[str, Sequence[float]],
+    *,
+    width: int,
+    height: int,
+) -> Dict[str, Any]:
+    """Summarize final rendered visibility and spread for trace/debug audits."""
+
+    bboxes = {str(key): list(value) for key, value in object_bboxes_px.items()}
+    centers = {str(key): list(value) for key, value in object_centers_px.items()}
+    visible_fractions = [
+        bbox_visible_fraction(bbox, width=int(width), height=int(height))
+        for bbox in bboxes.values()
+    ]
+    center_x_values = [float(point[0]) for point in centers.values()]
+    center_y_values = [float(point[1]) for point in centers.values()]
+    center_inside_count = sum(
+        1
+        for point in centers.values()
+        if 0.0 <= float(point[0]) <= float(width) and 0.0 <= float(point[1]) <= float(height)
+    )
+    max_overlap_fraction = 0.0
+    max_overlap_pixels = 0.0
+    bbox_values = list(bboxes.values())
+    for index, bbox_a in enumerate(bbox_values):
+        area_a = bbox_area(bbox_a)
+        for bbox_b in bbox_values[index + 1 :]:
+            overlap = _bbox_intersection_area(bbox_a, bbox_b)
+            max_overlap_pixels = max(max_overlap_pixels, float(overlap))
+            max_overlap_fraction = max(max_overlap_fraction, float(overlap) / max(1.0, min(area_a, bbox_area(bbox_b))))
+    return {
+        "object_count": int(len(bboxes)),
+        "center_inside_canvas_count": int(center_inside_count),
+        "center_x_span_px": round(float(max(center_x_values) - min(center_x_values)) if center_x_values else 0.0, 3),
+        "center_y_span_px": round(float(max(center_y_values) - min(center_y_values)) if center_y_values else 0.0, 3),
+        "min_visible_bbox_fraction": round(float(min(visible_fractions)) if visible_fractions else 1.0, 5),
+        "max_pairwise_overlap_fraction": round(float(max_overlap_fraction), 5),
+        "max_pairwise_overlap_px": round(float(max_overlap_pixels), 3),
+    }
 
 
 def camera_record(camera, *, yaw_band: Sequence[float]) -> Dict[str, Any]:
@@ -310,7 +481,7 @@ def build_dataset_from_sequence(
     selected_camera_yaw_band = _camera_yaw_band_for_instance(int(instance_seed))
     for _attempt in range(720):
         camera = _sample_camera(rng, yaw_band_degrees=selected_camera_yaw_band)
-        object_specs = place_cluster_objects(rng=rng, sequence=sequence, scene_variant=str(scene_variant))
+        object_specs, cluster_layout = place_cluster_objects(rng=rng, sequence=sequence, scene_variant=str(scene_variant))
         reference_points = [point for spec in object_specs for point in _object_reference_points(spec)]
         frame = _build_projection_frame(camera=camera, render_params=render_params, point_worlds=reference_points)
         if not view_is_valid(specs=object_specs, camera=camera, frame=frame, render_params=render_params):
@@ -357,6 +528,9 @@ def build_dataset_from_sequence(
             "target_object_ids": list(target_object_ids),
             "counted_object_ids": list(trace_extra.get("counted_object_ids", target_object_ids)),
             "role_object_ids": {str(role): list(ids) for role, ids in sorted(role_object_ids.items())},
+            "cluster_layout": dict(cluster_layout),
+            "cluster_count": int(cluster_layout["cluster_count"]),
+            "cluster_compactness": float(cluster_layout["compactness"]),
             "object_specs": sorted(finalized_specs, key=lambda spec: str(spec["object_id"])),
             "point_specs": sorted(finalized_specs, key=lambda spec: str(spec["object_id"])),
             "context_object_specs": [],
@@ -377,6 +551,9 @@ def build_dataset_from_sequence(
                 "answer_value": int(answer_value),
                 "target_object_ids": list(target_object_ids),
                 "role_object_ids": {str(role): list(ids) for role, ids in sorted(role_object_ids.items())},
+                "cluster_layout": dict(cluster_layout),
+                "cluster_count": int(cluster_layout["cluster_count"]),
+                "cluster_compactness": float(cluster_layout["compactness"]),
                 "shape_counts": {str(key): int(value) for key, value in sorted(shape_counts.items())},
                 "color_counts": {str(key): int(value) for key, value in sorted(color_counts.items())},
                 "property_counts": {
@@ -397,4 +574,6 @@ def build_dataset_from_sequence(
 __all__ = [
     "build_dataset_from_sequence",
     "rendered_bboxes_are_valid",
+    "rendered_layout_stats",
+    "screen_span_requirements",
 ]

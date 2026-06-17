@@ -512,7 +512,7 @@ def _draw_element(
         pull_bbox = [center[0] - pull_w * 0.5, center[1] - pull_h * 0.5, center[0] + pull_w * 0.5, center[1] + pull_h * 0.5]
         draw.rounded_rectangle(pull_bbox, radius=max(3, int(pull_h * 0.45)), fill=(86, 68, 48), outline=(39, 31, 24), width=2)
         draw.line([(pull_bbox[0] + pull_w * 0.18, center[1] - pull_h * 0.08), (pull_bbox[2] - pull_w * 0.18, center[1] - pull_h * 0.12)], fill=(174, 147, 96), width=1)
-        bbox = list(pull_bbox)
+        bbox = bbox_union(bbox_from_points(face), pull_bbox)
     elif element_type == "drive_bay":
         bay = shrink_polygon(cell, 0.88)
         bay_fill = _mix(fill, (28, 34, 40), 0.04 if semantic_color else 0.12)

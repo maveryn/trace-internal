@@ -35,6 +35,7 @@ from trace.tasks.three_d.surface_fixture.scoped_colored_element_count import (
     TASK_ID as SCOPED_COLORED_TASK_ID,
 )
 from trace.tasks.three_d.surface_fixture.shared.metrics import COLOR_CONFUSION_EXCLUSIONS
+from trace.tasks.three_d.surface_fixture.shared.rendering import bbox_from_points, quad_cell
 from trace.tasks.three_d.surface_fixture.shared.state import (
     COLOR_READOUT_SCENE_VARIANTS,
     ELEMENT_TYPE_BY_SCENE_VARIANT,
@@ -635,6 +636,51 @@ def test_surface_fixture_recolor_drive_bay_uses_visible_fill_rgb() -> None:
     assert original_brown[1] > original_brown[2] + 20.0
     assert recolored_green[1] > recolored_green[0] + 50.0
     assert recolored_green[1] > recolored_green[2] + 50.0
+
+
+def test_surface_fixture_drawer_pull_bbox_covers_visible_face() -> None:
+    output = create_task(REPEATED_TASK_ID).generate(
+        20260699,
+        params={
+            "query_id": "single",
+            "scene_variant": "drawer_pull_panel",
+            "target_count": 8,
+            "post_image_noise_apply_prob": 0.0,
+        },
+        max_attempts=20,
+    )
+
+    trace = output.trace_payload["execution_trace"]
+    render_map = output.trace_payload["render_map"]
+    fixture_entity = next(
+        entity
+        for entity in output.trace_payload["scene_ir"]["entities"]
+        if entity["entity_id"] == "surface_fixture_panel"
+    )
+    quad = fixture_entity["attrs"]["surface_screen_corners_px"]
+
+    assert trace["scene_variant"] == "drawer_pull_panel"
+    assert trace["target_element_type"] == "drawer_pull"
+    assert output.annotation_gt.type == "bbox_set"
+
+    for cell in trace["surface_cells"]:
+        if not cell["present"]:
+            continue
+        element_id = str(cell["element_id"])
+        cell_bbox = bbox_from_points(
+            quad_cell(
+                quad,
+                float(cell["u0"]),
+                float(cell["u1"]),
+                float(cell["v0"]),
+                float(cell["v1"]),
+            )
+        )
+        element_bbox = render_map["element_bboxes_px"][element_id]
+        cell_height = float(cell_bbox[3]) - float(cell_bbox[1])
+        element_height = float(element_bbox[3]) - float(element_bbox[1])
+
+        assert element_height >= cell_height * 0.45
 
 
 def test_surface_fixture_task_registered_in_three_d_taxonomy() -> None:

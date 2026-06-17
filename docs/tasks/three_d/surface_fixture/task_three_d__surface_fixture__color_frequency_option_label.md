@@ -7,6 +7,7 @@
 - Query ids: `most_frequent_color`, `absent_color`
 - Answer type: `option_letter`
 - Annotation type: `bbox`
+- Annotation schema: `bbox`
 
 ## Program Contract
 - `label(select_text_option(option_cards, color_name = argmax(count(surface_fixture_elements by color)))); scene=surface_fixture; scope=color_frequency_option_label; query=most_frequent_color`

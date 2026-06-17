@@ -106,8 +106,8 @@
   "static_slots_by_key": {
     "query:element_type_count": {
       "answer_hint": "set \"answer\" to the number of counted surface elements",
-      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted surface element",
-      "json_example": "{\"annotation\":[[147,472],[420,345],[730,550]],\"answer\":3}",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted surface element",
+      "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370],[704,520,756,580]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:highest_element_count_panel": {
@@ -124,14 +124,14 @@
     },
     "query:element_color_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted colored surface element",
-      "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted colored surface element",
+      "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:color_count_after_operations": {
       "answer_hint": "set \"answer\" to the final count as an integer after applying the listed changes",
-      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each original visible target-color element used as the starting count; do not mark hypothetical added elements",
-      "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":5}",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each original visible target-color element used as the starting count; do not mark hypothetical added elements",
+      "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370]],\"answer\":5}",
       "json_example_answer_only": "{\"answer\":5}"
     },
     "query:recolor_board_match": {
@@ -142,8 +142,8 @@
     },
     "query:scoped_element_color_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one [x, y] pixel point near the center of each counted colored surface element in the requested row or column",
-      "json_example": "{\"annotation\":[[147,472],[420,345]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted colored surface element in the requested row or column",
+      "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:most_frequent_color_option": {

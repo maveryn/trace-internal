@@ -7,6 +7,7 @@
 - Query id: `single`
 - Answer type: `option_letter`
 - Annotation type: `bbox`
+- Annotation schema: `bbox`
 
 ## Program Contract
 - `match(option_board where fixed_position_color_state == recolor(original_fixed_position_color_state, source_color, destination_color)); scene=surface_fixture; scope=recolor_board_match_label`

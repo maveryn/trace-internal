@@ -7,6 +7,7 @@
 - Query ids: `highest_element_count`, `lowest_element_count`
 - Answer type: `option_letter`
 - Annotation type: `bbox`
+- Annotation schema: `bbox`
 
 ## Contract
 The image shows four labeled option panels, `A` through `D`, arranged in a 2x2

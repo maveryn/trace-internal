@@ -671,8 +671,8 @@ def test_surface_fixture_drawer_pull_bbox_covers_visible_face() -> None:
             quad_cell(
                 quad,
                 float(cell["u0"]),
-                float(cell["u1"]),
                 float(cell["v0"]),
+                float(cell["u1"]),
                 float(cell["v1"]),
             )
         )

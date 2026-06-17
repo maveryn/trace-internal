@@ -41,7 +41,7 @@ from .shared.layout import (
     sample_shelf_region as _sample_shelf_region,
 )
 from .shared.output import build_scoped_region_trace_payload
-from .shared.annotations import point_set_from_bboxes
+from .shared.annotations import bbox_set_from_bboxes
 from .shared.rendering import (
     render_scoped_region_scene as _render_scoped_region_scene,
 )
@@ -452,7 +452,7 @@ class IconsCountingNamedShapeRegionCountTask:
         annotation_bboxes = tuple(instance.bbox_xyxy for instance in scene.instances if instance.counted)
         if len(annotation_bboxes) != int(scene.target_count):
             raise RuntimeError("projected region annotation did not match target answer")
-        annotation_artifacts = point_set_from_bboxes(annotation_bboxes)
+        annotation_artifacts = bbox_set_from_bboxes(annotation_bboxes)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,

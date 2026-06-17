@@ -43,11 +43,11 @@ region membership.
   region predicate
 
 ## Annotation Contract
-- `annotation_gt.type = point_set`
-- one `[x, y]` pixel center point for every counted target-shape icon
+- `annotation_gt.type = bbox_set`
+- one `[x0, y0, x1, y1]` pixel bounding box for every counted target-shape icon
 - target-shape icons are placed with bbox clearance from the queried boundary,
   so counted and non-counted targets do not touch or cross it
-- annotation points are sorted by the witnesses in reading order
+- annotation boxes are sorted by the witnesses in reading order
 
 ## Trace Contract
 - `scene_ir.entities` contains one entity for each rendered procedural icon,
@@ -56,7 +56,7 @@ region membership.
 - `query_spec.params.query_id` records the selected region query.
 - `execution_trace.target_answer` equals the integer answer.
 - `render_map.counted_instance_ids`, `witness_symbolic.counted_instance_ids`,
-  and `projected_annotation.point_set` are derived from the same rendered
+  and `projected_annotation.bbox_set` are derived from the same rendered
   instances.
 
 ## Prompt Contract

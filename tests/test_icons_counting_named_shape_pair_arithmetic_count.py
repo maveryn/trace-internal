@@ -25,19 +25,12 @@ def _bbox_sort_key(entity: dict[str, object]) -> tuple[int, int, int, int]:
     return (box[1], box[0], box[3], box[2])
 
 
-def _center_from_bbox(bbox: list[int] | tuple[int, int, int, int]) -> list[float]:
-    return [
-        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
-        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
-    ]
-
-
 def _expected_counted_annotation(
     left_entities: list[dict[str, object]],
     right_entities: list[dict[str, object]],
-) -> list[list[float]]:
+) -> list[list[int]]:
     return [
-        _center_from_bbox(entity["bbox_xyxy"])  # type: ignore[arg-type]
+        [int(value) for value in entity["bbox_xyxy"]]  # type: ignore[index]
         for entity in sorted(left_entities + right_entities, key=_bbox_sort_key)
     ]
 
@@ -84,7 +77,7 @@ def test_icons_counting_named_shape_pair_arithmetic_contract_all_queries() -> No
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == target_answer
         assert out.answer_gt.value == answer
-        assert out.annotation_gt.type == "point_set"
+        assert out.annotation_gt.type == "bbox_set"
         assert len(left_entities) == 2
         assert len(right_entities) == 3
         assert len(out.annotation_gt.value) == 5
@@ -95,9 +88,10 @@ def test_icons_counting_named_shape_pair_arithmetic_contract_all_queries() -> No
         }
         expected_annotation = _expected_counted_annotation(left_entities, right_entities)
         assert out.annotation_gt.value == expected_annotation
-        assert trace["projected_annotation"]["type"] == "point_set"
-        assert trace["projected_annotation"]["point_set"] == expected_annotation
-        assert trace["projected_annotation"]["pixel_point_set"] == expected_annotation
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == expected_annotation
+        assert trace["projected_annotation"]["pixel_bbox_set"] == expected_annotation
+        assert len(trace["projected_annotation"]["pixel_point_set"]) == len(expected_annotation)
         assert str(left_operand["shape_name"]) in out.prompt
         assert str(right_operand["shape_name"]) in out.prompt
         if uses_color_binding:
@@ -128,7 +122,7 @@ def test_icons_counting_named_shape_pair_arithmetic_supports_zero_difference() -
     assert trace["execution_trace"]["left_count"] == 3
     assert trace["execution_trace"]["right_count"] == 3
     assert len(out.annotation_gt.value) == 6
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
 
 
 def test_icons_counting_named_shape_pair_arithmetic_sampling_distribution() -> None:
@@ -152,7 +146,7 @@ def test_icons_counting_named_shape_pair_arithmetic_sampling_distribution() -> N
         assert out.answer_gt.value == expected
         assert 6 <= int(execution["object_count"]) <= 20
         assert len(out.annotation_gt.value) == int(execution["left_count"]) + int(execution["right_count"])
-        assert out.annotation_gt.type == "point_set"
+        assert out.annotation_gt.type == "bbox_set"
 
     assert set(query_counts) == set(TOTAL_QUERY_IDS + DIFFERENCE_QUERY_IDS)
     assert set(answer_counts).issubset(set(range(0, 11)))

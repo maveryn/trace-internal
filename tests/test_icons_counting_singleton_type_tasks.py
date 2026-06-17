@@ -17,9 +17,6 @@ def _overlap_fraction_smaller(left: list[int], right: list[int]) -> float:
     right_area = max(1, int(right[2]) - int(right[0])) * max(1, int(right[3]) - int(right[1]))
     return float(inter) / float(min(left_area, right_area))
 
-def _bbox_center(bbox: list[int]) -> list[float]:
-    return [round((float(bbox[0]) + float(bbox[2])) / 2.0, 3), round((float(bbox[1]) + float(bbox[3])) / 2.0, 3)]
-
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = 'Example JSON:\n'
     assert marker in str(prompt)
@@ -34,9 +31,9 @@ def test_icons_counting_singleton_type_contract_matches_scene() -> None:
     scene_entities = trace['scene_ir']['entities']
     assert out.answer_gt.type == 'integer'
     assert int(out.answer_gt.value) == 3
-    assert out.annotation_gt.type == 'point_set'
+    assert out.annotation_gt.type == 'bbox_set'
     assert len(out.annotation_gt.value) == 3
-    assert out.annotation_gt.value == sorted(out.annotation_gt.value, key=lambda point: (point[1], point[0]))
+    assert out.annotation_gt.value == sorted(out.annotation_gt.value, key=lambda bbox: (bbox[1], bbox[0], bbox[3], bbox[2]))
     assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
     assert trace['query_spec']['prompt_variant_active_key'] == 'answer_and_annotation'
     assert trace['scene_ir']['scene_kind'] == 'icons_singleton_type_counting'
@@ -58,10 +55,11 @@ def test_icons_counting_singleton_type_contract_matches_scene() -> None:
     type_frequencies = {str(key): int(value) for key, value in execution['type_frequencies'].items()}
     assert len(singleton_indices) == 3
     assert sum((1 for value in execution['scene_icon_ids'] if type_frequencies[str(value)] == 1)) == 3
-    assert trace['projected_annotation']['type'] == 'point_set'
-    assert trace['projected_annotation']['point_set'] == out.annotation_gt.value
-    assert trace['projected_annotation']['pixel_point_set'] == out.annotation_gt.value
-    annotation_points = {tuple(point) for point in out.annotation_gt.value}
+    assert trace['projected_annotation']['type'] == 'bbox_set'
+    assert trace['projected_annotation']['bbox_set'] == out.annotation_gt.value
+    assert trace['projected_annotation']['pixel_bbox_set'] == out.annotation_gt.value
+    assert len(trace['projected_annotation']['pixel_point_set']) == len(out.annotation_gt.value)
+    annotation_bboxes = {tuple(bbox) for bbox in out.annotation_gt.value}
     for index, entity in enumerate(scene_entities):
         icon_id = str(entity['icon_id'])
         assert int(entity['type_frequency']) == int(type_frequencies[icon_id])
@@ -70,7 +68,7 @@ def test_icons_counting_singleton_type_contract_matches_scene() -> None:
         assert int(entity['rotation_degrees']) in {0, 90, 180, 270}
         assert isinstance(entity['noise_edits'], list)
         if bool(entity['is_singleton_type']):
-            assert tuple(_bbox_center(entity['bbox_xyxy'])) in annotation_points
+            assert tuple(entity['bbox_xyxy']) in annotation_bboxes
             assert int(type_frequencies[icon_id]) == 1
         else:
             assert int(type_frequencies[icon_id]) >= 2
@@ -95,7 +93,7 @@ def test_icons_counting_singleton_type_prompt_example_matches_contract() -> None
     assert list(answer_and_annotation.keys()) == ['annotation', 'answer']
     assert isinstance(answer_and_annotation['annotation'], list)
     assert len(answer_and_annotation['annotation']) == 2
-    assert all((len(point) == 2 for point in answer_and_annotation['annotation']))
+    assert all((len(bbox) == 4 for bbox in answer_and_annotation['annotation']))
     assert answer_and_annotation['answer'] == 2
 
 def test_icons_counting_singleton_type_repeated_distractors_share_visual_style() -> None:
@@ -113,15 +111,15 @@ def test_icons_counting_singleton_type_repeated_distractors_share_visual_style()
     assert len(execution['repeated_indices']) == 6
     assert len(execution['annotation_indices']) == 2
     assert trace['scene_ir']['relations']['counting_rule'] == 'singleton_icon_type_frequency'
-    annotation_points = {tuple(point) for point in out.annotation_gt.value}
+    annotation_bboxes = {tuple(bbox) for bbox in out.annotation_gt.value}
     repeated_styles: dict[str, set[tuple[object, ...]]] = {}
     for entity in trace['scene_ir']['entities']:
         if bool(entity['is_repeated_type']):
-            assert tuple(_bbox_center(entity['bbox_xyxy'])) not in annotation_points
+            assert tuple(entity['bbox_xyxy']) not in annotation_bboxes
             assert int(entity['type_frequency']) >= 2
             repeated_styles.setdefault(str(entity['icon_id']), set()).add((int(entity['rotation_degrees']), int(entity['nominal_size_px']), tuple((int(channel) for channel in entity['tint_rgb'])), json.dumps(entity['noise_edits'], sort_keys=True), entity['noise_seed']))
         else:
-            assert tuple(_bbox_center(entity['bbox_xyxy'])) in annotation_points
+            assert tuple(entity['bbox_xyxy']) in annotation_bboxes
             assert int(entity['type_frequency']) == 1
     assert repeated_styles
     assert all((len(styles) == 1 for styles in repeated_styles.values()))

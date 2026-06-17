@@ -24,11 +24,10 @@ from ...shared.text_rendering import draw_text_centered, load_font
 from ...shared.variant_sampling import resolve_variant
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_noise import serialize_icon_noise_edits
-from ..shared.annotation import keyed_point_map_annotation
+from ..shared.annotation import keyed_bbox_map_annotation
 from ..shared.icon_scene import BBox, draw_single_panel, resolve_single_panel_layout, single_panel_geometry_to_trace
 from ..shared.icon_task_rendering import resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
-    bbox_center_float,
     bbox_from_center_dimensions,
     bbox_inside,
     boxes_overlap,
@@ -584,10 +583,10 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
 
         candidate_by_label = {str(icon.label): icon for icon in scene_payload.candidate_icons}
         answer_icon = candidate_by_label[str(scene_payload.answer_label)]
-        annotation_artifacts = keyed_point_map_annotation(
+        annotation_artifacts = keyed_bbox_map_annotation(
             {
-                "reference_icon": bbox_center_float(scene_payload.reference_icon.bbox_xyxy),
-                "selected_candidate": bbox_center_float(answer_icon.bbox_xyxy),
+                "reference_icon": scene_payload.reference_icon.bbox_xyxy,
+                "selected_candidate": answer_icon.bbox_xyxy,
             }
         )
         answer_gt = TypedValue(type="option_letter", value=str(scene_payload.answer_label))

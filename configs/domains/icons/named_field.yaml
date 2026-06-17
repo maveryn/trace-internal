@@ -697,10 +697,10 @@ prompt:
       scene_key: single_scene_counting
       object_description: a panel of icons
       question_text: How many "{shape_name}" icons are in the panel?
-      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every counted
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every counted
         "{shape_name}" icon
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[142,154],[660,328]],"answer":2}'
+      json_example: '{"annotation":[[112,124,172,184],[630,298,690,358]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       bundle_id: icons_named_field_v1
       task_key: counting_query
@@ -714,10 +714,10 @@ prompt:
       question_text_neither_shape_nor_color_count: How many icons are neither "{shape_name}" icons nor icons with {attribute_phrase}?
       question_text_exactly_one_shape_or_color_count: 'How many icons have exactly one of these properties: being a "{shape_name}"
         icon or having {attribute_phrase}?'
-      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every icon
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every icon
         satisfying the stated shape/attribute condition
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[142,154],[660,328]],"answer":2}'
+      json_example: '{"annotation":[[112,124,172,184],[630,298,690,358]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       bundle_id: icons_named_field_v1
       task_key: counting_query
@@ -731,10 +731,10 @@ prompt:
       question_text_neither_shape_nor_color_count: How many icons are neither "{shape_name}" icons nor icons with {attribute_phrase}?
       question_text_exactly_one_shape_or_color_count: 'How many icons have exactly one of these properties: being a "{shape_name}"
         icon or having {attribute_phrase}?'
-      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every icon
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every icon
         satisfying the stated shape/attribute condition
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[142,154],[660,328]],"answer":2}'
+      json_example: '{"annotation":[[112,124,172,184],[630,298,690,358]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       bundle_id: icons_named_field_v1
       task_key: counting_query
@@ -748,10 +748,10 @@ prompt:
       question_text_neither_shape_nor_color_count: How many icons are neither "{shape_name}" icons nor icons with {attribute_phrase}?
       question_text_exactly_one_shape_or_color_count: 'How many icons have exactly one of these properties: being a "{shape_name}"
         icon or having {attribute_phrase}?'
-      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every icon
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every icon
         satisfying the stated shape/attribute condition
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[142,154],[660,328]],"answer":2}'
+      json_example: '{"annotation":[[112,124,172,184],[630,298,690,358]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       bundle_id: icons_named_field_v1
       task_key: counting_query
@@ -765,10 +765,10 @@ prompt:
       question_text_neither_shape_nor_color_count: How many icons are neither "{shape_name}" icons nor icons with {attribute_phrase}?
       question_text_exactly_one_shape_or_color_count: 'How many icons have exactly one of these properties: being a "{shape_name}"
         icon or having {attribute_phrase}?'
-      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every icon
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every icon
         satisfying the stated shape/attribute condition
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[142,154],[660,328]],"answer":2}'
+      json_example: '{"annotation":[[112,124,172,184],[630,298,690,358]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       bundle_id: icons_named_field_v1
       task_key: counting_query
@@ -782,10 +782,10 @@ prompt:
       question_text_neither_shape_nor_color_count: How many icons are neither "{shape_name}" icons nor icons with {attribute_phrase}?
       question_text_exactly_one_shape_or_color_count: 'How many icons have exactly one of these properties: being a "{shape_name}"
         icon or having {attribute_phrase}?'
-      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every icon
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every icon
         satisfying the stated shape/attribute condition
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[142,154],[660,328]],"answer":2}'
+      json_example: '{"annotation":[[112,124,172,184],[630,298,690,358]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       bundle_id: icons_named_field_v1
       task_key: counting_query
@@ -800,10 +800,10 @@ prompt:
         "{right_shape_name}" icons?
       question_text_two_bound_color_difference_count: What is the difference between the number of {left_operand_label} icons
         and {right_operand_label} icons?
-      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every icon
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every icon
         counted in either operand group
       answer_hint: set "answer" to the requested count as an integer
-      json_example: '{"annotation":[[142,154],[264,154],[660,328]],"answer":3}'
+      json_example: '{"annotation":[[112,124,172,184],[234,124,294,184],[630,298,690,358]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
       bundle_id: icons_named_field_v1
       task_key: counting_query
@@ -812,10 +812,10 @@ prompt:
       object_description: a panel with two larger reference icons and several icons
       question_text_closer_to_reference_count: How many "{target_shape_name}" icons are closer to the "{queried_reference_shape_name}"
         icon than to the "{other_reference_shape_name}" icon?
-      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every counted
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every counted
         "{target_shape_name}" icon
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[142,154],[264,154]],"answer":2}'
+      json_example: '{"annotation":[[112,124,172,184],[234,124,294,184]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       bundle_id: icons_named_field_v1
       task_key: counting_query
@@ -826,10 +826,10 @@ prompt:
         icons. How many "{target_shape_name}" icons would be in the Scene?
       question_text_total_count_after_shape_removal: Suppose all "{remove_shape_name}" icons were removed from the Scene.
         How many icons would remain?
-      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every visible
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every visible
         icon that would be counted after the hypothetical edit
       answer_hint: set "answer" to the resulting count as an integer
-      json_example: '{"annotation":[[142,154],[660,328]],"answer":2}'
+      json_example: '{"annotation":[[112,124,172,184],[630,298,690,358]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       bundle_id: icons_named_field_v1
       task_key: counting_query
@@ -840,10 +840,10 @@ prompt:
         icons. How many "{target_shape_name}" icons would be in the Scene?
       question_text_total_count_after_shape_removal: Suppose all "{remove_shape_name}" icons were removed from the Scene.
         How many icons would remain?
-      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every visible
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every visible
         icon that would be counted after the hypothetical edit
       answer_hint: set "answer" to the resulting count as an integer
-      json_example: '{"annotation":[[142,154],[660,328]],"answer":2}'
+      json_example: '{"annotation":[[112,124,172,184],[630,298,690,358]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       bundle_id: icons_named_field_v1
       task_key: counting_query
@@ -858,10 +858,10 @@ prompt:
         lines?
       question_text_inside_quadrant_count: How many "{shape_name}" icons have centers inside the highlighted quadrant?
       question_text_inside_shelf_count: How many "{shape_name}" icons have centers inside the highlighted shelf?
-      annotation_hint: set "annotation" to a JSON array of [x, y] center points in image pixel coordinates for every counted
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every counted
         "{shape_name}" icon
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[142,154],[660,328]],"answer":2}'
+      json_example: '{"annotation":[[112,124,172,184],[630,298,690,358]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       bundle_id: icons_named_field_v1
       task_key: counting_query
@@ -872,9 +872,9 @@ prompt:
       question_text_second_closest_to_named_reference_label: Which labeled icon is second closest to the {reference_description}?
       question_text_farthest_from_named_reference_label: Which labeled icon is farthest from the {reference_description}?
       annotation_hint: set "annotation" to a JSON object with keys "reference_icon" and "selected_candidate", each mapped
-        to a [x, y] center point in image pixel coordinates
+        to an [x0, y0, x1, y1] bounding box in image pixel coordinates
       answer_hint: set "answer" to the selected option letter as a string
-      json_example: '{"annotation":{"reference_icon":[208,274],"selected_candidate":[644,216]},"answer":"D"}'
+      json_example: '{"annotation":{"reference_icon":[178,244,238,304],"selected_candidate":[614,186,674,246]},"answer":"D"}'
       json_example_answer_only: '{"answer":"D"}'
       bundle_id: icons_named_field_v1
       task_key: counting_query

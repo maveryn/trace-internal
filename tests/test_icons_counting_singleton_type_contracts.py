@@ -23,7 +23,7 @@ def test_icons_counting_singleton_type_deterministic() -> None:
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.answer_gt.type == "integer"
-    assert out_a.annotation_gt.type == "point_set"
+    assert out_a.annotation_gt.type == "bbox_set"
 
 
 def test_icons_counting_most_frequent_type_deterministic() -> None:
@@ -40,7 +40,7 @@ def test_icons_counting_most_frequent_type_deterministic() -> None:
     assert out_a.scene_id == "icon_field"
     assert out_a.query_id == "most_frequent_type_count"
     assert out_a.answer_gt.type == "integer"
-    assert out_a.annotation_gt.type == "point_set"
+    assert out_a.annotation_gt.type == "bbox_set"
 
     frequencies = out_a.trace_payload["execution_trace"]["type_frequencies"]
     max_frequency = max(int(value) for value in frequencies.values())

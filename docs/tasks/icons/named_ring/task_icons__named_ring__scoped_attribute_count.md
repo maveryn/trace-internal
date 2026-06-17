@@ -24,9 +24,10 @@ Allowed program arguments:
    and `B` along the specified directed arc.
 5. Markers `A` and `B` are excluded from the count.
 6. `answer_gt.type = integer`.
-7. `annotation_gt.type = point_set` over the center points of the counted
+7. `annotation_gt.type = bbox_set` over the bounding boxes of the counted
    target-shape icons only. `projected_annotation` mirrors this as typed
-   point-set annotation with `point_set` and `pixel_point_set`.
+   bbox-set annotation with `bbox_set`, `pixel_bbox_set`, and derived
+   `pixel_point_set`.
 
 ## Query IDs
 - `clockwise_arc_shape_count`

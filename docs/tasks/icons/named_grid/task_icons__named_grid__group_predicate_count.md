@@ -16,9 +16,9 @@
    icons.
 5. The answer is the number of qualifying rows or columns.
 6. `answer_gt.type = integer`.
-7. `annotation_gt.type = point_set` with one center point for each qualifying
-   row or column region. `projected_annotation` mirrors this as typed point-set
-   annotation with `point_set` and `pixel_point_set`.
+7. `annotation_gt.type = bbox_set` with one bounding box for each qualifying
+   row or column region. `projected_annotation` mirrors this as typed bbox-set
+   annotation with `bbox_set`, `pixel_bbox_set`, and derived `pixel_point_set`.
 
 ## Query IDs
 - `row_at_least_shape_count`

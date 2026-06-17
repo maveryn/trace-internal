@@ -11,9 +11,6 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     assert marker in str(prompt)
     return json.loads(str(prompt).split(marker, 1)[1].strip())
 
-def _bbox_center(bbox: list[int]) -> list[float]:
-    return [round((float(bbox[0]) + float(bbox[2])) / 2.0, 3), round((float(bbox[1]) + float(bbox[3])) / 2.0, 3)]
-
 def test_icons_named_path_neighbor_contract_matches_scene() -> None:
     task = IconsNamedPathPathNeighborLabelTask()
     out = task.generate(2026052801, params={'query_id': 'after_second_shape_label', 'answer_label': 'E', 'distractor_count': 5, 'target_occurrence_count': 3}, max_attempts=100)
@@ -24,8 +21,8 @@ def test_icons_named_path_neighbor_contract_matches_scene() -> None:
     assert out.query_id == 'after_second_shape_label'
     assert out.answer_gt.type == 'option_letter'
     assert out.answer_gt.value == 'E'
-    assert out.annotation_gt.type == 'point'
-    assert len(out.annotation_gt.value) == 2
+    assert out.annotation_gt.type == 'bbox'
+    assert len(out.annotation_gt.value) == 4
     assert trace['scene_ir']['scene_kind'] == 'icons_named_path_neighbor'
     assert execution['question_format'] == 'select_labeled_neighbor_of_named_icon_along_start_to_end_path'
     labels = [str(entity['label']) for entity in entities if str(entity['label'])]
@@ -50,11 +47,11 @@ def test_icons_named_path_neighbor_contract_matches_scene() -> None:
     assert str(query_entity['label']) == ''
     assert str(answer_entity['label']) == 'E'
     assert str(answer_entity['shape_id']) != str(execution['target_shape_id'])
-    expected_annotation = _bbox_center(answer_entity['bbox_xyxy'])
+    expected_annotation = answer_entity['bbox_xyxy']
     assert out.annotation_gt.value == expected_annotation
-    assert trace['projected_annotation']['type'] == 'point'
-    assert trace['projected_annotation']['point'] == expected_annotation
-    assert trace['projected_annotation']['pixel_point'] == expected_annotation
+    assert trace['projected_annotation']['type'] == 'bbox'
+    assert trace['projected_annotation']['bbox'] == expected_annotation
+    assert trace['projected_annotation']['pixel_bbox'] == expected_annotation
     style = trace['render_spec']['style']
     assert 'candidate_label_stroke_rgb' in style
     assert 'endpoint_label_stroke_rgb' in style
@@ -99,7 +96,7 @@ def test_icons_named_path_neighbor_prompt_example_matches_contract() -> None:
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
     assert answer_only == {'answer': 'E'}
     assert list(answer_and_annotation.keys()) == ['annotation', 'answer']
-    assert answer_and_annotation['annotation'] == [576, 276]
+    assert answer_and_annotation['annotation'] == [546, 246, 606, 306]
     assert answer_and_annotation['answer'] == 'E'
 
 def test_icons_named_path_neighbor_sampling_smoke() -> None:

@@ -21,7 +21,7 @@ Allowed program arguments:
 3. Exactly six non-target stop icons are option icons labeled `A` through `F`; the answer is one option letter.
 4. The queried named icon occurrence is selected by path order and is not one of the option icons.
 5. `answer_gt.type = option_letter`.
-6. `annotation_gt.type = point` for the selected labeled answer icon center.
+6. `annotation_gt.type = bbox` for the selected labeled answer icon.
    Annotation marks the answer icon itself, not the queried named-icon
    occurrence, numeric path stops, or standalone label text.
 

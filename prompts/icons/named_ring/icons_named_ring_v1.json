@@ -70,9 +70,9 @@
     "object_description": "a ring of icons with endpoint markers A and B",
     "question_text_clockwise_arc_shape_count": "Starting at marker A and moving clockwise to marker B, how many \"{target_shape_name}\" icons are strictly between A and B?",
     "question_text_counterclockwise_arc_shape_count": "Starting at marker A and moving counterclockwise to marker B, how many \"{target_shape_name}\" icons are strictly between A and B?",
-    "annotation_hint": "set \"annotation\" to a JSON array of [x, y] center points in image pixel coordinates for every counted \"{target_shape_name}\" icon strictly between A and B along the {direction} arc",
+    "annotation_hint": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every counted \"{target_shape_name}\" icon strictly between A and B along the {direction} arc",
     "answer_hint": "set \"answer\" to the count as an integer",
-    "json_example": "{\"annotation\":[[206,198],[414,328]],\"answer\":2}",
+    "json_example": "{\"annotation\":[[176,168,236,228],[384,298,444,358]],\"answer\":2}",
     "json_example_answer_only": "{\"answer\":2}"
   }
 }

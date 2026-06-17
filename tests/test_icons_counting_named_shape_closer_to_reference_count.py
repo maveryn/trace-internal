@@ -18,13 +18,6 @@ def _distance(entity: dict[str, object], reference: dict[str, object]) -> float:
     return ((float(ex) - float(rx)) ** 2 + (float(ey) - float(ry)) ** 2) ** 0.5
 
 
-def _center_from_bbox(bbox: list[int] | tuple[int, int, int, int]) -> list[float]:
-    return [
-        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
-        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
-    ]
-
-
 def test_icons_counting_named_shape_closer_to_reference_contract_all_queries() -> None:
     task = create_task(TASK_ID)
     for index, reference_label in enumerate(QUERIED_REFERENCE_LABELS):
@@ -61,7 +54,7 @@ def test_icons_counting_named_shape_closer_to_reference_contract_all_queries() -
         assert trace["query_spec"]["internal_query_id"] == QUERY_ID
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == 3
-        assert out.annotation_gt.type == "point_set"
+        assert out.annotation_gt.type == "bbox_set"
         assert len(references) == 2
         assert set(references) == {"A", "B"}
         assert len(targets) == 7
@@ -70,10 +63,11 @@ def test_icons_counting_named_shape_closer_to_reference_contract_all_queries() -
         assert len(counted) == 3
         assert len(out.annotation_gt.value) == 3
         assert set(trace["render_map"]["counted_instance_ids"]) == {str(entity["instance_id"]) for entity in counted}
-        assert sorted(out.annotation_gt.value) == sorted(_center_from_bbox(entity["bbox_xyxy"]) for entity in counted)
-        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["type"] == "point_set"
-        assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+        assert sorted(out.annotation_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted)
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+        assert len(trace["projected_annotation"]["pixel_point_set"]) == len(out.annotation_gt.value)
         assert trace["render_spec"]["style"]["text_legibility"]["failure_count"] == 0
         assert "reference_label_stroke_rgb" not in trace["render_spec"]["style"]
         assert all(entity["label_bbox_xyxy"] is None for entity in references.values())

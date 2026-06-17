@@ -12,9 +12,6 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     assert marker in str(prompt)
     return json.loads(str(prompt).split(marker, 1)[1].strip())
 
-def _bbox_center(bbox: list[int]) -> list[float]:
-    return [round((float(bbox[0]) + float(bbox[2])) / 2.0, 3), round((float(bbox[1]) + float(bbox[3])) / 2.0, 3)]
-
 def _line_counts(shape_grid: list[list[str]], *, axis: str, target_shape_id: str) -> list[int]:
     if axis == 'row':
         return [sum((1 for value in row if str(value) == str(target_shape_id))) for row in shape_grid]
@@ -36,12 +33,12 @@ def test_icons_counting_named_grid_row_at_least_contract_matches_scene() -> None
     execution = trace['execution_trace']
     counts = _line_counts(execution['shape_ids_by_cell'], axis='row', target_shape_id=str(execution['target_shape_id']))
     qualifying_indices = [index for index, count in enumerate(counts) if int(count) >= 3]
-    expected_points = sorted((_bbox_center(bbox) for bbox in trace['render_map']['qualifying_line_region_bboxes_px'].values()))
+    expected_bboxes = sorted(trace['render_map']['qualifying_line_region_bboxes_px'].values())
     assert out.scene_id == 'named_grid'
     assert out.query_id == 'row_at_least_shape_count'
     assert out.answer_gt.type == 'integer'
     assert out.answer_gt.value == 2
-    assert out.annotation_gt.type == 'point_set'
+    assert out.annotation_gt.type == 'bbox_set'
     assert len(out.annotation_gt.value) == 2
     assert trace['scene_ir']['scene_kind'] == 'icons_named_grid_line_condition_count'
     assert execution['question_format'] == 'count_grid_lines_satisfying_named_shape_count_condition'
@@ -51,10 +48,11 @@ def test_icons_counting_named_grid_row_at_least_contract_matches_scene() -> None
     assert counts == execution['row_target_counts']
     assert qualifying_indices == execution['qualifying_line_indices']
     assert len(qualifying_indices) == 2
-    assert sorted(out.annotation_gt.value) == expected_points
-    assert trace['projected_annotation']['type'] == 'point_set'
-    assert trace['projected_annotation']['point_set'] == out.annotation_gt.value
-    assert trace['projected_annotation']['pixel_point_set'] == out.annotation_gt.value
+    assert sorted(out.annotation_gt.value) == expected_bboxes
+    assert trace['projected_annotation']['type'] == 'bbox_set'
+    assert trace['projected_annotation']['bbox_set'] == out.annotation_gt.value
+    assert trace['projected_annotation']['pixel_bbox_set'] == out.annotation_gt.value
+    assert len(trace['projected_annotation']['pixel_point_set']) == len(out.annotation_gt.value)
     style = trace['render_spec']['style']
     assert 'axis_label_stroke_rgb' in style
     assert style['text_legibility']['required_role_count'] >= 2
@@ -87,7 +85,7 @@ def test_icons_counting_named_grid_line_condition_prompt_example_matches_contrac
     assert answer_only == {'answer': 2}
     assert list(answer_and_annotation.keys()) == ['annotation', 'answer']
     assert isinstance(answer_and_annotation['annotation'], list)
-    assert all((len(point) == 2 for point in answer_and_annotation['annotation']))
+    assert all((len(bbox) == 4 for bbox in answer_and_annotation['annotation']))
     assert answer_and_annotation['answer'] == 2
 
 def test_icons_counting_named_grid_line_condition_sampling_distribution() -> None:

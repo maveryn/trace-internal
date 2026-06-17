@@ -17,7 +17,7 @@ Query ids:
 - `most_frequent_type_count`: count icons belonging to the unique most frequent type.
 
 Answer schema: integer.
-Annotation schema: `point_set` over the center point of every counted icon
+Annotation schema: `bbox_set` over the bounding box of every counted icon
 instance.
 Answer support:
 - `singleton_type_count`: `0..4`

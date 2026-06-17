@@ -21,7 +21,7 @@ from trace.tasks.icons.shared.procedural_named_icon_field_scene import (
 from .shared.annotations import (
     boolean_annotation_bboxes,
     counterfactual_annotation_bboxes,
-    point_set_from_bboxes,
+    bbox_set_from_bboxes,
 )
 from .shared.defaults import BOOLEAN_DEFAULTS, COUNTERFACTUAL_DEFAULTS, SHAPE_COUNT_DEFAULTS
 from .shared.metrics import (
@@ -226,7 +226,7 @@ def prepare_shape_count_objective(
         annotation_bboxes = named_icon_bboxes_for_shape(scene.instances, shape_id=str(sample.target_shape_id))
         if len(annotation_bboxes) != int(sample.target_count):
             raise RuntimeError("rendered named-shape count did not match target count")
-        annotation_artifacts = point_set_from_bboxes(annotation_bboxes)
+        annotation_artifacts = bbox_set_from_bboxes(annotation_bboxes)
         prompt_artifacts, prompt_defaults = build_shape_count_prompt_artifacts(
             domain=str(domain),
             run_namespace=str(run_namespace),
@@ -319,7 +319,7 @@ def prepare_boolean_count_objective(
         annotation_bboxes = boolean_annotation_bboxes(sample, scene.instances)
         if len(annotation_bboxes) != int(sample.target_answer):
             raise RuntimeError("rendered Boolean named-icon count did not match target answer")
-        annotation_artifacts = point_set_from_bboxes(annotation_bboxes)
+        annotation_artifacts = bbox_set_from_bboxes(annotation_bboxes)
         prompt_artifacts, prompt_defaults = build_boolean_prompt_artifacts(
             domain=str(domain),
             run_namespace=str(run_namespace),
@@ -423,7 +423,7 @@ def prepare_counterfactual_count_objective(
         annotation_bboxes = counterfactual_annotation_bboxes(sample, scene.instances)
         if len(annotation_bboxes) != int(sample.target_answer):
             raise RuntimeError("rendered counterfactual named-icon count did not match target answer")
-        annotation_artifacts = point_set_from_bboxes(annotation_bboxes)
+        annotation_artifacts = bbox_set_from_bboxes(annotation_bboxes)
         prompt_artifacts, prompt_defaults = build_counterfactual_prompt_artifacts(
             domain=str(domain),
             run_namespace=str(run_namespace),

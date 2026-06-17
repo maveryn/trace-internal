@@ -20,7 +20,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
-from ..shared.annotation import point_set_from_bboxes
+from ..shared.annotation import bbox_set_annotation
 from .shared.annotations import bboxes_for_icon_ids, indices_for_icon_ids
 from .shared.defaults import IconFieldDefaults
 from .shared.rendering import sample_and_render_icon_field_scene
@@ -266,7 +266,7 @@ class IconsIconFieldTypeFrequencyCountTask:
 
         annotation_bboxes = list(binding["annotation_bboxes"])
         annotation_indices = list(binding["annotation_indices"])
-        annotation_payload = point_set_from_bboxes(annotation_bboxes)
+        annotation_payload = bbox_set_annotation(annotation_bboxes)
         answer_gt = TypedValue(type="integer", value=int(answer_value))
         annotation_gt = TypedValue(
             type=str(annotation_payload["annotation_type"]),

@@ -10,12 +10,6 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     assert marker in str(prompt)
     return json.loads(str(prompt).split(marker, 1)[1].strip())
 
-def _center_from_bbox(bbox: list[int] | tuple[int, int, int, int]) -> list[float]:
-    return [
-        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
-        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
-    ]
-
 def test_icons_relation_named_reference_distance_rank_contract_matches_scene() -> None:
     task = IconsRelationNamedReferenceDistanceRankLabelTask()
     out = task.generate(2026052401, params={'distance_rank_query': 'second_closest_to_named_reference_label', 'answer_label': 'D', 'distractor_count': 4}, max_attempts=200)
@@ -27,7 +21,7 @@ def test_icons_relation_named_reference_distance_rank_contract_matches_scene() -
     distractors = [entity for entity in entities if str(entity.get('role')) == 'distractor']
     assert out.answer_gt.type == 'option_letter'
     assert out.answer_gt.value == 'D'
-    assert out.annotation_gt.type == 'keyed_point_map'
+    assert out.annotation_gt.type == 'keyed_bbox_map'
     assert len(out.annotation_gt.value) == 2
     assert out.scene_id == 'named_field'
     assert out.query_id == 'second_closest_to_named_reference_label'
@@ -44,11 +38,14 @@ def test_icons_relation_named_reference_distance_rank_contract_matches_scene() -
     matching_reference_combo = [entity for entity in entities if str(entity['shape_id']) == str(reference['shape_id']) and str(entity['color_name']) == str(reference['color_name'])]
     assert matching_reference_combo == [reference]
     answer_entity = next((entity for entity in candidates if str(entity['label']) == 'D'))
-    expected_annotation = {'reference_icon': _center_from_bbox(reference['bbox_xyxy']), 'selected_candidate': _center_from_bbox(answer_entity['bbox_xyxy'])}
+    expected_annotation = {
+        'reference_icon': reference['bbox_xyxy'],
+        'selected_candidate': answer_entity['bbox_xyxy'],
+    }
     assert out.annotation_gt.value == expected_annotation
-    assert trace['projected_annotation']['type'] == 'keyed_point_map'
-    assert trace['projected_annotation']['keyed_point_map'] == expected_annotation
-    assert trace['projected_annotation']['pixel_keyed_point_map'] == expected_annotation
+    assert trace['projected_annotation']['type'] == 'keyed_bbox_map'
+    assert trace['projected_annotation']['keyed_bbox_map'] == expected_annotation
+    assert trace['projected_annotation']['pixel_keyed_bbox_map'] == expected_annotation
     assert trace['render_spec']['style']['text_legibility']['required_role_count'] >= 2
     assert trace['render_spec']['style']['text_legibility']['failure_count'] == 0
     assert 'candidate_label_stroke_rgb' in trace['render_spec']['style']
@@ -60,7 +57,10 @@ def test_icons_relation_named_reference_distance_rank_prompt_example_matches_con
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
     assert answer_only == {'answer': 'D'}
     assert list(answer_and_annotation.keys()) == ['annotation', 'answer']
-    assert answer_and_annotation['annotation'] == {'reference_icon': [208, 274], 'selected_candidate': [644, 216]}
+    assert answer_and_annotation['annotation'] == {
+        'reference_icon': [178, 244, 238, 304],
+        'selected_candidate': [614, 186, 674, 246],
+    }
     assert answer_and_annotation['answer'] == 'D'
 
 def test_icons_relation_named_reference_distance_rank_sampling_smoke() -> None:

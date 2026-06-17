@@ -15,7 +15,7 @@ from trace.tasks.shared.config_defaults import required_group_defaults, split_sc
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.prompt_json_example import resolve_prompt_json_examples
 from trace.tasks.shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
-from trace.tasks.shared.text_rendering import load_font
+from trace.tasks.shared.text_rendering import load_font, symbol_safe_font_for_text
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.geometry.shared.background_defaults import load_geometry_background_defaults
 from trace.tasks.geometry.shared.coordinate_panel_grid import (
@@ -985,8 +985,8 @@ def _draw_condition_box(
     rendering_defaults: Mapping[str, Any],
 ) -> List[int]:
     font_size = _resolve_int_param(params, rendering_defaults, "locus_condition_label_font_size", _DEFAULTS.condition_label_font_size)
-    font = load_font(max(12, int(font_size)), bold=True)
     label_text = f"Condition: {text}"
+    font = symbol_safe_font_for_text(label_text, load_font(max(12, int(font_size)), bold=True))
     text_bbox = draw.textbbox((0, 0), label_text, font=font)
     pad_x = 12
     pad_y = 6

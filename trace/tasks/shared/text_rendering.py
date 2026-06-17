@@ -30,7 +30,6 @@ _FONT_CANDIDATES_REGULAR: Sequence[str] = (
     "LiberationSans-Bold.ttf",
 )
 _DEFAULT_FONT_FAMILY: ContextVar[str] = ContextVar("trace_default_font_family", default="")
-_SYMBOL_SAFE_FONT_FAMILY = "vollkorn"
 _SYMBOL_SAFE_CODEPOINTS = frozenset(
     ord(char)
     for char in (
@@ -40,6 +39,8 @@ _SYMBOL_SAFE_CODEPOINTS = frozenset(
         "π",
         "√",
         "−",
+        "≤",
+        "≥",
     )
 )
 
@@ -122,11 +123,7 @@ def symbol_safe_font_for_text(text: str, font: ImageFont.ImageFont) -> ImageFont
     if not text_needs_symbol_safe_font(str(text)):
         return font
     size = int(getattr(font, "size", 14))
-    return load_font(
-        size,
-        bold=_font_is_bold(font),
-        font_family=_SYMBOL_SAFE_FONT_FAMILY,
-    )
+    return _load_font_cached(int(size), bold=_font_is_bold(font), font_family="")
 
 
 def resolve_label_font_size_px(

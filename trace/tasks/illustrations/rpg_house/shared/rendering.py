@@ -59,9 +59,12 @@ RGB = tuple[int, int, int]
 THEMES: Mapping[str, Mapping[str, Any]] = {
     "warm_cottage": {
         "background_rgb": (57, 47, 39),
-        "wall_rgb": (111, 72, 45),
-        "wall_dark_rgb": (57, 39, 31),
-        "door_rgb": (124, 73, 41),
+        "wall_rgb": (94, 88, 78),
+        "wall_dark_rgb": (45, 42, 36),
+        "door_rgb": (145, 78, 39),
+        "door_outline_rgb": (50, 27, 18),
+        "door_panel_light_rgb": (184, 117, 58),
+        "door_panel_dark_rgb": (82, 40, 25),
         "floor_rgbs": {
             "bedroom": (171, 128, 82),
             "kitchen": (154, 121, 84),
@@ -80,6 +83,9 @@ THEMES: Mapping[str, Mapping[str, Any]] = {
         "wall_rgb": (96, 105, 123),
         "wall_dark_rgb": (46, 52, 64),
         "door_rgb": (111, 73, 48),
+        "door_outline_rgb": (42, 28, 22),
+        "door_panel_light_rgb": (154, 104, 68),
+        "door_panel_dark_rgb": (67, 42, 30),
         "floor_rgbs": {
             "bedroom": (146, 115, 78),
             "kitchen": (126, 120, 108),
@@ -98,6 +104,9 @@ THEMES: Mapping[str, Mapping[str, Any]] = {
         "wall_rgb": (117, 111, 101),
         "wall_dark_rgb": (55, 54, 50),
         "door_rgb": (115, 75, 45),
+        "door_outline_rgb": (45, 29, 20),
+        "door_panel_light_rgb": (157, 106, 67),
+        "door_panel_dark_rgb": (70, 43, 28),
         "floor_rgbs": {
             "bedroom": (133, 119, 95),
             "kitchen": (119, 117, 105),
@@ -663,6 +672,7 @@ def _draw_wall_band(
 
 
 def _draw_door(draw: ImageDraw.ImageDraw, door: _DoorSpec, *, theme: Mapping[str, Any]) -> None:
+    """Render an open wall gap or a closed slab with palette-independent door contrast."""
     x, y = door.tile_xy
     px = int(x) * CANONICAL_TILE_PX
     py = int(y) * CANONICAL_TILE_PX
@@ -690,15 +700,19 @@ def _draw_door(draw: ImageDraw.ImageDraw, door: _DoorSpec, *, theme: Mapping[str
         else:
             draw.line((gap[0] + 2, py, gap[2] - 2, py), fill=_rgba(_shade(threshold_rgb, 24), 160))
         return
-    draw.rectangle(closed, fill=_rgba(theme["door_rgb"]), outline=_rgba(_shade(theme["door_rgb"], -42)))
+    door_rgb = theme["door_rgb"]
+    door_outline_rgb = theme.get("door_outline_rgb", _shade(door_rgb, -58))
+    door_panel_light_rgb = theme.get("door_panel_light_rgb", _shade(door_rgb, 32))
+    door_panel_dark_rgb = theme.get("door_panel_dark_rgb", _shade(door_rgb, -36))
+    draw.rectangle(closed, fill=_rgba(door_rgb), outline=_rgba(door_outline_rgb))
     if door.orientation == "vertical":
         panel_x = px - slab_half + 3
-        draw.line((panel_x, closed[1] + 3, panel_x, closed[3] - 3), fill=_rgba(_shade(theme["door_rgb"], 28), 150))
-        draw.line((px + slab_half - 3, closed[1] + 3, px + slab_half - 3, closed[3] - 3), fill=_rgba(_shade(theme["door_rgb"], -28), 150))
+        draw.line((panel_x, closed[1] + 3, panel_x, closed[3] - 3), fill=_rgba(door_panel_light_rgb, 170))
+        draw.line((px + slab_half - 3, closed[1] + 3, px + slab_half - 3, closed[3] - 3), fill=_rgba(door_panel_dark_rgb, 170))
     else:
         panel_y = py - slab_half + 3
-        draw.line((closed[0] + 3, panel_y, closed[2] - 3, panel_y), fill=_rgba(_shade(theme["door_rgb"], 28), 150))
-        draw.line((closed[0] + 3, py + slab_half - 3, closed[2] - 3, py + slab_half - 3), fill=_rgba(_shade(theme["door_rgb"], -28), 150))
+        draw.line((closed[0] + 3, panel_y, closed[2] - 3, panel_y), fill=_rgba(door_panel_light_rgb, 170))
+        draw.line((closed[0] + 3, py + slab_half - 3, closed[2] - 3, py + slab_half - 3), fill=_rgba(door_panel_dark_rgb, 170))
     knob_x, knob_y = knob
     draw.rectangle((knob_x - 1, knob_y - 1, knob_x + 1, knob_y + 1), fill=_rgba((230, 188, 82)))
 
@@ -869,6 +883,7 @@ __all__ = [
     "ROOM_IDS",
     "ROOM_PUBLIC_NAMES",
     "SCENE_ID",
+    "THEMES",
     "draw_rpg_house_debug_overlay",
     "reachable_room_ids",
     "render_rpg_house_scene",

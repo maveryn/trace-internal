@@ -12,6 +12,7 @@ from trace.tasks.illustrations.rpg_house.room_count import TASK_ID as ROOM_COUNT
 from trace.tasks.illustrations.rpg_house.shared.rendering import (
     MAX_ROOM_COUNT,
     MIN_ROOM_COUNT,
+    THEMES,
     draw_rpg_house_debug_overlay,
     reachable_room_ids,
     render_rpg_house_scene,
@@ -29,6 +30,19 @@ def _shared_wall_overlap(room_a: tuple[int, int, int, int], room_b: tuple[int, i
     if orientation == "vertical":
         return max(ay, by), min(ay + ah, by + bh)
     return max(ax, bx), min(ax + aw, bx + bw)
+
+
+def _rgb_distance(left: tuple[int, int, int], right: tuple[int, int, int]) -> float:
+    return sum((int(a) - int(b)) ** 2 for a, b in zip(left, right, strict=True)) ** 0.5
+
+
+def test_rpg_house_theme_doors_contrast_with_walls() -> None:
+    for theme_id, theme in THEMES.items():
+        wall_rgb = theme["wall_rgb"]
+        door_rgb = theme["door_rgb"]
+        door_outline_rgb = theme["door_outline_rgb"]
+        assert _rgb_distance(wall_rgb, door_rgb) >= 45.0, theme_id
+        assert _rgb_distance(wall_rgb, door_outline_rgb) >= 55.0, theme_id
 
 
 def test_rpg_house_renderer_is_deterministic_and_profile_safe() -> None:

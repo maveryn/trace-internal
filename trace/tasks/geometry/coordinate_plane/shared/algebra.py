@@ -759,6 +759,7 @@ def _render_scene(
     known_color, candidate_color, color_meta = _resolve_marker_colors(rng)
     midpoint_color = (36, 115, 170) if known_color != (36, 115, 170) else (142, 86, 46)
     axis_color = (72, 82, 98)
+    transform_axis_color = (202, 45, 55) if str(problem.operation_key) in REFLECTION_OPERATIONS else axis_color
     guide_color = (94, 103, 118)
 
     if problem.transform_line is not None:
@@ -767,7 +768,7 @@ def _render_scene(
             context=context,
             line=problem.transform_line,
             max_abs=int(max_abs),
-            color=axis_color,
+            color=transform_axis_color,
         )
     if problem.guide_segments:
         _draw_guide_segments(
@@ -877,7 +878,7 @@ def _render_scene(
         "candidate_marker_style": str(candidate_style),
         "marker_radius_px": int(marker_radius),
         "midpoint_color": list(midpoint_color),
-        "transform_axis_color": list(axis_color),
+        "transform_axis_color": list(transform_axis_color),
         "guide_segment_color": list(guide_color),
         **dict(color_meta),
     }

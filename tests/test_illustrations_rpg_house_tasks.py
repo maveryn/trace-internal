@@ -47,7 +47,7 @@ def test_rpg_house_theme_doors_contrast_with_walls() -> None:
 
 
 def test_rpg_house_renderer_is_deterministic_and_profile_safe() -> None:
-    for width, height in ((1200, 800), (960, 960), (800, 1200)):
+    for width, height in ((1296, 864), (1008, 1008), (864, 1296)):
         first = render_rpg_house_scene(
             12345,
             width=width,
@@ -177,7 +177,7 @@ def test_rpg_house_reachable_room_count_contract() -> None:
     assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 2
-    assert out.annotation_gt.type == "keyed_point_set_map"
+    assert out.annotation_gt.type == "point_set_map"
     assert sorted(out.annotation_gt.value) == ["player", "reachable_rooms"]
     assert len(out.annotation_gt.value["player"]) == 1
     assert len(out.annotation_gt.value["reachable_rooms"]) == 2
@@ -187,8 +187,8 @@ def test_rpg_house_reachable_room_count_contract() -> None:
             assert 0 <= float(point[0]) <= float(width)
             assert 0 <= float(point[1]) <= float(height)
     trace = out.trace_payload
-    assert trace["projected_annotation"]["type"] == "keyed_point_set_map"
-    assert trace["projected_annotation"]["keyed_point_set_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "point_set_map"
+    assert trace["projected_annotation"]["point_set_map"] == out.annotation_gt.value
     assert trace["render_map"]["reachable_count"] == 2
     assert trace["render_map"]["player_room_id"] == trace["query_spec"]["params"]["player_room_id"]
     entities = trace["scene_ir"]["entities"]
@@ -278,15 +278,15 @@ def test_rpg_house_missing_patch_label_contract() -> None:
     assert out.query_id == "single"
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert sorted(out.annotation_gt.value) == ["missing_region", "selected_option"]
     width, height = out.image.size
     for bbox in out.annotation_gt.value.values():
         _assert_bbox_inside_canvas(bbox, width=width, height=height)
     trace = out.trace_payload
     assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_house_v0"
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
     assert trace["render_map"]["selected_option_bbox_px"] == out.annotation_gt.value["selected_option"]
     assert trace["render_map"]["missing_region_bbox_px"] == out.annotation_gt.value["missing_region"]
     assert trace["render_map"]["candidate_crop_count"] > 0

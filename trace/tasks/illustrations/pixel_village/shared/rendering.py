@@ -49,6 +49,7 @@ from trace.tasks.illustrations.shared.pixel_world_objects import (
     draw_pixel_wagon,
     draw_pixel_winter_overlay,
 )
+from trace.tasks.illustrations.shared.rpg_tile_profiles import DEFAULT_RPG_TILE_PX
 from .regions import (
     PixelOrchardPlan,
     draw_pixel_orchard_boundary,
@@ -64,7 +65,7 @@ TileBox = tuple[int, int, int, int]
 DEFAULT_GRID_COLS = 30
 DEFAULT_GRID_ROWS = 22
 CANONICAL_TILE_PX = 16
-DEFAULT_DISPLAY_TILE_PX = 40
+DEFAULT_DISPLAY_TILE_PX = DEFAULT_RPG_TILE_PX
 
 # Backward-compatible constants for review scripts/tests that inspect the
 # prototype module directly. Rendered scenes now sample per-instance dimensions.
@@ -2397,13 +2398,13 @@ def _sample_layout(
 ) -> PixelVillageLayout:
     """Choose a full-bleed tile grid so the village itself fills the output canvas."""
 
-    requested_tile_px = max(20, min(40, int(tile_px)))
+    requested_tile_px = max(20, min(DEFAULT_DISPLAY_TILE_PX, int(tile_px)))
     image_w = int(width)
     image_h = int(height)
 
     if grid_cols is None and grid_rows is None:
         candidates: list[PixelVillageLayout] = []
-        for candidate_tile_px in range(20, 41):
+        for candidate_tile_px in range(20, DEFAULT_DISPLAY_TILE_PX + 1):
             if image_w % candidate_tile_px != 0 or image_h % candidate_tile_px != 0:
                 continue
             candidate = PixelVillageLayout(
@@ -2411,7 +2412,7 @@ def _sample_layout(
                 rows=image_h // candidate_tile_px,
                 tile_px=candidate_tile_px,
             )
-            if 20 <= candidate.cols <= 34 and 15 <= candidate.rows <= 30:
+            if 18 <= candidate.cols <= 34 and 15 <= candidate.rows <= 30:
                 candidates.append(candidate)
         if candidates:
             return min(
@@ -2423,21 +2424,21 @@ def _sample_layout(
     if grid_cols is not None and grid_rows is not None:
         cols = int(grid_cols)
         rows = int(grid_rows)
-        if cols < 20 or rows < 15:
-            raise ValueError("pixel village grid must be at least 20x15")
+        if cols < 18 or rows < 15:
+            raise ValueError("pixel village grid must be at least 18x15")
         if image_w % cols != 0 or image_h % rows != 0 or image_w // cols != image_h // rows:
             raise ValueError(
                 f"explicit pixel village grid {cols}x{rows} cannot fill {width}x{height} with square tiles"
             )
         layout = PixelVillageLayout(cols=cols, rows=rows, tile_px=image_w // cols)
-        if not (20 <= layout.tile_px <= 40):
+        if not (20 <= layout.tile_px <= DEFAULT_DISPLAY_TILE_PX):
             raise ValueError("explicit pixel village grid implies unsupported tile size")
         return layout
 
     explicit_cols = int(grid_cols) if grid_cols is not None else None
     explicit_rows = int(grid_rows) if grid_rows is not None else None
     candidates = []
-    for candidate_tile_px in range(20, 41):
+    for candidate_tile_px in range(20, DEFAULT_DISPLAY_TILE_PX + 1):
         if image_w % candidate_tile_px != 0 or image_h % candidate_tile_px != 0:
             continue
         candidate = PixelVillageLayout(
@@ -2448,7 +2449,7 @@ def _sample_layout(
         if (
             candidate.display_width_px == image_w
             and candidate.display_height_px == image_h
-            and 20 <= candidate.cols <= 34
+            and 18 <= candidate.cols <= 34
             and 15 <= candidate.rows <= 30
         ):
             candidates.append(candidate)

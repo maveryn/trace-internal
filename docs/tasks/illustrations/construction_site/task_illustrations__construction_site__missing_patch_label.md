@@ -13,7 +13,7 @@
 4. Supported `query_id` values: `single`
 5. Query ids: `single`
 6. Answer schema: `option_letter`
-7. Annotation schema: `keyed_bbox_map`
+7. Annotation schema: `bbox_map`
 8. Program schema: `select_option(match_patch(source_image, missing_region, options)); scene=construction_site; scope=missing_patch_label`
 
 ## Program Contract
@@ -47,8 +47,8 @@ This public task id is a stable scene-owned visual-option contract. The single p
 - The answer value is one of the visible option letters.
 
 ## Annotation Contract
-- Annotation schema: `keyed_bbox_map`
-- Generator `annotation_gt.type`: `keyed_bbox_map`
+- Annotation schema: `bbox_map`
+- Generator `annotation_gt.type`: `bbox_map`
 - Annotation keys are `missing_region` and `selected_option`.
 - Annotation boxes are final-image pixel boxes around the missing source region and the selected patch option. Do not include all options, labels, or context-only source objects.
 

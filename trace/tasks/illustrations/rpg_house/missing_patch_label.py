@@ -86,7 +86,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rende
 )
 
 
-def _keyed_bbox_map(value: Mapping[str, Sequence[float]]) -> Dict[str, list[float]]:
+def _bbox_map(value: Mapping[str, Sequence[float]]) -> Dict[str, list[float]]:
     return {
         str(key): [round(float(coord), 3) for coord in bbox[:4]]
         for key, bbox in value.items()
@@ -265,7 +265,7 @@ class IllustrationsRpgHouseMissingPatchLabelTask:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
         answer_label = str(artifacts.selected_label)
-        annotation_value = _keyed_bbox_map(
+        annotation_value = _bbox_map(
             {
                 "missing_region": artifacts.missing_region_bbox,
                 "selected_option": artifacts.selected_option_bbox,
@@ -386,16 +386,16 @@ class IllustrationsRpgHouseMissingPatchLabelTask:
                 "selected_option_bbox": list(artifacts.selected_option_bbox),
             },
             "projected_annotation": {
-                "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(annotation_value),
-                "pixel_keyed_bbox_map": dict(annotation_value),
+                "type": "bbox_map",
+                "bbox_map": dict(annotation_value),
+                "pixel_bbox_map": dict(annotation_value),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="option_letter", value=answer_label),
-            annotation_gt=TypedValue(type="keyed_bbox_map", value=dict(annotation_value)),
+            annotation_gt=TypedValue(type="bbox_map", value=dict(annotation_value)),
             image=artifacts.image,
             image_id="img0",
             trace_payload=trace_payload,

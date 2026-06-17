@@ -8,7 +8,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from .....core.seed import hash64
 from ....shared.config_defaults import group_default
 from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
-from ...shared.canvas_profiles import resolve_profile_render_params
+from ...shared.rpg_tile_profiles import resolve_rpg_tile_render_params
 from ...shared.task_support import bounds, sample_count, uniform_string_probability_map
 from .rendering import PixelVillageEntity, PixelVillageScene, render_pixel_village_map
 
@@ -131,7 +131,7 @@ TERRITORY_OBJECT_SPECS: Dict[str, Dict[str, str]] = {
 class _Defaults:
     canvas_width: int = 960
     canvas_height: int = 720
-    tile_px: int = 40
+    tile_px: int = 48
     theme_mode: str = "auto"
     cemetery_mode: str = "auto"
     orchard_mode: str = "auto"
@@ -392,13 +392,11 @@ def _render_scene(
     path_person_count: int = 0,
     background_person_path_clearance: int = 0,
 ) -> PixelVillageScene:
-    profile_params = resolve_profile_render_params(
+    profile_params = resolve_rpg_tile_render_params(
         params,
         render_defaults,
-        prefix="pixel_village",
-        fallback_width=_DEFAULTS.canvas_width,
-        fallback_height=_DEFAULTS.canvas_height,
-        fallback_scale=1,
+        tile_px_key="pixel_village_tile_px",
+        fallback_tile_px=_DEFAULTS.tile_px,
         instance_seed=int(instance_seed),
         namespace=f"{namespace}:canvas_profile",
     )
@@ -406,9 +404,9 @@ def _render_scene(
         _scene_seed(str(namespace), int(instance_seed), int(attempt_index)),
         width=int(profile_params["canvas_width"]),
         height=int(profile_params["canvas_height"]),
-        tile_px=int(params.get("tile_px", group_default(render_defaults, "pixel_village_tile_px", _DEFAULTS.tile_px))),
-        grid_cols=params.get("grid_cols", group_default(render_defaults, "pixel_village_grid_cols", None)),
-        grid_rows=params.get("grid_rows", group_default(render_defaults, "pixel_village_grid_rows", None)),
+        tile_px=int(profile_params["tile_px"]),
+        grid_cols=params.get("grid_cols", group_default(render_defaults, "pixel_village_grid_cols", profile_params["grid_cols"])),
+        grid_rows=params.get("grid_rows", group_default(render_defaults, "pixel_village_grid_rows", profile_params["grid_rows"])),
         cemetery_mode=str(params.get("cemetery_mode", group_default(render_defaults, "pixel_village_cemetery_mode", _DEFAULTS.cemetery_mode))),
         orchard_mode=str(params.get("orchard_mode", group_default(render_defaults, "pixel_village_orchard_mode", _DEFAULTS.orchard_mode))),
         windmill_mode=str(params.get("windmill_mode", group_default(render_defaults, "pixel_village_windmill_mode", _DEFAULTS.windmill_mode))),

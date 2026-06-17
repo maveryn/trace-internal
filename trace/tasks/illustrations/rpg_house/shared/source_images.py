@@ -8,21 +8,18 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from PIL import Image
 
 from trace.core.seed import hash64
-from trace.tasks.illustrations.shared.canvas_profiles import resolve_profile_render_params, resolve_reconstruction_source_profile
 from trace.tasks.illustrations.shared.option_rendering import image_detail_score
+from trace.tasks.illustrations.shared.rpg_tile_profiles import resolve_rpg_tile_profile
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 
 from .rendering import (
-    DEFAULT_CANVAS_HEIGHT,
-    DEFAULT_CANVAS_WIDTH,
     DEFAULT_TILE_PX,
     MAX_ROOM_COUNT,
     MIN_ROOM_COUNT,
     RENDERER_ID,
     SCENE_ID,
     render_rpg_house_profile_scene,
-    resolve_rpg_house_tile_px,
 )
 from .state import RpgHouseScene
 
@@ -180,26 +177,22 @@ def sample_rpg_house_source_scene_spec(
         source_room_count = int(support[int(index) % len(support)])
         probabilities = dict(uniform_probability_map(support))
 
-    profile = resolve_reconstruction_source_profile(
+    profile = resolve_rpg_tile_profile(
         params=params,
         defaults=generation_defaults,
-        fallback_source_width=int(source_width),
-        fallback_source_height=int(source_height),
+        tile_px_key="rpg_house_tile_px",
+        fallback_tile_px=DEFAULT_TILE_PX,
         instance_seed=int(instance_seed),
         namespace=f"{seed_namespace}:source_profile",
+        width_key="source_width",
+        height_key="source_height",
     )
     width = int(profile.width)
     height = int(profile.height)
     trace = dict(profile.trace())
     if grid_rows is not None and grid_cols is not None:
-        raw_width, raw_height = width, height
-        width = width - (width % int(grid_cols))
-        height = height - (height % int(grid_rows))
-        if width < int(grid_cols) or height < int(grid_rows):
-            raise ValueError("source profile is too small for the requested reconstruction grid")
-        if width != raw_width or height != raw_height:
-            trace["pre_grid_snap_canvas_profile_size"] = [int(raw_width), int(raw_height)]
-            trace["canvas_profile_size"] = [int(width), int(height)]
+        if width % int(grid_cols) != 0 or height % int(grid_rows) != 0:
+            raise ValueError("RPG house source profile must align with the requested reconstruction grid")
         trace["grid_alignment"] = {"rows": int(grid_rows), "cols": int(grid_cols)}
     return RpgHouseSourceSceneSpec(
         source_room_count=int(source_room_count),
@@ -220,22 +213,20 @@ def render_rpg_house_source_scene(
 ) -> RpgHouseScene:
     """Render one dense source RPG house panel."""
 
-    render_param_overrides = {
-        **dict(params),
+    tile_px = int(
+        params.get(
+            "source_tile_px",
+            params.get("tile_px", group_default(render_defaults, "rpg_house_tile_px", DEFAULT_TILE_PX)),
+        )
+    )
+    render_params = {
         "canvas_width": int(source.source_size[0]),
         "canvas_height": int(source.source_size[1]),
+        "tile_px": int(tile_px),
+        "grid_cols": int(source.source_profile_trace.get("rpg_tile_profile", {}).get("grid_cols", 0)),
+        "grid_rows": int(source.source_profile_trace.get("rpg_tile_profile", {}).get("grid_rows", 0)),
+        **dict(source.source_profile_trace),
     }
-    render_params = resolve_profile_render_params(
-        render_param_overrides,
-        render_defaults,
-        prefix=SCENE_ID,
-        fallback_width=DEFAULT_CANVAS_WIDTH,
-        fallback_height=DEFAULT_CANVAS_HEIGHT,
-        fallback_scale=1,
-        instance_seed=int(instance_seed),
-        namespace=f"{seed_namespace}:source_canvas_profile",
-    )
-    tile_px = int(params.get("source_tile_px", resolve_rpg_house_tile_px(params, render_defaults)))
     return render_rpg_house_profile_scene(
         hash64(int(instance_seed), f"{seed_namespace}:source_scene", int(attempt_index)),
         render_params=render_params,

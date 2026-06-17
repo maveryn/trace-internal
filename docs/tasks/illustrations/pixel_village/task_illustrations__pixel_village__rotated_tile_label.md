@@ -24,7 +24,7 @@ Renders a pixel-village source illustration as a profile-aware grid of lettered 
 - Parameter axes: `rotation_degrees`, `source_size`, `canvas_profile`
 - Arguments:
   - `tile_grid`: semantic_role; allowed `profile_aware_pixel_village_tile_grid`; source `program_schema_concrete`
-  - `labels`: semantic_role; allowed `A_D_or_A_F_lettered_tiles`; source `program_schema_concrete`
+  - `labels`: semantic_role; allowed `A_F_or_A_I_lettered_tiles`; source `program_schema_concrete`
   - `rotation_degrees`: operation_parameter; allowed `90`, `270`; source `parameter_axes`
   - `canvas_profile`: render_parameter; allowed `landscape`, `square`, `portrait`; source `trace_metadata`
 - Argument metadata status: `curated`
@@ -45,5 +45,5 @@ Renders a pixel-village source illustration as a profile-aware grid of lettered 
 - Prompt text must come from `prompts/illustrations/pixel_village/illustrations_pixel_village_v0.json`.
 - Runtime query id is the single-query sentinel `single`; rotation angle, usable tile indices, selected tile, source render modes, and label font are trace parameters.
 - The composed grid uses the source image full-bleed with functional tile grid lines and option letters only; it must not add decorative outer margins, borders, or background frames.
-- Quarter-turn rotations require square source cells; the source profile chooses a landscape 2x3, square 2x2, or portrait 3x2 grid.
+- Quarter-turn rotations require square source cells; the source profile chooses a landscape 2x3, square 3x3, or portrait 3x2 grid.
 - The selected tile bbox, answer label, rotation angle, and usable-tile set must all come from the same `compose_rotated_tile_grid` execution trace.

@@ -38,7 +38,7 @@ grounding.
 ## Annotation Policy
 Prompt-facing annotation should mark visible object bboxes, semantic part
 bboxes, paths, regions, source/candidate panels, or other decisive witnesses in
-final-image coordinates. Use keyed annotation when source and target,
+final-image coordinates. Use map annotation when source and target,
 before/after, reference/candidate, or object/part roles matter.
 
 Do not annotate decorative sky/sun/cloud elements unless a task explicitly
@@ -57,7 +57,9 @@ Derived reconstruction tasks should render their source scene directly at the
 selected profile and then downscale the final option layout only if needed to
 stay under the 1,280,000-pixel review cap, scaling annotation coordinates with the image.
 For quarter-turn rotated-tile tasks, choose profile-aware square-cell grids:
-landscape `2x3`, square `2x2`, and portrait `3x2`.
+landscape `2x3`, square `3x3`, and portrait `3x2`. Top-down RPG tile
+scenes use shared 48px tile profiles: landscape `27x18`, square `21x21`,
+and portrait `18x27`.
 
 The rendered source illustration itself should not be placed on a decorative
 outer background, card, border, or frame. If a visual-option task needs layout

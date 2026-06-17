@@ -18,6 +18,7 @@ from trace.tasks.illustrations.shared.object_rendering import (
 from trace.tasks.illustrations.shared.object_variants import RENDERER_STYLE_TOP_DOWN_PIXEL_RPG
 from trace.tasks.illustrations.shared.option_rendering import draw_label_badge
 from trace.tasks.illustrations.shared.pixel_world_objects import CANONICAL_TILE_PX
+from trace.tasks.illustrations.shared.rpg_tile_profiles import DEFAULT_RPG_TILE_PX
 
 from .relations import room_graph
 from .state import BBox, RpgHouseDoor, RpgHouseEntity, RpgHouseRoom, RpgHouseScene, TileBox
@@ -25,9 +26,9 @@ from .state import BBox, RpgHouseDoor, RpgHouseEntity, RpgHouseRoom, RpgHouseSce
 
 SCENE_ID = "rpg_house"
 RENDERER_ID = "rpg_house_top_down_v0"
-DEFAULT_TILE_PX = 40
-DEFAULT_CANVAS_WIDTH = 960
-DEFAULT_CANVAS_HEIGHT = 720
+DEFAULT_TILE_PX = DEFAULT_RPG_TILE_PX
+DEFAULT_CANVAS_WIDTH = 27 * DEFAULT_TILE_PX
+DEFAULT_CANVAS_HEIGHT = 18 * DEFAULT_TILE_PX
 CANONICAL_WALL_THICKNESS = 12
 CANONICAL_WALL_SHADOW_THICKNESS = 16
 CANONICAL_DOOR_CLEARANCE = 2
@@ -287,6 +288,7 @@ def rpg_house_profile_metadata(render_params: Mapping[str, Any]) -> dict[str, An
         "canvas_profile": str(render_params.get("canvas_profile", "")),
         "canvas_profile_size": list(render_params.get("canvas_profile_size", [])),
         "canvas_profile_probabilities": dict(render_params.get("canvas_profile_probabilities", {})),
+        "rpg_tile_profile": dict(render_params.get("rpg_tile_profile", {})),
     }
 
 

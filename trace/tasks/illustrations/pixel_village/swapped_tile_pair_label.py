@@ -28,7 +28,6 @@ from ..shared.cutouts import (
 from ..shared.option_rendering import sample_visual_label_font_trace
 from .shared.output import pixel_village_scene_ir
 from .shared.prompts import build_pixel_village_prompt_artifacts
-from .shared.rendering import DEFAULT_DISPLAY_TILE_PX
 from .shared.sampling import SCENE_ID, sample_option_answer_index
 from .shared.source_images import PixelVillageSourceSpec, build_pixel_village_source_spec, render_pixel_village_source_scene, source_panel_for_scene
 
@@ -88,7 +87,7 @@ def _build_grid_aligned_source_spec(*, params: Mapping[str, Any], instance_seed:
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}:source_profile",
     )
-    tile_px = int(params.get("tile_px", group_default(_RENDER_DEFAULTS, "pixel_village_tile_px", DEFAULT_DISPLAY_TILE_PX)))
+    tile_px = int(source_spec.tile_px)
     multiple = _tile_grid_multiple(tile_px)
     raw_width, raw_height = int(source_spec.source_size[0]), int(source_spec.source_size[1])
     width = _align_dimension(raw_width, multiple=multiple)
@@ -112,6 +111,8 @@ def _build_grid_aligned_source_spec(*, params: Mapping[str, Any], instance_seed:
         source_spec,
         source_size=(int(width), int(height)),
         canvas_size=(int(width), int(height)),
+        grid_cols=int(width // tile_px),
+        grid_rows=int(height // tile_px),
     )
     trace["canvas_profile_size"] = [width, height]
     return aligned_spec, trace

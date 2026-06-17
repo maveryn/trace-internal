@@ -70,27 +70,8 @@ generation:
       min_pair_difference: 7.0
 
 rendering:
-  task_overrides:
-    task_illustrations__rpg_house__door_state_count:
-      rpg_house_canvas_width: 960
-      rpg_house_canvas_height: 720
-      rpg_house_tile_px: 40
-    task_illustrations__rpg_house__missing_patch_label:
-      rpg_house_canvas_width: 960
-      rpg_house_canvas_height: 720
-      rpg_house_tile_px: 40
-    task_illustrations__rpg_house__reachable_room_count:
-      rpg_house_canvas_width: 960
-      rpg_house_canvas_height: 720
-      rpg_house_tile_px: 40
-    task_illustrations__rpg_house__room_count:
-      rpg_house_canvas_width: 960
-      rpg_house_canvas_height: 720
-      rpg_house_tile_px: 40
-    task_illustrations__rpg_house__swapped_tile_pair_label:
-      rpg_house_canvas_width: 960
-      rpg_house_canvas_height: 720
-      rpg_house_tile_px: 40
+  shared:
+    rpg_house_tile_px: 48
 
 prompt:
   task_overrides:

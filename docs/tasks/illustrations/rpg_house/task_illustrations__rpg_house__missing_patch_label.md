@@ -36,8 +36,8 @@ Render a top-down RPG house source panel with one missing rectangular region and
 - The answer value is one of the visible patch option letters.
 
 ## Annotation Contract
-- Annotation schema: `keyed_bbox_map`
-- Generator `annotation_gt.type`: `keyed_bbox_map`
+- Annotation schema: `bbox_map`
+- Generator `annotation_gt.type`: `bbox_map`
 - Annotation keys are `missing_region` and `selected_option`.
 - Annotation boxes are final-image pixel boxes around the missing source region and selected patch option. Do not include all options, option labels, room fixtures, or context-only source objects.
 

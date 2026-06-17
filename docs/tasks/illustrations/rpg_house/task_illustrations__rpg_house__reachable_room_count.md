@@ -36,8 +36,8 @@ Counts the other rooms reachable from the player's room by following only open d
 - The answer is the number of rooms other than the player's current room that are reachable through open doorways.
 
 ## Annotation Contract
-- Annotation schema: `keyed_point_set_map`
-- Generator `annotation_gt.type`: `keyed_point_set_map`
+- Annotation schema: `point_set_map`
+- Generator `annotation_gt.type`: `point_set_map`
 - Annotation key `player` contains one point on the visible player marker.
 - Annotation key `reachable_rooms` contains one center point for each counted reachable room and is empty when the answer is zero.
 - Annotation excludes unreachable rooms, closed doors, furniture, walls, and decorative fixtures.

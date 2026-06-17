@@ -30,8 +30,6 @@ generation:
       person_count_max: 13
       equipment_count_min: 4
       equipment_count_max: 7
-      source_width: 520
-      source_height: 366
       min_tile_detail_score: 600
     task_illustrations__park_playground__missing_patch_label:
       source_person_count_min: 8
@@ -46,15 +44,11 @@ generation:
       patch_height_min: 130
       patch_height_max: 185
       crop_margin_px: 36
-      source_width: 820
-      source_height: 560
     task_illustrations__park_playground__rotated_tile_label:
       source_person_count_min: 8
       source_person_count_max: 13
       source_equipment_count_min: 4
       source_equipment_count_max: 7
-      source_width: 960
-      source_height: 640
       min_tile_detail_score: 180
       min_rotation_delta: 7
       rotation_degrees_support:
@@ -65,8 +59,6 @@ generation:
       source_person_count_max: 13
       source_equipment_count_min: 4
       source_equipment_count_max: 7
-      source_width: 1200
-      source_height: 798
       min_tile_detail_score: 180
       min_pair_difference: 8
 

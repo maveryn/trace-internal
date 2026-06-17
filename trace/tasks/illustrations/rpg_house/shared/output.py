@@ -185,19 +185,19 @@ def point_set_projection(points: Sequence[Sequence[float]]) -> dict[str, Any]:
     return {"type": "point_set", "point_set": values, "pixel_point_set": values}
 
 
-def keyed_point_set_map_projection(keyed_points: Mapping[str, Sequence[Sequence[float]]]) -> dict[str, Any]:
+def point_set_map_projection(keyed_points: Mapping[str, Sequence[Sequence[float]]]) -> dict[str, Any]:
     values = {
         str(key): [[round(float(point[0]), 3), round(float(point[1]), 3)] for point in points]
         for key, points in keyed_points.items()
     }
-    return {"type": "keyed_point_set_map", "keyed_point_set_map": values, "pixel_keyed_point_set_map": values}
+    return {"type": "point_set_map", "point_set_map": values, "pixel_point_set_map": values}
 
 
 __all__ = [
     "bbox_projection",
     "door_point_map",
     "door_bbox_map",
-    "keyed_point_set_map_projection",
+    "point_set_map_projection",
     "player_entity",
     "point_set_projection",
     "room_bbox_map",

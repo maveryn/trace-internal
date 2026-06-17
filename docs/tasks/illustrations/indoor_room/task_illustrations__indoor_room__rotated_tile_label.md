@@ -24,7 +24,7 @@ Renders an indoor-room source illustration as a profile-aware grid of lettered s
 - Parameter axes: `theme_id`, `source_object_count`, `rotation_degrees`, `canvas_profile`
 - Arguments:
   - `tile_grid`: semantic_role; allowed `lettered_indoor_room_tile_grid`; source `program_schema_concrete`
-  - `labels`: semantic_role; allowed `A_D_or_A_F`; source `program_schema_concrete`
+  - `labels`: semantic_role; allowed `A_F_or_A_I`; source `program_schema_concrete`
   - `rotation_degrees`: render_parameter; allowed `90`, `270`; source `trace_metadata`
   - `canvas_profile`: render_parameter; allowed `landscape`, `square`, `portrait`; source `trace_metadata`
 - Argument metadata status: `curated`
@@ -44,6 +44,6 @@ Renders an indoor-room source illustration as a profile-aware grid of lettered s
 - Prompt text must come from the `illustrations_indoor_room_v0` prompt bundle, with scene/task/output layers selected deterministically and recorded in metadata.
 - Render randomness, sampled room theme/style, tile-label font, grid style, selected tile, and verifier payloads must be explicit in the instance trace.
 - The selected tile is sampled only from tiles with enough visual detail and rotation difference to make the anomaly visible.
-- Quarter-turn rotations require square source cells; the source profile chooses a landscape 2x3, square 2x2, or portrait 3x2 grid.
+- Quarter-turn rotations require square source cells; the source profile chooses a landscape 2x3, square 3x3, or portrait 3x2 grid.
 - The composed grid must be full-bleed over the source image with no decorative outer margin, border, or background frame.
 - The selected tile bbox, answer label, and rotated tile index must all come from the same `compose_rotated_tile_grid` execution trace.

@@ -13,8 +13,6 @@ generation:
       patch_height_min: 120
       patch_height_max: 180
       crop_margin_px: 36
-      source_width: 820
-      source_height: 615
     task_illustrations__pixel_village__object_type_count:
       query_id_support:
         - single
@@ -34,8 +32,6 @@ generation:
     task_illustrations__pixel_village__rotated_tile_label:
       query_id_support:
         - single
-      source_width: 960
-      source_height: 640
       min_tile_detail_score: 120
       min_rotation_delta: 7
       rotation_degrees_support:
@@ -44,8 +40,6 @@ generation:
     task_illustrations__pixel_village__swapped_tile_pair_label:
       query_id_support:
         - single
-      source_width: 1200
-      source_height: 840
       min_tile_detail_score: 150
       min_pair_difference: 8
     task_illustrations__pixel_village__territory_object_count:
@@ -70,11 +64,10 @@ generation:
       target_answer_count_max: 8
 
 rendering:
+  shared:
+    pixel_village_tile_px: 48
   task_overrides:
     task_illustrations__pixel_village__missing_patch_label:
-      pixel_village_canvas_width: 960
-      pixel_village_canvas_height: 720
-      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: force
       pixel_village_orchard_mode: force
@@ -83,18 +76,12 @@ rendering:
       pixel_village_river_orientation: auto
       pixel_village_river_placement: balanced
     task_illustrations__pixel_village__object_type_count:
-      pixel_village_canvas_width: 960
-      pixel_village_canvas_height: 720
-      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
       pixel_village_orchard_mode: auto
       pixel_village_windmill_mode: auto
       annotation_padding_px: 0.0
     task_illustrations__pixel_village__person_path_count:
-      pixel_village_canvas_width: 960
-      pixel_village_canvas_height: 720
-      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
       pixel_village_orchard_mode: auto
@@ -102,9 +89,6 @@ rendering:
       background_person_path_clearance: 1
       annotation_padding_px: 0.0
     task_illustrations__pixel_village__rotated_tile_label:
-      pixel_village_canvas_width: 960
-      pixel_village_canvas_height: 640
-      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: force
       pixel_village_orchard_mode: force
@@ -113,9 +97,6 @@ rendering:
       pixel_village_river_orientation: auto
       pixel_village_river_placement: balanced
     task_illustrations__pixel_village__swapped_tile_pair_label:
-      pixel_village_canvas_width: 1200
-      pixel_village_canvas_height: 840
-      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: force
       pixel_village_orchard_mode: force
@@ -124,18 +105,12 @@ rendering:
       pixel_village_river_orientation: auto
       pixel_village_river_placement: balanced
     task_illustrations__pixel_village__territory_object_count:
-      pixel_village_canvas_width: 960
-      pixel_village_canvas_height: 720
-      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
       pixel_village_orchard_mode: auto
       pixel_village_windmill_mode: auto
       annotation_padding_px: 0.0
     task_illustrations__pixel_village__river_side_object_count:
-      pixel_village_canvas_width: 960
-      pixel_village_canvas_height: 720
-      pixel_village_tile_px: 40
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
       pixel_village_orchard_mode: auto

@@ -44,6 +44,6 @@ Renders a pixel-village source illustration as a numbered 3x3 tile grid, swaps a
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/pixel_village/illustrations_pixel_village_v0.json`.
 - Runtime query id is the single-query sentinel `single`; answer option letter, option-pair mapping, swapped pair, source render modes, source tile boxes, style, and option-label font are trace parameters.
-- The pixel-village source size is aligned to both the 3x3 task grid and the pixel-village tile size so tile boundaries do not introduce blank strips or partial pixel tiles.
+- The pixel-village source size uses the shared 48px top-down RPG tile profiles and is aligned to both the 3x3 task grid and the pixel-village tile size so tile boundaries do not introduce blank strips or partial pixel tiles.
 - The composed grid uses the source image full-bleed with functional tile grid lines, numbered cell badges, and compact pair-option cards only; it must not add a decorative scene background frame.
 - The swapped-cell bboxes, answer label, chosen pair option, source tile boxes, and candidate-pair support must all come from the same `compose_swapped_tile_pair_mcq` execution trace.

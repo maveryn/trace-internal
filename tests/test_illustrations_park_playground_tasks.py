@@ -187,7 +187,7 @@ def test_jigsaw_arrangement_label_contract() -> None:
     assert execution["option_permutations_by_label"][answer_label] == correct_permutation
     assert option_permutations[answer_label] == correct_permutation
     assert sum(perm == correct_permutation for perm in option_permutations.values()) == 1
-    assert trace["query_spec"]["params"]["grid_shape"] in ([2, 2], [2, 3], [3, 2])
+    assert trace["query_spec"]["params"]["grid_shape"] in ([3, 3], [2, 3], [3, 2])
     assert trace["render_map"]["option_layout_shape"] == [2, 2]
     assert min(trace["query_spec"]["params"]["tile_detail_scores"]) >= 600
     assert trace["render_spec"]["canvas_size"][0] * trace["render_spec"]["canvas_size"][1] <= MAX_RECONSTRUCTION_OUTPUT_PIXELS
@@ -232,13 +232,13 @@ def test_missing_patch_label_contract() -> None:
     assert out.scene_id == "park_playground"
     assert out.query_id == SINGLE_QUERY_ID
     assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert answer_label == "C"
     assert set(out.annotation_gt.value) == {"missing_region", "selected_option"}
     assert out.annotation_gt.value["missing_region"] == trace["render_map"]["missing_region_bbox_px"]
     assert out.annotation_gt.value["selected_option"] == trace["render_map"]["selected_option_bbox_px"]
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
     assert trace["query_spec"]["params"]["patch_mode"] == "plain"
     assert trace["query_spec"]["params"]["option_labels"] == ["A", "B", "C", "D"]
     assert trace["query_spec"]["params"]["correct_index"] == 2

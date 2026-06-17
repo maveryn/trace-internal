@@ -167,7 +167,7 @@ def test_missing_patch_label_contract() -> None:
     assert annotation["missing_region"] == render_map["missing_region_bbox_px"]
     assert annotation["selected_option"] == render_map["selected_option_bbox_px"]
     assert annotation["selected_option"] == render_map["option_bboxes_px_by_label"][out.answer_gt.value]
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
+    assert trace["projected_annotation"]["bbox_map"] == annotation
     assert len(render_map["option_bboxes_px_by_label"]) == 4
     assert len(render_map["option_source_crop_boxes_px"]) == 4
     assert render_map["option_source_crop_boxes_px"][2] == render_map["source_crop_box_px"]

@@ -18,10 +18,10 @@ from trace.tasks.shared.config_defaults import (
 )
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.illustrations.shared.canvas_profiles import resolve_profile_render_params
+from trace.tasks.illustrations.shared.rpg_tile_profiles import resolve_rpg_tile_render_params
 
 from .shared.output import (
-    keyed_point_set_map_projection,
+    point_set_map_projection,
     player_entity,
     room_point_map,
     rpg_house_reachable_room_count_render_map,
@@ -31,13 +31,11 @@ from .shared.output import (
 from .shared.prompts import build_rpg_house_prompt_artifacts
 from .shared.relations import connected_component, door_edges, grow_reachable_subset, reachable_room_ids
 from .shared.rendering import (
-    DEFAULT_CANVAS_HEIGHT,
-    DEFAULT_CANVAS_WIDTH,
+    DEFAULT_TILE_PX,
     MAX_ROOM_COUNT,
     MIN_ROOM_COUNT,
     SCENE_ID,
     render_rpg_house_profile_scene,
-    resolve_rpg_house_tile_px,
 )
 from .shared.sampling import select_count_from_support, select_feasible_count_from_support, select_string_from_support
 
@@ -170,17 +168,15 @@ class IllustrationsRpgHouseReachableRoomCountTask:
             fallback_support=tuple(range(MIN_ROOM_COUNT, MAX_ROOM_COUNT + 1)),
             namespace=f"{TASK_ID}:room_count",
         )
-        render_params = resolve_profile_render_params(
+        render_params = resolve_rpg_tile_render_params(
             task_params,
             _RENDER_DEFAULTS,
-            prefix="rpg_house",
-            fallback_width=DEFAULT_CANVAS_WIDTH,
-            fallback_height=DEFAULT_CANVAS_HEIGHT,
-            fallback_scale=1,
+            tile_px_key="rpg_house_tile_px",
+            fallback_tile_px=DEFAULT_TILE_PX,
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}:canvas_profile",
         )
-        tile_px = resolve_rpg_house_tile_px(task_params, _RENDER_DEFAULTS)
+        tile_px = int(render_params["tile_px"])
         required_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             [
@@ -326,13 +322,13 @@ class IllustrationsRpgHouseReachableRoomCountTask:
                 "reachable_room_ids": list(sample.reachable_room_ids),
                 "reachable_room_count": int(answer),
             },
-            "projected_annotation": keyed_point_set_map_projection(annotation_value),
+            "projected_annotation": point_set_map_projection(annotation_value),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=answer),
-            annotation_gt=TypedValue(type="keyed_point_set_map", value=annotation_value),
+            annotation_gt=TypedValue(type="point_set_map", value=annotation_value),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

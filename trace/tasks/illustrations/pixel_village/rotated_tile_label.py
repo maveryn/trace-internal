@@ -28,10 +28,10 @@ from ..shared.cutouts import (
 )
 from ..shared.canvas_profiles import (
     MAX_RECONSTRUCTION_OUTPUT_PIXELS,
-    reconstruction_grid_for_size,
     reconstruction_option_labels,
 )
 from ..shared.option_rendering import sample_visual_label_font_trace
+from ..shared.rpg_tile_profiles import rpg_rotated_tile_grid_for_size
 from .shared.output import pixel_village_scene_ir
 from .shared.prompts import build_pixel_village_prompt_artifacts
 from .shared.sampling import SCENE_ID
@@ -196,7 +196,7 @@ class IllustrationsPixelVillageRotatedTileLabelTask:
             namespace=f"{TASK_ID}:source_profile",
         )
         source_width, source_height = int(source_spec.source_size[0]), int(source_spec.source_size[1])
-        grid_rows, grid_cols = reconstruction_grid_for_size(source_width, source_height)
+        grid_rows, grid_cols = rpg_rotated_tile_grid_for_size(source_width, source_height)
         tile_labels = reconstruction_option_labels(grid_rows, grid_cols)
 
         for attempt in range(max(1, int(max_attempts))):

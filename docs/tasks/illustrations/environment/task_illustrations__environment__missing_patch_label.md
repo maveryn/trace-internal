@@ -36,8 +36,8 @@ Renders an environment source panel with one missing visual region and four or s
 - The answer value is one of the visible option letters.
 
 ## Annotation Contract
-- Annotation schema: `keyed_bbox_map`
-- Generator `annotation_gt.type`: `keyed_bbox_map`
+- Annotation schema: `bbox_map`
+- Generator `annotation_gt.type`: `bbox_map`
 - Annotation keys are `missing_region` and `selected_option`.
 - Annotation boxes are final-image pixel boxes around the missing source region and the selected patch option. Do not include all options, labels, source objects, or context-only regions.
 

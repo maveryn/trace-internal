@@ -51,13 +51,9 @@ generation:
       patch_height_min: 110
       patch_height_max: 175
       crop_margin_px: 34
-      source_width: 820
-      source_height: 560
     task_illustrations__environment__rotated_tile_label:
       source_object_count_min: 12
       source_object_count_max: 18
-      source_width: 960
-      source_height: 640
       rotation_degrees_support:
         - 90
         - 270

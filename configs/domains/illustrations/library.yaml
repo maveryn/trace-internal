@@ -36,8 +36,6 @@ generation:
       section_count_max: 6
       section_book_count_min: 8
       section_book_count_max: 14
-      source_width: 960
-      source_height: 640
       rotation_degrees_support:
         - 90
         - 270
@@ -56,8 +54,6 @@ generation:
       patch_height_min: 110
       patch_height_max: 175
       crop_margin_px: 34
-      source_width: 820
-      source_height: 560
 
 rendering:
   shared:

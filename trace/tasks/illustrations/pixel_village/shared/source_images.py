@@ -9,8 +9,8 @@ from PIL import Image
 
 from .....core.seed import hash64
 from ....shared.config_defaults import group_default
-from ...shared.canvas_profiles import resolve_reconstruction_source_profile
 from ...shared.option_rendering import fit_source_image
+from ...shared.rpg_tile_profiles import resolve_rpg_tile_profile
 from .rendering import DEFAULT_DISPLAY_TILE_PX, PixelVillageScene, render_pixel_village_map
 from .sampling import _DEFAULTS
 
@@ -22,6 +22,8 @@ class PixelVillageSourceSpec:
     source_size: Tuple[int, int]
     canvas_size: Tuple[int, int]
     tile_px: int
+    grid_cols: int
+    grid_rows: int
     canvas_profile: str
     canvas_profile_probabilities: Mapping[str, float]
     theme_mode: str
@@ -45,18 +47,22 @@ def build_pixel_village_source_spec(
 ) -> PixelVillageSourceSpec:
     """Resolve source-image render parameters from task params and defaults."""
 
-    profile = resolve_reconstruction_source_profile(
+    profile = resolve_rpg_tile_profile(
         params=params,
         defaults=rendering_defaults,
-        fallback_source_width=int(fallback_source_width),
-        fallback_source_height=int(fallback_source_height),
+        tile_px_key="pixel_village_tile_px",
+        fallback_tile_px=DEFAULT_DISPLAY_TILE_PX,
         instance_seed=int(instance_seed),
         namespace=str(namespace),
+        width_key="source_width",
+        height_key="source_height",
     )
     return PixelVillageSourceSpec(
         source_size=(int(profile.width), int(profile.height)),
         canvas_size=(int(profile.width), int(profile.height)),
-        tile_px=int(params.get("tile_px", group_default(rendering_defaults, "pixel_village_tile_px", DEFAULT_DISPLAY_TILE_PX))),
+        tile_px=int(profile.tile_px),
+        grid_cols=int(profile.grid_cols),
+        grid_rows=int(profile.grid_rows),
         canvas_profile=str(profile.profile_id),
         canvas_profile_probabilities=dict(profile.probabilities),
         theme_mode=str(params.get("theme_mode", group_default(rendering_defaults, "pixel_village_theme_mode", _DEFAULTS.theme_mode))),
@@ -84,6 +90,8 @@ def render_pixel_village_source_scene(
         width=int(source_spec.canvas_size[0]),
         height=int(source_spec.canvas_size[1]),
         tile_px=int(source_spec.tile_px),
+        grid_cols=int(source_spec.grid_cols),
+        grid_rows=int(source_spec.grid_rows),
         cemetery_mode=str(source_spec.cemetery_mode),
         orchard_mode=str(source_spec.orchard_mode),
         windmill_mode=str(source_spec.windmill_mode),

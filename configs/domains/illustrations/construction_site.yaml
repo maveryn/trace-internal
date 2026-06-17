@@ -65,8 +65,6 @@ generation:
       patch_height_min: 130
       patch_height_max: 185
       crop_margin_px: 36
-      source_width: 820
-      source_height: 560
     task_illustrations__construction_site__rotated_tile_label:
       source_worker_count_min: 10
       source_worker_count_max: 16
@@ -74,8 +72,6 @@ generation:
       source_material_count_max: 10
       source_equipment_count_min: 4
       source_equipment_count_max: 7
-      source_width: 960
-      source_height: 640
       rotation_degrees_support:
         - 90
         - 270

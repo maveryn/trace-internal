@@ -194,10 +194,11 @@ def test_canvas_profiles_resolve_profile_grids_and_labels() -> None:
         fallback_height=420,
     ).size == (800, 1200)
     assert reconstruction_grid_for_size(1200, 800) == (2, 3)
-    assert reconstruction_grid_for_size(960, 960) == (2, 2)
+    assert reconstruction_grid_for_size(960, 960) == (3, 3)
     assert reconstruction_grid_for_size(800, 1200) == (3, 2)
     assert reconstruction_option_labels(2, 2) == ("A", "B", "C", "D")
     assert reconstruction_option_labels(2, 3) == ("A", "B", "C", "D", "E", "F")
+    assert reconstruction_option_labels(3, 3) == ("A", "B", "C", "D", "E", "F", "G", "H", "I")
 
 
 def test_downscale_helpers_scale_jigsaw_bboxes_under_pixel_cap() -> None:

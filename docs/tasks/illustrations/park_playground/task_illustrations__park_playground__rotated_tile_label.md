@@ -24,7 +24,7 @@ Render a park/playground source illustration as a profile-aware grid of lettered
 - Parameter axes: `source_person_count`, `source_equipment_count`, `rotation_degrees`, `canvas_profile`
 - Arguments:
   - `tile_grid`: semantic_role; allowed `lettered_park_playground_tile_grid`; source `program_schema_concrete`
-  - `labels`: semantic_role; allowed `A_D_or_A_F`; source `program_schema_concrete`
+  - `labels`: semantic_role; allowed `A_F_or_A_I`; source `program_schema_concrete`
   - `rotation_degrees`: render_parameter; allowed `90`, `270`; source `trace_metadata`
   - `canvas_profile`: render_parameter; allowed `landscape`, `square`, `portrait`; source `trace_metadata`
 - Argument metadata status: `curated`
@@ -44,6 +44,6 @@ Render a park/playground source illustration as a profile-aware grid of lettered
 - Prompt text comes from `prompts/illustrations/park_playground/illustrations_park_playground_v0.json`.
 - Render randomness, sampled park setting/style, tile-label font, grid style, selected tile, and verifier payloads are explicit in the instance trace.
 - The selected tile is sampled only from tiles with enough visual detail and rotation difference to make the anomaly visible.
-- Quarter-turn rotations require square source cells; the source profile chooses a landscape 2x3, square 2x2, or portrait 3x2 grid.
+- Quarter-turn rotations require square source cells; the source profile chooses a landscape 2x3, square 3x3, or portrait 3x2 grid.
 - The composed grid must be full-bleed over the source image with no decorative outer margin, border, or background frame.
 - The selected tile bbox, answer label, and rotated tile index must all come from the same `compose_rotated_tile_grid` execution trace.

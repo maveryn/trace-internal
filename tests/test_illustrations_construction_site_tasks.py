@@ -81,9 +81,9 @@ def test_construction_site_missing_patch_uses_keyed_visual_witnesses() -> None:
     assert out.query_id == SINGLE_QUERY_ID
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert set(out.annotation_gt.value) == {"missing_region", "selected_option"}
-    assert out.trace_payload["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert out.trace_payload["projected_annotation"]["bbox_map"] == out.annotation_gt.value
 
     canvas_width, canvas_height = out.trace_payload["render_spec"]["canvas_size"]
     for bbox in out.annotation_gt.value.values():

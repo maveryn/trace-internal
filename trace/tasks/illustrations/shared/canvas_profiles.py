@@ -201,7 +201,7 @@ def reconstruction_grid_for_profile(profile: CanvasProfile | Mapping[str, Any] |
     else:
         profile_id = str(profile)
     if profile_id == CANVAS_PROFILE_SQUARE:
-        return (2, 2)
+        return (3, 3)
     if profile_id == CANVAS_PROFILE_PORTRAIT:
         return (3, 2)
     return (2, 3)
@@ -215,7 +215,7 @@ def reconstruction_grid_for_size(width: int, height: int) -> Tuple[int, int]:
     if w <= 0 or h <= 0:
         raise ValueError("reconstruction source size must be positive")
     if abs(w - h) <= max(2, int(round(0.01 * max(w, h)))):
-        return (2, 2)
+        return (3, 3)
     if h > w:
         return (3, 2)
     return (2, 3)

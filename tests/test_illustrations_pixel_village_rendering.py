@@ -50,9 +50,9 @@ def test_pixel_village_renderer_is_deterministic_and_semantic() -> None:
     assert first.trace["theme_id"] == "temperate"
     assert first.trace["snow_intensity"] == "none"
     assert first.trace["autumn_intensity"] == "none"
-    assert 24 <= int(first.trace["grid_cols"]) <= 34
-    assert 17 <= int(first.trace["grid_rows"]) <= 24
-    assert first.trace["tile_px"] == 40
+    assert 18 <= int(first.trace["grid_cols"]) <= 34
+    assert 15 <= int(first.trace["grid_rows"]) <= 30
+    assert first.trace["tile_px"] == 48
     assert first.trace["canonical_tile_px"] == 16
     assert first.trace["map_size_px"] == [960, 720]
     assert first.trace["map_offset_xy"] == [0, 0]
@@ -471,7 +471,7 @@ def test_pixel_village_supports_territory_absent_and_present_modes() -> None:
 def test_pixel_village_orchard_uses_variable_sizes() -> None:
     sizes: set[tuple[int, int]] = set()
     for seed in range(20260604, 20260612):
-        scene = render_pixel_village_map(seed, width=960, height=720, cemetery_mode="none", orchard_mode="force")
+        scene = render_pixel_village_map(seed, width=1296, height=864, cemetery_mode="none", orchard_mode="force")
         orchards = [territory for territory in scene.territories if territory.territory_type == "orchard"]
         assert len(orchards) == 1
         _, _, w, h = orchards[0].tile_xywh

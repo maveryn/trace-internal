@@ -667,6 +667,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     assert scene_package_migration.is_scene_package_task('task_icons__named_path__path_neighbor_label', domain='icons')
     assert scene_package_migration.is_scene_package_task('task_icons__named_ring__scoped_attribute_count', domain='icons')
     assert scene_package_migration.is_scene_package_task('task_icons__pattern_grid__attribute_pattern_violation_index', domain='icons')
+    assert scene_package_migration.is_scene_package_task('task_illustrations__rpg_house__rotated_tile_label', domain='illustrations')
     assert scene_package_migration.is_scene_package_task('task_three_d__surface_fixture__repeated_element_count', domain='three_d')
 
 def test_task_classes_do_not_claim_scene_package_migration_independently() -> None:

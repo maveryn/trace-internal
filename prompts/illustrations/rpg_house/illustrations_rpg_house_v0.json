@@ -9,7 +9,21 @@
       "",
       ""
     ],
+    "rpg_house_missing_patch_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "rpg_house_reachable_room_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "rpg_house_rotated_tile_label_task": [
       "",
       "",
       "",
@@ -22,13 +36,22 @@
       "",
       "",
       ""
+    ],
+    "rpg_house_swapped_tile_pair_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:rpg_house_canvas": [],
     "query:closed_door_count": [],
+    "query:missing_patch_label": [],
     "query:open_door_count": [],
     "query:reachable_room_count": [],
+    "query:rotated_tile_label": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -39,7 +62,8 @@
       "annotation_hint",
       "answer_hint",
       "json_example"
-    ]
+    ],
+    "query:swapped_tile_pair_label": []
   },
   "answer_or_annotation_templates": {
     "answer_only": [
@@ -74,6 +98,13 @@
       "How many doorways have a closed door across them?",
       "Count each closed door once. What is the total?"
     ],
+    "missing_patch_label": [
+      "One rectangular region is missing from the source house image. Which patch option restores that missing region?",
+      "Select the lettered patch that belongs in the missing rectangle of the RPG house image.",
+      "Which option patch matches the hidden region in the top-down house layout?",
+      "A patch has been removed from the house floor plan. Which lettered option should fill it?",
+      "Choose the patch option that completes the missing part of the RPG house scene."
+    ],
     "open_door_count": [
       "How many open doors are shown in the house layout?",
       "Count the doorways that are open. How many open doors are there?",
@@ -88,12 +119,26 @@
       "How many rooms besides the player's room are connected to the player through open doors?",
       "Follow paths through open doors from the player. How many other rooms can be reached?"
     ],
+    "rotated_tile_label": [
+      "The house image is split into lettered tiles, and exactly one tile has been rotated. Which tile is rotated?",
+      "Which letter marks the tile that is turned the wrong way?",
+      "Find the single rotated tile in the RPG house grid. What is its letter?",
+      "One lettered tile in the house layout has been rotated. Which letter identifies it?",
+      "Which tile should be turned back to restore the house image?"
+    ],
     "room_count": [
       "How many enclosed rooms are shown in the house layout?",
       "Count the distinct rooms enclosed by walls in the house. How many rooms are there?",
       "What is the total number of separate rooms in this top-down house interior?",
       "How many distinct rooms can be seen inside the RPG house floor plan?",
       "Count each enclosed room once. What is the total number of rooms?"
+    ],
+    "swapped_tile_pair_label": [
+      "The numbered house grid has exactly two tiles swapped. Which option names the two swapped tiles?",
+      "Two numbered tiles are in each other's positions. Which lettered option gives the swapped pair?",
+      "Identify the pair of numbered cells that were exchanged in the RPG house grid. Which option is correct?",
+      "Which option lists the two tiles that need to be swapped back?",
+      "In the numbered house layout, exactly two tiles are out of place. Which option names them?"
     ]
   },
   "allow_empty_task_templates": true

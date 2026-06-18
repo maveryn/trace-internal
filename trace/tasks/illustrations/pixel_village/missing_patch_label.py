@@ -23,6 +23,7 @@ from ..shared.cutouts import (
     style_trace,
 )
 from ..shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS
+from ..shared.missing_patch_sizing import sample_missing_patch_size
 from ..shared.option_rendering import sample_visual_label_font_trace
 from .shared.output import pixel_village_scene_ir
 from .shared.prompts import build_pixel_village_prompt_artifacts
@@ -43,10 +44,11 @@ PROMPT_QUERY_KEY = "missing_patch_label"
 @dataclass(frozen=True)
 class _Defaults:
     option_count_support: Tuple[int, ...] = (4, 6)
-    patch_width_min: int = 150
-    patch_width_max: int = 230
-    patch_height_min: int = 120
-    patch_height_max: int = 180
+    patch_width_ratio_min: float = 0.15
+    patch_width_ratio_max: float = 0.30
+    patch_height_ratio_min: float = 0.15
+    patch_height_ratio_max: float = 0.26
+    patch_area_ratio_max: float = 0.065
     crop_margin_px: int = 36
     source_width: int = 820
     source_height: int = 615
@@ -57,6 +59,7 @@ class _SampleSpec:
     option_count: int
     correct_index: int
     patch_size: Tuple[int, int]
+    patch_size_trace: Dict[str, Any]
     crop_margin_px: int
     option_count_probabilities: Dict[str, float]
     correct_index_probabilities: Dict[str, float]
@@ -114,23 +117,13 @@ def _sample_correct_index(*, params: Mapping[str, Any], instance_seed: int, opti
     return selected, dict(uniform_probability_map(tuple(range(int(option_count)))))
 
 
-def _sample_range(
+def _sample_spec(
     *,
-    rng: Any,
+    instance_seed: int,
     params: Mapping[str, Any],
-    key_min: str,
-    key_max: str,
-    fallback_min: int,
-    fallback_max: int,
-) -> int:
-    low = int(params.get(key_min, group_default(_GEN_DEFAULTS, key_min, int(fallback_min))))
-    high = int(params.get(key_max, group_default(_GEN_DEFAULTS, key_max, int(fallback_max))))
-    if low > high:
-        raise ValueError(f"{key_min} must be <= {key_max}")
-    return int(rng.randint(low, high))
-
-
-def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
+    attempt_index: int,
+    source_size: Sequence[int] | None = None,
+) -> _SampleSpec:
     """Sample patch-option operands for a pixel-village source image."""
 
     option_count, option_count_probabilities = _sample_option_count(params=params, instance_seed=int(instance_seed))
@@ -140,27 +133,28 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         option_count=int(option_count),
     )
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}:patch_spec", int(attempt_index))
-    patch_w = _sample_range(
-        rng=rng,
-        params=params,
-        key_min="patch_width_min",
-        key_max="patch_width_max",
-        fallback_min=_DEFAULTS.patch_width_min,
-        fallback_max=_DEFAULTS.patch_width_max,
+    resolved_source_size = (
+        tuple(int(value) for value in source_size)
+        if source_size is not None
+        else (int(_DEFAULTS.source_width), int(_DEFAULTS.source_height))
     )
-    patch_h = _sample_range(
+    patch_sample = sample_missing_patch_size(
         rng=rng,
         params=params,
-        key_min="patch_height_min",
-        key_max="patch_height_max",
-        fallback_min=_DEFAULTS.patch_height_min,
-        fallback_max=_DEFAULTS.patch_height_max,
+        defaults=_GEN_DEFAULTS,
+        source_size=resolved_source_size,
+        fallback_width_ratio_min=_DEFAULTS.patch_width_ratio_min,
+        fallback_width_ratio_max=_DEFAULTS.patch_width_ratio_max,
+        fallback_height_ratio_min=_DEFAULTS.patch_height_ratio_min,
+        fallback_height_ratio_max=_DEFAULTS.patch_height_ratio_max,
+        fallback_area_ratio_max=_DEFAULTS.patch_area_ratio_max,
     )
     crop_margin = int(params.get("crop_margin_px", group_default(_GEN_DEFAULTS, "crop_margin_px", _DEFAULTS.crop_margin_px)))
     return _SampleSpec(
         option_count=int(option_count),
         correct_index=int(correct_index),
-        patch_size=(int(patch_w), int(patch_h)),
+        patch_size=tuple(int(value) for value in patch_sample.patch_size),
+        patch_size_trace=dict(patch_sample.trace()),
         crop_margin_px=int(crop_margin),
         option_count_probabilities=dict(option_count_probabilities),
         correct_index_probabilities=dict(correct_index_probabilities),
@@ -200,7 +194,12 @@ class IllustrationsPixelVillageMissingPatchLabelTask:
         )
         for attempt in range(max(1, int(max_attempts))):
             try:
-                sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
+                sample = _sample_spec(
+                    instance_seed=int(instance_seed),
+                    params=params,
+                    attempt_index=int(attempt),
+                    source_size=source_spec.source_size,
+                )
                 scene = render_pixel_village_source_scene(
                     seed_namespace=TASK_ID,
                     instance_seed=int(instance_seed),
@@ -328,6 +327,7 @@ class IllustrationsPixelVillageMissingPatchLabelTask:
                     "correct_index": int(sample.correct_index),
                     "correct_index_probabilities": dict(sample.correct_index_probabilities),
                     "patch_size": [int(sample.patch_size[0]), int(sample.patch_size[1])],
+                    "patch_size_ratio": dict(sample.patch_size_trace),
                     "crop_margin_px": int(sample.crop_margin_px),
                     "source_size": [int(value) for value in source_spec.source_size],
                     "canvas_profile": str(source_spec.canvas_profile),

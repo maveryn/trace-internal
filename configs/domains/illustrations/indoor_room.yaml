@@ -119,10 +119,11 @@ generation:
       option_count_support:
         - 4
         - 6
-      patch_width_min: 150
-      patch_width_max: 230
-      patch_height_min: 110
-      patch_height_max: 175
+      patch_width_ratio_min: 0.15
+      patch_width_ratio_max: 0.30
+      patch_height_ratio_min: 0.15
+      patch_height_ratio_max: 0.26
+      patch_area_ratio_max: 0.065
       crop_margin_px: 34
       indoor_object_type_support:
         - apple

@@ -25,6 +25,7 @@ from ..shared.cutouts import (
     style_trace,
 )
 from ..shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS, resolve_reconstruction_source_profile
+from ..shared.missing_patch_sizing import sample_missing_patch_size
 from ..shared.option_rendering import image_detail_score, sample_visual_label_font_trace
 from ..shared.task_support import uniform_string_probability_map
 from .shared.annotations import feature_bbox_map, feature_path_map
@@ -46,10 +47,11 @@ class _Defaults:
     source_object_count_min: int = 12
     source_object_count_max: int = 18
     option_count_support: Tuple[int, ...] = (4, 6)
-    patch_width_min: int = 150
-    patch_width_max: int = 230
-    patch_height_min: int = 110
-    patch_height_max: int = 175
+    patch_width_ratio_min: float = 0.15
+    patch_width_ratio_max: float = 0.30
+    patch_height_ratio_min: float = 0.15
+    patch_height_ratio_max: float = 0.26
+    patch_area_ratio_max: float = 0.065
     crop_margin_px: int = 34
     source_width: int = 820
     source_height: int = 560
@@ -64,6 +66,7 @@ class _SampleSpec:
     option_count: int
     correct_index: int
     patch_size: Tuple[int, int]
+    patch_size_trace: Dict[str, Any]
     crop_margin_px: int
     source_size: Tuple[int, int]
     source_profile_trace: Dict[str, Any]
@@ -91,23 +94,6 @@ def _int_value(params: Mapping[str, Any], defaults: Mapping[str, Any], key: str,
     """Resolve one integer value from params, defaults, or fallback."""
 
     return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
-
-
-def _sample_range(
-    *,
-    rng: Any,
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    low_key: str,
-    high_key: str,
-    fallback_low: int,
-    fallback_high: int,
-) -> int:
-    low = int(params.get(str(low_key), group_default(defaults, str(low_key), int(fallback_low))))
-    high = int(params.get(str(high_key), group_default(defaults, str(high_key), int(fallback_high))))
-    if low < 1 or high < low:
-        raise ValueError(f"invalid {low_key}/{high_key} bounds")
-    return int(rng.randint(int(low), int(high)))
 
 
 def _sample_theme(*, params: Mapping[str, Any], instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -188,23 +174,16 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         correct_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:answer")) % int(option_count)
         correct_index_probabilities = {str(key): float(value) for key, value in uniform_probability_map(tuple(range(int(option_count)))).items()}
 
-    patch_w = _sample_range(
+    patch_sample = sample_missing_patch_size(
         rng=rng,
         params=params,
         defaults=_GEN_DEFAULTS,
-        low_key="patch_width_min",
-        high_key="patch_width_max",
-        fallback_low=_DEFAULTS.patch_width_min,
-        fallback_high=_DEFAULTS.patch_width_max,
-    )
-    patch_h = _sample_range(
-        rng=rng,
-        params=params,
-        defaults=_GEN_DEFAULTS,
-        low_key="patch_height_min",
-        high_key="patch_height_max",
-        fallback_low=_DEFAULTS.patch_height_min,
-        fallback_high=_DEFAULTS.patch_height_max,
+        source_size=source_profile.size,
+        fallback_width_ratio_min=_DEFAULTS.patch_width_ratio_min,
+        fallback_width_ratio_max=_DEFAULTS.patch_width_ratio_max,
+        fallback_height_ratio_min=_DEFAULTS.patch_height_ratio_min,
+        fallback_height_ratio_max=_DEFAULTS.patch_height_ratio_max,
+        fallback_area_ratio_max=_DEFAULTS.patch_area_ratio_max,
     )
     return _SampleSpec(
         theme_id=str(theme_id),
@@ -213,7 +192,8 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         source_object_count_probabilities=dict(source_object_count_probabilities),
         option_count=int(option_count),
         correct_index=int(correct_index),
-        patch_size=(int(patch_w), int(patch_h)),
+        patch_size=tuple(int(value) for value in patch_sample.patch_size),
+        patch_size_trace=dict(patch_sample.trace()),
         crop_margin_px=_int_value(params, _GEN_DEFAULTS, "crop_margin_px", _DEFAULTS.crop_margin_px),
         source_size=tuple(int(value) for value in source_profile.size),
         source_profile_trace=dict(source_profile.trace()),
@@ -474,6 +454,7 @@ class IllustrationsEnvironmentMissingPatchLabelTask:
                     "answer_label": answer_label,
                     "correct_index": int(sample.correct_index),
                     "patch_size": [int(sample.patch_size[0]), int(sample.patch_size[1])],
+                    "patch_size_ratio": dict(sample.patch_size_trace),
                     "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
                     **dict(sample.source_profile_trace),
                     "crop_margin_px": int(sample.crop_margin_px),

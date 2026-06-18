@@ -56,6 +56,8 @@ Canvas profile is a render/style axis, not a query id or public task split.
 Derived reconstruction tasks should render their source scene directly at the
 selected profile and then downscale the final option layout only if needed to
 stay under the 1,280,000-pixel review cap, scaling annotation coordinates with the image.
+Missing-patch source crops should be sized relative to the resolved source image:
+width `15%-30%`, height `15%-26%`, with area capped at `6.5%`.
 For quarter-turn rotated-tile tasks, choose profile-aware square-cell grids:
 landscape `2x3`, square `3x3`, and portrait `3x2`. Top-down RPG tile
 scenes use shared 48px tile profiles: landscape `27x18`, square `21x21`,

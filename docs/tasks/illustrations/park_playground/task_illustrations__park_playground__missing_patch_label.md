@@ -44,4 +44,5 @@ Render a park/playground source panel with one missing visual region and four or
 - Prompt text comes from `prompts/illustrations/park_playground/illustrations_park_playground_v0.json`.
 - Render randomness, sampled fonts/styles, option order, crop box, and verifier payloads are explicit in the instance trace.
 - Option count is sampled from `4` or `6`; option bboxes are keyed by their visible letter in `render_map`.
+- Missing-region size is sampled relative to the resolved source image: width `15%-30%`, height `15%-26%`, area at most `6.5%`.
 - The selected option bbox, answer label, and missing-region bbox must all come from the same `compose_patch_options` execution trace.

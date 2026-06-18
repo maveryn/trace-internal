@@ -39,10 +39,11 @@ generation:
       option_count_support:
         - 4
         - 6
-      patch_width_min: 170
-      patch_width_max: 240
-      patch_height_min: 130
-      patch_height_max: 185
+      patch_width_ratio_min: 0.15
+      patch_width_ratio_max: 0.30
+      patch_height_ratio_min: 0.15
+      patch_height_ratio_max: 0.26
+      patch_area_ratio_max: 0.065
       crop_margin_px: 36
     task_illustrations__park_playground__rotated_tile_label:
       source_person_count_min: 8

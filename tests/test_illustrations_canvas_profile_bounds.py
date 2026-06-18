@@ -46,6 +46,16 @@ MIGRATED_ILLUSTRATION_TASK_IDS: tuple[str, ...] = (
     "task_illustrations__rpg_house__swapped_tile_pair_label",
 )
 
+MISSING_PATCH_TASK_IDS: tuple[str, ...] = (
+    "task_illustrations__construction_site__missing_patch_label",
+    "task_illustrations__environment__missing_patch_label",
+    "task_illustrations__indoor_room__missing_patch_label",
+    "task_illustrations__library__missing_patch_label",
+    "task_illustrations__park_playground__missing_patch_label",
+    "task_illustrations__pixel_village__missing_patch_label",
+    "task_illustrations__rpg_house__missing_patch_label",
+)
+
 CANVAS_PROFILES: tuple[str, ...] = ("landscape", "square", "portrait")
 FULL_BLEED_CONTEXT_TYPES: set[tuple[str, str]] = {
     ("environment", "environment_feature"),
@@ -156,3 +166,28 @@ def test_migrated_illustration_tasks_keep_foreground_bboxes_inside_canvas(
                 box,
                 (width, height),
             )
+
+
+@pytest.mark.parametrize("task_id", MISSING_PATCH_TASK_IDS)
+@pytest.mark.parametrize("canvas_profile", CANVAS_PROFILES)
+def test_missing_patch_tasks_use_source_relative_patch_ratios(task_id: str, canvas_profile: str) -> None:
+    out = create_task(task_id).generate(
+        hash64(2026061801, f"{task_id}:{canvas_profile}:patch-ratio", 0),
+        params={"canvas_profile": canvas_profile},
+        max_attempts=500,
+    )
+    params = out.trace_payload["query_spec"]["params"]
+    patch_w, patch_h = [int(value) for value in params["patch_size"]]
+    source_w, source_h = [int(value) for value in params["source_size"]]
+    ratio_trace = params["patch_size_ratio"]
+
+    width_ratio = float(patch_w) / float(source_w)
+    height_ratio = float(patch_h) / float(source_h)
+    area_ratio = float(patch_w * patch_h) / float(source_w * source_h)
+
+    assert 0.15 <= width_ratio <= 0.30
+    assert 0.15 <= height_ratio <= 0.26
+    assert area_ratio <= 0.065
+    assert ratio_trace["width_ratio_range"] == [0.15, 0.3]
+    assert ratio_trace["height_ratio_range"] == [0.15, 0.26]
+    assert ratio_trace["area_ratio_max"] == 0.065

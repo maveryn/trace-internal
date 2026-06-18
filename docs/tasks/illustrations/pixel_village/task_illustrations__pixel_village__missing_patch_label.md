@@ -21,7 +21,7 @@ Renders a pixel-village source panel with one missing visual region and four or 
 ## Program Metadata
 - Program signatures: `selection.option_match`
 - Base program contract: `select_option(match_patch(source_image, missing_region, options, transform=none)); scene=pixel_village; scope=missing_patch_label`
-- Parameter axes: `option_count`, `patch_size`, `source_size`, `canvas_profile`
+- Parameter axes: `option_count`, `source_relative_patch_size`, `source_size`, `canvas_profile`
 - Arguments:
   - `source_image`: semantic_role; allowed `pixel_village_source_panel`; source `program_schema_concrete`
   - `missing_region`: semantic_role; allowed `masked_source_region`; source `program_schema_concrete`
@@ -44,5 +44,6 @@ Renders a pixel-village source panel with one missing visual region and four or 
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/pixel_village/illustrations_pixel_village_v0.json`.
 - Runtime query id is the single-query sentinel `single`; option count, patch size, crop box, style, source render modes, and option-label font are trace parameters.
+- Missing-region size is sampled relative to the resolved source image: width `15%-30%`, height `15%-26%`, area at most `6.5%`.
 - The composed image uses a frameless functional layout: no source-panel title, decorative outer border, option-card outline, or extra scene background.
 - The selected option bbox, answer label, missing-region bbox, and crop boxes must all come from the same `compose_patch_options` execution trace.

@@ -23,6 +23,7 @@ from ..shared.cutouts import (
     style_trace,
 )
 from ..shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS, resolve_reconstruction_source_profile
+from ..shared.missing_patch_sizing import sample_missing_patch_size
 from ..shared.option_rendering import sample_visual_label_font_trace
 from .shared.output import construction_scene_entities, serialize_construction_scene
 from .shared.rendering import render_construction_site_scene
@@ -65,10 +66,11 @@ class _Defaults:
     source_equipment_count_max: int = 7
     option_count: int = 6
     option_count_support: Tuple[int, ...] = (4, 6)
-    patch_width_min: int = 170
-    patch_width_max: int = 240
-    patch_height_min: int = 130
-    patch_height_max: int = 185
+    patch_width_ratio_min: float = 0.15
+    patch_width_ratio_max: float = 0.30
+    patch_height_ratio_min: float = 0.15
+    patch_height_ratio_max: float = 0.26
+    patch_area_ratio_max: float = 0.065
     crop_margin_px: int = 36
     source_width: int = 820
     source_height: int = 560
@@ -87,8 +89,10 @@ class _SampleSpec:
     option_count: int
     correct_index: int
     patch_size: Tuple[int, int]
+    patch_size_trace: Dict[str, Any]
     crop_margin_px: int
     source_size: Tuple[int, int]
+    source_profile_trace: Dict[str, Any]
     worker_specs: Tuple[ConstructionWorkerSpec, ...]
     material_specs: Tuple[ConstructionMaterialSpec, ...]
     equipment_specs: Tuple[ConstructionEquipmentSpec, ...]
@@ -209,26 +213,25 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         correct_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:answer")) % int(option_count)
         correct_index_probabilities = {str(key): float(value) for key, value in uniform_probability_map(tuple(range(int(option_count)))).items()}
 
-    patch_w = _sample_range(
+    source_profile = resolve_reconstruction_source_profile(
+        params=params,
+        defaults=_RENDER_DEFAULTS,
+        fallback_source_width=_DEFAULTS.source_width,
+        fallback_source_height=_DEFAULTS.source_height,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}:source_profile",
+    )
+    patch_sample = sample_missing_patch_size(
         rng=rng,
         params=params,
         defaults=_GEN_DEFAULTS,
-        low_key="patch_width_min",
-        high_key="patch_width_max",
-        fallback_low=_DEFAULTS.patch_width_min,
-        fallback_high=_DEFAULTS.patch_width_max,
+        source_size=source_profile.size,
+        fallback_width_ratio_min=_DEFAULTS.patch_width_ratio_min,
+        fallback_width_ratio_max=_DEFAULTS.patch_width_ratio_max,
+        fallback_height_ratio_min=_DEFAULTS.patch_height_ratio_min,
+        fallback_height_ratio_max=_DEFAULTS.patch_height_ratio_max,
+        fallback_area_ratio_max=_DEFAULTS.patch_area_ratio_max,
     )
-    patch_h = _sample_range(
-        rng=rng,
-        params=params,
-        defaults=_GEN_DEFAULTS,
-        low_key="patch_height_min",
-        high_key="patch_height_max",
-        fallback_low=_DEFAULTS.patch_height_min,
-        fallback_high=_DEFAULTS.patch_height_max,
-    )
-    source_width = _int_value(params, _GEN_DEFAULTS, "source_width", _DEFAULTS.source_width)
-    source_height = _int_value(params, _GEN_DEFAULTS, "source_height", _DEFAULTS.source_height)
     crop_margin = _int_value(params, _GEN_DEFAULTS, "crop_margin_px", _DEFAULTS.crop_margin_px)
 
     worker_specs = tuple(
@@ -256,9 +259,11 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         source_equipment_count=int(equipment_count),
         option_count=int(option_count),
         correct_index=int(correct_index),
-        patch_size=(int(patch_w), int(patch_h)),
+        patch_size=tuple(int(value) for value in patch_sample.patch_size),
+        patch_size_trace=dict(patch_sample.trace()),
         crop_margin_px=int(crop_margin),
-        source_size=(int(source_width), int(source_height)),
+        source_size=tuple(int(value) for value in source_profile.size),
+        source_profile_trace=dict(source_profile.trace()),
         worker_specs=worker_specs,
         material_specs=material_specs,
         equipment_specs=equipment_specs,
@@ -295,18 +300,10 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
         artifacts = None
         frame_style = None
         label_font_trace: Dict[str, Any] | None = None
-        source_profile = resolve_reconstruction_source_profile(
-            params=params,
-            defaults=_RENDER_DEFAULTS,
-            fallback_source_width=_DEFAULTS.source_width,
-            fallback_source_height=_DEFAULTS.source_height,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:source_profile",
-        )
-        source_size = source_profile.size
         for attempt in range(max(1, int(max_attempts))):
             try:
                 sample = _sample_spec(instance_seed=int(instance_seed), params=params, attempt_index=int(attempt))
+                source_size = sample.source_size
                 scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:source_scene", int(attempt))
                 render_overrides = {
                     **dict(params),
@@ -448,8 +445,9 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
                     "answer_label": answer_label,
                     "correct_index": int(sample.correct_index),
                     "patch_size": [int(sample.patch_size[0]), int(sample.patch_size[1])],
+                    "patch_size_ratio": dict(sample.patch_size_trace),
                     "source_size": [int(source_size[0]), int(source_size[1])],
-                    **source_profile.trace(),
+                    **dict(sample.source_profile_trace),
                     "crop_margin_px": int(sample.crop_margin_px),
                     "query_id_probabilities": dict(sample.query_probabilities),
                     "query_probabilities": dict(sample.query_probabilities),
@@ -461,7 +459,7 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
                 "coord_space": "pixel",
                 "scene_id": SCENE_ID,
                 "source_scene_canvas_size": [int(source_scene.canvas_width), int(source_scene.canvas_height)],
-                "source_profile": source_profile.trace(),
+                "source_profile": dict(sample.source_profile_trace),
                 "style": {
                     "source_setting_id": str(source_scene.setting_id),
                     "source_style_id": str(source_scene.style_id),

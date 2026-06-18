@@ -23,6 +23,7 @@ from ..shared.cutouts import (
     style_trace,
 )
 from ..shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS, resolve_reconstruction_source_profile
+from ..shared.missing_patch_sizing import sample_missing_patch_size
 from ..shared.option_rendering import sample_visual_label_font_trace
 from .shared.annotations import park_scene_entities, serialize_park_scene
 from .shared.prompts import build_park_prompt_artifacts
@@ -56,10 +57,11 @@ class _Defaults:
     source_equipment_count_min: int = 4
     source_equipment_count_max: int = 7
     option_count_support: Tuple[int, ...] = (4, 6)
-    patch_width_min: int = 170
-    patch_width_max: int = 240
-    patch_height_min: int = 130
-    patch_height_max: int = 185
+    patch_width_ratio_min: float = 0.15
+    patch_width_ratio_max: float = 0.30
+    patch_height_ratio_min: float = 0.15
+    patch_height_ratio_max: float = 0.26
+    patch_area_ratio_max: float = 0.065
     crop_margin_px: int = 36
     source_width: int = 820
     source_height: int = 560
@@ -77,6 +79,7 @@ class _SampleSpec:
     option_count: int
     correct_index: int
     patch_size: Tuple[int, int]
+    patch_size_trace: Dict[str, Any]
     crop_margin_px: int
     source_size: Tuple[int, int]
     source_profile_trace: Dict[str, Any]
@@ -208,24 +211,6 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         instance_seed=int(instance_seed),
         option_count=int(option_count),
     )
-    patch_w = _sample_range(
-        rng=rng,
-        params=task_params,
-        defaults=_GEN_DEFAULTS,
-        low_key="patch_width_min",
-        high_key="patch_width_max",
-        fallback_low=_DEFAULTS.patch_width_min,
-        fallback_high=_DEFAULTS.patch_width_max,
-    )
-    patch_h = _sample_range(
-        rng=rng,
-        params=task_params,
-        defaults=_GEN_DEFAULTS,
-        low_key="patch_height_min",
-        high_key="patch_height_max",
-        fallback_low=_DEFAULTS.patch_height_min,
-        fallback_high=_DEFAULTS.patch_height_max,
-    )
     source_profile = resolve_reconstruction_source_profile(
         params=task_params,
         defaults=_GEN_DEFAULTS,
@@ -233,6 +218,17 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         fallback_source_height=_DEFAULTS.source_height,
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}:source_profile",
+    )
+    patch_sample = sample_missing_patch_size(
+        rng=rng,
+        params=task_params,
+        defaults=_GEN_DEFAULTS,
+        source_size=source_profile.size,
+        fallback_width_ratio_min=_DEFAULTS.patch_width_ratio_min,
+        fallback_width_ratio_max=_DEFAULTS.patch_width_ratio_max,
+        fallback_height_ratio_min=_DEFAULTS.patch_height_ratio_min,
+        fallback_height_ratio_max=_DEFAULTS.patch_height_ratio_max,
+        fallback_area_ratio_max=_DEFAULTS.patch_area_ratio_max,
     )
     person_specs = tuple(
         ParkPersonSpec(activity=str(rng.choice(activities)), role="source")
@@ -249,7 +245,8 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         source_equipment_count=int(source_equipment_count),
         option_count=int(option_count),
         correct_index=int(correct_index),
-        patch_size=(int(patch_w), int(patch_h)),
+        patch_size=tuple(int(value) for value in patch_sample.patch_size),
+        patch_size_trace=dict(patch_sample.trace()),
         crop_margin_px=_int_value(task_params, _GEN_DEFAULTS, "crop_margin_px", _DEFAULTS.crop_margin_px),
         source_size=tuple(int(value) for value in source_profile.size),
         source_profile_trace=dict(source_profile.trace()),
@@ -424,6 +421,7 @@ class IllustrationsParkPlaygroundMissingPatchLabelTask:
                     "correct_index": int(sample.correct_index),
                     "correct_index_probabilities": dict(sample.correct_index_probabilities),
                     "patch_size": [int(sample.patch_size[0]), int(sample.patch_size[1])],
+                    "patch_size_ratio": dict(sample.patch_size_trace),
                     "source_size": [int(sample.source_size[0]), int(sample.source_size[1])],
                     **dict(sample.source_profile_trace),
                     "crop_margin_px": int(sample.crop_margin_px),

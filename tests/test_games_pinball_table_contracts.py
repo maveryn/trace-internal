@@ -59,8 +59,8 @@ def test_games_pinball_table_defaults_present() -> None:
     assert "numeric score targets" in str(prompt_defaults["object_description_scoreable_count"]).lower()
     assert "[x, y] pixel point" in str(prompt_defaults["annotation_hint_first_hit_object_label"])
     assert "without a number" in str(prompt_defaults["pinball_scoreable_rule_text"]).lower()
-    assert "numeric score labels" in str(prompt_defaults["annotation_hint_scoreable_object_count"]).lower()
-    assert "[x, y] pixel point" in str(prompt_defaults["annotation_hint_scoreable_object_count"])
+    assert "numeric score label" in str(prompt_defaults["annotation_hint_scoreable_object_count"]).lower()
+    assert "bounding boxes" in str(prompt_defaults["annotation_hint_scoreable_object_count"])
 
 
 def test_games_pinball_first_hit_emits_expected_contract() -> None:
@@ -157,7 +157,7 @@ def test_games_pinball_scoreable_object_count_emits_expected_contract() -> None:
 
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 4
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert out.query_id in NO_BRANCH_QUERY_IDS
     assert out.scene_id == "pinball_table"
     assert trace["query_spec"]["query_id"] in NO_BRANCH_QUERY_IDS
@@ -169,12 +169,12 @@ def test_games_pinball_scoreable_object_count_emits_expected_contract() -> None:
     assert all(score_by_id[entity_id] is None for entity_id in non_scoreable_ids)
     assert out.answer_gt.value == len(scoreable_ids)
     assert out.annotation_gt.value == [
-        trace["render_map"]["entity_points_px"][entity_id]
+        trace["render_map"]["entity_bboxes_px"][entity_id]
         for entity_id in annotation_entity_ids
     ]
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
     for obj in execution["objects"]:
         if obj["score_value"] is None:
             assert obj["display_text"] is None

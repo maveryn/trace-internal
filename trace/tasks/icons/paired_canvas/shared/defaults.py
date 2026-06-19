@@ -30,10 +30,10 @@ class PairedCanvasDefaults:
     outer_margin_px: int = ICON_SHARED_DEFAULTS.outer_margin_px
     panel_padding_px: int = ICON_SHARED_DEFAULTS.panel_padding_px
     panel_corner_radius_px: int = ICON_SHARED_DEFAULTS.panel_corner_radius_px
-    scene_icon_size_min_px: int = 42
+    scene_icon_size_min_px: int = 48
     scene_icon_size_max_px: int = 78
     reference_icon_size_px: int = 78
-    reference_icon_size_min_px: int = 42
+    reference_icon_size_min_px: int = 48
     reference_icon_size_max_px: int = 78
     scene_max_overlap_fraction: float = 0.04
     scene_placement_max_attempts: int = 160

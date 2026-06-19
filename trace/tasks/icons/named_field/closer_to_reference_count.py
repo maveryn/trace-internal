@@ -79,8 +79,8 @@ class _TaskDefaults:
     panel_padding_px: int = ICON_SHARED_DEFAULTS.panel_padding_px
     panel_corner_radius_px: int = ICON_SHARED_DEFAULTS.panel_corner_radius_px
     panel_title_font_size_px: int = ICON_SHARED_DEFAULTS.panel_title_font_size_px
-    scene_icon_size_min_px: int = 44
-    scene_icon_size_max_px: int = 64
+    scene_icon_size_min_px: int = 48
+    scene_icon_size_max_px: int = 72
     reference_icon_size_min_px: int = 56
     reference_icon_size_max_px: int = 72
     reference_icon_size_px: int = 64
@@ -322,7 +322,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
             tint_rgb=tuple(int(channel) for channel in named_color(str(color_name))),
             fill_style=str(fill_style),
             nominal_size_px=int(rng.randint(min(low, high), max(low, high))),
-            rotation_degrees=0 if str(role) == "reference" else rotation_for_named_shape(rng, str(shape_id)),
+            rotation_degrees=rotation_for_named_shape(rng, str(shape_id)),
             desired_closer_label=str(desired_closer_label),
             noise_edits=tuple(noise_edits),
             noise_seed=int(noise_seed),

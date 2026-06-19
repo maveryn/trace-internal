@@ -71,10 +71,10 @@ rendering:
     outer_margin_px: 24
     panel_padding_px: 20
     panel_corner_radius_px: 18
-    scene_icon_size_min_px: 42
+    scene_icon_size_min_px: 48
     scene_icon_size_max_px: 78
     reference_icon_size_px: 78
-    reference_icon_size_min_px: 42
+    reference_icon_size_min_px: 48
     reference_icon_size_max_px: 78
     scene_max_overlap_fraction: 0.04
     scene_placement_max_attempts: 160
@@ -188,8 +188,8 @@ rendering:
     task_icons__paired_canvas__original_attribute_label:
       canvas_width: 1120
       canvas_height: 640
-      scene_icon_size_min_px: 44
-      scene_icon_size_max_px: 66
+      scene_icon_size_min_px: 48
+      scene_icon_size_max_px: 72
       scene_max_overlap_fraction: 0.0
       scene_placement_max_attempts: 420
       icon_collision_gap_px: 8

@@ -394,11 +394,11 @@ def _draw_shape_mask(shape_id: str, *, size: int) -> Image.Image:
         draw.polygon([(0.34 * m, 0.28 * m), (0.66 * m, 0.28 * m), (0.54 * m, 0.48 * m), (0.46 * m, 0.48 * m)], fill=255)
         draw.polygon([(0.46 * m, 0.54 * m), (0.54 * m, 0.54 * m), (0.68 * m, 0.72 * m), (0.32 * m, 0.72 * m)], fill=255)
     elif shape == "key":
-        draw.ellipse((0.14 * m, 0.28 * m, 0.50 * m, 0.64 * m), fill=255)
-        draw.ellipse((0.26 * m, 0.40 * m, 0.38 * m, 0.52 * m), fill=0)
-        draw.rounded_rectangle((0.46 * m, 0.43 * m, 0.86 * m, 0.55 * m), radius=int(0.03 * m), fill=255)
-        draw.rectangle((0.68 * m, 0.52 * m, 0.76 * m, 0.68 * m), fill=255)
-        draw.rectangle((0.80 * m, 0.52 * m, 0.88 * m, 0.62 * m), fill=255)
+        draw.ellipse((0.12 * m, 0.58 * m, 0.46 * m, 0.92 * m), fill=255)
+        draw.ellipse((0.23 * m, 0.69 * m, 0.35 * m, 0.81 * m), fill=0)
+        _draw_thick_line(draw, ((0.42 * m, 0.62 * m), (0.80 * m, 0.24 * m)), width=thin_w)
+        draw.polygon([(0.72 * m, 0.30 * m), (0.80 * m, 0.22 * m), (0.88 * m, 0.30 * m), (0.80 * m, 0.38 * m)], fill=255)
+        draw.polygon([(0.62 * m, 0.40 * m), (0.70 * m, 0.32 * m), (0.78 * m, 0.40 * m), (0.70 * m, 0.48 * m)], fill=255)
     elif shape == "bell":
         draw.arc((0.10 * m, 0.30 * m, 0.28 * m, 0.70 * m), start=105, end=255, fill=255, width=max(1, thin_w // 2))
         draw.arc((0.72 * m, 0.30 * m, 0.90 * m, 0.70 * m), start=285, end=75, fill=255, width=max(1, thin_w // 2))
@@ -688,13 +688,14 @@ def _draw_shape_mask(shape_id: str, *, size: int) -> Image.Image:
         draw.ellipse((0.22 * m, 0.08 * m, 0.42 * m, 0.28 * m), fill=255)
         draw.ellipse((0.27 * m, 0.13 * m, 0.37 * m, 0.23 * m), fill=0)
     elif shape == "fork":
-        draw.rounded_rectangle((0.44 * m, 0.38 * m, 0.56 * m, 0.88 * m), radius=int(0.03 * m), fill=255)
-        for x in (0.34, 0.45, 0.56):
-            draw.rounded_rectangle((x * m, 0.12 * m, (x + 0.08) * m, 0.42 * m), radius=int(0.02 * m), fill=255)
-        draw.rectangle((0.34 * m, 0.36 * m, 0.64 * m, 0.48 * m), fill=255)
+        _draw_thick_line(draw, ((0.32 * m, 0.86 * m), (0.58 * m, 0.42 * m)), width=thin_w)
+        _draw_thick_line(draw, ((0.56 * m, 0.44 * m), (0.78 * m, 0.22 * m)), width=max(1, thin_w // 2))
+        _draw_thick_line(draw, ((0.52 * m, 0.38 * m), (0.70 * m, 0.20 * m)), width=max(1, thin_w // 2))
+        _draw_thick_line(draw, ((0.62 * m, 0.48 * m), (0.84 * m, 0.26 * m)), width=max(1, thin_w // 2))
+        _draw_thick_line(draw, ((0.54 * m, 0.48 * m), (0.62 * m, 0.56 * m)), width=max(1, thin_w // 2))
     elif shape == "spoon":
-        draw.ellipse((0.34 * m, 0.10 * m, 0.66 * m, 0.46 * m), fill=255)
-        draw.rounded_rectangle((0.44 * m, 0.42 * m, 0.56 * m, 0.88 * m), radius=int(0.05 * m), fill=255)
+        draw.ellipse((0.54 * m, 0.10 * m, 0.86 * m, 0.42 * m), fill=255)
+        _draw_thick_line(draw, ((0.60 * m, 0.40 * m), (0.28 * m, 0.86 * m)), width=thin_w)
     elif shape == "pizza_slice":
         draw.polygon([(0.18 * m, 0.18 * m), (0.86 * m, 0.34 * m), (0.42 * m, 0.88 * m)], fill=255)
         _draw_thick_line(draw, ((0.20 * m, 0.18 * m), (0.86 * m, 0.34 * m)), width=thin_w)
@@ -795,11 +796,11 @@ def _draw_shape_mask(shape_id: str, *, size: int) -> Image.Image:
         draw.rounded_rectangle((0.68 * m, 0.38 * m, 0.86 * m, 0.48 * m), radius=int(0.02 * m), fill=255)
         _draw_thick_line(draw, ((0.42 * m, 0.74 * m), (0.42 * m, 0.90 * m)), width=thin_w)
     elif shape == "toothbrush":
-        draw.rounded_rectangle((0.20 * m, 0.58 * m, 0.66 * m, 0.68 * m), radius=int(0.05 * m), fill=255)
-        draw.rounded_rectangle((0.62 * m, 0.46 * m, 0.82 * m, 0.68 * m), radius=int(0.035 * m), fill=255)
-        for x in (0.64, 0.68, 0.72, 0.76, 0.80):
-            _draw_thick_line(draw, ((x * m, 0.30 * m), (x * m, 0.48 * m)), width=max(1, thin_w // 3))
-        draw.ellipse((0.28 * m, 0.61 * m, 0.34 * m, 0.67 * m), fill=0)
+        _draw_thick_line(draw, ((0.18 * m, 0.78 * m), (0.64 * m, 0.32 * m)), width=thin_w)
+        draw.rounded_rectangle((0.58 * m, 0.20 * m, 0.84 * m, 0.42 * m), radius=int(0.035 * m), fill=255)
+        for x0, y0 in ((0.61, 0.18), (0.66, 0.16), (0.71, 0.16), (0.76, 0.18), (0.81, 0.20)):
+            _draw_thick_line(draw, ((x0 * m, y0 * m), ((x0 - 0.08) * m, (y0 - 0.08) * m)), width=max(1, thin_w // 3))
+        draw.ellipse((0.27 * m, 0.67 * m, 0.33 * m, 0.73 * m), fill=0)
     elif shape == "broom":
         _draw_thick_line(draw, ((0.30 * m, 0.14 * m), (0.62 * m, 0.58 * m)), width=thin_w)
         draw.polygon([(0.52 * m, 0.54 * m), (0.84 * m, 0.66 * m), (0.70 * m, 0.90 * m), (0.38 * m, 0.74 * m)], fill=255)
@@ -818,9 +819,9 @@ def _draw_shape_mask(shape_id: str, *, size: int) -> Image.Image:
         draw.polygon([(0.24 * m, 0.48 * m), (0.04 * m, 0.38 * m), (0.20 * m, 0.64 * m)], fill=255)
         draw.rounded_rectangle((0.38 * m, 0.22 * m, 0.58 * m, 0.36 * m), radius=int(0.04 * m), fill=255)
     elif shape == "knife":
-        draw.rounded_rectangle((0.14 * m, 0.56 * m, 0.44 * m, 0.72 * m), radius=int(0.05 * m), fill=255)
-        draw.polygon([(0.40 * m, 0.50 * m), (0.90 * m, 0.18 * m), (0.76 * m, 0.62 * m), (0.44 * m, 0.72 * m)], fill=255)
-        _draw_thick_line(draw, ((0.48 * m, 0.56 * m), (0.72 * m, 0.42 * m)), width=max(1, thin_w // 2), fill=0)
+        _draw_thick_line(draw, ((0.18 * m, 0.78 * m), (0.42 * m, 0.54 * m)), width=line_w)
+        draw.polygon([(0.36 * m, 0.50 * m), (0.88 * m, 0.14 * m), (0.70 * m, 0.56 * m), (0.44 * m, 0.66 * m)], fill=255)
+        _draw_thick_line(draw, ((0.46 * m, 0.52 * m), (0.70 * m, 0.36 * m)), width=max(1, thin_w // 2), fill=0)
     elif shape == "soccer_ball":
         draw.ellipse((0.16 * m, 0.16 * m, 0.84 * m, 0.84 * m), fill=255)
         draw.polygon(_regular_polygon_points(cx, cy, 0.12 * m, 5, start_degrees=-90), fill=0)
@@ -846,10 +847,10 @@ def _draw_shape_mask(shape_id: str, *, size: int) -> Image.Image:
         for px, py in ((0.38, 0.46), (0.50, 0.46), (0.62, 0.46), (0.38, 0.60), (0.50, 0.60), (0.62, 0.60), (0.38, 0.74), (0.50, 0.74), (0.62, 0.74)):
             draw.rectangle((px * m, py * m, (px + 0.06) * m, (py + 0.06) * m), fill=0)
     elif shape == "plug":
-        draw.rounded_rectangle((0.36 * m, 0.38 * m, 0.64 * m, 0.70 * m), radius=int(0.06 * m), fill=255)
-        draw.rectangle((0.42 * m, 0.18 * m, 0.48 * m, 0.40 * m), fill=255)
-        draw.rectangle((0.56 * m, 0.18 * m, 0.62 * m, 0.40 * m), fill=255)
-        _draw_thick_line(draw, ((0.50 * m, 0.70 * m), (0.50 * m, 0.90 * m), (0.64 * m, 0.94 * m)), width=thin_w)
+        draw.polygon([(0.36 * m, 0.44 * m), (0.54 * m, 0.26 * m), (0.76 * m, 0.48 * m), (0.58 * m, 0.66 * m)], fill=255)
+        _draw_thick_line(draw, ((0.44 * m, 0.30 * m), (0.30 * m, 0.16 * m)), width=max(1, thin_w // 2))
+        _draw_thick_line(draw, ((0.56 * m, 0.18 * m), (0.42 * m, 0.04 * m)), width=max(1, thin_w // 2))
+        _draw_thick_line(draw, ((0.56 * m, 0.66 * m), (0.40 * m, 0.82 * m), (0.48 * m, 0.94 * m)), width=thin_w)
     elif shape == "broccoli":
         draw.rounded_rectangle((0.42 * m, 0.56 * m, 0.58 * m, 0.88 * m), radius=int(0.05 * m), fill=255)
         draw.polygon([(0.42 * m, 0.60 * m), (0.28 * m, 0.82 * m), (0.46 * m, 0.76 * m)], fill=255)

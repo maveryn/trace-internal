@@ -16,7 +16,7 @@ from ...shared.config_defaults import (
 from ...shared.fixed_query import select_task_query_id
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import build_prompt_query_spec
-from ..shared.annotation import bbox_set_annotation
+from ..shared.annotation import icon_bbox_set_annotation
 from ..shared.icon_task_rendering import resolve_icon_render_params
 
 from .shared.annotations import bboxes_from_icon_indices
@@ -417,7 +417,7 @@ class IconsCountingPanelSetRelationCountTask:
             instance_seed=int(instance_seed),
         )
         annotation_panel, annotation_bboxes = _selected_annotation(scene, query_id=str(query_id))
-        annotation_artifacts = bbox_set_annotation(annotation_bboxes)
+        annotation_artifacts = icon_bbox_set_annotation(annotation_bboxes)
         query_spec = build_prompt_query_spec(
             prompt_artifacts=prompt_artifacts,
             query_id=str(query_id),

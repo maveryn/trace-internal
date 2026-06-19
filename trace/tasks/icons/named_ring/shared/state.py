@@ -47,6 +47,7 @@ class RenderedRingIcon:
     bbox_xyxy: Tuple[int, int, int, int]
     center_xy: Tuple[float, float]
     nominal_size_px: int
+    rotation_degrees: int
     tint_rgb: Tuple[int, int, int]
     fill_style: str
     noise_edits: Tuple[Dict[str, Any], ...]

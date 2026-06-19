@@ -22,7 +22,7 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
 from ...shared.text_rendering import draw_text_centered, load_font
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.annotation import keyed_bbox_map_annotation
+from ..shared.annotation import icon_bbox_map_annotation
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
     BBox,
@@ -1037,7 +1037,7 @@ class IconsRelationNamedOriginalAttributeLabelTask:
         right_by_pair = {str(icon.pair_id): icon for icon in scene_payload.right_icons}
         answer_original = original_by_pair[str(scene_payload.answer_pair_id)]
         answer_right = right_by_pair[str(scene_payload.answer_pair_id)]
-        annotation_artifacts = keyed_bbox_map_annotation(
+        annotation_artifacts = icon_bbox_map_annotation(
             {
                 "original_icon": answer_original.bbox_xyxy,
                 "right_icon": answer_right.bbox_xyxy,

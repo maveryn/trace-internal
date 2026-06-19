@@ -4,6 +4,12 @@ from __future__ import annotations
 
 import pytest
 
+from trace.core.seed import spawn_rng
+from trace.tasks.icons.shared.annotation import (
+    ICON_OBJECT_ANNOTATION_MIN_SIDE_PX,
+    icon_bbox_set_annotation,
+)
+from trace.tasks.icons.shared.procedural_named_icon_field_scene import rotation_for_named_shape
 from trace.tasks.icons.shared.procedural_named_icons import (
     PROCEDURAL_NAMED_ICON_DISPLAY_NAMES,
     PROCEDURAL_NAMED_ICON_FILL_STYLES,
@@ -52,6 +58,31 @@ def test_procedural_named_icon_renderer_outputs_supported_fill_styles() -> None:
         )
         assert image.mode == "RGBA"
         assert image.getchannel("A").getbbox() is not None
+
+
+def test_procedural_named_icon_thin_canonical_shapes_have_usable_48px_bboxes() -> None:
+    for shape_id in ("plug", "fork", "spoon", "toothbrush", "key", "knife"):
+        image = render_procedural_named_icon_rgba(
+            shape_id=shape_id,
+            size_px=48,
+            tint_rgb=(20, 90, 180),
+        )
+        assert min(image.size) >= ICON_OBJECT_ANNOTATION_MIN_SIDE_PX
+
+
+def test_named_icon_nonsemantic_rotation_jitter_is_small() -> None:
+    rng = spawn_rng(2026061901, "named_icon_jitter")
+    values = [rotation_for_named_shape(rng, shape_id) for shape_id in PROCEDURAL_NAMED_ICON_SHAPES for _ in range(3)]
+    assert all(-15 <= int(value) <= 15 for value in values)
+    assert any(int(value) < 0 for value in values)
+    assert any(int(value) > 0 for value in values)
+
+
+def test_icon_bbox_set_annotation_expands_small_icon_witnesses_to_min_side() -> None:
+    annotation = icon_bbox_set_annotation([[10, 20, 20, 30], [40, 50, 72, 78]])
+    assert annotation["annotation_type"] == "bbox_set"
+    for bbox in annotation["annotation_value"]:
+        assert min(int(bbox[2]) - int(bbox[0]), int(bbox[3]) - int(bbox[1])) >= ICON_OBJECT_ANNOTATION_MIN_SIDE_PX
 
 
 def test_procedural_named_icon_renderer_rejects_unknown_shape() -> None:

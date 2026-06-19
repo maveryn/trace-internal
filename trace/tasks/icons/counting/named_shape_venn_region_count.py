@@ -33,7 +33,7 @@ from ..shared.icon_scene import (
     sort_bboxes_reading_order,
 )
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
-from ..shared.annotation import bbox_set_annotation
+from ..shared.annotation import icon_bbox_set_annotation
 from ..shared.procedural_named_icons import (
     PROCEDURAL_NAMED_ICON_FILL_STYLES,
     PROCEDURAL_NAMED_ICON_SHAPES,
@@ -935,7 +935,7 @@ class IconsCountingNamedShapeVennRegionCountTask:
         annotation_bboxes = sort_bboxes_reading_order(tuple(instance.bbox_xyxy for instance in scene.instances if instance.counted))
         if len(annotation_bboxes) != int(scene.target_count):
             raise RuntimeError("projected Venn annotation did not match target answer")
-        annotation_artifacts = bbox_set_annotation(annotation_bboxes)
+        annotation_artifacts = icon_bbox_set_annotation(annotation_bboxes)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,

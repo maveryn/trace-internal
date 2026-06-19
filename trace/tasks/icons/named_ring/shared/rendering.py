@@ -12,7 +12,7 @@ from ...shared.icon_noise import serialize_icon_noise_edits
 from ...shared.icon_scene import BBox, draw_single_panel, resolve_single_panel_layout, single_panel_geometry_to_trace
 from ...shared.icon_style import sample_icon_palette
 from ...shared.icon_task_rendering import sample_icon_instance_noise
-from ...shared.procedural_named_icon_field_scene import bbox_center_float
+from ...shared.procedural_named_icon_field_scene import bbox_center_float, bbox_from_center_and_size, rotation_for_named_shape
 from ...shared.procedural_named_icons import (
     procedural_named_icon_display_name,
     render_procedural_named_icon_rgba,
@@ -22,12 +22,8 @@ from ...shared.procedural_named_icons import (
 from .state import RenderedRingIcon, RingArcPlan, RingScenePayload
 
 
-def _icon_bbox(center_xy: Sequence[float], size_px: int) -> Tuple[int, int, int, int]:
-    cx, cy = float(center_xy[0]), float(center_xy[1])
-    size = int(size_px)
-    x0 = int(round(cx - 0.5 * float(size)))
-    y0 = int(round(cy - 0.5 * float(size)))
-    return (int(x0), int(y0), int(x0 + size), int(y0 + size))
+def _icon_bbox(center_xy: Sequence[float], sprite_size: Sequence[int]) -> Tuple[int, int, int, int]:
+    return bbox_from_center_and_size(center_xy, sprite_size)
 
 
 def _marker_label_bbox(
@@ -251,16 +247,17 @@ def render_named_ring_scene(
             namespace=f"{noise_namespace}.{int(index)}",
             render_params=render_params,
         )
+        rotation_degrees = rotation_for_named_shape(rng, str(shape_id))
         sprite = render_procedural_named_icon_rgba(
             shape_id=str(shape_id),
             size_px=int(nominal_size_px),
             tint_rgb=tuple(int(value) for value in tint_rgb),
             fill_style=str(fill_style),
-            rotation_degrees=0,
+            rotation_degrees=int(rotation_degrees),
             noise_edits=tuple(noise_edits),
             noise_seed=int(noise_seed),
         )
-        bbox = _icon_bbox(center, int(sprite.size[0]))
+        bbox = _icon_bbox(center, sprite.size)
         image.alpha_composite(sprite, (int(bbox[0]), int(bbox[1])))
         marker_label = "A" if int(index) == int(plan.start_index) else "B" if int(index) == int(plan.end_index) else ""
         role = (
@@ -284,6 +281,7 @@ def render_named_ring_scene(
                 bbox_xyxy=tuple(int(value) for value in bbox),
                 center_xy=(float(center[0]), float(center[1])),
                 nominal_size_px=int(nominal_size_px),
+                rotation_degrees=int(rotation_degrees),
                 tint_rgb=tuple(int(value) for value in tint_rgb),
                 fill_style=str(fill_style),
                 noise_edits=tuple(serialize_icon_noise_edits(noise_edits)),
@@ -329,6 +327,7 @@ def serialize_ring_icon(icon: RenderedRingIcon) -> Dict[str, Any]:
         "bbox_xyxy": [int(value) for value in icon.bbox_xyxy],
         "center_xy": [float(icon.center_xy[0]), float(icon.center_xy[1])],
         "nominal_size_px": int(icon.nominal_size_px),
+        "rotation_degrees": int(icon.rotation_degrees),
         "tint_rgb": [int(value) for value in icon.tint_rgb],
         "fill_style": str(icon.fill_style),
         "noise_edits": [dict(value) for value in icon.noise_edits],

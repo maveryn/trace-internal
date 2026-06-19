@@ -43,7 +43,7 @@ class NamedGridDefaults:
     panel_corner_radius_px: int = ICON_SHARED_DEFAULTS.panel_corner_radius_px
     panel_title_font_size_px: int = ICON_SHARED_DEFAULTS.panel_title_font_size_px
     scene_icon_size_min_px: int = 48
-    scene_icon_size_max_px: int = 76
+    scene_icon_size_max_px: int = 72
     scene_max_overlap_fraction: float = 0.0
     scene_placement_max_attempts: int = ICON_SHARED_DEFAULTS.scene_placement_max_attempts
     scene_size_shrink_rounds: int = ICON_SHARED_DEFAULTS.scene_size_shrink_rounds

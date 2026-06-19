@@ -28,8 +28,8 @@ rendering:
   shared:
     canvas_width: 1280
     canvas_height: 720
-    scene_icon_size_min_px: 44
-    scene_icon_size_max_px: 60
+    scene_icon_size_min_px: 48
+    scene_icon_size_max_px: 72
     scene_max_overlap_fraction: 0.0
     scene_placement_max_attempts: 200
     path_stroke_width_px: 7

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Sequence
 
-from ...shared.annotation import bbox_set_annotation
+from ...shared.annotation import icon_bbox_set_annotation
 from ...shared.icon_scene import sort_bboxes_reading_order
 
 from .metrics import boolean_counted_instance_ids, counterfactual_counted_instance_ids
@@ -14,7 +14,7 @@ def bbox_set_from_bboxes(bboxes: Sequence[Sequence[int | float]]) -> dict[str, A
     """Return the standard bbox-set annotation payload from icon bboxes."""
 
     sorted_bboxes = sort_bboxes_reading_order(tuple(bboxes))
-    return dict(bbox_set_annotation(sorted_bboxes))
+    return dict(icon_bbox_set_annotation(sorted_bboxes))
 
 
 def boolean_annotation_bboxes(sample: Any, instances: Sequence[Any]) -> list[list[int]]:

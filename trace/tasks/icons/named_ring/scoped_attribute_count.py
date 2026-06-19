@@ -22,7 +22,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
-from ..shared.annotation import bbox_set_annotation
+from ..shared.annotation import icon_bbox_set_annotation
 from ..shared.icon_scene import sort_bboxes_reading_order
 from ..shared.icon_task_rendering import icon_render_style_trace
 
@@ -178,7 +178,7 @@ class IconsNamedRingScopedAttributeCountTask:
         annotation_bboxes = sort_bboxes_reading_order(icon.bbox_xyxy for icon in counted_icons)
         if len(annotation_bboxes) != int(sample.plan.answer_count):
             raise RuntimeError("rendered named-ring annotation count does not match answer")
-        annotation_payload = bbox_set_annotation(annotation_bboxes)
+        annotation_payload = icon_bbox_set_annotation(annotation_bboxes)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,

@@ -16,6 +16,7 @@ from ...shared.procedural_named_icons import (
     render_procedural_named_icon_rgba,
     sample_procedural_named_icon_fill_style,
 )
+from ...shared.procedural_named_icon_field_scene import rotation_for_named_shape
 
 from .defaults import NamedGridDefaults
 from .state import NamedGridRenderSpec, NamedGridScenePayload, RenderedGridIcon
@@ -197,12 +198,13 @@ def render_named_grid_scene(
                 namespace=f"{_NOISE_NAMESPACE}:r{int(row)}c{int(col)}",
                 render_params=render_params,
             )
+            rotation_degrees = rotation_for_named_shape(rng, str(shape_id))
             sprite = render_procedural_named_icon_rgba(
                 shape_id=str(shape_id),
                 size_px=int(nominal_size_px),
                 tint_rgb=tint_rgb,
                 fill_style=str(fill_style),
-                rotation_degrees=0,
+                rotation_degrees=int(rotation_degrees),
                 noise_edits=tuple(noise_edits),
                 noise_seed=int(noise_seed),
             )
@@ -228,6 +230,7 @@ def render_named_grid_scene(
                     nominal_size_px=int(nominal_size_px),
                     tint_rgb=tuple(int(value) for value in tint_rgb),
                     fill_style=str(fill_style),
+                    rotation_degrees=int(rotation_degrees),
                     noise_edits=tuple(serialize_icon_noise_edits(noise_edits)),
                     noise_seed=int(noise_seed),
                     is_target_shape=str(shape_id) == str(sample.target_shape_id),
@@ -257,6 +260,7 @@ def serialize_named_grid_icon(icon: RenderedGridIcon) -> Dict[str, Any]:
         "bbox_xyxy": [int(value) for value in icon.bbox_xyxy],
         "cell_bbox_xyxy": [int(value) for value in icon.cell_bbox_xyxy],
         "nominal_size_px": int(icon.nominal_size_px),
+        "rotation_degrees": int(icon.rotation_degrees),
         "tint_rgb": [int(value) for value in icon.tint_rgb],
         "fill_style": str(icon.fill_style),
         "noise_edits": [dict(edit) for edit in icon.noise_edits],

@@ -24,7 +24,7 @@ from ...shared.text_rendering import draw_text_centered, load_font
 from ...shared.variant_sampling import resolve_variant
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_noise import serialize_icon_noise_edits
-from ..shared.annotation import keyed_bbox_map_annotation
+from ..shared.annotation import icon_bbox_map_annotation
 from ..shared.icon_scene import BBox, draw_single_panel, resolve_single_panel_layout, single_panel_geometry_to_trace
 from ..shared.icon_task_rendering import resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
@@ -33,6 +33,7 @@ from ..shared.procedural_named_icon_field_scene import (
     boxes_overlap,
     label_bbox_for_icon,
     render_planned_named_icon_sprite,
+    rotation_for_named_shape,
     union_bbox,
     resolve_named_icon_fill_style_probabilities,
 )
@@ -103,7 +104,7 @@ class _TaskDefaults:
     panel_padding_px: int = ICON_SHARED_DEFAULTS.panel_padding_px
     panel_corner_radius_px: int = ICON_SHARED_DEFAULTS.panel_corner_radius_px
     panel_title_font_size_px: int = ICON_SHARED_DEFAULTS.panel_title_font_size_px
-    scene_icon_size_min_px: int = 50
+    scene_icon_size_min_px: int = 48
     scene_icon_size_max_px: int = 72
     reference_icon_size_min_px: int = 58
     reference_icon_size_max_px: int = 76
@@ -399,7 +400,7 @@ def _sample_icon_plans(
             tint_rgb=reference_rgb,
             fill_style="solid",
             nominal_size_px=int(reference_size),
-            rotation_degrees=0,
+            rotation_degrees=rotation_for_named_shape(rng, str(reference_shape_id)),
             noise_edits=tuple(reference_noise),
             noise_seed=int(reference_noise_seed),
         )
@@ -431,7 +432,7 @@ def _sample_icon_plans(
                     low=int(render_params["scene_icon_size_min_px"]),
                     high=int(render_params["scene_icon_size_max_px"]),
                 ),
-                rotation_degrees=int(rng.choice((0, 0, 0, 90, 180, 270))),
+                rotation_degrees=rotation_for_named_shape(rng, str(shape_id)),
                 noise_edits=tuple(noise_edits),
                 noise_seed=int(noise_seed),
             )
@@ -463,7 +464,7 @@ def _sample_icon_plans(
                     low=int(render_params["scene_icon_size_min_px"]),
                     high=int(render_params["scene_icon_size_max_px"]),
                 ),
-                rotation_degrees=int(rng.choice((0, 0, 0, 90, 180, 270))),
+                rotation_degrees=rotation_for_named_shape(rng, str(shape_id)),
                 noise_edits=tuple(noise_edits),
                 noise_seed=int(noise_seed),
             )
@@ -583,7 +584,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
 
         candidate_by_label = {str(icon.label): icon for icon in scene_payload.candidate_icons}
         answer_icon = candidate_by_label[str(scene_payload.answer_label)]
-        annotation_artifacts = keyed_bbox_map_annotation(
+        annotation_artifacts = icon_bbox_map_annotation(
             {
                 "reference_icon": scene_payload.reference_icon.bbox_xyxy,
                 "selected_candidate": answer_icon.bbox_xyxy,

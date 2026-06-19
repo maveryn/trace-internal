@@ -27,22 +27,7 @@ from .procedural_named_icons import (
 
 SCENE_ID = "named_field"
 
-DEFAULT_ROTATABLE_NAMED_ICON_SHAPES = (
-    "triangle",
-    "diamond",
-    "pentagon",
-    "hexagon",
-    "octagon",
-    "arrow",
-    "lightning_bolt",
-    "leaf",
-    "flag",
-    "capsule",
-    "teardrop",
-    "hourglass",
-    "key",
-    "ladder",
-)
+DEFAULT_NAMED_ICON_ROTATION_JITTER_DEGREES = 15
 
 
 @dataclass(frozen=True)
@@ -161,13 +146,22 @@ def rotation_for_named_shape(
     rng,
     shape_id: str,
     *,
-    rotatable_shapes: Sequence[str] = DEFAULT_ROTATABLE_NAMED_ICON_SHAPES,
+    rotatable_shapes: Sequence[str] | None = None,
+    jitter_degrees: int = DEFAULT_NAMED_ICON_ROTATION_JITTER_DEGREES,
 ) -> int:
-    """Return a deterministic visual rotation for rotatable named-icon shapes."""
+    """Return a small naturalistic pose jitter for named-icon scenes.
 
-    if str(shape_id) not in set(str(value) for value in rotatable_shapes):
+    ``shape_id`` and ``rotatable_shapes`` are retained for call-site
+    compatibility. Current named-icon counting/spatial scenes use the same
+    non-semantic jitter for every named icon, while stack layouts opt out at the
+    call site by passing/setting a zero rotation.
+    """
+
+    del shape_id, rotatable_shapes
+    span = max(0, int(jitter_degrees))
+    if span <= 0:
         return 0
-    return int(rng.choice((0, 90, 180, 270))) % 360
+    return int(rng.randint(-span, span))
 
 
 def bbox_center_float(bbox: Sequence[int | float]) -> Tuple[float, float]:
@@ -663,6 +657,7 @@ def named_icon_bboxes_for_shape(
 __all__ = [
     "SCENE_ID",
     "NamedIconFieldSpec",
+    "DEFAULT_NAMED_ICON_ROTATION_JITTER_DEGREES",
     "RenderedNamedIconFieldScene",
     "RenderedNamedIconInstance",
     "named_icon_bboxes_for_shape",

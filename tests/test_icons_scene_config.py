@@ -500,7 +500,7 @@ def test_icons_relation_defaults_loaded() -> None:
     assert list(distance_generation['named_icon_fill_style_support']) == ['solid', 'striped', 'dotted']
     assert int(distance_rendering['canvas_width']) == 960
     assert int(distance_rendering['canvas_height']) == 560
-    assert int(distance_rendering['scene_icon_size_min_px']) == 50
+    assert int(distance_rendering['scene_icon_size_min_px']) == 48
     assert int(distance_rendering['scene_icon_size_max_px']) == 72
     assert int(distance_rendering['distance_rank_margin_px']) == 24
     assert int(distance_rendering['candidate_label_font_size_px']) == 24
@@ -527,8 +527,8 @@ def test_icons_named_path_defaults_loaded() -> None:
     assert list(path_generation['named_icon_fill_style_support']) == ['solid', 'striped', 'dotted']
     assert int(path_rendering['canvas_width']) == 1280
     assert int(path_rendering['canvas_height']) == 720
-    assert int(path_rendering['scene_icon_size_min_px']) == 44
-    assert int(path_rendering['scene_icon_size_max_px']) == 60
+    assert int(path_rendering['scene_icon_size_min_px']) == 48
+    assert int(path_rendering['scene_icon_size_max_px']) == 72
     assert int(path_rendering['path_stroke_width_px']) == 7
     assert int(path_rendering['candidate_label_font_size_px']) == 24
     assert str(path_prompt['bundle_id']).strip() == 'icons_named_path_v1'

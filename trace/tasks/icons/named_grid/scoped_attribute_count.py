@@ -14,7 +14,7 @@ from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import build_prompt_query_spec
 from ...shared.variant_sampling import resolve_variant
-from ..shared.annotation import bbox_set_annotation
+from ..shared.annotation import icon_bbox_set_annotation
 from ..shared.icon_scene import sort_bboxes_reading_order
 from ..shared.procedural_named_icons import procedural_named_icon_display_name
 from .shared.defaults import SCENE_ID, NamedGridDefaults
@@ -324,7 +324,7 @@ class IconsCountingNamedGridRowColumnShapeCountTask:
         annotation_bboxes = sort_bboxes_reading_order(icon.bbox_xyxy for icon in counted_icons)
         if len(annotation_bboxes) != int(sample.target_count):
             raise RuntimeError("rendered named-grid annotation count does not match answer")
-        annotation_payload = bbox_set_annotation(annotation_bboxes)
+        annotation_payload = icon_bbox_set_annotation(annotation_bboxes)
 
         question_key = f"question_text_{sample.query_id}"
         prompt_artifacts, _prompt_defaults = build_named_grid_prompt_artifacts(

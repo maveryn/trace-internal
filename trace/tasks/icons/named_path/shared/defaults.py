@@ -29,8 +29,8 @@ class NamedPathDefaults:
     panel_padding_px: int = ICON_SHARED_DEFAULTS.panel_padding_px
     panel_corner_radius_px: int = ICON_SHARED_DEFAULTS.panel_corner_radius_px
     panel_title_font_size_px: int = ICON_SHARED_DEFAULTS.panel_title_font_size_px
-    scene_icon_size_min_px: int = 44
-    scene_icon_size_max_px: int = 60
+    scene_icon_size_min_px: int = 48
+    scene_icon_size_max_px: int = 72
     reference_panel_width_px: int = ICON_SHARED_DEFAULTS.reference_panel_width_px
     reference_icon_size_px: int = ICON_SHARED_DEFAULTS.reference_icon_size_px
     reference_icon_size_min_px: int = ICON_SHARED_DEFAULTS.reference_icon_size_px

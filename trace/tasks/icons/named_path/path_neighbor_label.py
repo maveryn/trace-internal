@@ -22,7 +22,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
-from ..shared.annotation import bbox_annotation
+from ..shared.annotation import icon_bbox_annotation
 from ..shared.icon_task_rendering import icon_render_style_trace
 
 from .shared.defaults import NamedPathDefaults, OPTION_LABELS, SCENE_ID
@@ -395,7 +395,7 @@ class IconsNamedPathPathNeighborLabelTask:
         answer_icon = icons_by_position[int(scene_payload.answer_position_index)]
         if str(answer_icon.label) != str(scene_payload.answer_label):
             raise RuntimeError("rendered answer icon label does not match answer label")
-        annotation_artifacts = bbox_annotation(answer_icon.bbox_xyxy)
+        annotation_artifacts = icon_bbox_annotation(answer_icon.bbox_xyxy)
         serialized_icons = [serialize_path_icon(icon) for icon in scene_payload.icons]
         answer_gt = TypedValue(type="option_letter", value=str(scene_payload.answer_label))
         annotation_gt = TypedValue(

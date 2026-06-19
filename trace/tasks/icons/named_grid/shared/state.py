@@ -34,6 +34,7 @@ class RenderedGridIcon:
     bbox_xyxy: Tuple[int, int, int, int]
     cell_bbox_xyxy: Tuple[int, int, int, int]
     nominal_size_px: int
+    rotation_degrees: int
     tint_rgb: Tuple[int, int, int]
     fill_style: str
     noise_edits: Tuple[Dict[str, Any], ...]

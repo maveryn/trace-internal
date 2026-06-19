@@ -19,7 +19,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.variant_sampling import resolve_variant
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.annotation import bbox_set_annotation
+from ..shared.annotation import icon_bbox_set_annotation
 from ..shared.icon_grid_scene import resolve_horizontal_row_slots
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
@@ -35,6 +35,7 @@ from ..shared.procedural_named_icon_field_scene import (
     bbox_from_center_dimensions,
     render_planned_named_icon_sprite,
     resolve_named_icon_fill_style_probabilities,
+    rotation_for_named_shape,
 )
 from ..shared.procedural_named_icons import (
     PROCEDURAL_NAMED_ICON_FILL_STYLES,
@@ -503,7 +504,7 @@ def _build_icon_plans(
                     probabilities=sample.fill_style_probabilities,
                 ),
                 nominal_size_px=int(rng.randint(int(min_size), int(max_size))),
-                rotation_degrees=0,
+                rotation_degrees=rotation_for_named_shape(rng, str(shape_id)),
                 noise_edits=tuple(noise_edits),
                 noise_seed=int(noise_seed),
             )
@@ -651,6 +652,7 @@ class IconsSequenceNamedShapeRunLengthTask:
     task_id = TASK_ID
     domain = "icons"
     scene_id = "sequence"
+    supported_query_ids = QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         render_params = resolve_icon_cell_render_params(
@@ -696,7 +698,7 @@ class IconsSequenceNamedShapeRunLengthTask:
         )
         if len(annotation_bboxes) != int(sample.answer):
             raise RuntimeError("rendered named-strip annotation length does not match answer")
-        annotation_payload = bbox_set_annotation(annotation_bboxes)
+        annotation_payload = icon_bbox_set_annotation(annotation_bboxes)
         selected_instance_ids = tuple(
             str(icon.instance_id)
             for icon in scene.icons

@@ -132,8 +132,8 @@ rendering:
     outer_margin_px: 24
     panel_padding_px: 20
     panel_corner_radius_px: 18
-    scene_icon_size_min_px: 40
-    scene_icon_size_max_px: 96
+    scene_icon_size_min_px: 48
+    scene_icon_size_max_px: 72
     reference_icon_size_px: 136
     scene_max_overlap_fraction: 0.1
     scene_placement_max_attempts: 120
@@ -247,7 +247,7 @@ rendering:
       canvas_width: 880
       canvas_height: 680
       scene_icon_size_min_px: 48
-      scene_icon_size_max_px: 76
+      scene_icon_size_max_px: 72
       scene_max_overlap_fraction: 0.0
       row_label_band_width_px: 48
       column_label_band_height_px: 42
@@ -277,7 +277,7 @@ rendering:
       canvas_width: 880
       canvas_height: 680
       scene_icon_size_min_px: 48
-      scene_icon_size_max_px: 76
+      scene_icon_size_max_px: 72
       scene_max_overlap_fraction: 0.0
       row_label_band_width_px: 48
       column_label_band_height_px: 42
@@ -307,7 +307,7 @@ rendering:
       canvas_width: 880
       canvas_height: 680
       scene_icon_size_min_px: 48
-      scene_icon_size_max_px: 76
+      scene_icon_size_max_px: 72
       scene_max_overlap_fraction: 0.0
       row_label_band_width_px: 48
       column_label_band_height_px: 42

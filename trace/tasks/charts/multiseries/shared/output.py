@@ -1,63 +1,73 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
-from trace.tasks.charts.multiseries.shared.comparison_common import (
-    SCENE_VARIANT_LOADS,
-    normalize_multiseries_visual_scan,
-)
-from trace.tasks.charts.multiseries.shared.runtime import (
-    MultiseriesRenderResult,
+from trace.tasks.charts.multiseries.shared.rendering import (
     render_map_payload,
     render_spec_payload,
 )
-from trace.tasks.shared.prompt_variants import PromptTraceArtifacts, build_prompt_query_spec
+from trace.tasks.charts.multiseries.shared.state import MultiseriesRenderResult
 
 
+def common_trace_fields(
+    *,
+    answer_label: str,
+    annotation_values: Sequence[int],
+    queried_series_labels: Sequence[str],
+    value_range: Sequence[int],
+    answer_type: str,
+    extra: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """Build common objective trace fields for public multiseries tasks."""
+
+    normalized_extra = dict(extra)
+    normalized_annotation_values = [int(value) for value in annotation_values]
+    common = {
+        "answer_label": str(answer_label),
+        "annotation_values": list(normalized_annotation_values),
+        "queried_series_labels": [str(label) for label in queried_series_labels],
+        **normalized_extra,
+    }
+    return (
+        dict(common),
+        {
+            "answer_label": str(answer_label),
+            "value_range": [int(value) for value in value_range],
+            **normalized_extra,
+        },
+        {
+            "answer_label": str(answer_label),
+            "answer_type": str(answer_type),
+            "annotation_values": list(normalized_annotation_values),
+            **normalized_extra,
+        },
+    )
 
 
 def build_trace_payload(
     *,
     result: MultiseriesRenderResult,
-    prompt_artifacts: PromptTraceArtifacts,
-    query_id: str,
+    prompt_query_spec: Mapping[str, Any],
+    relation_payload: Mapping[str, Any],
+    execution_base: Mapping[str, Any],
     scene_variant: str,
-    variant_family: str,
-    internal_query_id: str,
-    answer_value: Any,
     question_format: str,
     trace_extras: Mapping[str, Any],
-    relations_extra: Mapping[str, Any],
-    query_params_extra: Mapping[str, Any],
     execution_extra: Mapping[str, Any],
     witness_symbolic: Mapping[str, Any],
     projected_annotation: Mapping[str, Any],
 ) -> dict[str, Any]:
-    relation_payload = {
-        "query_id": str(query_id),
-        "scene_variant": str(scene_variant),
-        "variant_family": str(variant_family),
-        "internal_query_id": str(internal_query_id),
-        **dict(relations_extra),
-    }
-    query_params = {
-        "query_id": str(query_id),
-        "scene_variant": str(scene_variant),
-        "variant_family": str(variant_family),
-        "internal_query_id": str(internal_query_id),
-        "series_count": int(trace_extras["series_count"]),
-        "series_count_range": list(trace_extras["series_count_range"]),
-        "category_count": int(trace_extras["category_count"]),
-        "category_count_range": list(trace_extras["category_count_range"]),
-        "queried_series_labels": list(trace_extras.get("queried_series_labels", [])),
-        **dict(query_params_extra),
-    }
+    """Assemble renderer, prompt, and objective fields into verifier metadata.
+
+    Public task files provide the objective-specific relations and execution
+    fields. This shared helper only combines those fields with the neutral
+    multiseries render projection, so it must not branch on task or query
+    identity.
+    """
+
     execution_trace = {
-        "query_id": str(query_id),
-        "scene_variant": str(scene_variant),
-        "variant_family": str(variant_family),
-        "internal_query_id": str(internal_query_id),
+        **dict(execution_base),
         "category_labels": list(result.category_labels),
         "series_labels": list(result.series_labels),
         "queried_series_labels": list(trace_extras.get("queried_series_labels", [])),
@@ -76,13 +86,9 @@ def build_trace_payload(
         "scene_ir": {
             "scene_kind": f"chart_{str(scene_variant)}_multiseries",
             "entities": [dict(entity) for entity in result.rendered_scene.entities],
-            "relations": relation_payload,
+            "relations": dict(relation_payload),
         },
-        "query_spec": build_prompt_query_spec(
-            prompt_artifacts=prompt_artifacts,
-            query_id=str(query_id),
-            params=query_params,
-        ),
+        "query_spec": dict(prompt_query_spec),
         "render_spec": render_spec_payload(result, scene_variant=str(scene_variant)),
         "render_map": render_map_payload(result),
         "execution_trace": execution_trace,
@@ -91,3 +97,4 @@ def build_trace_payload(
     }
 
 
+__all__ = ["build_trace_payload", "common_trace_fields"]

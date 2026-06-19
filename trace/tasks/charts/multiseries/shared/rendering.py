@@ -1,45 +1,61 @@
-"""Rendering and annotation projection helpers for multiseries chart tasks."""
+"""Rendering helpers for multiseries chart tasks."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict, Mapping, Sequence
-
-from PIL import Image
+from typing import Any, Dict, List, Mapping, Sequence
 
 from .....core.visual.background import make_background_canvas
 from .....core.visual.noise import apply_post_image_noise
 from ....shared.font_assets import font_asset_version
 from ....shared.text_rendering import temporary_default_font_family
-from ...shared.chart_scene import render_multiseries_chart_scene, value_axis_render_metadata
+from ...shared.chart_scene import (
+    MultiSeriesChartMarkSpec,
+    render_multiseries_chart_scene,
+    value_axis_render_metadata,
+)
 from ...shared.labeled_chart_common import resolve_chart_render_params_for_task
-from .comparison_common import (
+from .defaults import (
     DEFAULTS,
     POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDER_DEFAULTS,
-    keyed_points_from_projection,
-    projected_keyed_point_annotation,
     sample_chart_font_family,
 )
-from .multiseries_chart_config import (
-    build_multiseries_mark_specs,
-    projected_multiseries_mark_annotation,
-    resolve_multiseries_chart_colors,
-)
+from .state import MultiseriesRenderResult
+from .styles import resolve_multiseries_chart_colors
 
 
-@dataclass(frozen=True)
-class MultiseriesRenderResult:
-    image: Image.Image
-    rendered_scene: Any
-    render_params: Any
-    mark_style: Dict[str, Any]
-    background_meta: Dict[str, Any]
-    post_noise_meta: Dict[str, Any]
-    chart_font_family: str
-    category_labels: list[str]
-    series_labels: list[str]
+def build_multiseries_mark_specs(
+    *,
+    category_labels: Sequence[str],
+    series_labels: Sequence[str],
+    values_by_category: Mapping[str, Mapping[str, int]],
+    mark_style: Mapping[str, Any],
+) -> List[MultiSeriesChartMarkSpec]:
+    """Build chart-mark specs for one multiseries chart."""
+
+    fill_palette = [tuple(int(channel) for channel in value) for value in mark_style["series_fill_palette_rgb"]]
+    outline_palette = [tuple(int(channel) for channel in value) for value in mark_style["series_outline_palette_rgb"]]
+    if len(fill_palette) != len(series_labels) or len(outline_palette) != len(series_labels):
+        raise ValueError("multiseries charts require one color per series")
+
+    specs: List[MultiSeriesChartMarkSpec] = []
+    for category_rank, category_label in enumerate(category_labels):
+        values_for_category = values_by_category[str(category_label)]
+        for series_rank, series_label in enumerate(series_labels):
+            specs.append(
+                MultiSeriesChartMarkSpec(
+                    category_label=str(category_label),
+                    series_label=str(series_label),
+                    category_rank=int(category_rank),
+                    series_rank=int(series_rank),
+                    value=int(values_for_category[str(series_label)]),
+                    fill_rgb=fill_palette[int(series_rank)],
+                    outline_rgb=outline_palette[int(series_rank)],
+                )
+            )
+    return specs
+
 
 
 def render_multiseries_dataset(
@@ -50,6 +66,14 @@ def render_multiseries_dataset(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> MultiseriesRenderResult:
+    """Render one neutral multiseries dataset with shared chart styling.
+
+    Task files provide the already-bound category/series values and annotation
+    targets. This renderer only samples visual presentation, draws the selected
+    multiseries variant, and records projection metadata for later annotation
+    binding.
+    """
+
     category_labels = [str(label) for label in trace_extras["category_labels"]]
     series_labels = [str(label) for label in trace_extras["series_labels"]]
     mark_style = resolve_multiseries_chart_colors(
@@ -104,21 +128,6 @@ def render_multiseries_dataset(
         category_labels=list(category_labels),
         series_labels=list(series_labels),
     )
-
-
-def mark_annotation_payload(
-    *,
-    rendered_scene: Any,
-    category_labels: Sequence[str],
-    series_labels: Sequence[str] | Mapping[str, Sequence[str]],
-) -> tuple[Dict[str, list[float]], Dict[str, Any]]:
-    projection = projected_multiseries_mark_annotation(
-        rendered_scene,
-        [str(label) for label in category_labels],
-        series_labels,
-    )
-    points = keyed_points_from_projection(projection)
-    return points, projected_keyed_point_annotation(projection, points)
 
 
 def category_label_centers(rendered_scene: Any) -> Dict[str, list[float]]:
@@ -185,7 +194,6 @@ def render_map_payload(result: MultiseriesRenderResult) -> Dict[str, Any]:
 __all__ = [
     "MultiseriesRenderResult",
     "category_label_centers",
-    "mark_annotation_payload",
     "render_map_payload",
     "render_multiseries_dataset",
     "render_spec_payload",

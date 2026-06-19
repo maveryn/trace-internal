@@ -1,26 +1,20 @@
 # `task_charts__multiseries__series_comparison_count`
 
 ## Contract
-1. Domain: `charts`
-2. Scene id: `multiseries`
-3. Source implementation domain/group: `charts/multiseries`
-4. Query id: `series_comparison_count`
-5. Semantic query details are recorded in `query_id` and trace params.
+- Domain: `charts`
+- Scene id: `multiseries`
+- Query id: `single`
+- Answer schema: `integer_count`
+- Annotation schema: `point_map`
+- Program contract: `count(filter(categories, compare(value(series_a), value(series_b), comparison)))`
+
+## Program Contract
+- `count(filter(categories, compare(value(category, series_a), value(category, series_b), relation={greater_than,less_than}))); output=integer_count; annotation=point_map(mark_center(matching_category, {series_a,series_b})); scene=multiseries; scope=series_comparison_count`
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.multiseries.comparison_query.ChartsMultiseriesSeriesComparisonCountTask`
-2. Prompt lookup domain/group: `charts/multiseries`
-3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
-4. Answers and annotation are produced from the same metadata execution trace.
+- Source: `trace/tasks/charts/multiseries/series_comparison_count.py`
+- Class: `ChartsMultiseriesSeriesComparisonCountTask`
+- Prompt bundle: `prompts/charts/multiseries/charts_multiseries_v1.json`
 
-## Annotation Contract
-1. Answer schema: `integer_count`.
-2. Annotation schema: `keyed_point_map`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
-
-## Query Details
-
-| Query id | Program signature | Answer schema | Annotation schema |
-|---|---|---|---|
-| `series_comparison_count` | `count.pairwise_comparison` | `integer_count` | `keyed_point_map` |
+## Annotation
+Annotate the two queried series marks in every counted category using keys of the form `<category>:<series>`.

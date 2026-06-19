@@ -1,21 +1,20 @@
-# task_charts__multiseries__series_rank_at_category_label
+# `task_charts__multiseries__series_rank_at_category_label`
 
-## Overview
-
+## Contract
 - Domain: `charts`
 - Scene id: `multiseries`
-- Source group: `charts/multiseries`
-- Query id: `series_rank_at_category_label`
-- Implementation: `trace.tasks.charts.multiseries.comparison_query.ChartsMultiseriesSeriesRankAtCategoryLabelTask`
-
-## Contracts
-
+- Query id: `single`
 - Answer schema: `string_label`
-- Annotation schema: `keyed_point_map`
-- Annotation witnesses: every series mark at the queried category.
+- Annotation schema: `point_map`
+- Program contract: `select_ranked(series, value_at(category), extremum_direction, rank)`
 
-## Query Details
+## Program Contract
+- `select_label(arg_ranked_extreme(series, value(target_category, series), direction={largest,smallest}, rank)); output=string_label; annotation=point_map(mark_center(target_category, all_series)); scene=multiseries; scope=series_rank_at_category_label`
 
-| Query id | Program contract | Answer | Annotation |
-| --- | --- | --- | --- |
-| `series_rank_at_category_label` | `selection.ranked_item_within_group` | `string_label` | `keyed_point_map` |
+## Implementation
+- Source: `trace/tasks/charts/multiseries/series_rank_at_category_label.py`
+- Class: `ChartsMultiseriesSeriesRankAtCategoryLabelTask`
+- Prompt bundle: `prompts/charts/multiseries/charts_multiseries_v1.json`
+
+## Annotation
+Annotate every series mark in the queried category using keys of the form `<category>:<series>`.

@@ -3,110 +3,131 @@
 from __future__ import annotations
 
 import random
-from typing import Any, Dict, Mapping, Tuple
+from typing import Any, Dict, List, Mapping, Tuple
 
-from ...shared.label_assets import resolve_chart_category_labels
-from ...shared.labeled_chart_common import resolve_chart_axis_variant
-from .comparison_common import (
-    CATEGORY_TOTAL_QUERY_ID,
-    CHANGE_QUERY_ID,
-    EQUALITY_QUERY_ID,
+from .....core.seed import spawn_rng
+from ...shared.label_assets import resolve_chart_category_labels, resolve_chart_entity_labels
+from ...shared.labeled_chart_common import resolve_chart_axis_variant_for_namespace
+from .defaults import (
     FAMILY_RANGE_KEYS,
     GEN_DEFAULTS,
-    PAIRWISE_QUERY_ID,
-    RATIO_QUERY_ID,
     SCENE_NAMESPACE,
-    SERIES_RANK_QUERY_ID,
     SUPPORTED_CHANGE_DIRECTIONS,
     SUPPORTED_CHANGE_MEASURES,
     SUPPORTED_COMPARISONS,
     SUPPORTED_EXTREMUM_DIRECTIONS,
     SUPPORTED_RATIO_MEASURES,
 )
-from .multiseries_chart_config import SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS
+from .state import SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS
+
+
+def sample_series_labels(*, count: int, instance_seed: int) -> Tuple[str, ...]:
+    """Sample one randomized series-label tuple."""
+
+    if int(count) <= 0:
+        raise ValueError("series count must be positive")
+    rng = spawn_rng(int(instance_seed), "charts.multiseries.series_labels")
+    resolved = resolve_chart_entity_labels(
+        rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=4,
+        allow_spaces=False,
+    )
+    return tuple(str(value).title() for value in resolved.labels)
+
+
+
+def _sample_distinct_values(
+    rng,
+    *,
+    count: int,
+    value_min: int,
+    value_max: int,
+) -> List[int]:
+    """Sample one distinct integer value list within the inclusive bounds."""
+
+    universe = [int(value) for value in range(int(value_min), int(value_max) + 1)]
+    if int(count) > len(universe):
+        raise ValueError("distinct value sampling requires a larger value range")
+    return [int(value) for value in rng.sample(universe, int(count))]
 
 
 def resolve_change_measure(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    return resolve_chart_axis_variant(
+    return resolve_chart_axis_variant_for_namespace(
         params=params,
         gen_defaults=GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         supported_variants=SUPPORTED_CHANGE_MEASURES,
-        task_id=SCENE_NAMESPACE,
+        namespace=f"{SCENE_NAMESPACE}.change_measure",
         explicit_key="change_measure",
         weights_key="change_measure_weights",
         balance_flag_key="balanced_change_measure_sampling",
-        axis_namespace="change_measure",
     )
 
 
 def resolve_ratio_measure(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    return resolve_chart_axis_variant(
+    return resolve_chart_axis_variant_for_namespace(
         params=params,
         gen_defaults=GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         supported_variants=SUPPORTED_RATIO_MEASURES,
-        task_id=SCENE_NAMESPACE,
+        namespace=f"{SCENE_NAMESPACE}.ratio_measure",
         explicit_key="ratio_measure",
         weights_key="ratio_measure_weights",
         balance_flag_key="balanced_ratio_measure_sampling",
-        axis_namespace="ratio_measure",
     )
 
 
 def resolve_change_direction(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    return resolve_chart_axis_variant(
+    return resolve_chart_axis_variant_for_namespace(
         params=params,
         gen_defaults=GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         supported_variants=SUPPORTED_CHANGE_DIRECTIONS,
-        task_id=SCENE_NAMESPACE,
+        namespace=f"{SCENE_NAMESPACE}.change_direction",
         explicit_key="change_direction",
         weights_key="change_direction_weights",
         balance_flag_key="balanced_change_direction_sampling",
-        axis_namespace="change_direction",
     )
 
 
 def resolve_extremum_direction(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    return resolve_chart_axis_variant(
+    return resolve_chart_axis_variant_for_namespace(
         params=params,
         gen_defaults=GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         supported_variants=SUPPORTED_EXTREMUM_DIRECTIONS,
-        task_id=SCENE_NAMESPACE,
+        namespace=f"{SCENE_NAMESPACE}.extremum_direction",
         explicit_key="extremum_direction",
         weights_key="extremum_direction_weights",
         balance_flag_key="balanced_extremum_direction_sampling",
-        axis_namespace="extremum_direction",
     )
 
 
 def resolve_comparison(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    return resolve_chart_axis_variant(
+    return resolve_chart_axis_variant_for_namespace(
         params=params,
         gen_defaults=GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         supported_variants=SUPPORTED_COMPARISONS,
-        task_id=SCENE_NAMESPACE,
+        namespace=f"{SCENE_NAMESPACE}.comparison",
         explicit_key="comparison",
         weights_key="comparison_weights",
         balance_flag_key="balanced_comparison_sampling",
-        axis_namespace="comparison",
     )
 
 
 def resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    return resolve_chart_axis_variant(
+    return resolve_chart_axis_variant_for_namespace(
         params=params,
         gen_defaults=GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         supported_variants=SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS,
-        task_id=SCENE_NAMESPACE,
+        namespace=f"{SCENE_NAMESPACE}.scene_variant",
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
         balance_flag_key="balanced_scene_variant_sampling",
-        axis_namespace="scene_variant",
     )
 
 
@@ -272,17 +293,7 @@ def balance_answer_label_for_indexed_probe(
 
 
 __all__ = [
-    "CATEGORY_TOTAL_QUERY_ID",
-    "CHANGE_QUERY_ID",
-    "EQUALITY_QUERY_ID",
-    "PAIRWISE_QUERY_ID",
-    "RATIO_QUERY_ID",
-    "SERIES_RANK_QUERY_ID",
-    "SUPPORTED_CHANGE_DIRECTIONS",
-    "SUPPORTED_CHANGE_MEASURES",
-    "SUPPORTED_COMPARISONS",
-    "SUPPORTED_EXTREMUM_DIRECTIONS",
-    "SUPPORTED_RATIO_MEASURES",
+    "_sample_distinct_values",
     "balance_answer_label_for_indexed_probe",
     "internal_change_variant",
     "internal_pairwise_variant",
@@ -290,6 +301,7 @@ __all__ = [
     "params_for_variant_family",
     "resolve_change_direction",
     "resolve_change_measure",
+    "sample_series_labels",
     "resolve_comparison",
     "resolve_extremum_direction",
     "resolve_ratio_measure",

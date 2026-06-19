@@ -1,21 +1,20 @@
-# task_charts__multiseries__pair_equality_label
+# `task_charts__multiseries__pair_equality_label`
 
-## Overview
-
+## Contract
 - Domain: `charts`
 - Scene id: `multiseries`
-- Source group: `charts/multiseries`
-- Query id: `pair_equality_label`
-- Implementation: `trace.tasks.charts.multiseries.comparison_query.ChartsMultiseriesPairEqualityLabelTask`
-
-## Contracts
-
+- Query id: `single`
 - Answer schema: `string_label`
-- Annotation schema: `keyed_point_map`
-- Annotation witnesses: the two queried series marks in the answer category.
+- Annotation schema: `point_map`
+- Program contract: `select_unique(categories, value(series_a) == value(series_b))`
 
-## Query Details
+## Program Contract
+- `select_label(unique(category where value(category, series_a) == value(category, series_b))); output=string_label; annotation=point_map(mark_center(answer_category, {series_a,series_b})); scene=multiseries; scope=pair_equality_label`
 
-| Query id | Program contract | Answer | Annotation |
-| --- | --- | --- | --- |
-| `pair_equality_label` | `selection.exact_pair_equality_label` | `string_label` | `keyed_point_map` |
+## Implementation
+- Source: `trace/tasks/charts/multiseries/pair_equality_label.py`
+- Class: `ChartsMultiseriesPairEqualityLabelTask`
+- Prompt bundle: `prompts/charts/multiseries/charts_multiseries_v1.json`
+
+## Annotation
+Annotate the two queried series marks in the answer category using keys of the form `<category>:<series>`.

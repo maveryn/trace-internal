@@ -126,9 +126,9 @@
     "platformer_score_rule_text": "Coins score 1; bonus items score their printed value.",
     "annotation_hint_jump_landing_label": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the labeled platform where the jump lands",
     "answer_hint_jump_landing_label": "set \"answer\" to the selected platform label as a string",
-    "annotation_hint_collectible_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one around each coin lying on the dashed jump arc",
+    "annotation_hint_collectible_count": "set \"annotation\" to [x, y] pixel points at the centers of each coin lying on the dashed jump arc",
     "answer_hint_collectible_count": "set \"answer\" to the number of coins lying on the dashed jump arc as an integer",
-    "annotation_hint_jump_collectible_score_value": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one around each coin or printed-value bonus item included in the dashed-arc score",
+    "annotation_hint_jump_collectible_score_value": "set \"annotation\" to [x, y] pixel points at the centers of each coin or printed-value bonus item included in the dashed-arc score",
     "answer_hint_jump_collectible_score_value": "set \"answer\" to the integer total score from collectibles on the dashed jump arc"
   }
 }

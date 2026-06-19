@@ -393,7 +393,7 @@ def _make_platform(
         x_norm=float(center[0]),
         y_norm=float(center[1]),
         width_norm=float(width),
-        height_norm=0.058,
+        height_norm=0.085,
         color_index=int(index),
     )
 

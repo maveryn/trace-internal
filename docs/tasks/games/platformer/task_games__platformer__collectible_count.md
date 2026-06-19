@@ -6,7 +6,7 @@
 3. Public task id: `task_games__platformer__collectible_count`
 4. Supported `query_id` values: `single`
 5. Answer schema: `integer_count`
-6. Annotation schema: `bbox_set`
+6. Annotation schema: `point_set`
 7. Program schema: `count(filter(collectibles, collected_by_route=True)); scene=platformer; scope=collectible_count`
 
 ## Program Contract
@@ -15,3 +15,4 @@
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from the same generated game state used for answer verification.
+4. Annotation points mark the centers of the counted coins.

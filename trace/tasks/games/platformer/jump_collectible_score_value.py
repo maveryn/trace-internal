@@ -12,7 +12,7 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
 from ._lifecycle import AttemptPlatformerResult, ObjectivePlatformerPlan, run_platformer_lifecycle
-from .shared.annotations import bbox_set_for_entity_ids
+from .shared.annotations import point_set_for_entity_ids
 from .shared.defaults import DEFAULTS, SCENE_ID
 from .shared.sampling import (
     PlatformerVisualAxes,
@@ -62,7 +62,7 @@ def _json_examples() -> tuple[str, str]:
 
     return (
         json.dumps(
-            {"annotation": [[328, 210, 364, 246], [430, 182, 466, 218], [536, 198, 572, 234]], "answer": 13},
+            {"annotation": [[346, 228], [448, 200], [554, 216]], "answer": 13},
             separators=(",", ":"),
             ensure_ascii=False,
         ),
@@ -150,7 +150,7 @@ def _prepare_score_objective(
             sample=sample,
             answer_gt=TypedValue(type="integer", value=int(sample.answer)),
             annotation_entity_ids=annotation_ids,
-            build_annotation=lambda rendered: bbox_set_for_entity_ids(rendered.rendered_scene, annotation_ids),
+            build_annotation=lambda rendered: point_set_for_entity_ids(rendered.rendered_scene, annotation_ids),
             witness_type="object_set",
             relations_extra={"target_collectible_ids": list(annotation_ids)},
             execution_extra={"target_collectible_ids": list(annotation_ids)},
@@ -161,7 +161,7 @@ def _prepare_score_objective(
         attempt_namespace="games.platformer.path_score_total",
         prompt_query_key=PROMPT_QUERY_KEY,
         answer_hint='set "answer" to the integer total score from collectibles on the dashed jump arc',
-        annotation_hint='set "annotation" to bounding boxes [x0, y0, x1, y1], one around each coin or printed-value bonus item included in the dashed-arc score',
+        annotation_hint='set "annotation" to [x, y] pixel points at the centers of each coin or printed-value bonus item included in the dashed-arc score',
         json_example=json_example,
         json_example_answer_only=json_example_answer_only,
         query_params={

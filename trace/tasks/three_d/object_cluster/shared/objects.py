@@ -30,6 +30,7 @@ from .defaults import (
     MAX_PAIRWISE_OVERLAP_PX,
     MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION,
     MAX_RENDERED_PAIRWISE_OVERLAP_PX,
+    MIN_RENDERED_BBOX_SIDE_PX,
     MIN_RENDERED_VISIBLE_BBOX_FRACTION,
     MIN_PROJECTED_OBJECT_AREA_PX,
     PLACEMENT_FOOTPRINT_SEPARATION_FACTOR,
@@ -68,6 +69,36 @@ def bbox_visible_fraction(
     return float(visible) / float(full_area)
 
 
+def clip_bbox_to_canvas(
+    bbox: Sequence[float],
+    *,
+    width: int,
+    height: int,
+) -> List[float]:
+    """Clip one bbox to the public image coordinate range."""
+
+    return [
+        round(max(0.0, min(float(width), float(bbox[0]))), 3),
+        round(max(0.0, min(float(height), float(bbox[1]))), 3),
+        round(max(0.0, min(float(width), float(bbox[2]))), 3),
+        round(max(0.0, min(float(height), float(bbox[3]))), 3),
+    ]
+
+
+def clip_object_bboxes_to_canvas(
+    object_bboxes_px: Mapping[str, Sequence[float]],
+    *,
+    width: int,
+    height: int,
+) -> Dict[str, List[float]]:
+    """Clip rendered object bboxes before exposing them as public annotations."""
+
+    return {
+        str(object_id): clip_bbox_to_canvas(bbox, width=int(width), height=int(height))
+        for object_id, bbox in object_bboxes_px.items()
+    }
+
+
 def bbox_is_readable(
     bbox: Sequence[float],
     *,
@@ -88,7 +119,7 @@ def sample_scaled_dimensions(*, rng, shape_type: str) -> Tuple[Tuple[float, floa
     """Sample small per-instance scale while preserving object-resource proportions."""
 
     base = cluster_dimensions(str(shape_type))
-    scale = float(rng.uniform(0.84, 1.12)) * float(CLUSTER_DIMENSION_SCALE)
+    scale = float(rng.uniform(0.92, 1.16)) * float(CLUSTER_DIMENSION_SCALE)
     return scale_dimensions(base, scale), round(float(scale), 4)
 
 
@@ -394,6 +425,7 @@ def rendered_bboxes_are_valid(
     width: int,
     height: int,
     object_count: int,
+    annotation_object_ids: Sequence[str] = (),
 ) -> bool:
     """Validate the final rendered object boxes that reviewers actually inspect."""
 
@@ -411,14 +443,27 @@ def rendered_bboxes_are_valid(
     if float(stats["center_x_span_px"]) < float(min_x_span) or float(stats["center_y_span_px"]) < float(min_y_span):
         return False
 
-    bboxes = [list(bbox) for bbox in object_bboxes_px.values()]
+    clipped_bboxes = clip_object_bboxes_to_canvas(object_bboxes_px, width=int(width), height=int(height))
+    bboxes = [list(bbox) for bbox in clipped_bboxes.values()]
     if any(
         not bbox_is_readable(
             bbox,
             width=int(width),
             height=int(height),
+            min_side_px=12.0,
         )
         for bbox in bboxes
+    ):
+        return False
+    annotation_ids = [str(object_id) for object_id in annotation_object_ids]
+    if any(
+        not bbox_is_readable(
+            clipped_bboxes[str(object_id)],
+            width=int(width),
+            height=int(height),
+            min_side_px=float(MIN_RENDERED_BBOX_SIDE_PX),
+        )
+        for object_id in annotation_ids
     ):
         return False
     for index, bbox_a in enumerate(bboxes):
@@ -630,6 +675,8 @@ def build_dataset_from_sequence(
 __all__ = [
     "build_dataset_from_sequence",
     "apply_composition_offset",
+    "clip_bbox_to_canvas",
+    "clip_object_bboxes_to_canvas",
     "rendered_bboxes_are_valid",
     "rendered_layout_stats",
     "sample_composition_offset",

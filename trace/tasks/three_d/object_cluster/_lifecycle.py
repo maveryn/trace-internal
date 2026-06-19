@@ -26,7 +26,7 @@ from trace.tasks.three_d.shared.object_scene import (
 )
 
 from .shared.defaults import PROMPT_COLOR_RGB, SCENE_ID
-from .shared.objects import rendered_bboxes_are_valid, rendered_layout_stats
+from .shared.objects import clip_object_bboxes_to_canvas, rendered_bboxes_are_valid, rendered_layout_stats
 from .shared.relations import semantic_color_label
 from .shared.state import BuildRequest
 
@@ -115,20 +115,33 @@ def _run_once(
         draw_candidate_labels=False,
         compute_single_annotation=False,
     )
-    layout_stats = rendered_layout_stats(
-        object_bboxes_px=rendered.object_bboxes_px,
-        object_centers_px=rendered.object_centers_px,
-        width=int(rendered.image.width),
-        height=int(rendered.image.height),
-    )
     if not rendered_bboxes_are_valid(
         rendered.object_bboxes_px,
         rendered.object_centers_px,
         width=int(rendered.image.width),
         height=int(rendered.image.height),
         object_count=int(dataset["object_count"]),
+        annotation_object_ids=[str(object_id) for object_id in dataset["target_object_ids"]],
     ):
         raise ValueError("rendered object cluster failed readability constraints")
+    raw_object_bboxes_px = {str(object_id): list(bbox) for object_id, bbox in rendered.object_bboxes_px.items()}
+    public_object_bboxes_px = clip_object_bboxes_to_canvas(
+        raw_object_bboxes_px,
+        width=int(rendered.image.width),
+        height=int(rendered.image.height),
+    )
+    layout_stats = rendered_layout_stats(
+        object_bboxes_px=public_object_bboxes_px,
+        object_centers_px=rendered.object_centers_px,
+        width=int(rendered.image.width),
+        height=int(rendered.image.height),
+    )
+    raw_layout_stats = rendered_layout_stats(
+        object_bboxes_px=raw_object_bboxes_px,
+        object_centers_px=rendered.object_centers_px,
+        width=int(rendered.image.width),
+        height=int(rendered.image.height),
+    )
     image, post_noise_meta = apply_post_image_noise(
         rendered.image,
         instance_seed=int(instance_seed),
@@ -137,25 +150,25 @@ def _run_once(
     )
 
     target_object_ids = [str(object_id) for object_id in dataset["target_object_ids"]]
-    target_bboxes = [list(rendered.object_bboxes_px[str(object_id)]) for object_id in target_object_ids]
+    target_bboxes = [list(public_object_bboxes_px[str(object_id)]) for object_id in target_object_ids]
     if bool(request.keyed_annotation):
         role_object_ids = dataset.get("role_object_ids", {})
         left_ids = [str(object_id) for object_id in role_object_ids.get("left_operand", [])]
         right_ids = [str(object_id) for object_id in role_object_ids.get("right_operand", [])]
         annotation_value = {
-            "left_operand": [list(rendered.object_bboxes_px[str(object_id)]) for object_id in left_ids],
-            "right_operand": [list(rendered.object_bboxes_px[str(object_id)]) for object_id in right_ids],
+            "left_operand": [list(public_object_bboxes_px[str(object_id)]) for object_id in left_ids],
+            "right_operand": [list(public_object_bboxes_px[str(object_id)]) for object_id in right_ids],
         }
-        annotation_gt = TypedValue(type="keyed_bbox_set_map", value=dict(annotation_value))
+        annotation_gt = TypedValue(type="bbox_set_map", value=dict(annotation_value))
         projected_annotation = {
-            "type": "keyed_bbox_set_map",
-            "keyed_bbox_set_map": dict(annotation_value),
-            "pixel_keyed_bbox_set_map": dict(annotation_value),
+            "type": "bbox_set_map",
+            "bbox_set_map": dict(annotation_value),
+            "pixel_bbox_set_map": dict(annotation_value),
         }
         annotation_render_map = {
             "operand_object_bboxes_px": {
-                "left_operand": {str(object_id): list(rendered.object_bboxes_px[str(object_id)]) for object_id in left_ids},
-                "right_operand": {str(object_id): list(rendered.object_bboxes_px[str(object_id)]) for object_id in right_ids},
+                "left_operand": {str(object_id): list(public_object_bboxes_px[str(object_id)]) for object_id in left_ids},
+                "right_operand": {str(object_id): list(public_object_bboxes_px[str(object_id)]) for object_id in right_ids},
             }
         }
     else:
@@ -211,10 +224,11 @@ def _run_once(
         "image_id": "img0",
         "scene_bbox_px": list(rendered.scene_bbox_px),
         "room_bbox_px": list(rendered.room_bbox_px),
-        "object_bboxes_px": dict(rendered.object_bboxes_px),
+        "object_bboxes_px": dict(public_object_bboxes_px),
+        "raw_object_bboxes_px": dict(raw_object_bboxes_px),
         "object_centers_px": dict(rendered.object_centers_px),
         "target_object_bboxes_px": {
-            str(object_id): list(rendered.object_bboxes_px[str(object_id)])
+            str(object_id): list(public_object_bboxes_px[str(object_id)])
             for object_id in target_object_ids
         },
         "target_object_centers_px": {
@@ -298,6 +312,7 @@ def _run_once(
             "cluster_layout": dict(dataset["cluster_layout"]),
             "composition_offset": dict(dataset["composition_offset"]),
             "rendered_layout_stats": dict(layout_stats),
+            "raw_rendered_layout_stats": dict(raw_layout_stats),
         },
         "render_map": dict(render_map),
         "execution_trace": {

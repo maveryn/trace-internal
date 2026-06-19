@@ -239,7 +239,7 @@ def test_object_cluster_instance_count_answer_and_annotation() -> None:
             "scene_variant": "tabletop_pile",
             "object_count": 20,
             "target_count": 6,
-            "target_shape_type": "pencil",
+            "target_shape_type": "button",
             "post_image_noise_apply_prob": 0.0,
         },
         max_attempts=240,
@@ -259,8 +259,8 @@ def test_object_cluster_instance_count_answer_and_annotation() -> None:
     assert output.annotation_gt.type == "bbox_set"
     assert len(output.annotation_gt.value) == int(output.answer_gt.value)
     assert output.annotation_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in target_object_ids]
-    assert trace["shape_counts"]["pencil"] == 6
-    assert all(str(spec["shape_type"]) == "pencil" for spec in object_specs if str(spec["object_id"]) in set(target_object_ids))
+    assert trace["shape_counts"]["button"] == 6
+    assert all(str(spec["shape_type"]) == "button" for spec in object_specs if str(spec["object_id"]) in set(target_object_ids))
     assert all(not bool(spec.get("is_answer_candidate", False)) for spec in object_specs)
     assert all(bool(spec.get("is_countable_object", False)) for spec in object_specs)
     assert trace["solver_trace"]["cluster_object_pool_size"] == len(COUNTABLE_SHAPE_TYPES)
@@ -321,6 +321,7 @@ def test_object_cluster_countqa_additions_have_profiles_and_render() -> None:
     assert COUNTQA_CLUSTER_ADDITIONS.issubset(set(OBJECT_CLUSTER_EXTRA_SHAPE_TYPES))
     assert COUNTQA_CLUSTER_ADDITIONS.issubset(set(COUNTABLE_SHAPE_TYPES))
     assert "stick" not in set(COUNTABLE_SHAPE_TYPES)
+    assert {"pen", "pencil"}.isdisjoint(set(COUNTABLE_SHAPE_TYPES))
     assert "stick" not in set(COLOR_SAFE_CLUSTER_SHAPE_TYPES)
     profiles = {
         str(profile.object_type): profile
@@ -617,14 +618,14 @@ def test_object_cluster_count_arithmetic_keyed_operand_annotation() -> None:
 
     assert output.query_id == "two_type_difference_count"
     assert output.answer_gt.value == 4
-    assert output.annotation_gt.type == "keyed_bbox_set_map"
+    assert output.annotation_gt.type == "bbox_set_map"
     assert set(output.annotation_gt.value) == {"left_operand", "right_operand"}
     assert len(output.annotation_gt.value["left_operand"]) == 6
     assert len(output.annotation_gt.value["right_operand"]) == 2
     assert output.annotation_gt.value["left_operand"] == [render_map["object_bboxes_px"][object_id] for object_id in left_ids]
     assert output.annotation_gt.value["right_operand"] == [render_map["object_bboxes_px"][object_id] for object_id in right_ids]
-    assert output.trace_payload["projected_annotation"]["keyed_bbox_set_map"] == output.annotation_gt.value
-    assert output.trace_payload["projected_annotation"]["pixel_keyed_bbox_set_map"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["bbox_set_map"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["pixel_bbox_set_map"] == output.annotation_gt.value
 
 
 def test_object_cluster_type_frequency_singleton_count_answer_and_annotation() -> None:

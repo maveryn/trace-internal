@@ -108,6 +108,7 @@ def render_node_link_sample(
     instance_seed: int,
     scene_id: str = SCENE_ID,
     strict_edge_label_placement: bool = False,
+    edge_text_label_font_size_px: int | None = None,
 ) -> NodeLinkRenderedSample:
     """Render one graph sample and apply scene-local background/noise policy."""
 
@@ -133,6 +134,7 @@ def render_node_link_sample(
         edge_style_by_label=_semantic_edge_styles(sample),
         edge_weights_by_label=_semantic_edge_weights(sample),
         edge_text_labels_by_label=_semantic_edge_text_labels(sample),
+        edge_text_label_font_size_px=edge_text_label_font_size_px,
         edge_text_label_strict_placement=bool(strict_edge_label_placement),
     )
     image, post_noise_meta = apply_post_image_noise(

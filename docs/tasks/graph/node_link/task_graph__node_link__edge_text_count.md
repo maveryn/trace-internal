@@ -52,7 +52,8 @@
 1. Rendering uses the shared graph light-panel style from `configs/domains/graph/base.yaml`.
 2. Edge-label boxes are placed by the shared node-link renderer and must avoid nodes and other edge-label boxes.
 3. Node label format, edge routing, glyph style, named node color, layout transform, and layout remain visual variation only.
-4. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.
+4. Edge-label task rendering uses a `960x720` canvas and keeps node labels at `20px` while drawing edge-label text at `19px`.
+5. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.

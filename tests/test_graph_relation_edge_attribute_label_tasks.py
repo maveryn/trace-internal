@@ -24,6 +24,11 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 
+def _bbox_min_side(bbox: list[int] | tuple[int, ...]) -> float:
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    return min(abs(x1 - x0), abs(y1 - y0))
+
+
 def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -> None:
     task = GraphRelationEdgeBetweenNodesLabelTask()
     out = task.generate(
@@ -42,6 +47,7 @@ def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
+    render_spec = trace["render_spec"]
     edge_entities = [
         entity for entity in trace["scene_ir"]["entities"] if entity["entity_kind"] == "graph_edge"
     ]
@@ -59,6 +65,10 @@ def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -
     assert execution["question_format"] == "directed_edge_between_nodes_label"
     assert execution["edge_routing_variant"] == "mixed_arc"
     assert execution["label_variant"] == "named"
+    assert render_spec["canvas_size"] == [960, 720]
+    assert render_spec["style"]["label_font_size_px"] == 20
+    assert render_spec["style"]["edge_text_label_font_size_px"] == 19
+    assert render_spec["style"]["resolved_edge_text_label_font_size_px"] == 19
     assert 'node "' in str(out.prompt)
 
     query_edge = tuple(str(value) for value in trace["witness_symbolic"]["edge_labels"][0])
@@ -79,6 +89,7 @@ def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -
     bbox = query_entity["label_bbox_xyxy"]
     assert bbox is not None
     assert out.annotation_gt.value == bbox
+    assert _bbox_min_side(out.annotation_gt.value) >= 24
     assert all(edge["label_bbox_xyxy"] is not None for edge in edge_entities)
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
@@ -123,11 +134,16 @@ def test_graph_relation_edge_attribute_label_shortest_path_first_edge_contract()
         max_attempts=100,
     )
     execution = out.trace_payload["execution_trace"]
+    render_spec = out.trace_payload["render_spec"]
 
     assert out.query_id == "single"
     assert out.answer_gt.value == "routes"
     assert "unique shortest path" in str(out.prompt)
     assert "first edge" in str(out.prompt)
+    assert render_spec["canvas_size"] == [960, 720]
+    assert render_spec["style"]["label_font_size_px"] == 20
+    assert render_spec["style"]["edge_text_label_font_size_px"] == 19
+    assert render_spec["style"]["resolved_edge_text_label_font_size_px"] == 19
     query_edge = tuple(str(value) for value in out.trace_payload["witness_symbolic"]["edge_labels"][0])
     labels_by_edge = {
         tuple(str(value) for value in entry["edge"]): str(entry["edge_label"])
@@ -142,6 +158,7 @@ def test_graph_relation_edge_attribute_label_shortest_path_first_edge_contract()
     ][0]
     assert out.annotation_gt.type == "bbox"
     assert query_entity["label_bbox_xyxy"] == out.annotation_gt.value
+    assert _bbox_min_side(out.annotation_gt.value) >= 24
 
 
 def test_graph_relation_edge_attribute_label_balanced_sampling_covers_label_support() -> None:

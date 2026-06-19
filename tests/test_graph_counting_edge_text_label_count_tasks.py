@@ -23,6 +23,11 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 
+def _bbox_min_side(bbox: list[int] | tuple[int, ...]) -> float:
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    return min(abs(x1 - x0), abs(y1 - y0))
+
+
 def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
     task = GraphCountingEdgeTextLabelCountTask()
     out = task.generate(
@@ -47,6 +52,7 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
+    render_spec = trace["render_spec"]
     edge_entities = [
         entity
         for entity in trace["scene_ir"]["entities"]
@@ -67,6 +73,10 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
     assert execution["question_format"] == "edge_text_label_count"
     assert execution["edge_routing_variant"] == "mixed_arc"
     assert execution["label_variant"] == "named"
+    assert render_spec["canvas_size"] == [960, 720]
+    assert render_spec["style"]["label_font_size_px"] == 20
+    assert render_spec["style"]["edge_text_label_font_size_px"] == 19
+    assert render_spec["style"]["resolved_edge_text_label_font_size_px"] == 19
     assert '"feeds"' in str(out.prompt)
 
     matching_edges = [
@@ -99,6 +109,7 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
     assert sorted(out.annotation_gt.value) == sorted(
         boxes_by_edge[tuple(edge)] for edge in matching_edges
     )
+    assert all(_bbox_min_side(bbox) >= 24 for bbox in out.annotation_gt.value)
     assert trace["projected_annotation"]["type"] == "bbox_set"
     assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]

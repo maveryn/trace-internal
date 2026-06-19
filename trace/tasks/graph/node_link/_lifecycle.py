@@ -373,6 +373,20 @@ def run_node_link_plan(
         node_shape_variant=str(axes.node_shape_variant),
         edge_routing_variant=str(axes.edge_routing_variant),
     )
+    raw_edge_text_label_font_size_px = params.get(
+        "edge_text_label_font_size_px",
+        group_default(render_defaults, "edge_text_label_font_size_px", None),
+    )
+    edge_text_label_font_size_px = (
+        int(raw_edge_text_label_font_size_px)
+        if raw_edge_text_label_font_size_px is not None
+        else None
+    )
+    resolved_edge_text_label_font_size_px = (
+        int(edge_text_label_font_size_px)
+        if edge_text_label_font_size_px is not None
+        else max(14, int(render_params.label_font_size_px) - 4)
+    )
     search_attempts = int(params.get("graph_search_attempts", group_default(gen_defaults, "graph_search_attempts", defaults.graph_search_attempts)))
 
     sample = None
@@ -397,6 +411,7 @@ def run_node_link_plan(
                 instance_seed=int(instance_seed),
                 scene_id=scene_id,
                 strict_edge_label_placement=bool(plan.strict_edge_label_placement),
+                edge_text_label_font_size_px=edge_text_label_font_size_px,
             )
             rendered_scene = rendered.rendered_scene
             image = rendered.image
@@ -660,6 +675,13 @@ def run_node_link_plan(
                 "edge_routing_variant": str(rendered_scene.edge_routing_variant),
                 "theme_tone": str(render_params.theme_tone),
                 "panel_style_variant": str(render_params.panel_style_variant),
+                "label_font_size_px": int(render_params.label_font_size_px),
+                "edge_text_label_font_size_px": (
+                    int(edge_text_label_font_size_px)
+                    if edge_text_label_font_size_px is not None
+                    else None
+                ),
+                "resolved_edge_text_label_font_size_px": int(resolved_edge_text_label_font_size_px),
                 "background_meta": dict(background_meta),
                 "post_image_noise_meta": dict(post_noise_meta),
             },

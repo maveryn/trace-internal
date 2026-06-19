@@ -87,7 +87,11 @@ def test_section_point_task_has_unique_candidate_answer(query_id: str) -> None:
 )
 def test_transformed_point_task_has_unique_candidate_answer(task_id: str, query_id: str) -> None:
     task = create_task(task_id)
-    out = task.generate(77911, params={"query_id": query_id, "winner_label": "E"}, max_attempts=50)
+    out = task.generate(
+        77911,
+        params={"query_id": query_id, "winner_label": "E", "algebra_candidate_count": 6},
+        max_attempts=50,
+    )
     trace = out.trace_payload
     execution = trace["execution_trace"]
     candidates = execution["candidate_points_by_label"]
@@ -118,10 +122,18 @@ def test_transformed_point_task_has_unique_candidate_answer(task_id: str, query_
         line_value = int(execution["transform_line"]["value"])
         assert execution["transform_line"]["axis"] == "x"
         assert target == [(2 * line_value) - source[0], source[1]]
+        assert (
+            trace["render_spec"]["marker_style"]["transform_axis_width_px"]
+            > trace["render_spec"]["background_style"]["style_spec"]["axis_line_width"]
+        )
     elif query_id == "reflect_over_horizontal_line":
         line_value = int(execution["transform_line"]["value"])
         assert execution["transform_line"]["axis"] == "y"
         assert target == [source[0], (2 * line_value) - source[1]]
+        assert (
+            trace["render_spec"]["marker_style"]["transform_axis_width_px"]
+            > trace["render_spec"]["background_style"]["style_spec"]["axis_line_width"]
+        )
     elif query_id == "single":
         center = execution["known_points_by_label"]["O"]["point_graph"]
         dx = source[0] - center[0]

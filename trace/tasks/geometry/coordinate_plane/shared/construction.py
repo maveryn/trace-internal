@@ -11,10 +11,8 @@ from trace.core.seed import spawn_rng
 from trace.core.scene_config import get_scene_defaults
 from trace.core.visual.background import make_background_canvas
 from trace.core.visual.noise import apply_post_image_noise
-from trace.tasks.shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
-from trace.tasks.shared.prompt_json_example import resolve_prompt_json_examples
-from trace.tasks.shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 from trace.tasks.shared.text_rendering import load_font, symbol_safe_font_for_text
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.geometry.shared.background_defaults import load_geometry_background_defaults
@@ -43,6 +41,7 @@ from .spatial_primitives import (
     _sample_marker_style,
 )
 from .defaults import resolve_int_param as _resolve_int_param
+from .output import build_option_letter_prompt_artifacts
 
 
 GraphPoint = Tuple[int, int]
@@ -1357,8 +1356,6 @@ def build_locus_point_artifacts(
     config_key: str,
     semantic_operation_key: str,
     semantic_query_probabilities: Mapping[str, float],
-    output_operation_key: str,
-    output_query_probabilities: Mapping[str, float],
     prompt_query_key: str,
     winner_label: str,
     winner_label_probabilities: Mapping[str, float],
@@ -1384,46 +1381,16 @@ def build_locus_point_artifacts(
         generation_defaults=generation_defaults,
         rendering_defaults=rendering_defaults,
     )
-    prompt_defaults = required_group_defaults(
-        prompt_defaults_all,
-        (
-            "bundle_id",
-            "scene_key",
-            "task_key",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "object_description",
-            "annotation_hint_candidate_point",
-            "answer_hint_option_letter",
-        ),
-        context=f"prompt defaults for {config_key}",
-    )
     annotation_value = _candidate_point_annotation(rendered, str(query.winner_label))
-    json_example, json_example_answer_only = resolve_prompt_json_examples(
-        prompt_defaults_all,
+    prompt_defaults, prompt_artifacts = build_option_letter_prompt_artifacts(
+        prompt_defaults_all=prompt_defaults_all,
+        config_key=str(config_key),
+        scene_key_fallback=SCENE_ID,
+        prompt_query_key=str(prompt_query_key),
+        annotation_hint_key="annotation_hint_candidate_point",
         annotation_value=annotation_value,
-        answer_type="option_letter",
-    )
-    prompt_selection = render_scene_prompt_variants(
-        domain="geometry",
-        scene_id=SCENE_ID,
-        bundle_id=str(prompt_defaults["bundle_id"]),
-        scene_key=str(prompt_defaults["scene_key"]),
-        task_key=str(prompt_defaults["task_key"]),
-        query_key=str(prompt_query_key),
-        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(prompt_defaults["object_description"]),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults["annotation_hint_candidate_point"]),
-            "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
-            "json_example": str(json_example),
-            "json_example_answer_only": str(json_example_answer_only),
-        },
         instance_seed=int(instance_seed),
     )
-    prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
     trace_payload = _point_trace_payload(
         query=query,
         rendered=rendered,
@@ -1431,19 +1398,6 @@ def build_locus_point_artifacts(
         prompt_artifacts=prompt_artifacts,
         annotation_value=annotation_value,
     )
-    trace_payload["query_spec"]["operation_key"] = str(output_operation_key)
-    trace_payload["query_spec"]["params"]["operation_key"] = str(output_operation_key)
-    trace_payload["query_spec"]["params"]["operation_key_probabilities"] = {
-        str(key): float(value) for key, value in output_query_probabilities.items()
-    }
-    trace_payload["query_spec"]["params"]["semantic_operation"] = str(semantic_operation_key)
-    trace_payload["execution_trace"]["operation_key"] = str(output_operation_key)
-    trace_payload["execution_trace"]["operation_key_probabilities"] = dict(
-        trace_payload["query_spec"]["params"]["operation_key_probabilities"]
-    )
-    trace_payload["execution_trace"]["semantic_operation"] = str(semantic_operation_key)
-    trace_payload["scene_ir"]["relations"]["operation_key"] = str(output_operation_key)
-    trace_payload["scene_ir"]["relations"]["semantic_operation"] = str(semantic_operation_key)
     return LocusPointArtifacts(
         query=query,
         rendered=rendered,
@@ -1459,8 +1413,6 @@ def build_locus_panel_artifacts(
     config_key: str,
     semantic_operation_key: str,
     semantic_query_probabilities: Mapping[str, float],
-    output_operation_key: str,
-    output_query_probabilities: Mapping[str, float],
     prompt_query_key: str,
     winner_label: str,
     winner_label_probabilities: Mapping[str, float],
@@ -1486,46 +1438,16 @@ def build_locus_panel_artifacts(
         generation_defaults=generation_defaults,
         rendering_defaults=rendering_defaults,
     )
-    prompt_defaults = required_group_defaults(
-        prompt_defaults_all,
-        (
-            "bundle_id",
-            "scene_key",
-            "task_key",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "object_description",
-            "annotation_hint_selected_panel_bbox",
-            "answer_hint_option_letter",
-        ),
-        context=f"prompt defaults for {config_key}",
-    )
     annotation_value = list(rendered.panels_by_label[str(query.winner_label)].panel_bbox)
-    json_example, json_example_answer_only = resolve_prompt_json_examples(
-        prompt_defaults_all,
+    prompt_defaults, prompt_artifacts = build_option_letter_prompt_artifacts(
+        prompt_defaults_all=prompt_defaults_all,
+        config_key=str(config_key),
+        scene_key_fallback=SCENE_ID,
+        prompt_query_key=str(prompt_query_key),
+        annotation_hint_key="annotation_hint_selected_panel_bbox",
         annotation_value=annotation_value,
-        answer_type="option_letter",
-    )
-    prompt_selection = render_scene_prompt_variants(
-        domain="geometry",
-        scene_id=SCENE_ID,
-        bundle_id=str(prompt_defaults["bundle_id"]),
-        scene_key=str(prompt_defaults["scene_key"]),
-        task_key=str(prompt_defaults["task_key"]),
-        query_key=str(prompt_query_key),
-        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(prompt_defaults["object_description"]),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults["annotation_hint_selected_panel_bbox"]),
-            "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
-            "json_example": str(json_example),
-            "json_example_answer_only": str(json_example_answer_only),
-        },
         instance_seed=int(instance_seed),
     )
-    prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
     trace_payload = _panel_trace_payload(
         query=query,
         rendered=rendered,
@@ -1533,19 +1455,6 @@ def build_locus_panel_artifacts(
         prompt_artifacts=prompt_artifacts,
         annotation_value=annotation_value,
     )
-    trace_payload["query_spec"]["operation_key"] = str(output_operation_key)
-    trace_payload["query_spec"]["params"]["operation_key"] = str(output_operation_key)
-    trace_payload["query_spec"]["params"]["operation_key_probabilities"] = {
-        str(key): float(value) for key, value in output_query_probabilities.items()
-    }
-    trace_payload["query_spec"]["params"]["semantic_operation"] = str(semantic_operation_key)
-    trace_payload["execution_trace"]["operation_key"] = str(output_operation_key)
-    trace_payload["execution_trace"]["operation_key_probabilities"] = dict(
-        trace_payload["query_spec"]["params"]["operation_key_probabilities"]
-    )
-    trace_payload["execution_trace"]["semantic_operation"] = str(semantic_operation_key)
-    trace_payload["scene_ir"]["relations"]["operation_key"] = str(output_operation_key)
-    trace_payload["scene_ir"]["relations"]["semantic_operation"] = str(semantic_operation_key)
     return LocusPanelArtifacts(
         query=query,
         rendered=rendered,

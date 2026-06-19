@@ -10,10 +10,8 @@ from PIL import Image, ImageDraw
 
 from trace.core.seed import spawn_rng
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
-from trace.tasks.shared.prompt_json_example import resolve_prompt_json_examples
-from trace.tasks.shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 from trace.tasks.shared.text_rendering import load_font, resolve_scene_label_font_size_px
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.geometry.shared.background_defaults import load_geometry_background_defaults
@@ -30,6 +28,7 @@ from .spatial_primitives import (
     _resolve_marker_colors,
     _sample_marker_style,
 )
+from .output import build_option_letter_prompt_artifacts
 
 SCENE_ID = "coordinate_plane"
 from .defaults import resolve_int_param as _resolve_int_param
@@ -579,8 +578,10 @@ def _draw_dashed_axis_line(
     line: Mapping[str, int],
     max_abs: int,
     color: Color,
+    width_px: int,
 ) -> None:
     scale = int(context.scene_scale)
+    width = max(2, int(width_px))
     line_value = int(line["value"])
     if str(line["axis"]) == "x":
         start = graph_units_to_pixel((line_value, -int(max_abs) - 1), graph_origin=context.graph_origin, spacing=int(context.graph_spacing))
@@ -597,7 +598,7 @@ def _draw_dashed_axis_line(
         gap = max(6, 5 * scale)
         cursor = y0
         while cursor < y1:
-            draw.line([(x, cursor), (x, min(y1, cursor + dash))], fill=color, width=max(2, 2 * scale))
+            draw.line([(x, cursor), (x, min(y1, cursor + dash))], fill=color, width=width)
             cursor += dash + gap
     else:
         x0, x1 = sorted([float(start_scaled[0]), float(end_scaled[0])])
@@ -606,7 +607,7 @@ def _draw_dashed_axis_line(
         gap = max(6, 5 * scale)
         cursor = x0
         while cursor < x1:
-            draw.line([(cursor, y), (min(x1, cursor + dash), y)], fill=color, width=max(2, 2 * scale))
+            draw.line([(cursor, y), (min(x1, cursor + dash), y)], fill=color, width=width)
             cursor += dash + gap
 
 
@@ -759,7 +760,9 @@ def _render_scene(
     known_color, candidate_color, color_meta = _resolve_marker_colors(rng)
     midpoint_color = (36, 115, 170) if known_color != (36, 115, 170) else (142, 86, 46)
     axis_color = (72, 82, 98)
-    transform_axis_color = (202, 45, 55) if str(problem.operation_key) in REFLECTION_OPERATIONS else axis_color
+    is_reflection_operation = str(problem.operation_key) in REFLECTION_OPERATIONS
+    transform_axis_color = (202, 45, 55) if is_reflection_operation else axis_color
+    transform_axis_width_px = max(4, (6 if is_reflection_operation else 2) * int(context.scene_scale))
     guide_color = (94, 103, 118)
 
     if problem.transform_line is not None:
@@ -769,6 +772,7 @@ def _render_scene(
             line=problem.transform_line,
             max_abs=int(max_abs),
             color=transform_axis_color,
+            width_px=int(transform_axis_width_px),
         )
     if problem.guide_segments:
         _draw_guide_segments(
@@ -879,6 +883,7 @@ def _render_scene(
         "marker_radius_px": int(marker_radius),
         "midpoint_color": list(midpoint_color),
         "transform_axis_color": list(transform_axis_color),
+        "transform_axis_width_px": int(round(float(transform_axis_width_px) / float(context.scene_scale))),
         "guide_segment_color": list(guide_color),
         **dict(color_meta),
     }
@@ -1054,8 +1059,6 @@ def build_algebra_artifacts(
     config_key: str,
     semantic_operation_key: str,
     semantic_query_probabilities: Mapping[str, float],
-    output_operation_key: str,
-    output_query_probabilities: Mapping[str, float],
     prompt_query_key: str,
     winner_label: str,
     winner_label_probabilities: Mapping[str, float],
@@ -1082,46 +1085,16 @@ def build_algebra_artifacts(
         generation_defaults=generation_defaults,
         rendering_defaults=rendering_defaults,
     )
-    prompt_defaults = required_group_defaults(
-        prompt_defaults_all,
-        (
-            "bundle_id",
-            "scene_key",
-            "task_key",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "object_description",
-            "annotation_hint_candidate_point",
-            "answer_hint_option_letter",
-        ),
-        context=f"prompt defaults for {config_key}",
-    )
     annotation_value = _candidate_point_annotation(rendered, str(query.winner_label))
-    json_example, json_example_answer_only = resolve_prompt_json_examples(
-        prompt_defaults_all,
+    prompt_defaults, prompt_artifacts = build_option_letter_prompt_artifacts(
+        prompt_defaults_all=prompt_defaults_all,
+        config_key=str(config_key),
+        scene_key_fallback=str(scene_key),
+        prompt_query_key=str(prompt_query_key),
+        annotation_hint_key="annotation_hint_candidate_point",
         annotation_value=annotation_value,
-        answer_type="option_letter",
-    )
-    prompt_selection = render_scene_prompt_variants(
-        domain="geometry",
-        scene_id=SCENE_ID,
-        bundle_id=str(prompt_defaults["bundle_id"]),
-        scene_key=str(prompt_defaults.get("scene_key", scene_key)),
-        task_key=str(prompt_defaults["task_key"]),
-        query_key=str(prompt_query_key),
-        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(prompt_defaults["object_description"]),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults["annotation_hint_candidate_point"]),
-            "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
-            "json_example": str(json_example),
-            "json_example_answer_only": str(json_example_answer_only),
-        },
         instance_seed=int(instance_seed),
     )
-    prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
     trace_payload = _trace_payload(
         namespace=str(namespace),
         query=query,
@@ -1130,19 +1103,6 @@ def build_algebra_artifacts(
         prompt_artifacts=prompt_artifacts,
         annotation_value=annotation_value,
     )
-    trace_payload["query_spec"]["operation_key"] = str(output_operation_key)
-    trace_payload["query_spec"]["params"]["operation_key"] = str(output_operation_key)
-    trace_payload["query_spec"]["params"]["operation_key_probabilities"] = {
-        str(key): float(value) for key, value in output_query_probabilities.items()
-    }
-    trace_payload["query_spec"]["params"]["semantic_operation"] = str(semantic_operation_key)
-    trace_payload["execution_trace"]["operation_key"] = str(output_operation_key)
-    trace_payload["execution_trace"]["operation_key_probabilities"] = dict(
-        trace_payload["query_spec"]["params"]["operation_key_probabilities"]
-    )
-    trace_payload["execution_trace"]["semantic_operation"] = str(semantic_operation_key)
-    trace_payload["scene_ir"]["relations"]["operation_key"] = str(output_operation_key)
-    trace_payload["scene_ir"]["relations"]["semantic_operation"] = str(semantic_operation_key)
     return AlgebraArtifacts(
         query=query,
         rendered=rendered,

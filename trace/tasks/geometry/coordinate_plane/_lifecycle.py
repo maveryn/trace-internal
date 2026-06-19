@@ -107,6 +107,42 @@ def _attach_public_query_trace(
     return payload
 
 
+def _attach_output_operation_trace(
+    trace_payload: Mapping[str, Any],
+    *,
+    output_operation_key: str,
+    output_operation_probabilities: Mapping[str, float],
+    semantic_operation_key: str,
+) -> dict[str, Any]:
+    """Record public output operation separately from scene semantic operation."""
+
+    payload = dict(trace_payload)
+    probabilities = {str(key): float(value) for key, value in output_operation_probabilities.items()}
+
+    query_spec = dict(payload.get("query_spec", {}))
+    query_params = dict(query_spec.get("params", {}))
+    query_spec["operation_key"] = str(output_operation_key)
+    query_params["operation_key"] = str(output_operation_key)
+    query_params["operation_key_probabilities"] = dict(probabilities)
+    query_params["semantic_operation"] = str(semantic_operation_key)
+    query_spec["params"] = query_params
+    payload["query_spec"] = query_spec
+
+    execution_trace = dict(payload.get("execution_trace", {}))
+    execution_trace["operation_key"] = str(output_operation_key)
+    execution_trace["operation_key_probabilities"] = dict(probabilities)
+    execution_trace["semantic_operation"] = str(semantic_operation_key)
+    payload["execution_trace"] = execution_trace
+
+    scene_ir = dict(payload.get("scene_ir", {}))
+    relations = dict(scene_ir.get("relations", {}))
+    relations["operation_key"] = str(output_operation_key)
+    relations["semantic_operation"] = str(semantic_operation_key)
+    scene_ir["relations"] = relations
+    payload["scene_ir"] = scene_ir
+    return payload
+
+
 def run_coordinate_relation_entry(
     task: Any,
     instance_seed: int,
@@ -238,8 +274,6 @@ def run_coordinate_algebra_entry(
         config_key=str(task.task_id),
         semantic_operation_key=str(objective.semantic_operation),
         semantic_query_probabilities={str(objective.semantic_operation): 1.0},
-        output_operation_key=str(selected_query),
-        output_query_probabilities=query_probabilities,
         prompt_query_key=str(objective.prompt_query_key),
         winner_label=str(winner_label),
         winner_label_probabilities=winner_probabilities,
@@ -248,7 +282,12 @@ def run_coordinate_algebra_entry(
         instance_seed=int(instance_seed),
         params=task_params,
     )
-    trace_payload = dict(artifacts.trace_payload)
+    trace_payload = _attach_output_operation_trace(
+        artifacts.trace_payload,
+        output_operation_key=str(selected_query),
+        output_operation_probabilities=query_probabilities,
+        semantic_operation_key=str(objective.semantic_operation),
+    )
     trace_payload = _attach_public_query_trace(
         trace_payload,
         selected_query=str(selected_query),
@@ -309,8 +348,6 @@ def run_coordinate_locus_point_entry(
         config_key=str(task.task_id),
         semantic_operation_key=str(objective.semantic_operation),
         semantic_query_probabilities={str(objective.semantic_operation): 1.0},
-        output_operation_key=str(selected_query),
-        output_query_probabilities=query_probabilities,
         prompt_query_key=str(objective.prompt_query_key),
         winner_label=str(winner_label),
         winner_label_probabilities=winner_probabilities,
@@ -318,7 +355,12 @@ def run_coordinate_locus_point_entry(
         instance_seed=int(instance_seed),
         params=task_params,
     )
-    trace_payload = dict(artifacts.trace_payload)
+    trace_payload = _attach_output_operation_trace(
+        artifacts.trace_payload,
+        output_operation_key=str(selected_query),
+        output_operation_probabilities=query_probabilities,
+        semantic_operation_key=str(objective.semantic_operation),
+    )
     trace_payload = _attach_public_query_trace(
         trace_payload,
         selected_query=str(selected_query),
@@ -379,8 +421,6 @@ def run_coordinate_locus_panel_entry(
         config_key=str(task.task_id),
         semantic_operation_key=str(objective.semantic_operation),
         semantic_query_probabilities={str(objective.semantic_operation): 1.0},
-        output_operation_key=str(selected_query),
-        output_query_probabilities=query_probabilities,
         prompt_query_key=str(objective.prompt_query_key),
         winner_label=str(winner_label),
         winner_label_probabilities=winner_probabilities,
@@ -388,7 +428,12 @@ def run_coordinate_locus_panel_entry(
         instance_seed=int(instance_seed),
         params=task_params,
     )
-    trace_payload = dict(artifacts.trace_payload)
+    trace_payload = _attach_output_operation_trace(
+        artifacts.trace_payload,
+        output_operation_key=str(selected_query),
+        output_operation_probabilities=query_probabilities,
+        semantic_operation_key=str(objective.semantic_operation),
+    )
     trace_payload = _attach_public_query_trace(
         trace_payload,
         selected_query=str(selected_query),

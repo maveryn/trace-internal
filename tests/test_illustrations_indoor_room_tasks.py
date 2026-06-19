@@ -8,6 +8,7 @@ from pathlib import Path
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
+from trace.tasks.illustrations.indoor_room.shared.rendering import ANNOTATION_BBOX_MIN_SIDE_PX
 from trace.tasks.illustrations.indoor_room.shared.state import INDOOR_OBJECT_TYPES
 
 
@@ -70,6 +71,13 @@ def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
     assert max(counts.values()) <= int(expected * 1.7) + 1
 
 
+def _assert_min_bbox_sides(boxes: list[list[float]]) -> None:
+    for box in boxes:
+        width = float(box[2]) - float(box[0])
+        height = float(box[3]) - float(box[1])
+        assert min(width, height) >= ANNOTATION_BBOX_MIN_SIDE_PX
+
+
 def test_object_type_on_surface_count_contract() -> None:
     _assert_scene_packaged_task(SURFACE_TASK_ID)
     out = create_task(SURFACE_TASK_ID).generate(
@@ -96,6 +104,19 @@ def test_object_type_on_surface_count_contract() -> None:
     assert trace["projected_annotation"]["type"] == "bbox_set"
     assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+
+
+def test_indoor_count_annotations_keep_minimum_bbox_side() -> None:
+    for task_id in (SURFACE_TASK_ID, FURNITURE_TASK_ID):
+        task = create_task(task_id)
+        for index in range(60):
+            out = task.generate(
+                hash64(2026061905, f"indoor-count-min-bbox-side:{task_id}", index),
+                params={},
+                max_attempts=120,
+            )
+            assert out.annotation_gt.type == "bbox_set"
+            _assert_min_bbox_sides(out.annotation_gt.value)
 
 
 def test_object_type_on_surface_count_answer_range() -> None:

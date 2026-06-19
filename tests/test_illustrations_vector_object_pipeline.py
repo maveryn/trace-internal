@@ -309,6 +309,26 @@ def test_reviewed_vector_library_objects_emit_stable_parts() -> None:
             assert part_counts.get(part_kind) == expected_count
 
 
+def test_elongated_indoor_vector_objects_have_countable_short_side() -> None:
+    image = Image.new("RGB", (420, 80), (245, 246, 242))
+    draw = ImageDraw.Draw(image)
+
+    for index, object_type in enumerate(("pencil", "ruler", "spoon", "key")):
+        x0 = 12 + index * 100
+        rendered = draw_illustration_object(
+            draw,
+            object_id=f"{object_type}_small",
+            object_type=object_type,
+            bbox_xyxy=(float(x0), 20.0, float(x0 + 90), 50.0),
+            primary_color_rgb=(86, 126, 177),
+            accent_color_rgb=(245, 190, 88),
+            style_id="flat_vector",
+            render_scale=1,
+        )
+        x0_box, y0_box, x1_box, y1_box = [float(value) for value in rendered.bbox_xyxy]
+        assert min(x1_box - x0_box, y1_box - y0_box) >= 24.0
+
+
 def test_migrated_scene_person_renderers_do_not_keep_local_duplicate_drawers() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     banned = {

@@ -38,6 +38,24 @@ INDOOR_OBJECT_TYPES: Tuple[str, ...] = variant_ids_with_tag("indoor_object")
 INDOOR_SURFACE_TYPES: Tuple[str, ...] = variant_ids_with_tag("indoor_surface")
 INDOOR_CONTAINER_TYPES: Tuple[str, ...] = variant_ids_with_tag("indoor_container")
 INDOOR_FURNITURE_TYPES: Tuple[str, ...] = variant_ids_with_tag("indoor_furniture")
+ANNOTATION_BBOX_MIN_SIDE_PX = 24.0
+_INDOOR_OBJECT_MIN_PLACEMENT_SIZE: Dict[str, Tuple[float, float]] = {
+    "bottle": (58.0, 42.0),
+    "candle": (58.0, 42.0),
+    "egg": (42.0, 48.0),
+    "flower": (58.0, 42.0),
+    "lightbulb": (52.0, 42.0),
+    "mug": (52.0, 42.0),
+    "mushroom": (54.0, 42.0),
+    "potted_plant": (56.0, 42.0),
+    "vase": (56.0, 42.0),
+}
+
+
+def _indoor_object_min_placement_size(object_type: str) -> Tuple[float, float]:
+    """Return scene-local placement floors needed for countable object bboxes."""
+
+    return _INDOOR_OBJECT_MIN_PLACEMENT_SIZE.get(str(object_type), (42.0, 42.0))
 
 
 @dataclass(frozen=True)
@@ -806,7 +824,9 @@ def _slot_boxes(
         aspect = max(0.35, float(aspect_ratio_for_object(str(spec.object_type))))
         h = min(float(size_max_px), 0.72 * cell_h, 0.82 * cell_w / aspect)
         h = max(30.0, min(float(size_min_px), h) if h < float(size_min_px) else h)
-        w = max(26.0, min(0.82 * cell_w, h * aspect))
+        min_w, min_h = _indoor_object_min_placement_size(str(spec.object_type))
+        h = max(float(min_h), h)
+        w = max(26.0, float(min_w), min(0.82 * cell_w, h * aspect))
         if align_bottom:
             contact_y = y1 - 2.0 + float(rng.uniform(-0.01, 0.006)) * cell_h
             contact_ratio = _surface_contact_ratio(str(spec.object_type))
@@ -862,7 +882,9 @@ def _surface_slot_boxes(
         aspect = max(0.35, float(aspect_ratio_for_object(str(spec.object_type))))
         h = min(float(size_max_px) * visible_scale, 0.82 * cell_w / aspect)
         h = max(30.0, min(float(size_min_px) * visible_scale, h) if h < float(size_min_px) * visible_scale else h)
-        w = max(24.0, min(0.84 * cell_w, h * aspect))
+        min_w, min_h = _indoor_object_min_placement_size(str(spec.object_type))
+        h = max(float(min_h), h)
+        w = max(24.0, float(min_w), min(0.84 * cell_w, h * aspect))
         contact_ratio = _surface_contact_ratio(str(spec.object_type))
         xx0 = max(support_x0 + 2.0, min(support_x1 - w - 2.0, float(contact_x) - 0.5 * w))
         contact_x = xx0 + 0.5 * w

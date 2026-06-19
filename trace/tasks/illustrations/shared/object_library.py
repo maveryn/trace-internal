@@ -1080,11 +1080,14 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
         _arc(draw, _rel_bbox(box, 0.18, 0.24, 0.82, 0.76), start=202, end=338, fill=(105, 61, 39), width=max(1, width - 1), scale=scale)
         boxes.append(_rel_bbox(box, 0.07, 0.19, 0.93, 0.81))
     elif object_type == "spoon":
-        bowl = _rel_bbox(box, 0.08, 0.25, 0.34, 0.75)
-        handle = _rel_bbox(box, 0.30, 0.44, 0.92, 0.56)
+        bowl = _rel_bbox(box, 0.06, 0.16, 0.38, 0.84)
+        handle = _rel_bbox(box, 0.33, 0.36, 0.94, 0.64)
+        neck = _rel_bbox(box, 0.30, 0.39, 0.44, 0.61)
         _ellipse(draw, bowl, fill=(230, 224, 210), outline=outline, width=width, scale=scale)
+        _rect(draw, neck, fill=(201, 194, 181), outline=outline, width=max(1, width - 1), scale=scale, radius=4)
         _rect(draw, handle, fill=(201, 194, 181), outline=outline, width=max(1, width - 1), scale=scale, radius=5)
-        boxes.extend([bowl, handle])
+        _arc(draw, _rel_bbox(bowl, 0.24, 0.20, 0.80, 0.82), start=205, end=335, fill=(246, 242, 232), width=max(1, width - 1), scale=scale)
+        boxes.extend([bowl, neck, handle])
     elif object_type == "plate":
         rim = _rel_bbox(box, 0.08, 0.14, 0.92, 0.86)
         well = _rel_bbox(box, 0.22, 0.28, 0.78, 0.72)
@@ -1155,13 +1158,16 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
         _ellipse(draw, red, fill=(220, 80, 75), outline=None, width=1, scale=scale)
         boxes.append(body)
     elif object_type == "pencil":
-        shaft = _rel_bbox(box, 0.16, 0.40, 0.76, 0.62)
-        tip = _rel_bbox(box, 0.74, 0.38, 0.94, 0.64)
-        eraser = _rel_bbox(box, 0.06, 0.40, 0.18, 0.62)
-        band = _rel_bbox(box, 0.16, 0.40, 0.21, 0.62)
+        shaft = _rel_bbox(box, 0.16, 0.14, 0.76, 0.88)
+        tip = _rel_bbox(box, 0.74, 0.08, 0.94, 0.94)
+        eraser = _rel_bbox(box, 0.06, 0.18, 0.18, 0.84)
+        band = _rel_bbox(box, 0.16, 0.18, 0.22, 0.84)
         _rect(draw, shaft, fill=(235, 186, 72), outline=outline, width=width, scale=scale, radius=4)
         _rect(draw, eraser, fill=(214, 118, 132), outline=outline, width=max(1, width - 1), scale=scale, radius=3)
         _rect(draw, band, fill=(186, 188, 182), outline=outline, width=max(1, width - 1), scale=scale, radius=1)
+        for ridge_y in (0.34, 0.51, 0.68):
+            y = box[1] + ridge_y * (box[3] - box[1])
+            _line(draw, [(shaft[0] + 2.0, y), (shaft[2] - 2.0, y)], fill=(204, 147, 46), width=max(1, width - 1), scale=scale)
         _poly(
             draw,
             [(tip[0], tip[1]), (tip[2], (tip[1] + tip[3]) / 2.0), (tip[0], tip[3])],
@@ -1170,7 +1176,7 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
             width=width,
             scale=scale,
         )
-        graphite = _rel_bbox(box, 0.89, 0.46, 0.96, 0.56)
+        graphite = _rel_bbox(box, 0.88, 0.36, 0.96, 0.66)
         _poly(
             draw,
             [(graphite[0], graphite[1]), (graphite[2], (graphite[1] + graphite[3]) / 2.0), (graphite[0], graphite[3])],
@@ -1181,11 +1187,11 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
         )
         boxes.extend([shaft, eraser, band, tip, graphite])
     elif object_type == "ruler":
-        body = _rel_bbox(box, 0.06, 0.34, 0.94, 0.66)
+        body = _rel_bbox(box, 0.06, 0.08, 0.94, 0.92)
         _rect(draw, body, fill=(235, 208, 105), outline=outline, width=width, scale=scale, radius=4)
         for idx in range(1, 10):
             x = body[0] + idx * (body[2] - body[0]) / 10.0
-            tick_h = 0.20 if idx % 2 else 0.28
+            tick_h = 0.36 if idx % 2 else 0.52
             _line(
                 draw,
                 [(x, body[1] + 0.08 * (body[3] - body[1])), (x, body[1] + tick_h * (body[3] - body[1]))],
@@ -1195,7 +1201,7 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
             )
         _line(
             draw,
-            [(body[0] + 0.10 * (body[2] - body[0]), body[1] + 0.72 * (body[3] - body[1])), (body[0] + 0.90 * (body[2] - body[0]), body[1] + 0.72 * (body[3] - body[1]))],
+            [(body[0] + 0.10 * (body[2] - body[0]), body[1] + 0.74 * (body[3] - body[1])), (body[0] + 0.90 * (body[2] - body[0]), body[1] + 0.74 * (body[3] - body[1]))],
             fill=(190, 160, 82),
             width=max(1, width),
             scale=scale,
@@ -1466,14 +1472,17 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
         _line(draw, [(box[0] + 0.33 * (box[2] - box[0]), box[1] + 0.47 * (box[3] - box[1])), (box[0] + 0.88 * (box[2] - box[0]), box[1] + 0.78 * (box[3] - box[1]))], fill=SOFT_OUTLINE_RGB, width=max(4, width + 1), scale=scale)
         boxes.append(_rel_bbox(box, 0.12, 0.16, 0.88, 0.78))
     elif object_type == "key":
-        handle = _rel_bbox(box, 0.08, 0.34, 0.34, 0.66)
-        shaft = _rel_bbox(box, 0.30, 0.45, 0.82, 0.55)
+        handle = _rel_bbox(box, 0.06, 0.08, 0.38, 0.92)
+        shaft = _rel_bbox(box, 0.34, 0.32, 0.84, 0.68)
+        bridge = _rel_bbox(box, 0.30, 0.36, 0.45, 0.64)
         _ellipse(draw, handle, fill=(246, 246, 242), outline=primary, width=max(4, width + 1), scale=scale)
+        _rect(draw, bridge, fill=primary, outline=outline, width=1, scale=scale, radius=3)
         _rect(draw, shaft, fill=primary, outline=outline, width=1, scale=scale, radius=3)
-        _rect(draw, _rel_bbox(box, 0.74, 0.38, 0.86, 0.45), fill=primary, outline=None, width=1, scale=scale)
-        _rect(draw, _rel_bbox(box, 0.74, 0.55, 0.88, 0.63), fill=primary, outline=None, width=1, scale=scale)
+        _rect(draw, _rel_bbox(box, 0.74, 0.18, 0.88, 0.40), fill=primary, outline=None, width=1, scale=scale)
+        _rect(draw, _rel_bbox(box, 0.76, 0.60, 0.92, 0.84), fill=primary, outline=None, width=1, scale=scale)
+        _ellipse(draw, _rel_bbox(handle, 0.28, 0.28, 0.72, 0.72), fill=(246, 246, 242), outline=primary, width=max(1, width - 1), scale=scale)
         parts.add("handle", handle)
-        boxes.extend([handle, shaft])
+        boxes.extend([handle, bridge, shaft, _rel_bbox(box, 0.74, 0.18, 0.92, 0.84)])
     else:
         body = _rel_bbox(box, 0.30, 0.16, 0.70, 0.86)
         neck = _rel_bbox(box, 0.38, 0.06, 0.62, 0.20)

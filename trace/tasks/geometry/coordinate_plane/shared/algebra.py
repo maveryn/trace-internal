@@ -645,8 +645,10 @@ def _draw_guide_segments(
     points_by_label: Mapping[str, GraphPoint],
     segments: Sequence[GuideSegment],
     color: Color,
+    width_px: int,
 ) -> None:
     scale = int(context.scene_scale)
+    line_width = max(2, int(width_px))
     for start_label, end_label, style in segments:
         if str(start_label) not in points_by_label or str(end_label) not in points_by_label:
             continue
@@ -658,7 +660,6 @@ def _draw_guide_segments(
             graph_units_to_pixel(points_by_label[str(end_label)], graph_origin=context.graph_origin, spacing=int(context.graph_spacing)),
             scale,
         )
-        line_width = max(2, 2 * scale)
         draw.line([start_px, end_px], fill=color, width=line_width)
         if str(style) != "arrow":
             continue
@@ -763,7 +764,9 @@ def _render_scene(
     is_reflection_operation = str(problem.operation_key) in REFLECTION_OPERATIONS
     transform_axis_color = (202, 45, 55) if is_reflection_operation else axis_color
     transform_axis_width_px = max(4, (6 if is_reflection_operation else 2) * int(context.scene_scale))
-    guide_color = (202, 45, 55) if str(problem.operation_key) in ROTATION_OPERATIONS else (94, 103, 118)
+    is_rotation_operation = str(problem.operation_key) in ROTATION_OPERATIONS
+    guide_color = (202, 45, 55) if is_rotation_operation else (94, 103, 118)
+    guide_segment_width_px = max(2, (6 if is_rotation_operation else 2) * int(context.scene_scale))
 
     if problem.transform_line is not None:
         _draw_dashed_axis_line(
@@ -781,6 +784,7 @@ def _render_scene(
             points_by_label=problem.known_points_by_label,
             segments=problem.guide_segments,
             color=guide_color,
+            width_px=int(guide_segment_width_px),
         )
     label_box_bbox = None
     if problem.transform_text:
@@ -885,6 +889,7 @@ def _render_scene(
         "transform_axis_color": list(transform_axis_color),
         "transform_axis_width_px": int(round(float(transform_axis_width_px) / float(context.scene_scale))),
         "guide_segment_color": list(guide_color),
+        "guide_segment_width_px": int(round(float(guide_segment_width_px) / float(context.scene_scale))),
         **dict(color_meta),
     }
     return _RenderedScene(

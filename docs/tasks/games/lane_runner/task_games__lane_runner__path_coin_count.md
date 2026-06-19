@@ -5,7 +5,7 @@
 2. Scene id: `lane_runner`
 3. Public task id: `task_games__lane_runner__path_coin_count`
 4. Supported `query_id` values: `single`
-5. Annotation schema: `bbox_set`
+5. Annotation schema: `point_set`
 
 ## Program Contract
 `count(intersection(coins, shown_path_cells)); scene=lane_runner; scope=path_coin_count`
@@ -16,6 +16,6 @@
 
 ## Answer And Annotation
 1. `answer_gt.type`: `integer`.
-2. `annotation_gt.type`: `bbox_set`.
-3. Annotation boxes enclose every coin collected by the shown path.
+2. `annotation_gt.type`: `point_set`.
+3. Annotation points mark the centers of every coin collected by the shown path.
 4. Off-path coins, including same-row parallel distractors, are not annotation.

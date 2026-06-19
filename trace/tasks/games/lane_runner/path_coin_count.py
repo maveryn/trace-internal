@@ -10,7 +10,7 @@ from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 
 from ._lifecycle import LaneRunnerAttemptResult, LaneRunnerObjectivePlan, run_lane_runner_lifecycle
-from .shared.annotations import lane_runner_coin_bbox_annotation
+from .shared.annotations import lane_runner_coin_point_annotation
 from .shared.rules import (
     coin_entity_id,
     path_coin_collection,
@@ -142,7 +142,7 @@ def _prepare_path_coin_objective(
                 "shown_path_lanes": sample.shown_path_lanes,
                 "start_lane": int(sample.start_lane),
             },
-            build_annotation=lambda rendered: lane_runner_coin_bbox_annotation(
+            build_annotation=lambda rendered: lane_runner_coin_point_annotation(
                 rendered,
                 sample.annotation_entity_ids,
             ),

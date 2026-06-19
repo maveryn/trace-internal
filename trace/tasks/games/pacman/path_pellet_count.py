@@ -12,7 +12,7 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
 from ._lifecycle import AttemptPacmanResult, ObjectivePacmanPlan, run_pacman_lifecycle
-from .shared.annotations import bbox_set_for_entity_ids
+from .shared.annotations import point_set_for_entity_ids
 from .shared.defaults import DEFAULTS, SCENE_ID
 from .shared.sampling import (
     resolve_pacman_integer_target,
@@ -37,7 +37,7 @@ def _json_examples() -> tuple[str, str]:
     """Return valid format examples for route pellet-count output."""
 
     answer_value = 5
-    annotation_value = [[302, 196, 328, 222], [356, 196, 382, 222]]
+    annotation_value = [[315, 209], [369, 209]]
     return (
         json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
@@ -70,7 +70,7 @@ def _prepare_path_pellet_count_objective(
         attempt_namespace="games.pacman.path_pellet_count",
         prompt_query_key=PROMPT_QUERY_KEY,
         answer_hint='set "answer" to the number of normal pellets on the highlighted route',
-        annotation_hint='set "annotation" to bounding boxes [x0, y0, x1, y1], one for each normal pellet on the highlighted route',
+        annotation_hint='set "annotation" to [x, y] pixel points at the centers of every normal pellet on the highlighted route',
         json_example=json_example,
         json_example_answer_only=json_example_answer_only,
         query_params={
@@ -107,7 +107,7 @@ def _construct_path_pellet_count_attempt(*, rng: Any, axes: Any, target: int) ->
         scene=scene,
         answer_gt=TypedValue(type="integer", value=int(target)),
         annotation_entity_ids=annotation_ids,
-        build_annotation=lambda rendered: bbox_set_for_entity_ids(rendered.rendered_scene, annotation_ids),
+        build_annotation=lambda rendered: point_set_for_entity_ids(rendered.rendered_scene, annotation_ids),
         execution_extra={"target_answer": int(target)},
     )
 

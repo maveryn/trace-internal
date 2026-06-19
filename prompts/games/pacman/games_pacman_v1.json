@@ -119,7 +119,7 @@
   "code_prompt_defaults": {
     "object_description_compact_maze": "a Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, bonus items, and a highlighted route",
     "object_description_wide_maze": "a wider Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, bonus items, and a highlighted route",
-    "annotation_hint_path_pellet_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one for each normal pellet that lies on the highlighted route",
+    "annotation_hint_path_pellet_count": "set \"annotation\" to [x, y] pixel points at the centers of every normal pellet that lies on the highlighted route",
     "answer_hint_path_pellet_count": "set \"answer\" to the number of normal pellets on the highlighted route",
     "annotation_hint_next_item_label": "set \"annotation\" to one [x, y] point coordinate at the center of the first labeled bonus item reached along the highlighted route",
     "answer_hint_next_item_label": "set \"answer\" to the single option letter of the first labeled bonus item reached along the highlighted route",

@@ -763,7 +763,7 @@ def _render_scene(
     is_reflection_operation = str(problem.operation_key) in REFLECTION_OPERATIONS
     transform_axis_color = (202, 45, 55) if is_reflection_operation else axis_color
     transform_axis_width_px = max(4, (6 if is_reflection_operation else 2) * int(context.scene_scale))
-    guide_color = (94, 103, 118)
+    guide_color = (202, 45, 55) if str(problem.operation_key) in ROTATION_OPERATIONS else (94, 103, 118)
 
     if problem.transform_line is not None:
         _draw_dashed_axis_line(

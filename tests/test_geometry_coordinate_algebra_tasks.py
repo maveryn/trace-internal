@@ -143,6 +143,7 @@ def test_transformed_point_task_has_unique_candidate_answer(task_id: str, query_
         else:
             expected = [center[0] - dy, center[1] + dx]
         assert target == expected
+        assert trace["render_spec"]["marker_style"]["guide_segment_color"] == [202, 45, 55]
     else:
         raise AssertionError(f"unhandled transform query {query_id}")
 

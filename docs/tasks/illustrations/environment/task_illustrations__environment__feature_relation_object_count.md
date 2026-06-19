@@ -36,12 +36,13 @@ Counts foreground objects in a queried relation to a road or river feature.
 - Answer schema: `integer_count`
 - Generator `answer_gt.type`: `integer`
 - The answer value is a non-negative integer derived from the same execution trace as the annotation.
-- Default answer support is `1..18` for `above_feature` and `below_feature`; `on_feature` uses `2..5` so road/river placements remain visually separated across all supported canvas profiles.
+- `above_feature` and `below_feature` use default side-count support `1..18`; when the sampled side count exceeds `12`, the renderer spreads forced same-side placement over `9..12` objects to preserve visible bbox witnesses and avoid cap pileups, then binds the final rendered relation count. `on_feature` uses exact support `2..5` so road/river placements remain visually separated across all supported canvas profiles.
 
 ## Annotation Contract
 - Annotation schema: `bbox_set`
 - Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel points, one near the center of each counted foreground object. Do not include the queried road/river feature, labels, numeric annotations, or context-only regions.
+- Annotation is an unordered set of final-image pixel boxes, one around each counted foreground object. Do not include the queried road/river feature, labels, numeric annotations, or context-only regions.
+- Counted object bboxes are generated with a minimum side of `24px`.
 - Annotation and answer must be projected from the same generated scene trace, not inferred from pixels or prompt text.
 
 ## Prompt And Trace Requirements

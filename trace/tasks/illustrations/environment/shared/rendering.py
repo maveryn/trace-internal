@@ -51,6 +51,16 @@ ROAD_STYLE_IDS: Tuple[str, ...] = ("asphalt_median", "curb_edges", "rough_asphal
 RIVER_STYLE_IDS: Tuple[str, ...] = ("blue_channel", "reed_bank", "stone_bank", "canal_edge")
 BRIDGE_STYLE_IDS: Tuple[str, ...] = ("wood_plank", "concrete_slab", "rail_bridge")
 BUILDING_STYLE_IDS: Tuple[str, ...] = ("glass_office", "apartment_grid", "brick_row", "storefront_row")
+ANNOTATION_BBOX_MIN_SIDE_PX = 24.0
+ANNOTATION_BBOX_TARGET_MIN_SIDE_PX = 26.0
+_NARROW_ENV_OBJECT_MIN_PLACEMENT_SIZE: Dict[str, Tuple[float, float]] = {
+    "bottle": (51.0, 0.0),
+    "buoy": (43.0, 0.0),
+    "flower": (45.0, 0.0),
+    "potted_plant": (39.0, 0.0),
+    "streetlamp": (45.0, 0.0),
+    "traffic_light": (45.0, 0.0),
+}
 
 
 @dataclass(frozen=True)
@@ -712,33 +722,45 @@ def _draw_buildings(
                 stripe_x += stripe_w
         window_bboxes: List[BBox] = []
         if building_style == "glass_office":
-            cols = max(2, int((box[2] - box[0]) // 26))
-            rows = max(3, int((box[3] - box[1]) // 30))
-            pad_x, pad_y, window_radius = 8.0, 14.0, 1
+            pad_x, pad_y, window_radius = 8.0, 12.0, 2
             window_bottom_limit = box[3] - 18.0
+            min_window_w, min_window_h = 26.0, 26.0
+            max_window_w, max_window_h = 34.0, 32.0
+            max_cols, max_rows = 4, 5
         elif building_style == "storefront_row":
-            cols = max(2, int((box[2] - box[0]) // 30))
-            rows = max(1, int(max(34.0, box[3] - box[1] - 56.0) // 34))
-            pad_x, pad_y, window_radius = 10.0, 14.0, 2
+            pad_x, pad_y, window_radius = 10.0, 12.0, 2
             window_bottom_limit = box[3] - 54.0
+            min_window_w, min_window_h = 28.0, 26.0
+            max_window_w, max_window_h = 42.0, 34.0
+            max_cols, max_rows = 3, 3
         else:
-            cols = max(2, int((box[2] - box[0]) // 24))
-            rows = max(2, int((box[3] - box[1]) // 34))
-            pad_x, pad_y, window_radius = 10.0, 18.0, 2
+            pad_x, pad_y, window_radius = 10.0, 16.0, 2
             window_bottom_limit = box[3] - 22.0
-        cell_w = max(12.0, (box[2] - box[0] - 2.0 * pad_x) / float(cols))
-        cell_h = max(14.0, (window_bottom_limit - box[1] - pad_y) / float(rows))
-        for row in range(rows):
-            for col in range(cols):
-                wx0 = box[0] + pad_x + col * cell_w + 3.0
-                wy0 = box[1] + pad_y + row * cell_h + 4.0
-                if building_style == "glass_office":
-                    wb = (wx0, wy0, wx0 + min(18.0, cell_w - 5.0), wy0 + min(22.0, cell_h - 6.0))
-                else:
-                    wb = (wx0, wy0, wx0 + min(14.0, cell_w - 6.0), wy0 + min(18.0, cell_h - 7.0))
-                if wb[3] > window_bottom_limit:
-                    continue
-                window_bboxes.append(tuple(float(v) for v in wb))
+            min_window_w, min_window_h = 26.0, 26.0
+            max_window_w, max_window_h = 32.0, 30.0
+            max_cols, max_rows = 3, 4
+        gap_x, gap_y = 8.0, 8.0
+        available_w = box[2] - box[0] - 2.0 * pad_x
+        available_h = window_bottom_limit - box[1] - pad_y
+        if available_w >= min_window_w and available_h >= min_window_h:
+            cols = min(int(max_cols), max(1, int((available_w + gap_x) // (min_window_w + gap_x))))
+            rows = min(int(max_rows), max(1, int((available_h + gap_y) // (min_window_h + gap_y))))
+            cell_w = available_w / float(cols)
+            cell_h = available_h / float(rows)
+            for row in range(rows):
+                for col in range(cols):
+                    win_w = min(float(max_window_w), max(float(min_window_w), cell_w - gap_x))
+                    win_h = min(float(max_window_h), max(float(min_window_h), cell_h - gap_y))
+                    cell_x0 = box[0] + pad_x + col * cell_w
+                    cell_y0 = box[1] + pad_y + row * cell_h
+                    wx0 = cell_x0 + max(0.0, 0.5 * (cell_w - win_w))
+                    wy0 = cell_y0 + max(0.0, 0.5 * (cell_h - win_h))
+                    wb = (wx0, wy0, wx0 + win_w, wy0 + win_h)
+                    if (wb[2] - wb[0]) < ANNOTATION_BBOX_TARGET_MIN_SIDE_PX or (wb[3] - wb[1]) < ANNOTATION_BBOX_TARGET_MIN_SIDE_PX:
+                        continue
+                    if wb[3] > window_bottom_limit:
+                        continue
+                    window_bboxes.append(tuple(float(v) for v in wb))
         door: BBox | None = None
         if (box[2] - box[0]) > 60.0:
             door_width = 24.0 if building_style == "storefront_row" else 20.0
@@ -876,13 +898,14 @@ def feature_relation_render_overrides(
         return on_feature_render_overrides(params, choice, requested_object_count, target_count)
 
     effective_count = effective_environment_object_count(str(choice.theme_id), int(requested_object_count))
-    explicit_replay = any(
-        key in params
-        for key in ("object_count", "target_count", "target_count_min", "target_count_max")
-    )
-    placement_cap = 8 if explicit_replay else int(effective_count)
     target_zone = "land_above" if str(choice.relation) == "above" else "land_below"
-    forced_side_count = max(1, min(int(target_count), int(effective_count), int(placement_cap)))
+    placement_cap = 12
+    forced_side_count = max(1, min(int(target_count), int(effective_count)))
+    if forced_side_count > int(placement_cap):
+        overflow_floor = max(1, int(placement_cap) - 3)
+        overflow_span = int(placement_cap) - int(overflow_floor) + 1
+        forced_side_count = int(overflow_floor) + int((int(choice.branch_index) + int(target_count)) % int(overflow_span))
+        forced_side_count = min(int(forced_side_count), int(effective_count))
     return {"zone_count_overrides": {target_zone: int(forced_side_count)}}
 
 
@@ -1040,7 +1063,9 @@ def _candidate_box_for_zone(
         h = min(h, 86.0)
     if str(object_type) in SKY_OBJECT_TYPES:
         h = min(h, 78.0)
-    w = max(32.0, h * aspect)
+    min_w, min_h = _NARROW_ENV_OBJECT_MIN_PLACEMENT_SIZE.get(str(object_type), (32.0, 0.0))
+    h = max(h, float(min_h))
+    w = max(float(min_w), h * aspect)
     x = float(rng.uniform(42.0, max(44.0, float(width) - w - 42.0)))
     if str(zone_id) == "sky":
         low = 42.0

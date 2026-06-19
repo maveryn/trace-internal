@@ -2,14 +2,24 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Tuple
+from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ...shared.object_rendering import serialize_rendered_illustration_object
 
 from .annotations import sort_bbox_centers_by_ids, sort_bboxes_by_ids, target_feature
 from .labels import CROSSED_FEATURE_NAMES, CROSSING_NAMES, feature_name, feature_relation_phrase
-from .rendering import RenderedEnvironmentObjectScene
+from .rendering import ANNOTATION_BBOX_MIN_SIDE_PX, RenderedEnvironmentObjectScene
 from .state import BoundCountResult, EnvironmentChoice
+
+
+def _bbox_min_side(box: list[float]) -> float:
+    return min(abs(float(box[2]) - float(box[0])), abs(float(box[3]) - float(box[1])))
+
+
+def _require_min_bbox_sides(*, label: str, bboxes: Sequence[list[float]]) -> None:
+    for box in bboxes:
+        if _bbox_min_side(box) < float(ANNOTATION_BBOX_MIN_SIDE_PX):
+            raise ValueError(f"{label} bbox below {ANNOTATION_BBOX_MIN_SIDE_PX:g}px minimum side: {box}")
 
 
 def serialize_environment_objects(scene: RenderedEnvironmentObjectScene) -> tuple[list[dict[str, Any]], Dict[str, list[float]], Dict[str, list[float]]]:
@@ -61,6 +71,7 @@ def bind_feature_relation_result(
             relation=str(choice.relation),
         )
     counted_object_bboxes = sort_bboxes_by_ids(object_bboxes, counted_object_ids)
+    _require_min_bbox_sides(label="feature-relation counted object", bboxes=counted_object_bboxes)
     counted_object_points = sort_bbox_centers_by_ids(object_bboxes, counted_object_ids)
     phrase = feature_relation_phrase(choice.feature_type, choice.relation)
     return BoundCountResult(
@@ -168,6 +179,7 @@ def bind_window_result(
     window_bbox_map = {item_id: bbox for item_id, bbox in window_items}
     counted_window_ids = tuple(item_id for item_id, _bbox in window_items)
     counted_window_bboxes = sort_bboxes_by_ids(window_bbox_map, counted_window_ids)
+    _require_min_bbox_sides(label="lit window", bboxes=counted_window_bboxes)
     counted_window_points = sort_bbox_centers_by_ids(window_bbox_map, counted_window_ids)
     return BoundCountResult(
         answer=int(len(counted_window_ids)),

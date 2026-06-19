@@ -20,6 +20,18 @@ def _bbox_center(box: list[float]) -> list[float]:
     ]
 
 
+def _assert_bbox_min_side(box: list[float], *, min_side_px: float = 24.0) -> None:
+    width = abs(float(box[2]) - float(box[0]))
+    height = abs(float(box[3]) - float(box[1]))
+    assert width >= float(min_side_px), box
+    assert height >= float(min_side_px), box
+
+
+def _assert_bbox_set_min_side(boxes: list[list[float]], *, min_side_px: float = 24.0) -> None:
+    for box in boxes:
+        _assert_bbox_min_side(box, min_side_px=float(min_side_px))
+
+
 def test_feature_relation_object_count_contracts() -> None:
     scenarios = (
         ("park_road", "road", "above_feature", "above"),
@@ -70,6 +82,7 @@ def test_feature_relation_object_count_contracts() -> None:
         assert int(out.answer_gt.value) == len(execution["counted_object_ids"])
         assert out.annotation_gt.type == "bbox_set"
         assert len(out.annotation_gt.value) == int(out.answer_gt.value)
+        _assert_bbox_set_min_side(out.annotation_gt.value)
         assert execution["feature_id"] in render_map["feature_bboxes_px"]
         assert execution["feature_id"] in render_map["feature_paths_px"]
         assert render_map["counted_object_ids"] == execution["counted_object_ids"]
@@ -126,7 +139,47 @@ def test_building_window_count_contract() -> None:
     assert out.annotation_gt.type == "bbox_set"
     expected = [render_map["window_bboxes_px"][window_id] for window_id in execution["counted_window_ids"]]
     assert sorted(out.annotation_gt.value) == sorted(expected)
+    _assert_bbox_set_min_side(out.annotation_gt.value)
     assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+
+
+def test_environment_count_bbox_annotations_respect_min_side_floor() -> None:
+    cases = (
+        (
+            "task_illustrations__environment__feature_relation_object_count",
+            {"query_id": "above_feature", "theme_id": "road_and_river", "feature_type": "river"},
+            10,
+        ),
+        (
+            "task_illustrations__environment__feature_relation_object_count",
+            {"query_id": "below_feature", "theme_id": "road_and_river", "feature_type": "road"},
+            10,
+        ),
+        (
+            "task_illustrations__environment__feature_relation_object_count",
+            {"query_id": "on_feature", "theme_id": "road_and_river", "feature_type": "river"},
+            10,
+        ),
+        (
+            "task_illustrations__environment__lit_window_count",
+            {"theme_id": "skyline_street", "target_count": 6},
+            12,
+        ),
+        (
+            "task_illustrations__environment__lit_window_count",
+            {"theme_id": "canal_city", "target_count": 6},
+            12,
+        ),
+    )
+    for task_id, params, sample_count in cases:
+        for index in range(sample_count):
+            out = create_task(task_id).generate(
+                hash64(2026061901, f"{task_id}:min-bbox-side", index),
+                params=dict(params),
+                max_attempts=500,
+            )
+            assert out.annotation_gt.type == "bbox_set"
+            _assert_bbox_set_min_side(out.annotation_gt.value)
 
 
 def test_building_window_default_answer_range_is_capped_at_six() -> None:

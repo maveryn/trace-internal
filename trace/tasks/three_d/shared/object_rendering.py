@@ -746,6 +746,7 @@ def _visual_attributes_from_mapping(spec: Mapping[str, Any]) -> dict[str, Any]:
         "building_style",
         "building_style_name",
         "orientation_axis",
+        "orientation_deg",
         "scenery_variant",
         "picture_content",
         "shelf_style",

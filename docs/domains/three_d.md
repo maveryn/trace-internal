@@ -36,7 +36,7 @@ style are metadata/style axes unless directly queried.
 ## Annotation Policy
 Prompt-facing annotation should mark projected visible objects, fixtures,
 reference surfaces, candidate markers, option panels, or route/path witnesses in
-final-image coordinates. Use keyed annotation when reference/candidate,
+final-image coordinates. Use map annotation when reference/candidate,
 source/target, before/after, left/right view, or operand roles matter.
 
 Answers must come from finalized 3D metadata such as world coordinates, camera
@@ -67,6 +67,11 @@ predicate.
 Use the 3D object review surfaces for object-fidelity audits. Style, lighting,
 camera, and object-palette variation must not encode answer value, query id,
 correct option, relation truth, or construction order unless explicitly queried.
+
+Object-cluster instances may apply a bounded per-object `orientation_deg`
+rendering jitter for visual variety. This value must be recorded in trace
+metadata and projected-geometry calculations, but remains a renderer axis rather
+than a query/task split unless a task explicitly asks about object orientation.
 
 ## Shared Code
 Reusable camera, projection, object-profile, room, street, warehouse, and

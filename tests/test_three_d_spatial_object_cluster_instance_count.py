@@ -26,6 +26,7 @@ from trace.tasks.three_d.object_cluster.shared.defaults import (
     MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION,
     MAX_RENDERED_PAIRWISE_OVERLAP_PX,
     MIN_RENDERED_VISIBLE_BBOX_FRACTION,
+    OBJECT_CLUSTER_ORIENTATION_DEGREES,
     PROMPT_COLOR_RGB,
 )
 from trace.tasks.three_d.object_cluster.shared.objects import screen_span_requirements
@@ -263,6 +264,10 @@ def test_object_cluster_instance_count_answer_and_annotation() -> None:
     assert all(str(spec["shape_type"]) == "button" for spec in object_specs if str(spec["object_id"]) in set(target_object_ids))
     assert all(not bool(spec.get("is_answer_candidate", False)) for spec in object_specs)
     assert all(bool(spec.get("is_countable_object", False)) for spec in object_specs)
+    assert all(
+        -float(OBJECT_CLUSTER_ORIENTATION_DEGREES) <= float(spec["orientation_deg"]) <= float(OBJECT_CLUSTER_ORIENTATION_DEGREES)
+        for spec in object_specs
+    )
     assert trace["solver_trace"]["cluster_object_pool_size"] == len(COUNTABLE_SHAPE_TYPES)
     assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
     assert output.trace_payload["projected_annotation"]["pixel_bbox_set"] == output.annotation_gt.value
@@ -321,8 +326,8 @@ def test_object_cluster_countqa_additions_have_profiles_and_render() -> None:
     assert COUNTQA_CLUSTER_ADDITIONS.issubset(set(OBJECT_CLUSTER_EXTRA_SHAPE_TYPES))
     assert COUNTQA_CLUSTER_ADDITIONS.issubset(set(COUNTABLE_SHAPE_TYPES))
     assert "stick" not in set(COUNTABLE_SHAPE_TYPES)
-    assert {"pen", "pencil"}.isdisjoint(set(COUNTABLE_SHAPE_TYPES))
-    assert "stick" not in set(COLOR_SAFE_CLUSTER_SHAPE_TYPES)
+    assert {"pen", "pencil"}.issubset(set(COUNTABLE_SHAPE_TYPES))
+    assert {"pen", "pencil", "stick"}.isdisjoint(set(COLOR_SAFE_CLUSTER_SHAPE_TYPES))
     profiles = {
         str(profile.object_type): profile
         for profile in object_profiles(source_scene="object_cluster", role="cluster_small_shape")

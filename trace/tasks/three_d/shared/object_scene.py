@@ -636,6 +636,7 @@ def render_object_scene_3d(
                     "base_xyz": list(spec["base_xyz"]),
                     "dimensions_xyz": list(spec["dimensions_xyz"]),
                     "dimension_scale": float(spec.get("dimension_scale", 1.0)),
+                    "orientation_deg": float(spec.get("orientation_deg", 0.0)),
                     "screen_xy": [round(float(x), 3), round(float(y), 3)],
                     "camera_xyz": list(spec["camera_xyz"]),
                     "camera_distance": float(spec["camera_distance"]),

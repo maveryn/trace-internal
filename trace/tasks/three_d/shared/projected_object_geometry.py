@@ -2,9 +2,33 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any, List, Mapping, Sequence, Tuple
 
 from .camera_projection import project_xy
+
+
+def orientation_degrees(spec: Mapping[str, Any]) -> float:
+    """Return the horizontal yaw angle recorded on one object spec."""
+
+    try:
+        return float(spec.get("orientation_deg", 0.0))
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def oriented_offset_xy(spec: Mapping[str, Any], dx: float, dy: float) -> Tuple[float, float]:
+    """Rotate one local xy offset by the object's yaw, if present."""
+
+    angle = math.radians(orientation_degrees(spec))
+    if abs(angle) < 1e-12:
+        return float(dx), float(dy)
+    cos_a = math.cos(angle)
+    sin_a = math.sin(angle)
+    return (
+        float(dx) * cos_a - float(dy) * sin_a,
+        float(dx) * sin_a + float(dy) * cos_a,
+    )
 
 
 def object_reference_points(spec: Mapping[str, Any]) -> List[Tuple[float, float, float]]:
@@ -14,12 +38,13 @@ def object_reference_points(spec: Mapping[str, Any]) -> List[Tuple[float, float,
     raw_base = spec.get("base_xyz", (x, y, 0.0))
     base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    return [
-        (x + dx * width * 0.5, y + dy * depth * 0.5, base_z + z)
-        for dx in (-1.0, 1.0)
-        for dy in (-1.0, 1.0)
-        for z in (0.0, height)
-    ] + [(x, y, base_z + height * 0.5)]
+    points: List[Tuple[float, float, float]] = []
+    for dx in (-1.0, 1.0):
+        for dy in (-1.0, 1.0):
+            ox, oy = oriented_offset_xy(spec, dx * width * 0.5, dy * depth * 0.5)
+            for z in (0.0, height):
+                points.append((x + ox, y + oy, base_z + z))
+    return points + [(x, y, base_z + height * 0.5)]
 
 
 def object_screen_bbox(
@@ -51,13 +76,19 @@ def bbox_intersection_area(a: Sequence[float], b: Sequence[float]) -> float:
 _object_reference_points = object_reference_points
 _object_screen_bbox = object_screen_bbox
 _bbox_intersection_area = bbox_intersection_area
+_orientation_degrees = orientation_degrees
+_oriented_offset_xy = oriented_offset_xy
 
 
 __all__ = [
     "_bbox_intersection_area",
     "_object_reference_points",
     "_object_screen_bbox",
+    "_orientation_degrees",
+    "_oriented_offset_xy",
     "bbox_intersection_area",
     "object_reference_points",
     "object_screen_bbox",
+    "orientation_degrees",
+    "oriented_offset_xy",
 ]

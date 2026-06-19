@@ -13,6 +13,7 @@ from .camera_projection import (
     distance as _distance,
     project_xy as _project_xy,
 )
+from .projected_object_geometry import _oriented_offset_xy
 
 
 def _bbox_union(*bboxes: Sequence[float]) -> List[float]:
@@ -41,12 +42,13 @@ def _object_vertices(spec: Mapping[str, Any]) -> Dict[str, Tuple[float, float, f
     raw_base = spec.get("base_xyz", (x, y, 0.0))
     base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    return {
-        f"{sx}{sy}{top}": (x + sx * width * 0.5, y + sy * depth * 0.5, base_z + (height if top else 0.0))
-        for sx in (-1, 1)
-        for sy in (-1, 1)
-        for top in (0, 1)
-    }
+    vertices: Dict[str, Tuple[float, float, float]] = {}
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            ox, oy = _oriented_offset_xy(spec, sx * width * 0.5, sy * depth * 0.5)
+            for top in (0, 1):
+                vertices[f"{sx}{sy}{top}"] = (x + ox, y + oy, base_z + (height if top else 0.0))
+    return vertices
 
 
 def _draw_polyline(draw: ImageDraw.ImageDraw, points: Sequence[Sequence[float]], *, fill: Tuple[int, int, int], width: int = 2) -> None:
@@ -92,6 +94,7 @@ def _diagonal_ground_axis_basis(
     axis_norm = max(1e-6, math.hypot(float(axis_xy[0]), float(axis_xy[1])))
     ux = float(axis_xy[0]) / axis_norm
     uy = float(axis_xy[1]) / axis_norm
+    ux, uy = _oriented_offset_xy(spec, ux, uy)
     world_length = max(float(width), float(depth))
     projected_start = _project_xy((x - ux * world_length * 0.5, y - uy * world_length * 0.5, center_z), camera, frame)
     projected_end = _project_xy((x + ux * world_length * 0.5, y + uy * world_length * 0.5, center_z), camera, frame)
@@ -159,8 +162,9 @@ def _sub_box_spec(
 ) -> Dict[str, Any]:
     x, y, _z = (float(value) for value in spec["world_xyz"])
     width, depth, height = (float(value) for value in dimensions_xyz)
-    cx = float(x + float(offset_xyz[0]))
-    cy = float(y + float(offset_xyz[1]))
+    ox, oy = _oriented_offset_xy(spec, float(offset_xyz[0]), float(offset_xyz[1]))
+    cx = float(x + ox)
+    cy = float(y + oy)
     base_z = float(offset_xyz[2])
     return {
         **dict(spec),
@@ -198,7 +202,10 @@ def _draw_footprint_prism_object(
     raw_base = spec.get("base_xyz", (x, y, 0.0))
     base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    base = [(x + px * width * 0.5, y + py * depth * 0.5, base_z) for px, py in footprint_xy]
+    base = [
+        (x + ox, y + oy, base_z)
+        for ox, oy in (_oriented_offset_xy(spec, px * width * 0.5, py * depth * 0.5) for px, py in footprint_xy)
+    ]
     top = [(point[0], point[1], base_z + height) for point in base]
     faces: List[Tuple[List[Tuple[float, float, float]], Tuple[int, int, int]]] = [
         (list(top), _tint(fill, 0.22)),
@@ -272,20 +279,23 @@ def _draw_half_cylinder_object(
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
     radius_y = depth * 0.5
     profile = [
-        (y - radius_y, base_z),
+        (-radius_y, base_z),
         *[
             (
-                y + math.cos(math.pi - step * math.pi / 8.0) * radius_y,
+                math.cos(math.pi - step * math.pi / 8.0) * radius_y,
                 base_z + math.sin(math.pi - step * math.pi / 8.0) * height,
             )
             for step in range(1, 8)
         ],
-        (y + radius_y, base_z),
+        (radius_y, base_z),
     ]
-    left_x = x - width * 0.5
-    right_x = x + width * 0.5
-    left_face = [(left_x, py, pz) for py, pz in profile]
-    right_face = [(right_x, py, pz) for py, pz in profile]
+    left_face = []
+    right_face = []
+    for py, pz in profile:
+        left_ox, left_oy = _oriented_offset_xy(spec, -width * 0.5, py)
+        right_ox, right_oy = _oriented_offset_xy(spec, width * 0.5, py)
+        left_face.append((x + left_ox, y + left_oy, pz))
+        right_face.append((x + right_ox, y + right_oy, pz))
     faces: List[Tuple[List[Tuple[float, float, float]], Tuple[int, int, int]]] = [
         (left_face, _shade(fill, 0.76)),
         (right_face, _tint(fill, 0.16)),
@@ -318,12 +328,15 @@ def _draw_pyramid_object(
     raw_base = spec.get("base_xyz", (x, y, 0.0))
     base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    base = [
-        (x - width * 0.5, y - depth * 0.5, base_z),
-        (x + width * 0.5, y - depth * 0.5, base_z),
-        (x + width * 0.5, y + depth * 0.5, base_z),
-        (x - width * 0.5, y + depth * 0.5, base_z),
-    ]
+    base = []
+    for dx, dy in (
+        (-width * 0.5, -depth * 0.5),
+        (width * 0.5, -depth * 0.5),
+        (width * 0.5, depth * 0.5),
+        (-width * 0.5, depth * 0.5),
+    ):
+        ox, oy = _oriented_offset_xy(spec, dx, dy)
+        base.append((x + ox, y + oy, base_z))
     apex = (x, y, base_z + height)
     faces = [
         ([base[0], base[1], apex], _tint(fill, 0.16)),
@@ -352,18 +365,17 @@ def _draw_wedge_object(
     raw_base = spec.get("base_xyz", (x, y, 0.0))
     base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    left = x - width * 0.5
-    right = x + width * 0.5
-    front = y - depth * 0.5
-    back = y + depth * 0.5
-    vertices = [
-        (left, front, base_z),
-        (right, front, base_z),
-        (right, back, base_z),
-        (left, back, base_z),
-        (left, front, base_z + height),
-        (left, back, base_z + height),
-    ]
+    vertices = []
+    for dx, dy, dz in (
+        (-width * 0.5, -depth * 0.5, 0.0),
+        (width * 0.5, -depth * 0.5, 0.0),
+        (width * 0.5, depth * 0.5, 0.0),
+        (-width * 0.5, depth * 0.5, 0.0),
+        (-width * 0.5, -depth * 0.5, height),
+        (-width * 0.5, depth * 0.5, height),
+    ):
+        ox, oy = _oriented_offset_xy(spec, dx, dy)
+        vertices.append((x + ox, y + oy, base_z + dz))
     faces = [
         ([vertices[0], vertices[1], vertices[2], vertices[3]], _shade(fill, 0.70)),
         ([vertices[0], vertices[1], vertices[4]], _tint(fill, 0.16)),
@@ -476,12 +488,10 @@ def _radius_px_for_object(spec: Mapping[str, Any], camera: _CameraSpec, frame: _
     x, y, z = (float(value) for value in spec["world_xyz"])
     width, depth, _height = (float(value) for value in spec["dimensions_xyz"])
     center = _project_xy((x, y, z), camera, frame)
-    offsets = [
-        _project_xy((x + width * 0.5, y, z), camera, frame),
-        _project_xy((x - width * 0.5, y, z), camera, frame),
-        _project_xy((x, y + depth * 0.5, z), camera, frame),
-        _project_xy((x, y - depth * 0.5, z), camera, frame),
-    ]
+    offsets = []
+    for dx, dy in ((width * 0.5, 0.0), (-width * 0.5, 0.0), (0.0, depth * 0.5), (0.0, -depth * 0.5)):
+        ox, oy = _oriented_offset_xy(spec, dx, dy)
+        offsets.append(_project_xy((x + ox, y + oy, z), camera, frame))
     return max(18.0, max(math.hypot(point[0] - center[0], point[1] - center[1]) for point in offsets))
 
 

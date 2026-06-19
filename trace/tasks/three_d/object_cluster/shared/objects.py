@@ -33,6 +33,7 @@ from .defaults import (
     MIN_RENDERED_BBOX_SIDE_PX,
     MIN_RENDERED_VISIBLE_BBOX_FRACTION,
     MIN_PROJECTED_OBJECT_AREA_PX,
+    OBJECT_CLUSTER_ORIENTATION_DEGREES,
     PLACEMENT_FOOTPRINT_SEPARATION_FACTOR,
     PROMPT_COLOR_RGB,
     cluster_dimensions,
@@ -170,6 +171,10 @@ def make_cluster_object(
             "prompt_color_name": str(color_name),
             "fill_rgb": list(fill_rgb),
             "semantic_color": color_name in PROMPT_COLOR_RGB,
+            "orientation_deg": round(
+                float(rng.uniform(-float(OBJECT_CLUSTER_ORIENTATION_DEGREES), float(OBJECT_CLUSTER_ORIENTATION_DEGREES))),
+                3,
+            ),
         }
     )
     return spec

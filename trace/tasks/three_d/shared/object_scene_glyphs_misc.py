@@ -30,12 +30,14 @@ from .object_scene_primitives import (
     _draw_torus_object,
     _draw_upright_profile_object,
     _draw_wedge_object,
+    _diagonal_ground_axis_basis,
     _face_distance,
     _gear_footprint_points,
     _heart_profile_points,
     _hexagon_footprint_points,
     _object_vertices,
     _oval_profile_points,
+    _padded_bbox_from_screen_points,
     _project_face,
     _radius_px_for_object,
     _shade,
@@ -157,27 +159,43 @@ def _draw_ruler_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    x, y, _z = (float(value) for value in spec["world_xyz"])
-    raw_base = spec.get("base_xyz", (x, y, 0.0))
-    base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
-    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=(232, 196, 82))
-    bboxes = [bbox]
-    edge_a = _project_xy((x - width * 0.42, y - depth * 0.44, base_z + height * 1.04), camera, frame)
-    edge_b = _project_xy((x - width * 0.42, y + depth * 0.44, base_z + height * 1.04), camera, frame)
-    draw.line((edge_a, edge_b), fill=(92, 70, 34), width=2)
-    bboxes.append(_bbox_from_screen_points([edge_a, edge_b]))
+    center, direction, normal, length_px = _diagonal_ground_axis_basis(
+        spec,
+        camera,
+        frame,
+        center_height_frac=0.62,
+        length_scale=0.88,
+        min_length_px=66.0,
+        max_length_px=112.0,
+    )
+    half_width = max(6.0, min(11.0, length_px * 0.085))
+
+    def point_at(axis_frac: float, offset_px: float = 0.0) -> Tuple[float, float]:
+        return (
+            center[0] + direction[0] * length_px * float(axis_frac) + normal[0] * float(offset_px),
+            center[1] + direction[1] * length_px * float(axis_frac) + normal[1] * float(offset_px),
+        )
+
+    body = [
+        point_at(-0.52, -half_width),
+        point_at(0.52, -half_width),
+        point_at(0.52, half_width),
+        point_at(-0.52, half_width),
+    ]
+    draw.polygon(body, fill=(232, 196, 82), outline=(92, 70, 34))
+    bboxes = [_bbox_from_screen_points(body)]
+    edge = [point_at(-0.48, -half_width * 0.62), point_at(0.48, -half_width * 0.62)]
+    draw.line(edge, fill=(92, 70, 34), width=2)
+    bboxes.append(_padded_bbox_from_screen_points(edge, pad_px=1.0))
     for index in range(13):
-        y_offset = -depth * 0.42 + depth * 0.84 * float(index) / 12.0
-        tick_length = width * (0.80 if index % 6 == 0 else 0.62 if index % 3 == 0 else 0.42)
-        x0 = x - width * 0.38
-        z = base_z + height * 1.06
+        axis_frac = -0.43 + 0.86 * float(index) / 12.0
+        tick_length = half_width * (1.60 if index % 6 == 0 else 1.24 if index % 3 == 0 else 0.84)
         tick = [
-            _project_xy((x0, y + y_offset, z), camera, frame),
-            _project_xy((x0 + tick_length, y + y_offset, z), camera, frame),
+            point_at(axis_frac, -half_width * 0.58),
+            point_at(axis_frac, -half_width * 0.58 + tick_length),
         ]
         draw.line(tick, fill=(89, 72, 42), width=1)
-        bboxes.append(_bbox_from_screen_points(tick))
+        bboxes.append(_padded_bbox_from_screen_points(tick, pad_px=1.0))
     return _bbox_union(*bboxes)
 
 

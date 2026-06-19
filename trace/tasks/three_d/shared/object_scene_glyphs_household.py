@@ -31,12 +31,14 @@ from .object_scene_primitives import (
     _draw_torus_object,
     _draw_upright_profile_object,
     _draw_wedge_object,
+    _diagonal_ground_axis_basis,
     _face_distance,
     _gear_footprint_points,
     _heart_profile_points,
     _hexagon_footprint_points,
     _object_vertices,
     _oval_profile_points,
+    _padded_bbox_from_screen_points,
     _project_face,
     _radius_px_for_object,
     _shade,
@@ -163,34 +165,63 @@ def _draw_paint_brush_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    parts = [
-        ("handle", _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.20, 0.0), dimensions_xyz=(width * 0.18, depth * 0.76, height * 0.46)), (119, 77, 42)),
-        ("ferrule", _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.23, 0.0), dimensions_xyz=(width * 0.38, depth * 0.22, height * 0.58)), (176, 184, 190)),
-        ("bristles", _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.45, 0.0), dimensions_xyz=(width * 0.62, depth * 0.22, height * 0.70)), _shade(fill, 0.76)),
-    ]
-    bboxes = []
-    rendered_by_kind: Dict[str, List[float]] = {}
-    for kind, part, color in sorted(parts, key=lambda item: _distance(item[1]["world_xyz"], camera.camera_position), reverse=True):
-        bbox = _draw_box_object(draw, part, camera=camera, frame=frame, fill=color)
-        bboxes.append(bbox)
-        rendered_by_kind[str(kind)] = bbox
-    ferrule_bbox = rendered_by_kind["ferrule"]
-    fx0, fy0, fx1, fy1 = (float(value) for value in ferrule_bbox)
-    fw = max(1.0, fx1 - fx0)
-    fh = max(1.0, fy1 - fy0)
-    for offset in (0.24, 0.50, 0.76):
-        line = [(fx0 + fw * offset, fy0 + fh * 0.12), (fx0 + fw * offset, fy1 - fh * 0.10)]
+    center, direction, normal, length_px = _diagonal_ground_axis_basis(
+        spec,
+        camera,
+        frame,
+        center_height_frac=0.60,
+        length_scale=0.88,
+        min_length_px=68.0,
+        max_length_px=112.0,
+    )
+    handle_radius = max(4.0, min(6.5, length_px * 0.055))
+    ferrule_radius = max(6.0, min(9.5, length_px * 0.085))
+    bristle_radius = max(8.0, min(13.0, length_px * 0.115))
+
+    def point_at(axis_frac: float, offset_px: float = 0.0) -> Tuple[float, float]:
+        return (
+            center[0] + direction[0] * length_px * float(axis_frac) + normal[0] * float(offset_px),
+            center[1] + direction[1] * length_px * float(axis_frac) + normal[1] * float(offset_px),
+        )
+
+    def strip_between(a: Sequence[float], b: Sequence[float], ra: float, rb: float | None = None) -> List[Tuple[float, float]]:
+        rb = float(ra if rb is None else rb)
+        return [
+            (float(a[0]) + normal[0] * float(ra), float(a[1]) + normal[1] * float(ra)),
+            (float(b[0]) + normal[0] * rb, float(b[1]) + normal[1] * rb),
+            (float(b[0]) - normal[0] * rb, float(b[1]) - normal[1] * rb),
+            (float(a[0]) - normal[0] * float(ra), float(a[1]) - normal[1] * float(ra)),
+        ]
+
+    handle_start = point_at(-0.52)
+    handle_end = point_at(0.08)
+    ferrule_end = point_at(0.28)
+    bristle_end = point_at(0.52)
+    handle = strip_between(handle_start, handle_end, handle_radius)
+    ferrule = strip_between(handle_end, ferrule_end, ferrule_radius)
+    bristles = strip_between(ferrule_end, bristle_end, bristle_radius, bristle_radius * 0.58)
+    bboxes: List[List[float]] = []
+    for poly, color, outline in (
+        (handle, (119, 77, 42), (64, 42, 28)),
+        (ferrule, (176, 184, 190), (77, 86, 96)),
+        (bristles, _shade(fill, 0.76), _shade(fill, 0.48)),
+    ):
+        draw.polygon(poly, fill=color, outline=outline)
+        bboxes.append(_bbox_from_screen_points(poly))
+    for offset in (-0.38, 0.0, 0.38):
+        line = [
+            point_at(0.10, offset * ferrule_radius),
+            point_at(0.27, offset * ferrule_radius * 0.88),
+        ]
         _draw_line(draw, line[0], line[1], fill=(92, 102, 112), width=1)
-        bboxes.append(_bbox_from_screen_points(line))
-    bristle_bbox = rendered_by_kind["bristles"]
-    bx0, by0, bx1, by1 = (float(value) for value in bristle_bbox)
-    bw = max(1.0, bx1 - bx0)
-    bh = max(1.0, by1 - by0)
-    for offset in (0.30, 0.50, 0.70):
-        line = [(bx0 + bw * offset, by0 + bh * 0.12), (bx0 + bw * (offset - 0.04), by1 - bh * 0.12)]
+        bboxes.append(_padded_bbox_from_screen_points(line, pad_px=1.0))
+    for offset in (-0.36, 0.0, 0.36):
+        line = [
+            point_at(0.32, offset * bristle_radius * 0.76),
+            point_at(0.50, offset * bristle_radius * 0.42),
+        ]
         _draw_line(draw, line[0], line[1], fill=_shade(fill, 0.48), width=1)
-        bboxes.append(_bbox_from_screen_points(line))
+        bboxes.append(_padded_bbox_from_screen_points(line, pad_px=1.0))
     return _bbox_union(*bboxes)
 
 

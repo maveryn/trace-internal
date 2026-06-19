@@ -60,6 +60,54 @@ def _bbox_from_screen_points(points: Sequence[Sequence[float]]) -> List[float]:
     return _bbox_union(*[[point[0], point[1], point[0], point[1]] for point in points])
 
 
+def _padded_bbox_from_screen_points(points: Sequence[Sequence[float]], *, pad_px: float = 1.0) -> List[float]:
+    bbox = _bbox_from_screen_points(points)
+    return [
+        round(float(bbox[0]) - float(pad_px), 3),
+        round(float(bbox[1]) - float(pad_px), 3),
+        round(float(bbox[2]) + float(pad_px), 3),
+        round(float(bbox[3]) + float(pad_px), 3),
+    ]
+
+
+def _diagonal_ground_axis_basis(
+    spec: Mapping[str, Any],
+    camera: _CameraSpec,
+    frame: _ProjectionFrame,
+    *,
+    center_height_frac: float = 0.58,
+    length_scale: float = 0.78,
+    min_length_px: float = 42.0,
+    max_length_px: float = 104.0,
+    axis_xy: Tuple[float, float] = (1.0, 0.0),
+) -> Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float], float]:
+    """Return a screen-space basis for objects whose neutral pose is diagonal."""
+
+    x, y, _z = (float(value) for value in spec["world_xyz"])
+    raw_base = spec.get("base_xyz", (x, y, 0.0))
+    base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
+    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
+    center_z = base_z + height * float(center_height_frac)
+    center = _project_xy((x, y, center_z), camera, frame)
+    axis_norm = max(1e-6, math.hypot(float(axis_xy[0]), float(axis_xy[1])))
+    ux = float(axis_xy[0]) / axis_norm
+    uy = float(axis_xy[1]) / axis_norm
+    world_length = max(float(width), float(depth))
+    projected_start = _project_xy((x - ux * world_length * 0.5, y - uy * world_length * 0.5, center_z), camera, frame)
+    projected_end = _project_xy((x + ux * world_length * 0.5, y + uy * world_length * 0.5, center_z), camera, frame)
+    axis_dx = float(projected_end[0]) - float(projected_start[0])
+    axis_dy = float(projected_end[1]) - float(projected_start[1])
+    axis_len = math.hypot(axis_dx, axis_dy)
+    if axis_len < 1e-6:
+        inv_sqrt2 = math.sqrt(0.5)
+        direction = (inv_sqrt2, -inv_sqrt2)
+    else:
+        direction = (axis_dx / axis_len, axis_dy / axis_len)
+    normal = (-direction[1], direction[0])
+    length_px = max(float(min_length_px), min(float(max_length_px), float(frame.scale) * world_length * float(length_scale)))
+    return center, direction, normal, length_px
+
+
 def _project_face(face: Sequence[Sequence[float]], camera: _CameraSpec, frame: _ProjectionFrame) -> List[Tuple[float, float]]:
     return [_project_xy(point, camera, frame) for point in face]
 
@@ -580,6 +628,7 @@ __all__ = [
     "_arrow_footprint_points",
     "_bbox_from_screen_points",
     "_bbox_union",
+    "_diagonal_ground_axis_basis",
     "_draw_box_object",
     "_draw_box_parts_object",
     "_draw_cone_object",
@@ -599,6 +648,7 @@ __all__ = [
     "_hexagon_footprint_points",
     "_object_vertices",
     "_oval_profile_points",
+    "_padded_bbox_from_screen_points",
     "_project_face",
     "_radius_px_for_object",
     "_shade",

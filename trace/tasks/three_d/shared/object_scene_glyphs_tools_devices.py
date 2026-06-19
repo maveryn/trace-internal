@@ -30,6 +30,7 @@ from .object_scene_primitives import (
     _draw_torus_object,
     _draw_upright_profile_object,
     _draw_wedge_object,
+    _diagonal_ground_axis_basis,
     _face_distance,
     _gear_footprint_points,
     _heart_profile_points,
@@ -73,14 +74,16 @@ def _draw_pencil_object(
             bboxes.append(_draw_detail_line(draw, [(x0 + w * 0.10, y0 + h * offset), (x1 - w * 0.10, y0 + h * (offset - 0.04))], fill=_shade(fill, 0.62), width=1))
         return _bbox_union(*bboxes)
     if shape_type == "pen":
-        x, y, _z = (float(value) for value in spec["world_xyz"])
-        raw_base = spec.get("base_xyz", (x, y, 0.0))
-        base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
-        center = _project_xy((x, y, base_z + height * 0.58), camera, frame)
-        length_px = max(56.0, min(96.0, float(frame.scale) * depth * 0.78))
-        radius = max(2.8, min(4.8, length_px * 0.052))
-        direction = (0.945, -0.327)
-        normal = (-direction[1], direction[0])
+        center, direction, normal, length_px = _diagonal_ground_axis_basis(
+            spec,
+            camera,
+            frame,
+            center_height_frac=0.58,
+            length_scale=0.84,
+            min_length_px=64.0,
+            max_length_px=108.0,
+        )
+        radius = max(3.8, min(6.0, length_px * 0.060))
 
         def point_at(axis_frac: float) -> Tuple[float, float]:
             return (
@@ -185,21 +188,22 @@ def _draw_pencil_object(
             draw.polygon([(broad_tip[0], broad_tip[1]), (broad_tip[2], broad_tip[1]), ((broad_tip[0] + broad_tip[2]) * 0.5, broad_tip[3])], fill=(34, 40, 48))
             bboxes.extend([color_band, broad_tip])
         return _bbox_union(*bboxes)
-    x, y, _z = (float(value) for value in spec["world_xyz"])
-    raw_base = spec.get("base_xyz", (x, y, 0.0))
-    base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
-    center_z = base_z + height * 0.56
+    center, direction, normal, length_px = _diagonal_ground_axis_basis(
+        spec,
+        camera,
+        frame,
+        center_height_frac=0.56,
+        length_scale=0.86,
+        min_length_px=66.0,
+        max_length_px=110.0,
+    )
+    radius = max(4.0, min(6.8, length_px * 0.060))
 
-    def point_at(y_frac: float, *, z_frac: float = 0.0) -> Tuple[float, float]:
-        return _project_xy((x, y + depth * float(y_frac), center_z + height * float(z_frac)), camera, frame)
-
-    axis_start = point_at(-0.52)
-    axis_end = point_at(0.54)
-    axis_dx = axis_end[0] - axis_start[0]
-    axis_dy = axis_end[1] - axis_start[1]
-    axis_len = max(1e-6, math.hypot(axis_dx, axis_dy))
-    normal = (-axis_dy / axis_len, axis_dx / axis_len)
-    radius = max(3.3, min(6.2, float(frame.scale) * width * 0.078))
+    def point_at(axis_frac: float, *, z_frac: float = 0.0) -> Tuple[float, float]:
+        return (
+            center[0] + direction[0] * length_px * float(axis_frac) - normal[0] * length_px * 0.012 * float(z_frac),
+            center[1] + direction[1] * length_px * float(axis_frac) - normal[1] * length_px * 0.012 * float(z_frac),
+        )
 
     def strip_between(a: Sequence[float], b: Sequence[float], ra: float, rb: float | None = None) -> List[Tuple[float, float]]:
         rb = float(ra if rb is None else rb)
@@ -643,15 +647,16 @@ def _draw_screw_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    x, y, _z = (float(value) for value in spec["world_xyz"])
-    raw_base = spec.get("base_xyz", (x, y, 0.0))
-    base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
-    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    center = _project_xy((x, y, base_z + height * 0.58), camera, frame)
-    length_px = max(50.0, min(86.0, float(frame.scale) * depth * 0.72))
-    shaft_width = max(3, int(round(length_px * 0.055)))
-    direction = (0.952, -0.306)
-    normal = (-direction[1], direction[0])
+    center, direction, normal, length_px = _diagonal_ground_axis_basis(
+        spec,
+        camera,
+        frame,
+        center_height_frac=0.58,
+        length_scale=0.76,
+        min_length_px=58.0,
+        max_length_px=96.0,
+    )
+    shaft_width = max(4, int(round(length_px * 0.064)))
 
     def point_at(axis_frac: float) -> Tuple[float, float]:
         return (
@@ -864,27 +869,34 @@ def _draw_stick_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    x, y, _z = (float(value) for value in spec["world_xyz"])
-    raw_base = spec.get("base_xyz", (x, y, 0.0))
-    base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    center_z = base_z + height * 0.62
-    world_points = [
-        (x - width * 0.10, y - depth * 0.50, center_z),
-        (x + width * 0.04, y - depth * 0.22, center_z + height * 0.08),
-        (x - width * 0.06, y + depth * 0.08, center_z - height * 0.03),
-        (x + width * 0.12, y + depth * 0.50, center_z + height * 0.04),
+    center, direction, normal, length_px = _diagonal_ground_axis_basis(
+        spec,
+        camera,
+        frame,
+        center_height_frac=0.62,
+        length_scale=0.86,
+        min_length_px=62.0,
+        max_length_px=108.0,
+    )
+
+    def point_at(axis_frac: float, offset_px: float = 0.0) -> Tuple[float, float]:
+        return (
+            center[0] + direction[0] * length_px * float(axis_frac) + normal[0] * float(offset_px),
+            center[1] + direction[1] * length_px * float(axis_frac) + normal[1] * float(offset_px),
+        )
+
+    points = [
+        point_at(-0.52, -2.0),
+        point_at(-0.18, 3.0),
+        point_at(0.14, -2.5),
+        point_at(0.52, 2.0),
     ]
-    points = [_project_xy(point, camera, frame) for point in world_points]
-    main_width = max(5, int(round(float(frame.scale) * max(width, height) * 0.18)))
+    main_width = max(5, int(round(length_px * 0.070)))
     draw.line(points, fill=(71, 43, 23), width=main_width + 2, joint="curve")
     draw.line(points, fill=(132, 84, 43), width=main_width, joint="curve")
     bboxes: List[List[float]] = [_padded_screen_line_bbox(points, pad_px=float(main_width + 2))]
-    branch_world = [
-        (x - width * 0.02, y + depth * 0.05, center_z),
-        (x + width * 0.58, y + depth * 0.20, center_z + height * 0.10),
-    ]
-    branch = [_project_xy(point, camera, frame) for point in branch_world]
+    branch = [point_at(0.06, -1.0), point_at(0.27, 18.0)]
     draw.line(branch, fill=(83, 50, 26), width=max(3, main_width - 2), joint="curve")
     bboxes.append(_padded_screen_line_bbox(branch, pad_px=float(main_width)))
     for offset in (0.22, 0.48, 0.72):
@@ -907,20 +919,38 @@ def _draw_straw_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    screen_points = _project_face(list(_object_vertices(spec).values()), camera, frame)
-    x0, y0, x1, y1 = (float(value) for value in _bbox_from_screen_points(screen_points))
-    w = max(1.0, x1 - x0)
-    h = max(1.0, y1 - y0)
-    tube = [(x0 + w * 0.22, y1 - h * 0.18), (x0 + w * 0.50, y0 + h * 0.36), (x1 - w * 0.16, y0 + h * 0.22)]
-    draw.line(tube, fill=_shade(fill, 0.52), width=9, joint="curve")
-    draw.line(tube, fill=_tint(fill, 0.30), width=6, joint="curve")
-    bboxes = [_padded_screen_line_bbox(tube, pad_px=5.0)]
-    for frac in (0.26, 0.42, 0.60, 0.76):
-        stripe = [(x0 + w * (frac - 0.035), y0 + h * (1.02 - frac)), (x0 + w * (frac + 0.055), y0 + h * (0.92 - frac))]
+    center, direction, normal, length_px = _diagonal_ground_axis_basis(
+        spec,
+        camera,
+        frame,
+        center_height_frac=0.58,
+        length_scale=0.84,
+        min_length_px=60.0,
+        max_length_px=104.0,
+    )
+
+    def point_at(axis_frac: float, offset_px: float = 0.0) -> Tuple[float, float]:
+        return (
+            center[0] + direction[0] * length_px * float(axis_frac) + normal[0] * float(offset_px),
+            center[1] + direction[1] * length_px * float(axis_frac) + normal[1] * float(offset_px),
+        )
+
+    tube_width = max(7, int(round(length_px * 0.090)))
+    tube = [point_at(-0.52, -1.0), point_at(-0.10, 7.0), point_at(0.52, -2.0)]
+    draw.line(tube, fill=_shade(fill, 0.52), width=tube_width + 3, joint="curve")
+    draw.line(tube, fill=_tint(fill, 0.30), width=tube_width, joint="curve")
+    bboxes = [_padded_screen_line_bbox(tube, pad_px=float(tube_width))]
+    for frac in (-0.30, -0.12, 0.08, 0.28):
+        p = point_at(frac, 2.0)
+        stripe = [
+            (p[0] - normal[0] * tube_width * 0.54, p[1] - normal[1] * tube_width * 0.54),
+            (p[0] + normal[0] * tube_width * 0.54, p[1] + normal[1] * tube_width * 0.54),
+        ]
         draw.line(stripe, fill=(236, 244, 248), width=2)
         bboxes.append(_padded_screen_line_bbox(stripe, pad_px=1.0))
     for end_x, end_y in ((tube[0][0], tube[0][1]), (tube[-1][0], tube[-1][1])):
-        end = [end_x - w * 0.045, end_y - h * 0.045, end_x + w * 0.045, end_y + h * 0.045]
+        end_radius = max(4.0, float(tube_width) * 0.58)
+        end = [end_x - end_radius, end_y - end_radius, end_x + end_radius, end_y + end_radius]
         draw.ellipse(end, fill=(48, 61, 70), outline=(237, 244, 246), width=1)
         bboxes.append(end)
     return _bbox_union(*bboxes)
@@ -934,15 +964,46 @@ def _draw_tube_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=(170, 181, 187))
-    x0, y0, x1, y1 = (float(value) for value in bbox)
-    w = max(1.0, x1 - x0)
-    h = max(1.0, y1 - y0)
-    left_hole = [x0 + w * 0.06, y0 + h * 0.33, x0 + w * 0.22, y0 + h * 0.66]
-    right_hole = [x1 - w * 0.22, y1 - h * 0.66, x1 - w * 0.06, y1 - h * 0.33]
-    for hole in (left_hole, right_hole):
-        draw.ellipse(hole, fill=(66, 76, 86), outline=(224, 230, 232), width=1)
-    return _bbox_union(bbox, left_hole, right_hole)
+    center, direction, normal, length_px = _diagonal_ground_axis_basis(
+        spec,
+        camera,
+        frame,
+        center_height_frac=0.56,
+        length_scale=0.80,
+        min_length_px=58.0,
+        max_length_px=100.0,
+    )
+
+    def point_at(axis_frac: float) -> Tuple[float, float]:
+        return (
+            center[0] + direction[0] * length_px * float(axis_frac),
+            center[1] + direction[1] * length_px * float(axis_frac),
+        )
+
+    body_width = max(12, int(round(length_px * 0.150)))
+    start = point_at(-0.50)
+    end = point_at(0.50)
+    line = [start, end]
+    draw.line(line, fill=(73, 82, 92), width=body_width + 4)
+    draw.line(line, fill=(170, 181, 187), width=body_width)
+    shine = [
+        (start[0] + normal[0] * body_width * 0.20, start[1] + normal[1] * body_width * 0.20),
+        (end[0] + normal[0] * body_width * 0.20, end[1] + normal[1] * body_width * 0.20),
+    ]
+    draw.line(shine, fill=(224, 230, 232), width=2)
+    bboxes = [
+        _padded_screen_line_bbox(line, pad_px=float(body_width + 2)),
+        _padded_screen_line_bbox(shine, pad_px=1.0),
+    ]
+    end_radius = max(5.0, float(body_width) * 0.52)
+    for end_x, end_y in (start, end):
+        outer = [end_x - end_radius, end_y - end_radius, end_x + end_radius, end_y + end_radius]
+        inner_radius = end_radius * 0.44
+        inner = [end_x - inner_radius, end_y - inner_radius, end_x + inner_radius, end_y + inner_radius]
+        draw.ellipse(outer, fill=(154, 165, 173), outline=(53, 62, 72), width=1)
+        draw.ellipse(inner, fill=(58, 68, 78), outline=(224, 230, 232), width=1)
+        bboxes.extend([outer, inner])
+    return _bbox_union(*bboxes)
 
 
 def _draw_clip_object(

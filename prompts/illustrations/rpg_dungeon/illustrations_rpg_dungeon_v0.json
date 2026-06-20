@@ -1,0 +1,64 @@
+{
+  "bundle_id": "illustrations_rpg_dungeon_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "rpg_dungeon_reachable_chest_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:rpg_dungeon_canvas": [],
+    "query:reachable_chest_count": [],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "rpg_dungeon_canvas": [
+      "The image shows a top-down pixel RPG dungeon with stone chambers, corridors, a player, treasure chests, sealed doors, and rubble.",
+      "The scene shows a top-down RPG-style dungeon map with walkable floor, blocked passages, a player, and treasure chests.",
+      "The picture shows a pixel-art dungeon from above, including corridors, chambers, blockers, and treasure chests.",
+      "The canvas contains a top-down dungeon layout with a player, visible chests, and some blocked corridor paths.",
+      "This illustration shows an RPG dungeon map from above with walkable passages and blocked passages."
+    ]
+  },
+  "query_templates": {
+    "reachable_chest_count": [
+      "Starting from the player, how many treasure chests can be reached by walking only through open floor and corridors?",
+      "Count the treasure chests reachable from the player without crossing sealed doors or rubble. What is the count?",
+      "From the player's position, how many chests are connected by unblocked floor paths?",
+      "Follow paths through the open dungeon floor from the player. How many treasure chests can be reached?",
+      "How many treasure chests can the player reach without passing through a blocked corridor?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}
+

@@ -1,0 +1,32 @@
+generation:
+  shared:
+    balanced_sampling: true
+  task_overrides:
+    task_illustrations__rpg_dungeon__reachable_chest_count:
+      query_id_support:
+        - single
+      reachable_chest_count_support:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+
+rendering:
+  shared:
+    rpg_dungeon_tile_px: 48
+
+prompt:
+  task_overrides:
+    task_illustrations__rpg_dungeon__reachable_chest_count:
+      bundle_id: illustrations_rpg_dungeon_v0
+      scene_key: rpg_dungeon_canvas
+      task_key: rpg_dungeon_reachable_chest_count_task
+      json_output_contract: 'Return JSON with keys "annotation" and "answer".'
+      json_output_contract_answer_only: 'Return JSON with key "answer".'
+      answer_hint_rpg_dungeon_reachable_chest_count: set "answer" to the number of treasure chests reachable from the player
+      annotation_hint_rpg_dungeon_reachable_chest_count: set "annotation" to an object with keys "player" and "reachable_chests"; "player" contains one [x, y] point on the player, and "reachable_chests" contains one [x, y] point on each counted reachable chest
+      json_example_rpg_dungeon_reachable_chest_count: '{"annotation":{"player":[[420,360]],"reachable_chests":[[260,180],[620,180]]},"answer":2}'
+      json_example_answer_only_rpg_dungeon_reachable_chest_count: '{"answer":2}'
+

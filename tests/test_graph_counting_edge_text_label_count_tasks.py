@@ -75,8 +75,8 @@ def test_graph_counting_edge_text_label_count_contract_matches_trace() -> None:
     assert execution["label_variant"] == "named"
     assert render_spec["canvas_size"] == [960, 720]
     assert render_spec["style"]["label_font_size_px"] == 20
-    assert render_spec["style"]["edge_text_label_font_size_px"] == 19
-    assert render_spec["style"]["resolved_edge_text_label_font_size_px"] == 19
+    assert render_spec["style"]["edge_text_label_font_size_px"] == 22
+    assert render_spec["style"]["resolved_edge_text_label_font_size_px"] == 22
     assert '"feeds"' in str(out.prompt)
 
     matching_edges = [

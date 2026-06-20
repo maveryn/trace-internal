@@ -67,8 +67,8 @@ def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -
     assert execution["label_variant"] == "named"
     assert render_spec["canvas_size"] == [960, 720]
     assert render_spec["style"]["label_font_size_px"] == 20
-    assert render_spec["style"]["edge_text_label_font_size_px"] == 19
-    assert render_spec["style"]["resolved_edge_text_label_font_size_px"] == 19
+    assert render_spec["style"]["edge_text_label_font_size_px"] == 22
+    assert render_spec["style"]["resolved_edge_text_label_font_size_px"] == 22
     assert 'node "' in str(out.prompt)
 
     query_edge = tuple(str(value) for value in trace["witness_symbolic"]["edge_labels"][0])
@@ -142,8 +142,8 @@ def test_graph_relation_edge_attribute_label_shortest_path_first_edge_contract()
     assert "first edge" in str(out.prompt)
     assert render_spec["canvas_size"] == [960, 720]
     assert render_spec["style"]["label_font_size_px"] == 20
-    assert render_spec["style"]["edge_text_label_font_size_px"] == 19
-    assert render_spec["style"]["resolved_edge_text_label_font_size_px"] == 19
+    assert render_spec["style"]["edge_text_label_font_size_px"] == 22
+    assert render_spec["style"]["resolved_edge_text_label_font_size_px"] == 22
     query_edge = tuple(str(value) for value in out.trace_payload["witness_symbolic"]["edge_labels"][0])
     labels_by_edge = {
         tuple(str(value) for value in entry["edge"]): str(entry["edge_label"])

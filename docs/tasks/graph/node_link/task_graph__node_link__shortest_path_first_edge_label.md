@@ -28,7 +28,7 @@
 5. Edge labels are lowercase text of `3..5` characters and are filtered so they do not duplicate any visible node label.
 6. Instances cap visible labeled edges at `12`; edge-label boxes must be collision-free with node boxes and other edge-label boxes.
 7. The shortest-path length support is `2..3`.
-8. Edge-label task rendering uses a `960x720` canvas and keeps node labels at `20px` while drawing edge-label text at `19px`.
+8. Edge-label task rendering uses a `960x720` canvas and keeps node labels at `20px` while drawing edge-label text at `22px`.
 
 ## Prompt Contract
 1. Prompt text comes from graph prompt templates and scene config, not hardcoded user-facing text.

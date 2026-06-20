@@ -4460,7 +4460,7 @@ rendering:
       arrow_width_px: 7
       node_border_width_px: 2
       label_font_size_px: 20
-      edge_text_label_font_size_px: 19
+      edge_text_label_font_size_px: 22
     task_graph__node_link__edge_color_count:
       canvas_width: 864
       canvas_height: 640
@@ -4489,7 +4489,7 @@ rendering:
       arrow_width_px: 7
       node_border_width_px: 2
       label_font_size_px: 20
-      edge_text_label_font_size_px: 19
+      edge_text_label_font_size_px: 22
     task_graph__node_link__shortest_path_first_edge_label:
       canvas_width: 960
       canvas_height: 720
@@ -4504,7 +4504,7 @@ rendering:
       arrow_width_px: 7
       node_border_width_px: 2
       label_font_size_px: 20
-      edge_text_label_font_size_px: 19
+      edge_text_label_font_size_px: 22
     task_graph__node_link__unique_related_node_label:
       canvas_width: 864
       canvas_height: 640

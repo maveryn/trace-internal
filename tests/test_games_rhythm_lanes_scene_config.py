@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.games.rhythm.shared.common import (
-    SUPPORTED_RHYTHM_QUERY_IDS,
-    SUPPORTED_RHYTHM_SCENE_VARIANTS,
-    SUPPORTED_RHYTHM_STYLE_VARIANTS,
-)
+from trace.tasks.games.rhythm.shared.state import SUPPORTED_SCENE_VARIANTS, SUPPORTED_STYLE_VARIANTS
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
@@ -19,21 +18,24 @@ def test_games_rhythm_lanes_defaults_present() -> None:
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_lane_count_sampling"]) is True
     assert bool(generation["balanced_row_count_sampling"]) is True
     assert bool(generation["balanced_beat_window_sampling"]) is True
     assert bool(generation["balanced_hit_count_sampling"]) is True
-    assert set(generation["scene_variant_weights"].keys()) == set(SUPPORTED_RHYTHM_SCENE_VARIANTS)
-    assert set(generation["query_id_weights"].keys()) == set(SUPPORTED_RHYTHM_QUERY_IDS)
-    assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_RHYTHM_STYLE_VARIANTS)
+    assert set(generation["scene_variant_weights"].keys()) == set(SUPPORTED_SCENE_VARIANTS)
+    assert "query_id_weights" not in generation
+    assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_STYLE_VARIANTS)
     assert list(generation["lane_count_support"]) == [5, 6, 7, 8]
     assert list(generation["row_count_support"]) == [10, 11, 12, 13, 14]
     assert list(generation["beat_window_support"]) == [5, 6, 7]
     assert list(generation["hit_count_support"]) == [1, 2, 3, 4, 5]
     assert int(rendering["canvas_width"]) == 760
     assert int(rendering["canvas_height"]) == 900
-    assert str(prompt["bundle_id"]) == "games_rhythm_v0"
-    assert "one row per beat" in str(prompt["rhythm_motion_rule_text"])
-    assert "bounding boxes" in str(prompt["annotation_hint_lane_hit_count"])
+    assert str(prompt["bundle_id"]) == "games_rhythm_v1"
+
+    bundle = json.loads(Path("prompts/games/rhythm/games_rhythm_v1.json").read_text(encoding="utf-8"))
+    prompt_defaults = bundle["code_prompt_defaults"]
+    assert "one row per beat" in str(prompt_defaults["rhythm_motion_rule_text"])
+    assert "bounding boxes" in str(prompt_defaults["annotation_hint_lane_hit_count"])
+    assert "bounding box [x0, y0, x1, y1]" in str(prompt_defaults["annotation_hint_earliest_hit_lane_label"])

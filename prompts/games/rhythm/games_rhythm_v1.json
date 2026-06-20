@@ -147,7 +147,7 @@
     "answer_hint_lane_color_hit_count": "set \"answer\" to the integer count",
     "annotation_hint_most_hits_lane_label": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around the notes in the winning lane that reach the hit line within the stated number of beats",
     "answer_hint_most_hits_lane_label": "set \"answer\" to the winning lane number as an integer",
-    "annotation_hint_earliest_hit_lane_label": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the note that reaches the hit line earliest",
+    "annotation_hint_earliest_hit_lane_label": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the note that reaches the hit line earliest",
     "answer_hint_earliest_hit_lane_label": "set \"answer\" to the winning lane number as an integer"
   }
 }

@@ -10,7 +10,8 @@ from PIL import Image, ImageDraw
 from ....shared.text_rendering import fit_font_to_box
 from ...shared.text import draw_game_text_traced as draw_text_traced
 from ...shared.layout import apply_games_layout_jitter_to_bbox
-from .common import RhythmNote, lane_entity_id, lane_label
+from .rules import lane_entity_id, lane_label
+from .state import RhythmNote
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 
 
@@ -58,7 +59,7 @@ class RenderedRhythmScene:
 
 
 def build_games_rhythm_theme(*, style_variant: str) -> RhythmTheme:
-    """Return one rhythm-lanes visual theme."""
+    """Return the palette for one rhythm-lanes visual style."""
 
     style = str(style_variant)
     if style == "neon":
@@ -254,7 +255,7 @@ def render_rhythm_lanes_scene(
     params: RhythmRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedRhythmScene:
-    """Render one rhythm-lanes playfield."""
+    """Render the complete rhythm-lanes playfield and trace geometry."""
 
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")

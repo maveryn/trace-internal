@@ -1,15 +1,15 @@
 # `task_games__rhythm__earliest_hit_lane_label`
 
-## Contract
-1. Domain: `games`
-2. Scene: `rhythm`
-3. Scene id: `rhythm`
-4. Public task id: `task_games__rhythm__earliest_hit_lane_label`
-5. Supported `query_id` values: `earliest_hit_lane_label`
-6. Answer schema: `integer_value`
-7. Annotation schema: `bbox_set`
-8. Program schema: `integer_label(arg_extreme(filter(notes, note_in_hit_window(note, beat_window)=True), metric=bottom_distance_to_hit_line, direction=lowest).lane); scene=rhythm; scope=earliest_hit_lane_label`
+## Program Contract
+- Domain: `games`
+- Scene: `rhythm`
+- Public task id: `task_games__rhythm__earliest_hit_lane_label`
+- Supported `query_id` values: `single`
+- Answer schema: `integer_value`
+- Annotation schema: `bbox`
+- Program code: `argmin(filter(notes, note_in_hit_window(note, beat_window)=true), metric=bottom_row_from_hit_line).lane_label; scene=rhythm; scope=earliest_hit_lane_label`
 
-## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
+## Notes
+- The sampled scene has one uniquely earliest hitting note by construction.
+- Annotation is the scalar bbox around that earliest note.
+- Scalar annotation checked: true.

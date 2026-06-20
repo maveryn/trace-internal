@@ -69,6 +69,7 @@ rendering:
     table_font_size_px: 18
     table_header_font_size_px: 19
     mark_outline_width_px: 2
+    chart_context_profile: dense_clean_minimal
 prompt:
   shared:
     bundle_id: charts_part_whole_v1

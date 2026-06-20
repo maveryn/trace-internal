@@ -1,20 +1,47 @@
-"""Rendering helpers for part-whole composition chart tasks."""
+"""Rendering primitives for part-whole chart scenes."""
 
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Mapping, Sequence, Tuple
+from dataclasses import dataclass
+from typing import Any, Mapping, Sequence
 
 from PIL import Image, ImageDraw
 
-from .....core.seed import spawn_rng
-from ....shared.config_defaults import group_default
-from ....shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
-from ....shared.text_rendering import load_font
-from ....shared.text_legibility import draw_text_traced
-from .share_arithmetic_common import PartWholeDataset, RENDER_DEFAULTS, RenderedShareChart, SAMPLING_NAMESPACE
+from trace.core.seed import spawn_rng
+from trace.core.visual.background import make_background_canvas
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.charts.shared.visual_defaults import chart_font_asset_metadata, sample_chart_font_family
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
+from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_rendering import load_font, temporary_default_font_family
 
-def _bbox_center(bbox: Sequence[float]) -> List[float]:
+from .defaults import (
+    DEFAULTS,
+    POST_IMAGE_BACKGROUND_DEFAULTS,
+    POST_IMAGE_NOISE_DEFAULTS,
+    RENDER_DEFAULTS,
+    SAMPLING_NAMESPACE,
+    SCENE_ID,
+)
+from .state import PartWholeDataset, RenderedShareChart
+
+
+@dataclass(frozen=True)
+class PartWholeRenderResult:
+    """Rendered chart plus non-semantic visual metadata."""
+
+    image: Image.Image
+    rendered_scene: RenderedShareChart
+    background_meta: dict[str, Any]
+    post_noise_meta: dict[str, Any]
+    font_assets: dict[str, str]
+    canvas_width: int
+    canvas_height: int
+
+
+def _bbox_center(bbox: Sequence[float]) -> list[float]:
     x0, y0, x1, y1 = [float(value) for value in bbox]
     return [(float(x0) + float(x1)) / 2.0, (float(y0) + float(y1)) / 2.0]
 
@@ -25,7 +52,7 @@ def _text_bbox_at_origin(
     font: Any,
     *,
     stroke_width: int = 0,
-) -> Tuple[float, float, float, float]:
+) -> tuple[float, float, float, float]:
     try:
         bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=max(0, int(stroke_width)))
         return float(bbox[0]), float(bbox[1]), float(bbox[2]), float(bbox[3])
@@ -35,29 +62,32 @@ def _text_bbox_at_origin(
         return float(-pad), float(-pad), float(width + pad), float(height + pad)
 
 
-def _text_size(draw: ImageDraw.ImageDraw, text: str, font: Any, *, stroke_width: int = 0) -> Tuple[float, float]:
+def _text_size(draw: ImageDraw.ImageDraw, text: str, font: Any, *, stroke_width: int = 0) -> tuple[float, float]:
     bbox = _text_bbox_at_origin(draw, str(text), font, stroke_width=max(0, int(stroke_width)))
     return float(bbox[2] - bbox[0]), float(bbox[3] - bbox[1])
 
 
 def _draw_text(
     draw: ImageDraw.ImageDraw,
-    xy: Tuple[float, float],
+    xy: tuple[float, float],
     text: str,
     font: Any,
-    fill: Tuple[int, int, int],
+    fill: tuple[int, int, int],
     *,
     stroke_width: int = 0,
-    stroke_fill: Tuple[int, int, int] = (255, 255, 255),
-) -> List[float]:
-    draw_text_traced(draw,
+    stroke_fill: tuple[int, int, int] = (255, 255, 255),
+) -> list[float]:
+    draw_text_traced(
+        draw,
         (float(xy[0]), float(xy[1])),
         str(text),
         font=font,
         fill=fill,
         stroke_width=max(0, int(stroke_width)),
         stroke_fill=stroke_fill,
-     role="readout", required=False,)
+        role="readout",
+        required=False,
+    )
     raw = _text_bbox_at_origin(draw, str(text), font, stroke_width=max(0, int(stroke_width)))
     return [
         float(xy[0]) + float(raw[0]),
@@ -69,14 +99,14 @@ def _draw_text(
 
 def _draw_centered(
     draw: ImageDraw.ImageDraw,
-    xy: Tuple[float, float],
+    xy: tuple[float, float],
     text: str,
     font: Any,
-    fill: Tuple[int, int, int],
+    fill: tuple[int, int, int],
     *,
     stroke_width: int = 0,
-    stroke_fill: Tuple[int, int, int] = (255, 255, 255),
-) -> List[float]:
+    stroke_fill: tuple[int, int, int] = (255, 255, 255),
+) -> list[float]:
     raw = _text_bbox_at_origin(draw, str(text), font, stroke_width=max(0, int(stroke_width)))
     width = float(raw[2] - raw[0])
     height = float(raw[3] - raw[1])
@@ -95,12 +125,12 @@ def _draw_centered(
 
 def _centered_text_bbox(
     draw: ImageDraw.ImageDraw,
-    xy: Tuple[float, float],
+    xy: tuple[float, float],
     text: str,
     font: Any,
     *,
     stroke_width: int = 0,
-) -> List[float]:
+) -> list[float]:
     raw = _text_bbox_at_origin(draw, str(text), font, stroke_width=max(0, int(stroke_width)))
     width = float(raw[2] - raw[0])
     height = float(raw[3] - raw[1])
@@ -123,7 +153,7 @@ def _bboxes_overlap(left: Sequence[float], right: Sequence[float], *, padding: f
     )
 
 
-def _contrast_text(color: Sequence[int]) -> Tuple[int, int, int]:
+def _contrast_text(color: Sequence[int]) -> tuple[int, int, int]:
     red, green, blue = (int(color[0]), int(color[1]), int(color[2]))
     luminance = (0.299 * float(red)) + (0.587 * float(green)) + (0.114 * float(blue))
     return (22, 25, 32) if float(luminance) > 150.0 else (255, 255, 255)
@@ -134,21 +164,29 @@ def _render_pie_like(
     *,
     dataset: PartWholeDataset,
     scene_variant: str,
-    chart_bbox: Tuple[float, float, float, float],
-    text_color: Tuple[int, int, int],
-    panel_fill: Tuple[int, int, int],
+    chart_bbox: tuple[float, float, float, float],
+    text_color: tuple[int, int, int],
+    panel_fill: tuple[int, int, int],
     outline_width: int,
     label_font: Any,
-) -> Tuple[List[Dict[str, Any]], Tuple[int, int, int, int]]:
+) -> tuple[list[dict[str, Any]], tuple[int, int, int, int]]:
+    """Draw circular share marks and record stable segment-center projections.
+
+    This helper owns only pie/donut geometry.  It never chooses answer
+    categories; every returned projection is keyed by visible category label so
+    task-owned annotation labels can be projected later without reinterpreting
+    pixels.
+    """
+
     x0, y0, x1, y1 = [float(value) for value in chart_bbox]
     center = ((float(x0) + float(x1)) / 2.0, (float(y0) + float(y1)) / 2.0 + 8.0)
     radius = min((float(x1) - float(x0)) * 0.42, (float(y1) - float(y0)) * 0.43)
     pie_box = (center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius)
-    start_angle = -90.0
-    min_label_share = 5
-    label_specs: List[Dict[str, Any]] = []
-    candidate_bboxes: List[List[float]] = []
     label_radius = float(radius) * (0.72 if str(scene_variant) == "pie" else 0.78)
+    min_label_share = 5
+    label_specs: list[dict[str, Any]] = []
+    candidate_bboxes: list[list[float]] = []
+    start_angle = -90.0
     for category in dataset.categories:
         share = int(category.value)
         end_angle = float(start_angle + (float(share) * 3.6))
@@ -165,8 +203,6 @@ def _render_pie_like(
         label_specs.append(
             {
                 "category": category,
-                "start_angle": float(start_angle),
-                "end_angle": float(end_angle),
                 "label_x": float(label_x),
                 "label_y": float(label_y),
                 "candidate_bbox": list(candidate_bbox),
@@ -174,8 +210,9 @@ def _render_pie_like(
         )
         candidate_bboxes.append(list(candidate_bbox))
         start_angle = float(end_angle)
+
     labels_fit = all(int(category.value) >= int(min_label_share) for category in dataset.categories)
-    if bool(labels_fit):
+    if labels_fit:
         for left_index, left_bbox in enumerate(candidate_bboxes):
             for right_bbox in candidate_bboxes[int(left_index) + 1 :]:
                 if _bboxes_overlap(left_bbox, right_bbox, padding=4.0):
@@ -184,8 +221,8 @@ def _render_pie_like(
             if not labels_fit:
                 break
 
+    traces: list[dict[str, Any]] = []
     start_angle = -90.0
-    traces: List[Dict[str, Any]] = []
     for spec in label_specs:
         category = spec["category"]
         share = int(category.value)
@@ -205,18 +242,17 @@ def _render_pie_like(
                 fill=panel_fill,
                 outline=panel_fill,
             )
-        label_x = float(spec["label_x"])
-        label_y = float(spec["label_y"])
-        label_bbox: List[float] | None = None
-        if bool(labels_fit):
+        label_bbox: list[float] | None = None
+        if labels_fit:
+            fill = _contrast_text(category.color_rgb)
             label_bbox = _draw_centered(
                 draw,
-                (label_x, label_y),
+                (float(spec["label_x"]), float(spec["label_y"])),
                 str(category.label),
                 label_font,
-                _contrast_text(category.color_rgb),
+                fill,
                 stroke_width=2,
-                stroke_fill=(32, 36, 44) if _contrast_text(category.color_rgb) == (255, 255, 255) else (255, 255, 255),
+                stroke_fill=(32, 36, 44) if fill == (255, 255, 255) else (255, 255, 255),
             )
         traces.append(
             {
@@ -225,9 +261,9 @@ def _render_pie_like(
                 "fill_rgb": [int(channel) for channel in category.color_rgb],
                 "slice_angle_start": float(start_angle),
                 "slice_angle_end": float(end_angle),
-                "slice_center_px": [float(label_x), float(label_y)],
+                "slice_center_px": [float(spec["label_x"]), float(spec["label_y"])],
                 "label_bbox_px": list(label_bbox) if label_bbox is not None else None,
-                "label_display_mode": "all" if bool(labels_fit) else "none",
+                "label_display_mode": "all" if labels_fit else "none",
             }
         )
         start_angle = float(end_angle)
@@ -236,97 +272,7 @@ def _render_pie_like(
     return traces, tuple(int(round(value)) for value in pie_box)
 
 
-def _render_stacked(
-    draw: ImageDraw.ImageDraw,
-    *,
-    dataset: PartWholeDataset,
-    scene_variant: str,
-    chart_bbox: Tuple[float, float, float, float],
-    grid_color: Tuple[int, int, int],
-    outline_width: int,
-    label_font: Any,
-) -> Tuple[List[Dict[str, Any]], Tuple[int, int, int, int]]:
-    x0, y0, x1, y1 = [float(value) for value in chart_bbox]
-    traces: List[Dict[str, Any]] = []
-    if str(scene_variant) == "stacked_horizontal_bar":
-        bar_x0 = float(x0) + 34.0
-        bar_x1 = float(x1) - 34.0
-        bar_y0 = (float(y0) + float(y1)) / 2.0 - 52.0
-        bar_y1 = (float(y0) + float(y1)) / 2.0 + 52.0
-        draw.line((bar_x0, bar_y1 + 22.0, bar_x1, bar_y1 + 22.0), fill=grid_color, width=2)
-        for fraction, label in ((0.0, "0%"), (0.5, "50%"), (1.0, "100%")):
-            tick_x = float(bar_x0 + ((bar_x1 - bar_x0) * float(fraction)))
-            draw.line((tick_x, bar_y1 + 15.0, tick_x, bar_y1 + 28.0), fill=grid_color, width=2)
-            _draw_centered(draw, (tick_x, bar_y1 + 47.0), label, label_font, (64, 68, 76))
-        cursor = float(bar_x0)
-        for category in dataset.categories:
-            seg_width = (float(bar_x1) - float(bar_x0)) * float(category.value) / 100.0
-            seg_x1 = float(cursor + seg_width)
-            bbox = [float(cursor), float(bar_y0), float(seg_x1), float(bar_y1)]
-            draw.rectangle(tuple(bbox), fill=tuple(category.color_rgb), outline=(255, 255, 255), width=max(1, int(outline_width)))
-            label_bbox = None
-            if float(seg_width) >= 28.0:
-                label_bbox = _draw_centered(
-                    draw,
-                    ((float(cursor) + float(seg_x1)) / 2.0, (float(bar_y0) + float(bar_y1)) / 2.0),
-                    str(category.label),
-                    label_font,
-                    _contrast_text(category.color_rgb),
-                    stroke_width=1,
-                    stroke_fill=(32, 36, 44) if _contrast_text(category.color_rgb) == (255, 255, 255) else (255, 255, 255),
-                )
-            traces.append(
-                {
-                    "label": str(category.label),
-                    "value": int(category.value),
-                    "fill_rgb": [int(channel) for channel in category.color_rgb],
-                    "segment_bbox_px": list(bbox),
-                    "label_bbox_px": list(label_bbox) if label_bbox is not None else None,
-                }
-            )
-            cursor = float(seg_x1)
-        return traces, (int(round(bar_x0)), int(round(bar_y0)), int(round(bar_x1)), int(round(bar_y1)))
-
-    bar_x0 = (float(x0) + float(x1)) / 2.0 - 56.0
-    bar_x1 = (float(x0) + float(x1)) / 2.0 + 56.0
-    bar_y0 = float(y0) + 46.0
-    bar_y1 = float(y1) - 46.0
-    draw.line((bar_x0 - 24.0, bar_y1, bar_x1 + 24.0, bar_y1), fill=grid_color, width=2)
-    for fraction, label in ((0.0, "0%"), (0.5, "50%"), (1.0, "100%")):
-        tick_y = float(bar_y1 - ((bar_y1 - bar_y0) * float(fraction)))
-        draw.line((bar_x0 - 18.0, tick_y, bar_x0 - 8.0, tick_y), fill=grid_color, width=2)
-        _draw_text(draw, (bar_x0 - 70.0, tick_y - 10.0), label, label_font, (64, 68, 76))
-    cursor = float(bar_y1)
-    for category in dataset.categories:
-        seg_height = (float(bar_y1) - float(bar_y0)) * float(category.value) / 100.0
-        seg_y0 = float(cursor - seg_height)
-        bbox = [float(bar_x0), float(seg_y0), float(bar_x1), float(cursor)]
-        draw.rectangle(tuple(bbox), fill=tuple(category.color_rgb), outline=(255, 255, 255), width=max(1, int(outline_width)))
-        label_bbox = None
-        if float(seg_height) >= 24.0:
-            label_bbox = _draw_centered(
-                draw,
-                ((float(bar_x0) + float(bar_x1)) / 2.0, (float(seg_y0) + float(cursor)) / 2.0),
-                str(category.label),
-                label_font,
-                _contrast_text(category.color_rgb),
-                stroke_width=1,
-                stroke_fill=(32, 36, 44) if _contrast_text(category.color_rgb) == (255, 255, 255) else (255, 255, 255),
-            )
-        traces.append(
-            {
-                "label": str(category.label),
-                "value": int(category.value),
-                "fill_rgb": [int(channel) for channel in category.color_rgb],
-                "segment_bbox_px": list(bbox),
-                "label_bbox_px": list(label_bbox) if label_bbox is not None else None,
-            }
-        )
-        cursor = float(seg_y0)
-    return traces, (int(round(bar_x0)), int(round(bar_y0)), int(round(bar_x1)), int(round(bar_y1)))
-
-
-def _coerce_position_options(raw: Any) -> Tuple[str, ...]:
+def _coerce_position_options(raw: Any) -> tuple[str, ...]:
     if raw is None:
         return ("right", "left", "bottom", "top")
     if isinstance(raw, str):
@@ -369,7 +315,7 @@ def _layout_share_chart_regions(
     table_height: int,
     chart_gap: int,
     table_position: str,
-) -> Tuple[Tuple[int, int, int, int], Tuple[float, float, float, float], Tuple[int, int, int, int]]:
+) -> tuple[tuple[int, int, int, int], tuple[float, float, float, float], tuple[int, int, int, int]]:
     content_x0 = int(margin_left)
     content_x1 = int(width - margin_right)
     content_y0 = int(margin_top + 72)
@@ -409,6 +355,13 @@ def _render_share_chart(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> RenderedShareChart:
+    """Render the circular chart and exact-value table for one dataset.
+
+    The renderer keeps chart segment centers and table rows aligned to the same
+    category records.  Objective code may select any subset of labels, but this
+    function never branches on public task or query identity.
+    """
+
     image = base_image.convert("RGB")
     draw = ImageDraw.Draw(image)
     width, height = image.size
@@ -444,10 +397,18 @@ def _render_share_chart(
         instance_seed=int(instance_seed),
         namespace=SAMPLING_NAMESPACE,
     )
-    title_font = load_font(int(params.get("title_font_size_px", group_default(RENDER_DEFAULTS, "title_font_size_px", 26))), bold=True)
-    label_font = load_font(int(params.get("label_font_size_px", group_default(RENDER_DEFAULTS, "label_font_size_px", 18))), bold=True)
-    table_font = load_font(int(params.get("table_font_size_px", group_default(RENDER_DEFAULTS, "table_font_size_px", 18))), bold=False)
-    table_header_font = load_font(int(params.get("table_header_font_size_px", group_default(RENDER_DEFAULTS, "table_header_font_size_px", 19))), bold=True)
+    label_font = load_font(
+        int(params.get("label_font_size_px", group_default(RENDER_DEFAULTS, "label_font_size_px", 18))),
+        bold=True,
+    )
+    table_font = load_font(
+        int(params.get("table_font_size_px", group_default(RENDER_DEFAULTS, "table_font_size_px", 18))),
+        bold=False,
+    )
+    table_header_font = load_font(
+        int(params.get("table_header_font_size_px", group_default(RENDER_DEFAULTS, "table_header_font_size_px", 19))),
+        bold=True,
+    )
 
     margin_left = int(params.get("plot_margin_left_px", group_default(RENDER_DEFAULTS, "plot_margin_left_px", 42)))
     margin_right = int(params.get("plot_margin_right_px", group_default(RENDER_DEFAULTS, "plot_margin_right_px", 42)))
@@ -487,10 +448,9 @@ def _render_share_chart(
     }
     draw.rounded_rectangle(chart_bbox, radius=8, fill=panel_fill, outline=grid_color, width=max(1, int(outline_width)))
     draw.rounded_rectangle(table_bbox, radius=8, fill=panel_fill, outline=grid_color, width=max(1, int(outline_width)))
-    _draw_text(draw, (float(margin_left), float(margin_top - 4)), "Category share composition", title_font, text_color)
-    total_bbox: List[float] | None = None
-    known_count_bbox: List[float] | None = None
-    info_y = float(margin_top + 25)
+
+    total_bbox: list[float] | None = None
+    info_y = float(margin_top + 21)
     total_count = dataset.trace_extras.get("total_count")
     if total_count is not None:
         total_bbox = _draw_text(
@@ -500,39 +460,17 @@ def _render_share_chart(
             table_header_font,
             text_color,
         )
-        info_y += 26.0
-    known_count_value = dataset.trace_extras.get("known_count_value")
-    known_count_category = dataset.trace_extras.get("known_count_category")
-    if known_count_value is not None and known_count_category is not None:
-        known_count_bbox = _draw_text(
-            draw,
-            (float(margin_left), float(info_y)),
-            f"Known count: {known_count_category} = {int(known_count_value)}",
-            table_header_font,
-            text_color,
-        )
 
-    if str(scene_variant) in {"pie", "donut"}:
-        chart_traces, chart_mark_bbox = _render_pie_like(
-            draw,
-            dataset=dataset,
-            scene_variant=str(scene_variant),
-            chart_bbox=chart_bbox,
-            text_color=text_color,
-            panel_fill=panel_fill,
-            outline_width=int(outline_width),
-            label_font=label_font,
-        )
-    else:
-        chart_traces, chart_mark_bbox = _render_stacked(
-            draw,
-            dataset=dataset,
-            scene_variant=str(scene_variant),
-            chart_bbox=chart_bbox,
-            grid_color=grid_color,
-            outline_width=int(outline_width),
-            label_font=label_font,
-        )
+    chart_traces, _chart_mark_bbox = _render_pie_like(
+        draw,
+        dataset=dataset,
+        scene_variant=str(scene_variant),
+        chart_bbox=chart_bbox,
+        text_color=text_color,
+        panel_fill=panel_fill,
+        outline_width=int(outline_width),
+        label_font=label_font,
+    )
 
     table_inner_left = float(table_bbox[0]) + 14.0
     table_inner_right = float(table_bbox[2]) - 14.0
@@ -546,16 +484,13 @@ def _render_share_chart(
     row_area_bottom = float(table_bbox[3]) - 14.0
     row_height = float(row_area_bottom - row_area_top) / float(max(1, rows_per_column))
     swatch_size = min(22.0, max(14.0, float(row_height) * 0.58))
-    annotation_bbox_by_label: Dict[str, List[float]] = {}
-    annotation_point_by_label: Dict[str, List[float]] = {}
+    annotation_bbox_by_label: dict[str, list[float]] = {}
+    annotation_point_by_label: dict[str, list[float]] = {}
     for trace in chart_traces:
         label = str(trace["label"])
-        if trace.get("slice_center_px") is not None:
-            annotation_point_by_label[label] = [float(value) for value in trace["slice_center_px"]]
-        elif trace.get("segment_bbox_px") is not None:
-            annotation_point_by_label[label] = _bbox_center(trace["segment_bbox_px"])
-    category_traces: List[Dict[str, Any]] = []
-    entities: List[Dict[str, Any]] = []
+        annotation_point_by_label[label] = [float(value) for value in trace["slice_center_px"]]
+    category_traces: list[dict[str, Any]] = []
+    entities: list[dict[str, Any]] = []
     if total_bbox is not None:
         annotation_bbox_by_label["__total__"] = list(total_bbox)
         annotation_point_by_label["__total__"] = _bbox_center(total_bbox)
@@ -567,21 +502,6 @@ def _render_share_chart(
                     "label": "total_count",
                     "value": int(total_count),
                     "bbox_px": list(total_bbox),
-                },
-            }
-        )
-    if known_count_bbox is not None:
-        annotation_bbox_by_label["__known_count__"] = list(known_count_bbox)
-        annotation_point_by_label["__known_count__"] = _bbox_center(known_count_bbox)
-        entities.append(
-            {
-                "entity_id": "__known_count__",
-                "kind": "composition_known_count",
-                "attrs": {
-                    "label": "known_count",
-                    "category": str(known_count_category),
-                    "value": int(known_count_value),
-                    "bbox_px": list(known_count_bbox),
                 },
             }
         )
@@ -605,7 +525,6 @@ def _render_share_chart(
         row_index = int(index) % int(rows_per_column)
         col_x0 = float(table_inner_left + (float(column_index) * (float(column_width) + float(column_gap))))
         col_x1 = float(col_x0 + float(column_width))
-        row_y0 = float(row_area_top + (float(index) * float(row_height)))
         row_y0 = float(row_area_top + (float(row_index) * float(row_height)))
         row_y1 = float(row_area_top + (float(row_index + 1) * float(row_height)))
         if int(index) % 2 == 1:
@@ -680,3 +599,64 @@ def _render_share_chart(
         layout_jitter_meta=dict(layout_jitter_meta),
     )
 
+
+def render_part_whole_dataset(
+    *,
+    dataset: PartWholeDataset,
+    scene_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> PartWholeRenderResult:
+    """Render a task-bound part-whole dataset into chart geometry."""
+
+    canvas_width = int(params.get("canvas_width", group_default(RENDER_DEFAULTS, "canvas_width", DEFAULTS.canvas_width)))
+    canvas_height = int(params.get("canvas_height", group_default(RENDER_DEFAULTS, "canvas_height", DEFAULTS.canvas_height)))
+    background, background_meta = make_background_canvas(
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+    )
+    chart_font_family = sample_chart_font_family(
+        instance_seed=int(instance_seed),
+        namespace=f"{SAMPLING_NAMESPACE}.chart_font",
+        params=params,
+    )
+    with temporary_default_font_family(str(chart_font_family)):
+        rendered_scene = _render_share_chart(
+            base_image=background,
+            dataset=dataset,
+            scene_variant=str(scene_variant),
+            params=params,
+            instance_seed=int(instance_seed),
+        )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    rendered_scene = RenderedShareChart(
+        image=image,
+        entities=tuple(dict(entity) for entity in rendered_scene.entities),
+        plot_bbox_px=tuple(int(value) for value in rendered_scene.plot_bbox_px),
+        table_bbox_px=tuple(int(value) for value in rendered_scene.table_bbox_px),
+        chart_traces=tuple(dict(trace) for trace in rendered_scene.chart_traces),
+        category_traces=tuple(dict(trace) for trace in rendered_scene.category_traces),
+        annotation_bbox_by_label=dict(rendered_scene.annotation_bbox_by_label),
+        annotation_point_by_label=dict(rendered_scene.annotation_point_by_label),
+        layout_jitter_meta=dict(rendered_scene.layout_jitter_meta),
+    )
+    return PartWholeRenderResult(
+        image=image,
+        rendered_scene=rendered_scene,
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
+        font_assets=chart_font_asset_metadata(str(chart_font_family)),
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+    )
+
+
+__all__ = ["PartWholeRenderResult", "render_part_whole_dataset"]

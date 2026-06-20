@@ -10,10 +10,9 @@ from trace.tasks.shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 
-from .share_arithmetic_common import PROMPT_DEFAULTS, SCENE_ID, chart_order_phrase
+from .defaults import DOMAIN, PROMPT_DEFAULTS, SCENE_ID, chart_order_phrase
 
 
-DOMAIN = "charts"
 PROMPT_BUNDLE_ID = "charts_part_whole_v1"
 
 _OBJECT_DESCRIPTIONS = {

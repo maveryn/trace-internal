@@ -1,94 +1,78 @@
-"""Convert a selected circular chart sector share to degrees."""
+"""Public task for `task_charts__part_whole__sector_share_to_angle`."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from trace.tasks.registry import register_task
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.output import build_trace_payload
-from .shared.prompts import build_prompt_artifacts, dynamic_slots
-from .shared.runtime import annotation_payload, render_part_whole_dataset
-from .shared.share_arithmetic_common import SCENE_ID, SECTOR_SHARE_TO_ANGLE_QUERY_ID, resolve_scene_variant
-from .shared.share_arithmetic_dataset import build_dataset
+from ._lifecycle import finish_part_whole_plan, run_part_whole_task, sample_part_whole_base
+from .shared.defaults import DOMAIN, SAMPLING_NAMESPACE
+from .shared.sampling import sample_chart_order_span
 
 
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {
-    "part_whole_category_count_min": 3,
-    "part_whole_category_count_max": 5,
-    "part_whole_angle_span_count_min": 2,
-    "part_whole_angle_span_count_max": 2,
-}
+SUPPORTED_QUERY_IDS = ("clockwise_sector_angle", "counterclockwise_sector_angle")
+
+
+def _build_plan(params, instance_seed: int, selected: str, _probabilities):
+    """Bind a circular span whose share converts to an integer angle."""
+
+    direction = "counterclockwise" if str(selected).startswith("counter") else "clockwise"
+    base = sample_part_whole_base(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{SAMPLING_NAMESPACE}.sector_angle.category_count",
+        min_key="part_whole_category_count_min",
+        max_key="part_whole_category_count_max",
+        fallback_min=3,
+        fallback_max=5,
+    )
+    selected_categories, span_extras = sample_chart_order_span(
+        base.categories,
+        direction=str(direction),
+        params=params,
+        count_params=base.count_params,
+        instance_seed=int(instance_seed),
+        namespace=f"{SAMPLING_NAMESPACE}.sector_angle.{direction}",
+        min_key="part_whole_angle_span_count_min",
+        max_key="part_whole_angle_span_count_max",
+        fallback_min=2,
+        fallback_max=2,
+        require_share_multiple_of_five=True,
+    )
+    selected_share = int(span_extras["selected_share_value"])
+    answer_value = int(selected_share * 360 // 100)
+    extras = {
+        **dict(base.base_extras),
+        **dict(span_extras),
+        "category_list": [str(category.label) for category in selected_categories],
+        "central_angle_degrees": int(answer_value),
+        "calculation": "convert_circular_chart_order_share_to_degrees",
+    }
+    return finish_part_whole_plan(
+        base=base,
+        selected=str(selected),
+        instance_seed=int(instance_seed),
+        answer_value=int(answer_value),
+        annotation_labels=tuple(str(category.label) for category in selected_categories),
+        trace_extras=dict(extras),
+    )
 
 
 @register_task
 class ChartsCompositionChartSectorShareToAngleTask:
-    """Return the central angle for a selected chart-order sector span."""
+    """Return the central angle for a selected circular chart span."""
 
     task_id = "task_charts__part_whole__sector_share_to_angle"
-    domain = "charts"
-    scene_id = SCENE_ID
+    domain = DOMAIN
     objective_contract = "sector_share_to_angle"
-    supported_query_ids = (SECTOR_SHARE_TO_ANGLE_QUERY_ID,)
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = SUPPORTED_QUERY_IDS[0]
     default_dataset_enabled = True
+    _build_plan = staticmethod(_build_plan)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, _query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=SECTOR_SHARE_TO_ANGLE_QUERY_ID,
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt == 0 else int(hash64(int(instance_seed), self.task_id, attempt))
-            try:
-                return self._generate_once(int(attempt_seed), params=task_params, selected_query_id=str(selected_query_id))
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        """Select direction branch and return a generated part-whole instance."""
 
-    def _generate_once(self, instance_seed: int, *, params: Dict[str, Any], selected_query_id: str) -> TaskOutput:
-        scene_variant, scene_variant_probabilities = resolve_scene_variant(params, instance_seed=int(instance_seed))
-        dataset = build_dataset(query_id=str(selected_query_id), params=params, instance_seed=int(instance_seed))
-        rendered = render_part_whole_dataset(
-            dataset=dataset,
-            scene_variant=str(scene_variant),
-            params=params,
-            instance_seed=int(instance_seed),
-        )
-        annotation = annotation_payload(dataset=dataset, rendered_scene=rendered.rendered_scene)
-        prompt_artifacts = build_prompt_artifacts(
-            prompt_query_key=str(selected_query_id),
-            dynamic_slot_values=dynamic_slots(dataset.trace_extras, scene_variant=str(scene_variant)),
-            instance_seed=int(instance_seed),
-        )
-        trace_payload = build_trace_payload(
-            dataset=dataset,
-            rendered=rendered,
-            prompt_artifacts=prompt_artifacts,
-            query_id=str(selected_query_id),
-            scene_variant=str(scene_variant),
-            scene_variant_probabilities=scene_variant_probabilities,
-            annotation_payload=annotation,
-        )
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=TypedValue(type="integer", value=int(dataset.answer_value)),
-            annotation_gt=TypedValue(type="keyed_point_map", value=dict(annotation["keyed_points"])),
-            image=rendered.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(selected_query_id),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-        )
+        return run_part_whole_task(self, int(instance_seed), dict(params), int(max_attempts))
 
 
 __all__ = ["ChartsCompositionChartSectorShareToAngleTask"]

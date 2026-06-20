@@ -3,24 +3,25 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `part_whole`
-3. Source implementation domain/group: `charts/composition`
-4. Query id: `chart_order_adjacent_transfer_gap`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Supported `query_id`: `clockwise_adjacent_transfer`, `counterclockwise_adjacent_transfer`
+4. Answer schema: `integer_value`
+5. Annotation schema: `point_map`
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.composition.share_arithmetic_value.ChartsCompositionChartAdjacentTransferGapValueTask`
-2. Prompt lookup domain/group: `charts/composition`
+1. Registered class: `trace.tasks.charts.part_whole.adjacent_transfer_gap_value.ChartsCompositionChartAdjacentTransferGapValueTask`
+2. Prompt lookup domain/scene: `charts/part_whole`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
+## Program Contract
+`absolute_difference(value(source_category) - transfer_delta, value(adjacent_category(source_category, direction)) + transfer_delta); scene=part_whole; scope=adjacent_transfer_gap_value`
+
 ## Annotation Contract
-1. Answer schema: `integer_value`.
-2. Annotation schema: `keyed_point_map`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Annotation maps the source category label and adjacent target category label to `[x,y]` pixel points at the centers of their chart segments.
 
 ## Query Details
 
-| Query id | Program signature | Answer schema | Annotation schema |
+| Query id | Adjacent direction | Answer schema | Annotation schema |
 |---|---|---|---|
-| `chart_order_adjacent_transfer_gap` | `numeric.difference_or_change` | `integer_value` | `keyed_point_map` |
+| `clockwise_adjacent_transfer` | clockwise | `integer_value` | `point_map` |
+| `counterclockwise_adjacent_transfer` | counterclockwise | `integer_value` | `point_map` |

@@ -20,7 +20,7 @@ SUPPORTED_QUERY_IDS = (QUERY_ID,)
 
 @register_task
 class ThreeDObjectClusterTotalObjectCountTask:
-    """Count every visible object in a homogeneous dense object cluster."""
+    """Count every visible object in a one-type dense object cluster."""
 
     task_id = TASK_ID
     domain = "three_d"

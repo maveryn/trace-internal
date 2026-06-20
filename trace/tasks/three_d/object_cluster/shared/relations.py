@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
@@ -109,6 +110,30 @@ def random_color(rng) -> str:
     """Sample one semantic color for non-color-targeted objects."""
 
     return str(rng.choice(list(color_support())))
+
+
+def sample_visual_color_sequence(
+    *,
+    rng,
+    object_count: int,
+    min_colors: int = 2,
+    max_colors: int = 4,
+) -> Tuple[Tuple[str, ...], Tuple[str, ...], Dict[str, int]]:
+    """Assign non-semantic canonical colors across a count-only sequence."""
+
+    count = int(object_count)
+    if count < 1:
+        raise ValueError("visual color sequence needs at least one object")
+    support = list(color_support())
+    rng.shuffle(support)
+    active_count = min(count, max(int(min_colors), min(int(max_colors), 2 + int(rng.randrange(3)))))
+    active_colors = tuple(str(color) for color in support[:active_count])
+    colors = list(active_colors)
+    for _ in range(max(0, count - active_count)):
+        colors.append(str(rng.choice(active_colors)))
+    rng.shuffle(colors)
+    color_counts = Counter(str(color) for color in colors)
+    return tuple(str(color) for color in colors), tuple(active_colors), {str(color): int(color_counts[str(color)]) for color in active_colors}
 
 
 def target_mapping(target: PredicateTarget) -> Dict[str, Any]:
@@ -378,12 +403,12 @@ def build_total_sequence(
     object_count: int,
     rng,
 ) -> tuple[list[ClusterSequenceItem], PredicateTarget]:
-    """Build a homogeneous cluster where every object is counted."""
+    """Build a one-type cluster where every object is counted."""
 
-    color = random_color(rng)
+    color_sequence, visual_color_names, visual_color_counts = sample_visual_color_sequence(rng=rng, object_count=int(object_count))
     sequence = [
-        ClusterSequenceItem(str(shape_type), color, True, "target")
-        for _ in range(int(object_count))
+        ClusterSequenceItem(str(shape_type), str(color), True, "target")
+        for color in color_sequence
     ]
     name = object_name_for_shape(str(shape_type))
     return sequence, PredicateTarget(
@@ -392,6 +417,11 @@ def build_total_sequence(
         target_object_name=str(name),
         target_object_plural=object_plural(str(name)),
         target_property_phrase="all objects",
+        extras={
+            "color_role": "non_semantic_visual_variation",
+            "visual_color_names": list(visual_color_names),
+            "visual_color_counts": dict(visual_color_counts),
+        },
     )
 
 

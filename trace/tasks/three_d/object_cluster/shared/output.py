@@ -84,14 +84,14 @@ def build_count_request(
             key="primary_shape_type",
             instance_seed=int(instance_seed),
             namespace=f"{namespace}.primary_shape_type",
-            support=COUNTABLE_SHAPE_TYPES,
+            support=COLOR_SAFE_CLUSTER_SHAPE_TYPES,
         )
         sequence, target = build_total_sequence(shape_type=str(primary_shape), object_count=int(object_count), rng=rng)
         answer_value = int(object_count)
         expected_annotation_count = int(object_count)
         scene_kind = "three_d_object_cluster_total_count"
-        extra_trace = {"cluster_composition_mode": "single_type_cluster", "distractor_count": 0, "cluster_object_pool_size": len(COUNTABLE_SHAPE_TYPES)}
-        count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": dict(object_probabilities), "target_shape_probabilities": dict(shape_probabilities), "cluster_object_pool_size": len(COUNTABLE_SHAPE_TYPES)})
+        extra_trace = {"cluster_composition_mode": "single_type_cluster", "distractor_count": 0, "cluster_object_pool_size": len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)}
+        count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": dict(object_probabilities), "target_shape_probabilities": dict(shape_probabilities), "cluster_object_pool_size": len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)})
     elif str(mode) == "type_membership":
         composition_mode, composition_probabilities = resolve_composition_mode(params=params, gen_defaults=gen_defaults, instance_seed=int(instance_seed), namespace=f"{namespace}.composition_mode")
         count_record = resolve_membership_counts(params=params, gen_defaults=gen_defaults, composition_mode=str(composition_mode), instance_seed=int(instance_seed), namespace=f"{namespace}.counts")

@@ -225,6 +225,13 @@ def test_object_cluster_total_object_count_answer_and_annotation() -> None:
     assert max_overlap_fraction <= float(MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION)
     assert max_overlap_pixels <= float(MAX_RENDERED_PAIRWISE_OVERLAP_PX)
     assert all(str(spec["shape_type"]) == "button" for spec in object_specs)
+    assert all(str(spec["shape_type"]) in set(COLOR_SAFE_CLUSTER_SHAPE_TYPES) for spec in object_specs)
+    assert all(spec["fill_rgb"] == list(PROMPT_COLOR_RGB[str(spec["color_name"])]) for spec in object_specs)
+    assert trace["target_spec"]["color_role"] == "non_semantic_visual_variation"
+    assert set(trace["target_spec"]["visual_color_names"]) == set(trace["color_counts"])
+    assert trace["target_spec"]["visual_color_counts"] == trace["color_counts"]
+    assert 2 <= len(trace["color_counts"]) <= 4
+    assert sum(int(count) for count in trace["color_counts"].values()) == 14
     assert all(bool(spec.get("matches_query", False)) for spec in object_specs)
     assert all(bool(spec.get("is_countable_object", False)) for spec in object_specs)
     assert "button" not in output.prompt.lower()

@@ -437,14 +437,14 @@ def _draw_element(
             mid = [quad_point(cell, 0.14, 0.54), quad_point(cell, 0.86, 0.46)]
             draw.line(mid, fill=_mix(shade, (92, 90, 82), 0.18), width=1)
     elif element_type == "hole":
-        w = max(6.0, (float(bbox[2]) - float(bbox[0])) * 0.42)
-        h = max(5.0, (float(bbox[3]) - float(bbox[1])) * 0.38)
+        w = max(12.0, (float(bbox[2]) - float(bbox[0])) * 0.52)
+        h = max(12.0, (float(bbox[3]) - float(bbox[1])) * 0.50)
         bbox = [center[0] - w * 0.5, center[1] - h * 0.5, center[0] + w * 0.5, center[1] + h * 0.5]
         draw.ellipse(bbox, fill=(43, 51, 58), outline=(223, 229, 231), width=2)
         draw.ellipse([bbox[0] + w * 0.22, bbox[1] + h * 0.18, bbox[2] - w * 0.18, bbox[3] - h * 0.28], fill=(23, 28, 33))
     elif element_type == "slot":
-        w = max(12.0, (float(bbox[2]) - float(bbox[0])) * 0.78)
-        h = max(6.0, (float(bbox[3]) - float(bbox[1])) * 0.28)
+        w = max(26.0, (float(bbox[2]) - float(bbox[0])) * 0.78)
+        h = max(26.0, (float(bbox[3]) - float(bbox[1])) * 0.36)
         bbox = [center[0] - w * 0.5, center[1] - h * 0.5, center[0] + w * 0.5, center[1] + h * 0.5]
         draw.rounded_rectangle(bbox, radius=max(3, int(h * 0.45)), fill=(63, 55, 43), outline=(236, 226, 198), width=2)
         draw.line([(bbox[0] + w * 0.16, center[1]), (bbox[2] - w * 0.16, center[1])], fill=(31, 27, 22), width=2)
@@ -535,7 +535,7 @@ def _draw_element(
         draw.ellipse(highlight, fill=_semantic_highlight(button_fill, 0.20 if semantic_color else 0.34))
         bbox = list(button_bbox)
     elif element_type == "screw":
-        screw_bbox = _mounted_bbox(bbox, center, 0.56, 0.56, min_width=13.0, min_height=13.0)
+        screw_bbox = _mounted_bbox(bbox, center, 0.78, 0.78, min_width=26.0, min_height=26.0)
         head_fill = _mix(fill, (255, 255, 255), 0.10)
         draw.ellipse(screw_bbox, fill=head_fill, outline=(61, 70, 78), width=2)
         inner = [
@@ -552,7 +552,7 @@ def _draw_element(
         draw.line([(center[0] - dx, center[1] - dy), (center[0] + dx, center[1] + dy)], fill=(44, 50, 56), width=3)
         bbox = list(screw_bbox)
     elif element_type == "hex_nut":
-        nut_bbox = _mounted_bbox(bbox, center, 0.68, 0.62, min_width=15.0, min_height=14.0)
+        nut_bbox = _mounted_bbox(bbox, center, 0.86, 0.82, min_width=26.0, min_height=26.0)
         rx = (nut_bbox[2] - nut_bbox[0]) * 0.50
         ry = (nut_bbox[3] - nut_bbox[1]) * 0.50
         hex_points = _regular_polygon_points(center, rx, ry, 6, rotation=math.pi / 6.0)
@@ -564,7 +564,7 @@ def _draw_element(
         draw.line(shine[:3], fill=_mix(nut_fill, (255, 255, 255), 0.35), width=1)
         bbox = list(nut_bbox)
     elif element_type == "washer":
-        washer_bbox = _mounted_bbox(bbox, center, 0.70, 0.66, min_width=16.0, min_height=15.0)
+        washer_bbox = _mounted_bbox(bbox, center, 0.86, 0.82, min_width=26.0, min_height=26.0)
         washer_fill = _mix(fill, (255, 255, 255), 0.08)
         draw.ellipse(washer_bbox, fill=washer_fill, outline=(60, 68, 76), width=2)
         outer_w = washer_bbox[2] - washer_bbox[0]
@@ -580,7 +580,7 @@ def _draw_element(
         draw.arc(highlight, start=195, end=330, fill=_mix(washer_fill, (255, 255, 255), 0.45), width=2)
         bbox = list(washer_bbox)
     elif element_type == "socket":
-        socket_bbox = _mounted_bbox(bbox, center, 0.78, 0.68, min_width=22.0, min_height=18.0)
+        socket_bbox = _mounted_bbox(bbox, center, 0.82, 0.74, min_width=26.0, min_height=24.0)
         socket_fill = _mix(fill, (243, 243, 236), 0.10 if semantic_color else 0.48)
         draw.rounded_rectangle(socket_bbox, radius=max(3, int((socket_bbox[3] - socket_bbox[1]) * 0.16)), fill=socket_fill, outline=_semantic_outline(fill, 0.62) if semantic_color else (91, 96, 94), width=2)
         sw = socket_bbox[2] - socket_bbox[0]
@@ -685,8 +685,8 @@ def _draw_element(
             draw.ellipse([screw_c[0] - screw_r, screw_c[1] - screw_r, screw_c[0] + screw_r, screw_c[1] + screw_r], fill=(215, 221, 223), outline=(52, 60, 65))
         bbox = list(pipe_bbox)
     elif element_type == "light":
-        glow_bbox = _mounted_bbox(bbox, center, 0.78, 0.78, min_width=18.0, min_height=18.0)
-        light_bbox = _mounted_bbox(bbox, center, 0.56, 0.56, min_width=13.0, min_height=13.0)
+        glow_bbox = _mounted_bbox(bbox, center, 0.92, 0.92, min_width=26.0, min_height=26.0)
+        light_bbox = _mounted_bbox(bbox, center, 0.64, 0.64, min_width=16.0, min_height=16.0)
         lens_fill = fill
         draw.ellipse(glow_bbox, fill=_semantic_highlight(fill, 0.30 if semantic_color else 0.54))
         draw.ellipse(light_bbox, fill=lens_fill, outline=(24, 29, 34), width=2)

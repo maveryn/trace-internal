@@ -1,13 +1,12 @@
-"""Shared Reversi rules and board-state sampling helpers for games tasks."""
+"""Reversi board rules and mechanics."""
 
 from __future__ import annotations
 
 from typing import Dict, Iterable, List, Sequence, Tuple
 
+from .state import BLACK, EMPTY, WHITE, Board, Coord
 
-EMPTY = 0
-BLACK = 1
-WHITE = -1
+
 _DIRECTIONS: Tuple[Tuple[int, int], ...] = (
     (-1, -1),
     (-1, 0),
@@ -18,9 +17,6 @@ _DIRECTIONS: Tuple[Tuple[int, int], ...] = (
     (1, 0),
     (1, 1),
 )
-
-Coord = Tuple[int, int]
-Board = Tuple[Tuple[int, ...], ...]
 
 
 def player_name(player: int) -> str:
@@ -53,6 +49,13 @@ def corner_coords(board_size: int) -> Tuple[Coord, ...]:
     )
 
 
+def _in_bounds(board: Sequence[Sequence[int]], row: int, col: int) -> bool:
+    """Return whether a coordinate lies inside the board."""
+
+    size = int(len(board))
+    return 0 <= int(row) < size and 0 <= int(col) < size
+
+
 def adjacent_coords(board: Sequence[Sequence[int]], coord: Coord) -> Tuple[Coord, ...]:
     """Return in-bounds adjacent coordinates around one board coordinate."""
 
@@ -73,7 +76,10 @@ def frontier_disc_coords(board: Sequence[Sequence[int]], player: int) -> Tuple[C
         for col, value in enumerate(board_row):
             if int(value) != int(current):
                 continue
-            if any(int(board[adj_row][adj_col]) == int(EMPTY) for adj_row, adj_col in adjacent_coords(board, (int(row), int(col)))):
+            if any(
+                int(board[adj_row][adj_col]) == int(EMPTY)
+                for adj_row, adj_col in adjacent_coords(board, (int(row), int(col)))
+            ):
                 coords.append((int(row), int(col)))
     return tuple(sorted(coords))
 
@@ -91,13 +97,6 @@ def initial_board(board_size: int) -> Board:
     board[center][center + 1] = BLACK
     board[center + 1][center] = BLACK
     return tuple(tuple(int(cell) for cell in row) for row in board)
-
-
-def _in_bounds(board: Sequence[Sequence[int]], row: int, col: int) -> bool:
-    """Return whether a coordinate lies inside the board."""
-
-    size = int(len(board))
-    return 0 <= int(row) < size and 0 <= int(col) < size
 
 
 def legal_moves_with_flips(board: Sequence[Sequence[int]], player: int) -> Dict[Coord, Tuple[Coord, ...]]:
@@ -172,11 +171,6 @@ def simulate_random_state(
 
 
 __all__ = [
-    "BLACK",
-    "Board",
-    "Coord",
-    "EMPTY",
-    "WHITE",
     "adjacent_coords",
     "apply_move",
     "coord_to_cell_id",

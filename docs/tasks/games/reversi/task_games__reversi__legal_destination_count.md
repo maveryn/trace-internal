@@ -1,15 +1,20 @@
 # `task_games__reversi__legal_destination_count`
 
-## Contract
-1. Domain: `games`
-2. Scene: `reversi`
-3. Scene id: `reversi`
-4. Public task id: `task_games__reversi__legal_destination_count`
-5. Supported `query_id` values: `corner_move_count`, `legal_move_count`
-6. Answer schema: `integer_count`
-7. Annotation schema: `bbox_set`
-8. Program schema: `count(filter(legal_moves(current_player), destination_filter)); scene=reversi; scope=legal_destination_count; query_branch=corner_move_count`
+## Program Contract
+
+- Domain: `games`
+- Scene: `reversi`
+- Public task id: `task_games__reversi__legal_destination_count`
+- Supported `query_id` values: `legal_move_count`, `corner_move_count`
+- Answer schema: `integer_count`
+- Annotation schema: `bbox_set`
+- Program schema: `count(filter(legal_moves(current_player), destination_filter)); scene=reversi; scope=legal_destination_count`
+- Program code: `count.filter.legal_moves.destination_filter`
+- Scalar annotation checked: `true`
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
+
+- `legal_move_count` counts all legal empty destination cells for the current player.
+- `corner_move_count` uses the same legal-move rule, then filters to the four corner cells.
+- Annotation boxes are the board-cell bboxes for every counted destination cell.
+- The answer and annotation are bound from the same generated legal-move set.

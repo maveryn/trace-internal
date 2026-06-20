@@ -11,7 +11,8 @@ from ....shared.marker_legibility import draw_semantic_bbox_marker, resolve_sema
 from ....shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.text import draw_game_text_traced as draw_text_traced
 from ...shared.layout import apply_games_layout_jitter_to_bbox, offset_bbox
-from .common import BLACK, WHITE, Coord, coord_to_cell_id, player_name
+from .rules import coord_to_cell_id, player_name
+from .state import BLACK, WHITE, Coord
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from ...shared.style import ReversiTheme, build_games_reversi_theme
 

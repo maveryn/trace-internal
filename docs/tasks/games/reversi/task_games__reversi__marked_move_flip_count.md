@@ -1,15 +1,20 @@
 # `task_games__reversi__marked_move_flip_count`
 
-## Contract
-1. Domain: `games`
-2. Scene: `reversi`
-3. Scene id: `reversi`
-4. Public task id: `task_games__reversi__marked_move_flip_count`
-5. Supported `query_id` values: `flip_count_for_marked_move`
-6. Answer schema: `integer_count`
-7. Annotation schema: `point_set`
-8. Program schema: `count(flipped_discs(transform(board, marked_move))); scene=reversi; scope=marked_move_flip_count; query_branch=flip_count_for_marked_move`
+## Program Contract
+
+- Domain: `games`
+- Scene: `reversi`
+- Public task id: `task_games__reversi__marked_move_flip_count`
+- Supported `query_id` values: `single`
+- Answer schema: `integer_count`
+- Annotation schema: `point_set`
+- Program schema: `count(flipped_discs(apply(marked_legal_move))); scene=reversi; scope=marked_move_flip_count`
+- Program code: `count.transform.reversi_marked_move_flips`
+- Scalar annotation checked: `true`
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
+
+- The marked empty square is a legal Reversi move for the current player.
+- The task asks how many opponent discs would flip if that marked move is played.
+- Annotation points are the centers of all discs flipped by the marked move.
+- The answer and annotation are bound from the same generated marked-move flip set.

@@ -13,7 +13,7 @@ from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 from trace.tasks.shared.support_sampling import resolve_integer_support
 
 from ._lifecycle import AttemptPacmanResult, ObjectivePacmanPlan, run_pacman_lifecycle
-from .shared.annotations import bbox_set_for_entity_ids
+from .shared.annotations import point_set_for_entity_ids
 from .shared.defaults import DEFAULTS, PACMAN_ITEM_KINDS, PACMAN_ITEM_LABELS, SCENE_ID
 from .shared.sampling import (
     available_open_cells,
@@ -40,7 +40,7 @@ def _json_examples() -> tuple[str, str]:
     """Return valid format examples for route-score output."""
 
     answer_value = 12
-    annotation_value = [[302, 196, 328, 222], [356, 196, 382, 222], [404, 244, 444, 284]]
+    annotation_value = [[315, 209], [369, 209], [424, 264]]
     return (
         json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
@@ -95,7 +95,7 @@ def _prepare_route_score_objective(
         attempt_namespace="games.pacman.route_score_value",
         prompt_query_key=PROMPT_QUERY_KEY,
         answer_hint='set "answer" to the integer total score from collectibles on the highlighted route',
-        annotation_hint='set "annotation" to bounding boxes [x0, y0, x1, y1], one for each normal pellet or printed-value bonus item included in the route score',
+        annotation_hint='set "annotation" to [x, y] pixel points at the centers of each normal pellet or printed-value bonus item included in the route score',
         json_example=json_example,
         json_example_answer_only=json_example_answer_only,
         query_params={
@@ -214,7 +214,7 @@ def _construct_route_score_attempt(
         scene=scene,
         answer_gt=TypedValue(type="integer", value=int(answer)),
         annotation_entity_ids=tuple(annotation_ids),
-        build_annotation=lambda rendered: bbox_set_for_entity_ids(rendered.rendered_scene, annotation_ids),
+        build_annotation=lambda rendered: point_set_for_entity_ids(rendered.rendered_scene, annotation_ids),
         execution_extra={"target_answer": int(answer)},
     )
 

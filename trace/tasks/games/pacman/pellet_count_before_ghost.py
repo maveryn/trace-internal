@@ -12,7 +12,7 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
 from ._lifecycle import AttemptPacmanResult, ObjectivePacmanPlan, run_pacman_lifecycle
-from .shared.annotations import keyed_bbox_set_for_entity_ids
+from .shared.annotations import keyed_point_set_for_entity_ids
 from .shared.defaults import DEFAULTS, PACMAN_GHOST_COLOR_KEYS, SCENE_ID
 from .shared.sampling import (
     available_open_cells,
@@ -41,8 +41,8 @@ def _json_examples() -> tuple[str, str]:
 
     answer_value = 4
     annotation_value = {
-        "counted_pellets": [[342, 204, 368, 230], [402, 264, 428, 290], [462, 264, 488, 290], [522, 264, 548, 290]],
-        "first_ghost": [[528, 258, 568, 298]],
+        "counted_pellets": [[355, 217], [415, 277], [475, 277], [535, 277]],
+        "first_ghost": [[548, 278]],
     }
     return (
         json.dumps({"annotation": annotation_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
@@ -76,7 +76,7 @@ def _prepare_pellet_count_before_ghost_objective(
         attempt_namespace="games.pacman.pellet_count_before_ghost",
         prompt_query_key=PROMPT_QUERY_KEY,
         answer_hint='set "answer" to the number of normal pellets reached before the first ghost on the highlighted route',
-        annotation_hint='set "annotation" to {"counted_pellets":[[x0, y0, x1, y1], ...], "first_ghost":[[x0, y0, x1, y1]]}, with boxes around pellets before the ghost and the first route ghost',
+        annotation_hint='set "annotation" to {"counted_pellets":[[x, y], ...], "first_ghost":[[x, y]]}, using center points for pellets before the ghost and the first route ghost',
         json_example=json_example,
         json_example_answer_only=json_example_answer_only,
         query_params={
@@ -145,7 +145,7 @@ def _construct_pellet_count_before_ghost_attempt(*, rng: Any, axes: Any, target:
         scene=scene,
         answer_gt=TypedValue(type="integer", value=int(target)),
         annotation_entity_ids=annotation_ids,
-        build_annotation=lambda rendered: keyed_bbox_set_for_entity_ids(rendered.rendered_scene, keyed_ids),
+        build_annotation=lambda rendered: keyed_point_set_for_entity_ids(rendered.rendered_scene, keyed_ids),
         execution_extra={"target_answer": int(target), "annotation_keyed_entity_ids": {key: list(value) for key, value in keyed_ids.items()}},
     )
 

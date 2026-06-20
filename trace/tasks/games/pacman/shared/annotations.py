@@ -57,15 +57,15 @@ def keyed_point_set_for_entity_ids(
         for key, entity_ids in keyed_entity_ids.items()
     }
     projected = {
-        "type": "keyed_point_set_map",
-        "keyed_point_set_map": {key: [list(point) for point in points] for key, points in keyed_points.items()},
-        "pixel_keyed_point_set_map": {key: [list(point) for point in points] for key, points in keyed_points.items()},
+        "type": "point_set_map",
+        "point_set_map": {key: [list(point) for point in points] for key, points in keyed_points.items()},
+        "pixel_point_set_map": {key: [list(point) for point in points] for key, points in keyed_points.items()},
     }
     value = {key: [list(point) for point in points] for key, points in keyed_points.items()}
     return AnnotationArtifacts(
-        annotation_type="keyed_point_set_map",
+        annotation_type="point_set_map",
         value=value,
-        annotation_gt=TypedValue(type="keyed_point_set_map", value=value),
+        annotation_gt=TypedValue(type="point_set_map", value=value),
         projected_annotation=projected,
     )
 
@@ -82,14 +82,14 @@ def keyed_bbox_set_for_entity_ids(
     }
     value = {key: [list(bbox) for bbox in bboxes] for key, bboxes in keyed_bboxes.items()}
     projected = {
-        "type": "keyed_bbox_set_map",
-        "keyed_bbox_set_map": {key: [list(bbox) for bbox in bboxes] for key, bboxes in value.items()},
-        "pixel_keyed_bbox_set_map": {key: [list(bbox) for bbox in bboxes] for key, bboxes in value.items()},
+        "type": "bbox_set_map",
+        "bbox_set_map": {key: [list(bbox) for bbox in bboxes] for key, bboxes in value.items()},
+        "pixel_bbox_set_map": {key: [list(bbox) for bbox in bboxes] for key, bboxes in value.items()},
     }
     return AnnotationArtifacts(
-        annotation_type="keyed_bbox_set_map",
+        annotation_type="bbox_set_map",
         value=value,
-        annotation_gt=TypedValue(type="keyed_bbox_set_map", value=value),
+        annotation_gt=TypedValue(type="bbox_set_map", value=value),
         projected_annotation=projected,
     )
 

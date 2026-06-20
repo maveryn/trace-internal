@@ -57,9 +57,9 @@ def test_games_pacman_public_tasks_emit_expected_contract(
         assert trace["projected_annotation"]["point"] == out.annotation_gt.value
         assert trace["projected_annotation"]["pixel_point"] == out.annotation_gt.value
         assert len(execution["annotation_entity_ids"]) == 1
-    elif out.annotation_gt.type == "keyed_point_set_map":
-        assert trace["projected_annotation"]["keyed_point_set_map"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_keyed_point_set_map"] == out.annotation_gt.value
+    elif out.annotation_gt.type == "point_set_map":
+        assert trace["projected_annotation"]["point_set_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_point_set_map"] == out.annotation_gt.value
     else:
         assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
         assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
@@ -124,7 +124,7 @@ def test_games_pacman_pellet_count_before_ghost_stops_at_first_route_ghost() -> 
     assert int(out.answer_gt.value) == 5
     assert len(stop_ghosts) == 1
     assert annotation_ghosts == [stop_ghosts[0]["entity_id"]]
-    assert out.annotation_gt.type == "keyed_point_set_map"
+    assert out.annotation_gt.type == "point_set_map"
     assert set(out.annotation_gt.value) == {"counted_pellets", "first_ghost"}
     stop_index = route_order[tuple(stop_ghosts[0]["coord"])]
     assert len(annotation_coords) == 5

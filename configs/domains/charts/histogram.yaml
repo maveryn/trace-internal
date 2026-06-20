@@ -15,7 +15,7 @@ generation:
 rendering:
   shared:
     canvas_width: 860
-    canvas_height: 620
+    canvas_height: 780
     plot_margin_left_px: 104
     plot_margin_right_px: 54
     plot_margin_top_px: 44

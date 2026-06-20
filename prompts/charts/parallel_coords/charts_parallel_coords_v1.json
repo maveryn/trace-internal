@@ -99,38 +99,38 @@
   "static_slots_by_key": {
     "query:above_on_both_axes": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping each matching profile label to an [x,y] pixel point on its segment between the two named axes",
-      "json_example": "{\"annotation\":{\"A\":[320,210],\"D\":[320,390]},\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points, one point on each counted profile segment between the two named axes",
+      "json_example": "{\"annotation\":[[320,210],[320,390]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:below_on_both_axes": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping each matching profile label to an [x,y] pixel point on its segment between the two named axes",
-      "json_example": "{\"annotation\":{\"A\":[320,210],\"D\":[320,390]},\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points, one point on each counted profile segment between the two named axes",
+      "json_example": "{\"annotation\":[[320,210],[320,390]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:above_on_one_below_on_other": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping each matching profile label to an [x,y] pixel point on its segment between the two named axes",
-      "json_example": "{\"annotation\":{\"A\":[320,210],\"D\":[320,390]},\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points, one point on each counted profile segment between the two named axes",
+      "json_example": "{\"annotation\":[[320,210],[320,390]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:largest_increase_between_axes": {
       "answer_hint": "set \"answer\" to the exact visible profile label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping the supporting profile label to an [x,y] pixel point on its segment between the two named axes",
-      "json_example": "{\"annotation\":{\"K7\":[335,270]},\"answer\":\"K7\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the answer profile segment between the two named axes",
+      "json_example": "{\"annotation\":[335,270],\"answer\":\"K7\"}",
       "json_example_answer_only": "{\"answer\":\"K7\"}"
     },
     "query:largest_decrease_between_axes": {
       "answer_hint": "set \"answer\" to the exact visible profile label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping the supporting profile label to an [x,y] pixel point on its segment between the two named axes",
-      "json_example": "{\"annotation\":{\"K7\":[335,270]},\"answer\":\"K7\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the answer profile segment between the two named axes",
+      "json_example": "{\"annotation\":[335,270],\"answer\":\"K7\"}",
       "json_example_answer_only": "{\"answer\":\"K7\"}"
     },
     "query:largest_absolute_change_between_axes": {
       "answer_hint": "set \"answer\" to the exact visible profile label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping the supporting profile label to an [x,y] pixel point on its segment between the two named axes",
-      "json_example": "{\"annotation\":{\"K7\":[335,270]},\"answer\":\"K7\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the answer profile segment between the two named axes",
+      "json_example": "{\"annotation\":[335,270],\"answer\":\"K7\"}",
       "json_example_answer_only": "{\"answer\":\"K7\"}"
     },
     "query:all_crossings_between_adjacent_axes": {

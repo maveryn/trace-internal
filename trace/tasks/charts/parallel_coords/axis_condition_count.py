@@ -1,98 +1,62 @@
-"""Count profiles satisfying two axis predicates."""
+"""Public task for `task_charts__parallel_coords__axis_condition_count`."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Mapping
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.output import build_trace_payload
-from .shared.profile_common import SCENE_ID
-from .shared.profile_sampling import _build_dataset
-from .shared.prompts import build_prompt_artifacts, dynamic_slots
-from .shared.runtime import annotation_payload, render_dataset
+from ._lifecycle import ParallelCoordsTaskPlan, profile_segment_point_set_plan, run_parallel_coords_task
+from .shared.defaults import DOMAIN, SCENE_NAMESPACE
+from .shared.sampling import sample_axis_condition_dataset
 
 
-CONDITION_QUERY_IDS = ("above_on_both_axes", "below_on_both_axes", "above_on_one_below_on_other")
+ABOVE_BOTH = "above_on_both_axes"
+BELOW_BOTH = "below_on_both_axes"
+ABOVE_BELOW = "above_on_one_below_on_other"
+SUPPORTED_QUERY_IDS = (ABOVE_BOTH, BELOW_BOTH, ABOVE_BELOW)
+COMPARATOR_PAIRS: dict[str, tuple[str, str]] = {
+    ABOVE_BOTH: ("above", "above"),
+    BELOW_BOTH: ("below", "below"),
+    ABOVE_BELOW: ("above", "below"),
+}
+
+
+def _build_plan(params: Mapping[str, Any], instance_seed: int, selected: str) -> ParallelCoordsTaskPlan:
+    """Bind one two-axis threshold predicate count before rendering."""
+
+    comparators = COMPARATOR_PAIRS[str(selected)]
+    dataset = sample_axis_condition_dataset(
+        params=params,
+        instance_seed=int(instance_seed),
+        comparator_pair=comparators,
+        namespace=f"{SCENE_NAMESPACE}.axis_condition.{selected}",
+    )
+    return profile_segment_point_set_plan(
+        dataset=dataset,
+        params=dict(params),
+        instance_seed=int(instance_seed),
+        prompt_branch_key=str(selected),
+        extra_trace_params={"axis_predicates": list(comparators)},
+    )
 
 
 @register_task
 class ChartsParallelCoordinatesAxisConditionCountTask:
-    """Count profile lines satisfying a two-axis threshold condition."""
+    """Count profiles satisfying a two-axis threshold condition."""
 
     task_id = "task_charts__parallel_coords__axis_condition_count"
-    domain = "charts"
-    scene_id = SCENE_ID
+    domain = DOMAIN
     objective_contract = "axis_condition_count"
-    supported_query_ids = CONDITION_QUERY_IDS
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = ABOVE_BOTH
+    task_param_defaults: dict[str, Any] = {}
     default_dataset_enabled = True
+    _build_plan = staticmethod(_build_plan)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=self.supported_query_ids,
-            default_query_id="above_on_both_axes",
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt == 0 else int(hash64(int(instance_seed), self.task_id, attempt))
-            try:
-                return self._generate_once(
-                    int(attempt_seed),
-                    params=task_params,
-                    selected_query_id=str(selected_query_id),
-                    query_probabilities=query_probabilities,
-                )
-            except Exception as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        """Select the comparator query and count matching profile segments."""
 
-    def _generate_once(
-        self,
-        instance_seed: int,
-        *,
-        params: Dict[str, Any],
-        selected_query_id: str,
-        query_probabilities: Dict[str, float],
-    ) -> TaskOutput:
-        dataset = _build_dataset(
-            params=params,
-            instance_seed=int(instance_seed),
-            query_id=str(selected_query_id),
-            query_id_probabilities=query_probabilities,
-        )
-        rendered = render_dataset(dataset=dataset, params=params, instance_seed=int(instance_seed))
-        annotation_type, annotation_value, projected_annotation = annotation_payload(dataset, rendered.rendered_scene)
-        prompt_artifacts = build_prompt_artifacts(
-            prompt_query_key=str(selected_query_id),
-            dynamic_slot_values=dynamic_slots(dataset),
-            instance_seed=int(instance_seed),
-        )
-        answer_value = int(dataset.query.answer)
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=TypedValue(type="integer", value=int(answer_value)),
-            annotation_gt=TypedValue(type=str(annotation_type), value=annotation_value),
-            image=rendered.image,
-            image_id="img0",
-            trace_payload=build_trace_payload(
-                dataset=dataset,
-                rendered=rendered,
-                prompt_artifacts=prompt_artifacts,
-                annotation_type=str(annotation_type),
-                projected_annotation=projected_annotation,
-            ),
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(selected_query_id),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-        )
+        return run_parallel_coords_task(self, int(instance_seed), dict(params), int(max_attempts))
 
 
 __all__ = ["ChartsParallelCoordinatesAxisConditionCountTask"]

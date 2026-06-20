@@ -10,11 +10,9 @@ from trace.tasks.shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 
-from .profile_common import _PROMPT_DEFAULTS, SCENE_ID
+from .defaults import DOMAIN, PROMPT_BUNDLE_ID, PROMPT_DEFAULTS, SCENE_ID
 
 
-DOMAIN = "charts"
-PROMPT_BUNDLE_ID = "charts_parallel_coords_v1"
 SCENE_PROMPT_KEY = "parallel_coords_chart"
 TASK_PROMPT_KEY = "parallel_coords_query"
 OBJECT_DESCRIPTION = (
@@ -45,7 +43,7 @@ def build_prompt_artifacts(
     rendered_prompt = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
-        bundle_id=str(_PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
+        bundle_id=str(PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
         scene_key=SCENE_PROMPT_KEY,
         task_key=TASK_PROMPT_KEY,
         query_key=str(prompt_query_key),

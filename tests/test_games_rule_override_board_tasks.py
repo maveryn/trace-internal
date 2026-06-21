@@ -9,9 +9,11 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.rule_override_board.line_result_count import (
     LINE_LOSS_QUERY_ID,
     LINE_WIN_QUERY_ID,
+    GamesRuleOverrideLineResultCountTask,
+)
+from trace.tasks.games.rule_override_board.piece_result_count import (
     PIECE_LOSS_QUERY_ID,
     PIECE_WIN_QUERY_ID,
-    GamesRuleOverrideLineResultCountTask,
     GamesRuleOverridePieceResultCountTask,
 )
 from tests.helpers import read_jsonl

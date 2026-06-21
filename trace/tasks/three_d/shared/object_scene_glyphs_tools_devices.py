@@ -38,6 +38,8 @@ from .object_scene_primitives import (
     _object_vertices,
     _oval_profile_points,
     _project_face,
+    _project_local_xy_point,
+    _project_local_xy_rect,
     _radius_px_for_object,
     _shade,
     _star_footprint_points,
@@ -1279,32 +1281,42 @@ def _draw_pillow_cushion_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     shape_type = str(spec.get("shape_type", "pillow"))
-    screen_points = _project_face(list(_object_vertices(spec).values()), camera, frame)
-    x0, y0, x1, y1 = (float(value) for value in _bbox_from_screen_points(screen_points))
-    w = max(1.0, x1 - x0)
-    h = max(1.0, y1 - y0)
-    radius = max(5, int(min(w, h) * (0.34 if shape_type == "pillow" else 0.26)))
-    soft_rect = [x0 + w * 0.03, y0 + h * 0.04, x1 - w * 0.03, y1 - h * 0.04]
-    draw.rounded_rectangle(soft_rect, radius=radius, fill=_tint(fill, 0.32), outline=_shade(fill, 0.64), width=2)
-    bboxes: List[List[float]] = [soft_rect]
-    seam = [soft_rect[0] + w * 0.07, soft_rect[1] + h * 0.10, soft_rect[2] - w * 0.07, soft_rect[3] - h * 0.10]
-    draw.rounded_rectangle(seam, radius=max(3, int(radius * 0.62)), outline=_shade(fill, 0.72), width=1)
-    bboxes.append(seam)
+    body = _project_local_xy_rect(spec, camera, frame, u0=0.04, v0=0.06, u1=0.96, v1=0.94, z_frac=1.0)
+    seam = _project_local_xy_rect(spec, camera, frame, u0=0.13, v0=0.17, u1=0.87, v1=0.83, z_frac=1.02)
+    draw.polygon(body, fill=_tint(fill, 0.32), outline=_shade(fill, 0.64))
+    _draw_polyline(draw, body, fill=_shade(fill, 0.62), width=2)
+    _draw_polyline(draw, seam, fill=_shade(fill, 0.72), width=1)
+    bboxes: List[List[float]] = [_bbox_from_screen_points(body), _bbox_from_screen_points(seam)]
     if shape_type == "cushion":
+        center = _project_local_xy_point(spec, camera, frame, u=0.50, v=0.50, z_frac=1.04)
+        body_bbox = _bbox_from_screen_points(body)
+        x0, y0, x1, y1 = (float(value) for value in body_bbox)
         button = [
-            x0 + w * 0.43,
-            y0 + h * 0.41,
-            x0 + w * 0.57,
-            y0 + h * 0.55,
+            float(center[0]) - max(2.0, (x1 - x0) * 0.045),
+            float(center[1]) - max(2.0, (y1 - y0) * 0.045),
+            float(center[0]) + max(2.0, (x1 - x0) * 0.045),
+            float(center[1]) + max(2.0, (y1 - y0) * 0.045),
         ]
         draw.ellipse(button, fill=_shade(fill, 0.68), outline=(45, 52, 61), width=1)
         bboxes.append(button)
     else:
-        fold = [(x0 + w * 0.20, y0 + h * 0.48), (x1 - w * 0.20, y0 + h * 0.44)]
+        fold = [
+            _project_local_xy_point(spec, camera, frame, u=0.20, v=0.50, z_frac=1.04),
+            _project_local_xy_point(spec, camera, frame, u=0.80, v=0.46, z_frac=1.04),
+        ]
         draw.line(fold, fill=_shade(fill, 0.70), width=2)
         bboxes.append(_padded_screen_line_bbox(fold, pad_px=1.0))
-        for cx, cy in ((x0 + w * 0.13, y0 + h * 0.16), (x1 - w * 0.13, y0 + h * 0.16), (x0 + w * 0.13, y1 - h * 0.16), (x1 - w * 0.13, y1 - h * 0.16)):
-            pinch = [cx - w * 0.035, cy - h * 0.035, cx + w * 0.035, cy + h * 0.035]
+        body_bbox = _bbox_from_screen_points(body)
+        x0, y0, x1, y1 = (float(value) for value in body_bbox)
+        rx = max(1.5, (x1 - x0) * 0.025)
+        ry = max(1.5, (y1 - y0) * 0.025)
+        for cx, cy in (
+            _project_local_xy_point(spec, camera, frame, u=0.13, v=0.16, z_frac=1.04),
+            _project_local_xy_point(spec, camera, frame, u=0.87, v=0.16, z_frac=1.04),
+            _project_local_xy_point(spec, camera, frame, u=0.13, v=0.84, z_frac=1.04),
+            _project_local_xy_point(spec, camera, frame, u=0.87, v=0.84, z_frac=1.04),
+        ):
+            pinch = [cx - rx, cy - ry, cx + rx, cy + ry]
             draw.ellipse(pinch, fill=_shade(fill, 0.62))
             bboxes.append(pinch)
     return _bbox_union(*bboxes)
@@ -1445,20 +1457,20 @@ def _draw_tray_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    bbox = _bbox_from_screen_points(_project_face(list(_object_vertices(spec).values()), camera, frame))
-    x0, y0, x1, y1 = (float(value) for value in bbox)
-    w = max(1.0, x1 - x0)
-    h = max(1.0, y1 - y0)
-    lip = [x0 + w * 0.04, y0 + h * 0.08, x1 - w * 0.04, y1 - h * 0.08]
-    inner = [x0 + w * 0.14, y0 + h * 0.24, x1 - w * 0.14, y1 - h * 0.22]
-    draw.rounded_rectangle(lip, radius=max(4, int(min(w, h) * 0.16)), fill=_tint(fill, 0.16), outline=_shade(fill, 0.48), width=3)
-    draw.rounded_rectangle(inner, radius=max(3, int(min(w, h) * 0.09)), fill=_shade(fill, 0.80), outline=_shade(fill, 0.52), width=1)
+    base_bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=_tint(fill, 0.10))
+    lip = _project_local_xy_rect(spec, camera, frame, u0=0.04, v0=0.08, u1=0.96, v1=0.92, z_frac=1.04)
+    inner = _project_local_xy_rect(spec, camera, frame, u0=0.14, v0=0.24, u1=0.86, v1=0.78, z_frac=1.06)
+    draw.polygon(lip, fill=_tint(fill, 0.16), outline=_shade(fill, 0.48))
+    _draw_polyline(draw, lip, fill=_shade(fill, 0.48), width=3)
+    draw.polygon(inner, fill=_shade(fill, 0.80), outline=_shade(fill, 0.52))
+    _draw_polyline(draw, inner, fill=_shade(fill, 0.52), width=1)
     handles = []
     for px in (0.08, 0.92):
-        handle = [x0 + w * (px - 0.055), y0 + h * 0.42, x0 + w * (px + 0.055), y0 + h * 0.62]
-        draw.ellipse(handle, fill=(236, 240, 238), outline=_shade(fill, 0.50), width=2)
-        handles.append(handle)
-    return _bbox_union(bbox, lip, inner, *handles)
+        handle = _project_local_xy_rect(spec, camera, frame, u0=px - 0.055, v0=0.42, u1=px + 0.055, v1=0.62, z_frac=1.08)
+        draw.polygon(handle, fill=(236, 240, 238), outline=_shade(fill, 0.50))
+        _draw_polyline(draw, handle, fill=_shade(fill, 0.50), width=2)
+        handles.append(_bbox_from_screen_points(handle))
+    return _bbox_union(base_bbox, _bbox_from_screen_points(lip), _bbox_from_screen_points(inner), *handles)
 
 
 def _draw_coaster_object(

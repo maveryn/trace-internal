@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import inspect
 from pathlib import Path
 
 import trace.tasks  # noqa: F401 - registers tasks.
@@ -12,6 +13,7 @@ from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
 from trace.tasks.shared.named_colors import available_named_colors
 from trace.tasks.three_d.shared.object_inventory_preview import render_three_d_object_profile_preview
 from trace.tasks.three_d.shared.object_resources import OBJECT_CLUSTER_EXTRA_SHAPE_TYPES, object_profiles
+from trace.tasks.three_d.shared import object_scene_glyphs_tools_devices as tools_glyphs
 from trace.tasks.three_d.object_cluster.color_membership_count import TASK_ID as COLOR_MEMBERSHIP_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.count_arithmetic import TASK_ID as COUNT_ARITHMETIC_TASK_ID
 from trace.tasks.three_d.object_cluster.multi_attribute_and_count import TASK_ID as MULTI_ATTRIBUTE_AND_TASK_ID
@@ -354,6 +356,18 @@ def test_object_cluster_countqa_additions_have_profiles_and_render() -> None:
         x0, y0, x1, y1 = preview.object_bbox_px
         assert x1 - x0 > 8.0
         assert y1 - y0 > 8.0
+
+
+def test_object_cluster_orientation_sensitive_glyphs_use_local_yaw_projection() -> None:
+    """Flat cluster glyph bodies must not collapse sampled yaw into axis-aligned boxes."""
+
+    for renderer in (
+        tools_glyphs._draw_tray_object,
+        tools_glyphs._draw_pillow_cushion_object,
+    ):
+        source = inspect.getsource(renderer)
+        assert "_project_local_xy_rect" in source
+        assert "_bbox_from_screen_points(_project_face(list(_object_vertices(spec).values())" not in source
 
 
 def test_object_cluster_multi_attribute_and_count_answer_and_annotation() -> None:

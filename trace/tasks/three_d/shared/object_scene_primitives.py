@@ -115,6 +115,46 @@ def _project_face(face: Sequence[Sequence[float]], camera: _CameraSpec, frame: _
     return [_project_xy(point, camera, frame) for point in face]
 
 
+def _project_local_xy_point(
+    spec: Mapping[str, Any],
+    camera: _CameraSpec,
+    frame: _ProjectionFrame,
+    *,
+    u: float,
+    v: float,
+    z_frac: float = 1.0,
+) -> Tuple[float, float]:
+    """Project a point from one object's local xy footprint onto the screen."""
+
+    x, y, _z = (float(value) for value in spec["world_xyz"])
+    raw_base = spec.get("base_xyz", (x, y, 0.0))
+    base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
+    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
+    ox, oy = _oriented_offset_xy(spec, (float(u) - 0.5) * width, (float(v) - 0.5) * depth)
+    return _project_xy((x + ox, y + oy, base_z + height * float(z_frac)), camera, frame)
+
+
+def _project_local_xy_rect(
+    spec: Mapping[str, Any],
+    camera: _CameraSpec,
+    frame: _ProjectionFrame,
+    *,
+    u0: float,
+    v0: float,
+    u1: float,
+    v1: float,
+    z_frac: float = 1.0,
+) -> List[Tuple[float, float]]:
+    """Project a local object-footprint rectangle while preserving object yaw."""
+
+    return [
+        _project_local_xy_point(spec, camera, frame, u=float(u0), v=float(v0), z_frac=float(z_frac)),
+        _project_local_xy_point(spec, camera, frame, u=float(u1), v=float(v0), z_frac=float(z_frac)),
+        _project_local_xy_point(spec, camera, frame, u=float(u1), v=float(v1), z_frac=float(z_frac)),
+        _project_local_xy_point(spec, camera, frame, u=float(u0), v=float(v1), z_frac=float(z_frac)),
+    ]
+
+
 def _face_distance(face: Sequence[Sequence[float]], camera: _CameraSpec) -> float:
     center = tuple(sum(float(point[index]) for point in face) / float(len(face)) for index in range(3))
     return _distance(center, camera.camera_position)
@@ -611,6 +651,8 @@ draw_sphere_object = _draw_sphere_object
 draw_torus_object = _draw_torus_object
 draw_upright_profile_object = _draw_upright_profile_object
 draw_wedge_object = _draw_wedge_object
+project_local_xy_point = _project_local_xy_point
+project_local_xy_rect = _project_local_xy_rect
 project_face = _project_face
 shade_rgb = _shade
 tint_rgb = _tint
@@ -632,6 +674,8 @@ __all__ = [
     "draw_torus_object",
     "draw_upright_profile_object",
     "draw_wedge_object",
+    "project_local_xy_point",
+    "project_local_xy_rect",
     "project_face",
     "shade_rgb",
     "tint_rgb",
@@ -660,6 +704,8 @@ __all__ = [
     "_oval_profile_points",
     "_padded_bbox_from_screen_points",
     "_project_face",
+    "_project_local_xy_point",
+    "_project_local_xy_rect",
     "_radius_px_for_object",
     "_shade",
     "_star_footprint_points",

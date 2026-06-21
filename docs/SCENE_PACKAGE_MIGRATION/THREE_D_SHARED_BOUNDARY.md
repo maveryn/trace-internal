@@ -309,6 +309,13 @@ scene-private `_lifecycle.py`, but role-split the current broad helpers:
 - common trace scaffolding -> `output.py`;
 - annotation projection helpers -> `annotations.py`.
 
+Cluster object renderers may sample non-semantic `orientation_deg` metadata.
+Domain-shared glyphs with orientation-sensitive rectangular footprints must
+draw their visible body from projected local-object coordinates instead of
+collapsing oriented vertices into a screen-axis bbox. Truly symmetric or
+upright billboard-style glyphs may remain visually yaw-invariant when that is
+part of the renderer design.
+
 `predicate_counts.py` must not remain a shared public-task base or a
 review-candidate lifecycle entry point. It currently routes by task/query
 identity and constructs `TaskOutput`. Before review-candidate registration,

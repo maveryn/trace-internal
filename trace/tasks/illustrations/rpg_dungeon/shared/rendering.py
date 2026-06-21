@@ -558,11 +558,6 @@ def _decor_specs(
     ):
         add(object_type, public_name, box, None)
 
-    loose_tiles = list(floor_tiles - occupied_tiles)
-    rng.shuffle(loose_tiles)
-    for tile in loose_tiles[: min(6, max(2, len(loose_tiles) // 18))]:
-        kind = _choose(rng, ("rock", "boulder"))
-        add(kind, kind, (tile[0], tile[1], 1, 1), None)
     return tuple(specs)
 
 

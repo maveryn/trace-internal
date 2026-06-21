@@ -45,6 +45,5 @@ Counts the treasure chests reachable from the player by following only unblocked
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/rpg_dungeon/illustrations_rpg_dungeon_v0.json`.
 - Public prompts refer to the player and require following only unblocked/open floor paths.
-- Render-only attributes such as palette, chamber positions, decorative rocks/crystals/torches, blocker type, and canvas profile must not be query ids.
+- Render-only attributes such as palette, chamber positions, decorative crystals/torches, blocker type, and canvas profile must not be query ids.
 - Floor tiles, blocked tiles, player entity, all chest entities, reachable chest ids, projected keyed point-set annotation, and diagnostic blocker/entity bboxes must be recorded in the trace.
-

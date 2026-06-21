@@ -47,6 +47,7 @@ def test_rpg_dungeon_renderer_is_deterministic_and_profile_safe() -> None:
             _assert_bbox_inside_canvas(list(blocker.bbox_xyxy), width=width, height=height)
         for entity in first.entities:
             _assert_bbox_inside_canvas(list(entity.bbox_xyxy), width=width, height=height)
+            assert entity.object_type not in {"rock", "boulder"}
 
 
 def test_rpg_dungeon_renderer_samples_reachable_count_range() -> None:

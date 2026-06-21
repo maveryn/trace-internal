@@ -17,5 +17,12 @@
 
 1. Query ids: `largest_side_gap_label`, `smallest_nonzero_side_gap_label`
 2. Answer schema: `string_label`.
-3. Annotation schema: `bbox_set`
+3. Annotation schema: `bbox`
 4. Annotation marks one bbox around the paired left/right bars in the answer row.
+
+## Program Contract
+
+`select_label(arg_extremum(age_group_rows, abs(left_value - right_value), rank)); scene=population_pyramid; scope=side_gap_extremum_label`
+
+Arguments:
+- `rank`: `largest` or `smallest_nonzero`

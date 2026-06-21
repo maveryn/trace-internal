@@ -15,7 +15,16 @@
 
 ## Contract
 
-1. Query ids: `left_side_threshold_count`, `right_side_threshold_count`, `combined_total_threshold_count`
+1. Query ids: `left_side_at_least_threshold_count`, `left_side_at_most_threshold_count`, `right_side_at_least_threshold_count`, `right_side_at_most_threshold_count`, `combined_total_at_least_threshold_count`, `combined_total_at_most_threshold_count`
 2. Answer schema: `integer_count`.
 3. Annotation schema: `bbox_set`
 4. Annotation marks one bbox around the paired left/right bars for each counted age-group row.
+
+## Program Contract
+
+`count(filter(age_group_rows, compare(metric(row, side), threshold, relation))); scene=population_pyramid; scope=age_group_threshold_count`
+
+Arguments:
+- `side`: `left`, `right`, or `combined_total`
+- `relation`: `at_least` or `at_most`
+- `threshold`: sampled visible chart-scale integer

@@ -39,15 +39,26 @@ def test_rpg_dungeon_renderer_is_deterministic_and_profile_safe() -> None:
         assert first.player_entity_id == "player_00"
         assert len(first.floor_tiles) > 0
         assert len(first.corridor_tiles) > 0
-        assert len(first.blocked_tiles) == TOTAL_CHEST_COUNT - 3
-        assert len(first.blockers) == TOTAL_CHEST_COUNT - 3
+        assert len(first.blocked_tiles) == len(first.blockers)
+        assert len(first.blocked_tiles) == len(set(first.blocked_tiles))
+        assert {
+            "edge_northwest_chamber_north_chamber",
+            "edge_north_chamber_northeast_chamber",
+            "edge_southwest_chamber_southeast_chamber",
+        }.issubset(set(first.trace["edge_ids"]))
+        assert set(first.trace["blocked_edge_ids"]) == {
+            str(blocker.metadata["edge_id"])
+            for blocker in first.blockers
+        }
         for chamber in first.chambers:
             _assert_bbox_inside_canvas(list(chamber.bbox_xyxy), width=width, height=height)
         for blocker in first.blockers:
             _assert_bbox_inside_canvas(list(blocker.bbox_xyxy), width=width, height=height)
+            assert blocker.blocker_type in {"sealed_door", "boulder"}
+            assert blocker.metadata["passable"] is False
         for entity in first.entities:
             _assert_bbox_inside_canvas(list(entity.bbox_xyxy), width=width, height=height)
-            assert entity.object_type not in {"rock", "boulder"}
+            assert entity.object_type in {"chest", "person"}
 
 
 def test_rpg_dungeon_renderer_samples_reachable_count_range() -> None:

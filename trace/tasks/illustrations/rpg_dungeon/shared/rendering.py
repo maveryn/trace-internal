@@ -50,7 +50,6 @@ THEMES: Mapping[str, Mapping[str, Any]] = {
         "wall_light_rgb": (118, 126, 139),
         "chest_wood_rgb": (142, 84, 42),
         "chest_metal_rgb": (210, 172, 72),
-        "crystal_rgb": (105, 185, 218),
     },
     "green_ruin": {
         "background_rgb": (33, 40, 35),
@@ -61,7 +60,6 @@ THEMES: Mapping[str, Mapping[str, Any]] = {
         "wall_light_rgb": (112, 132, 111),
         "chest_wood_rgb": (130, 79, 43),
         "chest_metal_rgb": (196, 161, 68),
-        "crystal_rgb": (119, 209, 152),
     },
     "red_crypt": {
         "background_rgb": (42, 32, 35),
@@ -72,7 +70,6 @@ THEMES: Mapping[str, Mapping[str, Any]] = {
         "wall_light_rgb": (138, 114, 112),
         "chest_wood_rgb": (116, 67, 42),
         "chest_metal_rgb": (216, 154, 79),
-        "crystal_rgb": (209, 113, 152),
     },
 }
 
@@ -126,17 +123,28 @@ class _EntitySpec:
 @dataclass(frozen=True)
 class _BlockerSpec:
     blocker_id: str
+    edge_id: str
     blocker_type: str
     tile_xy: Tile
     orientation: str
 
 
 @dataclass(frozen=True)
+class _EdgeSpec:
+    edge_id: str
+    source_chamber_id: str
+    target_chamber_id: str
+    path: tuple[Tile, ...]
+
+
+@dataclass(frozen=True)
 class _LayoutSpec:
     chambers: tuple[_ChamberSpec, ...]
+    edge_specs: tuple[_EdgeSpec, ...]
     floor_tiles: tuple[Tile, ...]
     corridor_tiles: tuple[Tile, ...]
     blocked_tiles: tuple[Tile, ...]
+    blocked_edge_ids: tuple[str, ...]
     blocker_specs: tuple[_BlockerSpec, ...]
     entity_specs: tuple[_EntitySpec, ...]
     player_tile: Tile
@@ -204,6 +212,8 @@ def render_rpg_dungeon_scene(
         "tile_px": int(layout.tile_px),
         "reachable_chest_target": int(target_count),
         "reachable_chest_ids": [str(entity_id) for entity_id in layout_spec.reachable_chest_ids],
+        "edge_ids": [str(edge.edge_id) for edge in layout_spec.edge_specs],
+        "blocked_edge_ids": [str(edge_id) for edge_id in layout_spec.blocked_edge_ids],
         "player_tile": [int(value) for value in layout_spec.player_tile],
         "chest_tile_map": {
             str(entity_id): [int(tile[0]), int(tile[1])]
@@ -323,25 +333,22 @@ def _make_layout_spec(layout: RpgDungeonLayout, *, rng: random.Random, target_co
     start_tile = _rect_center_tile(start.tile_xywh)
     chest_chambers = tuple(spec for spec in chamber_specs if spec.chamber_id != "start")
     chest_ids = tuple(f"chest_{index:02d}" for index in range(len(chest_chambers)))
-    shuffled = list(chest_ids)
-    rng.shuffle(shuffled)
-    reachable_chest_ids = frozenset(shuffled[: int(target_count)])
+    edge_specs = _make_edge_specs(chamber_by_id)
 
     floor: set[Tile] = set()
     for chamber in chamber_specs:
         floor.update(_rect_tiles(chamber.tile_xywh))
     corridor_tiles: set[Tile] = set()
-    blockers: list[_BlockerSpec] = []
+    chamber_floor_tiles = set(floor)
+    for edge in edge_specs:
+        floor.update(edge.path)
+        corridor_tiles.update(tile for tile in edge.path if tile not in chamber_floor_tiles)
     chest_tile_map: dict[str, Tile] = {}
     entity_specs: list[_EntitySpec] = [
         _player_spec(start_tile),
     ]
     for index, chamber in enumerate(chest_chambers):
         chest_id = chest_ids[index]
-        target_tile = _rect_center_tile(chamber.tile_xywh)
-        path = _branch_path(start_tile, target_tile, chamber_id=chamber.chamber_id)
-        corridor_tiles.update(path)
-        floor.update(path)
         chest_box = _centered_box(chamber.tile_xywh, width_tiles=2, height_tiles=1)
         chest_tile_map[chest_id] = _rect_center_tile(chest_box)
         entity_specs.append(
@@ -358,49 +365,40 @@ def _make_layout_spec(layout: RpgDungeonLayout, *, rng: random.Random, target_co
                 },
             )
         )
-        if chest_id not in reachable_chest_ids:
-            blocker_tile = _blocker_tile_for_branch(path, start=start, target=chamber)
-            if blocker_tile is not None:
-                blockers.append(
-                    _BlockerSpec(
-                        blocker_id=f"blocker_{chamber.chamber_id}",
-                        blocker_type=_choose(rng, ("sealed_door", "rubble")),
-                        tile_xy=blocker_tile,
-                        orientation=_blocker_orientation(path, blocker_tile),
-                    )
-                )
 
-    blocked_tiles = tuple(sorted({blocker.tile_xy for blocker in blockers}, key=lambda tile: (tile[1], tile[0])))
-    occupied = {start_tile, *blocked_tiles}
-    occupied.update(tile for box in (spec.tile_xywh for spec in entity_specs) for tile in _rect_tiles(box))
-    entity_specs.extend(
-        _decor_specs(
-            layout,
-            rng=rng,
-            chamber_specs=chamber_specs,
-            floor_tiles=floor,
-            occupied_tiles=occupied,
-        )
+    blockers, blocked_edge_ids, reachable_chest_ids = _select_blocked_edge_config(
+        rng=rng,
+        target_count=int(target_count),
+        chamber_by_id=chamber_by_id,
+        edge_specs=edge_specs,
+        floor_tiles=floor,
+        start_tile=start_tile,
+        chest_tile_map=chest_tile_map,
     )
+    blocked_tiles = tuple(sorted({blocker.tile_xy for blocker in blockers}, key=lambda tile: (tile[1], tile[0])))
     return _LayoutSpec(
         chambers=tuple(chamber_specs),
+        edge_specs=tuple(edge_specs),
         floor_tiles=tuple(sorted(floor, key=lambda tile: (tile[1], tile[0]))),
         corridor_tiles=tuple(sorted(corridor_tiles, key=lambda tile: (tile[1], tile[0]))),
         blocked_tiles=blocked_tiles,
+        blocked_edge_ids=tuple(sorted(blocked_edge_ids)),
         blocker_specs=tuple(blockers),
         entity_specs=tuple(entity_specs),
         player_tile=start_tile,
         chest_tile_map=chest_tile_map,
-        reachable_chest_ids=tuple(sorted(reachable_chest_ids)),
+        reachable_chest_ids=tuple(str(entity_id) for entity_id in sorted(reachable_chest_ids)),
     )
 
 
 def _replace_reachable_ids(spec: _LayoutSpec, reachable_ids: Sequence[str]) -> _LayoutSpec:
     return _LayoutSpec(
         chambers=spec.chambers,
+        edge_specs=spec.edge_specs,
         floor_tiles=spec.floor_tiles,
         corridor_tiles=spec.corridor_tiles,
         blocked_tiles=spec.blocked_tiles,
+        blocked_edge_ids=spec.blocked_edge_ids,
         blocker_specs=spec.blocker_specs,
         entity_specs=spec.entity_specs,
         player_tile=spec.player_tile,
@@ -449,6 +447,55 @@ def _branch_path(start_tile: Tile, target_tile: Tile, *, chamber_id: str) -> tup
     return tuple(dict.fromkeys(path))
 
 
+def _make_edge_specs(chamber_by_id: Mapping[str, _ChamberSpec]) -> tuple[_EdgeSpec, ...]:
+    """Return room-to-room graph edges used by reachability and blocker placement."""
+
+    edge_pairs = (
+        ("start", "northwest_chamber"),
+        ("start", "north_chamber"),
+        ("start", "northeast_chamber"),
+        ("start", "southwest_chamber"),
+        ("start", "southeast_chamber"),
+        ("northwest_chamber", "north_chamber"),
+        ("north_chamber", "northeast_chamber"),
+        ("southwest_chamber", "southeast_chamber"),
+    )
+    edges: list[_EdgeSpec] = []
+    for source_id, target_id in edge_pairs:
+        source = chamber_by_id[source_id]
+        target = chamber_by_id[target_id]
+        source_tile = _rect_center_tile(source.tile_xywh)
+        target_tile = _rect_center_tile(target.tile_xywh)
+        if source_id == "start":
+            path = _branch_path(source_tile, target_tile, chamber_id=target_id)
+        else:
+            path = _straight_path(source_tile, target_tile)
+        edge_id = f"edge_{source_id}_{target_id}"
+        edges.append(
+            _EdgeSpec(
+                edge_id=edge_id,
+                source_chamber_id=source_id,
+                target_chamber_id=target_id,
+                path=path,
+            )
+        )
+    return tuple(edges)
+
+
+def _straight_path(source_tile: Tile, target_tile: Tile) -> tuple[Tile, ...]:
+    sx, sy = source_tile
+    tx, ty = target_tile
+    path: list[Tile] = []
+    if int(sy) == int(ty):
+        _append_horizontal(path, sy, sx, tx)
+    elif int(sx) == int(tx):
+        _append_vertical(path, sx, sy, ty)
+    else:
+        _append_horizontal(path, sy, sx, tx)
+        _append_vertical(path, tx, sy, ty)
+    return tuple(dict.fromkeys(path))
+
+
 def _append_horizontal(path: list[Tile], y: int, x0: int, x1: int) -> None:
     step = 1 if int(x1) >= int(x0) else -1
     for x in range(int(x0), int(x1) + step, step):
@@ -461,19 +508,85 @@ def _append_vertical(path: list[Tile], x: int, y0: int, y1: int) -> None:
         path.append((int(x), int(y)))
 
 
-def _blocker_tile_for_branch(path: Sequence[Tile], *, start: _ChamberSpec, target: _ChamberSpec) -> Tile | None:
-    start_tiles = set(_rect_tiles(start.tile_xywh))
-    target_tiles = set(_rect_tiles(target.tile_xywh))
-    candidates = [tile for tile in path if tile not in start_tiles and tile not in target_tiles]
+def _select_blocked_edge_config(
+    *,
+    rng: random.Random,
+    target_count: int,
+    chamber_by_id: Mapping[str, _ChamberSpec],
+    edge_specs: Sequence[_EdgeSpec],
+    floor_tiles: set[Tile],
+    start_tile: Tile,
+    chest_tile_map: Mapping[str, Tile],
+) -> tuple[tuple[_BlockerSpec, ...], tuple[str, ...], tuple[str, ...]]:
+    """Choose visible blockers whose tile graph yields exactly the requested count."""
+
+    eligible_edges: list[tuple[_EdgeSpec, Tile, str]] = []
+    for edge in edge_specs:
+        blocker_tile = _blocker_tile_for_edge(edge, chamber_by_id=chamber_by_id)
+        if blocker_tile is None:
+            continue
+        eligible_edges.append((edge, blocker_tile, _blocker_orientation(edge.path, blocker_tile)))
+
+    matching_configs: list[tuple[tuple[tuple[_EdgeSpec, Tile, str], ...], tuple[str, ...]]] = []
+    for mask in range(1 << len(eligible_edges)):
+        blocked_tiles: set[Tile] = set()
+        selected: list[tuple[_EdgeSpec, Tile, str]] = []
+        duplicate_tile = False
+        for index, edge_blocker in enumerate(eligible_edges):
+            if not (mask & (1 << index)):
+                continue
+            edge, blocker_tile, _orientation = edge_blocker
+            if blocker_tile in blocked_tiles:
+                duplicate_tile = True
+                break
+            blocked_tiles.add(blocker_tile)
+            selected.append((edge, blocker_tile, _orientation))
+        if duplicate_tile:
+            continue
+        reached = reachable_tiles(floor_tiles, blocked_tiles=blocked_tiles, start_tile=start_tile)
+        reachable_ids = reachable_entity_ids(entity_tile_map=dict(chest_tile_map), reachable_tile_set=reached)
+        if len(reachable_ids) == int(target_count):
+            matching_configs.append((tuple(selected), tuple(reachable_ids)))
+
+    if not matching_configs:
+        raise ValueError(f"no RPG dungeon blocker graph produced {target_count} reachable chests")
+
+    min_blockers = min(len(selected) for selected, _reachable_ids in matching_configs)
+    compact_configs = [
+        config
+        for config in matching_configs
+        if len(config[0]) <= min_blockers + (0 if int(target_count) in {0, TOTAL_CHEST_COUNT} else 1)
+    ]
+    selected_edges, reachable_ids = _choose(rng, compact_configs)
+    blocker_specs: list[_BlockerSpec] = []
+    for index, (edge, blocker_tile, orientation) in enumerate(sorted(selected_edges, key=lambda item: item[0].edge_id)):
+        blocker_specs.append(
+            _BlockerSpec(
+                blocker_id=f"blocker_{index:02d}",
+                edge_id=str(edge.edge_id),
+                blocker_type=_choose(rng, ("sealed_door", "sealed_door", "boulder")),
+                tile_xy=blocker_tile,
+                orientation=orientation,
+            )
+        )
+    return (
+        tuple(blocker_specs),
+        tuple(str(blocker.edge_id) for blocker in blocker_specs),
+        tuple(str(entity_id) for entity_id in reachable_ids),
+    )
+
+
+def _blocker_tile_for_edge(edge: _EdgeSpec, *, chamber_by_id: Mapping[str, _ChamberSpec]) -> Tile | None:
+    source_tiles = set(_rect_tiles(chamber_by_id[edge.source_chamber_id].tile_xywh))
+    target_tiles = set(_rect_tiles(chamber_by_id[edge.target_chamber_id].tile_xywh))
+    candidates = [
+        (index, tile)
+        for index, tile in enumerate(edge.path)
+        if tile not in source_tiles and tile not in target_tiles
+    ]
     if not candidates:
         return None
-    target_center = _rect_center_tile(target.tile_xywh)
-    start_center = _rect_center_tile(start.tile_xywh)
-    preferred_x = start_center[0] if target.chamber_id == "north_chamber" else target_center[0]
-    preferred = [tile for tile in candidates if int(tile[0]) == int(preferred_x)]
-    if preferred:
-        return preferred[len(preferred) // 2]
-    return candidates[len(candidates) // 2]
+    return candidates[len(candidates) // 2][1]
 
 
 def _blocker_orientation(path: Sequence[Tile], tile: Tile) -> str:
@@ -509,64 +622,6 @@ def _player_spec(start_tile: Tile) -> _EntitySpec:
     )
 
 
-def _decor_specs(
-    layout: RpgDungeonLayout,
-    *,
-    rng: random.Random,
-    chamber_specs: Sequence[_ChamberSpec],
-    floor_tiles: set[Tile],
-    occupied_tiles: set[Tile],
-) -> tuple[_EntitySpec, ...]:
-    """Add non-query fixtures only on unoccupied floor tiles."""
-
-    specs: list[_EntitySpec] = []
-
-    def can_place(box: TileBox) -> bool:
-        tiles = set(_rect_tiles(box))
-        return bool(tiles) and tiles.issubset(floor_tiles) and not (tiles & occupied_tiles)
-
-    def add(object_type: str, public_name: str, box: TileBox, chamber_id: str | None, **visual: Any) -> bool:
-        if not can_place(box):
-            return False
-        entity_id = f"{object_type}_{len(specs):02d}"
-        occupied_tiles.update(_rect_tiles(box))
-        specs.append(
-            _EntitySpec(
-                entity_id=entity_id,
-                object_type=object_type,
-                public_name=public_name,
-                chamber_id=chamber_id,
-                tile_xywh=box,
-                role="context",
-                visual=visual,
-            )
-        )
-        return True
-
-    for chamber in chamber_specs:
-        if chamber.chamber_id == "start":
-            continue
-        x, y, w, h = chamber.tile_xywh
-        if rng.random() < 0.45:
-            add("crystal_cluster", "crystal cluster", (x + 1, y + h - 2, 1, 1), chamber.chamber_id, crystal_rgb=_choose(rng, ((111, 189, 213), (155, 126, 220), (115, 208, 153))))
-        if rng.random() < 0.35:
-            add("torch", "torch", (x + w - 2, y + 1, 1, 1), chamber.chamber_id, flame_rgb=_choose(rng, ((244, 153, 45), (255, 204, 76), (218, 92, 64))))
-
-    for object_type, public_name, box in (
-        ("stairs", "stairs", _corner_box(layout, width_tiles=2, height_tiles=2, corner="south")),
-        ("statue", "statue", _corner_box(layout, width_tiles=2, height_tiles=2, corner="north")),
-    ):
-        add(object_type, public_name, box, None)
-
-    return tuple(specs)
-
-
-def _corner_box(layout: RpgDungeonLayout, *, width_tiles: int, height_tiles: int, corner: str) -> TileBox:
-    if corner == "south":
-        return (int(layout.cols // 2) - 1, int(layout.rows) - int(height_tiles) - 2, int(width_tiles), int(height_tiles))
-    return (int(layout.cols // 2) - 1, 2, int(width_tiles), int(height_tiles))
-
-
 def _render_base(
     layout: RpgDungeonLayout,
     *,
@@ -581,8 +636,6 @@ def _render_base(
     for tile in sorted(floor, key=lambda item: (item[1], item[0])):
         _draw_floor_tile(draw, tile, theme=theme)
     _draw_wall_edges(draw, floor_tiles=floor, theme=theme)
-    for tile in sorted(layout_spec.corridor_tiles, key=lambda item: (item[1], item[0])):
-        _draw_corridor_highlight(draw, tile, theme=theme)
     return image, draw
 
 
@@ -614,13 +667,6 @@ def _draw_floor_tile(draw: ImageDraw.ImageDraw, tile: Tile, *, theme: Mapping[st
     draw.rectangle((x0, y0, x0 + 15, y0 + 15), outline=_rgba(theme["floor_line_rgb"], 95))
     if (int(x) * 17 + int(y) * 31) % 7 == 0:
         draw.line((x0 + 3, y0 + 9, x0 + 12, y0 + 11), fill=_rgba(_shade(fill, -32), 120))
-
-
-def _draw_corridor_highlight(draw: ImageDraw.ImageDraw, tile: Tile, *, theme: Mapping[str, Any]) -> None:
-    x, y = tile
-    x0 = int(x) * CANONICAL_TILE_PX
-    y0 = int(y) * CANONICAL_TILE_PX
-    draw.rectangle((x0 + 5, y0 + 5, x0 + 10, y0 + 10), outline=_rgba(_shade(theme["floor_rgb"], 20), 80))
 
 
 def _draw_wall_edges(draw: ImageDraw.ImageDraw, *, floor_tiles: set[Tile], theme: Mapping[str, Any]) -> None:
@@ -657,8 +703,6 @@ def _render_entities(
         visual = {"theme_id": theme_id, "renderer_style": RENDERER_STYLE_TOP_DOWN_PIXEL_RPG}
         if spec.object_type == "chest":
             visual.update({"wood_rgb": theme["chest_wood_rgb"], "metal_rgb": theme["chest_metal_rgb"]})
-        if spec.object_type == "crystal_cluster":
-            visual.update({"crystal_rgb": theme["crystal_rgb"]})
         visual.update(dict(spec.visual or {}))
         rendered = render_illustration_object(
             IllustrationObjectSpec(
@@ -711,25 +755,13 @@ def _render_blockers(
     for spec in blocker_specs:
         tile_xywh = (int(spec.tile_xy[0]), int(spec.tile_xy[1]), 1, 1)
         bbox = _tile_bbox(layout, tile_xywh)
-        visual: dict[str, Any] = {"theme_id": theme_id, "renderer_style": RENDERER_STYLE_TOP_DOWN_PIXEL_RPG}
-        if spec.blocker_type == "sealed_door":
-            visual.update({"door_orientation": spec.orientation, "stone_rgb": _shade(theme["floor_rgb"], 24)})
-        rendered = render_illustration_object(
-            IllustrationObjectSpec(
-                object_id=spec.blocker_id,
-                object_type=spec.blocker_type,
-                public_name="sealed door" if spec.blocker_type == "sealed_door" else "rubble",
-                bbox_xyxy=bbox,
-                tile_xywh=tile_xywh,
-                renderer_id=RENDERER_ID,
-                renderer_variant_id=f"top_down:{theme_id}",
-                semantic_attributes={"passable": False, "role": "blocker"},
-                visual_attributes=visual,
-                role="context",
-                source_entity_type="rpg_dungeon_blocker",
-            ),
-            RenderContext(renderer_style=RENDERER_STYLE_TOP_DOWN_PIXEL_RPG, draw=draw),
-        )
+        visual: dict[str, Any] = {
+            "theme_id": theme_id,
+            "renderer_style": RENDERER_STYLE_TOP_DOWN_PIXEL_RPG,
+            "door_orientation": spec.orientation,
+            "contrast": "high",
+        }
+        _draw_dungeon_blocker(draw, spec, theme=theme)
         point = ((bbox[0] + bbox[2]) * 0.5, (bbox[1] + bbox[3]) * 0.5)
         blockers.append(
             RpgDungeonBlocker(
@@ -739,10 +771,74 @@ def _render_blockers(
                 tile_xywh=tile_xywh,
                 bbox_xyxy=bbox,
                 point_xy=point,
-                metadata={"passable": False, "orientation": spec.orientation, "object_record": rendered.object_record},
+                metadata={
+                    "passable": False,
+                    "edge_id": spec.edge_id,
+                    "orientation": spec.orientation,
+                    "visual_attributes": visual,
+                },
             )
         )
     return blockers
+
+
+def _draw_dungeon_blocker(draw: ImageDraw.ImageDraw, spec: _BlockerSpec, *, theme: Mapping[str, Any]) -> None:
+    if spec.blocker_type == "sealed_door":
+        _draw_one_tile_sealed_door(draw, spec.tile_xy, orientation=spec.orientation)
+    else:
+        _draw_one_tile_boulder(draw, spec.tile_xy, floor_rgb=theme["floor_rgb"])
+
+
+def _draw_one_tile_sealed_door(draw: ImageDraw.ImageDraw, tile: Tile, *, orientation: str) -> None:
+    x, y = tile
+    x0 = int(x) * CANONICAL_TILE_PX
+    y0 = int(y) * CANONICAL_TILE_PX
+    outline = (32, 35, 40)
+    panel = (229, 221, 183)
+    shade = (142, 126, 91)
+    strap = (62, 75, 96)
+    seal = (238, 183, 55)
+    draw.rectangle((x0 + 2, y0 + 2, x0 + 13, y0 + 13), fill=_rgba((30, 31, 33), 70))
+    if str(orientation) == "horizontal":
+        draw.rounded_rectangle((x0 + 1, y0 + 4, x0 + 14, y0 + 11), radius=2, fill=_rgba(panel), outline=_rgba(outline), width=1)
+        draw.line((x0 + 2, y0 + 6, x0 + 13, y0 + 6), fill=_rgba(shade))
+        draw.line((x0 + 2, y0 + 9, x0 + 13, y0 + 9), fill=_rgba(shade))
+        draw.rectangle((x0 + 6, y0 + 4, x0 + 9, y0 + 11), fill=_rgba(strap))
+        draw.rectangle((x0 + 7, y0 + 6, x0 + 8, y0 + 8), fill=_rgba(seal))
+    else:
+        draw.rounded_rectangle((x0 + 4, y0 + 1, x0 + 11, y0 + 14), radius=2, fill=_rgba(panel), outline=_rgba(outline), width=1)
+        draw.line((x0 + 6, y0 + 2, x0 + 6, y0 + 13), fill=_rgba(shade))
+        draw.line((x0 + 9, y0 + 2, x0 + 9, y0 + 13), fill=_rgba(shade))
+        draw.rectangle((x0 + 4, y0 + 6, x0 + 11, y0 + 9), fill=_rgba(strap))
+        draw.rectangle((x0 + 7, y0 + 7, x0 + 8, y0 + 8), fill=_rgba(seal))
+
+
+def _draw_one_tile_boulder(draw: ImageDraw.ImageDraw, tile: Tile, *, floor_rgb: Any) -> None:
+    x, y = tile
+    x0 = int(x) * CANONICAL_TILE_PX
+    y0 = int(y) * CANONICAL_TILE_PX
+    outline = (35, 39, 37)
+    fill = (217, 223, 216)
+    shadow = _shade(floor_rgb, -40)
+    facet = (134, 146, 137)
+    highlight = (242, 244, 238)
+    draw.ellipse((x0 + 2, y0 + 4, x0 + 14, y0 + 14), fill=_rgba(shadow, 150))
+    draw.polygon(
+        (
+            (x0 + 3, y0 + 5),
+            (x0 + 6, y0 + 2),
+            (x0 + 11, y0 + 3),
+            (x0 + 14, y0 + 7),
+            (x0 + 12, y0 + 13),
+            (x0 + 5, y0 + 14),
+            (x0 + 2, y0 + 10),
+        ),
+        fill=_rgba(fill),
+        outline=_rgba(outline),
+    )
+    draw.line((x0 + 6, y0 + 3, x0 + 8, y0 + 8, x0 + 4, y0 + 11), fill=_rgba(facet))
+    draw.line((x0 + 9, y0 + 4, x0 + 12, y0 + 8, x0 + 10, y0 + 12), fill=_rgba(facet))
+    draw.line((x0 + 5, y0 + 5, x0 + 9, y0 + 4), fill=_rgba(highlight))
 
 
 def _tile_bbox(layout: RpgDungeonLayout, tile_xywh: TileBox) -> BBox:

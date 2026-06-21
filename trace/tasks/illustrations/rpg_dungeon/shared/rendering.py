@@ -34,9 +34,11 @@ RENDERER_ID = "rpg_dungeon_top_down_v0"
 DEFAULT_TILE_PX = DEFAULT_RPG_TILE_PX
 DEFAULT_CANVAS_WIDTH = 27 * DEFAULT_TILE_PX
 DEFAULT_CANVAS_HEIGHT = 18 * DEFAULT_TILE_PX
+MIN_TOTAL_CHEST_COUNT = 4
+MAX_TOTAL_CHEST_COUNT = 6
+DEFAULT_TOTAL_CHEST_COUNT = 5
 MIN_REACHABLE_CHEST_COUNT = 0
-MAX_REACHABLE_CHEST_COUNT = 5
-TOTAL_CHEST_COUNT = 5
+MAX_REACHABLE_CHEST_COUNT = MAX_TOTAL_CHEST_COUNT
 
 RGB = tuple[int, int, int]
 
@@ -107,6 +109,10 @@ class _ChamberSpec:
     chamber_id: str
     public_name: str
     tile_xywh: TileBox
+    layout_role: str
+    side_id: str | None
+    slot_index: int | None
+    layout_orientation: str
 
 
 @dataclass(frozen=True)
@@ -140,6 +146,9 @@ class _EdgeSpec:
 class _LayoutSpec:
     chambers: tuple[_ChamberSpec, ...]
     edge_specs: tuple[_EdgeSpec, ...]
+    layout_orientation: str
+    side_counts: Mapping[str, int]
+    total_chest_count: int
     floor_tiles: tuple[Tile, ...]
     corridor_tiles: tuple[Tile, ...]
     blocked_tiles: tuple[Tile, ...]
@@ -158,7 +167,7 @@ def render_rpg_dungeon_scene(
     height: int = DEFAULT_CANVAS_HEIGHT,
     tile_px: int = DEFAULT_TILE_PX,
     reachable_chest_count: int | None = None,
-    total_chest_count: int = TOTAL_CHEST_COUNT,
+    total_chest_count: int | None = None,
     render_metadata: Mapping[str, Any] | None = None,
 ) -> RpgDungeonScene:
     """Render one top-down RPG dungeon layout with reachable chest metadata."""
@@ -167,10 +176,18 @@ def render_rpg_dungeon_scene(
     layout = _sample_layout(width=int(width), height=int(height), tile_px=int(tile_px))
     theme_id = str(_choose(rng, tuple(THEMES)))
     theme = THEMES[theme_id]
-    target_count = _resolve_reachable_chest_count(rng, reachable_chest_count)
-    if int(total_chest_count) != TOTAL_CHEST_COUNT:
-        raise ValueError(f"rpg_dungeon currently renders exactly {TOTAL_CHEST_COUNT} chests")
-    layout_spec = _make_valid_layout_spec(layout, rng=rng, target_count=target_count)
+    resolved_total_count = _resolve_total_chest_count(rng, total_chest_count)
+    target_count = _resolve_reachable_chest_count(
+        rng,
+        reachable_chest_count,
+        total_chest_count=int(resolved_total_count),
+    )
+    layout_spec = _make_valid_layout_spec(
+        layout,
+        rng=rng,
+        target_count=target_count,
+        total_chest_count=int(resolved_total_count),
+    )
 
     canonical, draw = _render_base(layout, layout_spec=layout_spec, theme=theme, rng=rng)
     entities = _render_entities(
@@ -196,7 +213,13 @@ def render_rpg_dungeon_scene(
             public_name=spec.public_name,
             tile_xywh=spec.tile_xywh,
             bbox_xyxy=_tile_bbox(layout, spec.tile_xywh),
-            metadata={"kind": "carved_chamber"},
+            metadata={
+                "kind": "carved_chamber",
+                "layout_role": spec.layout_role,
+                "side_id": spec.side_id,
+                "slot_index": spec.slot_index,
+                "layout_orientation": spec.layout_orientation,
+            },
         )
         for spec in layout_spec.chambers
     )
@@ -209,6 +232,9 @@ def render_rpg_dungeon_scene(
         "grid_cols": int(layout.cols),
         "grid_rows": int(layout.rows),
         "tile_px": int(layout.tile_px),
+        "layout_orientation": str(layout_spec.layout_orientation),
+        "side_counts": {str(key): int(value) for key, value in sorted(layout_spec.side_counts.items())},
+        "total_chest_count": int(layout_spec.total_chest_count),
         "reachable_chest_target": int(target_count),
         "reachable_chest_ids": [str(entity_id) for entity_id in layout_spec.reachable_chest_ids],
         "edge_ids": [str(edge.edge_id) for edge in layout_spec.edge_specs],
@@ -252,6 +278,7 @@ def render_rpg_dungeon_profile_scene(
     render_params: Mapping[str, Any],
     tile_px: int,
     reachable_chest_count: int,
+    total_chest_count: int | None = None,
     render_metadata: Mapping[str, Any] | None = None,
 ) -> RpgDungeonScene:
     """Render an RPG dungeon using resolved canvas-profile parameters."""
@@ -265,6 +292,7 @@ def render_rpg_dungeon_profile_scene(
         height=int(render_params["canvas_height"]),
         tile_px=int(tile_px),
         reachable_chest_count=int(reachable_chest_count),
+        total_chest_count=total_chest_count,
         render_metadata=metadata,
     )
 
@@ -303,36 +331,84 @@ def _sample_layout(*, width: int, height: int, tile_px: int) -> RpgDungeonLayout
     )
 
 
-def _resolve_reachable_chest_count(rng: random.Random, reachable_chest_count: int | None) -> int:
-    if reachable_chest_count is None:
-        return int(rng.randint(MIN_REACHABLE_CHEST_COUNT, MAX_REACHABLE_CHEST_COUNT))
-    value = int(reachable_chest_count)
-    if not MIN_REACHABLE_CHEST_COUNT <= value <= MAX_REACHABLE_CHEST_COUNT:
+def _resolve_total_chest_count(rng: random.Random, total_chest_count: int | None) -> int:
+    if total_chest_count is None:
+        return int(rng.randint(MIN_TOTAL_CHEST_COUNT, MAX_TOTAL_CHEST_COUNT))
+    value = int(total_chest_count)
+    if not MIN_TOTAL_CHEST_COUNT <= value <= MAX_TOTAL_CHEST_COUNT:
         raise ValueError(
-            f"reachable_chest_count must be in [{MIN_REACHABLE_CHEST_COUNT}, {MAX_REACHABLE_CHEST_COUNT}], got {value}"
+            f"total_chest_count must be in [{MIN_TOTAL_CHEST_COUNT}, {MAX_TOTAL_CHEST_COUNT}], got {value}"
         )
     return value
 
 
-def _make_valid_layout_spec(layout: RpgDungeonLayout, *, rng: random.Random, target_count: int) -> _LayoutSpec:
+def _resolve_reachable_chest_count(
+    rng: random.Random,
+    reachable_chest_count: int | None,
+    *,
+    total_chest_count: int,
+) -> int:
+    if reachable_chest_count is None:
+        return int(rng.randint(MIN_REACHABLE_CHEST_COUNT, int(total_chest_count)))
+    value = int(reachable_chest_count)
+    if not MIN_REACHABLE_CHEST_COUNT <= value <= int(total_chest_count):
+        raise ValueError(
+            f"reachable_chest_count must be in [{MIN_REACHABLE_CHEST_COUNT}, {total_chest_count}], got {value}"
+        )
+    return value
+
+
+def _make_valid_layout_spec(
+    layout: RpgDungeonLayout,
+    *,
+    rng: random.Random,
+    target_count: int,
+    total_chest_count: int,
+) -> _LayoutSpec:
     for attempt in range(80):
-        spec = _make_layout_spec(layout, rng=random.Random(rng.randrange(1 << 62) + int(attempt)), target_count=target_count)
+        spec = _make_layout_spec(
+            layout,
+            rng=random.Random(rng.randrange(1 << 62) + int(attempt)),
+            target_count=target_count,
+            total_chest_count=int(total_chest_count),
+        )
         reachable_ids = _reachable_chests_for_spec(spec)
         if len(reachable_ids) == int(target_count):
             return _replace_reachable_ids(spec, reachable_ids)
-    raise ValueError(f"could not construct RPG dungeon with {target_count} reachable chests")
+    raise ValueError(f"could not construct RPG dungeon with {target_count} of {total_chest_count} reachable chests")
 
 
-def _make_layout_spec(layout: RpgDungeonLayout, *, rng: random.Random, target_count: int) -> _LayoutSpec:
+def _make_layout_spec(
+    layout: RpgDungeonLayout,
+    *,
+    rng: random.Random,
+    target_count: int,
+    total_chest_count: int,
+) -> _LayoutSpec:
     """Construct the carved graph while keeping target answer control explicit."""
 
-    chamber_specs = _make_chamber_specs(layout, rng=rng)
+    chamber_specs = _make_chamber_specs(layout, rng=rng, total_chest_count=int(total_chest_count))
     chamber_by_id = {spec.chamber_id: spec for spec in chamber_specs}
     start = chamber_by_id["start"]
     start_tile = _rect_center_tile(start.tile_xywh)
     chest_chambers = tuple(spec for spec in chamber_specs if spec.chamber_id != "start")
     chest_ids = tuple(f"chest_{index:02d}" for index in range(len(chest_chambers)))
-    edge_specs = _make_edge_specs(chamber_by_id)
+    shuffled_chest_ids = list(chest_ids)
+    rng.shuffle(shuffled_chest_ids)
+    reachable_chest_id_set = frozenset(str(chest_id) for chest_id in shuffled_chest_ids[: int(target_count)])
+    chest_id_by_chamber_id = {
+        str(chamber.chamber_id): str(chest_ids[index])
+        for index, chamber in enumerate(chest_chambers)
+    }
+    reachable_chamber_ids = frozenset(
+        str(chamber_id)
+        for chamber_id, chest_id in chest_id_by_chamber_id.items()
+        if str(chest_id) in reachable_chest_id_set
+    )
+    edge_specs = _make_edge_specs(
+        chamber_specs,
+        reachable_chamber_ids=reachable_chamber_ids,
+    )
 
     floor: set[Tile] = set()
     for chamber in chamber_specs:
@@ -365,19 +441,21 @@ def _make_layout_spec(layout: RpgDungeonLayout, *, rng: random.Random, target_co
             )
         )
 
-    blockers, blocked_edge_ids, reachable_chest_ids = _select_blocked_edge_config(
-        rng=rng,
-        target_count=int(target_count),
+    blockers = _make_start_edge_blockers(
         chamber_by_id=chamber_by_id,
         edge_specs=edge_specs,
-        floor_tiles=floor,
-        start_tile=start_tile,
-        chest_tile_map=chest_tile_map,
+        reachable_chamber_ids=reachable_chamber_ids,
     )
+    blocked_edge_ids = tuple(sorted({str(blocker.edge_id) for blocker in blockers}))
     blocked_tiles = tuple(sorted({blocker.tile_xy for blocker in blockers}, key=lambda tile: (tile[1], tile[0])))
+    reached = reachable_tiles(floor, blocked_tiles=blocked_tiles, start_tile=start_tile)
+    reachable_chest_ids = reachable_entity_ids(entity_tile_map=chest_tile_map, reachable_tile_set=reached)
     return _LayoutSpec(
         chambers=tuple(chamber_specs),
         edge_specs=tuple(edge_specs),
+        layout_orientation=chamber_specs[0].layout_orientation,
+        side_counts=_side_counts(chamber_specs),
+        total_chest_count=len(chest_tile_map),
         floor_tiles=tuple(sorted(floor, key=lambda tile: (tile[1], tile[0]))),
         corridor_tiles=tuple(sorted(corridor_tiles, key=lambda tile: (tile[1], tile[0]))),
         blocked_tiles=blocked_tiles,
@@ -394,6 +472,9 @@ def _replace_reachable_ids(spec: _LayoutSpec, reachable_ids: Sequence[str]) -> _
     return _LayoutSpec(
         chambers=spec.chambers,
         edge_specs=spec.edge_specs,
+        layout_orientation=spec.layout_orientation,
+        side_counts=spec.side_counts,
+        total_chest_count=spec.total_chest_count,
         floor_tiles=spec.floor_tiles,
         corridor_tiles=spec.corridor_tiles,
         blocked_tiles=spec.blocked_tiles,
@@ -411,73 +492,174 @@ def _reachable_chests_for_spec(spec: _LayoutSpec) -> tuple[str, ...]:
     return reachable_entity_ids(entity_tile_map=dict(spec.chest_tile_map), reachable_tile_set=reached)
 
 
-def _make_chamber_specs(layout: RpgDungeonLayout, *, rng: random.Random) -> tuple[_ChamberSpec, ...]:
+def _make_chamber_specs(
+    layout: RpgDungeonLayout,
+    *,
+    rng: random.Random,
+    total_chest_count: int,
+) -> tuple[_ChamberSpec, ...]:
+    """Create a profile-aware two-sided dungeon room layout."""
+
     room_w = 4
     room_h = 4
     start_x = int(layout.cols // 2) - 2
     start_y = int(layout.rows // 2) - 2
-    jitter_top = int(rng.choice((0, 1)))
-    jitter_bottom = int(rng.choice((0, 1)))
-    top_y = 1 + jitter_top
-    bottom_y = int(layout.rows) - room_h - 1 - jitter_bottom
-    left_x = 1 + int(rng.choice((0, 1)))
-    right_x = int(layout.cols) - room_w - 1 - int(rng.choice((0, 1)))
-    middle_x = max(left_x + room_w + 2, min(right_x - room_w - 2, int(layout.cols // 2) - 2 + int(rng.choice((-1, 0, 1)))))
-    return (
-        _ChamberSpec("start", "starting chamber", (start_x, start_y, 4, 4)),
-        _ChamberSpec("northwest_chamber", "northwest chest chamber", (left_x, top_y, room_w, room_h)),
-        _ChamberSpec("north_chamber", "north chest chamber", (middle_x, top_y, room_w, room_h)),
-        _ChamberSpec("northeast_chamber", "northeast chest chamber", (right_x, top_y, room_w, room_h)),
-        _ChamberSpec("southwest_chamber", "southwest chest chamber", (left_x, bottom_y, room_w, room_h)),
-        _ChamberSpec("southeast_chamber", "southeast chest chamber", (right_x, bottom_y, room_w, room_h)),
-    )
+    orientation = _choose_layout_orientation(layout, rng=rng)
+    side_counts = _choose_side_counts(int(total_chest_count), rng=rng)
+    if orientation == "top_bottom":
+        side_ids = ("top", "bottom")
+        side_origins = {
+            "top": 1 + int(rng.choice((0, 1))),
+            "bottom": int(layout.rows) - room_h - 1 - int(rng.choice((0, 1))),
+        }
+        axis_origins = _slot_origins(
+            total_len=int(layout.cols),
+            room_size=room_w,
+            rng=rng,
+        )
+        make_box = lambda side_id, slot: (axis_origins[int(slot)], side_origins[str(side_id)], room_w, room_h)
+    else:
+        side_ids = ("left", "right")
+        side_origins = {
+            "left": 1 + int(rng.choice((0, 1))),
+            "right": int(layout.cols) - room_w - 1 - int(rng.choice((0, 1))),
+        }
+        axis_origins = _slot_origins(
+            total_len=int(layout.rows),
+            room_size=room_h,
+            rng=rng,
+        )
+        make_box = lambda side_id, slot: (side_origins[str(side_id)], axis_origins[int(slot)], room_w, room_h)
+
+    specs: list[_ChamberSpec] = [
+        _ChamberSpec(
+            "start",
+            "starting chamber",
+            (start_x, start_y, 4, 4),
+            "start",
+            None,
+            None,
+            orientation,
+        )
+    ]
+    room_index = 0
+    for side_id, count in zip(side_ids, side_counts, strict=True):
+        slots = _slot_indices_for_count(int(count))
+        for slot_index in slots:
+            specs.append(
+                _ChamberSpec(
+                    chamber_id=f"chest_room_{room_index:02d}",
+                    public_name=f"{side_id} chest chamber {slot_index + 1}",
+                    tile_xywh=make_box(side_id, slot_index),
+                    layout_role="chest_room",
+                    side_id=str(side_id),
+                    slot_index=int(slot_index),
+                    layout_orientation=orientation,
+                )
+            )
+            room_index += 1
+    return tuple(specs)
 
 
-def _branch_path(start_tile: Tile, target_tile: Tile, *, chamber_id: str) -> tuple[Tile, ...]:
+def _choose_layout_orientation(layout: RpgDungeonLayout, *, rng: random.Random) -> str:
+    if int(layout.rows) > int(layout.cols):
+        return str(_choose(rng, ("left_right", "left_right", "top_bottom")))
+    if int(layout.cols) > int(layout.rows):
+        return str(_choose(rng, ("top_bottom", "top_bottom", "left_right")))
+    return str(_choose(rng, ("top_bottom", "left_right")))
+
+
+def _choose_side_counts(total_chest_count: int, *, rng: random.Random) -> tuple[int, int]:
+    if int(total_chest_count) == 4:
+        return (2, 2)
+    if int(total_chest_count) == 6:
+        return (3, 3)
+    if int(total_chest_count) == 5:
+        return tuple(_choose(rng, ((3, 2), (2, 3))))  # type: ignore[return-value]
+    raise ValueError(f"total_chest_count must be 4, 5, or 6; got {total_chest_count}")
+
+
+def _slot_origins(*, total_len: int, room_size: int, rng: random.Random) -> tuple[int, int, int]:
+    start = 1 + int(rng.choice((0, 1)))
+    end = int(total_len) - int(room_size) - 1 - int(rng.choice((0, 1)))
+    center = int(total_len // 2) - int(room_size // 2) + int(rng.choice((-1, 0, 1)))
+    center = max(start + int(room_size) + 2, min(end - int(room_size) - 2, center))
+    return (int(start), int(center), int(end))
+
+
+def _slot_indices_for_count(count: int) -> tuple[int, ...]:
+    if int(count) == 3:
+        return (0, 1, 2)
+    if int(count) != 2:
+        raise ValueError(f"side room count must be 2 or 3; got {count}")
+    return (0, 2)
+
+
+def _side_counts(chamber_specs: Sequence[_ChamberSpec]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for chamber in chamber_specs:
+        if chamber.side_id is None:
+            continue
+        counts[str(chamber.side_id)] = counts.get(str(chamber.side_id), 0) + 1
+    return counts
+
+
+def _branch_path(start_tile: Tile, target_tile: Tile, *, layout_orientation: str) -> tuple[Tile, ...]:
     sx, sy = start_tile
     tx, ty = target_tile
     path: list[Tile] = []
-    if chamber_id == "north_chamber":
-        _append_vertical(path, sx, sy, ty)
-        _append_horizontal(path, ty, sx, tx)
-    else:
+    if str(layout_orientation) == "top_bottom":
         _append_horizontal(path, sy, sx, tx)
         _append_vertical(path, tx, sy, ty)
+    else:
+        _append_vertical(path, sx, sy, ty)
+        _append_horizontal(path, ty, sx, tx)
     return tuple(dict.fromkeys(path))
 
 
-def _make_edge_specs(chamber_by_id: Mapping[str, _ChamberSpec]) -> tuple[_EdgeSpec, ...]:
+def _make_edge_specs(
+    chamber_specs: Sequence[_ChamberSpec],
+    *,
+    reachable_chamber_ids: frozenset[str],
+) -> tuple[_EdgeSpec, ...]:
     """Return room-to-room graph edges used by reachability and blocker placement."""
 
-    edge_pairs = (
-        ("start", "northwest_chamber"),
-        ("start", "north_chamber"),
-        ("start", "northeast_chamber"),
-        ("start", "southwest_chamber"),
-        ("start", "southeast_chamber"),
-        ("northwest_chamber", "north_chamber"),
-        ("north_chamber", "northeast_chamber"),
-        ("southwest_chamber", "southeast_chamber"),
-    )
+    chamber_by_id = {chamber.chamber_id: chamber for chamber in chamber_specs}
+    start = chamber_by_id["start"]
+    chest_rooms = tuple(chamber for chamber in chamber_specs if chamber.layout_role == "chest_room")
     edges: list[_EdgeSpec] = []
-    for source_id, target_id in edge_pairs:
-        source = chamber_by_id[source_id]
-        target = chamber_by_id[target_id]
-        source_tile = _rect_center_tile(source.tile_xywh)
+    source_tile = _rect_center_tile(start.tile_xywh)
+    for target in chest_rooms:
         target_tile = _rect_center_tile(target.tile_xywh)
-        if source_id == "start":
-            path = _branch_path(source_tile, target_tile, chamber_id=target_id)
-        else:
-            path = _straight_path(source_tile, target_tile)
-        edge_id = f"edge_{source_id}_{target_id}"
+        path = _branch_path(source_tile, target_tile, layout_orientation=target.layout_orientation)
         edges.append(
             _EdgeSpec(
-                edge_id=edge_id,
-                source_chamber_id=source_id,
-                target_chamber_id=target_id,
+                edge_id=f"edge_start_{target.chamber_id}",
+                source_chamber_id="start",
+                target_chamber_id=target.chamber_id,
                 path=path,
             )
         )
+    rooms_by_side: dict[str, list[_ChamberSpec]] = {}
+    for chamber in chest_rooms:
+        rooms_by_side.setdefault(str(chamber.side_id), []).append(chamber)
+    for side_id, side_rooms in sorted(rooms_by_side.items()):
+        ordered = sorted(side_rooms, key=lambda chamber: int(chamber.slot_index or 0))
+        for source, target in zip(ordered, ordered[1:]):
+            source_reachable = str(source.chamber_id) in reachable_chamber_ids
+            target_reachable = str(target.chamber_id) in reachable_chamber_ids
+            if source_reachable != target_reachable:
+                continue
+            source_tile = _rect_center_tile(source.tile_xywh)
+            target_tile = _rect_center_tile(target.tile_xywh)
+            edges.append(
+                _EdgeSpec(
+                    edge_id=f"edge_{side_id}_{source.chamber_id}_{target.chamber_id}",
+                    source_chamber_id=source.chamber_id,
+                    target_chamber_id=target.chamber_id,
+                    path=_straight_path(source_tile, target_tile),
+                )
+            )
     return tuple(edges)
 
 
@@ -507,74 +689,33 @@ def _append_vertical(path: list[Tile], x: int, y0: int, y1: int) -> None:
         path.append((int(x), int(y)))
 
 
-def _select_blocked_edge_config(
+def _make_start_edge_blockers(
     *,
-    rng: random.Random,
-    target_count: int,
     chamber_by_id: Mapping[str, _ChamberSpec],
     edge_specs: Sequence[_EdgeSpec],
-    floor_tiles: set[Tile],
-    start_tile: Tile,
-    chest_tile_map: Mapping[str, Tile],
-) -> tuple[tuple[_BlockerSpec, ...], tuple[str, ...], tuple[str, ...]]:
-    """Choose visible blockers whose tile graph yields exactly the requested count."""
+    reachable_chamber_ids: frozenset[str],
+) -> tuple[_BlockerSpec, ...]:
+    """Place one boulder near each unreachable room's start corridor entrance."""
 
-    eligible_edges: list[tuple[_EdgeSpec, Tile]] = []
+    blockers: list[_BlockerSpec] = []
     for edge in edge_specs:
-        blocker_tile = _blocker_tile_for_edge(edge, chamber_by_id=chamber_by_id)
+        if edge.source_chamber_id != "start" or edge.target_chamber_id in reachable_chamber_ids:
+            continue
+        blocker_tile = _start_edge_blocker_tile(edge, chamber_by_id=chamber_by_id)
         if blocker_tile is None:
             continue
-        eligible_edges.append((edge, blocker_tile))
-
-    matching_configs: list[tuple[tuple[tuple[_EdgeSpec, Tile], ...], tuple[str, ...]]] = []
-    for mask in range(1 << len(eligible_edges)):
-        blocked_tiles: set[Tile] = set()
-        selected: list[tuple[_EdgeSpec, Tile]] = []
-        duplicate_tile = False
-        for index, edge_blocker in enumerate(eligible_edges):
-            if not (mask & (1 << index)):
-                continue
-            edge, blocker_tile = edge_blocker
-            if blocker_tile in blocked_tiles:
-                duplicate_tile = True
-                break
-            blocked_tiles.add(blocker_tile)
-            selected.append((edge, blocker_tile))
-        if duplicate_tile:
-            continue
-        reached = reachable_tiles(floor_tiles, blocked_tiles=blocked_tiles, start_tile=start_tile)
-        reachable_ids = reachable_entity_ids(entity_tile_map=dict(chest_tile_map), reachable_tile_set=reached)
-        if len(reachable_ids) == int(target_count):
-            matching_configs.append((tuple(selected), tuple(reachable_ids)))
-
-    if not matching_configs:
-        raise ValueError(f"no RPG dungeon blocker graph produced {target_count} reachable chests")
-
-    min_blockers = min(len(selected) for selected, _reachable_ids in matching_configs)
-    compact_configs = [
-        config
-        for config in matching_configs
-        if len(config[0]) <= min_blockers + (0 if int(target_count) in {0, TOTAL_CHEST_COUNT} else 1)
-    ]
-    selected_edges, reachable_ids = _choose(rng, compact_configs)
-    blocker_specs: list[_BlockerSpec] = []
-    for index, (edge, blocker_tile) in enumerate(sorted(selected_edges, key=lambda item: item[0].edge_id)):
-        blocker_specs.append(
+        blockers.append(
             _BlockerSpec(
-                blocker_id=f"blocker_{index:02d}",
+                blocker_id=f"blocker_{len(blockers):02d}",
                 edge_id=str(edge.edge_id),
                 blocker_type="boulder",
                 tile_xy=blocker_tile,
             )
         )
-    return (
-        tuple(blocker_specs),
-        tuple(str(blocker.edge_id) for blocker in blocker_specs),
-        tuple(str(entity_id) for entity_id in reachable_ids),
-    )
+    return tuple(blockers)
 
 
-def _blocker_tile_for_edge(edge: _EdgeSpec, *, chamber_by_id: Mapping[str, _ChamberSpec]) -> Tile | None:
+def _start_edge_blocker_tile(edge: _EdgeSpec, *, chamber_by_id: Mapping[str, _ChamberSpec]) -> Tile | None:
     source_tiles = set(_rect_tiles(chamber_by_id[edge.source_chamber_id].tile_xywh))
     target_tiles = set(_rect_tiles(chamber_by_id[edge.target_chamber_id].tile_xywh))
     candidates = [
@@ -584,7 +725,7 @@ def _blocker_tile_for_edge(edge: _EdgeSpec, *, chamber_by_id: Mapping[str, _Cham
     ]
     if not candidates:
         return None
-    return candidates[len(candidates) // 2][1]
+    return candidates[-1][1]
 
 
 def _player_spec(start_tile: Tile) -> _EntitySpec:
@@ -856,12 +997,14 @@ __all__ = [
     "DEFAULT_CANVAS_HEIGHT",
     "DEFAULT_CANVAS_WIDTH",
     "DEFAULT_TILE_PX",
+    "DEFAULT_TOTAL_CHEST_COUNT",
     "MAX_REACHABLE_CHEST_COUNT",
+    "MAX_TOTAL_CHEST_COUNT",
     "MIN_REACHABLE_CHEST_COUNT",
+    "MIN_TOTAL_CHEST_COUNT",
     "RENDERER_ID",
     "SCENE_ID",
     "THEMES",
-    "TOTAL_CHEST_COUNT",
     "draw_rpg_dungeon_debug_overlay",
     "render_rpg_dungeon_profile_scene",
     "render_rpg_dungeon_scene",

@@ -5,6 +5,10 @@ generation:
     task_illustrations__rpg_dungeon__reachable_chest_count:
       query_id_support:
         - single
+      total_chest_count_support:
+        - 4
+        - 5
+        - 6
       reachable_chest_count_support:
         - 0
         - 1
@@ -12,6 +16,7 @@ generation:
         - 3
         - 4
         - 5
+        - 6
 
 rendering:
   shared:
@@ -29,4 +34,3 @@ prompt:
       annotation_hint_rpg_dungeon_reachable_chest_count: set "annotation" to an object with keys "player" and "reachable_chests"; "player" contains one [x, y] point on the player, and "reachable_chests" contains one [x, y] point on each counted reachable chest
       json_example_rpg_dungeon_reachable_chest_count: '{"annotation":{"player":[[420,360]],"reachable_chests":[[260,180],[620,180]]},"answer":2}'
       json_example_answer_only_rpg_dungeon_reachable_chest_count: '{"answer":2}'
-

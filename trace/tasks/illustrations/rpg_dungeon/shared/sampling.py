@@ -18,6 +18,7 @@ def select_count_from_support(
     explicit_key: str,
     fallback_support: Sequence[int],
     namespace: str,
+    max_value: int | None = None,
 ) -> tuple[int, dict[str, float]]:
     """Select an integer count from task params, defaults, or fallback support."""
 
@@ -26,6 +27,8 @@ def select_count_from_support(
         support = (int(raw_support),)
     else:
         support = tuple(dict.fromkeys(int(value) for value in raw_support))
+    if max_value is not None:
+        support = tuple(value for value in support if int(value) <= int(max_value))
     if not support:
         raise ValueError(f"{support_key} must contain at least one value")
     explicit = params.get(str(explicit_key))
@@ -47,4 +50,3 @@ def select_count_from_support(
 
 
 __all__ = ["select_count_from_support"]
-

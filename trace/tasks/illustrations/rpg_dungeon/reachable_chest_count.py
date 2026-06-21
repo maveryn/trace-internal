@@ -29,7 +29,9 @@ from .shared.prompts import build_rpg_dungeon_prompt_artifacts
 from .shared.rendering import (
     DEFAULT_TILE_PX,
     MAX_REACHABLE_CHEST_COUNT,
+    MAX_TOTAL_CHEST_COUNT,
     MIN_REACHABLE_CHEST_COUNT,
+    MIN_TOTAL_CHEST_COUNT,
     SCENE_ID,
     render_rpg_dungeon_profile_scene,
 )
@@ -66,6 +68,15 @@ class IllustrationsRpgDungeonReachableChestCountTask:
             task_id=TASK_ID,
             namespace=f"{TASK_ID}:query",
         )
+        total_chest_count, total_count_probabilities = select_count_from_support(
+            instance_seed=int(instance_seed),
+            params=task_params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key="total_chest_count_support",
+            explicit_key="total_chest_count",
+            fallback_support=tuple(range(MIN_TOTAL_CHEST_COUNT, MAX_TOTAL_CHEST_COUNT + 1)),
+            namespace=f"{TASK_ID}:total_chest_count",
+        )
         target_count, target_probabilities = select_count_from_support(
             instance_seed=int(instance_seed),
             params=task_params,
@@ -74,6 +85,7 @@ class IllustrationsRpgDungeonReachableChestCountTask:
             explicit_key="reachable_chest_count",
             fallback_support=tuple(range(MIN_REACHABLE_CHEST_COUNT, MAX_REACHABLE_CHEST_COUNT + 1)),
             namespace=f"{TASK_ID}:reachable_chest_count",
+            max_value=int(total_chest_count),
         )
         render_params = resolve_rpg_tile_render_params(
             task_params,
@@ -105,6 +117,7 @@ class IllustrationsRpgDungeonReachableChestCountTask:
             render_params=render_params,
             tile_px=tile_px,
             reachable_chest_count=int(target_count),
+            total_chest_count=int(total_chest_count),
         )
         answer = int(len(scene.reachable_chest_ids))
         if answer != int(target_count):
@@ -139,6 +152,8 @@ class IllustrationsRpgDungeonReachableChestCountTask:
             "query_id": str(resolved_query_id),
             "prompt_query_key": PROMPT_QUERY_KEY,
             "query_id_probabilities": dict(query_probabilities),
+            "total_chest_count": int(total_chest_count),
+            "total_chest_count_probabilities": dict(total_count_probabilities),
             "reachable_chest_count": int(target_count),
             "reachable_chest_count_probabilities": dict(target_probabilities),
             "canvas_profile": str(render_params.get("canvas_profile", "")),
@@ -154,6 +169,7 @@ class IllustrationsRpgDungeonReachableChestCountTask:
                     "prompt_query_key": PROMPT_QUERY_KEY,
                     "player_entity_id": str(scene.player_entity_id),
                     "chest_entity_ids": [str(entity_id) for entity_id in scene.chest_entity_ids],
+                    "total_chest_count": int(len(scene.chest_entity_ids)),
                     "reachable_chest_ids": [str(entity_id) for entity_id in scene.reachable_chest_ids],
                     "answer": int(answer),
                 },
@@ -174,12 +190,14 @@ class IllustrationsRpgDungeonReachableChestCountTask:
                 "prompt_query_key": PROMPT_QUERY_KEY,
                 "scene_id": SCENE_ID,
                 "reachable_chest_count": int(answer),
+                "total_chest_count": int(len(scene.chest_entity_ids)),
                 "player_entity_id": str(scene.player_entity_id),
                 "reachable_chest_ids": [str(entity_id) for entity_id in scene.reachable_chest_ids],
                 "renderer": dict(scene.trace),
             },
             "witness_symbolic": {
                 "reachable_chest_count": int(answer),
+                "total_chest_count": int(len(scene.chest_entity_ids)),
                 "player_entity_id": str(scene.player_entity_id),
                 "reachable_chest_ids": [str(entity_id) for entity_id in scene.reachable_chest_ids],
             },

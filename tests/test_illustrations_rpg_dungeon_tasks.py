@@ -5,8 +5,9 @@ from trace.tasks.illustrations.rpg_dungeon.reachable_chest_count import TASK_ID
 from trace.tasks.illustrations.rpg_dungeon.shared.relations import reachable_tiles
 from trace.tasks.illustrations.rpg_dungeon.shared.rendering import (
     MAX_REACHABLE_CHEST_COUNT,
+    MAX_TOTAL_CHEST_COUNT,
     MIN_REACHABLE_CHEST_COUNT,
-    TOTAL_CHEST_COUNT,
+    MIN_TOTAL_CHEST_COUNT,
     draw_rpg_dungeon_debug_overlay,
     render_rpg_dungeon_scene,
 )
@@ -18,34 +19,37 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
 
 
 def test_rpg_dungeon_renderer_is_deterministic_and_profile_safe() -> None:
-    for width, height in ((1296, 864), (1008, 1008), (864, 1296)):
+    for width, height, total_count in ((1296, 864, 6), (1008, 1008, 5), (864, 1296, 4)):
         first = render_rpg_dungeon_scene(
             2026062001,
             width=width,
             height=height,
+            total_chest_count=total_count,
             reachable_chest_count=3,
         )
         second = render_rpg_dungeon_scene(
             2026062001,
             width=width,
             height=height,
+            total_chest_count=total_count,
             reachable_chest_count=3,
         )
         assert first.image.size == (width, height)
         assert first.image.tobytes() == second.image.tobytes()
         assert draw_rpg_dungeon_debug_overlay(first).size == first.image.size
-        assert len(first.chest_entity_ids) == TOTAL_CHEST_COUNT
+        assert len(first.chest_entity_ids) == total_count
+        assert first.trace["total_chest_count"] == total_count
         assert len(first.reachable_chest_ids) == 3
+        assert first.trace["layout_orientation"] in {"top_bottom", "left_right"}
+        assert sorted(first.trace["side_counts"].values()) in ([2, 2], [2, 3], [3, 3])
+        assert sum(first.trace["side_counts"].values()) == total_count
         assert first.player_entity_id == "player_00"
         assert len(first.floor_tiles) > 0
         assert len(first.corridor_tiles) > 0
         assert len(first.blocked_tiles) == len(first.blockers)
         assert len(first.blocked_tiles) == len(set(first.blocked_tiles))
-        assert {
-            "edge_northwest_chamber_north_chamber",
-            "edge_north_chamber_northeast_chamber",
-            "edge_southwest_chamber_southeast_chamber",
-        }.issubset(set(first.trace["edge_ids"]))
+        assert sum(1 for edge_id in first.trace["edge_ids"] if str(edge_id).startswith("edge_start_")) == total_count
+        assert any(not str(edge_id).startswith("edge_start_") for edge_id in first.trace["edge_ids"])
         assert set(first.trace["blocked_edge_ids"]) == {
             str(blocker.metadata["edge_id"])
             for blocker in first.blockers
@@ -63,24 +67,34 @@ def test_rpg_dungeon_renderer_is_deterministic_and_profile_safe() -> None:
 
 def test_rpg_dungeon_renderer_samples_reachable_count_range() -> None:
     seen_counts = set()
-    for seed in range(36):
+    seen_totals = set()
+    seen_orientations = set()
+    for seed in range(120):
         scene = render_rpg_dungeon_scene(7000 + seed, width=1296, height=864)
+        total = len(scene.chest_entity_ids)
         seen_counts.add(len(scene.reachable_chest_ids))
+        seen_totals.add(total)
+        seen_orientations.add(str(scene.trace["layout_orientation"]))
+        assert MIN_TOTAL_CHEST_COUNT <= total <= MAX_TOTAL_CHEST_COUNT
         assert MIN_REACHABLE_CHEST_COUNT <= len(scene.reachable_chest_ids) <= MAX_REACHABLE_CHEST_COUNT
+        assert len(scene.reachable_chest_ids) <= total
     assert seen_counts == set(range(MIN_REACHABLE_CHEST_COUNT, MAX_REACHABLE_CHEST_COUNT + 1))
+    assert seen_totals == set(range(MIN_TOTAL_CHEST_COUNT, MAX_TOTAL_CHEST_COUNT + 1))
+    assert {"top_bottom", "left_right"}.issubset(seen_orientations)
 
 
 def test_rpg_dungeon_reachable_chest_count_contract() -> None:
     task = create_task(TASK_ID)
-    for profile, count, seed in (
-        ("landscape", 0, 2026062011),
-        ("square", 2, 2026062012),
-        ("portrait", 5, 2026062013),
+    for profile, total_count, count, seed in (
+        ("landscape", 4, 0, 2026062011),
+        ("square", 5, 2, 2026062012),
+        ("portrait", 6, 6, 2026062013),
     ):
         out = task.generate(
             seed,
             params={
                 "canvas_profile": profile,
+                "total_chest_count": total_count,
                 "reachable_chest_count": count,
             },
             max_attempts=20,
@@ -107,7 +121,9 @@ def test_rpg_dungeon_reachable_chest_count_contract() -> None:
         assert trace["projected_annotation"]["type"] == "point_set_map"
         assert trace["projected_annotation"]["point_set_map"] == out.annotation_gt.value
         assert trace["render_map"]["reachable_count"] == count
-        assert len(trace["render_map"]["chest_entity_ids"]) == TOTAL_CHEST_COUNT
+        assert trace["render_map"]["total_chest_count"] == total_count
+        assert len(trace["render_map"]["chest_entity_ids"]) == total_count
+        assert trace["query_spec"]["params"]["total_chest_count"] == total_count
 
         scene_ir = trace["scene_ir"]
         reached = reachable_tiles(

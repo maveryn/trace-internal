@@ -7,7 +7,8 @@
 - Supported `query_id` values: `single`
 - Answer schema: `integer_value`
 - Annotation schema: `bbox`
-- Program code: `argmin(filter(notes, note_in_hit_window(note, beat_window)=true), metric=bottom_row_from_hit_line).lane_label; scene=rhythm; scope=earliest_hit_lane_label`
+- Program schema: `argmin(filter(notes, note_in_hit_window(note, beat_window)=true), metric=bottom_row_from_hit_line).lane_label; scene=rhythm; scope=earliest_hit_lane_label`
+- Program code: `argmin.rhythm.earliest_hit_lane`
 
 ## Notes
 - The sampled scene has one uniquely earliest hitting note by construction.

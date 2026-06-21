@@ -7,7 +7,8 @@
 - Supported `query_id` values: `single`
 - Answer schema: `integer_count`
 - Annotation schema: `bbox_set`
-- Program code: `count(filter(notes, lane=target_lane and color=target_color and note_in_hit_window(note, beat_window)=true)); scene=rhythm; scope=lane_color_hit_count`
+- Program schema: `count(filter(notes, lane=target_lane and color=target_color and note_in_hit_window(note, beat_window)=true)); scene=rhythm; scope=lane_color_hit_count`
+- Program code: `count.filter.rhythm_lane_color_hits`
 
 ## Notes
 - `target_lane`, `target_color`, and `beat_window` are rendered/prompt-bound sample arguments.

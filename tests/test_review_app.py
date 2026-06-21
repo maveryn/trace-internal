@@ -381,6 +381,45 @@ def test_review_index_scans_domain_scene_task_query_samples(tmp_path: Path) -> N
     assert "assets/fonts" not in index.scenes
 
 
+def test_review_index_accepts_program_schema_after_contract_metadata(tmp_path: Path) -> None:
+    root = _make_review_fixture(tmp_path)
+    task_doc = tmp_path / "docs" / "tasks" / "pages" / "workspace" / f"{TASK_ID}.md"
+    task_doc.write_text(
+        "\n".join(
+            [
+                f"# `{TASK_ID}`",
+                "",
+                "## Contract",
+                "- Domain: `pages`",
+                "- Scene id: `workspace`",
+                "- Query id: `lookup`",
+                "- Answer schema: `option_letter`",
+                "- Annotation schema: `bbox_set`",
+                "",
+                "## Program Contract",
+                "- Domain: `pages`",
+                "- Scene: `workspace`",
+                "- Public task id: `task_pages__workspace__toolbar_palette_control_label`",
+                "- Program schema: `select_labeled_control(toolbar_palette, target_role=palette_control); scene=workspace; scope=toolbar_palette_control_label`",
+                "- Program code: `select.pages.toolbar_palette_control`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    index = build_review_index(root, repo_root=tmp_path, enforce_migration_registry=False)
+
+    scene = index.scenes["pages/workspace"]
+    task = index.tasks[f"pages/workspace/{TASK_ID}"]
+    assert scene.taxonomy_review_pass is True
+    assert task.taxonomy_summary["program_contract"] == (
+        "select_labeled_control(toolbar_palette, target_role=palette_control); "
+        "scene=workspace; scope=toolbar_palette_control_label"
+    )
+    assert not any("taxonomy_review_status.json claims passed" in error for error in index.errors)
+
+
 def test_review_index_default_hides_unregistered_migration_scenes(tmp_path: Path) -> None:
     root = _make_review_fixture(tmp_path)
 

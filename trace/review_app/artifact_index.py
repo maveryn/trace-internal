@@ -401,12 +401,26 @@ def _parse_task_doc_taxonomy(doc_path: Path) -> Dict[str, Any]:
             summary["annotation_schema"] = value
 
     program_body = _markdown_section(text, "Program Contract")
+    program_contract = _extract_program_contract(program_body)
+    if program_contract:
+        summary["program_contract"] = program_contract
+    return summary
+
+
+def _extract_program_contract(program_body: str) -> str:
+    """Extract the concrete program schema from a task-doc Program Contract section."""
+
+    fallback = ""
     for raw_line in program_body.splitlines():
         line = _clean_markdown_value(re.sub(r"^[-*]\s*", "", raw_line.strip()))
-        if line:
-            summary["program_contract"] = line
-            break
-    return summary
+        if not line:
+            continue
+        match = re.match(r"Program schema:\s*(.+)$", line, flags=re.IGNORECASE)
+        if match:
+            return _clean_markdown_value(match.group(1))
+        if not fallback:
+            fallback = line
+    return fallback
 
 
 def _markdown_section(text: str, heading: str) -> str:

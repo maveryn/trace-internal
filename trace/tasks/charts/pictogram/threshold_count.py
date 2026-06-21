@@ -2,99 +2,99 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from trace.core.seed import spawn_rng
+from trace.tasks.registry import register_task
+from trace.tasks.shared.config_defaults import resolve_required_int_bounds
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.output import annotation_payload, build_trace_payload
-from .shared.prompts import build_prompt_artifacts, dynamic_slots
-from .shared.runtime import render_pictogram_dataset
-from .shared.waffle_chart import SCENE_ID, _construct_dataset, _resolve_scene_variant
+from ._lifecycle import make_pictogram_query, plan_from_mark_counts, run_pictogram_task
+from .shared.defaults import DOMAIN, GEN_DEFAULTS, SCENE_NAMESPACE, support_probability_map
+from .shared.sampling import sample_balanced_int, sample_base
 
 
-THRESHOLD_COUNT_QUERY_ID = "threshold_count"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+GREATER_THAN_QUERY_ID = "greater_than_threshold"
+LESS_THAN_QUERY_ID = "less_than_threshold"
+SUPPORTED_QUERY_IDS = (GREATER_THAN_QUERY_ID, LESS_THAN_QUERY_ID)
+
+
+def _build_plan(params: dict, instance_seed: int, selected: str, probabilities: dict[str, float]):
+    # Force a known number of category rows on one side of the selected threshold.
+    base = sample_base(params, instance_seed=int(instance_seed))
+    mark_min, mark_max = tuple(int(value) for value in base.mark_count_range)
+    answer_min, answer_max = resolve_required_int_bounds(
+        params,
+        GEN_DEFAULTS,
+        min_key="threshold_answer_min",
+        max_key="threshold_answer_max",
+        fallback_min=1,
+        fallback_max=5,
+        context=f"generation defaults for {SCENE_NAMESPACE}",
+    )
+    answer_max = min(int(answer_max), len(base.mark_counts) - 1)
+    answer_min = min(int(answer_min), int(answer_max))
+    target_count = sample_balanced_int(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace="charts.pictogram.threshold.target_count",
+        low=int(answer_min),
+        high=int(answer_max),
+    )
+    direction = "less_than" if str(selected) == LESS_THAN_QUERY_ID else "greater_than"
+    rng = spawn_rng(int(instance_seed), "charts.pictogram.threshold")
+    threshold_mark = rng.randint(int(mark_min) + 1, int(mark_max) - 1)
+    target_indices = set(rng.sample(range(len(base.mark_counts)), k=int(target_count)))
+    mark_counts = list(base.mark_counts)
+    for index in range(len(mark_counts)):
+        if str(direction) == "greater_than":
+            mark_counts[index] = (
+                rng.randint(int(threshold_mark) + 1, int(mark_max))
+                if index in target_indices
+                else rng.randint(int(mark_min), int(threshold_mark))
+            )
+        else:
+            mark_counts[index] = (
+                rng.randint(int(mark_min), int(threshold_mark) - 1)
+                if index in target_indices
+                else rng.randint(int(threshold_mark), int(mark_max))
+            )
+    threshold_value = int(threshold_mark) * int(base.unit_scale)
+    query = make_pictogram_query(
+        selected=str(selected),
+        answer=int(target_count),
+        annotation_type="bbox_set",
+        annotation_category_ids=tuple(f"cat_{index}" for index in sorted(target_indices)),
+        params={
+            "threshold_direction": str(direction),
+            "threshold_mark_count": int(threshold_mark),
+            "threshold_value": int(threshold_value),
+            "target_count": int(target_count),
+            "target_count_probabilities": support_probability_map(range(int(answer_min), int(answer_max) + 1)),
+        },
+    )
+    return plan_from_mark_counts(
+        base=base,
+        mark_counts=mark_counts,
+        query=query,
+        selected=str(selected),
+        probabilities=probabilities,
+        params=params,
+        instance_seed=int(instance_seed),
+        prompt_task_key="threshold_count",
+        prompt_query_key=str(selected),
+    )
 
 
 @register_task
 class ChartsPictogramThresholdCountTask:
-    """Return the number of categories whose scaled totals satisfy a threshold."""
-
     task_id = "task_charts__pictogram__threshold_count"
-    domain = "charts"
-    scene_id = SCENE_ID
+    domain = DOMAIN
     objective_contract = "threshold_count"
-    supported_query_ids = (THRESHOLD_COUNT_QUERY_ID,)
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = GREATER_THAN_QUERY_ID
     default_dataset_enabled = True
+    _build_plan = staticmethod(_build_plan)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=THRESHOLD_COUNT_QUERY_ID,
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt == 0 else int(hash64(int(instance_seed), self.task_id, attempt))
-            try:
-                return self._generate_once(
-                    int(attempt_seed),
-                    params=task_params,
-                    selected_query_id=str(selected_query_id),
-                    query_probabilities=query_probabilities,
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
-
-    def _generate_once(
-        self,
-        instance_seed: int,
-        *,
-        params: Dict[str, Any],
-        selected_query_id: str,
-        query_probabilities: Dict[str, float],
-    ) -> TaskOutput:
-        scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        dataset = _construct_dataset(
-            query_id=str(selected_query_id),
-            query_id_probabilities=query_probabilities,
-            scene_variant=str(scene_variant),
-            scene_variant_probabilities=scene_variant_probabilities,
-            params=params,
-            instance_seed=int(instance_seed),
-        )
-        rendered = render_pictogram_dataset(dataset=dataset, params=params, instance_seed=int(instance_seed))
-        annotation = annotation_payload(dataset=dataset, rendered=rendered)
-        prompt_artifacts = build_prompt_artifacts(
-            prompt_query_key=str(selected_query_id),
-            dynamic_slot_values=dynamic_slots(dataset=dataset, scene_variant=str(scene_variant)),
-            instance_seed=int(instance_seed),
-        )
-        trace_payload = build_trace_payload(
-            dataset=dataset,
-            rendered=rendered,
-            prompt_artifacts=prompt_artifacts,
-            annotation_payload=annotation,
-        )
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-            answer_gt=TypedValue(type=str(dataset.query.answer_type), value=int(dataset.query.answer)),
-            annotation_gt=TypedValue(type=str(annotation["type"]), value=annotation["value"]),
-            image=rendered.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(selected_query_id),
-        )
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        return run_pictogram_task(self, int(instance_seed), dict(params), int(max_attempts))
 
 
 __all__ = ["ChartsPictogramThresholdCountTask"]

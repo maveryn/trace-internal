@@ -3,24 +3,26 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `pictogram`
-3. Source implementation domain/group: `charts/pictogram`
-4. Query id: `threshold_count`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Public task id: `task_charts__pictogram__threshold_count`
+4. Supported `query_id`: `greater_than_threshold`, `less_than_threshold`
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.pictogram.waffle_chart.ChartsPictogramThresholdCountTask`
-2. Prompt lookup domain/group: `charts/pictogram`
-3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
-4. Answers and annotation are produced from the same metadata execution trace.
+1. Registered class: `trace.tasks.charts.pictogram.threshold_count.ChartsPictogramThresholdCountTask`
+2. Prompt bundle: `prompts/charts/pictogram/charts_pictogram_v1.json`
+3. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `bbox_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+3. Annotation marks every matching category row as an unordered set of row bboxes.
+
+## Program Contract
+
+`count(filter(categories, compare(category_total(category, unit_scale), threshold, comparator={greater_than,less_than}))); output=integer_count; annotation=bbox_set(matching_category_rows); scene=pictogram; scope=threshold_count`
 
 ## Query Details
 
-| Query id | Program signature | Answer schema | Annotation schema |
+| Query id | Comparator | Answer schema | Annotation schema |
 |---|---|---|---|
-| `threshold_count` | `count.one_bound_threshold` | `integer_count` | `bbox_set` |
+| `greater_than_threshold` | `greater_than` | `integer_count` | `bbox_set` |
+| `less_than_threshold` | `less_than` | `integer_count` | `bbox_set` |

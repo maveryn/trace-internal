@@ -1,27 +1,18 @@
 {
   "bundle_id": "charts_pictogram_v1",
   "schema_version": "v1",
-  "allow_empty_task_templates": true,
+  "allow_empty_task_templates": false,
   "templates": {
     "scene": {
       "pictogram_scene": [
         "The image shows {object_description}.",
         "The chart shows {object_description}.",
-        "The image shows {object_description}.",
         "The figure shows {object_description}.",
-        "The visual shows {object_description}."
+        "The visual shows {object_description}.",
+        "The image contains {object_description}."
       ]
     },
     "task": {
-      "pictogram_quantity_query": [
-        "",
-        "",
-        "",
-        "",
-        ""
-      ]
-    },
-    "query": {
       "category_total_value": [
         "Using the unit scale, what is the total for category \"{category_label}\"?",
         "Read category \"{category_label}\". What total value do its repeated marks represent?",
@@ -37,11 +28,27 @@
         "Use the legend scale to calculate the absolute total gap between \"{category_label_a}\" and \"{category_label_b}\"."
       ],
       "threshold_count": [
-        "Using the unit scale, how many categories have totals {threshold_phrase}?",
-        "Count the categories whose total value is {threshold_phrase}.",
-        "How many category rows represent a total {threshold_phrase}?",
-        "From the repeated marks, count categories with totals {threshold_phrase}.",
-        "Use the legend scale to count the categories whose totals are {threshold_phrase}."
+        "Use the unit scale to compare each category total with the threshold.",
+        "Read each category total from the repeated marks and the legend scale.",
+        "Compare the scaled total for every category row against the requested threshold.",
+        "Use the legend scale, then evaluate the requested threshold condition for each row.",
+        "Determine each category total from its marks before applying the threshold."
+      ]
+    },
+    "query": {
+      "greater_than_threshold": [
+        "How many categories have totals greater than {threshold_value}?",
+        "Count the categories whose total value is greater than {threshold_value}.",
+        "How many category rows represent a total greater than {threshold_value}?",
+        "From the repeated marks, count categories with totals greater than {threshold_value}.",
+        "Use the legend scale to count the categories whose totals are greater than {threshold_value}."
+      ],
+      "less_than_threshold": [
+        "How many categories have totals less than {threshold_value}?",
+        "Count the categories whose total value is less than {threshold_value}.",
+        "How many category rows represent a total less than {threshold_value}?",
+        "From the repeated marks, count categories with totals less than {threshold_value}.",
+        "Use the legend scale to count the categories whose totals are less than {threshold_value}."
       ]
     },
     "output": {
@@ -56,27 +63,33 @@
         "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "Annotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
         "Required annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-        "Final answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "Format for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
       ]
     }
   },
   "static_slots_by_key": {
-    "query:category_total_value": {
+    "task:category_total_value": {
       "answer_hint": "set \"answer\" to the requested integer value",
-      "annotation_hint": "set \"annotation\" to an object mapping the requested category label to an [x0, y0, x1, y1] pixel box around that category row",
-      "json_example": "{\"annotation\":{\"M4\":[92,180,1160,248]},\"answer\":42}",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] pixel box around the requested category row",
+      "json_example": "{\"annotation\":[92,180,1160,248],\"answer\":42}",
       "json_example_answer_only": "{\"answer\":42}"
     },
-    "query:group_difference_value": {
+    "task:group_difference_value": {
       "answer_hint": "set \"answer\" to the requested integer value",
       "annotation_hint": "set \"annotation\" to an object mapping each compared category label to an [x0, y0, x1, y1] pixel box around that category row",
       "json_example": "{\"annotation\":{\"M4\":[92,270,1160,338],\"Q8\":[92,430,1160,498]},\"answer\":18}",
       "json_example_answer_only": "{\"answer\":18}"
     },
-    "query:threshold_count": {
-      "answer_hint": "set \"answer\" to the requested integer value",
-      "annotation_hint": "set \"annotation\" to an array of [x0, y0, x1, y1] pixel boxes around every category row matching the threshold",
+    "query:greater_than_threshold": {
+      "answer_hint": "set \"answer\" to the requested integer count",
+      "annotation_hint": "set \"annotation\" to an array of [x0, y0, x1, y1] pixel boxes around every category row with a total greater than the threshold",
+      "json_example": "{\"annotation\":[[92,180,1160,248],[92,350,1160,418],[92,520,1160,588]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:less_than_threshold": {
+      "answer_hint": "set \"answer\" to the requested integer count",
+      "annotation_hint": "set \"annotation\" to an array of [x0, y0, x1, y1] pixel boxes around every category row with a total less than the threshold",
       "json_example": "{\"annotation\":[[92,180,1160,248],[92,350,1160,418],[92,520,1160,588]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     }
@@ -86,6 +99,6 @@
     "category_label": {"type": "string"},
     "category_label_a": {"type": "string"},
     "category_label_b": {"type": "string"},
-    "threshold_phrase": {"type": "string"}
+    "threshold_value": {"type": "integer"}
   }
 }

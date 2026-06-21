@@ -17,9 +17,6 @@ generation:
     scene_variant_weights:
       waffle_grid_blocks: 1.0
       pictogram_rows: 1.0
-    threshold_direction_weights:
-      greater_than: 1.0
-      less_than: 1.0
     glyph_weights:
       circle: 1.0
       square: 1.0
@@ -30,7 +27,6 @@ generation:
       coin: 1.0
       book: 1.0
     balanced_scene_variant_sampling: true
-    balanced_threshold_direction_sampling: true
     balanced_glyph_sampling: true
 rendering:
   shared:
@@ -161,6 +157,7 @@ rendering:
     - - 70
       - 64
       - 58
+    chart_context_profile: dense_clean_minimal
 prompt:
   shared:
     bundle_id: charts_pictogram_v1

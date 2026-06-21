@@ -2,99 +2,90 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.core.seed import spawn_rng
+from trace.tasks.registry import register_task
+from trace.tasks.shared.config_defaults import resolve_required_int_bounds
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.output import annotation_payload, build_trace_payload
-from .shared.prompts import build_prompt_artifacts, dynamic_slots
-from .shared.runtime import render_pictogram_dataset
-from .shared.waffle_chart import SCENE_ID, _construct_dataset, _resolve_scene_variant
+from ._lifecycle import make_pictogram_query, plan_from_mark_counts, run_pictogram_task
+from .shared.defaults import DOMAIN, GEN_DEFAULTS, SCENE_NAMESPACE, support_probability_map
+from .shared.sampling import sample_balanced_int, sample_base
 
 
-GROUP_DIFFERENCE_QUERY_ID = "group_difference_value"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
+
+
+def _build_plan(params: dict, instance_seed: int, selected: str, probabilities: dict[str, float]):
+    # Select two visible category rows, force a mark-count gap, and bind both row boxes by label.
+    base = sample_base(params, instance_seed=int(instance_seed))
+    mark_min, mark_max = tuple(int(value) for value in base.mark_count_range)
+    diff_min, diff_max = resolve_required_int_bounds(
+        params,
+        GEN_DEFAULTS,
+        min_key="difference_mark_min",
+        max_key="difference_mark_max",
+        fallback_min=2,
+        fallback_max=10,
+        context=f"generation defaults for {SCENE_NAMESPACE}",
+    )
+    diff_max = min(int(diff_max), max(1, int(mark_max) - int(mark_min)))
+    diff_min = min(int(diff_min), int(diff_max))
+    diff_marks = sample_balanced_int(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace="charts.pictogram.group_difference.diff_marks",
+        low=int(diff_min),
+        high=int(diff_max),
+    )
+    rng = spawn_rng(int(instance_seed), "charts.pictogram.group_difference.pair")
+    pair = sorted(rng.sample(range(len(base.mark_counts)), k=2))
+    low_value = rng.randint(int(mark_min), int(mark_max) - int(diff_marks))
+    high_value = int(low_value) + int(diff_marks)
+    mark_counts = list(base.mark_counts)
+    if rng.random() < 0.5:
+        mark_counts[pair[0]] = int(low_value)
+        mark_counts[pair[1]] = int(high_value)
+    else:
+        mark_counts[pair[0]] = int(high_value)
+        mark_counts[pair[1]] = int(low_value)
+    query = make_pictogram_query(
+        selected=str(selected),
+        answer=int(diff_marks) * int(base.unit_scale),
+        annotation_type="bbox_map",
+        annotation_category_ids=(f"cat_{pair[0]}", f"cat_{pair[1]}"),
+        params={
+            "category_id_a": f"cat_{pair[0]}",
+            "category_id_b": f"cat_{pair[1]}",
+            "category_index_a": int(pair[0]),
+            "category_index_b": int(pair[1]),
+            "difference_mark_count": int(diff_marks),
+            "difference_mark_count_probabilities": support_probability_map(range(int(diff_min), int(diff_max) + 1)),
+        },
+    )
+    return plan_from_mark_counts(
+        base=base,
+        mark_counts=mark_counts,
+        query=query,
+        selected=str(selected),
+        probabilities=probabilities,
+        params=params,
+        instance_seed=int(instance_seed),
+        prompt_task_key="group_difference_value",
+    )
 
 
 @register_task
 class ChartsPictogramGroupDifferenceValueTask:
-    """Return the absolute difference between two scaled category totals."""
-
     task_id = "task_charts__pictogram__group_difference_value"
-    domain = "charts"
-    scene_id = SCENE_ID
+    domain = DOMAIN
     objective_contract = "group_difference_value"
-    supported_query_ids = (GROUP_DIFFERENCE_QUERY_ID,)
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = SINGLE_QUERY_ID
     default_dataset_enabled = True
+    _build_plan = staticmethod(_build_plan)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=GROUP_DIFFERENCE_QUERY_ID,
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt == 0 else int(hash64(int(instance_seed), self.task_id, attempt))
-            try:
-                return self._generate_once(
-                    int(attempt_seed),
-                    params=task_params,
-                    selected_query_id=str(selected_query_id),
-                    query_probabilities=query_probabilities,
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
-
-    def _generate_once(
-        self,
-        instance_seed: int,
-        *,
-        params: Dict[str, Any],
-        selected_query_id: str,
-        query_probabilities: Dict[str, float],
-    ) -> TaskOutput:
-        scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        dataset = _construct_dataset(
-            query_id=str(selected_query_id),
-            query_id_probabilities=query_probabilities,
-            scene_variant=str(scene_variant),
-            scene_variant_probabilities=scene_variant_probabilities,
-            params=params,
-            instance_seed=int(instance_seed),
-        )
-        rendered = render_pictogram_dataset(dataset=dataset, params=params, instance_seed=int(instance_seed))
-        annotation = annotation_payload(dataset=dataset, rendered=rendered)
-        prompt_artifacts = build_prompt_artifacts(
-            prompt_query_key=str(selected_query_id),
-            dynamic_slot_values=dynamic_slots(dataset=dataset, scene_variant=str(scene_variant)),
-            instance_seed=int(instance_seed),
-        )
-        trace_payload = build_trace_payload(
-            dataset=dataset,
-            rendered=rendered,
-            prompt_artifacts=prompt_artifacts,
-            annotation_payload=annotation,
-        )
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-            answer_gt=TypedValue(type=str(dataset.query.answer_type), value=int(dataset.query.answer)),
-            annotation_gt=TypedValue(type=str(annotation["type"]), value=annotation["value"]),
-            image=rendered.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(selected_query_id),
-        )
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        return run_pictogram_task(self, int(instance_seed), dict(params), int(max_attempts))
 
 
 __all__ = ["ChartsPictogramGroupDifferenceValueTask"]

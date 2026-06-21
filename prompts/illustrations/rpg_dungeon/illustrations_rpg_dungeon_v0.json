@@ -43,20 +43,20 @@
   },
   "scene_templates": {
     "rpg_dungeon_canvas": [
-      "The image shows a top-down pixel RPG dungeon with stone chambers, corridors, a player, treasure chests, sealed doors, and boulders.",
-      "The scene shows a top-down RPG-style dungeon map with walkable floor, blocked passages, a player, and treasure chests.",
+      "The image shows a top-down pixel RPG dungeon with stone chambers, corridors, a player, treasure chests, and boulders blocking some paths.",
+      "The scene shows a top-down RPG-style dungeon map with walkable floor, boulder-blocked passages, a player, and treasure chests.",
       "The picture shows a pixel-art dungeon from above, including corridors, chambers, blockers, and treasure chests.",
-      "The canvas contains a top-down dungeon layout with a player, visible chests, and some blocked corridor paths.",
-      "This illustration shows an RPG dungeon map from above with walkable passages and blocked passages."
+      "The canvas contains a top-down dungeon layout with a player, visible chests, and some corridor paths blocked by boulders.",
+      "This illustration shows an RPG dungeon map from above with walkable passages and boulder-blocked passages."
     ]
   },
   "query_templates": {
     "reachable_chest_count": [
       "Starting from the player, how many treasure chests can be reached by walking only through open floor and corridors?",
-      "Count the treasure chests reachable from the player without crossing sealed doors or boulders. What is the count?",
+      "Count the treasure chests reachable from the player without crossing boulders. What is the count?",
       "From the player's position, how many chests are connected by unblocked floor paths?",
       "Follow paths through the open dungeon floor from the player. How many treasure chests can be reached?",
-      "How many treasure chests can the player reach without passing through a blocked corridor?"
+      "How many treasure chests can the player reach without passing through a corridor blocked by a boulder?"
     ]
   },
   "allow_empty_task_templates": true

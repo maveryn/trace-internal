@@ -126,7 +126,6 @@ class _BlockerSpec:
     edge_id: str
     blocker_type: str
     tile_xy: Tile
-    orientation: str
 
 
 @dataclass(frozen=True)
@@ -520,27 +519,27 @@ def _select_blocked_edge_config(
 ) -> tuple[tuple[_BlockerSpec, ...], tuple[str, ...], tuple[str, ...]]:
     """Choose visible blockers whose tile graph yields exactly the requested count."""
 
-    eligible_edges: list[tuple[_EdgeSpec, Tile, str]] = []
+    eligible_edges: list[tuple[_EdgeSpec, Tile]] = []
     for edge in edge_specs:
         blocker_tile = _blocker_tile_for_edge(edge, chamber_by_id=chamber_by_id)
         if blocker_tile is None:
             continue
-        eligible_edges.append((edge, blocker_tile, _blocker_orientation(edge.path, blocker_tile)))
+        eligible_edges.append((edge, blocker_tile))
 
-    matching_configs: list[tuple[tuple[tuple[_EdgeSpec, Tile, str], ...], tuple[str, ...]]] = []
+    matching_configs: list[tuple[tuple[tuple[_EdgeSpec, Tile], ...], tuple[str, ...]]] = []
     for mask in range(1 << len(eligible_edges)):
         blocked_tiles: set[Tile] = set()
-        selected: list[tuple[_EdgeSpec, Tile, str]] = []
+        selected: list[tuple[_EdgeSpec, Tile]] = []
         duplicate_tile = False
         for index, edge_blocker in enumerate(eligible_edges):
             if not (mask & (1 << index)):
                 continue
-            edge, blocker_tile, _orientation = edge_blocker
+            edge, blocker_tile = edge_blocker
             if blocker_tile in blocked_tiles:
                 duplicate_tile = True
                 break
             blocked_tiles.add(blocker_tile)
-            selected.append((edge, blocker_tile, _orientation))
+            selected.append((edge, blocker_tile))
         if duplicate_tile:
             continue
         reached = reachable_tiles(floor_tiles, blocked_tiles=blocked_tiles, start_tile=start_tile)
@@ -559,14 +558,13 @@ def _select_blocked_edge_config(
     ]
     selected_edges, reachable_ids = _choose(rng, compact_configs)
     blocker_specs: list[_BlockerSpec] = []
-    for index, (edge, blocker_tile, orientation) in enumerate(sorted(selected_edges, key=lambda item: item[0].edge_id)):
+    for index, (edge, blocker_tile) in enumerate(sorted(selected_edges, key=lambda item: item[0].edge_id)):
         blocker_specs.append(
             _BlockerSpec(
                 blocker_id=f"blocker_{index:02d}",
                 edge_id=str(edge.edge_id),
-                blocker_type=_choose(rng, ("sealed_door", "sealed_door", "boulder")),
+                blocker_type="boulder",
                 tile_xy=blocker_tile,
-                orientation=orientation,
             )
         )
     return (
@@ -587,19 +585,6 @@ def _blocker_tile_for_edge(edge: _EdgeSpec, *, chamber_by_id: Mapping[str, _Cham
     if not candidates:
         return None
     return candidates[len(candidates) // 2][1]
-
-
-def _blocker_orientation(path: Sequence[Tile], tile: Tile) -> str:
-    tiles = list(path)
-    try:
-        index = tiles.index(tile)
-    except ValueError:
-        return "horizontal"
-    prev_tile = tiles[max(0, index - 1)]
-    next_tile = tiles[min(len(tiles) - 1, index + 1)]
-    if prev_tile[0] == next_tile[0]:
-        return "horizontal"
-    return "vertical"
 
 
 def _player_spec(start_tile: Tile) -> _EntitySpec:
@@ -758,10 +743,10 @@ def _render_blockers(
         visual: dict[str, Any] = {
             "theme_id": theme_id,
             "renderer_style": RENDERER_STYLE_TOP_DOWN_PIXEL_RPG,
-            "door_orientation": spec.orientation,
             "contrast": "high",
+            "blocker_shape": "single_tile_boulder",
         }
-        _draw_dungeon_blocker(draw, spec, theme=theme)
+        _draw_one_tile_boulder(draw, spec.tile_xy, floor_rgb=theme["floor_rgb"])
         point = ((bbox[0] + bbox[2]) * 0.5, (bbox[1] + bbox[3]) * 0.5)
         blockers.append(
             RpgDungeonBlocker(
@@ -774,7 +759,6 @@ def _render_blockers(
                 metadata={
                     "passable": False,
                     "edge_id": spec.edge_id,
-                    "orientation": spec.orientation,
                     "visual_attributes": visual,
                 },
             )
@@ -782,63 +766,21 @@ def _render_blockers(
     return blockers
 
 
-def _draw_dungeon_blocker(draw: ImageDraw.ImageDraw, spec: _BlockerSpec, *, theme: Mapping[str, Any]) -> None:
-    if spec.blocker_type == "sealed_door":
-        _draw_one_tile_sealed_door(draw, spec.tile_xy, orientation=spec.orientation)
-    else:
-        _draw_one_tile_boulder(draw, spec.tile_xy, floor_rgb=theme["floor_rgb"])
-
-
-def _draw_one_tile_sealed_door(draw: ImageDraw.ImageDraw, tile: Tile, *, orientation: str) -> None:
-    x, y = tile
-    x0 = int(x) * CANONICAL_TILE_PX
-    y0 = int(y) * CANONICAL_TILE_PX
-    outline = (32, 35, 40)
-    panel = (229, 221, 183)
-    shade = (142, 126, 91)
-    strap = (62, 75, 96)
-    seal = (238, 183, 55)
-    draw.rectangle((x0 + 2, y0 + 2, x0 + 13, y0 + 13), fill=_rgba((30, 31, 33), 70))
-    if str(orientation) == "horizontal":
-        draw.rounded_rectangle((x0 + 1, y0 + 4, x0 + 14, y0 + 11), radius=2, fill=_rgba(panel), outline=_rgba(outline), width=1)
-        draw.line((x0 + 2, y0 + 6, x0 + 13, y0 + 6), fill=_rgba(shade))
-        draw.line((x0 + 2, y0 + 9, x0 + 13, y0 + 9), fill=_rgba(shade))
-        draw.rectangle((x0 + 6, y0 + 4, x0 + 9, y0 + 11), fill=_rgba(strap))
-        draw.rectangle((x0 + 7, y0 + 6, x0 + 8, y0 + 8), fill=_rgba(seal))
-    else:
-        draw.rounded_rectangle((x0 + 4, y0 + 1, x0 + 11, y0 + 14), radius=2, fill=_rgba(panel), outline=_rgba(outline), width=1)
-        draw.line((x0 + 6, y0 + 2, x0 + 6, y0 + 13), fill=_rgba(shade))
-        draw.line((x0 + 9, y0 + 2, x0 + 9, y0 + 13), fill=_rgba(shade))
-        draw.rectangle((x0 + 4, y0 + 6, x0 + 11, y0 + 9), fill=_rgba(strap))
-        draw.rectangle((x0 + 7, y0 + 7, x0 + 8, y0 + 8), fill=_rgba(seal))
-
-
 def _draw_one_tile_boulder(draw: ImageDraw.ImageDraw, tile: Tile, *, floor_rgb: Any) -> None:
     x, y = tile
     x0 = int(x) * CANONICAL_TILE_PX
     y0 = int(y) * CANONICAL_TILE_PX
     outline = (35, 39, 37)
-    fill = (217, 223, 216)
     shadow = _shade(floor_rgb, -40)
-    facet = (134, 146, 137)
-    highlight = (242, 244, 238)
-    draw.ellipse((x0 + 2, y0 + 4, x0 + 14, y0 + 14), fill=_rgba(shadow, 150))
-    draw.polygon(
-        (
-            (x0 + 3, y0 + 5),
-            (x0 + 6, y0 + 2),
-            (x0 + 11, y0 + 3),
-            (x0 + 14, y0 + 7),
-            (x0 + 12, y0 + 13),
-            (x0 + 5, y0 + 14),
-            (x0 + 2, y0 + 10),
-        ),
-        fill=_rgba(fill),
-        outline=_rgba(outline),
-    )
-    draw.line((x0 + 6, y0 + 3, x0 + 8, y0 + 8, x0 + 4, y0 + 11), fill=_rgba(facet))
-    draw.line((x0 + 9, y0 + 4, x0 + 12, y0 + 8, x0 + 10, y0 + 12), fill=_rgba(facet))
-    draw.line((x0 + 5, y0 + 5, x0 + 9, y0 + 4), fill=_rgba(highlight))
+    stone_light = (225, 229, 219)
+    stone_mid = (180, 188, 178)
+    stone_dark = (130, 140, 132)
+    draw.ellipse((x0 + 2, y0 + 8, x0 + 14, y0 + 15), fill=_rgba(shadow, 160))
+    draw.ellipse((x0 + 1, y0 + 6, x0 + 8, y0 + 13), fill=_rgba(stone_mid), outline=_rgba(outline))
+    draw.ellipse((x0 + 6, y0 + 3, x0 + 14, y0 + 12), fill=_rgba(stone_light), outline=_rgba(outline))
+    draw.ellipse((x0 + 5, y0 + 8, x0 + 13, y0 + 15), fill=_rgba(stone_dark), outline=_rgba(outline))
+    draw.point((x0 + 8, y0 + 5), fill=_rgba((246, 248, 240)))
+    draw.point((x0 + 3, y0 + 8), fill=_rgba((222, 228, 218)))
 
 
 def _tile_bbox(layout: RpgDungeonLayout, tile_xywh: TileBox) -> BBox:

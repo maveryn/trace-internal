@@ -33,7 +33,7 @@ Counts the treasure chests reachable from the player by following only unblocked
 ## Answer Contract
 - Answer schema: `integer`
 - Generator `answer_gt.type`: `integer`
-- The answer is the number of visible treasure chests reachable from the player without crossing sealed doors, boulders, or wall/background tiles.
+- The answer is the number of visible treasure chests reachable from the player without crossing boulders or wall/background tiles.
 
 ## Annotation Contract
 - Annotation schema: `point_set_map`

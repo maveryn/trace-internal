@@ -54,7 +54,7 @@ def test_rpg_dungeon_renderer_is_deterministic_and_profile_safe() -> None:
             _assert_bbox_inside_canvas(list(chamber.bbox_xyxy), width=width, height=height)
         for blocker in first.blockers:
             _assert_bbox_inside_canvas(list(blocker.bbox_xyxy), width=width, height=height)
-            assert blocker.blocker_type in {"sealed_door", "boulder"}
+            assert blocker.blocker_type == "boulder"
             assert blocker.metadata["passable"] is False
         for entity in first.entities:
             _assert_bbox_inside_canvas(list(entity.bbox_xyxy), width=width, height=height)

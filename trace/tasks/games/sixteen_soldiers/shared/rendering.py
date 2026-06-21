@@ -7,22 +7,35 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.layout import apply_games_layout_jitter_to_bbox
+from trace.tasks.shared.config_defaults import group_default
+
+from ...shared.layout import (
+    apply_games_layout_jitter_to_bbox,
+    attach_games_unit_size_jitter,
+    resolve_games_layout_jitter,
+    resolve_games_unit_size_scale,
+    scale_games_px,
+)
 from ...shared.marking import draw_optional_marker_x, draw_semantic_ellipse_marker, resolve_semantic_marker_style
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
-from .common import (
-    BLUE,
+from .defaults import DEFAULTS
+from .rules import (
     EDGES,
-    EMPTY,
     POINT_COORDS,
-    RED,
-    Board,
-    PointId,
     board_to_dict,
     piece_to_entity_id,
     player_name,
     point_coord,
     point_id_from_coord,
+)
+from .state import (
+    BLUE,
+    EMPTY,
+    RED,
+    Board,
+    PointId,
+    RenderedSixteenSoldiersScene,
+    SixteenSoldiersTheme,
 )
 
 
@@ -41,30 +54,6 @@ class SixteenSoldiersRenderParams:
     marker_width_px: int
     layout_jitter_meta: Dict[str, Any] | None = None
     instance_seed: int = 0
-
-
-@dataclass(frozen=True)
-class SixteenSoldiersTheme:
-    """Scene-local color controls for Sixteen Soldiers boards."""
-
-    board_fill_rgb: Tuple[int, int, int]
-    board_border_rgb: Tuple[int, int, int]
-    edge_rgb: Tuple[int, int, int]
-    point_fill_rgb: Tuple[int, int, int]
-    point_outline_rgb: Tuple[int, int, int]
-    red_piece_fill_rgb: Tuple[int, int, int]
-    red_piece_outline_rgb: Tuple[int, int, int]
-    blue_piece_fill_rgb: Tuple[int, int, int]
-    blue_piece_outline_rgb: Tuple[int, int, int]
-
-
-@dataclass(frozen=True)
-class RenderedSixteenSoldiersScene:
-    """Rendered scene plus trace-friendly geometry maps."""
-
-    image: Image.Image
-    scene_entities: Tuple[Dict[str, Any], ...]
-    render_map: Dict[str, Any]
 
 
 def _theme_for_style(style_variant: str) -> SixteenSoldiersTheme:
@@ -139,6 +128,106 @@ def _bbox_from_center(center: Sequence[float], radius: float) -> Tuple[float, fl
         round(float(cy - radius), 3),
         round(float(cx + radius), 3),
         round(float(cy + radius), 3),
+    )
+
+
+def resolve_sixteen_soldiers_render_params(
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    *,
+    instance_seed: int,
+) -> SixteenSoldiersRenderParams:
+    """Resolve render parameters from scene config/defaults."""
+
+    unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
+        params,
+        render_defaults,
+        instance_seed=int(instance_seed),
+        namespace="games.sixteen_soldiers.unit_size",
+    )
+    layout_jitter = attach_games_unit_size_jitter(
+        resolve_games_layout_jitter(
+            params,
+            render_defaults,
+            instance_seed=int(instance_seed),
+            namespace="games.sixteen_soldiers.layout",
+        ),
+        unit_scale_meta,
+    )
+    base_canvas_width = int(params.get("canvas_width", group_default(render_defaults, "canvas_width", DEFAULTS.canvas_width)))
+    base_canvas_height = int(params.get("canvas_height", group_default(render_defaults, "canvas_height", DEFAULTS.canvas_height)))
+    max_board_width_px = scale_games_px(
+        params.get("max_board_width_px", group_default(render_defaults, "max_board_width_px", DEFAULTS.max_board_width_px)),
+        unit_scale,
+        min_px=280,
+    )
+    max_board_height_px = scale_games_px(
+        params.get("max_board_height_px", group_default(render_defaults, "max_board_height_px", DEFAULTS.max_board_height_px)),
+        unit_scale,
+        min_px=520,
+    )
+    dynamic_canvas_enabled = bool(
+        params.get(
+            "dynamic_canvas_size_enabled",
+            group_default(render_defaults, "dynamic_canvas_size_enabled", DEFAULTS.dynamic_canvas_size_enabled),
+        )
+    )
+    canvas_width = int(base_canvas_width)
+    canvas_height = int(base_canvas_height)
+    if dynamic_canvas_enabled and params.get("canvas_width") is None:
+        canvas_width = min(
+            int(base_canvas_width),
+            max(
+                int(params.get("canvas_min_width_px", group_default(render_defaults, "canvas_min_width_px", DEFAULTS.canvas_min_width_px))),
+                int(
+                    round(
+                        float(max_board_width_px)
+                        + (
+                            2.0
+                            * float(
+                                params.get(
+                                    "canvas_side_padding_px",
+                                    group_default(render_defaults, "canvas_side_padding_px", DEFAULTS.canvas_side_padding_px),
+                                )
+                            )
+                        )
+                    )
+                ),
+            ),
+        )
+    if dynamic_canvas_enabled and params.get("canvas_height") is None:
+        canvas_height = min(
+            int(base_canvas_height),
+            max(
+                int(params.get("canvas_min_height_px", group_default(render_defaults, "canvas_min_height_px", DEFAULTS.canvas_min_height_px))),
+                int(
+                    round(
+                        float(max_board_height_px)
+                        + (
+                            2.0
+                            * float(
+                                params.get(
+                                    "canvas_vertical_padding_px",
+                                    group_default(render_defaults, "canvas_vertical_padding_px", DEFAULTS.canvas_vertical_padding_px),
+                                )
+                            )
+                        )
+                    )
+                ),
+            ),
+        )
+    return SixteenSoldiersRenderParams(
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        panel_margin_px=int(params.get("panel_margin_px", group_default(render_defaults, "panel_margin_px", DEFAULTS.panel_margin_px))),
+        max_board_width_px=int(max_board_width_px),
+        max_board_height_px=int(max_board_height_px),
+        edge_width_px=scale_games_px(params.get("edge_width_px", group_default(render_defaults, "edge_width_px", DEFAULTS.edge_width_px)), unit_scale, min_px=2),
+        point_radius_px=scale_games_px(params.get("point_radius_px", group_default(render_defaults, "point_radius_px", DEFAULTS.point_radius_px)), unit_scale, min_px=4),
+        piece_radius_px=scale_games_px(params.get("piece_radius_px", group_default(render_defaults, "piece_radius_px", DEFAULTS.piece_radius_px)), unit_scale, min_px=13),
+        marker_width_px=scale_games_px(params.get("marker_width_px", group_default(render_defaults, "marker_width_px", DEFAULTS.marker_width_px)), unit_scale, min_px=3),
+        layout_jitter_meta=layout_jitter,
+        instance_seed=int(instance_seed),
     )
 
 
@@ -377,5 +466,6 @@ def render_sixteen_soldiers_scene(
 __all__ = [
     "RenderedSixteenSoldiersScene",
     "SixteenSoldiersRenderParams",
+    "resolve_sixteen_soldiers_render_params",
     "render_sixteen_soldiers_scene",
 ]

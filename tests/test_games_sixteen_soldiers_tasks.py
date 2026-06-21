@@ -8,7 +8,7 @@ from pathlib import Path
 import trace.tasks  # noqa: F401
 from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.sixteen_soldiers.shared.common import (
+from trace.tasks.games.sixteen_soldiers.shared.rules import (
     BLUE,
     EDGES,
     JUMP_SPECS,
@@ -58,10 +58,7 @@ def test_games_sixteen_soldiers_defaults_expose_axes_and_prompt_bundle() -> None
         "center_crossroads_midgame",
         "triangle_wing_midgame",
     }
-    assert set(generation["query_id_weights"].keys()) == {
-        "marked_piece_destination_count",
-        "marked_piece_capture_count",
-    }
+    assert "query_id_weights" not in generation
     assert set(generation["style_variant_weights"].keys()) == {
         "ground_court",
         "ink_court",
@@ -73,15 +70,14 @@ def test_games_sixteen_soldiers_defaults_expose_axes_and_prompt_bundle() -> None
     assert list(generation["marked_piece_capture_count_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["piece_count_per_side_support"]) == [8, 9, 10, 11, 12, 13, 14]
     assert int(rendering["max_board_height_px"]) > int(rendering["max_board_width_px"])
-    assert str(prompt["bundle_id"]) == "games_sixteen_soldiers_v0"
-    assert "drawn straight line" in str(prompt["capture_rule_text"])
+    assert str(prompt["bundle_id"]) == "games_sixteen_soldiers_v1"
 
 
 def test_games_sixteen_soldiers_prompt_bundle_has_queries() -> None:
     bundle = json.loads(
-        Path("prompts/games/sixteen_soldiers/games_sixteen_soldiers_v0.json").read_text(encoding="utf-8")
+        Path("prompts/games/sixteen_soldiers/games_sixteen_soldiers_v1.json").read_text(encoding="utf-8")
     )
-    assert set(bundle["query_templates"].keys()) == {
+    assert set(bundle["templates"]["query"].keys()) == {
         "marked_piece_destination_count",
         "marked_piece_capture_count",
     }
@@ -101,11 +97,13 @@ def test_games_sixteen_soldiers_marked_destination_answer_matches_trace() -> Non
     expected_points = [out.trace_payload["render_map"]["point_centers_px"][point_id] for point_id in expected_ids]
 
     assert out.scene_id == "sixteen_soldiers"
-    assert out.query_id == "marked_piece_destination_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 6
     assert out.annotation_gt.type == "point_set"
     assert execution["annotation_point_ids"] == expected_ids
+    assert execution["prompt_query_key"] == "marked_piece_destination_count"
+    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "marked_piece_destination_count"
     assert out.annotation_gt.value == expected_points
     assert out.trace_payload["projected_annotation"]["point_set"] == expected_points
 
@@ -124,12 +122,14 @@ def test_games_sixteen_soldiers_marked_capture_answer_matches_trace() -> None:
     expected_points = [out.trace_payload["render_map"]["piece_centers_px"][piece_id] for piece_id in expected_entity_ids]
 
     assert out.scene_id == "sixteen_soldiers"
-    assert out.query_id == "marked_piece_capture_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 4
     assert out.annotation_gt.type == "point_set"
     assert execution["annotation_point_ids"] == expected_points_ids
     assert execution["annotation_entity_ids"] == expected_entity_ids
+    assert execution["prompt_query_key"] == "marked_piece_capture_count"
+    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "marked_piece_capture_count"
     assert out.annotation_gt.value == expected_points
     assert out.trace_payload["projected_annotation"]["pixel_point_set"] == expected_points
     assert len(execution["capture_lines_for_marked_piece"]) >= 4
@@ -159,4 +159,4 @@ def test_games_sixteen_soldiers_taxonomy_mapping() -> None:
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "sixteen_soldiers"
         assert taxonomy.source_domain == "games"
-        assert taxonomy.source_scene_id == "sixteen_soldiers"
+        assert taxonomy.source_scene_id == ""

@@ -1,59 +1,19 @@
-"""Shared rules and symbolic helpers for Sixteen Soldiers scenes."""
+"""Topology and movement rules for Sixteen Soldiers games tasks."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Mapping, Sequence, Tuple
+from typing import Any, Mapping, Tuple
 
-
-EMPTY = 0
-RED = 1
-BLUE = 2
-Coord = Tuple[int, int]
-PointId = str
-Board = Tuple[Tuple[PointId, int], ...]
-
-SUPPORTED_SIXTEEN_SOLDIERS_QUERY_IDS: Tuple[str, ...] = (
-    "marked_piece_destination_count",
-    "marked_piece_capture_count",
+from .state import (
+    BLUE,
+    EMPTY,
+    RED,
+    Board,
+    Coord,
+    JumpSpec,
+    PointId,
+    SixteenSoldiersSample,
 )
-SUPPORTED_SIXTEEN_SOLDIERS_SCENE_VARIANTS: Tuple[str, ...] = (
-    "balanced_midgame",
-    "center_crossroads_midgame",
-    "triangle_wing_midgame",
-)
-SUPPORTED_SIXTEEN_SOLDIERS_STYLE_VARIANTS: Tuple[str, ...] = (
-    "ground_court",
-    "ink_court",
-    "cloth_board",
-    "slate_court",
-    "sand_court",
-)
-
-
-@dataclass(frozen=True)
-class JumpSpec:
-    """One directed jump line: origin -> adjacent opponent -> empty landing."""
-
-    origin_id: PointId
-    middle_id: PointId
-    landing_id: PointId
-
-
-@dataclass(frozen=True)
-class SixteenSoldiersSample:
-    """One symbolic Sixteen Soldiers board plus query witnesses."""
-
-    mode: str
-    scene_variant: str
-    style_variant: str
-    board: Board
-    answer: int
-    target_answer: int
-    annotation_point_ids: Tuple[PointId, ...]
-    target_color: int
-    marked_point_id: PointId
-    construction_mode: str
 
 
 def _valid_point_coords() -> Tuple[Coord, ...]:
@@ -90,7 +50,7 @@ def _edge_key(a: Coord, b: Coord) -> Tuple[PointId, PointId]:
 
 
 def _build_edges() -> Tuple[Tuple[PointId, PointId], ...]:
-    """Build the fixed alquerque-plus-two-triangles graph."""
+    """Build every playable line for the canonical Sixteen Soldiers graph."""
 
     edges: set[Tuple[PointId, PointId]] = set()
 
@@ -271,11 +231,7 @@ def legal_destinations(board: Board, point_id: PointId) -> Tuple[PointId, ...]:
     origin_id = str(point_id)
     if values[origin_id] == EMPTY:
         return tuple()
-    return tuple(
-        neighbor_id
-        for neighbor_id in NEIGHBORS[origin_id]
-        if values[str(neighbor_id)] == EMPTY
-    )
+    return tuple(neighbor_id for neighbor_id in NEIGHBORS[origin_id] if values[str(neighbor_id)] == EMPTY)
 
 
 def jump_specs_from(point_id: PointId) -> Tuple[JumpSpec, ...]:
@@ -339,7 +295,11 @@ def board_piece_count(board: Board, player: int) -> int:
     return sum(1 for _point_id, value in freeze_board(dict(board)) if int(value) == int(player))
 
 
-def validate_sixteen_soldiers_sample(sample: SixteenSoldiersSample) -> None:
+def _validate_sixteen_soldiers_sample(
+    sample: SixteenSoldiersSample,
+    *,
+    expected_point_ids: Tuple[PointId, ...],
+) -> None:
     """Validate answer/annotation consistency for one sampled scene."""
 
     board = freeze_board(dict(sample.board))
@@ -348,16 +308,31 @@ def validate_sixteen_soldiers_sample(sample: SixteenSoldiersSample) -> None:
         raise ValueError("marked point id is not on the Sixteen Soldiers board")
     if int(values[str(sample.marked_point_id)]) not in {RED, BLUE}:
         raise ValueError("marked point must contain a piece")
-    if str(sample.mode) == "marked_piece_destination_count":
-        expected = tuple(sorted(legal_destinations(board, sample.marked_point_id), key=_point_sort_key))
-    elif str(sample.mode) == "marked_piece_capture_count":
-        expected = tuple(sorted(capturable_opponent_points(board, sample.marked_point_id), key=_point_sort_key))
-    else:
-        raise ValueError(f"unsupported Sixteen Soldiers mode={sample.mode!r}")
+    expected = tuple(sorted(expected_point_ids, key=_point_sort_key))
     if tuple(sorted(sample.annotation_point_ids, key=_point_sort_key)) != expected:
         raise ValueError("Sixteen Soldiers annotation points do not match board rules")
     if int(sample.answer) != len(expected):
         raise ValueError("Sixteen Soldiers answer does not match annotation count")
+
+
+def validate_destination_sample(sample: SixteenSoldiersSample) -> None:
+    """Validate a sample whose witness is every adjacent empty destination."""
+
+    board = freeze_board(dict(sample.board))
+    _validate_sixteen_soldiers_sample(
+        sample,
+        expected_point_ids=tuple(sorted(legal_destinations(board, sample.marked_point_id), key=_point_sort_key)),
+    )
+
+
+def validate_capture_sample(sample: SixteenSoldiersSample) -> None:
+    """Validate a sample whose witness is every immediately capturable opponent."""
+
+    board = freeze_board(dict(sample.board))
+    _validate_sixteen_soldiers_sample(
+        sample,
+        expected_point_ids=tuple(sorted(capturable_opponent_points(board, sample.marked_point_id), key=_point_sort_key)),
+    )
 
 
 def visible_board_trace(board: Board) -> list[dict[str, Any]]:
@@ -390,23 +365,12 @@ def visible_board_trace(board: Board) -> list[dict[str, Any]]:
 
 
 __all__ = [
-    "BLUE",
-    "Board",
     "COORD_TO_POINT_ID",
-    "Coord",
     "EDGES",
-    "EMPTY",
     "JUMP_SPECS",
-    "JumpSpec",
     "NEIGHBORS",
     "POINT_COORDS",
     "POINT_ID_TO_COORD",
-    "PointId",
-    "RED",
-    "SUPPORTED_SIXTEEN_SOLDIERS_QUERY_IDS",
-    "SUPPORTED_SIXTEEN_SOLDIERS_SCENE_VARIANTS",
-    "SUPPORTED_SIXTEEN_SOLDIERS_STYLE_VARIANTS",
-    "SixteenSoldiersSample",
     "all_point_ids",
     "board_piece_count",
     "board_to_dict",
@@ -420,6 +384,7 @@ __all__ = [
     "player_name",
     "point_coord",
     "point_id_from_coord",
-    "validate_sixteen_soldiers_sample",
+    "validate_capture_sample",
+    "validate_destination_sample",
     "visible_board_trace",
 ]

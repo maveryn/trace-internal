@@ -78,13 +78,6 @@ def _resolve_render_params(
         canvas_width=int(params.get("canvas_width", group_default(render_defaults, "canvas_width", DEFAULTS.canvas_width))),
         canvas_height=int(params.get("canvas_height", group_default(render_defaults, "canvas_height", DEFAULTS.canvas_height))),
         panel_margin_px=int(params.get("panel_margin_px", group_default(render_defaults, "panel_margin_px", DEFAULTS.panel_margin_px))),
-        player_badge_height_px=int(
-            params.get("player_badge_height_px", group_default(render_defaults, "player_badge_height_px", DEFAULTS.player_badge_height_px))
-        ),
-        player_badge_width_px=int(
-            params.get("player_badge_width_px", group_default(render_defaults, "player_badge_width_px", DEFAULTS.player_badge_width_px))
-        ),
-        header_gap_px=int(params.get("header_gap_px", group_default(render_defaults, "header_gap_px", DEFAULTS.header_gap_px))),
         max_board_size_px=scale_games_px(
             params.get("max_board_size_px", group_default(render_defaults, "max_board_size_px", DEFAULTS.max_board_size_px)),
             unit_scale,
@@ -114,9 +107,6 @@ def _resolve_render_params(
             min_px=3,
         ),
         disc_inset_fraction=float(params.get("disc_inset_fraction", group_default(render_defaults, "disc_inset_fraction", DEFAULTS.disc_inset_fraction))),
-        player_badge_font_size_px=int(
-            params.get("player_badge_font_size_px", group_default(render_defaults, "player_badge_font_size_px", DEFAULTS.player_badge_font_size_px))
-        ),
         font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
         instance_seed=int(instance_seed),

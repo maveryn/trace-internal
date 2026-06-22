@@ -10,7 +10,7 @@ import pytest
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.reversi.legal_destination_count import GamesReversiLegalDestinationCountTask
-from trace.tasks.games.reversi.shared.rules import corner_coords, frontier_disc_coords
+from trace.tasks.games.reversi.shared.rules import frontier_disc_coords
 from trace.tasks.games.reversi.shared.state import BLACK, WHITE
 from trace.tasks.games.shared.style import SUPPORTED_REVERSI_STYLE_VARIANTS
 from trace.tasks.registry import create_task
@@ -22,14 +22,8 @@ from tests.helpers import read_jsonl
     (
         (
             "task_games__reversi__legal_destination_count",
-            {"scene_variant": "compact_board", "query_id": "legal_move_count", "target_answer": 4},
+            {"scene_variant": "compact_board", "target_answer": 4},
             4,
-            "bbox_set",
-        ),
-        (
-            "task_games__reversi__legal_destination_count",
-            {"scene_variant": "classic_board", "query_id": "corner_move_count", "target_answer": 0},
-            0,
             "bbox_set",
         ),
         (
@@ -59,20 +53,6 @@ def test_games_reversi_tasks_emit_expected_contract(
     assert trace["projected_annotation"][str(expected_annotation_type)] == out.annotation_gt.value
     assert len(execution["annotation_entity_ids"]) == int(expected_answer)
     assert all(str(entity_id).startswith("cell_r") for entity_id in execution["annotation_entity_ids"])
-
-
-def test_games_reversi_corner_annotation_stays_on_corner_squares() -> None:
-    out = create_task("task_games__reversi__legal_destination_count").generate(
-        28011,
-        params={"scene_variant": "classic_board", "query_id": "corner_move_count", "target_answer": 2},
-        max_attempts=64,
-    )
-    execution = out.trace_payload["execution_trace"]
-    corners = {tuple(coord) for coord in corner_coords(8)}
-    annotation_coords = {tuple(coord) for coord in execution["annotation_coords"]}
-
-    assert len(annotation_coords) == 2
-    assert annotation_coords.issubset(corners)
 
 
 def test_games_reversi_marked_move_keeps_annotation_on_flipped_discs() -> None:
@@ -128,34 +108,25 @@ def test_games_reversi_frontier_disc_count_matches_visible_board(query_id: str, 
 
 def test_games_reversi_legal_destination_cycle_covers_answer_scene_and_style_support() -> None:
     task = GamesReversiLegalDestinationCountTask()
-    answers_by_query: dict[str, set[int]] = {"legal_move_count": set(), "corner_move_count": set()}
-    scenes_by_query: dict[str, set[str]] = {"legal_move_count": set(), "corner_move_count": set()}
-    styles_by_query: dict[str, set[str]] = {"legal_move_count": set(), "corner_move_count": set()}
+    answers: set[int] = set()
+    scenes: set[str] = set()
+    styles: set[str] = set()
 
     for sampling_index in range(84):
         out = task.generate(28101 + int(sampling_index), params={"_sample_cursor": sampling_index}, max_attempts=192)
-        query_id = str(out.query_id)
         execution = out.trace_payload["execution_trace"]
-        answers_by_query[query_id].add(int(out.answer_gt.value))
-        scenes_by_query[query_id].add(str(execution["scene_variant"]))
-        styles_by_query[query_id].add(str(execution["style_variant"]))
+        assert str(out.query_id) == "single"
+        answers.add(int(out.answer_gt.value))
+        scenes.add(str(execution["scene_variant"]))
+        styles.add(str(execution["style_variant"]))
 
-    assert answers_by_query == {
-        "legal_move_count": {0, 1, 2, 3, 4, 5, 6},
-        "corner_move_count": {0, 1, 2, 3, 4},
-    }
-    assert scenes_by_query == {
-        "legal_move_count": {"compact_board", "classic_board"},
-        "corner_move_count": {"compact_board", "classic_board"},
-    }
-    assert styles_by_query == {
-        "legal_move_count": set(SUPPORTED_REVERSI_STYLE_VARIANTS),
-        "corner_move_count": set(SUPPORTED_REVERSI_STYLE_VARIANTS),
-    }
+    assert answers == {0, 1, 2, 3, 4, 5, 6}
+    assert scenes == {"compact_board", "classic_board"}
+    assert styles == set(SUPPORTED_REVERSI_STYLE_VARIANTS)
 
 
 def test_games_reversi_task_is_deterministic() -> None:
-    params = {"scene_variant": "compact_board", "query_id": "legal_move_count", "target_answer": 6}
+    params = {"scene_variant": "compact_board", "target_answer": 6}
     task = GamesReversiLegalDestinationCountTask()
     out_a = task.generate(28031, params=params, max_attempts=64)
     out_b = task.generate(28031, params=params, max_attempts=64)
@@ -171,11 +142,6 @@ def test_games_reversi_prompt_bundle_requires_rule_text_for_query_specific_promp
     bundle = json.loads(Path("prompts/games/reversi/games_reversi_v1.json").read_text(encoding="utf-8"))
     required = bundle["required_slots_by_key"]
     assert required["query:legal_move_count"] == ["current_player_name", "legal_move_rule_text"]
-    assert required["query:corner_move_count"] == [
-        "current_player_name",
-        "legal_move_rule_text",
-        "corner_rule_text",
-    ]
     assert required["query:flip_count_for_marked_move"] == [
         "current_player_name",
         "legal_move_rule_text",

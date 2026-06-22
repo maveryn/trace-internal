@@ -23,16 +23,13 @@ def test_games_reversi_move_count_defaults_expose_scene_query_and_answer_axes() 
     assert set(generation["scene_variant_weights"].keys()) == {"compact_board", "classic_board"}
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_REVERSI_STYLE_VARIANTS)
     assert list(generation["legal_move_count_support"]) == [0, 1, 2, 3, 4, 5, 6]
-    assert list(generation["corner_move_count_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["flip_count_support"]) == [2, 3, 4, 5, 6]
     assert list(generation["frontier_disc_count_support"]) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     assert int(rendering["max_board_size_px"]) > 0
-    assert int(rendering["player_badge_height_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_reversi_v1"
     bundle = json.loads(Path("prompts/games/reversi/games_reversi_v1.json").read_text(encoding="utf-8"))
     code_defaults = bundle["code_prompt_defaults"]
     assert "6 by 6" in str(code_defaults["object_description_compact_board"])
-    assert "corner" in str(code_defaults["annotation_hint_corner_move_count"]).lower()
     assert "pixel point" in str(code_defaults["annotation_hint_flip_count_for_marked_move"]).lower()
     assert "flip" in str(code_defaults["answer_hint_flip_count_for_marked_move"]).lower()
     assert "frontier" in str(code_defaults["frontier_rule_text"]).lower()

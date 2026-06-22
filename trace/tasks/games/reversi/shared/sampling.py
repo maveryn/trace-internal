@@ -9,7 +9,7 @@ from trace.tasks.games.shared.style import SUPPORTED_REVERSI_STYLE_VARIANTS
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 
 from .defaults import DEFAULTS
-from .rules import coord_to_cell_id, corner_coords, frontier_disc_coords, legal_moves_with_flips, simulate_random_state
+from .rules import coord_to_cell_id, frontier_disc_coords, legal_moves_with_flips, simulate_random_state
 from .state import (
     BLACK,
     BOARD_SIZE_BY_SCENE_VARIANT,
@@ -175,53 +175,6 @@ def sample_legal_destination_scene(
     raise ValueError("failed to find a reachable board with the requested legal-move count")
 
 
-def sample_corner_destination_scene(
-    *,
-    rng: Any,
-    board_size: int,
-    current_player: int,
-    target_answer: int,
-) -> SampledReversiScene:
-    """Construct one board with an exact number of legal corner moves."""
-
-    board = _empty_board(int(board_size))
-    opponent = int(WHITE if int(current_player) == int(BLACK) else BLACK)
-    corners = list(corner_coords(int(board_size)))
-    selected_corners = [] if int(target_answer) == 0 else list(rng.sample(corners, k=int(target_answer)))
-    corner_pattern_specs = {
-        (0, 0): ((0, 1), (0, 2)),
-        (0, int(board_size) - 1): ((0, int(board_size) - 2), (0, int(board_size) - 3)),
-        (int(board_size) - 1, 0): ((int(board_size) - 1, 1), (int(board_size) - 1, 2)),
-        (
-            int(board_size) - 1,
-            int(board_size) - 1,
-        ): ((int(board_size) - 1, int(board_size) - 2), (int(board_size) - 1, int(board_size) - 3)),
-    }
-    selected_set = {tuple(item) for item in selected_corners}
-    for corner in corners:
-        if tuple(corner) in selected_set:
-            adjacent_coord, terminal_coord = corner_pattern_specs[tuple(corner)]
-            _set_cell(board, adjacent_coord, opponent)
-            _set_cell(board, terminal_coord, current_player)
-        else:
-            _set_cell(board, tuple(corner), current_player if int(corner[0] + corner[1]) % 2 == 0 else opponent)
-    frozen_board = _freeze_board(board)
-    legal_moves = legal_moves_with_flips(frozen_board, int(current_player))
-    annotation_coords = tuple(sorted(move for move in legal_moves if tuple(move) in set(corners)))
-    if int(len(annotation_coords)) != int(target_answer):
-        raise ValueError("constructed corner-move board did not match the target answer")
-    return SampledReversiScene(
-        board=frozen_board,
-        current_player=int(current_player),
-        legal_moves=legal_moves,
-        annotation_coords=annotation_coords,
-        annotation_entity_ids=tuple(coord_to_cell_id(coord) for coord in annotation_coords),
-        marked_move=None,
-        marked_move_flips=tuple(),
-        construction_mode="corner_patterns",
-    )
-
-
 def sample_marked_move_flip_scene(
     *,
     rng: Any,
@@ -342,7 +295,6 @@ __all__ = [
     "resolve_current_player",
     "resolve_reversi_target_axis",
     "resolve_reversi_visual_axes",
-    "sample_corner_destination_scene",
     "sample_frontier_disc_scene",
     "sample_legal_destination_scene",
     "sample_marked_move_flip_scene",

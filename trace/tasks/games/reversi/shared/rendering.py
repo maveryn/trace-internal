@@ -8,10 +8,8 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....shared.marker_legibility import draw_semantic_bbox_marker, resolve_semantic_marker_style
-from ....shared.text_rendering import load_font, resolve_text_stroke_fill
-from ...shared.text import draw_game_text_traced as draw_text_traced
 from ...shared.layout import apply_games_layout_jitter_to_bbox, offset_bbox
-from .rules import coord_to_cell_id, player_name
+from .rules import coord_to_cell_id
 from .state import BLACK, WHITE, Coord
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from ...shared.style import ReversiTheme, build_games_reversi_theme
@@ -24,16 +22,12 @@ class ReversiRenderParams:
     canvas_width: int
     canvas_height: int
     panel_margin_px: int
-    player_badge_height_px: int
-    player_badge_width_px: int
-    header_gap_px: int
     max_board_size_px: int
     board_corner_radius_px: int
     board_frame_width_px: int
     cell_line_width_px: int
     marked_square_outline_width_px: int
     disc_inset_fraction: float
-    player_badge_font_size_px: int
     font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
     instance_seed: int = 0
@@ -132,29 +126,12 @@ def render_reversi_board_scene(
     cell_size = min(
         int(params.max_board_size_px) // int(board_size),
         (int(params.canvas_width) - (2 * int(params.panel_margin_px))) // int(board_size),
-        (
-            int(params.canvas_height)
-            - (2 * int(params.panel_margin_px))
-            - int(params.player_badge_height_px)
-            - int(params.header_gap_px)
-        )
-        // int(board_size),
+        (int(params.canvas_height) - (2 * int(params.panel_margin_px))) // int(board_size),
     )
     board_width = int(cell_size) * int(board_size)
     board_height = int(cell_size) * int(board_size)
     board_left = int(0.5 * (int(params.canvas_width) - int(board_width)))
-    available_height = (
-        int(params.canvas_height)
-        - (2 * int(params.panel_margin_px))
-        - int(params.player_badge_height_px)
-        - int(params.header_gap_px)
-    )
-    board_top = int(
-        params.panel_margin_px
-        + params.player_badge_height_px
-        + params.header_gap_px
-        + max(0, 0.5 * (available_height - int(board_height)))
-    )
+    board_top = int(0.5 * (int(params.canvas_height) - int(board_height)))
     board_bbox = (
         round(float(board_left), 3),
         round(float(board_top), 3),
@@ -162,27 +139,7 @@ def render_reversi_board_scene(
         round(float(board_top + board_height), 3),
     )
 
-    badge_font = load_font(int(params.player_badge_font_size_px), bold=True, font_family=str(params.font_family))
-    badge_text = f"{player_name(int(current_player))} to move"
-    badge_text_bbox = draw.textbbox((0, 0), badge_text, font=badge_font, stroke_width=1)
-    badge_width = max(
-        int(params.player_badge_width_px),
-        int((badge_text_bbox[2] - badge_text_bbox[0]) + params.player_badge_height_px + 34),
-    )
-    badge_left = int(0.5 * (int(params.canvas_width) - int(badge_width)))
-    badge_top = int(params.panel_margin_px)
-    badge_bbox = (
-        round(float(badge_left), 3),
-        round(float(badge_top), 3),
-        round(float(badge_left + badge_width), 3),
-        round(float(badge_top + params.player_badge_height_px), 3),
-    )
-    group_bbox = (
-        min(float(board_bbox[0]), float(badge_bbox[0])),
-        min(float(board_bbox[1]), float(badge_bbox[1])),
-        max(float(board_bbox[2]), float(badge_bbox[2])),
-        max(float(board_bbox[3]), float(badge_bbox[3])),
-    )
+    group_bbox = board_bbox
     group_bbox, dx, dy, layout_jitter = apply_games_layout_jitter_to_bbox(
         bbox_px=group_bbox,
         canvas_width=int(params.canvas_width),
@@ -191,10 +148,7 @@ def render_reversi_board_scene(
     )
     board_left = float(board_left + dx)
     board_top = float(board_top + dy)
-    badge_left = float(badge_left + dx)
-    badge_top = float(badge_top + dy)
     board_bbox = offset_bbox(board_bbox, dx=dx, dy=dy)
-    badge_bbox = offset_bbox(badge_bbox, dx=dx, dy=dy)
 
     if panel_style is not None:
         panel_pad = 24.0
@@ -229,35 +183,6 @@ def render_reversi_board_scene(
         radius=max(8, int(params.board_corner_radius_px) - int(params.board_frame_width_px)),
         fill=tuple(int(value) for value in theme.board_fill_rgb),
     )
-    draw.rounded_rectangle(
-        badge_bbox,
-        radius=int(0.5 * int(params.player_badge_height_px)),
-        fill=tuple(int(value) for value in theme.badge_fill_rgb),
-        outline=tuple(int(value) for value in theme.badge_outline_rgb),
-        width=2,
-    )
-    disc_d = int(params.player_badge_height_px) - 16
-    disc_left = int(badge_left + 12)
-    disc_top = int(badge_top + 8)
-    _draw_disc(
-        draw,
-        bbox_px=(float(disc_left), float(disc_top), float(disc_left + disc_d), float(disc_top + disc_d)),
-        theme=theme,
-        player=int(current_player),
-    )
-    badge_text_rgb = tuple(int(value) for value in theme.badge_text_rgb)
-    draw_text_traced(draw,
-        (
-            float(disc_left + disc_d + 12),
-            float(badge_top + 0.5 * (int(params.player_badge_height_px) - (badge_text_bbox[3] - badge_text_bbox[1]))),
-        ),
-        badge_text,
-        font=badge_font,
-        fill=badge_text_rgb,
-        stroke_width=1,
-        stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(badge_text_rgb)),
-     role="readout", required=False,)
-
     cell_specs: List[ReversiCellSpec] = []
     scene_entities: List[Dict[str, Any]] = []
     cell_bboxes_px: Dict[str, Tuple[float, float, float, float]] = {}
@@ -356,7 +281,6 @@ def render_reversi_board_scene(
             "cell_bboxes_px": {str(key): list(value) for key, value in cell_bboxes_px.items()},
             "disc_bboxes_px": {str(key): list(value) for key, value in disc_bboxes_px.items()},
             "disc_points_px": {str(key): list(value) for key, value in disc_points_px.items()},
-            "player_badge_bbox_px": list(badge_bbox),
             "marked_square_bbox_px": None if marked_square_bbox_px is None else list(marked_square_bbox_px),
             "board_size": int(board_size),
             "scene_variant": str(scene_variant),

@@ -13,15 +13,14 @@ from .shared.defaults import DEFAULTS
 from .shared.sampling import (
     resolve_current_player,
     resolve_reversi_target_axis,
-    sample_corner_destination_scene,
     sample_legal_destination_scene,
 )
 from .shared.state import SCENE_ID, SCENE_NAMESPACE
 
 
 TASK_ID = "task_games__reversi__legal_destination_count"
-SUPPORTED_QUERY_IDS = ("legal_move_count", "corner_move_count")
-DEFAULT_QUERY_ID = "legal_move_count"
+SUPPORTED_QUERY_IDS = ("single",)
+DEFAULT_QUERY_ID = "single"
 
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
     "games",
@@ -38,7 +37,7 @@ def _prepare_legal_destination_objective(
 ) -> ObjectiveReversiPlan:
     """Prepare target support and sampler hooks for legal-destination counts."""
 
-    if str(query_id) == "legal_move_count":
+    if str(query_id) == "single":
         target_axis = resolve_reversi_target_axis(
             int(instance_seed),
             params=params,
@@ -60,34 +59,12 @@ def _prepare_legal_destination_objective(
                 target_answer=int(target_axis.target_answer),
             ),
         )
-    if str(query_id) == "corner_move_count":
-        target_axis = resolve_reversi_target_axis(
-            int(instance_seed),
-            params=params,
-            gen_defaults=_GEN_DEFAULTS,
-            support_key="corner_move_count_support",
-            fallback_support=DEFAULTS.corner_move_count_support,
-            namespace=f"{SCENE_NAMESPACE}.corner_destination.target_answer",
-        )
-        return ObjectiveReversiPlan(
-            attempt_namespace=f"{SCENE_NAMESPACE}.corner_destination",
-            prompt_query_key="corner_move_count",
-            target_axis=target_axis,
-            annotation_kind="cell_bbox_set",
-            query_params={"destination_filter": "legal_corner_moves"},
-            construct_attempt=lambda rng, axes: sample_corner_destination_scene(
-                rng=rng,
-                board_size=int(axes.board_size),
-                current_player=resolve_current_player(rng, params=params),
-                target_answer=int(target_axis.target_answer),
-            ),
-        )
     raise ValueError(f"unsupported Reversi legal-destination query: {query_id}")
 
 
 @register_task
 class GamesReversiLegalDestinationCountTask:
-    """Count all legal destination squares or legal corner destinations."""
+    """Count all legal destination squares for the current player."""
 
     task_id = TASK_ID
     domain = "games"

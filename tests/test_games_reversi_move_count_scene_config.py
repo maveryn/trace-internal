@@ -26,6 +26,7 @@ def test_games_reversi_move_count_defaults_expose_scene_query_and_answer_axes() 
     assert list(generation["flip_count_support"]) == [2, 3, 4, 5, 6]
     assert list(generation["frontier_disc_count_support"]) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     assert int(rendering["max_board_size_px"]) > 0
+    assert int(rendering["player_badge_height_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_reversi_v1"
     bundle = json.loads(Path("prompts/games/reversi/games_reversi_v1.json").read_text(encoding="utf-8"))
     code_defaults = bundle["code_prompt_defaults"]

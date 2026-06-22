@@ -44,6 +44,9 @@ rendering:
     canvas_width: 900
     canvas_height: 900
     panel_margin_px: 48
+    player_badge_height_px: 52
+    player_badge_width_px: 190
+    header_gap_px: 18
     max_board_size_px: 720
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
@@ -52,6 +55,7 @@ rendering:
     cell_line_width_px: 3
     marked_square_outline_width_px: 6
     disc_inset_fraction: 0.14
+    player_badge_font_size_px: 22
 prompt:
   shared:
     bundle_id: games_reversi_v1

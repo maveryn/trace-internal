@@ -1,0 +1,29 @@
+generation:
+  shared:
+    balanced_sampling: true
+  task_overrides:
+    task_illustrations__isometric_farmstead__terrain_elevation_extremum_label:
+      query_id_support:
+        - highest_terrain_tile
+        - lowest_terrain_tile
+      candidate_count_support:
+        - 6
+rendering:
+  shared:
+    canvas_profile_support:
+      - landscape
+      - square
+      - portrait
+
+prompt:
+  task_overrides:
+    task_illustrations__isometric_farmstead__terrain_elevation_extremum_label:
+      bundle_id: illustrations_isometric_farmstead_v0
+      scene_key: isometric_farmstead_elevation_canvas
+      task_key: terrain_elevation_extremum_label_task
+      json_output_contract: 'Return JSON with keys "annotation" and "answer".'
+      json_output_contract_answer_only: 'Return JSON with key "answer".'
+      answer_hint_terrain_elevation_extremum_label: set "answer" to the selected ground-tile letter
+      annotation_hint_terrain_elevation_extremum_label: set "annotation" to one [x0, y0, x1, y1] pixel bounding box around the selected terrain tile
+      json_example_terrain_elevation_extremum_label: '{"annotation":[420,260,486,294],"answer":"D"}'
+      json_example_answer_only_terrain_elevation_extremum_label: '{"answer":"D"}'

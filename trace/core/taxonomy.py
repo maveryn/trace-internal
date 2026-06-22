@@ -141,7 +141,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_charts__multiseries__ranked_change_extremum_label": _entry("charts", "multiseries", "charts", "multiseries"),
     "task_charts__multiseries__ranked_pair_ratio_extremum_label": _entry("charts", "multiseries", "charts", "multiseries"),
     "task_charts__multiseries__ranked_series_share_extremum_label": _entry("charts", "multiseries", "charts", "multiseries"),
-    "task_charts__multiseries__series_comparison_count": _entry("charts", "multiseries", "charts", "multiseries"),
     "task_charts__multiseries__series_rank_at_category_label": _entry("charts", "multiseries", "charts", "multiseries"),
     "task_charts__parallel_coords__all_crossings_between_adjacent_axes": _entry("charts", "parallel_coords", "charts", "parallel_coords"),
     "task_charts__parallel_coords__axis_condition_count": _entry("charts", "parallel_coords", "charts", "parallel_coords"),
@@ -913,6 +912,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     ),
     "task_illustrations__rpg_dungeon__missing_patch_label": _entry(
         "illustrations", "rpg_dungeon", "illustrations", "rpg_dungeon"
+    ),
+    "task_illustrations__isometric_farmstead__terrain_elevation_extremum_label": _entry(
+        "illustrations", "isometric_farmstead", "illustrations", "isometric_farmstead"
     ),
     "task_illustrations__transit_terminal__person_in_boarding_area_count": _entry(
         "illustrations", "transit_terminal", "illustrations", "counting"

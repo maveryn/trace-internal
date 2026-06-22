@@ -10,7 +10,8 @@ from trace.tasks.shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 
-from .profile_common import SCENE_ID, _Dataset, _PROMPT_DEFAULTS
+from .defaults import prompt_bundle_id
+from .state import RadarDataset, SCENE_ID
 
 
 DOMAIN = "charts"
@@ -30,9 +31,9 @@ OBJECT_DESCRIPTION_BY_VARIANT = {
 }
 
 
-def dynamic_slots(*, dataset: _Dataset) -> dict[str, Any]:
+def dynamic_slots(*, dataset: RadarDataset) -> dict[str, Any]:
     return {
-        "object_description": str(OBJECT_DESCRIPTION_BY_VARIANT[str(dataset.query.scene_variant)]),
+        "object_description": str(OBJECT_DESCRIPTION_BY_VARIANT[str(dataset.scene_variant)]),
         "metric_label": str(dataset.query.metric_label),
         "panel_label": str(dataset.query.panel_label),
         "profile_a_label": str(dataset.query.profile_a_label),
@@ -51,7 +52,7 @@ def build_prompt_artifacts(
     rendered_prompt = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
-        bundle_id=str(_PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
+        bundle_id=str(prompt_bundle_id() or PROMPT_BUNDLE_ID),
         scene_key=SCENE_PROMPT_KEY,
         task_key=TASK_PROMPT_KEY,
         query_key=str(prompt_query_key),

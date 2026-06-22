@@ -11,21 +11,28 @@ from .....core.visual.background import make_background_canvas
 from .....core.visual.noise import apply_post_image_noise
 from ....shared.render_variation import apply_layout_jitter_to_margins
 from ....shared.text_legibility import draw_text_traced
-from ....shared.text_rendering import fit_font_to_box, load_font
-from .profile_common import (
+from ....shared.text_rendering import fit_font_to_box, load_font, temporary_default_font_family
+from .defaults import (
     POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
-    TASK_ID,
+    RENDER_DEFAULTS,
+    bbox as round_bbox,
+    resolve_gen_int,
+    resolve_int,
+    resolve_rgb,
+    sample_chart_font_family,
+)
+from .state import (
     BBox,
     RGB,
-    _Dataset,
-    _RENDER_DEFAULTS,
-    _Rendered,
-    _bbox,
-    _palette,
-    _resolve_gen_int,
-    _resolve_int,
-    _resolve_rgb,
+    RadarDataset,
+    RadarPanel,
+    RadarProfile,
+    RadarRenderResult,
+    RenderedRadarScene,
+    SCENE_NAMESPACE,
+    SINGLE_PROFILE_SCENE_VARIANT,
+    SMALL_MULTIPLE_SCENE_VARIANT,
 )
 
 def _text_bbox(
@@ -38,10 +45,10 @@ def _text_bbox(
 ) -> List[float]:
     try:
         box = draw.textbbox((float(xy[0]), float(xy[1])), str(text), font=font, stroke_width=max(0, int(stroke_width)))
-        return _bbox(box)
+        return round_bbox(box)
     except Exception:
         width, height = draw.textsize(str(text), font=font)
-        return _bbox([float(xy[0]), float(xy[1]), float(xy[0]) + float(width), float(xy[1]) + float(height)])
+        return round_bbox([float(xy[0]), float(xy[1]), float(xy[0]) + float(width), float(xy[1]) + float(height)])
 
 def _center_text(
     draw: ImageDraw.ImageDraw,
@@ -126,24 +133,26 @@ def _draw_radar_panel(
     *,
     bbox: BBox,
     metrics: Sequence[str],
-    panel: _Panel,
+    panel: RadarPanel,
     params: Mapping[str, Any],
     max_value: int,
     show_title: bool,
     single_panel: bool,
     highlight_metric: str = "",
 ) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]], List[float]]:
+    """Draw one radar panel and return reusable mark projections."""
+
     x1, y1, x2, y2 = (float(value) for value in bbox)
-    text_rgb = _resolve_rgb(params, "text_rgb", (37, 45, 58))
-    muted_rgb = _resolve_rgb(params, "muted_text_rgb", (88, 99, 116))
-    grid_rgb = _resolve_rgb(params, "grid_rgb", (207, 214, 225))
-    spoke_rgb = _resolve_rgb(params, "spoke_rgb", (186, 196, 210))
-    query_spoke_rgb = _resolve_rgb(params, "query_spoke_rgb", (70, 91, 118))
-    query_metric_label_rgb = _resolve_rgb(params, "query_metric_label_rgb", (26, 54, 93))
-    panel_title_font = load_font(_resolve_int(params, "panel_title_font_size_px", 20), bold=True)
-    metric_font = load_font(_resolve_int(params, "metric_font_size_px", 15 if not bool(single_panel) else 18), bold=True)
-    tick_font = load_font(_resolve_int(params, "tick_font_size_px", 13 if not bool(single_panel) else 15), bold=False)
-    point_radius = float(_resolve_int(params, "point_radius_px", 6 if not bool(single_panel) else 8))
+    text_rgb = resolve_rgb(params, "text_rgb", (37, 45, 58))
+    muted_rgb = resolve_rgb(params, "muted_text_rgb", (88, 99, 116))
+    grid_rgb = resolve_rgb(params, "grid_rgb", (207, 214, 225))
+    spoke_rgb = resolve_rgb(params, "spoke_rgb", (186, 196, 210))
+    query_spoke_rgb = resolve_rgb(params, "query_spoke_rgb", (70, 91, 118))
+    query_metric_label_rgb = resolve_rgb(params, "query_metric_label_rgb", (26, 54, 93))
+    panel_title_font = load_font(resolve_int(params, "panel_title_font_size_px", 20), bold=True)
+    metric_font = load_font(resolve_int(params, "metric_font_size_px", 15 if not bool(single_panel) else 18), bold=True)
+    tick_font = load_font(resolve_int(params, "tick_font_size_px", 13 if not bool(single_panel) else 15), bold=False)
+    point_radius = float(resolve_int(params, "point_radius_px", 6 if not bool(single_panel) else 8))
     title_bbox = [float(x1), float(y1), float(x1), float(y1)]
     title_height = 0.0
     if bool(show_title) and str(panel.panel_label):
@@ -160,12 +169,12 @@ def _draw_radar_panel(
     radius = 0.5 * min(float(x2 - x1), float(content_bottom - content_top)) - float(label_pad)
     radius = max(54.0 if not bool(single_panel) else 160.0, float(radius))
 
-    ring_count = max(2, _resolve_int(params, "ring_count", 5))
+    ring_count = max(2, resolve_int(params, "ring_count", 5))
     for ring_index in range(1, int(ring_count) + 1):
         ring_value = int(round((float(max_value) * float(ring_index)) / float(ring_count)))
         ring_radius = float(radius) * (float(ring_value) / float(max(1, int(max_value))))
         points = _ring_points(center=center, radius=ring_radius, metrics=metrics)
-        draw.line([*points, points[0]], fill=grid_rgb, width=_resolve_int(params, "grid_line_width_px", 1))
+        draw.line([*points, points[0]], fill=grid_rgb, width=resolve_int(params, "grid_line_width_px", 1))
         if ring_index in {int(ring_count), max(1, int(ring_count) // 2)}:
             _center_text(
                 draw,
@@ -188,9 +197,9 @@ def _draw_radar_panel(
             [center, spoke_end],
             fill=query_spoke_rgb if bool(is_highlighted_metric) else spoke_rgb,
             width=(
-                _resolve_int(params, "query_spoke_width_px", 3)
+                resolve_int(params, "query_spoke_width_px", 3)
                 if bool(is_highlighted_metric)
-                else _resolve_int(params, "grid_line_width_px", 1)
+                else resolve_int(params, "grid_line_width_px", 1)
             ),
         )
         label_radius = float(radius) + (34.0 if bool(single_panel) else 24.0)
@@ -207,7 +216,7 @@ def _draw_radar_panel(
                 max_height=22,
                 bold=True,
                 min_size_px=10,
-                max_size_px=_resolve_int(params, "metric_font_size_px", 15),
+                max_size_px=resolve_int(params, "metric_font_size_px", 15),
                 fill_ratio=0.95,
             )
         _center_text(
@@ -235,7 +244,7 @@ def _draw_radar_panel(
             draw.line(
                 [*polygon, polygon[0]],
                 fill=tuple(int(value) for value in profile.color_rgb),
-                width=_resolve_int(params, "profile_line_width_px", 4),
+                width=resolve_int(params, "profile_line_width_px", 4),
             )
         for metric in metrics:
             cx, cy = points_by_metric[str(metric)]
@@ -249,15 +258,15 @@ def _draw_radar_panel(
                 marker_bbox,
                 fill=tuple(int(value) for value in profile.color_rgb),
                 outline=(255, 255, 255),
-                width=_resolve_int(params, "point_outline_width_px", 2),
+                width=resolve_int(params, "point_outline_width_px", 2),
             )
             point_id = f"{str(panel.panel_label)}|{str(profile.profile_label)}|{str(metric)}"
-            point_bboxes[str(point_id)] = _bbox(marker_bbox)
+            point_bboxes[str(point_id)] = round_bbox(marker_bbox)
             entities.append(
                 {
                     "entity_id": str(point_id),
                     "entity_type": "chart_radar_vertex",
-                    "bbox_px": _bbox(marker_bbox),
+                    "bbox_px": round_bbox(marker_bbox),
                     "attrs": {
                         "panel_label": str(panel.panel_label),
                         "profile_label": str(profile.profile_label),
@@ -272,12 +281,12 @@ def _draw_radar_panel(
 def _draw_legend(
     draw: ImageDraw.ImageDraw,
     *,
-    profiles: Sequence[_Profile],
+    profiles: Sequence[RadarProfile],
     params: Mapping[str, Any],
     origin: Tuple[float, float],
 ) -> Dict[str, List[float]]:
-    font = load_font(_resolve_int(params, "legend_font_size_px", 18), bold=True)
-    text_rgb = _resolve_rgb(params, "text_rgb", (37, 45, 58))
+    font = load_font(resolve_int(params, "legend_font_size_px", 18), bold=True)
+    text_rgb = resolve_rgb(params, "text_rgb", (37, 45, 58))
     legend_bboxes: Dict[str, List[float]] = {}
     x = float(origin[0])
     y = float(origin[1])
@@ -287,14 +296,16 @@ def _draw_legend(
         label_xy = (x + 32.0, y)
         draw_text_traced(draw, label_xy, str(profile.profile_label), font=font, fill=text_rgb, role="readout", required=False)
         text_box = _text_bbox(draw, label_xy, str(profile.profile_label), font)
-        legend_bboxes[str(profile.profile_label)] = _bbox([swatch[0], swatch[1], text_box[2], text_box[3]])
+        legend_bboxes[str(profile.profile_label)] = round_bbox([swatch[0], swatch[1], text_box[2], text_box[3]])
         x = float(text_box[2]) + 42.0
     return legend_bboxes
 
-def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_seed: int) -> _Rendered:
+def _render_dataset(dataset: RadarDataset, *, params: Mapping[str, Any], instance_seed: int) -> RenderedRadarScene:
+    """Render a complete radar chart scene without owning public task behavior."""
+
     params = {**dict(params), "_render_style_seed": int(instance_seed)}
-    canvas_width = _resolve_int(params, "canvas_width", 1600)
-    canvas_height = _resolve_int(params, "canvas_height", 1000)
+    canvas_width = resolve_int(params, "canvas_width", 1424)
+    canvas_height = resolve_int(params, "canvas_height", 888)
     background, background_meta = make_background_canvas(
         canvas_width=int(canvas_width),
         canvas_height=int(canvas_height),
@@ -304,26 +315,26 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
     )
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
-    outer = _resolve_int(params, "outer_margin_px", 42)
+    outer = resolve_int(params, "outer_margin_px", 42)
     margin_left, margin_right, margin_top, margin_bottom, layout_jitter_meta = apply_layout_jitter_to_margins(
         left_px=int(outer),
         right_px=int(outer),
         top_px=int(outer),
         bottom_px=int(outer),
         params=params,
-        defaults=_RENDER_DEFAULTS,
+        defaults=RENDER_DEFAULTS,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.layout",
+        namespace=f"{SCENE_NAMESPACE}.layout",
     )
-    title_band = _resolve_int(params, "title_band_height_px", 86)
-    panel_gap = _resolve_int(params, "panel_gap_px", 26)
-    panel_padding = _resolve_int(params, "panel_padding_px", 18)
-    panel_fill = _resolve_rgb(params, "panel_fill_rgb", (255, 255, 255))
-    panel_border = _resolve_rgb(params, "panel_border_rgb", (190, 199, 212))
-    text_rgb = _resolve_rgb(params, "text_rgb", (37, 45, 58))
-    muted_rgb = _resolve_rgb(params, "muted_text_rgb", (88, 99, 116))
-    title_font = load_font(_resolve_int(params, "title_font_size_px", 30), bold=True)
-    subtitle_font = load_font(_resolve_int(params, "subtitle_font_size_px", 18), bold=False)
+    title_band = resolve_int(params, "title_band_height_px", 86)
+    panel_gap = resolve_int(params, "panel_gap_px", 26)
+    panel_padding = resolve_int(params, "panel_padding_px", 18)
+    panel_fill = resolve_rgb(params, "panel_fill_rgb", (255, 255, 255))
+    panel_border = resolve_rgb(params, "panel_border_rgb", (190, 199, 212))
+    text_rgb = resolve_rgb(params, "text_rgb", (37, 45, 58))
+    muted_rgb = resolve_rgb(params, "muted_text_rgb", (88, 99, 116))
+    title_font = load_font(resolve_int(params, "title_font_size_px", 30), bold=True)
+    subtitle_font = load_font(resolve_int(params, "subtitle_font_size_px", 18), bold=False)
 
     draw_text_traced(
         draw,
@@ -352,9 +363,9 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
         float(canvas_width - margin_right),
         float(canvas_height - margin_bottom),
     ]
-    max_value = _resolve_gen_int(params, "value_max", 10)
+    max_value = resolve_gen_int(params, "value_max", 10)
 
-    if str(dataset.query.scene_variant) == "single_radar_multi_profile":
+    if str(dataset.scene_variant) == SINGLE_PROFILE_SCENE_VARIANT:
         legend_bboxes = _draw_legend(
             draw,
             profiles=dataset.panels[0].profiles,
@@ -367,10 +378,10 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
         px1, py1, px2, py2 = (float(value) for value in panel_bbox)
         draw.rounded_rectangle(
             [px1, py1, px2, py2],
-            radius=_resolve_int(params, "panel_corner_radius_px", 8),
+            radius=resolve_int(params, "panel_corner_radius_px", 8),
             fill=panel_fill,
             outline=panel_border,
-            width=_resolve_int(params, "panel_border_width_px", 2),
+            width=resolve_int(params, "panel_border_width_px", 2),
         )
         content_bbox = (
             px1 + float(panel_padding),
@@ -385,15 +396,11 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
             panel=panel,
             params=params,
             max_value=int(max_value),
-            show_title=str(dataset.query.scene_variant) == "small_multiple_radar",
-            single_panel=str(dataset.query.scene_variant) == "single_radar_multi_profile",
-            highlight_metric=(
-                str(dataset.query.metric_label)
-                if str(dataset.query.query_id) == "highlighted_metric_threshold_panel_count"
-                else ""
-            ),
+            show_title=str(dataset.scene_variant) == SMALL_MULTIPLE_SCENE_VARIANT,
+            single_panel=str(dataset.scene_variant) == SINGLE_PROFILE_SCENE_VARIANT,
+            highlight_metric=str(dataset.highlight_metric_label),
         )
-        panel_bboxes[str(panel.panel_label)] = _bbox(panel_bbox)
+        panel_bboxes[str(panel.panel_label)] = round_bbox(panel_bbox)
         if str(panel.panel_label):
             panel_title_bboxes[str(panel.panel_label)] = list(title_bbox)
         entities.extend(rendered_entities)
@@ -402,7 +409,7 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
             {
                 "entity_id": f"radar_panel_{str(panel.panel_label) or 'single'}",
                 "entity_type": "chart_radar_panel",
-                "bbox_px": _bbox(panel_bbox),
+                "bbox_px": round_bbox(panel_bbox),
                 "attrs": {
                     "panel_label": str(panel.panel_label),
                     "profile_count": int(len(panel.profiles)),
@@ -417,24 +424,35 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
         params=params,
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
-    return _Rendered(
+    return RenderedRadarScene(
         image=image,
         entities=tuple(entities),
         point_bboxes=dict(point_bboxes),
         panel_bboxes=dict(panel_bboxes),
         panel_title_bboxes=dict(panel_title_bboxes),
         legend_bboxes=dict(legend_bboxes),
-        plot_bbox_px=_bbox(plot_bbox),
+        plot_bbox_px=round_bbox(plot_bbox),
         render_meta={
             "background_style": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
             "layout_jitter": dict(layout_jitter_meta),
             "panel_bboxes_px": dict(panel_bboxes),
             "metric_labels": list(dataset.metrics),
-            "highlight_metric_label": (
-                str(dataset.query.metric_label)
-                if str(dataset.query.query_id) == "highlighted_metric_threshold_panel_count"
-                else ""
-            ),
+            "highlight_metric_label": str(dataset.highlight_metric_label),
         },
     )
+
+
+def render_radar_dataset(
+    *,
+    dataset: RadarDataset,
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> RadarRenderResult:
+    chart_font_family = sample_chart_font_family(int(instance_seed), params)
+    with temporary_default_font_family(str(chart_font_family)):
+        rendered_scene = _render_dataset(dataset, params=params, instance_seed=int(instance_seed))
+    return RadarRenderResult(rendered_scene=rendered_scene, chart_font_family=str(chart_font_family))
+
+
+__all__ = ["render_radar_dataset"]

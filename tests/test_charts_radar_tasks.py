@@ -6,7 +6,7 @@ from trace.tasks.charts.radar.highlighted_metric_threshold_panel_count import Ch
 from trace.tasks.charts.radar.matching_condition_panel_count import ChartsRadarMatchingConditionPanelCountTask
 from trace.tasks.charts.radar.profile_advantage_count import ChartsRadarProfileAdvantageCountTask
 from trace.tasks.charts.radar.threshold_metric_count_for_panel import ChartsRadarThresholdMetricCountForPanelTask
-CASES = ((ChartsRadarHighlightedMetricThresholdPanelCountTask, 'highlighted_metric_threshold_panel_count', 'bbox_set'), (ChartsRadarMatchingConditionPanelCountTask, 'matching_condition_panel_count', 'bbox_set'), (ChartsRadarThresholdMetricCountForPanelTask, 'threshold_metric_count_for_panel', 'point_set'), (ChartsRadarProfileAdvantageCountTask, 'profile_advantage_count', 'segment_set'))
+CASES = ((ChartsRadarHighlightedMetricThresholdPanelCountTask, 'bbox_set'), (ChartsRadarMatchingConditionPanelCountTask, 'bbox_set'), (ChartsRadarThresholdMetricCountForPanelTask, 'point_set'), (ChartsRadarProfileAdvantageCountTask, 'segment_set'))
 
 def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
     assert len(bbox) == 4
@@ -23,9 +23,9 @@ def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) 
 def _annotation_len(value) -> int:
     return len(value)
 
-@pytest.mark.parametrize(('task_cls', 'query_id', 'annotation_type'), CASES)
-def test_charts_radar_tasks_match_contract(task_cls: type, query_id: str, annotation_type: str) -> None:
-    out = task_cls().generate(94600 + len(query_id), params={'query_id': query_id}, max_attempts=120)
+@pytest.mark.parametrize(('task_cls', 'annotation_type'), CASES)
+def test_charts_radar_tasks_match_contract(task_cls: type, annotation_type: str) -> None:
+    out = task_cls().generate(94600, params={'query_id': 'single'}, max_attempts=120)
     trace = out.trace_payload
     render = trace['render_spec']
     projected = trace['projected_annotation']
@@ -33,7 +33,7 @@ def test_charts_radar_tasks_match_contract(task_cls: type, query_id: str, annota
     width = int(render['canvas_width'])
     height = int(render['canvas_height'])
     assert out.scene_id == 'radar'
-    assert out.query_id == query_id
+    assert out.query_id == 'single'
     assert out.answer_gt.type == 'integer'
     assert out.annotation_gt.type == annotation_type
     assert projected['type'] == annotation_type
@@ -59,8 +59,8 @@ def test_charts_radar_tasks_match_contract(task_cls: type, query_id: str, annota
                 _assert_point_inside_canvas([float(value) for value in point], width=width, height=height)
 
 def test_charts_radar_prompt_examples_match_annotation_contracts() -> None:
-    for task_cls, query_id, annotation_type in CASES:
-        out = task_cls().generate(94700 + len(query_id), params={'query_id': query_id}, max_attempts=120)
+    for task_cls, annotation_type in CASES:
+        out = task_cls().generate(94700, params={'query_id': 'single'}, max_attempts=120)
         example = extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
         answer_only = extract_prompt_json_example(out.prompt_variants['answer_only'])
         assert isinstance(example['answer'], int)

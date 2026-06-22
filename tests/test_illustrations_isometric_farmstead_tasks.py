@@ -37,11 +37,19 @@ def test_isometric_farmstead_renderer_is_deterministic_and_profile_safe() -> Non
         assert first.image.tobytes() == second.image.tobytes()
         assert first.trace["renderer_id"] == "isometric_farmstead_v0"
         assert first.trace["projection"]["type"] == "2:1_isometric"
-        assert first.trace["levels"] == list(SUPPORTED_LEVELS)
-        assert set(first.trace["level_tile_counts"]) == {"0", "1", "2", "3"}
-        assert all(int(first.trace["level_tile_counts"][str(level)]) > 0 for level in SUPPORTED_LEVELS)
-        assert {transition.lower_level for transition in first.transitions} == {0, 1, 2}
-        assert {transition.upper_level for transition in first.transitions} == {1, 2, 3}
+        assert first.trace["supported_levels"] == list(SUPPORTED_LEVELS)
+        active_levels = [int(level) for level in first.trace["levels"]]
+        assert active_levels[0] == 0
+        assert 1 <= int(first.trace["active_max_level"]) <= 3
+        assert active_levels == list(range(0, int(first.trace["active_max_level"]) + 1))
+        assert set(first.trace["level_tile_counts"]) == {str(level) for level in active_levels}
+        assert all(int(first.trace["level_tile_counts"][str(level)]) > 0 for level in active_levels)
+        assert first.trace["layout_family"]
+        assert first.trace["farm_patches"]
+        assert first.trace["context_object_counts"]["tree"] >= 1
+        assert first.trace["context_object_counts"]["domestic_animal"] >= 1
+        assert all(transition.upper_level in active_levels for transition in first.transitions)
+        assert all(transition.lower_level in active_levels for transition in first.transitions)
         assert first.trace["eligible_tile_ids"]
         for tile in first.tiles:
             _assert_bbox_inside_canvas(list(tile.bbox_xyxy), width=width, height=height)
@@ -62,13 +70,13 @@ def test_isometric_farmstead_elevation_task_contract() -> None:
     for query_id, profile, seed in cases:
         out = task.generate(
             seed,
-            params={"query_id": query_id, "canvas_profile": profile, "candidate_count": 6},
+            params={"query_id": query_id, "canvas_profile": profile, "candidate_count": 4},
             max_attempts=30,
         )
         assert out.scene_id == SCENE_ID
         assert out.query_id == query_id
         assert out.answer_gt.type == "option_letter"
-        assert out.answer_gt.value in {"A", "B", "C", "D", "E", "F"}
+        assert out.answer_gt.value in {"A", "B", "C", "D"}
         assert out.annotation_gt.type == "bbox"
         width, height = out.image.size
         _assert_bbox_inside_canvas(list(out.annotation_gt.value), width=width, height=height)
@@ -83,7 +91,7 @@ def test_isometric_farmstead_elevation_task_contract() -> None:
         assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
         assert trace["render_map"]["selected_label"] == out.answer_gt.value
         assert trace["render_map"]["selected_tile_bbox_px"] == out.annotation_gt.value
-        assert len(trace["render_map"]["candidate_tile_ids_by_label"]) == 6
+        assert len(trace["render_map"]["candidate_tile_ids_by_label"]) == 4
         levels = trace["render_map"]["candidate_levels_by_label"]
         selected_level = int(levels[str(out.answer_gt.value)])
         if query_id == "highest_terrain_tile":

@@ -7,7 +7,7 @@ generation:
         - highest_terrain_tile
         - lowest_terrain_tile
       candidate_count_support:
-        - 6
+        - 4
 rendering:
   shared:
     canvas_profile_support:

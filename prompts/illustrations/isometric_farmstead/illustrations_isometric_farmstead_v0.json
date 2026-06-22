@@ -44,11 +44,11 @@
   },
   "scene_templates": {
     "isometric_farmstead_elevation_canvas": [
-      "The image shows an isometric farmstead made of raised terrain tiles with visible side faces and several lettered ground tiles.",
-      "The scene shows a pixel-art isometric farm with stacked terrain levels, ramps or stairs, farm objects, and lettered ground tiles.",
+      "The image shows an isometric farmstead made of raised terrain tiles with visible side faces, farm animals or trees, and several lettered ground tiles.",
+      "The scene shows a pixel-art isometric farm with varied terrain levels, connected farm patches, farm animals or trees, and lettered ground tiles.",
       "The picture shows an isometric farmstead where terrain tiles sit at different elevations and some ground tiles are labeled with letters.",
-      "The canvas contains an isometric farm scene with multiple terrain heights and lettered candidate ground tiles.",
-      "This illustration shows a farmstead drawn on isometric tiles, with raised ground levels and lettered terrain tiles."
+      "The canvas contains an isometric farm scene with multiple terrain heights, farm context objects, and lettered candidate ground tiles.",
+      "This illustration shows a farmstead drawn on isometric tiles, with raised ground levels, connected farm areas, and lettered terrain tiles."
     ]
   },
   "query_templates": {

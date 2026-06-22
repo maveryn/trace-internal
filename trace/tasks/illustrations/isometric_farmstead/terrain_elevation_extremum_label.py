@@ -114,7 +114,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         defaults=_GEN_DEFAULTS,
         support_key="candidate_count_support",
         explicit_key="candidate_count",
-        fallback=(6,),
+        fallback=(4,),
         namespace=f"{TASK_ID}:candidate_count",
     )
     if candidate_count > len(DEFAULT_CANDIDATE_LABELS):
@@ -170,12 +170,15 @@ def _label_clear_of_context(scene: IsoFarmsteadScene, tile: IsoFarmsteadTile) ->
 
 def _eligible_tiles_by_level(scene: IsoFarmsteadScene) -> dict[int, list[IsoFarmsteadTile]]:
     eligible_ids = {str(value) for value in scene.trace.get("eligible_tile_ids", [])}
-    by_level: dict[int, list[IsoFarmsteadTile]] = {int(level): [] for level in SUPPORTED_LEVELS}
+    active_levels = tuple(int(level) for level in scene.trace.get("levels", SUPPORTED_LEVELS))
+    by_level: dict[int, list[IsoFarmsteadTile]] = {int(level): [] for level in active_levels}
     width, height = scene.image.size
     for tile in scene.tiles:
         if str(tile.tile_id) not in eligible_ids:
             continue
-        if str(tile.terrain) in {"crop", "soil"}:
+        if not bool(tile.metadata.get("candidate_allowed", False)):
+            continue
+        if str(tile.terrain) != "grass":
             continue
         if not _tile_inside_canvas(tile, width=width, height=height):
             continue
@@ -195,12 +198,15 @@ def _select_candidate_tiles(
     """Select one unique elevation-extremum tile plus distractor tiles."""
 
     by_level = _eligible_tiles_by_level(scene)
+    active_levels = tuple(level for level in sorted(by_level) if by_level[level])
+    if len(active_levels) < 2:
+        raise ValueError("not enough active elevation levels with eligible candidate tiles")
     if str(selected_query) == "highest_terrain_tile":
-        target_level = max(SUPPORTED_LEVELS)
-        distractor_levels = [level for level in SUPPORTED_LEVELS if int(level) < int(target_level)]
+        target_level = max(active_levels)
+        distractor_levels = [level for level in active_levels if int(level) < int(target_level)]
     elif str(selected_query) == "lowest_terrain_tile":
-        target_level = min(SUPPORTED_LEVELS)
-        distractor_levels = [level for level in SUPPORTED_LEVELS if int(level) > int(target_level)]
+        target_level = min(active_levels)
+        distractor_levels = [level for level in active_levels if int(level) > int(target_level)]
     else:
         raise ValueError(f"unsupported elevation query: {selected_query}")
 
@@ -214,11 +220,13 @@ def _select_candidate_tiles(
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}:candidate_tiles:{selected_query}")
     answer_tile = rng.choice(answer_pool)
     rng.shuffle(distractor_pool)
-    chosen = [answer_tile, *distractor_pool[: int(candidate_count) - 1]]
-    rng.shuffle(chosen)
     labels = list(DEFAULT_CANDIDATE_LABELS[: int(candidate_count)])
-    candidate_tile_ids_by_label = {str(label): str(tile.tile_id) for label, tile in zip(labels, chosen)}
-    selected_label = next(str(label) for label, tile_id in candidate_tile_ids_by_label.items() if str(tile_id) == str(answer_tile.tile_id))
+    selected_label = str(labels[int(instance_seed) % int(candidate_count)])
+    distractor_labels = [str(label) for label in labels if str(label) != selected_label]
+    candidate_tile_ids_by_label = {selected_label: str(answer_tile.tile_id)}
+    for label, tile in zip(distractor_labels, distractor_pool[: int(candidate_count) - 1]):
+        candidate_tile_ids_by_label[str(label)] = str(tile.tile_id)
+    candidate_tile_ids_by_label = {str(label): str(candidate_tile_ids_by_label[str(label)]) for label in labels}
     return candidate_tile_ids_by_label, selected_label
 
 

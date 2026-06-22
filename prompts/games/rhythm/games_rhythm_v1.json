@@ -30,11 +30,11 @@
         "Count all visible note objects in lane {selected_lane_label}."
       ],
       "lane_note_score_value": [
-        "{score_palette_rule_text} Look only at lane {selected_lane_label}. What is the total score of its note objects?",
-        "Use the score palette beside the board: each note scores the number shown for its color. Look only at lane {selected_lane_label}. A long vertical note counts once. What is the total note score?",
-        "{score_palette_rule_text} Add the color scores for all note objects in lane {selected_lane_label}.",
-        "For lane {selected_lane_label}, use the side palette to score each visible note by color. A long vertical note counts once. What is the sum?",
-        "Using the side score palette, look only at lane {selected_lane_label} and add the values for its note colors. A long vertical note counts once. What total score does that lane have?"
+        "Look only at lane {selected_lane_label}. Use the side score palette to score each note by color. A long vertical note counts once. What is the total score?",
+        "In lane {selected_lane_label}, each note is worth the number shown for its color in the side score palette. A long vertical note counts once. What is the total score?",
+        "Use the side score palette. Add the score for each note object in lane {selected_lane_label}. A long vertical note counts once. What total do you get?",
+        "Only consider lane {selected_lane_label}. For each note object, use the side score palette value for that note's color. A long vertical note counts once. What is the sum?",
+        "What is the total score for lane {selected_lane_label}? Use the side score palette value for each note object. A long vertical note counts once."
       ],
       "most_notes_lane_label": [
         "Which lane number has the most note objects?",

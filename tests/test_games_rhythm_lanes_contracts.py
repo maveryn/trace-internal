@@ -97,8 +97,10 @@ def test_games_rhythm_lane_note_score_value_matches_trace() -> None:
     assert set(execution["annotation_entity_ids"]) == {str(note["note_id"]) for note in expected}
     assert len(out.annotation_gt.value) == len(expected)
     assert out.trace_payload["render_map"]["score_palette"]["values_by_color"] == score_values
-    assert "each note scores the number shown for its color" in out.prompt
+    assert "side score palette" in out.prompt
+    assert f"lane {execution['selected_lane_label']}" in out.prompt
     assert "long vertical note counts once" in out.prompt
+    assert "add the values for its note colors" not in out.prompt
     assert '"answer":7' in out.prompt
 
 

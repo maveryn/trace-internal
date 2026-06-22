@@ -18,8 +18,8 @@ class RuleOverrideBoardDefaults:
     target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
     line_board_size_support: Tuple[int, ...] = (3, 4)
     piece_board_size_support: Tuple[int, ...] = (4, 5)
-    canvas_width: int = 1040
-    canvas_height: int = 760
+    min_canvas_width_px: int = 520
+    min_canvas_height_px: int = 420
     cell_size_px: int = 56
     board_gap_px: int = 22
     board_padding_px: int = 14

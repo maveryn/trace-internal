@@ -98,8 +98,10 @@ def resolve_render_params(
     content_w = (int(cols) * int(board_panel_w)) + ((int(cols) - 1) * int(board_gap))
     content_h = (int(rows) * int(board_panel_h)) + ((int(rows) - 1) * int(board_gap))
     content_margin = int(group_default(render_defaults, "content_margin_px", DEFAULTS.content_margin_px))
-    canvas_width = int(params.get("canvas_width", max(DEFAULTS.canvas_width, content_w + (2 * content_margin))))
-    canvas_height = int(params.get("canvas_height", max(DEFAULTS.canvas_height, content_h + (2 * content_margin))))
+    min_canvas_width = int(group_default(render_defaults, "min_canvas_width_px", DEFAULTS.min_canvas_width_px))
+    min_canvas_height = int(group_default(render_defaults, "min_canvas_height_px", DEFAULTS.min_canvas_height_px))
+    canvas_width = int(params.get("canvas_width", max(min_canvas_width, content_w + (2 * content_margin))))
+    canvas_height = int(params.get("canvas_height", max(min_canvas_height, content_h + (2 * content_margin))))
     font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),

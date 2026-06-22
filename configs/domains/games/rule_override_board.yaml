@@ -37,8 +37,8 @@ generation:
     - 5
 rendering:
   shared:
-    canvas_width: 1040
-    canvas_height: 760
+    min_canvas_width_px: 520
+    min_canvas_height_px: 420
     cell_size_px: 56
     board_gap_px: 22
     board_padding_px: 14

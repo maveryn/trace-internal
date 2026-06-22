@@ -168,11 +168,57 @@ def _label_clear_of_context(scene: IsoFarmsteadScene, tile: IsoFarmsteadTile) ->
     return not any(_boxes_intersect(label_box, entity.bbox_xyxy, pad=8.0) for entity in scene.entities)
 
 
+def _same_level_component_sizes(scene: IsoFarmsteadScene) -> dict[str, int]:
+    tiles_by_cell = {(int(tile.col), int(tile.row)): tile for tile in scene.tiles}
+    component_sizes: dict[str, int] = {}
+    visited: set[str] = set()
+    for tile in scene.tiles:
+        if str(tile.tile_id) in visited:
+            continue
+        stack = [tile]
+        component: list[IsoFarmsteadTile] = []
+        visited.add(str(tile.tile_id))
+        while stack:
+            current = stack.pop()
+            component.append(current)
+            for delta_col, delta_row in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                neighbor = tiles_by_cell.get((int(current.col) + delta_col, int(current.row) + delta_row))
+                if neighbor is None:
+                    continue
+                if int(neighbor.level) != int(current.level):
+                    continue
+                if str(neighbor.tile_id) in visited:
+                    continue
+                visited.add(str(neighbor.tile_id))
+                stack.append(neighbor)
+        size = len(component)
+        for component_tile in component:
+            component_sizes[str(component_tile.tile_id)] = int(size)
+    return component_sizes
+
+
+def _has_same_level_neighbor_support(
+    tiles_by_cell: Mapping[tuple[int, int], IsoFarmsteadTile],
+    tile: IsoFarmsteadTile,
+) -> bool:
+    has_horizontal = False
+    has_vertical = False
+    for delta_col, delta_row in ((1, 0), (-1, 0)):
+        neighbor = tiles_by_cell.get((int(tile.col) + delta_col, int(tile.row) + delta_row))
+        has_horizontal = has_horizontal or (neighbor is not None and int(neighbor.level) == int(tile.level))
+    for delta_col, delta_row in ((0, 1), (0, -1)):
+        neighbor = tiles_by_cell.get((int(tile.col) + delta_col, int(tile.row) + delta_row))
+        has_vertical = has_vertical or (neighbor is not None and int(neighbor.level) == int(tile.level))
+    return bool(has_horizontal and has_vertical)
+
+
 def _eligible_tiles_by_level(scene: IsoFarmsteadScene) -> dict[int, list[IsoFarmsteadTile]]:
     eligible_ids = {str(value) for value in scene.trace.get("eligible_tile_ids", [])}
     active_levels = tuple(int(level) for level in scene.trace.get("levels", SUPPORTED_LEVELS))
     by_level: dict[int, list[IsoFarmsteadTile]] = {int(level): [] for level in active_levels}
     width, height = scene.image.size
+    tiles_by_cell = {(int(tile.col), int(tile.row)): tile for tile in scene.tiles}
+    component_sizes = _same_level_component_sizes(scene)
     for tile in scene.tiles:
         if str(tile.tile_id) not in eligible_ids:
             continue
@@ -184,8 +230,17 @@ def _eligible_tiles_by_level(scene: IsoFarmsteadScene) -> dict[int, list[IsoFarm
             continue
         if not _label_clear_of_context(scene, tile):
             continue
+        if int(component_sizes.get(str(tile.tile_id), 0)) < 6:
+            continue
+        if not _has_same_level_neighbor_support(tiles_by_cell, tile):
+            continue
         by_level[int(tile.level)].append(tile)
     return {level: sorted(tiles, key=lambda item: (item.row, item.col)) for level, tiles in by_level.items()}
+
+
+def _label_clear_of_candidate_tiles(candidate_tiles: Sequence[IsoFarmsteadTile], tile: IsoFarmsteadTile) -> bool:
+    label_box = _label_box_for_tile(tile)
+    return not any(_boxes_intersect(label_box, _label_box_for_tile(candidate), pad=6.0) for candidate in candidate_tiles)
 
 
 def _select_candidate_tiles(
@@ -218,13 +273,29 @@ def _select_candidate_tiles(
         raise ValueError("not enough eligible elevation distractor tiles")
 
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}:candidate_tiles:{selected_query}")
-    answer_tile = rng.choice(answer_pool)
+    rng.shuffle(answer_pool)
     rng.shuffle(distractor_pool)
+    selected_tiles: list[IsoFarmsteadTile] | None = None
+    for answer_tile in answer_pool:
+        candidate_tiles = [answer_tile]
+        for tile in distractor_pool:
+            if str(tile.tile_id) == str(answer_tile.tile_id):
+                continue
+            if not _label_clear_of_candidate_tiles(candidate_tiles, tile):
+                continue
+            candidate_tiles.append(tile)
+            if len(candidate_tiles) >= int(candidate_count):
+                break
+        if len(candidate_tiles) >= int(candidate_count):
+            selected_tiles = candidate_tiles
+            break
+    if selected_tiles is None:
+        raise ValueError("not enough label-separated candidate tiles")
     labels = list(DEFAULT_CANDIDATE_LABELS[: int(candidate_count)])
     selected_label = str(labels[int(instance_seed) % int(candidate_count)])
     distractor_labels = [str(label) for label in labels if str(label) != selected_label]
-    candidate_tile_ids_by_label = {selected_label: str(answer_tile.tile_id)}
-    for label, tile in zip(distractor_labels, distractor_pool[: int(candidate_count) - 1]):
+    candidate_tile_ids_by_label = {selected_label: str(selected_tiles[0].tile_id)}
+    for label, tile in zip(distractor_labels, selected_tiles[1:]):
         candidate_tile_ids_by_label[str(label)] = str(tile.tile_id)
     candidate_tile_ids_by_label = {str(label): str(candidate_tile_ids_by_label[str(label)]) for label in labels}
     return candidate_tile_ids_by_label, selected_label

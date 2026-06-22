@@ -26,15 +26,13 @@ SCENE_ID = "isometric_farmstead"
 RENDERER_ID = "isometric_farmstead_v0"
 RENDERER_STYLE = "isometric_pixel_farmstead"
 SUPPORTED_LEVELS: tuple[int, ...] = (0, 1, 2, 3)
-ACTIVE_MAX_LEVEL_SUPPORT: tuple[int, ...] = (1, 2, 3)
+ACTIVE_MAX_LEVEL_SUPPORT: tuple[int, ...] = (1, 2)
 DEFAULT_CANDIDATE_LABELS: tuple[str, ...] = ("A", "B", "C", "D")
 LAYOUT_FAMILIES: tuple[str, ...] = (
     "concentric_terrace",
     "side_plateau",
     "corner_plateau",
-    "diagonal_ridge",
     "split_field",
-    "stepped_hillside",
 )
 FARM_PATCH_TERRAINS: tuple[str, ...] = ("crop", "soil", "flower", "pasture")
 TREE_STYLES: tuple[str, ...] = ("oak", "pine", "maple", "fruit_tree")
@@ -121,7 +119,7 @@ def _apply_rect(grid: dict[tuple[int, int], int], rect: TileRect, *, level: int,
 
 
 def _sample_active_max_level(rng: random.Random) -> int:
-    return int(rng.choice((1, 2, 2, 3, 3)))
+    return int(rng.choice((1, 2, 2)))
 
 
 def _sample_layout_family(rng: random.Random) -> str:
@@ -209,61 +207,6 @@ def _make_split_rects(rng: random.Random, *, cols: int, rows: int, active_max_le
     return rects
 
 
-def _score_for_direction(col: int, row: int, *, cols: int, rows: int, direction: str) -> float:
-    if direction == "nw":
-        return float((cols - 1 - col) + (rows - 1 - row))
-    if direction == "ne":
-        return float(col + (rows - 1 - row))
-    if direction == "sw":
-        return float((cols - 1 - col) + row)
-    return float(col + row)
-
-
-def _make_banded_grid(
-    *,
-    rng: random.Random,
-    cols: int,
-    rows: int,
-    active_max_level: int,
-    family: str,
-) -> tuple[dict[tuple[int, int], int], dict[int, list[TileRect]]]:
-    """Build diagonal or side-stepped elevation bands while preserving every active level."""
-
-    direction = rng.choice(("nw", "ne", "sw", "se"))
-    scores = {
-        (col, row): _score_for_direction(col, row, cols=cols, rows=rows, direction=direction)
-        for row in range(int(rows))
-        for col in range(int(cols))
-    }
-    min_score = min(scores.values())
-    max_score = max(scores.values())
-    span = max(1.0, max_score - min_score)
-    grid = _blank_level_grid(cols=cols, rows=rows)
-    for cell, score in scores.items():
-        normalized = (float(score) - float(min_score)) / span
-        if str(family) == "stepped_hillside":
-            normalized = round(normalized * (int(active_max_level) + 1)) / float(int(active_max_level) + 1)
-        level = min(int(active_max_level), int(normalized * (int(active_max_level) + 1)))
-        grid[cell] = max(0, int(level))
-    shapes = {
-        level: [
-            (
-                min(col for (col, row), value in grid.items() if int(value) == int(level)),
-                min(row for (col, row), value in grid.items() if int(value) == int(level)),
-                max(col for (col, row), value in grid.items() if int(value) == int(level))
-                - min(col for (col, row), value in grid.items() if int(value) == int(level))
-                + 1,
-                max(row for (col, row), value in grid.items() if int(value) == int(level))
-                - min(row for (col, row), value in grid.items() if int(value) == int(level))
-                + 1,
-            )
-        ]
-        for level in range(1, int(active_max_level) + 1)
-        if any(int(value) == int(level) for value in grid.values())
-    }
-    return grid, shapes
-
-
 def _make_level_grid(
     rng: random.Random,
     *,
@@ -272,14 +215,6 @@ def _make_level_grid(
     active_max_level: int,
     layout_family: str,
 ) -> tuple[dict[tuple[int, int], int], dict[int, list[TileRect]]]:
-    if str(layout_family) in {"diagonal_ridge", "stepped_hillside"}:
-        return _make_banded_grid(
-            rng=rng,
-            cols=int(cols),
-            rows=int(rows),
-            active_max_level=int(active_max_level),
-            family=str(layout_family),
-        )
     if str(layout_family) == "side_plateau":
         rects = _make_side_rects(rng, cols=int(cols), rows=int(rows), active_max_level=int(active_max_level))
     elif str(layout_family) == "corner_plateau":

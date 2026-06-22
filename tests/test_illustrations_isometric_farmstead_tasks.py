@@ -40,11 +40,11 @@ def test_isometric_farmstead_renderer_is_deterministic_and_profile_safe() -> Non
         assert first.trace["supported_levels"] == list(SUPPORTED_LEVELS)
         active_levels = [int(level) for level in first.trace["levels"]]
         assert active_levels[0] == 0
-        assert 1 <= int(first.trace["active_max_level"]) <= 3
+        assert 1 <= int(first.trace["active_max_level"]) <= 2
         assert active_levels == list(range(0, int(first.trace["active_max_level"]) + 1))
         assert set(first.trace["level_tile_counts"]) == {str(level) for level in active_levels}
         assert all(int(first.trace["level_tile_counts"][str(level)]) > 0 for level in active_levels)
-        assert first.trace["layout_family"]
+        assert first.trace["layout_family"] not in {"diagonal_ridge", "stepped_hillside"}
         assert first.trace["farm_patches"]
         assert first.trace["context_object_counts"]["tree"] >= 1
         assert first.trace["context_object_counts"]["domestic_animal"] >= 1

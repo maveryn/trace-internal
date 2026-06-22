@@ -7,7 +7,7 @@
 - Implementation source: `trace/tasks/illustrations/isometric_farmstead/terrain_elevation_extremum_label.py`
 
 ## Task Contract
-Selects the lettered terrain tile at the requested elevation extremum in an isometric farmstead scene. Each scene samples an active elevation range from `0..1`, `0..2`, or `0..3`.
+Selects the lettered terrain tile at the requested elevation extremum in an isometric farmstead scene. Each scene samples an active elevation range from `0..1` or `0..2`.
 
 ## Program Contract
 `select(label, extremum(level(tile), mode=highest|lowest), tile in lettered_ground_tiles); scene=isometric_farmstead; scope=terrain_elevation_extremum_label`
@@ -24,8 +24,8 @@ Selects the lettered terrain tile at the requested elevation extremum in an isom
 - Base program contract: `select(label, extremum(level(tile), mode=highest|lowest), tile in lettered_ground_tiles); scene=isometric_farmstead; scope=terrain_elevation_extremum_label`
 - Parameter axes: `canvas_profile`, `candidate_count=4`, `candidate_tile_ids`, `active_level_range`, `layout_family`, `terrain_level`, `extremum_mode`
 - Arguments:
-  - `tile`: visible lettered terrain tile; allowed generated candidate terrain tiles not occupied by farm objects or transitions; source `scene_ir.tiles`
-  - `level`: integer terrain elevation; allowed active subset of `0|1|2|3`; source `scene_ir.tiles`
+  - `tile`: visible lettered terrain tile; allowed generated candidate terrain tiles are plain grass tiles not occupied by farm objects or transitions, inside a same-level connected terrain region of at least six tiles, and supported by same-level neighbors on both grid axes; source `scene_ir.tiles`
+  - `level`: integer terrain elevation; allowed active subset of `0|1|2`; source `scene_ir.tiles`
   - `mode`: extremum operator; allowed `highest|lowest`; source `query_id`
 - Argument metadata status: `curated`
 - Supported query ids: `highest_terrain_tile`, `lowest_terrain_tile`

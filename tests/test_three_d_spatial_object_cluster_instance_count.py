@@ -53,14 +53,12 @@ COUNTQA_CLUSTER_ADDITIONS = {
     "chess_piece",
     "light_bulb",
     "egg",
-    "chili",
     "paint_brush",
     "straw",
     "ticket",
     "marble",
     "bead",
     "bolt",
-    "pillow",
     "cushion",
     "stool",
     "bucket",
@@ -72,7 +70,7 @@ COUNTQA_CLUSTER_ADDITIONS = {
     "tape_roll",
     "bag",
 }
-REMOVED_OBJECT_CLUSTER_SHAPE_TYPES = {"coffee_bean", "dot", "glass", "heater"}
+REMOVED_OBJECT_CLUSTER_SHAPE_TYPES = {"chili", "coffee_bean", "dot", "glass", "heater", "paper_clip", "pillow"}
 
 
 def _renderer_function_for_shape(shape_type: str) -> str:
@@ -477,7 +475,6 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
         "ticket",
         "marble",
         "bead",
-        "pillow",
         "cushion",
         "stool",
         "bucket",

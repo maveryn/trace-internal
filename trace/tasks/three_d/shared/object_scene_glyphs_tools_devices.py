@@ -1141,8 +1141,8 @@ def _draw_socket_object(
     plate = _project_local_xy_rect(spec, camera, frame, u0=0.14, v0=0.16, u1=0.86, v1=0.84, z_frac=1.06)
     _draw_polyline(draw, plate, fill=(56, 64, 73), width=1)
     bboxes: List[List[float]] = [bbox, _bbox_from_screen_points(plate)]
-    for u in (0.33, 0.50, 0.67):
-        slot = _project_local_xy_rect(spec, camera, frame, u0=u - 0.040, v0=0.34, u1=u + 0.040, v1=0.66, z_frac=1.08)
+    for u in (0.40, 0.60):
+        slot = _project_local_xy_rect(spec, camera, frame, u0=u - 0.045, v0=0.34, u1=u + 0.045, v1=0.66, z_frac=1.08)
         draw.polygon(slot, fill=(38, 45, 54), outline=(24, 30, 36))
         bboxes.append(_bbox_from_screen_points(slot))
     for v in (0.25, 0.75):

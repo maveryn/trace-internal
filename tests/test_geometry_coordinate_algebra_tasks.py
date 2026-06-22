@@ -128,6 +128,7 @@ def test_transformed_point_task_has_unique_candidate_answer(task_id: str, query_
         point_s = execution["known_points_by_label"]["S"]["point_graph"]
         expected = [source[0] + point_s[0] - point_r[0], source[1] + point_s[1] - point_r[1]]
         assert target == expected
+        assert trace["render_spec"]["marker_style"]["guide_arrow_head_length_px"] >= 20
     elif query_id == "reflect_over_vertical_line":
         line_value = int(execution["transform_line"]["value"])
         assert execution["transform_line"]["axis"] == "x"

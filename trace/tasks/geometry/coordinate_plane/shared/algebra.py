@@ -660,9 +660,11 @@ def _draw_guide_segments(
     segments: Sequence[GuideSegment],
     color: Color,
     width_px: int,
+    arrow_head_length_px: int,
 ) -> None:
     scale = int(context.scene_scale)
     line_width = max(2, int(width_px))
+    arrow_head_length = max(12.0 * float(scale), float(arrow_head_length_px))
     for start_label, end_label, style in segments:
         if str(start_label) not in points_by_label or str(end_label) not in points_by_label:
             continue
@@ -678,15 +680,14 @@ def _draw_guide_segments(
         if str(style) != "arrow":
             continue
         angle = math.atan2(float(end_px[1]) - float(start_px[1]), float(end_px[0]) - float(start_px[0]))
-        arrow_len = 12.0 * float(scale)
         wing = math.pi / 7.0
         p1 = (
-            float(end_px[0]) - (arrow_len * math.cos(angle - wing)),
-            float(end_px[1]) - (arrow_len * math.sin(angle - wing)),
+            float(end_px[0]) - (arrow_head_length * math.cos(angle - wing)),
+            float(end_px[1]) - (arrow_head_length * math.sin(angle - wing)),
         )
         p2 = (
-            float(end_px[0]) - (arrow_len * math.cos(angle + wing)),
-            float(end_px[1]) - (arrow_len * math.sin(angle + wing)),
+            float(end_px[0]) - (arrow_head_length * math.cos(angle + wing)),
+            float(end_px[1]) - (arrow_head_length * math.sin(angle + wing)),
         )
         draw.polygon([end_px, p1, p2], fill=color)
 
@@ -781,6 +782,7 @@ def _render_scene(
     is_rotation_operation = str(problem.operation_key) in ROTATION_OPERATIONS
     guide_color = (202, 45, 55) if is_rotation_operation else (94, 103, 118)
     guide_segment_width_px = max(2, (6 if is_rotation_operation else 2) * int(context.scene_scale))
+    guide_arrow_head_length_px = 20 * int(context.scene_scale)
 
     if problem.transform_line is not None:
         _draw_dashed_axis_line(
@@ -799,6 +801,7 @@ def _render_scene(
             segments=problem.guide_segments,
             color=guide_color,
             width_px=int(guide_segment_width_px),
+            arrow_head_length_px=int(guide_arrow_head_length_px),
         )
     label_box_bbox = None
     if problem.transform_text:
@@ -904,6 +907,7 @@ def _render_scene(
         "transform_axis_width_px": int(round(float(transform_axis_width_px) / float(context.scene_scale))),
         "guide_segment_color": list(guide_color),
         "guide_segment_width_px": int(round(float(guide_segment_width_px) / float(context.scene_scale))),
+        "guide_arrow_head_length_px": int(round(float(guide_arrow_head_length_px) / float(context.scene_scale))),
         **dict(color_meta),
     }
     return _RenderedScene(

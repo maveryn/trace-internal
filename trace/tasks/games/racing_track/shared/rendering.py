@@ -22,7 +22,7 @@ from ...shared.scene_style import (
     draw_panel_scene_chrome,
     game_panel_scene_style_metadata,
 )
-from ...shared.text import draw_game_text_traced
+from ...shared.text import draw_centered_game_text_traced
 
 
 Color = Tuple[int, int, int]
@@ -339,16 +339,12 @@ def _draw_car(
     )
     draw.ellipse(label_bbox, fill=theme.label_fill_rgb, outline=theme.car_outline_rgb, width=2)
     font = load_font(int(params.label_font_size_px), bold=True, font_family=str(params.font_family or "") or None)
-    text_bbox = draw.textbbox((0, 0), str(car.label), font=font)
-    text_w = float(text_bbox[2] - text_bbox[0])
-    text_h = float(text_bbox[3] - text_bbox[1])
-    text_xy = (cx - (text_w * 0.5), cy - (text_h * 0.58))
-    draw_game_text_traced(
+    draw_centered_game_text_traced(
         draw,
-        text_xy,
-        str(car.label),
+        center=(cx, cy),
+        text=str(car.label),
         font=font,
-        fill=theme.label_text_rgb,
+        fill_rgb=theme.label_text_rgb,
         role="car_label",
         required=True,
         surface_rgbs=(theme.label_fill_rgb,),

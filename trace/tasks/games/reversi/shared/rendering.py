@@ -305,6 +305,7 @@ def render_reversi_board_scene(
                     role="marked_square_outline",
                     surface_rgbs=(theme.board_fill_rgb,),
                     preferred_rgbs=(theme.marked_square_outline_rgb,),
+                    candidate_rgbs=(theme.marked_square_outline_rgb,),
                 )
                 draw_semantic_bbox_marker(
                     draw,

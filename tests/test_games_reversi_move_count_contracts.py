@@ -12,7 +12,7 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.reversi.legal_destination_count import GamesReversiLegalDestinationCountTask
 from trace.tasks.games.reversi.shared.rules import frontier_disc_coords
 from trace.tasks.games.reversi.shared.state import BLACK, WHITE
-from trace.tasks.games.shared.style import SUPPORTED_REVERSI_STYLE_VARIANTS
+from trace.tasks.games.shared.style import SUPPORTED_REVERSI_STYLE_VARIANTS, build_games_reversi_theme
 from trace.tasks.registry import create_task
 from tests.helpers import read_jsonl
 
@@ -73,6 +73,10 @@ def test_games_reversi_marked_move_keeps_annotation_on_flipped_discs() -> None:
     assert len(execution["marked_move_flip_coords"]) == 4
     assert out.annotation_gt.type == "point_set"
     assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    marker_records = trace["render_spec"]["drawn_markers"]["marker_legibility"]["records"]
+    expected_red = build_games_reversi_theme(style_variant=str(execution["style_variant"])).marked_square_outline_rgb
+    assert len(marker_records) == 1
+    assert marker_records[0]["inner_rgb"] == list(expected_red)
 
 
 @pytest.mark.parametrize(

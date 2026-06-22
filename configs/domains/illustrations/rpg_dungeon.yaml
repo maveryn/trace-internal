@@ -43,6 +43,31 @@ generation:
         - 3
         - 4
         - 5
+    task_illustrations__rpg_dungeon__rotated_tile_label:
+      query_id_support:
+        - single
+      source_chest_count_min: 5
+      source_chest_count_max: 6
+      source_monster_count_support:
+        - 1
+        - 2
+        - 3
+      rotation_degrees_support:
+        - 90
+        - 270
+      min_tile_detail_score: 80.0
+      min_rotation_delta: 6.0
+    task_illustrations__rpg_dungeon__swapped_tile_pair_label:
+      query_id_support:
+        - single
+      source_chest_count_min: 5
+      source_chest_count_max: 6
+      source_monster_count_support:
+        - 1
+        - 2
+        - 3
+      min_tile_detail_score: 80.0
+      min_pair_difference: 6.0
 
 rendering:
   shared:
@@ -80,3 +105,23 @@ prompt:
       annotation_hint_rpg_dungeon_safe_reachable_chest_count: set "annotation" to an object with keys "player" and "counted_chests"; "player" contains one [x0, y0, x1, y1] bounding box around the player, and "counted_chests" contains one [x0, y0, x1, y1] bounding box around each counted chest
       json_example_rpg_dungeon_safe_reachable_chest_count: '{"annotation":{"player":[[396,336,444,384]],"counted_chests":[[236,156,284,204],[596,156,644,204]]},"answer":2}'
       json_example_answer_only_rpg_dungeon_safe_reachable_chest_count: '{"answer":2}'
+    task_illustrations__rpg_dungeon__rotated_tile_label:
+      bundle_id: illustrations_rpg_dungeon_v0
+      scene_key: rpg_dungeon_reconstruction_canvas
+      task_key: rpg_dungeon_rotated_tile_label_task
+      json_output_contract: 'Return JSON with keys "annotation" and "answer".'
+      json_output_contract_answer_only: 'Return JSON with key "answer".'
+      answer_hint_rotated_tile: set "answer" to the selected tile letter
+      annotation_hint_rotated_tile: set "annotation" to one [x0, y0, x1, y1] box around the rotated tile in image pixel coordinates
+      json_example_rotated_tile: '{"annotation":[432,288,864,720],"answer":"B"}'
+      json_example_answer_only_rotated_tile: '{"answer":"B"}'
+    task_illustrations__rpg_dungeon__swapped_tile_pair_label:
+      bundle_id: illustrations_rpg_dungeon_v0
+      scene_key: rpg_dungeon_reconstruction_canvas
+      task_key: rpg_dungeon_swapped_tile_pair_label_task
+      json_output_contract: 'Return JSON with keys "annotation" and "answer".'
+      json_output_contract_answer_only: 'Return JSON with key "answer".'
+      answer_hint_rpg_dungeon_swapped_tile_pair_label: set "answer" to the option letter naming the two swapped numbered tiles
+      annotation_hint_rpg_dungeon_swapped_tile_pair_label: set "annotation" to two [x0, y0, x1, y1] pixel boxes around the swapped numbered tiles
+      json_example_rpg_dungeon_swapped_tile_pair_label: '{"annotation":[[0,0,432,288],[864,576,1296,864]],"answer":"D"}'
+      json_example_answer_only_rpg_dungeon_swapped_tile_pair_label: '{"answer":"D"}'

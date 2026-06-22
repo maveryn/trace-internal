@@ -1,18 +1,20 @@
 # `task_games__sliding_block__sliding_block_blocker_count`
 
-## Summary
-1. Domain: `games`
-2. Scene: `sliding_block`
-3. Task id: `task_games__sliding_block__sliding_block_blocker_count`
-4. Scene id: `sliding_block`
-5. Goal: count the rectangular blocks currently occupying the red target block's straight path to the exit arrow.
-
 ## Contract
-1. Branch metadata: `query_id`
-2. `query_id`: `blocker_count`
-3. Board size: `6..8` rows by `6..8` columns
-4. Target blocker count support: `1..6`
-5. Answer type: `integer`
-6. Annotation type: `bbox_set`
-7. Annotation target: all blocks in the target block's straight exit path
-8. Scene variants: `wooden_tray|cool_grid|paper_board`
+1. Domain: `games`
+2. Scene id: `sliding_block`
+3. Public task id: `task_games__sliding_block__sliding_block_blocker_count`
+4. Supported `query_id` values: `single`
+5. Answer schema: `integer`
+6. Annotation schema: `bbox_set`
+7. Program schema: `count(blocks_intersecting(target_exit_path)); scene=sliding_block; scope=sliding_block_blocker_count`
+8. Scalar annotation checked: `true`
+
+## Program Contract
+- `count(blocks_intersecting(target_exit_path)); scene=sliding_block; scope=sliding_block_blocker_count`
+
+## Generation Notes
+1. The red target block and exit arrow define the straight exit path.
+2. The answer is the number of non-target blocks occupying cells on that path.
+3. Annotation is the bbox set of the blocking blocks.
+

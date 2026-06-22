@@ -5,11 +5,9 @@ from __future__ import annotations
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import TASK_REGISTRY
 from trace.tasks.games.sliding_block.movable_block_count import GamesSlidingBlockMovableBlockCountTask
-from trace.tasks.games.sliding_block.sliding_block_blocker_count import (
-    BlockSpec,
-    GamesSlidingBlockBlockerCountTask,
-    _legal_moves,
-)
+from trace.tasks.games.sliding_block.shared.rules import legal_moves
+from trace.tasks.games.sliding_block.shared.state import BlockSpec
+from trace.tasks.games.sliding_block.sliding_block_blocker_count import GamesSlidingBlockBlockerCountTask
 from trace.tasks.games.sliding_block.sliding_block_move_result_label import GamesSlidingBlockMoveResultLabelTask
 
 
@@ -17,20 +15,23 @@ TASKS = (
     (
         "task_games__sliding_block__sliding_block_blocker_count",
         GamesSlidingBlockBlockerCountTask,
-        "blocker_count",
+        "single",
         "integer",
+        "blocker_count",
     ),
     (
         "task_games__sliding_block__movable_block_count",
         GamesSlidingBlockMovableBlockCountTask,
-        "movable_block_count",
+        "single",
         "integer",
+        "movable_block_count",
     ),
     (
         "task_games__sliding_block__sliding_block_move_result_label",
         GamesSlidingBlockMoveResultLabelTask,
-        "move_result_label",
+        "single",
         "option_letter",
+        "move_result_label",
     ),
 )
 
@@ -63,7 +64,7 @@ def _bbox_row_counts(bboxes: dict[str, list[float]], *, tolerance_px: float = 4.
 
 
 def test_sliding_block_tasks_are_registered_and_taxonomy_mapped() -> None:
-    for task_id, task_cls, _query_id, _answer_type in TASKS:
+    for task_id, task_cls, _query_id, _answer_type, _prompt_query_key in TASKS:
         assert TASK_REGISTRY[task_id] is task_cls
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
@@ -71,7 +72,7 @@ def test_sliding_block_tasks_are_registered_and_taxonomy_mapped() -> None:
 
 
 def test_sliding_block_tasks_emit_contracts() -> None:
-    for index, (_task_id, task_cls, query_id, answer_type) in enumerate(TASKS):
+    for index, (_task_id, task_cls, query_id, answer_type, prompt_query_key) in enumerate(TASKS):
         out = task_cls().generate(2026052700 + index, params={}, max_attempts=30)
         trace = out.trace_payload
         execution = trace["execution_trace"]
@@ -82,7 +83,8 @@ def test_sliding_block_tasks_emit_contracts() -> None:
         assert out.annotation_gt.type == "bbox_set"
         assert trace["query_spec"]["params"]["query_id"] == query_id
         assert trace["render_spec"]["scene_id"] == "sliding_block"
-        if query_id == "move_result_label":
+        assert execution["question_format"] == prompt_query_key
+        if prompt_query_key == "move_result_label":
             assert trace["render_map"]["annotation_source"] == "block_bboxes_px+option_panel_bboxes_px"
         else:
             assert trace["render_map"]["annotation_source"] == "block_bboxes_px"
@@ -93,13 +95,13 @@ def test_sliding_block_tasks_emit_contracts() -> None:
             int(trace["render_spec"]["canvas_height"]),
         )
         assert execution["answer_block_ids"]
-        if query_id == "blocker_count":
+        if prompt_query_key == "blocker_count":
             assert len(out.annotation_gt.value) == len(execution["answer_block_ids"])
             assert int(out.answer_gt.value) == len(execution["blocking_block_ids"])
             assert execution["answer_block_ids"] == execution["blocking_block_ids"]
-        elif query_id == "movable_block_count":
+        elif prompt_query_key == "movable_block_count":
             blocks = _execution_blocks(execution)
-            moves = _legal_moves(
+            moves = legal_moves(
                 blocks,
                 rows=int(execution["rows"]),
                 cols=int(execution["cols"]),

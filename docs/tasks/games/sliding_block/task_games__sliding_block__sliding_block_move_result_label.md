@@ -1,19 +1,20 @@
 # `task_games__sliding_block__sliding_block_move_result_label`
 
-## Summary
-1. Domain: `games`
-2. Scene: `sliding_block`
-3. Task id: `task_games__sliding_block__sliding_block_move_result_label`
-4. Scene id: `sliding_block`
-5. Goal: apply a short ordered sequence of sliding-block moves and select the final board option.
-
 ## Contract
-1. Branch metadata: `query_id`
-2. `query_id`: `move_result_label`
-3. Board size: `6..8` rows by `6..8` columns
-4. Move count: `1..2`
-5. Answer label support: `A..F`
-6. Answer type: `option_letter`
-7. Annotation type: `bbox_set`
-8. Annotation target: original boxes of the moved blocks in first-seen move order, followed by the correct final-board option panel box
-9. Scene variants: `wooden_tray|cool_grid|paper_board`
+1. Domain: `games`
+2. Scene id: `sliding_block`
+3. Public task id: `task_games__sliding_block__sliding_block_move_result_label`
+4. Supported `query_id` values: `single`
+5. Answer schema: `option_letter`
+6. Annotation schema: `bbox_set`
+7. Program schema: `select(option_board_equal_to(apply_ordered_slides(source_board, slide_sequence))); scene=sliding_block; scope=sliding_block_move_result_label`
+8. Scalar annotation checked: `true`
+
+## Program Contract
+- `select(option_board_equal_to(apply_ordered_slides(source_board, slide_sequence))); scene=sliding_block; scope=sliding_block_move_result_label`
+
+## Generation Notes
+1. The prompt gives a short ordered slide sequence.
+2. The answer is the visual option label whose board matches the final state.
+3. Annotation is the bbox set containing moved source blocks plus the correct option panel.
+

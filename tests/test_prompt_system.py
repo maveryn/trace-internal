@@ -1307,7 +1307,7 @@ def test_puzzles_spatial_bundle_supports_cube_structure_variants() -> None:
 
 
 def test_games_sliding_block_bundle_supports_sliding_block_variants() -> None:
-    bundle = load_prompt_bundle("games", "sliding_block", "games_sliding_block_v0")
+    bundle = load_prompt_bundle("games", "sliding_block", "games_sliding_block_v1")
     assert len(bundle.task_templates["sliding_block_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["blocker_count"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["movable_block_count"]) == REQUIRED_PROMPT_VARIANTS

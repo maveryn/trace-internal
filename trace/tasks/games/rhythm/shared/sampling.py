@@ -171,31 +171,35 @@ def resolve_rhythm_count_target_axis(
     params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
     namespace: str,
+    support_key: str,
+    explicit_key: str,
+    fallback_support: Sequence[int],
+    balanced_flag_key: str,
 ) -> RhythmCountTargetAxis:
-    """Resolve the target hit count for count-style Rhythm objectives."""
+    """Resolve an integer target for count-style Rhythm objectives."""
 
-    target_hit_count, target_hit_count_probabilities = resolve_integer_choice(
+    target_count, target_count_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,
-        support_key="hit_count_support",
-        explicit_key="target_hit_count",
-        fallback_support=DEFAULTS.hit_count_support,
+        support_key=str(support_key),
+        explicit_key=str(explicit_key),
+        fallback_support=tuple(int(value) for value in fallback_support),
         namespace=str(namespace),
-        balanced_flag_key="balanced_hit_count_sampling",
+        balanced_flag_key=str(balanced_flag_key),
         use_instance_seed_cycle=True,
         namespace_support_permutation=True,
     )
-    target_hit_count_support = resolve_integer_support(
+    target_count_support = resolve_integer_support(
         params,
         gen_defaults=gen_defaults,
-        key="hit_count_support",
-        fallback=DEFAULTS.hit_count_support,
+        key=str(support_key),
+        fallback=tuple(int(value) for value in fallback_support),
     )
     return RhythmCountTargetAxis(
-        target_hit_count=int(target_hit_count),
-        target_hit_count_support=tuple(int(value) for value in target_hit_count_support),
-        target_hit_count_probabilities=dict(target_hit_count_probabilities),
+        target_count=int(target_count),
+        target_count_support=tuple(int(value) for value in target_count_support),
+        target_count_probabilities=dict(target_count_probabilities),
     )
 
 
@@ -209,18 +213,6 @@ def resolve_selected_lane(rng: Any, *, lane_count: int, params: Mapping[str, Any
             raise ValueError(f"{key} out of range")
         return lane
     return int(rng.randrange(int(lane_count)))
-
-
-def resolve_target_color(rng: Any, *, params: Mapping[str, Any]) -> str:
-    """Resolve one target color key for color-filtered note counts."""
-
-    explicit = params.get("target_color_key", params.get("target_color"))
-    if explicit is not None:
-        color = str(explicit)
-        if color not in SUPPORTED_COLOR_KEYS:
-            raise ValueError(f"unsupported target_color_key: {color}")
-        return color
-    return str(rng.choice(SUPPORTED_COLOR_KEYS))
 
 
 def _fill_late_distractors(builder: RhythmNoteBuilder, *, rng: Any, axes: RhythmVisualAxes, minimum_total: int) -> None:
@@ -239,34 +231,87 @@ def _fill_late_distractors(builder: RhythmNoteBuilder, *, rng: Any, axes: Rhythm
         )
 
 
-def sample_lane_hit_count_scene(*, rng: Any, axes: RhythmVisualAxes, selected_lane: int, target_count: int) -> SampledRhythmScene:
-    """Construct a lane-specific hit-count scene with an exact target count."""
+def _add_note_objects(
+    builder: RhythmNoteBuilder,
+    *,
+    rng: Any,
+    lane: int,
+    target_count: int,
+    colors: Sequence[str],
+) -> list[RhythmNote]:
+    """Place a requested number of note objects in one lane."""
 
-    if int(target_count) > int(axes.beat_window):
-        raise ValueError("target_count cannot exceed beat_window")
-    builder = RhythmNoteBuilder(lane_count=int(axes.lane_count), row_count=int(axes.row_count), rng=rng)
-    rows = list(range(1, int(axes.beat_window) + 1))
+    placed: list[RhythmNote] = []
+    rows = list(range(1, int(builder.row_count) + 1))
     rng.shuffle(rows)
-    annotation_ids: List[str] = []
-    for row in rows[: int(target_count)]:
-        note = builder.add_note(
-            lane=int(selected_lane),
-            bottom_row=int(row),
-            length=1,
-            color_key=str(rng.choice(SUPPORTED_COLOR_KEYS)),
+    lengths = [1, 1, 1, 2, 2, 3]
+    for _ in range(int(target_count)):
+        note = builder.add_random_note(
+            lanes=(int(lane),),
+            bottom_rows=rows,
+            colors=colors,
+            lengths=lengths,
         )
-        annotation_ids.append(str(note.note_id))
-    for _ in range(int(rng.randrange(1, 3))):
-        builder.add_random_note(
-            lanes=(int(selected_lane),),
-            bottom_rows=tuple(range(int(axes.beat_window) + 1, int(axes.row_count) + 1)),
-            colors=SUPPORTED_COLOR_KEYS,
-        )
-    _fill_late_distractors(
+        if note is None:
+            raise ValueError("could not place requested rhythm note object count")
+        placed.append(note)
+    return placed
+
+
+def _fill_other_lane_distractors(
+    builder: RhythmNoteBuilder,
+    *,
+    rng: Any,
+    axes: RhythmVisualAxes,
+    excluded_lane: int,
+    per_lane_max: int = 5,
+) -> None:
+    """Populate non-target lanes without changing the target lane answer."""
+
+    rows = tuple(range(1, int(axes.row_count) + 1))
+    for lane in range(int(axes.lane_count)):
+        if int(lane) == int(excluded_lane):
+            continue
+        count = int(rng.randrange(1, max(2, int(per_lane_max) + 1)))
+        try:
+            _add_note_objects(
+                builder,
+                rng=rng,
+                lane=int(lane),
+                target_count=count,
+                colors=SUPPORTED_COLOR_KEYS,
+            )
+        except ValueError:
+            continue
+    attempts = 0
+    minimum_total = int(rng.randrange(max(12, int(axes.lane_count) * 2), max(13, int(axes.lane_count) * 4)))
+    while len(builder.notes) < minimum_total and attempts < 180:
+        attempts += 1
+        lane = int(rng.randrange(int(axes.lane_count)))
+        if lane == int(excluded_lane):
+            continue
+        builder.add_random_note(lanes=(lane,), bottom_rows=rows, colors=SUPPORTED_COLOR_KEYS)
+
+
+def sample_lane_note_count_scene(*, rng: Any, axes: RhythmVisualAxes, selected_lane: int, target_count: int) -> SampledRhythmScene:
+    """Construct a lane-specific note-object count scene."""
+
+    if int(target_count) > int(axes.row_count):
+        raise ValueError("target_count cannot exceed row_count")
+    builder = RhythmNoteBuilder(lane_count=int(axes.lane_count), row_count=int(axes.row_count), rng=rng)
+    target_notes = _add_note_objects(
+        builder,
+        rng=rng,
+        lane=int(selected_lane),
+        target_count=int(target_count),
+        colors=SUPPORTED_COLOR_KEYS,
+    )
+    _fill_other_lane_distractors(
         builder,
         rng=rng,
         axes=axes,
-        minimum_total=int(rng.randrange(max(14, int(axes.lane_count) * 3), max(15, int(axes.lane_count) * 5 + 3))),
+        excluded_lane=int(selected_lane),
+        per_lane_max=max(2, int(target_count) + 1),
     )
     sample = SampledRhythmScene(
         lane_count=int(axes.lane_count),
@@ -278,51 +323,67 @@ def sample_lane_hit_count_scene(*, rng: Any, axes: RhythmVisualAxes, selected_la
         target_color_key=None,
         answer=int(target_count),
         notes=tuple(builder.notes),
-        annotation_entity_ids=tuple(annotation_ids),
-        construction_mode="target_lane_hit_count",
+        annotation_entity_ids=tuple(str(note.note_id) for note in target_notes),
+        construction_mode="target_lane_note_count",
     )
     validate_rhythm_scene_basic(sample)
     return sample
 
 
-def sample_lane_color_hit_count_scene(
+def _score_terms_for_total(total: int, values: Sequence[int], *, max_terms: int = 6) -> tuple[int, ...]:
+    """Return one short multiset of score values that sums to total."""
+
+    sorted_values = tuple(sorted({int(value) for value in values}, reverse=True))
+
+    def search(remaining: int, terms_left: int, prefix: tuple[int, ...]) -> tuple[int, ...] | None:
+        if remaining == 0 and prefix:
+            return prefix
+        if remaining < 0 or terms_left <= 0:
+            return None
+        for value in sorted_values:
+            found = search(int(remaining) - int(value), int(terms_left) - 1, (*prefix, int(value)))
+            if found is not None:
+                return found
+        return None
+
+    result = search(int(total), int(max_terms), tuple())
+    if result is None:
+        raise ValueError(f"cannot compose rhythm score total: {total}")
+    return result
+
+
+def sample_lane_note_score_scene(
     *,
     rng: Any,
     axes: RhythmVisualAxes,
     selected_lane: int,
-    target_color: str,
-    target_count: int,
+    target_score: int,
+    score_values_by_color: Mapping[str, int],
 ) -> SampledRhythmScene:
-    """Construct a color-filtered lane hit-count scene with distractor colors."""
+    """Construct a lane score scene where color scores sum to the target."""
 
-    if int(target_count) > int(axes.beat_window):
-        raise ValueError("target_count cannot exceed beat_window")
+    color_by_score = {int(value): str(color) for color, value in score_values_by_color.items()}
+    score_terms = _score_terms_for_total(int(target_score), tuple(color_by_score.keys()), max_terms=6)
     builder = RhythmNoteBuilder(lane_count=int(axes.lane_count), row_count=int(axes.row_count), rng=rng)
-    rows = list(range(1, int(axes.beat_window) + 1))
+    target_notes: list[RhythmNote] = []
+    rows = list(range(1, int(axes.row_count) + 1))
     rng.shuffle(rows)
-    annotation_ids: List[str] = []
-    for row in rows[: int(target_count)]:
-        note = builder.add_note(lane=int(selected_lane), bottom_row=int(row), length=1, color_key=str(target_color))
-        annotation_ids.append(str(note.note_id))
-    other_colors = [color for color in SUPPORTED_COLOR_KEYS if str(color) != str(target_color)]
-    for _ in range(int(rng.randrange(1, 3))):
-        builder.add_random_note(
+    for score_value in score_terms:
+        note = builder.add_random_note(
             lanes=(int(selected_lane),),
-            bottom_rows=tuple(range(1, int(axes.beat_window) + 1)),
-            colors=other_colors,
-            lengths=(1, 1, 2),
+            bottom_rows=rows,
+            colors=(str(color_by_score[int(score_value)]),),
+            lengths=(1, 1, 2, 3),
         )
-    builder.add_random_note(
-        lanes=(int(selected_lane),),
-        bottom_rows=tuple(range(int(axes.beat_window) + 1, int(axes.row_count) + 1)),
-        colors=(str(target_color),),
-        lengths=(1, 2, 3),
-    )
-    _fill_late_distractors(
+        if note is None:
+            raise ValueError("could not place rhythm score note")
+        target_notes.append(note)
+    _fill_other_lane_distractors(
         builder,
         rng=rng,
         axes=axes,
-        minimum_total=int(rng.randrange(max(14, int(axes.lane_count) * 3), max(15, int(axes.lane_count) * 5 + 3))),
+        excluded_lane=int(selected_lane),
+        per_lane_max=max(2, len(target_notes) + 1),
     )
     sample = SampledRhythmScene(
         lane_count=int(axes.lane_count),
@@ -331,47 +392,34 @@ def sample_lane_color_hit_count_scene(
         scene_variant=str(axes.scene_variant),
         selected_lane_index=int(selected_lane),
         selected_lane_label=lane_label(int(selected_lane)),
-        target_color_key=str(target_color),
-        answer=int(target_count),
+        target_color_key=None,
+        answer=int(target_score),
         notes=tuple(builder.notes),
-        annotation_entity_ids=tuple(annotation_ids),
-        construction_mode="target_lane_color_hit_count",
+        annotation_entity_ids=tuple(str(note.note_id) for note in target_notes),
+        construction_mode="target_lane_note_score",
+        score_values_by_color={str(color): int(value) for color, value in score_values_by_color.items()},
     )
     validate_rhythm_scene_basic(sample)
     return sample
 
 
-def sample_most_hits_lane_scene(*, rng: Any, axes: RhythmVisualAxes, target_lane: int, target_count: int) -> SampledRhythmScene:
-    """Construct a scene with one lane uniquely maximizing hit count."""
+def sample_most_notes_lane_scene(*, rng: Any, axes: RhythmVisualAxes, target_lane: int, target_count: int) -> SampledRhythmScene:
+    """Construct a scene with one lane uniquely maximizing note-object count."""
 
-    if int(target_count) > int(axes.beat_window):
-        raise ValueError("target_count cannot exceed beat_window")
     builder = RhythmNoteBuilder(lane_count=int(axes.lane_count), row_count=int(axes.row_count), rng=rng)
-    rows = list(range(1, int(axes.beat_window) + 1))
-    rng.shuffle(rows)
-    annotation_ids: List[str] = []
-    for row in rows[: int(target_count)]:
-        note = builder.add_note(
-            lane=int(target_lane),
-            bottom_row=int(row),
-            length=1,
-            color_key=str(rng.choice(SUPPORTED_COLOR_KEYS)),
-        )
-        annotation_ids.append(str(note.note_id))
+    target_notes = _add_note_objects(
+        builder,
+        rng=rng,
+        lane=int(target_lane),
+        target_count=int(target_count),
+        colors=SUPPORTED_COLOR_KEYS,
+    )
     for lane in range(int(axes.lane_count)):
         if int(lane) == int(target_lane):
             continue
-        lane_hits = int(rng.randrange(0, max(1, int(target_count))))
-        lane_rows = list(range(1, int(axes.beat_window) + 1))
-        rng.shuffle(lane_rows)
-        for row in lane_rows[:lane_hits]:
-            builder.add_note(lane=lane, bottom_row=int(row), length=1, color_key=str(rng.choice(SUPPORTED_COLOR_KEYS)))
-    _fill_late_distractors(
-        builder,
-        rng=rng,
-        axes=axes,
-        minimum_total=int(rng.randrange(max(15, int(axes.lane_count) * 3), max(16, int(axes.lane_count) * 5 + 5))),
-    )
+        lane_count = int(rng.randrange(0, max(1, int(target_count))))
+        if lane_count > 0:
+            _add_note_objects(builder, rng=rng, lane=int(lane), target_count=lane_count, colors=SUPPORTED_COLOR_KEYS)
     sample = SampledRhythmScene(
         lane_count=int(axes.lane_count),
         row_count=int(axes.row_count),
@@ -382,8 +430,8 @@ def sample_most_hits_lane_scene(*, rng: Any, axes: RhythmVisualAxes, target_lane
         target_color_key=None,
         answer=int(lane_label(int(target_lane))),
         notes=tuple(builder.notes),
-        annotation_entity_ids=tuple(annotation_ids),
-        construction_mode="unique_most_hits_lane",
+        annotation_entity_ids=tuple(str(note.note_id) for note in target_notes),
+        construction_mode="unique_most_notes_lane",
     )
     validate_rhythm_scene_basic(sample)
     return sample
@@ -433,9 +481,8 @@ __all__ = [
     "resolve_rhythm_count_target_axis",
     "resolve_rhythm_visual_axes",
     "resolve_selected_lane",
-    "resolve_target_color",
     "sample_earliest_hit_lane_scene",
-    "sample_lane_color_hit_count_scene",
-    "sample_lane_hit_count_scene",
-    "sample_most_hits_lane_scene",
+    "sample_lane_note_count_scene",
+    "sample_lane_note_score_scene",
+    "sample_most_notes_lane_scene",
 ]

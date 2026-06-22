@@ -48,6 +48,8 @@ def build_rhythm_prompt_artifacts(
     prompt_defaults: Mapping[str, Any],
     selected_lane_label: str,
     target_color: str,
+    score_values_by_color: Mapping[str, int] | None,
+    prompt_rule_keys: Tuple[str, ...],
     beat_window: int,
     instance_seed: int,
 ) -> tuple[Dict[str, Any], Any]:
@@ -56,12 +58,13 @@ def build_rhythm_prompt_artifacts(
     object_description_key = f"object_description_{str(scene_variant)}"
     answer_hint_key = f"answer_hint_{str(prompt_query_key)}"
     annotation_hint_key = f"annotation_hint_{str(prompt_query_key)}"
+    rule_keys = tuple(str(key) for key in prompt_rule_keys)
     defaults = required_group_defaults(
         prompt_defaults,
         (
             *_PROMPT_WIRING_KEYS,
             object_description_key,
-            "rhythm_motion_rule_text",
+            *rule_keys,
             answer_hint_key,
             annotation_hint_key,
         ),
@@ -81,10 +84,18 @@ def build_rhythm_prompt_artifacts(
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         dynamic_slots={
             "object_description": str(defaults[object_description_key]),
-            "rhythm_motion_rule_text": str(defaults["rhythm_motion_rule_text"]),
+            "rhythm_motion_rule_text": str(defaults.get("rhythm_motion_rule_text", "")),
+            "note_object_rule_text": str(defaults.get("note_object_rule_text", "")),
+            "score_palette_rule_text": str(defaults.get("score_palette_rule_text", "")),
             "beat_window": str(int(beat_window)),
             "selected_lane_label": str(selected_lane_label),
             "target_color": str(target_color),
+            "score_values_by_color": ""
+            if score_values_by_color is None
+            else ", ".join(
+                f"{str(color)}={int(score_values_by_color[str(color)])}"
+                for color in sorted(score_values_by_color)
+            ),
             "json_output_contract": str(defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(defaults["json_output_contract_answer_only"]),
             "answer_hint": str(defaults[answer_hint_key]),

@@ -41,6 +41,7 @@ class ObjectiveRhythmPlan:
     prompt_query_key: str
     annotation_kind: str
     construct_attempt: AttemptBuilder
+    prompt_rule_keys: Sequence[str] = ("note_object_rule_text",)
     query_params: Mapping[str, Any] = field(default_factory=dict)
 
 
@@ -97,6 +98,7 @@ def _annotation_for_objective(
 def _note_trace(sample: SampledRhythmScene) -> list[dict[str, Any]]:
     """Return trace-friendly note rows with timing and lane metadata."""
 
+    score_values = dict(sample.score_values_by_color or {})
     return [
         {
             "note_id": str(note.note_id),
@@ -105,6 +107,7 @@ def _note_trace(sample: SampledRhythmScene) -> list[dict[str, Any]]:
             "bottom_row_from_hit_line": int(note.bottom_row),
             "length_rows": int(note.length),
             "color_key": str(note.color_key),
+            "score_value": None if not score_values else int(score_values[str(note.color_key)]),
             "kind": str(note.kind),
         }
         for note in sample.notes
@@ -168,6 +171,9 @@ def _build_trace_payload(
                 "row_count": int(sample.row_count),
                 "beat_window": int(sample.beat_window),
                 "annotation_entity_ids": list(annotation_entity_ids),
+                "score_values_by_color": None
+                if sample.score_values_by_color is None
+                else {str(color): int(value) for color, value in sample.score_values_by_color.items()},
             },
         },
         "query_spec": dict(prompt_query_spec),
@@ -179,6 +185,7 @@ def _build_trace_payload(
             "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
             "panel_scene_style": dict(rendered_scene.render_map.get("panel_scene_style", {})),
             "text_style": dict(rendered_scene.render_map.get("text_style", {})),
+            "score_palette": dict(rendered_scene.render_map.get("score_palette", {})),
         },
         "render_map": dict(rendered_scene.render_map),
         "execution_trace": {
@@ -192,6 +199,9 @@ def _build_trace_payload(
             "selected_lane_index": sample.selected_lane_index,
             "selected_lane_label": sample.selected_lane_label,
             "target_color_key": sample.target_color_key,
+            "score_values_by_color": None
+            if sample.score_values_by_color is None
+            else {str(color): int(value) for color, value in sample.score_values_by_color.items()},
             "answer": int(sample.answer),
             "notes": note_trace,
             "annotation_entity_ids": list(annotation_entity_ids),
@@ -273,6 +283,7 @@ def run_rhythm_lifecycle(
         row_count=int(sample.row_count),
         beat_window=int(sample.beat_window),
         notes=sample.notes,
+        score_values_by_color=sample.score_values_by_color,
         background=background,
         style_variant=str(visual_axes.style_variant),
         params=render_params,
@@ -297,6 +308,8 @@ def run_rhythm_lifecycle(
         prompt_defaults=prompt_defaults,
         selected_lane_label=str(sample.selected_lane_label or ""),
         target_color=str(sample.target_color_key or ""),
+        score_values_by_color=sample.score_values_by_color,
+        prompt_rule_keys=tuple(str(key) for key in objective.prompt_rule_keys),
         beat_window=int(sample.beat_window),
         instance_seed=int(instance_seed),
     )
@@ -311,6 +324,9 @@ def run_rhythm_lifecycle(
         "selected_lane_index": sample.selected_lane_index,
         "selected_lane_label": sample.selected_lane_label,
         "target_color_key": sample.target_color_key,
+        "score_values_by_color": None
+        if sample.score_values_by_color is None
+        else {str(color): int(value) for color, value in sample.score_values_by_color.items()},
         "answer": int(sample.answer),
     }
     text_style_meta = {

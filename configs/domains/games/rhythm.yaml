@@ -13,7 +13,8 @@ generation:
     balanced_lane_count_sampling: true
     balanced_row_count_sampling: true
     balanced_beat_window_sampling: true
-    balanced_hit_count_sampling: true
+    balanced_note_count_sampling: true
+    balanced_score_total_sampling: true
     lane_count_support:
     - 5
     - 6
@@ -29,15 +30,33 @@ generation:
     - 5
     - 6
     - 7
-    hit_count_support:
+    note_count_support:
     - 1
     - 2
     - 3
     - 4
     - 5
+    - 6
+    score_total_support:
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+    - 18
 rendering:
   shared:
-    canvas_width: 760
+    canvas_width: 900
     canvas_height: 900
     panel_margin_px: 42
     grid_width_px: 650

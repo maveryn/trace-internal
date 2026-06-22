@@ -16,27 +16,26 @@ from tests.helpers import read_jsonl
     ("task_id", "params", "prompt_query_key", "annotation_type"),
     (
         (
-            "task_games__rhythm__lane_hit_count",
-            {"lane_count": 6, "row_count": 12, "beat_window": 6, "target_hit_count": 3},
-            "lane_hit_count",
+            "task_games__rhythm__lane_note_count",
+            {"lane_count": 6, "row_count": 12, "beat_window": 6, "target_note_count": 3},
+            "lane_note_count",
             "bbox_set",
         ),
         (
-            "task_games__rhythm__lane_color_hit_count",
+            "task_games__rhythm__lane_note_score_value",
             {
                 "lane_count": 6,
                 "row_count": 12,
                 "beat_window": 6,
-                "target_hit_count": 3,
-                "target_color_key": "cyan",
+                "target_score": 12,
             },
-            "lane_color_hit_count",
+            "lane_note_score_value",
             "bbox_set",
         ),
         (
-            "task_games__rhythm__most_hits_lane_label",
-            {"lane_count": 7, "row_count": 13, "beat_window": 5, "target_hit_count": 4},
-            "most_hits_lane_label",
+            "task_games__rhythm__most_notes_lane_label",
+            {"lane_count": 7, "row_count": 13, "beat_window": 5, "target_note_count": 4},
+            "most_notes_lane_label",
             "bbox_set",
         ),
         (
@@ -73,61 +72,51 @@ def test_games_rhythm_public_tasks_emit_expected_contract(
         assert len(out.annotation_gt.value) >= 1
 
 
-def test_games_rhythm_lane_color_hit_count_matches_trace() -> None:
-    out = create_task("task_games__rhythm__lane_color_hit_count").generate(
+def test_games_rhythm_lane_note_score_value_matches_trace() -> None:
+    out = create_task("task_games__rhythm__lane_note_score_value").generate(
         98410,
         params={
             "lane_count": 6,
             "row_count": 12,
             "beat_window": 6,
-            "target_hit_count": 4,
-            "target_color_key": "magenta",
+            "target_score": 12,
         },
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
     selected_lane = int(execution["selected_lane_index"])
-    beat_window = int(execution["beat_window"])
-    target_color = str(execution["target_color_key"])
+    score_values = {str(color): int(value) for color, value in execution["score_values_by_color"].items()}
     expected = [
         note
         for note in execution["notes"]
         if int(note["lane_index"]) == selected_lane
-        and str(note["color_key"]) == target_color
-        and int(note["bottom_row_from_hit_line"]) <= beat_window
     ]
+    expected_score = sum(score_values[str(note["color_key"])] for note in expected)
 
-    assert int(out.answer_gt.value) == len(expected) == 4
+    assert int(out.answer_gt.value) == expected_score == 12
     assert set(execution["annotation_entity_ids"]) == {str(note["note_id"]) for note in expected}
     assert len(out.annotation_gt.value) == len(expected)
+    assert out.trace_payload["render_map"]["score_palette"]["values_by_color"] == score_values
 
 
-def test_games_rhythm_most_hits_lane_label_matches_trace() -> None:
-    out = create_task("task_games__rhythm__most_hits_lane_label").generate(
+def test_games_rhythm_most_notes_lane_label_matches_trace() -> None:
+    out = create_task("task_games__rhythm__most_notes_lane_label").generate(
         98420,
-        params={"lane_count": 8, "row_count": 14, "beat_window": 7, "target_hit_count": 5},
+        params={"lane_count": 8, "row_count": 14, "beat_window": 7, "target_note_count": 5},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
-    hit_counts: list[int] = []
+    note_counts: list[int] = []
     for lane in range(int(execution["lane_count"])):
-        hit_counts.append(
-            sum(
-                1
-                for note in execution["notes"]
-                if int(note["lane_index"]) == lane
-                and int(note["bottom_row_from_hit_line"]) <= int(execution["beat_window"])
-            )
-        )
-    expected_lane = hit_counts.index(max(hit_counts))
+        note_counts.append(sum(1 for note in execution["notes"] if int(note["lane_index"]) == lane))
+    expected_lane = note_counts.index(max(note_counts))
     expected_ids = {
         str(note["note_id"])
         for note in execution["notes"]
         if int(note["lane_index"]) == expected_lane
-        and int(note["bottom_row_from_hit_line"]) <= int(execution["beat_window"])
     }
 
-    assert hit_counts.count(max(hit_counts)) == 1
+    assert note_counts.count(max(note_counts)) == 1
     assert int(out.answer_gt.value) == expected_lane + 1
     assert set(execution["annotation_entity_ids"]) == expected_ids
 
@@ -161,8 +150,8 @@ def test_games_rhythm_build_smoke(tmp_path: Path) -> None:
         instance_version="v0",
         image_format="png",
         tasks=[
-            BuildTaskConfig(task_id="task_games__rhythm__lane_hit_count", count=1, params={}),
-            BuildTaskConfig(task_id="task_games__rhythm__most_hits_lane_label", count=1, params={}),
+            BuildTaskConfig(task_id="task_games__rhythm__lane_note_count", count=1, params={}),
+            BuildTaskConfig(task_id="task_games__rhythm__most_notes_lane_label", count=1, params={}),
         ],
         max_attempts_per_instance=512,
         workers=1,

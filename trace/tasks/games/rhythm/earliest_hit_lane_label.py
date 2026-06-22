@@ -34,6 +34,7 @@ def _prepare_earliest_hit_objective(
         attempt_namespace=f"{SCENE_NAMESPACE}.earliest_hit",
         prompt_query_key=PROMPT_QUERY_KEY,
         annotation_kind="note_bbox",
+        prompt_rule_keys=("rhythm_motion_rule_text",),
         query_params={},
         construct_attempt=lambda rng, axes: sample_earliest_hit_lane_scene(
             rng=rng,

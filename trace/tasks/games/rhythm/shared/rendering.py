@@ -11,7 +11,7 @@ from ....shared.text_rendering import fit_font_to_box
 from ...shared.text import draw_game_text_traced as draw_text_traced
 from ...shared.layout import apply_games_layout_jitter_to_bbox
 from .rules import lane_entity_id, lane_label
-from .state import RhythmNote
+from .state import RhythmNote, SUPPORTED_COLOR_KEYS
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 
 
@@ -191,10 +191,22 @@ def _draw_centered_text(
      role="readout", required=False,)
 
 
-def _grid_bbox(params: RhythmRenderParams) -> Tuple[float, float, float, float]:
+_SCORE_PALETTE_WIDTH_PX = 150.0
+_SCORE_PALETTE_GAP_PX = 20.0
+
+
+def _grid_bbox(
+    params: RhythmRenderParams,
+    *,
+    side_panel_width_px: float = 0.0,
+    side_panel_gap_px: float = 0.0,
+) -> Tuple[float, float, float, float]:
     """Return the rhythm grid bbox before jitter."""
 
-    left = float((int(params.canvas_width) - int(params.grid_width_px)) / 2.0)
+    total_width = float(params.grid_width_px) + max(0.0, float(side_panel_width_px))
+    if float(side_panel_width_px) > 0:
+        total_width += max(0.0, float(side_panel_gap_px))
+    left = float((int(params.canvas_width) - total_width) / 2.0)
     top = float((int(params.canvas_height) - int(params.grid_height_px)) / 2.0) - 14.0
     return (
         left,
@@ -244,12 +256,87 @@ def _note_bbox(
     return (round(x0, 3), round(y0, 3), round(x1, 3), round(y1, 3))
 
 
+def _draw_score_palette(
+    draw: ImageDraw.ImageDraw,
+    *,
+    palette_bbox: Tuple[float, float, float, float],
+    score_values_by_color: Mapping[str, int],
+    theme: RhythmTheme,
+    params: RhythmRenderParams,
+) -> Dict[str, Any]:
+    """Draw the side score palette used by score-value objectives."""
+
+    left, top, right, bottom = palette_bbox
+    draw.rounded_rectangle(
+        palette_bbox,
+        radius=18,
+        fill=tuple(int(v) for v in theme.grid_fill_rgb) + (238,),
+        outline=tuple(int(v) for v in theme.grid_outline_rgb) + (240,),
+        width=max(2, int(params.grid_border_width_px) - 1),
+    )
+    heading_bbox = (left + 12.0, top + 12.0, right - 12.0, top + 46.0)
+    _draw_centered_text(
+        draw,
+        bbox=heading_bbox,
+        text="POINTS",
+        fill=tuple(int(v) for v in theme.label_text_rgb),
+        max_size_px=22,
+        font_family=str(params.font_family),
+    )
+
+    colors = [str(color) for color in SUPPORTED_COLOR_KEYS if str(color) in score_values_by_color]
+    available_h = max(1.0, float(bottom - top - 62.0))
+    row_h = available_h / max(1, len(colors))
+    entry_bboxes: Dict[str, list[float]] = {}
+    swatch_bboxes: Dict[str, list[float]] = {}
+    value_bboxes: Dict[str, list[float]] = {}
+    for index, color_key in enumerate(colors):
+        row_top = float(top + 52.0 + (index * row_h))
+        row_bottom = float(top + 52.0 + ((index + 1) * row_h) - 6.0)
+        entry_bbox = (left + 12.0, row_top, right - 12.0, row_bottom)
+        swatch_side = min(34.0, max(20.0, float(row_bottom - row_top - 4.0)))
+        swatch_bbox = (
+            entry_bbox[0],
+            row_top + ((row_bottom - row_top - swatch_side) / 2.0),
+            entry_bbox[0] + swatch_side,
+            row_top + ((row_bottom - row_top + swatch_side) / 2.0),
+        )
+        value_bbox = (swatch_bbox[2] + 12.0, row_top, entry_bbox[2], row_bottom)
+        draw.rounded_rectangle(
+            swatch_bbox,
+            radius=8,
+            fill=tuple(int(v) for v in theme.note_palette_rgb[str(color_key)]) + (248,),
+            outline=tuple(int(v) for v in theme.note_outline_rgb) + (235,),
+            width=2,
+        )
+        _draw_centered_text(
+            draw,
+            bbox=value_bbox,
+            text=str(int(score_values_by_color[str(color_key)])),
+            fill=tuple(int(v) for v in theme.label_text_rgb),
+            max_size_px=26,
+            font_family=str(params.font_family),
+        )
+        entry_bboxes[str(color_key)] = [round(float(v), 3) for v in entry_bbox]
+        swatch_bboxes[str(color_key)] = [round(float(v), 3) for v in swatch_bbox]
+        value_bboxes[str(color_key)] = [round(float(v), 3) for v in value_bbox]
+
+    return {
+        "bbox_px": [round(float(v), 3) for v in palette_bbox],
+        "values_by_color": {str(color): int(value) for color, value in score_values_by_color.items()},
+        "entry_bboxes_px": entry_bboxes,
+        "swatch_bboxes_px": swatch_bboxes,
+        "value_bboxes_px": value_bboxes,
+    }
+
+
 def render_rhythm_lanes_scene(
     *,
     lane_count: int,
     row_count: int,
     beat_window: int,
     notes: Tuple[RhythmNote, ...],
+    score_values_by_color: Mapping[str, int] | None = None,
     background: Image.Image,
     style_variant: str,
     params: RhythmRenderParams,
@@ -260,19 +347,46 @@ def render_rhythm_lanes_scene(
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")
     theme = build_games_rhythm_theme(style_variant=str(style_variant))
+    score_palette_values = (
+        None
+        if score_values_by_color is None
+        else {str(color): int(value) for color, value in score_values_by_color.items()}
+    )
+    palette_width = _SCORE_PALETTE_WIDTH_PX if score_palette_values else 0.0
+    palette_gap = _SCORE_PALETTE_GAP_PX if score_palette_values else 0.0
 
-    grid_bbox = _grid_bbox(params)
+    grid_bbox = _grid_bbox(params, side_panel_width_px=palette_width, side_panel_gap_px=palette_gap)
+    group_bbox = (
+        grid_bbox[0],
+        grid_bbox[1],
+        grid_bbox[2] + palette_gap + palette_width,
+        grid_bbox[3],
+    )
     if isinstance(params.layout_jitter_meta, Mapping):
-        grid_bbox, _dx, _dy, layout_jitter = apply_games_layout_jitter_to_bbox(
-            bbox_px=grid_bbox,
+        jittered_group_bbox, dx, dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+            bbox_px=group_bbox,
             canvas_width=int(params.canvas_width),
             canvas_height=int(params.canvas_height),
             jitter=params.layout_jitter_meta,
         )
+        grid_bbox = (
+            float(grid_bbox[0] + dx),
+            float(grid_bbox[1] + dy),
+            float(grid_bbox[2] + dx),
+            float(grid_bbox[3] + dy),
+        )
+        group_bbox = jittered_group_bbox
     else:
         layout_jitter = {}
 
     grid_left, grid_top, grid_right, grid_bottom = grid_bbox
+    group_left, group_top, group_right, group_bottom = group_bbox
+    score_palette_bbox = (
+        round(float(grid_right + palette_gap), 3),
+        round(float(grid_top + 44.0), 3),
+        round(float(grid_right + palette_gap + palette_width), 3),
+        round(float(grid_top + 300.0), 3),
+    ) if score_palette_values else None
     label_band_h = 52.0
     hit_label_w = 54.0
     play_bbox = (
@@ -286,10 +400,10 @@ def render_rhythm_lanes_scene(
     if panel_style is not None:
         panel_pad = 22.0
         panel_bbox = (
-            int(round(max(6.0, float(grid_left) - panel_pad))),
-            int(round(max(6.0, float(grid_top) - panel_pad))),
-            int(round(min(float(params.canvas_width) - 6.0, float(grid_right) + panel_pad))),
-            int(round(min(float(params.canvas_height) - 6.0, float(grid_bottom) + panel_pad))),
+            int(round(max(6.0, float(group_left) - panel_pad))),
+            int(round(max(6.0, float(group_top) - panel_pad))),
+            int(round(min(float(params.canvas_width) - 6.0, float(group_right) + panel_pad))),
+            int(round(min(float(params.canvas_height) - 6.0, float(group_bottom) + panel_pad))),
         )
         draw_panel_scene_chrome(
             draw,
@@ -306,6 +420,15 @@ def render_rhythm_lanes_scene(
         outline=tuple(int(v) for v in theme.grid_outline_rgb) + (255,),
         width=int(params.grid_border_width_px),
     )
+    score_palette_meta: Dict[str, Any] = {}
+    if score_palette_values and score_palette_bbox is not None:
+        score_palette_meta = _draw_score_palette(
+            draw,
+            palette_bbox=score_palette_bbox,
+            score_values_by_color=score_palette_values,
+            theme=theme,
+            params=params,
+        )
 
     lane_w = float((play_right - play_left) / max(1, int(lane_count)))
     row_h = float((play_bottom - play_top) / max(1, int(row_count)))
@@ -446,6 +569,7 @@ def render_rhythm_lanes_scene(
         "font_family": str(params.font_family),
         "text_style": {"font_family": str(params.font_family)},
         "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
+        "score_palette": score_palette_meta,
     }
     return RenderedRhythmScene(
         image=image.convert("RGB"),

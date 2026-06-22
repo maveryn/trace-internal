@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Tuple
+from typing import Dict, Mapping, Tuple
 
 
 SCENE_ID = "rhythm"
@@ -48,11 +48,11 @@ class RhythmVisualAxes:
 
 @dataclass(frozen=True)
 class RhythmCountTargetAxis:
-    """Resolved integer target count for count-style Rhythm objectives."""
+    """Resolved integer target for count-style Rhythm objectives."""
 
-    target_hit_count: int
-    target_hit_count_support: Tuple[int, ...]
-    target_hit_count_probabilities: Dict[str, float]
+    target_count: int
+    target_count_support: Tuple[int, ...]
+    target_count_probabilities: Dict[str, float]
 
 
 @dataclass(frozen=True)
@@ -70,6 +70,7 @@ class SampledRhythmScene:
     notes: Tuple[RhythmNote, ...]
     annotation_entity_ids: Tuple[str, ...]
     construction_mode: str
+    score_values_by_color: Mapping[str, int] | None = None
 
 
 __all__ = [

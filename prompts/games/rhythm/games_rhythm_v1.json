@@ -22,26 +22,26 @@
       ]
     },
     "query": {
-      "lane_hit_count": [
-        "{rhythm_motion_rule_text} In lane {selected_lane_label}, how many notes reach the hit line within {beat_window} beats?",
-        "Look only at lane {selected_lane_label}. {rhythm_motion_rule_text} Count the notes that reach the hit line within {beat_window} beats.",
-        "{rhythm_motion_rule_text} For lane {selected_lane_label}, report the count of notes that arrive at the hit line in at most {beat_window} beats.",
-        "Using lane {selected_lane_label}, count the notes whose bottom edge is {beat_window} or fewer rows above the hit line.",
-        "{rhythm_motion_rule_text} How many notes in lane {selected_lane_label} are within the next {beat_window} beats?"
+      "lane_note_count": [
+        "In lane {selected_lane_label}, how many note objects are there?",
+        "Look only at lane {selected_lane_label}. {note_object_rule_text} Count the visible note objects.",
+        "For lane {selected_lane_label}, report the number of note objects.",
+        "{note_object_rule_text} How many note objects are in lane {selected_lane_label}?",
+        "Count all visible note objects in lane {selected_lane_label}."
       ],
-      "lane_color_hit_count": [
-        "{rhythm_motion_rule_text} In lane {selected_lane_label}, how many {target_color} notes reach the hit line within {beat_window} beats?",
-        "Look only at lane {selected_lane_label}. Count the {target_color} notes that reach the hit line within {beat_window} beats.",
-        "{rhythm_motion_rule_text} For lane {selected_lane_label}, count only {target_color} notes that arrive in at most {beat_window} beats.",
-        "In lane {selected_lane_label}, how many {target_color} notes have their bottom edge {beat_window} or fewer rows above the hit line?",
-        "{rhythm_motion_rule_text} Report the number of {target_color} notes in lane {selected_lane_label} that are within the next {beat_window} beats."
+      "lane_note_score_value": [
+        "{score_palette_rule_text} What is the total score of the note objects in lane {selected_lane_label}?",
+        "Use the score palette beside the board. In lane {selected_lane_label}, what is the total note score?",
+        "{score_palette_rule_text} Add the scores for all note objects in lane {selected_lane_label}.",
+        "For lane {selected_lane_label}, sum the score values of its visible note objects.",
+        "Using the side score palette, what total score is shown by lane {selected_lane_label}?"
       ],
-      "most_hits_lane_label": [
-        "{rhythm_motion_rule_text} Which lane number has the most notes reaching the hit line within {beat_window} beats?",
-        "Across all lanes, count notes reaching the hit line within {beat_window} beats. Which lane number has the largest count?",
-        "{rhythm_motion_rule_text} Report the lane number with the most notes arriving in at most {beat_window} beats.",
-        "Which lane has the highest number of notes whose bottom edge is {beat_window} or fewer rows above the hit line?",
-        "{rhythm_motion_rule_text} Identify the lane number with the most notes in the next {beat_window} beats."
+      "most_notes_lane_label": [
+        "Which lane number has the most note objects?",
+        "Across all lanes, count visible note objects. Which lane number has the largest count?",
+        "{note_object_rule_text} Report the lane number with the most note objects.",
+        "Which lane contains the highest number of visible note objects?",
+        "Identify the lane number with the most note objects."
       ],
       "earliest_hit_lane_label": [
         "{rhythm_motion_rule_text} Which lane number has the note that reaches the hit line earliest within {beat_window} beats?",
@@ -72,20 +72,16 @@
     "scene:visible_rhythm_lanes": [
       "object_description"
     ],
-    "query:lane_hit_count": [
-      "rhythm_motion_rule_text",
-      "selected_lane_label",
-      "beat_window"
+    "query:lane_note_count": [
+      "note_object_rule_text",
+      "selected_lane_label"
     ],
-    "query:lane_color_hit_count": [
-      "rhythm_motion_rule_text",
-      "selected_lane_label",
-      "target_color",
-      "beat_window"
+    "query:lane_note_score_value": [
+      "score_palette_rule_text",
+      "selected_lane_label"
     ],
-    "query:most_hits_lane_label": [
-      "rhythm_motion_rule_text",
-      "beat_window"
+    "query:most_notes_lane_label": [
+      "note_object_rule_text"
     ],
     "query:earliest_hit_lane_label": [
       "rhythm_motion_rule_text",
@@ -128,7 +124,16 @@
     "object_description": {
       "type": "string"
     },
+    "note_object_rule_text": {
+      "type": "string"
+    },
     "rhythm_motion_rule_text": {
+      "type": "string"
+    },
+    "score_palette_rule_text": {
+      "type": "string"
+    },
+    "score_values_by_color": {
       "type": "string"
     },
     "selected_lane_label": {
@@ -141,12 +146,14 @@
   "code_prompt_defaults": {
     "object_description_falling_notes": "a rhythm-game lane grid with colored falling notes, lane numbers, and a bottom hit line",
     "rhythm_motion_rule_text": "Notes fall one row per beat. The bottom line is the hit line. A long vertical note counts as one note.",
-    "annotation_hint_lane_hit_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around all notes in the specified lane that reach the hit line within the stated number of beats",
-    "answer_hint_lane_hit_count": "set \"answer\" to the integer count",
-    "annotation_hint_lane_color_hit_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around all notes in the specified lane with the specified color that reach the hit line within the stated number of beats",
-    "answer_hint_lane_color_hit_count": "set \"answer\" to the integer count",
-    "annotation_hint_most_hits_lane_label": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around the notes in the winning lane that reach the hit line within the stated number of beats",
-    "answer_hint_most_hits_lane_label": "set \"answer\" to the winning lane number as an integer",
+    "note_object_rule_text": "A long vertical note counts as one note object.",
+    "score_palette_rule_text": "Use the score palette beside the board. Each note scores the number shown for its color, and a long vertical note counts once.",
+    "annotation_hint_lane_note_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around all note objects in the specified lane",
+    "answer_hint_lane_note_count": "set \"answer\" to the integer count",
+    "annotation_hint_lane_note_score_value": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around all note objects in the specified lane that contribute to the score",
+    "answer_hint_lane_note_score_value": "set \"answer\" to the total integer score",
+    "annotation_hint_most_notes_lane_label": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around all note objects in the lane with the most note objects",
+    "answer_hint_most_notes_lane_label": "set \"answer\" to the winning lane number as an integer",
     "annotation_hint_earliest_hit_lane_label": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the note that reaches the hit line earliest",
     "answer_hint_earliest_hit_lane_label": "set \"answer\" to the winning lane number as an integer"
   }

@@ -13,8 +13,9 @@ class RhythmSceneDefaults:
     lane_count_support: Tuple[int, ...] = (5, 6, 7, 8)
     row_count_support: Tuple[int, ...] = (10, 11, 12, 13, 14)
     beat_window_support: Tuple[int, ...] = (5, 6, 7)
-    hit_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
-    canvas_width: int = 760
+    note_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
+    score_total_support: Tuple[int, ...] = (3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18)
+    canvas_width: int = 900
     canvas_height: int = 900
     panel_margin_px: int = 42
     grid_width_px: int = 650

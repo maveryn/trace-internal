@@ -8,13 +8,14 @@
 5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `point_set`
-8. Program schema: `count(empty_adjacent_points(linked_to(x_marked_piece))); scene=radial_hunt_board; scope=marked_piece_destination_count`
+8. Program schema: `count(simple_adjacent_empty_points(linked_to(x_marked_piece))); scene=radial_hunt_board; scope=marked_piece_destination_count`
 
 ## Program Contract
-`count(empty_adjacent_points(linked_to(x_marked_piece))); scene=radial_hunt_board; scope=marked_piece_destination_count`
+`count(simple_adjacent_empty_points(linked_to(x_marked_piece))); scene=radial_hunt_board; scope=marked_piece_destination_count`
 
 ## Generation Notes
 1. The board is a Pretwa-inspired radial graph with three concentric circles and three diameters, producing 19 playable points.
-2. A legal destination is an adjacent empty point connected to the X-marked piece along one drawn circle or diameter segment.
-3. Occupied adjacent points are not legal destinations.
-4. The answer range is `0..6`; annotation marks the centers of every legal empty destination point, and an empty annotation list is valid when the answer is `0`.
+2. A simple-move destination is an adjacent empty point connected to the X-marked piece along one drawn circle or diameter segment.
+3. Occupied adjacent points and capture-jump landing points are excluded.
+4. Capture jumps are covered by `task_games__radial_hunt_board__capture_move_count`.
+5. The answer range is `0..6`; annotation marks the centers of every simple-move destination point, and an empty annotation list is valid when the answer is `0`.

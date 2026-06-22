@@ -411,14 +411,15 @@ def _draw_flat_rect_object(
             crimp = [(x0 + w * px, y0 + h * 0.10), (x0 + w * px, y1 - h * 0.10)]
             bboxes.append(_draw_detail_line(draw, crimp, fill=_shade(base_fill, 0.58), width=1))
     elif shape_type == "small_box":
+        box_detail = _shade(base_fill, 0.54)
+        box_soft_detail = _shade(base_fill, 0.68)
         seam1 = [(x0 + w * 0.18, y0 + h * 0.34), (x1 - w * 0.12, y0 + h * 0.34)]
         seam2 = [(x0 + w * 0.50, y0 + h * 0.12), (x0 + w * 0.50, y1 - h * 0.12)]
-        draw.line(seam1, fill=detail, width=2)
-        draw.line(seam2, fill=_shade(base_fill, 0.62), width=1)
+        draw.line(seam1, fill=box_detail, width=2)
+        draw.line(seam2, fill=box_soft_detail, width=1)
         bboxes.extend([_padded_screen_line_bbox(seam1, pad_px=1.0), _padded_screen_line_bbox(seam2, pad_px=1.0)])
-        tape = [x0 + w * 0.36, y0 + h * 0.08, x0 + w * 0.64, y1 - h * 0.10]
-        draw.rounded_rectangle(tape, radius=max(2, int(w * 0.03)), fill=(221, 194, 117), outline=(121, 95, 48), width=1)
-        bboxes.append(tape)
+        lid_line = [(x0 + w * 0.28, y0 + h * 0.18), (x1 - w * 0.18, y0 + h * 0.20)]
+        bboxes.append(_draw_detail_line(draw, lid_line, fill=box_soft_detail, width=1))
     elif shape_type == "towel":
         for offset in (0.30, 0.52, 0.74):
             fold = [(x0 + w * 0.10, y0 + h * offset), (x1 - w * 0.10, y0 + h * (offset - 0.04))]

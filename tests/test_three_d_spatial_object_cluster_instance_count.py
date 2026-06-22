@@ -375,6 +375,8 @@ def test_object_cluster_orientation_sensitive_glyphs_use_local_yaw_projection() 
     bookmark_branch = flat_rect_source.split('if shape_type == "bookmark":', 1)[1].split("base_fill = {", 1)[0]
     assert "_project_local_xy_rect" in bookmark_branch
     assert "_draw_box_object" not in bookmark_branch
+    small_box_branch = flat_rect_source.split('elif shape_type == "small_box":', 1)[1].split('elif shape_type == "towel":', 1)[0]
+    assert "(221, 194, 117)" not in small_box_branch
     ticket_source = inspect.getsource(tools_glyphs._draw_ticket_tag_object)
     ticket_branch = ticket_source.split('if shape_type == "ticket":', 1)[1].split("base_fill = _tint", 1)[0]
     assert "_project_local_xy_rect" in ticket_branch

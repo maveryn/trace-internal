@@ -369,6 +369,11 @@ def test_object_cluster_orientation_sensitive_glyphs_use_local_yaw_projection() 
         assert "_project_local_xy_rect" in source
         assert "_bbox_from_screen_points(_project_face(list(_object_vertices(spec).values())" not in source
 
+    flat_rect_source = inspect.getsource(tools_glyphs._draw_flat_rect_object)
+    bookmark_branch = flat_rect_source.split('if shape_type == "bookmark":', 1)[1].split("base_fill = {", 1)[0]
+    assert "_project_local_xy_rect" in bookmark_branch
+    assert "_draw_box_object" not in bookmark_branch
+
 
 def test_object_cluster_multi_attribute_and_count_answer_and_annotation() -> None:
     task = create_task(MULTI_ATTRIBUTE_AND_TASK_ID)

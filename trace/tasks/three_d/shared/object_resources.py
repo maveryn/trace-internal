@@ -405,7 +405,7 @@ OBJECT_CLUSTER_EXTRA_DIMENSIONS: Dict[str, Tuple[float, float, float]] = {
     "pen": (0.30, 1.14, 0.16),
     "pencil": (0.32, 1.16, 0.18),
     "card": (0.66, 0.88, 0.06),
-    "bookmark": (0.24, 0.94, 0.05),
+    "bookmark": (0.40, 1.02, 0.06),
     "candy_disc": (0.42, 0.42, 0.12),
     "cd": (0.54, 0.54, 0.08),
     "berry": (0.34, 0.34, 0.34),

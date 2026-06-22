@@ -318,9 +318,43 @@ def _draw_flat_rect_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     shape_type = str(spec.get("shape_type", "card"))
+    if shape_type == "bookmark":
+        fabric_fill = _tint(fill, 0.18)
+        fabric_edge = _shade(fill, 0.50)
+        stitch = (248, 250, 245) if sum(fill) < 420 else (78, 84, 92)
+        body = _project_local_xy_rect(spec, camera, frame, u0=0.08, v0=0.05, u1=0.92, v1=0.96, z_frac=1.0)
+        draw.polygon(body, fill=fabric_fill, outline=fabric_edge)
+        _draw_polyline(draw, body, fill=fabric_edge, width=2)
+        bboxes: List[List[float]] = [_bbox_from_screen_points(body)]
+        inset = _project_local_xy_rect(spec, camera, frame, u0=0.15, v0=0.12, u1=0.85, v1=0.90, z_frac=1.06)
+        _draw_polyline(draw, inset, fill=stitch, width=1)
+        bboxes.append(_bbox_from_screen_points(inset))
+        for u in (0.38, 0.50, 0.62):
+            lace = [
+                _project_local_xy_point(spec, camera, frame, u=u, v=0.16, z_frac=1.07),
+                _project_local_xy_point(spec, camera, frame, u=u, v=0.84, z_frac=1.07),
+            ]
+            bboxes.append(_draw_detail_line(draw, lace, fill=_shade(stitch, 0.86), width=1))
+        for v0, v1 in ((0.20, 0.30), (0.42, 0.52), (0.64, 0.74)):
+            seam = [
+                _project_local_xy_point(spec, camera, frame, u=0.24, v=v0, z_frac=1.07),
+                _project_local_xy_point(spec, camera, frame, u=0.76, v=v1, z_frac=1.07),
+            ]
+            bboxes.append(_draw_detail_line(draw, seam, fill=_shade(stitch, 0.82), width=1))
+        hole = _project_local_xy_point(spec, camera, frame, u=0.50, v=0.09, z_frac=1.08)
+        body_bbox = _bbox_from_screen_points(body)
+        hole_r = max(1.4, min(float(body_bbox[2]) - float(body_bbox[0]), float(body_bbox[3]) - float(body_bbox[1])) * 0.035)
+        bboxes.append(_draw_small_ellipse(draw, hole, hole_r, hole_r, fill=(238, 242, 240), outline=fabric_edge, width=1))
+        for u in (0.47, 0.53):
+            marker = [
+                _project_local_xy_point(spec, camera, frame, u=u, v=0.06, z_frac=1.08),
+                _project_local_xy_point(spec, camera, frame, u=u + (0.02 if u < 0.5 else -0.02), v=-0.08, z_frac=1.08),
+            ]
+            bboxes.append(_draw_detail_line(draw, marker, fill=fabric_edge, width=1))
+        return _bbox_union(*bboxes)
+
     base_fill = {
         "card": (238, 240, 232),
-        "bookmark": _tint(fill, 0.18),
         "sachet": (221, 226, 216),
         "packet": _tint(fill, 0.12),
         "small_box": _tint(fill, 0.06),
@@ -332,12 +366,7 @@ def _draw_flat_rect_object(
     h = max(1.0, y1 - y0)
     detail = (47, 56, 66)
     bboxes: List[List[float]] = [bbox]
-    if shape_type == "bookmark":
-        stripe = [x0 + w * 0.43, y0 + h * 0.10, x0 + w * 0.57, y1 - h * 0.10]
-        draw.rectangle(stripe, fill=_shade(fill, 0.72))
-        bboxes.append(stripe)
-        bboxes.append(_draw_small_ellipse(draw, (x0 + w * 0.50, y0 + h * 0.16), max(2.0, w * 0.06), max(2.0, h * 0.035), fill=(244, 247, 246), outline=detail))
-    elif shape_type in {"sachet", "packet"}:
+    if shape_type in {"sachet", "packet"}:
         for offset in (0.13, 0.87):
             line = [(x0 + w * 0.10, y0 + h * offset), (x1 - w * 0.10, y0 + h * offset)]
             draw.line(line, fill=detail, width=2)

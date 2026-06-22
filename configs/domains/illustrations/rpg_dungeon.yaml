@@ -17,6 +17,18 @@ generation:
         - 4
         - 5
         - 6
+    task_illustrations__rpg_dungeon__monster_chamber_count:
+      query_id_support:
+        - single
+      total_chest_count_support:
+        - 4
+        - 5
+        - 6
+      monster_chamber_count_support:
+        - 0
+        - 1
+        - 2
+        - 3
 
 rendering:
   shared:
@@ -34,3 +46,13 @@ prompt:
       annotation_hint_rpg_dungeon_reachable_chest_count: set "annotation" to an object with keys "player" and "reachable_chests"; "player" contains one [x0, y0, x1, y1] bounding box around the player, and "reachable_chests" contains one [x0, y0, x1, y1] bounding box around each counted reachable chest
       json_example_rpg_dungeon_reachable_chest_count: '{"annotation":{"player":[[396,336,444,384]],"reachable_chests":[[236,156,284,204],[596,156,644,204]]},"answer":2}'
       json_example_answer_only_rpg_dungeon_reachable_chest_count: '{"answer":2}'
+    task_illustrations__rpg_dungeon__monster_chamber_count:
+      bundle_id: illustrations_rpg_dungeon_v0
+      scene_key: rpg_dungeon_monster_canvas
+      task_key: rpg_dungeon_monster_chamber_count_task
+      json_output_contract: 'Return JSON with keys "annotation" and "answer".'
+      json_output_contract_answer_only: 'Return JSON with key "answer".'
+      answer_hint_rpg_dungeon_monster_chamber_count: set "answer" to the number of treasure chambers that contain a monster
+      annotation_hint_rpg_dungeon_monster_chamber_count: set "annotation" to a list containing one [x0, y0, x1, y1] bounding box around each counted monster; use an empty list when the answer is 0
+      json_example_rpg_dungeon_monster_chamber_count: '{"annotation":[[236,156,284,204],[596,156,644,204]],"answer":2}'
+      json_example_answer_only_rpg_dungeon_monster_chamber_count: '{"answer":2}'

@@ -8,11 +8,20 @@
       "",
       "",
       ""
+    ],
+    "rpg_dungeon_monster_chamber_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:rpg_dungeon_canvas": [],
+    "scene:rpg_dungeon_monster_canvas": [],
     "query:reachable_chest_count": [],
+    "query:monster_chamber_count": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -48,6 +57,13 @@
       "The picture shows a pixel-art dungeon from above, including corridors, chambers, blockers, and treasure chests.",
       "The canvas contains a top-down dungeon layout with a player, visible chests, and some corridor paths blocked by boulders.",
       "This illustration shows an RPG dungeon map from above with walkable passages and boulder-blocked passages."
+    ],
+    "rpg_dungeon_monster_canvas": [
+      "The image shows a top-down pixel RPG dungeon with stone chambers, corridors, a player, treasure chests, and small monsters in some chambers.",
+      "The scene shows a top-down RPG-style dungeon map with walkable floor, treasure chambers, chests, and small visible monsters.",
+      "The picture shows a pixel-art dungeon from above, including corridors, chambers, treasure chests, and small monsters.",
+      "The canvas contains a top-down dungeon layout with a player, visible treasure chests, and small monsters inside some chambers.",
+      "This illustration shows an RPG dungeon map from above with connected chambers, chests, and small monsters."
     ]
   },
   "query_templates": {
@@ -57,6 +73,13 @@
       "From the player's position, how many chests are connected by unblocked floor paths?",
       "Follow paths through the open dungeon floor from the player. How many treasure chests can be reached?",
       "How many treasure chests can the player reach without passing through a corridor blocked by a boulder?"
+    ],
+    "monster_chamber_count": [
+      "How many treasure chambers contain a monster?",
+      "Count the treasure chambers that have a monster inside. What is the count?",
+      "How many chamber areas with treasure chests also contain a monster?",
+      "Looking across the treasure chambers, how many contain a visible monster?",
+      "What is the number of treasure chambers that include a monster?"
     ]
   },
   "allow_empty_task_templates": true

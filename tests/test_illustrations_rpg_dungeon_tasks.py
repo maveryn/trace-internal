@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 from trace.tasks.registry import create_task
-from trace.tasks.illustrations.rpg_dungeon.reachable_chest_count import TASK_ID
+from trace.tasks.illustrations.rpg_dungeon.monster_chamber_count import TASK_ID as MONSTER_CHAMBER_COUNT_TASK_ID
+from trace.tasks.illustrations.rpg_dungeon.reachable_chest_count import TASK_ID as REACHABLE_CHEST_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_dungeon.shared.relations import reachable_tiles
 from trace.tasks.illustrations.rpg_dungeon.shared.rendering import (
+    MAX_MONSTER_CHAMBER_COUNT,
     MAX_REACHABLE_CHEST_COUNT,
     MAX_TOTAL_CHEST_COUNT,
+    MIN_MONSTER_CHAMBER_COUNT,
     MIN_REACHABLE_CHEST_COUNT,
     MIN_TOTAL_CHEST_COUNT,
+    MONSTER_OBJECT_TYPES,
     draw_rpg_dungeon_debug_overlay,
     render_rpg_dungeon_scene,
 )
@@ -65,6 +69,37 @@ def test_rpg_dungeon_renderer_is_deterministic_and_profile_safe() -> None:
             assert entity.object_type in {"chest", "person"}
 
 
+def test_rpg_dungeon_renderer_supports_distinct_monsters() -> None:
+    first = render_rpg_dungeon_scene(
+        2026062201,
+        width=1296,
+        height=864,
+        total_chest_count=6,
+        reachable_chest_count=6,
+        monster_chamber_count=3,
+    )
+    second = render_rpg_dungeon_scene(
+        2026062201,
+        width=1296,
+        height=864,
+        total_chest_count=6,
+        reachable_chest_count=6,
+        monster_chamber_count=3,
+    )
+    assert first.image.tobytes() == second.image.tobytes()
+    monsters = [entity for entity in first.entities if str(entity.object_type).startswith("monster_")]
+    assert len(monsters) == 3
+    assert first.trace["monster_count"] == 3
+    assert set(first.trace["monster_entity_ids"]) == {str(entity.entity_id) for entity in monsters}
+    assert set(first.trace["monster_chamber_ids"]) == {str(entity.chamber_id) for entity in monsters}
+    assert {str(entity.object_type) for entity in monsters}.issubset(set(MONSTER_OBJECT_TYPES))
+    assert len({str(entity.chamber_id) for entity in monsters}) == 3
+    for entity in monsters:
+        _assert_bbox_inside_canvas(list(entity.bbox_xyxy), width=1296, height=864)
+        assert entity.role == "queryable"
+        assert entity.metadata["visual_attributes"]["monster_type"] == entity.object_type
+
+
 def test_rpg_dungeon_renderer_samples_reachable_count_range() -> None:
     seen_counts = set()
     seen_totals = set()
@@ -78,13 +113,15 @@ def test_rpg_dungeon_renderer_samples_reachable_count_range() -> None:
         assert MIN_TOTAL_CHEST_COUNT <= total <= MAX_TOTAL_CHEST_COUNT
         assert MIN_REACHABLE_CHEST_COUNT <= len(scene.reachable_chest_ids) <= MAX_REACHABLE_CHEST_COUNT
         assert len(scene.reachable_chest_ids) <= total
+        assert MIN_MONSTER_CHAMBER_COUNT <= scene.trace["monster_count"] <= MAX_MONSTER_CHAMBER_COUNT
+        assert scene.trace["monster_count"] == 0
     assert seen_counts == set(range(MIN_REACHABLE_CHEST_COUNT, MAX_REACHABLE_CHEST_COUNT + 1))
     assert seen_totals == set(range(MIN_TOTAL_CHEST_COUNT, MAX_TOTAL_CHEST_COUNT + 1))
     assert {"top_bottom", "left_right"}.issubset(seen_orientations)
 
 
 def test_rpg_dungeon_reachable_chest_count_contract() -> None:
-    task = create_task(TASK_ID)
+    task = create_task(REACHABLE_CHEST_COUNT_TASK_ID)
     for profile, total_count, count, seed in (
         ("landscape", 4, 0, 2026062011),
         ("square", 5, 2, 2026062012),
@@ -143,3 +180,50 @@ def test_rpg_dungeon_reachable_chest_count_contract() -> None:
         )
         assert expected_ids == sorted(trace["render_map"]["reachable_chest_ids"])
         assert expected_ids == sorted(trace["scene_ir"]["relations"]["reachable_chest_ids"])
+
+
+def test_rpg_dungeon_monster_chamber_count_contract() -> None:
+    task = create_task(MONSTER_CHAMBER_COUNT_TASK_ID)
+    for profile, total_count, count, seed in (
+        ("landscape", 4, 0, 2026062211),
+        ("square", 5, 2, 2026062212),
+        ("portrait", 6, 3, 2026062213),
+    ):
+        out = task.generate(
+            seed,
+            params={
+                "canvas_profile": profile,
+                "total_chest_count": total_count,
+                "monster_chamber_count": count,
+            },
+            max_attempts=20,
+        )
+        assert out.scene_id == "rpg_dungeon"
+        assert out.query_id == "single"
+        assert out.answer_gt.type == "integer"
+        assert out.answer_gt.value == count
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) == count
+        assert "rooms" not in out.prompt.lower()
+        assert "red-outlined" not in out.prompt
+        assert "lettered candidate" not in out.prompt
+        width, height = out.image.size
+        for bbox in out.annotation_gt.value:
+            _assert_bbox_inside_canvas(list(bbox), width=width, height=height)
+
+        trace = out.trace_payload
+        assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_dungeon_v0"
+        assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_dungeon"
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+        assert trace["render_map"]["monster_count"] == count
+        assert trace["render_map"]["total_chest_count"] == total_count
+        assert len(trace["render_map"]["chest_entity_ids"]) == total_count
+        assert len(trace["render_map"]["monster_entity_ids"]) == count
+        assert len(trace["render_map"]["monster_chamber_ids"]) == count
+        assert len(set(trace["render_map"]["monster_chamber_ids"])) == count
+        assert trace["query_spec"]["params"]["monster_chamber_count"] == count
+        assert trace["query_spec"]["params"]["total_chest_count"] == total_count
+        assert trace["scene_ir"]["relations"]["monster_chamber_ids"] == trace["render_map"]["monster_chamber_ids"]
+        assert trace["scene_ir"]["relations"]["answer"] == count

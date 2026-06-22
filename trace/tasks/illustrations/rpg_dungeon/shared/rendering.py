@@ -39,6 +39,14 @@ MAX_TOTAL_CHEST_COUNT = 6
 DEFAULT_TOTAL_CHEST_COUNT = 5
 MIN_REACHABLE_CHEST_COUNT = 0
 MAX_REACHABLE_CHEST_COUNT = MAX_TOTAL_CHEST_COUNT
+MIN_MONSTER_CHAMBER_COUNT = 0
+MAX_MONSTER_CHAMBER_COUNT = 3
+MONSTER_OBJECT_TYPES = ("monster_slime", "monster_bat", "monster_spider")
+MONSTER_PUBLIC_NAMES: Mapping[str, str] = {
+    "monster_slime": "slime",
+    "monster_bat": "bat",
+    "monster_spider": "spider",
+}
 
 RGB = tuple[int, int, int]
 
@@ -158,6 +166,8 @@ class _LayoutSpec:
     player_tile: Tile
     chest_tile_map: Mapping[str, Tile]
     reachable_chest_ids: tuple[str, ...]
+    monster_chamber_ids: tuple[str, ...]
+    monster_entity_ids: tuple[str, ...]
 
 
 def render_rpg_dungeon_scene(
@@ -168,6 +178,7 @@ def render_rpg_dungeon_scene(
     tile_px: int = DEFAULT_TILE_PX,
     reachable_chest_count: int | None = None,
     total_chest_count: int | None = None,
+    monster_chamber_count: int | None = None,
     render_metadata: Mapping[str, Any] | None = None,
 ) -> RpgDungeonScene:
     """Render one top-down RPG dungeon layout with reachable chest metadata."""
@@ -182,11 +193,16 @@ def render_rpg_dungeon_scene(
         reachable_chest_count,
         total_chest_count=int(resolved_total_count),
     )
+    resolved_monster_count = _resolve_monster_chamber_count(
+        monster_chamber_count,
+        total_chest_count=int(resolved_total_count),
+    )
     layout_spec = _make_valid_layout_spec(
         layout,
         rng=rng,
         target_count=target_count,
         total_chest_count=int(resolved_total_count),
+        monster_chamber_count=int(resolved_monster_count),
     )
 
     canonical, draw = _render_base(layout, layout_spec=layout_spec, theme=theme, rng=rng)
@@ -237,6 +253,10 @@ def render_rpg_dungeon_scene(
         "total_chest_count": int(layout_spec.total_chest_count),
         "reachable_chest_target": int(target_count),
         "reachable_chest_ids": [str(entity_id) for entity_id in layout_spec.reachable_chest_ids],
+        "monster_count": int(len(layout_spec.monster_chamber_ids)),
+        "monster_chamber_ids": [str(chamber_id) for chamber_id in layout_spec.monster_chamber_ids],
+        "monster_entity_ids": [str(entity_id) for entity_id in layout_spec.monster_entity_ids],
+        "monster_type_counts": _monster_type_counts(layout_spec.entity_specs),
         "edge_ids": [str(edge.edge_id) for edge in layout_spec.edge_specs],
         "blocked_edge_ids": [str(edge_id) for edge_id in layout_spec.blocked_edge_ids],
         "player_tile": [int(value) for value in layout_spec.player_tile],
@@ -279,6 +299,7 @@ def render_rpg_dungeon_profile_scene(
     tile_px: int,
     reachable_chest_count: int,
     total_chest_count: int | None = None,
+    monster_chamber_count: int | None = None,
     render_metadata: Mapping[str, Any] | None = None,
 ) -> RpgDungeonScene:
     """Render an RPG dungeon using resolved canvas-profile parameters."""
@@ -293,6 +314,7 @@ def render_rpg_dungeon_profile_scene(
         tile_px=int(tile_px),
         reachable_chest_count=int(reachable_chest_count),
         total_chest_count=total_chest_count,
+        monster_chamber_count=monster_chamber_count,
         render_metadata=metadata,
     )
 
@@ -358,12 +380,29 @@ def _resolve_reachable_chest_count(
     return value
 
 
+def _resolve_monster_chamber_count(
+    monster_chamber_count: int | None,
+    *,
+    total_chest_count: int,
+) -> int:
+    if monster_chamber_count is None:
+        return 0
+    value = int(monster_chamber_count)
+    max_count = min(MAX_MONSTER_CHAMBER_COUNT, int(total_chest_count))
+    if not MIN_MONSTER_CHAMBER_COUNT <= value <= max_count:
+        raise ValueError(
+            f"monster count must be in [{MIN_MONSTER_CHAMBER_COUNT}, {max_count}], got {value}"
+        )
+    return value
+
+
 def _make_valid_layout_spec(
     layout: RpgDungeonLayout,
     *,
     rng: random.Random,
     target_count: int,
     total_chest_count: int,
+    monster_chamber_count: int,
 ) -> _LayoutSpec:
     for attempt in range(80):
         spec = _make_layout_spec(
@@ -371,6 +410,7 @@ def _make_valid_layout_spec(
             rng=random.Random(rng.randrange(1 << 62) + int(attempt)),
             target_count=target_count,
             total_chest_count=int(total_chest_count),
+            monster_chamber_count=int(monster_chamber_count),
         )
         reachable_ids = _reachable_chests_for_spec(spec)
         if len(reachable_ids) == int(target_count):
@@ -384,6 +424,7 @@ def _make_layout_spec(
     rng: random.Random,
     target_count: int,
     total_chest_count: int,
+    monster_chamber_count: int,
 ) -> _LayoutSpec:
     """Construct the carved graph while keeping target answer control explicit."""
 
@@ -400,6 +441,11 @@ def _make_layout_spec(
         str(chamber.chamber_id): str(chest_ids[index])
         for index, chamber in enumerate(chest_chambers)
     }
+    monster_chamber_ids = _select_monster_chamber_ids(
+        chest_chambers,
+        monster_chamber_count=int(monster_chamber_count),
+        rng=rng,
+    )
     reachable_chamber_ids = frozenset(
         str(chamber_id)
         for chamber_id, chest_id in chest_id_by_chamber_id.items()
@@ -419,6 +465,7 @@ def _make_layout_spec(
         floor.update(edge.path)
         corridor_tiles.update(tile for tile in edge.path if tile not in chamber_floor_tiles)
     chest_tile_map: dict[str, Tile] = {}
+    chest_box_by_chamber_id: dict[str, TileBox] = {}
     entity_specs: list[_EntitySpec] = [
         _player_spec(start_tile),
     ]
@@ -426,6 +473,7 @@ def _make_layout_spec(
         chest_id = chest_ids[index]
         chest_box = _centered_box(chamber.tile_xywh, width_tiles=2, height_tiles=1)
         chest_tile_map[chest_id] = _rect_center_tile(chest_box)
+        chest_box_by_chamber_id[str(chamber.chamber_id)] = chest_box
         entity_specs.append(
             _EntitySpec(
                 entity_id=chest_id,
@@ -438,6 +486,19 @@ def _make_layout_spec(
                     "wood_rgb": _choose(rng, ((126, 71, 39), (149, 84, 41), (116, 76, 48))),
                     "metal_rgb": _choose(rng, ((218, 171, 67), (198, 181, 96), (216, 142, 76))),
                 },
+            )
+        )
+    monster_entity_ids: list[str] = []
+    for index, chamber_id in enumerate(monster_chamber_ids):
+        chamber = chamber_by_id[str(chamber_id)]
+        monster_id = f"monster_{index:02d}"
+        monster_entity_ids.append(monster_id)
+        entity_specs.append(
+            _monster_spec(
+                entity_id=monster_id,
+                chamber=chamber,
+                chest_box=chest_box_by_chamber_id[str(chamber.chamber_id)],
+                rng=rng,
             )
         )
 
@@ -465,6 +526,8 @@ def _make_layout_spec(
         player_tile=start_tile,
         chest_tile_map=chest_tile_map,
         reachable_chest_ids=tuple(str(entity_id) for entity_id in sorted(reachable_chest_ids)),
+        monster_chamber_ids=tuple(str(chamber_id) for chamber_id in monster_chamber_ids),
+        monster_entity_ids=tuple(str(entity_id) for entity_id in monster_entity_ids),
     )
 
 
@@ -484,6 +547,8 @@ def _replace_reachable_ids(spec: _LayoutSpec, reachable_ids: Sequence[str]) -> _
         player_tile=spec.player_tile,
         chest_tile_map=spec.chest_tile_map,
         reachable_chest_ids=tuple(sorted(str(entity_id) for entity_id in reachable_ids)),
+        monster_chamber_ids=spec.monster_chamber_ids,
+        monster_entity_ids=spec.monster_entity_ids,
     )
 
 
@@ -748,6 +813,67 @@ def _player_spec(start_tile: Tile) -> _EntitySpec:
     )
 
 
+def _select_monster_chamber_ids(
+    chest_chambers: Sequence[_ChamberSpec],
+    *,
+    monster_chamber_count: int,
+    rng: random.Random,
+) -> tuple[str, ...]:
+    if int(monster_chamber_count) <= 0:
+        return ()
+    chamber_ids = [str(chamber.chamber_id) for chamber in chest_chambers]
+    rng.shuffle(chamber_ids)
+    return tuple(sorted(chamber_ids[: int(monster_chamber_count)]))
+
+
+def _monster_spec(
+    *,
+    entity_id: str,
+    chamber: _ChamberSpec,
+    chest_box: TileBox,
+    rng: random.Random,
+) -> _EntitySpec:
+    object_type = str(_choose(rng, MONSTER_OBJECT_TYPES))
+    return _EntitySpec(
+        entity_id=str(entity_id),
+        object_type=object_type,
+        public_name=str(MONSTER_PUBLIC_NAMES[object_type]),
+        chamber_id=str(chamber.chamber_id),
+        tile_xywh=_monster_box_for_chamber(chamber.tile_xywh, chest_box=chest_box, rng=rng),
+        role="queryable",
+        visual={
+            "monster_type": object_type,
+            "style": "top_down_pixel_creature",
+        },
+    )
+
+
+def _monster_box_for_chamber(chamber_box: TileBox, *, chest_box: TileBox, rng: random.Random) -> TileBox:
+    chamber_tiles = list(_rect_tiles(chamber_box))
+    chest_tiles = set(_rect_tiles(chest_box))
+    x, y, w, h = chamber_box
+    interior_tiles = {
+        (tx, ty)
+        for tx, ty in chamber_tiles
+        if int(x) < int(tx) < int(x) + int(w) - 1 and int(y) < int(ty) < int(y) + int(h) - 1
+    }
+    candidates = sorted(interior_tiles - chest_tiles, key=lambda tile: (tile[1], tile[0]))
+    if not candidates:
+        candidates = sorted(set(chamber_tiles) - chest_tiles, key=lambda tile: (tile[1], tile[0]))
+    if not candidates:
+        raise ValueError(f"could not place monster in chamber {chamber_box}")
+    tile = _choose(rng, candidates)
+    return (int(tile[0]), int(tile[1]), 1, 1)
+
+
+def _monster_type_counts(entity_specs: Sequence[_EntitySpec]) -> dict[str, int]:
+    counts = {str(object_type): 0 for object_type in MONSTER_OBJECT_TYPES}
+    for spec in entity_specs:
+        if spec.object_type in counts:
+            counts[str(spec.object_type)] += 1
+    return {key: value for key, value in counts.items() if int(value) > 0}
+
+
 def _render_base(
     layout: RpgDungeonLayout,
     *,
@@ -830,27 +956,35 @@ def _render_entities(
         if spec.object_type == "chest":
             visual.update({"wood_rgb": theme["chest_wood_rgb"], "metal_rgb": theme["chest_metal_rgb"]})
         visual.update(dict(spec.visual or {}))
-        rendered = render_illustration_object(
-            IllustrationObjectSpec(
-                object_id=spec.entity_id,
-                object_type=spec.object_type,
-                public_name=spec.public_name,
-                bbox_xyxy=bbox,
-                tile_xywh=spec.tile_xywh,
-                renderer_id=RENDERER_ID,
-                renderer_variant_id=f"top_down:{theme_id}",
-                semantic_attributes={
-                    "chamber_id": spec.chamber_id,
-                    "role": spec.role,
-                    "layout_context": str(spec.role) == "context",
-                },
-                visual_attributes=visual,
-                role=spec.role,
-                source_entity_type="rpg_dungeon_entity",
-            ),
-            RenderContext(renderer_style=RENDERER_STYLE_TOP_DOWN_PIXEL_RPG, draw=draw),
-        )
+        rendered_record: Mapping[str, Any] | None = None
+        if spec.object_type in MONSTER_OBJECT_TYPES:
+            _draw_monster(draw, spec, theme=theme)
+        else:
+            rendered = render_illustration_object(
+                IllustrationObjectSpec(
+                    object_id=spec.entity_id,
+                    object_type=spec.object_type,
+                    public_name=spec.public_name,
+                    bbox_xyxy=bbox,
+                    tile_xywh=spec.tile_xywh,
+                    renderer_id=RENDERER_ID,
+                    renderer_variant_id=f"top_down:{theme_id}",
+                    semantic_attributes={
+                        "chamber_id": spec.chamber_id,
+                        "role": spec.role,
+                        "layout_context": str(spec.role) == "context",
+                    },
+                    visual_attributes=visual,
+                    role=spec.role,
+                    source_entity_type="rpg_dungeon_entity",
+                ),
+                RenderContext(renderer_style=RENDERER_STYLE_TOP_DOWN_PIXEL_RPG, draw=draw),
+            )
+            rendered_record = rendered.object_record
         point = ((bbox[0] + bbox[2]) * 0.5, (bbox[1] + bbox[3]) * 0.5)
+        metadata: dict[str, Any] = {"visual_attributes": visual}
+        if rendered_record is not None:
+            metadata["object_record"] = rendered_record
         entities.append(
             RpgDungeonEntity(
                 entity_id=spec.entity_id,
@@ -861,10 +995,91 @@ def _render_entities(
                 bbox_xyxy=bbox,
                 point_xy=point,
                 role=spec.role,
-                metadata={"visual_attributes": visual, "object_record": rendered.object_record},
+                metadata=metadata,
             )
         )
     return entities
+
+
+def _draw_monster(draw: ImageDraw.ImageDraw, spec: _EntitySpec, *, theme: Mapping[str, Any]) -> None:
+    x, y, w, h = spec.tile_xywh
+    if int(w) != 1 or int(h) != 1:
+        raise ValueError(f"monster entity must occupy one tile, got {spec.tile_xywh}")
+    x0 = int(x) * CANONICAL_TILE_PX
+    y0 = int(y) * CANONICAL_TILE_PX
+    shadow = _rgba(_shade(theme["floor_rgb"], -38), 170)
+    draw.ellipse((x0 + 2, y0 + 10, x0 + 14, y0 + 15), fill=shadow)
+    if spec.object_type == "monster_slime":
+        _draw_slime_monster(draw, x0, y0)
+    elif spec.object_type == "monster_bat":
+        _draw_bat_monster(draw, x0, y0)
+    elif spec.object_type == "monster_spider":
+        _draw_spider_monster(draw, x0, y0)
+    else:
+        raise ValueError(f"unsupported RPG dungeon monster type: {spec.object_type}")
+
+
+def _draw_slime_monster(draw: ImageDraw.ImageDraw, x0: int, y0: int) -> None:
+    outline = (16, 65, 37)
+    body = (80, 220, 129)
+    dark = (41, 144, 78)
+    light = (165, 248, 187)
+    draw.polygon(
+        [
+            (x0 + 2, y0 + 10),
+            (x0 + 4, y0 + 5),
+            (x0 + 7, y0 + 3),
+            (x0 + 12, y0 + 5),
+            (x0 + 14, y0 + 11),
+            (x0 + 12, y0 + 14),
+            (x0 + 4, y0 + 14),
+        ],
+        fill=_rgba(body),
+        outline=_rgba(outline),
+    )
+    draw.rectangle((x0 + 5, y0 + 11, x0 + 12, y0 + 14), fill=_rgba(dark), outline=_rgba(outline))
+    draw.rectangle((x0 + 5, y0 + 7, x0 + 6, y0 + 8), fill=_rgba((10, 36, 26)))
+    draw.rectangle((x0 + 10, y0 + 7, x0 + 11, y0 + 8), fill=_rgba((10, 36, 26)))
+    draw.point((x0 + 7, y0 + 4), fill=_rgba(light))
+    draw.line((x0 + 5, y0 + 2, x0 + 6, y0 + 4), fill=_rgba(light))
+
+
+def _draw_bat_monster(draw: ImageDraw.ImageDraw, x0: int, y0: int) -> None:
+    outline = (34, 20, 58)
+    wing = (102, 74, 178)
+    wing_dark = (67, 48, 124)
+    body = (58, 43, 94)
+    draw.polygon(
+        [(x0 + 1, y0 + 8), (x0 + 3, y0 + 3), (x0 + 6, y0 + 7), (x0 + 8, y0 + 11), (x0 + 4, y0 + 10)],
+        fill=_rgba(wing),
+        outline=_rgba(outline),
+    )
+    draw.polygon(
+        [(x0 + 15, y0 + 8), (x0 + 13, y0 + 3), (x0 + 10, y0 + 7), (x0 + 8, y0 + 11), (x0 + 12, y0 + 10)],
+        fill=_rgba(wing),
+        outline=_rgba(outline),
+    )
+    draw.polygon([(x0 + 3, y0 + 8), (x0 + 5, y0 + 9), (x0 + 6, y0 + 11), (x0 + 4, y0 + 10)], fill=_rgba(wing_dark))
+    draw.polygon([(x0 + 13, y0 + 8), (x0 + 11, y0 + 9), (x0 + 10, y0 + 11), (x0 + 12, y0 + 10)], fill=_rgba(wing_dark))
+    draw.ellipse((x0 + 5, y0 + 5, x0 + 11, y0 + 13), fill=_rgba(body), outline=_rgba(outline))
+    draw.polygon([(x0 + 5, y0 + 5), (x0 + 6, y0 + 2), (x0 + 7, y0 + 5)], fill=_rgba(body), outline=_rgba(outline))
+    draw.polygon([(x0 + 9, y0 + 5), (x0 + 10, y0 + 2), (x0 + 11, y0 + 5)], fill=_rgba(body), outline=_rgba(outline))
+    draw.point((x0 + 7, y0 + 8), fill=_rgba((238, 228, 119)))
+    draw.point((x0 + 10, y0 + 8), fill=_rgba((238, 228, 119)))
+
+
+def _draw_spider_monster(draw: ImageDraw.ImageDraw, x0: int, y0: int) -> None:
+    outline = (33, 27, 32)
+    leg = (214, 216, 204)
+    body = (54, 55, 70)
+    abdomen = (84, 71, 56)
+    for dy in (6, 8, 10, 12):
+        draw.line((x0 + 6, y0 + dy, x0 + 2, y0 + dy - 2), fill=_rgba(leg), width=1)
+        draw.line((x0 + 10, y0 + dy, x0 + 14, y0 + dy - 2), fill=_rgba(leg), width=1)
+    draw.ellipse((x0 + 3, y0 + 6, x0 + 12, y0 + 14), fill=_rgba(abdomen), outline=_rgba(outline))
+    draw.ellipse((x0 + 5, y0 + 3, x0 + 11, y0 + 9), fill=_rgba(body), outline=_rgba(outline))
+    draw.point((x0 + 7, y0 + 5), fill=_rgba((236, 73, 67)))
+    draw.point((x0 + 9, y0 + 5), fill=_rgba((236, 73, 67)))
 
 
 def _render_blockers(
@@ -999,9 +1214,13 @@ __all__ = [
     "DEFAULT_TILE_PX",
     "DEFAULT_TOTAL_CHEST_COUNT",
     "MAX_REACHABLE_CHEST_COUNT",
+    "MAX_MONSTER_CHAMBER_COUNT",
     "MAX_TOTAL_CHEST_COUNT",
     "MIN_REACHABLE_CHEST_COUNT",
+    "MIN_MONSTER_CHAMBER_COUNT",
     "MIN_TOTAL_CHEST_COUNT",
+    "MONSTER_OBJECT_TYPES",
+    "MONSTER_PUBLIC_NAMES",
     "RENDERER_ID",
     "SCENE_ID",
     "THEMES",

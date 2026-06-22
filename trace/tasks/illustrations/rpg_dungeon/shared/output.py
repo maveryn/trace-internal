@@ -47,6 +47,7 @@ def rpg_dungeon_render_spec(scene: RpgDungeonScene, *, scene_id: str = SCENE_ID)
             "layout_orientation": str(scene.trace.get("layout_orientation", "")),
             "side_counts": dict(scene.trace.get("side_counts", {})),
             "total_chest_count": int(scene.trace.get("total_chest_count", 0)),
+            "monster_count": int(scene.trace.get("monster_count", 0)),
             "canvas_profile": str(scene.trace.get("canvas_profile", "")),
             "canvas_profile_probabilities": dict(scene.trace.get("canvas_profile_probabilities", {})),
         },
@@ -79,6 +80,38 @@ def rpg_dungeon_reachable_chest_count_render_map(*, scene: RpgDungeonScene) -> d
         "blocker_bboxes_px": blocker_bbox_map(scene),
         "blocker_points_px": blocker_point_map(scene),
     }
+
+
+def rpg_dungeon_monster_chamber_count_render_map(*, scene: RpgDungeonScene) -> dict[str, Any]:
+    """Return task render-map fields for monster-chamber counting."""
+
+    monsters = monster_entities(scene)
+    return {
+        "image_id": "img0",
+        "total_chest_count": len(scene.chest_entity_ids),
+        "monster_count": len(monsters),
+        "monster_entity_ids": [str(entity.entity_id) for entity in monsters],
+        "monster_chamber_ids": [str(entity.chamber_id) for entity in monsters],
+        "monster_object_types": [str(entity.object_type) for entity in monsters],
+        "monster_points_px": {
+            str(entity.entity_id): [round(float(entity.point_xy[0]), 3), round(float(entity.point_xy[1]), 3)]
+            for entity in monsters
+        },
+        "monster_bboxes_px": {
+            str(entity.entity_id): [round(float(value), 3) for value in entity.bbox_xyxy]
+            for entity in monsters
+        },
+        "chest_entity_ids": [str(entity_id) for entity_id in scene.chest_entity_ids],
+        "chest_bboxes_px": entity_bbox_map(scene, scene.chest_entity_ids),
+    }
+
+
+def monster_entities(scene: RpgDungeonScene) -> list[Any]:
+    return [
+        entity
+        for entity in scene.entities
+        if str(entity.object_type).startswith("monster_")
+    ]
 
 
 def entity_point_map(scene: RpgDungeonScene, entity_ids: Sequence[str] | None = None) -> dict[str, list[float]]:
@@ -128,13 +161,21 @@ def bbox_set_map_projection(keyed_bboxes: Mapping[str, Sequence[Sequence[float]]
     return {"type": "bbox_set_map", "bbox_set_map": values, "pixel_bbox_set_map": values}
 
 
+def bbox_set_projection(bboxes: Sequence[Sequence[float]]) -> dict[str, Any]:
+    values = [[round(float(value), 3) for value in bbox] for bbox in bboxes]
+    return {"type": "bbox_set", "bbox_set": values, "pixel_bbox_set": values}
+
+
 __all__ = [
+    "bbox_set_projection",
     "bbox_set_map_projection",
     "blocker_bbox_map",
     "blocker_point_map",
     "entity_bbox_map",
     "entity_point_map",
+    "monster_entities",
     "player_entity",
+    "rpg_dungeon_monster_chamber_count_render_map",
     "rpg_dungeon_reachable_chest_count_render_map",
     "rpg_dungeon_render_spec",
     "rpg_dungeon_scene_ir",

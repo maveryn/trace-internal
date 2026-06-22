@@ -22,15 +22,24 @@
       "",
       "",
       ""
+    ],
+    "rpg_dungeon_missing_patch_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:rpg_dungeon_canvas": [],
     "scene:rpg_dungeon_monster_canvas": [],
     "scene:rpg_dungeon_hazard_canvas": [],
+    "scene:rpg_dungeon_patch_canvas": [],
     "query:reachable_chest_count": [],
     "query:monster_chamber_count": [],
     "query:safe_reachable_chest_count": [],
+    "query:missing_patch_label": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -80,6 +89,13 @@
       "The picture shows a pixel-art dungeon from above, including corridors, chambers, boulder blockers, treasure chests, and small monsters.",
       "The canvas contains a top-down dungeon layout with a player, visible chests, monsters in some chambers, and some corridor paths blocked by boulders.",
       "This illustration shows an RPG dungeon map from above with walkable passages, boulder-blocked passages, treasure chests, and monsters."
+    ],
+    "rpg_dungeon_patch_canvas": [
+      "The image shows a top-down pixel RPG dungeon with one region removed and lettered patch options below it.",
+      "The scene shows an RPG-style dungeon map from above with a missing rectangular patch and several lettered candidate patches.",
+      "The picture shows a top-down pixel-art dungeon where one area has been blanked out and patch options are shown underneath.",
+      "The canvas contains a dungeon source panel with a missing region plus lettered patch choices.",
+      "This illustration shows a top-down dungeon layout with one missing patch and candidate replacements."
     ]
   },
   "query_templates": {
@@ -103,6 +119,13 @@
       "From the player's position, how many reachable treasure chests are in chambers without monsters?",
       "Follow only unblocked dungeon paths from the player. How many reachable chests are not inside monster chambers?",
       "How many treasure chests can the player reach without passing through boulder-blocked paths, after excluding chests in chambers with monsters?"
+    ],
+    "missing_patch_label": [
+      "Which lettered patch option restores the missing region in the dungeon image?",
+      "Choose the letter of the patch that fits the blank region in the top dungeon panel.",
+      "Which option matches the removed part of the dungeon scene?",
+      "Select the lettered patch that completes the missing area of the dungeon map.",
+      "What is the letter of the patch option that belongs in the blank region?"
     ]
   },
   "allow_empty_task_templates": true

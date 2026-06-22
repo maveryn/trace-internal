@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from trace.tasks.registry import create_task
+from trace.tasks.illustrations.rpg_dungeon.missing_patch_label import TASK_ID as MISSING_PATCH_LABEL_TASK_ID
 from trace.tasks.illustrations.rpg_dungeon.monster_chamber_count import TASK_ID as MONSTER_CHAMBER_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_dungeon.reachable_chest_count import TASK_ID as REACHABLE_CHEST_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_dungeon.safe_reachable_chest_count import TASK_ID as SAFE_REACHABLE_CHEST_COUNT_TASK_ID
@@ -258,6 +259,7 @@ def test_rpg_dungeon_monster_chamber_count_contract() -> None:
         assert trace["scene_ir"]["relations"]["monster_chamber_ids"] == trace["render_map"]["monster_chamber_ids"]
         assert trace["scene_ir"]["relations"]["answer"] == count
 
+
 def test_rpg_dungeon_safe_reachable_chest_count_contract() -> None:
     task = create_task(SAFE_REACHABLE_CHEST_COUNT_TASK_ID)
     for profile, total_count, count, seed in (
@@ -305,3 +307,50 @@ def test_rpg_dungeon_safe_reachable_chest_count_contract() -> None:
         assert trace["query_spec"]["params"]["monster_chamber_count"] >= 1
         assert trace["scene_ir"]["relations"]["counted_chest_ids"] == trace["render_map"]["counted_chest_ids"]
         assert trace["scene_ir"]["relations"]["answer"] == count
+
+
+def test_rpg_dungeon_missing_patch_label_contract() -> None:
+    task = create_task(MISSING_PATCH_LABEL_TASK_ID)
+    for profile, option_count, seed in (
+        ("landscape", 4, 2026062261),
+        ("square", 6, 2026062262),
+        ("portrait", 4, 2026062263),
+    ):
+        out = task.generate(
+            seed,
+            params={
+                "canvas_profile": profile,
+                "source_chest_count": 6,
+                "source_reachable_chest_count": 4,
+                "source_monster_count": 2,
+                "option_count": option_count,
+            },
+            max_attempts=40,
+        )
+        assert out.scene_id == "rpg_dungeon"
+        assert out.query_id == "single"
+        assert out.answer_gt.type == "option_letter"
+        assert out.annotation_gt.type == "bbox_map"
+        assert sorted(out.annotation_gt.value) == ["missing_region", "selected_option"]
+        assert "patch" in out.prompt.lower()
+        assert "room" not in out.prompt.lower()
+        width, height = out.image.size
+        for bbox in out.annotation_gt.value.values():
+            _assert_bbox_inside_canvas(list(bbox), width=width, height=height)
+
+        trace = out.trace_payload
+        assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_dungeon_v0"
+        assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_dungeon"
+        assert trace["query_spec"]["params"]["source_chest_count"] == 6
+        assert trace["query_spec"]["params"]["source_reachable_chest_count"] == 4
+        assert trace["query_spec"]["params"]["source_monster_count"] == 2
+        assert trace["query_spec"]["params"]["option_count"] == option_count
+        assert trace["projected_annotation"]["type"] == "bbox_map"
+        assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_map"] == out.annotation_gt.value
+        assert trace["render_map"]["missing_region_bbox_px"] == out.annotation_gt.value["missing_region"]
+        assert trace["render_map"]["selected_option_bbox_px"] == out.annotation_gt.value["selected_option"]
+        assert len(trace["render_map"]["option_bboxes_px_by_label"]) == option_count
+        assert out.answer_gt.value in trace["render_map"]["option_bboxes_px_by_label"]
+        assert trace["render_map"]["candidate_crop_count"] >= 1
+        assert trace["scene_ir"]["relations"]["answer_label"] == out.answer_gt.value

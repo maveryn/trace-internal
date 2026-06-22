@@ -911,6 +911,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__rpg_dungeon__safe_reachable_chest_count": _entry(
         "illustrations", "rpg_dungeon", "illustrations", "rpg_dungeon"
     ),
+    "task_illustrations__rpg_dungeon__missing_patch_label": _entry(
+        "illustrations", "rpg_dungeon", "illustrations", "rpg_dungeon"
+    ),
     "task_illustrations__transit_terminal__person_in_boarding_area_count": _entry(
         "illustrations", "transit_terminal", "illustrations", "counting"
     ),

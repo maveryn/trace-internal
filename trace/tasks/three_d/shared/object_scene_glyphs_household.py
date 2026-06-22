@@ -118,7 +118,7 @@ def _draw_candle_object(
 ) -> List[float]:
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
     wax = _sub_box_spec(spec, offset_xyz=(0.0, 0.0, -height * 0.08), dimensions_xyz=(width * 0.32, depth * 0.32, height * 0.72))
-    wax_bbox = _draw_cylinder_object(draw, wax, camera=camera, frame=frame, fill=(238, 225, 181))
+    wax_bbox = _draw_cylinder_object(draw, wax, camera=camera, frame=frame, fill=_tint(fill, 0.14))
     flame_profile = [(0.0, 1.0), (0.30, 0.24), (0.12, -0.42), (0.0, -0.76), (-0.12, -0.42), (-0.30, 0.24)]
     flame_spec = _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.62), dimensions_xyz=(width * 0.34, depth * 0.14, height * 0.58))
     flame = _project_face(_upright_profile_world_points(flame_spec, camera=camera, profile_xz=flame_profile), camera, frame)

@@ -14,7 +14,7 @@ from .defaults import (
     COLOR_CONFUSION_EXCLUSIONS,
     COLOR_READOUT_CLUSTER_SHAPE_TYPES,
     COLOR_SAFE_CLUSTER_SHAPE_TYPES,
-    COUNTABLE_SHAPE_TYPES,
+    NAMED_CLUSTER_SHAPE_TYPES,
     PROMPT_COLOR_RGB,
     compatible_distractor_pool,
     object_name_for_shape,
@@ -95,9 +95,15 @@ def _sample_nonconflicting_readout_colors(*, instance_seed: int, namespace: str,
 
 
 def safe_shape_support() -> Tuple[str, ...]:
-    """Return shapes with renderers that support explicit semantic colors."""
+    """Return named object shapes available for shape/type questions."""
 
     return tuple(str(shape) for shape in COLOR_SAFE_CLUSTER_SHAPE_TYPES)
+
+
+def named_shape_support() -> Tuple[str, ...]:
+    """Return the scene-approved named object pool for object-cluster tasks."""
+
+    return tuple(str(shape) for shape in NAMED_CLUSTER_SHAPE_TYPES)
 
 
 def color_readout_shape_support() -> Tuple[str, ...]:
@@ -440,7 +446,7 @@ def build_type_membership_sequence(
         for _ in range(int(target_count))
     ]
     if str(composition_mode) != "single_type_cluster":
-        distractor_pool = list(compatible_distractor_pool(str(shape_type), support=COUNTABLE_SHAPE_TYPES))
+        distractor_pool = list(compatible_distractor_pool(str(shape_type), support=NAMED_CLUSTER_SHAPE_TYPES))
         while len(sequence) < int(object_count):
             sequence.append(ClusterSequenceItem(str(rng.choice(distractor_pool)), random_color(rng), False, "distractor"))
     rng.shuffle(sequence)
@@ -454,7 +460,7 @@ def build_type_membership_sequence(
         extras={
             "cluster_composition_mode": str(composition_mode),
             "distractor_count": int(object_count) - int(target_count),
-            "cluster_object_pool_size": len(COUNTABLE_SHAPE_TYPES),
+            "cluster_object_pool_size": len(NAMED_CLUSTER_SHAPE_TYPES),
         },
     )
 
@@ -774,7 +780,7 @@ def resolve_shape_choice(
     key: str,
     instance_seed: int,
     namespace: str,
-    support: Sequence[str] = COUNTABLE_SHAPE_TYPES,
+    support: Sequence[str] = NAMED_CLUSTER_SHAPE_TYPES,
 ) -> tuple[str, Dict[str, float]]:
     """Resolve one object shape from the requested support."""
 
@@ -862,6 +868,7 @@ __all__ = [
     "build_type_membership_sequence",
     "build_type_union_sequence",
     "color_readout_shape_support",
+    "named_shape_support",
     "resolve_color_choice",
     "resolve_composition_mode",
     "resolve_membership_counts",

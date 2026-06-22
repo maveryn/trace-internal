@@ -168,7 +168,7 @@ def _draw_ruler_object(
         min_length_px=66.0,
         max_length_px=112.0,
     )
-    half_width = max(6.0, min(11.0, length_px * 0.085))
+    half_width = max(12.5, min(16.0, length_px * 0.110))
 
     def point_at(axis_frac: float, offset_px: float = 0.0) -> Tuple[float, float]:
         return (
@@ -182,10 +182,12 @@ def _draw_ruler_object(
         point_at(0.52, half_width),
         point_at(-0.52, half_width),
     ]
-    draw.polygon(body, fill=(232, 196, 82), outline=(92, 70, 34))
+    outline = _shade(fill, 0.45)
+    detail = _shade(fill, 0.56)
+    draw.polygon(body, fill=_tint(fill, 0.12), outline=outline)
     bboxes = [_bbox_from_screen_points(body)]
     edge = [point_at(-0.48, -half_width * 0.62), point_at(0.48, -half_width * 0.62)]
-    draw.line(edge, fill=(92, 70, 34), width=2)
+    draw.line(edge, fill=detail, width=2)
     bboxes.append(_padded_bbox_from_screen_points(edge, pad_px=1.0))
     for index in range(13):
         axis_frac = -0.43 + 0.86 * float(index) / 12.0
@@ -194,7 +196,7 @@ def _draw_ruler_object(
             point_at(axis_frac, -half_width * 0.58),
             point_at(axis_frac, -half_width * 0.58 + tick_length),
         ]
-        draw.line(tick, fill=(89, 72, 42), width=1)
+        draw.line(tick, fill=detail, width=1)
         bboxes.append(_padded_bbox_from_screen_points(tick, pad_px=1.0))
     return _bbox_union(*bboxes)
 

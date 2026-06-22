@@ -250,7 +250,7 @@ def _draw_crown_object(
         spec,
         camera=camera,
         frame=frame,
-        fill=(204, 164, 56),
+        fill=_tint(fill, 0.10),
         profile_xz=profile,
         inset_scale=0.78,
     )
@@ -481,14 +481,15 @@ def _draw_bell_object(
         spec,
         camera=camera,
         frame=frame,
-        fill=(196, 152, 48),
+        fill=_tint(fill, 0.10),
         profile_xz=profile,
         inset_scale=0.76,
     )
     rim = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.70, -0.80), (0.70, -0.80)])
     clapper_center = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.0, -0.72)])[0]
     clapper_radius = max(3.0, float(frame.scale) * float(spec["dimensions_xyz"][0]) * 0.035)
-    draw.line(rim, fill=(116, 82, 28), width=3)
+    detail = _shade(fill, 0.50)
+    draw.line(rim, fill=detail, width=3)
     draw.ellipse(
         (
             clapper_center[0] - clapper_radius,
@@ -496,8 +497,8 @@ def _draw_bell_object(
             clapper_center[0] + clapper_radius,
             clapper_center[1] + clapper_radius,
         ),
-        fill=(116, 82, 28),
-        outline=(74, 52, 22),
+        fill=detail,
+        outline=_shade(fill, 0.34),
         width=1,
     )
     return _bbox_union(
@@ -547,7 +548,7 @@ def _draw_trophy_object(
         spec,
         camera=camera,
         frame=frame,
-        fill=(210, 168, 54),
+        fill=_tint(fill, 0.10),
         profile_xz=profile,
         inset_scale=0.76,
     )

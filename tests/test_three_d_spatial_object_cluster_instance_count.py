@@ -28,6 +28,7 @@ from trace.tasks.three_d.object_cluster.shared.defaults import (
     MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION,
     MAX_RENDERED_PAIRWISE_OVERLAP_PX,
     MIN_RENDERED_VISIBLE_BBOX_FRACTION,
+    NAMED_CLUSTER_SHAPE_TYPES,
     OBJECT_CLUSTER_ORIENTATION_DEGREES,
     PROMPT_COLOR_RGB,
 )
@@ -61,7 +62,6 @@ COUNTQA_CLUSTER_ADDITIONS = {
     "bolt",
     "cushion",
     "stool",
-    "bucket",
     "tray",
     "coaster",
     "rose",
@@ -70,7 +70,86 @@ COUNTQA_CLUSTER_ADDITIONS = {
     "tape_roll",
     "bag",
 }
-REMOVED_OBJECT_CLUSTER_SHAPE_TYPES = {"chili", "coffee_bean", "dot", "glass", "heater", "paper_clip", "pillow"}
+REMOVED_OBJECT_CLUSTER_SHAPE_TYPES = {"bucket", "chili", "coffee_bean", "dot", "glass", "heater", "paper_clip", "pillow"}
+EXPECTED_OBJECT_CLUSTER_NAMED_SHAPES = {
+    "anchor",
+    "apple",
+    "arrow",
+    "basket",
+    "bell",
+    "bottle",
+    "bowl",
+    "button",
+    "cactus",
+    "calculator",
+    "candle",
+    "card",
+    "carrot",
+    "chess_piece",
+    "clock",
+    "compass",
+    "cone",
+    "crown",
+    "cube",
+    "cup",
+    "cylinder",
+    "diamond",
+    "dice",
+    "drum",
+    "fish",
+    "flower",
+    "glove",
+    "half_cylinder",
+    "hat",
+    "heart",
+    "helmet",
+    "horseshoe",
+    "jar",
+    "key",
+    "kite",
+    "lantern",
+    "leaf",
+    "mail_envelope",
+    "mini_chair",
+    "mini_table",
+    "mushroom",
+    "open_book",
+    "pencil",
+    "plate",
+    "plug",
+    "puzzle_piece",
+    "pyramid",
+    "remote_control",
+    "ruler",
+    "screw",
+    "shield",
+    "sphere",
+    "star_prism",
+    "stick",
+    "stool",
+    "straw",
+    "sword",
+    "torus",
+    "tray",
+    "trophy",
+    "umbrella",
+    "wedge",
+}
+PROMOTED_COLOR_READOUT_SHAPES = {
+    "bell",
+    "candle",
+    "crown",
+    "dice",
+    "hat",
+    "helmet",
+    "mini_chair",
+    "mini_table",
+    "pencil",
+    "ruler",
+    "straw",
+    "trophy",
+    "umbrella",
+}
 
 
 def _renderer_function_for_shape(shape_type: str) -> str:
@@ -99,7 +178,10 @@ def _renderer_fill_load_count(function_name: str) -> int:
         Path("trace/tasks/three_d/shared/object_scene_primitives.py"),
         Path("trace/tasks/three_d/shared/object_scene_glyphs_symbolic.py"),
         Path("trace/tasks/three_d/shared/object_scene_glyphs_household.py"),
+        Path("trace/tasks/three_d/shared/object_scene_glyphs_large_furniture.py"),
+        Path("trace/tasks/three_d/shared/object_scene_glyphs_large_stage.py"),
         Path("trace/tasks/three_d/shared/object_scene_glyphs_nature_apparel.py"),
+        Path("trace/tasks/three_d/shared/object_scene_glyphs_misc.py"),
         Path("trace/tasks/three_d/shared/object_scene_glyphs_tools_devices.py"),
     ):
         text = path.read_text()
@@ -222,7 +304,7 @@ def test_object_cluster_total_object_count_answer_and_annotation() -> None:
     assert max_overlap_fraction <= float(MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION)
     assert max_overlap_pixels <= float(MAX_RENDERED_PAIRWISE_OVERLAP_PX)
     assert all(str(spec["shape_type"]) == "button" for spec in object_specs)
-    assert all(str(spec["shape_type"]) in set(COLOR_SAFE_CLUSTER_SHAPE_TYPES) for spec in object_specs)
+    assert all(str(spec["shape_type"]) in set(NAMED_CLUSTER_SHAPE_TYPES) for spec in object_specs)
     assert all(spec["fill_rgb"] == list(PROMPT_COLOR_RGB[str(spec["color_name"])]) for spec in object_specs)
     assert trace["target_spec"]["color_role"] == "non_semantic_visual_variation"
     assert set(trace["target_spec"]["visual_color_names"]) == set(trace["color_counts"])
@@ -272,7 +354,7 @@ def test_object_cluster_instance_count_answer_and_annotation() -> None:
         -float(OBJECT_CLUSTER_ORIENTATION_DEGREES) <= float(spec["orientation_deg"]) <= float(OBJECT_CLUSTER_ORIENTATION_DEGREES)
         for spec in object_specs
     )
-    assert trace["solver_trace"]["cluster_object_pool_size"] == len(COUNTABLE_SHAPE_TYPES)
+    assert trace["solver_trace"]["cluster_object_pool_size"] == len(NAMED_CLUSTER_SHAPE_TYPES)
     assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
     assert output.trace_payload["projected_annotation"]["pixel_bbox_set"] == output.annotation_gt.value
     assert_three_d_canvas_contract(output)
@@ -287,7 +369,7 @@ def test_object_cluster_single_type_mode_counts_every_object() -> None:
             "scene_variant": "cluster_mat",
             "composition_mode": "single_type_cluster",
             "target_count": 8,
-            "target_shape_type": "spoon",
+            "target_shape_type": "stool",
             "post_image_noise_apply_prob": 0.0,
         },
         max_attempts=240,
@@ -302,7 +384,7 @@ def test_object_cluster_single_type_mode_counts_every_object() -> None:
     assert trace["distractor_count"] == 0
     assert output.answer_gt.value == 8
     assert len(output.annotation_gt.value) == 8
-    assert all(str(spec["shape_type"]) == "spoon" for spec in object_specs)
+    assert all(str(spec["shape_type"]) == "stool" for spec in object_specs)
     assert all(bool(spec.get("matches_query", False)) for spec in object_specs)
 
 
@@ -333,8 +415,12 @@ def test_object_cluster_countqa_additions_have_profiles_and_render() -> None:
     assert REMOVED_OBJECT_CLUSTER_SHAPE_TYPES.isdisjoint(set(COUNTABLE_SHAPE_TYPES))
     assert REMOVED_OBJECT_CLUSTER_SHAPE_TYPES.isdisjoint(set(COLOR_SAFE_CLUSTER_SHAPE_TYPES))
     assert "stick" not in set(COUNTABLE_SHAPE_TYPES)
+    assert set(NAMED_CLUSTER_SHAPE_TYPES) == EXPECTED_OBJECT_CLUSTER_NAMED_SHAPES
+    assert "apple" in set(NAMED_CLUSTER_SHAPE_TYPES)
+    assert "stick" in set(NAMED_CLUSTER_SHAPE_TYPES)
+    assert "bucket" not in set(NAMED_CLUSTER_SHAPE_TYPES)
     assert {"pen", "pencil"}.issubset(set(COUNTABLE_SHAPE_TYPES))
-    assert {"pen", "pencil", "stick"}.isdisjoint(set(COLOR_SAFE_CLUSTER_SHAPE_TYPES))
+    assert "pen" not in set(NAMED_CLUSTER_SHAPE_TYPES)
     profiles = {
         str(profile.object_type): profile
         for profile in object_profiles(source_scene="object_cluster", role="cluster_small_shape")
@@ -440,8 +526,8 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_cluster"
     assert not taxonomy.source_scene_id
-    assert len(COLOR_SAFE_CLUSTER_SHAPE_TYPES) >= 12
-    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 26
+    assert len(COLOR_SAFE_CLUSTER_SHAPE_TYPES) == len(NAMED_CLUSTER_SHAPE_TYPES)
+    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 33
     assert {
         "sphere",
         "cube",
@@ -449,42 +535,35 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
         "puzzle_piece",
         "cup",
         "shield",
-        "flask",
         "half_cylinder",
     }.issubset(set(COLOR_READOUT_CLUSTER_SHAPE_TYPES))
+    assert PROMOTED_COLOR_READOUT_SHAPES.issubset(set(COLOR_READOUT_CLUSTER_SHAPE_TYPES))
     assert {
         "button",
         "marble",
         "bead",
         "dot",
-        "straw",
         "ticket",
         "coaster",
         "tape_roll",
         "open_book",
         "apple",
-        "dice",
         "clock",
         "calculator",
         "light_bulb",
         "tomato",
-        "mini_chair",
         "lantern",
-        "trophy",
+        "flask",
+        "bucket",
     }.isdisjoint(set(COLOR_READOUT_CLUSTER_SHAPE_TYPES))
     assert {
-        "straw",
-        "ticket",
-        "marble",
-        "bead",
-        "cushion",
+        "apple",
+        "stick",
+        "sword",
+        "remote_control",
+        "open_book",
         "stool",
-        "bucket",
         "tray",
-        "coaster",
-        "hook",
-        "tape_roll",
-        "bag",
     }.issubset(set(COLOR_SAFE_CLUSTER_SHAPE_TYPES))
     for shape_type in COLOR_READOUT_CLUSTER_SHAPE_TYPES:
         renderer_function = _renderer_function_for_shape(str(shape_type))
@@ -607,7 +686,7 @@ def test_object_cluster_type_union_count_answer_and_annotation() -> None:
             "scene_variant": "tabletop_pile",
             "object_count": 20,
             "target_count": 7,
-            "target_shape_types": ["button", "marble"],
+            "target_shape_types": ["button", "dice"],
             "post_image_noise_apply_prob": 0.0,
         },
         max_attempts=300,
@@ -619,7 +698,7 @@ def test_object_cluster_type_union_count_answer_and_annotation() -> None:
     expected_ids = [
         str(spec["object_id"])
         for spec in sorted(object_specs, key=lambda item: str(item["object_id"]))
-        if str(spec["shape_type"]) in {"button", "marble"}
+        if str(spec["shape_type"]) in {"button", "dice"}
     ]
 
     assert output.query_id == "single"
@@ -627,7 +706,7 @@ def test_object_cluster_type_union_count_answer_and_annotation() -> None:
     assert output.answer_gt.value == 7
     assert target_object_ids == expected_ids
     assert output.annotation_gt.type == "bbox_set"
-    assert set(trace["target_shape_types"]) == {"button", "marble"}
+    assert set(trace["target_shape_types"]) == {"button", "dice"}
 
 
 def test_object_cluster_count_arithmetic_keyed_operand_annotation() -> None:
@@ -638,7 +717,7 @@ def test_object_cluster_count_arithmetic_keyed_operand_annotation() -> None:
             "query_id": "two_type_difference_count",
             "scene_variant": "shallow_tray",
             "left_shape_type": "button",
-            "right_shape_type": "marble",
+            "right_shape_type": "dice",
             "left_operand_count": 6,
             "right_operand_count": 2,
             "object_count": 18,
@@ -674,7 +753,7 @@ def test_object_cluster_type_frequency_singleton_count_answer_and_annotation() -
             "scene_variant": "cluster_mat",
             "object_count": 18,
             "target_count": 4,
-            "target_shape_types": ["button", "marble", "bead", "ticket"],
+            "target_shape_types": ["button", "dice", "heart", "shield"],
             "post_image_noise_apply_prob": 0.0,
         },
         max_attempts=300,

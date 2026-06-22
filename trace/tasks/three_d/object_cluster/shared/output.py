@@ -7,7 +7,12 @@ from typing import Any, Dict, Mapping
 from trace.core.seed import spawn_rng
 from trace.tasks.three_d.shared.object_scene import ObjectSceneRenderParams
 
-from .defaults import CLUSTER_SCENE_VARIANTS, COLOR_READOUT_CLUSTER_SHAPE_TYPES, COLOR_SAFE_CLUSTER_SHAPE_TYPES, COUNTABLE_SHAPE_TYPES, PROMPT_COLOR_RGB
+from .defaults import (
+    CLUSTER_SCENE_VARIANTS,
+    COLOR_READOUT_CLUSTER_SHAPE_TYPES,
+    NAMED_CLUSTER_SHAPE_TYPES,
+    PROMPT_COLOR_RGB,
+)
 from .objects import build_dataset_from_sequence
 from .relations import (
     build_arithmetic_sequence,
@@ -55,7 +60,7 @@ def build_count_request(
         namespace=f"{namespace}.scene_variant",
     )
     rng = spawn_rng(int(instance_seed), f"{namespace}.sequence")
-    count_probabilities: Dict[str, Any] = {"cluster_object_pool_size": len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)}
+    count_probabilities: Dict[str, Any] = {"cluster_object_pool_size": len(NAMED_CLUSTER_SHAPE_TYPES)}
     keyed_annotation = False
 
     if str(mode) == "all_objects":
@@ -84,24 +89,24 @@ def build_count_request(
             key="primary_shape_type",
             instance_seed=int(instance_seed),
             namespace=f"{namespace}.primary_shape_type",
-            support=COLOR_SAFE_CLUSTER_SHAPE_TYPES,
+            support=NAMED_CLUSTER_SHAPE_TYPES,
         )
         sequence, target = build_total_sequence(shape_type=str(primary_shape), object_count=int(object_count), rng=rng)
         answer_value = int(object_count)
         expected_annotation_count = int(object_count)
         scene_kind = "three_d_object_cluster_total_count"
-        extra_trace = {"cluster_composition_mode": "single_type_cluster", "distractor_count": 0, "cluster_object_pool_size": len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)}
-        count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": dict(object_probabilities), "target_shape_probabilities": dict(shape_probabilities), "cluster_object_pool_size": len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)})
+        extra_trace = {"cluster_composition_mode": "single_type_cluster", "distractor_count": 0, "cluster_object_pool_size": len(NAMED_CLUSTER_SHAPE_TYPES)}
+        count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": dict(object_probabilities), "target_shape_probabilities": dict(shape_probabilities), "cluster_object_pool_size": len(NAMED_CLUSTER_SHAPE_TYPES)})
     elif str(mode) == "type_membership":
         composition_mode, composition_probabilities = resolve_composition_mode(params=params, gen_defaults=gen_defaults, instance_seed=int(instance_seed), namespace=f"{namespace}.composition_mode")
         count_record = resolve_membership_counts(params=params, gen_defaults=gen_defaults, composition_mode=str(composition_mode), instance_seed=int(instance_seed), namespace=f"{namespace}.counts")
-        target_shape, shape_probabilities = resolve_shape_choice(params=params, key="target_shape_type", instance_seed=int(instance_seed), namespace=f"{namespace}.target_shape_type", support=COUNTABLE_SHAPE_TYPES)
+        target_shape, shape_probabilities = resolve_shape_choice(params=params, key="target_shape_type", instance_seed=int(instance_seed), namespace=f"{namespace}.target_shape_type", support=NAMED_CLUSTER_SHAPE_TYPES)
         sequence, target = build_type_membership_sequence(shape_type=str(target_shape), composition_mode=str(composition_mode), target_count=int(count_record["target_count"]), object_count=int(count_record["object_count"]), rng=rng)
         answer_value = int(count_record["target_count"])
         expected_annotation_count = int(count_record["target_count"])
         scene_kind = "three_d_object_cluster_instance_count"
-        extra_trace = {"cluster_composition_mode": str(composition_mode), "distractor_count": int(count_record["distractor_count"]), "cluster_object_pool_size": len(COUNTABLE_SHAPE_TYPES)}
-        count_probabilities.update({**dict(count_record), "composition_mode_probabilities": dict(composition_probabilities), "target_shape_probabilities": dict(shape_probabilities), "cluster_object_pool_size": len(COUNTABLE_SHAPE_TYPES)})
+        extra_trace = {"cluster_composition_mode": str(composition_mode), "distractor_count": int(count_record["distractor_count"]), "cluster_object_pool_size": len(NAMED_CLUSTER_SHAPE_TYPES)}
+        count_probabilities.update({**dict(count_record), "composition_mode_probabilities": dict(composition_probabilities), "target_shape_probabilities": dict(shape_probabilities), "cluster_object_pool_size": len(NAMED_CLUSTER_SHAPE_TYPES)})
     elif str(mode) in {"type_color", "color_membership", "type_or_color", "type_without_color", "color_without_type", "type_union"}:
         object_count, object_probabilities = resolve_uniform_count(params=params, explicit_key="object_count", minimum=int(gen_defaults.get("object_count_min", 16)), maximum=int(gen_defaults.get("object_count_max", 30)), instance_seed=int(instance_seed), namespace=f"{namespace}.object_count")
         target_min = int(gen_defaults.get("target_count_min", 2))
@@ -127,7 +132,7 @@ def build_count_request(
         answer_value = int(target_count)
         expected_annotation_count = int(target_count)
         scene_kind = f"three_d_object_cluster_{mode}"
-        pool_size = len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) if str(mode) in {"type_color", "color_membership", "type_or_color", "type_without_color", "color_without_type"} else len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)
+        pool_size = len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) if str(mode) in {"type_color", "color_membership", "type_or_color", "type_without_color", "color_without_type"} else len(NAMED_CLUSTER_SHAPE_TYPES)
         extra_trace = {"cluster_object_pool_size": int(pool_size)}
         count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": dict(target_probabilities), "target_shape_probabilities": dict(shape_probabilities), "target_color_probabilities": dict(color_probabilities), "cluster_object_pool_size": int(pool_size)})
     elif str(mode).startswith("arithmetic_"):
@@ -143,9 +148,9 @@ def build_count_request(
         if "_type_" in str(mode):
             if params.get("left_shape_type") is not None and params.get("right_shape_type") is not None:
                 operands = [str(params["left_shape_type"]), str(params["right_shape_type"])]
-                if len(set(operands)) != 2 or any(value not in set(COLOR_SAFE_CLUSTER_SHAPE_TYPES) for value in operands):
+                if len(set(operands)) != 2 or any(value not in set(NAMED_CLUSTER_SHAPE_TYPES) for value in operands):
                     raise ValueError("shape operands must be two distinct supported shapes")
-                operand_probabilities = selected_probability_map(COLOR_SAFE_CLUSTER_SHAPE_TYPES, operands)
+                operand_probabilities = selected_probability_map(NAMED_CLUSTER_SHAPE_TYPES, operands)
             else:
                 operands, operand_probabilities = resolve_two_shapes(params=params, key="operand_shape_types", instance_seed=int(instance_seed), namespace=f"{namespace}.operand_shape_types")
             operand_kind = "shape"
@@ -165,7 +170,7 @@ def build_count_request(
         sequence, target = build_arithmetic_sequence(operand_kind=operand_kind, operation=operation, left_value=str(operands[0]), right_value=str(operands[1]), left_count=int(left_count), right_count=int(right_count), object_count=int(object_count), rng=rng)
         expected_annotation_count = int(operand_total)
         scene_kind = "three_d_object_cluster_count_arithmetic"
-        pool_size = len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) if str(operand_kind) == "color" else len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)
+        pool_size = len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) if str(operand_kind) == "color" else len(NAMED_CLUSTER_SHAPE_TYPES)
         extra_trace = {"cluster_object_pool_size": int(pool_size)}
         keyed_annotation = True
         count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": {"derived_from_operands": 1.0}, "left_operand_count": int(left_count), "left_operand_count_probabilities": dict(left_probabilities), "right_operand_count": int(right_count), "right_operand_count_probabilities": dict(right_probabilities), "target_shape_probabilities": shape_probabilities, "target_color_probabilities": color_probabilities, "cluster_object_pool_size": int(pool_size)})
@@ -173,7 +178,7 @@ def build_count_request(
         object_count, object_probabilities = resolve_uniform_count(params=params, explicit_key="object_count", minimum=int(gen_defaults.get("object_count_min", 16)), maximum=int(gen_defaults.get("object_count_max", 30)), instance_seed=int(instance_seed), namespace=f"{namespace}.object_count")
         if str(mode) == "frequency_max":
             target_count, target_probabilities = resolve_uniform_count(params=params, explicit_key="target_count", minimum=int(gen_defaults.get("target_count_min", 3)), maximum=min(int(gen_defaults.get("target_count_max", 9)), max(3, int(object_count) - 6)), instance_seed=int(instance_seed), namespace=f"{namespace}.target_count")
-            target_shape, shape_probabilities = resolve_shape_choice(params=params, key="target_shape_type", instance_seed=int(instance_seed), namespace=f"{namespace}.target_shape_type", support=COLOR_SAFE_CLUSTER_SHAPE_TYPES)
+            target_shape, shape_probabilities = resolve_shape_choice(params=params, key="target_shape_type", instance_seed=int(instance_seed), namespace=f"{namespace}.target_shape_type", support=NAMED_CLUSTER_SHAPE_TYPES)
             singleton_shapes: list[str] = []
         else:
             explicit_value = params.get("target_shape_types")
@@ -181,18 +186,18 @@ def build_count_request(
                 singleton_shapes = [str(value).strip() for value in explicit_value] if not isinstance(explicit_value, str) else [value.strip() for value in explicit_value.split(",") if value.strip()]
                 target_count = len(singleton_shapes)
                 target_probabilities = {str(target_count): 1.0}
-                shape_probabilities = {str(shape): (1.0 / len(singleton_shapes) if str(shape) in set(singleton_shapes) else 0.0) for shape in COLOR_SAFE_CLUSTER_SHAPE_TYPES}
+                shape_probabilities = {str(shape): (1.0 / len(singleton_shapes) if str(shape) in set(singleton_shapes) else 0.0) for shape in NAMED_CLUSTER_SHAPE_TYPES}
             else:
                 target_count, target_probabilities = resolve_uniform_count(params=params, explicit_key="target_count", minimum=int(gen_defaults.get("target_count_min", 3)), maximum=min(int(gen_defaults.get("target_count_max", 9)), max(1, int(object_count) - 4)), instance_seed=int(instance_seed), namespace=f"{namespace}.target_count")
                 singleton_shapes, shape_probabilities = resolve_two_shapes(params=params, key="target_shape_types", instance_seed=int(instance_seed), namespace=f"{namespace}.singleton_shape_types")
                 while len(singleton_shapes) < int(target_count):
-                    singleton_shapes.append(str(COLOR_SAFE_CLUSTER_SHAPE_TYPES[len(singleton_shapes) % len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)]))
+                    singleton_shapes.append(str(NAMED_CLUSTER_SHAPE_TYPES[len(singleton_shapes) % len(NAMED_CLUSTER_SHAPE_TYPES)]))
             target_shape = None
         sequence, target = build_frequency_sequence(mode="most_common" if str(mode) == "frequency_max" else "singletons", target_shape_type=target_shape, singleton_shape_types=singleton_shapes, target_count=int(target_count), object_count=int(object_count), rng=rng)
         answer_value = int(target_count)
         expected_annotation_count = int(target_count)
         scene_kind = "three_d_object_cluster_type_frequency_count"
-        extra_trace = {"cluster_object_pool_size": len(COLOR_SAFE_CLUSTER_SHAPE_TYPES)}
+        extra_trace = {"cluster_object_pool_size": len(NAMED_CLUSTER_SHAPE_TYPES)}
         count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": dict(target_probabilities), "target_shape_probabilities": dict(shape_probabilities)})
 
     dataset = build_dataset_from_sequence(

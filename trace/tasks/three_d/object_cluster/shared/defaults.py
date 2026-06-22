@@ -25,6 +25,74 @@ COUNTABLE_SHAPE_TYPES: Tuple[str, ...] = tuple(
     for shape in OBJECT_CLUSTER_SHAPE_TYPES
     if str(shape) not in set(OBJECT_CLUSTER_EXCLUDED_SHAPE_TYPES)
 )
+NAMED_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
+    shape
+    for shape in (
+        "arrow",
+        "apple",
+        "anchor",
+        "sphere",
+        "basket",
+        "bell",
+        "open_book",
+        "bottle",
+        "bowl",
+        "button",
+        "cactus",
+        "calculator",
+        "candle",
+        "card",
+        "carrot",
+        "mini_chair",
+        "chess_piece",
+        "clock",
+        "compass",
+        "cone",
+        "crown",
+        "cube",
+        "cup",
+        "cylinder",
+        "diamond",
+        "dice",
+        "drum",
+        "mail_envelope",
+        "fish",
+        "flower",
+        "glove",
+        "half_cylinder",
+        "hat",
+        "heart",
+        "helmet",
+        "horseshoe",
+        "jar",
+        "key",
+        "kite",
+        "lantern",
+        "leaf",
+        "mushroom",
+        "pencil",
+        "plate",
+        "plug",
+        "puzzle_piece",
+        "pyramid",
+        "wedge",
+        "remote_control",
+        "torus",
+        "ruler",
+        "screw",
+        "shield",
+        "star_prism",
+        "stick",
+        "stool",
+        "straw",
+        "sword",
+        "mini_table",
+        "tray",
+        "trophy",
+        "umbrella",
+    )
+    if shape in set(OBJECT_CLUSTER_SHAPE_TYPES)
+)
 OBJECT_CLUSTER_ORIENTATION_DEGREES = 15.0
 CLUSTER_DIMENSION_SCALE = 1.04
 MIN_PROJECTED_OBJECT_AREA_PX = 320.0
@@ -56,56 +124,12 @@ PROMPT_COLOR_RGB: Dict[str, Tuple[int, int, int]] = {
     str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
     for name, rgb in available_named_colors()
 }
-COLOR_SAFE_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
-    shape
-    for shape in (
-        "sphere",
-        "cube",
-        "cylinder",
-        "cone",
-        "torus",
-        "pyramid",
-        "wedge",
-        "star_prism",
-        "diamond",
-        "heart",
-        "button",
-        "candy_disc",
-        "berry",
-        "card",
-        "bookmark",
-        "small_box",
-        "puzzle_piece",
-        "cup",
-        "bowl",
-        "plate",
-        "mini_chair",
-        "mini_table",
-        "stool",
-        "flower",
-        "cushion",
-        "jar",
-        "can",
-        "lid",
-        "bucket",
-        "tray",
-        "coaster",
-        "clip",
-        "socket",
-        "hook",
-        "tape_roll",
-        "bag",
-        "chess_piece",
-        "straw",
-        "ticket",
-        "marble",
-        "bead",
-    )
-    if shape in set(COUNTABLE_SHAPE_TYPES)
-)
+# Backwards-compatible name for shape-only/count-by-type object support. This is
+# not the semantic-color readout pool; use COLOR_READOUT_CLUSTER_SHAPE_TYPES for
+# tasks where the prompt asks about a named color.
+COLOR_SAFE_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_CLUSTER_SHAPE_TYPES)
 # Semantic-color tasks only use shapes whose projected renderer makes ``fill_rgb``
-# a visible body color. Canonical-color glyphs such as books, apples, dice, and
-# clocks stay available for non-color object-cluster tasks.
+# a visible dominant body color.
 COLOR_READOUT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
     shape
     for shape in (
@@ -119,22 +143,29 @@ COLOR_READOUT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
         "star_prism",
         "diamond",
         "heart",
-        "small_box",
         "puzzle_piece",
         "cup",
         "bowl",
         "stool",
         "flower",
-        "can",
-        "bucket",
         "tray",
-        "bag",
         "chess_piece",
         "arrow",
         "shield",
-        "gear",
-        "flask",
         "half_cylinder",
+        "dice",
+        "pencil",
+        "straw",
+        "ruler",
+        "bell",
+        "candle",
+        "crown",
+        "trophy",
+        "mini_chair",
+        "mini_table",
+        "hat",
+        "helmet",
+        "umbrella",
     )
     if shape in set(COUNTABLE_SHAPE_TYPES)
 )
@@ -156,7 +187,7 @@ VISUAL_CONFUSION_GROUPS: Tuple[Tuple[str, ...], ...] = (
     ("candy_disc", "cd", "berry", "button", "sphere", "marble", "bead", "coaster", "lid"),
     ("screw", "hex_nut", "clip", "socket", "bolt", "hook", "tape_roll", "torus"),
     ("fork", "spoon"),
-    ("plate", "bowl", "cup", "jar", "can", "lid", "bottle", "bucket", "tray", "coaster", "basket"),
+    ("plate", "bowl", "cup", "jar", "can", "lid", "bottle", "tray", "coaster", "basket"),
     ("hammer", "paint_brush"),
     ("flower", "rose", "cactus", "leaf", "egg", "apple", "carrot", "tomato"),
     ("light_bulb", "lantern", "candle"),
@@ -229,6 +260,7 @@ __all__ = [
     "MIN_RENDERED_VISIBLE_BBOX_FRACTION",
     "MIN_RENDERED_BBOX_SIDE_PX",
     "MIN_PROJECTED_OBJECT_AREA_PX",
+    "NAMED_CLUSTER_SHAPE_TYPES",
     "OBJECT_CLUSTER_EXCLUDED_SHAPE_TYPES",
     "OBJECT_CLUSTER_ORIENTATION_DEGREES",
     "PLACEMENT_FOOTPRINT_SEPARATION_FACTOR",

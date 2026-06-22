@@ -301,7 +301,7 @@ def _draw_hat_object(
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
     brim = _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.0), dimensions_xyz=(width, depth, height * 0.14))
     crown_spec = _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.08), dimensions_xyz=(width * 0.66, depth * 0.70, height * 0.76))
-    brim_bbox = _draw_cylinder_object(draw, brim, camera=camera, frame=frame, fill=(95, 78, 58))
+    brim_bbox = _draw_cylinder_object(draw, brim, camera=camera, frame=frame, fill=_shade(fill, 0.62))
     crown_profile = [
         (-0.76, -0.88),
         (0.76, -0.88),
@@ -311,11 +311,11 @@ def _draw_hat_object(
         (-0.42, 0.72),
         (-0.66, 0.24),
     ]
-    crown = _draw_upright_profile_object(draw, crown_spec, camera=camera, frame=frame, fill=(143, 107, 67), profile_xz=crown_profile, inset_scale=0.0)
+    crown = _draw_upright_profile_object(draw, crown_spec, camera=camera, frame=frame, fill=_tint(fill, 0.08), profile_xz=crown_profile, inset_scale=0.0)
     band = _upright_screen_points(crown_spec, camera=camera, frame=frame, profile_xz=[(-0.62, -0.36), (0.62, -0.36)])
     brim_curve = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.84, -0.70), (-0.36, -0.56), (0.36, -0.56), (0.84, -0.70)])
-    draw.line(band, fill=(53, 42, 34), width=4)
-    draw.line(brim_curve, fill=(53, 42, 34), width=2)
+    draw.line(band, fill=_shade(fill, 0.36), width=4)
+    draw.line(brim_curve, fill=_shade(fill, 0.40), width=2)
     return _bbox_union(brim_bbox, crown, _bbox_from_screen_points(band), _bbox_from_screen_points(brim_curve))
 
 
@@ -341,7 +341,7 @@ def _draw_helmet_object(
         (-0.26, -0.58),
         (-0.70, -0.74),
     ]
-    bbox = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=(73, 91, 132), profile_xz=profile, inset_scale=0.0)
+    bbox = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=_tint(fill, 0.06), profile_xz=profile, inset_scale=0.0)
     visor = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.58, 0.20), (0.58, 0.20), (0.46, -0.18), (0.12, -0.32), (-0.46, -0.18)])
     chin = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.32, -0.30), (0.00, -0.56), (0.32, -0.30), (0.20, -0.74), (-0.20, -0.74)])
     ridge = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.0, 0.86), (0.0, 0.28)])
@@ -349,11 +349,11 @@ def _draw_helmet_object(
     cheek_right = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.68, 0.12), (0.46, -0.20), (0.48, -0.52)])
     draw.polygon(visor, fill=(74, 190, 218))
     _draw_polyline(draw, visor, fill=(15, 28, 42), width=2)
-    draw.polygon(chin, fill=(42, 52, 76))
-    _draw_polyline(draw, chin, fill=(14, 22, 34), width=1)
-    draw.line(ridge, fill=(190, 205, 219), width=3)
-    draw.line(cheek_left, fill=(29, 38, 58), width=3)
-    draw.line(cheek_right, fill=(29, 38, 58), width=3)
+    draw.polygon(chin, fill=_shade(fill, 0.46))
+    _draw_polyline(draw, chin, fill=_shade(fill, 0.30), width=1)
+    draw.line(ridge, fill=_tint(fill, 0.36), width=3)
+    draw.line(cheek_left, fill=_shade(fill, 0.40), width=3)
+    draw.line(cheek_right, fill=_shade(fill, 0.40), width=3)
     return _bbox_union(
         bbox,
         _bbox_from_screen_points(visor),
@@ -459,8 +459,8 @@ def _draw_umbrella_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     canopy = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.96, 0.20), (-0.62, 0.68), (0.00, 0.86), (0.62, 0.68), (0.96, 0.20), (0.58, 0.06), (0.20, 0.18), (-0.20, 0.06), (-0.58, 0.18)])
-    draw.polygon(canopy, fill=(201, 67, 86))
-    _draw_polyline(draw, canopy, fill=(86, 38, 48), width=2)
+    draw.polygon(canopy, fill=_tint(fill, 0.08))
+    _draw_polyline(draw, canopy, fill=_shade(fill, 0.42), width=2)
     shaft = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.0, 0.14), (0.0, -0.88)])
     hook = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.0, -0.88), (0.20, -0.98), (0.34, -0.78)])
     draw.line(shaft, fill=(54, 61, 68), width=3)

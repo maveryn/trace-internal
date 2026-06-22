@@ -199,7 +199,7 @@ def _draw_pencil_object(
         min_length_px=66.0,
         max_length_px=110.0,
     )
-    radius = max(4.0, min(6.8, length_px * 0.060))
+    radius = max(6.6, min(9.5, length_px * 0.085))
 
     def point_at(axis_frac: float, *, z_frac: float = 0.0) -> Tuple[float, float]:
         return (
@@ -226,7 +226,7 @@ def _draw_pencil_object(
     parts = [
         (strip_between(eraser_rear, eraser_front, radius * 0.95), (214, 108, 126), (95, 58, 66)),
         (strip_between(eraser_front, ferrule_front, radius * 1.02), (180, 187, 194), (70, 78, 86)),
-        (strip_between(ferrule_front, body_front, radius), _tint(fill, 0.16), (122, 91, 24)),
+        (strip_between(ferrule_front, body_front, radius), _tint(fill, 0.16), _shade(fill, 0.42)),
         (strip_between(body_front, wood_front, radius * 0.98, radius * 0.34), (188, 139, 78), (91, 61, 35)),
         (strip_between(wood_front, graphite_tip, radius * 0.34, radius * 0.10), (34, 38, 43), (20, 24, 28)),
     ]
@@ -248,7 +248,7 @@ def _draw_pencil_object(
             (start[0] + normal[0] * radius * offset, start[1] + normal[1] * radius * offset),
             (end[0] + normal[0] * radius * offset, end[1] + normal[1] * radius * offset),
         ]
-        draw.line(line, fill=(170, 126, 33), width=1)
+        draw.line(line, fill=_shade(fill, 0.58), width=1)
         bboxes.append(_padded_screen_line_bbox(line, pad_px=1.0))
     tip_radius = max(1.1, radius * 0.18)
     draw.ellipse((graphite_tip[0] - tip_radius, graphite_tip[1] - tip_radius, graphite_tip[0] + tip_radius, graphite_tip[1] + tip_radius), fill=(22, 25, 29))
@@ -1024,7 +1024,7 @@ def _draw_straw_object(
             center[1] + direction[1] * length_px * float(axis_frac) + normal[1] * float(offset_px),
         )
 
-    tube_width = max(7, int(round(length_px * 0.090)))
+    tube_width = max(12, int(round(length_px * 0.120)))
     tube = [point_at(-0.52, -1.0), point_at(-0.10, 7.0), point_at(0.52, -2.0)]
     draw.line(tube, fill=_shade(fill, 0.52), width=tube_width + 3, joint="curve")
     draw.line(tube, fill=_tint(fill, 0.30), width=tube_width, joint="curve")
@@ -2109,7 +2109,7 @@ def _draw_dice_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=(232, 235, 232))
+    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=_tint(fill, 0.12))
     bboxes = [bbox]
 
     vertices = _object_vertices(spec)

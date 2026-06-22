@@ -106,12 +106,50 @@ def rpg_dungeon_monster_chamber_count_render_map(*, scene: RpgDungeonScene) -> d
     }
 
 
+def rpg_dungeon_safe_reachable_chest_count_render_map(*, scene: RpgDungeonScene) -> dict[str, Any]:
+    """Return task render-map fields for reachable non-monster-chamber chest counting."""
+
+    player = player_entity(scene)
+    if player is None:
+        raise ValueError("safe reachable chest render map requires a player entity")
+    counted_ids = safe_reachable_chest_ids(scene)
+    counted_bboxes = entity_bbox_map(scene, counted_ids)
+    return {
+        "image_id": "img0",
+        "player_entity_id": str(scene.player_entity_id),
+        "player_point_px": [round(float(value), 3) for value in player.point_xy],
+        "player_bbox_px": [round(float(value), 3) for value in player.bbox_xyxy],
+        "total_chest_count": len(scene.chest_entity_ids),
+        "reachable_chest_ids": [str(entity_id) for entity_id in scene.reachable_chest_ids],
+        "monster_chamber_ids": [str(entity.chamber_id) for entity in monster_entities(scene)],
+        "counted_chest_ids": [str(entity_id) for entity_id in counted_ids],
+        "counted_chest_bboxes_px": counted_bboxes,
+        "counted_count": len(counted_ids),
+        "chest_bboxes_px": entity_bbox_map(scene, scene.chest_entity_ids),
+        "monster_bboxes_px": {
+            str(entity.entity_id): [round(float(value), 3) for value in entity.bbox_xyxy]
+            for entity in monster_entities(scene)
+        },
+        "blocker_bboxes_px": blocker_bbox_map(scene),
+    }
+
+
 def monster_entities(scene: RpgDungeonScene) -> list[Any]:
     return [
         entity
         for entity in scene.entities
         if str(entity.object_type).startswith("monster_")
     ]
+
+
+def safe_reachable_chest_ids(scene: RpgDungeonScene) -> tuple[str, ...]:
+    monster_chambers = {str(entity.chamber_id) for entity in monster_entities(scene)}
+    entity_by_id = {str(entity.entity_id): entity for entity in scene.entities}
+    return tuple(
+        str(entity_id)
+        for entity_id in scene.reachable_chest_ids
+        if str(entity_by_id[str(entity_id)].chamber_id) not in monster_chambers
+    )
 
 
 def entity_point_map(scene: RpgDungeonScene, entity_ids: Sequence[str] | None = None) -> dict[str, list[float]]:
@@ -178,5 +216,7 @@ __all__ = [
     "rpg_dungeon_monster_chamber_count_render_map",
     "rpg_dungeon_reachable_chest_count_render_map",
     "rpg_dungeon_render_spec",
+    "rpg_dungeon_safe_reachable_chest_count_render_map",
     "rpg_dungeon_scene_ir",
+    "safe_reachable_chest_ids",
 ]

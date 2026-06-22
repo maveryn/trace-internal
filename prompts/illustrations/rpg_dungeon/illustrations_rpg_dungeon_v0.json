@@ -15,13 +15,22 @@
       "",
       "",
       ""
+    ],
+    "rpg_dungeon_safe_reachable_chest_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:rpg_dungeon_canvas": [],
     "scene:rpg_dungeon_monster_canvas": [],
+    "scene:rpg_dungeon_hazard_canvas": [],
     "query:reachable_chest_count": [],
     "query:monster_chamber_count": [],
+    "query:safe_reachable_chest_count": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -64,6 +73,13 @@
       "The picture shows a pixel-art dungeon from above, including corridors, chambers, treasure chests, and small monsters.",
       "The canvas contains a top-down dungeon layout with a player, visible treasure chests, and small monsters inside some chambers.",
       "This illustration shows an RPG dungeon map from above with connected chambers, chests, and small monsters."
+    ],
+    "rpg_dungeon_hazard_canvas": [
+      "The image shows a top-down pixel RPG dungeon with stone chambers, corridors, a player, treasure chests, boulders blocking some paths, and small monsters in some chambers.",
+      "The scene shows a top-down RPG-style dungeon map with walkable floor, blocked passages, treasure chests, and monsters inside some chambers.",
+      "The picture shows a pixel-art dungeon from above, including corridors, chambers, boulder blockers, treasure chests, and small monsters.",
+      "The canvas contains a top-down dungeon layout with a player, visible chests, monsters in some chambers, and some corridor paths blocked by boulders.",
+      "This illustration shows an RPG dungeon map from above with walkable passages, boulder-blocked passages, treasure chests, and monsters."
     ]
   },
   "query_templates": {
@@ -80,6 +96,13 @@
       "How many chamber areas with treasure chests also contain a monster?",
       "Looking across the treasure chambers, how many contain a visible monster?",
       "What is the number of treasure chambers that include a monster?"
+    ],
+    "safe_reachable_chest_count": [
+      "Starting from the player, how many treasure chests can be reached without crossing boulders, excluding any chest in a chamber that contains a monster?",
+      "Count the treasure chests reachable from the player without crossing boulders, but do not count chests in monster chambers. What is the count?",
+      "From the player's position, how many reachable treasure chests are in chambers without monsters?",
+      "Follow only unblocked dungeon paths from the player. How many reachable chests are not inside monster chambers?",
+      "How many treasure chests can the player reach without passing through boulder-blocked paths, after excluding chests in chambers with monsters?"
     ]
   },
   "allow_empty_task_templates": true

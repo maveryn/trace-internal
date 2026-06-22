@@ -179,6 +179,7 @@ def render_rpg_dungeon_scene(
     reachable_chest_count: int | None = None,
     total_chest_count: int | None = None,
     monster_chamber_count: int | None = None,
+    reachable_monster_chamber_count: int | None = None,
     render_metadata: Mapping[str, Any] | None = None,
 ) -> RpgDungeonScene:
     """Render one top-down RPG dungeon layout with reachable chest metadata."""
@@ -203,6 +204,7 @@ def render_rpg_dungeon_scene(
         target_count=target_count,
         total_chest_count=int(resolved_total_count),
         monster_chamber_count=int(resolved_monster_count),
+        reachable_monster_chamber_count=reachable_monster_chamber_count,
     )
 
     canonical, draw = _render_base(layout, layout_spec=layout_spec, theme=theme, rng=rng)
@@ -300,6 +302,7 @@ def render_rpg_dungeon_profile_scene(
     reachable_chest_count: int,
     total_chest_count: int | None = None,
     monster_chamber_count: int | None = None,
+    reachable_monster_chamber_count: int | None = None,
     render_metadata: Mapping[str, Any] | None = None,
 ) -> RpgDungeonScene:
     """Render an RPG dungeon using resolved canvas-profile parameters."""
@@ -315,6 +318,7 @@ def render_rpg_dungeon_profile_scene(
         reachable_chest_count=int(reachable_chest_count),
         total_chest_count=total_chest_count,
         monster_chamber_count=monster_chamber_count,
+        reachable_monster_chamber_count=reachable_monster_chamber_count,
         render_metadata=metadata,
     )
 
@@ -403,6 +407,7 @@ def _make_valid_layout_spec(
     target_count: int,
     total_chest_count: int,
     monster_chamber_count: int,
+    reachable_monster_chamber_count: int | None,
 ) -> _LayoutSpec:
     for attempt in range(80):
         spec = _make_layout_spec(
@@ -411,6 +416,7 @@ def _make_valid_layout_spec(
             target_count=target_count,
             total_chest_count=int(total_chest_count),
             monster_chamber_count=int(monster_chamber_count),
+            reachable_monster_chamber_count=reachable_monster_chamber_count,
         )
         reachable_ids = _reachable_chests_for_spec(spec)
         if len(reachable_ids) == int(target_count):
@@ -425,6 +431,7 @@ def _make_layout_spec(
     target_count: int,
     total_chest_count: int,
     monster_chamber_count: int,
+    reachable_monster_chamber_count: int | None,
 ) -> _LayoutSpec:
     """Construct the carved graph while keeping target answer control explicit."""
 
@@ -441,15 +448,17 @@ def _make_layout_spec(
         str(chamber.chamber_id): str(chest_ids[index])
         for index, chamber in enumerate(chest_chambers)
     }
-    monster_chamber_ids = _select_monster_chamber_ids(
-        chest_chambers,
-        monster_chamber_count=int(monster_chamber_count),
-        rng=rng,
-    )
     reachable_chamber_ids = frozenset(
         str(chamber_id)
         for chamber_id, chest_id in chest_id_by_chamber_id.items()
         if str(chest_id) in reachable_chest_id_set
+    )
+    monster_chamber_ids = _select_monster_chamber_ids(
+        chest_chambers,
+        monster_chamber_count=int(monster_chamber_count),
+        reachable_chamber_ids=reachable_chamber_ids,
+        reachable_monster_chamber_count=reachable_monster_chamber_count,
+        rng=rng,
     )
     edge_specs = _make_edge_specs(
         chamber_specs,
@@ -817,10 +826,30 @@ def _select_monster_chamber_ids(
     chest_chambers: Sequence[_ChamberSpec],
     *,
     monster_chamber_count: int,
+    reachable_chamber_ids: frozenset[str],
+    reachable_monster_chamber_count: int | None,
     rng: random.Random,
 ) -> tuple[str, ...]:
     if int(monster_chamber_count) <= 0:
         return ()
+    if reachable_monster_chamber_count is not None:
+        reachable = [str(chamber.chamber_id) for chamber in chest_chambers if str(chamber.chamber_id) in reachable_chamber_ids]
+        unreachable = [str(chamber.chamber_id) for chamber in chest_chambers if str(chamber.chamber_id) not in reachable_chamber_ids]
+        reachable_needed = int(reachable_monster_chamber_count)
+        unreachable_needed = int(monster_chamber_count) - reachable_needed
+        if reachable_needed < 0 or unreachable_needed < 0:
+            raise ValueError(
+                f"reachable monster split is invalid: total={monster_chamber_count}, reachable={reachable_needed}"
+            )
+        if reachable_needed > len(reachable) or unreachable_needed > len(unreachable):
+            raise ValueError(
+                "reachable monster split exceeds chamber support: "
+                f"reachable_needed={reachable_needed}, reachable={len(reachable)}, "
+                f"unreachable_needed={unreachable_needed}, unreachable={len(unreachable)}"
+            )
+        rng.shuffle(reachable)
+        rng.shuffle(unreachable)
+        return tuple(sorted(reachable[:reachable_needed] + unreachable[:unreachable_needed]))
     chamber_ids = [str(chamber.chamber_id) for chamber in chest_chambers]
     rng.shuffle(chamber_ids)
     return tuple(sorted(chamber_ids[: int(monster_chamber_count)]))

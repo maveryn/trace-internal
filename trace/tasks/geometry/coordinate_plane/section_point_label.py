@@ -47,4 +47,6 @@ class GeometryCoordinateSectionPointLabelTask:
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
         """Generate a segment-section candidate selection scene."""
 
-        return run_coordinate_algebra_entry(self, instance_seed, params=params, max_attempts=max_attempts)
+        task_params = dict(params)
+        task_params["algebra_candidate_count"] = 4
+        return run_coordinate_algebra_entry(self, instance_seed, params=task_params, max_attempts=max_attempts)

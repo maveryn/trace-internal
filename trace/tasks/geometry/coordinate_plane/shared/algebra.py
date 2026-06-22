@@ -150,14 +150,16 @@ _MIDPOINT_CASES: Tuple[Tuple[GraphPoint, GraphPoint], ...] = (
     ((2, -6), (-1, -2)),
 )
 _SECTION_CASES: Tuple[Tuple[GraphPoint, GraphPoint], ...] = (
-    ((-6, -3), (3, 3)),
-    ((4, -5), (-5, 1)),
-    ((-6, 5), (3, -4)),
-    ((5, 4), (-4, -5)),
-    ((-5, -1), (4, 5)),
-    ((3, -6), (-6, 3)),
-    ((-4, 6), (5, 0)),
-    ((-7, 2), (2, -4)),
+    ((-6, -6), (6, 6)),
+    ((-6, 0), (6, 0)),
+    ((0, -6), (0, 6)),
+    ((-7, -3), (5, 3)),
+    ((-5, 5), (7, -1)),
+    ((6, -6), (-6, 6)),
+    ((-6, 3), (6, -3)),
+    ((-3, -6), (3, 6)),
+    ((5, -7), (-7, 5)),
+    ((-7, 2), (5, -4)),
 )
 _TRANSLATION_CASES: Tuple[Tuple[GraphPoint, GraphPoint], ...] = (
     ((-4, 1), (5, 2)),
@@ -452,6 +454,22 @@ def _candidate_labels_for_selection(query: _ResolvedQuery, *, candidate_count: i
     return labels
 
 
+def _interior_lattice_points_on_segment(point_p: GraphPoint, point_q: GraphPoint) -> Tuple[GraphPoint, ...]:
+    """Return integer lattice points strictly between two graph points."""
+
+    dx = int(point_q[0]) - int(point_p[0])
+    dy = int(point_q[1]) - int(point_p[1])
+    steps = math.gcd(abs(int(dx)), abs(int(dy)))
+    if int(steps) <= 1:
+        return ()
+    step_x = int(dx) // int(steps)
+    step_y = int(dy) // int(steps)
+    return tuple(
+        (int(point_p[0]) + (index * int(step_x)), int(point_p[1]) + (index * int(step_y)))
+        for index in range(1, int(steps))
+    )
+
+
 def _common_distractors(problem: _AlgebraProblem, *, max_abs: int) -> Tuple[GraphPoint, ...]:
     """Create plausible wrong graph points while preserving one unique target."""
 
@@ -469,16 +487,10 @@ def _common_distractors(problem: _AlgebraProblem, *, max_abs: int) -> Tuple[Grap
     elif str(problem.operation_key) in set(SECTION_OPERATIONS):
         point_p = known_points["P"]
         point_q = known_points["Q"]
-        dx = int(point_q[0]) - int(point_p[0])
-        dy = int(point_q[1]) - int(point_p[1])
-        one_third = (int(point_p[0]) + (int(dx) // 3), int(point_p[1]) + (int(dy) // 3))
-        two_thirds = (int(point_p[0]) + (2 * int(dx) // 3), int(point_p[1]) + (2 * int(dy) // 3))
-        reverse_one_third = (int(point_q[0]) - (int(dx) // 3), int(point_q[1]) - (int(dy) // 3))
-        midpoint = ((int(point_p[0]) + int(point_q[0])) // 2, (int(point_p[1]) + int(point_q[1])) // 2)
-        for point in (one_third, two_thirds, reverse_one_third, midpoint):
-            _add_candidate(distractors, point, occupied=set(), max_abs=int(max_abs))
-        _add_candidate(distractors, (int(target[0]) + (int(dx) // 3), int(target[1]) + (int(dy) // 3)), occupied=set(), max_abs=int(max_abs))
-        _add_candidate(distractors, (int(target[0]) - (int(dx) // 3), int(target[1]) - (int(dy) // 3)), occupied=set(), max_abs=int(max_abs))
+        for point in _interior_lattice_points_on_segment(point_p, point_q):
+            if tuple(point) != tuple(target):
+                _add_candidate(distractors, point, occupied=set(), max_abs=int(max_abs))
+        return tuple(distractors)
     elif str(problem.operation_key) == "translate_direct":
         source = known_points["P"]
         dx = int(target[0]) - int(source[0])
@@ -558,6 +570,8 @@ def _sample_candidate_points(
                 break
         if str(label) in candidate_points_by_label:
             continue
+        if str(problem.operation_key) in set(SECTION_OPERATIONS):
+            raise RuntimeError("section point task requires all candidate distractors to lie on segment PQ")
         for _ in range(500):
             point = (int(rng.randint(-int(max_abs), int(max_abs))), int(rng.randint(-int(max_abs), int(max_abs))))
             if point in occupied or point in set(candidate_points_by_label.values()):

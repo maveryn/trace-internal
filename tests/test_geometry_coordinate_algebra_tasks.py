@@ -50,7 +50,7 @@ def test_missing_endpoint_task_has_unique_candidate_answer(query_id: str) -> Non
 @pytest.mark.parametrize("query_id", SECTION_POINT_QUERY_IDS)
 def test_section_point_task_has_unique_candidate_answer(query_id: str) -> None:
     task = create_task(SECTION_POINT_TASK_ID)
-    out = task.generate(77906, params={"query_id": query_id, "winner_label": "D"}, max_attempts=50)
+    out = task.generate(77906, params={"query_id": query_id, "winner_label": "D", "algebra_candidate_count": 6}, max_attempts=50)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     candidates = execution["candidate_points_by_label"]
@@ -63,12 +63,22 @@ def test_section_point_task_has_unique_candidate_answer(query_id: str) -> None:
     assert out.annotation_gt.value == candidates["D"]["point_px"]
     assert trace["projected_annotation"]["point"] == out.annotation_gt.value
     assert execution["target_point_graph"] == candidates["D"]["point_graph"]
-    assert len(candidates) == 6
+    assert len(candidates) == 4
     assert sum(1 for payload in candidates.values() if payload["point_graph"] == execution["target_point_graph"]) == 1
 
     known = execution["known_points_by_label"]
     point_p = known["P"]["point_graph"]
     point_q = known["Q"]["point_graph"]
+    segment_dx = point_q[0] - point_p[0]
+    segment_dy = point_q[1] - point_p[1]
+    segment_length_squared = (segment_dx * segment_dx) + (segment_dy * segment_dy)
+    for payload in candidates.values():
+        point = payload["point_graph"]
+        rel_x = point[0] - point_p[0]
+        rel_y = point[1] - point_p[1]
+        assert (rel_x * segment_dy) == (rel_y * segment_dx)
+        projection = (rel_x * segment_dx) + (rel_y * segment_dy)
+        assert 0 < projection < segment_length_squared
     step = 1 if query_id == "one_third_from_p_to_q" else 2
     expected = [
         point_p[0] + (step * (point_q[0] - point_p[0]) // 3),

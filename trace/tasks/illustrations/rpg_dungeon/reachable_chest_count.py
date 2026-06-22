@@ -18,9 +18,9 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.illustrations.shared.rpg_tile_profiles import resolve_rpg_tile_render_params
 
 from .shared.output import (
-    entity_point_map,
+    bbox_set_map_projection,
+    entity_bbox_map,
     player_entity,
-    point_set_map_projection,
     rpg_dungeon_reachable_chest_count_render_map,
     rpg_dungeon_render_spec,
     rpg_dungeon_scene_ir,
@@ -125,11 +125,11 @@ class IllustrationsRpgDungeonReachableChestCountTask:
         player = player_entity(scene)
         if player is None:
             raise ValueError("RPG dungeon reachable-chest task requires a player entity")
-        reachable_points = entity_point_map(scene, scene.reachable_chest_ids)
+        reachable_bboxes = entity_bbox_map(scene, scene.reachable_chest_ids)
         annotation_value = {
-            "player": [[round(float(player.point_xy[0]), 3), round(float(player.point_xy[1]), 3)]],
+            "player": [[round(float(value), 3) for value in player.bbox_xyxy]],
             "reachable_chests": [
-                reachable_points[str(entity_id)]
+                reachable_bboxes[str(entity_id)]
                 for entity_id in scene.reachable_chest_ids
             ],
         }
@@ -201,13 +201,13 @@ class IllustrationsRpgDungeonReachableChestCountTask:
                 "player_entity_id": str(scene.player_entity_id),
                 "reachable_chest_ids": [str(entity_id) for entity_id in scene.reachable_chest_ids],
             },
-            "projected_annotation": point_set_map_projection(annotation_value),
+            "projected_annotation": bbox_set_map_projection(annotation_value),
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=answer),
-            annotation_gt=TypedValue(type="point_set_map", value=annotation_value),
+            annotation_gt=TypedValue(type="bbox_set_map", value=annotation_value),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

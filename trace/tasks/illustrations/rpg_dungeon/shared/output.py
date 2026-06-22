@@ -60,16 +60,21 @@ def rpg_dungeon_reachable_chest_count_render_map(*, scene: RpgDungeonScene) -> d
     if player is None:
         raise ValueError("reachable-chest count render map requires a player entity")
     chest_points = entity_point_map(scene, scene.chest_entity_ids)
+    chest_bboxes = entity_bbox_map(scene, scene.chest_entity_ids)
     reachable_points = entity_point_map(scene, scene.reachable_chest_ids)
+    reachable_bboxes = entity_bbox_map(scene, scene.reachable_chest_ids)
     return {
         "image_id": "img0",
         "player_entity_id": str(scene.player_entity_id),
         "player_point_px": [round(float(value), 3) for value in player.point_xy],
+        "player_bbox_px": [round(float(value), 3) for value in player.bbox_xyxy],
         "total_chest_count": len(scene.chest_entity_ids),
         "chest_entity_ids": [str(entity_id) for entity_id in scene.chest_entity_ids],
         "chest_points_px": chest_points,
+        "chest_bboxes_px": chest_bboxes,
         "reachable_chest_ids": [str(entity_id) for entity_id in scene.reachable_chest_ids],
         "reachable_chest_points_px": reachable_points,
+        "reachable_chest_bboxes_px": reachable_bboxes,
         "reachable_count": len(scene.reachable_chest_ids),
         "blocker_bboxes_px": blocker_bbox_map(scene),
         "blocker_points_px": blocker_point_map(scene),
@@ -115,21 +120,21 @@ def player_entity(scene: RpgDungeonScene) -> Any | None:
     return None
 
 
-def point_set_map_projection(keyed_points: Mapping[str, Sequence[Sequence[float]]]) -> dict[str, Any]:
+def bbox_set_map_projection(keyed_bboxes: Mapping[str, Sequence[Sequence[float]]]) -> dict[str, Any]:
     values = {
-        str(key): [[round(float(point[0]), 3), round(float(point[1]), 3)] for point in points]
-        for key, points in keyed_points.items()
+        str(key): [[round(float(value), 3) for value in bbox] for bbox in bboxes]
+        for key, bboxes in keyed_bboxes.items()
     }
-    return {"type": "point_set_map", "point_set_map": values, "pixel_point_set_map": values}
+    return {"type": "bbox_set_map", "bbox_set_map": values, "pixel_bbox_set_map": values}
 
 
 __all__ = [
+    "bbox_set_map_projection",
     "blocker_bbox_map",
     "blocker_point_map",
     "entity_bbox_map",
     "entity_point_map",
     "player_entity",
-    "point_set_map_projection",
     "rpg_dungeon_reachable_chest_count_render_map",
     "rpg_dungeon_render_spec",
     "rpg_dungeon_scene_ir",

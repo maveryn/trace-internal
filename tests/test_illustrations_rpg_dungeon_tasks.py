@@ -103,23 +103,23 @@ def test_rpg_dungeon_reachable_chest_count_contract() -> None:
         assert out.query_id == "single"
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == count
-        assert out.annotation_gt.type == "point_set_map"
+        assert out.annotation_gt.type == "bbox_set_map"
         assert sorted(out.annotation_gt.value) == ["player", "reachable_chests"]
         assert len(out.annotation_gt.value["player"]) == 1
         assert len(out.annotation_gt.value["reachable_chests"]) == count
         assert "red-outlined" not in out.prompt
         assert "lettered candidate" not in out.prompt
         width, height = out.image.size
-        for points in out.annotation_gt.value.values():
-            for point in points:
-                assert 0 <= float(point[0]) <= float(width)
-                assert 0 <= float(point[1]) <= float(height)
+        for bboxes in out.annotation_gt.value.values():
+            for bbox in bboxes:
+                _assert_bbox_inside_canvas(list(bbox), width=width, height=height)
 
         trace = out.trace_payload
         assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_dungeon_v0"
         assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_dungeon"
-        assert trace["projected_annotation"]["type"] == "point_set_map"
-        assert trace["projected_annotation"]["point_set_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "bbox_set_map"
+        assert trace["projected_annotation"]["bbox_set_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_set_map"] == out.annotation_gt.value
         assert trace["render_map"]["reachable_count"] == count
         assert trace["render_map"]["total_chest_count"] == total_count
         assert len(trace["render_map"]["chest_entity_ids"]) == total_count

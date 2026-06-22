@@ -31,6 +31,6 @@ prompt:
       json_output_contract: 'Return JSON with keys "annotation" and "answer".'
       json_output_contract_answer_only: 'Return JSON with key "answer".'
       answer_hint_rpg_dungeon_reachable_chest_count: set "answer" to the number of treasure chests reachable from the player
-      annotation_hint_rpg_dungeon_reachable_chest_count: set "annotation" to an object with keys "player" and "reachable_chests"; "player" contains one [x, y] point on the player, and "reachable_chests" contains one [x, y] point on each counted reachable chest
-      json_example_rpg_dungeon_reachable_chest_count: '{"annotation":{"player":[[420,360]],"reachable_chests":[[260,180],[620,180]]},"answer":2}'
+      annotation_hint_rpg_dungeon_reachable_chest_count: set "annotation" to an object with keys "player" and "reachable_chests"; "player" contains one [x0, y0, x1, y1] bounding box around the player, and "reachable_chests" contains one [x0, y0, x1, y1] bounding box around each counted reachable chest
+      json_example_rpg_dungeon_reachable_chest_count: '{"annotation":{"player":[[396,336,444,384]],"reachable_chests":[[236,156,284,204],[596,156,644,204]]},"answer":2}'
       json_example_answer_only_rpg_dungeon_reachable_chest_count: '{"answer":2}'

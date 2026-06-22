@@ -318,6 +318,36 @@ def _draw_flat_rect_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     shape_type = str(spec.get("shape_type", "card"))
+    if shape_type == "card":
+        face_fill = (246, 247, 241)
+        edge = (34, 42, 52)
+        mark = _shade(fill, 0.56)
+        if sum(mark) > 520:
+            mark = (118, 28, 44)
+        body = _project_local_xy_rect(spec, camera, frame, u0=0.06, v0=0.06, u1=0.94, v1=0.94, z_frac=1.0)
+        draw.polygon(body, fill=face_fill, outline=edge)
+        _draw_polyline(draw, body, fill=edge, width=2)
+        bboxes: List[List[float]] = [_bbox_from_screen_points(body)]
+        inset = _project_local_xy_rect(spec, camera, frame, u0=0.14, v0=0.14, u1=0.86, v1=0.86, z_frac=1.06)
+        _draw_polyline(draw, inset, fill=mark, width=1)
+        bboxes.append(_bbox_from_screen_points(inset))
+
+        body_bbox = _bbox_from_screen_points(body)
+        pip_radius = max(1.6, min(float(body_bbox[2]) - float(body_bbox[0]), float(body_bbox[3]) - float(body_bbox[1])) * 0.045)
+        for u, v, scale in ((0.26, 0.24, 0.74), (0.74, 0.76, 0.74), (0.50, 0.50, 1.0)):
+            center = _project_local_xy_point(spec, camera, frame, u=u, v=v, z_frac=1.08)
+            bboxes.append(_draw_small_ellipse(draw, center, pip_radius * scale, pip_radius * scale, fill=mark, outline=None, width=1))
+        for u, v in ((0.26, 0.76), (0.74, 0.24)):
+            diamond = [
+                _project_local_xy_point(spec, camera, frame, u=u, v=v - 0.035, z_frac=1.08),
+                _project_local_xy_point(spec, camera, frame, u=u + 0.035, v=v, z_frac=1.08),
+                _project_local_xy_point(spec, camera, frame, u=u, v=v + 0.035, z_frac=1.08),
+                _project_local_xy_point(spec, camera, frame, u=u - 0.035, v=v, z_frac=1.08),
+            ]
+            draw.polygon(diamond, fill=mark)
+            bboxes.append(_bbox_from_screen_points(diamond))
+        return _bbox_union(*bboxes)
+
     if shape_type == "bookmark":
         fabric_fill = _tint(fill, 0.18)
         fabric_edge = _shade(fill, 0.50)

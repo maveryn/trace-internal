@@ -386,31 +386,23 @@ def _draw_cup_object(
     x0, y0, x1, y1 = (float(value) for value in body_bbox)
     body_w = max(1.0, x1 - x0)
     body_h = max(1.0, y1 - y0)
-    side_handle = [
-        x1 - body_w * 0.20,
-        y0 + body_h * 0.23,
-        x1 + body_w * 0.42,
-        y0 + body_h * 0.73,
-    ]
-    draw.arc(tuple(side_handle), start=-82, end=82, fill=(35, 42, 50), width=7)
-    draw.arc(tuple(side_handle), start=-82, end=82, fill=_tint(fill, 0.10), width=4)
-    top_body = (x1 - body_w * 0.13, y0 + body_h * 0.35)
-    top_handle = (x1 + body_w * 0.03, y0 + body_h * 0.35)
-    bottom_body = (x1 - body_w * 0.13, y0 + body_h * 0.62)
-    bottom_handle = (x1 + body_w * 0.03, y0 + body_h * 0.62)
-    for p1, p2 in ((top_body, top_handle), (bottom_body, bottom_handle)):
-        _draw_line(draw, p1, p2, fill=(35, 42, 50), width=7)
-        _draw_line(draw, p1, p2, fill=_tint(fill, 0.10), width=4)
+    top_body = (x1 - body_w * 0.12, y0 + body_h * 0.35)
+    bottom_body = (x1 - body_w * 0.12, y0 + body_h * 0.64)
+    outer_top = (x1 + body_w * 0.28, y0 + body_h * 0.38)
+    outer_mid = (x1 + body_w * 0.42, y0 + body_h * 0.50)
+    outer_bottom = (x1 + body_w * 0.28, y0 + body_h * 0.62)
+    handle_path = [top_body, outer_top, outer_mid, outer_bottom, bottom_body]
+    draw.line(handle_path, fill=(35, 42, 50), width=8, joint="curve")
+    draw.line(handle_path, fill=_tint(fill, 0.10), width=5, joint="curve")
     attachment_boxes = []
     for cx, cy in (top_body, bottom_body):
-        pad = [cx - body_w * 0.055, cy - body_h * 0.055, cx + body_w * 0.075, cy + body_h * 0.055]
+        pad = [cx - body_w * 0.075, cy - body_h * 0.060, cx + body_w * 0.105, cy + body_h * 0.060]
         draw.ellipse(pad, fill=_tint(fill, 0.10), outline=(35, 42, 50), width=1)
         attachment_boxes.append(pad)
     connector_boxes = [
-        [min(top_body[0], top_handle[0]), min(top_body[1], top_handle[1]) - 4.0, max(top_body[0], top_handle[0]), max(top_body[1], top_handle[1]) + 4.0],
-        [min(bottom_body[0], bottom_handle[0]), min(bottom_body[1], bottom_handle[1]) - 4.0, max(bottom_body[0], bottom_handle[0]), max(bottom_body[1], bottom_handle[1]) + 4.0],
+        _bbox_from_screen_points(handle_path),
     ]
-    return _bbox_union(body_bbox, side_handle, *connector_boxes, *attachment_boxes)
+    return _bbox_union(body_bbox, *connector_boxes, *attachment_boxes)
 
 
 def _draw_bottle_object(

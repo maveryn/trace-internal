@@ -450,6 +450,45 @@ def _draw_ticket_tag_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     shape_type = str(spec.get("shape_type", "ticket"))
+    if shape_type == "ticket":
+        face_fill = _tint(fill, 0.24)
+        edge = (58, 66, 74)
+        accent = _shade(fill, 0.56)
+        if sum(accent) > 530:
+            accent = (133, 92, 42)
+        body = _project_local_xy_rect(spec, camera, frame, u0=0.06, v0=0.06, u1=0.94, v1=0.94, z_frac=1.0)
+        draw.polygon(body, fill=face_fill, outline=edge)
+        _draw_polyline(draw, body, fill=edge, width=2)
+        bboxes: List[List[float]] = [_bbox_from_screen_points(body)]
+
+        inset = _project_local_xy_rect(spec, camera, frame, u0=0.14, v0=0.14, u1=0.86, v1=0.86, z_frac=1.06)
+        _draw_polyline(draw, inset, fill=accent, width=1)
+        bboxes.append(_bbox_from_screen_points(inset))
+
+        for start_v, end_v in ((0.18, 0.28), (0.36, 0.46), (0.54, 0.64), (0.72, 0.82)):
+            segment = [
+                _project_local_xy_point(spec, camera, frame, u=0.50, v=start_v, z_frac=1.08),
+                _project_local_xy_point(spec, camera, frame, u=0.50, v=end_v, z_frac=1.08),
+            ]
+            bboxes.append(_draw_detail_line(draw, segment, fill=accent, width=1))
+        for u, v in ((0.24, 0.24), (0.76, 0.24), (0.24, 0.76), (0.76, 0.76)):
+            center = _project_local_xy_point(spec, camera, frame, u=u, v=v, z_frac=1.08)
+            body_bbox = _bbox_from_screen_points(body)
+            radius = max(1.5, min(float(body_bbox[2]) - float(body_bbox[0]), float(body_bbox[3]) - float(body_bbox[1])) * 0.030)
+            bboxes.append(_draw_small_ellipse(draw, center, radius, radius, fill=accent, outline=None, width=1))
+        for v in (0.28, 0.50, 0.72):
+            notch = [
+                _project_local_xy_point(spec, camera, frame, u=0.08, v=v, z_frac=1.09),
+                _project_local_xy_point(spec, camera, frame, u=0.16, v=v, z_frac=1.09),
+            ]
+            bboxes.append(_draw_detail_line(draw, notch, fill=(238, 242, 240), width=2))
+            notch = [
+                _project_local_xy_point(spec, camera, frame, u=0.84, v=v, z_frac=1.09),
+                _project_local_xy_point(spec, camera, frame, u=0.92, v=v, z_frac=1.09),
+            ]
+            bboxes.append(_draw_detail_line(draw, notch, fill=(238, 242, 240), width=2))
+        return _bbox_union(*bboxes)
+
     base_fill = _tint(fill, 0.18)
     bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=base_fill)
     x0, y0, x1, y1 = (float(value) for value in bbox)
@@ -457,27 +496,13 @@ def _draw_ticket_tag_object(
     h = max(1.0, y1 - y0)
     detail = (58, 66, 74)
     bboxes: List[List[float]] = [bbox]
-    if shape_type == "ticket":
-        center_line = [(x0 + w * 0.50, y0 + h * 0.12), (x0 + w * 0.50, y1 - h * 0.12)]
-        draw.line(center_line, fill=(141, 117, 61), width=2)
-        bboxes.append(_padded_screen_line_bbox(center_line, pad_px=1.0))
-        for cy in (y0 + h * 0.24, y0 + h * 0.50, y0 + h * 0.76):
-            notch_l = [x0 - w * 0.03, cy - h * 0.055, x0 + w * 0.08, cy + h * 0.055]
-            notch_r = [x1 - w * 0.08, cy - h * 0.055, x1 + w * 0.03, cy + h * 0.055]
-            draw.ellipse(notch_l, fill=(238, 242, 240), outline=(111, 96, 62), width=1)
-            draw.ellipse(notch_r, fill=(238, 242, 240), outline=(111, 96, 62), width=1)
-            bboxes.extend([notch_l, notch_r])
-        inset = [x0 + w * 0.12, y0 + h * 0.18, x1 - w * 0.12, y1 - h * 0.18]
-        draw.rectangle(inset, outline=(148, 122, 64), width=1)
-        bboxes.append(inset)
-    else:
-        hole = [x0 + w * 0.38, y0 + h * 0.08, x0 + w * 0.62, y0 + h * 0.24]
-        draw.ellipse(hole, fill=(238, 242, 240), outline=detail, width=2)
-        string = [(x0 + w * 0.50, y0 + h * 0.16), (x0 + w * 0.76, y0 - h * 0.12)]
-        draw.line(string, fill=(72, 62, 45), width=2)
-        slash = [(x0 + w * 0.18, y1 - h * 0.22), (x1 - w * 0.16, y0 + h * 0.44)]
-        draw.line(slash, fill=_shade(base_fill, 0.70), width=1)
-        bboxes.extend([hole, _padded_screen_line_bbox(string, pad_px=1.0), _padded_screen_line_bbox(slash, pad_px=1.0)])
+    hole = [x0 + w * 0.38, y0 + h * 0.08, x0 + w * 0.62, y0 + h * 0.24]
+    draw.ellipse(hole, fill=(238, 242, 240), outline=detail, width=2)
+    string = [(x0 + w * 0.50, y0 + h * 0.16), (x0 + w * 0.76, y0 - h * 0.12)]
+    draw.line(string, fill=(72, 62, 45), width=2)
+    slash = [(x0 + w * 0.18, y1 - h * 0.22), (x1 - w * 0.16, y0 + h * 0.44)]
+    draw.line(slash, fill=_shade(base_fill, 0.70), width=1)
+    bboxes.extend([hole, _padded_screen_line_bbox(string, pad_px=1.0), _padded_screen_line_bbox(slash, pad_px=1.0)])
     return _bbox_union(*bboxes)
 
 
@@ -657,15 +682,17 @@ def _draw_button_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     bbox = _draw_cylinder_object(draw, spec, camera=camera, frame=frame, fill=_tint(fill, 0.12))
-    cx, cy = _bbox_center(bbox)
     x0, y0, x1, y1 = (float(value) for value in bbox)
-    dx = max(2.6, (x1 - x0) * 0.10)
-    dy = max(2.2, (y1 - y0) * 0.08)
+    radius = max(1.35, min(x1 - x0, y1 - y0) * 0.036)
     holes = [
-        _draw_small_ellipse(draw, (cx - dx, cy - dy), max(1.8, dx * 0.35), max(1.5, dy * 0.45), fill=(45, 52, 61)),
-        _draw_small_ellipse(draw, (cx + dx, cy - dy), max(1.8, dx * 0.35), max(1.5, dy * 0.45), fill=(45, 52, 61)),
-        _draw_small_ellipse(draw, (cx - dx, cy + dy), max(1.8, dx * 0.35), max(1.5, dy * 0.45), fill=(45, 52, 61)),
-        _draw_small_ellipse(draw, (cx + dx, cy + dy), max(1.8, dx * 0.35), max(1.5, dy * 0.45), fill=(45, 52, 61)),
+        _draw_small_ellipse(
+            draw,
+            _project_local_xy_point(spec, camera, frame, u=u, v=v, z_frac=1.08),
+            radius,
+            radius * 0.82,
+            fill=(45, 52, 61),
+        )
+        for u, v in ((0.40, 0.40), (0.60, 0.40), (0.40, 0.60), (0.60, 0.60))
     ]
     return _bbox_union(bbox, *holes)
 
@@ -726,7 +753,7 @@ def _draw_screw_object(
         )
 
     head_center = point_at(-0.44)
-    shaft_start = point_at(-0.34)
+    shaft_start = point_at(-0.46)
     shaft_end = point_at(0.40)
     tip = point_at(0.50)
     shaft_points = [shaft_start, shaft_end]
@@ -1111,22 +1138,17 @@ def _draw_socket_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=_tint(fill, 0.18))
-    x0, y0, x1, y1 = (float(value) for value in bbox)
-    w = max(1.0, x1 - x0)
-    h = max(1.0, y1 - y0)
-    holes = [
-        [x0 + w * 0.30, y0 + h * 0.28, x0 + w * 0.42, y0 + h * 0.48],
-        [x0 + w * 0.58, y0 + h * 0.28, x0 + w * 0.70, y0 + h * 0.48],
-        [x0 + w * 0.43, y0 + h * 0.58, x0 + w * 0.57, y0 + h * 0.72],
-    ]
-    for hole in holes:
-        draw.ellipse(hole, fill=(38, 45, 54))
-    screws = []
-    for cy in (y0 + h * 0.18, y1 - h * 0.18):
-        screw = [x0 + w * 0.47, cy - h * 0.035, x0 + w * 0.53, cy + h * 0.035]
-        draw.ellipse(screw, fill=(176, 182, 186), outline=(72, 80, 88), width=1)
-        screws.append(screw)
-    return _bbox_union(bbox, *holes, *screws)
+    plate = _project_local_xy_rect(spec, camera, frame, u0=0.14, v0=0.16, u1=0.86, v1=0.84, z_frac=1.06)
+    _draw_polyline(draw, plate, fill=(56, 64, 73), width=1)
+    bboxes: List[List[float]] = [bbox, _bbox_from_screen_points(plate)]
+    for u in (0.33, 0.50, 0.67):
+        slot = _project_local_xy_rect(spec, camera, frame, u0=u - 0.040, v0=0.34, u1=u + 0.040, v1=0.66, z_frac=1.08)
+        draw.polygon(slot, fill=(38, 45, 54), outline=(24, 30, 36))
+        bboxes.append(_bbox_from_screen_points(slot))
+    for v in (0.25, 0.75):
+        screw_center = _project_local_xy_point(spec, camera, frame, u=0.50, v=v, z_frac=1.09)
+        bboxes.append(_draw_small_ellipse(draw, screw_center, 2.6, 2.0, fill=(176, 182, 186), outline=(72, 80, 88), width=1))
+    return _bbox_union(*bboxes)
 
 
 def _draw_magnet_object(
@@ -1910,22 +1932,28 @@ def _draw_egg_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     profile = [
-        (-0.42, -0.88),
-        (-0.62, -0.50),
-        (-0.58, 0.12),
-        (-0.34, 0.64),
-        (0.0, 0.90),
-        (0.34, 0.64),
-        (0.58, 0.12),
-        (0.62, -0.50),
-        (0.42, -0.88),
-        (0.0, -0.98),
+        (-0.36, -0.92),
+        (-0.62, -0.64),
+        (-0.68, -0.18),
+        (-0.54, 0.30),
+        (-0.28, 0.70),
+        (0.0, 0.94),
+        (0.28, 0.70),
+        (0.54, 0.30),
+        (0.68, -0.18),
+        (0.62, -0.64),
+        (0.36, -0.92),
+        (0.0, -1.00),
     ]
     bbox = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=(236, 229, 202), profile_xz=profile, inset_scale=0.76)
     x0, y0, x1, y1 = (float(value) for value in bbox)
-    highlight = [x0 + (x1 - x0) * 0.30, y0 + (y1 - y0) * 0.24, x0 + (x1 - x0) * 0.48, y0 + (y1 - y0) * 0.42]
+    w = max(1.0, x1 - x0)
+    h = max(1.0, y1 - y0)
+    highlight = [x0 + w * 0.30, y0 + h * 0.22, x0 + w * 0.48, y0 + h * 0.40]
+    lower_shade = [x0 + w * 0.22, y0 + h * 0.66, x1 - w * 0.18, y1 - h * 0.08]
+    draw.ellipse(lower_shade, outline=(203, 191, 159), width=1)
     draw.ellipse(highlight, fill=(252, 249, 236))
-    return _bbox_union(bbox, highlight)
+    return _bbox_union(bbox, highlight, lower_shade)
 
 
 def _draw_chili_object(
@@ -2035,16 +2063,16 @@ def _draw_spoon_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    handle = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.20, 0.0), dimensions_xyz=(width * 0.14, depth * 0.58, height * 0.40))
-    bowl = _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.30, 0.0), dimensions_xyz=(width * 0.92, depth * 0.42, height * 0.62))
+    handle = _sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.24, 0.0), dimensions_xyz=(width * 0.13, depth * 0.58, height * 0.42))
+    bowl = _sub_box_spec(spec, offset_xyz=(0.0, depth * 0.30, 0.0), dimensions_xyz=(width * 1.08, depth * 0.48, height * 0.76))
     handle_bbox = _draw_box_object(draw, handle, camera=camera, frame=frame, fill=(158, 168, 178))
-    bowl_bbox = _draw_upright_profile_object(draw, bowl, camera=camera, frame=frame, fill=(190, 200, 208), profile_xz=_oval_profile_points(32, z_scale=0.72), inset_scale=0.58)
+    bowl_bbox = _draw_upright_profile_object(draw, bowl, camera=camera, frame=frame, fill=(194, 204, 212), profile_xz=_oval_profile_points(32, z_scale=0.78), inset_scale=0.38)
     x0, y0, x1, y1 = (float(value) for value in bowl_bbox)
     w = max(1.0, x1 - x0)
     h = max(1.0, y1 - y0)
-    inner = [x0 + w * 0.18, y0 + h * 0.18, x1 - w * 0.18, y1 - h * 0.18]
-    shine = [(x0 + w * 0.25, y0 + h * 0.30), (x1 - w * 0.22, y0 + h * 0.22)]
-    draw.ellipse(inner, outline=(104, 116, 126), width=2)
+    inner = [x0 + w * 0.18, y0 + h * 0.20, x1 - w * 0.18, y1 - h * 0.16]
+    shine = [(x0 + w * 0.28, y0 + h * 0.34), (x1 - w * 0.24, y0 + h * 0.24)]
+    draw.ellipse(inner, fill=(174, 185, 194), outline=(91, 103, 113), width=2)
     draw.line(shine, fill=(244, 248, 249), width=2)
     return _bbox_union(handle_bbox, bowl_bbox, inner, _padded_screen_line_bbox(shine, pad_px=1.0))
 
@@ -2081,27 +2109,34 @@ def _draw_dice_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=(232, 235, 232))
-    x0, y0, x1, y1 = (float(value) for value in bbox)
-    dice_w = max(1.0, x1 - x0)
-    dice_h = max(1.0, y1 - y0)
-    radius = max(2.2, min(4.6, min(dice_w, dice_h) * 0.055))
     bboxes = [bbox]
 
-    def add_pip(cx: float, cy: float) -> None:
-        spot = [cx - radius, cy - radius, cx + radius, cy + radius]
-        draw.ellipse(spot, fill=(38, 44, 52))
-        bboxes.append(spot)
+    vertices = _object_vertices(spec)
+    sx = 1 if camera.camera_position[0] >= float(spec["world_xyz"][0]) else -1
+    sy = 1 if camera.camera_position[1] >= float(spec["world_xyz"][1]) else -1
+    face_quads = [
+        _project_face([vertices[f"{-sx}{-sy}1"], vertices[f"{sx}{-sy}1"], vertices[f"{sx}{sy}1"], vertices[f"{-sx}{sy}1"]], camera, frame),
+        _project_face([vertices[f"{sx}{-sy}0"], vertices[f"{sx}{sy}0"], vertices[f"{sx}{sy}1"], vertices[f"{sx}{-sy}1"]], camera, frame),
+        _project_face([vertices[f"{-sx}{sy}0"], vertices[f"{sx}{sy}0"], vertices[f"{sx}{sy}1"], vertices[f"{-sx}{sy}1"]], camera, frame),
+    ]
 
-    # Approximate the three visible dice faces: one on top, two on left, three on right.
-    add_pip(x0 + dice_w * 0.50, y0 + dice_h * 0.25)
-    for cx, cy in ((x0 + dice_w * 0.25, y0 + dice_h * 0.54), (x0 + dice_w * 0.42, y0 + dice_h * 0.76)):
-        add_pip(cx, cy)
-    for cx, cy in (
-        (x0 + dice_w * 0.63, y0 + dice_h * 0.52),
-        (x0 + dice_w * 0.75, y0 + dice_h * 0.64),
-        (x0 + dice_w * 0.87, y0 + dice_h * 0.76),
-    ):
-        add_pip(cx, cy)
+    def point_on_quad(quad: Sequence[Sequence[float]], u: float, v: float) -> Tuple[float, float]:
+        top_x = float(quad[0][0]) * (1.0 - u) + float(quad[1][0]) * u
+        top_y = float(quad[0][1]) * (1.0 - u) + float(quad[1][1]) * u
+        bottom_x = float(quad[3][0]) * (1.0 - u) + float(quad[2][0]) * u
+        bottom_y = float(quad[3][1]) * (1.0 - u) + float(quad[2][1]) * u
+        return (top_x * (1.0 - v) + bottom_x * v, top_y * (1.0 - v) + bottom_y * v)
+
+    def add_pip(quad: Sequence[Sequence[float]], u: float, v: float) -> None:
+        fx0, fy0, fx1, fy1 = (float(value) for value in _bbox_from_screen_points(quad))
+        radius = max(1.8, min(4.8, min(fx1 - fx0, fy1 - fy0) * 0.085))
+        bboxes.append(_draw_small_ellipse(draw, point_on_quad(quad, u, v), radius, radius * 0.90, fill=(38, 44, 52)))
+
+    add_pip(face_quads[0], 0.50, 0.50)
+    for u, v in ((0.36, 0.35), (0.64, 0.65)):
+        add_pip(face_quads[1], u, v)
+    for u, v in ((0.32, 0.28), (0.50, 0.50), (0.68, 0.72)):
+        add_pip(face_quads[2], u, v)
     return _bbox_union(*bboxes)
 
 

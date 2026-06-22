@@ -43,9 +43,7 @@ from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 COUNTQA_CLUSTER_ADDITIONS = {
     "mini_chair",
     "mini_table",
-    "heater",
     "flower",
-    "glass",
     "jar",
     "can",
     "lid",
@@ -61,7 +59,6 @@ COUNTQA_CLUSTER_ADDITIONS = {
     "ticket",
     "marble",
     "bead",
-    "dot",
     "bolt",
     "pillow",
     "cushion",
@@ -71,11 +68,11 @@ COUNTQA_CLUSTER_ADDITIONS = {
     "coaster",
     "rose",
     "tomato",
-    "coffee_bean",
     "hook",
     "tape_roll",
     "bag",
 }
+REMOVED_OBJECT_CLUSTER_SHAPE_TYPES = {"coffee_bean", "dot", "glass", "heater"}
 
 
 def _renderer_function_for_shape(shape_type: str) -> str:
@@ -334,6 +331,9 @@ def test_object_cluster_total_object_count_registered_in_three_d_taxonomy() -> N
 def test_object_cluster_countqa_additions_have_profiles_and_render() -> None:
     assert COUNTQA_CLUSTER_ADDITIONS.issubset(set(OBJECT_CLUSTER_EXTRA_SHAPE_TYPES))
     assert COUNTQA_CLUSTER_ADDITIONS.issubset(set(COUNTABLE_SHAPE_TYPES))
+    assert REMOVED_OBJECT_CLUSTER_SHAPE_TYPES.isdisjoint(set(OBJECT_CLUSTER_EXTRA_SHAPE_TYPES))
+    assert REMOVED_OBJECT_CLUSTER_SHAPE_TYPES.isdisjoint(set(COUNTABLE_SHAPE_TYPES))
+    assert REMOVED_OBJECT_CLUSTER_SHAPE_TYPES.isdisjoint(set(COLOR_SAFE_CLUSTER_SHAPE_TYPES))
     assert "stick" not in set(COUNTABLE_SHAPE_TYPES)
     assert {"pen", "pencil"}.issubset(set(COUNTABLE_SHAPE_TYPES))
     assert {"pen", "pencil", "stick"}.isdisjoint(set(COLOR_SAFE_CLUSTER_SHAPE_TYPES))
@@ -341,6 +341,7 @@ def test_object_cluster_countqa_additions_have_profiles_and_render() -> None:
         str(profile.object_type): profile
         for profile in object_profiles(source_scene="object_cluster", role="cluster_small_shape")
     }
+    assert REMOVED_OBJECT_CLUSTER_SHAPE_TYPES.isdisjoint(set(profiles))
 
     for shape_type in OBJECT_CLUSTER_EXTRA_SHAPE_TYPES:
         profile = profiles[str(shape_type)]
@@ -376,6 +377,10 @@ def test_object_cluster_orientation_sensitive_glyphs_use_local_yaw_projection() 
     bookmark_branch = flat_rect_source.split('if shape_type == "bookmark":', 1)[1].split("base_fill = {", 1)[0]
     assert "_project_local_xy_rect" in bookmark_branch
     assert "_draw_box_object" not in bookmark_branch
+    ticket_source = inspect.getsource(tools_glyphs._draw_ticket_tag_object)
+    ticket_branch = ticket_source.split('if shape_type == "ticket":', 1)[1].split("base_fill = _tint", 1)[0]
+    assert "_project_local_xy_rect" in ticket_branch
+    assert "_draw_box_object" not in ticket_branch
 
 
 def test_object_cluster_multi_attribute_and_count_answer_and_annotation() -> None:
@@ -472,7 +477,6 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
         "ticket",
         "marble",
         "bead",
-        "dot",
         "pillow",
         "cushion",
         "stool",

@@ -1,4 +1,4 @@
-"""Shared graph-paper plotting helpers for geometry function-graph tasks."""
+"""Projection and drawing primitives for function-graph scenes."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ from typing import Iterable, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
-from ....shared.text_rendering import draw_text_centered, load_font, resolve_text_stroke_fill
-from ....shared.drawing import draw_dashed_line
+from trace.tasks.shared.drawing import draw_dashed_line
+from trace.tasks.shared.text_rendering import draw_text_centered, load_font, resolve_text_stroke_fill
 
 PointF = Tuple[float, float]
 Color = Tuple[int, int, int]
@@ -19,7 +19,7 @@ def graph_units_to_pixel_float(
     graph_origin: Sequence[float],
     graph_spacing: int,
 ) -> PointF:
-    """Project one graph-unit point (possibly fractional) into canonical pixels."""
+    """Project one graph-unit point into canonical pixel coordinates."""
 
     return (
         float(graph_origin[0]) + (float(point[0]) * float(graph_spacing)),
@@ -28,13 +28,10 @@ def graph_units_to_pixel_float(
 
 
 def scale_polyline(points: Iterable[PointF], *, scene_scale: int) -> List[PointF]:
-    """Scale one canonical polyline into render-space pixels."""
+    """Scale canonical pixel points into render-space coordinates."""
 
     scale = float(max(1, int(scene_scale)))
-    return [
-        (float(point[0]) * scale, float(point[1]) * scale)
-        for point in points
-    ]
+    return [(float(point[0]) * scale, float(point[1]) * scale) for point in points]
 
 
 def draw_function_polyline(
@@ -47,7 +44,7 @@ def draw_function_polyline(
     line_width: int,
     line_color: Sequence[int],
 ) -> List[PointF]:
-    """Draw one plotted function polyline and return the render-space points."""
+    """Draw one plotted function polyline and return render-space points."""
 
     canonical_points = [
         graph_units_to_pixel_float(point, graph_origin=graph_origin, graph_spacing=int(graph_spacing))
@@ -82,10 +79,18 @@ def draw_horizontal_query_line(
     label_color: Sequence[int],
     canvas_size: int,
 ) -> Mapping[str, object]:
-    """Draw one dashed horizontal guide line plus a small `y = c` label."""
+    """Draw a dashed horizontal guide line and its small equation label."""
 
-    canonical_start = graph_units_to_pixel_float((float(x_min), float(y_value)), graph_origin=graph_origin, graph_spacing=int(graph_spacing))
-    canonical_end = graph_units_to_pixel_float((float(x_max), float(y_value)), graph_origin=graph_origin, graph_spacing=int(graph_spacing))
+    canonical_start = graph_units_to_pixel_float(
+        (float(x_min), float(y_value)),
+        graph_origin=graph_origin,
+        graph_spacing=int(graph_spacing),
+    )
+    canonical_end = graph_units_to_pixel_float(
+        (float(x_max), float(y_value)),
+        graph_origin=graph_origin,
+        graph_spacing=int(graph_spacing),
+    )
     render_start, render_end = scale_polyline((canonical_start, canonical_end), scene_scale=int(scene_scale))
     draw_dashed_line(
         draw,
@@ -99,18 +104,11 @@ def draw_horizontal_query_line(
 
     font = load_font(int(label_font_size_px), bold=True)
     label_fill = tuple(int(value) for value in label_color)
-    label_stroke = resolve_text_stroke_fill(tuple(int(value) for value in label_fill))
-    label_center = (
-        float(render_end[0] - (18.0 * float(max(1, int(scene_scale))))),
-        float(render_start[1] - (12.0 * float(max(1, int(scene_scale))))),
-    )
+    label_stroke = resolve_text_stroke_fill(label_fill)
+    scale = max(1, int(scene_scale))
+    label_center = (float(render_end[0] - (18.0 * scale)), float(render_start[1] - (12.0 * scale)))
     stroke_width = max(1, int(scene_scale))
-    raw_bbox = draw.textbbox(
-        (0.0, 0.0),
-        str(label_text),
-        font=font,
-        stroke_width=int(stroke_width),
-    )
+    raw_bbox = draw.textbbox((0.0, 0.0), str(label_text), font=font, stroke_width=int(stroke_width))
     tx = float(label_center[0]) - (0.5 * float(raw_bbox[0] + raw_bbox[2]))
     ty = float(label_center[1]) - (0.5 * float(raw_bbox[1] + raw_bbox[3]))
     draw_text_centered(
@@ -138,23 +136,18 @@ def draw_horizontal_query_line(
             [round(float(render_end[0]), 3), round(float(render_end[1]), 3)],
         ],
         "query_label_bbox": [
-            round(max(0.0, min(float(canvas_size), float(bbox[0]) / float(max(1, int(scene_scale))))), 3),
-            round(max(0.0, min(float(canvas_size), float(bbox[1]) / float(max(1, int(scene_scale))))), 3),
-            round(max(0.0, min(float(canvas_size), float(bbox[2]) / float(max(1, int(scene_scale))))), 3),
-            round(max(0.0, min(float(canvas_size), float(bbox[3]) / float(max(1, int(scene_scale))))), 3),
+            round(max(0.0, min(float(canvas_size), float(bbox[0]) / float(scale))), 3),
+            round(max(0.0, min(float(canvas_size), float(bbox[1]) / float(scale))), 3),
+            round(max(0.0, min(float(canvas_size), float(bbox[2]) / float(scale))), 3),
+            round(max(0.0, min(float(canvas_size), float(bbox[3]) / float(scale))), 3),
         ],
     }
 
 
 def build_query_line_color(*, line_color: Sequence[int], label_color: Sequence[int]) -> Color:
-    """Blend one guide-line accent that stays distinct from the main function line."""
+    """Blend a guide-line accent distinct from the main plotted function."""
 
     return tuple(
-        int(
-            round(
-                (0.78 * float(int(label_color[index])))
-                + (0.22 * float(int(line_color[index])))
-            )
-        )
+        int(round((0.78 * float(int(label_color[index]))) + (0.22 * float(int(line_color[index])))))
         for index in range(3)
     )

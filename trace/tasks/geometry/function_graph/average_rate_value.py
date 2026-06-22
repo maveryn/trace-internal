@@ -19,8 +19,8 @@ from ...shared.config_defaults import (
 )
 
 SCENE_ID = "function_graph"
-from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.drawing import draw_centered_text, draw_dashed_line
+from ...shared.fixed_query import select_task_query_id
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import (
@@ -30,13 +30,12 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_rendering import load_font, resolve_scene_label_font_size_px
 from ..shared.background_defaults import load_geometry_background_defaults
-from .shared.function_scene import (
+from .shared.projection import (
     build_query_line_color,
     draw_function_polyline,
     graph_units_to_pixel_float,
 )
 from ..shared.graph_rendering import graph_paper_grid_from_frame
-from ..shared.labeled_point_annotation import graph_point_set_annotation_artifacts
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.shape_style import (
     extract_background_anchor_colors,
@@ -48,15 +47,16 @@ from ..shared.single_object_scene import (
     make_graph_scene_canvas,
     resolve_graph_scene_context,
 )
+from .shared.sampling import resolve_rate_target
 
 
 TASK_ID = "task_geometry__function_graph__average_rate_value"
 AVERAGE_RATE_BETWEEN_MARKED_POINTS = "average_rate_between_marked_points"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (AVERAGE_RATE_BETWEEN_MARKED_POINTS,)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("single",)
 DEFAULT_RATE_SUPPORT: Tuple[float, ...] = (-2.0, -1.5, -1.0, -0.5, 0.5, 1.0, 1.5, 2.0)
 
-POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id="graphing")
-POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id="graphing")
+POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id=SCENE_ID)
+POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id=SCENE_ID)
 
 GraphPoint = Tuple[float, float]
 
@@ -106,7 +106,7 @@ class _RenderedRateScene:
 
     answer_value: float
     annotation_type: str
-    annotation_value: list[list[float]]
+    annotation_value: Dict[str, list[float]]
     projected_annotation: Dict[str, Any]
     witness_symbolic: Dict[str, Any]
     required_annotation_labels: list[str]
@@ -158,37 +158,21 @@ def _target_rate_support() -> Tuple[float, ...]:
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    """Resolve the fixed query plus balanced target average rate."""
+    """Resolve the task's single public query and target average rate."""
 
-    explicit_query = params.get("query_id", AVERAGE_RATE_BETWEEN_MARKED_POINTS)
-    query_id = str(explicit_query).strip().lower()
-    if query_id not in set(SUPPORTED_QUERY_IDS):
-        raise ValueError(f"unsupported query_id for {TASK_ID}: {explicit_query}")
-
-    support = _target_rate_support()
-    explicit_rate = params.get("target_rate", params.get("average_rate"))
-    if explicit_rate is not None:
-        target_rate = round(float(explicit_rate), 1)
-        probabilities = {
-            _rate_key(rate): (1.0 if abs(float(rate) - float(target_rate)) <= 1e-9 else 0.0)
-            for rate in support
-        }
-        if all(float(value) <= 0.0 for value in probabilities.values()):
-            probabilities[_rate_key(target_rate)] = 1.0
-    else:
-        selection_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.target_rate",
-        )
-        target_rate = float(support[int(selection_index) % len(support)])
-        probability = 1.0 / float(len(support))
-        probabilities = {_rate_key(rate): float(probability) for rate in support}
+    query_id, query_probabilities, task_params = select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=SUPPORTED_QUERY_IDS,
+        default_query_id="single",
+        task_id=TASK_ID,
+    )
+    target_rate, probabilities = resolve_rate_target(instance_seed=int(instance_seed), params=task_params)
 
     return _ResolvedQuery(
         query_id=str(query_id),
         target_rate=float(target_rate),
-        query_id_probabilities={AVERAGE_RATE_BETWEEN_MARKED_POINTS: 1.0},
+        query_id_probabilities=dict(query_probabilities),
         target_rate_probabilities=dict(sorted(probabilities.items())),
     )
 
@@ -445,17 +429,26 @@ def _render_scene(
         "A": point_a_pixel,
         "B": point_b_pixel,
     }
-    annotation = graph_point_set_annotation_artifacts(
-        points_by_label=points_by_label,
-        graph_origin=context.graph_origin,
-        graph_spacing=int(context.graph_spacing),
-        witness_type="marked_average_rate_points",
-        ordered_labels=("A", "B"),
-    )
-    witness_symbolic = dict(annotation["witness_symbolic"])
+    annotation_value = {
+        "A": [round(float(points_by_label["A"][0]), 3), round(float(points_by_label["A"][1]), 3)],
+        "B": [round(float(points_by_label["B"][0]), 3), round(float(points_by_label["B"][1]), 3)],
+    }
+    projected_annotation = {
+        "type": "point_map",
+        "point_map": dict(annotation_value),
+        "pixel_point_map": dict(annotation_value),
+    }
+    witness_symbolic = {
+        "type": "marked_average_rate_points",
+        "points_graph": {
+            "A": [float(sampled_scene.point_a[0]), float(sampled_scene.point_a[1])],
+            "B": [float(sampled_scene.point_b[0]), float(sampled_scene.point_b[1])],
+        },
+        "points_pixel": dict(annotation_value),
+        "average_rate": float(sampled_scene.answer_value),
+    }
     witness_symbolic.update(
         {
-            "type": "marked_average_rate_points",
             "point_a_graph": [float(sampled_scene.point_a[0]), float(sampled_scene.point_a[1])],
             "point_b_graph": [float(sampled_scene.point_b[0]), float(sampled_scene.point_b[1])],
             "average_rate": float(sampled_scene.answer_value),
@@ -463,11 +456,11 @@ def _render_scene(
     )
     return _RenderedRateScene(
         answer_value=float(sampled_scene.answer_value),
-        annotation_type=str(annotation["annotation_type"]),
-        annotation_value=[list(point) for point in annotation["annotation_value"]],
-        projected_annotation=dict(annotation["projected_annotation"]),
+        annotation_type="point_map",
+        annotation_value=dict(annotation_value),
+        projected_annotation=dict(projected_annotation),
         witness_symbolic=dict(witness_symbolic),
-        required_annotation_labels=list(annotation["required_labels"]),
+        required_annotation_labels=["A", "B"],
         scene_entities=list(sampled_scene.scene_entities),
         render_map=dict(render_map),
         execution_trace=dict(sampled_scene.execution_trace),
@@ -482,12 +475,12 @@ class GeometryGraphingAverageRateValueTask:
 
     task_id = TASK_ID
     domain = "geometry"
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Generate a marked-secants graph with A/B annotation bound from the same trace."""
+
         del max_attempts
         query = _resolve_query(int(instance_seed), params=params)
         rng = spawn_rng(int(instance_seed), f"{self.task_id}.scene")
@@ -586,7 +579,7 @@ class GeometryGraphingAverageRateValueTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_id),
+            query_key=AVERAGE_RATE_BETWEEN_MARKED_POINTS,
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_average_rate"]),
@@ -604,7 +597,7 @@ class GeometryGraphingAverageRateValueTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="number", value=float(round(rendered_scene.answer_value, 1)))
-        annotation_gt = TypedValue(type=str(rendered_scene.annotation_type), value=list(rendered_scene.annotation_value))
+        annotation_gt = TypedValue(type=str(rendered_scene.annotation_type), value=dict(rendered_scene.annotation_value))
         query_params = {
             "query_id": str(query.query_id),
             "query_id_probabilities": dict(query.query_id_probabilities),
@@ -665,4 +658,3 @@ class GeometryGraphingAverageRateValueTask:
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
-

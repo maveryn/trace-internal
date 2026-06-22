@@ -93,6 +93,8 @@
     ]
   },
   "code_prompt_defaults": {
+    "json_output_contract": "Return one JSON object with keys \"answer\" and \"annotation\".",
+    "json_output_contract_answer_only": "Return one JSON object with key \"answer\".",
     "object_description_quadratic": "a plotted function graph on graph paper",
     "object_description_quadratic_with_guide_line": "a plotted function graph on graph paper and a dashed horizontal guide line",
     "object_description_absolute_value": "a plotted function graph on graph paper",
@@ -110,7 +112,7 @@
     "annotation_hint_reference_line_crossing_count": "set \"annotation\" to an array containing every pixel point [x,y] where the plotted graph passes through {reference_line_description}; use [] when there are none",
     "annotation_hint_turning_point_count": "set \"annotation\" to an array containing every visible turning-point pixel point [x,y] where the graph changes from increasing to decreasing or decreasing to increasing; use [] when there are none",
     "annotation_hint_local_extremum_count": "set \"annotation\" to an array containing every visible local {extremum_kind_adjective} pixel point [x,y]; use [] when there are none",
-    "annotation_hint_average_rate_points": "set \"annotation\" to an array containing the pixel points [x,y] for the marked points A and B",
+    "annotation_hint_average_rate_points": "set \"annotation\" to an object with keys \"A\" and \"B\" whose values are the corresponding pixel points [x,y]",
     "json_example_reference_line_crossing_count": "{\"annotation\":[[180,320],[360,320]],\"answer\":2}",
     "json_example_turning_point_count": "{\"annotation\":[[160,260],[320,380],[480,260]],\"answer\":3}",
     "json_example_local_extremum_count": "{\"annotation\":[[220,380],[460,380]],\"answer\":2}",
@@ -122,7 +124,9 @@
     "extremum_kind_adjective_minimum": "minimum",
     "extremum_kind_adjective_maximum": "maximum",
     "extremum_visual_description_minimum": "valleys",
-    "extremum_visual_description_maximum": "peaks"
+    "extremum_visual_description_maximum": "peaks",
+    "json_example_average_rate_points": "{\"annotation\":{\"A\":[180,320],\"B\":[360,260]},\"answer\":1.5}",
+    "json_example_answer_only_average_rate_points": "{\"answer\":1.5}"
   },
   "allow_empty_task_templates": true
 }

@@ -1,64 +1,72 @@
-"""Count visible turning points on a plotted function."""
-
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any, Mapping
 
-from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
 
-from .shared.graphing.count_common import TURNING_POINT_COUNT, _SCENE_DEFAULTS
-from .shared.graphing.count_runtime import build_count_artifacts, count_query
+from ._lifecycle import (
+    TURNING_COUNT_PROMPT_KEYS,
+    integer_count_prompt_slots,
+    prepare_function_graph_count_plan,
+    run_function_graph_count_entry,
+)
+from .shared.defaults import DOMAIN
+from .shared.prompts import function_object_description
+from .shared.sampling import (
+    sample_turning_scene,
+    turning_count_support_by_family,
+)
 
 TASK_ID = "task_geometry__function_graph__extremum_count_turning_point_count"
-SCENE_ID = "function_graph"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (TURNING_POINT_COUNT,)
+SUPPORTED_QUERY_IDS = ("single",)
+PROMPT_TEMPLATE_KEY = "turning_point_count"
+
+
+def _prompt_slots(defaults: Mapping[str, Any], *, family: str):
+    return integer_count_prompt_slots(
+        defaults,
+        object_description=function_object_description(defaults=defaults, family=str(family), has_guide_line=False),
+        annotation_hint=str(defaults["annotation_hint_turning_point_count"]),
+        json_example=str(defaults["json_example_turning_point_count"]),
+        json_example_answer_only=str(defaults["json_example_answer_only_turning_point_count"]),
+    )
+
+
+def _prepare_turning_point_objective(
+    instance_seed: int,
+    task_params: Mapping[str, Any],
+    query_id: str,
+    query_probabilities: Mapping[str, float],
+):
+    return prepare_function_graph_count_plan(
+        instance_seed=int(instance_seed),
+        task_params=task_params,
+        task_id=TASK_ID,
+        branch_name=str(query_id),
+        branch_probabilities=query_probabilities,
+        support_by_family=turning_count_support_by_family(),
+        prompt_template_key=PROMPT_TEMPLATE_KEY,
+        prompt_default_keys=TURNING_COUNT_PROMPT_KEYS,
+        build_prompt_slots=lambda defaults, family, _target: _prompt_slots(defaults, family=str(family)),
+        sample_scene=lambda rng, family, target: sample_turning_scene(rng, family=str(family), target_count=int(target)),
+        build_scene_relations=lambda family, target: {"target_count": int(target), "scene_variant": str(family)},
+    )
 
 
 @register_task
 class GeometryGraphingTurningPointCountTask:
-    """Count visible points where the plotted graph changes direction."""
-
     task_id = TASK_ID
-    domain = "geometry"
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
+    domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        del max_attempts
-        query_id, query_probabilities, task_params = select_task_query_id(
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        return run_function_graph_count_entry(
+            task_id=TASK_ID,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
+            default_query_id="single",
             instance_seed=int(instance_seed),
             params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=TURNING_POINT_COUNT,
-            task_id=TASK_ID,
-        )
-        query = count_query(
-            instance_seed=int(instance_seed),
-            params=task_params,
-            query_id=str(query_id),
-            query_id_probabilities=query_probabilities,
-        )
-        artifacts = build_count_artifacts(
-            instance_seed=int(instance_seed),
-            params=task_params,
-            query=query,
-        )
-        return TaskOutput(
-            prompt=str(artifacts.prompt_artifacts.prompt),
-            answer_gt=TypedValue(type="integer", value=int(artifacts.rendered_scene.answer_value)),
-            annotation_gt=TypedValue(
-                type=str(artifacts.rendered_scene.annotation_type),
-                value=list(artifacts.rendered_scene.annotation_value),
-            ),
-            image=artifacts.image,
-            image_id="img0",
-            trace_payload=artifacts.trace_payload,
-            task_versions=artifacts.task_versions,
-            query_id=str(query.query_id),
-            prompt_variants=dict(artifacts.prompt_artifacts.prompt_variants),
+            max_attempts=int(max_attempts),
+            prepare_objective=_prepare_turning_point_objective,
         )

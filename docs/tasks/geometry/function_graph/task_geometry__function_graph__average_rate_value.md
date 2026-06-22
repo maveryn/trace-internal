@@ -3,19 +3,19 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `function_graph`
-5. Query id: `average_rate_between_marked_points`
+5. Query ids: `single`
 6. Answer schema: `decimal_value_1dp`
-7. Annotation schema: `point_set`
+7. Annotation schema: `point_map` with keys `A` and `B`
 
 ## Program Contract
-- `summary_statistic(values(visible_function_graph_support), statistic_schema=average_rate_between_marked_points); scene=function_graph; scope=average_rate_value`
+- `average_rate(marked_function_points, point_roles=A|B); scene=function_graph; scope=average_rate_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `function_graph`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+Prompt-facing annotation is a pixel-space `point_map` binding the marked graph points `A` and `B`. Graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

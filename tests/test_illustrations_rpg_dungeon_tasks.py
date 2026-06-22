@@ -3,9 +3,7 @@ from __future__ import annotations
 from trace.tasks.registry import create_task
 from trace.tasks.illustrations.rpg_dungeon.monster_chamber_count import TASK_ID as MONSTER_CHAMBER_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_dungeon.reachable_chest_count import TASK_ID as REACHABLE_CHEST_COUNT_TASK_ID
-from trace.tasks.illustrations.rpg_dungeon.rotated_tile_label import TASK_ID as ROTATED_TILE_LABEL_TASK_ID
 from trace.tasks.illustrations.rpg_dungeon.safe_reachable_chest_count import TASK_ID as SAFE_REACHABLE_CHEST_COUNT_TASK_ID
-from trace.tasks.illustrations.rpg_dungeon.swapped_tile_pair_label import TASK_ID as SWAPPED_TILE_PAIR_LABEL_TASK_ID
 from trace.tasks.illustrations.rpg_dungeon.shared.output import safe_reachable_chest_ids
 from trace.tasks.illustrations.rpg_dungeon.shared.relations import reachable_tiles
 from trace.tasks.illustrations.rpg_dungeon.shared.rendering import (
@@ -18,10 +16,6 @@ from trace.tasks.illustrations.rpg_dungeon.shared.rendering import (
     MONSTER_OBJECT_TYPES,
     draw_rpg_dungeon_debug_overlay,
     render_rpg_dungeon_scene,
-)
-from trace.tasks.illustrations.rpg_dungeon.shared.source_images import (
-    render_rpg_dungeon_source_scene,
-    sample_rpg_dungeon_source_scene_spec,
 )
 
 
@@ -134,34 +128,6 @@ def test_rpg_dungeon_renderer_controls_reachable_monster_split() -> None:
     assert len(reachable_monster_chambers) == 2
     assert len(safe_reachable_chest_ids(scene)) == 2
     assert len(scene.blockers) > 0
-
-
-def test_rpg_dungeon_source_image_helper_is_tile_aligned() -> None:
-    spec = sample_rpg_dungeon_source_scene_spec(
-        seed_namespace="test:rpg_dungeon_source",
-        instance_seed=2026062231,
-        params={"canvas_profile": "landscape", "source_chest_count": 6, "source_reachable_chest_count": 4},
-        generation_defaults={"rpg_dungeon_tile_px": 48},
-        source_chest_count_min=5,
-        source_chest_count_max=6,
-        grid_rows=3,
-        grid_cols=3,
-    )
-    assert spec.source_size == (1296, 864)
-    assert spec.source_size[0] % 3 == 0
-    assert spec.source_size[1] % 3 == 0
-    scene = render_rpg_dungeon_source_scene(
-        seed_namespace="test:rpg_dungeon_source",
-        instance_seed=2026062231,
-        attempt_index=0,
-        source=spec,
-        params={"canvas_profile": "landscape"},
-        render_defaults={"rpg_dungeon_tile_px": 48},
-    )
-    assert scene.image.size == spec.source_size
-    assert len(scene.chest_entity_ids) == 6
-    assert len(scene.reachable_chest_ids) == 4
-    assert len(scene.blockers) >= 1
 
 
 def test_rpg_dungeon_renderer_samples_reachable_count_range() -> None:
@@ -292,7 +258,6 @@ def test_rpg_dungeon_monster_chamber_count_contract() -> None:
         assert trace["scene_ir"]["relations"]["monster_chamber_ids"] == trace["render_map"]["monster_chamber_ids"]
         assert trace["scene_ir"]["relations"]["answer"] == count
 
-
 def test_rpg_dungeon_safe_reachable_chest_count_contract() -> None:
     task = create_task(SAFE_REACHABLE_CHEST_COUNT_TASK_ID)
     for profile, total_count, count, seed in (
@@ -340,81 +305,3 @@ def test_rpg_dungeon_safe_reachable_chest_count_contract() -> None:
         assert trace["query_spec"]["params"]["monster_chamber_count"] >= 1
         assert trace["scene_ir"]["relations"]["counted_chest_ids"] == trace["render_map"]["counted_chest_ids"]
         assert trace["scene_ir"]["relations"]["answer"] == count
-
-
-def test_rpg_dungeon_rotated_tile_label_contract() -> None:
-    task = create_task(ROTATED_TILE_LABEL_TASK_ID)
-    for profile, seed in (
-        ("landscape", 2026062241),
-        ("square", 2026062242),
-        ("portrait", 2026062243),
-    ):
-        out = task.generate(
-            seed,
-            params={
-                "canvas_profile": profile,
-                "source_chest_count": 6,
-                "rotation_degrees": 90,
-            },
-            max_attempts=40,
-        )
-        assert out.scene_id == "rpg_dungeon"
-        assert out.query_id == "single"
-        assert out.answer_gt.type == "option_letter"
-        assert isinstance(out.answer_gt.value, str)
-        assert out.annotation_gt.type == "bbox"
-        assert "rotated" in out.prompt.lower()
-        assert "room" not in out.prompt.lower()
-        assert "lettered candidate" not in out.prompt
-        width, height = out.image.size
-        _assert_bbox_inside_canvas(list(out.annotation_gt.value), width=width, height=height)
-
-        trace = out.trace_payload
-        assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_dungeon_v0"
-        assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_dungeon"
-        assert trace["query_spec"]["params"]["source_chest_count"] == 6
-        assert trace["query_spec"]["params"]["rotation_degrees"] == 90
-        assert trace["projected_annotation"]["type"] == "bbox"
-        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
-        assert trace["render_map"]["rotated_tile_bbox_px"] == out.annotation_gt.value
-        assert trace["scene_ir"]["relations"]["rotated_tile_label"] == out.answer_gt.value
-        grid_rows, grid_cols = trace["render_map"]["grid_shape"]
-        assert int(grid_rows) * int(grid_cols) == len(trace["render_map"]["tile_bboxes_px_by_label"])
-        assert out.answer_gt.value in trace["render_map"]["tile_bboxes_px_by_label"]
-
-
-def test_rpg_dungeon_swapped_tile_pair_label_contract() -> None:
-    task = create_task(SWAPPED_TILE_PAIR_LABEL_TASK_ID)
-    for profile, seed in (
-        ("landscape", 2026062251),
-        ("square", 2026062252),
-        ("portrait", 2026062253),
-    ):
-        out = task.generate(
-            seed,
-            params={
-                "canvas_profile": profile,
-                "source_chest_count": 6,
-            },
-            max_attempts=40,
-        )
-        assert out.scene_id == "rpg_dungeon"
-        assert out.query_id == "single"
-        assert out.answer_gt.type == "option_letter"
-        assert out.answer_gt.value in {"A", "B", "C", "D"}
-        assert out.annotation_gt.type == "bbox_set"
-        assert len(out.annotation_gt.value) == 2
-        assert "swapped" in out.prompt.lower()
-        assert "room" not in out.prompt.lower()
-        width, height = out.image.size
-        for bbox in out.annotation_gt.value:
-            _assert_bbox_inside_canvas(list(bbox), width=width, height=height)
-
-        trace = out.trace_payload
-        assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_dungeon_v0"
-        assert trace["projected_annotation"]["type"] == "bbox_set"
-        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-        assert trace["render_map"]["swapped_cell_bboxes_px"] == out.annotation_gt.value
-        assert trace["render_map"]["grid_shape"] == [3, 3]
-        assert sorted(trace["render_map"]["option_bboxes_px_by_label"]) == ["A", "B", "C", "D"]
-        assert trace["scene_ir"]["relations"]["answer_label"] == out.answer_gt.value

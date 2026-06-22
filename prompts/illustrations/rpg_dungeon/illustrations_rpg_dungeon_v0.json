@@ -22,32 +22,15 @@
       "",
       "",
       ""
-    ],
-    "rpg_dungeon_rotated_tile_label_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "rpg_dungeon_swapped_tile_pair_label_task": [
-      "",
-      "",
-      "",
-      "",
-      ""
     ]
   },
   "required_slots_by_key": {
     "scene:rpg_dungeon_canvas": [],
     "scene:rpg_dungeon_monster_canvas": [],
     "scene:rpg_dungeon_hazard_canvas": [],
-    "scene:rpg_dungeon_reconstruction_canvas": [],
     "query:reachable_chest_count": [],
     "query:monster_chamber_count": [],
     "query:safe_reachable_chest_count": [],
-    "query:rotated_tile_label": [],
-    "query:swapped_tile_pair_label": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -97,13 +80,6 @@
       "The picture shows a pixel-art dungeon from above, including corridors, chambers, boulder blockers, treasure chests, and small monsters.",
       "The canvas contains a top-down dungeon layout with a player, visible chests, monsters in some chambers, and some corridor paths blocked by boulders.",
       "This illustration shows an RPG dungeon map from above with walkable passages, boulder-blocked passages, treasure chests, and monsters."
-    ],
-    "rpg_dungeon_reconstruction_canvas": [
-      "The image shows a top-down pixel RPG dungeon divided into labeled or numbered tiles for a visual reconstruction task.",
-      "The scene shows a tiled top-down RPG dungeon map used for a visual reconstruction question.",
-      "The picture shows a pixel-art dungeon from above, split into visible tiles with labels or numbered cells.",
-      "The canvas contains a top-down dungeon layout arranged as a tile grid for comparison.",
-      "This illustration shows an RPG dungeon map from above with visible tile labels for a reconstruction task."
     ]
   },
   "query_templates": {
@@ -127,20 +103,6 @@
       "From the player's position, how many reachable treasure chests are in chambers without monsters?",
       "Follow only unblocked dungeon paths from the player. How many reachable chests are not inside monster chambers?",
       "How many treasure chests can the player reach without passing through boulder-blocked paths, after excluding chests in chambers with monsters?"
-    ],
-    "rotated_tile_label": [
-      "One of the lettered dungeon tiles is rotated relative to the rest of the image. Which tile is it?",
-      "Which lettered tile has been rotated in the dungeon grid?",
-      "Find the single tile that does not match the surrounding dungeon orientation because it was rotated. What is its letter?",
-      "Exactly one lettered tile in the dungeon grid is turned the wrong way. Which letter marks it?",
-      "Identify the letter of the rotated tile in this top-down dungeon grid."
-    ],
-    "swapped_tile_pair_label": [
-      "The numbered dungeon grid has exactly two tiles swapped. Which option names the two swapped tiles?",
-      "Exactly two numbered cells in the dungeon grid have exchanged places. Which option gives that pair?",
-      "Which option identifies the two numbered dungeon tiles that were swapped?",
-      "Find the pair of numbered cells that are out of place because they were swapped. Which option is correct?",
-      "The dungeon grid was made by swapping one pair of numbered tiles. Which option names the swapped pair?"
     ]
   },
   "allow_empty_task_templates": true

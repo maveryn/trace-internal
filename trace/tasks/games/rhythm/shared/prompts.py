@@ -24,10 +24,18 @@ _PROMPT_WIRING_KEYS = (
 )
 
 
-def rhythm_json_examples(*, prompt_query_key: str, annotation_type: str) -> Tuple[str, str]:
+def rhythm_json_examples(
+    *,
+    annotation_type: str,
+    example_annotation: Any | None = None,
+    example_answer: int | None = None,
+) -> Tuple[str, str]:
     """Return format-only JSON examples aligned to the task annotation shape."""
 
-    if str(annotation_type) == "bbox":
+    if example_annotation is not None and example_answer is not None:
+        annotation = example_annotation
+        answer = int(example_answer)
+    elif str(annotation_type) == "bbox":
         annotation: Any = [260, 432, 341, 479]
         answer = 4
     else:
@@ -50,6 +58,8 @@ def build_rhythm_prompt_artifacts(
     target_color: str,
     score_values_by_color: Mapping[str, int] | None,
     prompt_rule_keys: Tuple[str, ...],
+    json_example_annotation: Any | None,
+    json_example_answer: int | None,
     beat_window: int,
     instance_seed: int,
 ) -> tuple[Dict[str, Any], Any]:
@@ -71,8 +81,9 @@ def build_rhythm_prompt_artifacts(
         context="rhythm prompt wiring defaults",
     )
     json_example, json_example_answer_only = rhythm_json_examples(
-        prompt_query_key=str(prompt_query_key),
         annotation_type=str(annotation_type),
+        example_annotation=json_example_annotation,
+        example_answer=json_example_answer,
     )
     prompt_selection = render_scene_prompt_variants(
         domain=str(domain),

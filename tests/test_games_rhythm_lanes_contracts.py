@@ -97,6 +97,9 @@ def test_games_rhythm_lane_note_score_value_matches_trace() -> None:
     assert set(execution["annotation_entity_ids"]) == {str(note["note_id"]) for note in expected}
     assert len(out.annotation_gt.value) == len(expected)
     assert out.trace_payload["render_map"]["score_palette"]["values_by_color"] == score_values
+    assert "each note scores the number shown for its color" in out.prompt
+    assert "long vertical note counts once" in out.prompt
+    assert '"answer":7' in out.prompt
 
 
 def test_games_rhythm_most_notes_lane_label_matches_trace() -> None:

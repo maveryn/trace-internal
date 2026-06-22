@@ -40,6 +40,8 @@ def _prepare_lane_note_score_objective(
     _query_probabilities: Mapping[str, float],
     query_id: str,
 ) -> ObjectiveRhythmPlan:
+    """Bind the lane score objective, including its visible color-score palette."""
+
     if str(query_id) != DEFAULT_QUERY_ID:
         raise ValueError(f"unsupported Rhythm lane-note-score query: {query_id}")
     target_axis = resolve_rhythm_count_target_axis(
@@ -58,6 +60,8 @@ def _prepare_lane_note_score_objective(
         prompt_query_key=PROMPT_QUERY_KEY,
         annotation_kind="note_bbox_set",
         prompt_rule_keys=("score_palette_rule_text",),
+        json_example_annotation=((260, 498, 341, 545), (260, 432, 341, 479)),
+        json_example_answer=7,
         query_params={
             "target_score": int(target_axis.target_count),
             "target_score_support": [int(value) for value in target_axis.target_count_support],

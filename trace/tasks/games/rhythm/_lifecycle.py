@@ -42,6 +42,8 @@ class ObjectiveRhythmPlan:
     annotation_kind: str
     construct_attempt: AttemptBuilder
     prompt_rule_keys: Sequence[str] = ("note_object_rule_text",)
+    json_example_annotation: Any | None = None
+    json_example_answer: int | None = None
     query_params: Mapping[str, Any] = field(default_factory=dict)
 
 
@@ -310,6 +312,8 @@ def run_rhythm_lifecycle(
         target_color=str(sample.target_color_key or ""),
         score_values_by_color=sample.score_values_by_color,
         prompt_rule_keys=tuple(str(key) for key in objective.prompt_rule_keys),
+        json_example_annotation=objective.json_example_annotation,
+        json_example_answer=objective.json_example_answer,
         beat_window=int(sample.beat_window),
         instance_seed=int(instance_seed),
     )

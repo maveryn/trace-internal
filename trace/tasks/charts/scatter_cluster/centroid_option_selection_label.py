@@ -2,108 +2,88 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.cluster_dataset import _dataset_for_centroid_option
-from .shared.cluster_sampling import (
-    _option_labels_for_count,
-    _target_option_count,
-    _target_option_label,
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.tasks.registry import register_task
+
+from ._lifecycle import build_scatter_cluster_plan, run_scatter_cluster_task
+from .shared.annotations import centroid_option_bbox_map_annotation
+from .shared.data import build_centroid_option_dataset
+from .shared.sampling import (
+    option_labels_for_count,
+    sample_cluster_inputs,
+    target_option_count,
+    target_option_label,
 )
-from .shared.output import build_scatter_cluster_task_components
-from .shared.runtime import sample_cluster_inputs
+from .shared.state import DOMAIN
 
 
-QUERY_ID = "centroid_option_selection_label"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+TASK_ID = "task_charts__scatter_cluster__centroid_option_selection_label"
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
+DEFAULT_QUERY_ID = SINGLE_QUERY_ID
+PROMPT_QUERY_KEY = "centroid_option_selection_label"
+
+
+def _centroid_option_annotation(dataset, rendered):
+    return centroid_option_bbox_map_annotation(
+        dataset=dataset,
+        rendered=rendered,
+        target_cluster_label=str(dataset.question.params["target_cluster_label"]),
+        selected_option_label=str(dataset.question.answer),
+    )
+
+
+def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, probabilities: dict[str, float]):
+    """Bind the target cluster, option letters, and nearest-centroid answer."""
+
+    inputs = sample_cluster_inputs(params=params, instance_seed=int(instance_seed))
+    option_count = target_option_count(params, instance_seed=int(instance_seed))
+    option_labels = option_labels_for_count(int(option_count))
+    answer_option_label = target_option_label(
+        params,
+        instance_seed=int(instance_seed),
+        cluster_count=int(inputs.cluster_count),
+        option_labels=option_labels,
+    )
+    dataset = build_centroid_option_dataset(
+        params=params,
+        instance_seed=int(instance_seed),
+        labels=inputs.labels,
+        target_cluster_label=str(inputs.answer_label),
+        points_per_cluster=int(inputs.points_per_cluster),
+        answer_option_label=str(answer_option_label),
+        option_labels=option_labels,
+        branch_id=str(selected),
+        branch_probabilities=dict(probabilities),
+        question_params={
+            "program_code": "argmin_label(option, distance(point(option), centroid(target_cluster)))",
+        },
+    )
+    return build_scatter_cluster_plan(
+        dataset=dataset,
+        inputs=inputs,
+        prompt_key=PROMPT_QUERY_KEY,
+        question_format="scatter_cluster_centroid_option_selection_label",
+        witness_type="scatter_cluster_centroid_option_bbox_map",
+        annotation_builder=_centroid_option_annotation,
+    )
 
 
 @register_task
 class ChartsScatterClusterCentroidOptionSelectionLabelTask:
     """Choose the option marker closest to a named cluster centroid."""
 
-    task_id = "task_charts__scatter_cluster__centroid_option_selection_label"
-    domain = "charts"
-    scene_id = "scatter_cluster"
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "centroid_option_selection_label"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = DEFAULT_QUERY_ID
     default_dataset_enabled = True
+    _build_plan = staticmethod(_build_plan)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=QUERY_ID,
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                attempt_params = {**dict(task_params), "_attempt_index": int(attempt_index)}
-                return self._generate_once(
-                    int(attempt_seed),
-                    params=attempt_params,
-                    selected_query_id=str(selected_query_id),
-                    query_probabilities=query_probabilities,
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
-
-    def _generate_once(
-        self,
-        instance_seed: int,
-        *,
-        params: Dict[str, Any],
-        selected_query_id: str,
-        query_probabilities: Dict[str, float],
-    ) -> TaskOutput:
-        inputs = sample_cluster_inputs(params=params, instance_seed=int(instance_seed))
-        option_count = _target_option_count(params, instance_seed=int(instance_seed))
-        option_labels = _option_labels_for_count(int(option_count))
-        answer_option_label = _target_option_label(
-            params,
-            instance_seed=int(instance_seed),
-            cluster_count=int(inputs.cluster_count),
-            option_labels=option_labels,
-        )
-        dataset = _dataset_for_centroid_option(
-            params=params,
-            instance_seed=int(instance_seed),
-            labels=inputs.labels,
-            target_cluster_label=str(inputs.answer_label),
-            points_per_cluster=int(inputs.points_per_cluster),
-            answer_option_label=str(answer_option_label),
-            option_labels=option_labels,
-        )
-        components = build_scatter_cluster_task_components(
-            dataset=dataset,
-            inputs=inputs,
-            params=params,
-            instance_seed=int(instance_seed),
-            query_id=str(selected_query_id),
-            query_id_probabilities=query_probabilities,
-        )
-        return TaskOutput(
-            prompt=str(components.prompt),
-            prompt_variants=dict(components.prompt_variants),
-            answer_gt=TypedValue(type=str(components.answer_type), value=str(components.answer_value)),
-            annotation_gt=TypedValue(type=str(components.annotation_type), value=dict(components.annotation_value)),
-            image=components.image,
-            image_id="img0",
-            trace_payload=dict(components.trace_payload),
-            task_versions=default_task_versions(),
-            scene_id="scatter_cluster",
-            query_id=str(components.query_id),
-        )
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        return run_scatter_cluster_task(self, int(instance_seed), dict(params), int(max_attempts))
 
 
-__all__ = ["ChartsScatterClusterCentroidOptionSelectionLabelTask"]
+__all__ = ["ChartsScatterClusterCentroidOptionSelectionLabelTask", "SUPPORTED_QUERY_IDS"]

@@ -1,58 +1,98 @@
-"""Rendering helpers for scatter cluster chart tasks."""
+"""Rendering helpers for scatter-cluster chart scenes."""
 
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Sequence
 
 from PIL import Image, ImageDraw
 
-from ....shared.bbox_projection import bbox_union_raw as _bbox_union
-from ....shared.text_legibility import draw_text_traced
-from ....shared.text_rendering import load_font
-from .cluster_common import RGB, _AreaEnvelope, _Dataset, _Point, _Rendered, _RenderParams, _bbox
+from trace.core.visual.background import make_background_canvas
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.shared.bbox_projection import bbox_union_raw as _bbox_union
+from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_rendering import load_font, temporary_default_font_family
+
+from .defaults import (
+    POST_IMAGE_BACKGROUND_DEFAULTS,
+    POST_IMAGE_NOISE_DEFAULTS,
+    resolve_render_params,
+    sample_chart_font_family,
+)
+from .state import (
+    AreaEnvelope,
+    RGB,
+    RenderedScatterCluster,
+    ScatterClusterDataset,
+    ScatterClusterRenderParams,
+    ScatterClusterRenderResult,
+    ScatterPoint,
+)
+
+
+def _bbox(values: Sequence[float]) -> list[float]:
+    return [round(float(value), 3) for value in values]
+
 
 def _draw_text_box(
     draw: ImageDraw.ImageDraw,
     text: str,
-    xy: Tuple[float, float],
+    xy: tuple[float, float],
     *,
     font: Any,
     fill: RGB,
     stroke_fill: RGB,
     stroke_width: int = 0,
-) -> List[float]:
+) -> list[float]:
     try:
-        draw_text_traced(draw,(float(xy[0]), float(xy[1])), str(text), font=font, fill=fill, stroke_fill=stroke_fill, stroke_width=int(stroke_width), role="readout", required=False)
+        draw_text_traced(
+            draw,
+            (float(xy[0]), float(xy[1])),
+            str(text),
+            font=font,
+            fill=fill,
+            stroke_fill=stroke_fill,
+            stroke_width=int(stroke_width),
+            role="readout",
+            required=False,
+        )
         box = draw.textbbox((float(xy[0]), float(xy[1])), str(text), font=font, stroke_width=int(stroke_width))
         return _bbox(box)
     except Exception:
-        draw_text_traced(draw,(float(xy[0]), float(xy[1])), str(text), font=font, fill=fill, role="readout", required=False)
+        draw_text_traced(
+            draw,
+            (float(xy[0]), float(xy[1])),
+            str(text),
+            font=font,
+            fill=fill,
+            role="readout",
+            required=False,
+        )
         width, height = draw.textsize(str(text), font=font)
         return _bbox([float(xy[0]), float(xy[1]), float(xy[0]) + float(width), float(xy[1]) + float(height)])
 
 
-def _plot_value_xy(x_value: float, y_value: float, *, plot_bbox: Sequence[float]) -> Tuple[float, float]:
+def _plot_value_xy(x_value: float, y_value: float, *, plot_bbox: Sequence[float]) -> tuple[float, float]:
     left, top, right, bottom = [float(value) for value in plot_bbox]
     x = left + (float(x_value) / 100.0) * (right - left)
     y = bottom - (float(y_value) / 100.0) * (bottom - top)
     return (float(x), float(y))
 
 
-def _plot_xy(point: _Point, *, plot_bbox: Sequence[float]) -> Tuple[float, float]:
+def _plot_xy(point: ScatterPoint, *, plot_bbox: Sequence[float]) -> tuple[float, float]:
     return _plot_value_xy(float(point.x_value), float(point.y_value), plot_bbox=plot_bbox)
 
 
 def _area_envelope_polygon_px(
-    envelope: _AreaEnvelope,
+    envelope: AreaEnvelope,
     *,
     plot_bbox: Sequence[float],
     segments: int = 56,
-) -> List[Tuple[float, float]]:
+) -> list[tuple[float, float]]:
     angle = math.radians(float(envelope.angle_degrees))
     cos_a = math.cos(angle)
     sin_a = math.sin(angle)
-    polygon: List[Tuple[float, float]] = []
+    polygon: list[tuple[float, float]] = []
     for index in range(int(segments)):
         theta = 2.0 * math.pi * (float(index) / max(1.0, float(segments)))
         local_x = float(envelope.radius_x) * math.cos(theta)
@@ -63,25 +103,20 @@ def _area_envelope_polygon_px(
     return polygon
 
 
-def _bbox_from_points(points: Sequence[Tuple[float, float]], *, padding: float = 0.0) -> List[float]:
+def _bbox_from_points(points: Sequence[tuple[float, float]], *, padding: float = 0.0) -> list[float]:
     xs = [float(point[0]) for point in points]
     ys = [float(point[1]) for point in points]
-    return _bbox(
-        [
-            min(xs) - float(padding),
-            min(ys) - float(padding),
-            max(xs) + float(padding),
-            max(ys) + float(padding),
-        ]
-    )
+    return _bbox([min(xs) - float(padding), min(ys) - float(padding), max(xs) + float(padding), max(ys) + float(padding)])
 
 
-def _render_scatter(
+def render_scatter_scene(
     image: Image.Image,
     *,
-    dataset: _Dataset,
-    render_params: _RenderParams,
-) -> _Rendered:
+    dataset: ScatterClusterDataset,
+    render_params: ScatterClusterRenderParams,
+) -> RenderedScatterCluster:
+    """Draw the scatter plot and record pixel boxes for clusters, points, options, and legend rows."""
+
     draw = ImageDraw.Draw(image)
     width, height = image.size
     plot_bbox = [
@@ -100,8 +135,19 @@ def _render_scatter(
         float(width - 36.0),
         float(plot_bbox[3] + 72.0),
     ]
-    draw.rounded_rectangle(panel_bbox, radius=6, fill=render_params.panel_fill_rgb, outline=render_params.panel_border_rgb, width=2)
-    draw.rectangle(plot_bbox, fill=render_params.plot_fill_rgb, outline=render_params.axis_color_rgb, width=int(render_params.axis_line_width_px))
+    draw.rounded_rectangle(
+        panel_bbox,
+        radius=6,
+        fill=render_params.panel_fill_rgb,
+        outline=render_params.panel_border_rgb,
+        width=2,
+    )
+    draw.rectangle(
+        plot_bbox,
+        fill=render_params.plot_fill_rgb,
+        outline=render_params.axis_color_rgb,
+        width=int(render_params.axis_line_width_px),
+    )
     for tick in range(0, 101, 20):
         x = plot_bbox[0] + (float(tick) / 100.0) * (plot_bbox[2] - plot_bbox[0])
         y = plot_bbox[3] - (float(tick) / 100.0) * (plot_bbox[3] - plot_bbox[1])
@@ -109,8 +155,8 @@ def _render_scatter(
         draw.line([plot_bbox[0], y, plot_bbox[2], y], fill=render_params.grid_color_rgb, width=int(render_params.grid_line_width_px))
         draw.line([x, plot_bbox[3], x, plot_bbox[3] + render_params.tick_length_px], fill=render_params.axis_color_rgb, width=1)
         draw.line([plot_bbox[0] - render_params.tick_length_px, y, plot_bbox[0], y], fill=render_params.axis_color_rgb, width=1)
-        draw_text_traced(draw,(x, plot_bbox[3] + 12), str(tick), font=tick_font, fill=render_params.text_color_rgb, anchor="mt", role="readout", required=False)
-        draw_text_traced(draw,(plot_bbox[0] - 13, y), str(tick), font=tick_font, fill=render_params.text_color_rgb, anchor="rm", role="readout", required=False)
+        draw_text_traced(draw, (x, plot_bbox[3] + 12), str(tick), font=tick_font, fill=render_params.text_color_rgb, anchor="mt", role="readout", required=False)
+        draw_text_traced(draw, (plot_bbox[0] - 13, y), str(tick), font=tick_font, fill=render_params.text_color_rgb, anchor="rm", role="readout", required=False)
 
     title_bbox = _draw_text_box(
         draw,
@@ -137,14 +183,14 @@ def _render_scatter(
         stroke_fill=render_params.text_stroke_rgb,
     )
 
-    point_bboxes: Dict[str, List[float]] = {}
-    cluster_bboxes: Dict[str, List[float]] = {}
-    cluster_envelope_bboxes: Dict[str, List[float]] = {}
-    cluster_label_bboxes: Dict[str, List[float]] = {}
-    legend_bboxes: Dict[str, List[float]] = {}
-    option_bboxes: Dict[str, List[float]] = {}
-    option_centers_px: Dict[str, List[float]] = {}
-    entities: List[Dict[str, Any]] = [
+    point_bboxes: dict[str, list[float]] = {}
+    cluster_bboxes: dict[str, list[float]] = {}
+    cluster_envelope_bboxes: dict[str, list[float]] = {}
+    cluster_label_bboxes: dict[str, list[float]] = {}
+    legend_bboxes: dict[str, list[float]] = {}
+    option_bboxes: dict[str, list[float]] = {}
+    option_centers_px: dict[str, list[float]] = {}
+    entities: list[dict[str, Any]] = [
         {"entity_id": "scatter_panel", "entity_type": "chart_panel", "bbox_xyxy": _bbox(panel_bbox), "attrs": {}},
         {"entity_id": "scatter_plot", "entity_type": "scatter_plot", "bbox_xyxy": _bbox(plot_bbox), "attrs": {}},
         {"entity_id": "chart_title", "entity_type": "chart_title", "bbox_xyxy": title_bbox, "attrs": {"title": "Cluster Scatter Plot"}},
@@ -152,7 +198,7 @@ def _render_scatter(
         {"entity_id": "y_axis_label", "entity_type": "axis_label", "bbox_xyxy": y_label_box, "attrs": {"axis": "y"}},
     ]
 
-    envelope_polygons: Dict[str, List[Tuple[float, float]]] = {}
+    envelope_polygons: dict[str, list[tuple[float, float]]] = {}
     for cluster in dataset.clusters:
         if cluster.area_envelope is None:
             continue
@@ -166,18 +212,15 @@ def _render_scatter(
             polygon = envelope_polygons.get(str(cluster.cluster_label))
             if not polygon:
                 continue
-            fill = (*tuple(cluster.color_rgb), 54)
-            outline = (*tuple(cluster.color_rgb), 210)
-            overlay_draw.polygon(polygon, fill=fill)
-            overlay_draw.line(list(polygon) + [polygon[0]], fill=outline, width=3)
-        composed = Image.alpha_composite(image.convert("RGBA"), overlay).convert("RGB")
-        image.paste(composed)
+            overlay_draw.polygon(polygon, fill=(*tuple(cluster.color_rgb), 54))
+            overlay_draw.line(list(polygon) + [polygon[0]], fill=(*tuple(cluster.color_rgb), 210), width=3)
+        image.paste(Image.alpha_composite(image.convert("RGBA"), overlay).convert("RGB"))
         draw = ImageDraw.Draw(image)
 
     radius = float(render_params.point_radius_px)
     for cluster in dataset.clusters:
         plotted = [_plot_xy(point, plot_bbox=plot_bbox) for point in cluster.points]
-        point_boxes_for_cluster: List[List[float]] = []
+        point_boxes_for_cluster: list[list[float]] = []
         for point, (px, py) in zip(cluster.points, plotted):
             bbox = [px - radius, py - radius, px + radius, py + radius]
             point_bboxes[str(point.point_id)] = _bbox(bbox)
@@ -218,7 +261,10 @@ def _render_scatter(
                     "point_ids": [str(point.point_id) for point in cluster.points],
                     "area_envelope": (
                         {
-                            "center": [round(float(cluster.area_envelope.center_x), 3), round(float(cluster.area_envelope.center_y), 3)],
+                            "center": [
+                                round(float(cluster.area_envelope.center_x), 3),
+                                round(float(cluster.area_envelope.center_y), 3),
+                            ],
                             "radius_x": round(float(cluster.area_envelope.radius_x), 3),
                             "radius_y": round(float(cluster.area_envelope.radius_y), 3),
                             "angle_degrees": round(float(cluster.area_envelope.angle_degrees), 3),
@@ -303,7 +349,7 @@ def _render_scatter(
             }
         )
 
-    return _Rendered(
+    return RenderedScatterCluster(
         image=image,
         entities=tuple(dict(item) for item in entities),
         plot_bbox_px=_bbox(plot_bbox),
@@ -314,4 +360,38 @@ def _render_scatter(
         legend_bboxes=dict(legend_bboxes),
         option_bboxes=dict(option_bboxes),
         option_centers_px=dict(option_centers_px),
+    )
+
+
+def render_scatter_cluster_dataset(
+    *,
+    dataset: ScatterClusterDataset,
+    params: dict[str, Any],
+    instance_seed: int,
+) -> ScatterClusterRenderResult:
+    render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
+    render_params = resolve_render_params(render_style_params)
+    background, background_meta = make_background_canvas(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+    )
+    chart_font_family = sample_chart_font_family(int(instance_seed), params)
+    with temporary_default_font_family(str(chart_font_family)):
+        rendered_scene = render_scatter_scene(background, dataset=dataset, render_params=render_params)
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    return ScatterClusterRenderResult(
+        image=image,
+        rendered_scene=rendered_scene,
+        render_params=render_params,
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
+        chart_font_family=str(chart_font_family),
     )

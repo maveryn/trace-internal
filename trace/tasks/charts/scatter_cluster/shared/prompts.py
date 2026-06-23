@@ -1,4 +1,4 @@
-"""Prompt assembly for scatter-cluster chart tasks."""
+"""Prompt assembly for scatter-cluster chart scenes."""
 
 from __future__ import annotations
 
@@ -10,29 +10,21 @@ from trace.tasks.shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 
-from .cluster_common import _PROMPT_DEFAULTS, _is_area_rank_query
-from .cluster_common import _Dataset
+from .defaults import resolved_prompt_bundle_id
+from .state import AREA_ENVELOPE_SCATTER, DOMAIN, SCENE_ID, ScatterClusterDataset
 
 
-DOMAIN = "charts"
-SCENE_ID = "scatter_cluster"
-PROMPT_BUNDLE_ID = "charts_scatter_cluster_v1"
-
-
-def dynamic_slots(*, dataset: _Dataset) -> dict[str, Any]:
-    trace = dict(dataset.query.trace)
-    query_id = str(dataset.query.query_id)
+def dynamic_slots(*, dataset: ScatterClusterDataset) -> dict[str, Any]:
+    trace = dict(dataset.question.params)
     return {
         "object_description": (
             "a scatter plot with several colored point clusters, shaded cluster footprints, and a matching legend"
-            if _is_area_rank_query(query_id)
+            if str(dataset.scene_variant) == AREA_ENVELOPE_SCATTER
             else "a scatter plot with several colored point clusters and a matching legend"
         ),
         "trend_direction_phrase": str(trace.get("trend_direction", "")),
         "reference_cluster_label": str(trace.get("reference_cluster_label", "")),
-        "separation_extremum_phrase": "closest to"
-        if str(trace.get("separation_extremum")) == "closest"
-        else "farthest from",
+        "separation_extremum_phrase": "closest to" if str(trace.get("separation_extremum")) == "closest" else "farthest from",
         "spread_axis_phrase": str(trace.get("spread_axis", "")),
         "spread_extremum_phrase": str(trace.get("spread_extremum", "")),
         "area_rank_phrase": str(trace.get("area_rank_phrase", "")),
@@ -49,7 +41,7 @@ def build_prompt_artifacts(
     rendered_prompt = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
-        bundle_id=str(_PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
+        bundle_id=resolved_prompt_bundle_id(),
         scene_key="scatter_cluster",
         task_key="scatter_cluster_query",
         query_key=str(prompt_query_key),
@@ -57,6 +49,3 @@ def build_prompt_artifacts(
         instance_seed=int(instance_seed),
     )
     return build_prompt_trace_artifacts(rendered_prompt)
-
-
-__all__ = ["build_prompt_artifacts", "dynamic_slots"]

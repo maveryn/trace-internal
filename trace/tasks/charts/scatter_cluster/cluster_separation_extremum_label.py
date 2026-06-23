@@ -2,100 +2,79 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.cluster_dataset import _dataset_for_separation
-from .shared.cluster_sampling import _resolve_separation_extremum
-from .shared.output import build_scatter_cluster_task_components
-from .shared.runtime import sample_cluster_inputs
+from trace.tasks.registry import register_task
+
+from ._lifecycle import build_scatter_cluster_plan, run_scatter_cluster_task
+from .shared.annotations import cluster_pair_bbox_map_annotation
+from .shared.data import build_separation_dataset
+from .shared.sampling import sample_cluster_inputs
+from .shared.state import DOMAIN
 
 
-QUERY_ID = "cluster_separation_extremum_label"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+TASK_ID = "task_charts__scatter_cluster__cluster_separation_extremum_label"
+CLOSEST_QUERY_ID = "closest_to_reference_label"
+FARTHEST_QUERY_ID = "farthest_from_reference_label"
+SUPPORTED_QUERY_IDS = (CLOSEST_QUERY_ID, FARTHEST_QUERY_ID)
+DEFAULT_QUERY_ID = CLOSEST_QUERY_ID
+_SEPARATION_BY_BRANCH = {
+    CLOSEST_QUERY_ID: "closest",
+    FARTHEST_QUERY_ID: "farthest",
+}
+
+
+def _reference_answer_annotation(dataset, rendered):
+    return cluster_pair_bbox_map_annotation(
+        dataset=dataset,
+        rendered=rendered,
+        reference_cluster_label=str(dataset.question.params["reference_cluster_label"]),
+        answer_cluster_label=str(dataset.question.answer),
+    )
+
+
+def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, probabilities: dict[str, float]):
+    """Bind closest/farthest separation from the sampled reference cluster."""
+
+    separation_extremum = _SEPARATION_BY_BRANCH[str(selected)]
+    inputs = sample_cluster_inputs(params=params, instance_seed=int(instance_seed))
+    dataset = build_separation_dataset(
+        params=params,
+        instance_seed=int(instance_seed),
+        labels=inputs.labels,
+        answer_label=str(inputs.answer_label),
+        points_per_cluster=int(inputs.points_per_cluster),
+        separation_extremum=str(separation_extremum),
+        branch_id=str(selected),
+        branch_probabilities=dict(probabilities),
+        question_params={
+            "program_code": "argextreme_label(cluster, distance(center(cluster), center(reference_cluster)), direction)",
+        },
+    )
+    return build_scatter_cluster_plan(
+        dataset=dataset,
+        inputs=inputs,
+        prompt_key=str(selected),
+        question_format="scatter_cluster_separation_extremum_label",
+        witness_type="scatter_cluster_reference_answer_bbox_map",
+        annotation_builder=_reference_answer_annotation,
+    )
 
 
 @register_task
 class ChartsScatterClusterSeparationExtremumLabelTask:
     """Return the cluster with extremal separation from a reference cluster."""
 
-    task_id = "task_charts__scatter_cluster__cluster_separation_extremum_label"
-    domain = "charts"
-    scene_id = "scatter_cluster"
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "cluster_separation_extremum_label"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = DEFAULT_QUERY_ID
     default_dataset_enabled = True
+    _build_plan = staticmethod(_build_plan)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=QUERY_ID,
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                attempt_params = {**dict(task_params), "_attempt_index": int(attempt_index)}
-                return self._generate_once(
-                    int(attempt_seed),
-                    params=attempt_params,
-                    selected_query_id=str(selected_query_id),
-                    query_probabilities=query_probabilities,
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
-
-    def _generate_once(
-        self,
-        instance_seed: int,
-        *,
-        params: Dict[str, Any],
-        selected_query_id: str,
-        query_probabilities: Dict[str, float],
-    ) -> TaskOutput:
-        inputs = sample_cluster_inputs(params=params, instance_seed=int(instance_seed))
-        separation_extremum, separation_extremum_probabilities = _resolve_separation_extremum(
-            params,
-            instance_seed=int(instance_seed),
-        )
-        dataset = _dataset_for_separation(
-            params=params,
-            instance_seed=int(instance_seed),
-            labels=inputs.labels,
-            answer_label=str(inputs.answer_label),
-            points_per_cluster=int(inputs.points_per_cluster),
-            separation_extremum=str(separation_extremum),
-            separation_extremum_probabilities=separation_extremum_probabilities,
-        )
-        components = build_scatter_cluster_task_components(
-            dataset=dataset,
-            inputs=inputs,
-            params=params,
-            instance_seed=int(instance_seed),
-            query_id=str(selected_query_id),
-            query_id_probabilities=query_probabilities,
-        )
-        return TaskOutput(
-            prompt=str(components.prompt),
-            prompt_variants=dict(components.prompt_variants),
-            answer_gt=TypedValue(type=str(components.answer_type), value=str(components.answer_value)),
-            annotation_gt=TypedValue(type=str(components.annotation_type), value=dict(components.annotation_value)),
-            image=components.image,
-            image_id="img0",
-            trace_payload=dict(components.trace_payload),
-            task_versions=default_task_versions(),
-            scene_id="scatter_cluster",
-            query_id=str(components.query_id),
-        )
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        return run_scatter_cluster_task(self, int(instance_seed), dict(params), int(max_attempts))
 
 
-__all__ = ["ChartsScatterClusterSeparationExtremumLabelTask"]
+__all__ = ["ChartsScatterClusterSeparationExtremumLabelTask", "SUPPORTED_QUERY_IDS"]

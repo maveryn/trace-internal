@@ -1000,51 +1000,6 @@ def _draw_stick_object(
     return _bbox_union(*bboxes)
 
 
-def _draw_straw_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera: _CameraSpec,
-    frame: _ProjectionFrame,
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    center, direction, normal, length_px = _diagonal_ground_axis_basis(
-        spec,
-        camera,
-        frame,
-        center_height_frac=0.58,
-        length_scale=0.84,
-        min_length_px=60.0,
-        max_length_px=104.0,
-    )
-
-    def point_at(axis_frac: float, offset_px: float = 0.0) -> Tuple[float, float]:
-        return (
-            center[0] + direction[0] * length_px * float(axis_frac) + normal[0] * float(offset_px),
-            center[1] + direction[1] * length_px * float(axis_frac) + normal[1] * float(offset_px),
-        )
-
-    tube_width = max(12, int(round(length_px * 0.120)))
-    tube = [point_at(-0.52, -1.0), point_at(-0.10, 7.0), point_at(0.52, -2.0)]
-    draw.line(tube, fill=_shade(fill, 0.52), width=tube_width + 3, joint="curve")
-    draw.line(tube, fill=_tint(fill, 0.30), width=tube_width, joint="curve")
-    bboxes = [_padded_screen_line_bbox(tube, pad_px=float(tube_width))]
-    for frac in (-0.30, -0.12, 0.08, 0.28):
-        p = point_at(frac, 2.0)
-        stripe = [
-            (p[0] - normal[0] * tube_width * 0.54, p[1] - normal[1] * tube_width * 0.54),
-            (p[0] + normal[0] * tube_width * 0.54, p[1] + normal[1] * tube_width * 0.54),
-        ]
-        draw.line(stripe, fill=(236, 244, 248), width=2)
-        bboxes.append(_padded_screen_line_bbox(stripe, pad_px=1.0))
-    for end_x, end_y in ((tube[0][0], tube[0][1]), (tube[-1][0], tube[-1][1])):
-        end_radius = max(4.0, float(tube_width) * 0.58)
-        end = [end_x - end_radius, end_y - end_radius, end_x + end_radius, end_y + end_radius]
-        draw.ellipse(end, fill=(48, 61, 70), outline=(237, 244, 246), width=1)
-        bboxes.append(end)
-    return _bbox_union(*bboxes)
-
-
 def _draw_tube_object(
     draw: ImageDraw.ImageDraw,
     spec: Mapping[str, Any],
@@ -1236,7 +1191,7 @@ def _draw_flower_object(
         cx = float(center[0]) + math.cos(angle) * radius * 1.45
         cy = float(center[1]) + math.sin(angle) * radius * 1.15
         bboxes.append(_draw_small_ellipse(draw, (cx, cy), petal_radius, petal_radius * 0.72, fill=petal_fill, outline=(104, 48, 76), width=1))
-    bboxes.append(_draw_small_ellipse(draw, center, radius * 0.95, radius * 0.82, fill=(235, 190, 54), outline=(110, 82, 26), width=1))
+    bboxes.append(_draw_small_ellipse(draw, center, radius * 0.95, radius * 0.82, fill=petal_fill, outline=_shade(fill, 0.42), width=1))
     return _bbox_union(*bboxes)
 
 
@@ -2221,7 +2176,6 @@ __all__ = [
     "_draw_nail_object",
     "_draw_rod_object",
     "_draw_stick_object",
-    "_draw_straw_object",
     "_draw_tube_object",
     "_draw_clip_object",
     "_draw_socket_object",

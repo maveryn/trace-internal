@@ -77,7 +77,6 @@ _REQUESTED_NAMED_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = (
     "star_prism",
     "stick",
     "stool",
-    "straw",
     "sword",
     "mini_table",
     "tray",
@@ -152,7 +151,6 @@ COLOR_READOUT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
         "half_cylinder",
         "dice",
         "pencil",
-        "straw",
         "ruler",
         "bell",
         "candle",
@@ -179,7 +177,7 @@ COLOR_CONFUSION_EXCLUSIONS: Mapping[str, Tuple[str, ...]] = {
 }
 
 VISUAL_CONFUSION_GROUPS: Tuple[Tuple[str, ...], ...] = (
-    ("pen", "pencil", "ruler", "tube", "stick", "straw"),
+    ("pen", "pencil", "ruler", "tube", "stick"),
     ("card", "bookmark", "small_box", "ticket", "mail_envelope", "open_book"),
     ("candy_disc", "cd", "berry", "button", "sphere", "marble", "bead", "coaster", "lid"),
     ("screw", "hex_nut", "clip", "socket", "bolt", "hook", "tape_roll", "torus"),

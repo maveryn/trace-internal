@@ -118,7 +118,6 @@ from .object_scene_glyphs_tools_devices import (
     _draw_nail_object,
     _draw_rod_object,
     _draw_stick_object,
-    _draw_straw_object,
     _draw_tube_object,
     _draw_clip_object,
     _draw_socket_object,

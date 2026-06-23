@@ -556,8 +556,6 @@ def _draw_projected_object_shape(
         shape_bbox = scene_rendering._draw_rod_object(draw, spec, camera=camera, frame=frame, fill=fill)
     elif shape_type in {"stick", "cinnamon_stick"}:
         shape_bbox = scene_rendering._draw_stick_object(draw, spec, camera=camera, frame=frame, fill=fill)
-    elif shape_type == "straw":
-        shape_bbox = scene_rendering._draw_straw_object(draw, spec, camera=camera, frame=frame, fill=fill)
     elif shape_type == "tube":
         shape_bbox = scene_rendering._draw_tube_object(draw, spec, camera=camera, frame=frame, fill=fill)
     elif shape_type == "clip":

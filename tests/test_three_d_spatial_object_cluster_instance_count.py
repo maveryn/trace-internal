@@ -55,7 +55,6 @@ COUNTQA_CLUSTER_ADDITIONS = {
     "light_bulb",
     "egg",
     "paint_brush",
-    "straw",
     "ticket",
     "marble",
     "bead",
@@ -127,7 +126,6 @@ EXPECTED_OBJECT_CLUSTER_NAMED_SHAPES = {
     "star_prism",
     "stick",
     "stool",
-    "straw",
     "sword",
     "torus",
     "tray",
@@ -146,7 +144,6 @@ PROMOTED_COLOR_READOUT_SHAPES = {
     "mini_table",
     "pencil",
     "ruler",
-    "straw",
     "trophy",
     "umbrella",
 }
@@ -528,7 +525,7 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
     assert taxonomy.scene_id == "object_cluster"
     assert not taxonomy.source_scene_id
     assert len(COLOR_SAFE_CLUSTER_SHAPE_TYPES) == len(NAMED_CLUSTER_SHAPE_TYPES)
-    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 33
+    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 32
     assert {
         "sphere",
         "cube",
@@ -556,6 +553,7 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
         "lantern",
         "flask",
         "bucket",
+        "straw",
     }.isdisjoint(set(COLOR_READOUT_CLUSTER_SHAPE_TYPES))
     assert {
         "apple",

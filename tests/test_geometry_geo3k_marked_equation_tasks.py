@@ -15,6 +15,29 @@ TASK_QUERIES = {
         "similar_polygons_target_side_from_expression",
     ),
     "task_geometry__marked_polygon_equation__side_variable_value": (
+        "single",
+    ),
+    "task_geometry__marked_polygon_equation__angle_variable_value": (
+        "single",
+    ),
+    "task_geometry__marked_polygon_equation__side_length_value": (
+        "single",
+    ),
+    "task_geometry__marked_polygon_equation__angle_value": (
+        "single",
+    ),
+    "task_geometry__parallel_segment_proportion__variable_value": (
+        "triangle_side_splitter_variable",
+        "parallel_transversal_segment_variable",
+    ),
+    "task_geometry__parallel_segment_proportion__segment_length_value": (
+        "triangle_side_splitter_segment_length",
+        "parallel_transversal_segment_length",
+    ),
+}
+
+MARKED_CONSTRUCTION_FAMILIES = {
+    "task_geometry__marked_polygon_equation__side_variable_value": (
         "isosceles_triangle_equal_side_variable",
         "equilateral_triangle_equal_side_variable",
         "marked_polygon_equal_side_variable",
@@ -35,20 +58,12 @@ TASK_QUERIES = {
         "marked_equal_angle_from_expression",
         "isosceles_triangle_angle_from_expression",
     ),
-    "task_geometry__parallel_segment_proportion__variable_value": (
-        "triangle_side_splitter_variable",
-        "parallel_transversal_segment_variable",
-    ),
-    "task_geometry__parallel_segment_proportion__segment_length_value": (
-        "triangle_side_splitter_segment_length",
-        "parallel_transversal_segment_length",
-    ),
 }
 
 
-def _generate(task_id: str, query_id: str, seed: int = 20260607):
+def _generate(task_id: str, query_id: str, seed: int = 20260607, **extra_params):
     task = create_task(task_id)
-    return task.generate(seed, params={"query_id": query_id}, max_attempts=3)
+    return task.generate(seed, params={"query_id": query_id, **extra_params}, max_attempts=3)
 
 
 def test_geo3k_marked_equation_tasks_are_registered() -> None:
@@ -64,7 +79,7 @@ def test_geo3k_marked_equation_queries_emit_keyed_point_annotation() -> None:
             assert output.query_id == query_id
             assert output.answer_gt.type == "number"
             assert isinstance(output.answer_gt.value, (int, float))
-            assert output.annotation_gt.type == "keyed_point_map"
+            assert output.annotation_gt.type == "point_map"
             assert isinstance(output.annotation_gt.value, dict)
             assert output.annotation_gt.value
             width, height = output.image.size
@@ -76,9 +91,9 @@ def test_geo3k_marked_equation_queries_emit_keyed_point_annotation() -> None:
             trace = output.trace_payload
             assert trace["execution_trace"]["query_id"] == query_id
             assert trace["execution_trace"]["answer"] == output.answer_gt.value
-            assert trace["projected_annotation"]["type"] == "keyed_point_map"
-            assert trace["projected_annotation"]["keyed_point_map"] == output.annotation_gt.value
-            assert trace["projected_annotation"]["pixel_keyed_point_map"] == output.annotation_gt.value
+            assert trace["projected_annotation"]["type"] == "point_map"
+            assert trace["projected_annotation"]["point_map"] == output.annotation_gt.value
+            assert trace["projected_annotation"]["pixel_point_map"] == output.annotation_gt.value
             assert "task_variant" not in trace["query_spec"]["params"]
             assert "query_variant" not in trace["query_spec"]["params"]
 
@@ -90,7 +105,7 @@ def test_geo3k_marked_equation_queries_use_expected_scene_ids() -> None:
     ).scene_id == "similar_figure_measure_transfer"
     assert _generate(
         "task_geometry__marked_polygon_equation__side_variable_value",
-        "marked_polygon_equal_side_variable",
+        "single",
     ).scene_id == "marked_polygon_equation"
     assert _generate(
         "task_geometry__parallel_segment_proportion__variable_value",
@@ -106,3 +121,19 @@ def test_geo3k_marked_equation_generation_is_deterministic() -> None:
     assert first.answer_gt == second.answer_gt
     assert first.annotation_gt == second.annotation_gt
     assert first.trace_payload["execution_trace"] == second.trace_payload["execution_trace"]
+
+
+def test_marked_polygon_equation_construction_families_are_trace_metadata() -> None:
+    for task_id, families in MARKED_CONSTRUCTION_FAMILIES.items():
+        for index, family in enumerate(families):
+            output = _generate(
+                task_id,
+                "single",
+                seed=20260617 + index,
+                construction_family=family,
+            )
+            assert output.query_id == "single"
+            trace = output.trace_payload
+            assert trace["execution_trace"]["construction_family"] == family
+            assert trace["query_spec"]["params"]["construction_family"] == family
+            assert trace["query_spec"]["params"]["query_id"] == "single"

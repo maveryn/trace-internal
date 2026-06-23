@@ -2,65 +2,63 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any, Mapping
 
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
 
-from .shared.runtime import MARKED_ANGLE_VARIABLE_TASK_KEY, MARKED_POLYGON_SCENE_ID, MarkedEquationRuntime
-
+from ._lifecycle import run_marked_equation_task
+from .shared.construction import (
+    Builder,
+    equilateral_median_right_angle_variable,
+    isosceles_base_angle_variable,
+    marked_equal_angles_variable,
+)
+from .shared.sampling import select_case_variant, select_construction_family
 
 TASK_ID = "task_geometry__marked_polygon_equation__angle_variable_value"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = ('marked_equal_angles_variable', 'isosceles_triangle_base_angle_variable', 'equilateral_median_right_angle_variable')
+SUPPORTED_QUERY_IDS: tuple[str, ...] = ("single",)
+CONSTRUCTION_OPTIONS: tuple[tuple[str, Builder], ...] = (
+    ("marked_equal_angles_variable", marked_equal_angles_variable),
+    ("isosceles_triangle_base_angle_variable", isosceles_base_angle_variable),
+    ("equilateral_median_right_angle_variable", equilateral_median_right_angle_variable),
+)
 
 
-def _select_query(instance_seed: int, params: Dict[str, Any]) -> tuple[str, dict[str, float], Dict[str, Any]]:
-    return select_task_query_id(
-        instance_seed=int(instance_seed),
+def _build_case(instance_seed: int, params: Mapping[str, Any]):
+    """Select the equal-angle construction family and bind one algebraic case."""
+
+    family_name, builder, family_probabilities, task_params = select_construction_family(
+        options=CONSTRUCTION_OPTIONS,
         params=params,
-        supported_query_ids=SUPPORTED_QUERY_IDS,
-        default_query_id=SUPPORTED_QUERY_IDS[0],
-        task_id=TASK_ID,
-        namespace=f"{TASK_ID}.query",
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.construction_family",
     )
+    variant_index = select_case_variant(
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.{family_name}.case",
+    )
+    return builder(int(variant_index)), int(variant_index), dict(family_probabilities), task_params
 
 
 @register_task
 class GeometryMarkedPolygonEquationAngleVariableValueTask:
-    """Solve a variable from equal-angle polygon markings."""
+    """Task-owned equal-angle variable objective for marked polygon equations."""
 
     task_id = TASK_ID
     domain = "geometry"
-    scene_id = MARKED_POLYGON_SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities, task_params = _select_query(int(instance_seed), params)
-        runtime = MarkedEquationRuntime(
-            runtime_namespace=TASK_ID,
-            case_family=MARKED_ANGLE_VARIABLE_TASK_KEY,
-            scene_id=MARKED_POLYGON_SCENE_ID,
-        )
-        artifact = runtime.generate(
-            int(instance_seed),
-            params={**task_params, "query_id": str(query_id)},
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
+        return run_marked_equation_task(
+            task_id=TASK_ID,
+            supported_queries=SUPPORTED_QUERY_IDS,
+            build_case=_build_case,
+            reasoning_steps=1,
+            instance_seed=int(instance_seed),
+            params=params,
             max_attempts=int(max_attempts),
-        )
-        artifact.trace_payload["query_spec"]["params"]["query_id_probabilities"] = dict(query_probabilities)
-        artifact.trace_payload["execution_trace"]["query_id_probabilities"] = dict(query_probabilities)
-        return TaskOutput(
-            prompt=str(artifact.prompt),
-            answer_gt=artifact.answer_gt,
-            annotation_gt=artifact.annotation_gt,
-            image=artifact.image,
-            image_id=str(artifact.image_id),
-            trace_payload=dict(artifact.trace_payload),
-            task_versions=dict(artifact.task_versions),
-            scene_id=MARKED_POLYGON_SCENE_ID,
-            query_id=str(query_id),
-            prompt_variants=dict(artifact.prompt_variants),
         )
 
 

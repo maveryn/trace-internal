@@ -18,8 +18,8 @@ class SnakeDefaults:
 
     board_size_support: Tuple[int, ...] = (7, 8, 9, 10)
     body_length_support: Tuple[int, ...] = (5, 6, 7, 8, 9, 10, 11)
+    snake_length_count_support: Tuple[int, ...] = (6, 7, 8, 9, 10, 11, 12)
     safe_direction_count_support: Tuple[int, ...] = (0, 1, 2, 3)
-    shortest_food_path_length_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6, 7, 8)
     planned_move_count_support: Tuple[int, ...] = (3, 4, 5)
     obstacle_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
     planned_move_outcome_support: Tuple[str, ...] = PLANNED_MOVE_OUTCOMES
@@ -49,12 +49,11 @@ PROMPT_WIRING_KEYS = (
     "json_output_contract_answer_only",
     "object_description_square_grid",
     "snake_rule_text",
-    "shortest_food_path_rule_text",
     "planned_move_wall_annotation_rule_text",
+    "answer_hint_snake_length_count",
+    "annotation_hint_snake_length_count",
     "answer_hint_safe_direction_count",
     "annotation_hint_safe_direction_count",
-    "answer_hint_shortest_food_path_length",
-    "annotation_hint_shortest_food_path_length",
     "answer_hint_path_result_option_label",
     "annotation_hint_path_result_option_label",
 )

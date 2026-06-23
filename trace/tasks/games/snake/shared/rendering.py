@@ -65,8 +65,8 @@ def build_games_snake_theme(*, style_variant: str) -> SnakeTheme:
         return SnakeTheme(
             board_fill_rgb=(23, 28, 45),
             board_border_rgb=(117, 241, 224),
-            grid_rgb=(56, 68, 98),
-            cell_alt_rgba=(255, 255, 255, 12),
+            grid_rgb=(48, 108, 132),
+            cell_alt_rgba=(53, 226, 205, 18),
             head_rgb=(250, 218, 73),
             head_outline_rgb=(255, 248, 190),
             body_rgb=(64, 187, 255),
@@ -93,10 +93,10 @@ def build_games_snake_theme(*, style_variant: str) -> SnakeTheme:
         )
     if style == "paper":
         return SnakeTheme(
-            board_fill_rgb=(239, 234, 216),
-            board_border_rgb=(91, 85, 75),
-            grid_rgb=(196, 187, 166),
-            cell_alt_rgba=(151, 141, 121, 18),
+            board_fill_rgb=(238, 226, 184),
+            board_border_rgb=(105, 72, 45),
+            grid_rgb=(184, 142, 83),
+            cell_alt_rgba=(255, 244, 186, 32),
             head_rgb=(229, 184, 66),
             head_outline_rgb=(83, 75, 58),
             body_rgb=(83, 135, 166),

@@ -16,7 +16,6 @@ from .rules import (
     coord_to_cell_id,
     neighbor_coords,
     simulate_snake_moves,
-    shortest_static_path_to_food,
     step_coord,
 )
 from .state import (

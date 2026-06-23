@@ -43,7 +43,6 @@ def build_snake_prompt_artifacts(
         dynamic_slots={
             "object_description": str(prompt_defaults[f"object_description_{str(scene_variant)}"]),
             "snake_rule_text": str(prompt_defaults["snake_rule_text"]),
-            "shortest_food_path_rule_text": str(prompt_defaults["shortest_food_path_rule_text"]),
             "planned_move_wall_annotation_rule_text": str(prompt_defaults["planned_move_wall_annotation_rule_text"]),
             "planned_moves": move_sequence_text(sample.planned_moves),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),

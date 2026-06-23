@@ -13,8 +13,8 @@ generation:
     balanced_board_size_sampling: true
     balanced_body_length_sampling: true
     balanced_planned_move_count_sampling: true
+    balanced_snake_length_count_sampling: true
     balanced_safe_direction_count_sampling: true
-    balanced_shortest_food_path_length_sampling: true
     balanced_obstacle_count_sampling: true
     balanced_planned_move_outcome_sampling: true
     board_size_support:
@@ -35,15 +35,14 @@ generation:
     - 1
     - 2
     - 3
-    shortest_food_path_length_support:
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
+    snake_length_count_support:
     - 6
     - 7
     - 8
+    - 9
+    - 10
+    - 11
+    - 12
     obstacle_count_support:
     - 2
     - 3

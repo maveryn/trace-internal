@@ -478,7 +478,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__rule_override_board__piece_result_count": _entry("games", "rule_override_board", "games", "rule_override_board"),
     "task_games__snake__path_outcome_option_label": _entry("games", "snake", "games", "snake"),
     "task_games__snake__safe_direction_count": _entry("games", "snake", "games", "snake"),
-    "task_games__snake__shortest_food_path_length": _entry("games", "snake", "games", "snake"),
+    "task_games__snake__snake_length_count": _entry("games", "snake", "games", "snake"),
     "task_games__sixteen_soldiers__marked_piece_capture_count": _entry("games", "sixteen_soldiers", "games", "sixteen_soldiers"),
     "task_games__sixteen_soldiers__marked_piece_destination_count": _entry("games", "sixteen_soldiers", "games", "sixteen_soldiers"),
     "task_games__snakes_ladders__best_roll_value": _entry("games", "snakes_ladders", "games", "snakes_ladders"),

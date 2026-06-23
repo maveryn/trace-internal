@@ -56,7 +56,6 @@ class SnakeSample:
     result_options: Tuple[Mapping[str, Any], ...] = ()
     target_outcome: str | None = None
     observed_event_step: int | None = None
-    shortest_path_coords: Tuple[Coord, ...] = ()
 
 
 @dataclass(frozen=True)

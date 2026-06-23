@@ -1,8 +1,7 @@
-"""Snake movement, path, and validation rules."""
+"""Snake movement and validation rules."""
 
 from __future__ import annotations
 
-from collections import deque
 from itertools import product
 from typing import Mapping, Sequence, Tuple
 
@@ -111,30 +110,6 @@ def safe_next_directions(state: SnakeState) -> Tuple[str, ...]:
     return tuple(safe)
 
 
-def shortest_static_path_to_food(state: SnakeState) -> Tuple[Coord, ...] | None:
-    """Return one shortest path to food, with current body/walls as fixed blockers."""
-
-    size = int(state.board_size)
-    head = (int(state.head[0]), int(state.head[1]))
-    food = (int(state.food[0]), int(state.food[1]))
-    blocked = {(int(row), int(col)) for row, col in state.body}
-    blocked.update((int(row), int(col)) for row, col in state.obstacles)
-    if food in blocked:
-        return None
-    queue: deque[Tuple[Coord, Tuple[Coord, ...]]] = deque([(head, tuple())])
-    visited = {head}
-    while queue:
-        coord, path = queue.popleft()
-        if coord == food:
-            return tuple(path)
-        for candidate in neighbor_coords(coord, size=size):
-            if candidate in visited or candidate in blocked:
-                continue
-            visited.add(candidate)
-            queue.append((candidate, tuple(path) + (candidate,)))
-    return None
-
-
 def candidate_move_sequences(length: int) -> Tuple[Tuple[str, ...], ...]:
     """Return all cardinal move sequences of one length."""
 
@@ -188,7 +163,6 @@ __all__ = [
     "move_sequence_text",
     "neighbor_coords",
     "safe_next_directions",
-    "shortest_static_path_to_food",
     "simulate_snake_moves",
     "step_coord",
     "validate_snake_state",

@@ -22,19 +22,19 @@
       ]
     },
     "query": {
+      "snake_length_count": [
+        "How many cells long is the snake, including the yellow head and all connected body cells?",
+        "Count the total length of the snake. Include the head and every connected body cell.",
+        "How many board cells are occupied by the snake, counting the head and tail?",
+        "Count every visible snake cell, including the head, body, and tail. What is the total?",
+        "What is the snake's total length in cells, including its head and tail?"
+      ],
       "safe_direction_count": [
         "{snake_rule_text} How many of the four next moves (up, down, left, right) are safe?",
         "From the current head cell, count the directions among up, down, left, and right that are safe. {snake_rule_text}",
         "{snake_rule_text} Count the safe next-move directions from the snake head.",
         "How many immediate directions can the snake move without hitting the board edge, its body, or a gray wall cell? {snake_rule_text}",
         "{snake_rule_text} Report the number of safe one-step directions from the head."
-      ],
-      "shortest_food_path_length": [
-        "{snake_rule_text} {shortest_food_path_rule_text} What is the fewest number of moves needed for the head to reach the food?",
-        "{shortest_food_path_rule_text} Count the length of a shortest safe path from the snake head to the red food.",
-        "{snake_rule_text} Find a shortest safe route from the head to the food. {shortest_food_path_rule_text} How many moves does it take?",
-        "Using only up, down, left, and right moves, what is the shortest safe path length from the head to the food? {shortest_food_path_rule_text}",
-        "{shortest_food_path_rule_text} Report the minimum number of moves for the snake head to reach the red food."
       ],
       "path_result_option_label": [
         "{snake_rule_text} Follow these moves in order: {planned_moves}. Which labeled option shown in the image is the result? Point options mark possible final head cells; the GAME OVER option means the snake hits the board edge, its body, or a gray wall cell. {planned_move_wall_annotation_rule_text}",
@@ -65,12 +65,9 @@
     "scene:visible_snake_grid": [
       "object_description"
     ],
+    "query:snake_length_count": [],
     "query:safe_direction_count": [
       "snake_rule_text"
-    ],
-    "query:shortest_food_path_length": [
-      "snake_rule_text",
-      "shortest_food_path_rule_text"
     ],
     "query:path_result_option_label": [
       "snake_rule_text",
@@ -117,9 +114,6 @@
     "planned_moves": {
       "type": "string"
     },
-    "shortest_food_path_rule_text": {
-      "type": "string"
-    },
     "snake_rule_text": {
       "type": "string"
     }
@@ -127,12 +121,11 @@
   "code_prompt_defaults": {
     "object_description_square_grid": "a Snake game board with a yellow snake head, connected body cells, red food, and gray wall cells",
     "snake_rule_text": "A move is safe when the head stays inside the board and does not enter the snake body or a gray wall cell. Moving onto red food counts as safe.",
-    "shortest_food_path_rule_text": "Treat the current body cells and gray wall cells as blocked while finding the shortest path to the food.",
     "planned_move_wall_annotation_rule_text": "For a game-over result, use boxes around the visible in-board head path cells up to the hit cell or board edge.",
+    "annotation_hint_snake_length_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around every snake-occupied cell, including the head and tail",
+    "answer_hint_snake_length_count": "set \"answer\" to the total number of snake-occupied cells as an integer",
     "annotation_hint_safe_direction_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around each destination cell that is safe for the next move; include the food cell if it is safely reachable",
     "answer_hint_safe_direction_count": "set \"answer\" to the number of safe next-move directions as an integer",
-    "annotation_hint_shortest_food_path_length": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around the traversed cells after the head through the food cell on one shortest safe path",
-    "answer_hint_shortest_food_path_length": "set \"answer\" to the fewest number of moves needed to reach the food as an integer",
     "annotation_hint_path_result_option_label": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around the in-board cells the head traverses until the result; for an off-board hit, use the visible path cells up to the board edge",
     "answer_hint_path_result_option_label": "set \"answer\" to the option letter shown in the image, one of \"A\", \"B\", \"C\", or \"D\""
   }

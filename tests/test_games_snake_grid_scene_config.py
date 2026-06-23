@@ -18,12 +18,12 @@ def test_games_snake_grid_defaults_present() -> None:
     )
 
     assert bool(generation["balanced_style_variant_sampling"]) is True
-    assert bool(generation["balanced_shortest_food_path_length_sampling"]) is True
+    assert bool(generation["balanced_snake_length_count_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == set(SCENE_VARIANTS)
     assert set(generation["style_variant_weights"].keys()) == set(STYLE_VARIANTS)
     assert list(generation["board_size_support"]) == [7, 8, 9, 10]
     assert list(generation["safe_direction_count_support"]) == [0, 1, 2, 3]
-    assert list(generation["shortest_food_path_length_support"]) == [1, 2, 3, 4, 5, 6, 7, 8]
+    assert list(generation["snake_length_count_support"]) == [6, 7, 8, 9, 10, 11, 12]
     assert list(generation["planned_move_outcome_support"]) == ["point", "game_over"]
     assert list(generation["obstacle_count_support"]) == [2, 3, 4, 5, 6]
     assert int(rendering["canvas_width"]) == 900
@@ -32,4 +32,4 @@ def test_games_snake_grid_defaults_present() -> None:
     prompt_bundle = json.loads(Path("prompts/games/snake/games_snake_v1.json").read_text(encoding="utf-8"))
     code_defaults = prompt_bundle["code_prompt_defaults"]
     assert "connected body cells" in str(code_defaults["object_description_square_grid"]).lower()
-    assert "blocked" in str(code_defaults["shortest_food_path_rule_text"]).lower()
+    assert "snake-occupied cells" in str(code_defaults["answer_hint_snake_length_count"]).lower()

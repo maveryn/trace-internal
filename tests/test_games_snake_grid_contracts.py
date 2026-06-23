@@ -10,8 +10,8 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.snake.path_outcome_option_label import GamesSnakePathOutcomeTask
 from trace.tasks.games.snake.safe_direction_count import GamesSnakeMoveSafetyTask
-from trace.tasks.games.snake.shared.rules import safe_next_directions, shortest_static_path_to_food, simulate_snake_moves
-from trace.tasks.games.snake.shortest_food_path_length import GamesSnakeShortestFoodPathLengthTask
+from trace.tasks.games.snake.shared.rules import safe_next_directions, simulate_snake_moves
+from trace.tasks.games.snake.snake_length_count import GamesSnakeLengthCountTask
 from tests.helpers import read_jsonl
 
 
@@ -25,8 +25,8 @@ from tests.helpers import read_jsonl
             "integer",
         ),
         (
-            GamesSnakeShortestFoodPathLengthTask,
-            {"query_id": "single", "target_shortest_food_path_length": 5, "board_size": 8},
+            GamesSnakeLengthCountTask,
+            {"query_id": "single", "target_snake_length_count": 8, "board_size": 8},
             "single",
             "integer",
         ),
@@ -112,11 +112,11 @@ def test_games_snake_path_result_option_matches_simulation() -> None:
     assert simulation.outcome not in {"body", "wall", "food"}
 
 
-@pytest.mark.parametrize("target_length", tuple(range(1, 9)))
-def test_games_snake_shortest_food_path_length_matches_trace(target_length: int) -> None:
-    out = GamesSnakeShortestFoodPathLengthTask().generate(
+@pytest.mark.parametrize("target_length", tuple(range(6, 13)))
+def test_games_snake_length_count_matches_trace(target_length: int) -> None:
+    out = GamesSnakeLengthCountTask().generate(
         98250 + int(target_length),
-        params={"query_id": "single", "target_shortest_food_path_length": int(target_length)},
+        params={"query_id": "single", "target_snake_length_count": int(target_length)},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
@@ -130,14 +130,15 @@ def test_games_snake_shortest_food_path_length_matches_trace(target_length: int)
         food=tuple(state_payload["food"]),
         obstacles=tuple(tuple(coord) for coord in state_payload["obstacles"]),
     )
-    shortest_path = shortest_static_path_to_food(state)
-    assert shortest_path is not None
-    assert len(shortest_path) == int(target_length)
+    expected_length = int(len(state.body) + 1)
+    assert expected_length == int(target_length)
     assert int(out.answer_gt.value) == int(target_length)
-    assert tuple(tuple(coord) for coord in execution["shortest_path_coords"]) == tuple(shortest_path)
     assert len(out.annotation_gt.value) == int(target_length)
-    expected_ids = [f"cell_r{int(row)}_c{int(col)}" for row, col in shortest_path]
+    expected_ids = [f"cell_r{int(row)}_c{int(col)}" for row, col in (state.head, *state.body)]
     assert execution["annotation_cell_ids"] == expected_ids
+    assert execution["snake_length"] == int(target_length)
+    assert execution["head_cell_id"] == expected_ids[0]
+    assert execution["body_cell_ids"] == expected_ids[1:]
 
 
 def test_games_snake_build_smoke(tmp_path: Path) -> None:
@@ -149,7 +150,7 @@ def test_games_snake_build_smoke(tmp_path: Path) -> None:
         image_format="png",
         tasks=[
             BuildTaskConfig(task_id="task_games__snake__safe_direction_count", count=1, params={}),
-            BuildTaskConfig(task_id="task_games__snake__shortest_food_path_length", count=1, params={}),
+            BuildTaskConfig(task_id="task_games__snake__snake_length_count", count=1, params={}),
             BuildTaskConfig(task_id="task_games__snake__path_outcome_option_label", count=1, params={}),
         ],
         max_attempts_per_instance=512,

@@ -20,6 +20,13 @@ def bbox_projection(bbox: Sequence[float]) -> dict[str, Any]:
     return {"type": "bbox", "bbox": value, "pixel_bbox": value, "value": value}
 
 
+def bbox_set_projection(bboxes: Sequence[Sequence[float]]) -> dict[str, Any]:
+    """Return the unordered bbox-set projection payload."""
+
+    values = [rounded_bbox(bbox) for bbox in bboxes]
+    return {"type": "bbox_set", "bbox_set": values, "pixel_bbox_set": values}
+
+
 def isometric_farmstead_scene_ir(
     *,
     domain: str,
@@ -98,9 +105,42 @@ def isometric_farmstead_elevation_render_map(
     }
 
 
+def isometric_farmstead_object_count_render_map(
+    *,
+    scene: IsoFarmsteadScene,
+    target_object_type: str,
+    target_level: int,
+    counted_entity_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Return task render-map fields for terrain-level object counting."""
+
+    entities_by_id = {str(entity.entity_id): entity for entity in scene.entities}
+    level_object_counts: dict[str, dict[str, int]] = {}
+    for entity in scene.entities:
+        level_key = str(int(entity.level))
+        object_key = str(entity.object_type)
+        level_object_counts.setdefault(level_key, {})
+        level_object_counts[level_key][object_key] = int(level_object_counts[level_key].get(object_key, 0)) + 1
+    counted_ids = [str(entity_id) for entity_id in counted_entity_ids]
+    counted_bboxes = [rounded_bbox(entities_by_id[entity_id].bbox_xyxy) for entity_id in counted_ids if entity_id in entities_by_id]
+    return {
+        "image_id": "img0",
+        "target_object_type": str(target_object_type),
+        "target_level": int(target_level),
+        "counted_entity_ids": counted_ids,
+        "counted_entity_bboxes_px": counted_bboxes,
+        "entity_levels_by_id": {str(entity.entity_id): int(entity.level) for entity in scene.entities},
+        "entity_object_types_by_id": {str(entity.entity_id): str(entity.object_type) for entity in scene.entities},
+        "level_object_counts": level_object_counts,
+        "answer_count": len(counted_ids),
+    }
+
+
 __all__ = [
+    "bbox_set_projection",
     "bbox_projection",
     "isometric_farmstead_elevation_render_map",
+    "isometric_farmstead_object_count_render_map",
     "isometric_farmstead_render_spec",
     "isometric_farmstead_scene_ir",
     "rounded_bbox",

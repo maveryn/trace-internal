@@ -8,12 +8,26 @@
       "",
       "",
       ""
+    ],
+    "terrain_level_object_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:isometric_farmstead_elevation_canvas": [],
+    "scene:isometric_farmstead_object_count_canvas": [],
     "query:highest_terrain_tile": [],
     "query:lowest_terrain_tile": [],
+    "query:highest_terrain_object_count": [
+      "object_label"
+    ],
+    "query:lowest_terrain_object_count": [
+      "object_label"
+    ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -49,6 +63,13 @@
       "The picture shows an isometric farmstead where terrain tiles sit at different elevations and some ground tiles are labeled with letters.",
       "The canvas contains an isometric farm scene with multiple terrain heights, farm context objects, and lettered candidate ground tiles.",
       "This illustration shows a farmstead drawn on isometric tiles, with raised ground levels, connected farm areas, and lettered terrain tiles."
+    ],
+    "isometric_farmstead_object_count_canvas": [
+      "The image shows an isometric farmstead made of raised terrain tiles with visible side faces, farm animals, and trees.",
+      "The scene shows a pixel-art isometric farm with varied terrain levels, connected farm patches, farm animals, and trees.",
+      "The picture shows an isometric farmstead where terrain tiles sit at different elevations with farm animals and trees placed on the ground.",
+      "The canvas contains an isometric farm scene with multiple terrain heights, connected farm areas, farm animals, and trees.",
+      "This illustration shows a farmstead drawn on isometric tiles, with raised ground levels and farm context objects."
     ]
   },
   "query_templates": {
@@ -65,6 +86,20 @@
       "Among the lettered ground tiles, which one is at the lowest elevation?",
       "Which candidate letter marks the lowest terrain tile?",
       "Select the lettered farm tile with the smallest ground elevation."
+    ],
+    "highest_terrain_object_count": [
+      "How many {object_label} are on the highest terrain level?",
+      "Count the {object_label} placed on the highest terrace.",
+      "What is the number of {object_label} on the highest ground level?",
+      "How many {object_label} sit on the highest elevated terrain?",
+      "Count only the {object_label} whose base is on the highest terrain level."
+    ],
+    "lowest_terrain_object_count": [
+      "How many {object_label} are on the lowest terrain level?",
+      "Count the {object_label} placed on the lowest farm ground.",
+      "What is the number of {object_label} on the lowest ground level?",
+      "How many {object_label} sit on the lowest terrain?",
+      "Count only the {object_label} whose base is on the lowest terrain level."
     ]
   },
   "allow_empty_task_templates": true

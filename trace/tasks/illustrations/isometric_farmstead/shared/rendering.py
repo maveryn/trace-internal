@@ -543,6 +543,7 @@ def _draw_context_entities(
     *,
     transition_tile_ids: set[str],
     farm_patch_tile_ids: set[str],
+    required_entity_counts_by_level_type: Mapping[str, Mapping[int | str, int]] | None = None,
 ) -> tuple[list[IsoFarmsteadEntity], set[str]]:
     """Draw reusable farm context objects and return occupied terrain tile ids."""
 
@@ -564,17 +565,52 @@ def _draw_context_entities(
         for tile in tiles
         if str(tile.tile_id) not in blocked and str(tile.tile_id) not in farm_patch_tile_ids and str(tile.terrain) == "grass"
     ]
+    required_counts_raw = required_entity_counts_by_level_type or {}
+
+    def required_counts(object_type: str) -> dict[int, int]:
+        raw_counts = required_counts_raw.get(str(object_type), {})
+        return {int(level): int(count) for level, count in dict(raw_counts).items()}
+
+    def candidate_tiles_for_level(candidates: Sequence[IsoFarmsteadTile], level: int) -> list[IsoFarmsteadTile]:
+        return [tile for tile in candidates if int(tile.level) == int(level) and str(tile.tile_id) not in occupied]
+
+    tree_required = required_counts("tree")
     tree_candidates = edge_tiles or fallback_tree_tiles
     rng.shuffle(tree_candidates)
     drawable: list[tuple[float, str, str, str, IsoFarmsteadTile, BBox]] = []
-    tree_count = min(len(tree_candidates), rng.randint(3, 8))
-    for index, tile in enumerate(tree_candidates[:tree_count]):
+    tree_index = 0
+    for level, required_count in sorted(tree_required.items()):
+        candidates = candidate_tiles_for_level(fallback_tree_tiles, int(level))
+        rng.shuffle(candidates)
+        placed = 0
+        for tile in candidates:
+            if placed >= int(required_count):
+                break
+            style = str(rng.choice(TREE_STYLES))
+            bbox = _object_sprite_bbox(layout, tile, object_type="tree", subtype=style)
+            if not _bbox_inside_canvas(bbox, width=width, height=height):
+                continue
+            occupied.add(str(tile.tile_id))
+            drawable.append((float(bbox[3]), f"tree_{tree_index:02d}", "tree", style, tile, bbox))
+            tree_index += 1
+            placed += 1
+        if placed < int(required_count):
+            raise ValueError(f"could not place required tree count {required_count} on level {level}")
+
+    random_tree_candidates = [
+        tile
+        for tile in tree_candidates
+        if str(tile.tile_id) not in occupied and int(tile.level) not in set(tree_required)
+    ]
+    tree_count = min(len(random_tree_candidates), max(0, rng.randint(3, 8) - sum(tree_required.values())))
+    for tile in random_tree_candidates[:tree_count]:
         style = str(rng.choice(TREE_STYLES))
         bbox = _object_sprite_bbox(layout, tile, object_type="tree", subtype=style)
         if not _bbox_inside_canvas(bbox, width=width, height=height):
             continue
         occupied.add(str(tile.tile_id))
-        drawable.append((float(bbox[3]), f"tree_{index:02d}", "tree", style, tile, bbox))
+        drawable.append((float(bbox[3]), f"tree_{tree_index:02d}", "tree", style, tile, bbox))
+        tree_index += 1
 
     animal_candidates = [
         tile
@@ -584,10 +620,34 @@ def _draw_context_entities(
         and str(tile.terrain) in {"grass", "pasture"}
     ]
     rng.shuffle(animal_candidates)
-    animal_count = min(len(animal_candidates), rng.randint(3, 7))
+    animal_required = required_counts("domestic_animal")
     animal_index = 0
-    for tile in animal_candidates:
-        if animal_index >= animal_count:
+    for level, required_count in sorted(animal_required.items()):
+        candidates = candidate_tiles_for_level(animal_candidates, int(level))
+        rng.shuffle(candidates)
+        placed = 0
+        for tile in candidates:
+            if placed >= int(required_count):
+                break
+            animal_type = str(rng.choice(ANIMAL_TYPES))
+            bbox = _object_sprite_bbox(layout, tile, object_type="animal", subtype=animal_type)
+            if not _bbox_inside_canvas(bbox, width=width, height=height):
+                continue
+            occupied.add(str(tile.tile_id))
+            drawable.append((float(bbox[3]), f"animal_{animal_index:02d}", "domestic_animal", animal_type, tile, bbox))
+            animal_index += 1
+            placed += 1
+        if placed < int(required_count):
+            raise ValueError(f"could not place required domestic_animal count {required_count} on level {level}")
+
+    random_animal_candidates = [
+        tile
+        for tile in animal_candidates
+        if str(tile.tile_id) not in occupied and int(tile.level) not in set(animal_required)
+    ]
+    animal_count = min(len(random_animal_candidates), max(0, rng.randint(3, 7) - sum(animal_required.values())))
+    for tile in random_animal_candidates:
+        if animal_index >= animal_count + sum(animal_required.values()):
             break
         animal_type = str(rng.choice(ANIMAL_TYPES))
         bbox = _object_sprite_bbox(layout, tile, object_type="animal", subtype=animal_type)
@@ -661,6 +721,7 @@ def render_isometric_farmstead_scene(
     canvas_profile_probabilities: Mapping[str, float] | None = None,
     candidate_labels_by_tile_id: Mapping[str, str] | None = None,
     label_font_family: str | None = None,
+    required_entity_counts_by_level_type: Mapping[str, Mapping[int | str, int]] | None = None,
 ) -> IsoFarmsteadScene:
     """Render a deterministic isometric farmstead with variable terrain levels."""
 
@@ -704,6 +765,7 @@ def render_isometric_farmstead_scene(
         rng,
         transition_tile_ids=set(transition_tile_ids),
         farm_patch_tile_ids=set(farm_patch_tile_ids),
+        required_entity_counts_by_level_type=required_entity_counts_by_level_type,
     )
 
     labels = dict(candidate_labels_by_tile_id or {})

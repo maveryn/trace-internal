@@ -7,8 +7,13 @@ from trace.tasks.illustrations.isometric_farmstead.shared.rendering import (
     render_isometric_farmstead_scene,
 )
 from trace.tasks.illustrations.isometric_farmstead.terrain_elevation_extremum_label import (
-    SUPPORTED_QUERY_IDS,
-    TASK_ID,
+    SUPPORTED_QUERY_IDS as ELEVATION_QUERY_IDS,
+    TASK_ID as ELEVATION_TASK_ID,
+)
+from trace.tasks.illustrations.isometric_farmstead.terrain_level_object_count import (
+    SUPPORTED_QUERY_IDS as OBJECT_COUNT_QUERY_IDS,
+    TARGET_OBJECT_TYPES,
+    TASK_ID as OBJECT_COUNT_TASK_ID,
 )
 
 
@@ -62,7 +67,7 @@ def test_isometric_farmstead_renderer_is_deterministic_and_profile_safe() -> Non
 
 
 def test_isometric_farmstead_elevation_task_contract() -> None:
-    task = create_task(TASK_ID)
+    task = create_task(ELEVATION_TASK_ID)
     cases = (
         ("highest_terrain_tile", "landscape", 2026062311),
         ("lowest_terrain_tile", "square", 2026062312),
@@ -104,7 +109,67 @@ def test_isometric_farmstead_elevation_task_contract() -> None:
             assert sum(1 for value in levels.values() if int(value) == selected_level) == 1
 
 
-def test_isometric_farmstead_elevation_task_registered() -> None:
-    assert TASK_ID in TASK_REGISTRY
-    task_cls = TASK_REGISTRY[TASK_ID]
-    assert tuple(task_cls.supported_query_ids) == tuple(SUPPORTED_QUERY_IDS)
+def test_isometric_farmstead_terrain_level_object_count_contract() -> None:
+    task = create_task(OBJECT_COUNT_TASK_ID)
+    cases = (
+        ("highest_terrain_object_count", "domestic_animal", "landscape", 2026062321),
+        ("lowest_terrain_object_count", "tree", "square", 2026062322),
+        ("highest_terrain_object_count", "tree", "portrait", 2026062323),
+        ("lowest_terrain_object_count", "domestic_animal", "portrait", 2026062324),
+    )
+    for query_id, target_object_type, profile, seed in cases:
+        out = task.generate(
+            seed,
+            params={
+                "query_id": query_id,
+                "target_object_type": target_object_type,
+                "canvas_profile": profile,
+                "answer_count_support": [0, 1, 2, 3, 4, 5],
+            },
+            max_attempts=50,
+        )
+        assert out.scene_id == SCENE_ID
+        assert out.query_id == query_id
+        assert out.answer_gt.type == "integer"
+        assert 0 <= int(out.answer_gt.value) <= 5
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
+        width, height = out.image.size
+        for bbox in out.annotation_gt.value:
+            _assert_bbox_inside_canvas(list(bbox), width=width, height=height)
+            assert float(bbox[2]) - float(bbox[0]) >= 24.0
+            assert float(bbox[3]) - float(bbox[1]) >= 24.0
+        assert "highest" in out.prompt or "lowest" in out.prompt
+        assert ("farm animals" in out.prompt) if target_object_type == "domestic_animal" else ("trees" in out.prompt)
+
+        trace = out.trace_payload
+        assert trace["query_spec"]["query_id"] == query_id
+        assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_isometric_farmstead_v0"
+        assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == SCENE_ID
+        assert trace["render_map"]["target_object_type"] == target_object_type
+        assert trace["render_map"]["answer_count"] == int(out.answer_gt.value)
+        assert trace["render_map"]["counted_entity_bboxes_px"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+
+        entity_by_id = {str(entity["entity_id"]): entity for entity in trace["scene_ir"]["entities"]}
+        counted_ids = list(trace["render_map"]["counted_entity_ids"])
+        assert len(counted_ids) == int(out.answer_gt.value)
+        active_levels = [int(level) for level in trace["scene_ir"]["relations"].get("active_levels", trace["render_spec"]["style"]["levels"])]
+        expected_level = max(active_levels) if query_id == "highest_terrain_object_count" else min(active_levels)
+        assert int(trace["render_map"]["target_level"]) == int(expected_level)
+        for entity_id in counted_ids:
+            entity = entity_by_id[str(entity_id)]
+            assert entity["object_type"] == target_object_type
+            assert int(entity["level"]) == int(expected_level)
+
+
+def test_isometric_farmstead_tasks_registered() -> None:
+    assert ELEVATION_TASK_ID in TASK_REGISTRY
+    elevation_task_cls = TASK_REGISTRY[ELEVATION_TASK_ID]
+    assert tuple(elevation_task_cls.supported_query_ids) == tuple(ELEVATION_QUERY_IDS)
+    assert OBJECT_COUNT_TASK_ID in TASK_REGISTRY
+    object_count_task_cls = TASK_REGISTRY[OBJECT_COUNT_TASK_ID]
+    assert tuple(object_count_task_cls.supported_query_ids) == tuple(OBJECT_COUNT_QUERY_IDS)
+    assert tuple(TARGET_OBJECT_TYPES) == ("domestic_animal", "tree")

@@ -15,11 +15,19 @@
       "",
       "",
       ""
+    ],
+    "farmer_same_level_tile_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:isometric_farmstead_elevation_canvas": [],
     "scene:isometric_farmstead_object_count_canvas": [],
+    "scene:isometric_farmstead_farmer_reference_canvas": [],
     "query:highest_terrain_tile": [],
     "query:lowest_terrain_tile": [],
     "query:highest_terrain_object_count": [
@@ -28,6 +36,7 @@
     "query:lowest_terrain_object_count": [
       "object_label"
     ],
+    "query:farmer_same_level_tile": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -70,6 +79,13 @@
       "The picture shows an isometric farmstead where terrain tiles sit at different elevations with farm animals and trees placed on the ground.",
       "The canvas contains an isometric farm scene with multiple terrain heights, connected farm areas, farm animals, and trees.",
       "This illustration shows a farmstead drawn on isometric tiles, with raised ground levels and farm context objects."
+    ],
+    "isometric_farmstead_farmer_reference_canvas": [
+      "The image shows an isometric farmstead made of raised terrain tiles, one unlettered farmer, and several lettered ground tiles.",
+      "The scene shows a pixel-art isometric farm with varied terrain levels, an unlettered farmer reference, and lettered candidate ground tiles.",
+      "The picture shows an isometric farmstead where terrain tiles sit at different elevations and one farmer stands on a ground tile.",
+      "The canvas contains an isometric farm scene with multiple terrain heights, a farmer reference object, and lettered terrain tiles.",
+      "This illustration shows a farmstead drawn on isometric tiles, with a farmer and lettered candidate ground tiles."
     ]
   },
   "query_templates": {
@@ -100,6 +116,13 @@
       "What is the number of {object_label} on the lowest ground level?",
       "How many {object_label} sit on the lowest terrain?",
       "Count only the {object_label} whose base is on the lowest terrain level."
+    ],
+    "farmer_same_level_tile": [
+      "Which lettered ground tile is at the same terrain level as the farmer?",
+      "Choose the letter of the ground tile that sits at the farmer's elevation level.",
+      "Which candidate terrain tile is on the same raised level as the farmer?",
+      "Among the lettered ground tiles, which one matches the farmer's terrain elevation?",
+      "Select the lettered farm tile whose ground level matches the farmer's tile."
     ]
   },
   "allow_empty_task_templates": true

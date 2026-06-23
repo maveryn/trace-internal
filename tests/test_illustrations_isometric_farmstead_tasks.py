@@ -10,6 +10,10 @@ from trace.tasks.illustrations.isometric_farmstead.terrain_elevation_extremum_la
     SUPPORTED_QUERY_IDS as ELEVATION_QUERY_IDS,
     TASK_ID as ELEVATION_TASK_ID,
 )
+from trace.tasks.illustrations.isometric_farmstead.farmer_same_level_tile_label import (
+    SUPPORTED_QUERY_IDS as FARMER_SAME_LEVEL_QUERY_IDS,
+    TASK_ID as FARMER_SAME_LEVEL_TASK_ID,
+)
 from trace.tasks.illustrations.isometric_farmstead.terrain_level_object_count import (
     SUPPORTED_QUERY_IDS as OBJECT_COUNT_QUERY_IDS,
     TARGET_OBJECT_TYPES,
@@ -191,6 +195,62 @@ def test_isometric_farmstead_terrain_level_object_count_contract() -> None:
             assert int(entity["level"]) == int(expected_level)
 
 
+def test_isometric_farmstead_farmer_same_level_tile_contract() -> None:
+    task = create_task(FARMER_SAME_LEVEL_TASK_ID)
+    cases = (
+        ("landscape", 2026062331),
+        ("square", 2026062332),
+        ("landscape", 2026062333),
+        ("square", 2026062334),
+    )
+    for profile, seed in cases:
+        out = task.generate(
+            seed,
+            params={"query_id": "single", "canvas_profile": profile, "candidate_count": 4},
+            max_attempts=50,
+        )
+        assert out.scene_id == SCENE_ID
+        assert out.query_id == "single"
+        assert out.answer_gt.type == "option_letter"
+        assert out.answer_gt.value in {"A", "B", "C", "D"}
+        assert out.annotation_gt.type == "bbox"
+        width, height = out.image.size
+        _assert_bbox_inside_canvas(list(out.annotation_gt.value), width=width, height=height)
+        assert "farmer" in out.prompt
+        assert "same" in out.prompt or "matches" in out.prompt
+
+        trace = out.trace_payload
+        assert trace["query_spec"]["query_id"] == "single"
+        assert trace["query_spec"]["internal_query_id"] == "farmer_same_level_tile"
+        assert trace["query_spec"]["params"]["internal_query_id"] == "farmer_same_level_tile"
+        assert trace["execution_trace"]["query_id"] == "single"
+        assert trace["execution_trace"]["internal_query_id"] == "farmer_same_level_tile"
+        assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_isometric_farmstead_v0"
+        assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == SCENE_ID
+        assert trace["projected_annotation"]["type"] == "bbox"
+        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+        assert trace["render_map"]["selected_label"] == out.answer_gt.value
+        assert trace["render_map"]["selected_tile_bbox_px"] == out.annotation_gt.value
+        assert len(trace["render_map"]["candidate_tile_ids_by_label"]) == 4
+
+        scene_entities = {str(entity["entity_id"]): entity for entity in trace["scene_ir"]["entities"]}
+        farmer = scene_entities["farmer_00"]
+        assert farmer["object_type"] == "farmer"
+        assert farmer["role"] == "reference"
+        assert farmer["metadata"]["role"] == "reference"
+        assert trace["render_map"]["reference_farmer_entity_id"] == "farmer_00"
+        assert trace["render_map"]["reference_farmer_tile_id"] == farmer["tile_ids"][0]
+        assert trace["render_map"]["reference_farmer_bbox_px"] == farmer["bbox"]
+        unsafe_tile_ids = set(str(value) for value in trace["execution_trace"]["renderer"]["object_unsafe_low_adjacent_higher_tile_ids"])
+        assert str(farmer["tile_ids"][0]) not in unsafe_tile_ids
+
+        candidate_levels = trace["render_map"]["candidate_levels_by_label"]
+        farmer_level = int(trace["render_map"]["reference_farmer_level"])
+        selected_level = int(candidate_levels[str(out.answer_gt.value)])
+        assert selected_level == farmer_level
+        assert sum(1 for level in candidate_levels.values() if int(level) == farmer_level) == 1
+
+
 def test_isometric_farmstead_tasks_registered() -> None:
     assert ELEVATION_TASK_ID in TASK_REGISTRY
     elevation_task_cls = TASK_REGISTRY[ELEVATION_TASK_ID]
@@ -199,3 +259,7 @@ def test_isometric_farmstead_tasks_registered() -> None:
     object_count_task_cls = TASK_REGISTRY[OBJECT_COUNT_TASK_ID]
     assert tuple(object_count_task_cls.supported_query_ids) == tuple(OBJECT_COUNT_QUERY_IDS)
     assert tuple(TARGET_OBJECT_TYPES) == ("domestic_animal", "tree")
+    assert FARMER_SAME_LEVEL_TASK_ID in TASK_REGISTRY
+    farmer_same_level_task_cls = TASK_REGISTRY[FARMER_SAME_LEVEL_TASK_ID]
+    assert tuple(farmer_same_level_task_cls.supported_query_ids) == ("single",)
+    assert tuple(FARMER_SAME_LEVEL_QUERY_IDS) == ("farmer_same_level_tile",)

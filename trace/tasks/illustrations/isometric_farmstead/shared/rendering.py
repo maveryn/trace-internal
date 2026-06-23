@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import random
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 from PIL import Image, ImageDraw
 
-from trace.tasks.illustrations.shared.pixel_world_objects import draw_pixel_animal, draw_pixel_tree
-from trace.tasks.illustrations.shared.option_rendering import draw_label_badge
+from trace.tasks.illustrations.shared.pixel_world_objects import draw_pixel_animal, draw_pixel_person, draw_pixel_tree
+from trace.tasks.illustrations.shared.option_rendering import draw_label_badge, sample_visual_label_font_trace
 
+from .sampling import LabelTaskSampleSpec
 from .state import (
     BBox,
     IsoFarmsteadEntity,
@@ -510,6 +511,10 @@ def _object_sprite_bbox(layout: IsoLayout, tile: IsoFarmsteadTile, *, object_typ
         width = float(layout.tile_w) * 0.62
         height = float(layout.tile_w) * 1.18
         return (cx - width * 0.5, cy - height + float(layout.tile_h) * 0.28, cx + width * 0.5, cy + float(layout.tile_h) * 0.28)
+    if str(object_type) == "farmer":
+        width = float(layout.tile_w) * 0.5
+        height = float(layout.tile_w) * 0.7
+        return (cx - width * 0.5, cy - height + float(layout.tile_h) * 0.3, cx + width * 0.5, cy + float(layout.tile_h) * 0.3)
     if str(subtype) == "cow":
         width = float(layout.tile_w) * 0.96
         height = float(layout.tile_w) * 0.52
@@ -557,6 +562,27 @@ def _animal_sprite(animal_type: str, *, facing: str) -> Image.Image:
     return sprite
 
 
+def _farmer_sprite(*, rng: random.Random) -> Image.Image:
+    sprite = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    sprite_draw = ImageDraw.Draw(sprite, "RGBA")
+    shirt_rgb = rng.choice(((76, 141, 82), (56, 118, 177), (180, 82, 65)))
+    pants_rgb = rng.choice(((59, 76, 96), (76, 70, 58), (64, 88, 65)))
+    skin_rgb = rng.choice(((225, 171, 109), (189, 127, 80), (237, 190, 133)))
+    hair_rgb = rng.choice(((82, 50, 33), (116, 75, 35), (54, 38, 28)))
+    draw_pixel_person(
+        sprite_draw,
+        (0, 0, 1, 1),
+        skin_rgb=skin_rgb,
+        shirt_rgb=shirt_rgb,
+        pants_rgb=pants_rgb,
+        hair_rgb=hair_rgb,
+        gender_id="male",
+        facing="down",
+        person_variant_id="farmer",
+    )
+    return sprite
+
+
 def _patches_with_bboxes(patches: Sequence[Mapping[str, Any]], tiles_by_id: Mapping[str, IsoFarmsteadTile]) -> list[dict[str, Any]]:
     resolved: list[dict[str, Any]] = []
     for patch in patches:
@@ -597,6 +623,7 @@ def _draw_context_entities(
     farm_patch_tile_ids: set[str],
     required_entity_counts_by_level_type: Mapping[str, Mapping[int | str, int]] | None = None,
     object_unsafe_tile_ids: set[str] | None = None,
+    reference_farmer_tile_id: str | None = None,
 ) -> tuple[list[IsoFarmsteadEntity], set[str]]:
     """Draw reusable farm context objects and return occupied terrain tile ids."""
 
@@ -716,16 +743,35 @@ def _draw_context_entities(
         drawable.append((float(bbox[3]), f"animal_{animal_index:02d}", "domestic_animal", animal_type, tile, bbox))
         animal_index += 1
 
+    if reference_farmer_tile_id:
+        farmer_tile = tiles_by_id.get(str(reference_farmer_tile_id))
+        if farmer_tile is None:
+            raise ValueError(f"reference_farmer_tile_id does not name a rendered tile: {reference_farmer_tile_id!r}")
+        if str(farmer_tile.tile_id) in occupied or str(farmer_tile.tile_id) in blocked or str(farmer_tile.tile_id) in farm_patch_tile_ids:
+            raise ValueError(f"reference farmer tile is unavailable: {reference_farmer_tile_id!r}")
+        if str(farmer_tile.tile_id) in object_unsafe_tile_ids or str(farmer_tile.terrain) != "grass":
+            raise ValueError(f"reference farmer tile is not a safe grass tile: {reference_farmer_tile_id!r}")
+        farmer_bbox = _object_sprite_bbox(layout, farmer_tile, object_type="farmer", subtype="farmer")
+        if not _bbox_inside_canvas(farmer_bbox, width=width, height=height):
+            raise ValueError(f"reference farmer bbox is outside canvas: {reference_farmer_tile_id!r}")
+        occupied.add(str(farmer_tile.tile_id))
+        drawable.append((float(farmer_bbox[3]), "farmer_00", "farmer", "farmer", farmer_tile, farmer_bbox))
+
     for _, entity_id, object_type, subtype, tile, bbox in sorted(drawable, key=lambda item: item[0]):
         if object_type == "tree":
             _paste_sprite(image, bbox, _tree_sprite(subtype))
             public_name = f"{subtype.replace('_', ' ')}"
             metadata = {"base_level": int(tile.level), "tree_style": subtype}
+        elif object_type == "farmer":
+            _paste_sprite(image, bbox, _farmer_sprite(rng=rng))
+            public_name = "farmer"
+            metadata = {"base_level": int(tile.level), "person_variant_id": "farmer", "role": "reference"}
         else:
             facing = str(rng.choice(("left", "right")))
             _paste_sprite(image, bbox, _animal_sprite(subtype, facing=facing))
             public_name = subtype
             metadata = {"base_level": int(tile.level), "animal_type": subtype, "facing": facing}
+        entity_role = "reference" if object_type == "farmer" else "context"
         _add_entity(
             entities,
             entity_id=entity_id,
@@ -734,7 +780,7 @@ def _draw_context_entities(
             tile_ids=[str(tile.tile_id)],
             level=int(tile.level),
             bbox=bbox,
-            role="context",
+            role=entity_role,
             metadata=metadata,
         )
     return entities, occupied
@@ -781,6 +827,7 @@ def render_isometric_farmstead_scene(
     candidate_labels_by_tile_id: Mapping[str, str] | None = None,
     label_font_family: str | None = None,
     required_entity_counts_by_level_type: Mapping[str, Mapping[int | str, int]] | None = None,
+    reference_farmer_tile_id: str | None = None,
 ) -> IsoFarmsteadScene:
     """Render a deterministic isometric farmstead with variable terrain levels."""
 
@@ -827,6 +874,7 @@ def render_isometric_farmstead_scene(
         farm_patch_tile_ids=set(farm_patch_tile_ids),
         required_entity_counts_by_level_type=required_entity_counts_by_level_type,
         object_unsafe_tile_ids=set(object_unsafe_tile_ids),
+        reference_farmer_tile_id=reference_farmer_tile_id,
     )
 
     labels = dict(candidate_labels_by_tile_id or {})
@@ -882,6 +930,7 @@ def render_isometric_farmstead_scene(
         "farm_patches": farm_patches_with_bboxes,
         "farm_patch_tile_ids": sorted(farm_patch_tile_ids),
         "object_unsafe_low_adjacent_higher_tile_ids": sorted(object_unsafe_tile_ids),
+        "reference_farmer_tile_id": str(reference_farmer_tile_id or ""),
         "transition_tile_ids": sorted(transition_tile_ids),
         "occupied_tile_ids": sorted(occupied_tile_ids),
         "eligible_tile_ids": [
@@ -908,11 +957,74 @@ def render_isometric_farmstead_scene(
     )
 
 
+def render_isometric_farmstead_labeled_scene_with_retry(
+    *,
+    instance_seed: int,
+    max_attempts: int,
+    sample: LabelTaskSampleSpec,
+    params: Mapping[str, Any],
+    rendering_defaults: Mapping[str, Any],
+    font_seed_label: str,
+    label_namespace_suffix: str,
+    selection_fn: Callable[[IsoFarmsteadScene, int], Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Render a base scene, select lettered tiles, and retry failed constraints."""
+
+    last_error: Exception | None = None
+    for attempt in range(max(1, int(max_attempts))):
+        try:
+            scene_seed = int(instance_seed) + int(attempt) * 1009
+            base_scene = render_isometric_farmstead_scene(
+                scene_seed,
+                width=sample.canvas_width,
+                height=sample.canvas_height,
+                canvas_profile=sample.canvas_profile,
+                canvas_profile_probabilities=sample.canvas_profile_probabilities,
+            )
+            selection = dict(selection_fn(base_scene, scene_seed))
+            candidates_by_label = {
+                str(label): str(tile_id)
+                for label, tile_id in dict(selection["candidate_tile_ids_by_label"]).items()
+            }
+            labels_by_tile_id = {str(tile_id): str(label) for label, tile_id in candidates_by_label.items()}
+            label_font_trace = sample_visual_label_font_trace(
+                namespace_prefix=str(font_seed_label),
+                instance_seed=scene_seed,
+                params={**dict(rendering_defaults), **dict(params)},
+                namespace_suffix=str(label_namespace_suffix),
+                explicit_key="terrain_tile_label_font_family",
+                weights_key="terrain_tile_label_font_weights",
+            )
+            scene = render_isometric_farmstead_scene(
+                scene_seed,
+                width=sample.canvas_width,
+                height=sample.canvas_height,
+                canvas_profile=sample.canvas_profile,
+                canvas_profile_probabilities=sample.canvas_profile_probabilities,
+                candidate_labels_by_tile_id=labels_by_tile_id,
+                label_font_family=str(label_font_trace["font_family"]),
+                **dict(selection.get("render_kwargs", {})),
+            )
+            return {
+                **selection,
+                "scene_seed": int(scene_seed),
+                "base_scene": base_scene,
+                "scene": scene,
+                "candidate_tile_ids_by_label": candidates_by_label,
+                "selected_label": str(selection["selected_label"]),
+                "label_font_trace": dict(label_font_trace),
+            }
+        except Exception as exc:
+            last_error = exc
+    raise RuntimeError(f"could not render labeled farmstead scene for {font_seed_label}: {last_error}") from last_error
+
+
 __all__ = [
     "DEFAULT_CANDIDATE_LABELS",
     "RENDERER_ID",
     "RENDERER_STYLE",
     "SCENE_ID",
     "SUPPORTED_LEVELS",
+    "render_isometric_farmstead_labeled_scene_with_retry",
     "render_isometric_farmstead_scene",
 ]

@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Dict, Mapping, Tuple
 
 from trace.core.scene_config import get_scene_defaults
 from trace.core.seed import spawn_rng
@@ -11,48 +10,28 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import (
-    group_default,
-    required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
-from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.illustrations.shared.canvas_profiles import resolve_canvas_profile
-from trace.tasks.illustrations.shared.option_rendering import sample_visual_label_font_trace
 
 from .shared.output import (
-    bbox_projection,
     isometric_farmstead_elevation_render_map,
-    isometric_farmstead_render_spec,
-    isometric_farmstead_scene_ir,
+    make_tile_label_trace_payload,
     rounded_bbox,
 )
-from .shared.prompts import build_isometric_farmstead_prompt_artifacts
+from .shared.prompts import build_isometric_farmstead_task_prompt_with_default_slots
 from .shared.rendering import (
     DEFAULT_CANDIDATE_LABELS,
     SCENE_ID,
-    SUPPORTED_LEVELS,
-    render_isometric_farmstead_scene,
+    render_isometric_farmstead_labeled_scene_with_retry,
 )
+from .shared.sampling import sample_label_task_spec
 from .shared.state import IsoFarmsteadScene, IsoFarmsteadTile
+from .shared.spatial_primitives import eligible_label_tiles_by_level, label_clear_of_candidate_tiles
 
 
 TASK_ID = "task_illustrations__isometric_farmstead__terrain_elevation_extremum_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("highest_terrain_tile", "lowest_terrain_tile")
-
-
-@dataclass(frozen=True)
-class _SampleSpec:
-    selected_query: str
-    prompt_query_key: str
-    query_probabilities: dict[str, float]
-    candidate_count: int
-    candidate_count_probabilities: dict[str, float]
-    canvas_width: int
-    canvas_height: int
-    canvas_profile: str
-    canvas_profile_probabilities: dict[str, float]
 
 
 _SCENE_DEFAULTS = get_scene_defaults("illustrations", SCENE_ID)
@@ -62,185 +41,17 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rende
 )
 
 
-def _support_values(
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    *,
-    support_key: str,
-    fallback: Sequence[int],
-) -> tuple[int, ...]:
-    raw = params.get(str(support_key), group_default(defaults, str(support_key), tuple(fallback)))
-    values = (raw,) if isinstance(raw, int) else tuple(raw if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes)) else ())
-    support = tuple(dict.fromkeys(int(value) for value in values))
-    if not support:
-        raise ValueError(f"{support_key} must include at least one value")
-    return support
-
-
-def _select_count(
-    *,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    support_key: str,
-    explicit_key: str,
-    fallback: Sequence[int],
-    namespace: str,
-) -> tuple[int, dict[str, float]]:
-    support = _support_values(params, defaults, support_key=str(support_key), fallback=fallback)
-    explicit = params.get(str(explicit_key))
-    if explicit is not None:
-        value = int(explicit)
-        if value not in set(support):
-            raise ValueError(f"{explicit_key} must be one of {support}")
-        return value, {str(value): 1.0}
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    value = int(support[int(index) % len(support)])
-    return value, dict(uniform_probability_map(support))
-
-
-def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpec:
-    selected_query, query_probabilities, task_params = select_task_query_id(
+def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> Any:
+    return sample_label_task_spec(
         instance_seed=int(instance_seed),
         params=params,
-        supported_query_ids=SUPPORTED_QUERY_IDS,
+        identity_label=TASK_ID,
+        query_options=SUPPORTED_QUERY_IDS,
         default_query_id="highest_terrain_tile",
-        task_id=TASK_ID,
-        namespace=f"{TASK_ID}:query",
+        generation_defaults=_GEN_DEFAULTS,
+        rendering_defaults=_RENDER_DEFAULTS,
+        max_candidate_count=len(DEFAULT_CANDIDATE_LABELS),
     )
-    candidate_count, candidate_count_probabilities = _select_count(
-        instance_seed=int(instance_seed),
-        params=task_params,
-        defaults=_GEN_DEFAULTS,
-        support_key="candidate_count_support",
-        explicit_key="candidate_count",
-        fallback=(4,),
-        namespace=f"{TASK_ID}:candidate_count",
-    )
-    if candidate_count > len(DEFAULT_CANDIDATE_LABELS):
-        raise ValueError(f"candidate_count must be at most {len(DEFAULT_CANDIDATE_LABELS)}")
-    profile = resolve_canvas_profile(
-        params=task_params,
-        defaults=_RENDER_DEFAULTS,
-        fallback_width=1200,
-        fallback_height=800,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}:canvas_profile",
-    )
-    return _SampleSpec(
-        selected_query=str(selected_query),
-        prompt_query_key=str(selected_query),
-        query_probabilities=dict(query_probabilities),
-        candidate_count=int(candidate_count),
-        candidate_count_probabilities=dict(candidate_count_probabilities),
-        canvas_width=int(profile.width),
-        canvas_height=int(profile.height),
-        canvas_profile=str(profile.profile_id),
-        canvas_profile_probabilities=dict(profile.probabilities),
-    )
-
-
-def _tile_inside_canvas(tile: IsoFarmsteadTile, *, width: int, height: int) -> bool:
-    return (
-        0.0 <= float(tile.bbox_xyxy[0])
-        and float(tile.bbox_xyxy[2]) <= float(width)
-        and 0.0 <= float(tile.bbox_xyxy[1])
-        and float(tile.bbox_xyxy[3]) <= float(height)
-    )
-
-
-def _label_box_for_tile(tile: IsoFarmsteadTile) -> tuple[float, float, float, float]:
-    cx, cy = tile.center_xy
-    return (float(cx) - 18.0, float(cy) - 15.0, float(cx) + 18.0, float(cy) + 13.0)
-
-
-def _boxes_intersect(left: Sequence[float], right: Sequence[float], *, pad: float = 0.0) -> bool:
-    return (
-        float(left[0]) - float(pad) < float(right[2])
-        and float(left[2]) + float(pad) > float(right[0])
-        and float(left[1]) - float(pad) < float(right[3])
-        and float(left[3]) + float(pad) > float(right[1])
-    )
-
-
-def _label_clear_of_context(scene: IsoFarmsteadScene, tile: IsoFarmsteadTile) -> bool:
-    label_box = _label_box_for_tile(tile)
-    return not any(_boxes_intersect(label_box, entity.bbox_xyxy, pad=8.0) for entity in scene.entities)
-
-
-def _same_level_component_sizes(scene: IsoFarmsteadScene) -> dict[str, int]:
-    tiles_by_cell = {(int(tile.col), int(tile.row)): tile for tile in scene.tiles}
-    component_sizes: dict[str, int] = {}
-    visited: set[str] = set()
-    for tile in scene.tiles:
-        if str(tile.tile_id) in visited:
-            continue
-        stack = [tile]
-        component: list[IsoFarmsteadTile] = []
-        visited.add(str(tile.tile_id))
-        while stack:
-            current = stack.pop()
-            component.append(current)
-            for delta_col, delta_row in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                neighbor = tiles_by_cell.get((int(current.col) + delta_col, int(current.row) + delta_row))
-                if neighbor is None:
-                    continue
-                if int(neighbor.level) != int(current.level):
-                    continue
-                if str(neighbor.tile_id) in visited:
-                    continue
-                visited.add(str(neighbor.tile_id))
-                stack.append(neighbor)
-        size = len(component)
-        for component_tile in component:
-            component_sizes[str(component_tile.tile_id)] = int(size)
-    return component_sizes
-
-
-def _has_same_level_neighbor_support(
-    tiles_by_cell: Mapping[tuple[int, int], IsoFarmsteadTile],
-    tile: IsoFarmsteadTile,
-) -> bool:
-    has_horizontal = False
-    has_vertical = False
-    for delta_col, delta_row in ((1, 0), (-1, 0)):
-        neighbor = tiles_by_cell.get((int(tile.col) + delta_col, int(tile.row) + delta_row))
-        has_horizontal = has_horizontal or (neighbor is not None and int(neighbor.level) == int(tile.level))
-    for delta_col, delta_row in ((0, 1), (0, -1)):
-        neighbor = tiles_by_cell.get((int(tile.col) + delta_col, int(tile.row) + delta_row))
-        has_vertical = has_vertical or (neighbor is not None and int(neighbor.level) == int(tile.level))
-    return bool(has_horizontal and has_vertical)
-
-
-def _eligible_tiles_by_level(scene: IsoFarmsteadScene) -> dict[int, list[IsoFarmsteadTile]]:
-    eligible_ids = {str(value) for value in scene.trace.get("eligible_tile_ids", [])}
-    active_levels = tuple(int(level) for level in scene.trace.get("levels", SUPPORTED_LEVELS))
-    by_level: dict[int, list[IsoFarmsteadTile]] = {int(level): [] for level in active_levels}
-    width, height = scene.image.size
-    tiles_by_cell = {(int(tile.col), int(tile.row)): tile for tile in scene.tiles}
-    component_sizes = _same_level_component_sizes(scene)
-    for tile in scene.tiles:
-        if str(tile.tile_id) not in eligible_ids:
-            continue
-        if not bool(tile.metadata.get("candidate_allowed", False)):
-            continue
-        if str(tile.terrain) != "grass":
-            continue
-        if not _tile_inside_canvas(tile, width=width, height=height):
-            continue
-        if not _label_clear_of_context(scene, tile):
-            continue
-        if int(component_sizes.get(str(tile.tile_id), 0)) < 6:
-            continue
-        if not _has_same_level_neighbor_support(tiles_by_cell, tile):
-            continue
-        by_level[int(tile.level)].append(tile)
-    return {level: sorted(tiles, key=lambda item: (item.row, item.col)) for level, tiles in by_level.items()}
-
-
-def _label_clear_of_candidate_tiles(candidate_tiles: Sequence[IsoFarmsteadTile], tile: IsoFarmsteadTile) -> bool:
-    label_box = _label_box_for_tile(tile)
-    return not any(_boxes_intersect(label_box, _label_box_for_tile(candidate), pad=6.0) for candidate in candidate_tiles)
 
 
 def _select_candidate_tiles(
@@ -252,7 +63,7 @@ def _select_candidate_tiles(
 ) -> tuple[dict[str, str], str]:
     """Select one unique elevation-extremum tile plus distractor tiles."""
 
-    by_level = _eligible_tiles_by_level(scene)
+    by_level = eligible_label_tiles_by_level(scene)
     active_levels = tuple(level for level in sorted(by_level) if by_level[level])
     if len(active_levels) < 2:
         raise ValueError("not enough active elevation levels with eligible candidate tiles")
@@ -281,7 +92,7 @@ def _select_candidate_tiles(
         for tile in distractor_pool:
             if str(tile.tile_id) == str(answer_tile.tile_id):
                 continue
-            if not _label_clear_of_candidate_tiles(candidate_tiles, tile):
+            if not label_clear_of_candidate_tiles(candidate_tiles, tile):
                 continue
             candidate_tiles.append(tile)
             if len(candidate_tiles) >= int(candidate_count):
@@ -314,152 +125,74 @@ class IllustrationsIsometricFarmsteadTerrainElevationExtremumLabelTask:
         """Generate one option-selection instance with task-owned candidate and answer binding."""
 
         sample = _sample_spec(instance_seed=int(instance_seed), params=params)
-        prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
-            [
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "answer_hint_terrain_elevation_extremum_label",
-                "annotation_hint_terrain_elevation_extremum_label",
-                "json_example_terrain_elevation_extremum_label",
-                "json_example_answer_only_terrain_elevation_extremum_label",
-            ],
-            context=f"prompt defaults for {TASK_ID}",
+        _prompt_defaults, prompt_artifacts = build_isometric_farmstead_task_prompt_with_default_slots(
+            domain=self.domain,
+            scene_id=SCENE_ID,
+            prompt_defaults_source=_PROMPT_DEFAULTS,
+            prompt_query_key=sample.prompt_key,
+            answer_hint_key="answer_hint_terrain_elevation_extremum_label",
+            annotation_hint_key="annotation_hint_terrain_elevation_extremum_label",
+            json_example_key="json_example_terrain_elevation_extremum_label",
+            json_example_answer_only_key="json_example_answer_only_terrain_elevation_extremum_label",
+            context_label=TASK_ID,
+            instance_seed=int(instance_seed),
         )
-        last_error: Exception | None = None
-        for attempt in range(max(1, int(max_attempts))):
-            try:
-                scene_seed = int(instance_seed) + int(attempt) * 1009
-                base_scene = render_isometric_farmstead_scene(
-                    scene_seed,
-                    width=sample.canvas_width,
-                    height=sample.canvas_height,
-                    canvas_profile=sample.canvas_profile,
-                    canvas_profile_probabilities=sample.canvas_profile_probabilities,
-                )
-                candidates_by_label, selected_label = _select_candidate_tiles(
-                    scene=base_scene,
-                    selected_query=sample.selected_query,
-                    candidate_count=sample.candidate_count,
-                    instance_seed=scene_seed,
-                )
-                labels_by_tile_id = {str(tile_id): str(label) for label, tile_id in candidates_by_label.items()}
-                label_font_trace = sample_visual_label_font_trace(
-                    namespace_prefix=TASK_ID,
-                    instance_seed=scene_seed,
-                    params={**dict(_RENDER_DEFAULTS), **dict(params)},
-                    namespace_suffix="terrain_tile_labels",
-                    explicit_key="terrain_tile_label_font_family",
-                    weights_key="terrain_tile_label_font_weights",
-                )
-                scene = render_isometric_farmstead_scene(
-                    scene_seed,
-                    width=sample.canvas_width,
-                    height=sample.canvas_height,
-                    canvas_profile=sample.canvas_profile,
-                    canvas_profile_probabilities=sample.canvas_profile_probabilities,
-                    candidate_labels_by_tile_id=labels_by_tile_id,
-                    label_font_family=str(label_font_trace["font_family"]),
-                )
-                break
-            except Exception as exc:
-                last_error = exc
-        else:
-            raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
+        def _select_from_scene(base_scene: IsoFarmsteadScene, scene_seed: int) -> Mapping[str, Any]:
+            candidates, answer_label = _select_candidate_tiles(
+                scene=base_scene,
+                selected_query=sample.selected_key,
+                candidate_count=sample.candidate_count,
+                instance_seed=scene_seed,
+            )
+            return {"candidate_tile_ids_by_label": candidates, "selected_label": answer_label}
+
+        rendered = render_isometric_farmstead_labeled_scene_with_retry(
+            instance_seed=int(instance_seed),
+            max_attempts=int(max_attempts),
+            sample=sample,
+            params=params,
+            rendering_defaults=_RENDER_DEFAULTS,
+            font_seed_label=TASK_ID,
+            label_namespace_suffix="terrain_tile_labels",
+            selection_fn=_select_from_scene,
+        )
+        scene = rendered["scene"]
+        candidates_by_label = dict(rendered["candidate_tile_ids_by_label"])
+        selected_label = str(rendered["selected_label"])
+        label_font_trace = dict(rendered["label_font_trace"])
 
         tiles_by_id = {str(tile.tile_id): tile for tile in scene.tiles}
         selected_tile_id = str(candidates_by_label[str(selected_label)])
         selected_tile = tiles_by_id[selected_tile_id]
         annotation_value = rounded_bbox(selected_tile.bbox_xyxy)
-        prompt_artifacts = build_isometric_farmstead_prompt_artifacts(
-            domain=self.domain,
-            scene_id=SCENE_ID,
-            prompt_defaults=prompt_defaults,
-            prompt_query_key=sample.prompt_query_key,
-            slots={
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint_terrain_elevation_extremum_label"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint_terrain_elevation_extremum_label"]),
-                "json_example": str(prompt_defaults["json_example_terrain_elevation_extremum_label"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only_terrain_elevation_extremum_label"]),
-            },
-            instance_seed=int(instance_seed),
-        )
         render_map = isometric_farmstead_elevation_render_map(
             scene=scene,
             candidate_tile_ids_by_label=candidates_by_label,
             selected_label=str(selected_label),
         )
-        query_params = {
-            "query_id": str(sample.selected_query),
-            "prompt_query_key": str(sample.prompt_query_key),
-            "query_id_probabilities": dict(sample.query_probabilities),
-            "candidate_count": int(sample.candidate_count),
-            "candidate_count_probabilities": dict(sample.candidate_count_probabilities),
-            "candidate_labels": list(DEFAULT_CANDIDATE_LABELS[: int(sample.candidate_count)]),
-            "candidate_tile_ids_by_label": dict(candidates_by_label),
-            "candidate_levels_by_label": dict(render_map["candidate_levels_by_label"]),
-            "selected_label": str(selected_label),
-            "selected_tile_id": str(selected_tile_id),
-            "selected_tile_level": int(selected_tile.level),
-            "canvas_profile": str(sample.canvas_profile),
-            "canvas_profile_probabilities": dict(sample.canvas_profile_probabilities),
-        }
-        trace_payload = {
-            "scene_ir": isometric_farmstead_scene_ir(
-                domain=self.domain,
-                scene_id=SCENE_ID,
-                scene=scene,
-                relations={
-                    "operation": "select_elevation_extremum",
-                    "extremum": "highest" if sample.selected_query == "highest_terrain_tile" else "lowest",
-                    "candidate_tile_ids_by_label": dict(candidates_by_label),
-                    "selected_label": str(selected_label),
-                    "selected_tile_id": str(selected_tile_id),
-                    "selected_tile_level": int(selected_tile.level),
-                },
-            ),
-            "query_spec": {
-                "task_id": TASK_ID,
-                "query_id": str(sample.selected_query),
-                "prompt_query_key": str(sample.prompt_query_key),
-                "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": query_params,
-            },
-            "render_spec": {
-                **isometric_farmstead_render_spec(scene, scene_id=SCENE_ID),
-                "style": {
-                    **isometric_farmstead_render_spec(scene, scene_id=SCENE_ID)["style"],
-                    "label_font": dict(label_font_trace),
-                },
-            },
-            "render_map": render_map,
-            "execution_trace": {
-                "query_id": str(sample.selected_query),
-                "prompt_query_key": str(sample.prompt_query_key),
-                "scene_id": SCENE_ID,
-                "answer": str(selected_label),
+        trace_payload = make_tile_label_trace_payload(
+            domain=self.domain,
+            scene_id=SCENE_ID,
+            task_identity=TASK_ID,
+            scene=scene,
+            sample=sample,
+            prompt_artifacts=prompt_artifacts,
+            label_font_trace=label_font_trace,
+            render_map=render_map,
+            candidate_tile_ids_by_label=candidates_by_label,
+            candidate_labels=DEFAULT_CANDIDATE_LABELS[: int(sample.candidate_count)],
+            selected_label=str(selected_label),
+            selected_tile=selected_tile,
+            annotation_value=annotation_value,
+            relations={
+                "operation": "select_elevation_extremum",
+                "extremum": "highest" if sample.selected_key == "highest_terrain_tile" else "lowest",
+                "candidate_tile_ids_by_label": dict(candidates_by_label),
                 "selected_label": str(selected_label),
                 "selected_tile_id": str(selected_tile_id),
                 "selected_tile_level": int(selected_tile.level),
-                "candidate_tile_ids_by_label": dict(candidates_by_label),
-                "candidate_levels_by_label": dict(render_map["candidate_levels_by_label"]),
-                "renderer": dict(scene.trace),
             },
-            "witness_symbolic": {
-                "answer_label": str(selected_label),
-                "selected_tile_id": str(selected_tile_id),
-                "selected_tile_level": int(selected_tile.level),
-                "selected_tile_bbox": list(annotation_value),
-            },
-            "projected_annotation": bbox_projection(annotation_value),
-        }
+        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
@@ -470,7 +203,7 @@ class IllustrationsIsometricFarmsteadTerrainElevationExtremumLabelTask:
             trace_payload=trace_payload,
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
-            query_id=str(sample.selected_query),
+            query_id=str(sample.selected_key),
         )
 
 

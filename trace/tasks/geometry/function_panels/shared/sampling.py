@@ -74,14 +74,14 @@ def resolve_property_selection(
         task_id=str(namespace),
         instance_seed=int(instance_seed),
     )
+    visible = _visible_labels(pool, panel_count=int(panel_count))
     selected_label, selected_probs = _resolve_selected_label(
         params,
         instance_seed=int(instance_seed),
-        label_pool=pool,
+        label_pool=visible,
         namespace=f"{namespace}.selected_label",
         gen_defaults=gen_defaults,
     )
-    visible = _visible_labels(pool, selected_label=selected_label, panel_count=int(panel_count))
     return PropertySelection(
         selected_label=str(selected_label),
         label_pool=tuple(visible),
@@ -109,14 +109,14 @@ def resolve_intersection_selection(
         task_id=str(namespace),
         instance_seed=int(instance_seed),
     )
+    visible = _visible_labels(pool, panel_count=int(panel_count))
     selected_label, selected_probs = _resolve_selected_label(
         params,
         instance_seed=int(instance_seed),
-        label_pool=pool,
+        label_pool=visible,
         namespace=f"{namespace}.selected_label",
         gen_defaults=gen_defaults,
     )
-    visible = _visible_labels(pool, selected_label=selected_label, panel_count=int(panel_count))
     return IntersectionSelection(
         selected_label=str(selected_label),
         label_pool=tuple(visible),
@@ -159,11 +159,8 @@ def _resolve_selected_label(
     return selected, {str(key): float(value) for key, value in sorted(probabilities.items())}
 
 
-def _visible_labels(label_pool: Sequence[str], *, selected_label: str, panel_count: int) -> tuple[str, ...]:
-    labels = tuple(str(label) for label in label_pool[: int(panel_count)])
-    if str(selected_label) in set(labels):
-        return labels
-    return tuple([str(selected_label), *[label for label in labels if str(label) != str(selected_label)]])[: int(panel_count)]
+def _visible_labels(label_pool: Sequence[str], *, panel_count: int) -> tuple[str, ...]:
+    return tuple(str(label) for label in label_pool[: int(panel_count)])
 
 
 def selected_interval(rule_kind: str, *, sign_kind: str | None = None) -> tuple[float, float] | None:

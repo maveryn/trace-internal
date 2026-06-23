@@ -9,31 +9,43 @@ from ...shared.icon_task_rendering import icon_render_style_trace
 from .state import PatternGridSpec, RenderedPatternGridScene
 
 
-def scene_kind_for_axis(attribute_axis: str) -> str:
+def scene_kind_for_axis(attribute_axis: str, *, color_group_axis: str = "") -> str:
     """Return the public trace scene-kind id for one pattern attribute."""
 
     if str(attribute_axis) == "color":
-        return "icons_pattern_grid_color_violation"
+        if str(color_group_axis) == "row":
+            return "icons_pattern_grid_row_color_violation"
+        if str(color_group_axis) == "column":
+            return "icons_pattern_grid_column_color_violation"
+        raise ValueError("color_group_axis must be 'row' or 'column' for color pattern grids")
     if str(attribute_axis) == "size":
         return "icons_pattern_grid_size_violation"
     raise ValueError(f"unsupported attribute_axis: {attribute_axis}")
 
 
-def question_format_for_axis(attribute_axis: str) -> str:
+def question_format_for_axis(attribute_axis: str, *, color_group_axis: str = "") -> str:
     """Return the execution-trace question-format id for one pattern attribute."""
 
     if str(attribute_axis) == "color":
-        return "identify_grid_color_violation"
+        if str(color_group_axis) == "row":
+            return "identify_grid_row_color_violation"
+        if str(color_group_axis) == "column":
+            return "identify_grid_column_color_violation"
+        raise ValueError("color_group_axis must be 'row' or 'column' for color pattern grids")
     if str(attribute_axis) == "size":
         return "identify_grid_size_violation"
     raise ValueError(f"unsupported attribute_axis: {attribute_axis}")
 
 
-def pattern_rule_for_axis(attribute_axis: str) -> str:
+def pattern_rule_for_axis(attribute_axis: str, *, color_group_axis: str = "") -> str:
     """Return the symbolic pattern-rule id for one pattern attribute."""
 
     if str(attribute_axis) == "color":
-        return "row_col_color_level_offsets"
+        if str(color_group_axis) == "row":
+            return "row_uniform_color"
+        if str(color_group_axis) == "column":
+            return "column_uniform_color"
+        raise ValueError("color_group_axis must be 'row' or 'column' for color pattern grids")
     if str(attribute_axis) == "size":
         return "row_col_size_level_offsets"
     raise ValueError(f"unsupported attribute_axis: {attribute_axis}")

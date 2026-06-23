@@ -138,43 +138,6 @@ def _axis_support(
     branches on public query ids or task identities.
     """
 
-    if str(attribute_axis) == "color":
-        color_count = len(_color_ladder_rgb(params, defaults))
-        levels = _int_sequence_param(
-            params,
-            defaults,
-            key="color_levels",
-            fallback=tuple(range(int(color_count))),
-            label="color_levels",
-        )
-        allowed = set(range(int(color_count)))
-        level_support = tuple(int(level) for level in dict.fromkeys(levels) if int(level) in allowed)
-        if len(level_support) < 4:
-            raise ValueError("color_levels must contain at least four valid distinct levels")
-        base_candidates = _int_sequence_param(
-            params,
-            defaults,
-            key="base_color_level_candidates",
-            fallback=level_support,
-            label="base_color_level_candidates",
-        )
-        base_candidates = tuple(int(value) for value in base_candidates if int(value) in set(level_support))
-        row_steps = _int_sequence_param(
-            params,
-            defaults,
-            key="row_step_color_candidates",
-            fallback=_DEFAULTS.row_step_color_candidates,
-            label="row_step_color_candidates",
-        )
-        col_steps = _int_sequence_param(
-            params,
-            defaults,
-            key="col_step_color_candidates",
-            fallback=_DEFAULTS.col_step_color_candidates,
-            label="col_step_color_candidates",
-        )
-        return level_support, base_candidates, row_steps, col_steps, 1
-
     if str(attribute_axis) == "size":
         level_support = tuple(
             dict.fromkeys(
@@ -224,9 +187,110 @@ def _axis_support(
     raise ValueError(f"unsupported pattern-grid attribute_axis: {attribute_axis}")
 
 
+def _color_level_support(
+    params: Mapping[str, Any],
+    defaults: Mapping[str, Any],
+) -> Tuple[int, ...]:
+    color_count = len(_color_ladder_rgb(params, defaults))
+    levels = _int_sequence_param(
+        params,
+        defaults,
+        key="color_levels",
+        fallback=tuple(range(int(color_count))),
+        label="color_levels",
+    )
+    allowed = set(range(int(color_count)))
+    level_support = tuple(int(level) for level in dict.fromkeys(levels) if int(level) in allowed)
+    if len(level_support) < 4:
+        raise ValueError("color_levels must contain at least four valid distinct levels")
+    return level_support
+
+
+def _color_uniform_pattern(
+    *,
+    color_group_axis: str,
+    grid_rows: int,
+    grid_cols: int,
+    violation_cell_index: int,
+    level_support: Sequence[int],
+    base_index: int,
+    params: Mapping[str, Any],
+) -> Tuple[Tuple[int, ...], Tuple[int, ...], int, Tuple[int, ...], int]:
+    """Return a row- or column-uniform color pattern with one changed cell."""
+
+    group_axis = str(color_group_axis)
+    if group_axis not in {"row", "column"}:
+        raise ValueError("color_group_axis must be 'row' or 'column'")
+    group_count = int(grid_rows if group_axis == "row" else grid_cols)
+    support = tuple(int(value) for value in level_support)
+    if len(support) < int(group_count) + 1:
+        raise ValueError("color_levels must include at least one spare color beyond the row/column colors")
+
+    explicit_key = "row_color_levels" if group_axis == "row" else "column_color_levels"
+    explicit_group_levels = params.get(explicit_key)
+    if explicit_group_levels is not None:
+        if not isinstance(explicit_group_levels, (list, tuple)):
+            raise ValueError(f"{explicit_key} must be a sequence")
+        group_levels = tuple(int(value) for value in explicit_group_levels)
+        if len(group_levels) != int(group_count):
+            raise ValueError(f"{explicit_key} must contain exactly {group_count} values")
+        if len(set(group_levels)) != int(group_count) or any(level not in set(support) for level in group_levels):
+            raise ValueError(f"{explicit_key} values must be distinct supported color levels")
+    else:
+        valid_strides = [
+            int(stride)
+            for stride in range(1, len(support))
+            if len({int((index * stride) % len(support)) for index in range(int(group_count))}) == int(group_count)
+        ]
+        if not valid_strides:
+            raise ValueError("no valid color sampling stride available")
+        pattern_index = int(base_index)
+        start = int(pattern_index % len(support))
+        stride = int(valid_strides[int(pattern_index // len(support)) % len(valid_strides)])
+        group_levels = tuple(
+            int(support[int((start + index * stride) % len(support))])
+            for index in range(int(group_count))
+        )
+
+    expected = []
+    for index in range(int(grid_rows * grid_cols)):
+        row = int(index // int(grid_cols))
+        col = int(index % int(grid_cols))
+        group_index = int(row if group_axis == "row" else col)
+        expected.append(int(group_levels[int(group_index)]))
+
+    expected_level = int(expected[int(violation_cell_index)])
+    explicit_violation_level = params.get("violation_color_level")
+    if explicit_violation_level is not None:
+        violation_level = int(explicit_violation_level)
+        if int(violation_level) not in set(support):
+            raise ValueError("violation_color_level must be in color_levels")
+        if int(violation_level) == int(expected_level):
+            raise ValueError("violation_color_level must differ from the expected color")
+    else:
+        spare_levels = [int(level) for level in support if int(level) not in set(group_levels)]
+        if not spare_levels:
+            spare_levels = [int(level) for level in support if int(level) != int(expected_level)]
+        if not spare_levels:
+            raise ValueError("no valid violation color level available")
+        violation_level = int(spare_levels[int(base_index // max(1, len(support))) % len(spare_levels)])
+
+    observed = list(int(value) for value in expected)
+    observed[int(violation_cell_index)] = int(violation_level)
+    total_rule_support = int(len(support) * max(1, len(support) - 1))
+    return (
+        tuple(int(value) for value in expected),
+        tuple(int(value) for value in observed),
+        int(violation_level),
+        tuple(int(value) for value in group_levels),
+        int(total_rule_support),
+    )
+
+
 def resolve_pattern_grid_spec(
     *,
     attribute_axis: str,
+    color_group_axis: str = "",
     instance_seed: int,
     params: Mapping[str, Any],
     generation_defaults: Mapping[str, Any],
@@ -273,9 +337,6 @@ def resolve_pattern_grid_spec(
         raise ValueError("answer_index is outside configured support")
     violation_cell_index = int(answer_index) - 1
 
-    level_support, base_candidates, row_steps, col_steps, min_delta = _axis_support(axis, params, generation_defaults)
-    if not base_candidates:
-        raise ValueError("base level candidates must overlap level support")
     rotation_candidates = tuple(
         int(value) % 360
         for value in _int_sequence_param(
@@ -289,10 +350,55 @@ def resolve_pattern_grid_spec(
     if not rotation_candidates:
         raise ValueError("shared_rotation_candidates_degrees must not be empty")
 
-    explicit_base = params.get("base_color_level" if axis == "color" else "base_size_level")
-    explicit_row_step = params.get("row_step_color_levels" if axis == "color" else "row_step_levels")
-    explicit_col_step = params.get("col_step_color_levels" if axis == "color" else "col_step_levels")
-    explicit_violation_level = params.get("violation_color_level" if axis == "color" else "violation_size_level")
+    if axis == "color":
+        group_axis = str(color_group_axis or params.get("color_group_axis", "row"))
+        level_support = _color_level_support(params, generation_defaults)
+        expected, observed, violation_level, group_levels, total_rule_support = _color_uniform_pattern(
+            color_group_axis=str(group_axis),
+            grid_rows=int(grid_rows),
+            grid_cols=int(grid_cols),
+            violation_cell_index=int(violation_cell_index),
+            level_support=level_support,
+            base_index=int(base_index // max(1, len(answer_support))),
+            params=params,
+        )
+        explicit_rotation = params.get("shared_rotation_degrees")
+        rotation_index = int(base_index // max(1, len(answer_support) * int(total_rule_support))) % len(rotation_candidates)
+        rotation = int(explicit_rotation) % 360 if explicit_rotation is not None else int(rotation_candidates[int(rotation_index)])
+        color_ladder = _color_ladder_rgb(params, generation_defaults)
+        color_names = _color_level_names(params, generation_defaults, color_count=len(color_ladder))
+        pattern_rule = "row_uniform_color" if str(group_axis) == "row" else "column_uniform_color"
+        return PatternGridSpec(
+            attribute_axis=axis,
+            grid_rows=int(grid_rows),
+            grid_cols=int(grid_cols),
+            answer_index=int(answer_index),
+            violation_cell_index=int(violation_cell_index),
+            expected_levels=tuple(int(value) for value in expected),
+            observed_levels=tuple(int(value) for value in observed),
+            base_level=int(group_levels[0]),
+            row_step_levels=0,
+            col_step_levels=0,
+            violation_level=int(violation_level),
+            pattern_rule=str(pattern_rule),
+            shared_rotation_degrees=int(rotation),
+            level_support=tuple(int(value) for value in level_support),
+            plausible_rule_count=1,
+            total_rule_support=int(total_rule_support),
+            answer_index_probabilities=uniform_probability_map(answer_support),
+            color_group_axis=str(group_axis),
+            level_names=tuple(str(value) for value in color_names),
+            color_ladder_rgb=tuple(tuple(int(channel) for channel in color) for color in color_ladder),
+        )
+
+    level_support, base_candidates, row_steps, col_steps, min_delta = _axis_support(axis, params, generation_defaults)
+    if not base_candidates:
+        raise ValueError("base level candidates must overlap level support")
+
+    explicit_base = params.get("base_size_level")
+    explicit_row_step = params.get("row_step_levels")
+    explicit_col_step = params.get("col_step_levels")
+    explicit_violation_level = params.get("violation_size_level")
     explicit_rotation = params.get("shared_rotation_degrees")
 
     allowed = {int(value) for value in level_support}
@@ -372,6 +478,7 @@ def resolve_pattern_grid_spec(
         row_step_levels=int(row_step),
         col_step_levels=int(col_step),
         violation_level=int(violation_level),
+        pattern_rule="row_col_size_level_offsets",
         shared_rotation_degrees=int(rotation),
         level_support=tuple(int(value) for value in level_support),
         plausible_rule_count=int(plausible_rule_count),

@@ -49,27 +49,6 @@ generation:
     - - 204
       - 70
       - 156
-    base_color_level_candidates:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
-    - 7
-    row_step_color_candidates:
-    - -2
-    - -1
-    - 0
-    - 1
-    - 2
-    col_step_color_candidates:
-    - -2
-    - -1
-    - 0
-    - 1
-    - 2
     size_levels:
     - 1
     - 2
@@ -272,7 +251,10 @@ prompt:
   task_overrides:
     task_icons__pattern_grid__attribute_pattern_violation_index:
       object_description: a numbered 3 by 3 grid with one icon per box
-      question_text_grid_color_violation: Which numbered box breaks the color pattern?
+      question_text_grid_row_color_violation: Each row should contain icons of one color.
+        Which numbered box breaks the row color pattern?
+      question_text_grid_column_color_violation: Each column should contain icons of
+        one color. Which numbered box breaks the column color pattern?
       question_text_grid_size_violation: Which numbered box breaks the size pattern?
       annotation_hint: set "annotation" to one [x0, y0, x1, y1] box in image pixel
         coordinates for the violating numbered box

@@ -664,9 +664,6 @@ def test_icons_pattern_grid_defaults_loaded() -> None:
     )
     assert str(generation['pool_manifest']).strip() == 'all_icons.txt'
     assert list(generation['color_levels']) == [0, 1, 2, 3, 4, 5, 6, 7]
-    assert list(generation['base_color_level_candidates']) == [0, 1, 2, 3, 4, 5, 6, 7]
-    assert list(generation['row_step_color_candidates']) == [-2, -1, 0, 1, 2]
-    assert list(generation['col_step_color_candidates']) == [-2, -1, 0, 1, 2]
     assert list(generation['size_levels']) == [1, 2, 3, 4, 5]
     assert list(generation['base_size_level_candidates']) == [1, 2, 3, 4, 5]
     assert list(generation['row_step_size_candidates']) == [-1, 0, 1]
@@ -684,7 +681,8 @@ def test_icons_pattern_grid_defaults_loaded() -> None:
     assert int(rendering['size_level_gap_px']) == 10
     assert list(rendering['icon_noise_edit_count_range']) == [0, 0]
     assert str(prompt['object_description']).strip()
-    assert str(prompt['question_text_grid_color_violation']).strip()
+    assert str(prompt['question_text_grid_row_color_violation']).strip()
+    assert str(prompt['question_text_grid_column_color_violation']).strip()
     assert str(prompt['question_text_grid_size_violation']).strip()
     assert str(prompt['annotation_hint']).strip()
     assert str(prompt['answer_hint']).strip()

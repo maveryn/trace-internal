@@ -56,27 +56,25 @@ def _plausible_grid_size_indices(levels: list[int], *, grid_rows: int, grid_cols
     return exact_match, plausible
 
 
-def _plausible_grid_color_indices(levels: list[int], *, grid_rows: int, grid_cols: int) -> tuple[bool, set[int]]:
-    exact_match = False
+def _uniform_color_violation_indices(levels: list[int], *, grid_rows: int, grid_cols: int, group_axis: str) -> set[int]:
     plausible: set[int] = set()
-    allowed_levels = set(range(8))
-    for base in range(8):
-        for row_step in (-2, -1, 0, 1, 2):
-            for col_step in (-2, -1, 0, 1, 2):
-                if row_step == 0 and col_step == 0:
-                    continue
-                expected = [
-                    int(base + ((index // grid_cols) * row_step) + ((index % grid_cols) * col_step))
-                    for index in range(len(levels))
-                ]
-                if any(int(level) not in allowed_levels for level in expected):
-                    continue
-                mismatches = [index for index, (left, right) in enumerate(zip(levels, expected)) if int(left) != int(right)]
-                if not mismatches:
-                    exact_match = True
-                elif len(mismatches) == 1:
-                    plausible.add(int(mismatches[0]))
-    return exact_match, plausible
+    if group_axis == "row":
+        for row in range(grid_rows):
+            row_indices = [row * grid_cols + col for col in range(grid_cols)]
+            counts = Counter(int(levels[index]) for index in row_indices)
+            common_level, common_count = counts.most_common(1)[0]
+            if common_count == grid_cols - 1:
+                plausible.update(index for index in row_indices if int(levels[index]) != int(common_level))
+    elif group_axis == "column":
+        for col in range(grid_cols):
+            col_indices = [row * grid_cols + col for row in range(grid_rows)]
+            counts = Counter(int(levels[index]) for index in col_indices)
+            common_level, common_count = counts.most_common(1)[0]
+            if common_count == grid_rows - 1:
+                plausible.update(index for index in col_indices if int(levels[index]) != int(common_level))
+    else:
+        raise ValueError(group_axis)
+    return plausible
 
 
 def test_icons_pattern_structured_violation_row_rotation_contract_matches_scene() -> None:
@@ -163,16 +161,36 @@ def test_icons_pattern_structured_violation_grid_size_contract_matches_scene() -
     assert plausible_indices == {4}
 
 
-def test_icons_pattern_grid_color_violation_contract_matches_scene() -> None:
+@pytest.mark.parametrize(
+    ("query_id", "group_axis", "expected_scene_kind", "expected_question_format"),
+    (
+        (
+            "grid_row_color_violation",
+            "row",
+            "icons_pattern_grid_row_color_violation",
+            "identify_grid_row_color_violation",
+        ),
+        (
+            "grid_column_color_violation",
+            "column",
+            "icons_pattern_grid_column_color_violation",
+            "identify_grid_column_color_violation",
+        ),
+    ),
+)
+def test_icons_pattern_grid_color_violation_contract_matches_scene(
+    query_id: str,
+    group_axis: str,
+    expected_scene_kind: str,
+    expected_question_format: str,
+) -> None:
     task = IconsPatternGridAttributePatternViolationTask()
     out = task.generate(
         24115,
         params={
-            "query_id": "grid_color_violation",
+            "query_id": query_id,
             "answer_index": 5,
-            "base_color_level": 3,
-            "row_step_color_levels": 1,
-            "col_step_color_levels": -1,
+            f"{group_axis}_color_levels": [1, 2, 3],
             "violation_color_level": 0,
             "shared_rotation_degrees": 180,
         },
@@ -180,12 +198,15 @@ def test_icons_pattern_grid_color_violation_contract_matches_scene() -> None:
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
-    assert out.query_id == "grid_color_violation"
-    assert trace["scene_ir"]["scene_kind"] == "icons_pattern_grid_color_violation"
+    assert out.query_id == query_id
+    assert trace["scene_ir"]["scene_kind"] == expected_scene_kind
     assert trace["scene_ir"]["scene_id"] == "pattern_grid"
-    assert trace["query_spec"]["query_id"] == "grid_color_violation"
+    assert trace["query_spec"]["query_id"] == query_id
     assert execution["scene_variant"] == "numbered_grid"
-    assert execution["query_id"] == "grid_color_violation"
+    assert execution["query_id"] == query_id
+    assert execution["question_format"] == expected_question_format
+    assert execution["pattern_rule"] == f"{group_axis}_uniform_color"
+    assert execution["color_group_axis"] == group_axis
     assert int(out.answer_gt.value) == 5
     assert out.annotation_gt.type == "bbox"
     assert trace["projected_annotation"]["type"] == "bbox"
@@ -196,12 +217,12 @@ def test_icons_pattern_grid_color_violation_contract_matches_scene() -> None:
         str(record["role"])
         for record in style["text_legibility"]["records"]
     } >= {"icon_panel_header_text", "icon_cell_label_text"}
-    exact_match, plausible_indices = _plausible_grid_color_indices(
+    plausible_indices = _uniform_color_violation_indices(
         list(execution["observed_grid_color_levels"]),
         grid_rows=int(execution["grid_rows"]),
         grid_cols=int(execution["grid_cols"]),
+        group_axis=group_axis,
     )
-    assert exact_match is False
     assert plausible_indices == {4}
 
 
@@ -222,7 +243,8 @@ def test_icons_pattern_structured_violation_prompt_example_matches_contract() ->
     (
         (IconsPatternSequenceRotationViolationTask, {}, set(range(2, 7))),
         (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_size_violation"}, set(range(1, 10))),
-        (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_color_violation"}, set(range(1, 10))),
+        (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_row_color_violation"}, set(range(1, 10))),
+        (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_column_color_violation"}, set(range(1, 10))),
     ),
 )
 def test_icons_pattern_violation_balances_answers_by_default(task_cls, params: dict, expected_answers: set[int]) -> None:

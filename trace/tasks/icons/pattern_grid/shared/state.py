@@ -28,11 +28,13 @@ class PatternGridSpec:
     row_step_levels: int
     col_step_levels: int
     violation_level: int
+    pattern_rule: str
     shared_rotation_degrees: int
     level_support: Tuple[int, ...]
     plausible_rule_count: int
     total_rule_support: int
     answer_index_probabilities: Dict[str, float]
+    color_group_axis: str = ""
     level_names: Tuple[str, ...] = ()
     color_ladder_rgb: Tuple[RGB, ...] = ()
     size_level_nominal_sizes_px: Dict[int, int] | None = None

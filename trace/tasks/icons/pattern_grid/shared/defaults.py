@@ -66,9 +66,6 @@ class PatternGridDefaults:
     color_level_names: Tuple[str, ...] = DEFAULT_COLOR_NAMES
     color_ladder_rgb: Tuple[Tuple[int, int, int], ...] = DEFAULT_COLOR_LADDER_RGB
     color_levels: Tuple[int, ...] = tuple(range(len(DEFAULT_COLOR_LADDER_RGB)))
-    base_color_level_candidates: Tuple[int, ...] = tuple(range(len(DEFAULT_COLOR_LADDER_RGB)))
-    row_step_color_candidates: Tuple[int, ...] = (-2, -1, 0, 1, 2)
-    col_step_color_candidates: Tuple[int, ...] = (-2, -1, 0, 1, 2)
     size_levels: Tuple[int, ...] = (1, 2, 3, 4, 5)
     base_size_level_candidates: Tuple[int, ...] = (1, 2, 3, 4, 5)
     row_step_size_candidates: Tuple[int, ...] = (-1, 0, 1)

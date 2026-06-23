@@ -19,7 +19,6 @@ from .shared.annotations import violating_cell_bbox_annotation
 from .shared.defaults import DOMAIN, SCENE_ID, PatternGridDefaults
 from .shared.output import (
     pattern_grid_render_style,
-    pattern_rule_for_axis,
     question_format_for_axis,
     scene_kind_for_axis,
 )
@@ -30,19 +29,27 @@ from .shared.styles import resolve_pattern_grid_render_params
 
 
 TASK_ID = "task_icons__pattern_grid__attribute_pattern_violation_index"
-QUERY_GRID_COLOR_VIOLATION = "grid_color_violation"
+QUERY_GRID_ROW_COLOR_VIOLATION = "grid_row_color_violation"
+QUERY_GRID_COLUMN_COLOR_VIOLATION = "grid_column_color_violation"
 QUERY_GRID_SIZE_VIOLATION = "grid_size_violation"
-SUPPORTED_QUERY_IDS: Tuple[str, str] = (
-    QUERY_GRID_COLOR_VIOLATION,
+SUPPORTED_QUERY_IDS: Tuple[str, str, str] = (
+    QUERY_GRID_ROW_COLOR_VIOLATION,
+    QUERY_GRID_COLUMN_COLOR_VIOLATION,
     QUERY_GRID_SIZE_VIOLATION,
 )
 QUERY_IDS = SUPPORTED_QUERY_IDS
 _QUERY_TO_ATTRIBUTE_AXIS = {
-    QUERY_GRID_COLOR_VIOLATION: "color",
+    QUERY_GRID_ROW_COLOR_VIOLATION: "color",
+    QUERY_GRID_COLUMN_COLOR_VIOLATION: "color",
     QUERY_GRID_SIZE_VIOLATION: "size",
 }
+_QUERY_TO_COLOR_GROUP_AXIS = {
+    QUERY_GRID_ROW_COLOR_VIOLATION: "row",
+    QUERY_GRID_COLUMN_COLOR_VIOLATION: "column",
+}
 _QUERY_TO_PROMPT_KEY = {
-    QUERY_GRID_COLOR_VIOLATION: "question_text_grid_color_violation",
+    QUERY_GRID_ROW_COLOR_VIOLATION: "question_text_grid_row_color_violation",
+    QUERY_GRID_COLUMN_COLOR_VIOLATION: "question_text_grid_column_color_violation",
     QUERY_GRID_SIZE_VIOLATION: "question_text_grid_size_violation",
 }
 
@@ -61,7 +68,7 @@ def _select_query(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, D
         instance_seed=int(instance_seed),
         params=params,
         supported_query_ids=SUPPORTED_QUERY_IDS,
-        default_query_id=QUERY_GRID_COLOR_VIOLATION,
+        default_query_id=QUERY_GRID_ROW_COLOR_VIOLATION,
         task_id=TASK_ID,
         namespace=f"{TASK_ID}.query",
     )
@@ -80,9 +87,21 @@ def _question_text_for_query(query_id: str, prompt_defaults: Mapping[str, Any]) 
 def _axis_relation_payload(axis: str, spec, rendered_scene) -> Dict[str, Any]:
     """Build the axis-specific relation trace payload."""
 
+    color_group_levels = []
+    if str(axis) == "color":
+        if str(spec.color_group_axis) == "row":
+            color_group_levels = [
+                int(spec.expected_levels[int(row) * int(spec.grid_cols)])
+                for row in range(int(spec.grid_rows))
+            ]
+        elif str(spec.color_group_axis) == "column":
+            color_group_levels = [
+                int(spec.expected_levels[int(col)])
+                for col in range(int(spec.grid_cols))
+            ]
     relations: Dict[str, Any] = {
         "attribute_axis": str(axis),
-        "pattern_rule": pattern_rule_for_axis(str(axis)),
+        "pattern_rule": str(spec.pattern_rule),
         "pattern_icon_id": str(rendered_scene.pattern_icon_id),
         "level_support": [int(value) for value in spec.level_support],
         "base_level": int(spec.base_level),
@@ -96,13 +115,13 @@ def _axis_relation_payload(axis: str, spec, rendered_scene) -> Dict[str, Any]:
     if str(axis) == "color":
         relations.update(
             {
-                "pattern_rule": "row_col_color_level_offsets",
+                "pattern_rule": str(spec.pattern_rule),
+                "color_group_axis": str(spec.color_group_axis),
                 "color_levels": [int(value) for value in spec.level_support],
                 "color_level_names": [str(value) for value in spec.level_names],
                 "color_ladder_rgb": [list(color) for color in spec.color_ladder_rgb],
                 "base_color_level": int(spec.base_level),
-                "row_step_color_levels": int(spec.row_step_levels),
-                "col_step_color_levels": int(spec.col_step_levels),
+                f"{spec.color_group_axis}_color_levels": [int(value) for value in color_group_levels],
                 "expected_grid_color_levels": [int(value) for value in spec.expected_levels],
                 "observed_grid_color_levels": [int(value) for value in spec.observed_levels],
             }
@@ -137,7 +156,7 @@ def _axis_execution_payload(axis: str, spec, rendered_scene) -> Dict[str, Any]:
 
     payload: Dict[str, Any] = {
         "attribute_axis": str(axis),
-        "pattern_rule": pattern_rule_for_axis(str(axis)),
+        "pattern_rule": str(spec.pattern_rule),
         "level_support": [int(value) for value in spec.level_support],
         "base_level": int(spec.base_level),
         "row_step_levels": int(spec.row_step_levels),
@@ -147,6 +166,16 @@ def _axis_execution_payload(axis: str, spec, rendered_scene) -> Dict[str, Any]:
         "observed_levels": [int(value) for value in spec.observed_levels],
     }
     if str(axis) == "color":
+        if str(spec.color_group_axis) == "row":
+            color_group_levels = [
+                int(spec.expected_levels[int(row) * int(spec.grid_cols)])
+                for row in range(int(spec.grid_rows))
+            ]
+        else:
+            color_group_levels = [
+                int(spec.expected_levels[int(col)])
+                for col in range(int(spec.grid_cols))
+            ]
         expected_rgbs = [list(spec.color_ladder_rgb[int(level)]) for level in spec.expected_levels]
         observed_rgbs = [list(spec.color_ladder_rgb[int(level)]) for level in spec.observed_levels]
         payload.update(
@@ -154,9 +183,9 @@ def _axis_execution_payload(axis: str, spec, rendered_scene) -> Dict[str, Any]:
                 "color_levels": [int(value) for value in spec.level_support],
                 "color_level_names": [str(value) for value in spec.level_names],
                 "color_ladder_rgb": [list(color) for color in spec.color_ladder_rgb],
+                "color_group_axis": str(spec.color_group_axis),
                 "base_color_level": int(spec.base_level),
-                "row_step_color_levels": int(spec.row_step_levels),
-                "col_step_color_levels": int(spec.col_step_levels),
+                f"{spec.color_group_axis}_color_levels": [int(value) for value in color_group_levels],
                 "violation_color_level": int(spec.violation_level),
                 "expected_grid_color_levels": [int(value) for value in spec.expected_levels],
                 "observed_grid_color_levels": [int(value) for value in spec.observed_levels],
@@ -200,8 +229,10 @@ class IconsPatternGridAttributePatternViolationTask:
 
         query_id, query_probabilities, task_params = _select_query(int(instance_seed), params)
         attribute_axis = str(_QUERY_TO_ATTRIBUTE_AXIS[str(query_id)])
+        color_group_axis = str(_QUERY_TO_COLOR_GROUP_AXIS.get(str(query_id), ""))
         spec = resolve_pattern_grid_spec(
             attribute_axis=str(attribute_axis),
+            color_group_axis=str(color_group_axis),
             instance_seed=int(instance_seed),
             params=task_params,
             generation_defaults=_GEN_DEFAULTS,
@@ -271,7 +302,7 @@ class IconsPatternGridAttributePatternViolationTask:
             },
             "scene_ir": {
                 **common_ids,
-                "scene_kind": scene_kind_for_axis(attribute_axis),
+                "scene_kind": scene_kind_for_axis(attribute_axis, color_group_axis=str(spec.color_group_axis)),
                 "entities": [
                     *[dict(cell) for cell in rendered_scene.scene_cells],
                     *[dict(instance) for instance in rendered_scene.scene_icon_instances],
@@ -291,6 +322,8 @@ class IconsPatternGridAttributePatternViolationTask:
                         "scene_id": taxonomy.scene_id,
                         "query_id_probabilities": dict(query_probabilities),
                         "attribute_axis": str(attribute_axis),
+                        "color_group_axis": str(spec.color_group_axis),
+                        "pattern_rule": str(spec.pattern_rule),
                         "grid_rows": int(spec.grid_rows),
                         "grid_cols": int(spec.grid_cols),
                         "answer_index": int(spec.answer_index),
@@ -333,12 +366,13 @@ class IconsPatternGridAttributePatternViolationTask:
                 "total_rule_support": int(spec.total_rule_support),
                 "cell_box_width_px": int(rendered_scene.cell_box_width_px),
                 "cell_box_height_px": int(rendered_scene.cell_box_height_px),
-                "question_format": question_format_for_axis(attribute_axis),
+                "question_format": question_format_for_axis(attribute_axis, color_group_axis=str(spec.color_group_axis)),
                 **axis_execution,
             },
             "witness_symbolic": {
                 "attribute_axis": str(attribute_axis),
-                "pattern_rule": pattern_rule_for_axis(attribute_axis),
+                "color_group_axis": str(spec.color_group_axis),
+                "pattern_rule": str(spec.pattern_rule),
                 "expected_levels": [int(value) for value in spec.expected_levels],
                 "observed_levels": [int(value) for value in spec.observed_levels],
                 "violation_cell_index": int(spec.violation_cell_index),

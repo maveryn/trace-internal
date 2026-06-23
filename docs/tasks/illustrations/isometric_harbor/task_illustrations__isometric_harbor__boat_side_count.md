@@ -1,0 +1,47 @@
+# `task_illustrations__isometric_harbor__boat_side_count`
+
+## Summary
+- Domain: `illustrations`
+- Scene id: `isometric_harbor`
+- Implementation scene package: `isometric_harbor`
+- Implementation source: `trace/tasks/illustrations/isometric_harbor/boat_side_count.py`
+
+## Task Contract
+Counts boats docked on the image-left or image-right side of the main dock in an isometric harbor scene.
+
+## Program Contract
+`count(boat where dock_side(boat, main_dock)=side); scene=isometric_harbor; scope=boat_side_count`
+
+## Query Branches
+
+| Query id | Program schema |
+| --- | --- |
+| `left_side_boat_count` | `count(boat where dock_side(boat, main_dock)=image_left); scene=isometric_harbor; scope=boat_side_count` |
+| `right_side_boat_count` | `count(boat where dock_side(boat, main_dock)=image_right); scene=isometric_harbor; scope=boat_side_count` |
+
+## Program Metadata
+- Program signatures: `count.spatial_side_object_filter`
+- Base program contract: `count(boat where dock_side(boat, main_dock)=side); scene=isometric_harbor; scope=boat_side_count`
+- Parameter axes: `canvas_profile`, `target_count`, `dock_position`, `boat_type`, `dock_context_object_placement`, `palette`
+- Arguments:
+  - `side`: image-relative dock side; allowed `image_left|image_right`; source `query_id`
+  - `boat`: entity with `object_type=boat`; source `scene_ir.entities[]`
+  - `dock_side`: side metadata assigned by the renderer from each boat's mooring tile; source `scene_ir.entities[].metadata.dock_side`
+- Argument metadata status: `curated`
+- Supported query ids: `left_side_boat_count`, `right_side_boat_count`
+- `scalar_annotation_checked`: not applicable; annotation schema is `bbox_set`
+
+## Answer Contract
+- Answer schema: `integer`
+- Generator `answer_gt.type`: `integer`
+- Answer range: `0..5`
+
+## Annotation Contract
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
+- Annotation contains one bounding box for each counted boat; use `[]` when the answer is `0`.
+
+## Prompt And Trace Requirements
+- Prompt text must come from `prompts/illustrations/isometric_harbor/illustrations_isometric_harbor_v1.json`.
+- Prompts must say `image-left side` or `image-right side` of the main dock to avoid world-frame ambiguity.
+- Render-only attributes such as boat style, dock jitter, canvas profile, cargo placement, dock-post placement, and water palette must not be query ids.

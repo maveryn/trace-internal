@@ -1,0 +1,28 @@
+generation:
+  shared:
+    balanced_sampling: true
+  task_overrides:
+    task_illustrations__isometric_harbor__boat_side_count:
+      query_id_support:
+        - left_side_boat_count
+        - right_side_boat_count
+      answer_count_support:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+
+rendering:
+  shared:
+    canvas_profile_support:
+      - landscape
+      - square
+
+prompt:
+  task_overrides:
+    task_illustrations__isometric_harbor__boat_side_count:
+      bundle_id: illustrations_isometric_harbor_v1
+      scene_key: isometric_harbor_dock_canvas
+      task_key: boat_side_count_task

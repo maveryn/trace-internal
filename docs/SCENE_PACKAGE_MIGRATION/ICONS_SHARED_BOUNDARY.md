@@ -71,8 +71,7 @@ Approved domain-shared categories:
   repo-global helper is not already sufficient;
 - panel, bbox, placement, and grid-slot primitives that are genuinely reused by
   multiple scene packages;
-- anchor marker drawing, because `reference_canvas` and `two_anchor` both use
-  reference markers;
+- anchor marker drawing, when multiple icon scenes use reference markers;
 - visual option-grid primitives shared by true option-image scenes such as
   `icon_cutout`, `mirror_grid`, and `single_transform_options`.
 

@@ -65,13 +65,15 @@ def test_games_solitaire_defaults_expose_scene_axes_and_prompt_bundle() -> None:
     assert list(generation["same_suit_run_length_target_answer_support"]) == [1, 2, 3, 4, 5, 6]
     assert int(rendering["canvas_width"]) == 1060
     assert int(rendering["card_width_px"]) > 0
-    assert str(prompt["bundle_id"]) == "games_solitaire_v0"
-    assert "foundation" in str(prompt["foundation_rule_text"])
+    assert str(prompt["bundle_id"]) == "games_solitaire_v1"
+    bundle = json.loads(Path("prompts/games/solitaire/games_solitaire_v1.json").read_text(encoding="utf-8"))
+    assert "foundation" in str(bundle["code_prompt_defaults"]["foundation_rule_text"])
 
 
 def test_games_solitaire_prompt_bundle_has_four_queries() -> None:
-    bundle = json.loads(Path("prompts/games/solitaire/games_solitaire_v0.json").read_text(encoding="utf-8"))
-    assert set(bundle["query_templates"].keys()) == {
+    bundle = json.loads(Path("prompts/games/solitaire/games_solitaire_v1.json").read_text(encoding="utf-8"))
+    assert bundle["schema_version"] == "v1"
+    assert set(bundle["templates"]["query"].keys()) == {
         "move_legality_label",
         "foundation_ready_count",
         "tableau_sequence_count",
@@ -100,18 +102,19 @@ def test_games_solitaire_move_legality_has_one_legal_option() -> None:
         if legal:
             legal_labels.append(str(option["label"]))
 
-    assert out.answer_gt.type == "string"
+    assert out.answer_gt.type == "option_letter"
     assert legal_labels == [str(out.answer_gt.value)]
     assert execution["answer_option_label"] == out.answer_gt.value
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert set(out.annotation_gt.value) == {"source_card", "target"}
     assert set(execution["annotation_entity_ids"]) == {
         execution["legal_source_id"],
         execution["legal_target_id"],
     }
     assert out.scene_id == "solitaire"
-    assert out.query_id == "move_legality_label"
-    assert out.trace_payload["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert out.query_id == "single"
+    assert execution["prompt_query_key"] == "move_legality_label"
+    assert out.trace_payload["projected_annotation"]["type"] == "bbox_map"
     assert out.trace_payload["render_spec"]["solitaire_tableau_style"]["style_variant"]
     assert out.trace_payload["render_spec"]["text_style"]["font_family"]
 
@@ -128,7 +131,8 @@ def test_games_solitaire_foundation_ready_count_matches_trace() -> None:
     assert int(out.answer_gt.value) == 3
     assert len(execution["ready_card_ids"]) == 3
     assert int(execution["target_answer"]) == 3
-    assert out.query_id == "foundation_ready_count"
+    assert out.query_id == "single"
+    assert execution["prompt_query_key"] == "foundation_ready_count"
     assert len(out.annotation_gt.value) >= 4
 
 
@@ -144,7 +148,8 @@ def test_games_solitaire_tableau_sequence_count_matches_trace() -> None:
     assert int(out.answer_gt.value) == 4
     assert int(execution["valid_sequence_pair_count"]) == 4
     assert len(execution["valid_sequence_pairs"]) == 4
-    assert out.query_id == "tableau_sequence_count"
+    assert out.query_id == "single"
+    assert execution["prompt_query_key"] == "tableau_sequence_count"
     assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
     assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
 
@@ -162,7 +167,8 @@ def test_games_solitaire_same_suit_run_length_matches_trace() -> None:
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 5
-    assert out.query_id == "same_suit_descending_run_length"
+    assert out.query_id == "single"
+    assert execution["prompt_query_key"] == "same_suit_descending_run_length"
     assert run_ids == list(execution["same_suit_run_card_ids"])
     assert len(run_ids) == 5
     assert execution["annotation_entity_ids"] == run_ids

@@ -2,14 +2,19 @@
 
 ## Contract
 1. Domain: `games`
-2. Scene: `solitaire`
-3. Scene id: `solitaire`
-4. Public task id: `task_games__solitaire__tableau_sequence_count`
-5. Supported `query_id` values: `tableau_sequence_count`
-6. Answer schema: `integer_count`
-7. Annotation schema: `bbox_set`
-8. Program schema: `count(tableau_descending_alternating_sequences(tableau_columns)); scene=solitaire; scope=tableau_sequence_count`
+2. Scene id: `solitaire`
+3. Public task id: `task_games__solitaire__tableau_sequence_count`
+4. Supported `query_id` values: `single`
+5. Answer schema: `integer`
+6. Annotation schema: `bbox_set`
+7. Program schema: `count(adjacent_tableau_pairs(descending_one_rank_and_opposite_color)); scene=solitaire; scope=tableau_sequence_count`
+8. Scalar annotation checked: `true`
+
+## Program Contract
+- `count(adjacent_tableau_pairs(descending_one_rank_and_opposite_color)); scene=solitaire; scope=tableau_sequence_count`
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
+1. Count only directly adjacent visible same-column pairs.
+2. A counted pair has the lower card exactly one rank lower than the card above and opposite color.
+3. Annotation contains unique card bboxes for cards participating in counted adjacent pairs.
+4. Prompt wording comes from `prompts/games/solitaire/games_solitaire_v1.json`.

@@ -2,67 +2,52 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any, Mapping
 
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
 
-from .shared.runtime import MeasuringToolsRuntime, SCENE_ID
-
+from ._lifecycle import run_measuring_public_entry
+from .shared.rendering import render_angle_measurement
+from .shared.sampling import build_angle_measurement_plan
+from .shared.state import AngleMeasurementPlan
 
 TASK_ID = "task_geometry__measuring_tools__shape_angle_value_quadrilateral_vertex_protractor_reading"
-QUERY_ID = "quadrilateral_vertex_protractor_reading"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
-PROMPT_TASK_KEY = "shape_angle_value_query"
+SUPPORTED_QUERY_IDS: tuple[str, ...] = ("single",)
+MEASUREMENT_KIND = "quadrilateral_vertex_protractor_reading"
+PROMPT_TASK_KEY = "shape_angle_value_quadrilateral_vertex_protractor_reading"
+OBJECT_DESCRIPTION = "a quadrilateral with a protractor placed at the marked vertex angle"
+ANNOTATION_KEYS = ("angle_vertex", "baseline_ray_point", "target_ray_point", "protractor_reading_tick")
 
 
-def _select_query(instance_seed: int, params: Dict[str, Any]) -> tuple[str, dict[str, float], Dict[str, Any]]:
-    return select_task_query_id(
-        instance_seed=int(instance_seed),
+def _build_plan(instance_seed: int, params: Mapping[str, Any], gen_defaults: Mapping[str, Any]) -> AngleMeasurementPlan:
+    """Bind quadrilateral-angle semantics to the protractor support."""
+
+    return build_angle_measurement_plan(
         params=params,
-        supported_query_ids=SUPPORTED_QUERY_IDS,
-        default_query_id=QUERY_ID,
-        task_id=TASK_ID,
-        namespace=f"{TASK_ID}.query",
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        measurement_kind=MEASUREMENT_KIND,
+        shape_kind="quadrilateral",
+        answer_namespace=f"{TASK_ID}.target_angle",
     )
 
 
 @register_task
 class GeometryMeasuringToolsShapeAngleValueQuadrilateralVertexProtractorReadingTask:
-    """Read a quadrilateral vertex angle using a visible protractor."""
+    """Task-owned quadrilateral-angle protractor reading objective."""
 
     task_id = TASK_ID
     domain = "geometry"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
+    build_plan = staticmethod(_build_plan)
+    render_measurement = staticmethod(render_angle_measurement)
+    prompt_task_key = PROMPT_TASK_KEY
+    object_description = OBJECT_DESCRIPTION
+    annotation_keys = ANNOTATION_KEYS
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities, task_params = _select_query(int(instance_seed), params)
-        runtime = MeasuringToolsRuntime()
-        runtime.task_id = TASK_ID
-        runtime.query_ids = (str(query_id),)
-        runtime.prompt_task_key = PROMPT_TASK_KEY
-        artifact = runtime.generate(
-            int(instance_seed),
-            params={**task_params, "query_id": str(query_id)},
-            max_attempts=int(max_attempts),
-        )
-        artifact.trace_payload["query_spec"]["params"]["query_id_probabilities"] = dict(query_probabilities)
-        artifact.trace_payload["execution_trace"]["query_id_probabilities"] = dict(query_probabilities)
-        return TaskOutput(
-            prompt=str(artifact.prompt),
-            answer_gt=artifact.answer_gt,
-            annotation_gt=artifact.annotation_gt,
-            image=artifact.image,
-            image_id=str(artifact.image_id),
-            trace_payload=dict(artifact.trace_payload),
-            task_versions=dict(artifact.task_versions),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
-            prompt_variants=dict(artifact.prompt_variants),
-        )
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        return run_measuring_public_entry(self, int(instance_seed), params=params, max_attempts=max_attempts)
 
 
 __all__ = ["GeometryMeasuringToolsShapeAngleValueQuadrilateralVertexProtractorReadingTask"]

@@ -2,67 +2,53 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any, Mapping
 
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
 
-from .shared.runtime import MeasuringToolsRuntime, SCENE_ID
-
+from ._lifecycle import run_measuring_public_entry
+from .shared.rendering import render_length_measurement
+from .shared.sampling import build_ruler_length_plan
+from .shared.state import LengthMeasurementPlan
 
 TASK_ID = "task_geometry__measuring_tools__shape_length_value_circle_radius_ruler_reading"
-QUERY_ID = "circle_radius_ruler_reading"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
-PROMPT_TASK_KEY = "shape_length_value_query"
+SUPPORTED_QUERY_IDS: tuple[str, ...] = ("single",)
+MEASUREMENT_KIND = "circle_radius_ruler_reading"
+PROMPT_TASK_KEY = "shape_length_value_circle_radius_ruler_reading"
+OBJECT_DESCRIPTION = "a circle with a ruler placed alongside the marked radius"
+ANNOTATION_KEYS = ("measure_start", "measure_end", "ruler_start_tick", "ruler_end_tick")
 
 
-def _select_query(instance_seed: int, params: Dict[str, Any]) -> tuple[str, dict[str, float], Dict[str, Any]]:
-    return select_task_query_id(
-        instance_seed=int(instance_seed),
+def _build_plan(instance_seed: int, params: Mapping[str, Any], gen_defaults: Mapping[str, Any]) -> LengthMeasurementPlan:
+    """Bind circle-radius semantics to a ruler readout."""
+
+    return build_ruler_length_plan(
         params=params,
-        supported_query_ids=SUPPORTED_QUERY_IDS,
-        default_query_id=QUERY_ID,
-        task_id=TASK_ID,
-        namespace=f"{TASK_ID}.query",
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        measurement_kind=MEASUREMENT_KIND,
+        shape_kind="circle",
+        answer_namespace=f"{TASK_ID}.target_radius",
+        offset_namespace=f"{TASK_ID}.ruler_start_cm",
     )
 
 
 @register_task
 class GeometryMeasuringToolsShapeLengthValueCircleRadiusRulerReadingTask:
-    """Read a circle radius using a visible ruler."""
+    """Task-owned circle-radius ruler reading objective."""
 
     task_id = TASK_ID
     domain = "geometry"
-    scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
+    build_plan = staticmethod(_build_plan)
+    render_measurement = staticmethod(render_length_measurement)
+    prompt_task_key = PROMPT_TASK_KEY
+    object_description = OBJECT_DESCRIPTION
+    annotation_keys = ANNOTATION_KEYS
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities, task_params = _select_query(int(instance_seed), params)
-        runtime = MeasuringToolsRuntime()
-        runtime.task_id = TASK_ID
-        runtime.query_ids = (str(query_id),)
-        runtime.prompt_task_key = PROMPT_TASK_KEY
-        artifact = runtime.generate(
-            int(instance_seed),
-            params={**task_params, "query_id": str(query_id)},
-            max_attempts=int(max_attempts),
-        )
-        artifact.trace_payload["query_spec"]["params"]["query_id_probabilities"] = dict(query_probabilities)
-        artifact.trace_payload["execution_trace"]["query_id_probabilities"] = dict(query_probabilities)
-        return TaskOutput(
-            prompt=str(artifact.prompt),
-            answer_gt=artifact.answer_gt,
-            annotation_gt=artifact.annotation_gt,
-            image=artifact.image,
-            image_id=str(artifact.image_id),
-            trace_payload=dict(artifact.trace_payload),
-            task_versions=dict(artifact.task_versions),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
-            prompt_variants=dict(artifact.prompt_variants),
-        )
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        return run_measuring_public_entry(self, int(instance_seed), params=params, max_attempts=max_attempts)
 
 
 __all__ = ["GeometryMeasuringToolsShapeLengthValueCircleRadiusRulerReadingTask"]

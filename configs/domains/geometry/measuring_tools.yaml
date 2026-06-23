@@ -18,32 +18,3 @@ prompt:
   shared:
     bundle_id: geometry_measuring_tools_v0
     scene_key: measuring_tools_scene
-  task_overrides:
-    task_geometry__measuring_tools__shape_length_value_polygon_side_ruler_reading:
-      task_key: shape_length_value_query
-      object_description: a polygon with a ruler placed alongside the marked side
-      annotation_hint: set "annotation" to a JSON object with exactly the pixel point keys "measure_start", "measure_end", "ruler_start_tick", and "ruler_end_tick"; each value is a point [x,y]
-      answer_hint_number: set "answer" to the measured length in centimeters as an integer
-      json_example: '{"annotation":{"measure_start":[190,280],"measure_end":[442,280],"ruler_start_tick":[190,352],"ruler_end_tick":[442,352]},"answer":6}'
-      json_example_answer_only: '{"answer":6}'
-    task_geometry__measuring_tools__shape_length_value_circle_radius_ruler_reading:
-      task_key: shape_length_value_query
-      object_description: a circle with a ruler placed alongside the marked radius
-      annotation_hint: set "annotation" to a JSON object with exactly the pixel point keys "measure_start", "measure_end", "ruler_start_tick", and "ruler_end_tick"; each value is a point [x,y]
-      answer_hint_number: set "answer" to the measured length in centimeters as an integer
-      json_example: '{"annotation":{"measure_start":[190,280],"measure_end":[442,280],"ruler_start_tick":[190,352],"ruler_end_tick":[442,352]},"answer":6}'
-      json_example_answer_only: '{"answer":6}'
-    task_geometry__measuring_tools__shape_angle_value_triangle_vertex_protractor_reading:
-      task_key: shape_angle_value_query
-      object_description: a triangle with a protractor placed at the marked vertex angle
-      annotation_hint: set "annotation" to a JSON object with exactly the pixel point keys "angle_vertex", "baseline_ray_point", "target_ray_point", and "protractor_reading_tick"; each value is a point [x,y]
-      answer_hint_number: set "answer" to the measured angle in degrees as an integer
-      json_example: '{"annotation":{"angle_vertex":[255,405],"baseline_ray_point":[487,405],"target_ray_point":[371,204],"protractor_reading_tick":[367,211]},"answer":60}'
-      json_example_answer_only: '{"answer":60}'
-    task_geometry__measuring_tools__shape_angle_value_quadrilateral_vertex_protractor_reading:
-      task_key: shape_angle_value_query
-      object_description: a quadrilateral with a protractor placed at the marked vertex angle
-      annotation_hint: set "annotation" to a JSON object with exactly the pixel point keys "angle_vertex", "baseline_ray_point", "target_ray_point", and "protractor_reading_tick"; each value is a point [x,y]
-      answer_hint_number: set "answer" to the measured angle in degrees as an integer
-      json_example: '{"annotation":{"angle_vertex":[255,405],"baseline_ray_point":[487,405],"target_ray_point":[371,204],"protractor_reading_tick":[367,211]},"answer":60}'
-      json_example_answer_only: '{"answer":60}'

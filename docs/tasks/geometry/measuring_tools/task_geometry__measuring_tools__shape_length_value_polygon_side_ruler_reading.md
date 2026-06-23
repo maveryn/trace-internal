@@ -3,12 +3,12 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `measuring_tools`
-5. Query ids: `polygon_side_ruler_reading`
-6. Answer schema: `number`
-7. Annotation schema: `keyed_point_map`
+5. Supported `query_id`s: `single`
+6. Answer schema: `integer`
+7. Annotation schema: `point_map`
 
 ## Program Contract
-- `solve_formula(visible_measuring_tools_measurements, unknown_role=length_measure, formula_schema=polygon_side_ruler_reading); scene=measuring_tools; scope=shape_length_value_polygon_side_ruler_reading`
+- `read_visible_measurement_tool(tool=ruler, target=polygon_side, unit=centimeters, output_role=length_measure); scene=measuring_tools; scope=shape_length_value_polygon_side_ruler_reading`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `measuring_tools`.

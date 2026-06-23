@@ -39,6 +39,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
             "graph_paper",
             "incircle_tangents",
             "marked_polygon_equation",
+            "measuring_tools",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
@@ -72,6 +73,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
             "graph_paper",
             "incircle_tangents",
             "marked_polygon_equation",
+            "measuring_tools",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),

@@ -3,12 +3,12 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `measuring_tools`
-5. Query ids: `quadrilateral_vertex_protractor_reading`
-6. Answer schema: `number`
-7. Annotation schema: `keyed_point_map`
+5. Supported `query_id`s: `single`
+6. Answer schema: `integer`
+7. Annotation schema: `point_map`
 
 ## Program Contract
-- `derive_geometry_metric(visible_measuring_tools_measurements, derivation_rule=quadrilateral_vertex_protractor_reading, output_role=angle_measure); scene=measuring_tools; scope=shape_angle_value_quadrilateral_vertex_protractor_reading`
+- `read_visible_measurement_tool(tool=protractor, target=quadrilateral_vertex_angle, unit=degrees, output_role=angle_measure); scene=measuring_tools; scope=shape_angle_value_quadrilateral_vertex_protractor_reading`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `measuring_tools`.

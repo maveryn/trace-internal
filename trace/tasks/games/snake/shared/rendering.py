@@ -63,17 +63,17 @@ def build_games_snake_theme(*, style_variant: str) -> SnakeTheme:
     style = str(style_variant)
     if style == "neon":
         return SnakeTheme(
-            board_fill_rgb=(23, 28, 45),
-            board_border_rgb=(117, 241, 224),
-            grid_rgb=(48, 108, 132),
-            cell_alt_rgba=(53, 226, 205, 18),
+            board_fill_rgb=(229, 235, 250),
+            board_border_rgb=(72, 80, 126),
+            grid_rgb=(176, 187, 214),
+            cell_alt_rgba=(255, 255, 255, 66),
             head_rgb=(250, 218, 73),
-            head_outline_rgb=(255, 248, 190),
-            body_rgb=(64, 187, 255),
-            body_outline_rgb=(218, 246, 255),
+            head_outline_rgb=(74, 68, 38),
+            body_rgb=(67, 117, 202),
+            body_outline_rgb=(31, 63, 126),
             food_rgb=(255, 78, 118),
-            food_outline_rgb=(255, 226, 236),
-            food_leaf_rgb=(87, 237, 166),
+            food_outline_rgb=(112, 42, 62),
+            food_leaf_rgb=(71, 160, 98),
             eye_rgb=(22, 26, 40),
         )
     if style == "forest":

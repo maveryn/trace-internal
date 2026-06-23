@@ -133,13 +133,27 @@ def make_cluster_object(
 ) -> Dict[str, Any]:
     """Create a renderable object spec from a semantic count item."""
 
+    return move_cluster_object(
+        make_cluster_object_template(rng=rng, object_id=str(object_id), item=item),
+        xy=xy,
+    )
+
+
+def make_cluster_object_template(
+    *,
+    rng,
+    object_id: str,
+    item: ClusterSequenceItem,
+) -> Dict[str, Any]:
+    """Create a reusable object spec whose dimensions/style are fixed before placement."""
+
     dimensions_xyz, dimension_scale = sample_scaled_dimensions(rng=rng, shape_type=str(item.shape_type))
     object_name = object_name_for_shape(str(item.shape_type))
     spec = _make_object_spec(
         object_id=str(object_id),
         shape_type=str(item.shape_type),
         object_role="candidate",
-        xy=tuple(float(value) for value in xy),
+        xy=(0.0, 0.0),
         dimensions_xyz=dimensions_xyz,
         dimension_scale=float(dimension_scale),
         label=None,
@@ -175,9 +189,24 @@ def make_cluster_object(
                 float(rng.uniform(-float(OBJECT_CLUSTER_ORIENTATION_DEGREES), float(OBJECT_CLUSTER_ORIENTATION_DEGREES))),
                 3,
             ),
+            "render_order_bias": round(float(rng.uniform(-0.035, 0.035)), 5),
         }
     )
     return spec
+
+
+def move_cluster_object(spec: Mapping[str, Any], *, xy: Tuple[float, float]) -> Dict[str, Any]:
+    """Return one pre-sampled object spec moved to a new floor coordinate."""
+
+    moved = dict(spec)
+    _width, _depth, height = (float(value) for value in moved["dimensions_xyz"])
+    moved.update(
+        {
+            "world_xyz": [round(float(xy[0]), 4), round(float(xy[1]), 4), round(float(height * 0.5), 4)],
+            "base_xyz": [round(float(xy[0]), 4), round(float(xy[1]), 4), 0.0],
+        }
+    )
+    return moved
 
 
 def _weighted_cluster_count(rng) -> int:
@@ -317,24 +346,15 @@ def place_cluster_objects(
     return list(placed), dict(layout)
 
 
-def _base_footprint_for_shape(shape_type: str) -> float:
-    """Return a deterministic approximate floor footprint for placement order."""
-
-    width, depth, _height = (float(value) for value in cluster_dimensions(str(shape_type)))
-    return float(0.5 * math.sqrt(float(width) * float(width) + float(depth) * float(depth)))
-
-
-def _projection_frame_for_specs(
-    specs: Sequence[Mapping[str, Any]],
+def _stable_projection_frame(
     *,
     camera,
     render_params: ObjectSceneRenderParams,
     composition_offset: Mapping[str, Any],
 ):
-    """Build the frame used for projection-aware placement checks."""
+    """Build one candidate-placement frame for a camera and offset."""
 
-    reference_points = [point for spec in specs for point in _object_reference_points(spec)]
-    frame = _build_projection_frame(camera=camera, render_params=render_params, point_worlds=reference_points)
+    frame = _build_projection_frame(camera=camera, render_params=render_params, point_worlds=[])
     return apply_composition_offset(frame, composition_offset)
 
 
@@ -405,6 +425,41 @@ def projected_specs_are_valid(
     return True
 
 
+def projected_candidate_bbox_if_valid(
+    candidate: Mapping[str, Any],
+    *,
+    placed_bboxes: Mapping[str, Sequence[float]],
+    camera,
+    frame,
+    render_params: ObjectSceneRenderParams,
+) -> List[float] | None:
+    """Return candidate projected bbox when it passes incremental readability checks."""
+
+    width = int(render_params.canvas_width)
+    height = int(render_params.canvas_height)
+    candidate_bbox = list(_object_screen_bbox(candidate, camera, frame, pad_px=5.0))
+    if not bbox_is_readable(candidate_bbox, width=width, height=height):
+        return None
+    if bbox_area(candidate_bbox) < float(MIN_PROJECTED_OBJECT_AREA_PX):
+        return None
+    if bool(candidate.get("matches_query", False)) and not bbox_is_readable(
+        candidate_bbox,
+        width=width,
+        height=height,
+        min_side_px=float(MIN_RENDERED_BBOX_SIDE_PX),
+    ):
+        return None
+
+    candidate_area = bbox_area(candidate_bbox)
+    for placed_bbox in placed_bboxes.values():
+        overlap = _bbox_intersection_area(candidate_bbox, placed_bbox)
+        if overlap > float(MAX_PAIRWISE_OVERLAP_PX):
+            return None
+        if overlap > float(MAX_PAIRWISE_OVERLAP_FRACTION) * min(candidate_area, bbox_area(placed_bbox)):
+            return None
+    return list(candidate_bbox)
+
+
 def place_cluster_objects_projection_aware(
     *,
     rng,
@@ -417,50 +472,51 @@ def place_cluster_objects_projection_aware(
     """Place clustered objects while checking projected readability incrementally."""
 
     layout = sample_cluster_layout(rng, scene_variant=str(scene_variant), object_count=len(sequence))
+    templates = [
+        make_cluster_object_template(
+            rng=rng,
+            object_id=f"cluster_object_{int(index):02d}",
+            item=item,
+        )
+        for index, item in enumerate(sequence)
+    ]
     ordered_indices = sorted(
         range(len(sequence)),
         key=lambda index: (
             not bool(sequence[index].matches_query),
-            -_base_footprint_for_shape(str(sequence[index].shape_type)),
+            -float(templates[index]["footprint_radius"]),
             int(index),
         ),
     )
+    placement_frame = _stable_projection_frame(
+        camera=camera,
+        render_params=render_params,
+        composition_offset=composition_offset,
+    )
     placed: List[Dict[str, Any]] = []
+    placed_bboxes: Dict[str, List[float]] = {}
     candidate_attempts_total = 0
     candidate_attempts_max = 0
     candidate_attempts_by_object: Dict[str, int] = {}
 
     for original_index in ordered_indices:
-        item = sequence[int(original_index)]
         object_id = f"cluster_object_{int(original_index):02d}"
         for attempt_index in range(720):
             candidate_attempts_total += 1
-            candidate = make_cluster_object(
-                rng=rng,
-                object_id=object_id,
-                item=item,
-                xy=sample_cluster_xy(rng, layout=layout),
-            )
+            candidate = move_cluster_object(templates[int(original_index)], xy=sample_cluster_xy(rng, layout=layout))
             if not can_place_cluster(candidate, placed):
                 continue
-            trial_specs = [*placed, candidate]
-            frame = _projection_frame_for_specs(
-                trial_specs,
+            candidate_bbox = projected_candidate_bbox_if_valid(
+                candidate,
+                placed_bboxes=placed_bboxes,
                 camera=camera,
+                frame=placement_frame,
                 render_params=render_params,
-                composition_offset=composition_offset,
             )
-            annotation_ids = [str(spec["object_id"]) for spec in trial_specs if bool(spec.get("matches_query", False))]
-            if not projected_specs_are_valid(
-                trial_specs,
-                camera=camera,
-                frame=frame,
-                render_params=render_params,
-                annotation_object_ids=annotation_ids,
-            ):
+            if candidate_bbox is None:
                 continue
-            candidate["render_order_bias"] = round(float(rng.uniform(-0.035, 0.035)), 5)
             placed.append(candidate)
+            placed_bboxes[str(object_id)] = list(candidate_bbox)
             attempts_for_object = int(attempt_index + 1)
             candidate_attempts_by_object[str(object_id)] = attempts_for_object
             candidate_attempts_max = max(candidate_attempts_max, attempts_for_object)
@@ -469,17 +525,11 @@ def place_cluster_objects_projection_aware(
             raise ValueError("could not place enough projected-readable clustered 3D objects")
 
     placed_sorted = sorted(placed, key=lambda spec: str(spec["object_id"]))
-    frame = _projection_frame_for_specs(
-        placed_sorted,
-        camera=camera,
-        render_params=render_params,
-        composition_offset=composition_offset,
-    )
     annotation_ids = [str(spec["object_id"]) for spec in placed_sorted if bool(spec.get("matches_query", False))]
     if not projected_specs_are_valid(
         placed_sorted,
         camera=camera,
-        frame=frame,
+        frame=placement_frame,
         render_params=render_params,
         annotation_object_ids=annotation_ids,
         require_spread=True,
@@ -487,7 +537,7 @@ def place_cluster_objects_projection_aware(
         raise ValueError("projected object cluster failed final readability constraints")
 
     placement_meta = {
-        "placement_strategy": "projection_aware_v1",
+        "placement_strategy": "projection_aware_v2",
         "placement_candidate_attempts_total": int(candidate_attempts_total),
         "placement_candidate_attempts_max_per_object": int(candidate_attempts_max),
         "placement_layout_attempts": 1,

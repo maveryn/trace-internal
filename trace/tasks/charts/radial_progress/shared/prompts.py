@@ -10,7 +10,8 @@ from trace.tasks.shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 
-from .progress_chart import SCENE_ID, _Dataset, _PROMPT_DEFAULTS, _query_slots
+from .defaults import prompt_bundle_id
+from .state import SCENE_ID, ProgressDataset
 
 
 DOMAIN = "charts"
@@ -26,10 +27,12 @@ OBJECT_DESCRIPTION_BY_VARIANT = {
 }
 
 
-def dynamic_slots(*, dataset: _Dataset) -> dict[str, Any]:
+def dynamic_slots(*, dataset: ProgressDataset) -> dict[str, Any]:
     return {
         "object_description": str(OBJECT_DESCRIPTION_BY_VARIANT[str(dataset.scene_variant)]),
-        **_query_slots(str(dataset.query_id), dict(dataset.query.params)),
+        "threshold_phrase": str(dataset.question.params.get("threshold_phrase", "")),
+        "range_phrase": str(dataset.question.params.get("range_phrase", "")),
+        "extremum_phrase": str(dataset.question.params.get("extremum_phrase", "")),
     }
 
 
@@ -43,7 +46,7 @@ def build_prompt_artifacts(
     rendered_prompt = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
-        bundle_id=str(_PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
+        bundle_id=str(prompt_bundle_id() or PROMPT_BUNDLE_ID),
         scene_key=SCENE_PROMPT_KEY,
         task_key=EXTREMUM_TASK_PROMPT_KEY if bool(is_label_answer) else COUNT_TASK_PROMPT_KEY,
         query_key=str(prompt_query_key),

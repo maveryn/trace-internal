@@ -116,14 +116,14 @@
     },
     "query:highest_remaining_label": {
       "answer_hint": "set \"answer\" to the exact visible widget label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0,y0,x1,y1] pixel box around the answer widget",
-      "json_example": "{\"annotation\":[[92,154,352,388]],\"answer\":\"Orchid\"}",
+      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the answer widget",
+      "json_example": "{\"annotation\":[92,154,352,388],\"answer\":\"Orchid\"}",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}"
     },
     "query:lowest_remaining_label": {
       "answer_hint": "set \"answer\" to the exact visible widget label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0,y0,x1,y1] pixel box around the answer widget",
-      "json_example": "{\"annotation\":[[92,154,352,388]],\"answer\":\"Orchid\"}",
+      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the answer widget",
+      "json_example": "{\"annotation\":[92,154,352,388],\"answer\":\"Orchid\"}",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}"
     }
   },

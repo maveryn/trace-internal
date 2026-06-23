@@ -1,102 +1,75 @@
-"""Radial-progress remaining-extremum label task."""
-
 from __future__ import annotations
 
-from typing import Any, Dict
+from trace.tasks.registry import register_task
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.output import annotation_payload, build_trace_payload
-from .shared.progress_chart import REMAINING_EXTREMUM_QUERY_IDS, SCENE_ID, _construct_dataset, _resolve_scene_variant
-from .shared.prompts import build_prompt_artifacts, dynamic_slots
-from .shared.runtime import render_radial_progress_dataset
+from ._lifecycle import build_label_dataset_from_frame, build_label_plan, run_radial_progress_task
+from .shared.sampling import (
+    sample_distinct_values,
+    sample_progress_frame,
+)
+from .shared.state import DOMAIN
 
 
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+TASK_ID = "task_charts__radial_progress__extremum_remaining_label"
+HIGHEST_REMAINING_QUERY_ID = "highest_remaining_label"
+LOWEST_REMAINING_QUERY_ID = "lowest_remaining_label"
+SUPPORTED_QUERY_IDS = (HIGHEST_REMAINING_QUERY_ID, LOWEST_REMAINING_QUERY_ID)
+DEFAULT_QUERY_ID = HIGHEST_REMAINING_QUERY_ID
+
+
+def _build_plan(params, instance_seed, selected, probabilities):
+    """Bind remaining-progress extremum direction and annotate the selected widget."""
+
+    frame = sample_progress_frame(params, instance_seed=int(instance_seed))
+    values = sample_distinct_values(
+        params,
+        item_count=int(frame.item_count),
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.values.{selected}",
+    )
+    if str(selected) == HIGHEST_REMAINING_QUERY_ID:
+        target_index = min(range(int(frame.item_count)), key=lambda index: int(values[index]))
+        extremum_phrase = "the most remaining progress"
+        extremum_kind = "highest_remaining"
+    else:
+        target_index = max(range(int(frame.item_count)), key=lambda index: int(values[index]))
+        extremum_phrase = "the least remaining progress"
+        extremum_kind = "lowest_remaining"
+    answer = str(frame.labels[int(target_index)])
+    dataset = build_label_dataset_from_frame(
+        frame=frame,
+        values=values,
+        branch_id=str(selected),
+        branch_probabilities=dict(probabilities),
+        answer=str(answer),
+        annotation_type="bbox",
+        annotation_item_ids=(f"i{int(target_index)}",),
+        question_params={
+            "extremum_phrase": str(extremum_phrase),
+            "remaining_extremum": str(extremum_kind),
+            "target_value": int(values[int(target_index)]),
+            "target_remaining": int(100 - int(values[int(target_index)])),
+        },
+    )
+    return build_label_plan(
+        dataset=dataset,
+        prompt_key=str(selected),
+        scene_probabilities=dict(frame.scene_probabilities),
+    )
 
 
 @register_task
 class ChartsRadialProgressExtremumRemainingLabelTask:
-    """Select the progress widget label with most or least remaining progress."""
-
-    task_id = "task_charts__radial_progress__extremum_remaining_label"
-    domain = "charts"
-    scene_id = SCENE_ID
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "extremum_remaining_label"
-    supported_query_ids = REMAINING_EXTREMUM_QUERY_IDS
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = DEFAULT_QUERY_ID
     default_dataset_enabled = True
+    _build_plan = staticmethod(_build_plan)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id="highest_remaining_label",
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt == 0 else int(hash64(int(instance_seed), self.task_id, attempt))
-            try:
-                return self._generate_once(
-                    int(attempt_seed),
-                    params=task_params,
-                    selected_query_id=str(selected_query_id),
-                    query_probabilities=query_probabilities,
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
-
-    def _generate_once(
-        self,
-        instance_seed: int,
-        *,
-        params: Dict[str, Any],
-        selected_query_id: str,
-        query_probabilities: Dict[str, float],
-    ) -> TaskOutput:
-        scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        dataset = _construct_dataset(
-            query_id=str(selected_query_id),
-            query_probabilities=query_probabilities,
-            scene_variant=str(scene_variant),
-            scene_variant_probabilities=scene_variant_probabilities,
-            params=params,
-            instance_seed=int(instance_seed),
-        )
-        rendered = render_radial_progress_dataset(dataset=dataset, params=params, instance_seed=int(instance_seed))
-        annotation = annotation_payload(dataset=dataset, rendered=rendered)
-        answer_value = str(dataset.query.answer)
-        prompt_artifacts = build_prompt_artifacts(
-            prompt_query_key=str(selected_query_id),
-            is_label_answer=True,
-            dynamic_slot_values=dynamic_slots(dataset=dataset),
-            instance_seed=int(instance_seed),
-        )
-        trace_payload = build_trace_payload(
-            dataset=dataset,
-            rendered=rendered,
-            prompt_artifacts=prompt_artifacts,
-            answer_value=answer_value,
-            annotation_payload=annotation,
-        )
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-            answer_gt=TypedValue(type="string", value=str(answer_value)),
-            annotation_gt=TypedValue(type="bbox_set", value=list(annotation["bboxes"])),
-            image=rendered.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(selected_query_id),
-        )
+    def generate(self, instance_seed, *, params, max_attempts):
+        return run_radial_progress_task(self, int(instance_seed), dict(params), int(max_attempts))
 
 
-__all__ = ["ChartsRadialProgressExtremumRemainingLabelTask"]
+__all__ = ["ChartsRadialProgressExtremumRemainingLabelTask", "SUPPORTED_QUERY_IDS"]

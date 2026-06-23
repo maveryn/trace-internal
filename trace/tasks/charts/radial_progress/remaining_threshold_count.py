@@ -1,103 +1,77 @@
-"""Radial-progress remaining threshold count task."""
-
 from __future__ import annotations
 
-from typing import Any, Dict
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.tasks.registry import register_task
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.output import annotation_payload, build_trace_payload
-from .shared.progress_chart import SCENE_ID, _construct_dataset, _resolve_scene_variant
-from .shared.prompts import build_prompt_artifacts, dynamic_slots
-from .shared.runtime import render_radial_progress_dataset
+from ._lifecycle import build_count_dataset_from_frame, build_count_plan, run_radial_progress_task
+from .shared.sampling import (
+    sample_answer_count,
+    sample_condition_values,
+    sample_progress_frame,
+    sample_threshold,
+)
+from .shared.state import DOMAIN
 
 
-SUPPORTED_QUERY_IDS = ("remaining_at_least_threshold_count",)
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+TASK_ID = "task_charts__radial_progress__remaining_threshold_count"
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
+
+
+def _build_plan(params, instance_seed, selected, probabilities):
+    """Bind a remaining-progress threshold and construct the exact matching count."""
+
+    frame = sample_progress_frame(params, instance_seed=int(instance_seed))
+    answer_count, answer_support, answer_probabilities = sample_answer_count(
+        params,
+        item_count=int(frame.item_count),
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.answer_count",
+    )
+    threshold = sample_threshold(params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}.threshold")
+    values, annotation_item_ids = sample_condition_values(
+        item_count=int(frame.item_count),
+        answer_count=int(answer_count),
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.values",
+        target_predicate=lambda value: int(100 - int(value)) >= int(threshold),
+    )
+    dataset = build_count_dataset_from_frame(
+        frame=frame,
+        values=values,
+        branch_id=SINGLE_QUERY_ID,
+        branch_probabilities=dict(probabilities),
+        answer_count=int(answer_count),
+        answer_support=list(answer_support),
+        answer_probabilities=dict(answer_probabilities),
+        annotation_type="bbox_set",
+        annotation_item_ids=tuple(annotation_item_ids),
+        question_params={
+            "threshold_value": int(threshold),
+            "threshold_phrase": f"at least {threshold}% remaining",
+            "count_condition": "remaining_at_least_threshold",
+            "max_value_for_remaining": int(100 - int(threshold)),
+        },
+    )
+    return build_count_plan(
+        dataset=dataset,
+        prompt_key="remaining_at_least_threshold_count",
+        scene_probabilities=dict(frame.scene_probabilities),
+    )
 
 
 @register_task
 class ChartsRadialProgressRemainingThresholdCountTask:
-    """Count radial progress widgets satisfying a remaining-progress threshold."""
-
-    task_id = "task_charts__radial_progress__remaining_threshold_count"
-    domain = "charts"
-    scene_id = SCENE_ID
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "remaining_threshold_count"
     supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = SINGLE_QUERY_ID
     default_dataset_enabled = True
+    _build_plan = staticmethod(_build_plan)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id="remaining_at_least_threshold_count",
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt == 0 else int(hash64(int(instance_seed), self.task_id, attempt))
-            try:
-                return self._generate_once(
-                    int(attempt_seed),
-                    params=task_params,
-                    selected_query_id=str(selected_query_id),
-                    query_probabilities=query_probabilities,
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
-
-    def _generate_once(
-        self,
-        instance_seed: int,
-        *,
-        params: Dict[str, Any],
-        selected_query_id: str,
-        query_probabilities: Dict[str, float],
-    ) -> TaskOutput:
-        scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        dataset = _construct_dataset(
-            query_id=str(selected_query_id),
-            query_probabilities=query_probabilities,
-            scene_variant=str(scene_variant),
-            scene_variant_probabilities=scene_variant_probabilities,
-            params=params,
-            instance_seed=int(instance_seed),
-        )
-        rendered = render_radial_progress_dataset(dataset=dataset, params=params, instance_seed=int(instance_seed))
-        annotation = annotation_payload(dataset=dataset, rendered=rendered)
-        answer_value = int(dataset.query.answer)
-        prompt_artifacts = build_prompt_artifacts(
-            prompt_query_key=str(selected_query_id),
-            is_label_answer=False,
-            dynamic_slot_values=dynamic_slots(dataset=dataset),
-            instance_seed=int(instance_seed),
-        )
-        trace_payload = build_trace_payload(
-            dataset=dataset,
-            rendered=rendered,
-            prompt_artifacts=prompt_artifacts,
-            answer_value=answer_value,
-            annotation_payload=annotation,
-        )
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-            answer_gt=TypedValue(type="integer", value=int(answer_value)),
-            annotation_gt=TypedValue(type="bbox_set", value=list(annotation["bboxes"])),
-            image=rendered.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(selected_query_id),
-        )
+    def generate(self, instance_seed, *, params, max_attempts):
+        return run_radial_progress_task(self, int(instance_seed), dict(params), int(max_attempts))
 
 
 __all__ = ["ChartsRadialProgressRemainingThresholdCountTask", "SUPPORTED_QUERY_IDS"]

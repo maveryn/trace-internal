@@ -162,33 +162,22 @@ def test_icons_pattern_structured_violation_grid_size_contract_matches_scene() -
 
 
 @pytest.mark.parametrize(
-    ("query_id", "group_axis", "expected_scene_kind", "expected_question_format"),
+    ("group_axis", "expected_rule"),
     (
-        (
-            "grid_row_color_violation",
-            "row",
-            "icons_pattern_grid_row_color_violation",
-            "identify_grid_row_color_violation",
-        ),
-        (
-            "grid_column_color_violation",
-            "column",
-            "icons_pattern_grid_column_color_violation",
-            "identify_grid_column_color_violation",
-        ),
+        ("row", "row_uniform_color"),
+        ("column", "column_uniform_color"),
     ),
 )
 def test_icons_pattern_grid_color_violation_contract_matches_scene(
-    query_id: str,
     group_axis: str,
-    expected_scene_kind: str,
-    expected_question_format: str,
+    expected_rule: str,
 ) -> None:
     task = IconsPatternGridAttributePatternViolationTask()
     out = task.generate(
         24115,
         params={
-            "query_id": query_id,
+            "query_id": "grid_color_violation",
+            "color_group_axis": group_axis,
             "answer_index": 5,
             f"{group_axis}_color_levels": [1, 2, 3],
             "violation_color_level": 0,
@@ -198,14 +187,14 @@ def test_icons_pattern_grid_color_violation_contract_matches_scene(
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
-    assert out.query_id == query_id
-    assert trace["scene_ir"]["scene_kind"] == expected_scene_kind
+    assert out.query_id == "grid_color_violation"
+    assert trace["scene_ir"]["scene_kind"] == "icons_pattern_grid_color_violation"
     assert trace["scene_ir"]["scene_id"] == "pattern_grid"
-    assert trace["query_spec"]["query_id"] == query_id
+    assert trace["query_spec"]["query_id"] == "grid_color_violation"
     assert execution["scene_variant"] == "numbered_grid"
-    assert execution["query_id"] == query_id
-    assert execution["question_format"] == expected_question_format
-    assert execution["pattern_rule"] == f"{group_axis}_uniform_color"
+    assert execution["query_id"] == "grid_color_violation"
+    assert execution["question_format"] == "identify_grid_color_violation"
+    assert execution["pattern_rule"] == expected_rule
     assert execution["color_group_axis"] == group_axis
     assert int(out.answer_gt.value) == 5
     assert out.annotation_gt.type == "bbox"
@@ -243,8 +232,7 @@ def test_icons_pattern_structured_violation_prompt_example_matches_contract() ->
     (
         (IconsPatternSequenceRotationViolationTask, {}, set(range(2, 7))),
         (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_size_violation"}, set(range(1, 10))),
-        (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_row_color_violation"}, set(range(1, 10))),
-        (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_column_color_violation"}, set(range(1, 10))),
+        (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_color_violation"}, set(range(1, 10))),
     ),
 )
 def test_icons_pattern_violation_balances_answers_by_default(task_cls, params: dict, expected_answers: set[int]) -> None:

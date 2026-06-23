@@ -681,8 +681,7 @@ def test_icons_pattern_grid_defaults_loaded() -> None:
     assert int(rendering['size_level_gap_px']) == 10
     assert list(rendering['icon_noise_edit_count_range']) == [0, 0]
     assert str(prompt['object_description']).strip()
-    assert str(prompt['question_text_grid_row_color_violation']).strip()
-    assert str(prompt['question_text_grid_column_color_violation']).strip()
+    assert str(prompt['question_text_grid_color_violation']).strip()
     assert str(prompt['question_text_grid_size_violation']).strip()
     assert str(prompt['annotation_hint']).strip()
     assert str(prompt['answer_hint']).strip()

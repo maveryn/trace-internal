@@ -13,11 +13,7 @@ def scene_kind_for_axis(attribute_axis: str, *, color_group_axis: str = "") -> s
     """Return the public trace scene-kind id for one pattern attribute."""
 
     if str(attribute_axis) == "color":
-        if str(color_group_axis) == "row":
-            return "icons_pattern_grid_row_color_violation"
-        if str(color_group_axis) == "column":
-            return "icons_pattern_grid_column_color_violation"
-        raise ValueError("color_group_axis must be 'row' or 'column' for color pattern grids")
+        return "icons_pattern_grid_color_violation"
     if str(attribute_axis) == "size":
         return "icons_pattern_grid_size_violation"
     raise ValueError(f"unsupported attribute_axis: {attribute_axis}")
@@ -27,11 +23,7 @@ def question_format_for_axis(attribute_axis: str, *, color_group_axis: str = "")
     """Return the execution-trace question-format id for one pattern attribute."""
 
     if str(attribute_axis) == "color":
-        if str(color_group_axis) == "row":
-            return "identify_grid_row_color_violation"
-        if str(color_group_axis) == "column":
-            return "identify_grid_column_color_violation"
-        raise ValueError("color_group_axis must be 'row' or 'column' for color pattern grids")
+        return "identify_grid_color_violation"
     if str(attribute_axis) == "size":
         return "identify_grid_size_violation"
     raise ValueError(f"unsupported attribute_axis: {attribute_axis}")

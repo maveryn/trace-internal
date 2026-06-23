@@ -351,7 +351,12 @@ def resolve_pattern_grid_spec(
         raise ValueError("shared_rotation_candidates_degrees must not be empty")
 
     if axis == "color":
-        group_axis = str(color_group_axis or params.get("color_group_axis", "row"))
+        explicit_group_axis = params.get("color_group_axis", color_group_axis)
+        if explicit_group_axis:
+            group_axis = str(explicit_group_axis)
+        else:
+            group_axis_options = ("row", "column")
+            group_axis = str(group_axis_options[int(base_index % len(group_axis_options))])
         level_support = _color_level_support(params, generation_defaults)
         expected, observed, violation_level, group_levels, total_rule_support = _color_uniform_pattern(
             color_group_axis=str(group_axis),
@@ -359,11 +364,11 @@ def resolve_pattern_grid_spec(
             grid_cols=int(grid_cols),
             violation_cell_index=int(violation_cell_index),
             level_support=level_support,
-            base_index=int(base_index // max(1, len(answer_support))),
+            base_index=int(base_index // max(1, len(answer_support) * max(1, 2 if not explicit_group_axis else 1))),
             params=params,
         )
         explicit_rotation = params.get("shared_rotation_degrees")
-        rotation_index = int(base_index // max(1, len(answer_support) * int(total_rule_support))) % len(rotation_candidates)
+        rotation_index = int(base_index // max(1, len(answer_support) * int(total_rule_support) * max(1, 2 if not explicit_group_axis else 1))) % len(rotation_candidates)
         rotation = int(explicit_rotation) % 360 if explicit_rotation is not None else int(rotation_candidates[int(rotation_index)])
         color_ladder = _color_ladder_rgb(params, generation_defaults)
         color_names = _color_level_names(params, generation_defaults, color_count=len(color_ladder))
@@ -384,7 +389,7 @@ def resolve_pattern_grid_spec(
             shared_rotation_degrees=int(rotation),
             level_support=tuple(int(value) for value in level_support),
             plausible_rule_count=1,
-            total_rule_support=int(total_rule_support),
+            total_rule_support=int(total_rule_support * max(1, 2 if not explicit_group_axis else 1)),
             answer_index_probabilities=uniform_probability_map(answer_support),
             color_group_axis=str(group_axis),
             level_names=tuple(str(value) for value in color_names),

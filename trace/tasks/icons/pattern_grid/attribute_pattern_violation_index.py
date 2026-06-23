@@ -29,27 +29,19 @@ from .shared.styles import resolve_pattern_grid_render_params
 
 
 TASK_ID = "task_icons__pattern_grid__attribute_pattern_violation_index"
-QUERY_GRID_ROW_COLOR_VIOLATION = "grid_row_color_violation"
-QUERY_GRID_COLUMN_COLOR_VIOLATION = "grid_column_color_violation"
+QUERY_GRID_COLOR_VIOLATION = "grid_color_violation"
 QUERY_GRID_SIZE_VIOLATION = "grid_size_violation"
-SUPPORTED_QUERY_IDS: Tuple[str, str, str] = (
-    QUERY_GRID_ROW_COLOR_VIOLATION,
-    QUERY_GRID_COLUMN_COLOR_VIOLATION,
+SUPPORTED_QUERY_IDS: Tuple[str, str] = (
+    QUERY_GRID_COLOR_VIOLATION,
     QUERY_GRID_SIZE_VIOLATION,
 )
 QUERY_IDS = SUPPORTED_QUERY_IDS
 _QUERY_TO_ATTRIBUTE_AXIS = {
-    QUERY_GRID_ROW_COLOR_VIOLATION: "color",
-    QUERY_GRID_COLUMN_COLOR_VIOLATION: "color",
+    QUERY_GRID_COLOR_VIOLATION: "color",
     QUERY_GRID_SIZE_VIOLATION: "size",
 }
-_QUERY_TO_COLOR_GROUP_AXIS = {
-    QUERY_GRID_ROW_COLOR_VIOLATION: "row",
-    QUERY_GRID_COLUMN_COLOR_VIOLATION: "column",
-}
 _QUERY_TO_PROMPT_KEY = {
-    QUERY_GRID_ROW_COLOR_VIOLATION: "question_text_grid_row_color_violation",
-    QUERY_GRID_COLUMN_COLOR_VIOLATION: "question_text_grid_column_color_violation",
+    QUERY_GRID_COLOR_VIOLATION: "question_text_grid_color_violation",
     QUERY_GRID_SIZE_VIOLATION: "question_text_grid_size_violation",
 }
 
@@ -68,7 +60,7 @@ def _select_query(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, D
         instance_seed=int(instance_seed),
         params=params,
         supported_query_ids=SUPPORTED_QUERY_IDS,
-        default_query_id=QUERY_GRID_ROW_COLOR_VIOLATION,
+        default_query_id=QUERY_GRID_COLOR_VIOLATION,
         task_id=TASK_ID,
         namespace=f"{TASK_ID}.query",
     )
@@ -229,10 +221,8 @@ class IconsPatternGridAttributePatternViolationTask:
 
         query_id, query_probabilities, task_params = _select_query(int(instance_seed), params)
         attribute_axis = str(_QUERY_TO_ATTRIBUTE_AXIS[str(query_id)])
-        color_group_axis = str(_QUERY_TO_COLOR_GROUP_AXIS.get(str(query_id), ""))
         spec = resolve_pattern_grid_spec(
             attribute_axis=str(attribute_axis),
-            color_group_axis=str(color_group_axis),
             instance_seed=int(instance_seed),
             params=task_params,
             generation_defaults=_GEN_DEFAULTS,

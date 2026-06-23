@@ -5,6 +5,7 @@ rendering:
     line_width: 4
     label_font_size: 22
     small_label_font_size: 18
+    label_stroke_width: 1
     single_object_scene_rotation:
       enabled: true
       probability: 0.5
@@ -23,3 +24,9 @@ rendering:
 prompt:
   shared:
     bundle_id: geometry_tangent_polygon_incircle_v0
+    scene_key: tangent_polygon_incircle_scene
+  task_overrides:
+    task_geometry__incircle_tangents__incircle_tangent_perimeter_value:
+      task_key: incircle_tangent_perimeter_value_query
+    task_geometry__incircle_tangents__incircle_radius_from_area_value:
+      task_key: incircle_radius_from_area_value_query

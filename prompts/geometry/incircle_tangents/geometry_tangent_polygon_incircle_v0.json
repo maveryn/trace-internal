@@ -1,82 +1,103 @@
 {
   "bundle_id": "geometry_tangent_polygon_incircle_v0",
-  "schema_version": "v0",
-  "code_prompt_defaults": {
-    "scene_key": "tangent_polygon_incircle_scene",
-    "task_key": "tangent_polygon_incircle_value_query",
-    "object_description": "triangle ABC with an incircle tangent to all three sides and labeled equal tangent segments",
-    "annotation_hint": "set \"annotation\" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the visible tangent-segment and area label boxes needed for the computation",
-    "answer_hint_number": "set \"answer\" to the requested value rounded to one decimal place",
-    "json_example": "{\"annotation\":[[120,430,230,458],[520,430,630,458],[320,60,430,88]],\"answer\":42.0}",
-    "json_example_answer_only": "{\"answer\":42.0}"
-  },
-  "task_templates": {
-    "tangent_polygon_incircle_value_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ]
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "tangent_polygon_incircle_scene": [
+        "The diagram shows {object_description}.",
+        "The figure shows {object_description}.",
+        "This geometry diagram shows {object_description}.",
+        "The image shows {object_description}.",
+        "The labeled diagram shows {object_description}."
+      ]
+    },
+    "task": {
+      "incircle_tangent_perimeter_value_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "incircle_radius_from_area_value_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "triangle_perimeter_from_tangent_segments": [
+        "What is the perimeter of triangle ABC?",
+        "Find the perimeter of triangle ABC.",
+        "Determine the perimeter of triangle ABC.",
+        "What is the value of the triangle perimeter?",
+        "Use the labeled diagram to find the perimeter of triangle ABC."
+      ],
+      "inradius_from_area_and_tangent_segments": [
+        "What is the radius of the incircle?",
+        "Find the incircle radius.",
+        "Determine the radius of the circle inside the triangle.",
+        "What is the missing incircle radius?",
+        "Use the labeled diagram to find the incircle radius."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
   },
   "required_slots_by_key": {
     "scene:tangent_polygon_incircle_scene": [
       "object_description"
     ],
-    "answer_or_annotation:answer_only": [
+    "output:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
       "json_example_answer_only"
     ],
-    "answer_or_annotation:answer_and_annotation": [
+    "output:answer_and_annotation": [
       "json_output_contract",
       "annotation_hint",
       "answer_hint",
       "json_example"
-    ],
-    "query:triangle_perimeter_from_tangent_segments": [],
-    "query:inradius_from_area_and_tangent_segments": []
-  },
-  "answer_or_annotation_templates": {
-    "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
-    ],
-    "answer_and_annotation": [
-      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
-  "scene_templates": {
-    "tangent_polygon_incircle_scene": [
-      "The diagram shows {object_description}.",
-      "The figure shows {object_description}.",
-      "This geometry diagram shows {object_description}.",
-      "The image shows {object_description}.",
-      "The labeled diagram shows {object_description}."
-    ]
-  },
-  "query_templates": {
-    "triangle_perimeter_from_tangent_segments": [
-      "What is the perimeter of triangle ABC?",
-      "Find the perimeter of triangle ABC.",
-      "Determine the perimeter of triangle ABC.",
-      "What is the value of the triangle perimeter?",
-      "Use the labeled diagram to find the perimeter of triangle ABC."
-    ],
-    "inradius_from_area_and_tangent_segments": [
-      "What is the radius of the incircle?",
-      "Find the incircle radius.",
-      "Determine the radius of the circle inside the triangle.",
-      "What is the missing incircle radius?",
-      "Use the labeled diagram to find the incircle radius."
-    ]
-  },
-  "allow_empty_task_templates": true
+  "static_slots_by_key": {
+    "scene:tangent_polygon_incircle_scene": {
+      "object_description": "triangle ABC with an incircle tangent to all three sides and labeled equal tangent segments"
+    },
+    "task:incircle_tangent_perimeter_value_query": {
+      "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible label-box keys: \"AD_AF\", \"BD_BE\", \"CE_CF\"; each value must be that label's pixel box [x0,y0,x1,y1]",
+      "answer_hint": "set \"answer\" to the perimeter as an integer",
+      "json_example": "{\"annotation\":{\"AD_AF\":[104,421,203,447],\"BD_BE\":[540,421,639,447],\"CE_CF\":[311,55,410,81]},\"answer\":42}",
+      "json_example_answer_only": "{\"answer\":42}"
+    },
+    "task:incircle_radius_from_area_value_query": {
+      "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible label-box keys: \"AD_AF\", \"BD_BE\", \"CE_CF\", \"area\"; each value must be that label's pixel box [x0,y0,x1,y1]",
+      "answer_hint": "set \"answer\" to the incircle radius rounded to one decimal place",
+      "json_example": "{\"annotation\":{\"AD_AF\":[104,421,203,447],\"BD_BE\":[540,421,639,447],\"CE_CF\":[311,55,410,81],\"area\":[536,82,656,108]},\"answer\":4.2}",
+      "json_example_answer_only": "{\"answer\":4.2}"
+    },
+    "output:answer_only": {
+      "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."
+    },
+    "output:answer_and_annotation": {
+      "json_output_contract": "Return a JSON object with exactly two keys: \"answer\" and \"annotation\"."
+    }
+  }
 }

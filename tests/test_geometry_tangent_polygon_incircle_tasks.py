@@ -16,12 +16,13 @@ TASK_CLASSES = (
 )
 
 QUERY_IDS_BY_TASK = {
-    GeometryIncircleTangentPerimeterValueTask: (
-        "triangle_perimeter_from_tangent_segments",
-    ),
-    GeometryIncircleRadiusFromAreaValueTask: (
-        "inradius_from_area_and_tangent_segments",
-    ),
+    GeometryIncircleTangentPerimeterValueTask: ("single",),
+    GeometryIncircleRadiusFromAreaValueTask: ("single",),
+}
+
+INTERNAL_QUERY_BY_TASK = {
+    GeometryIncircleTangentPerimeterValueTask: "triangle_perimeter_from_tangent_segments",
+    GeometryIncircleRadiusFromAreaValueTask: "inradius_from_area_and_tangent_segments",
 }
 
 
@@ -31,10 +32,14 @@ def test_tangent_polygon_incircle_tasks_emit_public_contract(task_cls) -> None:
     out = task.generate(57001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id
-    assert out.answer_gt.type == "number"
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) in {3, 4}
+    assert out.query_id == "single"
+    if task_cls is GeometryIncircleTangentPerimeterValueTask:
+        assert out.answer_gt.type == "integer"
+        assert set(out.annotation_gt.value) == {"AD_AF", "BD_BE", "CE_CF"}
+    else:
+        assert out.answer_gt.type == "number"
+        assert set(out.annotation_gt.value) == {"AD_AF", "BD_BE", "CE_CF", "area"}
+    assert out.annotation_gt.type == "bbox_map"
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
@@ -42,13 +47,12 @@ def test_tangent_polygon_incircle_tasks_emit_public_contract(task_cls) -> None:
     assert trace["query_spec"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["execution_trace"]["internal_query_id"] == INTERNAL_QUERY_BY_TASK[task_cls]
+    assert trace["projected_annotation"]["type"] == "bbox_map"
     assert trace["execution_trace"]["semiperimeter"] > 0
     assert trace["execution_trace"]["area"] > 0
-    if out.query_id == "triangle_perimeter_from_tangent_segments":
-        assert out.answer_gt.value == pytest.approx(
-            2.0 * trace["execution_trace"]["semiperimeter"]
-        )
+    if task_cls is GeometryIncircleTangentPerimeterValueTask:
+        assert out.answer_gt.value == int(round(2.0 * trace["execution_trace"]["semiperimeter"]))
     else:
         assert out.answer_gt.value == pytest.approx(
             round(
@@ -89,7 +93,7 @@ def test_tangent_polygon_incircle_tasks_support_every_explicit_query(task_cls) -
             max_attempts=20,
         )
         assert out.query_id == query_id
-        assert out.answer_gt.type == "number"
+        assert out.answer_gt.type in {"integer", "number"}
         assert out.trace_payload["query_spec"]["params"][
             "query_id_probabilities"
         ] == {query_id: 1.0}
@@ -105,7 +109,7 @@ def test_tangent_polygon_incircle_annotation_stays_inside_canvas(task_cls) -> No
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.annotation_gt.value:
+        for x0, y0, x1, y1 in out.annotation_gt.value.values():
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0

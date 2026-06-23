@@ -79,13 +79,6 @@ def _bbox_union(boxes: Sequence[Sequence[float]]) -> BBox:
     )
 
 
-def _interpolate_point(start: IsoPoint, end: IsoPoint, t: float) -> IsoPoint:
-    return (
-        float(start[0]) + (float(end[0]) - float(start[0])) * float(t),
-        float(start[1]) + (float(end[1]) - float(start[1])) * float(t),
-    )
-
-
 def _tile_id(col: int, row: int) -> str:
     return f"tile_{int(col):02d}_{int(row):02d}"
 
@@ -480,13 +473,9 @@ def _draw_transition(draw: ImageDraw.ImageDraw, layout: IsoLayout, spec: tuple[s
     if str(side) == "east":
         polygon: IsoPolygon = (upper_right, upper_bottom, lower_left, lower_top)
         line_pairs = ((upper_right, lower_top), (upper_bottom, lower_left))
-        stair_outer_edge = (upper_right, upper_bottom)
-        stair_inner_source_edge = (upper_top, upper_left)
     else:
         polygon = (upper_left, upper_bottom, lower_right, lower_top)
         line_pairs = ((upper_left, lower_top), (upper_bottom, lower_right))
-        stair_outer_edge = (upper_left, upper_bottom)
-        stair_inner_source_edge = (upper_top, upper_right)
     points = [(int(round(x)), int(round(y))) for x, y in polygon]
     if kind == "ramp":
         draw.polygon(points, fill=(191, 145, 86), outline=(96, 70, 45))
@@ -500,42 +489,27 @@ def _draw_transition(draw: ImageDraw.ImageDraw, layout: IsoLayout, spec: tuple[s
             draw.line((int(lx), int(ly), int(rx), int(ry)), fill=(214, 164, 97), width=2)
     else:
         draw.polygon(points, fill=(102, 88, 66), outline=(72, 63, 50))
-        outer_start, outer_end = stair_outer_edge
-        inner_source_start, inner_source_end = stair_inner_source_edge
-        inset = 0.14
-        step_skew = 0.035
-        depth = 0.58
-        outer_left = _interpolate_point(outer_start, outer_end, inset)
-        outer_right = _interpolate_point(outer_start, outer_end, 1.0 - inset)
-        source_left = _interpolate_point(inner_source_start, inner_source_end, inset)
-        source_right = _interpolate_point(inner_source_start, inner_source_end, 1.0 - inset)
-        inner_left = _interpolate_point(outer_left, source_left, depth)
-        inner_right = _interpolate_point(outer_right, source_right, depth)
-
-        def boundary(t: float) -> tuple[IsoPoint, IsoPoint]:
-            left_t = max(0.0, min(1.0, float(t) - step_skew))
-            right_t = max(0.0, min(1.0, float(t) + step_skew))
-            return (
-                _interpolate_point(inner_left, outer_left, left_t),
-                _interpolate_point(inner_right, outer_right, right_t),
-            )
-
-        step_count = 5
-        for index in range(step_count):
-            p0, p1 = boundary(index / float(step_count))
-            p2, p3 = boundary((index + 1) / float(step_count))
-            fill = (156, 144, 108) if index % 2 == 0 else (137, 126, 96)
-            draw.polygon(
-                [(int(round(x)), int(round(y))) for x, y in (p0, p1, p3, p2)],
-                fill=fill,
-            )
-        for index in range(1, step_count):
-            p0, p1 = boundary(index / float(step_count))
-            draw.line((p0, p1), fill=(229, 216, 165), width=2)
-        draw.line((inner_left, outer_left), fill=(80, 70, 55), width=2)
-        draw.line((inner_right, outer_right), fill=(80, 70, 55), width=2)
-        draw.line((inner_left, inner_right), fill=(229, 216, 165), width=2)
-        draw.line((outer_left, outer_right), fill=(79, 69, 54), width=2)
+        center: IsoPoint = (
+            (float(upper_top[0]) + float(upper_right[0]) + float(upper_bottom[0]) + float(upper_left[0])) / 4.0,
+            (float(upper_top[1]) + float(upper_right[1]) + float(upper_bottom[1]) + float(upper_left[1])) / 4.0,
+        )
+        facets: tuple[tuple[tuple[IsoPoint, IsoPoint, IsoPoint], RGB], ...] = (
+            ((upper_top, upper_right, center), (185, 172, 123)),
+            ((upper_right, upper_bottom, center), (157, 143, 102)),
+            ((upper_bottom, upper_left, center), (132, 121, 91)),
+            ((upper_left, upper_top, center), (170, 158, 115)),
+        )
+        for facet, fill in facets:
+            draw.polygon([(int(round(x)), int(round(y))) for x, y in facet], fill=fill)
+        outline = (70, 63, 48)
+        highlight = (231, 219, 164)
+        shadow = (89, 77, 57)
+        draw.line((upper_top, upper_right), fill=highlight, width=2)
+        draw.line((upper_left, upper_top), fill=highlight, width=2)
+        draw.line((upper_right, upper_bottom), fill=shadow, width=2)
+        draw.line((upper_bottom, upper_left), fill=shadow, width=2)
+        for vertex in (upper_top, upper_right, upper_bottom, upper_left):
+            draw.line((center, vertex), fill=outline, width=2)
     return IsoFarmsteadTransition(
         transition_id=str(transition_id),
         transition_type=str(kind),

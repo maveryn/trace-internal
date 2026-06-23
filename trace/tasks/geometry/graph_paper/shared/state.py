@@ -34,7 +34,12 @@ class GraphPaperContext:
     grid_color: Color
     axis_color: Color
     label_color: Color
+    label_stroke_color: Color
+    shape_fill_color: Color
+    object_colors: tuple[Color, ...]
     background_meta: Mapping[str, Any]
+    shape_style_meta: Mapping[str, Any] = field(default_factory=dict)
+    graph_layout_meta: Mapping[str, Any] = field(default_factory=dict)
     post_noise_meta: Mapping[str, Any] = field(default_factory=dict)
 
 

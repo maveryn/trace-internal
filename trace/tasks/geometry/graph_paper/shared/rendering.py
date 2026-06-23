@@ -5,18 +5,69 @@ from __future__ import annotations
 from math import atan2, cos, degrees, radians, sin
 from typing import Any, Mapping, Sequence
 
-from PIL import Image, ImageDraw
+from PIL import ImageDraw
 
+from trace.core.seed import spawn_rng
+from trace.tasks.geometry.shared.background_defaults import load_geometry_background_defaults
+from trace.tasks.geometry.shared.graph_rendering import graph_paper_grid_from_frame
+from trace.tasks.geometry.shared.noise_defaults import load_geometry_noise_defaults
+from trace.tasks.geometry.shared.shape_style import (
+    extract_background_anchor_colors,
+    sample_geometry_shape_style,
+)
+from trace.tasks.geometry.shared.single_object_scene import (
+    finalize_graph_scene_image,
+    make_graph_scene_canvas,
+    resolve_graph_scene_context,
+)
 from trace.tasks.shared.text_rendering import load_font
 
 from .defaults import int_default
-from .state import BBox, Color, GraphObject, GraphPaperContext, Point
+from .state import BBox, Color, GraphObject, GraphPaperContext, Point, SCENE_ID
 
-LIGHT_THEMES: tuple[tuple[Color, Color, Color, Color, Color], ...] = (
-    ((250, 252, 255), (216, 226, 238), (118, 132, 150), (30, 52, 76), (19, 29, 43)),
-    ((252, 251, 246), (224, 218, 204), (142, 127, 104), (52, 57, 66), (25, 28, 34)),
-    ((247, 252, 249), (209, 229, 218), (105, 143, 125), (35, 69, 66), (20, 37, 35)),
-)
+_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id=SCENE_ID)
+_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id=SCENE_ID)
+
+
+def _coerce_color(value: Any, fallback: Color) -> Color:
+    if isinstance(value, (list, tuple)) and len(value) >= 3:
+        return (
+            max(0, min(255, int(value[0]))),
+            max(0, min(255, int(value[1]))),
+            max(0, min(255, int(value[2]))),
+        )
+    return tuple(int(channel) for channel in fallback)
+
+
+def _blend_color(color_a: Color, color_b: Color, ratio_b: float) -> Color:
+    ratio = max(0.0, min(1.0, float(ratio_b)))
+    return (
+        int(round(float(color_a[0]) * (1.0 - ratio) + float(color_b[0]) * ratio)),
+        int(round(float(color_a[1]) * (1.0 - ratio) + float(color_b[1]) * ratio)),
+        int(round(float(color_a[2]) * (1.0 - ratio) + float(color_b[2]) * ratio)),
+    )
+
+
+def _object_palette(base: Color) -> tuple[Color, ...]:
+    red, green, blue = (int(base[0]), int(base[1]), int(base[2]))
+    return (
+        (red, green, blue),
+        (
+            max(24, min(210, blue + 35)),
+            max(24, min(185, red + 16)),
+            max(24, min(195, green - 18)),
+        ),
+        (
+            max(24, min(195, green + 24)),
+            max(24, min(195, blue - 8)),
+            max(24, min(195, red + 40)),
+        ),
+        (
+            max(24, min(205, red - 20)),
+            max(24, min(195, green + 30)),
+            max(24, min(205, blue + 20)),
+        ),
+    )
 
 
 def make_context(
@@ -26,87 +77,103 @@ def make_context(
     defaults: Mapping[str, Any],
     theme_index: int = 0,
 ) -> GraphPaperContext:
-    """Create a graph-paper canvas with one bounded coordinate frame."""
+    """Create a graph-paper canvas through the shared geometry grid style layer."""
 
     canvas_size = int_default(params, defaults, "canvas_size", 768)
     graph_min = int_default(params, defaults, "graph_cells_min", 14)
     graph_max = int_default(params, defaults, "graph_cells_max", 20)
-    graph_cells = max(
-        8,
-        min(
-            24,
-            graph_min + (abs(int(instance_seed)) % max(1, graph_max - graph_min + 1)),
-        ),
+    style_seed = int(instance_seed) + (int(theme_index) * 1009)
+    rng = spawn_rng(style_seed, "geometry.graph_paper.shared_context")
+    shared_context = resolve_graph_scene_context(
+        rng,
+        instance_seed=int(style_seed),
+        params=params,
+        render_defaults=defaults,
+        background_defaults=_BACKGROUND_DEFAULTS,
+        fallback_canvas_min=int(canvas_size),
+        fallback_canvas_max=int(canvas_size),
+        fallback_cells_min=int(graph_min),
+        fallback_cells_max=int(graph_max),
+        require_graph_paper_background=True,
+        graph_style_overrides={
+            "origin_fraction_x": 0.5,
+            "origin_fraction_y": 0.5,
+            "axis_enabled": True,
+            "axis_scale_labels_enabled": True,
+            "origin_label_enabled": False,
+        },
     )
-    margin = int_default(params, defaults, "margin_px", 56)
-    panel_box = (
-        float(margin),
-        float(margin),
-        float(canvas_size - margin),
-        float(canvas_size - margin),
+    image, _draw, background_meta = make_graph_scene_canvas(
+        instance_seed=int(style_seed),
+        context=shared_context,
+        background_defaults=_BACKGROUND_DEFAULTS,
+        require_graph_paper=True,
     )
-    content_pad = int_default(params, defaults, "content_pad_px", 18)
-    content_box = (
-        panel_box[0] + content_pad,
-        panel_box[1] + content_pad,
-        panel_box[2] - content_pad,
-        panel_box[3] - content_pad,
+    image, background_meta, post_noise_meta = finalize_graph_scene_image(
+        image,
+        instance_seed=int(style_seed),
+        context=shared_context,
+        background_meta=background_meta,
+        noise_defaults=_NOISE_DEFAULTS,
     )
-    spacing = min(
-        (content_box[2] - content_box[0]) / float(graph_cells),
-        (content_box[3] - content_box[1]) / float(graph_cells),
-    )
-    half_range = int(graph_cells // 2)
-    origin = (
-        (content_box[0] + content_box[2]) / 2.0,
-        (content_box[1] + content_box[3]) / 2.0,
-    )
-    background, grid, axis, ink, label = LIGHT_THEMES[
-        int(theme_index) % len(LIGHT_THEMES)
-    ]
-    image = Image.new("RGB", (canvas_size, canvas_size), background)
     draw = ImageDraw.Draw(image)
-    for index in range(-half_range, half_range + 1):
-        x = origin[0] + index * spacing
-        y = origin[1] - index * spacing
-        draw.line([(x, content_box[1]), (x, content_box[3])], fill=grid, width=1)
-        draw.line([(content_box[0], y), (content_box[2], y)], fill=grid, width=1)
-    draw.rectangle(panel_box, outline=axis, width=2)
-    draw.line(
-        [(content_box[0], origin[1]), (content_box[2], origin[1])], fill=axis, width=2
+    shape_style = sample_geometry_shape_style(
+        rng,
+        params=params,
+        render_defaults=defaults,
+        anchor_colors=extract_background_anchor_colors(background_meta),
     )
-    draw.line(
-        [(origin[0], content_box[1]), (origin[0], content_box[3])], fill=axis, width=2
+    style_spec = background_meta.get("style_spec", {}) if isinstance(background_meta, Mapping) else {}
+    style_spec = style_spec if isinstance(style_spec, Mapping) else {}
+    panel_fill = _coerce_color(style_spec.get("base_color"), (248, 250, 252))
+    axis_color = _coerce_color(style_spec.get("axis_color"), (112, 124, 144))
+    grid_color = _coerce_color(style_spec.get("line_color"), (222, 228, 236))
+    label_color = tuple(int(channel) for channel in shape_style.label_color)
+    object_colors = _object_palette(tuple(int(channel) for channel in shape_style.line_color))
+    shape_fill = _blend_color(panel_fill, object_colors[0], 0.18)
+    layout = shared_context.graph_panel_layout
+    panel_box = tuple(float(value) for value in layout.panel_bbox_px)
+    content_box = tuple(float(value) for value in layout.content_bbox_px)
+    origin = (
+        float(shared_context.graph_origin[0]),
+        float(shared_context.graph_origin[1]),
     )
-    tick_font = load_font(14, bold=False)
-    for value in range(-half_range, half_range + 1, 2):
-        x = origin[0] + value * spacing
-        y = origin[1] - value * spacing
-        draw.text((x - 4, origin[1] + 5), str(value), fill=label, font=tick_font)
-        if value != 0:
-            draw.text((origin[0] + 5, y - 7), str(value), fill=label, font=tick_font)
     return GraphPaperContext(
         image=image,
         draw=draw,
-        canvas_size=int(canvas_size),
-        graph_cells=int(graph_cells),
+        canvas_size=int(shared_context.canvas_size),
+        graph_cells=int(shared_context.graph_cells),
         panel_box=panel_box,
         content_box=content_box,
         origin_px=origin,
-        spacing_px=float(spacing),
-        graph_half_range=int(half_range),
-        ink_color=ink,
-        accent_color=(194, 57, 52),
-        grid_color=grid,
-        axis_color=axis,
-        label_color=label,
-        background_meta={
-            "selected_style": "graph_paper_panel",
-            "theme_index": int(theme_index) % len(LIGHT_THEMES),
-            "kind": "bounded_graph_paper",
+        spacing_px=float(shared_context.graph_spacing),
+        graph_half_range=int(shared_context.graph_cells // 2),
+        ink_color=object_colors[0],
+        accent_color=object_colors[1],
+        grid_color=grid_color,
+        axis_color=axis_color,
+        label_color=label_color,
+        label_stroke_color=tuple(
+            int(channel) for channel in shape_style.label_stroke_color
+        ),
+        shape_fill_color=shape_fill,
+        object_colors=object_colors,
+        shape_style_meta=shape_style.to_trace_dict(),
+        graph_layout_meta={
+            **dict(shared_context.graph_layout_metadata),
+            "graph_coordinate_frame": dict(shared_context.graph_frame),
+            "graph_paper_grid": graph_paper_grid_from_frame(shared_context.graph_frame),
         },
-        post_noise_meta={"enabled": False},
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
     )
+
+
+def object_color(ctx: GraphPaperContext, index: int) -> Color:
+    """Return a deterministic non-semantic object stroke color by draw order."""
+
+    palette = tuple(ctx.object_colors) or (ctx.ink_color,)
+    return tuple(int(channel) for channel in palette[int(index) % len(palette)])
 
 
 def project(ctx: GraphPaperContext, point: Point) -> Point:
@@ -153,7 +220,14 @@ def draw_label(
         loc = (x - width / 2.0, y - height - 8)
     else:
         loc = (x + 6, y - height / 2.0)
-    ctx.draw.text(loc, str(text), fill=ctx.label_color, font=font)
+    ctx.draw.text(
+        loc,
+        str(text),
+        fill=ctx.label_color,
+        font=font,
+        stroke_width=1,
+        stroke_fill=ctx.label_stroke_color,
+    )
 
 
 def draw_point_marker(
@@ -273,7 +347,7 @@ def draw_polygon(
     """Draw one labeled polygon."""
 
     pts = tuple(project(ctx, point) for point in points)
-    ctx.draw.polygon(pts, fill=fill or (235, 241, 248), outline=color or ctx.ink_color)
+    ctx.draw.polygon(pts, fill=fill or ctx.shape_fill_color, outline=color or ctx.ink_color)
     ctx.draw.line([*pts, pts[0]], fill=color or ctx.ink_color, width=4)
     bbox = pixel_bbox(pts, pad_px=8)
     if str(label):
@@ -305,9 +379,7 @@ def draw_ellipse_or_circle(
     rx = float(radius_x) * float(ctx.spacing_px)
     ry = float(radius_y) * float(ctx.spacing_px)
     bbox = (center_px[0] - rx, center_px[1] - ry, center_px[0] + rx, center_px[1] + ry)
-    ctx.draw.ellipse(
-        bbox, outline=color or ctx.ink_color, width=4, fill=(236, 244, 249)
-    )
+    ctx.draw.ellipse(bbox, outline=color or ctx.ink_color, width=4, fill=ctx.shape_fill_color)
     if str(label):
         draw_label(ctx, label, (center_px[0], bbox[1] - 16), anchor="mm")
     return GraphObject(
@@ -353,6 +425,8 @@ def render_metadata(ctx: GraphPaperContext) -> dict[str, Any]:
         "background_style": dict(ctx.background_meta),
         "post_image_noise": dict(ctx.post_noise_meta),
         "text_style": {"draw_object_labels": True},
+        "shape_style": dict(ctx.shape_style_meta),
+        "object_colors": [[int(channel) for channel in color] for color in ctx.object_colors],
         "graph_cells": int(ctx.graph_cells),
         "graph_panel_bbox_px": [round(float(v), 3) for v in ctx.panel_box],
         "graph_content_bbox_px": [round(float(v), 3) for v in ctx.content_box],
@@ -367,4 +441,5 @@ def render_metadata(ctx: GraphPaperContext) -> dict[str, Any]:
             "spacing_px": round(float(ctx.spacing_px), 3),
             "cells_per_side": int(ctx.graph_cells),
         },
+        **dict(ctx.graph_layout_meta),
     }

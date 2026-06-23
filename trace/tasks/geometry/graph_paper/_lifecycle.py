@@ -37,6 +37,7 @@ from .shared.rendering import (
     draw_polygon,
     draw_segment,
     make_context,
+    object_color,
     render_metadata,
     slot_centers,
 )
@@ -758,14 +759,14 @@ def _build_angle_extremum_label(
     labels = label_subset(object_count)
     values = unique_metric_values(rng, count=object_count, low=35, high=150)
     objects = []
-    for label, value, center in zip(
-        labels, values, slot_centers(ctx, object_count), strict=True
+    for index, (label, value, center) in enumerate(
+        zip(labels, values, slot_centers(ctx, object_count), strict=True)
     ):
         obj = draw_angle(
             ctx,
             label,
             angle_points(center, float(value), radius=1.0),
-            color=ctx.ink_color,
+            color=object_color(ctx, index),
         )
         objects.append(replace(obj, metric_value=float(value)))
     winner = (
@@ -827,13 +828,13 @@ def _build_length_extremum_label(
     labels = label_subset(object_count)
     values = unique_metric_values(rng, count=object_count, low=3, high=10)
     objects = []
-    for label, value, center in zip(
-        labels, values, slot_centers(ctx, object_count), strict=True
+    for index, (label, value, center) in enumerate(
+        zip(labels, values, slot_centers(ctx, object_count), strict=True)
     ):
         length_units = float(value) * 0.25
         start = (center[0] - length_units / 2.0, center[1])
         end = (center[0] + length_units / 2.0, center[1])
-        obj = draw_segment(ctx, label, start, end, color=ctx.ink_color)
+        obj = draw_segment(ctx, label, start, end, color=object_color(ctx, index))
         objects.append(replace(obj, metric_value=float(value)))
     winner = (
         max(objects, key=lambda item: item.metric_value)
@@ -900,7 +901,9 @@ def _shape_extremum_objects(
     )
     objects = []
     used_values: set[int] = set()
-    for label, center in zip(labels, slot_centers(ctx, object_count), strict=True):
+    for index, (label, center) in enumerate(
+        zip(labels, slot_centers(ctx, object_count), strict=True)
+    ):
         for _ in range(30):
             width = rng.choice([1.2, 1.6, 2.0, 2.4])
             height = rng.choice([1.0, 1.4, 1.8, 2.2])
@@ -917,7 +920,7 @@ def _shape_extremum_objects(
                 used_values.add(encoded)
                 break
         obj = draw_polygon(
-            ctx, label, points, class_name=shape_kind, color=ctx.ink_color
+            ctx, label, points, class_name=shape_kind, color=object_color(ctx, index)
         )
         objects.append(replace(obj, metric_value=float(encoded)))
     return ctx, shape_kind, object_count, tuple(objects)
@@ -1145,14 +1148,14 @@ def _build_angle_type_count(
         theme_index=rng.randrange(0, 3),
     )
     objects = []
-    for cls_name, center in zip(
-        class_sequence, slot_centers(ctx, object_count), strict=True
+    for index, (cls_name, center) in enumerate(
+        zip(class_sequence, slot_centers(ctx, object_count), strict=True)
     ):
         obj = draw_angle(
             ctx,
             "",
             angle_points(center, ANGLE_VALUE_BY_CLASS[cls_name], radius=0.8),
-            color=ctx.ink_color,
+            color=object_color(ctx, index),
         )
         objects.append(
             replace(
@@ -1193,15 +1196,15 @@ def _build_triangle_type_count(
         theme_index=rng.randrange(0, 3),
     )
     objects = []
-    for cls_name, center in zip(
-        class_sequence, slot_centers(ctx, object_count), strict=True
+    for index, (cls_name, center) in enumerate(
+        zip(class_sequence, slot_centers(ctx, object_count), strict=True)
     ):
         obj = draw_polygon(
             ctx,
             "",
             _triangle_points(center, cls_name),
             class_name=str(cls_name),
-            color=ctx.ink_color,
+            color=object_color(ctx, index),
         )
         objects.append(replace(obj, class_name=str(cls_name)))
     return _count_components(
@@ -1236,15 +1239,15 @@ def _build_quadrilateral_type_count(
         theme_index=rng.randrange(0, 3),
     )
     objects = []
-    for cls_name, center in zip(
-        class_sequence, slot_centers(ctx, object_count), strict=True
+    for index, (cls_name, center) in enumerate(
+        zip(class_sequence, slot_centers(ctx, object_count), strict=True)
     ):
         obj = draw_polygon(
             ctx,
             "",
             _quadrilateral_points(center, cls_name),
             class_name=str(cls_name),
-            color=ctx.ink_color,
+            color=object_color(ctx, index),
         )
         objects.append(replace(obj, class_name=str(cls_name)))
     return _count_components(
@@ -1279,16 +1282,17 @@ def _build_shape_type_count(
         theme_index=rng.randrange(0, 3),
     )
     objects = []
-    for cls_name, center in zip(
-        class_sequence, slot_centers(ctx, object_count), strict=True
+    for index, (cls_name, center) in enumerate(
+        zip(class_sequence, slot_centers(ctx, object_count), strict=True)
     ):
+        color = object_color(ctx, index)
         if cls_name == "triangle":
             obj = draw_polygon(
                 ctx,
                 "",
                 right_triangle_points(center, 1.6, 1.5),
                 class_name="triangle",
-                color=ctx.ink_color,
+                color=color,
             )
         elif cls_name == "quadrilateral":
             obj = draw_polygon(
@@ -1296,7 +1300,7 @@ def _build_shape_type_count(
                 "",
                 rectangle_points(center, 1.8, 1.3),
                 class_name="quadrilateral",
-                color=ctx.ink_color,
+                color=color,
             )
         elif cls_name == "pentagon":
             obj = draw_polygon(
@@ -1304,7 +1308,7 @@ def _build_shape_type_count(
                 "",
                 regular_polygon(center, 5, 0.9),
                 class_name="pentagon",
-                color=ctx.ink_color,
+                color=color,
             )
         elif cls_name == "hexagon":
             obj = draw_polygon(
@@ -1312,15 +1316,15 @@ def _build_shape_type_count(
                 "",
                 regular_polygon(center, 6, 0.9),
                 class_name="hexagon",
-                color=ctx.ink_color,
+                color=color,
             )
         elif cls_name == "circle":
             obj = draw_ellipse_or_circle(
-                ctx, "", center, 0.75, 0.75, class_name="circle", color=ctx.ink_color
+                ctx, "", center, 0.75, 0.75, class_name="circle", color=color
             )
         else:
             obj = draw_ellipse_or_circle(
-                ctx, "", center, 0.95, 0.6, class_name="ellipse", color=ctx.ink_color
+                ctx, "", center, 0.95, 0.6, class_name="ellipse", color=color
             )
         objects.append(replace(obj, class_name=str(cls_name)))
     return _count_components(
@@ -1355,8 +1359,8 @@ def _build_polygon_convexity_count(
         theme_index=rng.randrange(0, 3),
     )
     objects = []
-    for cls_name, center in zip(
-        class_sequence, slot_centers(ctx, object_count), strict=True
+    for index, (cls_name, center) in enumerate(
+        zip(class_sequence, slot_centers(ctx, object_count), strict=True)
     ):
         points = (
             regular_polygon(center, 5, 0.9)
@@ -1364,7 +1368,7 @@ def _build_polygon_convexity_count(
             else concave_polygon(center, 5, 0.95, rng)
         )
         obj = draw_polygon(
-            ctx, "", points, class_name=str(cls_name), color=ctx.ink_color
+            ctx, "", points, class_name=str(cls_name), color=object_color(ctx, index)
         )
         objects.append(replace(obj, class_name=str(cls_name)))
     return _count_components(

@@ -3,10 +3,9 @@
 ## Identity
 - domain: `icons`
 - scene_id: `named_field`
-- scene_id: `counting`
 - task: `named_shape_count`
 - module: `trace/tasks/icons/named_field/single_attribute_membership_count.py`
-- prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
+- prompt bundle: `prompts/icons/named_field/icons_named_field_v1.json`
 
 ## Program Contract
 `count.single_attribute_membership(scene=named_field, scope=all_icons, attribute=shape, output=count)`

@@ -213,7 +213,6 @@ and decompose any that construct final public outputs:
 
 Current icons configs still include old reasoning-group files:
 
-- `configs/domains/icons/counting.yaml`
 - `configs/domains/icons/relation.yaml`
 - `configs/domains/icons/pattern.yaml`
 - `configs/domains/icons/sequence.yaml`

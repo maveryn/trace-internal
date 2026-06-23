@@ -499,12 +499,17 @@ def test_icons_pattern_bundle_supports_structured_violation_query() -> None:
     assert "structured_violation_scene" in bundle.scene_templates
 
 
-def test_icons_counting_bundle_supports_single_scene_counting_family() -> None:
-    bundle = load_prompt_bundle("icons", "counting", "icons_counting_v0")
-    assert "reference_scene_counting" in bundle.scene_templates
-    assert "single_scene_counting" in bundle.scene_templates
-    assert len(bundle.task_templates["counting_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task:counting_query"]) == ["question_text"]
+def test_icons_venn_field_bundle_supports_region_count_queries() -> None:
+    bundle = load_prompt_bundle("icons", "venn_field", "icons_venn_field_v1")
+    assert "venn_field_scene" in bundle.scene_templates
+    assert len(bundle.task_templates["scoped_attribute_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert set(bundle.query_templates.keys()) == {
+        "inside_both_circles_count",
+        "inside_either_circle_count",
+        "inside_exactly_one_circle_count",
+        "outside_both_circles_count",
+    }
+    assert list(bundle.required_slots_by_key["query:inside_both_circles_count"]) == ["target_description"]
 
 
 def test_graph_counting_bundle_supports_degree_count_query() -> None:

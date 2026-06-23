@@ -1,69 +1,67 @@
 # `task_icons__venn_field__scoped_attribute_count`
 
+## Program Contract
+
+`counting.set_region_predicate_count(scene=venn_field, scope=procedural_named_icons, region=both_circles|either_circle|exactly_one_circle|outside_both_circles, target=shape|color_and_shape, membership=center_in_region, output=count)`
+
 ## Identity
-- domain: `icons`
-- scene_id: `venn_field`
-- scene_id: `counting`
-- task: `named_shape_venn_region_count`
-- module: `trace/tasks/icons/counting/named_shape_venn_region_count.py`
-- prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
 
-## Scene And Query
-The task renders one panel containing procedurally generated
-named shape icons plus two overlapping marked circles. The prompt names one
-target icon condition and asks how many matching icons have centers in a Venn
-region.
+- Domain: `icons`
+- Scene id: `venn_field`
+- Task id: `task_icons__venn_field__scoped_attribute_count`
+- Objective contract: count prompt-named procedural icons whose centers satisfy a visible overlapping-circle region predicate.
+- Module: `trace/tasks/icons/venn_field/scoped_attribute_count.py`
+- Prompt bundle: `prompts/icons/venn_field/icons_venn_field_v1.json`
 
-Supported query ids:
-- `inside_both_circles_count`: count targets inside both marked circles.
-- `inside_either_circle_count`: count targets inside at least one marked
-  circle.
-- `inside_exactly_one_circle_count`: count targets inside exactly one marked
-  circle.
-- `outside_both_circles_count`: count targets outside both marked circles.
+## Contract
 
-Target modes:
-- `shape_only`: prompt names one procedural shape, e.g. `"bell"` icons.
-- `color_shape`: prompt names a shared semantic color plus shape, e.g.
-  `red [#E63232] "bell" icons`.
+- Supported `query_id` values:
+  - `inside_both_circles_count`: count target icons centered inside both marked circles.
+  - `inside_either_circle_count`: count target icons centered inside at least one marked circle.
+  - `inside_exactly_one_circle_count`: count target icons centered inside exactly one marked circle.
+  - `outside_both_circles_count`: count target icons centered outside both marked circles.
+- Answer schema: `integer`.
+- Annotation schema: `bbox_set`.
+- The image contains one panel with procedurally generated named icons and two overlapping marked circles.
+- The target predicate is either one quoted shape name, such as `"bell" icons`, or one named color plus quoted shape name, such as `red [#E63232] "bell" icons`.
+- Target predicate mode, target shape, target color, fill style, icon count, and render style are generation metadata, not public query ids.
+- Circle boundary margins keep icon boxes away from queried inside/outside boundaries.
 
-The target shape support is the full procedural named-icon vocabulary in
-`trace/tasks/icons/shared/procedural_named_icons.py`. Fill style is a
-render-only visual variation for this task and is not used as a target mode.
+## Generation
 
-## Answer Contract
-- `answer_gt.type = integer`
-- default answer support is `1..5`
-- value is the number of target icons whose centers satisfy the active Venn
-  predicate
+- `target_count` defaults to `1..5`.
+- `object_count` defaults to `8..16`.
+- At least one target icon is also placed outside the counted region as an opposite-region distractor.
+- Non-target distractors include shape and color confounds.
+- Query selection is task-owned and uniform unless `query_id` is explicitly supplied.
+- Generation rejects samples that cannot place all icon boxes with the requested Venn membership and overlap constraints.
 
-## Annotation Contract
-- `annotation_gt.type = bbox_set`
-- one `[x0, y0, x1, y1]` pixel bbox for every counted target icon
-- icons are placed with bbox clearance from circle boundaries so queried
-  targets do not touch or cross the marked circles
-- annotation boxes are sorted in reading order
+## Prompt
 
-## Trace Contract
-- `scene_ir.entities` contains one entity for each rendered procedural icon,
-  including `shape_id`, `shape_name`, `color_name`, `fill_style`,
-  `venn_category`, and target/count flags.
+- Prompt bundle: `icons_venn_field_v1`
+- `scene_key`: `venn_field_scene`
+- `task_key`: `scoped_attribute_count`
+- Query templates ask for one of the four overlapping-circle region predicates.
+- Answer-only JSON shape: `{"answer":2}`
+- Answer+annotation JSON shape: `{"annotation":[[116,128,168,180],[634,302,686,354]],"answer":2}`
+
+## Annotation
+
+- `bbox_set` is used because the number of counted witnesses can be one or more.
+- Boxes mark counted target icons only, sorted top-to-bottom then left-to-right.
+- The task is not scalar-annotation eligible because counted witness cardinality varies by generated answer.
+
+## Trace
+
+- `scene_ir.entities` contains one entity for each rendered procedural icon, including `shape_id`, `shape_name`, `color_name`, `fill_style`, `venn_category`, and target/count flags.
 - `scene_ir.relations.venn` records both circle geometries.
-- `query_spec.params.target_attribute_mode` records whether the target is
-  shape-only or color+shape.
-- `execution_trace.counted_venn_categories` records the categories counted by
-  the active query.
-- `render_map.counted_instance_ids`, `witness_symbolic.counted_instance_ids`,
-  and `projected_annotation.bbox_set` are derived from the same rendered
-  instances.
-- `projected_annotation` follows the shared icon bbox annotation shape, including
-  `bbox_set`, `pixel_bbox_set`, and `pixel_point_set`.
+- `query_spec.params.target_attribute_mode` records whether the target is shape-only or color+shape.
+- `execution_trace.counted_venn_categories` records the Venn categories counted by the active query.
+- `render_map.counted_instance_ids`, `witness_symbolic.counted_instance_ids`, and `projected_annotation.bbox_set` are derived from the same rendered instances.
 
-## Prompt Contract
-- `scene_key = single_scene_counting`
-- `task_key = counting_query`
-- prompts ask for the count of target named icons in a visible overlapping
-  circle region
-- prompt text quotes the named target shape, e.g. `"bell"`
-- answer-only and answer+annotation modes both include contract-valid JSON
-  examples
+## Tests
+
+- Behavior and trace tests: `tests/test_icons_counting_named_shape_venn_region_count.py`
+- Config tests: `tests/test_icons_scene_config.py`
+- Prompt bundle tests: `tests/test_prompt_system.py`
+- Scene-package migration gates: `tests/test_scene_package_migration_contracts.py`, `tests/test_scene_package_review_candidate_contracts.py`

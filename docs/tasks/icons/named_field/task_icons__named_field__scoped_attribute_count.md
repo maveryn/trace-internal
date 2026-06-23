@@ -3,10 +3,9 @@
 ## Identity
 - domain: `icons`
 - scene_id: `named_field`
-- scene_id: `counting`
 - task: `named_shape_region_count`
 - module: `trace/tasks/icons/named_field/scoped_attribute_count.py`
-- prompt bundle: `prompts/icons/counting/icons_counting_v0.json`
+- prompt bundle: `prompts/icons/named_field/icons_named_field_v1.json`
 
 ## Program Contract
 `count.scoped_attribute(scene=named_field, scope=marked_region_or_band_or_quadrant_or_shelf, attribute=shape, output=count)`

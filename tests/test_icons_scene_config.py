@@ -113,23 +113,7 @@ def test_icons_icon_field_scene_defaults_loaded() -> None:
     assert set(bundle.scene_templates.keys()) == {'single_scene_counting'}
     assert set(bundle.query_templates.keys()) == {'most_frequent_type_count', 'singleton_type_count'}
 
-def test_icons_counting_defaults_loaded() -> None:
-    cfg = get_scene_defaults('icons', 'counting')
-    generation_shared = cfg['generation']['shared']
-    assert int(generation_shared['object_count_min']) >= 1
-    assert int(generation_shared['object_count_max']) >= int(generation_shared['object_count_min'])
-    assert int(generation_shared['target_count_min']) == 0
-    assert int(generation_shared['target_count_max']) == 10
-    assert int(generation_shared['distractor_count_min']) == 1
-    assert int(generation_shared['distractor_count_max']) == 10
-    assert bool(generation_shared['balanced_sampling']) is True
-    assert 'task_icons__named_field__count_arithmetic' not in cfg['generation']['task_overrides']
-    assert 'task_icons__named_field__closer_to_reference_count' not in cfg['generation']['task_overrides']
-    assert 'task_icons__named_grid__scoped_attribute_count' not in cfg['generation'].get('task_overrides', {})
-    assert 'task_icons__named_grid__row_column_shape_extreme_number' not in cfg['generation'].get('task_overrides', {})
-    assert 'task_icons__named_grid__group_predicate_count' not in cfg['generation'].get('task_overrides', {})
-    assert 'task_icons__named_ring__scoped_attribute_count' not in cfg['generation']['task_overrides']
-    assert 'task_icons__venn_field__scoped_attribute_count' in cfg['generation']['task_overrides']
+def test_icons_named_field_grid_ring_defaults_loaded() -> None:
     named_cfg = get_scene_defaults('icons', 'named_field')
     named_grid_cfg = get_scene_defaults('icons', 'named_grid')
     named_ring_cfg = get_scene_defaults('icons', 'named_ring')
@@ -138,27 +122,6 @@ def test_icons_counting_defaults_loaded() -> None:
     assert 'task_icons__named_grid__scoped_attribute_count' in named_grid_cfg['generation']['task_overrides']
     assert 'task_icons__named_grid__row_column_shape_extreme_number' in named_grid_cfg['generation']['task_overrides']
     assert 'task_icons__named_grid__group_predicate_count' in named_grid_cfg['generation']['task_overrides']
-    render_shared = cfg['rendering']['shared']
-    assert int(render_shared['canvas_width']) > 0
-    assert int(render_shared['canvas_height']) > 0
-    assert int(render_shared['reference_panel_width_px']) > 0
-    assert int(render_shared['scene_icon_size_min_px']) > 0
-    assert int(render_shared['scene_icon_size_max_px']) >= int(render_shared['scene_icon_size_min_px'])
-    assert 0.0 <= float(render_shared['scene_max_overlap_fraction']) <= 1.0
-    assert int(render_shared['scene_placement_max_attempts']) > 0
-    assert 1 <= int(render_shared['palette_size_min']) <= int(render_shared['palette_size_max'])
-    assert float(render_shared['min_color_distance']) > 0.0
-    assert str(render_shared['color_distance_space']).strip() in {'lab', 'rgb'}
-    assert 'icon_tint_rgb' not in render_shared
-    assert list(render_shared['icon_noise_edit_types']) == ['blur', 'downsample', 'jpeg', 'noise']
-    assert list(render_shared['icon_noise_edit_count_range']) == [0, 2]
-    assert 'noise' in render_shared['icon_noise_value_ranges']
-    prompt_shared = cfg['prompt']['shared']
-    assert str(prompt_shared['bundle_id']).strip()
-    assert str(prompt_shared['scene_key']).strip()
-    assert str(prompt_shared['task_key']).strip()
-    assert str(prompt_shared['json_output_contract']).strip()
-    assert str(prompt_shared['json_output_contract_answer_only']).strip()
     pair_generation, pair_rendering, pair_prompt = split_generation_rendering_prompt_defaults(named_cfg, task_id='task_icons__named_field__count_arithmetic')
     assert int(pair_generation['operand_count_min']) == 1
     assert int(pair_generation['operand_count_max']) == 6
@@ -284,25 +247,36 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(closer_prompt['answer_hint']).strip()
     assert str(closer_prompt['json_example']).strip()
     assert str(closer_prompt['json_example_answer_only']).strip()
-    venn_generation, venn_rendering, venn_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__venn_field__scoped_attribute_count')
+def test_icons_venn_field_scene_defaults_loaded() -> None:
+    cfg = get_scene_defaults('icons', 'venn_field')
+    assert 'task_icons__venn_field__scoped_attribute_count' in cfg['generation']['task_overrides']
+    venn_generation, venn_rendering, venn_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id='task_icons__venn_field__scoped_attribute_count',
+    )
     assert int(venn_generation['object_count_min']) == 8
     assert int(venn_generation['object_count_max']) == 16
     assert int(venn_generation['target_count_min']) == 1
     assert int(venn_generation['target_count_max']) == 5
-    assert sorted(venn_generation['named_venn_query_ids']) == ['inside_both_circles_count', 'inside_either_circle_count', 'inside_exactly_one_circle_count', 'outside_both_circles_count']
+    assert 'named_venn_query_ids' not in venn_generation
+    assert 'query_id_weights' not in venn_generation
     assert sorted(venn_generation['target_attribute_mode_weights'].keys()) == ['color_shape', 'shape_only']
     assert int(venn_rendering['canvas_width']) > 0
     assert int(venn_rendering['canvas_height']) > 0
     assert int(venn_rendering['venn_boundary_margin_px']) == 12
-    assert str(venn_prompt['scene_key']).strip() == 'single_scene_counting'
-    assert str(venn_prompt['question_text_inside_both_circles_count']).strip()
-    assert str(venn_prompt['question_text_inside_either_circle_count']).strip()
-    assert str(venn_prompt['question_text_inside_exactly_one_circle_count']).strip()
-    assert str(venn_prompt['question_text_outside_both_circles_count']).strip()
-    assert str(venn_prompt['annotation_hint']).strip()
-    assert str(venn_prompt['answer_hint']).strip()
-    assert str(venn_prompt['json_example']).strip()
-    assert str(venn_prompt['json_example_answer_only']).strip()
+    assert str(venn_prompt['bundle_id']).strip() == 'icons_venn_field_v1'
+    assert str(venn_prompt['scene_key']).strip() == 'venn_field_scene'
+    assert str(venn_prompt['task_key']).strip() == 'scoped_attribute_count'
+    bundle = load_scene_prompt_bundle('icons', 'venn_field', 'icons_venn_field_v1')
+    assert bundle.bundle_id == 'icons_venn_field_v1'
+    assert bundle.schema_version == 'v1'
+    assert set(bundle.scene_templates.keys()) == {'venn_field_scene'}
+    assert set(bundle.query_templates.keys()) == {
+        'inside_both_circles_count',
+        'inside_either_circle_count',
+        'inside_exactly_one_circle_count',
+        'outside_both_circles_count',
+    }
 
 def test_icons_pair_grid_scene_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'pair_grid')

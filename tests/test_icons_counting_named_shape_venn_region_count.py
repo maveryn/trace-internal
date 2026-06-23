@@ -6,7 +6,7 @@ from collections import Counter
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
-from trace.tasks.icons.counting.named_shape_venn_region_count import QUERY_IDS, TARGET_ATTRIBUTE_MODES
+from trace.tasks.icons.venn_field.scoped_attribute_count import SUPPORTED_QUERY_IDS, TARGET_ATTRIBUTE_MODES
 
 
 TASK_ID = "task_icons__venn_field__scoped_attribute_count"
@@ -45,12 +45,12 @@ def _matches_target(entity: dict[str, object], trace_params: dict[str, object]) 
 
 def test_icons_counting_named_shape_venn_contract_all_queries_and_target_modes() -> None:
     task = create_task(TASK_ID)
-    for query_index, query_id in enumerate(QUERY_IDS):
+    for query_index, query_id in enumerate(SUPPORTED_QUERY_IDS):
         for mode_index, mode in enumerate(TARGET_ATTRIBUTE_MODES):
             out = task.generate(
                 hash64(20260525, "named-shape-venn-contract", query_index, mode_index),
                 params={
-                    "named_venn_query_id": query_id,
+                    "query_id": query_id,
                     "target_count": 2,
                     "object_count": 12,
                     **_target_mode_params(mode),
@@ -68,15 +68,16 @@ def test_icons_counting_named_shape_venn_contract_all_queries_and_target_modes()
             ]
 
             assert out.scene_id == "venn_field"
-            assert out.query_id == "single"
-            assert trace["query_spec"]["params"]["internal_query_id"] == query_id
+            assert out.query_id == query_id
+            assert trace["query_spec"]["query_id"] == query_id
+            assert trace["query_spec"]["params"]["query_id"] == query_id
             assert out.answer_gt.type == "integer"
             assert out.answer_gt.value == 2
             assert out.annotation_gt.type == "bbox_set"
             assert len(out.annotation_gt.value) == 2
             assert len(counted_entities) == 2
             assert trace["scene_ir"]["scene_kind"] == "icons_named_shape_venn_region_field"
-            assert trace["query_spec"]["template_id"] == "icons_counting_v0"
+            assert trace["query_spec"]["template_id"] == "icons_venn_field_v1"
             assert set(trace["execution_trace"]["counted_venn_categories"]) == counted_categories
             assert set(trace["render_map"]["counted_instance_ids"]) == {
                 str(entity["instance_id"]) for entity in counted_entities
@@ -102,16 +103,16 @@ def test_icons_counting_named_shape_venn_sampling_distribution() -> None:
             max_attempts=200,
         )
         execution = out.trace_payload["execution_trace"]
-        internal_query_id = str(execution["internal_query_id"])
-        query_counts[internal_query_id] += 1
+        query_id = str(out.query_id)
+        query_counts[query_id] += 1
         mode_counts[str(execution["target_attribute_mode"])] += 1
         answer_counts[int(out.answer_gt.value)] += 1
 
         assert 8 <= int(execution["object_count"]) <= 16
         assert 1 <= int(out.answer_gt.value) <= 5
         assert len(out.annotation_gt.value) == int(out.answer_gt.value)
-        assert set(execution["counted_venn_categories"]) == _counted_categories(internal_query_id)
+        assert set(execution["counted_venn_categories"]) == _counted_categories(query_id)
 
-    assert set(query_counts) == set(QUERY_IDS)
+    assert set(query_counts) == set(SUPPORTED_QUERY_IDS)
     assert set(mode_counts) == set(TARGET_ATTRIBUTE_MODES)
     assert set(answer_counts).issubset(set(range(1, 6)))

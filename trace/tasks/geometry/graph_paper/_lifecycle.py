@@ -38,6 +38,8 @@ from .shared.rendering import (
     draw_segment,
     make_context,
     object_color,
+    random_center_for_radii,
+    random_shift_points,
     render_metadata,
     slot_centers,
 )
@@ -399,59 +401,6 @@ def _component_payload(
     return components, TypedValue(type=str(answer_type), value=answer_value)
 
 
-def _build_angle_value(
-    context: Mapping[str, Any], plan: GraphPaperTaskPlan
-) -> tuple[GraphPaperComponents, TypedValue]:
-    """Build and bind one angle measurement from rendered graph rays."""
-
-    task_params = dict(context["task_params"])
-    rng, ctx = _new_context(context, plan.salt)
-    value_key = str(plan.value_param)
-    angle_value = int(task_params.get(value_key, rng.randrange(35, 151, 5)))
-    angle_obj = draw_angle(
-        ctx,
-        "A",
-        angle_points((0.0, 0.0), float(angle_value), radius=3.0),
-        color=ctx.accent_color,
-    )
-    annotation_value, projected = point_map_artifacts(
-        {
-            "ray_a": angle_obj.points_px[0],
-            "vertex": angle_obj.points_px[1],
-            "ray_b": angle_obj.points_px[2],
-        }
-    )
-    prompt_plan = _make_prompt(
-        context["prompt_defaults"],
-        prompt_key=plan.prompt_key_for(str(context["branch_name"])),
-        answer_hint='set "answer" to the integer angle measure in degrees',
-        annotation_hint='set "annotation" to an object with pixel points for keys "ray_a", "vertex", and "ray_b"',
-        json_example='{"annotation":{"ray_a":[210,320],"vertex":[330,320],"ray_b":[402,245]},"answer":65}',
-        json_example_answer_only='{"answer":65}',
-        target_text="angle A",
-        metric_text="angle measure",
-    )
-    return _component_payload(
-        context,
-        ctx=ctx,
-        prompt_plan=prompt_plan,
-        answer_type="integer",
-        answer_value=int(angle_value),
-        annotation_type="point_map",
-        annotation_value=annotation_value,
-        projected_annotation=projected,
-        witness_symbolic={
-            "points": ["ray_a", "vertex", "ray_b"],
-            "angle_degrees": int(angle_value),
-        },
-        objects=(angle_obj,),
-        prompt_key=plan.prompt_key_for(str(context["branch_name"])),
-        program_code="single_angle.measure_degrees",
-        scene_kind="geometry_graph_paper_single_angle",
-        semantic_args={"measured_angle_label": "A"},
-    )
-
-
 def _build_line_slope_value(
     context: Mapping[str, Any], plan: GraphPaperTaskPlan
 ) -> tuple[GraphPaperComponents, TypedValue]:
@@ -466,6 +415,9 @@ def _build_line_slope_value(
     reduced_dy, reduced_dx = reduced_slope(dy, dx)
     start = (-float(dx) / 2.0, -float(dy) / 2.0)
     end = (float(dx) / 2.0, float(dy) / 2.0)
+    start, end = random_shift_points(
+        ctx, (start, end), rng, margin_units=1.2, step=0.5
+    )
     segment = draw_segment(ctx, "A", start, end, color=ctx.accent_color)
     annotation_value, projected = scalar_segment_artifacts(
         segment.points_px[0], segment.points_px[1]
@@ -511,14 +463,18 @@ def _build_circle_circumference_value(
     rng, ctx = _new_context(context, plan.salt)
     radius = int(task_params.get("radius", rng.randint(2, 5)))
     answer_value = pi_expression(2 * radius)
+    center = random_center_for_radii(
+        ctx, radius, radius, rng, margin_units=1.2, step=0.5
+    )
     circle = draw_ellipse_or_circle(
         ctx,
         "A",
-        (0.0, 0.0),
+        center,
         radius,
         radius,
         class_name="circle",
         color=ctx.accent_color,
+        filled=False,
     )
     annotation_value, projected = scalar_bbox_artifacts(circle.bbox_px)
     prompt_plan = _make_prompt(
@@ -574,14 +530,18 @@ def _build_ellipse_area_value(
             [(rx, ry) for rx, ry in candidate_pairs if rx * ry == target_product]
         )
     answer_value = pi_expression(radius_x * radius_y)
+    center = random_center_for_radii(
+        ctx, radius_x, radius_y, rng, margin_units=1.2, step=0.5
+    )
     ellipse = draw_ellipse_or_circle(
         ctx,
         "A",
-        (0.0, 0.0),
+        center,
         radius_x,
         radius_y,
         class_name="ellipse",
         color=ctx.accent_color,
+        filled=False,
     )
     annotation_value, projected = scalar_bbox_artifacts(ellipse.bbox_px)
     prompt_plan = _make_prompt(
@@ -656,8 +616,8 @@ def _build_polygon_area_value(
     """Build and bind one lattice polygon area measurement objective."""
 
     rng, ctx = _new_context(context, plan.salt)
-    del rng
     points, shape_text = _single_polygon_points(context, salt="area_shape")
+    points = random_shift_points(ctx, points, rng, margin_units=1.2, step=0.5)
     answer_value = int(round(polygon_area(points)))
     polygon = draw_polygon(
         ctx,
@@ -665,6 +625,7 @@ def _build_polygon_area_value(
         points,
         class_name=shape_text.replace(" ", "_"),
         color=ctx.accent_color,
+        filled=False,
     )
     annotation_value, projected = point_set_artifacts(polygon.points_px)
     prompt_plan = _make_prompt(
@@ -702,10 +663,10 @@ def _build_polygon_perimeter_value(
     """Build and bind one lattice polygon perimeter measurement objective."""
 
     rng, ctx = _new_context(context, plan.salt)
-    del rng
     points, shape_text = _single_polygon_points(
         context, salt="perim_shape", perimeter_mode=True
     )
+    points = random_shift_points(ctx, points, rng, margin_units=1.2, step=0.5)
     answer_value = int(round(polygon_perimeter(points)))
     polygon = draw_polygon(
         ctx,
@@ -713,6 +674,7 @@ def _build_polygon_perimeter_value(
         points,
         class_name=shape_text.replace(" ", "_"),
         color=ctx.accent_color,
+        filled=False,
     )
     annotation_value, projected = point_set_artifacts(polygon.points_px)
     prompt_plan = _make_prompt(
@@ -760,12 +722,12 @@ def _build_angle_extremum_label(
     values = unique_metric_values(rng, count=object_count, low=35, high=150)
     objects = []
     for index, (label, value, center) in enumerate(
-        zip(labels, values, slot_centers(ctx, object_count), strict=True)
+        zip(labels, values, slot_centers(ctx, object_count, rng=rng), strict=True)
     ):
         obj = draw_angle(
             ctx,
             label,
-            angle_points(center, float(value), radius=1.0),
+            angle_points(center, float(value), radius=1.7),
             color=object_color(ctx, index),
         )
         objects.append(replace(obj, metric_value=float(value)))
@@ -829,7 +791,7 @@ def _build_length_extremum_label(
     values = unique_metric_values(rng, count=object_count, low=3, high=10)
     objects = []
     for index, (label, value, center) in enumerate(
-        zip(labels, values, slot_centers(ctx, object_count), strict=True)
+        zip(labels, values, slot_centers(ctx, object_count, rng=rng), strict=True)
     ):
         length_units = float(value) * 0.25
         start = (center[0] - length_units / 2.0, center[1])
@@ -902,7 +864,7 @@ def _shape_extremum_objects(
     objects = []
     used_values: set[int] = set()
     for index, (label, center) in enumerate(
-        zip(labels, slot_centers(ctx, object_count), strict=True)
+        zip(labels, slot_centers(ctx, object_count, rng=rng), strict=True)
     ):
         for _ in range(30):
             width = rng.choice([1.2, 1.6, 2.0, 2.4])
@@ -920,7 +882,12 @@ def _shape_extremum_objects(
                 used_values.add(encoded)
                 break
         obj = draw_polygon(
-            ctx, label, points, class_name=shape_kind, color=object_color(ctx, index)
+            ctx,
+            label,
+            points,
+            class_name=shape_kind,
+            color=object_color(ctx, index),
+            filled=False,
         )
         objects.append(replace(obj, metric_value=float(encoded)))
     return ctx, shape_kind, object_count, tuple(objects)
@@ -1149,12 +1116,12 @@ def _build_angle_type_count(
     )
     objects = []
     for index, (cls_name, center) in enumerate(
-        zip(class_sequence, slot_centers(ctx, object_count), strict=True)
+        zip(class_sequence, slot_centers(ctx, object_count, rng=rng), strict=True)
     ):
         obj = draw_angle(
             ctx,
             "",
-            angle_points(center, ANGLE_VALUE_BY_CLASS[cls_name], radius=0.8),
+            angle_points(center, ANGLE_VALUE_BY_CLASS[cls_name], radius=1.45),
             color=object_color(ctx, index),
         )
         objects.append(
@@ -1197,7 +1164,7 @@ def _build_triangle_type_count(
     )
     objects = []
     for index, (cls_name, center) in enumerate(
-        zip(class_sequence, slot_centers(ctx, object_count), strict=True)
+        zip(class_sequence, slot_centers(ctx, object_count, rng=rng), strict=True)
     ):
         obj = draw_polygon(
             ctx,
@@ -1205,6 +1172,7 @@ def _build_triangle_type_count(
             _triangle_points(center, cls_name),
             class_name=str(cls_name),
             color=object_color(ctx, index),
+            filled=False,
         )
         objects.append(replace(obj, class_name=str(cls_name)))
     return _count_components(
@@ -1240,7 +1208,7 @@ def _build_quadrilateral_type_count(
     )
     objects = []
     for index, (cls_name, center) in enumerate(
-        zip(class_sequence, slot_centers(ctx, object_count), strict=True)
+        zip(class_sequence, slot_centers(ctx, object_count, rng=rng), strict=True)
     ):
         obj = draw_polygon(
             ctx,
@@ -1248,6 +1216,7 @@ def _build_quadrilateral_type_count(
             _quadrilateral_points(center, cls_name),
             class_name=str(cls_name),
             color=object_color(ctx, index),
+            filled=False,
         )
         objects.append(replace(obj, class_name=str(cls_name)))
     return _count_components(
@@ -1283,7 +1252,7 @@ def _build_shape_type_count(
     )
     objects = []
     for index, (cls_name, center) in enumerate(
-        zip(class_sequence, slot_centers(ctx, object_count), strict=True)
+        zip(class_sequence, slot_centers(ctx, object_count, rng=rng), strict=True)
     ):
         color = object_color(ctx, index)
         if cls_name == "triangle":
@@ -1293,6 +1262,7 @@ def _build_shape_type_count(
                 right_triangle_points(center, 1.6, 1.5),
                 class_name="triangle",
                 color=color,
+                filled=False,
             )
         elif cls_name == "quadrilateral":
             obj = draw_polygon(
@@ -1301,6 +1271,7 @@ def _build_shape_type_count(
                 rectangle_points(center, 1.8, 1.3),
                 class_name="quadrilateral",
                 color=color,
+                filled=False,
             )
         elif cls_name == "pentagon":
             obj = draw_polygon(
@@ -1309,6 +1280,7 @@ def _build_shape_type_count(
                 regular_polygon(center, 5, 0.9),
                 class_name="pentagon",
                 color=color,
+                filled=False,
             )
         elif cls_name == "hexagon":
             obj = draw_polygon(
@@ -1317,14 +1289,29 @@ def _build_shape_type_count(
                 regular_polygon(center, 6, 0.9),
                 class_name="hexagon",
                 color=color,
+                filled=False,
             )
         elif cls_name == "circle":
             obj = draw_ellipse_or_circle(
-                ctx, "", center, 0.75, 0.75, class_name="circle", color=color
+                ctx,
+                "",
+                center,
+                0.75,
+                0.75,
+                class_name="circle",
+                color=color,
+                filled=False,
             )
         else:
             obj = draw_ellipse_or_circle(
-                ctx, "", center, 0.95, 0.6, class_name="ellipse", color=color
+                ctx,
+                "",
+                center,
+                0.95,
+                0.6,
+                class_name="ellipse",
+                color=color,
+                filled=False,
             )
         objects.append(replace(obj, class_name=str(cls_name)))
     return _count_components(
@@ -1360,7 +1347,7 @@ def _build_polygon_convexity_count(
     )
     objects = []
     for index, (cls_name, center) in enumerate(
-        zip(class_sequence, slot_centers(ctx, object_count), strict=True)
+        zip(class_sequence, slot_centers(ctx, object_count, rng=rng), strict=True)
     ):
         points = (
             regular_polygon(center, 5, 0.9)
@@ -1368,7 +1355,12 @@ def _build_polygon_convexity_count(
             else concave_polygon(center, 5, 0.95, rng)
         )
         obj = draw_polygon(
-            ctx, "", points, class_name=str(cls_name), color=object_color(ctx, index)
+            ctx,
+            "",
+            points,
+            class_name=str(cls_name),
+            color=object_color(ctx, index),
+            filled=False,
         )
         objects.append(replace(obj, class_name=str(cls_name)))
     return _count_components(

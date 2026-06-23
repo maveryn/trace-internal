@@ -590,7 +590,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__function_panels__x_axis_symmetry_label": _entry("geometry", "function_panels", "geometry", "analytical"),
     "task_geometry__graph_paper__angle_extremum_label": _entry("geometry", "graph_paper", "geometry", "comparison"),
     "task_geometry__graph_paper__angle_type_count": _entry("geometry", "graph_paper", "geometry", "counting"),
-    "task_geometry__graph_paper__angle_value": _entry("geometry", "graph_paper", "geometry", "measurement"),
     "task_geometry__graph_paper__area_extremum_label": _entry("geometry", "graph_paper", "geometry", "comparison"),
     "task_geometry__graph_paper__circle_circumference_value": _entry("geometry", "graph_paper", "geometry", "measurement"),
     "task_geometry__graph_paper__ellipse_area_value": _entry("geometry", "graph_paper", "geometry", "measurement"),

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from trace.tasks.geometry.graph_paper.angle_value import GeometryAngleMeasure2DTask
+from trace.tasks.geometry.graph_paper.line_slope_value import (
+    GeometryGraphPaperLineSlopeValueTask,
+)
 from trace.tasks.geometry.shared.graph_panel_layout import resolve_graph_panel_layout
 
 
@@ -34,9 +36,9 @@ def test_graph_panel_layout_bounds_origin_and_metadata() -> None:
 
 
 def test_graph_paper_task_records_bounded_panel_metadata() -> None:
-    output = GeometryAngleMeasure2DTask().generate(
+    output = GeometryGraphPaperLineSlopeValueTask().generate(
         4242,
-        params={"angle_step": 1},
+        params={},
         max_attempts=200,
     )
     render_spec = output.trace_payload["render_spec"]

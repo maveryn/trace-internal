@@ -7,10 +7,6 @@ strict_repro: true
 max_attempts_per_instance: 180
 sampling_seed: 0
 tasks:
-  - task_id: task_geometry__graph_paper__angle_value
-    count: 8
-    params:
-      scene_variant: angle
   - task_id: task_geometry__shape_gallery__transformation_match_label
     count: 8
     params:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from math import atan2, cos, degrees, radians, sin
+from math import atan2, ceil, cos, degrees, floor, radians, sin
 from typing import Any, Mapping, Sequence
 
 from PIL import ImageDraw
@@ -185,6 +185,64 @@ def project(ctx: GraphPaperContext, point: Point) -> Point:
     )
 
 
+def _axis_offset(rng: Any, lower: float, upper: float, *, step: float) -> float:
+    """Sample one quantized graph-unit offset inside an allowed interval."""
+
+    resolved_step = max(0.25, float(step))
+    low_index = int(ceil(float(lower) / resolved_step))
+    high_index = int(floor(float(upper) / resolved_step))
+    if low_index > high_index:
+        return (float(lower) + float(upper)) / 2.0
+    return float(rng.randint(low_index, high_index)) * resolved_step
+
+
+def random_shift_points(
+    ctx: GraphPaperContext,
+    points: Sequence[Point],
+    rng: Any,
+    *,
+    margin_units: float = 1.0,
+    step: float = 0.5,
+) -> tuple[Point, ...]:
+    """Translate graph-unit points by one random in-bounds offset."""
+
+    if not points:
+        return tuple()
+    xs = [float(point[0]) for point in points]
+    ys = [float(point[1]) for point in points]
+    limit = max(1.0, float(ctx.graph_half_range) - float(margin_units))
+    dx = _axis_offset(rng, -limit - min(xs), limit - max(xs), step=float(step))
+    dy = _axis_offset(rng, -limit - min(ys), limit - max(ys), step=float(step))
+    return tuple((float(point[0]) + dx, float(point[1]) + dy) for point in points)
+
+
+def random_center_for_radii(
+    ctx: GraphPaperContext,
+    radius_x: float,
+    radius_y: float,
+    rng: Any,
+    *,
+    margin_units: float = 1.0,
+    step: float = 0.5,
+) -> Point:
+    """Sample a graph-unit center that keeps an ellipse/circle in bounds."""
+
+    limit = max(1.0, float(ctx.graph_half_range) - float(margin_units))
+    center_x = _axis_offset(
+        rng,
+        -limit + float(radius_x),
+        limit - float(radius_x),
+        step=float(step),
+    )
+    center_y = _axis_offset(
+        rng,
+        -limit + float(radius_y),
+        limit - float(radius_y),
+        step=float(step),
+    )
+    return (float(center_x), float(center_y))
+
+
 def graph_bbox(
     ctx: GraphPaperContext, points: Sequence[Point], *, pad_px: float = 8.0
 ) -> BBox:
@@ -343,11 +401,13 @@ def draw_polygon(
     class_name: str = "polygon",
     color: Color | None = None,
     fill: Color | None = None,
+    filled: bool = True,
 ) -> GraphObject:
     """Draw one labeled polygon."""
 
     pts = tuple(project(ctx, point) for point in points)
-    ctx.draw.polygon(pts, fill=fill or ctx.shape_fill_color, outline=color or ctx.ink_color)
+    fill_color = (fill or ctx.shape_fill_color) if bool(filled) else None
+    ctx.draw.polygon(pts, fill=fill_color, outline=color or ctx.ink_color)
     ctx.draw.line([*pts, pts[0]], fill=color or ctx.ink_color, width=4)
     bbox = pixel_bbox(pts, pad_px=8)
     if str(label):
@@ -372,6 +432,7 @@ def draw_ellipse_or_circle(
     *,
     class_name: str,
     color: Color | None = None,
+    filled: bool = True,
 ) -> GraphObject:
     """Draw one labeled circle or ellipse with graph-unit radii."""
 
@@ -379,7 +440,8 @@ def draw_ellipse_or_circle(
     rx = float(radius_x) * float(ctx.spacing_px)
     ry = float(radius_y) * float(ctx.spacing_px)
     bbox = (center_px[0] - rx, center_px[1] - ry, center_px[0] + rx, center_px[1] + ry)
-    ctx.draw.ellipse(bbox, outline=color or ctx.ink_color, width=4, fill=ctx.shape_fill_color)
+    fill_color = ctx.shape_fill_color if bool(filled) else None
+    ctx.draw.ellipse(bbox, outline=color or ctx.ink_color, width=4, fill=fill_color)
     if str(label):
         draw_label(ctx, label, (center_px[0], bbox[1] - 16), anchor="mm")
     return GraphObject(
@@ -394,7 +456,9 @@ def draw_ellipse_or_circle(
     )
 
 
-def slot_centers(ctx: GraphPaperContext, count: int) -> list[Point]:
+def slot_centers(
+    ctx: GraphPaperContext, count: int, *, rng: Any | None = None
+) -> list[Point]:
     """Return graph-unit slot centers for multi-object scenes."""
 
     cols = 3 if int(count) > 4 else 2
@@ -406,8 +470,16 @@ def slot_centers(ctx: GraphPaperContext, count: int) -> list[Point]:
         for x in x_values:
             centers.append((float(x), float(y)))
             if len(centers) == int(count):
-                return centers
-    return centers
+                if rng is None:
+                    return centers
+                return list(
+                    random_shift_points(
+                        ctx, centers, rng, margin_units=1.6, step=0.5
+                    )
+                )
+    if rng is None:
+        return centers
+    return list(random_shift_points(ctx, centers, rng, margin_units=1.6, step=0.5))
 
 
 def render_metadata(ctx: GraphPaperContext) -> dict[str, Any]:

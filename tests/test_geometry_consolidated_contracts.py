@@ -11,14 +11,12 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.geometry.graph_paper.angle_extremum_label import GeometryComparisonValueTask
 from trace.tasks.geometry.graph_paper.angle_type_count import GeometryCountingValueTask
-from trace.tasks.geometry.graph_paper.angle_value import GeometryMeasurementValueTask
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
     ("task_cls", "params"),
     (
-        (GeometryMeasurementValueTask, {"scene_variant": "circle", "query_id": "perimeter"}),
         (
             GeometryComparisonValueTask,
             {"scene_variant": "rectangle", "query_id": "area_extremum", "extremum_direction": "largest"},
@@ -43,7 +41,6 @@ def test_geometry_consolidated_tasks_are_deterministic(task_cls, params) -> None
 @pytest.mark.parametrize(
     ("task_cls", "params"),
     (
-        (GeometryMeasurementValueTask, {"scene_variant": "circle", "query_id": "perimeter"}),
         (GeometryComparisonValueTask, {"scene_variant": "rectangle", "query_id": "largest_area"}),
         (
             GeometryCountingValueTask,

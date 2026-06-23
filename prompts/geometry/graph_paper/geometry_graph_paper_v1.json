@@ -22,13 +22,6 @@
       ]
     },
     "query": {
-      "angle_value": [
-        "What is the measure of {target_text} in degrees?",
-        "Find the degree measure of {target_text}.",
-        "Measure {target_text}. What is its degree value?",
-        "What integer degree measure does {target_text} have?",
-        "Use the graph-paper angle diagram. What is the measure of {target_text}?"
-      ],
       "line_slope_value": [
         "What is the slope of {target_text}?",
         "Find the slope of {target_text}.",

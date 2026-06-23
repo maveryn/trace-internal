@@ -13,7 +13,6 @@ from trace.tasks.geometry.coordinate_plane.segment_relation_count import (
     _resolve_axes as _resolve_coordinate_axes,
 )
 from trace.tasks.geometry.graph_paper.angle_type_count import GeometryCountingValueTask
-from trace.tasks.geometry.graph_paper.angle_value import GeometryMeasurementValueTask
 from trace.tasks.geometry.shape_gallery.congruent_count import (
     GeometrySimilarityCountTask,
     _resolve_axes as _resolve_similarity_axes,
@@ -98,37 +97,6 @@ def _assert_consolidated_probability_metadata(trace: dict, *, scene_variant: str
     assert query_probabilities[query_id] == 1.0
     assert abs(sum(float(value) for value in scene_probabilities.values()) - 1.0) < 1e-9
     assert abs(sum(float(value) for value in query_probabilities.values()) - 1.0) < 1e-9
-
-
-@pytest.mark.parametrize(
-    ("scene_variant", "query_id"),
-    (
-        ("angle", "angle"),
-        ("line", "slope"),
-        ("circle", "perimeter"),
-        ("ellipse", "area"),
-    ),
-)
-def test_geometry_measurement_value_tracks_scene_and_query_ids(
-    scene_variant: str, query_id: str
-) -> None:
-    task = GeometryMeasurementValueTask()
-    out = task.generate(
-        23001,
-        params={"scene_variant": scene_variant, "query_id": query_id},
-        max_attempts=20,
-    )
-    trace = out.trace_payload
-    assert out.query_id == query_id
-    assert trace["execution_trace"]["scene_variant"] == scene_variant
-    assert trace["execution_trace"]["query_id"] == query_id
-    assert trace["query_spec"]["params"]["scene_variant"] == scene_variant
-    assert trace["query_spec"]["params"]["query_id"] == query_id
-    assert trace["execution_trace"]["source_task_id"].startswith(
-        "source_geometry_measurement_"
-    )
-    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id=query_id)
-    assert out.annotation_gt.type == "point_set"
 
 
 @pytest.mark.parametrize(
@@ -293,10 +261,6 @@ def test_geometry_counting_value_supports_twelve_objects(
 @pytest.mark.parametrize(
     ("task_cls", "params"),
     (
-        (
-            GeometryMeasurementValueTask,
-            {"scene_variant": "triangle", "query_id": "slope"},
-        ),
         (
             GeometryComparisonValueTask,
             {"scene_variant": "segment", "query_id": "area_extremum"},
@@ -511,33 +475,6 @@ def test_geometry_similarity_count_decouplesseeded_sampler_axes() -> None:
             "quadrilateral",
         }
     assert len(combos) >= 22
-
-
-def test_geometry_measurement_value_decouples_source_answerseeded_sampler() -> None:
-    task = GeometryMeasurementValueTask()
-    per_variant_answers: dict[str, Counter[str]] = {
-        "area": Counter(),
-        "perimeter": Counter(),
-    }
-    all_variants: Counter[str] = Counter()
-
-    for index in range(100):
-        instance_seed = hash64(0, "geometry_measurement_value_base", index)
-        out = task.generate(
-            int(instance_seed),
-            params={},
-            max_attempts=100,
-        )
-        all_variants[str(out.query_id)] += 1
-        if str(out.query_id) in per_variant_answers:
-            per_variant_answers[str(out.query_id)][str(out.answer_gt.value)] += 1
-
-    assert set(all_variants) == {"angle", "area", "perimeter", "slope"}
-    assert all(15 <= count <= 35 for count in all_variants.values())
-    assert 15 <= sum(per_variant_answers["area"].values()) <= 35
-    assert 15 <= sum(per_variant_answers["perimeter"].values()) <= 35
-    assert max(per_variant_answers["area"].values()) <= 10
-    assert max(per_variant_answers["perimeter"].values()) <= 10
 
 
 @pytest.mark.parametrize(

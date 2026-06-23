@@ -13,10 +13,6 @@ from trace.tasks.geometry.coordinate_plane.segment_relation_count import (
     _resolve_axes as _resolve_coordinate_axes,
 )
 from trace.tasks.geometry.graph_paper.angle_type_count import GeometryCountingValueTask
-from trace.tasks.geometry.function_graph.reference_line_crossing_count import (
-    GeometryGraphingCountTask,
-    _resolve_axes as _resolve_graphing_axes,
-)
 from trace.tasks.geometry.graph_paper.angle_value import GeometryMeasurementValueTask
 from trace.tasks.geometry.shape_gallery.congruent_count import (
     GeometrySimilarityCountTask,
@@ -62,7 +58,7 @@ def test_geometry_registry_includes_consolidated_value_tasks_plus_new_visual_fam
         and getattr(task_cls, "default_dataset_enabled", False)
     }
 
-    assert len(geometry_tasks) == 190
+    assert len(geometry_tasks) == 189
     assert REQUIRED_GEOMETRY_SPLIT_TASKS <= geometry_tasks
 
 
@@ -394,73 +390,6 @@ def test_geometry_similarity_count_tracks_scene_and_query_ids(
     assert trace["projected_annotation"]["bbox_set"] == list(out.annotation_gt.value)
 
 
-@pytest.mark.parametrize(
-    ("scene_variant", "query_id", "params", "target_count"),
-    (
-        (
-            "quadratic",
-            "reference_line_crossing_count",
-            {"reference_line_kind": "x_axis"},
-            2,
-        ),
-        (
-            "absolute_value",
-            "reference_line_crossing_count",
-            {"reference_line_kind": "horizontal_line"},
-            2,
-        ),
-        (
-            "cubic",
-            "reference_line_crossing_count",
-            {"reference_line_kind": "x_axis"},
-            3,
-        ),
-        (
-            "sinusoid",
-            "reference_line_crossing_count",
-            {"reference_line_kind": "horizontal_line"},
-            4,
-        ),
-        ("sinusoid", "turning_point_count", {}, 4),
-        ("sinusoid", "local_extremum_count", {"extremum_kind": "minimum"}, 2),
-        ("sinusoid", "local_extremum_count", {"extremum_kind": "maximum"}, 2),
-        ("piecewise_linear", "turning_point_count", {}, 6),
-        ("piecewise_linear", "local_extremum_count", {"extremum_kind": "minimum"}, 6),
-        ("piecewise_linear", "local_extremum_count", {"extremum_kind": "maximum"}, 6),
-    ),
-)
-def test_geometry_graphing_count_tracks_scene_and_query_ids(
-    scene_variant: str,
-    query_id: str,
-    params: dict[str, str],
-    target_count: int,
-) -> None:
-    task = GeometryGraphingCountTask()
-    generation_params = {
-        "scene_variant": scene_variant,
-        "query_id": query_id,
-        "target_count": target_count,
-        **dict(params),
-    }
-    out = task.generate(
-        23095,
-        params=generation_params,
-        max_attempts=40,
-    )
-    trace = out.trace_payload
-    assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "point_set"
-    assert int(out.answer_gt.value) == int(target_count)
-    assert len(out.annotation_gt.value) == int(target_count)
-    assert out.query_id == query_id
-    assert trace["execution_trace"]["scene_variant"] == scene_variant
-    assert trace["execution_trace"]["query_id"] == query_id
-    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id=query_id)
-    for key, value in params.items():
-        assert trace["execution_trace"][key] == value
-        assert trace["query_spec"]["params"][key] == value
-
-
 def test_geometry_transformation_match_balances_winner_labels_across_review_seed_stream() -> (
     None
 ):
@@ -582,88 +511,6 @@ def test_geometry_similarity_count_decouplesseeded_sampler_axes() -> None:
             "quadrilateral",
         }
     assert len(combos) >= 22
-
-
-def test_geometry_graphing_count_balances_target_counts_across_review_seed_stream() -> (
-    None
-):
-    per_query_id_counts: dict[str, Counter[int]] = {
-        "reference_line_crossing_count": Counter(),
-        "turning_point_count": Counter(),
-        "local_extremum_count": Counter(),
-    }
-    collected_counts = {key: 0 for key in per_query_id_counts}
-
-    for index in range(10_000):
-        if all(int(value) >= 100 for value in collected_counts.values()):
-            break
-        instance_seed = hash64(0, "geometry_graphing_count_base", index)
-        resolved = _resolve_graphing_axes(int(instance_seed), params={})
-        query_id = str(resolved.query_id)
-        if int(collected_counts[query_id]) >= 100:
-            continue
-        collected_counts[query_id] += 1
-        per_query_id_counts[query_id][int(resolved.target_count)] += 1
-
-    assert collected_counts == {
-        "reference_line_crossing_count": 100,
-        "turning_point_count": 100,
-        "local_extremum_count": 100,
-    }
-    expected_support = {2, 3, 4, 5, 6}
-    for query_id, counts in per_query_id_counts.items():
-        assert set(counts.keys()) == expected_support, query_id
-        assert max(counts.values()) <= 30, query_id
-
-
-def test_geometry_graphing_count_balances_target_counts_withseeded_sampler_stream() -> (
-    None
-):
-    per_query_id_counts: dict[str, Counter[int]] = {
-        "reference_line_crossing_count": Counter(),
-        "turning_point_count": Counter(),
-        "local_extremum_count": Counter(),
-    }
-
-    for index in range(300):
-        instance_seed = hash64(0, "geometry_graphing_count_base", index)
-        resolved = _resolve_graphing_axes(
-            int(instance_seed), params={}
-        )
-        per_query_id_counts[str(resolved.query_id)][int(resolved.target_count)] += 1
-
-    assert all(80 <= sum(counter.values()) <= 120 for counter in per_query_id_counts.values())
-    for counter in per_query_id_counts.values():
-        assert set(counter.keys()) == {2, 3, 4, 5, 6}
-        assert max(counter.values()) <= 30
-        assert min(counter.values()) >= 10
-
-
-def test_geometry_graphing_count_balances_parameter_axes_withseeded_sampler_stream() -> (
-    None
-):
-    reference_line_counts: Counter[str] = Counter()
-    extremum_counts: Counter[str] = Counter()
-
-    for index in range(120):
-        instance_seed = hash64(0, "geometry_graphing_count_base.params", index)
-        crossing = _resolve_graphing_axes(
-            int(instance_seed),
-            params={
-                "query_id": "reference_line_crossing_count",
-            },
-        )
-        reference_line_counts[str(crossing.reference_line_kind)] += 1
-        local_extremum = _resolve_graphing_axes(
-            int(instance_seed),
-            params={"query_id": "local_extremum_count"},
-        )
-        extremum_counts[str(local_extremum.extremum_kind)] += 1
-
-    assert set(reference_line_counts) == {"x_axis", "horizontal_line"}
-    assert set(extremum_counts) == {"minimum", "maximum"}
-    assert all(50 <= count <= 70 for count in reference_line_counts.values())
-    assert all(45 <= count <= 75 for count in extremum_counts.values())
 
 
 def test_geometry_measurement_value_decouples_source_answerseeded_sampler() -> None:

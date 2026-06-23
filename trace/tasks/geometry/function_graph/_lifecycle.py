@@ -65,19 +65,6 @@ PromptSlotBuilder = Callable[[Mapping[str, Any], str, int], Mapping[str, Any]]
 SampleBuilder = Callable[[Any, str, int], SampledFunctionGraph]
 RelationBuilder = Callable[[str, int], Mapping[str, Any]]
 
-REFERENCE_COUNT_PROMPT_KEYS = (
-    "bundle_id",
-    "scene_key",
-    "task_key",
-    "json_output_contract",
-    "json_output_contract_answer_only",
-    "answer_hint_integer",
-    "annotation_hint_reference_line_crossing_count",
-    "json_example_reference_line_crossing_count",
-    "json_example_answer_only_reference_line_crossing_count",
-    "reference_line_description_x_axis",
-    "reference_line_description_horizontal_line",
-)
 TURNING_COUNT_PROMPT_KEYS = (
     "bundle_id",
     "scene_key",
@@ -120,7 +107,7 @@ def render_count_scene_artifacts(
         instance_seed=int(instance_seed),
         params=params,
     )
-    line_width, guide_line_width, label_font_size_px, shape_style = style_and_widths(
+    line_width, shape_style = style_and_widths(
         rng,
         params=params,
         context=context,
@@ -132,8 +119,6 @@ def render_count_scene_artifacts(
         sampled_scene=sampled_scene,
         shape_style=shape_style,
         line_width=int(line_width),
-        guide_line_width=int(guide_line_width),
-        label_font_size_px=int(label_font_size_px),
     )
     image, background_meta_final, post_noise_meta = finalize_graph_image(
         image,
@@ -367,16 +352,12 @@ def integer_count_prompt_slots(
     annotation_hint: str,
     json_example: str,
     json_example_answer_only: str,
-    reference_line_description: str = "",
-    query_line_equation: str = "",
     extra_slots: Mapping[str, Any] | None = None,
 ) -> Mapping[str, Any]:
     """Assemble common integer-count prompt slots from task-owned semantics."""
 
     return {
         "object_description": str(object_description),
-        "reference_line_description": str(reference_line_description),
-        "query_line_equation": str(query_line_equation),
         "json_output_contract": str(defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(defaults["json_output_contract_answer_only"]),
         "annotation_hint": str(annotation_hint),

@@ -1,26 +1,10 @@
 generation:
   shared:
-    quadratic_reference_line_crossing_support:
-    - 2
-    absolute_value_reference_line_crossing_support:
-    - 2
-    cubic_reference_line_crossing_support:
-    - 2
-    - 3
-    sinusoid_reference_line_crossing_support:
-    - 3
-    - 4
     sinusoid_turning_support:
     - 3
     - 4
     sinusoid_local_extremum_support:
     - 2
-    piecewise_reference_line_crossing_support:
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
     piecewise_turning_support:
     - 2
     - 3
@@ -33,29 +17,6 @@ generation:
     - 4
     - 5
     - 6
-    horizontal_line_support:
-    - -4
-    - -3
-    - -2
-    - -1
-    - 1
-    - 2
-    - 3
-    - 4
-    piecewise_intersection_x_positions:
-    - -9
-    - -7
-    - -5
-    - -3
-    - -2
-    - -1
-    - 0
-    - 1
-    - 2
-    - 3
-    - 5
-    - 7
-    - 9
     piecewise_turning_x_positions:
     - -9
     - -7
@@ -88,9 +49,6 @@ rendering:
     line_width: 4
     line_width_min: 3
     line_width_max: 5
-    guide_line_width: 3
-    guide_line_width_min: 2
-    guide_line_width_max: 4
     marker_radius: 7
     label_font_size_min: 16
     label_font_size_max: 24

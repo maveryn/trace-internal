@@ -15,7 +15,6 @@ class SampledFunctionGraph:
 
     polyline_graph: Tuple[GraphPolylinePoint, ...]
     annotation_graph_points: Tuple[GraphPoint, ...]
-    query_line_y: int | None
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
     execution_trace: Dict[str, Any]

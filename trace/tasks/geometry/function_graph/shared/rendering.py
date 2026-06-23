@@ -7,7 +7,6 @@ from typing import Any, Mapping, Tuple
 from PIL import Image
 
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.text_rendering import resolve_scene_label_font_size_px
 from trace.tasks.geometry.shared.graph_rendering import graph_paper_grid_from_frame
 from trace.tasks.geometry.shared.labeled_point_annotation import (
     empty_graph_point_set_annotation_artifacts,
@@ -22,7 +21,7 @@ from trace.tasks.geometry.shared.single_object_scene import (
 )
 
 from .defaults import DEFAULTS, POST_IMAGE_BACKGROUND_DEFAULTS, POST_IMAGE_NOISE_DEFAULTS, RENDER_DEFAULTS
-from .projection import build_query_line_color, draw_function_polyline, draw_horizontal_query_line, graph_units_to_pixel_float
+from .projection import draw_function_polyline, graph_units_to_pixel_float
 from .state import GraphPoint, GraphPolylinePoint, RenderedFunctionGraph, SampledFunctionGraph
 
 
@@ -62,24 +61,9 @@ def graph_context_and_canvas(
 
 
 def style_and_widths(rng, *, params: Mapping[str, Any], context: GraphSceneContext, background_meta: Mapping[str, Any]):
-    """Resolve line widths, label size, and contrast-aware shape style."""
+    """Resolve line widths and contrast-aware shape style."""
 
     line_width = int(params.get("line_width", group_default(RENDER_DEFAULTS, "line_width", DEFAULTS.line_width)))
-    guide_line_width = int(
-        params.get("guide_line_width", group_default(RENDER_DEFAULTS, "guide_line_width", DEFAULTS.guide_line_width))
-    )
-    label_font_size_px = int(
-        params.get(
-            "label_font_size_px",
-            resolve_scene_label_font_size_px(
-                canvas_size=int(context.canvas_size),
-                graph_spacing=int(context.graph_spacing),
-                scene_scale=int(context.scene_scale),
-                min_px=int(group_default(RENDER_DEFAULTS, "label_font_size_min", DEFAULTS.label_font_size_min)),
-                max_px=int(group_default(RENDER_DEFAULTS, "label_font_size_max", DEFAULTS.label_font_size_max)),
-            ),
-        )
-    )
     shape_style = sample_geometry_shape_style(
         rng,
         params=params,
@@ -88,8 +72,6 @@ def style_and_widths(rng, *, params: Mapping[str, Any], context: GraphSceneConte
     )
     return (
         int(line_width) * int(context.scene_scale),
-        int(guide_line_width) * int(context.scene_scale),
-        int(label_font_size_px),
         shape_style,
     )
 
@@ -111,38 +93,10 @@ def render_count_graph(
     sampled_scene: SampledFunctionGraph,
     shape_style,
     line_width: int,
-    guide_line_width: int,
-    label_font_size_px: int,
 ) -> RenderedFunctionGraph:
     """Draw a sampled function graph and bind its point-set annotation."""
 
     render_map = dict(sampled_scene.render_map)
-    if sampled_scene.query_line_y is not None:
-        render_map.update(
-            dict(
-                draw_horizontal_query_line(
-                    draw,
-                    y_value=int(sampled_scene.query_line_y),
-                    x_min=-9,
-                    x_max=9,
-                    graph_origin=context.graph_origin,
-                    graph_spacing=int(context.graph_spacing),
-                    scene_scale=int(context.scene_scale),
-                    dash_px=14.0 * float(context.scene_scale),
-                    gap_px=8.0 * float(context.scene_scale),
-                    line_width=int(guide_line_width),
-                    line_color=build_query_line_color(
-                        line_color=shape_style.line_color,
-                        label_color=shape_style.label_color,
-                    ),
-                    label_text=f"y = {int(sampled_scene.query_line_y)}",
-                    label_font_size_px=int(label_font_size_px),
-                    label_color=shape_style.label_color,
-                    canvas_size=int(context.canvas_size),
-                )
-            )
-        )
-
     render_polyline = draw_function_polyline(
         draw,
         polyline_graph=sampled_scene.polyline_graph,

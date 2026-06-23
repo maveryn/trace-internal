@@ -23,22 +23,14 @@ class FunctionGraphDefaults:
     graph_cells_min: int = 20
     graph_cells_max: int = 20
     line_width: int = 4
-    guide_line_width: int = 3
     marker_radius: int = 7
     label_font_size_min: int = 16
     label_font_size_max: int = 24
     average_rate_support: Tuple[float, ...] = (-2.0, -1.5, -1.0, -0.5, 0.5, 1.0, 1.5, 2.0)
-    quadratic_reference_support: Tuple[int, ...] = (2,)
-    absolute_value_reference_support: Tuple[int, ...] = (2,)
-    cubic_reference_support: Tuple[int, ...] = (2, 3)
-    sinusoid_reference_support: Tuple[int, ...] = (3, 4)
     sinusoid_turning_support: Tuple[int, ...] = (3, 4)
     sinusoid_local_support: Tuple[int, ...] = (2,)
-    piecewise_reference_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
     piecewise_turning_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
     piecewise_local_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
-    horizontal_line_support: Tuple[int, ...] = (-4, -3, -2, -1, 1, 2, 3, 4)
-    piecewise_intersection_x_positions: Tuple[int, ...] = (-9, -7, -5, -3, -2, -1, 0, 1, 2, 3, 5, 7, 9)
     piecewise_turning_x_positions: Tuple[int, ...] = (-9, -7, -5, -3, -2, -1, 0, 1, 2, 3, 5, 7, 9)
 
 

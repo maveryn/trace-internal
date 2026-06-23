@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-import json
-import random
-from pathlib import Path
-
 import pytest
 
 from trace.tasks.geometry.function_graph.average_rate_value import GeometryGraphingAverageRateValueTask
@@ -15,40 +11,11 @@ from trace.tasks.geometry.function_graph.extremum_count_local_extremum_count imp
 from trace.tasks.geometry.function_graph.extremum_count_turning_point_count import (
     GeometryGraphingTurningPointCountTask,
 )
-from trace.tasks.geometry.function_graph.reference_line_crossing_count import (
-    GeometryGraphingReferenceLineCrossingCountTask,
-)
-from trace.tasks.geometry.function_graph.shared.sampling import (
-    FAMILY_ABSOLUTE_VALUE,
-    FAMILY_CUBIC,
-    FAMILY_PIECEWISE_LINEAR,
-    FAMILY_QUADRATIC,
-    FAMILY_SINUSOID,
-    MIN_REFERENCE_CROSSING_SEPARATION,
-    sample_reference_scene,
-)
 
 
 @pytest.mark.parametrize(
     ("task", "params", "expected_query", "expected_answer"),
     (
-        (
-            GeometryGraphingReferenceLineCrossingCountTask(),
-            {"scene_variant": "quadratic", "query_id": "x_axis", "target_count": 2},
-            "x_axis",
-            2,
-        ),
-        (
-            GeometryGraphingReferenceLineCrossingCountTask(),
-            {
-                "scene_variant": "piecewise_linear",
-                "query_id": "horizontal_line",
-                "reference_line_y": 3,
-                "target_count": 6,
-            },
-            "horizontal_line",
-            6,
-        ),
         (
             GeometryGraphingTurningPointCountTask(),
             {"scene_variant": "piecewise_linear", "query_id": "single", "target_count": 6},
@@ -86,50 +53,11 @@ def test_geometry_graphing_count_tasks_emit_expected_contract(
     assert out.trace_payload["query_spec"]["params"]["query_id"] == expected_query
     assert out.trace_payload["execution_trace"]["target_count"] == int(expected_answer)
     assert out.trace_payload["query_spec"]["params"]["scene_variant"] == params["scene_variant"]
-    if task.task_id == "task_geometry__function_graph__reference_line_crossing_count":
-        render_map = out.trace_payload["render_map"]
-        if expected_query == "x_axis":
-            assert "query_line_render" not in render_map
-        else:
-            assert "query_line_render" in render_map
-
-
-@pytest.mark.parametrize(
-    ("family", "target_count", "reference_y"),
-    (
-        (FAMILY_QUADRATIC, 2, None),
-        (FAMILY_ABSOLUTE_VALUE, 2, 3),
-        (FAMILY_CUBIC, 2, None),
-        (FAMILY_CUBIC, 3, 2),
-        (FAMILY_SINUSOID, 3, None),
-        (FAMILY_SINUSOID, 4, -2),
-        (FAMILY_PIECEWISE_LINEAR, 6, 3),
-    ),
-)
-def test_geometry_graphing_reference_crossings_are_clear_and_spaced(
-    family: str,
-    target_count: int,
-    reference_y: int | None,
-) -> None:
-    sampled = sample_reference_scene(
-        random.Random(9000 + int(target_count)),
-        family=str(family),
-        target_count=int(target_count),
-        reference_y=reference_y,
-    )
-    xs = sorted(float(point[0]) for point in sampled.annotation_graph_points)
-    assert min(right - left for left, right in zip(xs, xs[1:])) >= MIN_REFERENCE_CROSSING_SEPARATION
-
-    if family == FAMILY_PIECEWISE_LINEAR:
-        vertices = {(round(float(x), 6), round(float(y), 6)) for x, y in sampled.polyline_graph}
-        for point in sampled.annotation_graph_points:
-            assert (round(float(point[0]), 6), round(float(point[1]), 6)) not in vertices
 
 
 @pytest.mark.parametrize(
     ("task", "params"),
     (
-        (GeometryGraphingReferenceLineCrossingCountTask(), {"scene_variant": "quadratic", "query_id": "x_axis", "target_count": 3}),
         (GeometryGraphingTurningPointCountTask(), {"scene_variant": "cubic", "query_id": "single", "target_count": 3}),
         (GeometryGraphingLocalExtremumCountTask(), {"scene_variant": "absolute_value", "query_id": "minimum", "target_count": 2}),
     ),
@@ -139,23 +67,9 @@ def test_geometry_graphing_count_tasks_reject_incompatible_scene_pairs(task, par
         task.generate(23411, params=params, max_attempts=20)
 
 
-def test_geometry_graphing_reference_line_rejects_target_below_active_answer_range() -> None:
-    with pytest.raises(ValueError):
-        GeometryGraphingReferenceLineCrossingCountTask().generate(
-            23413,
-            params={
-                "scene_variant": "piecewise_linear",
-                "query_id": "x_axis",
-                "target_count": 1,
-            },
-            max_attempts=40,
-        )
-
-
 @pytest.mark.parametrize(
     ("task", "source_query_id"),
     (
-        (GeometryGraphingReferenceLineCrossingCountTask(), "reference_line_crossing_count"),
         (GeometryGraphingTurningPointCountTask(), "turning_point_count"),
         (GeometryGraphingLocalExtremumCountTask(), "local_extremum_count"),
         (GeometryGraphingLocalExtremumCountTask(), "local_minima_count"),
@@ -172,11 +86,3 @@ def test_geometry_graphing_average_rate_does_not_draw_secant_helper_line() -> No
     assert set(out.annotation_gt.value) == {"A", "B"}
     assert "secant_segment_graph" not in out.trace_payload["render_map"]
     assert "secant_segment_pixel" not in out.trace_payload["render_map"]
-
-
-def test_geometry_graphing_count_crossing_prompts_exclude_tangencies() -> None:
-    prompt_bundle = json.loads(Path("prompts/geometry/function_graph/geometry_graphing_v0.json").read_text())
-    prompts = prompt_bundle["query_templates"]["reference_line_crossing_count"]
-    assert prompts
-    assert all("cross" in str(prompt).lower() or "passing through" in str(prompt).lower() for prompt in prompts)
-    assert all("tangenc" not in str(prompt).lower() for prompt in prompts)

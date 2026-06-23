@@ -69,7 +69,6 @@ def test_geometry_consolidated_tasks_accept_query_id_alias(task_cls, params) -> 
         ("task_geometry__circle_theorem__secant_secant_length_value", "circle"),
         ("task_geometry__coordinate_plane__segment_relation_count", "coordinate"),
         ("task_geometry__function_graph__extremum_count_turning_point_count", "graphing"),
-        ("task_geometry__function_graph__reference_line_crossing_count", "graphing"),
         ("task_geometry__shape_gallery__congruent_count", "similarity"),
         ("task_geometry__shape_gallery__reflection_match", "transformation"),
     ),

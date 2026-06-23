@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Iterable, List, Mapping, Sequence, Tuple
+from typing import Iterable, List, Sequence, Tuple
 
 from PIL import ImageDraw
 
-from trace.tasks.shared.drawing import draw_dashed_line
-from trace.tasks.shared.text_rendering import draw_text_centered, load_font, resolve_text_stroke_fill
-
 PointF = Tuple[float, float]
-Color = Tuple[int, int, int]
 
 
 def graph_units_to_pixel_float(
@@ -59,95 +55,3 @@ def draw_function_polyline(
             joint="curve",
         )
     return render_points
-
-
-def draw_horizontal_query_line(
-    draw: ImageDraw.ImageDraw,
-    *,
-    y_value: int,
-    x_min: int,
-    x_max: int,
-    graph_origin: Sequence[float],
-    graph_spacing: int,
-    scene_scale: int,
-    dash_px: float,
-    gap_px: float,
-    line_width: int,
-    line_color: Sequence[int],
-    label_text: str,
-    label_font_size_px: int,
-    label_color: Sequence[int],
-    canvas_size: int,
-) -> Mapping[str, object]:
-    """Draw a dashed horizontal guide line and its small equation label."""
-
-    canonical_start = graph_units_to_pixel_float(
-        (float(x_min), float(y_value)),
-        graph_origin=graph_origin,
-        graph_spacing=int(graph_spacing),
-    )
-    canonical_end = graph_units_to_pixel_float(
-        (float(x_max), float(y_value)),
-        graph_origin=graph_origin,
-        graph_spacing=int(graph_spacing),
-    )
-    render_start, render_end = scale_polyline((canonical_start, canonical_end), scene_scale=int(scene_scale))
-    draw_dashed_line(
-        draw,
-        start=render_start,
-        end=render_end,
-        fill=tuple(int(value) for value in line_color),
-        width=max(1, int(line_width)),
-        dash_px=float(dash_px),
-        gap_px=float(gap_px),
-    )
-
-    font = load_font(int(label_font_size_px), bold=True)
-    label_fill = tuple(int(value) for value in label_color)
-    label_stroke = resolve_text_stroke_fill(label_fill)
-    scale = max(1, int(scene_scale))
-    label_center = (float(render_end[0] - (18.0 * scale)), float(render_start[1] - (12.0 * scale)))
-    stroke_width = max(1, int(scene_scale))
-    raw_bbox = draw.textbbox((0.0, 0.0), str(label_text), font=font, stroke_width=int(stroke_width))
-    tx = float(label_center[0]) - (0.5 * float(raw_bbox[0] + raw_bbox[2]))
-    ty = float(label_center[1]) - (0.5 * float(raw_bbox[1] + raw_bbox[3]))
-    draw_text_centered(
-        draw,
-        text=str(label_text),
-        center=label_center,
-        font=font,
-        fill=label_fill,
-        stroke_fill=label_stroke,
-        stroke_width=int(stroke_width),
-    )
-    bbox = (
-        float(tx) + float(raw_bbox[0]),
-        float(ty) + float(raw_bbox[1]),
-        float(tx) + float(raw_bbox[2]),
-        float(ty) + float(raw_bbox[3]),
-    )
-    return {
-        "query_line_pixel": [
-            [round(float(canonical_start[0]), 3), round(float(canonical_start[1]), 3)],
-            [round(float(canonical_end[0]), 3), round(float(canonical_end[1]), 3)],
-        ],
-        "query_line_render": [
-            [round(float(render_start[0]), 3), round(float(render_start[1]), 3)],
-            [round(float(render_end[0]), 3), round(float(render_end[1]), 3)],
-        ],
-        "query_label_bbox": [
-            round(max(0.0, min(float(canvas_size), float(bbox[0]) / float(scale))), 3),
-            round(max(0.0, min(float(canvas_size), float(bbox[1]) / float(scale))), 3),
-            round(max(0.0, min(float(canvas_size), float(bbox[2]) / float(scale))), 3),
-            round(max(0.0, min(float(canvas_size), float(bbox[3]) / float(scale))), 3),
-        ],
-    }
-
-
-def build_query_line_color(*, line_color: Sequence[int], label_color: Sequence[int]) -> Color:
-    """Blend a guide-line accent distinct from the main plotted function."""
-
-    return tuple(
-        int(round((0.78 * float(int(label_color[index]))) + (0.22 * float(int(line_color[index])))))
-        for index in range(3)
-    )

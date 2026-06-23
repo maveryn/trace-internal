@@ -582,7 +582,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__function_graph__average_rate_value": _entry("geometry", "function_graph", "geometry", "graphing"),
     "task_geometry__function_graph__extremum_count_local_extremum_count": _entry("geometry", "function_graph", "geometry", "graphing"),
     "task_geometry__function_graph__extremum_count_turning_point_count": _entry("geometry", "function_graph", "geometry", "graphing"),
-    "task_geometry__function_graph__reference_line_crossing_count": _entry("geometry", "function_graph", "geometry", "graphing"),
     "task_geometry__function_panels__function_status_label": _entry("geometry", "function_panels", "geometry", "analytical"),
     "task_geometry__function_panels__intersection_property_label": _entry("geometry", "function_panels", "geometry", "analytical"),
     "task_geometry__function_panels__one_to_one_status_label": _entry("geometry", "function_panels", "geometry", "analytical"),

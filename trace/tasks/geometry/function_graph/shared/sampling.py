@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import itertools
 import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
@@ -15,6 +16,9 @@ FAMILY_ABSOLUTE_VALUE = "absolute_value"
 FAMILY_CUBIC = "cubic"
 FAMILY_SINUSOID = "sinusoid"
 FAMILY_PIECEWISE_LINEAR = "piecewise_linear"
+MIN_REFERENCE_CROSSING_SEPARATION = 1.5
+REFERENCE_CROSSING_SIDE_OFFSET = 1.0
+REFERENCE_CROSSING_MIN_SIDE_DELTA = 0.65
 
 
 def average_rate_support() -> Tuple[float, ...]:
@@ -302,10 +306,16 @@ def _build_quadratic_scene(rng, *, target_count: int, reference_y: int | None) -
     h_value = int(rng.randint(-6 + root_delta, 6 - root_delta))
     k_value = int(baseline_y - (a_value * (root_delta**2)))
     annotation_points = ((int(h_value - root_delta), int(baseline_y)), (int(h_value + root_delta), int(baseline_y)))
+    polyline = _quadratic_sample_points(a_value=int(a_value), h_value=int(h_value), k_value=int(k_value))
+    _require_clear_reference_crossings(
+        polyline=polyline,
+        annotation_points=annotation_points,
+        baseline_y=int(baseline_y),
+    )
     parameters = {"a": int(a_value), "h": int(h_value), "k": int(k_value)}
     return _function_scene(
         family=FAMILY_QUADRATIC,
-        polyline=_quadratic_sample_points(a_value=int(a_value), h_value=int(h_value), k_value=int(k_value)),
+        polyline=polyline,
         annotation_points=annotation_points,
         query_line_y=reference_y,
         parameters=parameters,
@@ -341,15 +351,21 @@ def _build_absolute_value_scene(rng, *, target_count: int, reference_y: int | No
         (int(h_value - root_distance), int(baseline_y)),
         (int(h_value + root_distance), int(baseline_y)),
     )
+    polyline = _absolute_value_sample_points(
+        orientation=int(orientation),
+        slope=int(slope),
+        h_value=int(h_value),
+        k_value=int(k_value),
+    )
+    _require_clear_reference_crossings(
+        polyline=polyline,
+        annotation_points=annotation_points,
+        baseline_y=int(baseline_y),
+    )
     parameters = {"orientation": int(orientation), "slope": int(slope), "h": int(h_value), "k": int(k_value)}
     return _function_scene(
         family=FAMILY_ABSOLUTE_VALUE,
-        polyline=_absolute_value_sample_points(
-            orientation=int(orientation),
-            slope=int(slope),
-            h_value=int(h_value),
-            k_value=int(k_value),
-        ),
+        polyline=polyline,
         annotation_points=annotation_points,
         query_line_y=reference_y,
         parameters=parameters,
@@ -364,12 +380,76 @@ def _choose_distinct_integers(rng, *, count: int, support: Sequence[int]) -> Tup
     return tuple(sorted(int(value) for value in values[: int(count)]))
 
 
+def _minimum_x_separation(points: Sequence[Sequence[float]]) -> float:
+    """Return the smallest x-gap among sorted reference crossing points."""
+
+    xs = sorted(float(point[0]) for point in points)
+    if len(xs) < 2:
+        return float("inf")
+    return min(float(right - left) for left, right in zip(xs, xs[1:]))
+
+
+def _require_reference_crossing_spacing(points: Sequence[Sequence[float]]) -> None:
+    """Reject crossings that are too close to read reliably on graph paper."""
+
+    min_gap = _minimum_x_separation(points)
+    if min_gap < float(MIN_REFERENCE_CROSSING_SEPARATION):
+        raise ValueError(
+            "reference crossings are too close together: "
+            f"{min_gap:.3f} < {MIN_REFERENCE_CROSSING_SEPARATION:.3f}"
+        )
+
+
+def _interpolate_polyline_y(polyline: Sequence[GraphPolylinePoint], x_value: float) -> float:
+    """Interpolate the plotted polyline y-value at one x-coordinate."""
+
+    x_target = float(x_value)
+    ordered = tuple((float(x), float(y)) for x, y in polyline)
+    for (x0, y0), (x1, y1) in zip(ordered, ordered[1:], strict=False):
+        left, right = sorted((float(x0), float(x1)))
+        if x_target < left - 1e-9 or x_target > right + 1e-9:
+            continue
+        if abs(float(x1) - float(x0)) <= 1e-9:
+            continue
+        ratio = (x_target - float(x0)) / (float(x1) - float(x0))
+        return float(y0) + (float(ratio) * (float(y1) - float(y0)))
+    raise ValueError(f"cannot interpolate polyline at x={x_target:.3f}")
+
+
+def _require_clear_reference_crossings(
+    *,
+    polyline: Sequence[GraphPolylinePoint],
+    annotation_points: Sequence[GraphPoint],
+    baseline_y: int,
+) -> None:
+    """Verify each crossing visibly passes through the reference line."""
+
+    _require_reference_crossing_spacing(annotation_points)
+    baseline = float(baseline_y)
+    for x_value, _y_value in annotation_points:
+        left_y = _interpolate_polyline_y(polyline, float(x_value) - float(REFERENCE_CROSSING_SIDE_OFFSET))
+        right_y = _interpolate_polyline_y(polyline, float(x_value) + float(REFERENCE_CROSSING_SIDE_OFFSET))
+        left_delta = float(left_y) - baseline
+        right_delta = float(right_y) - baseline
+        if (left_delta * right_delta) >= 0.0:
+            raise ValueError("reference point is not a true sign-changing crossing")
+        if min(abs(left_delta), abs(right_delta)) < float(REFERENCE_CROSSING_MIN_SIDE_DELTA):
+            raise ValueError("reference crossing side clearance is too small")
+
+
 def _cubic_roots_for_target(rng, *, target_count: int) -> Tuple[int, int, int]:
     if int(target_count) not in {2, 3}:
         raise ValueError(f"unsupported cubic target_count: {target_count}")
     visible_support = [-7, -5, -3, -1, 1, 3, 5, 7]
+    visible_candidates = [
+        tuple(int(value) for value in combo)
+        for combo in itertools.combinations(visible_support, int(target_count))
+        if _minimum_x_separation([(float(value), 0.0) for value in combo]) >= 4.0
+    ]
+    if not visible_candidates:
+        raise ValueError("no spaced cubic roots available")
+    visible_roots = tuple(rng.choice(visible_candidates))
     hidden_support = [-15, -13, -11, 11, 13, 15]
-    visible_roots = _choose_distinct_integers(rng, count=int(target_count), support=visible_support)
     hidden_roots = _choose_distinct_integers(rng, count=int(3 - int(target_count)), support=hidden_support)
     roots = tuple(sorted((int(value) for value in visible_roots + hidden_roots)))
     return (int(roots[0]), int(roots[1]), int(roots[2]))
@@ -398,13 +478,19 @@ def _cubic_sample_points(
 def _build_cubic_scene(rng, *, target_count: int, reference_y: int | None) -> SampledFunctionGraph:
     baseline_y = 0 if reference_y is None else int(reference_y)
     roots = _cubic_roots_for_target(rng, target_count=int(target_count))
-    scale_value = float(rng.choice((-0.012, -0.01, 0.01, 0.012)))
+    scale_value = float(rng.choice((-0.08, -0.07, -0.06, 0.06, 0.07, 0.08)))
     visible_roots = tuple(int(root) for root in roots if -9 <= int(root) <= 9)
     annotation_points = tuple(sorted({(int(root), int(baseline_y)) for root in visible_roots}))
+    polyline = _cubic_sample_points(scale_value=float(scale_value), roots=roots, baseline_y=int(baseline_y))
+    _require_clear_reference_crossings(
+        polyline=polyline,
+        annotation_points=annotation_points,
+        baseline_y=int(baseline_y),
+    )
     parameters = {"scale": float(scale_value), "roots": [int(value) for value in roots], "baseline_y": int(baseline_y)}
     return _function_scene(
         family=FAMILY_CUBIC,
-        polyline=_cubic_sample_points(scale_value=float(scale_value), roots=roots, baseline_y=int(baseline_y)),
+        polyline=polyline,
         annotation_points=annotation_points,
         query_line_y=reference_y,
         parameters=parameters,
@@ -472,10 +558,20 @@ def _build_sinusoid_reference_scene(rng, *, target_count: int, reference_y: int 
     phase_shift = _phase_shift_for_count(target_count=int(target_count), mode="midline")
     midline_y = 0 if reference_y is None else int(reference_y)
     annotation_points = tuple((int(x_value), int(midline_y)) for x_value in _sinusoid_midline_positions(int(phase_shift)))
+    polyline = _sinusoid_sample_points(
+        amplitude=int(amplitude),
+        phase_shift=int(phase_shift),
+        midline_y=int(midline_y),
+    )
+    _require_clear_reference_crossings(
+        polyline=polyline,
+        annotation_points=annotation_points,
+        baseline_y=int(midline_y),
+    )
     parameters = {"amplitude": int(amplitude), "phase_shift": int(phase_shift), "midline_y": int(midline_y), "period": 12}
     return _function_scene(
         family=FAMILY_SINUSOID,
-        polyline=_sinusoid_sample_points(amplitude=int(amplitude), phase_shift=int(phase_shift), midline_y=int(midline_y)),
+        polyline=polyline,
         annotation_points=annotation_points,
         query_line_y=reference_y,
         parameters=parameters,
@@ -535,23 +631,43 @@ def _piecewise_polyline_for_intersections(
     *,
     target_count: int,
     baseline_y: int,
-) -> Tuple[Tuple[GraphPoint, ...], Tuple[GraphPoint, ...]]:
-    x_positions = list(_piecewise_x_positions("piecewise_intersection_x_positions"))
-    vertex_count = int((2 * int(target_count)) + 1)
-    start_index = int(rng.randint(0, len(x_positions) - vertex_count))
-    selected_x = x_positions[start_index : start_index + vertex_count]
+) -> Tuple[Tuple[GraphPolylinePoint, ...], Tuple[GraphPoint, ...]]:
+    """Build visible pass-through crossings separated enough for counting."""
+
+    crossing_candidates = [
+        int(value)
+        for value in _piecewise_x_positions("piecewise_intersection_x_positions")
+        if -7 <= int(value) <= 7
+    ]
+    crossing_sets = [
+        tuple(int(value) for value in combo)
+        for combo in itertools.combinations(crossing_candidates, int(target_count))
+        if _minimum_x_separation([(float(value), float(baseline_y)) for value in combo])
+        >= float(MIN_REFERENCE_CROSSING_SEPARATION)
+    ]
+    if not crossing_sets:
+        raise ValueError(f"no clear piecewise crossing layout supports target_count={target_count}")
+    selected_crossings = tuple(rng.choice(crossing_sets))
     sign_start = int(rng.choice((-1, 1)))
-    vertices: List[GraphPoint] = []
-    annotation_points: List[GraphPoint] = []
-    for index, x_value in enumerate(selected_x):
-        if index % 2 == 1:
-            point = (int(x_value), int(baseline_y))
-            vertices.append(point)
-            annotation_points.append(point)
-            continue
-        sign_value = int(sign_start * ((-1) ** (index // 2)))
-        vertices.append((int(x_value), int(baseline_y + (sign_value * int(rng.randint(2, 4))))))
-    return tuple(vertices), tuple(annotation_points)
+    amplitude = int(rng.randint(2, 4))
+    current_sign = int(sign_start)
+    vertices: List[GraphPolylinePoint] = []
+    for crossing_x in selected_crossings:
+        before = (float(crossing_x) - 1.0, float(baseline_y + (current_sign * amplitude)))
+        after = (float(crossing_x) + 1.0, float(baseline_y - (current_sign * amplitude)))
+        if not vertices or abs(float(vertices[-1][0]) - float(before[0])) > 1e-9:
+            vertices.append(before)
+        else:
+            vertices[-1] = before
+        vertices.append(after)
+        current_sign *= -1
+    annotation_points = tuple((int(x_value), int(baseline_y)) for x_value in selected_crossings)
+    _require_clear_reference_crossings(
+        polyline=vertices,
+        annotation_points=annotation_points,
+        baseline_y=int(baseline_y),
+    )
+    return tuple(vertices), annotation_points
 
 
 def _piecewise_polyline_for_turning_points(
@@ -635,7 +751,7 @@ def _function_scene(
 
 def _piecewise_scene(
     *,
-    vertices: Sequence[GraphPoint],
+    vertices: Sequence[GraphPolylinePoint],
     annotation_points: Sequence[GraphPoint],
     query_line_y: int | None,
     purpose: str,

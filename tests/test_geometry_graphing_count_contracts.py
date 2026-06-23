@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import random
 from pathlib import Path
 
 import pytest
@@ -15,6 +16,15 @@ from trace.tasks.geometry.function_graph.extremum_count_turning_point_count impo
 )
 from trace.tasks.geometry.function_graph.reference_line_crossing_count import (
     GeometryGraphingReferenceLineCrossingCountTask,
+)
+from trace.tasks.geometry.function_graph.shared.sampling import (
+    FAMILY_ABSOLUTE_VALUE,
+    FAMILY_CUBIC,
+    FAMILY_PIECEWISE_LINEAR,
+    FAMILY_QUADRATIC,
+    FAMILY_SINUSOID,
+    MIN_REFERENCE_CROSSING_SEPARATION,
+    sample_reference_scene,
 )
 
 
@@ -75,6 +85,44 @@ def test_geometry_graphing_count_tasks_emit_expected_contract(
     assert out.trace_payload["query_spec"]["params"]["query_id"] == expected_query
     assert out.trace_payload["execution_trace"]["target_count"] == int(expected_answer)
     assert out.trace_payload["query_spec"]["params"]["scene_variant"] == params["scene_variant"]
+    if task.task_id == "task_geometry__function_graph__reference_line_crossing_count":
+        render_map = out.trace_payload["render_map"]
+        if expected_query == "x_axis":
+            assert "query_line_render" not in render_map
+        else:
+            assert "query_line_render" in render_map
+
+
+@pytest.mark.parametrize(
+    ("family", "target_count", "reference_y"),
+    (
+        (FAMILY_QUADRATIC, 2, None),
+        (FAMILY_ABSOLUTE_VALUE, 2, 3),
+        (FAMILY_CUBIC, 2, None),
+        (FAMILY_CUBIC, 3, 2),
+        (FAMILY_SINUSOID, 3, None),
+        (FAMILY_SINUSOID, 4, -2),
+        (FAMILY_PIECEWISE_LINEAR, 6, 3),
+    ),
+)
+def test_geometry_graphing_reference_crossings_are_clear_and_spaced(
+    family: str,
+    target_count: int,
+    reference_y: int | None,
+) -> None:
+    sampled = sample_reference_scene(
+        random.Random(9000 + int(target_count)),
+        family=str(family),
+        target_count=int(target_count),
+        reference_y=reference_y,
+    )
+    xs = sorted(float(point[0]) for point in sampled.annotation_graph_points)
+    assert min(right - left for left, right in zip(xs, xs[1:])) >= MIN_REFERENCE_CROSSING_SEPARATION
+
+    if family == FAMILY_PIECEWISE_LINEAR:
+        vertices = {(round(float(x), 6), round(float(y), 6)) for x, y in sampled.polyline_graph}
+        for point in sampled.annotation_graph_points:
+            assert (round(float(point[0]), 6), round(float(point[1]), 6)) not in vertices
 
 
 @pytest.mark.parametrize(

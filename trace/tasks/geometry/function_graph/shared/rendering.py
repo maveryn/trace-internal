@@ -116,25 +116,7 @@ def render_count_graph(
 ) -> RenderedFunctionGraph:
     """Draw a sampled function graph and bind its point-set annotation."""
 
-    render_polyline = draw_function_polyline(
-        draw,
-        polyline_graph=sampled_scene.polyline_graph,
-        graph_origin=context.graph_origin,
-        graph_spacing=int(context.graph_spacing),
-        scene_scale=int(context.scene_scale),
-        line_width=int(line_width),
-        line_color=shape_style.line_color,
-    )
     render_map = dict(sampled_scene.render_map)
-    render_map["function_polyline_pixel"] = [
-        [round(float(pixel_point(point, context=context)[0]), 3), round(float(pixel_point(point, context=context)[1]), 3)]
-        for point in sampled_scene.polyline_graph
-    ]
-    render_map["function_polyline_render"] = [
-        [round(float(point[0]), 3), round(float(point[1]), 3)]
-        for point in render_polyline
-    ]
-
     if sampled_scene.query_line_y is not None:
         render_map.update(
             dict(
@@ -160,6 +142,24 @@ def render_count_graph(
                 )
             )
         )
+
+    render_polyline = draw_function_polyline(
+        draw,
+        polyline_graph=sampled_scene.polyline_graph,
+        graph_origin=context.graph_origin,
+        graph_spacing=int(context.graph_spacing),
+        scene_scale=int(context.scene_scale),
+        line_width=int(line_width),
+        line_color=shape_style.line_color,
+    )
+    render_map["function_polyline_pixel"] = [
+        [round(float(pixel_point(point, context=context)[0]), 3), round(float(pixel_point(point, context=context)[1]), 3)]
+        for point in sampled_scene.polyline_graph
+    ]
+    render_map["function_polyline_render"] = [
+        [round(float(point[0]), 3), round(float(point[1]), 3)]
+        for point in render_polyline
+    ]
 
     points_by_label = {
         f"point_{index + 1}": pixel_point(point, context=context)

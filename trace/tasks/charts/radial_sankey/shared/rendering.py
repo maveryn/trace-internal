@@ -1,24 +1,42 @@
-"""Rendering helpers for radial Sankey chart tasks."""
+"""Rendering helpers for radial Sankey chart scenes."""
 
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Mapping, Sequence, Tuple
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 from PIL import Image, ImageDraw
 
-from .....core.seed import spawn_rng
-from ....shared.bbox_projection import round_bbox as _round_bbox
-from ....shared.drawing import draw_centered_text
-from ....shared.text_rendering import fit_font_to_box, load_font
-from .radial_sankey_common import (
-    BBox,
-    Point,
-    TASK_ID,
-    _RadialRenderParams,
-    _RenderedRadialSankey,
-    _clamp_bbox,
+from trace.core.seed import spawn_rng
+from trace.core.visual.background import make_background_canvas
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.shared.bbox_projection import round_bbox
+from trace.tasks.shared.drawing import draw_centered_text
+from trace.tasks.shared.text_rendering import fit_font_to_box, load_font, temporary_default_font_family
+
+from .defaults import (
+    POST_IMAGE_BACKGROUND_DEFAULTS,
+    POST_IMAGE_NOISE_DEFAULTS,
+    clamp_bbox,
+    font_assets_payload,
+    resolve_render_params,
+    sample_chart_font,
 )
+from .state import (
+    BBox,
+    FlowLink,
+    FlowNode,
+    Point,
+    RadialRenderParams,
+    RadialSankeyDataset,
+    RadialSankeyRenderResult,
+    RenderedRadialSankey,
+)
+
+
+def clamp_unit_interval(value: float) -> float:
+    return max(0.0, min(1.0, float(value)))
 
 
 def _angle_point(center: Point, radius: float, angle_degrees: float) -> Point:
@@ -36,7 +54,7 @@ def _cubic_point(p0: Point, p1: Point, p2: Point, p3: Point, t: float) -> Point:
     return (float(x), float(y))
 
 
-def _curve_points(start: Point, end: Point, center: Point, *, bend: float, steps: int = 44) -> List[Point]:
+def _curve_points(start: Point, end: Point, center: Point, *, bend: float, steps: int = 44) -> list[Point]:
     c1 = (
         float(start[0] + (float(center[0] - start[0]) * float(bend))),
         float(start[1] + (float(center[1] - start[1]) * float(bend))),
@@ -51,9 +69,9 @@ def _curve_points(start: Point, end: Point, center: Point, *, bend: float, steps
     ]
 
 
-def _curve_bbox(points: Sequence[Point], *, stroke_width: int, canvas_width: int, canvas_height: int) -> List[float]:
+def _curve_bbox(points: Sequence[Point], *, stroke_width: int, canvas_width: int, canvas_height: int) -> list[float]:
     pad = max(2.0, 0.5 * float(stroke_width) + 2.0)
-    return _clamp_bbox(
+    return clamp_bbox(
         (
             min(point[0] for point in points) - pad,
             min(point[1] for point in points) - pad,
@@ -65,7 +83,7 @@ def _curve_bbox(points: Sequence[Point], *, stroke_width: int, canvas_width: int
     )
 
 
-def _flow_width(value: int, *, render_params: _RadialRenderParams, value_min: int, value_max: int) -> int:
+def _flow_width(value: int, *, render_params: RadialRenderParams, value_min: int, value_max: int) -> int:
     if int(value_max) <= int(value_min):
         return int(render_params.min_flow_width_px)
     norm = (float(value) - float(value_min)) / float(value_max - value_min)
@@ -75,7 +93,7 @@ def _flow_width(value: int, *, render_params: _RadialRenderParams, value_min: in
     return max(1, int(round(width)))
 
 
-def _value_label_size(draw: ImageDraw.ImageDraw, *, text: str, render_params: _RadialRenderParams) -> Tuple[float, float]:
+def _value_label_size(draw: ImageDraw.ImageDraw, *, text: str, render_params: RadialRenderParams) -> tuple[float, float]:
     font = load_font(int(render_params.value_label_font_size_px), bold=True)
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
     text_width = float(text_bbox[2] - text_bbox[0])
@@ -83,15 +101,21 @@ def _value_label_size(draw: ImageDraw.ImageDraw, *, text: str, render_params: _R
     return (max(38.0, float(text_width + 18.0)), max(28.0, float(text_height + 12.0)))
 
 
-def _value_label_bbox(draw: ImageDraw.ImageDraw, *, text: str, center: Point, render_params: _RadialRenderParams) -> BBox:
+def _value_label_bbox(
+    draw: ImageDraw.ImageDraw,
+    *,
+    text: str,
+    center: Point,
+    render_params: RadialRenderParams,
+) -> BBox:
     label_width, label_height = _value_label_size(draw, text=str(text), render_params=render_params)
     cx, cy = float(center[0]), float(center[1])
-    return (
+    return [
         float(cx - (0.5 * label_width)),
         float(cy - (0.5 * label_height)),
         float(cx + (0.5 * label_width)),
         float(cy + (0.5 * label_height)),
-    )
+    ]
 
 
 def _draw_value_label(
@@ -99,8 +123,8 @@ def _draw_value_label(
     *,
     text: str,
     center: Point,
-    render_params: _RadialRenderParams,
-) -> List[float]:
+    render_params: RadialRenderParams,
+) -> list[float]:
     font = load_font(int(render_params.value_label_font_size_px), bold=True)
     bbox = _value_label_bbox(draw, text=str(text), center=center, render_params=render_params)
     draw.rounded_rectangle(
@@ -119,7 +143,7 @@ def _draw_value_label(
         stroke_fill=render_params.value_label_fill_rgb,
         stroke_width=1,
     )
-    return _round_bbox(bbox)
+    return round_bbox(bbox)
 
 
 def _resolve_value_label_centers(
@@ -127,11 +151,13 @@ def _resolve_value_label_centers(
     *,
     label_specs: Sequence[Mapping[str, Any]],
     plot_bbox: Sequence[float],
-    render_params: _RadialRenderParams,
-) -> Dict[str, Point]:
+    render_params: RadialRenderParams,
+) -> dict[str, Point]:
+    """Place flow value labels inside the plot area while keeping their link refs stable."""
+
     group = sorted(
         [dict(spec) for spec in label_specs],
-        key=lambda spec: (float(spec["desired_center"][1]), float(spec["desired_center"][0]), str(spec["link_id"])),
+        key=lambda spec: (float(spec["desired_center"][1]), float(spec["desired_center"][0]), str(spec["link_ref"])),
     )
     if not group:
         return {}
@@ -148,7 +174,7 @@ def _resolve_value_label_centers(
     else:
         effective_gap = 0.0
 
-    placed: List[Tuple[Dict[str, Any], float, float]] = []
+    placed: list[tuple[dict[str, Any], float, float]] = []
     previous_bottom = float("-inf")
     for spec, height in zip(group, heights):
         half_height = 0.5 * float(height)
@@ -169,23 +195,23 @@ def _resolve_value_label_centers(
     if underflow > 0.0:
         placed = [(spec, float(center_y + underflow), height) for spec, center_y, height in placed]
 
-    resolved: Dict[str, Point] = {}
+    resolved: dict[str, Point] = {}
     for spec, center_y, _height in placed:
         desired_x = max(float(plot_bbox[0]) + 28.0, min(float(plot_bbox[2]) - 28.0, float(spec["desired_center"][0])))
-        resolved[str(spec["link_id"])] = (float(desired_x), float(center_y))
+        resolved[str(spec["link_ref"])] = (float(desired_x), float(center_y))
     return resolved
 
 
 def _node_angles(
     *,
-    sources: Sequence[Mapping[str, Any]],
-    targets: Sequence[Mapping[str, Any]],
+    sources: Sequence[FlowNode],
+    targets: Sequence[FlowNode],
     instance_seed: int,
-) -> Dict[str, float]:
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_angles")
+) -> dict[str, float]:
+    rng = spawn_rng(int(instance_seed), "charts_radial_sankey_scene.node_angles")
     rotation = float(rng.choice([-12, -8, -4, 0, 4, 8, 12]))
 
-    def _arc_angles(count: int, start: float, end: float) -> List[float]:
+    def _arc_angles(count: int, start: float, end: float) -> list[float]:
         if int(count) == 1:
             return [0.5 * (float(start) + float(end)) + float(rotation)]
         return [
@@ -193,49 +219,51 @@ def _node_angles(
             for index in range(int(count))
         ]
 
-    angles: Dict[str, float] = {}
+    angles: dict[str, float] = {}
     for node, angle in zip(sources, _arc_angles(len(sources), 132.0, 228.0)):
-        angles[str(node["node_id"])] = float(angle)
+        angles[str(node.node_id)] = float(angle)
     for node, angle in zip(targets, _arc_angles(len(targets), -48.0, 48.0)):
-        angles[str(node["node_id"])] = float(angle)
+        angles[str(node.node_id)] = float(angle)
     return angles
 
 
-def _render_radial_sankey(
+def render_radial_sankey_scene(
     background: Image.Image,
     *,
     scene_title: str,
-    sources: Sequence[Mapping[str, Any]],
-    targets: Sequence[Mapping[str, Any]],
-    links: Sequence[Mapping[str, Any]],
-    render_params: _RadialRenderParams,
+    sources: Sequence[FlowNode],
+    targets: Sequence[FlowNode],
+    links: Sequence[FlowLink],
+    render_params: RadialRenderParams,
     value_min: int,
     value_max: int,
     instance_seed: int,
-) -> _RenderedRadialSankey:
+) -> RenderedRadialSankey:
+    """Draw the radial flow ring and record bboxes for nodes and value labels."""
+
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     outer = float(render_params.outer_margin_px)
     offset_x = float(render_params.layout_offset_x_px)
     offset_y = float(render_params.layout_offset_y_px)
-    panel_bbox: BBox = (
+    panel_bbox: BBox = [
         outer + offset_x,
         outer + offset_y,
         float(render_params.canvas_width) - outer + offset_x,
         float(render_params.canvas_height) - outer + offset_y,
-    )
-    title_bbox: BBox = (
+    ]
+    title_bbox: BBox = [
         panel_bbox[0] + float(render_params.panel_padding_px),
         panel_bbox[1] + 10.0,
         panel_bbox[2] - float(render_params.panel_padding_px),
         panel_bbox[1] + float(render_params.title_band_height_px),
-    )
-    plot_bbox: BBox = (
+    ]
+    plot_bbox: BBox = [
         panel_bbox[0] + float(render_params.panel_padding_px),
         title_bbox[3] + 18.0,
         panel_bbox[2] - float(render_params.panel_padding_px),
         panel_bbox[3] - float(render_params.panel_padding_px),
-    )
+    ]
     center = (0.5 * (plot_bbox[0] + plot_bbox[2]), 0.5 * (plot_bbox[1] + plot_bbox[3]))
     radius = min(
         float(render_params.ring_radius_px),
@@ -243,8 +271,20 @@ def _render_radial_sankey(
     )
     chord_radius = max(30.0, float(radius - render_params.chord_radius_inset_px))
 
-    draw.rounded_rectangle(panel_bbox, radius=16, fill=render_params.panel_fill_rgb, outline=render_params.panel_border_rgb, width=2)
-    draw.rounded_rectangle(plot_bbox, radius=12, fill=render_params.plot_fill_rgb, outline=render_params.panel_border_rgb, width=1)
+    draw.rounded_rectangle(
+        panel_bbox,
+        radius=16,
+        fill=render_params.panel_fill_rgb,
+        outline=render_params.panel_border_rgb,
+        width=2,
+    )
+    draw.rounded_rectangle(
+        plot_bbox,
+        radius=12,
+        fill=render_params.plot_fill_rgb,
+        outline=render_params.panel_border_rgb,
+        width=1,
+    )
     ring_bbox = (
         center[0] - float(radius),
         center[1] - float(radius),
@@ -264,32 +304,32 @@ def _render_radial_sankey(
 
     angles = _node_angles(sources=sources, targets=targets, instance_seed=int(instance_seed))
     all_nodes = [*sources, *targets]
-    node_center_map: Dict[str, Point] = {
-        str(node["node_id"]): _angle_point(center, float(radius), float(angles[str(node["node_id"])]))
+    node_center_map: dict[str, Point] = {
+        str(node.node_id): _angle_point(center, float(radius), float(angles[str(node.node_id)]))
         for node in all_nodes
     }
-    chord_anchor_map: Dict[str, Point] = {
-        str(node["node_id"]): _angle_point(center, float(chord_radius), float(angles[str(node["node_id"])]))
+    chord_anchor_map: dict[str, Point] = {
+        str(node.node_id): _angle_point(center, float(chord_radius), float(angles[str(node.node_id)]))
         for node in all_nodes
     }
 
     overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
     flow_draw = ImageDraw.Draw(overlay)
     palette = tuple(render_params.flow_palette_rgb)
-    link_bbox_map: Dict[str, List[float]] = {}
-    link_center_map: Dict[str, List[float]] = {}
-    entities: List[Dict[str, Any]] = []
+    link_bbox_map: dict[str, list[float]] = {}
+    link_center_map: dict[str, list[float]] = {}
+    entities: list[dict[str, Any]] = []
 
-    sorted_links = sorted(links, key=lambda link: (str(link["source_label"]), str(link["target_label"]), str(link["link_id"])))
+    sorted_links = sorted(links, key=lambda link: (str(link.source_label), str(link.target_label), str(link.link_id)))
     for index, link in enumerate(sorted_links):
-        link_id = str(link["link_id"])
+        link_ref = str(link.link_id)
         color = palette[int(index) % len(palette)]
-        start = chord_anchor_map[str(link["source_id"])]
-        end = chord_anchor_map[str(link["target_id"])]
+        start = chord_anchor_map[str(link.source_id)]
+        end = chord_anchor_map[str(link.target_id)]
         bend = 0.42 + (0.05 * float(index % 3))
         points = _curve_points(start, end, center, bend=float(bend))
         stroke_width = _flow_width(
-            int(link["value"]),
+            int(link.value),
             render_params=render_params,
             value_min=int(value_min),
             value_max=int(value_max),
@@ -313,16 +353,16 @@ def _render_radial_sankey(
             float(label_point[0] + (16.0 * math.cos(outward_angle))),
             float(label_point[1] + (16.0 * math.sin(outward_angle))),
         )
-        link_bbox_map[str(link_id)] = list(bbox)
-        link_center_map[str(link_id)] = [round(float(label_center[0]), 3), round(float(label_center[1]), 3)]
+        link_bbox_map[str(link_ref)] = list(bbox)
+        link_center_map[str(link_ref)] = [round(float(label_center[0]), 3), round(float(label_center[1]), 3)]
 
     image = Image.alpha_composite(image.convert("RGBA"), overlay).convert("RGB")
     draw = ImageDraw.Draw(image)
     value_label_specs = [
         {
-            "link_id": str(link["link_id"]),
-            "text": str(int(link["value"])),
-            "desired_center": tuple(float(value) for value in link_center_map[str(link["link_id"])]),
+            "link_ref": str(link.link_id),
+            "text": str(int(link.value)),
+            "desired_center": tuple(float(value) for value in link_center_map[str(link.link_id)]),
         }
         for link in sorted_links
     ]
@@ -332,38 +372,38 @@ def _render_radial_sankey(
         plot_bbox=plot_bbox,
         render_params=render_params,
     )
-    link_label_bbox_map: Dict[str, List[float]] = {}
+    link_label_bbox_map: dict[str, list[float]] = {}
     for link in sorted_links:
-        link_id = str(link["link_id"])
-        center_px = tuple(float(value) for value in resolved_centers[str(link_id)])
-        link_center_map[str(link_id)] = [round(float(center_px[0]), 3), round(float(center_px[1]), 3)]
-        link_label_bbox_map[str(link_id)] = _draw_value_label(
+        link_ref = str(link.link_id)
+        center_px = tuple(float(value) for value in resolved_centers[str(link_ref)])
+        link_center_map[str(link_ref)] = [round(float(center_px[0]), 3), round(float(center_px[1]), 3)]
+        link_label_bbox_map[str(link_ref)] = _draw_value_label(
             draw,
-            text=str(int(link["value"])),
+            text=str(int(link.value)),
             center=center_px,
             render_params=render_params,
         )
         entities.append(
             {
-                "entity_id": str(link_id),
+                "entity_id": str(link_ref),
                 "entity_type": "radial_sankey_link",
-                "bbox_xyxy": list(link_bbox_map[str(link_id)]),
+                "bbox_xyxy": list(link_bbox_map[str(link_ref)]),
                 "attrs": {
-                    "source_id": str(link["source_id"]),
-                    "source_label": str(link["source_label"]),
-                    "target_id": str(link["target_id"]),
-                    "target_label": str(link["target_label"]),
-                    "value": int(link["value"]),
-                    "label_bbox_xyxy": list(link_label_bbox_map[str(link_id)]),
+                    "source_id": str(link.source_id),
+                    "source_label": str(link.source_label),
+                    "target_id": str(link.target_id),
+                    "target_label": str(link.target_label),
+                    "value": int(link.value),
+                    "label_bbox_xyxy": list(link_label_bbox_map[str(link_ref)]),
                 },
             }
         )
 
-    node_bbox_map: Dict[str, List[float]] = {}
-    node_label_bbox_map: Dict[str, List[float]] = {}
+    node_bbox_map: dict[str, list[float]] = {}
+    node_label_bbox_map: dict[str, list[float]] = {}
     for node in all_nodes:
-        node_id = str(node["node_id"])
-        cx, cy = node_center_map[str(node_id)]
+        node_ref = str(node.node_id)
+        cx, cy = node_center_map[str(node_ref)]
         half_w = 0.5 * float(render_params.node_width_px)
         half_h = 0.5 * float(render_params.node_height_px)
         bbox = (
@@ -372,8 +412,12 @@ def _render_radial_sankey(
             float(cx + half_w),
             float(cy + half_h),
         )
-        fill = render_params.source_node_fill_rgb if str(node["role"]) == "source" else render_params.target_node_fill_rgb
-        node_bbox_map[str(node_id)] = _clamp_bbox(bbox, width=int(render_params.canvas_width), height=int(render_params.canvas_height))
+        fill = render_params.source_node_fill_rgb if str(node.role) == "source" else render_params.target_node_fill_rgb
+        node_bbox_map[str(node_ref)] = clamp_bbox(
+            bbox,
+            width=int(render_params.canvas_width),
+            height=int(render_params.canvas_height),
+        )
         draw.rounded_rectangle(
             bbox,
             radius=12,
@@ -383,7 +427,7 @@ def _render_radial_sankey(
         )
         label_font = fit_font_to_box(
             draw,
-            text=str(node["label"]),
+            text=str(node.label),
             max_width=float(bbox[2] - bbox[0] - 12.0),
             max_height=float(bbox[3] - bbox[1] - 8.0),
             bold=True,
@@ -393,28 +437,28 @@ def _render_radial_sankey(
         )
         label_bbox = draw_centered_text(
             draw,
-            text=str(node["label"]),
+            text=str(node.label),
             center=(float(cx), float(cy)),
             font=label_font,
             fill=render_params.node_text_rgb,
             stroke_fill=tuple(int(channel) for channel in fill),
             stroke_width=1,
         )
-        node_label_bbox_map[str(node_id)] = list(label_bbox)
+        node_label_bbox_map[str(node_ref)] = list(label_bbox)
         entities.append(
             {
-                "entity_id": str(node_id),
+                "entity_id": str(node_ref),
                 "entity_type": "radial_sankey_node",
-                "bbox_xyxy": list(node_bbox_map[str(node_id)]),
+                "bbox_xyxy": list(node_bbox_map[str(node_ref)]),
                 "attrs": {
-                    "label": str(node["label"]),
-                    "role": str(node["role"]),
-                    "angle_degrees": round(float(angles[str(node_id)]), 3),
+                    "label": str(node.label),
+                    "role": str(node.role),
+                    "angle_degrees": round(float(angles[str(node_ref)]), 3),
                 },
             }
         )
 
-    entities.insert(0, {"entity_id": "radial_flow_panel", "entity_type": "flow_panel", "bbox_xyxy": _round_bbox(panel_bbox)})
+    entities.insert(0, {"entity_id": "radial_flow_panel", "entity_type": "flow_panel", "bbox_xyxy": round_bbox(panel_bbox)})
     entities.insert(
         1,
         {
@@ -424,15 +468,68 @@ def _render_radial_sankey(
             "attrs": {"title": str(scene_title)},
         },
     )
-    return _RenderedRadialSankey(
+    return RenderedRadialSankey(
         image=image,
         entities=tuple(dict(item) for item in entities),
-        panel_bbox_px=_round_bbox(panel_bbox),
+        panel_bbox_px=round_bbox(panel_bbox),
         title_bbox_px=list(title_text_bbox),
-        plot_bbox_px=_round_bbox(plot_bbox),
+        plot_bbox_px=round_bbox(plot_bbox),
         node_bbox_map=dict(node_bbox_map),
         node_label_bbox_map=dict(node_label_bbox_map),
         link_bbox_map=dict(link_bbox_map),
         link_label_bbox_map=dict(link_label_bbox_map),
         link_center_map=dict(link_center_map),
     )
+
+
+def render_radial_sankey_dataset(
+    *,
+    dataset: RadialSankeyDataset,
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> RadialSankeyRenderResult:
+    """Render one already-bound dataset and return image plus all projection maps."""
+
+    render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
+    render_params = resolve_render_params(render_style_params)
+    background, background_meta = make_background_canvas(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+    )
+    chart_font_family = sample_chart_font(int(instance_seed), params)
+    with temporary_default_font_family(str(chart_font_family)):
+        rendered_scene = render_radial_sankey_scene(
+            background,
+            scene_title=str(dataset.frame.scene_title),
+            sources=dataset.frame.sources,
+            targets=dataset.frame.targets,
+            links=dataset.frame.links,
+            render_params=render_params,
+            value_min=int(dataset.frame.value_min),
+            value_max=int(dataset.frame.value_max),
+            instance_seed=int(instance_seed),
+        )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    return RadialSankeyRenderResult(
+        image=image,
+        rendered_scene=rendered_scene,
+        render_params=render_params,
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
+        chart_font_family=str(chart_font_family),
+    )
+
+
+__all__ = [
+    "font_assets_payload",
+    "render_radial_sankey_dataset",
+    "render_radial_sankey_scene",
+]

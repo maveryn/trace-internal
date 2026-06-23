@@ -63,7 +63,7 @@
         "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "Annotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
         "Required annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-        "Final answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "Format for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
       ]
     }
@@ -83,14 +83,14 @@
     },
     "query:largest_target_for_source": {
       "answer_hint": "set \"answer\" to the exact visible target label as a string",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around the compared printed flow-value labels and the selected target node",
-      "json_example": "{\"annotation\":[[420,330,458,358],[560,394,598,422],[930,470,954,498]],\"answer\":\"Y4M8\"}",
+      "annotation_hint": "set \"annotation\" to an object mapping \"compared_flow_values\" to [x0,y0,x1,y1] pixel boxes around the compared printed flow-value labels and \"answer_endpoint\" to one [x0,y0,x1,y1] pixel box around the selected target node",
+      "json_example": "{\"annotation\":{\"compared_flow_values\":[[420,330,458,358],[560,394,598,422]],\"answer_endpoint\":[[930,470,954,498]]},\"answer\":\"Y4M8\"}",
       "json_example_answer_only": "{\"answer\":\"Y4M8\"}"
     },
     "query:largest_source_for_target": {
       "answer_hint": "set \"answer\" to the exact visible source label as a string",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around the compared printed flow-value labels and the selected source node",
-      "json_example": "{\"annotation\":[[690,318,728,346],[612,430,650,458],[240,466,264,494]],\"answer\":\"B7P2\"}",
+      "annotation_hint": "set \"annotation\" to an object mapping \"compared_flow_values\" to [x0,y0,x1,y1] pixel boxes around the compared printed flow-value labels and \"answer_endpoint\" to one [x0,y0,x1,y1] pixel box around the selected source node",
+      "json_example": "{\"annotation\":{\"compared_flow_values\":[[690,318,728,346],[612,430,650,458]],\"answer_endpoint\":[[240,466,264,494]]},\"answer\":\"B7P2\"}",
       "json_example_answer_only": "{\"answer\":\"B7P2\"}"
     }
   },

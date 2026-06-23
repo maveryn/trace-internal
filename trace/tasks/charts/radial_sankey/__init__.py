@@ -1,9 +1,9 @@
 """Chart scene package tasks."""
 
-from .dominant_endpoint_label import ChartsFlowRadialSankeyDominantEndpointLabelPublicTask
-from .transfer_total_value import ChartsFlowRadialSankeyTransferTotalValuePublicTask
+from .dominant_endpoint_label import ChartsRadialSankeyDominantEndpointLabelTask
+from .transfer_total_value import ChartsRadialSankeyTransferTotalValueTask
 
 __all__ = [
-    "ChartsFlowRadialSankeyDominantEndpointLabelPublicTask",
-    "ChartsFlowRadialSankeyTransferTotalValuePublicTask",
+    "ChartsRadialSankeyDominantEndpointLabelTask",
+    "ChartsRadialSankeyTransferTotalValueTask",
 ]

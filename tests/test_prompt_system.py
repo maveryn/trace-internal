@@ -469,9 +469,18 @@ def test_icons_relation_bundle_supports_anchor_relation_query() -> None:
     bundle = load_prompt_bundle("icons", "relation", "icons_relation_v0")
     assert len(bundle.task_templates["relation_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:relation_query"]) == ["question_text"]
-    assert "scene_two_anchor_relation" in bundle.scene_templates
     assert "named_reference_distance_relation" in bundle.scene_templates
     assert "reference_grid_mirror_symmetry_relation" in bundle.scene_templates
+
+
+def test_icons_two_anchor_bundle_supports_strip_count_queries() -> None:
+    bundle = load_scene_prompt_bundle("icons", "two_anchor", "icons_two_anchor_v1")
+    assert bundle.schema_version == "v1"
+    assert len(bundle.scene_templates["two_anchor_scene"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["between_anchors_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["inside_vertical_strip"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["inside_horizontal_strip"]) == REQUIRED_PROMPT_VARIANTS
+    assert set(bundle.required_slots_by_key["scene:two_anchor_scene"]) == {"object_description"}
 
 
 def test_icons_sequence_bundle_supports_missing_count_query() -> None:

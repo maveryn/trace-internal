@@ -7,12 +7,12 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.relation.between_two_anchors_count import IconsRelationBetweenTwoAnchorsCountTask
+from trace.tasks.icons.two_anchor.between_anchors_count import IconsTwoAnchorBetweenAnchorsCountTask
 from tests.helpers import read_jsonl
 
 
 def test_icons_relation_between_two_anchors_count_deterministic() -> None:
-    task = IconsRelationBetweenTwoAnchorsCountTask()
+    task = IconsTwoAnchorBetweenAnchorsCountTask()
     out_a = task.generate(14920, params={}, max_attempts=200)
     out_b = task.generate(14920, params={}, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -48,7 +48,7 @@ def test_icons_relation_between_two_anchors_count_build_smoke(tmp_path: Path) ->
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "icons" for record in train_records)
-    assert all(record["scene_id"] == "relation" for record in train_records)
+    assert all(record["scene_id"] == "two_anchor" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_icons__two_anchor__between_anchors_count"]) == 4

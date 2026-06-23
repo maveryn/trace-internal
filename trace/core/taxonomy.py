@@ -800,7 +800,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_icons__single_transform_options__geometric_transform_result_label": _entry("icons", "single_transform_options", "icons", "single_transform_options"),
     "task_icons__mirror_grid__mirror_symmetry_match_label": _entry("icons", "mirror_grid", "icons", "mirror_grid"),
     "task_icons__overlap_grid__occlusion_order_count": _entry("icons", "overlap_grid", "icons", "relation"),
-    "task_icons__two_anchor__between_anchors_count": _entry("icons", "two_anchor", "icons", "relation"),
+    "task_icons__two_anchor__between_anchors_count": _entry("icons", "two_anchor", "icons", "two_anchor"),
     "task_icons__pattern_grid__attribute_pattern_violation_index": _entry("icons", "pattern_grid", "icons", "pattern"),
     "task_icons__sequence_strip__rotation_sequence_violation_index": _entry("icons", "sequence_strip", "icons", "sequence_strip"),
     "task_icons__wallpaper_panels__motif_violation_label": _entry("icons", "wallpaper_panels", "icons", "pattern"),

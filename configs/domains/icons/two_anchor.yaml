@@ -6,32 +6,26 @@ generation:
     target_count_max: 5
     distractor_count_min: 1
     distractor_count_max: 10
-    distractor_margin_over_target: 1
+    distractor_margin_over_target: 0
     balanced_sampling: true
-    balanced_variant_sampling: true
+    pool_manifest: all_icons.txt
+    rotation_candidates_degrees:
+    - 0
+    - 90
+    - 180
+    - 270
   task_overrides:
-    task_icons__overlap_grid__occlusion_order_count:
-      object_count_min: 2
-      object_count_max: 8
-      target_count_min: 0
-      target_count_max: 4
-      distractor_count_min: 1
-      distractor_count_max: 5
-      distractor_margin_over_target: 0
-      pool_manifest: all_icons.txt
+    task_icons__two_anchor__between_anchors_count: {}
 rendering:
   shared:
     canvas_width: 960
     canvas_height: 544
-    reference_panel_width_px: 248
-    panel_gap_px: 24
     outer_margin_px: 24
     panel_padding_px: 20
     panel_corner_radius_px: 18
     scene_icon_size_min_px: 40
     scene_icon_size_max_px: 96
-    reference_icon_size_px: 136
-    scene_max_overlap_fraction: 0.05
+    scene_max_overlap_fraction: 0.08
     scene_placement_max_attempts: 120
     scene_size_shrink_rounds: 6
     scene_size_shrink_factor: 0.9
@@ -138,11 +132,6 @@ rendering:
         alpha:
         - 0.03
         - 0.08
-    anchor_gap_px_directional: 8
-    anchor_target_area_ratio_min: 0.35
-    anchor_target_area_ratio_max: 0.65
-    anchor_opposite_area_ratio_min: 0.25
-    same_type_distractor_opposite_fraction_min: 0.75
     anchor_highlight_padding_px: 10
     anchor_highlight_radius_px: 14
     anchor_outline_rgb:
@@ -180,65 +169,17 @@ rendering:
       - 74
       - 72
     anchor_label_font_size_px: 20
-    cell_padding_px: 10
-    cell_border_rgb:
-    - 218
-    - 223
-    - 233
-    cell_border_rgb_options:
-    - - 218
-      - 223
-      - 233
-    - - 208
-      - 218
-      - 232
-    - - 226
-      - 216
-      - 205
-    - - 207
-      - 225
-      - 217
-    cell_label_color_rgb:
-    - 52
-    - 60
-    - 77
-    cell_label_color_rgb_options:
-    - - 52
-      - 60
-      - 77
-    - - 48
-      - 68
-      - 93
-    - - 77
-      - 61
-      - 81
-    - - 53
-      - 77
-      - 67
-    cell_label_font_size_px: 22
+    strip_boundary_margin_px: 14
+    strip_span_ratio_min: 0.32
+    strip_span_ratio_max: 0.6
+    strip_outside_ratio_min: 0.12
+    anchor_edge_padding_px: 10
   task_overrides:
-    task_icons__overlap_grid__occlusion_order_count:
-      canvas_width: 1104
-      canvas_height: 640
-      reference_panel_width_px: 296
-      reference_icon_size_px: 110
-      pair_min_color_distance: 80.0
-      overlap_ratio_range:
-      - 0.4
-      - 0.6
+    task_icons__two_anchor__between_anchors_count: {}
 prompt:
   shared:
-    bundle_id: icons_relation_v0
-    scene_key: reference_scene_anchor_relation
-    task_key: relation_query
+    bundle_id: icons_two_anchor_v1
+    scene_key: two_anchor_scene
+    task_key: between_anchors_count
   task_overrides:
-    task_icons__overlap_grid__occlusion_order_count:
-      scene_key: reference_grid_occlusion_relation
-      object_description: a Reference cell beside a labeled Scene grid
-      question_text: How many labeled Scene cells match the Reference front-to-back
-        order? Front-to-back order means which icon is on top.
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes
-        in image pixel coordinates around all matching Scene cells
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[336,104,506,274],[532,104,702,274],[728,104,898,274]],"answer":3}'
-      json_example_answer_only: '{"answer":3}'
+    task_icons__two_anchor__between_anchors_count: {}

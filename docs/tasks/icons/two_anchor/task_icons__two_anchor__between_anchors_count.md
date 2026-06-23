@@ -1,50 +1,55 @@
 # `task_icons__two_anchor__between_anchors_count`
 
-## 1) Identity
-1. Domain: `icons`
-2. Scene id: `two_anchor`
-3. Scene: `relation`
-4. Task id: `task_icons__two_anchor__between_anchors_count`
-5. Objective: count how many Scene icons have centers inside the strip between two marked anchors.
+## Program Contract
 
-## 2) Scene + task contract
-1. Entities/relations: one single-panel image of free-placed icons; exactly two Scene icons are visibly marked as `Anchor A` and `Anchor B`.
-2. Supported `query_id` values: `single`.
-3. Supported semantic parameter axis: `strip_axis=vertical|horizontal`.
-4. Answer type: `answer_gt.type = integer`.
-5. Annotation type: `annotation_gt.type = bbox_set` (scene-only boxes in final image pixel coordinates, sorted top-to-bottom then left-to-right).
-6. Count policy: `target_count` is sampled from `0..5`, `distractor_count` is sampled from `1..10`, and `object_count = target_count + distractor_count` therefore ranges from `1..15`; the two anchors are additional and are not counted in `object_count`.
-7. Anchor policy: the two anchors always share the same icon type, tint, and rotation. For `strip_axis=vertical`, the anchor centers share the same `y`; for `strip_axis=horizontal`, the anchor centers share the same `x`.
-8. Candidate policy: every non-anchor Scene icon uses a different icon type from the anchors, while tint and rotation may vary per icon.
-9. Match policy: candidate membership is computed from icon-center coordinates only. `strip_axis=vertical` counts candidate centers whose `x` lies between the anchor centers; `strip_axis=horizontal` counts candidate centers whose `y` lies between the anchor centers.
-10. Boundary-margin rule: every candidate center must stay at least `strip_boundary_margin_px = 14` away from the strip boundary, so positives and negatives never become near-threshold ambiguous cases.
-11. Placement policy: Scene icons are placed randomly under a `0.08` smaller-area overlap cap, with both anchor highlight boxes treated as occupied regions during placement.
-12. Noise/color policy: each icon instance (both anchors and every Scene icon) may receive `0..2` subtle per-icon edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; colors come from one background-safe Lab-separated palette.
+`counting.spatial_region_count(scene=two_anchor, scope=non_anchor_icons, region=vertical_strip_between_marked_anchors|horizontal_strip_between_marked_anchors, target=center_inside_region, output=count)`
 
-## 3) Prompt contract
-1. `prompt_bundle_id`: `icons_relation_v0`
-2. `scene_key`: `scene_two_anchor_relation`
-3. `task_key`: `relation_query`
-4. Answer+annotation JSON shape: `{"annotation":[[312,180,372,240],[540,286,612,358]],"answer":2}`
-5. Answer-only JSON shape: `{"answer":2}`
-6. Required slots:
-   - shared: `object_description`, `question_text`
-   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
-   - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
-7. Variant counts (scene/task/mode): exactly 5 templates per required key.
-8. Prompt style: the scene stem establishes the single panel plus the two icons marked A and B; task wording asks only about other icon centers inside the requested vertical or horizontal strip.
+## Identity
 
-## 4) Determinism + constraints
-1. Seed namespaces used: scene-level RNG via `spawn_rng(instance_seed, "scene")`.
-2. Unique-answer policy: the matching Scene set is sampled first, then rendered; annotation boxes are the rendered boxes of those same matches.
-3. Reject/resample conditions: unsupported count config, missing curated assets, anchor-pair layout failures, or strip/overlap-constrained placement failures.
-4. No-auto-relaxation guarantee: generation fails on unmet strip/asset/layout constraints instead of weakening the boundary margin or anchor alignment rule.
-5. Annotation scope: the user-facing `bbox_set` covers matching Scene icons only; both anchor boxes stay in trace metadata.
-6. Trace style metadata records the sampled palette, anchor styling, strip boundary margin, panel text-legibility metadata, anchor-label text draw records, and per-instance subtle-noise edits.
-7. Balanced defaults: seeded sampling balances the vertical/horizontal strip axis and target-count support using the same generator used for normal dataset generation.
+- Domain: `icons`
+- Scene id: `two_anchor`
+- Task id: `task_icons__two_anchor__between_anchors_count`
+- Objective contract: count the non-anchor icons whose centers lie in the requested strip between two marked anchors.
 
-## 5) Complexity + tests
-1. Complexity definition/components: object count + target count + query branch.
-2. Determinism/build tests: `tests/test_icons_relation_between_two_anchors_count_contracts.py`
-3. Behavior/trace/prompt tests: `tests/test_icons_relation_between_two_anchors_count_tasks.py`
-4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_scene_config.py`
+## Contract
+
+- Supported `query_id` values: `inside_vertical_strip`, `inside_horizontal_strip`.
+- Answer schema: `integer`.
+- Annotation schema: `bbox_set`.
+- The image contains one panel with two icons marked `A` and `B` plus additional unmarked icons.
+- The two anchors share the same icon type, tint, and rotation; they are alignment markers and are never counted.
+- `inside_vertical_strip` asks for non-anchor icons whose centers lie horizontally between the anchor centers.
+- `inside_horizontal_strip` asks for non-anchor icons whose centers lie vertically between the anchor centers.
+- The boundary margin keeps positive and negative icon centers away from the strip boundary.
+- The annotation contains boxes for counted non-anchor icons only, sorted top-to-bottom then left-to-right. Empty annotation is valid when the answer is `0`.
+
+## Generation
+
+- `target_count` is sampled from `0..5`.
+- `distractor_count` is sampled from `1..10`.
+- `object_count = target_count + distractor_count`; the two anchors are additional objects.
+- Candidate icons use an icon type different from the anchors. Candidate tints and rotations may vary.
+- Query selection is task-owned and uniform unless a supported `query_id` is explicitly supplied.
+- Generation rejects samples that cannot place icons under the strip, margin, and overlap constraints.
+
+## Prompt
+
+- Prompt bundle: `icons_two_anchor_v1`
+- `scene_key`: `two_anchor_scene`
+- `task_key`: `between_anchors_count`
+- Query templates ask for the vertical or horizontal strip count.
+- Answer-only JSON shape: `{"answer":2}`
+- Answer+annotation JSON shape: `{"annotation":[[312,180,372,240],[540,286,612,358]],"answer":2}`
+
+## Annotation
+
+- `bbox_set` is used because the number of counted witnesses can be zero, one, or more.
+- Boxes mark the full visible counted icons rather than the anchor markers.
+- Anchor boxes remain in trace metadata but are not part of `annotation_gt`.
+
+## Tests
+
+- Behavior and trace tests: `tests/test_icons_relation_between_two_anchors_count_tasks.py`
+- Determinism/build tests: `tests/test_icons_relation_between_two_anchors_count_contracts.py`
+- Config and prompt bundle tests: `tests/test_icons_scene_config.py`, `tests/test_prompt_system.py`
+- Scene-package migration gates: `tests/test_scene_package_migration_contracts.py`, `tests/test_scene_package_review_candidate_contracts.py`

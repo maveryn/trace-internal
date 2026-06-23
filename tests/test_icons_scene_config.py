@@ -436,7 +436,6 @@ def test_icons_relation_defaults_loaded() -> None:
     assert int(generation_shared['distractor_margin_over_target']) == 1
     assert bool(generation_shared['balanced_sampling']) is True
     assert bool(generation_shared['balanced_variant_sampling']) is True
-    assert 'task_icons__two_anchor__between_anchors_count' in cfg['generation']['task_overrides']
     assert 'task_icons__overlap_grid__occlusion_order_count' in cfg['generation']['task_overrides']
     assert 'task_icons__named_field__reference_distance_rank_label' not in cfg['generation']['task_overrides']
     assert 'task_icons__named_path__path_neighbor_label' not in cfg['generation']['task_overrides']
@@ -459,23 +458,6 @@ def test_icons_relation_defaults_loaded() -> None:
     assert str(prompt_shared['task_key']).strip()
     assert str(prompt_shared['json_output_contract']).strip()
     assert str(prompt_shared['json_output_contract_answer_only']).strip()
-    strip_generation, strip_rendering, strip_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__two_anchor__between_anchors_count')
-    assert str(strip_generation['pool_manifest']).strip() == 'all_icons.txt'
-    assert int(strip_generation['target_count_max']) == 5
-    assert int(strip_generation['distractor_count_max']) == 10
-    assert dict(strip_generation['strip_axis_weights']) == {'vertical': 1.0, 'horizontal': 1.0}
-    assert float(strip_rendering['scene_max_overlap_fraction']) == 0.08
-    assert int(strip_rendering['strip_boundary_margin_px']) == 14
-    assert float(strip_rendering['strip_span_ratio_min']) == 0.32
-    assert float(strip_rendering['strip_span_ratio_max']) == 0.6
-    assert str(strip_prompt['scene_key']).strip() == 'scene_two_anchor_relation'
-    assert str(strip_prompt['object_description']).strip()
-    assert str(strip_prompt['question_text_vertical_strip']).strip()
-    assert str(strip_prompt['question_text_horizontal_strip']).strip()
-    assert str(strip_prompt['annotation_hint']).strip()
-    assert str(strip_prompt['answer_hint']).strip()
-    assert str(strip_prompt['json_example']).strip()
-    assert str(strip_prompt['json_example_answer_only']).strip()
     occlusion_generation, occlusion_rendering, occlusion_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__overlap_grid__occlusion_order_count')
     assert str(occlusion_generation['pool_manifest']).strip() == 'all_icons.txt'
     assert int(occlusion_generation['object_count_min']) == 2
@@ -516,6 +498,37 @@ def test_icons_relation_defaults_loaded() -> None:
     assert str(distance_prompt['answer_hint']).strip()
     assert str(distance_prompt['json_example']).strip()
     assert str(distance_prompt['json_example_answer_only']).strip()
+
+
+def test_icons_two_anchor_scene_defaults_loaded() -> None:
+    task_id = 'task_icons__two_anchor__between_anchors_count'
+    cfg = get_scene_defaults('icons', 'two_anchor')
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg, task_id=task_id)
+    assert str(generation['pool_manifest']).strip() == 'all_icons.txt'
+    assert int(generation['object_count_min']) == 1
+    assert int(generation['object_count_max']) == 15
+    assert int(generation['target_count_min']) == 0
+    assert int(generation['target_count_max']) == 5
+    assert int(generation['distractor_count_min']) == 1
+    assert int(generation['distractor_count_max']) == 10
+    assert int(generation['distractor_margin_over_target']) == 0
+    assert 'query_id_weights' not in generation
+    assert list(generation['rotation_candidates_degrees']) == [0, 90, 180, 270]
+    assert float(rendering['scene_max_overlap_fraction']) == 0.08
+    assert int(rendering['strip_boundary_margin_px']) == 14
+    assert float(rendering['strip_span_ratio_min']) == 0.32
+    assert float(rendering['strip_span_ratio_max']) == 0.6
+    assert float(rendering['strip_outside_ratio_min']) == 0.12
+    assert int(rendering['anchor_edge_padding_px']) == 10
+    assert str(prompt['bundle_id']).strip() == 'icons_two_anchor_v1'
+    assert str(prompt['scene_key']).strip() == 'two_anchor_scene'
+    assert str(prompt['task_key']).strip() == 'between_anchors_count'
+    bundle = load_scene_prompt_bundle('icons', 'two_anchor', 'icons_two_anchor_v1')
+    assert bundle.bundle_id == 'icons_two_anchor_v1'
+    assert bundle.schema_version == 'v1'
+    assert set(bundle.query_templates.keys()) == {'inside_vertical_strip', 'inside_horizontal_strip'}
+
+
 def test_icons_named_path_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'named_path')
     path_generation, path_rendering, path_prompt = split_generation_rendering_prompt_defaults(

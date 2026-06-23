@@ -20,9 +20,6 @@
     "scene:reference_scene_anchor_relation": [
       "object_description"
     ],
-    "scene:scene_two_anchor_relation": [
-      "object_description"
-    ],
     "scene:named_reference_distance_relation": [
       "object_description"
     ],
@@ -76,13 +73,6 @@
       "The picture shows {object_description}."
     ],
     "reference_scene_anchor_relation": [
-      "The image shows {object_description}.",
-      "The figure shows {object_description}.",
-      "This image shows {object_description}.",
-      "The scene shows {object_description}.",
-      "The picture shows {object_description}."
-    ],
-    "scene_two_anchor_relation": [
       "The image shows {object_description}.",
       "The figure shows {object_description}.",
       "This image shows {object_description}.",

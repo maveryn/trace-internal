@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections import Counter
 from trace.core.seed import hash64
-from trace.tasks.icons.relation.between_two_anchors_count import IconsRelationBetweenTwoAnchorsCountTask
+from trace.tasks.icons.two_anchor.between_anchors_count import IconsTwoAnchorBetweenAnchorsCountTask
 
 def _overlap_fraction_smaller(left: list[int], right: list[int]) -> float:
     ix0 = max(int(left[0]), int(right[0]))
@@ -36,7 +36,7 @@ def _center_in_strip(entity: dict, anchor_a: dict, anchor_b: dict, strip_axis: s
     raise ValueError(f'unsupported strip_axis: {strip_axis}')
 
 def test_icons_relation_between_two_anchors_count_contract_matches_scene() -> None:
-    task = IconsRelationBetweenTwoAnchorsCountTask()
+    task = IconsTwoAnchorBetweenAnchorsCountTask()
     out = task.generate(14910, params={'query_id': 'inside_vertical_strip', 'target_count': 2, 'distractor_count': 4}, max_attempts=200)
     trace = out.trace_payload
     execution = trace['execution_trace']
@@ -60,7 +60,6 @@ def test_icons_relation_between_two_anchors_count_contract_matches_scene() -> No
     assert execution['question_format'] == 'count_scene_icon_centers_in_strip_between_two_anchors'
     assert out.query_id == 'inside_vertical_strip'
     assert execution['query_id'] == 'inside_vertical_strip'
-    assert execution['internal_query_id'] == 'inside_vertical_strip'
     assert execution['strip_axis'] == 'vertical'
     assert int(execution['object_count']) == 6
     assert int(execution['target_count']) == 2
@@ -91,13 +90,13 @@ def test_icons_relation_between_two_anchors_count_contract_matches_scene() -> No
             assert _overlap_fraction_smaller(list(entity['bbox_xyxy']), list(other['bbox_xyxy'])) <= 0.08 + 1e-06
 
 def test_icons_relation_between_two_anchors_count_supports_zero_matches() -> None:
-    task = IconsRelationBetweenTwoAnchorsCountTask()
+    task = IconsTwoAnchorBetweenAnchorsCountTask()
     out = task.generate(14911, params={'query_id': 'inside_horizontal_strip', 'target_count': 0, 'distractor_count': 4}, max_attempts=200)
     assert int(out.answer_gt.value) == 0
     assert out.annotation_gt.value == []
 
 def test_icons_relation_between_two_anchors_count_prompt_example_matches_contract() -> None:
-    task = IconsRelationBetweenTwoAnchorsCountTask()
+    task = IconsTwoAnchorBetweenAnchorsCountTask()
     out = task.generate(14912, params={'target_count': 2, 'distractor_count': 4}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants['answer_only'])
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
@@ -108,7 +107,7 @@ def test_icons_relation_between_two_anchors_count_prompt_example_matches_contrac
     assert answer_and_annotation['answer'] == 2
 
 def test_icons_relation_between_two_anchors_count_balanced_sampling_defaults() -> None:
-    task = IconsRelationBetweenTwoAnchorsCountTask()
+    task = IconsTwoAnchorBetweenAnchorsCountTask()
     target_counts: Counter[int] = Counter()
     distractor_counts: Counter[int] = Counter()
     strip_axis_counts: Counter[str] = Counter()

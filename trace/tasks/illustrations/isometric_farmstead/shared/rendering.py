@@ -83,11 +83,9 @@ def _tile_id(col: int, row: int) -> str:
 
 
 def _profile_grid(width: int, height: int) -> tuple[int, int]:
-    if int(height) > int(width) * 1.15:
-        return (11, 15)
     if int(width) > int(height) * 1.15:
-        return (15, 12)
-    return (13, 13)
+        return (16, 12)
+    return (14, 14)
 
 
 def _inside(col: int, row: int, rect: TileRect) -> bool:

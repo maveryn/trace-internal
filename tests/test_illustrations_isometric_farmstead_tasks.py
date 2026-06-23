@@ -40,7 +40,10 @@ def _assert_no_entity_on_unsafe_tile(scene: object) -> None:
 
 
 def test_isometric_farmstead_renderer_is_deterministic_and_profile_safe() -> None:
-    for width, height, profile in ((1200, 800, "landscape"), (960, 960, "square"), (800, 1200, "portrait")):
+    for width, height, profile, expected_grid in (
+        (1200, 800, "landscape", (16, 12)),
+        (960, 960, "square", (14, 14)),
+    ):
         first = render_isometric_farmstead_scene(
             2026062301,
             width=width,
@@ -59,6 +62,7 @@ def test_isometric_farmstead_renderer_is_deterministic_and_profile_safe() -> Non
         assert first.image.tobytes() == second.image.tobytes()
         assert first.trace["renderer_id"] == "isometric_farmstead_v0"
         assert first.trace["projection"]["type"] == "2:1_isometric"
+        assert (int(first.trace["grid_cols"]), int(first.trace["grid_rows"])) == expected_grid
         assert first.trace["supported_levels"] == list(SUPPORTED_LEVELS)
         active_levels = [int(level) for level in first.trace["levels"]]
         assert active_levels[0] == 0
@@ -90,8 +94,8 @@ def test_isometric_farmstead_elevation_task_contract() -> None:
     cases = (
         ("highest_terrain_tile", "landscape", 2026062311),
         ("lowest_terrain_tile", "square", 2026062312),
-        ("highest_terrain_tile", "portrait", 2026062313),
-        ("lowest_terrain_tile", "portrait", 2026062314),
+        ("highest_terrain_tile", "landscape", 2026062313),
+        ("lowest_terrain_tile", "square", 2026062314),
     )
     for query_id, profile, seed in cases:
         out = task.generate(
@@ -133,8 +137,8 @@ def test_isometric_farmstead_terrain_level_object_count_contract() -> None:
     cases = (
         ("highest_terrain_object_count", "domestic_animal", "landscape", 2026062321),
         ("lowest_terrain_object_count", "tree", "square", 2026062322),
-        ("highest_terrain_object_count", "tree", "portrait", 2026062323),
-        ("lowest_terrain_object_count", "domestic_animal", "portrait", 2026062324),
+        ("highest_terrain_object_count", "tree", "landscape", 2026062323),
+        ("lowest_terrain_object_count", "domestic_animal", "square", 2026062324),
     )
     for query_id, target_object_type, profile, seed in cases:
         out = task.generate(

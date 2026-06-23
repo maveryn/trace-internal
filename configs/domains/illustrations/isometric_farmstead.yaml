@@ -27,7 +27,6 @@ rendering:
     canvas_profile_support:
       - landscape
       - square
-      - portrait
 
 prompt:
   task_overrides:

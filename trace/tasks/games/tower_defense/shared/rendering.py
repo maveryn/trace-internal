@@ -2,20 +2,28 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
 from ....shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
-from .common import (
-    Point,
-    TowerDefenseEnemy,
-    TowerDefenseTower,
+from .rules import (
     enemy_entity_id,
     path_segment_entity_id,
 )
-from ...shared.layout import apply_games_layout_jitter_to_bbox
+from .defaults import DEFAULTS, RENDER_DEFAULTS
+from .state import (
+    BBox,
+    Color,
+    Point,
+    RenderedTowerDefenseScene,
+    SCENE_NAMESPACE,
+    TowerDefenseEnemy,
+    TowerDefenseRenderParams,
+    TowerDefenseTheme,
+    TowerDefenseTower,
+)
+from ...shared.layout import apply_games_layout_jitter_to_bbox, resolve_games_layout_jitter
 from ...shared.marking import draw_semantic_ellipse_marker, resolve_semantic_marker_style
 from ...shared.scene_style import (
     GamePanelSceneStyle,
@@ -23,55 +31,7 @@ from ...shared.scene_style import (
     game_panel_contrast_anchor_colors,
     game_panel_scene_style_metadata,
 )
-
-
-Color = Tuple[int, int, int]
-BBox = Tuple[float, float, float, float]
-
-
-@dataclass(frozen=True)
-class TowerDefenseRenderParams:
-    """Resolved render controls for one tower-defense scene."""
-
-    canvas_width: int
-    canvas_height: int
-    map_width_px: int
-    map_height_px: int
-    panel_margin_px: int
-    path_width_px: int
-    path_node_radius_px: int
-    tower_radius_px: int
-    enemy_radius_px: int
-    range_outline_width_px: int
-    layout_jitter_meta: Dict[str, Any] | None = None
-
-
-@dataclass(frozen=True)
-class TowerDefenseTheme:
-    """Resolved tower-defense visual theme."""
-
-    map_fill_rgb: Color
-    map_outline_rgb: Color
-    terrain_accent_rgb: Color
-    path_fill_rgb: Color
-    path_outline_rgb: Color
-    path_node_rgb: Color
-    tower_fill_rgb: Color
-    tower_inner_rgb: Color
-    tower_outline_rgb: Color
-    enemy_fill_rgb: Color
-    enemy_outline_rgb: Color
-    range_palette_rgb: Tuple[Color, ...]
-    terrain_pattern: str
-
-
-@dataclass(frozen=True)
-class RenderedTowerDefenseScene:
-    """Rendered tower-defense image plus trace-friendly geometry."""
-
-    image: Image.Image
-    scene_entities: Tuple[Dict[str, Any], ...]
-    render_map: Dict[str, Any]
+from ....shared.config_defaults import group_default
 
 
 def build_games_tower_defense_theme(*, style_variant: str) -> TowerDefenseTheme:
@@ -167,6 +127,41 @@ def _circle_bbox(center: Sequence[float], radius: float) -> BBox:
     cx, cy = float(center[0]), float(center[1])
     r = float(radius)
     return _round_bbox((cx - r, cy - r, cx + r, cy + r))
+
+
+def _int_default(params: Mapping[str, Any], key: str, fallback: int) -> int:
+    """Resolve one integer rendering control from params, config, or fallback."""
+
+    if str(key) in params:
+        return int(params[str(key)])
+    return int(group_default(RENDER_DEFAULTS, str(key), int(fallback)))
+
+
+def resolve_tower_defense_render_params(
+    params: Mapping[str, Any],
+    *,
+    instance_seed: int,
+) -> TowerDefenseRenderParams:
+    """Resolve deterministic render controls for one tower-defense map."""
+
+    return TowerDefenseRenderParams(
+        canvas_width=_int_default(params, "canvas_width", DEFAULTS.canvas_width),
+        canvas_height=_int_default(params, "canvas_height", DEFAULTS.canvas_height),
+        map_width_px=_int_default(params, "map_width_px", DEFAULTS.map_width_px),
+        map_height_px=_int_default(params, "map_height_px", DEFAULTS.map_height_px),
+        panel_margin_px=_int_default(params, "panel_margin_px", DEFAULTS.panel_margin_px),
+        path_width_px=_int_default(params, "path_width_px", DEFAULTS.path_width_px),
+        path_node_radius_px=_int_default(params, "path_node_radius_px", DEFAULTS.path_node_radius_px),
+        tower_radius_px=_int_default(params, "tower_radius_px", DEFAULTS.tower_radius_px),
+        enemy_radius_px=_int_default(params, "enemy_radius_px", DEFAULTS.enemy_radius_px),
+        range_outline_width_px=_int_default(params, "range_outline_width_px", DEFAULTS.range_outline_width_px),
+        layout_jitter_meta=resolve_games_layout_jitter(
+            params,
+            RENDER_DEFAULTS,
+            instance_seed=int(instance_seed),
+            namespace=f"{SCENE_NAMESPACE}.layout_jitter",
+        ),
+    )
 
 
 def _local_to_global(point: Sequence[float], *, map_bbox: Sequence[float]) -> Point:
@@ -278,7 +273,7 @@ def render_tower_defense_scene(
     params: TowerDefenseRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedTowerDefenseScene:
-    """Render one tower-defense map scene."""
+    """Render the complete tower-defense map and record annotation projections."""
 
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
@@ -481,4 +476,5 @@ __all__ = [
     "TowerDefenseTheme",
     "build_games_tower_defense_theme",
     "render_tower_defense_scene",
+    "resolve_tower_defense_render_params",
 ]

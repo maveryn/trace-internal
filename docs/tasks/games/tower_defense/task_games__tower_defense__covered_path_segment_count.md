@@ -5,10 +5,13 @@
 2. Scene: `tower_defense`
 3. Scene id: `tower_defense`
 4. Public task id: `task_games__tower_defense__covered_path_segment_count`
-5. Supported `query_id` values: `covered_path_segment_count`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `point_set`
-8. Program schema: `count(path_node for path_node in path_nodes if any(path_node_center inside tower_range_circle for tower in towers)); scene=tower_defense; scope=covered_path_segment_count`
+
+## Program Contract
+
+`count(path_node for path_node in path_nodes if any(path_node_center inside tower_range_circle for tower in towers)); scene=tower_defense; scope=covered_path_segment_count`
 
 ## Generation Notes
 1. The path is drawn as discrete visible nodes along a winding or switchback route.

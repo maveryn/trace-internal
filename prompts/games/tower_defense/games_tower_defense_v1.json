@@ -109,7 +109,7 @@
     "object_description_switchback_path_covered_path_segment_count": "a tower-defense map with a switchback path, circular tower range rings, and discrete path nodes",
     "coverage_rule_text_marked_enemy_covered_by_tower_count": "A tower covers the marked enemy when the enemy is inside that tower's visible range ring.",
     "coverage_rule_text_covered_path_segment_count": "A path node is covered when its center is inside at least one visible tower range ring.",
-    "annotation_hint_marked_enemy_covered_by_tower_count": "set \"annotation\" to [x, y] pixel points at the centers of every tower whose range ring covers the marked enemy; use an empty array when none do",
+    "annotation_hint_marked_enemy_covered_by_tower_count": "set \"annotation\" to bounding boxes [x1, y1, x2, y2] around every tower whose range ring covers the marked enemy; use an empty array when none do",
     "answer_hint_marked_enemy_covered_by_tower_count": "set \"answer\" to the number of towers whose range rings cover the marked enemy",
     "annotation_hint_covered_path_segment_count": "set \"annotation\" to [x, y] pixel points at the centers of every covered path node",
     "answer_hint_covered_path_segment_count": "set \"answer\" to the number of path nodes covered by at least one tower range ring"

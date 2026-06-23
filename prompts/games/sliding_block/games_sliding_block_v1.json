@@ -30,11 +30,11 @@
         "How many rectangular blocks currently block the red target block T from sliding straight out?"
       ],
       "movable_block_count": [
-        "Horizontal blocks slide left or right, and vertical blocks slide up or down. How many blocks can slide at least one cell?",
-        "Count the blocks with at least one legal one-cell slide along their own orientation.",
-        "How many labeled blocks can move one or more cells from their current position along their own orientation?",
-        "Count every block that can slide horizontally if it is horizontal, or vertically if it is vertical, without overlapping another block.",
-        "How many of the labeled blocks are movable right now under the orientation slide rule?"
+        "Horizontal blocks, which are wider than tall, can slide only left or right. Vertical blocks, which are taller than wide, can slide only up or down. How many blocks can make at least one legal one-cell slide without leaving the board or overlapping another block?",
+        "A horizontal block may move only left or right, and a vertical block may move only up or down. Count the blocks with at least one legal one-cell slide that stays inside the board and avoids other blocks.",
+        "Horizontal lying blocks can slide left or right only; vertical standing blocks can slide up or down only. How many labeled blocks can move one cell from their current position without colliding or going off the board?",
+        "Count every block that can slide one cell in its allowed direction: horizontal blocks left or right, vertical blocks up or down. The slide must stay inside the board and not overlap another block.",
+        "Using the rule that horizontal blocks move left/right and vertical blocks move up/down, how many labeled blocks can slide at least one cell without leaving the board or overlapping another block?"
       ],
       "horizontal_block_count": [
         "How many horizontal blocks are on the board?",

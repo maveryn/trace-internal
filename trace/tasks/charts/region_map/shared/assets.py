@@ -1,4 +1,4 @@
-"""Bundled geographic map assets for choropleth map tasks."""
+"""Bundled geographic map assets for marker-map tasks."""
 
 from __future__ import annotations
 
@@ -119,4 +119,3 @@ __all__ = [
     "load_world_map_asset",
     "normalize_geographic_map_variant",
 ]
-

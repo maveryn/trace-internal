@@ -3,24 +3,27 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `region_map`
-3. Source implementation domain/group: `charts/map`
-4. Query id: `adjacent_same_category_count`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Source implementation path: `trace/tasks/charts/region_map/adjacent_same_category_count.py`
+4. Supported `query_id`: `single`
+5. Public task id: `task_charts__region_map__adjacent_same_category_count`
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.map.choropleth_region_label.ChartsMapAdjacentSameCategoryCountTask`
-2. Prompt lookup domain/group: `charts/map`
+1. Registered class: `trace.tasks.charts.region_map.adjacent_same_category_count.ChartsMapAdjacentSameCategoryCountTask`
+2. Prompt bundle: `prompts/charts/region_map/charts_region_map_v1.json`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `bbox_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+3. Annotation marks the counted or summed map-region boxes only; legend, title, and context text are not annotation targets.
+4. Adjacent-region tasks annotate matching neighbors and exclude the highlighted reference region.
+
+## Program Contract
+- `count(filter(adjacent(reference_region), category == category(reference_region))); output=integer_count; annotation=bbox_set(matching_neighbor_regions); scene=region_map; scope=adjacent_same_category_count`
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `adjacent_same_category_count` | `count.adjacency_relation` | `integer_count` | `bbox_set` |
+| `single` | `count(adjacent(reference_region) where category == category(reference_region))` | `integer_count` | `bbox_set` |

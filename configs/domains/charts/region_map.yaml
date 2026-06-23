@@ -10,10 +10,6 @@ generation:
     legend_bin_count_max: 6
     count_answer_min: 1
     count_answer_max: 6
-    threshold_direction_weights:
-      greater_than: 1.0
-      less_than: 1.0
-    balanced_threshold_direction_sampling: true
     balanced_geographic_map_variant_sampling: true
     geographic_map_variant_weights:
       world_countries: 0.5
@@ -26,6 +22,7 @@ generation:
       geographic_region_map: 0.6666666666666666
 rendering:
   shared:
+    chart_context_profile: report_paragraph
     canvas_width: 1180
     canvas_height: 760
     outer_margin_px: 42

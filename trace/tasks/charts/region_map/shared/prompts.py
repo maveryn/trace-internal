@@ -26,15 +26,16 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rende
 )
 
 
-def dynamic_slots(*, dataset: Mapping[str, Any], query_id: str, scene_variant: str) -> dict[str, Any]:
+def dynamic_slots(dataset: Mapping[str, Any]) -> dict[str, Any]:
     question_params = dict(dataset.get("question_params", {}))
-    if _is_region_value_query(str(query_id)):
+    scene_variant = str(dataset.get("scene_variant") or "")
+    if bool(dataset.get("show_region_value_labels")):
         object_description = "a map with colored regions, visible region labels, visible integer values, and a legend"
-    elif str(query_id) == "group_filtered_region_value":
-        object_description = "a world map with selected countries colored by value, visible integer values, and a legend"
+        if str(scene_variant) == "geographic_region_map":
+            object_description = "a world map with selected countries colored by value, visible integer values, and a legend"
     elif str(scene_variant) == "geographic_region_map":
         object_description = str(dataset.get("map_object_description") or "a geographic map with selected colored regions and a legend")
-        if _is_categorical_query(str(query_id)):
+        if bool(dataset.get("categorical")):
             object_description = object_description.replace(
                 "colored by value and a color legend",
                 "colored by category and a category legend",
@@ -70,19 +71,6 @@ def build_prompt_artifacts(
         instance_seed=int(instance_seed),
     )
     return build_prompt_trace_artifacts(rendered_prompt)
-
-
-def _is_categorical_query(query_id: str) -> bool:
-    return str(query_id) in {
-        "categorical_region_count",
-        "continent_category_region_count",
-        "adjacent_same_category_count",
-        "adjacent_category_count",
-    }
-
-
-def _is_region_value_query(query_id: str) -> bool:
-    return str(query_id) in {"named_region_set_total_value", "group_filtered_region_value"}
 
 
 __all__ = ["build_prompt_artifacts", "dynamic_slots"]

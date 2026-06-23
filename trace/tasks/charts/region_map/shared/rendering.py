@@ -8,16 +8,19 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from .....core.visual.background import make_background_canvas
+from .....core.visual.noise import apply_post_image_noise
 from .....core.seed import spawn_rng
+from ....shared.font_assets import font_asset_version, sample_font_family
 from ....shared.bbox_projection import bbox_union_raw as _bbox_union, round_bbox as _round_bbox
 from ....shared.color_distance import coerce_rgb as _rgb
 from ....shared.config_defaults import required_group_defaults, resolve_required_int_bounds
 from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ....shared.drawing import draw_centered_text, draw_rounded_rect
 from ....shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
-from ....shared.text_rendering import fit_font_to_box, load_font
+from ....shared.text_rendering import fit_font_to_box, load_font, temporary_default_font_family
 from ...shared.label_assets import resolve_chart_category_labels
-from .choropleth_assets import (
+from .assets import (
     GEOGRAPHIC_MAP_ASSETS as _GEOGRAPHIC_MAP_ASSETS,
     WORLD_CATEGORY_TITLE_OPTIONS as _WORLD_CATEGORY_TITLE_OPTIONS,
     WORLD_MAP_ASSET_ID as _WORLD_MAP_ASSET_ID,
@@ -25,8 +28,13 @@ from .choropleth_assets import (
     load_geographic_map_asset as _load_geographic_map_asset,
     load_world_map_asset as _load_world_map_asset,
 )
-from .choropleth_config import *  # noqa: F403
-from .choropleth_geometry import (
+from .defaults import (
+    POST_IMAGE_BACKGROUND_DEFAULTS,
+    POST_IMAGE_NOISE_DEFAULTS,
+    SCENE_NAMESPACE,
+    _RENDER_DEFAULTS,
+)
+from .spatial_primitives import (
     _balanced_int,
     _choose_random,
     _grid_pair_support,
@@ -40,7 +48,7 @@ from .choropleth_geometry import (
     _sample_connected_cells,
     _shrink_polygon,
 )
-from .choropleth_geography import (
+from .projection import (
     WORLD_FILTERED_CONTINENTS as _WORLD_FILTERED_CONTINENTS,
     _border_segment_key,
     _border_segment_length,
@@ -53,9 +61,8 @@ from .choropleth_geography import (
     _world_country_shared_border_lengths,
     _world_filtered_region_candidates,
 )
-from .choropleth_style import (
+from .styles import (
     resolve_choropleth_legend_position as _resolve_legend_position,
-    resolve_choropleth_marker_style as _resolve_marker_style,
     resolve_choropleth_palette as _resolve_palette,
     resolve_choropleth_world_map_style as _resolve_world_map_style,
 )
@@ -123,7 +130,7 @@ def _rgb_param(params: Mapping[str, Any], key: str, fallback: Tuple[int, int, in
         str(key),
         fallback,
         instance_seed=_render_style_seed(params),
-        namespace=TASK_ID,
+        namespace=SCENE_NAMESPACE,
     )
 
 def _int_param(params: Mapping[str, Any], key: str, fallback: int) -> int:
@@ -133,9 +140,11 @@ def _int_param(params: Mapping[str, Any], key: str, fallback: int) -> int:
 def _resolve_render_params(
     params: Mapping[str, Any],
     *,
-    query_id: str,
     legend_count: int,
+    categorical: bool = False,
 ) -> _MapRenderParams:
+    """Resolve scene-wide render style while preserving map/legend layout invariants."""
+
     outer = _int_param(params, "outer_margin_px", 42)
     jitter_left, _jitter_right, jitter_top, _jitter_bottom, layout_jitter_meta = apply_layout_jitter_to_margins(
         left_px=int(outer),
@@ -145,13 +154,12 @@ def _resolve_render_params(
         params=params,
         defaults=_RENDER_DEFAULTS,
         instance_seed=_render_style_seed(params),
-        namespace=f"{TASK_ID}.layout",
+        namespace=f"{SCENE_NAMESPACE}.layout",
     )
-    categorical = _is_categorical_query_id(str(query_id))
     palette_variant, palette_probabilities, palette = _resolve_palette(
         params,
         render_defaults=_RENDER_DEFAULTS,
-        task_id=TASK_ID,
+        namespace=SCENE_NAMESPACE,
         style_seed=_render_style_seed(params),
         required_palette_count=int(legend_count),
         categorical=bool(categorical),
@@ -159,13 +167,13 @@ def _resolve_render_params(
     legend_position, legend_position_probabilities = _resolve_legend_position(
         params,
         render_defaults=_RENDER_DEFAULTS,
-        task_id=TASK_ID,
+        namespace=SCENE_NAMESPACE,
         instance_seed=_render_style_seed(params),
     )
     world_map_style_id, world_map_style_probabilities, world_map_style = _resolve_world_map_style(
         params,
         render_defaults=_RENDER_DEFAULTS,
-        task_id=TASK_ID,
+        namespace=SCENE_NAMESPACE,
         instance_seed=_render_style_seed(params),
     )
     return _MapRenderParams(
@@ -258,6 +266,8 @@ def _draw_region_value_label(
     )
 
 def _layout_bboxes(render_params: _MapRenderParams) -> Tuple[BBox, BBox, BBox, BBox]:
+    """Compute stable panel, title, map, and legend boxes from resolved margins."""
+
     outer = float(render_params.outer_margin_px)
     offset_x = float(render_params.layout_offset_x_px)
     offset_y = float(render_params.layout_offset_y_px)
@@ -333,6 +343,8 @@ def _draw_legend(
     render_params: _MapRenderParams,
     categorical: bool,
 ) -> Dict[str, List[float]]:
+    """Draw a value/category legend and return swatch bboxes keyed by legend bin id."""
+
     if str(render_params.legend_position) == "none":
         return {}
     draw_rounded_rect(
@@ -528,6 +540,8 @@ def _render_world_choropleth_map(
     neutral_regions: bool = False,
     show_region_value_labels: bool = False,
 ) -> _RenderedChoroplethMap:
+    """Render selected geographic asset regions with projected region bboxes for annotation."""
+
     image = background.copy()
     draw = ImageDraw.Draw(image)
     entities: List[Dict[str, Any]] = []
@@ -776,6 +790,8 @@ def _render_choropleth_map(
     neutral_regions: bool = False,
     show_region_value_labels: bool = False,
 ) -> _RenderedChoroplethMap:
+    """Render synthetic connected-cell regions with bbox/center maps for downstream tasks."""
+
     image = background.copy()
     draw = ImageDraw.Draw(image)
     entities: List[Dict[str, Any]] = []
@@ -944,13 +960,111 @@ def _render_choropleth_map(
     )
 
 
+@dataclass(frozen=True)
+class RegionMapRenderResult:
+    """Rendered region-map scene plus reusable render metadata."""
+
+    image: Image.Image
+    rendered_scene: _RenderedChoroplethMap
+    render_params: _MapRenderParams
+    background_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+    chart_font_family: str
+
+
+def render_region_map(
+    *,
+    dataset: Mapping[str, Any],
+    params: Mapping[str, Any],
+    instance_seed: int,
+    categorical: bool,
+    show_region_value_labels: bool,
+) -> RegionMapRenderResult:
+    """Render a complete region-map scene from semantic dataset fields."""
+
+    render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
+    render_params = _resolve_render_params(
+        render_style_params,
+        legend_count=len(dataset["legend_bins"]),
+        categorical=bool(categorical),
+    )
+    chart_font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.chart_font",
+        params=params,
+        explicit_key="chart_font_family",
+        weights_key="chart_font_family_weights",
+    )
+    background, background_meta = make_background_canvas(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+    )
+    with temporary_default_font_family(str(chart_font_family)):
+        if str(dataset["scene_variant"]) == "geographic_region_map":
+            rendered_scene = _render_world_choropleth_map(
+                background,
+                scene_title=str(dataset["scene_title"]),
+                map_asset_id=str(dataset.get("map_asset_id") or _WORLD_MAP_ASSET_ID),
+                regions=list(dataset["regions"]),
+                legend_bins=list(dataset["legend_bins"]),
+                render_params=render_params,
+                instance_seed=int(instance_seed),
+                categorical=bool(categorical),
+                draw_color_legend=True,
+                neutral_regions=False,
+                show_region_value_labels=bool(show_region_value_labels),
+            )
+        else:
+            rendered_scene = _render_choropleth_map(
+                background,
+                scene_title=str(dataset["scene_title"]),
+                rows=int(dataset["rows"]),
+                cols=int(dataset["cols"]),
+                regions=list(dataset["regions"]),
+                legend_bins=list(dataset["legend_bins"]),
+                render_params=render_params,
+                instance_seed=int(instance_seed),
+                categorical=bool(categorical),
+                draw_color_legend=True,
+                neutral_regions=False,
+                show_region_value_labels=bool(show_region_value_labels),
+            )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    return RegionMapRenderResult(
+        image=image,
+        rendered_scene=rendered_scene,
+        render_params=render_params,
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
+        chart_font_family=str(chart_font_family),
+    )
+
+
+def font_assets_payload(chart_font_family: str) -> Dict[str, str]:
+    return {
+        "font_asset_version": font_asset_version(),
+        "chart_font_family": str(chart_font_family),
+    }
+
+
 __all__ = [
     'BBox',
     'Point',
+    'RegionMapRenderResult',
+    'font_assets_payload',
+    'render_region_map',
     '_MapRenderParams',
     '_RenderedChoroplethMap',
     '_render_choropleth_map',
     '_render_world_choropleth_map',
     '_resolve_render_params',
 ]
-

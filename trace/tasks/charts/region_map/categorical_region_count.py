@@ -1,97 +1,70 @@
-"""Count map regions assigned to one categorical legend class."""
+"""Count map regions assigned to one visible legend category."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-from ....core.seed import hash64
+from ....core.query_ids import SINGLE_QUERY_ID
 from ....core.types import TypedValue
-from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.choropleth_config import _resolve_scene_variant
-from .shared.choropleth_region_label import build_region_map_task_components
+from ._lifecycle import RegionMapBoundObjective, run_region_map_lifecycle
+from .shared.annotations import region_bbox_set_bundle
+from .shared.defaults import resolve_scene_variant
+from .shared.sampling import construct_categorical_count_dataset
 
 
-QUERY_ID = "categorical_region_count"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {
-    'count_answer_min': 1,
-    'count_answer_max': 7,
-    'legend_bin_count_min': 3,
-    'legend_bin_count_max': 6,
-    'geographic_selected_region_count_min': 12,
-    'geographic_selected_region_count_max': 24,
-}
+TASK_ID = "task_charts__region_map__categorical_region_count"
+QUERY_ID = SINGLE_QUERY_ID
+SUPPORTED_QUERY_IDS = (QUERY_ID,)
 
 
 @register_task
 class ChartsMapCategoricalRegionCountTask:
-    """Count map regions assigned to one categorical legend class."""
+    """Count map regions assigned to one visible legend category."""
 
-    task_id = "task_charts__region_map__categorical_region_count"
+    task_id = TASK_ID
     domain = "charts"
-    scene_id = "region_map"
     objective_contract = "categorical_region_count"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
+    def _construct_categorical_dataset(self, instance_seed, params, selected_query_id, query_probabilities):
+        scene_variant, scene_variant_probabilities = resolve_scene_variant(params, instance_seed=instance_seed)
+        dataset = construct_categorical_count_dataset(
+            scene_variant=scene_variant,
+            params=params,
+            instance_seed=instance_seed,
+        )
+        dataset["_scene_variant_probabilities"] = scene_variant_probabilities
+        return dataset
+
+    def _bind_categorical_objective(self, dataset, rendered, selected_query_id):
+        annotation = region_bbox_set_bundle(rendered, dataset["annotation_region_ids"])
+        return RegionMapBoundObjective(
+            answer_gt=TypedValue(type="integer", value=int(dataset["answer_value"])),
+            annotation=annotation,
+            relations={
+                "query_id": str(selected_query_id),
+                "category_label": str(dataset["question_params"]["category_label"]),
+                "annotation_region_count": int(len(annotation.annotation_region_ids)),
+            },
+            witness_symbolic={
+                "type": "region_map_category_count_witness",
+                "candidate_region_ids": list(annotation.annotation_region_ids),
+                "answer_value": int(dataset["answer_value"]),
+            },
+        )
+
+    def generate(self, instance_seed, *, params, max_attempts):
+        return run_region_map_lifecycle(
+            task=self,
+            instance_seed=instance_seed,
+            params=dict(params),
+            max_attempts=max_attempts,
             default_query_id=QUERY_ID,
-            task_id=self.task_id,
+            prompt_query_key="categorical_region_count",
+            answer_type="integer",
+            question_format="map_region_count",
+            categorical=True,
+            show_region_value_labels=False,
+            build_dataset=self._construct_categorical_dataset,
+            bind_objective=self._bind_categorical_objective,
         )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                attempt_params = {**dict(task_params), "_attempt_index": int(attempt_index)}
-                return self._generate_once(
-                    int(attempt_seed),
-                    params=attempt_params,
-                    selected_query_id=str(selected_query_id),
-                    query_probabilities=query_probabilities,
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
-
-    def _generate_once(
-        self,
-        instance_seed: int,
-        *,
-        params: Dict[str, Any],
-        selected_query_id: str,
-        query_probabilities: Dict[str, float],
-    ) -> TaskOutput:
-        task_params = dict(params)
-        scene_variant, scene_variant_probabilities = _resolve_scene_variant(
-            task_params,
-            instance_seed=int(instance_seed),
-        )
-        components = build_region_map_task_components(
-            query_id=str(selected_query_id),
-            scene_variant=str(scene_variant),
-            query_id_probabilities=query_probabilities,
-            scene_variant_probabilities=scene_variant_probabilities,
-            instance_seed=int(instance_seed),
-            params=task_params,
-        )
-        return TaskOutput(
-            prompt=str(components.prompt),
-            prompt_variants=dict(components.prompt_variants),
-            answer_gt=TypedValue(type=str(components.answer_type), value=components.answer_value),
-            annotation_gt=TypedValue(type=str(components.annotation_type), value=list(components.annotation_value)),
-            image=components.image,
-            image_id="img0",
-            trace_payload=dict(components.trace_payload),
-            task_versions=default_task_versions(),
-            scene_id="region_map",
-            query_id=str(components.query_id),
-        )
-
-
-__all__ = ["ChartsMapCategoricalRegionCountTask"]

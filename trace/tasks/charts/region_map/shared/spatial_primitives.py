@@ -1,4 +1,4 @@
-"""Geometry helpers for chart-domain choropleth map tasks."""
+"""Spatial primitives for region-map chart tasks."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from ....shared.deterministic_sampling import resolve_selection_index
 
 
 Point = Tuple[float, float]
-CHOROPLETH_TASK_NAMESPACE = "charts_map_choropleth_region_count_base"
+CHOROPLETH_TASK_NAMESPACE = "charts_region_map"
 
 
 def _polygon_bbox(points: Sequence[Point]) -> List[float]:
@@ -208,4 +208,3 @@ __all__ = [
     "_sample_connected_cells",
     "_shrink_polygon",
 ]
-

@@ -187,23 +187,31 @@ def build_property_relations(
     selection = replace(selection, target_interval=target_interval)
     for _ in range(100):
         if str(rule_kind) == RULE_FUNCTION_TEST:
-            winner = _sample_function_winner(rng, _template_index(params, instance_seed=instance_seed, namespace=f"{namespace}.template", support_size=7))
+            winner = _sample_function_winner(rng, _template_index(params, instance_seed=instance_seed, namespace=f"{namespace}.template", support_size=10))
             distractors = _sample_function_distractors(rng)
         elif str(rule_kind) == RULE_ONE_TO_ONE_TEST:
-            winner = _sample_one_to_one_winner(rng, _template_index(params, instance_seed=instance_seed, namespace=f"{namespace}.template", support_size=6))
+            winner = _sample_one_to_one_winner(rng, _template_index(params, instance_seed=instance_seed, namespace=f"{namespace}.template", support_size=9))
             distractors = _sample_one_to_one_distractors(rng)
         elif str(rule_kind) == RULE_RANGE_MATCH:
             bank = _sample_range_bank(rng)
             winner = bank[_template_index(params, instance_seed=instance_seed, namespace=f"{namespace}.template", support_size=len(bank))]
             distractors = [relation for relation in bank if relation.relation_id != winner.relation_id]
         elif str(rule_kind) == RULE_X_AXIS_SYMMETRY:
-            winner = _tag_symmetry(_ellipse("target_x_axis_symmetric_relation", (0.0, 0.0), (float(rng.choice((2.6, 3.0, 3.4))), float(rng.choice((1.2, 1.6, 2.0))))), "x_axis")
+            winner = _sample_x_axis_symmetry_winner(
+                rng,
+                _template_index(params, instance_seed=instance_seed, namespace=f"{namespace}.template", support_size=4),
+            )
             distractors = _sample_x_axis_symmetry_distractors(rng)
         elif str(rule_kind) == RULE_SIGN_INTERVAL:
             if target_interval is None:
                 raise ValueError("sign interval requires a target interval")
             positive = str(sign_kind) == SIGN_POSITIVE
-            winner = _interval_sign_relation(rng, "target_interval_sign_relation", interval=target_interval, positive=positive)
+            winner = _sample_interval_sign_winner(
+                rng,
+                _template_index(params, instance_seed=instance_seed, namespace=f"{namespace}.template", support_size=4),
+                interval=target_interval,
+                positive=positive,
+            )
             distractors = _sample_sign_distractors(rng, target_interval=target_interval, positive=positive)
         else:
             raise ValueError(f"unsupported panel rule: {rule_kind}")
@@ -276,7 +284,85 @@ def _tag_symmetry(relation: RelationSpec, *axes: str) -> RelationSpec:
     return replace(relation, symmetry_axes=ordered)
 
 
+def _parabola_points(*, orientation: str, offset: Point = (0.0, 0.0), scale: float = 0.22, sample_count: int = 7) -> tuple[Point, ...]:
+    count = max(2, int(sample_count))
+    values = tuple(-4.0 + (8.0 * float(index) / float(count - 1)) for index in range(count))
+    ox, oy = float(offset[0]), float(offset[1])
+    if str(orientation) == "vertical_up":
+        return tuple((x + ox, (float(scale) * x * x) - 3.0 + oy) for x in values)
+    if str(orientation) == "vertical_down":
+        return tuple((x + ox, 3.0 - (float(scale) * x * x) + oy) for x in values)
+    if str(orientation) == "sideways_right":
+        return tuple(((float(scale) * y * y) - 3.0 + ox, y + oy) for y in values)
+    if str(orientation) == "sideways_left":
+        return tuple((3.0 - (float(scale) * y * y) + ox, y + oy) for y in values)
+    raise ValueError(f"unsupported parabola orientation: {orientation}")
+
+
+def _parabola(relation_id: str, *, orientation: str, offset: Point = (0.0, 0.0), scale: float = 0.22) -> RelationSpec:
+    is_function = str(orientation) in {"vertical_up", "vertical_down"}
+    return _polyline(
+        str(relation_id),
+        _parabola_points(orientation=str(orientation), offset=offset, scale=float(scale)),
+        is_function=is_function,
+        is_one_to_one=False,
+    )
+
+
+def _mirrored_zigzag(relation_id: str, points_upper: Sequence[Point]) -> RelationSpec:
+    upper = tuple((float(x), abs(float(y))) for x, y in points_upper)
+    lower = tuple((float(x), -abs(float(y))) for x, y in reversed(points_upper))
+    return _tag_symmetry(
+        _polyline(str(relation_id), (*upper, *lower), is_function=False, is_one_to_one=False),
+        "x_axis",
+    )
+
+
+def _shifted_mirrored_zigzag(relation_id: str, points_upper: Sequence[Point], *, y_offset: float) -> RelationSpec:
+    base = _mirrored_zigzag(str(relation_id), points_upper)
+    shifted = tuple((float(x), float(y) + float(y_offset)) for x, y in base.points)
+    return _polyline(str(relation_id), shifted, is_function=False, is_one_to_one=False)
+
+
+def _monotone_zigzag(relation_id: str, *, ascending: bool = True) -> RelationSpec:
+    if bool(ascending):
+        points = ((-4.0, -3.6), (-2.4, -2.2), (-1.2, -1.4), (0.5, 0.2), (2.0, 1.4), (4.0, 3.4))
+    else:
+        points = ((-4.0, 3.4), (-2.0, 1.5), (-0.5, 0.3), (1.2, -1.2), (2.6, -2.1), (4.0, -3.5))
+    return _polyline(str(relation_id), points, is_function=True, is_one_to_one=True)
+
+
+def _axis_symmetric_zigzag(relation_id: str, *, axis: str) -> RelationSpec:
+    if str(axis) == "y_axis":
+        points = ((-3.6, 2.8), (-2.0, -1.4), (-0.6, 1.5), (0.6, 1.5), (2.0, -1.4), (3.6, 2.8))
+    elif str(axis) == "origin":
+        points = ((-4.0, -3.0), (-2.2, -1.4), (-0.5, -0.4), (0.5, 0.4), (2.2, 1.4), (4.0, 3.0))
+    else:
+        raise ValueError(f"unsupported zigzag symmetry axis: {axis}")
+    return _tag_symmetry(_polyline(str(relation_id), points, is_function=True, is_one_to_one=False), str(axis))
+
+
+def _relation_shape_family(relation: RelationSpec) -> str:
+    relation_id = str(relation.relation_id)
+    if "parabola" in relation_id:
+        return "parabola"
+    if "zigzag" in relation_id:
+        return "zigzag"
+    if relation.draw_kind == "ellipse":
+        return "ellipse"
+    if "line" in relation_id or len(relation.points) == 2:
+        return "line"
+    return "polyline"
+
+
 def _sample_function_winner(rng, template_index: int) -> RelationSpec:
+    if int(template_index) == 7:
+        return _parabola("target_vertical_parabola_function", orientation=str(rng.choice(("vertical_up", "vertical_down"))))
+    if int(template_index) == 8:
+        return _polyline("target_u_zigzag_function", ((-4.0, 2.7), (-2.2, -0.8), (0.0, -2.5), (2.2, -0.8), (4.0, 2.7)), is_function=True, is_one_to_one=False)
+    if int(template_index) == 9:
+        return _monotone_zigzag("target_monotone_zigzag_function", ascending=bool(rng.randrange(2)))
+
     endpoints = (
         ((-4.0, -3.0), (4.0, 3.0)),
         ((-4.0, 3.0), (4.0, -3.0)),
@@ -291,6 +377,11 @@ def _sample_function_winner(rng, template_index: int) -> RelationSpec:
 
 
 def _sample_one_to_one_winner(rng, template_index: int) -> RelationSpec:
+    if int(template_index) in {6, 7}:
+        return _monotone_zigzag("target_monotone_zigzag_one_to_one", ascending=int(template_index) == 6)
+    if int(template_index) == 8:
+        return _polyline("target_piecewise_linear_one_to_one", ((-4.0, -3.4), (-2.5, -2.5), (-1.0, -0.8), (1.2, 0.6), (2.8, 2.1), (4.0, 3.2)), is_function=True, is_one_to_one=True)
+
     x0 = float(rng.choice((-4.0, -3.5, -3.0)))
     x1 = float(rng.choice((3.0, 3.5, 4.0)))
     ascending = int(template_index) % 2 == 0
@@ -305,19 +396,20 @@ def _sample_function_distractors(rng) -> list[RelationSpec]:
     return [
         _ellipse("closed_curve_not_function", (0.0, 0.0), (2.6, 1.8)),
         _line("vertical_segment_not_function", (float(rng.choice((-2, -1, 1, 2))), -4.0), (float(rng.choice((-2, -1, 1, 2))), 4.0), one_to_one=False),
+        _parabola("sideways_parabola_not_function", orientation=str(rng.choice(("sideways_right", "sideways_left")))),
         _polyline("sideways_v_not_function", ((3.0, -4.0), (-1.0, 0.0), (3.0, 4.0)), is_function=False, is_one_to_one=False),
         _ellipse("offset_ellipse_not_function", (1.0, -0.5), (2.2, 2.8)),
-        _polyline("loop_like_not_function", ((-2.0, -3.0), (1.0, -1.0), (-2.0, 1.0), (1.0, 3.0)), is_function=False, is_one_to_one=False),
+        _mirrored_zigzag("mirrored_zigzag_not_function", ((-3.8, 2.8), (-2.0, 1.1), (-0.5, 2.4), (1.4, 0.9), (3.7, 2.9))),
     ]
 
 
 def _sample_one_to_one_distractors(rng) -> list[RelationSpec]:
     return [
         _polyline("v_shape_not_injective", ((-4.0, 3.0), (0.0, -3.0), (4.0, 3.0)), is_function=True, is_one_to_one=False),
+        _parabola("vertical_parabola_not_injective", orientation=str(rng.choice(("vertical_up", "vertical_down")))),
         _polyline("flat_segment_not_injective", ((-4.0, 1.0), (4.0, 1.0)), is_function=True, is_one_to_one=False),
         _polyline("turning_relation_not_injective", ((-4.0, -2.0), (-1.0, 3.0), (2.0, -1.0), (4.0, 2.0)), is_function=True, is_one_to_one=False),
-        _ellipse("ellipse_not_injective", (0.0, 0.0), (2.5, 1.5)),
-        _polyline("sideways_not_function", ((3.0, -4.0), (-1.0, 0.0), (3.0, 4.0)), is_function=False, is_one_to_one=False),
+        _parabola("sideways_parabola_not_function_for_one_to_one", orientation=str(rng.choice(("sideways_right", "sideways_left")))),
         _polyline("wide_u_not_injective", ((-4.0, 2.0), (-2.0, -2.0), (0.0, -3.0), (2.0, -2.0), (4.0, 2.0)), is_function=True, is_one_to_one=False),
     ]
 
@@ -327,8 +419,8 @@ def _sample_range_bank(rng) -> tuple[RelationSpec, ...]:
         _line("range_line_a", (-4.0, -4.0), (4.0, 1.0)),
         _line("range_line_b", (-4.0, -2.0), (4.0, 4.0)),
         _polyline("range_polyline_c", ((-4.0, 3.0), (-1.0, -3.0), (4.0, 2.0)), is_function=True, is_one_to_one=False),
-        _polyline("range_polyline_d", ((-4.0, -1.0), (-1.0, 4.0), (4.0, -2.0)), is_function=True, is_one_to_one=False),
-        _ellipse("range_ellipse_e", (0.0, 0.0), (2.0, 1.3)),
+        _parabola("range_vertical_parabola_d", orientation="vertical_up", scale=0.18),
+        _mirrored_zigzag("range_mirrored_zigzag_e", ((-3.8, 2.7), (-2.0, 1.0), (0.0, 2.4), (1.8, 1.1), (3.8, 2.9))),
         _ellipse("range_ellipse_f", (1.0, -0.5), (2.5, 2.2)),
     )
     jitter = float(rng.choice((-0.3, 0.0, 0.3)))
@@ -347,13 +439,23 @@ def _shift_range(relation: RelationSpec, *, jitter: float) -> RelationSpec:
     return relation
 
 
+def _sample_x_axis_symmetry_winner(rng, template_index: int) -> RelationSpec:
+    templates = (
+        lambda: _tag_symmetry(_ellipse("target_x_axis_symmetric_ellipse", (0.0, 0.0), (float(rng.choice((2.6, 3.0, 3.4))), float(rng.choice((1.2, 1.6, 2.0))))), "x_axis"),
+        lambda: _tag_symmetry(_parabola("target_x_axis_sideways_parabola", orientation=str(rng.choice(("sideways_right", "sideways_left")))), "x_axis"),
+        lambda: _mirrored_zigzag("target_x_axis_mirrored_zigzag", ((-3.8, 2.7), (-2.0, 1.0), (-0.2, 2.4), (1.6, 1.1), (3.8, 2.9))),
+        lambda: _mirrored_zigzag("target_x_axis_angular_curve", ((-3.5, 1.4), (-2.1, 3.0), (-0.2, 1.0), (1.7, 2.5), (3.6, 1.5))),
+    )
+    return templates[int(template_index) % len(templates)]()
+
+
 def _sample_x_axis_symmetry_distractors(rng) -> list[RelationSpec]:
     return [
         _tag_symmetry(_ellipse("y_axis_symmetric_distractor", (0.0, 1.2), (1.4, 2.2)), "y_axis"),
-        _tag_symmetry(_polyline("origin_symmetric_distractor", ((-4.0, -3.0), (0.0, 0.0), (4.0, 3.0)), is_function=True, is_one_to_one=True), "origin"),
+        _tag_symmetry(_parabola("y_axis_parabola_distractor", orientation=str(rng.choice(("vertical_up", "vertical_down")))), "y_axis"),
+        _axis_symmetric_zigzag("origin_symmetric_zigzag_distractor", axis="origin"),
         _polyline("asymmetric_curve_a", ((-4.0, -2.0), (-1.0, 2.6), (2.0, -0.7), (4.0, 1.5)), is_function=True, is_one_to_one=False),
-        _ellipse("asymmetric_ellipse_b", (1.0, 0.8), (2.1, 1.4)),
-        _polyline("asymmetric_curve_c", ((-4.0, 3.0), (-2.0, 1.0), (1.0, -2.0), (4.0, -1.0)), is_function=True, is_one_to_one=True),
+        _shifted_mirrored_zigzag("shifted_mirrored_zigzag_distractor", ((-3.6, 2.4), (-1.8, 0.9), (0.0, 2.2), (1.7, 1.0), (3.6, 2.5)), y_offset=float(rng.choice((-0.9, 0.9)))),
     ]
 
 
@@ -366,9 +468,25 @@ def _interval_sign_relation(rng, relation_id: str, *, interval: tuple[float, flo
     return _polyline(str(relation_id), ((x0, values[0]), (x1, values[1]), (x2, values[2]), (x3, values[3])), is_function=True, is_one_to_one=False)
 
 
+def _sample_interval_sign_winner(rng, template_index: int, *, interval: tuple[float, float], positive: bool) -> RelationSpec:
+    if int(template_index) == 1:
+        sign = 1.0 if bool(positive) else -1.0
+        points = tuple((x, sign * y) for x, y in ((-4.0, 1.6), (-2.0, 3.4), (0.0, 2.1), (2.0, 3.0), (4.0, 1.4)))
+        return _polyline("target_interval_sign_zigzag_relation", points, is_function=True, is_one_to_one=False)
+    if int(template_index) == 2:
+        sign = 1.0 if bool(positive) else -1.0
+        points = tuple((x, sign * y) for x, y in ((-4.0, 3.5), (-2.0, 1.8), (0.0, 1.2), (2.0, 1.8), (4.0, 3.5)))
+        return _polyline("target_interval_sign_parabola_like_relation", points, is_function=True, is_one_to_one=False)
+    if int(template_index) == 3:
+        sign = 1.0 if bool(positive) else -1.0
+        points = tuple((x, sign * y) for x, y in ((-4.0, 1.2), (-2.6, 1.9), (-1.0, 2.7), (1.0, 2.0), (2.8, 3.2), (4.0, 2.4)))
+        return _polyline("target_interval_sign_monotone_broken_relation", points, is_function=True, is_one_to_one=False)
+    return _interval_sign_relation(rng, "target_interval_sign_relation", interval=interval, positive=positive)
+
+
 def _sample_sign_distractors(rng, *, target_interval: tuple[float, float], positive: bool) -> list[RelationSpec]:
     return [
-        _interval_sign_relation(rng, "opposite_sign_relation_a", interval=target_interval, positive=not bool(positive)),
+        _sample_interval_sign_winner(rng, 1, interval=target_interval, positive=not bool(positive)),
         _interval_sign_relation(rng, "opposite_sign_relation_b", interval=target_interval, positive=not bool(positive)),
         _polyline("sign_crossing_relation_a", ((-4.0, 3.0), (-1.0, 1.0), (1.0, -1.0), (4.0, -3.0)), is_function=True, is_one_to_one=True),
         _polyline("sign_crossing_relation_b", ((-4.0, -3.0), (-1.0, -1.0), (1.0, 1.0), (4.0, 3.0)), is_function=True, is_one_to_one=True),
@@ -425,6 +543,7 @@ def relation_trace_payload(relation: RelationSpec) -> dict[str, Any]:
 
     payload: dict[str, Any] = {
         "relation_id": str(relation.relation_id),
+        "shape_family": _relation_shape_family(relation),
         "draw_kind": str(relation.draw_kind),
         "domain": [float(relation.domain[0]), float(relation.domain[1])],
         "range": [float(relation.range[0]), float(relation.range[1])],

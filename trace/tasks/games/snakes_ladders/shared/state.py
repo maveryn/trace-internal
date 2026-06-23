@@ -20,7 +20,6 @@ SUPPORTED_SNAKES_LADDERS_STYLE_VARIANTS: Tuple[str, ...] = (
     "pastel",
     "wood",
 )
-SUPPORTED_HORIZON_ROLL_COUNTS: Tuple[int, ...] = (1, 2)
 SUPPORTED_DIE_VALUES: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
 
 
@@ -100,7 +99,6 @@ __all__ = [
     "SCENE_ID",
     "SUPPORTED_BOARD_SIDES",
     "SUPPORTED_DIE_VALUES",
-    "SUPPORTED_HORIZON_ROLL_COUNTS",
     "SUPPORTED_SNAKES_LADDERS_SCENE_VARIANTS",
     "SUPPORTED_SNAKES_LADDERS_STYLE_VARIANTS",
     "SnakesLaddersAxes",

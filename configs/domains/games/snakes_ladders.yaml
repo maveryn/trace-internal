@@ -13,7 +13,6 @@ generation:
     balanced_board_side_sampling: true
     balanced_target_answer_sampling: true
     balanced_die_value_sampling: true
-    balanced_horizon_roll_count_sampling: true
     board_side_support:
     - 5
     - 6
@@ -25,9 +24,6 @@ generation:
     - 4
     - 5
     - 6
-    horizon_roll_count_support:
-    - 1
-    - 2
     move_outcome_jump_probability: 0.3
     move_outcome_support:
     - 7
@@ -73,7 +69,25 @@ generation:
     - 47
     - 48
     - 49
-    best_roll_value_support:
+    special_square_count_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    remaining_to_finish_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
     - 14
     - 15
     - 16
@@ -86,46 +100,16 @@ generation:
     - 23
     - 24
     - 25
-    - 26
-    - 27
-    - 28
-    - 29
-    - 30
-    - 31
-    - 32
-    - 33
-    - 34
-    - 35
-    - 36
-    - 37
-    - 38
-    - 39
-    - 40
-    - 41
-    - 42
-    - 43
-    - 44
-    - 45
-    - 46
-    - 47
-    - 48
-    - 49
-    special_square_count_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
 rendering:
   shared:
-    canvas_width: 1120
-    canvas_height: 900
-    board_left_px: 56
-    board_top_px: 72
-    board_size_px: 740
+    canvas_width: 1000
+    canvas_height: 760
+    board_left_px: 48
+    board_top_px: 56
+    board_size_px: 660
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
-    side_panel_width_px: 220
+    side_panel_width_px: 200
     cell_gap_px: 4
     cell_radius_px: 6
     number_font_size_px: 24

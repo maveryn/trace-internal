@@ -6,7 +6,7 @@ from typing import Any, Mapping
 
 from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts
 
-from .rules import best_final_square, board_last_square
+from .rules import board_last_square
 from .state import SCENE_ID, SnakesLaddersAxes, SnakesLaddersMove, SnakesLaddersSample
 
 
@@ -66,16 +66,6 @@ def snakes_ladders_execution_trace(
         "shown_move": None if sample.move is None else move_trace(sample.move),
         "horizon_roll_count": None if sample.horizon_roll_count is None else int(sample.horizon_roll_count),
         "optimal_route": [move_trace(move) for move in sample.optimal_route],
-        "best_final_square": int(
-            best_final_square(
-                sample.start_square,
-                int(sample.horizon_roll_count or 0),
-                sample.jumps,
-                board_side=int(axes.board_side),
-            )
-        )
-        if sample.horizon_roll_count is not None
-        else None,
         "answer": int(sample.answer),
         "annotation_entity_ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
         "construction_mode": str(sample.construction_mode),

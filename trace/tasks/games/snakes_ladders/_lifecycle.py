@@ -55,6 +55,7 @@ class SnakesLaddersObjective:
     die_value: int | None = None
     horizon_roll_count: int | None = None
     show_roll_panel: bool = True
+    highlight_token_square: bool = True
 
 
 class SnakesLaddersLifecycleTask:
@@ -159,7 +160,7 @@ def resolve_snakes_ladders_render_params(params: Mapping[str, Any], *, instance_
         board_side=int(board_side),
         board_left_px=scale_games_px(params.get("board_left_px", group_default(RENDER_DEFAULTS, "board_left_px", DEFAULTS.board_left_px)), unit_scale, min_px=40),
         board_top_px=scale_games_px(params.get("board_top_px", group_default(RENDER_DEFAULTS, "board_top_px", DEFAULTS.board_top_px)), unit_scale, min_px=48),
-        board_size_px=scale_games_px(params.get("board_size_px", group_default(RENDER_DEFAULTS, "board_size_px", DEFAULTS.board_size_px)), unit_scale, min_px=max(360, int(board_side) * 56)),
+        board_size_px=scale_games_px(params.get("board_size_px", group_default(RENDER_DEFAULTS, "board_size_px", DEFAULTS.board_size_px)), unit_scale, min_px=max(560, int(board_side) * 80)),
         side_panel_width_px=scale_games_px(params.get("side_panel_width_px", group_default(RENDER_DEFAULTS, "side_panel_width_px", DEFAULTS.side_panel_width_px)), unit_scale, min_px=140),
         cell_gap_px=scale_games_px(params.get("cell_gap_px", group_default(RENDER_DEFAULTS, "cell_gap_px", DEFAULTS.cell_gap_px)), unit_scale, min_px=2),
         cell_radius_px=scale_games_px(params.get("cell_radius_px", group_default(RENDER_DEFAULTS, "cell_radius_px", DEFAULTS.cell_radius_px)), unit_scale, min_px=3),
@@ -234,6 +235,7 @@ def run_snakes_ladders_task(
         die_value=None if objective.die_value is None else int(objective.die_value),
         horizon_roll_count=None if objective.horizon_roll_count is None else int(objective.horizon_roll_count),
         show_roll_panel=bool(objective.show_roll_panel),
+        highlight_token_square=bool(objective.highlight_token_square),
         panel_style=panel_style,
     )
     annotation_artifacts, witness_symbolic = objective.build_annotation(rendered)

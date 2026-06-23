@@ -205,21 +205,17 @@ def valid_jump_starts(*, kind: str, board_side: int) -> Tuple[int, ...]:
     return tuple(range(max(3, int(min_span) + 2), int(last_square)))
 
 
-def special_square_entity_ids(
+def jump_start_entity_ids(
     *,
     jumps: Sequence[SnakesLaddersJump],
     kind: str,
-    start_square: int,
-    board_side: int,
 ) -> Tuple[str, ...]:
-    """Return square ids for counted jump starts ahead of the token."""
+    """Return square ids for every visible jump start of the requested kind."""
 
-    last_square = board_last_square(int(board_side))
     squares = sorted(
         int(jump.start_square)
         for jump in jumps
         if str(jump.kind) == str(kind)
-        and int(start_square) < int(jump.start_square) <= int(last_square)
     )
     return tuple(square_to_cell_id(int(square)) for square in squares)
 
@@ -284,16 +280,6 @@ def sample_start_for_direct_target(rng, *, target_final: int, die_value: int, bo
     if candidates:
         return int(rng.choice(tuple(candidates)))
     return None
-
-
-def critical_future_range(start_square: int, *, board_side: int) -> Tuple[int, ...]:
-    """Return squares that should not receive random jumps in planning scenes."""
-
-    last_square = board_last_square(int(board_side))
-    low = max(1, int(start_square))
-    high = min(int(last_square), int(start_square) + 24)
-    return tuple(range(low, high + 1))
-
 
 
 def construct_single_roll_outcome_sample(
@@ -375,62 +361,11 @@ def construct_single_roll_outcome_sample(
     raise ValueError("failed to sample Snakes and Ladders move-outcome scene")
 
 
-def construct_best_roll_sample(
-    *,
-    rng,
-    axes,
-    target_final: int,
-    horizon: int,
-):
-    """Construct a board whose best roll-plan final square equals target."""
-
-    from .rules import best_final_square, square_to_cell_id, trace_best_route, validate_snakes_ladders_sample
-    from .state import SnakesLaddersSample
-
-    board_side = int(axes.board_side)
-    last_square = board_last_square(board_side)
-    start_square = int(target_final) - (6 * int(horizon))
-    if int(start_square) < 2 or int(start_square) > int(last_square):
-        raise ValueError("target final square is incompatible with the planning horizon")
-    for _attempt in range(80):
-        target_ladders, target_snakes = target_jump_counts(int(board_side))
-        jumps_tuple = add_random_jumps(
-            rng=rng,
-            jumps=tuple(),
-            board_side=int(board_side),
-            protected_starts=tuple(),
-            protected_range=critical_future_range(int(start_square), board_side=int(board_side)),
-            target_ladders=int(target_ladders),
-            target_snakes=int(target_snakes),
-        )
-        answer = best_final_square(int(start_square), int(horizon), jumps_tuple, board_side=int(board_side))
-        if int(answer) != int(target_final):
-            continue
-        sample = SnakesLaddersSample(
-            mode="best_roll_planning",
-            scene_variant=str(axes.scene_variant),
-            style_variant=str(axes.style_variant),
-            board_side=int(board_side),
-            answer=int(target_final),
-            start_square=int(start_square),
-            jumps=tuple(jumps_tuple),
-            move=None,
-            horizon_roll_count=int(horizon),
-            optimal_route=tuple(trace_best_route(int(start_square), int(horizon), jumps_tuple, board_side=int(board_side))),
-            annotation_entity_ids=(square_to_cell_id(int(target_final)),),
-            construction_mode="best_final_square_planning",
-        )
-        validate_snakes_ladders_sample(sample)
-        return sample
-    raise ValueError("failed to sample Snakes and Ladders best-roll scene")
-
-
 __all__ = [
     "add_random_jumps",
     "append_jumps_from_allowed_starts",
-    "construct_best_roll_sample",
     "construct_single_roll_outcome_sample",
-    "critical_future_range",
+    "jump_start_entity_ids",
     "jump_conflicts_with_existing",
     "jump_visual_segment",
     "make_jump",
@@ -440,7 +375,6 @@ __all__ = [
     "sample_start_for_direct_target",
     "select_integer_axis",
     "segments_intersect",
-    "special_square_entity_ids",
     "target_jump_counts",
     "valid_jump_starts",
 ]

@@ -1,4 +1,4 @@
-"""Count snake-head or ladder-start squares ahead of the token."""
+"""Count all visible snake-head or ladder-start squares."""
 
 from __future__ import annotations
 
@@ -11,22 +11,22 @@ from trace.tasks.registry import register_task
 
 from ._lifecycle import SnakesLaddersLifecycleTask, SnakesLaddersObjective, run_snakes_ladders_task
 from .shared.annotations import bbox_set_annotation_for_entities
-from .shared.rules import board_last_square, validate_snakes_ladders_sample
-from .shared.sampling import append_jumps_from_allowed_starts, select_integer_axis, special_square_entity_ids, valid_jump_starts
+from .shared.rules import board_last_square, square_to_cell_id, validate_snakes_ladders_sample
+from .shared.sampling import append_jumps_from_allowed_starts, jump_start_entity_ids, select_integer_axis, valid_jump_starts
 from .shared.state import SnakesLaddersAxes, SnakesLaddersJump, SnakesLaddersSample
 
 
 TASK_ID = "task_games__snakes_ladders__special_square_count"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("ladder_start_ahead_count", "snake_head_ahead_count")
-SPECIAL_SQUARE_COUNT_SUPPORT = (0, 1, 2, 3, 4)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("ladder_count", "snake_count")
+SPECIAL_SQUARE_COUNT_SUPPORT = (1, 2, 3, 4)
 
 
 def special_query_kind(query_id: str) -> str:
     """Return the jump kind counted by one public query branch."""
 
-    if str(query_id) == "ladder_start_ahead_count":
+    if str(query_id) == "ladder_count":
         return "ladder"
-    if str(query_id) == "snake_head_ahead_count":
+    if str(query_id) == "snake_count":
         return "snake"
     raise ValueError(f"unsupported special-square query_id: {query_id}")
 
@@ -48,7 +48,7 @@ def _sample_special_square_scene(
     query_id: str,
     target_answer: int,
 ) -> SnakesLaddersSample:
-    """Construct an interval count scene over visible snake/ladder starts."""
+    """Construct a board with exactly the requested visible jump count."""
 
     board_side = int(axes.board_side)
     last_square = board_last_square(board_side)
@@ -57,50 +57,22 @@ def _sample_special_square_scene(
     valid_query_starts = valid_jump_starts(kind=query_kind, board_side=int(board_side))
     valid_opposite_starts = valid_jump_starts(kind=opposite_kind, board_side=int(board_side))
 
-    candidate_start_squares = [
-        int(square)
-        for square in range(1, int(last_square))
-        if len([value for value in valid_query_starts if int(value) > int(square)]) >= int(target_answer)
-    ]
-    if int(target_answer) == 0:
-        candidate_start_squares = [
-            int(square)
-            for square in range(1, int(last_square) + 1)
-            if not any(int(value) > int(square) for value in valid_query_starts)
-        ]
-    if not candidate_start_squares:
-        raise ValueError("target special-square answer is incompatible with board side")
-
     for _attempt in range(220):
-        start_square = int(rng.choice(tuple(candidate_start_squares)))
-        after_query_starts = [int(value) for value in valid_query_starts if int(value) > int(start_square)]
-        before_query_starts = [int(value) for value in valid_query_starts if int(value) < int(start_square)]
+        start_square = int(rng.randint(1, int(last_square) - 1))
         jumps: Tuple[SnakesLaddersJump, ...] = tuple()
         jumps = append_jumps_from_allowed_starts(
             rng=rng,
             jumps=jumps,
             board_side=int(board_side),
             kind=query_kind,
-            allowed_starts=tuple(after_query_starts),
+            allowed_starts=tuple(int(value) for value in valid_query_starts if int(value) != int(start_square)),
             count=int(target_answer),
             required=True,
         )
         if jumps is None:
             continue
-        distractor_same_count = int(rng.randint(0, min(2, len(before_query_starts)))) if before_query_starts else 0
-        jumps = append_jumps_from_allowed_starts(
-            rng=rng,
-            jumps=jumps,
-            board_side=int(board_side),
-            kind=query_kind,
-            allowed_starts=tuple(before_query_starts),
-            count=int(distractor_same_count),
-            required=False,
-        )
-        if jumps is None:
-            continue
         allowed_opposite_starts = [int(value) for value in valid_opposite_starts if int(value) != int(start_square)]
-        opposite_count = int(rng.randint(1, min(3, max(1, len(allowed_opposite_starts)))))
+        opposite_count = int(rng.randint(1, min(4, max(1, len(allowed_opposite_starts)))))
         jumps = append_jumps_from_allowed_starts(
             rng=rng,
             jumps=jumps,
@@ -112,13 +84,13 @@ def _sample_special_square_scene(
         )
         if jumps is None:
             continue
-        annotation_ids = special_square_entity_ids(
+        annotation_ids = jump_start_entity_ids(
             jumps=tuple(jumps),
             kind=query_kind,
-            start_square=int(start_square),
-            board_side=int(board_side),
         )
         if len(annotation_ids) != int(target_answer):
+            continue
+        if square_to_cell_id(int(start_square)) in annotation_ids:
             continue
         sample = SnakesLaddersSample(
             mode=str(query_id),
@@ -132,7 +104,7 @@ def _sample_special_square_scene(
             horizon_roll_count=None,
             optimal_route=tuple(),
             annotation_entity_ids=tuple(annotation_ids),
-            construction_mode="special_square_interval_count",
+            construction_mode="special_square_total_count",
         )
         validate_snakes_ladders_sample(sample)
         return sample
@@ -180,18 +152,16 @@ def _prepare_objective(
         },
         execution_extra={
             "special_square_kind": special_query_kind(str(query_id)),
-            "special_square_interval": {
-                "start_exclusive": int(sample.start_square),
-                "end_inclusive": int(board_last_square(int(axes.board_side))),
-            },
+            "count_scope": "all_visible_jumps_of_kind",
         },
         show_roll_panel=False,
+        highlight_token_square=False,
     )
 
 
 @register_task
 class GamesSnakesLaddersSpecialSquareCountTask(SnakesLaddersLifecycleTask):
-    """Count ladder-start or snake-head squares after the token."""
+    """Count visible ladder starts or snake heads."""
 
     task_id = TASK_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
@@ -204,7 +174,7 @@ class GamesSnakesLaddersSpecialSquareCountTask(SnakesLaddersLifecycleTask):
             int(max_attempts),
             _prepare_objective,
             supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id="ladder_start_ahead_count",
+            default_query_id="ladder_count",
         )
 
 

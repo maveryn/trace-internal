@@ -13,12 +13,13 @@ from trace.tasks.games.snakes_ladders.shared.state import (
 )
 from trace.tasks.games.snakes_ladders.shared.rules import (
     apply_die_roll,
-    best_final_square,
     square_to_cell_id,
 )
-from trace.tasks.games.snakes_ladders.best_roll_value import GamesSnakesLaddersBestRollValueTask
 from trace.tasks.games.snakes_ladders.move_outcome_value import (
     GamesSnakesLaddersMoveOutcomeValueTask,
+)
+from trace.tasks.games.snakes_ladders.remaining_to_finish_value import (
+    GamesSnakesLaddersRemainingToFinishValueTask,
 )
 from trace.tasks.games.snakes_ladders.special_square_count import GamesSnakesLaddersSpecialSquareCountTask
 from tests.helpers import read_jsonl
@@ -40,12 +41,10 @@ def _jumps_from_trace(execution: dict) -> tuple:
 
 def _special_square_ids(execution: dict) -> tuple[str, ...]:
     kind = str(execution["special_square_kind"])
-    start_square = int(execution["start_square"])
-    last_square = int(execution["last_square"])
     starts = sorted(
         int(jump["start_square"])
         for jump in execution["jumps"]
-        if str(jump["kind"]) == kind and start_square < int(jump["start_square"]) <= last_square
+        if str(jump["kind"]) == kind
     )
     return tuple(square_to_cell_id(square) for square in starts)
 
@@ -79,36 +78,11 @@ def test_games_snakes_ladders_move_outcome_matches_trace() -> None:
     ]
     assert execution["annotation_role_entity_ids"]["end_square"] == square_to_cell_id(int(move.final_square))
 
-def test_games_snakes_ladders_best_roll_returns_best_final_square() -> None:
-    out = GamesSnakesLaddersBestRollValueTask().generate(
-        68140,
-        params={"target_answer": 49, "horizon_roll_count": 2},
-        max_attempts=512,
-    )
-    execution = out.trace_payload["execution_trace"]
-    answer = best_final_square(
-        int(execution["start_square"]),
-        int(execution["horizon_roll_count"]),
-        _jumps_from_trace(execution),
-        board_side=int(execution["board_side"]),
-    )
-
-    assert int(out.answer_gt.value) == int(answer) == 49
-    assert out.query_id == "single"
-    assert execution["prompt_query_key"] == "best_roll_value"
-    assert execution["board_side"] == 7
-    assert len(execution["optimal_route"]) == 2
-    assert execution["best_final_square"] == 49
-    assert execution["annotation_entity_ids"] == [square_to_cell_id(49)]
-    assert out.annotation_gt.type == "bbox"
-    assert len(out.annotation_gt.value) == 4
-
-
 def test_games_snakes_ladders_special_square_count_matches_trace() -> None:
     task = GamesSnakesLaddersSpecialSquareCountTask()
     cases = (
-        ("ladder_start_ahead_count", 2),
-        ("snake_head_ahead_count", 3),
+        ("ladder_count", 2),
+        ("snake_count", 3),
     )
 
     for index, (query_id, target_answer) in enumerate(cases):
@@ -138,41 +112,40 @@ def test_games_snakes_ladders_special_square_count_matches_trace() -> None:
         assert trace["projected_annotation"]["type"] == "bbox_set"
         assert trace["projected_annotation"]["bbox_set"] == expected_bboxes
         assert execution["annotation_entity_ids"] == list(expected_ids)
-        assert execution["special_square_interval"] == {
-            "start_exclusive": int(execution["start_square"]),
-            "end_inclusive": int(execution["last_square"]),
-        }
+        assert execution["count_scope"] == "all_visible_jumps_of_kind"
 
 
-def test_games_snakes_ladders_special_square_zero_answer_emits_empty_annotation() -> None:
-    out = GamesSnakesLaddersSpecialSquareCountTask().generate(
+def test_games_snakes_ladders_remaining_to_finish_matches_trace() -> None:
+    out = GamesSnakesLaddersRemainingToFinishValueTask().generate(
         68620,
-        params={
-            "query_id": "ladder_start_ahead_count",
-            "target_answer": 0,
-            "board_side": 6,
-        },
+        params={"target_answer": 25},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
+    finish_square = int(execution["last_square"])
+    token_square = int(execution["start_square"])
 
-    assert int(out.answer_gt.value) == 0
-    assert out.annotation_gt.type == "bbox_set"
-    assert out.annotation_gt.value == []
-    assert execution["annotation_entity_ids"] == []
-    assert _special_square_ids(execution) == tuple()
+    assert int(out.answer_gt.value) == 25
+    assert int(out.answer_gt.value) == finish_square - token_square
+    assert out.annotation_gt.type == "bbox_map"
+    assert set(out.annotation_gt.value) == {"token_square", "finish_square"}
+    assert execution["remaining_to_finish"] == 25
+    assert execution["annotation_role_entity_ids"] == {
+        "token_square": square_to_cell_id(token_square),
+        "finish_square": square_to_cell_id(finish_square),
+    }
 
 
 def test_games_snakes_ladders_special_square_count_taxonomy() -> None:
     assert resolve_task_taxonomy("task_games__snakes_ladders__special_square_count").scene_id == "snakes_ladders"
+    assert resolve_task_taxonomy("task_games__snakes_ladders__remaining_to_finish_value").scene_id == "snakes_ladders"
 
 
 def test_games_snakes_ladders_sampling_cycles_cover_axes() -> None:
     move_task = GamesSnakesLaddersMoveOutcomeValueTask()
-    best_task = GamesSnakesLaddersBestRollValueTask()
+    remaining_task = GamesSnakesLaddersRemainingToFinishValueTask()
     move_answers: set[int] = set()
-    best_answers: set[int] = set()
-    horizons: set[int] = set()
+    remaining_answers: set[int] = set()
     board_sides: set[int] = set()
     styles: set[str] = set()
 
@@ -183,22 +156,20 @@ def test_games_snakes_ladders_sampling_cycles_cover_axes() -> None:
         styles.add(str(out.trace_payload["execution_trace"]["style_variant"]))
 
     for index in range(96):
-        out = best_task.generate(68400 + index, params={}, max_attempts=512)
-        best_answers.add(int(out.answer_gt.value))
-        horizons.add(int(out.trace_payload["execution_trace"]["horizon_roll_count"]))
+        out = remaining_task.generate(68400 + index, params={}, max_attempts=512)
+        remaining_answers.add(int(out.answer_gt.value))
 
     assert len(move_answers) >= 30
-    assert len(best_answers) >= 25
-    assert min(best_answers) >= 14
-    assert max(best_answers) <= 49
+    assert len(remaining_answers) >= 20
+    assert min(remaining_answers) >= 1
+    assert max(remaining_answers) <= 25
     assert board_sides == {5, 6, 7}
-    assert horizons == {1, 2}
     assert styles == set(SUPPORTED_SNAKES_LADDERS_STYLE_VARIANTS)
 
 
 def test_games_snakes_ladders_generation_is_deterministic() -> None:
-    params = {"target_answer": 49, "horizon_roll_count": 2, "style_variant": "paper"}
-    task = GamesSnakesLaddersBestRollValueTask()
+    params = {"target_answer": 25, "style_variant": "paper"}
+    task = GamesSnakesLaddersRemainingToFinishValueTask()
     out_a = task.generate(68500, params=params, max_attempts=512)
     out_b = task.generate(68500, params=params, max_attempts=512)
 
@@ -218,8 +189,8 @@ def test_games_snakes_ladders_build_smoke(tmp_path: Path) -> None:
         image_format="png",
         tasks=[
             BuildTaskConfig(task_id="task_games__snakes_ladders__move_outcome_value", count=1, params={}),
-            BuildTaskConfig(task_id="task_games__snakes_ladders__best_roll_value", count=1, params={}),
             BuildTaskConfig(task_id="task_games__snakes_ladders__special_square_count", count=1, params={}),
+            BuildTaskConfig(task_id="task_games__snakes_ladders__remaining_to_finish_value", count=1, params={}),
         ],
         max_attempts_per_instance=512,
         workers=1,

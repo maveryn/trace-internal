@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from functools import lru_cache
 from typing import Dict, Sequence, Tuple
 
 from .state import BOARD_ROWS, SUPPORTED_DIE_VALUES, SnakesLaddersJump, SnakesLaddersMove, SnakesLaddersSample
@@ -85,61 +84,6 @@ def apply_die_roll(
     )
 
 
-def best_final_square(
-    start_square: int,
-    rolls_left: int,
-    jumps: Sequence[SnakesLaddersJump],
-    *,
-    board_side: int = BOARD_ROWS,
-) -> int:
-    """Return the best final square reachable after choosing remaining rolls."""
-
-    frozen_jumps = tuple(jumps)
-    side = int(board_side)
-
-    @lru_cache(maxsize=None)
-    def _best(square: int, rolls: int) -> int:
-        if int(rolls) <= 0:
-            return int(square)
-        return max(
-            int(_best(apply_die_roll(int(square), die, frozen_jumps, board_side=side).final_square, int(rolls) - 1))
-            for die in SUPPORTED_DIE_VALUES
-        )
-
-    return int(_best(int(start_square), int(rolls_left)))
-
-
-def trace_best_route(
-    start_square: int,
-    horizon_roll_count: int,
-    jumps: Sequence[SnakesLaddersJump],
-    *,
-    board_side: int = BOARD_ROWS,
-) -> Tuple[SnakesLaddersMove, ...]:
-    """Return one deterministic route that reaches the best final square."""
-
-    route: list[SnakesLaddersMove] = []
-    current = int(start_square)
-    remaining = max(0, int(horizon_roll_count))
-    while remaining > 0:
-        candidates = {
-            die: best_final_square(
-                apply_die_roll(current, die, jumps, board_side=int(board_side)).final_square,
-                int(remaining) - 1,
-                jumps,
-                board_side=int(board_side),
-            )
-            for die in SUPPORTED_DIE_VALUES
-        }
-        best_value = max(candidates.values())
-        best_die = max(int(die) for die, value in candidates.items() if int(value) == int(best_value))
-        move = apply_die_roll(current, int(best_die), jumps, board_side=int(board_side))
-        route.append(move)
-        current = int(move.final_square)
-        remaining -= 1
-    return tuple(route)
-
-
 def validate_snakes_ladders_sample(sample: SnakesLaddersSample) -> None:
     """Raise if a sampled scene violates the public game-state contract."""
 
@@ -163,12 +107,10 @@ def validate_snakes_ladders_sample(sample: SnakesLaddersSample) -> None:
 
 __all__ = [
     "apply_die_roll",
-    "best_final_square",
     "board_last_square",
     "coord_to_square",
     "jump_lookup",
     "square_to_cell_id",
     "square_to_coord",
-    "trace_best_route",
     "validate_snakes_ladders_sample",
 ]

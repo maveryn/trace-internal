@@ -29,26 +29,26 @@
         "{movement_rule_text} {overshoot_rule_text} Apply the visible die value. What is the final square number?",
         "{movement_rule_text} {overshoot_rule_text} Move once using the shown die; what square is the token on afterward?"
       ],
-      "best_roll_value": [
-        "{movement_rule_text} {overshoot_rule_text} {planning_rule_text} What is the highest numbered square the token can finish on after exactly {horizon_roll_label}?",
-        "{movement_rule_text} {overshoot_rule_text} {planning_rule_text} After exactly {horizon_roll_label}, what is the best possible final square number?",
-        "{movement_rule_text} {overshoot_rule_text} {planning_rule_text} If you can choose the result of every roll, what highest square can the token reach after {horizon_roll_label}?",
-        "{movement_rule_text} {overshoot_rule_text} {planning_rule_text} For {horizon_roll_label} total, what is the highest possible board position?",
-        "{movement_rule_text} {overshoot_rule_text} {planning_rule_text} What final square number is best after exactly {horizon_roll_label}?"
+      "ladder_count": [
+        "How many ladders are visible on the board?",
+        "Count the visible ladders. How many are there?",
+        "How many ladder starts are shown on the board?",
+        "How many upward ladders are visible?",
+        "Count all visible ladders on this board."
       ],
-      "ladder_start_ahead_count": [
-        "{special_square_count_rule_text} How many ladder start squares are ahead of the token?",
-        "{special_square_count_rule_text} Count ladder starts after the token's square. How many are there?",
-        "{special_square_count_rule_text} How many lower ladder-start squares lie ahead of the token?",
-        "{special_square_count_rule_text} From the token to the finish, how many ladder starts are visible ahead?",
-        "{special_square_count_rule_text} How many ladder-start squares come after the token's square?"
+      "snake_count": [
+        "How many snakes are visible on the board?",
+        "Count the visible snakes. How many are there?",
+        "How many snake heads are shown on the board?",
+        "How many downward snakes are visible?",
+        "Count all visible snakes on this board."
       ],
-      "snake_head_ahead_count": [
-        "{special_square_count_rule_text} How many snake head squares are ahead of the token?",
-        "{special_square_count_rule_text} Count snake heads after the token's square. How many are there?",
-        "{special_square_count_rule_text} How many snake-start head squares lie ahead of the token?",
-        "{special_square_count_rule_text} From the token to the finish, how many snake heads are visible ahead?",
-        "{special_square_count_rule_text} How many snake-head squares come after the token's square?"
+      "remaining_to_finish_value": [
+        "How many squares remain from the token's square to the final square?",
+        "Subtract the token's square number from the final square number. What is the result?",
+        "How far is the token from the final square by square number?",
+        "How many numbered squares are left between the token's current square and the finish?",
+        "What is the final square number minus the token's square number?"
       ]
     },
     "output": {
@@ -77,18 +77,9 @@
       "overshoot_rule_text",
       "die_value"
     ],
-    "query:best_roll_value": [
-      "movement_rule_text",
-      "overshoot_rule_text",
-      "planning_rule_text",
-      "horizon_roll_label"
-    ],
-    "query:ladder_start_ahead_count": [
-      "special_square_count_rule_text"
-    ],
-    "query:snake_head_ahead_count": [
-      "special_square_count_rule_text"
-    ],
+    "query:ladder_count": [],
+    "query:snake_count": [],
+    "query:remaining_to_finish_value": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -111,9 +102,6 @@
     "die_value": {
       "type": "integer"
     },
-    "horizon_roll_label": {
-      "type": "label"
-    },
     "json_example": {
       "type": "string"
     },
@@ -135,12 +123,6 @@
     "overshoot_rule_text": {
       "type": "string"
     },
-    "planning_rule_text": {
-      "type": "string"
-    },
-    "special_square_count_rule_text": {
-      "type": "string"
-    },
     "horizon_roll_count": {
       "type": "string"
     }
@@ -149,15 +131,13 @@
     "object_description_standard_board": "a numbered Snakes and Ladders board with one token and visible snakes and ladders",
     "movement_rule_text": "A move advances the token by the selected die value, then immediately follows a ladder upward or a snake downward if the landing square is the start of one. A ladder starts at its lower square and ends at the arrowhead on the higher square; a snake starts at its head and ends at its pointed tail on the lower square.",
     "overshoot_rule_text": "If a die roll would move past the final square, the token stays on its current square for that roll.",
-    "planning_rule_text": "Each roll can independently be any die value from 1 to 6.",
-    "special_square_count_rule_text": "Count by square number from just after the token's square through the final square. Do not move the token or follow snakes or ladders.",
     "annotation_hint_move_outcome_value": "set \"annotation\" to a JSON object mapping start_square and end_square to bounding boxes [x0, y0, x1, y1]",
     "answer_hint_move_outcome_value": "set \"answer\" to the final square number after the shown die roll and any snake or ladder",
-    "annotation_hint_best_roll_value": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the final square named in the answer",
-    "answer_hint_best_roll_value": "set \"answer\" to the highest final square number reachable after independently choosing each stated roll, not to the die values",
-    "annotation_hint_ladder_start_ahead_count": "set \"annotation\" to a JSON array of bounding boxes [x0,y0,x1,y1] around every counted ladder-start square",
-    "answer_hint_ladder_start_ahead_count": "set \"answer\" to the number of counted ladder-start squares",
-    "annotation_hint_snake_head_ahead_count": "set \"annotation\" to a JSON array of bounding boxes [x0,y0,x1,y1] around every counted snake-head square",
-    "answer_hint_snake_head_ahead_count": "set \"answer\" to the number of counted snake-head squares"
+    "annotation_hint_ladder_count": "set \"annotation\" to a JSON array of bounding boxes [x0,y0,x1,y1] around every counted ladder-start square",
+    "answer_hint_ladder_count": "set \"answer\" to the number of visible ladders",
+    "annotation_hint_snake_count": "set \"annotation\" to a JSON array of bounding boxes [x0,y0,x1,y1] around every counted snake-head square",
+    "answer_hint_snake_count": "set \"answer\" to the number of visible snakes",
+    "annotation_hint_remaining_to_finish_value": "set \"annotation\" to a JSON object mapping token_square and finish_square to bounding boxes [x0, y0, x1, y1]",
+    "answer_hint_remaining_to_finish_value": "set \"answer\" to the final square number minus the token's square number"
   }
 }

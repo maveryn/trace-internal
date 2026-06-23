@@ -20,16 +20,14 @@ PROMPT_REQUIRED_KEYS = (
     "object_description_standard_board",
     "movement_rule_text",
     "overshoot_rule_text",
-    "planning_rule_text",
-    "special_square_count_rule_text",
     "answer_hint_move_outcome_value",
     "annotation_hint_move_outcome_value",
-    "answer_hint_best_roll_value",
-    "annotation_hint_best_roll_value",
-    "answer_hint_ladder_start_ahead_count",
-    "annotation_hint_ladder_start_ahead_count",
-    "answer_hint_snake_head_ahead_count",
-    "annotation_hint_snake_head_ahead_count",
+    "answer_hint_ladder_count",
+    "annotation_hint_ladder_count",
+    "answer_hint_snake_count",
+    "annotation_hint_snake_count",
+    "answer_hint_remaining_to_finish_value",
+    "annotation_hint_remaining_to_finish_value",
 )
 
 
@@ -50,7 +48,6 @@ def build_snakes_ladders_prompt_artifacts(
         PROMPT_REQUIRED_KEYS,
         context=f"prompt defaults for games/{SCENE_ID}/{prompt_query_key}",
     )
-    horizon = 0 if horizon_roll_count is None else int(horizon_roll_count)
     selection = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
@@ -65,11 +62,7 @@ def build_snakes_ladders_prompt_artifacts(
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "movement_rule_text": str(prompt_defaults["movement_rule_text"]),
             "overshoot_rule_text": str(prompt_defaults["overshoot_rule_text"]),
-            "planning_rule_text": str(prompt_defaults["planning_rule_text"]),
-            "special_square_count_rule_text": str(prompt_defaults["special_square_count_rule_text"]),
             "die_value": 0 if die_value is None else int(die_value),
-            "horizon_roll_count": str(horizon),
-            "horizon_roll_label": f"{horizon} roll{'s' if horizon != 1 else ''}",
             "answer_hint": str(prompt_defaults[f"answer_hint_{str(prompt_query_key)}"]),
             "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(prompt_query_key)}"]),
             "json_example": str(json_example),

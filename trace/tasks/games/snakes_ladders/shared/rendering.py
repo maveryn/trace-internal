@@ -403,6 +403,7 @@ def render_snakes_ladders_board_scene(
     die_value: int | None = None,
     horizon_roll_count: int | None = None,
     show_roll_panel: bool = True,
+    highlight_token_square: bool = True,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedSnakesLaddersScene:
     """Render one Snakes and Ladders board scene."""
@@ -527,13 +528,14 @@ def render_snakes_ladders_board_scene(
         )
 
     start_square_bbox = entity_bboxes[square_to_cell_id(int(start_square))]
-    draw.rounded_rectangle(
-        start_square_bbox,
-        radius=int(params.cell_radius_px) + 2,
-        fill=None,
-        outline=theme.token_outline_rgb,
-        width=max(5, int(params.jump_width_px)),
-    )
+    if bool(highlight_token_square):
+        draw.rounded_rectangle(
+            start_square_bbox,
+            radius=int(params.cell_radius_px) + 2,
+            fill=None,
+            outline=theme.token_outline_rgb,
+            width=max(5, int(params.jump_width_px)),
+        )
 
     token_center = centers[int(start_square)]
     token_radius = float(params.token_radius_px)

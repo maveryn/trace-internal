@@ -1,5 +1,3 @@
-"""Select the final board after a short sliding-block move sequence."""
-
 from __future__ import annotations
 
 from typing import Any, Mapping
@@ -19,7 +17,12 @@ SUPPORTED_QUERY_IDS = (DEFAULT_QUERY_ID,)
 PROMPT_QUERY_KEY = "move_result_label"
 
 
-def _prepare_result_objective(attempt_seed: int, task_params: Mapping[str, Any], exit_side: str) -> SlidingBlockObjective:
+def _prepare_result_objective(
+    attempt_seed: int,
+    task_params: Mapping[str, Any],
+    _exit_side: str,
+    _selected_query: str,
+) -> SlidingBlockObjective:
     """Bind one final-board option label after constructing a valid slide sequence."""
 
     option_labels, option_count_probabilities = move_result_option_labels(task_params, instance_seed=int(attempt_seed))
@@ -34,7 +37,6 @@ def _prepare_result_objective(attempt_seed: int, task_params: Mapping[str, Any],
     dataset = build_board_for_move_result(
         params=task_params,
         instance_seed=int(attempt_seed),
-        exit_side=str(exit_side),
         option_labels=option_labels,
         correct_option_label=str(correct_label),
     )

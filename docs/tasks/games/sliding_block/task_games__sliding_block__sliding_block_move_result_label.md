@@ -14,7 +14,7 @@
 - `select(option_board_equal_to(apply_ordered_slides(source_board, slide_sequence))); scene=sliding_block; scope=sliding_block_move_result_label`
 
 ## Generation Notes
-1. The prompt gives a short ordered slide sequence.
-2. The answer is the visual option label whose board matches the final state.
-3. Annotation is the bbox set containing moved source blocks plus the correct option panel.
-
+1. The prompt gives a short ordered slide sequence on a neutral board with no target block.
+2. The image always shows exactly four visual option boards.
+3. The answer is the visual option label whose board matches the final state.
+4. Annotation is the bbox set containing moved source blocks plus the correct option panel.

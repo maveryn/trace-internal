@@ -23,18 +23,32 @@
     },
     "query": {
       "blocker_count": [
-        "Count the blocks currently occupying the target block's straight path to the exit.",
-        "How many blocks are in the target block's direct exit path?",
-        "Determine the number of blocks blocking the red target block's straight route to the exit.",
-        "Count every block that lies between the target block and the exit arrow along the target's row or column.",
-        "How many rectangular blocks currently block the target block from sliding straight out?"
+        "Count the blocks currently occupying the red target block T's straight path to the exit.",
+        "How many blocks are in the red target block T's direct exit path?",
+        "Determine the number of blocks blocking the red target block labeled T from sliding straight to the exit.",
+        "Count every block that lies between the red target block T and the exit arrow along T's row or column.",
+        "How many rectangular blocks currently block the red target block T from sliding straight out?"
       ],
       "movable_block_count": [
-        "How many non-target blocks can slide at least one cell?",
-        "Count the non-target blocks that have at least one legal one-cell slide.",
-        "How many labeled blocks other than T can move one or more cells from their current position?",
-        "Count every non-target block that can slide left, right, up, or down by at least one cell without overlapping another block.",
-        "How many of the labeled non-target blocks are movable right now?"
+        "Horizontal blocks slide left or right, and vertical blocks slide up or down. How many blocks can slide at least one cell?",
+        "Count the blocks with at least one legal one-cell slide along their own orientation.",
+        "How many labeled blocks can move one or more cells from their current position along their own orientation?",
+        "Count every block that can slide horizontally if it is horizontal, or vertically if it is vertical, without overlapping another block.",
+        "How many of the labeled blocks are movable right now under the orientation slide rule?"
+      ],
+      "horizontal_block_count": [
+        "How many horizontal blocks are on the board?",
+        "Count the labeled blocks that are wider than they are tall.",
+        "How many blocks have horizontal orientation?",
+        "Count every rectangular block that lies horizontally.",
+        "How many labeled blocks are horizontal?"
+      ],
+      "vertical_block_count": [
+        "How many vertical blocks are on the board?",
+        "Count the labeled blocks that are taller than they are wide.",
+        "How many blocks have vertical orientation?",
+        "Count every rectangular block that lies vertically.",
+        "How many labeled blocks are vertical?"
       ],
       "move_result_label": [
         "Apply these slides in order: {move_sequence_description}. Which labeled option shows the final board?",
@@ -67,6 +81,8 @@
     ],
     "query:blocker_count": [],
     "query:movable_block_count": [],
+    "query:horizontal_block_count": [],
+    "query:vertical_block_count": [],
     "query:move_result_label": [
       "move_sequence_description"
     ],
@@ -109,17 +125,24 @@
     }
   },
   "code_prompt_defaults": {
-    "object_description": "a sliding-block puzzle board with labeled rectangular blocks, an exit arrow, and one red target block",
+    "object_description": "a sliding-block puzzle board with labeled rectangular blocks",
+    "object_description_blocker_count": "a sliding-block puzzle board with labeled rectangular blocks, an exit arrow, and one red target block labeled T",
+    "object_description_movable_block_count": "a sliding-block puzzle board with labeled rectangular blocks",
+    "object_description_block_orientation_count": "a sliding-block puzzle board with labeled rectangular blocks",
+    "object_description_move_result_label": "a sliding-block puzzle board with labeled rectangular blocks and four final-board options",
     "answer_hint_integer": "set \"answer\" to the integer count",
     "answer_hint_option_letter": "set \"answer\" to only the selected option letter",
     "annotation_hint_blocker_count": "set \"annotation\" to a JSON array of pixel-space bounding boxes [x0,y0,x1,y1] for the blocking blocks",
-    "annotation_hint_movable_block_count": "set \"annotation\" to a JSON array of pixel-space bounding boxes [x0,y0,x1,y1] for the movable non-target blocks",
+    "annotation_hint_movable_block_count": "set \"annotation\" to a JSON array of pixel-space bounding boxes [x0,y0,x1,y1] for the movable blocks",
+    "annotation_hint_block_orientation_count": "set \"annotation\" to a JSON array of pixel-space bounding boxes [x0,y0,x1,y1] for the blocks matching the requested orientation",
     "annotation_hint_move_result_label": "set \"annotation\" to a JSON array containing the moved block bounding boxes and the selected option-panel bounding box",
     "json_example_blocker_count": "{\"annotation\":[[120,160,210,245],[225,160,315,245]],\"answer\":2}",
     "json_example_movable_block_count": "{\"annotation\":[[110,150,195,235],[310,250,390,335]],\"answer\":2}",
+    "json_example_block_orientation_count": "{\"annotation\":[[110,150,235,220],[310,250,430,320]],\"answer\":2}",
     "json_example_move_result_label": "{\"annotation\":[[120,160,210,245],[430,500,650,680]],\"answer\":\"B\"}",
     "json_example_answer_only_blocker_count": "{\"answer\":2}",
     "json_example_answer_only_movable_block_count": "{\"answer\":2}",
+    "json_example_answer_only_block_orientation_count": "{\"answer\":2}",
     "json_example_answer_only_move_result_label": "{\"answer\":\"B\"}"
   }
 }

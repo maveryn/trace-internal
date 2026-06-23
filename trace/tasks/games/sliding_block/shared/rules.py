@@ -25,6 +25,25 @@ def state_signature(blocks: Sequence[BlockSpec]) -> tuple[tuple[str, int, int], 
     return tuple(sorted((str(block.block_id), int(block.row), int(block.col)) for block in blocks))
 
 
+def block_orientation(block: BlockSpec) -> str:
+    """Return the legal slide axis implied by one rectangular block shape."""
+
+    return "horizontal" if int(block.width) > int(block.height) else "vertical"
+
+
+def block_ids_by_orientation(blocks: Sequence[BlockSpec], *, orientation: str) -> list[str]:
+    """Return non-target block ids whose shape matches the requested orientation."""
+
+    target_orientation = str(orientation)
+    if target_orientation not in {"horizontal", "vertical"}:
+        raise ValueError(f"unsupported sliding-block orientation: {target_orientation}")
+    return [
+        str(block.block_id)
+        for block in blocks
+        if str(block.block_id) != "target" and block_orientation(block) == target_orientation
+    ]
+
+
 def replace_block(blocks: Sequence[BlockSpec], moved: BlockSpec) -> list[BlockSpec]:
     """Return a board state with one block replaced by its moved version."""
 
@@ -113,7 +132,7 @@ def legal_moves(
     for block in blocks:
         if str(block.block_id) == "target" or str(block.block_id) in excluded:
             continue
-        directions = ("left", "right") if int(block.width) > int(block.height) else ("up", "down")
+        directions = ("left", "right") if block_orientation(block) == "horizontal" else ("up", "down")
         for direction in directions:
             for distance in range(1, int(max_distance) + 1):
                 if can_apply_move(
@@ -144,6 +163,8 @@ def movable_block_ids(blocks: Sequence[BlockSpec], *, rows: int, cols: int) -> l
 __all__ = [
     "apply_move",
     "block_by_id",
+    "block_ids_by_orientation",
+    "block_orientation",
     "can_apply_move",
     "cells_for",
     "inside_board",
@@ -153,4 +174,3 @@ __all__ = [
     "shift_block",
     "state_signature",
 ]
-

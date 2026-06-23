@@ -14,7 +14,6 @@
 - `count(blocks_intersecting(target_exit_path)); scene=sliding_block; scope=sliding_block_blocker_count`
 
 ## Generation Notes
-1. The red target block and exit arrow define the straight exit path.
-2. The answer is the number of non-target blocks occupying cells on that path.
-3. Annotation is the bbox set of the blocking blocks.
-
+1. The red target block labeled `T` and exit arrow define the straight exit path.
+2. The answer is the number of non-target blocks occupying cells on that path; supported counts include `0`.
+3. Annotation is the bbox set of the blocking blocks, or an empty set when the answer is `0`.

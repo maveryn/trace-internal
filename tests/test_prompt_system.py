@@ -1311,6 +1311,8 @@ def test_games_sliding_block_bundle_supports_sliding_block_variants() -> None:
     assert len(bundle.task_templates["sliding_block_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["blocker_count"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["movable_block_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["horizontal_block_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["vertical_block_count"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["move_result_label"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["scene:sliding_block"]) == [
         "object_description",
@@ -1318,6 +1320,8 @@ def test_games_sliding_block_bundle_supports_sliding_block_variants() -> None:
     assert list(bundle.required_slots_by_key["query:move_result_label"]) == [
         "move_sequence_description",
     ]
+    assert list(bundle.required_slots_by_key["query:horizontal_block_count"]) == []
+    assert list(bundle.required_slots_by_key["query:vertical_block_count"]) == []
 
 
 def test_puzzles_topology_bundle_supports_cyclic_order_variants() -> None:

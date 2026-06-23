@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import TASK_REGISTRY
+from trace.tasks.games.sliding_block.block_orientation_count import GamesSlidingBlockOrientationCountTask
 from trace.tasks.games.sliding_block.movable_block_count import GamesSlidingBlockMovableBlockCountTask
+from trace.tasks.games.sliding_block.shared.rules import block_ids_by_orientation
 from trace.tasks.games.sliding_block.shared.rules import legal_moves
 from trace.tasks.games.sliding_block.shared.state import BlockSpec
 from trace.tasks.games.sliding_block.sliding_block_blocker_count import GamesSlidingBlockBlockerCountTask
@@ -12,6 +14,20 @@ from trace.tasks.games.sliding_block.sliding_block_move_result_label import Game
 
 
 TASKS = (
+    (
+        "task_games__sliding_block__block_orientation_count",
+        GamesSlidingBlockOrientationCountTask,
+        "horizontal_block_count",
+        "integer",
+        "horizontal_block_count",
+    ),
+    (
+        "task_games__sliding_block__block_orientation_count",
+        GamesSlidingBlockOrientationCountTask,
+        "vertical_block_count",
+        "integer",
+        "vertical_block_count",
+    ),
     (
         "task_games__sliding_block__sliding_block_blocker_count",
         GamesSlidingBlockBlockerCountTask,
@@ -73,7 +89,7 @@ def test_sliding_block_tasks_are_registered_and_taxonomy_mapped() -> None:
 
 def test_sliding_block_tasks_emit_contracts() -> None:
     for index, (_task_id, task_cls, query_id, answer_type, prompt_query_key) in enumerate(TASKS):
-        out = task_cls().generate(2026052700 + index, params={}, max_attempts=30)
+        out = task_cls().generate(2026052700 + index, params={"query_id": query_id}, max_attempts=30)
         trace = out.trace_payload
         execution = trace["execution_trace"]
 
@@ -94,11 +110,18 @@ def test_sliding_block_tasks_emit_contracts() -> None:
             int(trace["render_spec"]["canvas_width"]),
             int(trace["render_spec"]["canvas_height"]),
         )
-        assert execution["answer_block_ids"]
         if prompt_query_key == "blocker_count":
             assert len(out.annotation_gt.value) == len(execution["answer_block_ids"])
             assert int(out.answer_gt.value) == len(execution["blocking_block_ids"])
             assert execution["answer_block_ids"] == execution["blocking_block_ids"]
+        elif prompt_query_key in {"horizontal_block_count", "vertical_block_count"}:
+            blocks = _execution_blocks(execution)
+            orientation = "horizontal" if prompt_query_key == "horizontal_block_count" else "vertical"
+            expected_ids = block_ids_by_orientation(blocks, orientation=orientation)
+            assert int(out.answer_gt.value) == len(expected_ids)
+            assert execution["answer_block_ids"] == expected_ids
+            assert execution["orientation_block_ids"] == expected_ids
+            assert len(out.annotation_gt.value) == len(expected_ids)
         elif prompt_query_key == "movable_block_count":
             blocks = _execution_blocks(execution)
             moves = legal_moves(
@@ -143,3 +166,16 @@ def test_sliding_block_move_result_lays_out_four_options_as_two_by_two() -> None
 
     assert set(option_bboxes) == {"option_A", "option_B", "option_C", "option_D"}
     assert _bbox_row_counts(option_bboxes) == (2, 2)
+
+
+def test_sliding_block_blocker_count_can_emit_zero() -> None:
+    out = GamesSlidingBlockBlockerCountTask().generate(
+        2026052788,
+        params={"blocker_count_min": 0, "blocker_count_max": 0},
+        max_attempts=128,
+    )
+
+    assert out.answer_gt.value == 0
+    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.value == []
+    assert out.trace_payload["execution_trace"]["answer_block_ids"] == []

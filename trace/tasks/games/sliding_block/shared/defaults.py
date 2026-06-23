@@ -25,13 +25,20 @@ PROMPT_WIRING_KEYS = (
     "answer_hint_option_letter",
     "annotation_hint_blocker_count",
     "annotation_hint_movable_block_count",
+    "annotation_hint_block_orientation_count",
     "annotation_hint_move_result_label",
     "json_example_blocker_count",
     "json_example_movable_block_count",
+    "json_example_block_orientation_count",
     "json_example_move_result_label",
     "json_example_answer_only_blocker_count",
     "json_example_answer_only_movable_block_count",
+    "json_example_answer_only_block_orientation_count",
     "json_example_answer_only_move_result_label",
+    "object_description_blocker_count",
+    "object_description_movable_block_count",
+    "object_description_block_orientation_count",
+    "object_description_move_result_label",
 )
 
 
@@ -42,4 +49,3 @@ __all__ = [
     "PROMPT_WIRING_KEYS",
     "RENDER_DEFAULTS",
 ]
-

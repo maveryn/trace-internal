@@ -1,5 +1,3 @@
-"""Count blocks occupying the target block's direct exit path."""
-
 from __future__ import annotations
 
 from typing import Any, Mapping
@@ -19,10 +17,13 @@ SUPPORTED_QUERY_IDS = (DEFAULT_QUERY_ID,)
 PROMPT_QUERY_KEY = "blocker_count"
 
 
-def _prepare_blocker_objective(attempt_seed: int, task_params: Mapping[str, Any], exit_side: str) -> SlidingBlockObjective:
-    """Bind the exact path-blocker count and its block bbox witnesses."""
-
-    support = integer_support(task_params, min_key="blocker_count_min", max_key="blocker_count_max", fallback_min=1, fallback_max=6)
+def _prepare_blocker_objective(
+    attempt_seed: int,
+    task_params: Mapping[str, Any],
+    exit_side: str,
+    _selected_query: str,
+) -> SlidingBlockObjective:
+    support = integer_support(task_params, min_key="blocker_count_min", max_key="blocker_count_max", fallback_min=0, fallback_max=5)
     target = int(
         select_target_from_support(
             task_params,

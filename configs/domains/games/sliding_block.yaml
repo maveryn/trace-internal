@@ -4,13 +4,12 @@ generation:
     board_rows_max: 8
     board_cols_min: 6
     board_cols_max: 8
-    blocker_count_min: 1
-    blocker_count_max: 6
+    blocker_count_min: 0
+    blocker_count_max: 5
     non_target_block_count_min: 6
     non_target_block_count_max: 10
     move_result_option_count_support:
       - 4
-      - 6
     move_result_move_count_min: 1
     move_result_move_count_max: 2
     move_result_slide_distance_max: 3
@@ -30,6 +29,10 @@ generation:
       movable_block_count_min: 4
       movable_block_count_max: 9
       movable_block_count_generation_attempts: 512
+    task_games__sliding_block__block_orientation_count:
+      block_orientation_count_min: 1
+      block_orientation_count_max: 8
+      block_orientation_count_generation_attempts: 512
 rendering:
   shared:
     canvas_width: 980

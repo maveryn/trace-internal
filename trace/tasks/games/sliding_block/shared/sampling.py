@@ -12,7 +12,7 @@ from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .defaults import GEN_DEFAULTS
-from .rules import apply_move, block_by_id, legal_moves, movable_block_ids, state_signature
+from .rules import apply_move, block_ids_by_orientation, legal_moves, movable_block_ids, state_signature
 from .state import BLOCK_FILLS, EXIT_SIDES, OPTION_LABELS, SCENE_VARIANTS, TARGET_FILL, BlockMoveSpec, BlockSpec
 
 
@@ -121,9 +121,9 @@ def select_target_from_support(
 
 
 def move_result_option_labels(params: Mapping[str, Any], *, instance_seed: int) -> tuple[tuple[str, ...], dict[str, float]]:
-    """Resolve the 4-or-6 visual option labels for the final-board task."""
+    """Resolve the visual option labels for the final-board task."""
 
-    raw_support = params.get("move_result_option_count_support", group_default(GEN_DEFAULTS, "move_result_option_count_support", [4, 6]))
+    raw_support = params.get("move_result_option_count_support", group_default(GEN_DEFAULTS, "move_result_option_count_support", [4]))
     support = tuple(int(value) for value in raw_support)
     if not support:
         raise ValueError("move_result_option_count_support must not be empty")
@@ -397,33 +397,83 @@ def build_exit_path_board(
     }
 
 
+def build_neutral_board(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+    desired_non_target_count: int | None = None,
+) -> dict[str, Any]:
+    """Build a plain sliding-block board without a target block or exit path."""
+
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    rows_min, rows_max = _get_range(params, GEN_DEFAULTS, min_key="board_rows_min", max_key="board_rows_max", fallback_min=6, fallback_max=7)
+    cols_min, cols_max = _get_range(params, GEN_DEFAULTS, min_key="board_cols_min", max_key="board_cols_max", fallback_min=6, fallback_max=7)
+    rows = int(rng.randint(int(rows_min), int(rows_max)))
+    cols = int(rng.randint(int(cols_min), int(cols_max)))
+    non_target_min = _get_int(params, GEN_DEFAULTS, "non_target_block_count_min", 6)
+    non_target_max = _get_int(params, GEN_DEFAULTS, "non_target_block_count_max", 10)
+    desired_count = (
+        int(desired_non_target_count)
+        if desired_non_target_count is not None
+        else int(rng.randint(int(non_target_min), int(non_target_max)))
+    )
+    desired_count = max(1, min(int(desired_count), int(non_target_max)))
+
+    blocks: list[BlockSpec] = []
+    occupied: set[tuple[int, int]] = set()
+    attempts = 0
+    while len(blocks) < int(desired_count) and attempts < 1200:
+        attempts += 1
+        idx = len(blocks)
+        block = candidate_distractor(
+            block_id=f"block_{idx}",
+            rows=int(rows),
+            cols=int(cols),
+            rng=rng,
+            role="distractor",
+            fill_rgb=BLOCK_FILLS[idx % len(BLOCK_FILLS)],
+        )
+        if any(cell in occupied for cell in block.cells):
+            continue
+        occupied.update(block.cells)
+        blocks.append(block)
+
+    if len(blocks) < int(desired_count):
+        raise ValueError("failed to place requested number of neutral sliding blocks")
+
+    labeled_blocks = assign_labels(blocks)
+    movable_ids = movable_block_ids(labeled_blocks, rows=int(rows), cols=int(cols))
+    return {
+        "rows": int(rows),
+        "cols": int(cols),
+        "exit_side": "",
+        "blocks": serialize_blocks(labeled_blocks),
+        "target_block_id": "",
+        "blocking_block_ids": [],
+        "target_path_cells": [],
+        "movable_block_ids": [str(block_id) for block_id in movable_ids],
+        "movable_count": int(len(movable_ids)),
+        "blocker_count": 0,
+        "non_target_block_count": int(len(labeled_blocks)),
+    }
+
+
 def build_board_for_movable_target(
     *,
     params: Mapping[str, Any],
     instance_seed: int,
-    exit_side: str,
     movable_target: int,
 ) -> dict[str, Any]:
-    """Search for a board whose current non-target movable count matches target."""
+    """Search for a neutral board whose current movable count matches target."""
 
     max_attempts = _get_int(params, GEN_DEFAULTS, "movable_block_count_generation_attempts", 512)
-    blocker_support = integer_support(params, min_key="blocker_count_min", max_key="blocker_count_max", fallback_min=1, fallback_max=6)
     observed_counts: list[int] = []
     for attempt in range(int(max_attempts)):
         candidate_seed = int(instance_seed) + (7919 * (int(attempt) + 1))
-        blocker_target = int(
-            select_target_from_support(
-                params,
-                support=blocker_support,
-                instance_seed=int(candidate_seed),
-                namespace="games.sliding_block.movable_board.blocker_target",
-            )
-        )
-        candidate = build_exit_path_board(
+        candidate = build_neutral_board(
             params=params,
             instance_seed=int(candidate_seed),
-            exit_side=str(exit_side),
-            blocker_target=int(blocker_target),
             namespace="games.sliding_block.movable_board",
         )
         count = int(candidate["movable_count"])
@@ -434,6 +484,42 @@ def build_board_for_movable_target(
     raise ValueError(
         "failed to sample sliding-block board with requested movable count "
         f"{int(movable_target)}; observed={sorted(set(observed_counts))}"
+    )
+
+
+def build_board_for_orientation_target(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    orientation: str,
+    orientation_target: int,
+) -> dict[str, Any]:
+    """Search for a neutral board with the requested block-orientation count."""
+
+    max_attempts = _get_int(params, GEN_DEFAULTS, "block_orientation_count_generation_attempts", 512)
+    observed_counts: list[int] = []
+    for attempt in range(int(max_attempts)):
+        candidate_seed = int(instance_seed) + (6151 * (int(attempt) + 1))
+        non_target_max = _get_int(params, GEN_DEFAULTS, "non_target_block_count_max", 10)
+        candidate = build_neutral_board(
+            params=params,
+            instance_seed=int(candidate_seed),
+            namespace="games.sliding_block.orientation_board",
+            desired_non_target_count=min(int(non_target_max), max(int(orientation_target) + 2, 3)),
+        )
+        blocks = deserialize_blocks(candidate["blocks"])
+        matching_ids = block_ids_by_orientation(blocks, orientation=str(orientation))
+        observed_counts.append(len(matching_ids))
+        if len(matching_ids) != int(orientation_target):
+            continue
+        out = dict(candidate)
+        out["orientation"] = str(orientation)
+        out["orientation_block_ids"] = [str(block_id) for block_id in matching_ids]
+        out["orientation_count"] = int(len(matching_ids))
+        return out
+    raise ValueError(
+        "failed to sample sliding-block board with requested orientation count "
+        f"{int(orientation_target)} for {orientation}; observed={sorted(set(observed_counts))}"
     )
 
 
@@ -544,20 +630,15 @@ def build_board_for_move_result(
     *,
     params: Mapping[str, Any],
     instance_seed: int,
-    exit_side: str,
     option_labels: Sequence[str],
     correct_option_label: str,
 ) -> dict[str, Any]:
     """Construct a source board, short slide sequence, and final-board options."""
 
     rng = spawn_rng(int(instance_seed), "games.sliding_block.final_board")
-    blocker_support = integer_support(params, min_key="blocker_count_min", max_key="blocker_count_max", fallback_min=1, fallback_max=6)
-    blocker_target = int(blocker_support[int(rng.randrange(min(3, len(blocker_support))))])
-    board = build_exit_path_board(
+    board = build_neutral_board(
         params=params,
         instance_seed=int(instance_seed),
-        exit_side=str(exit_side),
-        blocker_target=int(blocker_target),
         namespace="games.sliding_block.final_board.source",
     )
     blocks = deserialize_blocks(board["blocks"])
@@ -618,9 +699,11 @@ def build_board_for_move_result(
 
 
 __all__ = [
+    "build_board_for_orientation_target",
     "build_board_for_movable_target",
     "build_board_for_move_result",
     "build_exit_path_board",
+    "build_neutral_board",
     "deserialize_blocks",
     "integer_support",
     "move_result_option_labels",
@@ -629,4 +712,3 @@ __all__ = [
     "select_target_from_support",
     "serialize_blocks",
 ]
-

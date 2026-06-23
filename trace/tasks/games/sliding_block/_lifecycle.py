@@ -22,7 +22,7 @@ from .shared.state import SCENE_ID, RenderedSlidingBlockScene
 
 
 AnnotationBuilder = Callable[[RenderedSlidingBlockScene], AnnotationArtifacts]
-ObjectiveBuilder = Callable[[int, Mapping[str, Any], str], "SlidingBlockObjective"]
+ObjectiveBuilder = Callable[[int, Mapping[str, Any], str, str], "SlidingBlockObjective"]
 
 
 @dataclass(frozen=True)
@@ -69,7 +69,7 @@ def run_sliding_block_lifecycle(
     for attempt_index in range(max(1, int(max_attempts))):
         attempt_seed = int(instance_seed) + (1009 * int(attempt_index))
         try:
-            objective = build_objective(int(attempt_seed), resolved_params, str(exit_side))
+            objective = build_objective(int(attempt_seed), resolved_params, str(exit_side), str(selected_query))
         except ValueError as exc:
             last_error = exc
             continue

@@ -19,7 +19,12 @@ SUPPORTED_QUERY_IDS = (DEFAULT_QUERY_ID,)
 PROMPT_QUERY_KEY = "movable_block_count"
 
 
-def _prepare_movable_objective(attempt_seed: int, task_params: Mapping[str, Any], exit_side: str) -> SlidingBlockObjective:
+def _prepare_movable_objective(
+    attempt_seed: int,
+    task_params: Mapping[str, Any],
+    _exit_side: str,
+    _selected_query: str,
+) -> SlidingBlockObjective:
     """Bind the target movable-block count and every counted block bbox."""
 
     support = integer_support(
@@ -40,7 +45,6 @@ def _prepare_movable_objective(attempt_seed: int, task_params: Mapping[str, Any]
     dataset = build_board_for_movable_target(
         params=task_params,
         instance_seed=int(attempt_seed),
-        exit_side=str(exit_side),
         movable_target=int(target),
     )
     answer_block_ids = [str(block_id) for block_id in dataset["movable_block_ids"]]
@@ -64,7 +68,7 @@ def _prepare_movable_objective(attempt_seed: int, task_params: Mapping[str, Any]
 
 @register_task
 class GamesSlidingBlockMovableBlockCountTask:
-    """Count labeled non-target blocks that can slide at least one cell."""
+    """Count labeled blocks that can slide at least one cell."""
 
     task_id = TASK_ID
     domain = DOMAIN

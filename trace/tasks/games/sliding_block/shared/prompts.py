@@ -31,7 +31,9 @@ def build_sliding_block_prompt_artifacts(
         context="sliding-block prompt wiring defaults",
     )
     slots = {
-        "object_description": str(prompt_defaults["object_description"]),
+        "object_description": str(
+            prompt_defaults.get(f"object_description_{prompt_default_prefix}", prompt_defaults["object_description"])
+        ),
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
         "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
         "annotation_hint": str(prompt_defaults[f"annotation_hint_{prompt_default_prefix}"]),
@@ -55,4 +57,3 @@ def build_sliding_block_prompt_artifacts(
 
 
 __all__ = ["build_sliding_block_prompt_artifacts"]
-

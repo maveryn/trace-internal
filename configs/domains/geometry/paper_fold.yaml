@@ -18,4 +18,5 @@ rendering:
       max_attempts: 6
 prompt:
   shared:
-    bundle_id: geometry_paper_fold_measurement_v0
+    bundle_id: geometry_paper_fold_measurement_v1
+    scene_key: paper_fold_measurement_scene

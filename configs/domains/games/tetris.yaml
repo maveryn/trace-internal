@@ -63,7 +63,6 @@ generation:
     - 3
     option_count_support:
     - 4
-    - 6
     board_row_count_support:
     - 10
     - 11

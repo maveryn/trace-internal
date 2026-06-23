@@ -14,5 +14,6 @@
 
 ## Generation Notes
 1. Query ids choose whether the fixed drop clears zero, one, or multiple rows.
-2. Annotation is the scalar bbox of the selected result-board option panel.
-3. Scalar annotation checked: true.
+2. The renderer always shows exactly four labeled result-board options in a two-by-two grid below the START board.
+3. Annotation is the scalar bbox of the selected result-board option panel.
+4. Scalar annotation checked: true.

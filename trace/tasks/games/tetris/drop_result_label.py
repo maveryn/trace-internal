@@ -15,6 +15,7 @@ from .shared.state import OPTION_LABELS
 
 TASK_ID = "task_games__tetris__drop_result_label"
 SUPPORTED_QUERY_IDS = ("no_clear_result", "single_clear_result", "multi_clear_result")
+RESULT_OPTION_COUNT = 4
 _CLEAR_COUNT_BY_QUERY = {
     "no_clear_result": 0,
     "single_clear_result": 1,
@@ -35,12 +36,16 @@ def _prepare_drop_result_objective(
     if str(selected_query) not in _CLEAR_COUNT_BY_QUERY:
         raise ValueError(f"unsupported Tetris drop-result query: {selected_query}")
     target_clear_count = int(_CLEAR_COUNT_BY_QUERY[str(selected_query)])
-    labels = OPTION_LABELS[: int(axes.option_count)]
-    answer_label, answer_label_probabilities = sample_label(
-        int(instance_seed),
-        namespace=f"{TASK_ID}.answer_label.{int(axes.option_count)}",
-        labels=labels,
-    )
+    labels = OPTION_LABELS[:RESULT_OPTION_COUNT]
+    if task_params.get("_sample_cursor") is not None:
+        answer_label = str(labels[abs(int(task_params["_sample_cursor"])) % int(RESULT_OPTION_COUNT)])
+        answer_label_probabilities = {str(label): 1.0 / float(RESULT_OPTION_COUNT) for label in labels}
+    else:
+        answer_label, answer_label_probabilities = sample_label(
+            int(instance_seed),
+            namespace=f"{TASK_ID}.answer_label.{RESULT_OPTION_COUNT}",
+            labels=labels,
+        )
 
     def construct_attempt(rng, resolved_axes):
         return build_drop_result_sample(
@@ -49,7 +54,7 @@ def _prepare_drop_result_objective(
             board_rows=int(resolved_axes.board_rows),
             board_cols=int(resolved_axes.board_cols),
             target_clear_count=int(target_clear_count),
-            option_count=int(resolved_axes.option_count),
+            option_count=int(RESULT_OPTION_COUNT),
             answer_label=str(answer_label),
         )
 
@@ -63,6 +68,8 @@ def _prepare_drop_result_objective(
         render_mode=RENDER_MODE_RESULT_OPTIONS,
         query_params={
             "target_clear_count": int(target_clear_count),
+            "option_count": int(RESULT_OPTION_COUNT),
+            "result_option_count_policy": "fixed_four_options",
             "drop_result_branch_probabilities": dict(query_probabilities),
             "answer_label": str(answer_label),
             "answer_label_probabilities": dict(answer_label_probabilities),

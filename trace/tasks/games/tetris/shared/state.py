@@ -59,7 +59,7 @@ class TetrisDefaults:
     drop_collision_time_support: Tuple[int, ...] = tuple(range(0, 9))
     edge_occupied_row_cell_count_support: Tuple[int, ...] = tuple(range(0, 12))
     shift_magnitude_support: Tuple[int, ...] = (1, 2, 3)
-    option_count_support: Tuple[int, ...] = (4, 6)
+    option_count_support: Tuple[int, ...] = (4,)
     board_row_count_support: Tuple[int, ...] = tuple(range(10, 16))
     board_col_count_support: Tuple[int, ...] = tuple(range(7, 12))
     canvas_width: int = 1100

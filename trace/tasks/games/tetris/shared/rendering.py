@@ -118,6 +118,26 @@ def piece_preview_panel_size(params: RenderParams) -> Tuple[int, int]:
     return int(preview_w + (2 * int(params.panel_pad_px))), int(preview_h + (2 * int(params.panel_pad_px)) + int(params.label_band_height_px))
 
 
+def compact_canvas_params_for_mode(params: RenderParams, *, render_mode: str, board_rows: int, board_cols: int) -> RenderParams:
+    """Shrink non-option Tetris canvases around the board while keeping readable cells."""
+
+    if str(render_mode) == RENDER_MODE_RESULT_OPTIONS:
+        return params
+    row_params = replace(params, cell_size_px=int(params.line_cell_size_px))
+    board_w, board_h = board_panel_size(row_params, board_rows=int(board_rows), board_cols=int(board_cols))
+    margin = max(24, int(params.panel_margin_px))
+    if str(render_mode) == RENDER_MODE_LINE_CLEAR:
+        preview_w, preview_h = piece_preview_panel_size(row_params)
+        total_w = max(int(board_w), int(preview_w))
+        total_h = int(preview_h) + int(params.board_gap_px) + int(board_h)
+        canvas_w = int(total_w + (2 * margin) + 60)
+        canvas_h = int(total_h + (2 * margin))
+        return replace(params, canvas_width=max(canvas_w, 520), canvas_height=max(canvas_h, 680))
+    canvas_w = int(board_w + (2 * margin) + 60)
+    canvas_h = int(board_h + (2 * margin) + 56)
+    return replace(params, canvas_width=max(canvas_w, 500), canvas_height=max(canvas_h, 560))
+
+
 def label_text(draw: ImageDraw.ImageDraw, bbox: Tuple[int, int, int, int], text: str, *, font_size: int, fill: Sequence[int], font_family: str = "") -> None:
     font = fit_font_to_box(
         draw,
@@ -248,29 +268,13 @@ def draw_piece_preview_panel(image: Image.Image, *, panel_bbox: Tuple[int, int, 
     return {"panel_bbox_px": [float(v) for v in panel_bbox], "cell_bboxes_px": dict(cell_bboxes), "grid_bbox_px": [float(grid_left), float(grid_top), float(grid_left + grid_w), float(grid_top + grid_h)]}, tuple(entities)
 
 
-def grid_panel_bboxes(params: RenderParams, *, count: int, cols: int, rows: int, board_rows: int, board_cols: int) -> Tuple[Tuple[int, int, int, int], ...]:
-    panel_w, panel_h = board_panel_size(params, board_rows=int(board_rows), board_cols=int(board_cols))
-    total_w = (int(cols) * panel_w) + ((int(cols) - 1) * int(params.board_gap_px))
-    total_h = (int(rows) * panel_h) + ((int(rows) - 1) * int(params.board_gap_px))
-    left = int((int(params.canvas_width) - total_w) / 2.0)
-    top = int((int(params.canvas_height) - total_h) / 2.0)
-    group_bbox = (float(left), float(top), float(left + total_w), float(top + total_h))
-    _shifted, dx, dy, _resolved = apply_games_layout_jitter_to_bbox(bbox_px=group_bbox, canvas_width=int(params.canvas_width), canvas_height=int(params.canvas_height), jitter=params.layout_jitter_meta)
-    bboxes: List[Tuple[int, int, int, int]] = []
-    for index in range(int(count)):
-        grid_row = index // int(cols)
-        grid_col = index % int(cols)
-        x0 = left + grid_col * (panel_w + int(params.board_gap_px)) + int(round(dx))
-        y0 = top + grid_row * (panel_h + int(params.board_gap_px)) + int(round(dy))
-        bboxes.append((int(x0), int(y0), int(x0 + panel_w), int(y0 + panel_h)))
-    return tuple(bboxes)
+def result_option_grid_params(params: RenderParams, *, panel_count: int, board_rows: int, board_cols: int) -> RenderParams:
+    """Return a fitted START-plus-2x2 result-board option grid."""
 
-
-def result_option_grid_params(params: RenderParams, *, panel_count: int, board_rows: int, board_cols: int) -> Tuple[RenderParams, int, int]:
-    """Return a fitted panel grid for START plus result-board options."""
-
-    cols = 4 if int(panel_count) > 6 else 3
-    rows = max(1, (int(panel_count) + int(cols) - 1) // int(cols))
+    if int(panel_count) != 5:
+        raise ValueError("Tetris result-board layout requires START plus exactly four options")
+    cols = 2
+    rows = 3
     cell_gap = int(params.cell_gap_px)
     panel_pad = int(params.panel_pad_px)
     label_band = int(params.label_band_height_px)
@@ -278,17 +282,54 @@ def result_option_grid_params(params: RenderParams, *, panel_count: int, board_r
     max_cell_w = (int(params.canvas_width) - ((int(cols) - 1) * board_gap) - (int(cols) * 2 * panel_pad) - (int(cols) * (int(board_cols) - 1) * cell_gap)) // max(1, int(cols) * int(board_cols))
     max_cell_h = (int(params.canvas_height) - ((int(rows) - 1) * board_gap) - (int(rows) * ((2 * panel_pad) + label_band)) - (int(rows) * (int(board_rows) - 1) * cell_gap)) // max(1, int(rows) * int(board_rows))
     fitted_cell = max(10, min(int(params.cell_size_px), int(max_cell_w), int(max_cell_h)))
-    return replace(params, cell_size_px=int(fitted_cell)), int(cols), int(rows)
+    return replace(params, cell_size_px=int(fitted_cell))
+
+
+def result_option_panel_bboxes(params: RenderParams, *, board_rows: int, board_cols: int) -> Tuple[Tuple[int, int, int, int], Tuple[Tuple[int, int, int, int], ...]]:
+    """Place START centered above a two-by-two option-board grid."""
+
+    panel_w, panel_h = board_panel_size(params, board_rows=int(board_rows), board_cols=int(board_cols))
+    gap = int(params.board_gap_px)
+    total_w = (2 * int(panel_w)) + gap
+    total_h = (3 * int(panel_h)) + (2 * gap)
+    left = int((int(params.canvas_width) - total_w) / 2.0)
+    top = int((int(params.canvas_height) - total_h) / 2.0)
+    group_bbox = (float(left), float(top), float(left + total_w), float(top + total_h))
+    _shifted, dx, dy, _resolved = apply_games_layout_jitter_to_bbox(
+        bbox_px=group_bbox,
+        canvas_width=int(params.canvas_width),
+        canvas_height=int(params.canvas_height),
+        jitter=params.layout_jitter_meta,
+    )
+    shift_x = int(round(dx))
+    shift_y = int(round(dy))
+    start_left = int(left + ((total_w - int(panel_w)) / 2.0) + shift_x)
+    start_top = int(top + shift_y)
+    start_bbox = (start_left, start_top, int(start_left + panel_w), int(start_top + panel_h))
+    option_bboxes: List[Tuple[int, int, int, int]] = []
+    option_top = int(top + int(panel_h) + gap + shift_y)
+    for row in range(2):
+        for col in range(2):
+            x0 = int(left + col * (int(panel_w) + gap) + shift_x)
+            y0 = int(option_top + row * (int(panel_h) + gap))
+            option_bboxes.append((x0, y0, int(x0 + panel_w), int(y0 + panel_h)))
+    return start_bbox, tuple(option_bboxes)
 
 
 def render_tetris_scene(*, sample: TetrisSample, render_mode: str, style_variant: str, params: RenderParams, instance_seed: int) -> RenderedTetrisScene:
     """Render one Tetris sample using a semantic layout mode chosen by the task."""
 
+    board_rows, board_cols = board_size(sample.board)
+    params = compact_canvas_params_for_mode(
+        params,
+        render_mode=str(render_mode),
+        board_rows=int(board_rows),
+        board_cols=int(board_cols),
+    )
     style, panel_style_meta = resolve_game_panel_scene_style(instance_seed=int(instance_seed), namespace="games.tetris.panel_style")
     background, background_meta = make_panel_scene_background(canvas_width=int(params.canvas_width), canvas_height=int(params.canvas_height), style=style)
     image = background.convert("RGBA")
     entities: List[Dict[str, Any]] = []
-    board_rows, board_cols = board_size(sample.board)
     render_map: Dict[str, Any] = {
         "board_rows": int(board_rows),
         "board_cols": int(board_cols),
@@ -355,14 +396,15 @@ def render_tetris_scene(*, sample: TetrisSample, render_mode: str, style_variant
         render_map["cell_bboxes_px"].update(panel_map["cell_bboxes_px"])
         render_map["row_bboxes_px"].update(panel_map["row_bboxes_px"])
     else:
-        grid_params, grid_cols, grid_rows = result_option_grid_params(params, panel_count=1 + len(sample.options), board_rows=board_rows, board_cols=board_cols)
-        bboxes = grid_panel_bboxes(grid_params, count=1 + len(sample.options), cols=int(grid_cols), rows=int(grid_rows), board_rows=board_rows, board_cols=board_cols)
-        start_map, start_entities = draw_board_panel(image, panel_bbox=bboxes[0], label="START", board=sample.board, style=style, params=grid_params, falling_cells=piece_cells(sample.falling_placement) if sample.falling_placement is not None else (), falling_piece=sample.piece, entity_prefix="start", style_variant=str(style_variant))
+        grid_params = result_option_grid_params(params, panel_count=1 + len(sample.options), board_rows=board_rows, board_cols=board_cols)
+        start_bbox, option_panel_bboxes = result_option_panel_bboxes(grid_params, board_rows=board_rows, board_cols=board_cols)
+        start_map, start_entities = draw_board_panel(image, panel_bbox=start_bbox, label="START", board=sample.board, style=style, params=grid_params, falling_cells=piece_cells(sample.falling_placement) if sample.falling_placement is not None else (), falling_piece=sample.piece, entity_prefix="start", style_variant=str(style_variant))
         entities.extend(start_entities)
         render_map["panels"]["start"] = list(start_map["panel_bbox_px"])
         render_map["cell_bboxes_px"].update(start_map["cell_bboxes_px"])
         render_map["row_bboxes_px"].update(start_map["row_bboxes_px"])
-        for option, panel_bbox in zip(sample.options, bboxes[1:]):
+        render_map["result_option_layout"] = {"start_row": 0, "option_grid_rows": 2, "option_grid_cols": 2}
+        for option, panel_bbox in zip(sample.options, option_panel_bboxes):
             panel_map, panel_entities = draw_board_panel(image, panel_bbox=panel_bbox, label=str(option.label), board=option.board, style=style, params=grid_params, entity_prefix=f"option_{option.label.lower()}", style_variant=str(style_variant))
             entities.extend(panel_entities)
             render_map["option_bboxes_px"][option.entity_id] = list(panel_map["panel_bbox_px"])

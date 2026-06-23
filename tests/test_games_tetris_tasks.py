@@ -117,16 +117,25 @@ def test_games_tetris_drop_result_contract() -> None:
     assert out.trace_payload["projected_annotation"]["type"] == "bbox"
 
 
-def test_games_tetris_drop_result_six_option_annotation_stays_in_bounds() -> None:
+def test_games_tetris_drop_result_four_option_layout_stays_in_bounds() -> None:
     out = GamesTetrisDropResultLabelTask().generate(
         6227121074877783,
-        params={"query_id": "single_clear_result", "option_count": 6, "board_rows": 15, "board_cols": 11},
+        params={"query_id": "single_clear_result", "board_rows": 15, "board_cols": 11},
         max_attempts=240,
     )
     width, height = out.image.size
     option_bboxes = out.trace_payload["render_map"]["option_bboxes_px"]
+    panels = out.trace_payload["render_map"]["panels"]
+    start_bbox = [float(v) for v in panels["start"]]
 
-    assert len(option_bboxes) == 6
+    assert len(option_bboxes) == 4
+    assert sorted(option_bboxes) == ["option_a", "option_b", "option_c", "option_d"]
+    assert out.trace_payload["query_spec"]["params"]["option_count"] == 4
+    assert start_bbox[1] < min(float(bbox[1]) for bbox in option_bboxes.values())
+    option_y0_values = sorted({round(float(bbox[1]), 3) for bbox in option_bboxes.values()})
+    assert len(option_y0_values) == 2
+    for y0 in option_y0_values:
+        assert sum(1 for bbox in option_bboxes.values() if round(float(bbox[1]), 3) == y0) == 2
     for bbox in option_bboxes.values():
         x0, y0, x1, y1 = [float(v) for v in bbox]
         assert 0 <= x0 < x1 <= width

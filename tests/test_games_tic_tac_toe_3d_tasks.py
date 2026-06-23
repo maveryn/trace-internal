@@ -8,7 +8,7 @@ from pathlib import Path
 import trace.tasks  # noqa: F401
 from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.tic_tac_toe_3d.winning_move_cell_label import WINNING_LINES, _immediate_winning_cells
+from trace.tasks.games.tic_tac_toe_3d.shared.rules import WINNING_LINES, immediate_winning_cells
 from trace.tasks.registry import create_task, list_default_task_ids
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
@@ -25,14 +25,8 @@ def test_games_tic_tac_toe_3d_defaults_and_prompt_bundle() -> None:
     cfg = get_scene_defaults("games", "tic_tac_toe_3d")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg)
 
-    assert set(generation["winning_move_query_id_weights"].keys()) == {
-        "x_winning_move_label",
-        "o_winning_move_label",
-    }
-    assert set(generation["layer_piece_count_query_id_weights"].keys()) == {
-        "x_piece_count_in_layer",
-        "o_piece_count_in_layer",
-    }
+    assert "winning_move_query_id_weights" not in generation
+    assert "layer_piece_count_query_id_weights" not in generation
     assert set(generation["layout_variant_weights"].keys()) == {
         "vertical_perspective_stack",
     }
@@ -48,14 +42,14 @@ def test_games_tic_tac_toe_3d_defaults_and_prompt_bundle() -> None:
     assert float(rendering["unit_size_scale_max"]) / float(rendering["unit_size_scale_min"]) >= 2.0
     assert list(generation["layer_piece_count_support"]) == [0, 1, 2, 3, 4, 5, 6]
     assert list(generation["option_count_support"]) == [4, 5, 6]
-    assert str(prompt["bundle_id"]) == "games_tic_tac_toe_3d_v0"
+    assert str(prompt["bundle_id"]) == "games_tic_tac_toe_3d_v1"
 
 
 def test_games_tic_tac_toe_3d_prompt_bundle_has_queries() -> None:
     bundle = json.loads(
-        Path("prompts/games/tic_tac_toe_3d/games_tic_tac_toe_3d_v0.json").read_text(encoding="utf-8")
+        Path("prompts/games/tic_tac_toe_3d/games_tic_tac_toe_3d_v1.json").read_text(encoding="utf-8")
     )
-    assert set(bundle["query_templates"].keys()) == {
+    assert set(bundle["templates"]["query"].keys()) == {
         "x_winning_move_label",
         "o_winning_move_label",
         "x_piece_count_in_layer",
@@ -71,7 +65,7 @@ def test_games_tic_tac_toe_3d_registry_and_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "tic_tac_toe_3d"
-        assert taxonomy.source_scene_id == "tic_tac_toe_3d"
+        assert taxonomy.source_domain == "games"
 
 
 def test_games_tic_tac_toe_3d_has_all_49_lines() -> None:
@@ -87,8 +81,9 @@ def test_games_tic_tac_toe_3d_winning_move_has_unique_option() -> None:
     )
     trace = out.trace_payload["execution_trace"]
     board = _trace_board_to_tuple(trace["board_layers"])
-    winning_cells = set(_immediate_winning_cells(board, "X"))
-    option_cells = {label: tuple(coord) for label, coord in zip(trace["option_labels"], trace["option_cells"])}
+    winning_cells = set(immediate_winning_cells(board, "X"))
+    option_labels = trace["available_option_labels"][: len(trace["option_cells"])]
+    option_cells = {label: tuple(coord) for label, coord in zip(option_labels, trace["option_cells"])}
     correct_labels = [label for label, coord in option_cells.items() if coord in winning_cells]
 
     assert out.query_id == "x_winning_move_label"

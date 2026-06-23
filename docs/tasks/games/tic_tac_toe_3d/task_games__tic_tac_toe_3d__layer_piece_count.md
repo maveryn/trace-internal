@@ -5,10 +5,12 @@
 2. Scene: `tic_tac_toe_3d`
 3. Scene id: `tic_tac_toe_3d`
 4. Public task id: `task_games__tic_tac_toe_3d__layer_piece_count`
-5. Supported `query_id` values: `o_piece_count_in_layer`, `x_piece_count_in_layer`
+5. Supported `query_id` values: `x_piece_count_in_layer`, `o_piece_count_in_layer`
 6. Answer schema: `integer_count`
 7. Annotation schema: `point_set`
-8. Program schema: `count(filter(layer_cells, mark=target_player)); scene=tic_tac_toe_3d; scope=layer_piece_count`
+
+## Program Contract
+`count(layer_cells where mark=target_player); scene=tic_tac_toe_3d; scope=layer_piece_count`
 
 ## Generation Notes
 1. Query ids are internal replay/sampling keys and do not define public task units.

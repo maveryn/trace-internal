@@ -183,10 +183,11 @@ def _draw_key_object(
     *,
     camera: _CameraSpec,
     frame: _ProjectionFrame,
+    fill: Tuple[int, int, int],
     floor_rgb: Tuple[int, int, int],
 ) -> List[float]:
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    key_fill = (196, 157, 54)
+    key_fill = _tint(fill, 0.08)
     bow = _sub_box_spec(
         spec,
         offset_xyz=(0.0, -depth * 0.36, 0.0),
@@ -408,7 +409,7 @@ def _draw_horseshoe_object(
         spec,
         camera=camera,
         frame=frame,
-        fill=(156, 162, 171),
+        fill=_tint(fill, 0.04),
         profile_xz=profile,
         inset_scale=0.0,
     )

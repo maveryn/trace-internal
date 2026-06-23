@@ -525,7 +525,7 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
     assert taxonomy.scene_id == "object_cluster"
     assert not taxonomy.source_scene_id
     assert len(COLOR_SAFE_CLUSTER_SHAPE_TYPES) == len(NAMED_CLUSTER_SHAPE_TYPES)
-    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 32
+    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 40
     assert {
         "sphere",
         "cube",
@@ -534,10 +534,17 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
         "cup",
         "shield",
         "half_cylinder",
+        "button",
+        "card",
+        "mail_envelope",
+        "glove",
+        "horseshoe",
+        "key",
+        "kite",
+        "plate",
     }.issubset(set(COLOR_READOUT_CLUSTER_SHAPE_TYPES))
     assert PROMOTED_COLOR_READOUT_SHAPES.issubset(set(COLOR_READOUT_CLUSTER_SHAPE_TYPES))
     assert {
-        "button",
         "marble",
         "bead",
         "dot",
@@ -554,6 +561,7 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
         "flask",
         "bucket",
         "straw",
+        "sword",
     }.isdisjoint(set(COLOR_READOUT_CLUSTER_SHAPE_TYPES))
     assert {
         "apple",

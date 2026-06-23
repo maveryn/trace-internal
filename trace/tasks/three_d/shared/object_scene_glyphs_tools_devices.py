@@ -319,11 +319,9 @@ def _draw_flat_rect_object(
 ) -> List[float]:
     shape_type = str(spec.get("shape_type", "card"))
     if shape_type == "card":
-        face_fill = (246, 247, 241)
-        edge = (34, 42, 52)
-        mark = _shade(fill, 0.56)
-        if sum(mark) > 520:
-            mark = (118, 28, 44)
+        face_fill = _tint(fill, 0.06)
+        edge = _shade(fill, 0.46)
+        mark = (248, 250, 245)
         body = _project_local_xy_rect(spec, camera, frame, u0=0.06, v0=0.06, u1=0.94, v1=0.94, z_frac=1.0)
         draw.polygon(body, fill=face_fill, outline=edge)
         _draw_polyline(draw, body, fill=edge, width=2)
@@ -706,10 +704,11 @@ def _draw_plate_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    bbox = _draw_cylinder_object(draw, spec, camera=camera, frame=frame, fill=(230, 229, 215))
+    plate_fill = _tint(fill, 0.12)
+    bbox = _draw_cylinder_object(draw, spec, camera=camera, frame=frame, fill=plate_fill)
     x0, y0, x1, y1 = (float(value) for value in bbox)
     rim = [x0 + (x1 - x0) * 0.16, y0 + (y1 - y0) * 0.22, x1 - (x1 - x0) * 0.16, y1 - (y1 - y0) * 0.22]
-    draw.ellipse(rim, outline=(145, 151, 151), width=2)
+    draw.ellipse(rim, outline=_shade(plate_fill, 0.58), width=2)
     return _bbox_union(bbox, rim)
 
 
@@ -2105,13 +2104,15 @@ def _draw_kite_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     diamond = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.0, 0.98), (0.78, 0.12), (0.0, -0.98), (-0.78, 0.12)])
-    draw.polygon(diamond, fill=(224, 91, 78))
-    _draw_polyline(draw, diamond, fill=(74, 52, 58), width=2)
+    kite_fill = _tint(fill, 0.06)
+    draw.polygon(diamond, fill=kite_fill)
+    _draw_polyline(draw, diamond, fill=_shade(kite_fill, 0.45), width=2)
     cross_a = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.0, 0.98), (0.0, -0.98)])
     cross_b = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.78, 0.12), (0.78, 0.12)])
     tail = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.0, -0.98), (0.16, -1.22), (-0.10, -1.46), (0.12, -1.70)])
-    draw.line(cross_a, fill=(242, 220, 164), width=2)
-    draw.line(cross_b, fill=(242, 220, 164), width=2)
+    rib_fill = (248, 250, 245) if sum(kite_fill) < 430 else _shade(kite_fill, 0.48)
+    draw.line(cross_a, fill=rib_fill, width=2)
+    draw.line(cross_b, fill=rib_fill, width=2)
     draw.line(tail, fill=(56, 65, 74), width=2)
     return _bbox_union(_bbox_from_screen_points(diamond), _bbox_from_screen_points(cross_a), _bbox_from_screen_points(cross_b), _bbox_from_screen_points(tail))
 

@@ -276,7 +276,9 @@ def _draw_glove_object(
         (-0.58, -0.04),
         (-0.76, -0.36),
     ]
-    bbox = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=(135, 85, 159), profile_xz=profile, inset_scale=0.0)
+    glove_fill = _tint(fill, 0.06)
+    seam_fill = _shade(glove_fill, 0.55)
+    bbox = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=glove_fill, profile_xz=profile, inset_scale=0.0)
     palm = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.48, -0.36), (0.34, -0.36)])
     finger_seams = [
         _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.22, 0.42), (0.28, 0.82)]),
@@ -284,9 +286,9 @@ def _draw_glove_object(
         _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.28, 0.36), (-0.36, 0.76)]),
         _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.44, -0.02), (0.68, 0.18)]),
     ]
-    draw.line(palm, fill=(76, 48, 92), width=2)
+    draw.line(palm, fill=seam_fill, width=2)
     for seam in finger_seams:
-        draw.line(seam, fill=(76, 48, 92), width=2)
+        draw.line(seam, fill=seam_fill, width=2)
     return _bbox_union(bbox, _bbox_from_screen_points(palm), *[_bbox_from_screen_points(seam) for seam in finger_seams])
 
 

@@ -161,6 +161,14 @@ COLOR_READOUT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
         "hat",
         "helmet",
         "umbrella",
+        "button",
+        "card",
+        "mail_envelope",
+        "glove",
+        "horseshoe",
+        "key",
+        "kite",
+        "plate",
     )
     if shape in set(COUNTABLE_SHAPE_TYPES)
 )

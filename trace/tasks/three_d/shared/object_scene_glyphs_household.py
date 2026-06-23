@@ -352,7 +352,9 @@ def _draw_mail_envelope_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     profile = [(-0.94, -0.66), (0.94, -0.66), (0.94, 0.66), (-0.94, 0.66)]
-    bbox = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=(232, 220, 185), profile_xz=profile, inset_scale=0.0)
+    envelope_fill = _tint(fill, 0.10)
+    line_fill = (248, 250, 245) if sum(envelope_fill) < 420 else _shade(envelope_fill, 0.52)
+    bbox = _draw_upright_profile_object(draw, spec, camera=camera, frame=frame, fill=envelope_fill, profile_xz=profile, inset_scale=0.0)
     line_profiles = [
         [(-0.90, 0.58), (0.0, -0.08), (0.90, 0.58)],
         [(-0.90, -0.58), (0.0, -0.08), (0.90, -0.58)],
@@ -360,7 +362,7 @@ def _draw_mail_envelope_object(
     line_points = []
     for profile_points in line_profiles:
         projected = _project_face(_upright_profile_world_points(spec, camera=camera, profile_xz=profile_points), camera, frame)
-        draw.line(projected, fill=(140, 116, 78), width=2)
+        draw.line(projected, fill=line_fill, width=2)
         line_points.extend(projected)
     return _bbox_union(bbox, _bbox_from_screen_points(line_points))
 

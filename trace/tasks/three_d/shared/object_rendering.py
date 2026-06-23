@@ -412,7 +412,7 @@ def _draw_projected_object_shape(
     elif shape_type == "heart":
         shape_bbox = scene_rendering._draw_heart_object(draw, spec, camera=camera, frame=frame, fill=fill)
     elif shape_type == "key":
-        shape_bbox = scene_rendering._draw_key_object(draw, spec, camera=camera, frame=frame, floor_rgb=floor_rgb)
+        shape_bbox = scene_rendering._draw_key_object(draw, spec, camera=camera, frame=frame, fill=fill, floor_rgb=floor_rgb)
     elif shape_type == "crown":
         shape_bbox = scene_rendering._draw_crown_object(draw, spec, camera=camera, frame=frame, fill=fill)
     elif shape_type == "anchor":

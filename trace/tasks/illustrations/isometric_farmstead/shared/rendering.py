@@ -475,18 +475,18 @@ def _draw_transition(draw: ImageDraw.ImageDraw, layout: IsoLayout, spec: tuple[s
     """Draw one ramp/stair over a sampled level boundary and record its blocking footprint."""
 
     transition_id, kind, lower_xy, upper_xy, lower_level, upper_level, side = spec
-    lower_top, lower_right, lower_bottom, lower_left = _tile_vertices(layout, lower_xy[0], lower_xy[1], lower_level)
-    _, upper_right, upper_bottom, upper_left = _tile_vertices(layout, upper_xy[0], upper_xy[1], upper_level)
+    lower_top, lower_right, _, lower_left = _tile_vertices(layout, lower_xy[0], lower_xy[1], lower_level)
+    upper_top, upper_right, upper_bottom, upper_left = _tile_vertices(layout, upper_xy[0], upper_xy[1], upper_level)
     if str(side) == "east":
         polygon: IsoPolygon = (upper_right, upper_bottom, lower_left, lower_top)
         line_pairs = ((upper_right, lower_top), (upper_bottom, lower_left))
-        stair_high_edge = (upper_right, upper_bottom)
-        stair_low_edge = (lower_right, lower_bottom)
+        stair_outer_edge = (upper_right, upper_bottom)
+        stair_inner_source_edge = (upper_top, upper_left)
     else:
         polygon = (upper_left, upper_bottom, lower_right, lower_top)
         line_pairs = ((upper_left, lower_top), (upper_bottom, lower_right))
-        stair_high_edge = (upper_left, upper_bottom)
-        stair_low_edge = (lower_left, lower_bottom)
+        stair_outer_edge = (upper_left, upper_bottom)
+        stair_inner_source_edge = (upper_top, upper_right)
     points = [(int(round(x)), int(round(y))) for x, y in polygon]
     if kind == "ramp":
         draw.polygon(points, fill=(191, 145, 86), outline=(96, 70, 45))
@@ -500,21 +500,24 @@ def _draw_transition(draw: ImageDraw.ImageDraw, layout: IsoLayout, spec: tuple[s
             draw.line((int(lx), int(ly), int(rx), int(ry)), fill=(214, 164, 97), width=2)
     else:
         draw.polygon(points, fill=(102, 88, 66), outline=(72, 63, 50))
-        high_start, high_end = stair_high_edge
-        low_start, low_end = stair_low_edge
+        outer_start, outer_end = stair_outer_edge
+        inner_source_start, inner_source_end = stair_inner_source_edge
         inset = 0.14
         step_skew = 0.035
-        high_left = _interpolate_point(high_start, high_end, inset)
-        high_right = _interpolate_point(high_start, high_end, 1.0 - inset)
-        low_left = _interpolate_point(low_start, low_end, inset)
-        low_right = _interpolate_point(low_start, low_end, 1.0 - inset)
+        depth = 0.58
+        outer_left = _interpolate_point(outer_start, outer_end, inset)
+        outer_right = _interpolate_point(outer_start, outer_end, 1.0 - inset)
+        source_left = _interpolate_point(inner_source_start, inner_source_end, inset)
+        source_right = _interpolate_point(inner_source_start, inner_source_end, 1.0 - inset)
+        inner_left = _interpolate_point(outer_left, source_left, depth)
+        inner_right = _interpolate_point(outer_right, source_right, depth)
 
         def boundary(t: float) -> tuple[IsoPoint, IsoPoint]:
             left_t = max(0.0, min(1.0, float(t) - step_skew))
             right_t = max(0.0, min(1.0, float(t) + step_skew))
             return (
-                _interpolate_point(high_left, low_left, left_t),
-                _interpolate_point(high_right, low_right, right_t),
+                _interpolate_point(inner_left, outer_left, left_t),
+                _interpolate_point(inner_right, outer_right, right_t),
             )
 
         step_count = 5
@@ -529,10 +532,10 @@ def _draw_transition(draw: ImageDraw.ImageDraw, layout: IsoLayout, spec: tuple[s
         for index in range(1, step_count):
             p0, p1 = boundary(index / float(step_count))
             draw.line((p0, p1), fill=(229, 216, 165), width=2)
-        draw.line((high_left, low_left), fill=(80, 70, 55), width=2)
-        draw.line((high_right, low_right), fill=(80, 70, 55), width=2)
-        draw.line((high_left, high_right), fill=(229, 216, 165), width=2)
-        draw.line((low_left, low_right), fill=(79, 69, 54), width=2)
+        draw.line((inner_left, outer_left), fill=(80, 70, 55), width=2)
+        draw.line((inner_right, outer_right), fill=(80, 70, 55), width=2)
+        draw.line((inner_left, inner_right), fill=(229, 216, 165), width=2)
+        draw.line((outer_left, outer_right), fill=(79, 69, 54), width=2)
     return IsoFarmsteadTransition(
         transition_id=str(transition_id),
         transition_type=str(kind),

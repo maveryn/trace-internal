@@ -95,6 +95,16 @@ def test_icons_sequence_missing_count_supports_end_missing_cell_and_zero_answer(
     assert int(execution['missing_cell_index']) == 3
     assert execution['full_sequence_counts'] == [3, 2, 1, 0]
 
+def test_icons_sequence_missing_count_supports_zero_delta() -> None:
+    task = IconsSequenceMissingCountTask()
+    out = task.generate(15114, params={'sequence_length': 5, 'missing_cell_index': 2, 'target_count': 4, 'step_delta': 0}, max_attempts=200)
+    execution = out.trace_payload['execution_trace']
+    query_params = out.trace_payload['query_spec']['params']
+    assert int(out.answer_gt.value) == 4
+    assert int(execution['step_delta']) == 0
+    assert execution['full_sequence_counts'] == [4, 4, 4, 4, 4]
+    assert query_params['step_delta_candidates'] == [-2, -1, 0, 1, 2]
+
 def test_icons_sequence_missing_count_prompt_example_matches_contract() -> None:
     task = IconsSequenceMissingCountTask()
     out = task.generate(15112, params={'sequence_length': 6, 'missing_cell_index': 5, 'target_count': 7, 'step_delta': 1}, max_attempts=200)
@@ -132,5 +142,5 @@ def test_icons_sequence_missing_count_balanced_sampling_defaults() -> None:
     assert set(sequence_lengths.keys()) == {4, 5, 6}
     assert all((missing_by_length[length] for length in (4, 5, 6)))
     assert missing_cell_indices[0] <= 16
-    assert max(missing_cell_indices.values()) <= 16
+    assert max(missing_cell_indices.values()) <= 20
     assert end_missing_count > 0

@@ -24,9 +24,10 @@ from .shared.annotations import scalar_bbox_artifacts
 from .shared.rendering import (
     IconSequenceCellSpec,
     render_sequence_scene_from_params,
+    validate_sequence_cell_box_bounds,
 )
 from .shared.prompts import render_sequence_strip_prompt_artifacts
-from .shared.sampling import sample_sequence_icon_appearance
+from .shared.sampling import resolve_rotation_candidates, sample_sequence_icon_appearance
 from .shared.output import bbox_anchor_render_map, sequence_render_spec
 from ..shared.icon_task_rendering import (
     resolve_icon_cell_render_params,
@@ -100,6 +101,7 @@ class _SequenceSpec:
     target_count: int
     missing_cell_index: int
     step_delta: int
+    step_delta_candidates: Tuple[int, ...]
     full_sequence_counts: Tuple[int, ...]
     sequence_length_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
@@ -132,19 +134,27 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_render
     task_id=TASK_ID,
 )
 
-def _rotation_candidates(params: Mapping[str, Any]) -> Tuple[int, ...]:
-    """Resolve the supported icon rotations."""
+def _step_delta_candidates(params: Mapping[str, Any]) -> Tuple[int, ...]:
+    """Resolve candidate arithmetic count deltas."""
 
-    raw = params.get(
-        "rotation_candidates_degrees",
-        group_default(_GEN_DEFAULTS, "rotation_candidates_degrees", list(_DEFAULTS.rotation_candidates_degrees)),
+    raw = params.get("step_delta_candidates", group_default(_GEN_DEFAULTS, "step_delta_candidates", None))
+    if raw is not None:
+        if not isinstance(raw, (list, tuple)):
+            raise ValueError("step_delta_candidates must be a sequence")
+        candidates = tuple(dict.fromkeys(int(value) for value in raw))
+        if not candidates:
+            raise ValueError("step_delta_candidates must contain at least one integer")
+        return candidates
+
+    step_abs_min = int(params.get("step_abs_min", group_default(_GEN_DEFAULTS, "step_abs_min", _DEFAULTS.step_abs_min)))
+    step_abs_max = int(params.get("step_abs_max", group_default(_GEN_DEFAULTS, "step_abs_max", _DEFAULTS.step_abs_max)))
+    if step_abs_min < 1 or step_abs_min > step_abs_max:
+        raise ValueError("step_abs_min must be positive and <= step_abs_max")
+    return tuple(
+        int(sign * step_abs)
+        for step_abs in range(int(step_abs_min), int(step_abs_max) + 1)
+        for sign in (-1, 1)
     )
-    if not isinstance(raw, (list, tuple)):
-        raise ValueError("rotation_candidates_degrees must be a sequence")
-    rotations = tuple(int(value) % 360 for value in raw)
-    if not rotations:
-        raise ValueError("rotation_candidates_degrees must contain at least one rotation")
-    return rotations
 
 
 def _resolve_sequence_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SequenceSpec:
@@ -154,14 +164,11 @@ def _resolve_sequence_spec(*, instance_seed: int, params: Mapping[str, Any]) -> 
     length_max = int(params.get("sequence_length_max", group_default(_GEN_DEFAULTS, "sequence_length_max", _DEFAULTS.sequence_length_max)))
     target_min = int(params.get("target_count_min", group_default(_GEN_DEFAULTS, "target_count_min", _DEFAULTS.target_count_min)))
     target_max = int(params.get("target_count_max", group_default(_GEN_DEFAULTS, "target_count_max", _DEFAULTS.target_count_max)))
-    step_abs_min = int(params.get("step_abs_min", group_default(_GEN_DEFAULTS, "step_abs_min", _DEFAULTS.step_abs_min)))
-    step_abs_max = int(params.get("step_abs_max", group_default(_GEN_DEFAULTS, "step_abs_max", _DEFAULTS.step_abs_max)))
+    step_delta_support = _step_delta_candidates(params)
     if length_min > length_max:
         raise ValueError("sequence_length_min must be <= sequence_length_max")
     if target_min > target_max:
         raise ValueError("target_count_min must be <= target_count_max")
-    if step_abs_min < 1 or step_abs_min > step_abs_max:
-        raise ValueError("step_abs_min must be positive and <= step_abs_max")
 
     length_support = tuple(range(int(length_min), int(length_max) + 1))
     target_support = tuple(range(int(target_min), int(target_max) + 1))
@@ -199,19 +206,18 @@ def _resolve_sequence_spec(*, instance_seed: int, params: Mapping[str, Any]) -> 
     for missing_cell_index in range(int(sequence_length)):
         if explicit_missing is not None and int(explicit_missing) != int(missing_cell_index):
             continue
-        for step_abs in range(int(step_abs_min), int(step_abs_max) + 1):
-            for sign in (-1, 1):
-                step_delta = int(sign * step_abs)
-                if explicit_step is not None and int(explicit_step) != int(step_delta):
-                    continue
-                counts = tuple(
-                    int(target_count) + ((int(index) - int(missing_cell_index)) * int(step_delta))
-                    for index in range(int(sequence_length))
+        for step_delta in step_delta_support:
+            step_delta = int(step_delta)
+            if explicit_step is not None and int(explicit_step) != int(step_delta):
+                continue
+            counts = tuple(
+                int(target_count) + ((int(index) - int(missing_cell_index)) * int(step_delta))
+                for index in range(int(sequence_length))
+            )
+            if all(int(target_min) <= int(value) <= int(target_max) for value in counts):
+                feasible_by_missing.setdefault(int(missing_cell_index), []).append(
+                    (int(step_delta), tuple(int(value) for value in counts))
                 )
-                if all(int(target_min) <= int(value) <= int(target_max) for value in counts):
-                    feasible_by_missing.setdefault(int(missing_cell_index), []).append(
-                        (int(step_delta), tuple(int(value) for value in counts))
-                    )
     if not feasible_by_missing:
         raise ValueError("no feasible arithmetic sequence support for the requested parameters")
     feasible_missing_indices = tuple(sorted(int(value) for value in feasible_by_missing))
@@ -226,6 +232,7 @@ def _resolve_sequence_spec(*, instance_seed: int, params: Mapping[str, Any]) -> 
         target_count=int(target_count),
         missing_cell_index=int(missing_cell_index),
         step_delta=int(step_delta),
+        step_delta_candidates=tuple(int(value) for value in step_delta_support),
         full_sequence_counts=tuple(int(value) for value in counts),
         sequence_length_probabilities=dict(length_probabilities),
         target_count_probabilities=dict(target_probabilities),
@@ -357,12 +364,13 @@ class IconsSequenceMissingCountTask:
             fallback_defaults=_DEFAULTS,
             instance_seed=int(instance_seed),
         )
-        if int(render_params["cell_box_width_min_px"]) > int(render_params["cell_box_width_max_px"]):
-            raise ValueError("cell_box_width_min_px must be <= cell_box_width_max_px")
-        if int(render_params["cell_box_height_min_px"]) > int(render_params["cell_box_height_max_px"]):
-            raise ValueError("cell_box_height_min_px must be <= cell_box_height_max_px")
+        validate_sequence_cell_box_bounds(render_params)
         pool_manifest = str(params.get("pool_manifest", group_default(_GEN_DEFAULTS, "pool_manifest", _DEFAULTS.pool_manifest)))
-        rotation_candidates = _rotation_candidates(params)
+        rotation_candidates = resolve_rotation_candidates(
+            params=params,
+            generation_defaults=_GEN_DEFAULTS,
+            fallback_candidates=_DEFAULTS.rotation_candidates_degrees,
+        )
 
         scene_payload = None
         image = None
@@ -439,6 +447,7 @@ class IconsSequenceMissingCountTask:
                     "target_count_probabilities": dict(sequence_spec.target_count_probabilities),
                     "missing_cell_index": int(scene_payload.missing_cell_index),
                     "step_delta": int(scene_payload.step_delta),
+                    "step_delta_candidates": [int(value) for value in sequence_spec.step_delta_candidates],
                     "pool_manifest": str(pool_manifest),
                     "rotation_candidates_degrees": [int(value) for value in rotation_candidates],
                     "cell_box_width_px": int(scene_payload.cell_box_width_px),

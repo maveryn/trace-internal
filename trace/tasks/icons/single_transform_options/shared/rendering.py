@@ -28,7 +28,7 @@ def fit_rgba_inside(image: Image.Image, bbox: Sequence[int | float]) -> Tuple[Im
     max_w = max(1, int(x1 - x0))
     max_h = max(1, int(y1 - y0))
     source = image.convert("RGBA")
-    scale = min(float(max_w) / float(max(1, source.size[0])), float(max_h) / float(max(1, source.size[1])))
+    scale = min(1.0, float(max_w) / float(max(1, source.size[0])), float(max_h) / float(max(1, source.size[1])))
     new_w = max(1, int(round(float(source.size[0]) * float(scale))))
     new_h = max(1, int(round(float(source.size[1]) * float(scale))))
     resized = source.resize((int(new_w), int(new_h)), resample=Image.Resampling.LANCZOS)

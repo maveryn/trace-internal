@@ -20,7 +20,7 @@
 ## Generation
 - Sequence length support: `4..6`.
 - Missing count support: `0..10`.
-- Arithmetic step absolute value support: `1..3`.
+- Arithmetic step delta support: `-2, -1, 0, 1, 2`.
 - The missing position can be any row position when feasible, including row ends.
 - All visible icons use one curated icon type and one tint; rotations may vary.
 - Generation rejects infeasible arithmetic sequences or failed in-cell placement.

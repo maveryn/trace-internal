@@ -25,7 +25,7 @@ class SingleTransformOptionsDefaults:
     panel_title_font_size_px: int = ICON_SHARED_DEFAULTS.panel_title_font_size_px
     scene_icon_size_min_px: int = 96
     scene_icon_size_max_px: int = 112
-    reference_icon_size_px: int = 160
+    reference_icon_size_px: int = 112
     scene_max_overlap_fraction: float = 0.05
     scene_placement_max_attempts: int = ICON_SHARED_DEFAULTS.scene_placement_max_attempts
     scene_size_shrink_rounds: int = ICON_SHARED_DEFAULTS.scene_size_shrink_rounds

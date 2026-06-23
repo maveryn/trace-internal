@@ -84,7 +84,7 @@ def test_icons_pattern_structured_violation_row_rotation_contract_matches_scene(
     out = task.generate(
         24110,
         params={
-            "sequence_length": 10,
+            "sequence_length": 8,
             "violation_cell_index": 3,
             "start_rotation_degrees": 0,
             "step_delta_degrees": 180,
@@ -230,7 +230,7 @@ def test_icons_pattern_structured_violation_prompt_example_matches_contract() ->
 @pytest.mark.parametrize(
     ("task_cls", "params", "expected_answers"),
     (
-        (IconsSequenceStripRotationSequenceViolationTask, {}, set(range(2, 7))),
+        (IconsSequenceStripRotationSequenceViolationTask, {}, set(range(2, 8))),
         (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_size_violation"}, set(range(1, 10))),
         (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_color_violation"}, set(range(1, 10))),
     ),

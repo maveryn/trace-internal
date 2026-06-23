@@ -18,6 +18,8 @@ def test_icons_single_transform_options_scene_defaults_loaded() -> None:
     assert 'query_id_weights' not in generation
     assert int(rendering['scene_icon_size_min_px']) == 96
     assert int(rendering['scene_icon_size_max_px']) == 112
+    assert int(rendering['reference_icon_size_px']) == 112
+    assert int(rendering['reference_icon_size_px']) == int(rendering['scene_icon_size_max_px'])
     assert str(prompt['bundle_id']) == 'icons_single_transform_options_v1'
     assert str(prompt['scene_key']) == 'single_transform_options_transformation'
     assert str(prompt['task_key']) == 'transformation_query'
@@ -621,6 +623,7 @@ def test_icons_sequence_strip_scene_defaults_loaded() -> None:
         task_id=missing_task_id,
     )
     assert str(missing_generation['pool_manifest']).strip() == 'all_icons.txt'
+    assert list(missing_generation['step_delta_candidates']) == [-2, -1, 0, 1, 2]
     assert list(missing_generation['rotation_candidates_degrees']) == [0, 90, 180, 270]
     assert int(missing_rendering['scene_icon_size_min_px']) == 24
     assert int(missing_rendering['scene_icon_size_max_px']) == 40
@@ -633,9 +636,9 @@ def test_icons_sequence_strip_scene_defaults_loaded() -> None:
     )
     assert str(rotation_generation['pool_manifest']).strip() == 'non_symmetry.txt'
     assert list(rotation_generation['step_candidates_degrees']) == [90, 180]
-    assert int(rotation_generation['sequence_length_min']) == 10
-    assert int(rotation_generation['sequence_length_max']) == 10
-    assert int(rotation_generation['answer_index_max']) == 6
+    assert int(rotation_generation['sequence_length_min']) == 8
+    assert int(rotation_generation['sequence_length_max']) == 8
+    assert int(rotation_generation['answer_index_max']) == 7
     assert int(rotation_rendering['scene_icon_size_min_px']) == 72
     assert int(rotation_rendering['scene_icon_size_max_px']) == 92
     assert str(rotation_prompt['bundle_id']) == 'icons_sequence_strip_v1'

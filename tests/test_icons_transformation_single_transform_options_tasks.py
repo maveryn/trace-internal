@@ -37,6 +37,17 @@ def test_icons_single_transform_options_contract_matches_scene() -> None:
     assert len(scene_entities) == 6
     assert [str(entity['label']) for entity in scene_entities] == list('ABCDEF')
     reference = reference_entities[0]
+    reference_box = list(reference['icon_bbox_xyxy'])
+    reference_dims = (int(reference_box[2] - reference_box[0]), int(reference_box[3] - reference_box[1]))
+    assert min(reference_dims) >= 100
+    option_dims = {
+        (
+            int(entity['icon_bbox_xyxy'][2] - entity['icon_bbox_xyxy'][0]),
+            int(entity['icon_bbox_xyxy'][3] - entity['icon_bbox_xyxy'][1]),
+        )
+        for entity in scene_entities
+    }
+    assert all(abs(width - reference_dims[0]) <= 1 and abs(height - reference_dims[1]) <= 1 for width, height in option_dims)
     assert str(reference['transform_id']) == IDENTITY_TRANSFORM_ID
     assert str(reference['target_transform_id']) == 'rot270'
     assert str(reference['operation_cue']) == 'Rotate 90 CW'

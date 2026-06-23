@@ -18,8 +18,8 @@
 - Annotation schema: scalar `bbox`, the violating numbered box in final image pixel coordinates.
 
 ## Generation
-- Default sequence length is `10`.
-- Answer support is `2..6` so there is visible context before and after the violation.
+- Default sequence length is `8`.
+- Answer support is `2..7` so there is visible context before and after the violation.
 - Rotation candidates are `{0, 90, 180, 270}`.
 - Step candidates are `{90, 180}`.
 - The task uses the asymmetric curated icon subset so orientation is visually meaningful.

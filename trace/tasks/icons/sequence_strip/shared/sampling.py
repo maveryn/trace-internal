@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Mapping, Tuple
+from typing import Any, Mapping, Sequence, Tuple
 
 from ...shared.icon_assets import resolve_icon_pool
 from ...shared.icon_style import sample_single_icon_tint
@@ -80,4 +80,26 @@ def sample_sequence_icon_appearance(
     )
 
 
-__all__ = ["SequenceIconAppearanceSample", "sample_sequence_icon_appearance"]
+def resolve_rotation_candidates(
+    *,
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    fallback_candidates: Sequence[int],
+    key: str = "rotation_candidates_degrees",
+) -> Tuple[int, ...]:
+    """Resolve supported icon rotations for a sequence-strip scene."""
+
+    raw = params.get(str(key), generation_defaults.get(str(key), list(fallback_candidates)))
+    if not isinstance(raw, (list, tuple)):
+        raise ValueError(f"{key} must be a sequence")
+    rotations = tuple(int(value) % 360 for value in raw)
+    if not rotations:
+        raise ValueError(f"{key} must contain at least one rotation")
+    return rotations
+
+
+__all__ = [
+    "SequenceIconAppearanceSample",
+    "resolve_rotation_candidates",
+    "sample_sequence_icon_appearance",
+]

@@ -189,7 +189,7 @@ rendering:
       reference_panel_width_px: 296
       scene_icon_size_min_px: 96
       scene_icon_size_max_px: 112
-      reference_icon_size_px: 160
+      reference_icon_size_px: 112
       reference_content_padding_px: 18
       scene_content_side_padding_px: 14
       scene_content_bottom_padding_px: 14

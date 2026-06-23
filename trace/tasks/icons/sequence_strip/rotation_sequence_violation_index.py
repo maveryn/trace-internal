@@ -24,9 +24,10 @@ from .shared.annotations import scalar_bbox_artifacts
 from .shared.rendering import (
     IconSequenceCellSpec,
     render_sequence_scene_from_params,
+    validate_sequence_cell_box_bounds,
 )
 from .shared.prompts import render_sequence_strip_prompt_artifacts
-from .shared.sampling import sample_sequence_icon_appearance
+from .shared.sampling import resolve_rotation_candidates, sample_sequence_icon_appearance
 from .shared.output import bbox_anchor_render_map, sequence_render_spec
 from ..shared.icon_task_rendering import (
     resolve_icon_cell_render_params,
@@ -140,21 +141,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_render
 )
 
 
-def _rotation_candidates(params: Mapping[str, Any]) -> Tuple[int, ...]:
-    """Resolve the supported icon rotations."""
-
-    raw = params.get(
-        "rotation_candidates_degrees",
-        group_default(_GEN_DEFAULTS, "rotation_candidates_degrees", list(_DEFAULTS.rotation_candidates_degrees)),
-    )
-    if not isinstance(raw, (list, tuple)):
-        raise ValueError("rotation_candidates_degrees must be a sequence")
-    rotations = tuple(int(value) % 360 for value in raw)
-    if not rotations:
-        raise ValueError("rotation_candidates_degrees must contain at least one rotation")
-    return rotations
-
-
 def _step_candidates(params: Mapping[str, Any]) -> Tuple[int, ...]:
     """Resolve supported constant rotation steps."""
 
@@ -231,7 +217,11 @@ def _resolve_sequence_spec(*, instance_seed: int, params: Mapping[str, Any]) -> 
     if answer_index_max > sequence_length_max:
         raise ValueError("answer_index_max must be <= sequence_length_max")
 
-    rotation_candidates = _rotation_candidates(params)
+    rotation_candidates = resolve_rotation_candidates(
+        params=params,
+        generation_defaults=_GEN_DEFAULTS,
+        fallback_candidates=_DEFAULTS.rotation_candidates_degrees,
+    )
     step_candidates = _step_candidates(params)
     length_support = tuple(range(int(sequence_length_min), int(sequence_length_max) + 1))
     answer_support = tuple(range(int(answer_index_min), int(answer_index_max) + 1))
@@ -468,10 +458,12 @@ class IconsSequenceStripRotationSequenceViolationTask:
             fallback_defaults=_DEFAULTS,
             instance_seed=int(instance_seed),
         )
-        if int(render_params["cell_box_width_min_px"]) > int(render_params["cell_box_width_max_px"]):
-            raise ValueError("cell_box_width_min_px must be <= cell_box_width_max_px")
-        if int(render_params["cell_box_height_min_px"]) > int(render_params["cell_box_height_max_px"]):
-            raise ValueError("cell_box_height_min_px must be <= cell_box_height_max_px")
+        validate_sequence_cell_box_bounds(render_params)
+        rotation_candidates = resolve_rotation_candidates(
+            params=params,
+            generation_defaults=_GEN_DEFAULTS,
+            fallback_candidates=_DEFAULTS.rotation_candidates_degrees,
+        )
         pool_manifest = str(params.get("pool_manifest", group_default(_GEN_DEFAULTS, "pool_manifest", _DEFAULTS.pool_manifest)))
 
         scene_payload = None
@@ -563,7 +555,7 @@ class IconsSequenceStripRotationSequenceViolationTask:
                     "step_delta_degrees": int(scene_payload.step_delta_degrees),
                     "violation_rotation_degrees": int(scene_payload.violation_rotation_degrees),
                     "pool_manifest": str(pool_manifest),
-                    "rotation_candidates_degrees": [int(value) for value in _rotation_candidates(params)],
+                    "rotation_candidates_degrees": [int(value) for value in rotation_candidates],
                     "step_candidates_degrees": [int(value) for value in _step_candidates(params)],
                     "cell_box_width_px": int(scene_payload.cell_box_width_px),
                     "cell_box_height_px": int(scene_payload.cell_box_height_px),

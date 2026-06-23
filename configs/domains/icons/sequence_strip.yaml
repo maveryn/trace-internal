@@ -9,6 +9,12 @@ generation:
     balanced_sampling: true
   task_overrides:
     task_icons__sequence_strip__missing_count_value:
+      step_delta_candidates:
+      - -2
+      - -1
+      - 0
+      - 1
+      - 2
       pool_manifest: all_icons.txt
       rotation_candidates_degrees:
       - 0
@@ -16,10 +22,10 @@ generation:
       - 180
       - 270
     task_icons__sequence_strip__rotation_sequence_violation_index:
-      sequence_length_min: 10
-      sequence_length_max: 10
+      sequence_length_min: 8
+      sequence_length_max: 8
       answer_index_min: 2
-      answer_index_max: 6
+      answer_index_max: 7
       pool_manifest: non_symmetry.txt
       rotation_candidates_degrees:
       - 0

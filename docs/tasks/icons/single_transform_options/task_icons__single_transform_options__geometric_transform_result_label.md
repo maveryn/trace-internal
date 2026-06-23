@@ -24,6 +24,7 @@
 
 - Uses the curated non-symmetric icon pool so identity, rotation, and flip signatures remain visually distinct.
 - All six option icons share one tint within an instance, so the answer depends on geometric transform rather than color.
+- The Reference icon and option icons use the same nominal icon size.
 - Query selection is task-owned and uniform unless an explicit supported `query_id` is supplied.
 - `object_count` is fixed at `6` because this task is a six-option visual MCQ.
 

@@ -77,6 +77,16 @@ def resolve_sequence_canvas_size(
     canvas_height = int(panel_height + (2 * outer_margin_px))
     return canvas_width, canvas_height
 
+
+def validate_sequence_cell_box_bounds(render_params: Mapping[str, Any]) -> None:
+    """Validate sampled sequence cell width/height bounds."""
+
+    if int(render_params["cell_box_width_min_px"]) > int(render_params["cell_box_width_max_px"]):
+        raise ValueError("cell_box_width_min_px must be <= cell_box_width_max_px")
+    if int(render_params["cell_box_height_min_px"]) > int(render_params["cell_box_height_max_px"]):
+        raise ValueError("cell_box_height_min_px must be <= cell_box_height_max_px")
+
+
 def render_icon_sequence_scene(
     *,
     rng,
@@ -345,4 +355,5 @@ __all__ = [
     "render_icon_sequence_scene",
     "render_sequence_scene_from_params",
     "resolve_sequence_canvas_size",
+    "validate_sequence_cell_box_bounds",
 ]

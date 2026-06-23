@@ -1,14 +1,17 @@
 # `task_games__snake__safe_direction_count`
 
-## Program Contract
+## Contract
 1. Domain: `games`
-2. Scene: `snake`
+2. Scene id: `snake`
 3. Public task id: `task_games__snake__safe_direction_count`
 4. Supported `query_id` values: `single`
 5. Answer schema: `integer`
 6. Annotation schema: `bbox_set`
 7. Program schema: `count(filter(cardinal_directions, snake_next_cell_is_safe)); scene=snake; scope=safe_direction_count`
 8. Scalar annotation checked: `true`
+
+## Program Contract
+- `count(filter(cardinal_directions, snake_next_cell_is_safe)); scene=snake; scope=safe_direction_count`
 
 ## Generation Notes
 1. Count the immediate up/down/left/right moves that keep the head inside the board and out of the body or gray walls.

@@ -231,7 +231,7 @@
     "line_clear_rule_text": "After the piece locks, every completely filled row clears and all rows above fall down by the number of cleared rows.",
     "annotation_hint_line_clear_count": "set \"annotation\" to an object mapping \"board\" and \"next_piece\" to their bounding boxes [x0, y0, x1, y1]",
     "answer_hint_line_clear_count": "set \"answer\" to the maximum number of rows the NEXT piece can clear",
-    "annotation_hint_drop_result_label": "set \"annotation\" to an array containing the selected result-board bounding box [x0, y0, x1, y1]",
+    "annotation_hint_drop_result_label": "set \"annotation\" to the selected result-board bounding box [x0, y0, x1, y1]",
     "answer_hint_drop_result_label": "set \"answer\" to only the selected option letter",
     "annotation_hint_row_occupancy_status_count": "set \"annotation\" to an array containing one whole-row bounding box [x0, y0, x1, y1] for each qualifying row",
     "answer_hint_row_occupancy_status_count": "set \"answer\" to the number of qualifying rows",

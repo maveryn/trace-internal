@@ -8,8 +8,11 @@
 5. Supported `query_id` values: `full_row_count`, `one_gap_row_count`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
-8. Program schema: `count(filter(board_rows, occupancy_status(row) = requested_status)); scene=tetris; scope=row_occupancy_status_count`
+
+## Program Contract
+`count(rows where row_occupancy_status(row) = requested_status); scene=tetris; scope=row_occupancy_status_count`
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation marks whole qualifying row bounding boxes on the rendered board.
+1. Query ids choose the requested row status: full or exactly one empty cell.
+2. Annotation marks whole qualifying row bboxes on the rendered board.
+3. Scalar annotation checked: true.

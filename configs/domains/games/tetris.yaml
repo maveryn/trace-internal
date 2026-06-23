@@ -4,24 +4,6 @@ generation:
       low_stack: 1.0
       notched_stack: 1.0
       high_stack: 1.0
-    line_clear_count_query_weights:
-      max_clear_with_next_piece: 1.0
-    drop_result_label_query_weights:
-      no_clear_result: 1.0
-      single_clear_result: 1.0
-      multi_clear_result: 1.0
-    row_occupancy_status_count_query_weights:
-      full_row_count: 1.0
-      one_gap_row_count: 1.0
-    drop_collision_time_value_query_weights:
-      no_shift_collision_time: 1.0
-      left_shift_collision_time: 1.0
-      right_shift_collision_time: 1.0
-    edge_occupied_row_cell_count_query_weights:
-      top_occupied_row_filled_cell_count: 1.0
-      top_occupied_row_empty_cell_count: 1.0
-      bottom_occupied_row_filled_cell_count: 1.0
-      bottom_occupied_row_empty_cell_count: 1.0
     style_variant_weights:
       classic_blocks: 1.0
       beveled_blocks: 1.0
@@ -29,7 +11,6 @@ generation:
       glass_blocks: 1.0
       neon_blocks: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
     balanced_target_clear_count_sampling: true

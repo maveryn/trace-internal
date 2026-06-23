@@ -239,6 +239,55 @@ def _make_split_rects(rng: random.Random, *, cols: int, rows: int, active_max_le
     return rects
 
 
+def _count_plateau_width(*, count: int, cols: int, rows: int) -> int:
+    """Choose a compact row width for an exact-count connected plateau."""
+
+    best_width = 3
+    best_score: tuple[float, int, int] | None = None
+    for width in range(3, min(7, int(cols) - 4) + 1):
+        height = (int(count) + int(width) - 1) // int(width)
+        if height > int(rows) - 4:
+            continue
+        remainder = int(count) % int(width)
+        missing = 0 if remainder == 0 else int(width) - int(remainder)
+        aspect_penalty = abs(float(width) / float(max(1, height)) - 1.35)
+        single_tail_penalty = 3 if remainder == 1 else 0
+        score = (float(missing) + float(single_tail_penalty) + aspect_penalty, int(height), int(width))
+        if best_score is None or score < best_score:
+            best_score = score
+            best_width = int(width)
+    return int(best_width)
+
+
+def _make_count_plateau_rects(
+    rng: random.Random,
+    *,
+    cols: int,
+    rows: int,
+    highest_tile_count: int,
+) -> dict[int, list[TileRect]]:
+    """Build a level-2 plateau with exactly the requested number of top tiles."""
+
+    count = int(highest_tile_count)
+    if count < 1:
+        raise ValueError("highest_tile_count must be positive")
+    width = _count_plateau_width(count=count, cols=int(cols), rows=int(rows))
+    full_rows = int(count) // int(width)
+    remainder = int(count) % int(width)
+    height = int(full_rows) + (1 if int(remainder) else 0)
+    if height <= 0 or width + 4 > int(cols) or height + 4 > int(rows):
+        raise ValueError(f"highest_tile_count {count} does not fit farmstead grid {cols}x{rows}")
+    x = rng.randint(2, max(2, int(cols) - int(width) - 2))
+    y = rng.randint(2, max(2, int(rows) - int(height) - 2))
+    top_rects: list[TileRect] = []
+    if full_rows:
+        top_rects.append((int(x), int(y), int(width), int(full_rows)))
+    if remainder:
+        top_rects.append((int(x), int(y) + int(full_rows), int(remainder), 1))
+    level_one = (int(x) - 1, int(y) - 1, int(width) + 2, int(height) + 2)
+    return {1: [level_one], 2: top_rects}
+
+
 def _make_level_grid(
     rng: random.Random,
     *,
@@ -246,8 +295,16 @@ def _make_level_grid(
     rows: int,
     active_max_level: int,
     layout_family: str,
+    highest_level_tile_count: int | None = None,
 ) -> tuple[dict[tuple[int, int], int], dict[int, list[TileRect]]]:
-    if str(layout_family) == "side_plateau":
+    if highest_level_tile_count is not None:
+        rects = _make_count_plateau_rects(
+            rng,
+            cols=int(cols),
+            rows=int(rows),
+            highest_tile_count=int(highest_level_tile_count),
+        )
+    elif str(layout_family) == "side_plateau":
         rects = _make_side_rects(rng, cols=int(cols), rows=int(rows), active_max_level=int(active_max_level))
     elif str(layout_family) == "corner_plateau":
         rects = _make_corner_rects(rng, cols=int(cols), rows=int(rows), active_max_level=int(active_max_level))
@@ -307,14 +364,18 @@ def _sample_farm_patches(
     active_levels: Sequence[int],
     level_grid: Mapping[tuple[int, int], int],
     blocked_tile_ids: set[str],
+    skip_levels: set[int] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[tuple[int, int], str], set[str]]:
     """Place at most one connected farm terrain patch per active level without consuming candidate support."""
 
     patches: list[dict[str, Any]] = []
     terrain_by_cell: dict[tuple[int, int], str] = {}
     occupied: set[str] = set()
+    skipped = set(int(level) for level in (skip_levels or set()))
     patch_sizes = ((2, 2), (2, 3), (3, 2), (3, 3))
     for level in active_levels:
+        if int(level) in skipped:
+            continue
         if rng.random() > 0.68:
             continue
         level_tile_total = sum(1 for value in level_grid.values() if int(value) == int(level))
@@ -354,6 +415,8 @@ def _sample_farm_patches(
         forced_levels = list(active_levels)
         rng.shuffle(forced_levels)
         for level in forced_levels:
+            if int(level) in skipped:
+                continue
             candidates = []
             level_tile_total = sum(1 for value in level_grid.values() if int(value) == int(level))
             for y in range(1, max(1, int(rows) - 2)):
@@ -624,12 +687,13 @@ def _draw_context_entities(
     required_entity_counts_by_level_type: Mapping[str, Mapping[int | str, int]] | None = None,
     object_unsafe_tile_ids: set[str] | None = None,
     reference_farmer_tile_id: str | None = None,
+    reserved_tile_ids: set[str] | None = None,
 ) -> tuple[list[IsoFarmsteadEntity], set[str]]:
     """Draw reusable farm context objects and return occupied terrain tile ids."""
 
     entities: list[IsoFarmsteadEntity] = []
     occupied: set[str] = set()
-    blocked = set(transition_tile_ids)
+    blocked = set(transition_tile_ids) | set(reserved_tile_ids or set())
     width, height = image.size
     tiles_by_id = {str(tile.tile_id): tile for tile in tiles}
     object_unsafe_tile_ids = set(object_unsafe_tile_ids or _lower_tiles_adjacent_to_higher(tiles))
@@ -828,13 +892,15 @@ def render_isometric_farmstead_scene(
     label_font_family: str | None = None,
     required_entity_counts_by_level_type: Mapping[str, Mapping[int | str, int]] | None = None,
     reference_farmer_tile_id: str | None = None,
+    highest_level_tile_count: int | None = None,
+    reserve_highest_level_tiles: bool = False,
 ) -> IsoFarmsteadScene:
     """Render a deterministic isometric farmstead with variable terrain levels."""
 
     rng = random.Random(int(seed))
     cols, rows = _profile_grid(int(width), int(height))
-    active_max_level = _sample_active_max_level(rng)
-    layout_family = _sample_layout_family(rng)
+    active_max_level = 2 if highest_level_tile_count is not None else _sample_active_max_level(rng)
+    layout_family = "count_plateau" if highest_level_tile_count is not None else _sample_layout_family(rng)
     active_levels = tuple(range(0, int(active_max_level) + 1))
     level_grid, level_shapes = _make_level_grid(
         rng,
@@ -842,8 +908,14 @@ def render_isometric_farmstead_scene(
         rows=rows,
         active_max_level=int(active_max_level),
         layout_family=str(layout_family),
+        highest_level_tile_count=highest_level_tile_count,
     )
     transition_tile_ids: set[str] = set()
+    reserved_highest_tile_ids = {
+        _tile_id(col, row)
+        for (col, row), level in level_grid.items()
+        if bool(reserve_highest_level_tiles) and int(level) == int(active_max_level)
+    }
     farm_patches, farm_terrain_by_cell, farm_patch_tile_ids = _sample_farm_patches(
         rng,
         cols=cols,
@@ -851,6 +923,7 @@ def render_isometric_farmstead_scene(
         active_levels=active_levels,
         level_grid=level_grid,
         blocked_tile_ids=set(transition_tile_ids),
+        skip_levels={int(active_max_level)} if bool(reserve_highest_level_tiles) else set(),
     )
     layout = _layout_for_scene(width=int(width), height=int(height), cols=cols, rows=rows, level_grid=level_grid)
     tile_rng = random.Random(int(seed) + 17011)
@@ -875,6 +948,7 @@ def render_isometric_farmstead_scene(
         required_entity_counts_by_level_type=required_entity_counts_by_level_type,
         object_unsafe_tile_ids=set(object_unsafe_tile_ids),
         reference_farmer_tile_id=reference_farmer_tile_id,
+        reserved_tile_ids=set(reserved_highest_tile_ids),
     )
 
     labels = dict(candidate_labels_by_tile_id or {})
@@ -917,6 +991,8 @@ def render_isometric_farmstead_scene(
             str(level): sum(1 for value in level_grid.values() if int(value) == int(level))
             for level in active_levels
         },
+        "highest_level_tile_count_request": None if highest_level_tile_count is None else int(highest_level_tile_count),
+        "reserved_highest_level_tile_ids": sorted(reserved_highest_tile_ids),
         "projection": {
             "type": "2:1_isometric",
             "tile_size_px": [round(float(layout.tile_w), 3), round(float(layout.tile_h), 3)],

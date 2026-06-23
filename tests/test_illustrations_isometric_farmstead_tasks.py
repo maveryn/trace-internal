@@ -14,6 +14,10 @@ from trace.tasks.illustrations.isometric_farmstead.farmer_same_level_tile_label 
     SUPPORTED_QUERY_IDS as FARMER_SAME_LEVEL_QUERY_IDS,
     TASK_ID as FARMER_SAME_LEVEL_TASK_ID,
 )
+from trace.tasks.illustrations.isometric_farmstead.highest_terrain_tile_count import (
+    SUPPORTED_QUERY_IDS as HIGHEST_TILE_COUNT_QUERY_IDS,
+    TASK_ID as HIGHEST_TILE_COUNT_TASK_ID,
+)
 from trace.tasks.illustrations.isometric_farmstead.terrain_level_object_count import (
     SUPPORTED_QUERY_IDS as OBJECT_COUNT_QUERY_IDS,
     TARGET_OBJECT_TYPES,
@@ -41,6 +45,21 @@ def _assert_no_entity_on_unsafe_tile(scene: object) -> None:
     unsafe_ids = set(str(value) for value in scene.trace["object_unsafe_low_adjacent_higher_tile_ids"])
     for entity in scene.entities:
         assert not unsafe_ids.intersection(str(tile_id) for tile_id in entity.tile_ids)
+
+
+def _assert_connected_tiles(tile_records: list[dict]) -> None:
+    cells = {(int(tile["col"]), int(tile["row"])) for tile in tile_records}
+    assert cells
+    stack = [next(iter(cells))]
+    visited = {stack[0]}
+    while stack:
+        col, row = stack.pop()
+        for dc, dr in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            neighbor = (int(col) + dc, int(row) + dr)
+            if neighbor in cells and neighbor not in visited:
+                visited.add(neighbor)
+                stack.append(neighbor)
+    assert visited == cells
 
 
 def test_isometric_farmstead_renderer_is_deterministic_and_profile_safe() -> None:
@@ -251,6 +270,56 @@ def test_isometric_farmstead_farmer_same_level_tile_contract() -> None:
         assert sum(1 for level in candidate_levels.values() if int(level) == farmer_level) == 1
 
 
+def test_isometric_farmstead_highest_terrain_tile_count_contract() -> None:
+    task = create_task(HIGHEST_TILE_COUNT_TASK_ID)
+    cases = (
+        ("landscape", 6, 2026062341),
+        ("square", 11, 2026062342),
+        ("landscape", 17, 2026062343),
+        ("square", 20, 2026062344),
+    )
+    for profile, target_count, seed in cases:
+        out = task.generate(
+            seed,
+            params={"query_id": "single", "canvas_profile": profile, "target_count": target_count},
+            max_attempts=30,
+        )
+        assert out.scene_id == SCENE_ID
+        assert out.query_id == "single"
+        assert out.answer_gt.type == "integer"
+        assert int(out.answer_gt.value) == int(target_count)
+        assert 6 <= int(out.answer_gt.value) <= 20
+        assert out.annotation_gt.type == "bbox"
+        width, height = out.image.size
+        _assert_bbox_inside_canvas(list(out.annotation_gt.value), width=width, height=height)
+        assert "highest" in out.prompt
+        assert "tiles" in out.prompt
+
+        trace = out.trace_payload
+        assert trace["query_spec"]["query_id"] == "single"
+        assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_isometric_farmstead_v0"
+        assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == SCENE_ID
+        assert trace["projected_annotation"]["type"] == "bbox"
+        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+        assert trace["render_map"]["answer_count"] == int(out.answer_gt.value)
+        assert trace["render_map"]["highest_level_bbox_px"] == out.annotation_gt.value
+
+        target_level = int(trace["render_map"]["target_level"])
+        tiles = trace["scene_ir"]["tiles"]
+        highest_tiles = [tile for tile in tiles if int(tile["level"]) == target_level]
+        assert len(highest_tiles) == int(out.answer_gt.value)
+        assert target_level == max(int(tile["level"]) for tile in tiles)
+        assert sorted(str(tile["tile_id"]) for tile in highest_tiles) == sorted(trace["render_map"]["counted_tile_ids"])
+        _assert_connected_tiles(highest_tiles)
+
+        highest_ids = {str(tile["tile_id"]) for tile in highest_tiles}
+        renderer_trace = trace["execution_trace"]["renderer"]
+        assert highest_ids == set(str(value) for value in renderer_trace["reserved_highest_level_tile_ids"])
+        assert highest_ids.isdisjoint(str(value) for value in renderer_trace["farm_patch_tile_ids"])
+        for entity in trace["scene_ir"]["entities"]:
+            assert highest_ids.isdisjoint(str(tile_id) for tile_id in entity["tile_ids"])
+
+
 def test_isometric_farmstead_tasks_registered() -> None:
     assert ELEVATION_TASK_ID in TASK_REGISTRY
     elevation_task_cls = TASK_REGISTRY[ELEVATION_TASK_ID]
@@ -263,3 +332,6 @@ def test_isometric_farmstead_tasks_registered() -> None:
     farmer_same_level_task_cls = TASK_REGISTRY[FARMER_SAME_LEVEL_TASK_ID]
     assert tuple(farmer_same_level_task_cls.supported_query_ids) == ("single",)
     assert tuple(FARMER_SAME_LEVEL_QUERY_IDS) == ("farmer_same_level_tile",)
+    assert HIGHEST_TILE_COUNT_TASK_ID in TASK_REGISTRY
+    highest_tile_count_task_cls = TASK_REGISTRY[HIGHEST_TILE_COUNT_TASK_ID]
+    assert tuple(highest_tile_count_task_cls.supported_query_ids) == tuple(HIGHEST_TILE_COUNT_QUERY_IDS)

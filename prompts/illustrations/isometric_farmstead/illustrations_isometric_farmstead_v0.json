@@ -22,12 +22,20 @@
       "",
       "",
       ""
+    ],
+    "highest_terrain_tile_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:isometric_farmstead_elevation_canvas": [],
     "scene:isometric_farmstead_object_count_canvas": [],
     "scene:isometric_farmstead_farmer_reference_canvas": [],
+    "scene:isometric_farmstead_tile_count_canvas": [],
     "query:highest_terrain_tile": [],
     "query:lowest_terrain_tile": [],
     "query:highest_terrain_object_count": [
@@ -37,6 +45,7 @@
       "object_label"
     ],
     "query:farmer_same_level_tile": [],
+    "query:highest_terrain_tile_count": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -86,6 +95,13 @@
       "The picture shows an isometric farmstead where terrain tiles sit at different elevations and one farmer stands on a ground tile.",
       "The canvas contains an isometric farm scene with multiple terrain heights, a farmer reference object, and lettered terrain tiles.",
       "This illustration shows a farmstead drawn on isometric tiles, with a farmer and lettered candidate ground tiles."
+    ],
+    "isometric_farmstead_tile_count_canvas": [
+      "The image shows an isometric farmstead made of visible terrain tiles at different elevation levels.",
+      "The scene shows a pixel-art isometric farm with a clean highest terrace and lower surrounding terrain.",
+      "The picture shows an isometric farmstead where terrain tiles form raised layers with visible tile borders.",
+      "The canvas contains an isometric farm scene with multiple terrain heights and a clearly visible highest layer.",
+      "This illustration shows a farmstead drawn on isometric tiles, including one highest elevated top layer."
     ]
   },
   "query_templates": {
@@ -123,6 +139,13 @@
       "Which candidate terrain tile is on the same raised level as the farmer?",
       "Among the lettered ground tiles, which one matches the farmer's terrain elevation?",
       "Select the lettered farm tile whose ground level matches the farmer's tile."
+    ],
+    "highest_terrain_tile_count": [
+      "How many visible terrain tiles are on the highest elevation layer?",
+      "Count the top-surface terrain tiles that make up the highest terrace.",
+      "What is the number of visible ground tiles on the highest raised layer?",
+      "How many tile tops belong to the highest terrain level?",
+      "Count only the visible top-surface tiles on the highest elevated farm layer."
     ]
   },
   "allow_empty_task_templates": true

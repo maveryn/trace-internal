@@ -187,7 +187,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_charts__scatter_cluster__cluster_separation_extremum_label": _entry("charts", "scatter_cluster", "charts", "scatter"),
     "task_charts__scatter_cluster__cluster_spread_extremum_label": _entry("charts", "scatter_cluster", "charts", "scatter"),
     "task_charts__scatter_cluster__cluster_trend_direction_label": _entry("charts", "scatter_cluster", "charts", "scatter"),
-    "task_charts__scatter_facet_grid__region_density_extremum_label": _entry("charts", "scatter_facet_grid", "charts", "scatter"),
+    "task_charts__scatter_facet_grid__region_density_extremum_label": _entry("charts", "scatter_facet_grid", "charts", "scatter_facet_grid"),
     "task_charts__scatter_points__axis_threshold_point_count": _entry("charts", "scatter_points", "charts", "scatter"),
     "task_charts__scatter_points__category_axis_mean_extremum_label": _entry("charts", "scatter_points", "charts", "scatter"),
     "task_charts__scatter_points__category_threshold_point_count": _entry("charts", "scatter_points", "charts", "scatter"),

@@ -10,11 +10,11 @@ from tests.helpers import extract_prompt_json_example
 from trace.core.seed import hash64
 from trace.core.scene_config import get_scene_defaults
 from trace.tasks import create_task
-from trace.tasks.charts.scatter_facet_grid.shared.facet_grid_query import (
-    SUPPORTED_LAYOUTS,
+from trace.tasks.charts.scatter_facet_grid.region_density_extremum_label import (
     SUPPORTED_QUERY_IDS,
-    ChartsScatterFacetGridQueryTask,
+    ChartsScatterFacetGridRegionDensityExtremumLabelTask,
 )
+from trace.tasks.charts.scatter_facet_grid.shared.state import SUPPORTED_LAYOUTS
 
 
 def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
@@ -40,7 +40,7 @@ def _expected_answer(execution: dict) -> str:
 
 @pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
 def test_chart_scatter_facet_grid_queries_match_contract(query_id: str) -> None:
-    task = ChartsScatterFacetGridQueryTask()
+    task = ChartsScatterFacetGridRegionDensityExtremumLabelTask()
     out = task.generate(
         hash64(20260606, "scatter_facet_grid_contract", SUPPORTED_QUERY_IDS.index(query_id)),
         params={"query_id": query_id},
@@ -55,7 +55,7 @@ def test_chart_scatter_facet_grid_queries_match_contract(query_id: str) -> None:
     assert out.scene_id == "scatter_facet_grid"
     assert out.query_id == query_id
     assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["question_format"]) == "scatter_facet_grid_query"
     assert out.image.size == (width, height)
@@ -76,13 +76,13 @@ def test_chart_scatter_facet_grid_queries_match_contract(query_id: str) -> None:
     expected = _expected_answer(execution)
     assert str(out.answer_gt.value) == expected
     assert str(execution["answer"]) == expected
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
     assert trace["projected_annotation"]["answer_panel_label"] == expected
     assert 0.10 <= float(execution["density_winner_relative_gap"]) <= 0.35
 
-    annotation_bbox = list(out.annotation_gt.value["answer_density_region"])
+    annotation_bbox = list(out.annotation_gt.value)
     _assert_bbox_inside_canvas(annotation_bbox, width=width, height=height)
     assert annotation_bbox == render_map["density_region_bboxes_px"][expected]
     assert _bbox_contains(render_map["panel_bboxes_px"][expected], annotation_bbox)
@@ -91,7 +91,7 @@ def test_chart_scatter_facet_grid_queries_match_contract(query_id: str) -> None:
 
 
 def test_chart_scatter_facet_grid_prompt_examples_match_contract() -> None:
-    task = ChartsScatterFacetGridQueryTask()
+    task = ChartsScatterFacetGridRegionDensityExtremumLabelTask()
     for index, query_id in enumerate(SUPPORTED_QUERY_IDS):
         out = task.generate(
             hash64(20260606, "scatter_facet_grid_prompt", index),
@@ -104,11 +104,12 @@ def test_chart_scatter_facet_grid_prompt_examples_match_contract() -> None:
         assert isinstance(answer_only["answer"], str)
         assert set(answer_and_annotation) == {"annotation", "answer"}
         assert isinstance(answer_and_annotation["answer"], str)
-        assert set(answer_and_annotation["annotation"]) == {"answer_density_region"}
+        assert isinstance(answer_and_annotation["annotation"], list)
+        assert len(answer_and_annotation["annotation"]) == 4
 
 
 def test_chart_scatter_facet_grid_balanced_sampling_covers_queries_and_layouts() -> None:
-    task = ChartsScatterFacetGridQueryTask()
+    task = ChartsScatterFacetGridRegionDensityExtremumLabelTask()
     queries: Counter[str] = Counter()
     layouts: Counter[str] = Counter()
     regions: Counter[str] = Counter()
@@ -134,7 +135,7 @@ def test_chart_scatter_facet_grid_balanced_sampling_covers_queries_and_layouts()
 
 
 def test_chart_scatter_facet_grid_is_deterministic() -> None:
-    task = ChartsScatterFacetGridQueryTask()
+    task = ChartsScatterFacetGridRegionDensityExtremumLabelTask()
     seed = hash64(20260606, "scatter_facet_grid_deterministic")
     first = task.generate(seed, params={}, max_attempts=80)
     second = task.generate(seed, params={}, max_attempts=80)
@@ -153,9 +154,8 @@ def test_chart_scatter_facet_grid_registered_and_group_config_loaded() -> None:
     assert out.query_id in SUPPORTED_QUERY_IDS
 
     cfg = get_scene_defaults("charts", "scatter_facet_grid")
-    generation = cfg["generation"]["task_overrides"]["charts_scatter_facet_grid_query_base"]
+    generation = cfg["generation"]["shared"]
     assert int(generation["facet_panel_count_min"]) == 6
     assert int(generation["facet_panel_count_max"]) == 12
-    prompt = cfg["prompt"]["task_overrides"]["charts_scatter_facet_grid_query_base"]
-    assert str(prompt["scene_key"]) == "scatter_facet_grid"
-    assert str(prompt["task_key"]) == "scatter_facet_grid_query"
+    prompt = cfg["prompt"]["shared"]
+    assert str(prompt["bundle_id"]) == "charts_scatter_facet_grid_v1"

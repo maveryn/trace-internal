@@ -10,15 +10,15 @@ from trace.tasks.shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 
-from .facet_grid_query import _Dataset, _PROMPT_DEFAULTS
+from .defaults import PROMPT_DEFAULTS
+from .state import Dataset, SCENE_ID
 
 
 DOMAIN = "charts"
-SCENE_ID = "scatter_facet_grid"
 PROMPT_BUNDLE_ID = "charts_scatter_facet_grid_v1"
 
 
-def dynamic_slots(*, dataset: _Dataset) -> dict[str, Any]:
+def dynamic_slots(*, dataset: Dataset) -> dict[str, Any]:
     return {
         "object_description": (
             "a grid of small scatter panels with shared x- and y-axes and a highlighted target region in each panel"
@@ -36,7 +36,7 @@ def build_prompt_artifacts(
     rendered_prompt = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
-        bundle_id=str(_PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
+        bundle_id=str(PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
         scene_key="scatter_facet_grid",
         task_key="scatter_facet_grid_query",
         query_key=str(prompt_query_key),

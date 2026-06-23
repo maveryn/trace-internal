@@ -71,26 +71,26 @@
   "static_slots_by_key": {
     "query:upper_right_density_extremum_label": {
       "answer_hint": "set \"answer\" to the exact visible panel label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_density_region\" to the [x0,y0,x1,y1] pixel box around the densest supporting point region inside the answer panel",
-      "json_example": "{\"annotation\":{\"answer_density_region\":[440,210,505,275]},\"answer\":\"Orchid\"}",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the densest supporting point region inside the answer panel",
+      "json_example": "{\"annotation\":[440,210,505,275],\"answer\":\"Orchid\"}",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}"
     },
     "query:upper_left_density_extremum_label": {
       "answer_hint": "set \"answer\" to the exact visible panel label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_density_region\" to the [x0,y0,x1,y1] pixel box around the densest supporting point region inside the answer panel",
-      "json_example": "{\"annotation\":{\"answer_density_region\":[440,210,505,275]},\"answer\":\"Orchid\"}",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the densest supporting point region inside the answer panel",
+      "json_example": "{\"annotation\":[440,210,505,275],\"answer\":\"Orchid\"}",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}"
     },
     "query:lower_right_density_extremum_label": {
       "answer_hint": "set \"answer\" to the exact visible panel label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_density_region\" to the [x0,y0,x1,y1] pixel box around the densest supporting point region inside the answer panel",
-      "json_example": "{\"annotation\":{\"answer_density_region\":[440,210,505,275]},\"answer\":\"Orchid\"}",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the densest supporting point region inside the answer panel",
+      "json_example": "{\"annotation\":[440,210,505,275],\"answer\":\"Orchid\"}",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}"
     },
     "query:lower_left_density_extremum_label": {
       "answer_hint": "set \"answer\" to the exact visible panel label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_density_region\" to the [x0,y0,x1,y1] pixel box around the densest supporting point region inside the answer panel",
-      "json_example": "{\"annotation\":{\"answer_density_region\":[440,210,505,275]},\"answer\":\"Orchid\"}",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the densest supporting point region inside the answer panel",
+      "json_example": "{\"annotation\":[440,210,505,275],\"answer\":\"Orchid\"}",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}"
     }
   },

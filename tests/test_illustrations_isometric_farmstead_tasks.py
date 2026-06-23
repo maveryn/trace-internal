@@ -22,6 +22,23 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
     assert 0 <= float(bbox[1]) < float(bbox[3]) <= float(height)
 
 
+def _assert_no_one_tile_terrace_border_gap(trace: dict) -> None:
+    cols = int(trace["grid_cols"])
+    rows = int(trace["grid_rows"])
+    for rects in trace["level_shapes"].values():
+        for x, y, w, h in rects:
+            assert int(x) != 1
+            assert int(y) != 1
+            assert int(cols) - (int(x) + int(w)) != 1
+            assert int(rows) - (int(y) + int(h)) != 1
+
+
+def _assert_no_entity_on_unsafe_tile(scene: object) -> None:
+    unsafe_ids = set(str(value) for value in scene.trace["object_unsafe_low_adjacent_higher_tile_ids"])
+    for entity in scene.entities:
+        assert not unsafe_ids.intersection(str(tile_id) for tile_id in entity.tile_ids)
+
+
 def test_isometric_farmstead_renderer_is_deterministic_and_profile_safe() -> None:
     for width, height, profile in ((1200, 800, "landscape"), (960, 960, "square"), (800, 1200, "portrait")):
         first = render_isometric_farmstead_scene(
@@ -50,6 +67,8 @@ def test_isometric_farmstead_renderer_is_deterministic_and_profile_safe() -> Non
         assert set(first.trace["level_tile_counts"]) == {str(level) for level in active_levels}
         assert all(int(first.trace["level_tile_counts"][str(level)]) > 0 for level in active_levels)
         assert first.trace["layout_family"] not in {"diagonal_ridge", "stepped_hillside"}
+        _assert_no_one_tile_terrace_border_gap(first.trace)
+        _assert_no_entity_on_unsafe_tile(first)
         assert first.trace["farm_patches"]
         assert first.trace["context_object_counts"]["tree"] >= 1
         assert first.trace["context_object_counts"]["domestic_animal"] >= 1
@@ -154,6 +173,9 @@ def test_isometric_farmstead_terrain_level_object_count_contract() -> None:
         assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
 
         entity_by_id = {str(entity["entity_id"]): entity for entity in trace["scene_ir"]["entities"]}
+        unsafe_tile_ids = set(str(value) for value in trace["execution_trace"]["renderer"]["object_unsafe_low_adjacent_higher_tile_ids"])
+        for entity in entity_by_id.values():
+            assert not unsafe_tile_ids.intersection(str(tile_id) for tile_id in entity["tile_ids"])
         counted_ids = list(trace["render_map"]["counted_entity_ids"])
         assert len(counted_ids) == int(out.answer_gt.value)
         active_levels = [int(level) for level in trace["scene_ir"]["relations"].get("active_levels", trace["render_spec"]["style"]["levels"])]

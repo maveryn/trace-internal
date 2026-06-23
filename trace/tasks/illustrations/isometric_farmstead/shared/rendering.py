@@ -107,6 +107,40 @@ def _rect_cells(rect: TileRect) -> list[tuple[int, int]]:
     return [(int(col), int(row)) for row in range(int(y), int(y + h)) for col in range(int(x), int(x + w))]
 
 
+def _snap_one_tile_border_gap(rect: TileRect, *, cols: int, rows: int) -> TileRect:
+    """Remove one-tile low strips between a raised terrace and the grid edge."""
+
+    x, y, w, h = [int(value) for value in rect]
+    if x == 1:
+        x = 0
+        w += 1
+    if y == 1:
+        y = 0
+        h += 1
+    if int(cols) - (x + w) == 1:
+        w += 1
+    if int(rows) - (y + h) == 1:
+        h += 1
+    w = min(int(w), int(cols) - int(x))
+    h = min(int(h), int(rows) - int(y))
+    return (int(x), int(y), int(w), int(h))
+
+
+def _snap_rects_one_tile_border_gaps(
+    rects: Mapping[int, Sequence[TileRect]],
+    *,
+    cols: int,
+    rows: int,
+) -> dict[int, list[TileRect]]:
+    return {
+        int(level): [
+            _snap_one_tile_border_gap(tuple(rect), cols=int(cols), rows=int(rows))
+            for rect in level_rects
+        ]
+        for level, level_rects in rects.items()
+    }
+
+
 def _blank_level_grid(*, cols: int, rows: int) -> dict[tuple[int, int], int]:
     return {(int(col), int(row)): 0 for row in range(int(rows)) for col in range(int(cols))}
 
@@ -222,6 +256,7 @@ def _make_level_grid(
         rects = _make_split_rects(rng, cols=int(cols), rows=int(rows), active_max_level=int(active_max_level))
     else:
         rects = _make_concentric_rects(rng, cols=int(cols), rows=int(rows), active_max_level=int(active_max_level))
+    rects = _snap_rects_one_tile_border_gaps(rects, cols=int(cols), rows=int(rows))
     grid = _blank_level_grid(cols=int(cols), rows=int(rows))
     for level in range(1, int(active_max_level) + 1):
         for rect in rects.get(int(level), []):
@@ -535,6 +570,25 @@ def _patches_with_bboxes(patches: Sequence[Mapping[str, Any]], tiles_by_id: Mapp
     return resolved
 
 
+def _lower_tiles_adjacent_to_higher(tiles: Sequence[IsoFarmsteadTile]) -> set[str]:
+    """Return lower tiles where object bases would read as attached to a terrace."""
+
+    tiles_by_cell = {(int(tile.col), int(tile.row)): tile for tile in tiles}
+    unsafe: set[str] = set()
+    for tile in tiles:
+        for delta_col in (-1, 0, 1):
+            for delta_row in (-1, 0, 1):
+                if delta_col == 0 and delta_row == 0:
+                    continue
+                neighbor = tiles_by_cell.get((int(tile.col) + delta_col, int(tile.row) + delta_row))
+                if neighbor is not None and int(neighbor.level) > int(tile.level):
+                    unsafe.add(str(tile.tile_id))
+                    break
+            if str(tile.tile_id) in unsafe:
+                break
+    return unsafe
+
+
 def _draw_context_entities(
     image: Image.Image,
     layout: IsoLayout,
@@ -544,6 +598,7 @@ def _draw_context_entities(
     transition_tile_ids: set[str],
     farm_patch_tile_ids: set[str],
     required_entity_counts_by_level_type: Mapping[str, Mapping[int | str, int]] | None = None,
+    object_unsafe_tile_ids: set[str] | None = None,
 ) -> tuple[list[IsoFarmsteadEntity], set[str]]:
     """Draw reusable farm context objects and return occupied terrain tile ids."""
 
@@ -552,10 +607,12 @@ def _draw_context_entities(
     blocked = set(transition_tile_ids)
     width, height = image.size
     tiles_by_id = {str(tile.tile_id): tile for tile in tiles}
+    object_unsafe_tile_ids = set(object_unsafe_tile_ids or _lower_tiles_adjacent_to_higher(tiles))
     edge_tiles = [
         tile
         for tile in tiles
         if str(tile.tile_id) not in blocked
+        and str(tile.tile_id) not in object_unsafe_tile_ids
         and str(tile.tile_id) not in farm_patch_tile_ids
         and str(tile.terrain) == "grass"
         and (tile.col <= 2 or tile.row <= 2 or tile.col >= layout.cols - 3 or tile.row >= layout.rows - 3)
@@ -563,7 +620,10 @@ def _draw_context_entities(
     fallback_tree_tiles = [
         tile
         for tile in tiles
-        if str(tile.tile_id) not in blocked and str(tile.tile_id) not in farm_patch_tile_ids and str(tile.terrain) == "grass"
+        if str(tile.tile_id) not in blocked
+        and str(tile.tile_id) not in object_unsafe_tile_ids
+        and str(tile.tile_id) not in farm_patch_tile_ids
+        and str(tile.terrain) == "grass"
     ]
     required_counts_raw = required_entity_counts_by_level_type or {}
 
@@ -616,6 +676,7 @@ def _draw_context_entities(
         tile
         for tile in tiles
         if str(tile.tile_id) not in blocked
+        and str(tile.tile_id) not in object_unsafe_tile_ids
         and str(tile.tile_id) not in occupied
         and str(tile.terrain) in {"grass", "pasture"}
     ]
@@ -750,6 +811,7 @@ def render_isometric_farmstead_scene(
     tile_rng = random.Random(int(seed) + 17011)
     tiles = _build_tiles(layout, level_grid, farm_terrain_by_cell)
     tiles_by_id = {str(tile.tile_id): tile for tile in tiles}
+    object_unsafe_tile_ids = _lower_tiles_adjacent_to_higher(tiles)
     farm_patches_with_bboxes = _patches_with_bboxes(farm_patches, tiles_by_id)
     image = Image.new("RGB", (int(width), int(height)), (207, 220, 190))
     draw = ImageDraw.Draw(image, "RGBA")
@@ -766,6 +828,7 @@ def render_isometric_farmstead_scene(
         transition_tile_ids=set(transition_tile_ids),
         farm_patch_tile_ids=set(farm_patch_tile_ids),
         required_entity_counts_by_level_type=required_entity_counts_by_level_type,
+        object_unsafe_tile_ids=set(object_unsafe_tile_ids),
     )
 
     labels = dict(candidate_labels_by_tile_id or {})
@@ -820,6 +883,7 @@ def render_isometric_farmstead_scene(
         },
         "farm_patches": farm_patches_with_bboxes,
         "farm_patch_tile_ids": sorted(farm_patch_tile_ids),
+        "object_unsafe_low_adjacent_higher_tile_ids": sorted(object_unsafe_tile_ids),
         "transition_tile_ids": sorted(transition_tile_ids),
         "occupied_tile_ids": sorted(occupied_tile_ids),
         "eligible_tile_ids": [

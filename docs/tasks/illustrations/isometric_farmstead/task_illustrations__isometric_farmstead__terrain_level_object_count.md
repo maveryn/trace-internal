@@ -47,4 +47,5 @@ Counts a queried class of farm context objects whose base terrain tile is on the
 - Prompt text must come from `prompts/illustrations/isometric_farmstead/illustrations_isometric_farmstead_v0.json`.
 - Public prompts must state the queried object class and highest or lowest terrain level.
 - Render-only attributes such as palette, canvas profile, active max level, layout family, connected farm patch placement, farm animal/tree subtype, tile geometry, and object sprite style must not be query ids.
+- The renderer must not place any farm animal or tree on a lower-level tile adjacent to a higher-level tile, because those objects can visually read as sitting on the raised terrace.
 - Target object type, target level, extremum mode, counted entity ids, counted entity bboxes, object counts by level, projection metadata, and the bbox-set annotation must be recorded in the trace.

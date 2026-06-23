@@ -47,7 +47,7 @@ prompt:
       task_key: terrain_level_object_count_task
       json_output_contract: 'Return JSON with keys "annotation" and "answer".'
       json_output_contract_answer_only: 'Return JSON with key "answer".'
-      answer_hint_terrain_level_object_count: set "answer" to the number of counted {object_label}
-      annotation_hint_terrain_level_object_count: set "annotation" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted {object_label}; use [] when the count is 0
+      answer_hint_terrain_level_object_count: set "answer" to the number of matching {object_label}
+      annotation_hint_terrain_level_object_count: set "annotation" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted object; use [] when the count is 0
       json_example_terrain_level_object_count: '{"annotation":[[236,420,282,470],[520,300,560,352]],"answer":2}'
       json_example_answer_only_terrain_level_object_count: '{"answer":2}'

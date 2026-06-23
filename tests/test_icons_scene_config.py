@@ -15,16 +15,24 @@ def test_icons_single_transform_options_scene_defaults_loaded() -> None:
     assert str(generation['pool_manifest']) == 'non_symmetry.txt'
     assert int(generation['object_count_min']) == 6
     assert int(generation['object_count_max']) == 6
-    assert sorted(generation['query_id_weights'].keys()) == ['flip_horizontal_result_label', 'flip_vertical_result_label', 'rotate_180_result_label', 'rotate_90_clockwise_result_label', 'rotate_90_counterclockwise_result_label']
+    assert 'query_id_weights' not in generation
     assert int(rendering['scene_icon_size_min_px']) == 96
     assert int(rendering['scene_icon_size_max_px']) == 112
-    assert str(prompt['bundle_id']) == 'icons_single_transform_options_v0'
+    assert str(prompt['bundle_id']) == 'icons_single_transform_options_v1'
     assert str(prompt['scene_key']) == 'single_transform_options_transformation'
     assert str(prompt['task_key']) == 'transformation_query'
     assert resolve_scene_section_defaults(cfg, 'prompt', task_id=task_id) == prompt
-    bundle = load_scene_prompt_bundle('icons', 'single_transform_options', 'icons_single_transform_options_v0')
-    assert bundle.bundle_id == 'icons_single_transform_options_v0'
+    bundle = load_scene_prompt_bundle('icons', 'single_transform_options', 'icons_single_transform_options_v1')
+    assert bundle.bundle_id == 'icons_single_transform_options_v1'
+    assert bundle.schema_version == 'v1'
     assert set(bundle.scene_templates.keys()) == {'single_transform_options_transformation'}
+    assert set(bundle.query_templates.keys()) == {
+        'flip_horizontal_result_label',
+        'flip_vertical_result_label',
+        'rotate_180_result_label',
+        'rotate_90_clockwise_result_label',
+        'rotate_90_counterclockwise_result_label',
+    }
 
 def test_icons_reference_canvas_scene_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'reference_canvas')

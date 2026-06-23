@@ -13,12 +13,6 @@ generation:
       object_count_min: 6
       object_count_max: 6
       transform_check_size_px: 96
-      query_id_weights:
-        rotate_90_clockwise_result_label: 1.0
-        rotate_90_counterclockwise_result_label: 1.0
-        rotate_180_result_label: 1.0
-        flip_horizontal_result_label: 1.0
-        flip_vertical_result_label: 1.0
 rendering:
   shared:
     canvas_width: 1104
@@ -206,33 +200,6 @@ rendering:
       min_color_distance: 42.0
 prompt:
   shared:
-    bundle_id: icons_single_transform_options_v0
+    bundle_id: icons_single_transform_options_v1
     scene_key: single_transform_options_transformation
     task_key: transformation_query
-  task_overrides:
-    task_icons__single_transform_options__geometric_transform_result_label:
-      scene_key: single_transform_options_transformation
-      object_description: a Reference icon with a transformation cue and six labeled
-        option icons
-      question_text_rotate_90_clockwise_result_label: Which labeled option shows the
-        Reference icon after a 90 degree clockwise rotation?
-      question_text_rotate_90_counterclockwise_result_label: Which labeled option
-        shows the Reference icon after a 90 degree counterclockwise rotation?
-      question_text_rotate_180_result_label: Which labeled option shows the Reference
-        icon after a 180 degree rotation?
-      question_text_flip_horizontal_result_label: Which labeled option shows the Reference
-        icon after a horizontal flip?
-      question_text_flip_vertical_result_label: Which labeled option shows the Reference
-        icon after a vertical flip?
-      annotation_hint: set "annotation" to a JSON object with keys "reference_icon"
-        and "selected_option", each a [x0, y0, x1, y1] box in image pixel coordinates
-      answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":{"reference_icon":[82,144,250,312],"selected_option":[532,104,702,274]},"answer":"C"}'
-      json_example_answer_only: '{"answer":"C"}'
-      query_id_weights:
-        rotate_90_clockwise_result_label: 1.0
-        rotate_90_counterclockwise_result_label: 1.0
-        rotate_180_result_label: 1.0
-        flip_horizontal_result_label: 1.0
-        flip_vertical_result_label: 1.0
-      bundle_id: icons_single_transform_options_v0

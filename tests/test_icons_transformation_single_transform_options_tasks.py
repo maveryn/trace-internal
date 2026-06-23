@@ -7,7 +7,7 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks.icons.shared.icon_assets import icon_transform_signature, resolve_icon_pool
 from trace.tasks.icons.shared.icon_transform import IDENTITY_TRANSFORM_ID
-from trace.tasks.icons.single_transform_options.geometric_transform_result_label import IconsSingleTransformOptionsGeometricTransformResultLabelTask, TASK_ID
+from trace.tasks.icons.single_transform_options.geometric_transform_result_label import IconsSingleTransformOptionsGeometricTransformResultLabelTask, SUPPORTED_QUERY_IDS, TASK_ID
 from tests.helpers import read_jsonl
 QUERY_TO_TRANSFORM = {'rotate_90_clockwise_result_label': 'rot270', 'rotate_90_counterclockwise_result_label': 'rot90', 'rotate_180_result_label': 'rot180', 'flip_horizontal_result_label': 'flip_h', 'flip_vertical_result_label': 'flip_v'}
 
@@ -25,10 +25,11 @@ def test_icons_single_transform_options_contract_matches_scene() -> None:
     reference_entities = [entity for entity in trace['scene_ir']['entities'] if str(entity.get('panel')) == 'reference']
     assert out.answer_gt.type == 'option_letter'
     assert out.answer_gt.value == 'D'
-    assert out.annotation_gt.type == 'keyed_bbox_map'
+    assert out.annotation_gt.type == 'bbox_map'
     assert sorted(out.annotation_gt.value.keys()) == ['reference_icon', 'selected_option']
     assert out.scene_id == 'single_transform_options'
     assert out.query_id == 'rotate_90_clockwise_result_label'
+    assert tuple(task.supported_query_ids) == SUPPORTED_QUERY_IDS
     assert trace['scene_ir']['scene_kind'] == 'icons_single_transform_options_result_label'
     assert execution['question_format'] == 'select_transformed_reference_icon_option'
     assert int(execution['object_count']) == 6
@@ -53,11 +54,15 @@ def test_icons_single_transform_options_contract_matches_scene() -> None:
     signatures.add(icon_transform_signature(str(execution['icon_id']), 96, IDENTITY_TRANSFORM_ID))
     assert len(signatures) == 6
     assert out.annotation_gt.value == {'reference_icon': list(reference['icon_bbox_xyxy']), 'selected_option': list(matching[0]['cell_bbox_xyxy'])}
-    assert trace['projected_annotation']['type'] == 'keyed_bbox_map'
-    assert trace['projected_annotation']['keyed_bbox_map'] == out.annotation_gt.value
+    assert trace['projected_annotation']['type'] == 'bbox_map'
+    assert trace['projected_annotation']['bbox_map'] == out.annotation_gt.value
     assert trace['witness_symbolic']['selected_option_label'] == answer_label
+    assert trace['query_spec']['template_id'] == 'icons_single_transform_options_v1'
+    assert trace['query_spec']['prompt_variant']['prompt_schema_version'] == 'v1'
+    assert trace['query_spec']['prompt_variant']['query_key'] == 'rotate_90_clockwise_result_label'
     assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
-    assert '90 degree clockwise rotation' in out.prompt
+    assert '90' in out.prompt
+    assert 'clockwise' in out.prompt
 
 def test_icons_single_transform_options_all_queries_map_to_expected_transform() -> None:
     task = IconsSingleTransformOptionsGeometricTransformResultLabelTask()
@@ -89,7 +94,6 @@ def test_icons_single_transform_options_build_smoke(tmp_path: Path) -> None:
     assert len(train_records) == 3
     assert all((record['domain'] == 'icons' for record in train_records))
     assert all((record['scene_id'] == 'single_transform_options' for record in train_records))
-    assert all(('scene_id' not in record for record in train_records))
     build_report = json.loads((final_path / 'build_report.json').read_text(encoding='utf-8'))
     assert int(build_report['accepted_counts_by_task'][TASK_ID]) == 3
     validation = json.loads((final_path / 'validation_report.json').read_text(encoding='utf-8'))

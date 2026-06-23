@@ -410,16 +410,17 @@ def test_object_cluster_total_object_count_registered_in_three_d_taxonomy() -> N
 
 def test_object_cluster_countqa_additions_have_profiles_and_render() -> None:
     assert COUNTQA_CLUSTER_ADDITIONS.issubset(set(OBJECT_CLUSTER_EXTRA_SHAPE_TYPES))
-    assert COUNTQA_CLUSTER_ADDITIONS.issubset(set(COUNTABLE_SHAPE_TYPES))
     assert REMOVED_OBJECT_CLUSTER_SHAPE_TYPES.isdisjoint(set(OBJECT_CLUSTER_EXTRA_SHAPE_TYPES))
     assert REMOVED_OBJECT_CLUSTER_SHAPE_TYPES.isdisjoint(set(COUNTABLE_SHAPE_TYPES))
     assert REMOVED_OBJECT_CLUSTER_SHAPE_TYPES.isdisjoint(set(COLOR_SAFE_CLUSTER_SHAPE_TYPES))
-    assert "stick" not in set(COUNTABLE_SHAPE_TYPES)
     assert set(NAMED_CLUSTER_SHAPE_TYPES) == EXPECTED_OBJECT_CLUSTER_NAMED_SHAPES
+    assert set(COUNTABLE_SHAPE_TYPES) == EXPECTED_OBJECT_CLUSTER_NAMED_SHAPES
+    assert set(COLOR_SAFE_CLUSTER_SHAPE_TYPES) == EXPECTED_OBJECT_CLUSTER_NAMED_SHAPES
     assert "apple" in set(NAMED_CLUSTER_SHAPE_TYPES)
-    assert "stick" in set(NAMED_CLUSTER_SHAPE_TYPES)
+    assert "stick" in set(COUNTABLE_SHAPE_TYPES)
     assert "bucket" not in set(NAMED_CLUSTER_SHAPE_TYPES)
-    assert {"pen", "pencil"}.issubset(set(COUNTABLE_SHAPE_TYPES))
+    assert "pencil" in set(COUNTABLE_SHAPE_TYPES)
+    assert "pen" not in set(COUNTABLE_SHAPE_TYPES)
     assert "pen" not in set(NAMED_CLUSTER_SHAPE_TYPES)
     profiles = {
         str(profile.object_type): profile

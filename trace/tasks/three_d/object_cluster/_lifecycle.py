@@ -121,6 +121,7 @@ def _run_once(
         width=int(rendered.image.width),
         height=int(rendered.image.height),
         object_count=int(dataset["object_count"]),
+        object_specs=[dict(spec) for spec in dataset["object_specs"]],
         annotation_object_ids=[str(object_id) for object_id in dataset["target_object_ids"]],
     ):
         raise ValueError("rendered object cluster failed readability constraints")
@@ -135,12 +136,14 @@ def _run_once(
         object_centers_px=rendered.object_centers_px,
         width=int(rendered.image.width),
         height=int(rendered.image.height),
+        object_specs=[dict(spec) for spec in dataset["object_specs"]],
     )
     raw_layout_stats = rendered_layout_stats(
         object_bboxes_px=raw_object_bboxes_px,
         object_centers_px=rendered.object_centers_px,
         width=int(rendered.image.width),
         height=int(rendered.image.height),
+        object_specs=[dict(spec) for spec in dataset["object_specs"]],
     )
     image, post_noise_meta = apply_post_image_noise(
         rendered.image,

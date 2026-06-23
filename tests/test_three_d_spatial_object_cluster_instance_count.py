@@ -25,6 +25,7 @@ from trace.tasks.three_d.object_cluster.shared.defaults import (
     COLOR_READOUT_CLUSTER_SHAPE_TYPES,
     COLOR_SAFE_CLUSTER_SHAPE_TYPES,
     COUNTABLE_SHAPE_TYPES,
+    MAX_RENDERED_CUMULATIVE_OCCLUSION_FRACTION,
     MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION,
     MAX_RENDERED_PAIRWISE_OVERLAP_PX,
     MIN_RENDERED_VISIBLE_BBOX_FRACTION,
@@ -300,6 +301,14 @@ def test_object_cluster_total_object_count_answer_and_annotation() -> None:
     max_overlap_fraction, max_overlap_pixels = _max_pairwise_render_overlap(render_map["object_bboxes_px"])
     assert max_overlap_fraction <= float(MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION)
     assert max_overlap_pixels <= float(MAX_RENDERED_PAIRWISE_OVERLAP_PX)
+    raw_rendered_stats = output.trace_payload["render_spec"]["raw_rendered_layout_stats"]
+    assert float(raw_rendered_stats["min_visible_bbox_fraction"]) >= float(MIN_RENDERED_VISIBLE_BBOX_FRACTION)
+    assert float(raw_rendered_stats["max_depth_aware_occlusion_fraction"]) <= float(
+        MAX_RENDERED_CUMULATIVE_OCCLUSION_FRACTION
+    )
+    assert float(raw_rendered_stats["min_depth_aware_final_visible_bbox_fraction"]) >= float(
+        MIN_RENDERED_VISIBLE_BBOX_FRACTION
+    )
     assert all(str(spec["shape_type"]) == "button" for spec in object_specs)
     assert all(str(spec["shape_type"]) in set(NAMED_CLUSTER_SHAPE_TYPES) for spec in object_specs)
     assert all(spec["fill_rgb"] == list(PROMPT_COLOR_RGB[str(spec["color_name"])]) for spec in object_specs)

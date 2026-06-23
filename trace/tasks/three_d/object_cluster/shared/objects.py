@@ -28,6 +28,7 @@ from .defaults import (
     CLUSTER_DIMENSION_SCALE,
     MAX_PAIRWISE_OVERLAP_FRACTION,
     MAX_PAIRWISE_OVERLAP_PX,
+    MAX_RENDERED_CUMULATIVE_OCCLUSION_FRACTION,
     MAX_RENDERED_PAIRWISE_OVERLAP_FRACTION,
     MAX_RENDERED_PAIRWISE_OVERLAP_PX,
     MIN_RENDERED_BBOX_SIDE_PX,
@@ -70,6 +71,48 @@ def bbox_visible_fraction(
     return float(visible) / float(full_area)
 
 
+def _bbox_intersection(bbox_a: Sequence[float], bbox_b: Sequence[float]) -> List[float] | None:
+    """Return the axis-aligned intersection rectangle, if non-empty."""
+
+    x0 = max(float(bbox_a[0]), float(bbox_b[0]))
+    y0 = max(float(bbox_a[1]), float(bbox_b[1]))
+    x1 = min(float(bbox_a[2]), float(bbox_b[2]))
+    y1 = min(float(bbox_a[3]), float(bbox_b[3]))
+    if x1 <= x0 or y1 <= y0:
+        return None
+    return [x0, y0, x1, y1]
+
+
+def rectangle_union_area(rectangles: Sequence[Sequence[float]]) -> float:
+    """Return exact union area for a small set of axis-aligned rectangles."""
+
+    rects = [tuple(float(value) for value in rect) for rect in rectangles if bbox_area(rect) > 0.0]
+    if not rects:
+        return 0.0
+    x_values = sorted({coord for x0, _y0, x1, _y1 in rects for coord in (x0, x1)})
+    total = 0.0
+    for left, right in zip(x_values, x_values[1:]):
+        if right <= left:
+            continue
+        intervals: List[Tuple[float, float]] = []
+        for x0, y0, x1, y1 in rects:
+            if x0 < right and x1 > left:
+                intervals.append((float(y0), float(y1)))
+        if not intervals:
+            continue
+        merged_height = 0.0
+        current_start, current_end = sorted(intervals)[0]
+        for start, end in sorted(intervals)[1:]:
+            if start <= current_end:
+                current_end = max(current_end, end)
+            else:
+                merged_height += current_end - current_start
+                current_start, current_end = start, end
+        merged_height += current_end - current_start
+        total += (right - left) * merged_height
+    return float(total)
+
+
 def clip_bbox_to_canvas(
     bbox: Sequence[float],
     *,
@@ -97,6 +140,79 @@ def clip_object_bboxes_to_canvas(
     return {
         str(object_id): clip_bbox_to_canvas(bbox, width=int(width), height=int(height))
         for object_id, bbox in object_bboxes_px.items()
+    }
+
+
+def object_draw_order_ranks(object_specs: Sequence[Mapping[str, Any]]) -> Dict[str, int]:
+    """Return renderer draw-order ranks keyed by object id.
+
+    Rank 0 is drawn first; larger ranks are drawn later and can visually occlude
+    smaller-rank objects.
+    """
+
+    ordered = sorted(
+        [dict(spec) for spec in object_specs],
+        key=lambda item: float(item["camera_distance"]) + float(item.get("render_order_bias", 0.0)),
+        reverse=True,
+    )
+    return {str(spec["object_id"]): int(index) for index, spec in enumerate(ordered)}
+
+
+def depth_aware_occlusion_stats(
+    object_bboxes_px: Mapping[str, Sequence[float]],
+    *,
+    object_specs: Sequence[Mapping[str, Any]],
+    width: int,
+    height: int,
+) -> Dict[str, Any]:
+    """Measure cumulative bbox occlusion from objects painted later in draw order."""
+
+    bboxes = {str(key): list(value) for key, value in object_bboxes_px.items()}
+    ranks = object_draw_order_ranks(object_specs)
+    canvas_bbox = [0.0, 0.0, float(width), float(height)]
+    missing = sorted(str(object_id) for object_id in bboxes if str(object_id) not in ranks)
+    per_object: Dict[str, Dict[str, float]] = {}
+    max_occlusion_fraction = 0.0
+    min_final_visible_fraction = 1.0
+    if missing:
+        return {
+            "missing_draw_order_object_ids": list(missing),
+            "max_depth_aware_occlusion_fraction": 1.0,
+            "min_depth_aware_final_visible_bbox_fraction": 0.0,
+            "per_object": {},
+        }
+    for object_id, bbox in bboxes.items():
+        full_area = max(1.0, bbox_area(bbox))
+        visible_bbox = _bbox_intersection(bbox, canvas_bbox)
+        canvas_visible_area = bbox_area(visible_bbox) if visible_bbox is not None else 0.0
+        occlusion_rects: List[List[float]] = []
+        for other_id, other_bbox in bboxes.items():
+            if str(other_id) == str(object_id):
+                continue
+            if int(ranks[str(other_id)]) <= int(ranks[str(object_id)]):
+                continue
+            if visible_bbox is None:
+                continue
+            intersection = _bbox_intersection(visible_bbox, other_bbox)
+            if intersection is not None:
+                occlusion_rects.append(intersection)
+        occluded_area = min(canvas_visible_area, rectangle_union_area(occlusion_rects))
+        final_visible_area = max(0.0, canvas_visible_area - occluded_area)
+        canvas_visible_fraction = float(canvas_visible_area) / full_area
+        occlusion_fraction = float(occluded_area) / full_area
+        final_visible_fraction = float(final_visible_area) / full_area
+        max_occlusion_fraction = max(max_occlusion_fraction, occlusion_fraction)
+        min_final_visible_fraction = min(min_final_visible_fraction, final_visible_fraction)
+        per_object[str(object_id)] = {
+            "canvas_visible_fraction": round(float(canvas_visible_fraction), 5),
+            "depth_aware_occlusion_fraction": round(float(occlusion_fraction), 5),
+            "depth_aware_final_visible_bbox_fraction": round(float(final_visible_fraction), 5),
+        }
+    return {
+        "missing_draw_order_object_ids": [],
+        "max_depth_aware_occlusion_fraction": round(float(max_occlusion_fraction), 5),
+        "min_depth_aware_final_visible_bbox_fraction": round(float(min_final_visible_fraction), 5),
+        "per_object": dict(sorted(per_object.items())),
     }
 
 
@@ -659,6 +775,7 @@ def rendered_bboxes_are_valid(
     width: int,
     height: int,
     object_count: int,
+    object_specs: Sequence[Mapping[str, Any]] = (),
     annotation_object_ids: Sequence[str] = (),
 ) -> bool:
     """Validate the final rendered object boxes that reviewers actually inspect."""
@@ -668,6 +785,7 @@ def rendered_bboxes_are_valid(
         object_centers_px=object_centers_px,
         width=int(width),
         height=int(height),
+        object_specs=object_specs,
     )
     if float(stats["min_visible_bbox_fraction"]) < float(MIN_RENDERED_VISIBLE_BBOX_FRACTION):
         return False
@@ -700,6 +818,19 @@ def rendered_bboxes_are_valid(
         for object_id in annotation_ids
     ):
         return False
+    if object_specs:
+        occlusion_stats = depth_aware_occlusion_stats(
+            object_bboxes_px,
+            object_specs=object_specs,
+            width=int(width),
+            height=int(height),
+        )
+        if occlusion_stats["missing_draw_order_object_ids"]:
+            return False
+        if float(occlusion_stats["max_depth_aware_occlusion_fraction"]) > float(MAX_RENDERED_CUMULATIVE_OCCLUSION_FRACTION):
+            return False
+        if float(occlusion_stats["min_depth_aware_final_visible_bbox_fraction"]) < float(MIN_RENDERED_VISIBLE_BBOX_FRACTION):
+            return False
     for index, bbox_a in enumerate(bboxes):
         area_a = bbox_area(bbox_a)
         for bbox_b in bboxes[index + 1 :]:
@@ -728,6 +859,7 @@ def rendered_layout_stats(
     *,
     width: int,
     height: int,
+    object_specs: Sequence[Mapping[str, Any]] = (),
 ) -> Dict[str, Any]:
     """Summarize final rendered visibility and spread for trace/debug audits."""
 
@@ -753,7 +885,7 @@ def rendered_layout_stats(
             overlap = _bbox_intersection_area(bbox_a, bbox_b)
             max_overlap_pixels = max(max_overlap_pixels, float(overlap))
             max_overlap_fraction = max(max_overlap_fraction, float(overlap) / max(1.0, min(area_a, bbox_area(bbox_b))))
-    return {
+    stats = {
         "object_count": int(len(bboxes)),
         "center_inside_canvas_count": int(center_inside_count),
         "center_x_span_px": round(float(max(center_x_values) - min(center_x_values)) if center_x_values else 0.0, 3),
@@ -762,6 +894,22 @@ def rendered_layout_stats(
         "max_pairwise_overlap_fraction": round(float(max_overlap_fraction), 5),
         "max_pairwise_overlap_px": round(float(max_overlap_pixels), 3),
     }
+    if object_specs:
+        occlusion_stats = depth_aware_occlusion_stats(
+            object_bboxes_px,
+            object_specs=object_specs,
+            width=int(width),
+            height=int(height),
+        )
+        stats.update(
+            {
+                "max_depth_aware_occlusion_fraction": float(occlusion_stats["max_depth_aware_occlusion_fraction"]),
+                "min_depth_aware_final_visible_bbox_fraction": float(
+                    occlusion_stats["min_depth_aware_final_visible_bbox_fraction"]
+                ),
+            }
+        )
+    return stats
 
 
 def camera_record(camera, *, yaw_band: Sequence[float]) -> Dict[str, Any]:

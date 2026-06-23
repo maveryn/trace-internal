@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 import math
 from typing import Tuple
 
@@ -9,20 +10,14 @@ from trace.tasks.geometry.shared.measurement_rendering import round1
 
 from .state import FoldGeometry
 
-FOLD_CASES: Tuple[Tuple[int, int], ...] = (
-    (10, 6),
-    (12, 8),
-    (14, 6),
-    (15, 9),
-    (16, 10),
-    (18, 12),
-    (20, 14),
-    (12, 5),
-    (14, 10),
-    (16, 7),
-    (18, 9),
-    (20, 11),
-)
+FoldCase = Tuple[int, int]
+FoldAnswerCases = Tuple[float, Tuple[FoldCase, ...]]
+
+_MIN_HEIGHT_UNITS = 10
+_MAX_HEIGHT_UNITS = 34
+_MIN_FOLDED_OFFSET_UNITS = 4
+_MIN_ANSWER_DEGREES = 50.0
+_MAX_ANSWER_DEGREES = 78.0
 
 
 def fold_geometry(height_units: float, folded_offset_units: float) -> FoldGeometry:
@@ -46,10 +41,33 @@ def fold_geometry(height_units: float, folded_offset_units: float) -> FoldGeomet
     )
 
 
+@lru_cache(maxsize=1)
+def fold_answer_cases() -> tuple[FoldAnswerCases, ...]:
+    """Return visually stable fold cases grouped by rounded answer value.
+
+    Sampling uses the rounded answer as the first-stage support so review and
+    training data do not over-represent common integer height/offset ratios
+    that collapse to the same angle.
+    """
+
+    grouped: dict[float, list[FoldCase]] = {}
+    for height in range(_MIN_HEIGHT_UNITS, _MAX_HEIGHT_UNITS + 1):
+        for offset in range(_MIN_FOLDED_OFFSET_UNITS, height - 2):
+            geometry = fold_geometry(float(height), float(offset))
+            answer = round1(geometry.half_angle_degrees)
+            if _MIN_ANSWER_DEGREES <= float(answer) <= _MAX_ANSWER_DEGREES:
+                grouped.setdefault(float(answer), []).append((int(height), int(offset)))
+    return tuple(
+        (float(answer), tuple(cases))
+        for answer, cases in sorted(grouped.items(), key=lambda item: float(item[0]))
+        if cases
+    )
+
+
 def fold_answer_support() -> tuple[float, ...]:
-    """Return answer support induced by the configured folded-corner cases."""
+    """Return the rounded answer support for paper-fold angle samples."""
 
-    return tuple(round1(fold_geometry(height, offset).half_angle_degrees) for height, offset in FOLD_CASES)
+    return tuple(float(answer) for answer, _cases in fold_answer_cases())
 
 
-__all__ = ["FOLD_CASES", "fold_answer_support", "fold_geometry"]
+__all__ = ["FoldAnswerCases", "FoldCase", "fold_answer_cases", "fold_answer_support", "fold_geometry"]

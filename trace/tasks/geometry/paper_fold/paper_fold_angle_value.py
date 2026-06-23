@@ -19,7 +19,7 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import PromptTraceArtifacts, build_prompt_query_spec
 
 from .shared.annotations import paper_fold_bbox_annotation
-from .shared.construction import FOLD_CASES, fold_answer_support, fold_geometry
+from .shared.construction import fold_answer_cases, fold_answer_support, fold_geometry
 from .shared.defaults import (
     POST_IMAGE_NOISE_DEFAULTS,
     SCENE_DEFAULTS,
@@ -52,12 +52,21 @@ def _resolve_plan(
     """Bind the single fold-angle objective to one valid numeric construction."""
 
     del gen_defaults
-    index = resolve_selection_index(
+    answer_cases = fold_answer_cases()
+    if not answer_cases:
+        raise ValueError("paper fold answer support must not be empty")
+    answer_index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.single.fold_case",
+        namespace=f"{TASK_ID}.single.answer_support",
     )
-    default_height, default_offset = FOLD_CASES[int(index) % len(FOLD_CASES)]
+    selected_support_answer, selected_cases = answer_cases[int(answer_index) % len(answer_cases)]
+    case_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.single.answer_case.{selected_support_answer:.1f}",
+    )
+    default_height, default_offset = selected_cases[int(case_index) % len(selected_cases)]
     height_units = float(params.get("height_units", default_height))
     folded_offset_units = float(params.get("folded_offset_units", default_offset))
     if not (2.0 < folded_offset_units < height_units):
@@ -81,6 +90,9 @@ def _resolve_plan(
             "known_angle_degrees": float(known_angle),
             "target_role": "half_angle_x",
             "answer_value": float(answer),
+            "answer_support": [f"{float(value):.1f}" for value in support_values],
+            "answer_support_size": int(len(support_values)),
+            "selected_support_answer": float(selected_support_answer),
             "formula_family": "fold_crease_bisects_reflected_angle",
             "reasoning_steps": 1,
         },

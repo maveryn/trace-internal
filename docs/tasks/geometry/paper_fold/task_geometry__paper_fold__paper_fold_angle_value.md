@@ -3,9 +3,10 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `paper_fold`
-5. Query id: `single`
-6. Answer schema: `number`
-7. Annotation schema: `bbox_map`
+3. Task id: `task_geometry__paper_fold__paper_fold_angle_value`
+4. Query id: `single`
+5. Answer schema: `number`
+6. Annotation schema: `bbox_map`
 
 ## Program Contract
 - `solve_formula(visible_paper_fold_angle_labels, unknown_role=half_angle_x, formula_schema=fold_crease_bisects_reflected_angle, output=angle_degrees_1dp); scene=paper_fold; scope=paper_fold_angle_value`
@@ -21,6 +22,9 @@ Prompt-facing annotation uses pixel-space witnesses only. The task returns a `bb
 - `given_angle_label`: the visible box around the given total angle label.
 
 Graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+
+## Sampling
+The generator samples a rounded angle answer uniformly from a broad finite support, then selects a valid folded-corner construction for that answer. This avoids over-representing common height/offset ratios that collapse to the same rounded angle.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import Counter
+
 import pytest
 
 from trace.tasks.registry import create_task
@@ -63,3 +65,18 @@ def test_paper_fold_explicit_geometry_overrides_still_bind_same_trace() -> None:
     assert witness["height_units"] == 16.0
     assert witness["folded_offset_units"] == 10.0
     assert witness["answer_value"] == out.answer_gt.value
+
+
+def test_paper_fold_samples_broad_answer_support() -> None:
+    task = create_task(TASK_ID)
+    answers = []
+    support_sizes = set()
+    for seed in range(100):
+        out = task.generate(instance_seed=seed, params={}, max_attempts=50)
+        answers.append(out.answer_gt.value)
+        support = out.trace_payload["query_spec"]["params"]["answer_support"]
+        support_sizes.add(len(support))
+
+    assert support_sizes == {190}
+    assert len(set(answers)) >= 60
+    assert max(Counter(answers).values()) <= 4

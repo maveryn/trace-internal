@@ -70,7 +70,7 @@ class IsoFarmsteadEntity:
 
 @dataclass(frozen=True)
 class IsoFarmsteadTransition:
-    """One visible ramp or stair transition between adjacent terrain levels."""
+    """Optional visible transition record between adjacent terrain levels."""
 
     transition_id: str
     transition_type: str

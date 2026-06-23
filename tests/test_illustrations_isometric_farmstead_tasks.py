@@ -48,6 +48,8 @@ def test_isometric_farmstead_renderer_is_deterministic_and_profile_safe() -> Non
         assert first.trace["farm_patches"]
         assert first.trace["context_object_counts"]["tree"] >= 1
         assert first.trace["context_object_counts"]["domestic_animal"] >= 1
+        assert first.trace["transition_tile_ids"] == []
+        assert first.transitions == ()
         assert all(transition.upper_level in active_levels for transition in first.transitions)
         assert all(transition.lower_level in active_levels for transition in first.transitions)
         assert first.trace["eligible_tile_ids"]

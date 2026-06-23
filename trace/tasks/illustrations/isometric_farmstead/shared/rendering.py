@@ -16,7 +16,6 @@ from .state import (
     IsoFarmsteadEntity,
     IsoFarmsteadScene,
     IsoFarmsteadTile,
-    IsoFarmsteadTransition,
     IsoPoint,
     IsoPolygon,
 )
@@ -356,10 +355,10 @@ def _sample_farm_patches(
 
 def _terrain_colors(terrain: str, level: int) -> tuple[RGB, RGB, RGB]:
     base_by_level = {
-        0: (76, 142, 72),
-        1: (100, 166, 82),
-        2: (124, 188, 94),
-        3: (142, 203, 106),
+        0: (58, 124, 66),
+        1: (101, 169, 80),
+        2: (150, 207, 100),
+        3: (171, 222, 113),
     }
     fill = base_by_level.get(int(level), base_by_level[0])
     if terrain == "crop":
@@ -370,7 +369,7 @@ def _terrain_colors(terrain: str, level: int) -> tuple[RGB, RGB, RGB]:
         fill = (111, 172, 88)
     elif terrain == "pasture":
         fill = (103, 171, 92)
-    return fill, _shade(fill, -42), _shade(fill, 34)
+    return fill, _shade(fill, -48), _shade(fill, 38)
 
 
 def _draw_tile_top(draw: ImageDraw.ImageDraw, layout: IsoLayout, tile: IsoFarmsteadTile, rng: random.Random) -> None:
@@ -439,88 +438,6 @@ def _draw_level_faces(draw: ImageDraw.ImageDraw, layout: IsoLayout, level_grid: 
                     }
                 )
     return records
-
-
-def _transition_specs(
-    rng: random.Random,
-    *,
-    level_grid: Mapping[tuple[int, int], int],
-    active_levels: Sequence[int],
-) -> list[tuple[str, str, tuple[int, int], tuple[int, int], int, int, str]]:
-    specs: list[tuple[str, str, tuple[int, int], tuple[int, int], int, int, str]] = []
-    for level in [value for value in active_levels if int(value) > 0]:
-        candidates: list[tuple[str, tuple[int, int], tuple[int, int]]] = []
-        for (col, row), tile_level in level_grid.items():
-            if int(tile_level) != int(level):
-                continue
-            for side, lower in (("south", (int(col), int(row) + 1)), ("east", (int(col) + 1, int(row)))):
-                if int(level_grid.get(lower, -1)) == int(level) - 1:
-                    candidates.append((side, lower, (int(col), int(row))))
-        if not candidates:
-            continue
-        side, lower, upper = rng.choice(candidates)
-        kind = "ramp" if level % 2 else "stair"
-        specs.append((f"transition_{level - 1}_{level}", kind, lower, upper, level - 1, level, str(side)))
-    return specs
-
-
-def _draw_transition(draw: ImageDraw.ImageDraw, layout: IsoLayout, spec: tuple[str, str, tuple[int, int], tuple[int, int], int, int, str]) -> IsoFarmsteadTransition:
-    """Draw one ramp/stair over a sampled level boundary and record its blocking footprint."""
-
-    transition_id, kind, lower_xy, upper_xy, lower_level, upper_level, side = spec
-    lower_top, lower_right, _, lower_left = _tile_vertices(layout, lower_xy[0], lower_xy[1], lower_level)
-    upper_top, upper_right, upper_bottom, upper_left = _tile_vertices(layout, upper_xy[0], upper_xy[1], upper_level)
-    if str(side) == "east":
-        polygon: IsoPolygon = (upper_right, upper_bottom, lower_left, lower_top)
-        line_pairs = ((upper_right, lower_top), (upper_bottom, lower_left))
-    else:
-        polygon = (upper_left, upper_bottom, lower_right, lower_top)
-        line_pairs = ((upper_left, lower_top), (upper_bottom, lower_right))
-    points = [(int(round(x)), int(round(y))) for x, y in polygon]
-    if kind == "ramp":
-        draw.polygon(points, fill=(191, 145, 86), outline=(96, 70, 45))
-        draw.line(line_pairs[0], fill=(100, 71, 45), width=2)
-        draw.line(line_pairs[1], fill=(141, 100, 58), width=2)
-        for t in (0.33, 0.66):
-            lx = line_pairs[0][0][0] + (line_pairs[0][1][0] - line_pairs[0][0][0]) * t
-            ly = line_pairs[0][0][1] + (line_pairs[0][1][1] - line_pairs[0][0][1]) * t
-            rx = line_pairs[1][0][0] + (line_pairs[1][1][0] - line_pairs[1][0][0]) * t
-            ry = line_pairs[1][0][1] + (line_pairs[1][1][1] - line_pairs[1][0][1]) * t
-            draw.line((int(lx), int(ly), int(rx), int(ry)), fill=(214, 164, 97), width=2)
-    else:
-        draw.polygon(points, fill=(102, 88, 66), outline=(72, 63, 50))
-        center: IsoPoint = (
-            (float(upper_top[0]) + float(upper_right[0]) + float(upper_bottom[0]) + float(upper_left[0])) / 4.0,
-            (float(upper_top[1]) + float(upper_right[1]) + float(upper_bottom[1]) + float(upper_left[1])) / 4.0,
-        )
-        facets: tuple[tuple[tuple[IsoPoint, IsoPoint, IsoPoint], RGB], ...] = (
-            ((upper_top, upper_right, center), (185, 172, 123)),
-            ((upper_right, upper_bottom, center), (157, 143, 102)),
-            ((upper_bottom, upper_left, center), (132, 121, 91)),
-            ((upper_left, upper_top, center), (170, 158, 115)),
-        )
-        for facet, fill in facets:
-            draw.polygon([(int(round(x)), int(round(y))) for x, y in facet], fill=fill)
-        outline = (70, 63, 48)
-        highlight = (231, 219, 164)
-        shadow = (89, 77, 57)
-        draw.line((upper_top, upper_right), fill=highlight, width=2)
-        draw.line((upper_left, upper_top), fill=highlight, width=2)
-        draw.line((upper_right, upper_bottom), fill=shadow, width=2)
-        draw.line((upper_bottom, upper_left), fill=shadow, width=2)
-        for vertex in (upper_top, upper_right, upper_bottom, upper_left):
-            draw.line((center, vertex), fill=outline, width=2)
-    return IsoFarmsteadTransition(
-        transition_id=str(transition_id),
-        transition_type=str(kind),
-        lower_tile_id=_tile_id(lower_xy[0], lower_xy[1]),
-        upper_tile_id=_tile_id(upper_xy[0], upper_xy[1]),
-        lower_level=int(lower_level),
-        upper_level=int(upper_level),
-        polygon_xy=polygon,
-        bbox_xyxy=_point_bbox(polygon),
-        metadata={"open_edge_side": str(side)},
-    )
 
 
 def _add_entity(
@@ -759,10 +676,7 @@ def render_isometric_farmstead_scene(
         active_max_level=int(active_max_level),
         layout_family=str(layout_family),
     )
-    transition_specs = _transition_specs(rng, level_grid=level_grid, active_levels=active_levels)
-    transition_tile_ids = {_tile_id(spec[2][0], spec[2][1]) for spec in transition_specs} | {
-        _tile_id(spec[3][0], spec[3][1]) for spec in transition_specs
-    }
+    transition_tile_ids: set[str] = set()
     farm_patches, farm_terrain_by_cell, farm_patch_tile_ids = _sample_farm_patches(
         rng,
         cols=cols,
@@ -781,9 +695,8 @@ def render_isometric_farmstead_scene(
 
     for tile in tiles:
         _draw_tile_top(draw, layout, tile, tile_rng)
-    open_edges = {(spec[3][0], spec[3][1], spec[6]) for spec in transition_specs}
-    face_records = _draw_level_faces(draw, layout, level_grid, open_edges=open_edges)
-    transitions = tuple(_draw_transition(draw, layout, spec) for spec in transition_specs)
+    face_records = _draw_level_faces(draw, layout, level_grid, open_edges=set())
+    transitions = ()
     entities, occupied_tile_ids = _draw_context_entities(
         image,
         layout,
@@ -814,7 +727,6 @@ def render_isometric_farmstead_scene(
         )
         label_bboxes[str(tile_id)] = tuple(float(value) for value in box)
 
-    transition_tile_ids = {transition.lower_tile_id for transition in transitions} | {transition.upper_tile_id for transition in transitions}
     excluded_tile_ids = set(transition_tile_ids) | set(occupied_tile_ids) | set(farm_patch_tile_ids)
     trace = {
         "renderer_id": RENDERER_ID,

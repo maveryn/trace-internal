@@ -10,13 +10,13 @@ from trace.core.seed import spawn_rng
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.geometry.shared.coordinate_panel_grid import (
+    BBox,
     CoordinatePanelConfig,
     coordinate_panel_layout,
     draw_coordinate_panel_grid,
     draw_endpoint,
     graph_point_to_panel_pixel,
     panel_bbox_for_index,
-    plot_bbox_for_panel,
 )
 from trace.tasks.geometry.shared.diagram_style import (
     geometry_coordinate_panel_style_from_diagram_style,
@@ -65,6 +65,39 @@ _INTERSECTION_COLORS: tuple[Color, ...] = ((36, 42, 52), (54, 58, 68), (45, 67, 
 def _panel_config(option_count: int) -> CoordinatePanelConfig:
     columns, rows = panel_grid_shape_for_option_count(int(option_count))
     return CoordinatePanelConfig(grid_min=GRID_MIN, grid_max=GRID_MAX, columns=int(columns), rows=int(rows))
+
+
+def _function_panel_layout(canvas_width: int, canvas_height: int, *, config: CoordinatePanelConfig) -> dict[str, int]:
+    if int(config.columns) != 2 or int(config.rows) != 2:
+        return coordinate_panel_layout(int(canvas_width), int(canvas_height), config=config)
+
+    gap = max(18, int(round(float(min(int(canvas_width), int(canvas_height))) * 0.025)))
+    margin_y = max(12, int(round(float(canvas_height) * 0.018)))
+    max_panel_from_height = (int(canvas_height) - (2 * margin_y) - gap) // 2
+    max_panel_from_width = (int(canvas_width) - 56 - gap) // 2
+    panel_size = int(max(240, min(max_panel_from_height, max_panel_from_width)))
+    content_width = (2 * panel_size) + gap
+    content_height = (2 * panel_size) + gap
+    return {
+        "margin_x": int((int(canvas_width) - content_width) // 2),
+        "margin_y": int((int(canvas_height) - content_height) // 2),
+        "gap_x": int(gap),
+        "gap_y": int(gap),
+        "panel_width": int(panel_size),
+        "panel_height": int(panel_size),
+    }
+
+
+def _plot_bbox_for_function_panel(panel_bbox: BBox) -> BBox:
+    left, top, right, bottom = panel_bbox
+    panel_w = int(right) - int(left)
+    panel_h = int(bottom) - int(top)
+    plot_size = int(max(160, min(panel_w - 44, panel_h - 44)))
+    plot_left = int(left) + ((panel_w - plot_size) // 2)
+    plot_top = int(top) + max(24, ((panel_h - plot_size) // 2) - 2)
+    if plot_top + plot_size > int(bottom) - 18:
+        plot_top = int(bottom) - 18 - plot_size
+    return (int(plot_left), int(plot_top), int(plot_left + plot_size), int(plot_top + plot_size))
 
 
 def _relation_pixels(relation: RelationSpec, *, plot_bbox, config: CoordinatePanelConfig) -> list[Point]:
@@ -174,7 +207,7 @@ def render_property_scene(
     draw = ImageDraw.Draw(image)
     config = _panel_config(len(selection.label_pool))
     panel_style = geometry_coordinate_panel_style_from_diagram_style(diagram_style)
-    layout = coordinate_panel_layout(int(width), int(height), config=config)
+    layout = _function_panel_layout(int(width), int(height), config=config)
     rng = spawn_rng(int(instance_seed), "geometry.function_panels.property.render")
     palette_index = int(rng.randrange(len(_LINE_PALETTES)))
     line_colors = tuple(_LINE_PALETTES[palette_index])
@@ -183,7 +216,7 @@ def render_property_scene(
     plot_bboxes: dict[str, list[int]] = {}
     for index, label in enumerate(selection.label_pool):
         panel_bbox = panel_bbox_for_index(layout, int(index), config=config)
-        plot_bbox = plot_bbox_for_panel(panel_bbox)
+        plot_bbox = _plot_bbox_for_function_panel(panel_bbox)
         draw_coordinate_panel_grid(draw, panel_bbox=panel_bbox, plot_bbox=plot_bbox, label=str(label), config=config, style=panel_style)
         _draw_relation(
             draw,
@@ -245,7 +278,7 @@ def render_intersection_scene(
     draw = ImageDraw.Draw(image)
     config = _panel_config(len(selection.label_pool))
     panel_style = geometry_coordinate_panel_style_from_diagram_style(diagram_style)
-    layout = coordinate_panel_layout(image.width, image.height, config=config)
+    layout = _function_panel_layout(image.width, image.height, config=config)
     rng = spawn_rng(int(instance_seed), "geometry.function_panels.intersection.render")
     palette_index = int(rng.randrange(len(_OBJECT_COLOR_PALETTES)))
     object_colors = tuple(_OBJECT_COLOR_PALETTES[palette_index])
@@ -257,7 +290,7 @@ def render_intersection_scene(
     point_bboxes: dict[str, list[list[int]]] = {}
     for index, label in enumerate(selection.label_pool):
         panel_bbox = panel_bbox_for_index(layout, int(index), config=config)
-        plot_bbox = plot_bbox_for_panel(panel_bbox)
+        plot_bbox = _plot_bbox_for_function_panel(panel_bbox)
         draw_coordinate_panel_grid(draw, panel_bbox=panel_bbox, plot_bbox=plot_bbox, label=str(label), config=config, style=panel_style)
         point_bboxes[str(label)] = _draw_intersection_panel(
             draw,

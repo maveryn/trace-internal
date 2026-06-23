@@ -139,10 +139,12 @@
     "object_description_path_sequence_label": "a Sokoban-style grid with walls, boxes, a start cell S, a goal cell G, and labeled move-sequence options",
     "object_description_box_target_relation_label": "a Sokoban-style grid with walls, labeled boxes, labeled targets, and option letters on candidate cells or pairs",
     "answer_hint_option_letter": "set \"answer\" to only the selected option letter",
-    "annotation_hint_option_panel": "set \"annotation\" to a JSON array containing the selected option-panel bounding box as [x0,y0,x1,y1]",
-    "annotation_hint_relation_option_marker": "set \"annotation\" to a JSON array of pixel-space bounding boxes [x0,y0,x1,y1] for the selected option-marked cell or cells",
-    "json_example_option_label": "{\"annotation\":[[520,120,700,210]],\"answer\":\"B\"}",
-    "json_example_relation_option_label": "{\"annotation\":[[220,180,280,240],[360,300,420,360]],\"answer\":\"B\"}",
+    "annotation_hint_option_panel_bbox": "set \"annotation\" to the selected option-panel bounding box as [x0,y0,x1,y1] in image pixels",
+    "annotation_hint_relation_cell_bbox": "set \"annotation\" to the selected option-marked cell bounding box as [x0,y0,x1,y1] in image pixels",
+    "annotation_hint_relation_pair_bbox_set": "set \"annotation\" to a JSON array of two image-pixel bounding boxes [x0,y0,x1,y1] for the selected same-letter box and target cells",
+    "json_example_option_label_bbox": "{\"annotation\":[520,120,700,210],\"answer\":\"B\"}",
+    "json_example_relation_cell_label_bbox": "{\"annotation\":[220,180,280,240],\"answer\":\"B\"}",
+    "json_example_relation_pair_label_bbox_set": "{\"annotation\":[[220,180,280,240],[360,300,420,360]],\"answer\":\"B\"}",
     "json_example_answer_only_option_label": "{\"answer\":\"B\"}"
   }
 }

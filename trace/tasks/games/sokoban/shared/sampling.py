@@ -1,0 +1,534 @@
+"""Identity-free Sokoban scene sampling primitives."""
+
+from __future__ import annotations
+
+from string import ascii_uppercase
+from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
+
+from trace.core.seed import spawn_rng
+from trace.tasks.games.shared.sampling import (
+    get_games_int_param as _get_int,
+    get_games_int_range as _get_range,
+    resolve_games_named_axis,
+)
+from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
+
+from .defaults import GEN_DEFAULTS
+from .rules import (
+    add_cells,
+    json_safe,
+    largest_component,
+    manhattan,
+    moves_from_path,
+    sequence_description,
+    sequence_text,
+    simulate_grid_path,
+    shortest_path,
+)
+from .state import (
+    DIRECTIONS,
+    PATH_CONTRACT_KIND,
+    PATH_MODE_BLOCKED,
+    PATH_MODE_SHORTEST,
+    PATH_MODE_VALID,
+    PATH_OPTION_COUNT_SUPPORT,
+    RELATION_CONTRACT_KIND,
+    RELATION_MODE_NEAREST_BOX,
+    RELATION_MODE_NEAREST_TARGET,
+    RELATION_MODE_RANKED_PAIR,
+    RELATION_OPTION_COUNT_SUPPORT,
+    SUPPORTED_SCENE_VARIANTS,
+    Cell,
+    SokobanAxes,
+)
+
+
+def select_scene_axes(params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> SokobanAxes:
+    """Resolve scene-level rendering grammar axes."""
+
+    scene_variant, scene_variant_probabilities = resolve_games_named_axis(
+        task_id=str(namespace),
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=GEN_DEFAULTS,
+        namespace="scene_variant",
+        explicit_key="scene_variant",
+        weights_key="scene_variant_weights",
+        balance_flag_key="balanced_scene_variant_sampling",
+        supported_variants=SUPPORTED_SCENE_VARIANTS,
+    )
+    return SokobanAxes(
+        scene_variant=str(scene_variant),
+        scene_variant_probabilities=dict(scene_variant_probabilities),
+    )
+
+
+def select_option_count(
+    params: Mapping[str, Any],
+    *,
+    instance_seed: int,
+    namespace: str,
+    family: str,
+) -> tuple[int, tuple[int, ...], dict[str, float]]:
+    """Resolve path or relation option counts from scene-level config."""
+
+    if str(family) == "path":
+        support_key = "path_option_count_support"
+        fallback = PATH_OPTION_COUNT_SUPPORT
+        balance_key = "balanced_path_option_count_sampling"
+    elif str(family) == "relation":
+        support_key = "relation_option_count_support"
+        fallback = RELATION_OPTION_COUNT_SUPPORT
+        balance_key = "balanced_relation_option_count_sampling"
+    else:
+        raise ValueError(f"unsupported Sokoban option family: {family}")
+
+    option_count, probabilities = resolve_integer_choice(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=GEN_DEFAULTS,
+        support_key=str(support_key),
+        explicit_key="option_count",
+        fallback_support=fallback,
+        namespace=f"{namespace}.{family}.option_count",
+        balanced_flag_key=str(balance_key),
+        namespace_support_permutation=True,
+    )
+    support = resolve_integer_support(
+        params,
+        gen_defaults=GEN_DEFAULTS,
+        key=str(support_key),
+        fallback=fallback,
+    )
+    return int(option_count), tuple(int(value) for value in support), dict(probabilities)
+
+
+def select_rank(option_count: int, *, instance_seed: int) -> int:
+    """Choose the requested pair-rank axis for ranked relation scenes."""
+
+    return 2 + (int(instance_seed) % min(3, int(option_count) - 1))
+
+
+def sample_base_board(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+    open_bias: bool = False,
+) -> Dict[str, Any]:
+    """Sample a connected board with border walls and sparse internal walls."""
+
+    rng = spawn_rng(int(instance_seed), namespace)
+    row_min, row_max = _get_range(
+        params,
+        GEN_DEFAULTS,
+        min_key="board_rows_min",
+        max_key="board_rows_max",
+        fallback_min=6,
+        fallback_max=9,
+    )
+    col_min, col_max = _get_range(
+        params,
+        GEN_DEFAULTS,
+        min_key="board_cols_min",
+        max_key="board_cols_max",
+        fallback_min=6,
+        fallback_max=9,
+    )
+    wall_min, wall_max = _get_range(
+        params,
+        GEN_DEFAULTS,
+        min_key="internal_wall_count_min",
+        max_key="internal_wall_count_max",
+        fallback_min=2,
+        fallback_max=9,
+    )
+    if open_bias:
+        wall_max = max(0, min(int(wall_max), 4))
+    for _attempt in range(256):
+        rows = int(rng.randint(row_min, row_max))
+        cols = int(rng.randint(col_min, col_max))
+        walls: set[Cell] = set()
+        for row in range(rows):
+            walls.add((row, 0))
+            walls.add((row, cols - 1))
+        for col in range(cols):
+            walls.add((0, col))
+            walls.add((rows - 1, col))
+        interior = [(row, col) for row in range(1, rows - 1) for col in range(1, cols - 1)]
+        rng.shuffle(interior)
+        wall_count = int(rng.randint(wall_min, wall_max))
+        walls.update(interior[: min(wall_count, max(0, len(interior) // 4))])
+        component = largest_component(rows, cols, walls)
+        if len(component) >= max(12, int(0.55 * (rows - 2) * (cols - 2))):
+            return {
+                "rows": int(rows),
+                "cols": int(cols),
+                "walls": set(walls),
+                "component": list(component),
+            }
+    raise ValueError("could not sample connected Sokoban board")
+
+
+def _choose_option_labels(option_count: int) -> List[str]:
+    return list(ascii_uppercase[: int(option_count)])
+
+
+def _assign_option_labels(
+    *,
+    correct: Dict[str, Any],
+    distractors: Sequence[Dict[str, Any]],
+    option_count: int,
+    instance_seed: int,
+    cycle_stride: int = 3,
+) -> Tuple[List[Dict[str, Any]], str]:
+    labels = _choose_option_labels(option_count)
+    correct_index = (int(instance_seed) // max(1, int(cycle_stride))) % int(option_count)
+    option_specs: List[Dict[str, Any]] = []
+    distractor_iter = iter(list(distractors))
+    for index, label in enumerate(labels):
+        payload = dict(correct) if int(index) == int(correct_index) else dict(next(distractor_iter))
+        payload["option_label"] = str(label)
+        payload["is_correct"] = bool(int(index) == int(correct_index))
+        payload["option_id"] = f"option_{label}"
+        option_specs.append(payload)
+    return option_specs, str(labels[correct_index])
+
+
+def _sample_distinct_cells(
+    rng,
+    cells: Sequence[Cell],
+    count: int,
+    *,
+    forbidden: Iterable[Cell] = (),
+) -> List[Cell]:
+    forbidden_set = set(forbidden)
+    candidates = [tuple(cell) for cell in cells if tuple(cell) not in forbidden_set]
+    rng.shuffle(candidates)
+    if len(candidates) < int(count):
+        raise ValueError("not enough available Sokoban cells")
+    return candidates[: int(count)]
+
+
+def _mutated_sequence(base: Sequence[str], rng, *, alphabet: Sequence[str] = tuple(DIRECTIONS.keys())) -> List[str]:
+    seq = [str(item) for item in base]
+    if not seq:
+        return [str(alphabet[int(rng.randrange(len(alphabet)))])]
+    op = int(rng.randrange(3))
+    if op == 0:
+        idx = int(rng.randrange(len(seq)))
+        choices = [move for move in alphabet if move != seq[idx]]
+        seq[idx] = str(choices[int(rng.randrange(len(choices)))])
+    elif op == 1 and len(seq) > 2:
+        del seq[int(rng.randrange(len(seq)))]
+    else:
+        seq.insert(int(rng.randrange(len(seq) + 1)), str(alphabet[int(rng.randrange(len(alphabet)))]))
+    return seq
+
+
+def sample_path_sequence_dataset(
+    *,
+    path_mode: str,
+    option_count: int,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> Dict[str, Any]:
+    """Build one path-option Sokoban dataset for a task-owned path mode."""
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.path.{path_mode}")
+    dist_min, dist_max = _get_range(
+        params,
+        GEN_DEFAULTS,
+        min_key="path_length_min",
+        max_key="path_length_max",
+        fallback_min=4,
+        fallback_max=12,
+    )
+    for attempt in range(256):
+        board = sample_base_board(
+            params=params,
+            instance_seed=int(instance_seed) + attempt,
+            namespace=f"{namespace}.path.board",
+            open_bias=False,
+        )
+        rows, cols, walls = int(board["rows"]), int(board["cols"]), set(board["walls"])
+        component = list(board["component"])
+        box_count = int(rng.randint(1, 3))
+        boxes_cells = _sample_distinct_cells(rng, component, box_count, forbidden=())
+        boxes = {f"B{idx}": tuple(cell) for idx, cell in enumerate(boxes_cells, start=1)}
+        passable = set(component) - set(boxes.values())
+        candidate_pairs = []
+        shuffled = list(passable)
+        rng.shuffle(shuffled)
+        for start in shuffled[: min(len(shuffled), 36)]:
+            for goal in shuffled:
+                if start == goal:
+                    continue
+                path = shortest_path(passable, start, goal)
+                if path is None:
+                    continue
+                length = len(path) - 1
+                if dist_min <= length <= dist_max:
+                    candidate_pairs.append((start, goal, path))
+            if candidate_pairs:
+                break
+        if not candidate_pairs:
+            continue
+        start, goal, path = candidate_pairs[int(rng.randrange(len(candidate_pairs)))]
+        shortest_moves = moves_from_path(path)
+        if str(path_mode) == PATH_MODE_VALID:
+            correct_moves = list(shortest_moves)
+            if len(path) >= 2:
+                back = path[-2]
+                out_move = moves_from_path([goal, back])[0]
+                in_move = moves_from_path([back, goal])[0]
+                correct_moves = list(shortest_moves) + [out_move, in_move]
+            correct_kind = "valid_path"
+        elif str(path_mode) == PATH_MODE_BLOCKED:
+            prefix = list(shortest_moves[: max(1, len(shortest_moves) // 2)])
+            prefix_end = simulate_grid_path(passable, start, prefix)["end"]
+            blocked_moves = [
+                move
+                for move, delta in DIRECTIONS.items()
+                if add_cells(prefix_end, delta) not in passable
+            ]
+            if not blocked_moves:
+                continue
+            correct_moves = prefix + [str(blocked_moves[int(rng.randrange(len(blocked_moves)))])]
+            correct_kind = "blocked_path"
+        elif str(path_mode) == PATH_MODE_SHORTEST:
+            correct_moves = list(shortest_moves)
+            correct_kind = "shortest_path"
+        else:
+            raise ValueError(f"unsupported Sokoban path mode: {path_mode}")
+        seen = {sequence_text(correct_moves)}
+        distractors: List[Dict[str, Any]] = []
+        for _ in range(512):
+            if len(distractors) >= int(option_count) - 1:
+                break
+            candidate = _mutated_sequence(shortest_moves, rng)
+            sim = simulate_grid_path(passable, start, candidate)
+            if str(path_mode) == PATH_MODE_BLOCKED:
+                if sim["blocked_at_step"] is not None:
+                    continue
+            elif sim["blocked_at_step"] is None and sim["end"] == goal and (
+                str(path_mode) != PATH_MODE_SHORTEST or len(candidate) == len(shortest_moves)
+            ):
+                continue
+            key = sequence_text(candidate)
+            if key in seen:
+                continue
+            seen.add(key)
+            distractors.append({"kind": "move_sequence", "moves": list(candidate), "display_text": sequence_text(candidate)})
+        if len(distractors) < int(option_count) - 1:
+            continue
+        correct = {"kind": "move_sequence", "moves": list(correct_moves), "display_text": sequence_text(correct_moves)}
+        option_specs, answer_label = _assign_option_labels(
+            correct=correct,
+            distractors=distractors,
+            option_count=int(option_count),
+            instance_seed=int(instance_seed),
+        )
+        return {
+            "contract_kind": PATH_CONTRACT_KIND,
+            "path_mode": str(path_mode),
+            "rows": rows,
+            "cols": cols,
+            "walls": sorted([list(cell) for cell in walls]),
+            "component_cells": sorted([list(cell) for cell in component]),
+            "player_start": list(start),
+            "boxes_start": {label: list(cell) for label, cell in sorted(boxes.items())},
+            "targets": {"G": list(goal)},
+            "path_start": list(start),
+            "path_goal": list(goal),
+            "shortest_path_cells": [list(cell) for cell in path],
+            "shortest_moves": list(shortest_moves),
+            "correct_sequence_kind": str(correct_kind),
+            "move_sequence": list(correct_moves),
+            "move_sequence_text": sequence_text(correct_moves),
+            "move_sequence_description": sequence_description(correct_moves),
+            "option_count": int(option_count),
+            "option_specs": option_specs,
+            "answer_option_label": str(answer_label),
+            "solver_trace": {
+                "passable_cells": sorted([list(cell) for cell in passable]),
+                "correct_sequence_simulation": simulate_grid_path(passable, start, correct_moves),
+            },
+        }
+    raise ValueError(f"could not build Sokoban path-sequence dataset for {path_mode}")
+
+
+def sample_relation_dataset(
+    *,
+    relation_mode: str,
+    option_count: int,
+    rank: int | None,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> Dict[str, Any]:
+    """Build one relation-option Sokoban dataset for a task-owned relation mode."""
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.relation.{relation_mode}")
+    for attempt in range(256):
+        needed = 2 * int(option_count) + 1 if str(relation_mode) == RELATION_MODE_RANKED_PAIR else int(option_count) + 2
+        board = sample_base_board(
+            params=params,
+            instance_seed=int(instance_seed) + attempt,
+            namespace=f"{namespace}.relation.board",
+            open_bias=True,
+        )
+        rows, cols, walls = int(board["rows"]), int(board["cols"]), set(board["walls"])
+        component = list(board["component"])
+        if len(component) < int(needed):
+            continue
+        cells = _sample_distinct_cells(rng, component, needed, forbidden=())
+        player = tuple(cells[0])
+        if str(relation_mode) == RELATION_MODE_NEAREST_TARGET:
+            boxes = {"B1": tuple(cells[1])}
+            targets = {f"T{idx}": tuple(cell) for idx, cell in enumerate(cells[2 : 2 + int(option_count)], start=1)}
+            distances = {label: manhattan(boxes["B1"], cell) for label, cell in targets.items()}
+            if len(set(distances.values())) < len(distances):
+                continue
+            answer_target = min(distances, key=lambda label: distances[label])
+            correct = {
+                "kind": "target_label",
+                "display_text": str(answer_target),
+                "target_label": str(answer_target),
+                "candidate_cells": [list(targets[str(answer_target)])],
+            }
+            distractors = [
+                {
+                    "kind": "target_label",
+                    "display_text": str(label),
+                    "target_label": str(label),
+                    "candidate_cells": [list(targets[str(label)])],
+                }
+                for label in sorted(targets)
+                if label != answer_target
+            ]
+            marked_box_label = "B1"
+            marked_target_label = ""
+            query_entity_type = "box"
+            query_entity_label = "B1"
+            answer_cell = list(targets[str(answer_target)])
+            support = {"answer_target_label": str(answer_target), "distances": dict(distances)}
+        elif str(relation_mode) == RELATION_MODE_NEAREST_BOX:
+            target = tuple(cells[1])
+            targets = {"T1": target}
+            boxes = {f"B{idx}": tuple(cell) for idx, cell in enumerate(cells[2 : 2 + int(option_count)], start=1)}
+            distances = {label: manhattan(cell, target) for label, cell in boxes.items()}
+            if len(set(distances.values())) < len(distances):
+                continue
+            answer_box = min(distances, key=lambda label: distances[label])
+            correct = {
+                "kind": "box_label",
+                "display_text": str(answer_box),
+                "box_label": str(answer_box),
+                "candidate_cells": [list(boxes[str(answer_box)])],
+            }
+            distractors = [
+                {
+                    "kind": "box_label",
+                    "display_text": str(label),
+                    "box_label": str(label),
+                    "candidate_cells": [list(boxes[str(label)])],
+                }
+                for label in sorted(boxes)
+                if label != answer_box
+            ]
+            marked_box_label = ""
+            marked_target_label = "T1"
+            query_entity_type = "target"
+            query_entity_label = "T1"
+            answer_cell = list(boxes[str(answer_box)])
+            support = {"answer_box_label": str(answer_box), "distances": dict(distances)}
+        elif str(relation_mode) == RELATION_MODE_RANKED_PAIR:
+            resolved_rank = select_rank(int(option_count), instance_seed=int(instance_seed)) if rank is None else int(rank)
+            box_cells = cells[1 : 1 + int(option_count)]
+            target_cells = cells[1 + int(option_count) : 1 + (2 * int(option_count))]
+            boxes = {f"B{idx}": tuple(cell) for idx, cell in enumerate(box_cells, start=1)}
+            targets = {f"T{idx}": tuple(cell) for idx, cell in enumerate(target_cells, start=1)}
+            paired_labels = [
+                (f"B{idx}", f"T{idx}", manhattan(boxes[f"B{idx}"], targets[f"T{idx}"]))
+                for idx in range(1, int(option_count) + 1)
+            ]
+            if len(set(dist for _b, _t, dist in paired_labels)) < len(paired_labels):
+                continue
+            pair_options = sorted(paired_labels, key=lambda item: (item[2], item[0], item[1]))
+            answer_pair = pair_options[int(resolved_rank) - 1]
+            correct = {
+                "kind": "pair_label",
+                "display_text": f"{answer_pair[0]}-{answer_pair[1]}",
+                "box_label": str(answer_pair[0]),
+                "target_label": str(answer_pair[1]),
+                "candidate_cells": [list(boxes[str(answer_pair[0])]), list(targets[str(answer_pair[1])])],
+            }
+            distractors = [
+                {
+                    "kind": "pair_label",
+                    "display_text": f"{box_label}-{target_label}",
+                    "box_label": str(box_label),
+                    "target_label": str(target_label),
+                    "candidate_cells": [list(boxes[str(box_label)]), list(targets[str(target_label)])],
+                }
+                for box_label, target_label, _dist in pair_options
+                if (box_label, target_label) != (answer_pair[0], answer_pair[1])
+            ]
+            marked_box_label = ""
+            marked_target_label = ""
+            query_entity_type = "pair"
+            query_entity_label = ""
+            answer_cell = [list(boxes[str(answer_pair[0])]), list(targets[str(answer_pair[1])])]
+            support = {
+                "rank": int(resolved_rank),
+                "rank_word": {2: "second", 3: "third", 4: "fourth"}.get(int(resolved_rank), str(resolved_rank)),
+                "answer_pair": [str(answer_pair[0]), str(answer_pair[1])],
+                "pair_distances": [
+                    {"box_label": str(b), "target_label": str(t), "distance": int(d)}
+                    for b, t, d in paired_labels
+                ],
+            }
+        else:
+            raise ValueError(f"unsupported Sokoban relation mode: {relation_mode}")
+        if len(distractors) < int(option_count) - 1:
+            continue
+        option_specs, answer_label = _assign_option_labels(
+            correct=correct,
+            distractors=distractors,
+            option_count=int(option_count),
+            instance_seed=int(instance_seed),
+        )
+        return {
+            "contract_kind": RELATION_CONTRACT_KIND,
+            "relation_mode": str(relation_mode),
+            "rows": rows,
+            "cols": cols,
+            "walls": sorted([list(cell) for cell in walls]),
+            "component_cells": sorted([list(cell) for cell in component]),
+            "player_start": list(player),
+            "boxes_start": {label: list(cell) for label, cell in sorted(boxes.items())},
+            "targets": {label: list(cell) for label, cell in sorted(targets.items())},
+            "marked_box_label": str(marked_box_label),
+            "marked_target_label": str(marked_target_label),
+            "query_entity_type": str(query_entity_type),
+            "query_entity_label": str(query_entity_label),
+            "answer_cell": json_safe(answer_cell),
+            "relation_support": support,
+            "option_count": int(option_count),
+            "option_specs": option_specs[: int(option_count)],
+            "answer_option_label": str(answer_label),
+            "solver_trace": dict(support),
+        }
+    raise ValueError(f"could not build Sokoban relation dataset for {relation_mode}")
+
+
+__all__ = [
+    "sample_base_board",
+    "sample_path_sequence_dataset",
+    "sample_relation_dataset",
+    "select_option_count",
+    "select_rank",
+    "select_scene_axes",
+]

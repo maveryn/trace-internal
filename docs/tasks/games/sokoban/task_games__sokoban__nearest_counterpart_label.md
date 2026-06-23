@@ -3,20 +3,18 @@
 ## Contract
 1. Domain: `games`
 2. Scene id: `sokoban`
-3. Source implementation domain/group: `games/sokoban`
-4. Task id: `task_games__sokoban__nearest_counterpart_label`
-5. Objective contract: nearest counterpart label.
-6. Supported sampled `query_id`: `box_closest_to_marked_target_label`
-7. `answer_gt.type`: `option_letter`
-8. `annotation_gt.type`: `bbox_set`
-9. Annotation policy: minimal visual witnesses for the visible objects, cells, panels, or role-keyed components needed to solve the task.
+3. Public task id: `task_games__sokoban__nearest_counterpart_label`
+4. Supported `query_id` values: `nearest_target_for_marked_box_label`, `box_closest_to_marked_target_label`
+5. Answer schema: `option_letter`
+6. Annotation schema: `bbox`
+7. Program schema: `select_option(nearest_box_target_counterpart); scene=sokoban; scope=nearest_counterpart_label`
+8. Scalar annotation checked: `true`
 
-## Implementation
-1. Registered class: `trace.tasks.games.sokoban.nearest_counterpart_label.GamesSokobanNearestCounterpartLabelTask`
-2. Prompt lookup domain/group: `games/sokoban`
-3. Prompt bundle: `see trace prompt metadata`
-4. Example sampled scene variant: `paper_grid`
+## Program Contract
+- `select_option(nearest_box_target_counterpart); scene=sokoban; scope=nearest_counterpart_label`
 
-## Notes
-2. Generation must remain deterministic from explicit seeds, params, prompt bundle, renderer config, and code versions.
-3. Answers and annotation must come from the same metadata execution trace.
+## Generation Notes
+1. The board shows labeled boxes, labeled targets, and option letters on candidate cells.
+2. The task asks either for the target nearest to a marked box or the box nearest to a marked target by Manhattan distance.
+3. Annotation is the scalar bbox of the selected option-marked cell.
+4. Prompt wording comes from `prompts/games/sokoban/games_sokoban_v1.json`.

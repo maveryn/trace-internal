@@ -1,67 +1,63 @@
 generation:
-  task_overrides:
-    games_sokoban_grid_internal:
-      board_rows_min: 6
-      board_rows_max: 9
-      board_cols_min: 6
-      board_cols_max: 9
-      internal_wall_count_min: 2
-      internal_wall_count_max: 8
-      path_option_count_support:
-      - 4
-      - 6
-      relation_option_count_support:
-      - 4
-      - 5
-      - 6
-      balanced_path_option_count_sampling: true
-      balanced_relation_option_count_sampling: true
-      path_length_min: 4
-      path_length_max: 12
-      balanced_scene_variant_sampling: true
-      scene_variant_weights:
-        warehouse_classic: 1.0
-        paper_grid: 1.0
-        cool_room: 1.0
+  shared:
+    board_rows_min: 6
+    board_rows_max: 9
+    board_cols_min: 6
+    board_cols_max: 9
+    internal_wall_count_min: 2
+    internal_wall_count_max: 8
+    path_option_count_support:
+    - 4
+    - 6
+    relation_option_count_support:
+    - 4
+    - 5
+    - 6
+    balanced_path_option_count_sampling: true
+    balanced_relation_option_count_sampling: true
+    path_length_min: 4
+    path_length_max: 12
+    balanced_scene_variant_sampling: true
+    scene_variant_weights:
+      warehouse_classic: 1.0
+      paper_grid: 1.0
+      cool_room: 1.0
 rendering:
-  task_overrides:
-    games_sokoban_grid_internal:
-      canvas_width: 1220
-      canvas_height: 900
-      scene_margin_left_px: 52
-      scene_margin_top_px: 48
-      board_panel_width_px: 650
-      board_panel_height_px: 740
-      option_panel_width_px: 188
-      option_panel_height_px: 170
-      option_gap_px: 20
-      option_row_gap_px: 20
-      panel_corner_radius_px: 22
-      board_border_width_px: 4
-      grid_width_px: 2
-      coord_gutter_px: 34
-      main_cell_size_px: 58
-      unit_size_scale_min: 0.5
-      unit_size_scale_max: 1.0
-      mini_cell_size_px: 16
-      option_label_font_size_px: 28
-      cell_label_font_size_px: 18
-      sequence_font_size_px: 22
-      text_color_rgb:
-      - 28
-      - 32
-      - 38
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
+  shared:
+    canvas_width: 1220
+    canvas_height: 900
+    scene_margin_left_px: 52
+    scene_margin_top_px: 48
+    board_panel_width_px: 650
+    board_panel_height_px: 740
+    option_panel_width_px: 188
+    option_panel_height_px: 170
+    option_gap_px: 20
+    option_row_gap_px: 20
+    panel_corner_radius_px: 22
+    board_border_width_px: 4
+    grid_width_px: 2
+    coord_gutter_px: 34
+    main_cell_size_px: 58
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    mini_cell_size_px: 16
+    option_label_font_size_px: 28
+    cell_label_font_size_px: 18
+    sequence_font_size_px: 22
+    text_color_rgb:
+    - 28
+    - 32
+    - 38
+    text_stroke_rgb:
+    - 255
+    - 255
+    - 255
 prompt:
-  task_overrides:
-    games_sokoban_grid_internal:
-      bundle_id: games_sokoban_v1
-      scene_key: sokoban_grid
-      task_key: sokoban_grid_query
-  shared: {}
+  shared:
+    bundle_id: games_sokoban_v1
+    scene_key: sokoban_grid
+    task_key: sokoban_grid_query
 visual:
   noise:
     apply_prob: 0.0

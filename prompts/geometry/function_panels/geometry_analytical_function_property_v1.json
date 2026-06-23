@@ -67,25 +67,25 @@
     },
     "output": {
       "answer_only": [
-        "Return a JSON object with an \"answer\" field only.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-        "Return only a JSON object containing \"answer\".\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-        "Respond with JSON only.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-        "Return a JSON object.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-        "Use JSON only.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+        "answer: {answer_hint}.\nExample: {json_example_answer_only}",
+        "answer: {answer_hint}.\nExample: {json_example_answer_only}",
+        "answer: {answer_hint}.\nExample: {json_example_answer_only}",
+        "answer: {answer_hint}.\nExample: {json_example_answer_only}",
+        "answer: {answer_hint}.\nExample: {json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "Return a JSON object with \"annotation\" and \"answer\" fields.\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-        "Return only JSON with \"annotation\" and \"answer\".\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-        "Respond with JSON only.\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}",
-        "Return a JSON object.\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-        "Use JSON only.\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}"
+        "annotation: {annotation_hint}.\nanswer: {answer_hint}.\nExample: {json_example}",
+        "annotation: {annotation_hint}.\nanswer: {answer_hint}.\nExample: {json_example}",
+        "annotation: {annotation_hint}.\nanswer: {answer_hint}.\nExample: {json_example}",
+        "annotation: {annotation_hint}.\nanswer: {answer_hint}.\nExample: {json_example}",
+        "annotation: {annotation_hint}.\nanswer: {answer_hint}.\nExample: {json_example}"
       ]
     }
   },
   "static_slots_by_key": {
     "global": {
-      "answer_hint": "set \"answer\" to the selected panel label as a capital letter shown in the image",
-      "annotation_hint": "set \"annotation\" to the selected panel bounding box [x0,y0,x1,y1] in pixels",
+      "answer_hint": "the selected panel label as a capital letter shown in the image",
+      "annotation_hint": "the selected panel bounding box [x0,y0,x1,y1] in pixels",
       "json_example": "{\"annotation\":[40,40,310,320],\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
     }

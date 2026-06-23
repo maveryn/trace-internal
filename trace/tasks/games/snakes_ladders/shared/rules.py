@@ -1,88 +1,11 @@
-"""Shared mechanics for Snakes and Ladders board scenes."""
+"""Board numbering and movement rules for Snakes and Ladders scenes."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from functools import lru_cache
-from typing import Any, Dict, Sequence, Tuple
+from typing import Dict, Sequence, Tuple
 
-
-BOARD_ROWS = 10
-BOARD_COLS = 10
-LAST_SQUARE = BOARD_ROWS * BOARD_COLS
-SUPPORTED_BOARD_SIDES: Tuple[int, ...] = (5, 6, 7)
-SUPPORTED_SNAKES_LADDERS_QUERY_IDS: Tuple[str, ...] = (
-    "move_outcome_value",
-    "best_roll_value",
-    "ladder_start_ahead_count",
-    "snake_head_ahead_count",
-)
-SUPPORTED_SNAKES_LADDERS_SCENE_VARIANTS: Tuple[str, ...] = ("standard_board",)
-SUPPORTED_SNAKES_LADDERS_STYLE_VARIANTS: Tuple[str, ...] = (
-    "classic",
-    "paper",
-    "neon",
-    "pastel",
-    "wood",
-)
-SUPPORTED_HORIZON_ROLL_COUNTS: Tuple[int, ...] = (1, 2)
-SUPPORTED_DIE_VALUES: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
-
-
-@dataclass(frozen=True)
-class SnakesLaddersJump:
-    """One directed snake or ladder jump."""
-
-    jump_id: str
-    kind: str
-    start_square: int
-    end_square: int
-
-    def to_trace(self) -> Dict[str, Any]:
-        return {
-            "jump_id": str(self.jump_id),
-            "kind": str(self.kind),
-            "start_square": int(self.start_square),
-            "end_square": int(self.end_square),
-        }
-
-
-@dataclass(frozen=True)
-class SnakesLaddersMove:
-    """Resolved result of one die roll from one square."""
-
-    start_square: int
-    die_value: int
-    landing_square: int
-    final_square: int
-    jump_id: str | None
-
-    def to_trace(self) -> Dict[str, Any]:
-        return {
-            "start_square": int(self.start_square),
-            "die_value": int(self.die_value),
-            "landing_square": int(self.landing_square),
-            "final_square": int(self.final_square),
-            "jump_id": None if self.jump_id is None else str(self.jump_id),
-        }
-
-
-@dataclass(frozen=True)
-class SnakesLaddersSample:
-    """Complete sampled scene and query trace."""
-
-    mode: str
-    scene_variant: str
-    style_variant: str
-    board_side: int
-    answer: int
-    start_square: int
-    jumps: Tuple[SnakesLaddersJump, ...]
-    move: SnakesLaddersMove | None
-    horizon_roll_count: int | None
-    optimal_route: Tuple[SnakesLaddersMove, ...]
-    annotation_entity_ids: Tuple[str, ...]
-    construction_mode: str
+from .state import BOARD_ROWS, SUPPORTED_DIE_VALUES, SnakesLaddersJump, SnakesLaddersMove, SnakesLaddersSample
 
 
 def board_last_square(board_side: int = BOARD_ROWS) -> int:
@@ -95,7 +18,7 @@ def board_last_square(board_side: int = BOARD_ROWS) -> int:
 
 
 def square_to_coord(square: int, *, board_side: int = BOARD_ROWS) -> Tuple[int, int]:
-    """Return visual `(row, col)` for one 1-indexed serpentine square."""
+    """Return visual ``(row, col)`` for one 1-indexed serpentine square."""
 
     value = int(square)
     side = int(board_side)
@@ -123,7 +46,7 @@ def coord_to_square(row: int, col: int, *, board_side: int = BOARD_ROWS) -> int:
 
 
 def square_to_cell_id(square: int) -> str:
-    """Return the public render entity id for one board square."""
+    """Return the render entity id for one board square."""
 
     return f"square_{int(square)}"
 
@@ -141,7 +64,7 @@ def apply_die_roll(
     *,
     board_side: int = BOARD_ROWS,
 ) -> SnakesLaddersMove:
-    """Move forward by one die value, then immediately resolve one jump if present."""
+    """Move forward by one die value, then resolve one snake/ladder jump."""
 
     start = int(start_square)
     die = int(die_value)
@@ -151,8 +74,7 @@ def apply_die_roll(
     landing = int(start + die)
     if landing > last_square:
         landing = int(start)
-    lookup = jump_lookup(jumps)
-    jump = lookup.get(int(landing))
+    jump = jump_lookup(jumps).get(int(landing))
     final = int(landing if jump is None else jump.end_square)
     return SnakesLaddersMove(
         start_square=int(start),
@@ -170,7 +92,7 @@ def best_final_square(
     *,
     board_side: int = BOARD_ROWS,
 ) -> int:
-    """Return the best final square reachable after choosing each remaining die roll."""
+    """Return the best final square reachable after choosing remaining rolls."""
 
     frozen_jumps = tuple(jumps)
     side = int(board_side)
@@ -219,7 +141,7 @@ def trace_best_route(
 
 
 def validate_snakes_ladders_sample(sample: SnakesLaddersSample) -> None:
-    """Raise if a sampled scene violates the public task contract."""
+    """Raise if a sampled scene violates the public game-state contract."""
 
     board_side = int(sample.board_side)
     last_square = board_last_square(board_side)
@@ -240,18 +162,6 @@ def validate_snakes_ladders_sample(sample: SnakesLaddersSample) -> None:
 
 
 __all__ = [
-    "BOARD_COLS",
-    "BOARD_ROWS",
-    "LAST_SQUARE",
-    "SUPPORTED_BOARD_SIDES",
-    "SUPPORTED_DIE_VALUES",
-    "SUPPORTED_HORIZON_ROLL_COUNTS",
-    "SUPPORTED_SNAKES_LADDERS_QUERY_IDS",
-    "SUPPORTED_SNAKES_LADDERS_SCENE_VARIANTS",
-    "SUPPORTED_SNAKES_LADDERS_STYLE_VARIANTS",
-    "SnakesLaddersJump",
-    "SnakesLaddersMove",
-    "SnakesLaddersSample",
     "apply_die_roll",
     "best_final_square",
     "board_last_square",

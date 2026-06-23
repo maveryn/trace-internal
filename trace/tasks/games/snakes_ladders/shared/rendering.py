@@ -13,13 +13,8 @@ from ...shared.text import draw_centered_game_text as draw_centered_text
 from ....shared.text_rendering import fit_font_to_box
 from ...shared.layout import apply_games_layout_jitter_to_bbox
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
-from .common import (
-    BOARD_ROWS,
-    SnakesLaddersJump,
-    board_last_square,
-    square_to_cell_id,
-    square_to_coord,
-)
+from .rules import board_last_square, square_to_cell_id, square_to_coord
+from .state import BOARD_ROWS, SnakesLaddersJump
 
 
 @dataclass(frozen=True)

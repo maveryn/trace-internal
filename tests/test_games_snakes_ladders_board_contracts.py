@@ -7,24 +7,25 @@ from pathlib import Path
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.games.snakes_ladders.shared.common import (
+from trace.tasks.games.snakes_ladders.shared.state import (
     SUPPORTED_SNAKES_LADDERS_STYLE_VARIANTS,
+    SnakesLaddersJump,
+)
+from trace.tasks.games.snakes_ladders.shared.rules import (
     apply_die_roll,
     best_final_square,
     square_to_cell_id,
 )
+from trace.tasks.games.snakes_ladders.best_roll_value import GamesSnakesLaddersBestRollValueTask
 from trace.tasks.games.snakes_ladders.move_outcome_value import (
-    GamesSnakesLaddersBestRollValueTask,
     GamesSnakesLaddersMoveOutcomeValueTask,
-    GamesSnakesLaddersSpecialSquareCountTask,
 )
+from trace.tasks.games.snakes_ladders.special_square_count import GamesSnakesLaddersSpecialSquareCountTask
 from tests.helpers import read_jsonl
 
 
 def _jumps_from_trace(execution: dict) -> tuple:
     """Return jump dataclasses from trace dictionaries."""
-
-    from trace.tasks.games.snakes_ladders.shared.common import SnakesLaddersJump
 
     return tuple(
         SnakesLaddersJump(
@@ -61,14 +62,16 @@ def test_games_snakes_ladders_move_outcome_matches_trace() -> None:
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(move.final_square) == 31
-    assert out.annotation_gt.type == "keyed_bbox_map"
-    assert out.query_id == "move_outcome_value"
+    assert out.annotation_gt.type == "bbox_map"
+    assert out.query_id == "single"
     assert out.scene_id == "snakes_ladders"
-    assert execution["query_id"] == "move_outcome_value"
+    assert execution["query_id"] == "single"
+    assert execution["prompt_query_key"] == "move_outcome_value"
     assert execution["board_side"] in {5, 6, 7}
-    assert trace_value(out, "query_spec", "params", "query_id") == "move_outcome_value"
-    assert trace_value(out, "projected_annotation", "type") == "keyed_bbox_map"
-    assert trace_value(out, "projected_annotation", "keyed_bbox_map") == out.annotation_gt.value
+    assert trace_value(out, "query_spec", "params", "query_id") == "single"
+    assert trace_value(out, "query_spec", "params", "prompt_query_key") == "move_outcome_value"
+    assert trace_value(out, "projected_annotation", "type") == "bbox_map"
+    assert trace_value(out, "projected_annotation", "bbox_map") == out.annotation_gt.value
     assert set(out.annotation_gt.value) == {"start_square", "end_square"}
     assert execution["annotation_entity_ids"] == [
         square_to_cell_id(int(execution["start_square"])),
@@ -91,13 +94,14 @@ def test_games_snakes_ladders_best_roll_returns_best_final_square() -> None:
     )
 
     assert int(out.answer_gt.value) == int(answer) == 49
-    assert out.query_id == "best_roll_value"
+    assert out.query_id == "single"
+    assert execution["prompt_query_key"] == "best_roll_value"
     assert execution["board_side"] == 7
     assert len(execution["optimal_route"]) == 2
     assert execution["best_final_square"] == 49
     assert execution["annotation_entity_ids"] == [square_to_cell_id(49)]
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 1
+    assert out.annotation_gt.type == "bbox"
+    assert len(out.annotation_gt.value) == 4
 
 
 def test_games_snakes_ladders_special_square_count_matches_trace() -> None:

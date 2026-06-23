@@ -36,10 +36,9 @@ from .shared.sampling import (
 
 DOMAIN = "icons"
 TASK_ID = "task_icons__paired_canvas__panel_attribute_change_count"
-QUERY_IDS: Tuple[str, ...] = ("color_changed_count", "size_changed_count", "rotation_changed_count")
+QUERY_IDS: Tuple[str, ...] = ("color_changed_count", "rotation_changed_count")
 _QUERY_TO_ATTRIBUTE = {
     "color_changed_count": "color",
-    "size_changed_count": "size",
     "rotation_changed_count": "rotation",
 }
 

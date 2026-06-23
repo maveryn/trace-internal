@@ -37,7 +37,6 @@ from .shared.sampling import (
 DOMAIN = "icons"
 TASK_ID = "task_icons__paired_canvas__panel_set_relation_count"
 QUERY_IDS: Tuple[str, ...] = (
-    "right_exact_match_count",
     "added_in_right_count",
     "missing_from_right_count",
 )
@@ -99,119 +98,6 @@ def _min_gap(params: Mapping[str, Any]) -> float:
             "min_center_gap_frac",
             group_default(_RENDER_DEFAULTS, "min_center_gap_frac", _DEFAULTS.min_center_gap_frac),
         )
-    )
-
-
-def _make_exact_match_scene(
-    *,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    render_params: Mapping[str, Any],
-) -> _SetRelationScene:
-    """Render a scene where counted Right icons exactly match Left icons."""
-
-    rng = spawn_rng(int(instance_seed), "scene")
-    (
-        object_count,
-        object_count_probabilities,
-        target_count,
-        target_count_probabilities,
-        distractor_count,
-        distractor_count_probabilities,
-    ) = resolve_paired_counts(
-        rng,
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        defaults=_DEFAULTS,
-    )
-    pool = list(load_icon_pool_from_params(params=params, gen_defaults=_GEN_DEFAULTS, defaults=_DEFAULTS))
-    rng.shuffle(pool)
-    left_extra_count = max(1, min(3, int(distractor_count)))
-    total_unique = int(target_count) + int(distractor_count) + int(left_extra_count)
-    if len(pool) < total_unique:
-        raise ValueError("icon pool is too small for paired exact-match scene")
-
-    palette = sample_palette(rng, render_params=render_params)
-    attrs = sample_base_attributes(
-        rng,
-        pool=pool,
-        palette=palette,
-        count=total_unique,
-        render_params=render_params,
-        rotation_candidates=_rotation_candidates(params),
-    )
-    left_attrs = attrs[: int(target_count)] + attrs[int(target_count) + int(distractor_count) :]
-    right_attrs = attrs[: int(target_count)] + attrs[int(target_count) : int(target_count) + int(distractor_count)]
-    rng.shuffle(right_attrs)
-    left_positions = sample_positions(rng, count=len(left_attrs), min_gap_frac=_min_gap(params))
-    right_positions = sample_positions(rng, count=len(right_attrs), min_gap_frac=_min_gap(params))
-
-    left_specs = [
-        make_icon_spec(
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:left:{index}",
-            render_params=render_params,
-            instance_id=f"left_{index}",
-            identity_id=str(attr["identity_id"]),
-            icon_id=str(attr["icon_id"]),
-            panel="left",
-            position=pos,
-            tint_rgb=tuple(attr["tint_rgb"]),
-            size_px=int(attr["size_px"]),
-            rotation_degrees=int(attr["rotation_degrees"]),
-        )
-        for index, (attr, pos) in enumerate(zip(left_attrs, left_positions))
-    ]
-    matching_identity_ids = {str(attrs[index]["identity_id"]) for index in range(int(target_count))}
-    right_specs = [
-        make_icon_spec(
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:right:{index}",
-            render_params=render_params,
-            instance_id=f"right_{index}",
-            identity_id=str(attr["identity_id"]),
-            icon_id=str(attr["icon_id"]),
-            panel="right",
-            position=pos,
-            tint_rgb=tuple(attr["tint_rgb"]),
-            size_px=int(attr["size_px"]),
-            rotation_degrees=int(attr["rotation_degrees"]),
-        )
-        for index, (attr, pos) in enumerate(zip(right_attrs, right_positions))
-    ]
-    rendered = render_paired_canvas(left_icons=left_specs, right_icons=right_specs, render_params=render_params)
-    matching_right_indices = tuple(
-        index
-        for index, icon in enumerate(rendered.right_icons)
-        if str(icon["identity_id"]) in matching_identity_ids
-    )
-    matching_left_indices = tuple(
-        index
-        for index, icon in enumerate(rendered.left_icons)
-        if str(icon["identity_id"]) in matching_identity_ids
-    )
-    return _SetRelationScene(
-        image=rendered.image,
-        panel_geometry=dict(rendered.panel_geometry),
-        left_icons=tuple(dict(item) for item in rendered.left_icons),
-        right_icons=tuple(dict(item) for item in rendered.right_icons),
-        matching_right_indices=tuple(int(index) for index in matching_right_indices),
-        matching_left_indices=tuple(int(index) for index in matching_left_indices),
-        target_count=int(target_count),
-        object_count=int(object_count),
-        distractor_count=int(distractor_count),
-        sampled_palette_rgb=tuple(palette),
-        object_count_probabilities=dict(object_count_probabilities),
-        target_count_probabilities=dict(target_count_probabilities),
-        distractor_count_probabilities=dict(distractor_count_probabilities),
-        question_format="count_right_icons_with_exact_left_match",
-        trace_relation={
-            "counting_target": "right_icons_exactly_matching_any_left_icon",
-            "left_extra_count": int(left_extra_count),
-            "right_count": len(rendered.right_icons),
-            "left_count": len(rendered.left_icons),
-        },
     )
 
 
@@ -345,12 +231,6 @@ def _make_scene(
     render_params: Mapping[str, Any],
     query_id: str,
 ) -> _SetRelationScene:
-    if str(query_id) == "right_exact_match_count":
-        return _make_exact_match_scene(
-            instance_seed=int(instance_seed),
-            params=params,
-            render_params=render_params,
-        )
     return _make_added_removed_scene(
         instance_seed=int(instance_seed),
         params=params,
@@ -374,7 +254,7 @@ def _selected_annotation(scene: _SetRelationScene, *, query_id: str) -> tuple[st
 
 @register_task
 class IconsCountingPanelSetRelationCountTask:
-    """Count exact matches, additions, or removals across paired icon panels."""
+    """Count additions or removals across paired icon panels."""
 
     task_id = TASK_ID
     domain = DOMAIN

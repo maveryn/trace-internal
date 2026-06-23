@@ -8,12 +8,12 @@
 5. Objective: count Right-panel icons whose queried attribute changed from the corresponding Left-panel icon.
 
 ## Program Contract
-`count.pairwise_comparison(scene=paired_canvas, scope=aligned_left_right_icon_pairs, predicate=changed_color|changed_size|changed_rotation, output=count)`
+`count.pairwise_comparison(scene=paired_canvas, scope=aligned_left_right_icon_pairs, predicate=changed_color|changed_rotation, output=count)`
 
 ## 2) Scene + task contract
 1. Entities/relations: two large icon panels labeled `Left` and `Right`; corresponding icons appear at matching relative positions.
 2. Branch metadata: `query_id`
-3. Query ids: `color_changed_count`, `size_changed_count`, `rotation_changed_count`.
+3. Query ids: `color_changed_count`, `rotation_changed_count`.
 4. Answer type: `answer_gt.type = integer`.
 5. Annotation type: `annotation_gt.type = bbox_set` over every counted Right-panel icon.
    `projected_annotation` mirrors this as typed bbox-set annotation with
@@ -26,7 +26,7 @@
 2. `scene_key`: `paired_canvas_attribute_change`
 3. `task_key`: `paired_canvas_query`
 4. Answer+annotation JSON shape: `{"annotation":[[620,156,684,220],[834,338,902,406]],"answer":2}`
-5. Prompt wording specifies whether color, size, or rotation is queried.
+5. Prompt wording specifies whether color or rotation is queried.
 
 ## 4) Determinism + constraints
 1. The per-pair changed attributes are recorded in trace metadata.

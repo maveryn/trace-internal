@@ -393,7 +393,6 @@ def test_icons_paired_canvas_scene_defaults_loaded() -> None:
     assert int(rendering['reference_panel_width_px']) == 516
     assert str(prompt['scene_key']) == 'paired_canvas_attribute_change'
     assert str(prompt['question_text_color_changed_count']).strip()
-    assert str(prompt['question_text_size_changed_count']).strip()
     assert str(prompt['question_text_rotation_changed_count']).strip()
     bundle = load_scene_prompt_bundle('icons', 'paired_canvas', 'icons_paired_canvas_v0')
     assert bundle.bundle_id == 'icons_paired_canvas_v0'

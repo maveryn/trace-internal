@@ -218,8 +218,6 @@ prompt:
     task_icons__paired_canvas__panel_set_relation_count:
       scene_key: paired_canvas_set_relation
       object_description: two icon panels labeled Left and Right
-      question_text: How many Right-panel icons exactly match an icon in the Left
-        panel by type, color, size, and rotation?
       question_text_added_in_right_count: How many Right-panel icons are new, meaning
         they do not exactly match any icon in the Left panel?
       question_text_missing_from_right_count: How many Left-panel icons are missing
@@ -235,8 +233,6 @@ prompt:
         icons at matching positions
       question_text_color_changed_count: How many Right-panel icons changed color
         compared with the corresponding icon in the Left panel?
-      question_text_size_changed_count: How many Right-panel icons changed size compared
-        with the corresponding icon in the Left panel?
       question_text_rotation_changed_count: How many Right-panel icons changed rotation
         compared with the corresponding icon in the Left panel?
       annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes

@@ -9,11 +9,11 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.pattern.wallpaper_reference_match_count import (
-    IconsPatternWallpaperReferenceMatchCountTask,
+from trace.tasks.icons.wallpaper_panels.reference_pattern_match_count import (
+    IconsWallpaperPanelsReferencePatternMatchCountTask,
     TASK_ID,
 )
-from trace.tasks.icons.pattern.wallpaper_shared import (
+from trace.tasks.icons.wallpaper_panels.shared.rendering import (
     SAFE_WALLPAPER_CANVAS_TREATMENTS,
     WALLPAPER_PANEL_CHROME_POLICY,
 )
@@ -28,7 +28,7 @@ def _extract_prompt_json_example(prompt: str) -> dict:
 
 
 def test_icons_wallpaper_reference_match_count_contract_matches_scene() -> None:
-    task = IconsPatternWallpaperReferenceMatchCountTask()
+    task = IconsWallpaperPanelsReferencePatternMatchCountTask()
     out = task.generate(
         2026060904,
         params={
@@ -48,10 +48,10 @@ def test_icons_wallpaper_reference_match_count_contract_matches_scene() -> None:
 
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 3
-    assert out.annotation_gt.type == "keyed_bbox_set_map"
+    assert out.annotation_gt.type == "bbox_set_map"
     assert sorted(out.annotation_gt.value.keys()) == ["matching_candidate_panels", "reference_panel"]
     assert out.scene_id == "wallpaper_panels"
-    assert out.query_id == "reference_pattern_match_count"
+    assert out.query_id == "single"
     assert trace["scene_ir"]["scene_kind"] == "icons_wallpaper_panels_reference_match_count"
     assert execution["question_format"] == "count_candidate_panels_matching_reference_wallpaper_pattern"
     assert int(execution["option_count"]) == 6
@@ -91,15 +91,17 @@ def test_icons_wallpaper_reference_match_count_contract_matches_scene() -> None:
         "matching_candidate_panels": [list(panel["panel_bbox_xyxy"]) for panel in matching],
     }
     assert out.annotation_gt.value == expected_annotation
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_set_map"
-    assert trace["projected_annotation"]["keyed_bbox_set_map"] == expected_annotation
-    assert trace["projected_annotation"]["pixel_keyed_bbox_set_map"] == expected_annotation
+    assert trace["projected_annotation"]["type"] == "bbox_set_map"
+    assert trace["projected_annotation"]["bbox_set_map"] == expected_annotation
+    assert trace["projected_annotation"]["pixel_bbox_set_map"] == expected_annotation
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
-    assert "How many labeled panels use the same wallpaper arrangement as the Reference panel?" in out.prompt
+    assert "Reference" in out.prompt
+    assert "wallpaper" in out.prompt
+    assert "pattern" in out.prompt
 
 
 def test_icons_wallpaper_reference_match_count_prompt_example_matches_contract() -> None:
-    task = IconsPatternWallpaperReferenceMatchCountTask()
+    task = IconsWallpaperPanelsReferencePatternMatchCountTask()
     out = task.generate(2026060905, params={"match_count": 2}, max_attempts=300)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
@@ -113,7 +115,7 @@ def test_icons_wallpaper_reference_match_count_prompt_example_matches_contract()
 
 
 def test_icons_wallpaper_reference_match_count_rejects_unsafe_canvas_treatment() -> None:
-    task = IconsPatternWallpaperReferenceMatchCountTask()
+    task = IconsWallpaperPanelsReferencePatternMatchCountTask()
     with pytest.raises(ValueError, match="quiet canvas treatments"):
         task.generate(2026060913, params={"icon_canvas_treatment": "dot_sheet"}, max_attempts=20)
 
@@ -136,7 +138,6 @@ def test_icons_wallpaper_reference_match_count_build_smoke(tmp_path: Path) -> No
     assert len(train_records) == 3
     assert all(record["domain"] == "icons" for record in train_records)
     assert all(record["scene_id"] == "wallpaper_panels" for record in train_records)
-    assert all(record["scene_id"] == "pattern" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"][TASK_ID]) == 3

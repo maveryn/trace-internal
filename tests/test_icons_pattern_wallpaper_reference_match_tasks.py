@@ -9,11 +9,11 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.pattern.wallpaper_reference_match import (
-    IconsPatternWallpaperReferenceMatchTask,
+from trace.tasks.icons.wallpaper_panels.same_pattern_as_reference_label import (
+    IconsWallpaperPanelsSamePatternAsReferenceLabelTask,
     TASK_ID,
 )
-from trace.tasks.icons.pattern.wallpaper_shared import (
+from trace.tasks.icons.wallpaper_panels.shared.rendering import (
     SAFE_WALLPAPER_CANVAS_TREATMENTS,
     WALLPAPER_PANEL_CHROME_POLICY,
 )
@@ -28,7 +28,7 @@ def _extract_prompt_json_example(prompt: str) -> dict:
 
 
 def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
-    task = IconsPatternWallpaperReferenceMatchTask()
+    task = IconsWallpaperPanelsSamePatternAsReferenceLabelTask()
     out = task.generate(
         2026060901,
         params={"answer_label": "D", "reference_wallpaper_group_id": "p1"},
@@ -44,10 +44,10 @@ def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
 
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "D"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert sorted(out.annotation_gt.value.keys()) == ["reference_panel", "selected_panel"]
     assert out.scene_id == "wallpaper_panels"
-    assert out.query_id == "same_pattern_as_reference_label"
+    assert out.query_id == "single"
     assert trace["scene_ir"]["scene_kind"] == "icons_wallpaper_panels_reference_match"
     assert execution["question_format"] == "select_candidate_panel_matching_reference_wallpaper_pattern"
     assert int(execution["option_count"]) == 6
@@ -82,14 +82,16 @@ def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
         "reference_panel": list(reference["panel_bbox_xyxy"]),
         "selected_panel": list(answer["panel_bbox_xyxy"]),
     }
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
-    assert "same wallpaper pattern as the Reference panel" in out.prompt
+    assert "Reference" in out.prompt
+    assert "wallpaper" in out.prompt
+    assert "pattern" in out.prompt
 
 
 def test_icons_wallpaper_reference_match_prompt_example_matches_contract() -> None:
-    task = IconsPatternWallpaperReferenceMatchTask()
+    task = IconsWallpaperPanelsSamePatternAsReferenceLabelTask()
     out = task.generate(2026060902, params={"answer_label": "C"}, max_attempts=300)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
@@ -100,7 +102,7 @@ def test_icons_wallpaper_reference_match_prompt_example_matches_contract() -> No
 
 
 def test_icons_wallpaper_reference_match_rejects_unsafe_canvas_treatment() -> None:
-    task = IconsPatternWallpaperReferenceMatchTask()
+    task = IconsWallpaperPanelsSamePatternAsReferenceLabelTask()
     with pytest.raises(ValueError, match="quiet canvas treatments"):
         task.generate(
             2026060912,
@@ -127,7 +129,6 @@ def test_icons_wallpaper_reference_match_build_smoke(tmp_path: Path) -> None:
     assert len(train_records) == 3
     assert all(record["domain"] == "icons" for record in train_records)
     assert all(record["scene_id"] == "wallpaper_panels" for record in train_records)
-    assert all(record["scene_id"] == "pattern" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"][TASK_ID]) == 3

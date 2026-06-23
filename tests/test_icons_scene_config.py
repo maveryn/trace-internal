@@ -606,32 +606,38 @@ def test_icons_sequence_strip_scene_defaults_loaded() -> None:
     assert set(bundle.scene_templates.keys()) == {'sequence_strip'}
     assert set(bundle.query_templates.keys()) == {'missing_count_value', 'rotation_sequence_violation_index'}
 
-def test_icons_pattern_defaults_loaded() -> None:
-    cfg = get_scene_defaults('icons', 'pattern')
+def test_icons_wallpaper_panels_defaults_loaded() -> None:
+    cfg = get_scene_defaults('icons', 'wallpaper_panels')
     generation_shared = cfg['generation']['shared']
-    assert int(generation_shared['grid_rows']) == 3
-    assert int(generation_shared['grid_cols']) == 3
-    assert int(generation_shared['answer_index_min']) == 1
-    assert int(generation_shared['answer_index_max']) == 9
-    assert bool(generation_shared['balanced_sampling']) is True
-    assert 'task_icons__pattern_grid__attribute_pattern_violation_index' not in cfg['generation']['task_overrides']
-    assert 'task_icons__sequence_strip__rotation_sequence_violation_index' not in cfg['generation']['task_overrides']
+    assert list(generation_shared['option_count_choices']) == [6]
+    assert int(generation_shared['lattice_rows']) == 4
+    assert int(generation_shared['lattice_cols']) == 4
+    assert str(generation_shared['pool_manifest']) == 'non_symmetry.txt'
+    assert len(generation_shared['wallpaper_group_ids']) >= 6
+    count_generation = cfg['generation']['task_overrides'][
+        'task_icons__wallpaper_panels__reference_pattern_match_count'
+    ]
+    assert list(count_generation['match_count_choices']) == [1, 2, 3, 4, 5]
     render_shared = cfg['rendering']['shared']
-    assert int(render_shared['scene_icon_size_min_px']) == 48
-    assert int(render_shared['scene_icon_size_max_px']) == 72
-    assert int(render_shared['cell_box_width_min_px']) == 104
-    assert int(render_shared['cell_box_width_max_px']) == 140
-    assert int(render_shared['cell_box_height_min_px']) == 104
-    assert int(render_shared['cell_box_height_max_px']) == 140
-    assert int(render_shared['scene_content_side_padding_px']) == 10
-    assert int(render_shared['scene_content_bottom_padding_px']) == 10
-    assert int(render_shared['scene_content_top_offset_px']) == 40
+    assert int(render_shared['canvas_width']) == 1104
+    assert int(render_shared['canvas_height']) == 640
+    assert int(render_shared['lattice_rows']) == 4
+    assert int(render_shared['lattice_cols']) == 4
+    assert int(render_shared['scene_icon_size_min_px']) == 21
+    assert int(render_shared['scene_icon_size_max_px']) == 31
+    assert list(render_shared['icon_noise_edit_count_range']) == [0, 0]
     prompt_shared = cfg['prompt']['shared']
-    assert str(prompt_shared['bundle_id']).strip() == 'icons_pattern_v0'
-    assert str(prompt_shared['scene_key']).strip() == 'structured_violation_scene'
-    assert str(prompt_shared['task_key']).strip() == 'structured_violation_query'
-    assert str(prompt_shared['json_output_contract']).strip()
-    assert str(prompt_shared['json_output_contract_answer_only']).strip()
+    assert str(prompt_shared['bundle_id']).strip() == 'icons_wallpaper_panels_v1'
+    prompt_overrides = cfg['prompt']['task_overrides']
+    assert str(prompt_overrides['task_icons__wallpaper_panels__motif_violation_label']['task_key']) == (
+        'motif_violation_label'
+    )
+    assert str(prompt_overrides['task_icons__wallpaper_panels__same_pattern_as_reference_label']['task_key']) == (
+        'same_pattern_as_reference_label'
+    )
+    assert str(prompt_overrides['task_icons__wallpaper_panels__reference_pattern_match_count']['task_key']) == (
+        'reference_pattern_match_count'
+    )
 def test_icons_pattern_grid_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'pattern_grid')
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(

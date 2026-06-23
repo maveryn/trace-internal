@@ -483,10 +483,25 @@ def test_icons_sequence_bundle_supports_missing_count_query() -> None:
 
 
 def test_icons_pattern_bundle_supports_structured_violation_query() -> None:
-    bundle = load_prompt_bundle("icons", "pattern", "icons_pattern_v0")
+    bundle = load_prompt_bundle("icons", "pattern_grid", "icons_pattern_v0")
     assert len(bundle.task_templates["structured_violation_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:structured_violation_query"]) == ["question_text"]
     assert "structured_violation_scene" in bundle.scene_templates
+
+
+def test_icons_wallpaper_panels_bundle_supports_reference_tasks() -> None:
+    bundle = load_prompt_bundle("icons", "wallpaper_panels", "icons_wallpaper_panels_v1")
+    assert set(bundle.scene_templates.keys()) == {
+        "wallpaper_panel_violation_scene",
+        "wallpaper_reference_match_scene",
+    }
+    assert set(bundle.task_templates.keys()) == {
+        "motif_violation_label",
+        "same_pattern_as_reference_label",
+        "reference_pattern_match_count",
+    }
+    assert not bundle.query_templates
+    assert "answer_hint" in bundle.static_slots_by_key["task:motif_violation_label"]
 
 
 def test_icons_venn_field_bundle_supports_region_count_queries() -> None:

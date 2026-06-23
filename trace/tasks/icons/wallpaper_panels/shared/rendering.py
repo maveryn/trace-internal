@@ -5,18 +5,20 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, MutableMapping, Sequence, Tuple
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
-from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
-from ..shared.icon_noise import serialize_icon_noise_edits
-from ..shared.icon_scene import RenderedIconInstance, serialize_rendered_icon_instance
-from ..shared.icon_task_rendering import sample_icon_instance_noise
+from ...shared.icon_assets import render_icon_rgba, resolve_icon_pool
+from ...shared.icon_noise import serialize_icon_noise_edits
+from ...shared.icon_scene import RenderedIconInstance, serialize_rendered_icon_instance
+from ...shared.icon_style import sample_single_icon_tint
+from ...shared.icon_task_rendering import sample_icon_instance_noise
+from ...shared.scene_style import draw_icon_panel_chrome, make_icon_canvas_background
+
+from .defaults import LATTICE_COLS, LATTICE_ROWS, OPTION_LABELS, REFERENCE_LABEL, WALLPAPER_GROUP_IDS
+from .layout import draw_panel_label, option_panel_geometry, reference_panel_geometry
+from .state import WallpaperScenePayload
 
 
-OPTION_LABELS: Tuple[str, ...] = tuple("ABCDEF")
-LATTICE_ROWS = 4
-LATTICE_COLS = 4
-WALLPAPER_GROUP_IDS: Tuple[str, ...] = ("p1", "p2", "pm", "pg", "cm", "pmm", "p4", "p3")
 SAFE_WALLPAPER_CANVAS_TREATMENTS: Tuple[str, ...] = (
     "bare_canvas",
     "plain_sheet",
@@ -238,7 +240,7 @@ def select_distinct_icon_ids(rng: Any, *, pool_manifest: str, labels: Sequence[s
 def draw_wallpaper_motifs(
     image: Image.Image,
     *,
-    task_id: str,
+    noise_namespace: str,
     instance_seed: int,
     panel_label: str,
     group_id: str,
@@ -251,6 +253,13 @@ def draw_wallpaper_motifs(
     entity_kind_prefix: str = "wallpaper",
     is_answer_panel: bool = False,
 ) -> Tuple[Tuple[Dict[str, Any], ...], Tuple[Dict[str, Any], ...]]:
+    """Draw one panel's resolved wallpaper lattice without choosing task answers.
+
+    Invariant: the caller supplies the panel label, wallpaper group, icon id,
+    and answer flag; this helper only projects motif elements into pixels and
+    serializes the corresponding neutral scene entities.
+    """
+
     scene_elements: List[Dict[str, Any]] = []
     scene_icon_instances: List[Dict[str, Any]] = []
     elements = elements_for_group(
@@ -261,7 +270,7 @@ def draw_wallpaper_motifs(
     for element in elements:
         noise_edits, noise_seed = sample_icon_instance_noise(
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:panel_{str(panel_label)}_element_{int(element.element_index)}",
+            namespace=f"{noise_namespace}:panel_{str(panel_label)}_element_{int(element.element_index)}",
             render_params=render_params,
         )
         cache_key = (str(icon_id), int(element.rotation_degrees) % 360, bool(element.mirror_x))
@@ -325,6 +334,187 @@ def draw_wallpaper_motifs(
     return tuple(scene_elements), tuple(scene_icon_instances)
 
 
+def render_option_wallpaper_scene(
+    *,
+    rng: Any,
+    instance_seed: int,
+    option_labels: Sequence[str],
+    wallpaper_group_ids_by_label: Mapping[str, str],
+    answer_labels: Sequence[str],
+    pool_manifest: str,
+    render_params: Mapping[str, Any],
+    noise_namespace: str,
+) -> Tuple[WallpaperScenePayload, Image.Image]:
+    """Render option-only wallpaper panels from resolved semantic group ids."""
+
+    return _render_wallpaper_scene(
+        rng=rng,
+        instance_seed=int(instance_seed),
+        panel_labels=tuple(str(label) for label in option_labels),
+        option_labels=tuple(str(label) for label in option_labels),
+        wallpaper_group_ids_by_label=wallpaper_group_ids_by_label,
+        answer_labels=answer_labels,
+        reference_group_id=None,
+        pool_manifest=str(pool_manifest),
+        render_params=render_params,
+        noise_namespace=str(noise_namespace),
+        reference_layout=False,
+    )
+
+
+def render_reference_wallpaper_scene(
+    *,
+    rng: Any,
+    instance_seed: int,
+    option_labels: Sequence[str],
+    reference_wallpaper_group_id: str,
+    wallpaper_group_ids_by_label: Mapping[str, str],
+    answer_labels: Sequence[str],
+    pool_manifest: str,
+    render_params: Mapping[str, Any],
+    noise_namespace: str,
+) -> Tuple[WallpaperScenePayload, Image.Image]:
+    """Render one Reference panel and resolved candidate wallpaper panels."""
+
+    panel_labels = (REFERENCE_LABEL, *tuple(str(label) for label in option_labels))
+    return _render_wallpaper_scene(
+        rng=rng,
+        instance_seed=int(instance_seed),
+        panel_labels=panel_labels,
+        option_labels=tuple(str(label) for label in option_labels),
+        wallpaper_group_ids_by_label=wallpaper_group_ids_by_label,
+        answer_labels=answer_labels,
+        reference_group_id=str(reference_wallpaper_group_id),
+        pool_manifest=str(pool_manifest),
+        render_params=render_params,
+        noise_namespace=str(noise_namespace),
+        reference_layout=True,
+    )
+
+
+def _render_wallpaper_scene(
+    *,
+    rng: Any,
+    instance_seed: int,
+    panel_labels: Sequence[str],
+    option_labels: Sequence[str],
+    wallpaper_group_ids_by_label: Mapping[str, str],
+    answer_labels: Sequence[str],
+    reference_group_id: str | None,
+    pool_manifest: str,
+    render_params: Mapping[str, Any],
+    noise_namespace: str,
+    reference_layout: bool,
+) -> Tuple[WallpaperScenePayload, Image.Image]:
+    """Render fully resolved wallpaper panels without task-specific branching.
+
+    Invariant: public task files already selected the reference group, candidate
+    groups, and answer labels; this helper only renders those resolved inputs
+    into a scene payload and image.
+    """
+
+    answer_label_set = set(str(label) for label in answer_labels)
+    icon_ids_by_label = select_distinct_icon_ids(rng, pool_manifest=str(pool_manifest), labels=panel_labels)
+    tint_rgb, sampled_palette_rgb = sample_single_icon_tint(
+        rng,
+        channel_min=int(render_params["color_channel_min"]),
+        channel_max=int(render_params["color_channel_max"]),
+        anchor_colors=(
+            tuple(int(v) for v in render_params["background_color_rgb"]),
+            tuple(int(v) for v in render_params["panel_fill_rgb"]),
+            tuple(int(v) for v in render_params["panel_border_rgb"]),
+            tuple(int(v) for v in render_params["header_text_rgb"]),
+        ),
+        min_color_distance=float(render_params["min_color_distance"]),
+        distance_space=str(render_params["color_distance_space"]),
+    )
+    nominal_icon_size_px = int(
+        rng.randint(
+            int(render_params["scene_icon_size_min_px"]),
+            int(render_params["scene_icon_size_max_px"]),
+        )
+    )
+    if reference_layout:
+        panel_geometry, panels = reference_panel_geometry(render_params=render_params, option_labels=option_labels)
+    else:
+        panel_geometry, panels = option_panel_geometry(render_params=render_params, option_labels=option_labels)
+    image = make_icon_canvas_background(
+        canvas_width=int(render_params["canvas_width"]),
+        canvas_height=int(render_params["canvas_height"]),
+        style=render_params.get("_icon_canvas_style_object"),
+        fallback_rgb=tuple(int(v) for v in render_params["background_color_rgb"]),
+    )
+    draw = ImageDraw.Draw(image)
+    scene_panels: List[Dict[str, Any]] = []
+    scene_elements: List[Dict[str, Any]] = []
+    scene_icon_instances: List[Dict[str, Any]] = []
+    sprite_cache: Dict[Tuple[str, int, bool], Image.Image] = {}
+
+    for label in panel_labels:
+        panel_info = panels[str(label)]
+        panel_bbox = tuple(int(value) for value in panel_info["panel_bbox_xyxy"])
+        content_bbox = tuple(int(value) for value in panel_info["content_bbox_xyxy"])
+        is_reference = bool(str(label) == REFERENCE_LABEL and reference_layout)
+        group_id = str(reference_group_id if is_reference else wallpaper_group_ids_by_label[str(label)])
+        is_answer = bool((not is_reference) and str(label) in answer_label_set)
+        draw_icon_panel_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=render_params.get("_icon_canvas_style_object"),
+            fallback_fill_rgb=tuple(int(v) for v in render_params["panel_fill_rgb"]),
+            fallback_border_rgb=tuple(int(v) for v in render_params["panel_border_rgb"]),
+            radius=int(render_params["panel_corner_radius_px"]),
+            border_width=2,
+        )
+        draw_panel_label(draw, label=str(label), panel_bbox=panel_bbox, render_params=render_params)
+        icon_id = str(icon_ids_by_label[str(label)])
+        elements, instances = draw_wallpaper_motifs(
+            image,
+            noise_namespace=str(noise_namespace),
+            instance_seed=int(instance_seed),
+            panel_label=str(label),
+            group_id=str(group_id),
+            icon_id=str(icon_id),
+            tint_rgb=tuple(int(v) for v in tint_rgb),
+            nominal_icon_size_px=int(nominal_icon_size_px),
+            content_bbox=content_bbox,
+            render_params=render_params,
+            sprite_cache=sprite_cache,
+            is_answer_panel=bool(is_answer),
+        )
+        scene_elements.extend(dict(element) for element in elements)
+        scene_icon_instances.extend(dict(instance) for instance in instances)
+        scene_panels.append(
+            {
+                "entity_kind": "wallpaper_panel",
+                "label": str(label),
+                "panel_role": "reference" if is_reference else "candidate",
+                "panel_bbox_xyxy": [int(value) for value in panel_bbox],
+                "content_bbox_xyxy": [int(value) for value in content_bbox],
+                "icon_id": str(icon_id),
+                "wallpaper_group_id": str(group_id),
+                "is_reference": bool(is_reference),
+                "is_answer": bool(is_answer),
+                "matches_reference_pattern": bool(is_reference or is_answer),
+            }
+        )
+
+    return (
+        WallpaperScenePayload(
+            option_count=int(len(option_labels)),
+            option_labels=tuple(str(label) for label in option_labels),
+            icon_ids_by_label=dict(icon_ids_by_label),
+            sampled_palette_rgb=tuple(tuple(int(channel) for channel in color) for color in sampled_palette_rgb),
+            nominal_icon_size_px=int(nominal_icon_size_px),
+            panel_geometry=dict(panel_geometry),
+            scene_panels=tuple(scene_panels),
+            scene_elements=tuple(scene_elements),
+            scene_icon_instances=tuple(scene_icon_instances),
+        ),
+        image.convert("RGB"),
+    )
+
+
 __all__ = [
     "LATTICE_COLS",
     "LATTICE_ROWS",
@@ -339,6 +529,8 @@ __all__ = [
     "element_to_trace",
     "elements_for_group",
     "resolve_wallpaper_group_support",
+    "render_option_wallpaper_scene",
+    "render_reference_wallpaper_scene",
     "select_distinct_icon_ids",
     "uniform_str_probability_map",
     "wallpaper_chrome_policy_trace",

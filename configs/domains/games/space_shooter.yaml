@@ -20,6 +20,12 @@ generation:
     - 7
     - 8
     enemy_count_support:
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
     - 10
     - 11
     - 12
@@ -69,7 +75,7 @@ rendering:
     lane_pad_gap_px: 10
     enemy_width_px: 62
     enemy_height_px: 48
-    projectile_width_px: 18
+    projectile_width_px: 28
     projectile_height_px: 42
     blocker_width_px: 70
     blocker_height_px: 42

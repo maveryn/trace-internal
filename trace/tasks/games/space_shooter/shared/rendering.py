@@ -8,11 +8,14 @@ from typing import Any, Dict, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from .....core.seed import hash64
+from ....shared.config_defaults import group_default
+from ....shared.font_assets import sample_font_family
 from ....shared.text_rendering import fit_font_to_box
 from ...shared.text import draw_game_text_traced as draw_text_traced
-from ...shared.layout import apply_games_layout_jitter_to_bbox
+from ...shared.layout import apply_games_layout_jitter_to_bbox, resolve_games_layout_jitter
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
-from .common import SpaceBlocker, SpaceEnemy, SpaceProjectile, lane_entity_id
+from .defaults import DEFAULTS, RENDER_DEFAULTS
+from .state import SpaceBlocker, SpaceEnemy, SpaceProjectile, lane_entity_id
 
 
 @dataclass(frozen=True)
@@ -69,8 +72,45 @@ class RenderedSpaceShooterScene:
     render_map: Dict[str, Any]
 
 
+def resolve_space_shooter_render_params(params: Mapping[str, Any], *, instance_seed: int) -> SpaceShooterRenderParams:
+    """Resolve render parameters from scene config and caller overrides."""
+
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.space_shooter.font_family",
+        params=params,
+    )
+    return SpaceShooterRenderParams(
+        canvas_width=int(params.get("canvas_width", group_default(RENDER_DEFAULTS, "canvas_width", DEFAULTS.canvas_width))),
+        canvas_height=int(params.get("canvas_height", group_default(RENDER_DEFAULTS, "canvas_height", DEFAULTS.canvas_height))),
+        panel_margin_px=int(params.get("panel_margin_px", group_default(RENDER_DEFAULTS, "panel_margin_px", DEFAULTS.panel_margin_px))),
+        playfield_width_px=int(params.get("playfield_width_px", group_default(RENDER_DEFAULTS, "playfield_width_px", DEFAULTS.playfield_width_px))),
+        playfield_height_px=int(params.get("playfield_height_px", group_default(RENDER_DEFAULTS, "playfield_height_px", DEFAULTS.playfield_height_px))),
+        playfield_border_width_px=int(params.get("playfield_border_width_px", group_default(RENDER_DEFAULTS, "playfield_border_width_px", DEFAULTS.playfield_border_width_px))),
+        lane_pad_height_px=int(params.get("lane_pad_height_px", group_default(RENDER_DEFAULTS, "lane_pad_height_px", DEFAULTS.lane_pad_height_px))),
+        lane_pad_gap_px=int(params.get("lane_pad_gap_px", group_default(RENDER_DEFAULTS, "lane_pad_gap_px", DEFAULTS.lane_pad_gap_px))),
+        enemy_width_px=int(params.get("enemy_width_px", group_default(RENDER_DEFAULTS, "enemy_width_px", DEFAULTS.enemy_width_px))),
+        enemy_height_px=int(params.get("enemy_height_px", group_default(RENDER_DEFAULTS, "enemy_height_px", DEFAULTS.enemy_height_px))),
+        projectile_width_px=int(params.get("projectile_width_px", group_default(RENDER_DEFAULTS, "projectile_width_px", DEFAULTS.projectile_width_px))),
+        projectile_height_px=int(params.get("projectile_height_px", group_default(RENDER_DEFAULTS, "projectile_height_px", DEFAULTS.projectile_height_px))),
+        blocker_width_px=int(params.get("blocker_width_px", group_default(RENDER_DEFAULTS, "blocker_width_px", DEFAULTS.blocker_width_px))),
+        blocker_height_px=int(params.get("blocker_height_px", group_default(RENDER_DEFAULTS, "blocker_height_px", DEFAULTS.blocker_height_px))),
+        player_ship_width_px=int(params.get("player_ship_width_px", group_default(RENDER_DEFAULTS, "player_ship_width_px", DEFAULTS.player_ship_width_px))),
+        player_ship_height_px=int(params.get("player_ship_height_px", group_default(RENDER_DEFAULTS, "player_ship_height_px", DEFAULTS.player_ship_height_px))),
+        label_font_size_px=int(params.get("label_font_size_px", group_default(RENDER_DEFAULTS, "label_font_size_px", DEFAULTS.label_font_size_px))),
+        font_family=str(font_family),
+        layout_jitter_meta=resolve_games_layout_jitter(
+            params,
+            RENDER_DEFAULTS,
+            instance_seed=int(instance_seed),
+            namespace="games.space_shooter.layout",
+        ),
+    )
+
+
 def build_games_space_shooter_theme(*, style_variant: str) -> SpaceShooterTheme:
-    """Return one Space-shooter visual theme."""
+    """Return one complete Space-shooter palette for a sampled style variant."""
 
     style = str(style_variant)
     if style == "deep_space":
@@ -325,7 +365,7 @@ def render_space_shooter_scene(
     highlight_player_lane: bool = False,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedSpaceShooterScene:
-    """Render one Space-shooter playfield."""
+    """Render one playfield and record every object box used by annotations."""
 
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")
@@ -578,5 +618,6 @@ __all__ = [
     "SpaceShooterRenderParams",
     "SpaceShooterTheme",
     "build_games_space_shooter_theme",
+    "resolve_space_shooter_render_params",
     "render_space_shooter_scene",
 ]

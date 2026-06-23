@@ -1,0 +1,134 @@
+"""Passive state and constants for space-shooter game tasks."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Dict, Tuple
+
+
+DOMAIN = "games"
+SCENE_ID = "space_shooter"
+SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("defense_wave",)
+SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
+    "neon",
+    "deep_space",
+    "vector",
+    "amber",
+    "terminal",
+)
+ENEMY_LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(26))
+
+
+@dataclass(frozen=True)
+class SpaceEnemy:
+    """One visible enemy ship."""
+
+    enemy_id: str
+    label: str
+    lane: int
+    y_slot: int
+    dx_frac: float
+    dy_px: float
+    score_value: int | None = None
+
+
+@dataclass(frozen=True)
+class SpaceProjectile:
+    """One visible enemy projectile."""
+
+    projectile_id: str
+    lane: int
+    y_slot: int
+    dx_frac: float
+    dy_px: float
+
+
+@dataclass(frozen=True)
+class SpaceBlocker:
+    """One visible shield or asteroid blocker."""
+
+    blocker_id: str
+    lane: int
+    y_slot: int
+    blocker_type: str
+    dx_frac: float
+    dy_px: float
+
+
+@dataclass(frozen=True)
+class SpaceShooterSample:
+    """Generated scene state plus task-owned answer and annotation ids."""
+
+    lane_count: int
+    scene_variant: str
+    answer: int | str
+    player_lane: int
+    enemies: Tuple[SpaceEnemy, ...]
+    projectiles: Tuple[SpaceProjectile, ...]
+    blockers: Tuple[SpaceBlocker, ...]
+    clear_enemy_ids: Tuple[str, ...]
+    intercept_projectile_ids: Tuple[str, ...]
+    lowest_enemy_id: str
+    lowest_enemy_label: str
+    safe_lane_indices: Tuple[int, ...]
+    annotation_entity_ids: Tuple[str, ...]
+    target_answer: int | None
+    construction_mode: str
+    metadata: Dict[str, Any]
+
+
+@dataclass(frozen=True)
+class SceneAxes:
+    """Resolved scene-level axes shared by all space-shooter objectives."""
+
+    scene_variant: str
+    style_variant: str
+    lane_count: int
+    enemy_count: int
+    clear_shot_score_value_support: Tuple[int, ...]
+    scene_variant_probabilities: Dict[str, float]
+    style_variant_probabilities: Dict[str, float]
+    lane_count_probabilities: Dict[str, float]
+    enemy_count_probabilities: Dict[str, float]
+
+
+def lane_entity_id(lane: int) -> str:
+    """Return the stable render/entity id for one bottom lane pad."""
+
+    return f"lane_{int(lane)}"
+
+
+def validate_basic_space_shooter_sample(sample: SpaceShooterSample) -> None:
+    """Validate scene-wide invariants independent of the public objective."""
+
+    lane_count = int(sample.lane_count)
+    if lane_count <= 0:
+        raise ValueError("space shooter lane_count must be positive")
+    if not (0 <= int(sample.player_lane) < lane_count):
+        raise ValueError("space shooter player_lane out of range")
+    enemy_ids = [str(enemy.enemy_id) for enemy in sample.enemies]
+    projectile_ids = [str(projectile.projectile_id) for projectile in sample.projectiles]
+    blocker_ids = [str(blocker.blocker_id) for blocker in sample.blockers]
+    if len(enemy_ids) != len(set(enemy_ids)):
+        raise ValueError("space shooter enemy ids must be unique")
+    if len(projectile_ids) != len(set(projectile_ids)):
+        raise ValueError("space shooter projectile ids must be unique")
+    if len(blocker_ids) != len(set(blocker_ids)):
+        raise ValueError("space shooter blocker ids must be unique")
+    if len(set(str(enemy.label) for enemy in sample.enemies)) != len(sample.enemies):
+        raise ValueError("space shooter enemy labels must be unique")
+    known_entities = set(enemy_ids) | set(projectile_ids) | set(blocker_ids) | {
+        lane_entity_id(lane) for lane in range(lane_count)
+    }
+    if not set(str(entity_id) for entity_id in sample.annotation_entity_ids) <= known_entities:
+        raise ValueError("space shooter annotation references unknown entities")
+    if not set(str(entity_id) for entity_id in sample.clear_enemy_ids) <= set(enemy_ids):
+        raise ValueError("space shooter clear shot ids must reference enemies")
+    if not set(str(entity_id) for entity_id in sample.intercept_projectile_ids) <= set(projectile_ids):
+        raise ValueError("space shooter intercept ids must reference projectiles")
+    if str(sample.lowest_enemy_id) not in set(enemy_ids):
+        raise ValueError("space shooter lowest enemy id must reference an enemy")
+    if str(sample.lowest_enemy_label) not in {str(enemy.label) for enemy in sample.enemies}:
+        raise ValueError("space shooter lowest enemy label must reference an enemy")
+    if not set(int(lane) for lane in sample.safe_lane_indices) <= set(range(lane_count)):
+        raise ValueError("space shooter safe lanes out of range")

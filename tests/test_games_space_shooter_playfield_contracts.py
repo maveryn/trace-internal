@@ -10,17 +10,24 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.space_shooter.clear_shot_count import (
     GamesSpaceShooterClearShotCountTask,
+)
+from trace.tasks.games.space_shooter.clear_shot_score_value import (
     GamesSpaceShooterClearShotScoreValueTask,
+)
+from trace.tasks.games.space_shooter.highest_threat_label import (
     GamesSpaceShooterHighestThreatLabelTask,
-    GamesSpaceShooterPlayfieldTask,
+)
+from trace.tasks.games.space_shooter.projectile_intercept_count import (
     GamesSpaceShooterProjectileInterceptCountTask,
+)
+from trace.tasks.games.space_shooter.safe_lane_count import (
     GamesSpaceShooterSafeLaneCountTask,
 )
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "params", "expected_query", "expected_answer", "expected_answer_type"),
+    ("task_cls", "params", "expected_prompt_query_key", "expected_answer", "expected_answer_type"),
     (
         (
             GamesSpaceShooterClearShotCountTask,
@@ -60,9 +67,9 @@ from tests.helpers import read_jsonl
     ),
 )
 def test_games_space_shooter_public_tasks_emit_expected_contract(
-    task_cls: type[GamesSpaceShooterPlayfieldTask],
+    task_cls,
     params: dict[str, int | str],
-    expected_query: str,
+    expected_prompt_query_key: str,
     expected_answer: int | None,
     expected_answer_type: str,
 ) -> None:
@@ -73,17 +80,24 @@ def test_games_space_shooter_public_tasks_emit_expected_contract(
     assert out.answer_gt.type == expected_answer_type
     if expected_answer is not None:
         assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.annotation_gt.type == "bbox_set"
-    assert out.query_id == expected_query
+    expected_annotation_type = "bbox" if expected_prompt_query_key == "highest_threat_label" else "bbox_set"
+    assert out.annotation_gt.type == expected_annotation_type
+    assert out.query_id == "single"
     assert out.scene_id == "space_shooter"
-    assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert execution["query_id"] == expected_query
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["query_spec"]["query_id"] == "single"
+    assert trace["query_spec"]["params"]["query_id"] == "single"
+    assert trace["query_spec"]["params"]["prompt_query_key"] == expected_prompt_query_key
+    assert execution["query_id"] == "single"
+    assert execution["prompt_query_key"] == expected_prompt_query_key
+    if expected_annotation_type == "bbox":
+        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    else:
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert trace["render_spec"]["panel_scene_style"]["treatment"]
     assert trace["render_spec"]["text_style"]["font_family"]
     assert trace["render_map"]["panel_bbox_px"] is not None
-    assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
+    expected_count = 1 if expected_annotation_type == "bbox" else len(out.annotation_gt.value)
+    assert len(execution["annotation_entity_ids"]) == expected_count
 
 
 def test_games_space_shooter_clear_shot_count_matches_trace() -> None:
@@ -173,6 +187,9 @@ def test_games_space_shooter_projectile_intercept_count_matches_trace() -> None:
     assert int(out.answer_gt.value) == len(aligned) == 4
     assert list(execution["intercept_projectile_ids"]) == aligned
     assert list(execution["annotation_entity_ids"]) == aligned
+    for bbox in out.annotation_gt.value:
+        assert float(bbox[2]) - float(bbox[0]) >= 24.0
+        assert float(bbox[3]) - float(bbox[1]) >= 24.0
 
 
 def test_games_space_shooter_highest_threat_label_matches_unique_lowest_enemy() -> None:
@@ -182,7 +199,7 @@ def test_games_space_shooter_highest_threat_label_matches_unique_lowest_enemy() 
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
-    target_id = str(execution["highest_threat_enemy_id"])
+    target_id = str(execution["lowest_enemy_id"])
     target_enemy = next(enemy for enemy in execution["enemies"] if str(enemy["enemy_id"]) == target_id)
     other_slots = [
         int(enemy["y_slot"])
@@ -190,10 +207,11 @@ def test_games_space_shooter_highest_threat_label_matches_unique_lowest_enemy() 
         if str(enemy["enemy_id"]) != target_id
     ]
 
-    assert str(out.answer_gt.value) == str(target_enemy["label"]) == str(execution["highest_threat_label"])
+    assert str(out.answer_gt.value) == str(target_enemy["label"]) == str(execution["lowest_enemy_label"])
     assert int(target_enemy["y_slot"]) == 5
     assert all(slot < 5 for slot in other_slots)
     assert list(execution["annotation_entity_ids"]) == [target_id]
+    assert out.annotation_gt.type == "bbox"
 
 
 def test_games_space_shooter_safe_lane_count_matches_trace() -> None:
@@ -210,9 +228,9 @@ def test_games_space_shooter_safe_lane_count_matches_trace() -> None:
 
 
 def test_games_space_shooter_non_lane_entities_do_not_share_lane_slots() -> None:
-    out = GamesSpaceShooterPlayfieldTask().generate(
+    out = GamesSpaceShooterSafeLaneCountTask().generate(
         88150,
-        params={"query_id": "safe_lane_count", "target_answer": 5, "lane_count": 8, "enemy_count": 16},
+        params={"target_answer": 5, "lane_count": 8, "enemy_count": 16},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]

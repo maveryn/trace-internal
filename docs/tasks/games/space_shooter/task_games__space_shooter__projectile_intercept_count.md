@@ -5,11 +5,14 @@
 2. Scene: `space_shooter`
 3. Scene id: `space_shooter`
 4. Public task id: `task_games__space_shooter__projectile_intercept_count`
-5. Supported `query_id` values: `projectile_intercept_count`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
-8. Program schema: `count(filter(projectiles, intersects_player_zone(projectile)=True)); scene=space_shooter; scope=projectile_intercept_count`
+
+## Program Contract
+`count(filter(projectiles, same_lane(projectile, player_ship)=True)); scene=space_shooter; scope=projectile_intercept_count`
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
+1. `single` is the only public query id; the task-specific prompt key is trace metadata.
+2. Annotation is the bbox set of enemy shots aligned with the player ship lane.
+3. Scalar annotation checked: true.

@@ -141,7 +141,7 @@
     "answer_hint_clear_shot_count": "set \"answer\" to the number of enemy ships that have no enemy ship, shield, or asteroid below them in the same lane",
     "annotation_hint_projectile_intercept_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for enemy shots aligned with the player ship",
     "answer_hint_projectile_intercept_count": "set \"answer\" to the number of enemy shots in the same lane as the player ship",
-    "annotation_hint_highest_threat_label": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the selected enemy ship",
+    "annotation_hint_highest_threat_label": "set \"annotation\" to the selected enemy ship bounding box [x0, y0, x1, y1]",
     "answer_hint_highest_threat_label": "set \"answer\" to the selected enemy label as a string",
     "annotation_hint_safe_lane_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for the safe bottom lane pads",
     "answer_hint_safe_lane_count": "set \"answer\" to the number of bottom lane pads with no enemy shot in that lane and no asteroid on that pad"

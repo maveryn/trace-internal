@@ -5,11 +5,14 @@
 2. Scene: `space_shooter`
 3. Scene id: `space_shooter`
 4. Public task id: `task_games__space_shooter__clear_shot_count`
-5. Supported `query_id` values: `clear_shot_count`
+5. Supported `query_id` values: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
-8. Program schema: `count(filter(enemy_targets, shot_line_blocked(target)=False)); scene=space_shooter; scope=clear_shot_count`
+
+## Program Contract
+`count(filter(enemy_targets, shot_line_blocked(target)=False)); scene=space_shooter; scope=clear_shot_count`
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
+1. `single` is the only public query id; the task-specific prompt key is trace metadata.
+2. Annotation is the bbox set of enemy ships counted as clear shots.
+3. Scalar annotation checked: true.

@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from trace.tasks.geometry.function_graph.average_rate_value import GeometryGraphingAverageRateValueTask
 from trace.tasks.geometry.function_graph.extremum_count_local_extremum_count import (
     GeometryGraphingLocalExtremumCountTask,
 )
@@ -163,6 +164,14 @@ def test_geometry_graphing_reference_line_rejects_target_below_active_answer_ran
 def test_geometry_graphing_count_tasks_reject_source_query_ids(task, source_query_id: str) -> None:
     with pytest.raises(ValueError):
         task.generate(23414, params={"query_id": source_query_id}, max_attempts=20)
+
+
+def test_geometry_graphing_average_rate_does_not_draw_secant_helper_line() -> None:
+    out = GeometryGraphingAverageRateValueTask().generate(23415, params={}, max_attempts=20)
+    assert out.annotation_gt.type == "point_map"
+    assert set(out.annotation_gt.value) == {"A", "B"}
+    assert "secant_segment_graph" not in out.trace_payload["render_map"]
+    assert "secant_segment_pixel" not in out.trace_payload["render_map"]
 
 
 def test_geometry_graphing_count_crossing_prompts_exclude_tangencies() -> None:

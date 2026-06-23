@@ -19,7 +19,7 @@ from ...shared.config_defaults import (
 )
 
 SCENE_ID = "function_graph"
-from ...shared.drawing import draw_centered_text, draw_dashed_line
+from ...shared.drawing import draw_centered_text
 from ...shared.fixed_query import select_task_query_id
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
@@ -30,11 +30,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_rendering import load_font, resolve_scene_label_font_size_px
 from ..shared.background_defaults import load_geometry_background_defaults
-from .shared.projection import (
-    build_query_line_color,
-    draw_function_polyline,
-    graph_units_to_pixel_float,
-)
+from .shared.projection import draw_function_polyline, graph_units_to_pixel_float
 from ..shared.graph_rendering import graph_paper_grid_from_frame
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.shape_style import (
@@ -70,7 +66,6 @@ class _TaskDefaults:
     graph_cells_min: int = 20
     graph_cells_max: int = 20
     line_width: int = 4
-    guide_line_width: int = 3
     marker_radius: int = 7
     label_font_size_min: int = 18
     label_font_size_max: int = 26
@@ -262,7 +257,6 @@ def _sample_rate_scene(rng, query: _ResolvedQuery) -> _SampledRateScene:
             "A": [float(point_a[0]), float(point_a[1])],
             "B": [float(point_b[0]), float(point_b[1])],
         },
-        "secant_segment_graph": [[float(point_a[0]), float(point_a[1])], [float(point_b[0]), float(point_b[1])]],
     }
     execution_trace = {
         "question_format": "average_rate_between_marked_points",
@@ -344,7 +338,6 @@ def _render_scene(
     sampled_scene: _SampledRateScene,
     shape_style,
     line_width: int,
-    guide_line_width: int,
     marker_radius: int,
     label_font_size_px: int,
 ) -> _RenderedRateScene:
@@ -361,20 +354,7 @@ def _render_scene(
     )
     point_a_pixel = _pixel_point(sampled_scene.point_a, context=context)
     point_b_pixel = _pixel_point(sampled_scene.point_b, context=context)
-    secant_color = build_query_line_color(
-        line_color=shape_style.line_color,
-        label_color=shape_style.label_color,
-    )
     scale = max(1, int(context.scene_scale))
-    draw_dashed_line(
-        draw,
-        start=(float(point_a_pixel[0]) * float(scale), float(point_a_pixel[1]) * float(scale)),
-        end=(float(point_b_pixel[0]) * float(scale), float(point_b_pixel[1]) * float(scale)),
-        fill=secant_color,
-        width=max(1, int(guide_line_width)),
-        dash_px=12.0 * float(scale),
-        gap_px=7.0 * float(scale),
-    )
     label_bbox_a = _draw_marked_point(
         draw,
         canonical_point=point_a_pixel,
@@ -419,10 +399,6 @@ def _render_scene(
                 "A": [round(float(value) / float(scale), 3) for value in label_bbox_a],
                 "B": [round(float(value) / float(scale), 3) for value in label_bbox_b],
             },
-            "secant_segment_pixel": [
-                [round(float(point_a_pixel[0]), 3), round(float(point_a_pixel[1]), 3)],
-                [round(float(point_b_pixel[0]), 3), round(float(point_b_pixel[1]), 3)],
-            ],
         }
     )
     points_by_label = {
@@ -527,9 +503,6 @@ class GeometryGraphingAverageRateValueTask:
         line_width = int(
             params.get("line_width", group_default(_RENDER_DEFAULTS, "line_width", _DEFAULTS.line_width))
         ) * int(scene_context.scene_scale)
-        guide_line_width = int(
-            params.get("guide_line_width", group_default(_RENDER_DEFAULTS, "guide_line_width", _DEFAULTS.guide_line_width))
-        ) * int(scene_context.scene_scale)
         marker_radius = int(
             params.get("marker_radius", group_default(_RENDER_DEFAULTS, "marker_radius", _DEFAULTS.marker_radius))
         )
@@ -558,7 +531,6 @@ class GeometryGraphingAverageRateValueTask:
             sampled_scene=sampled_scene,
             shape_style=shape_style,
             line_width=int(line_width),
-            guide_line_width=int(guide_line_width),
             marker_radius=int(marker_radius),
             label_font_size_px=int(label_font_size_px),
         )

@@ -14,7 +14,7 @@ import re
 
 MIGRATED_SCENE_PACKAGE_DOMAINS: frozenset[str] = frozenset()
 MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap", "hexbin_density", "histogram", "marker_map", "matrix", "multiseries", "parallel_coords", "part_whole", "pictogram", "population_pyramid", "radar", "radial_progress", "radial_sankey", "region_map"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap", "hexbin_density", "histogram", "marker_map", "matrix", "multiseries", "parallel_coords", "part_whole", "pictogram", "population_pyramid", "radar", "radial_progress", "radial_sankey", "region_map", "sankey"}),
     "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes", "go", "hex", "irregular_link_board", "lane_runner", "ludo_board", "mancala_pit_board", "marble_chain", "match3", "minecraft", "minesweeper", "minigolf", "nine_mens_morris", "pacman", "pinball_table", "platformer", "pool", "racing_track", "radial_hunt_board", "reversi", "rhythm", "rule_override_board", "sixteen_soldiers", "sliding_block", "snake", "snakes_ladders", "sokoban", "solitaire", "space_shooter"}),
     "geometry": frozenset(
         {
@@ -41,12 +41,12 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
-    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path", "named_ring", "pair_grid", "paired_canvas", "pattern_grid", "reference_canvas", "sequence_strip"}),
+    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path", "named_ring", "pair_grid", "paired_canvas", "pattern_grid", "reference_canvas", "sequence_strip", "single_transform_options"}),
     "illustrations": frozenset({"construction_site", "environment", "indoor_room", "isometric_farmstead", "isometric_quarry", "library", "park_playground", "pixel_village", "rpg_dungeon", "rpg_house"}),
     "three_d": frozenset({"object_cluster", "surface_fixture"}),
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
-    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap", "hexbin_density", "histogram", "marker_map", "matrix", "multiseries", "parallel_coords", "part_whole", "pictogram", "population_pyramid", "radar", "radial_progress", "radial_sankey", "region_map"}),
+    "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap", "hexbin_density", "histogram", "marker_map", "matrix", "multiseries", "parallel_coords", "part_whole", "pictogram", "population_pyramid", "radar", "radial_progress", "radial_sankey", "region_map", "sankey"}),
     "games": frozenset({"2048", "backgammon", "battleship", "bingo", "bowling", "brick_breaker", "bubble_shooter", "cards", "checkers", "chess", "chess_variant", "circular_chess", "connect_four", "crossing", "darts", "dominoes", "dots_and_boxes", "go", "hex", "irregular_link_board", "lane_runner", "ludo_board", "mancala_pit_board", "marble_chain", "match3", "minecraft", "minesweeper", "minigolf", "nine_mens_morris", "pacman", "pinball_table", "platformer", "pool", "racing_track", "radial_hunt_board", "reversi", "rhythm", "rule_override_board", "sixteen_soldiers", "sliding_block", "snake", "snakes_ladders", "sokoban", "solitaire", "space_shooter"}),
     "geometry": frozenset(
         {
@@ -73,7 +73,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
-    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path", "named_ring", "pair_grid", "paired_canvas", "pattern_grid", "reference_canvas", "sequence_strip"}),
+    "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path", "named_ring", "pair_grid", "paired_canvas", "pattern_grid", "reference_canvas", "sequence_strip", "single_transform_options"}),
     "illustrations": frozenset({"construction_site", "environment", "indoor_room", "isometric_farmstead", "isometric_quarry", "library", "park_playground", "pixel_village", "rpg_dungeon", "rpg_house"}),
     "three_d": frozenset({"object_cluster", "surface_fixture"}),
 }

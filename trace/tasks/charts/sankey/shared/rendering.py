@@ -6,10 +6,25 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ....shared.bbox_projection import round_bbox as _round_bbox
-from ....shared.drawing import draw_centered_text
-from ....shared.text_rendering import fit_font_to_box, load_font
-from .sankey_common import BBox, Point, _FLOW_PALETTE_RGB, _FlowRenderParams, _RenderedSankey
+from trace.core.visual.background import make_background_canvas
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.shared.bbox_projection import round_bbox as _round_bbox
+from trace.tasks.shared.drawing import draw_centered_text
+from trace.tasks.shared.text_rendering import fit_font_to_box, load_font, temporary_default_font_family
+
+from .defaults import (
+    FLOW_PALETTE_RGB,
+    POST_IMAGE_BACKGROUND_DEFAULTS,
+    POST_IMAGE_NOISE_DEFAULTS,
+    resolve_render_params,
+    sample_font_family,
+)
+from .sampling import node_dict, path_dict
+from .state import BBox, Point, FlowRenderParams, RenderedSankey, SankeyDataset, SankeyRenderResult
+
+
+def clamp_unit_interval(value: float) -> float:
+    return max(0.0, min(1.0, float(value)))
 
 def _clamp_bbox(bbox: Sequence[float], *, width: int, height: int) -> List[float]:
     x0, y0, x1, y1 = [float(value) for value in bbox]
@@ -61,7 +76,7 @@ def _node_bboxes(
     x_center: float,
     top: float,
     bottom: float,
-    render_params: _FlowRenderParams,
+    render_params: FlowRenderParams,
 ) -> Dict[str, BBox]:
     count = len(nodes)
     if int(count) <= 0:
@@ -93,7 +108,7 @@ def _port_y(
     node_bbox: Sequence[float],
     ordered_path_ids: Sequence[str],
     path_id: str,
-    render_params: _FlowRenderParams,
+    render_params: FlowRenderParams,
 ) -> float:
     center_y = 0.5 * (float(node_bbox[1]) + float(node_bbox[3]))
     total = max(1, len(ordered_path_ids))
@@ -112,7 +127,7 @@ def _port_y(
     return float(center_y + offset)
 
 
-def _flow_width(value: int, *, render_params: _FlowRenderParams, value_min: int, value_max: int) -> int:
+def _flow_width(value: int, *, render_params: FlowRenderParams, value_min: int, value_max: int) -> int:
     if int(value_max) <= int(value_min):
         return int(render_params.min_flow_width_px)
     norm = (float(value) - float(value_min)) / float(value_max - value_min)
@@ -124,7 +139,7 @@ def _value_label_size(
     draw: ImageDraw.ImageDraw,
     *,
     text: str,
-    render_params: _FlowRenderParams,
+    render_params: FlowRenderParams,
 ) -> Tuple[float, float]:
     font = load_font(int(render_params.value_label_font_size_px), bold=True)
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
@@ -138,7 +153,7 @@ def _value_label_bbox(
     *,
     text: str,
     center: Point,
-    render_params: _FlowRenderParams,
+    render_params: FlowRenderParams,
 ) -> BBox:
     label_width, label_height = _value_label_size(draw, text=str(text), render_params=render_params)
     cx, cy = float(center[0]), float(center[1])
@@ -155,7 +170,7 @@ def _draw_value_label(
     *,
     text: str,
     center: Point,
-    render_params: _FlowRenderParams,
+    render_params: FlowRenderParams,
 ) -> List[float]:
     font = load_font(int(render_params.value_label_font_size_px), bold=True)
     bbox = _value_label_bbox(draw, text=str(text), center=center, render_params=render_params)
@@ -184,8 +199,10 @@ def _resolve_value_label_centers(
     *,
     label_specs: Sequence[Mapping[str, Any]],
     plot_bbox: Sequence[float],
-    render_params: _FlowRenderParams,
+    render_params: FlowRenderParams,
 ) -> Dict[str, Point]:
+    """Place value labels in each link column while preserving non-overlap vertically."""
+
     resolved: Dict[str, Point] = {}
     gap = float(render_params.value_label_gap_px)
     top_limit = float(plot_bbox[1]) + max(4.0, gap)
@@ -265,7 +282,7 @@ def _segment_lane_offsets(
     paths: Sequence[Mapping[str, Any]],
     *,
     segment_kind: str,
-    render_params: _FlowRenderParams,
+    render_params: FlowRenderParams,
 ) -> Dict[str, float]:
     """Fan out parallel bands that connect the same pair of Sankey nodes."""
 
@@ -303,10 +320,12 @@ def _render_sankey(
     middles: Sequence[Mapping[str, Any]],
     targets: Sequence[Mapping[str, Any]],
     paths: Sequence[Mapping[str, Any]],
-    render_params: _FlowRenderParams,
+    render_params: FlowRenderParams,
     value_min: int,
     value_max: int,
-) -> _RenderedSankey:
+) -> RenderedSankey:
+    """Render the three-column Sankey grammar and record node, segment, and label geometry."""
+
     base = background.convert("RGBA")
     overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
     flow_draw = ImageDraw.Draw(overlay)
@@ -402,7 +421,7 @@ def _render_sankey(
 
     for index, path in enumerate(paths):
         path_id = str(path["path_id"])
-        color = _FLOW_PALETTE_RGB[int(index) % len(_FLOW_PALETTE_RGB)]
+        color = FLOW_PALETTE_RGB[int(index) % len(FLOW_PALETTE_RGB)]
         source_bbox = node_bbox_map_raw[str(path["source_id"])]
         middle_bbox = node_bbox_map_raw[str(path["middle_id"])]
         target_bbox = node_bbox_map_raw[str(path["target_id"])]
@@ -606,7 +625,7 @@ def _render_sankey(
             "attrs": {"title": str(scene_title)},
         },
     )
-    return _RenderedSankey(
+    return RenderedSankey(
         image=image_with_flows,
         entities=tuple(dict(item) for item in entities),
         panel_bbox_px=_round_bbox(panel_bbox),
@@ -619,3 +638,52 @@ def _render_sankey(
         segment_center_map=dict(segment_center_map),
     )
 
+
+def render_sankey_dataset(
+    *,
+    dataset: SankeyDataset,
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> SankeyRenderResult:
+    """Render a task-bound Sankey dataset with sampled chart font, background, and noise."""
+
+    frame = dataset.frame
+    render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
+    render_params = resolve_render_params(render_style_params)
+    background, background_meta = make_background_canvas(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+    )
+    chart_font_family = sample_font_family(int(instance_seed), params)
+    with temporary_default_font_family(str(chart_font_family)):
+        rendered_scene = _render_sankey(
+            background,
+            scene_title=str(frame.scene_title),
+            sources=[node_dict(node) for node in frame.sources],
+            middles=[node_dict(node) for node in frame.middles],
+            targets=[node_dict(node) for node in frame.targets],
+            paths=[path_dict(path) for path in frame.paths],
+            render_params=render_params,
+            value_min=int(frame.value_min),
+            value_max=int(frame.value_max),
+        )
+    image, post_noise_meta = apply_post_image_noise(
+        rendered_scene.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    return SankeyRenderResult(
+        image=image,
+        rendered_scene=rendered_scene,
+        render_params=render_params,
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
+        chart_font_family=str(chart_font_family),
+    )
+
+
+__all__ = ["render_sankey_dataset"]

@@ -3,24 +3,28 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `sankey`
-3. Source implementation domain/group: `charts/flow`
-4. Query id: `source_to_target_total_flow`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Task id: `task_charts__sankey__source_to_target_total_flow`
+4. Objective contract: `source_to_target_total_flow`
+5. Supported `query_id` values: `single`
+
+## Program Contract
+`sum(min(value(source_to_middle), value(middle_to_target)) for route in routes(source_label, target_label)); scene=sankey; scope=source_to_target_total_flow`
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.flow.sankey_path_value.ChartsFlowSankeySourceToTargetTotalFlowPublicTask`
-2. Prompt lookup domain/group: `charts/flow`
-3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
-4. Answers and annotation are produced from the same metadata execution trace.
+1. Registered class: `trace.tasks.charts.sankey.source_to_target_total_flow.ChartsFlowSankeySourceToTargetTotalFlowPublicTask`
+2. Prompt bundle: `charts_sankey_v1`
+3. Scene key: `sankey`
+4. Task key: `sankey_path_query`
+5. Query key: `source_to_target_total_flow`
 
 ## Annotation Contract
-1. Answer schema: `integer_value`.
-2. Annotation schema: `bbox_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+1. Answer schema: `integer_value`
+2. Annotation schema: `bbox_set`
+3. Annotation marks the printed value-label boxes for the two Sankey bands on every route included in the sum.
+4. Node boxes, unselected flow labels, flow curves, title, and panel frame are context unless explicitly referenced by the task.
 
 ## Query Details
 
-| Query id | Program signature | Answer schema | Annotation schema |
+| Query id | Program argument | Answer schema | Annotation schema |
 |---|---|---|---|
-| `source_to_target_total_flow` | `numeric.aggregate_sum` | `integer_value` | `bbox_set` |
+| `single` | `source_label,target_label` | `integer_value` | `bbox_set` |

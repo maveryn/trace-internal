@@ -10,24 +10,23 @@ from trace.tasks.shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 
-from .sankey_common import _PROMPT_DEFAULTS
+from .defaults import PROMPT_DEFAULTS
+from .state import PROMPT_BUNDLE_ID, SCENE_ID, SankeyDataset
 
 
 DOMAIN = "charts"
-SCENE_ID = "sankey"
-PROMPT_BUNDLE_ID = "charts_sankey_v1"
 
 
-def dynamic_slots(*, dataset: Mapping[str, Any]) -> dict[str, Any]:
-    query = dict(dataset["query"])
+def dynamic_slots(*, dataset: SankeyDataset) -> dict[str, Any]:
+    question = dataset.question
     return {
         "object_description": (
             "a three-column Sankey-style flow diagram. Each node has a visible label, each directed band "
             "has a printed integer value, and bands run from a source node through one middle node to a target node"
         ),
-        "source_label": str(query.get("source_label", "")),
-        "middle_label": str(query.get("middle_label", "")),
-        "target_label": str(query.get("target_label", "")),
+        "source_label": str(question.params.get("source_label", "")),
+        "middle_label": str(question.params.get("middle_label", "")),
+        "target_label": str(question.params.get("target_label", "")),
     }
 
 
@@ -40,7 +39,7 @@ def build_prompt_artifacts(
     rendered_prompt = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
-        bundle_id=str(_PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
+        bundle_id=str(PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
         scene_key="sankey",
         task_key="sankey_path_query",
         query_key=str(prompt_query_key),

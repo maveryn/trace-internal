@@ -78,7 +78,6 @@ def test_icons_relation_relative_position_type_contract_matches_scene() -> None:
     assert execution['question_format'] == 'count_matching_scene_icons_by_reference_and_anchor_relation'
     assert out.query_id == 'right_of_anchor'
     assert execution['query_id'] == 'right_of_anchor'
-    assert execution['internal_query_id'] == 'right_of_anchor'
     assert execution['direction'] == 'right'
     assert int(execution['object_count']) == 5
     assert int(execution['target_count']) == 2

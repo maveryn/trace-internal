@@ -14,7 +14,6 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
-    required_group_default,
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
@@ -23,7 +22,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
-    render_task_prompt_variants,
+    render_scene_prompt_variants,
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.anchor_marking import draw_anchor_marker
@@ -47,10 +46,6 @@ from ..shared.icon_task_rendering import (
     resolve_icon_rgb_param,
     sample_icon_instance_noise,
 )
-from ..shared.public_query_task import rewrite_icons_query_output
-
-
-_PUBLIC_QUERY_ID = "relative_position_count"
 TASK_ID = "task_icons__reference_canvas__anchor_position_count"
 SCENE_ID = "reference_canvas"
 _RELATION_VARIANTS: Tuple[str, ...] = (
@@ -59,6 +54,7 @@ _RELATION_VARIANTS: Tuple[str, ...] = (
     "above_anchor",
     "below_anchor",
 )
+SUPPORTED_QUERY_IDS = _RELATION_VARIANTS
 _DIRECTIONS: Tuple[str, ...] = ("left", "right", "above", "below")
 _OPPOSITE_RELATION = {
     "left_of_anchor": "right_of_anchor",
@@ -739,6 +735,8 @@ class IconsRelationRelativePositionTypeTask:
 
     task_id = TASK_ID
     domain = "icons"
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic anchored icon relation-counting instance."""
@@ -750,7 +748,6 @@ class IconsRelationRelativePositionTypeTask:
             instance_seed=int(instance_seed),
         )
         query_id = _direction_to_variant(str(direction))
-        public_query_id = str(_PUBLIC_QUERY_ID)
         counting_params = dict(params)
         (
             object_count,
@@ -835,40 +832,18 @@ class IconsRelationRelativePositionTypeTask:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "annotation_hint",
-                "answer_hint",
-                "json_example",
-                "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        question_text = str(
-            required_group_default(
-                _PROMPT_DEFAULTS,
-                f"question_text_{direction}",
-                context=f"prompt defaults for {self.task_id}",
-            )
-        )
-        prompt_selection = render_task_prompt_variants(
+        prompt_selection = render_scene_prompt_variants(
             domain=self.domain,
             scene_id=SCENE_ID,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
+            query_key=str(query_id),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "question_text": str(question_text),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
-            },
+            dynamic_slots={},
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
@@ -888,8 +863,7 @@ class IconsRelationRelativePositionTypeTask:
                 "entities": scene_entities,
                 "relations": {
                     "counting_target": "same_icon_type_and_directional_relation_to_anchor",
-                    "query_id": str(public_query_id),
-                    "internal_query_id": str(query_id),
+                    "query_id": str(query_id),
                     "reference_icon_id": str(scene_payload.reference_icon_id),
                     "anchor_icon_id": str(scene_payload.anchor_icon_id),
                     "spatial_relation": str(query_id),
@@ -905,7 +879,7 @@ class IconsRelationRelativePositionTypeTask:
                 },
             },
             "query_spec": {
-                "query_id": str(public_query_id),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -926,7 +900,6 @@ class IconsRelationRelativePositionTypeTask:
                     "pool_manifest": str(pool_manifest),
                     "direction": str(direction),
                     "direction_probabilities": dict(direction_probabilities),
-                    "internal_query_id": str(query_id),
                     "anchor_gap_px_directional": int(render_params["anchor_gap_px_directional"]),
                     "same_type_distractor_opposite_fraction_min": float(
                         render_params["same_type_distractor_opposite_fraction_min"]
@@ -966,8 +939,7 @@ class IconsRelationRelativePositionTypeTask:
             },
             "execution_trace": {
                 "scene_variant": "reference_scene_anchor",
-                "query_id": str(public_query_id),
-                "internal_query_id": str(query_id),
+                "query_id": str(query_id),
                 "direction": str(direction),
                 "object_count": int(scene_payload.object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
@@ -997,8 +969,7 @@ class IconsRelationRelativePositionTypeTask:
             "witness_symbolic": {
                 "reference_icon_id": str(scene_payload.reference_icon_id),
                 "anchor_icon_id": str(scene_payload.anchor_icon_id),
-                "query_id": str(public_query_id),
-                "internal_query_id": str(query_id),
+                "query_id": str(query_id),
                 "direction": str(direction),
                 "spatial_relation": str(query_id),
                 "matching_scene_indices": [int(value) for value in scene_payload.matching_scene_indices],
@@ -1051,17 +1022,10 @@ class IconsRelationRelativePositionTypeTask:
             image_id="img0",
             trace_payload=trace_payload,
             task_versions=default_task_versions(),
-            query_id=str(public_query_id),
-        )
-        return rewrite_icons_query_output(
-            output,
-            query_id=str(query_id),
             scene_id=SCENE_ID,
-            query_probabilities={
-                _direction_to_variant(str(key)): float(value)
-                for key, value in direction_probabilities.items()
-            },
+            query_id=str(query_id),
         )
+        return output
 
 
-__all__ = ["IconsRelationRelativePositionTypeTask"]
+__all__ = ["IconsRelationRelativePositionTypeTask", "SUPPORTED_QUERY_IDS"]

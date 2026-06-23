@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections import Counter
 from trace.core.seed import hash64
-from trace.tasks.icons.reference_canvas.shared.size_relation import IconsCountingSizeRelationTask
+from trace.tasks.icons.reference_canvas.reference_metric_relation_count import IconsReferenceCanvasReferenceMetricRelationCountTask
 
 def _overlap_fraction_smaller(left: list[int], right: list[int]) -> float:
     ix0 = max(int(left[0]), int(right[0]))
@@ -24,7 +24,7 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 def test_icons_counting_size_relation_contract_matches_scene() -> None:
-    task = IconsCountingSizeRelationTask()
+    task = IconsReferenceCanvasReferenceMetricRelationCountTask()
     out = task.generate(14610, params={'target_count': 3, 'distractor_count': 4, 'size_relation': 'smaller'}, max_attempts=200)
     trace = out.trace_payload
     execution = trace['execution_trace']
@@ -69,13 +69,13 @@ def test_icons_counting_size_relation_contract_matches_scene() -> None:
             assert _overlap_fraction_smaller(left['bbox_xyxy'], right['bbox_xyxy']) <= 0.1 + 1e-06
 
 def test_icons_counting_size_relation_supports_zero_matches() -> None:
-    task = IconsCountingSizeRelationTask()
+    task = IconsReferenceCanvasReferenceMetricRelationCountTask()
     out = task.generate(14611, params={'target_count_min': 0, 'target_count': 0, 'distractor_count': 5, 'size_relation': 'larger'}, max_attempts=200)
     assert int(out.answer_gt.value) == 0
     assert out.annotation_gt.value == []
 
 def test_icons_counting_size_relation_prompt_example_matches_contract() -> None:
-    task = IconsCountingSizeRelationTask()
+    task = IconsReferenceCanvasReferenceMetricRelationCountTask()
     out = task.generate(14612, params={'target_count': 2, 'distractor_count': 3, 'size_relation': 'larger'}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants['answer_only'])
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
@@ -86,7 +86,7 @@ def test_icons_counting_size_relation_prompt_example_matches_contract() -> None:
     assert answer_and_annotation['answer'] == 2
 
 def test_icons_counting_size_relation_balanced_sampling_defaults() -> None:
-    task = IconsCountingSizeRelationTask()
+    task = IconsReferenceCanvasReferenceMetricRelationCountTask()
     object_counts: Counter[int] = Counter()
     target_counts: Counter[int] = Counter()
     distractor_counts: Counter[int] = Counter()

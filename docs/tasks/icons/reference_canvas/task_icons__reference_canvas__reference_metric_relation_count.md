@@ -3,29 +3,20 @@
 ## Identity
 - domain: `icons`
 - scene_id: `reference_canvas`
-- scene_id: `counting`
 - module: `trace/tasks/icons/reference_canvas/reference_metric_relation_count.py`
-- prompt bundle: `icons_counting_v0`
+- prompt bundle: `icons_reference_canvas_v1`
 
-## Contract
-Renders a Reference icon and a Scene panel, then asks how many Scene icons
-satisfy one predicate relative to the Reference.
+## Program Contract
+`count.reference_icon_metric_predicate(scene=reference_canvas, scope=scene_panel_icons, reference=left_panel_reference_icon, metric=nominal_size, predicates=smaller_than_reference|larger_than_reference, output=count)`
 
-Query ids:
-- `match_type`
-- `match_color`
-- `match_rotation`
-- `match_type_color_rotation`
-- `size_smaller`
-- `size_larger`
+Renders a Reference icon and a Scene panel, then asks for an integer count of
+Scene icons whose nominal size is smaller or larger than the Reference.
+
+Supported `query_id`: `size_smaller`, `size_larger`.
 
 Answer schema: integer.
 Annotation schema: `bbox_set` over counted Scene icon boxes only.
 
 ## Notes
-The reference icon bbox, sampled sizes, colors, rotations, and predicate branch
-are retained in trace metadata but are not part of user-facing annotation.
-
-Renderer metadata records sampled palette/style, panel-header text-legibility
-metadata, and per-icon noise edits. Size branches share this public task id and
-keep their concrete branch in `query_id`.
+The concrete Reference size, per-icon nominal sizes, and minimum size delta are
+retained in trace metadata. Annotation covers only the counted Scene icons.

@@ -30,7 +30,7 @@ def test_icons_reference_canvas_scene_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'reference_canvas')
     attribute_task_id = 'task_icons__reference_canvas__reference_attribute_match_count'
     attribute_generation, attribute_rendering, attribute_prompt = split_generation_rendering_prompt_defaults(cfg, task_id=attribute_task_id)
-    assert set(attribute_generation['query_id_weights'].keys()) == {'match_type', 'match_color', 'match_rotation', 'match_type_color_rotation'}
+    assert 'query_id_weights' not in attribute_generation
     assert str(attribute_generation['variant_generation_params']['match_type']['pool_manifest']).strip() == 'all_icons.txt'
     assert str(attribute_generation['variant_generation_params']['match_color']['pool_manifest']).strip() == 'all_icons.txt'
     assert str(attribute_generation['variant_generation_params']['match_rotation']['pool_manifest']).strip() == 'non_symmetry.txt'
@@ -38,19 +38,15 @@ def test_icons_reference_canvas_scene_defaults_loaded() -> None:
     assert float(attribute_rendering['variant_render_params']['match_color']['min_color_distance']) == 60.0
     assert int(attribute_rendering['variant_render_params']['match_color']['palette_size_min']) == 3
     assert int(attribute_rendering['variant_render_params']['match_color']['palette_size_max']) == 4
-    assert str(attribute_prompt['bundle_id']) == 'icons_reference_canvas_v0'
+    assert str(attribute_prompt['bundle_id']) == 'icons_reference_canvas_v1'
     assert str(attribute_prompt['scene_key']) == 'reference_canvas_counting'
-    assert set(attribute_prompt['question_text_by_variant'].keys()) == {'match_type', 'match_color', 'match_rotation', 'match_type_color_rotation'}
-    assert str(attribute_prompt['annotation_hint']).strip()
-    assert str(attribute_prompt['answer_hint']).strip()
     metric_task_id = 'task_icons__reference_canvas__reference_metric_relation_count'
     metric_generation, metric_rendering, metric_prompt = split_generation_rendering_prompt_defaults(cfg, task_id=metric_task_id)
-    assert set(metric_generation['query_id_weights'].keys()) == {'size_smaller', 'size_larger'}
-    assert set(metric_prompt['question_text_by_variant'].keys()) == {'size_smaller', 'size_larger'}
+    assert 'query_id_weights' not in metric_generation
+    assert str(metric_prompt['bundle_id']) == 'icons_reference_canvas_v1'
     metric_generation_smaller = metric_generation['variant_generation_params']['size_smaller']
     assert str(metric_generation_smaller['pool_manifest']).strip() == 'all_icons.txt'
     assert list(metric_generation_smaller['rotation_candidates_degrees']) == [0, 90, 180, 270]
-    assert list(metric_generation_smaller['size_relation_candidates']) == ['smaller', 'larger']
     assert int(metric_generation_smaller['size_relation_min_delta_px']) == 18
     assert int(metric_generation_smaller['object_count_max']) == 14
     assert int(metric_generation_smaller['target_count_max']) == 5
@@ -64,13 +60,11 @@ def test_icons_reference_canvas_scene_defaults_loaded() -> None:
     assert dict(anchor_generation['direction_weights']) == {'left': 1.0, 'right': 1.0, 'above': 1.0, 'below': 1.0}
     assert float(anchor_rendering['scene_max_overlap_fraction']) == 0.05
     assert int(anchor_rendering['anchor_gap_px_directional']) == 8
+    assert str(anchor_prompt['bundle_id']) == 'icons_reference_canvas_v1'
     assert str(anchor_prompt['scene_key']) == 'reference_canvas_anchor'
-    assert str(anchor_prompt['question_text_left']).strip()
-    assert str(anchor_prompt['question_text_right']).strip()
-    assert str(anchor_prompt['question_text_above']).strip()
-    assert str(anchor_prompt['question_text_below']).strip()
-    bundle = load_scene_prompt_bundle('icons', 'reference_canvas', 'icons_reference_canvas_v0')
-    assert bundle.bundle_id == 'icons_reference_canvas_v0'
+    bundle = load_scene_prompt_bundle('icons', 'reference_canvas', 'icons_reference_canvas_v1')
+    assert bundle.bundle_id == 'icons_reference_canvas_v1'
+    assert bundle.schema_version == 'v1'
     assert set(bundle.scene_templates.keys()) == {'reference_canvas_anchor', 'reference_canvas_counting'}
 
 def test_icons_icon_field_scene_defaults_loaded() -> None:

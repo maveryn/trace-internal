@@ -29,7 +29,7 @@ def test_icons_counting_attribute_match_count_tracks_consolidated_trace(task_cls
     assert 'source_query_id' not in execution
     assert execution['scene_variant'] == 'reference_scene'
     assert execution['query_id'] == query_id
-    assert trace['query_spec']['template_id'] == 'icons_reference_canvas_v0'
+    assert trace['query_spec']['template_id'] == 'icons_reference_canvas_v1'
     assert trace['query_spec']['params']['scene_variant'] == 'reference_scene'
     assert trace['query_spec']['params']['query_id'] == query_id
     assert out.query_id == query_id

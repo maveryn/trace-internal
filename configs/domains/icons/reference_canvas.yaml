@@ -13,11 +13,6 @@ generation:
       object_count_max: 16
       target_count_min: 0
       target_count_max: 8
-      query_id_weights:
-        match_type: 1.0
-        match_color: 1.0
-        match_rotation: 1.0
-        match_type_color_rotation: 1.0
       variant_generation_params:
         match_type:
           pool_manifest: all_icons.txt
@@ -42,9 +37,6 @@ generation:
       object_count_max: 16
       target_count_min: 0
       target_count_max: 8
-      query_id_weights:
-        size_smaller: 1.0
-        size_larger: 1.0
       variant_generation_params:
         size_smaller:
           object_count_max: 14
@@ -57,9 +49,6 @@ generation:
           - 90
           - 180
           - 270
-          size_relation_candidates:
-          - smaller
-          - larger
           size_relation_min_delta_px: 18
         size_larger:
           object_count_max: 14
@@ -72,9 +61,6 @@ generation:
           - 90
           - 180
           - 270
-          size_relation_candidates:
-          - smaller
-          - larger
           size_relation_min_delta_px: 18
     task_icons__reference_canvas__anchor_position_count:
       object_count_min: 1
@@ -222,11 +208,6 @@ rendering:
           min_color_distance: 40.0
           palette_size_min: 3
           palette_size_max: 4
-      query_id_weights:
-        match_type: 1.0
-        match_color: 1.0
-        match_rotation: 1.0
-        match_type_color_rotation: 1.0
     task_icons__reference_canvas__reference_metric_relation_count:
       variant_render_params:
         size_smaller:
@@ -239,9 +220,6 @@ rendering:
           reference_icon_size_px: 80
           reference_icon_size_min_px: 64
           reference_icon_size_max_px: 96
-      query_id_weights:
-        size_smaller: 1.0
-        size_larger: 1.0
     task_icons__reference_canvas__anchor_position_count:
       scene_max_overlap_fraction: 0.05
       anchor_gap_px_directional: 8
@@ -288,59 +266,13 @@ rendering:
       anchor_label_font_size_px: 20
 prompt:
   shared:
-    bundle_id: icons_reference_canvas_v0
+    bundle_id: icons_reference_canvas_v1
     scene_key: reference_canvas_counting
     task_key: reference_canvas_query
   task_overrides:
     task_icons__reference_canvas__reference_attribute_match_count:
       scene_key: reference_canvas_counting
-      object_description: a Reference icon beside a Scene panel
-      question_text_by_variant:
-        match_type: How many Scene icons have the same type as the Reference?
-        match_color: How many Scene icons have the same color as the Reference?
-        match_rotation: How many Scene icons have the same rotation as the Reference?
-        match_type_color_rotation: How many Scene icons match the Reference in type,
-          color, and rotation?
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes
-        in image pixel coordinates for all counted Scene icons
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[322,152,377,207],[756,318,820,382]],"answer":2}'
-      json_example_answer_only: '{"answer":2}'
-      query_id_weights:
-        match_type: 1.0
-        match_color: 1.0
-        match_rotation: 1.0
-        match_type_color_rotation: 1.0
     task_icons__reference_canvas__reference_metric_relation_count:
       scene_key: reference_canvas_counting
-      object_description: a Reference icon beside a Scene panel
-      question_text_by_variant:
-        size_smaller: How many Scene icons are smaller than the Reference?
-        size_larger: How many Scene icons are larger than the Reference?
-      question_text_smaller: How many Scene icons are smaller than the Reference?
-      question_text_larger: How many Scene icons are larger than the Reference?
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes
-        in image pixel coordinates for all counted Scene icons
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[322,152,377,207],[756,318,820,382]],"answer":2}'
-      json_example_answer_only: '{"answer":2}'
-      query_id_weights:
-        size_smaller: 1.0
-        size_larger: 1.0
     task_icons__reference_canvas__anchor_position_count:
       scene_key: reference_canvas_anchor
-      object_description: a Reference icon beside a Scene panel with one icon marked
-        Anchor
-      question_text_left: How many Scene icons match the Reference type and are to
-        the left of the Anchor?
-      question_text_right: How many Scene icons match the Reference type and are to
-        the right of the Anchor?
-      question_text_above: How many Scene icons match the Reference type and are above
-        the Anchor?
-      question_text_below: How many Scene icons match the Reference type and are below
-        the Anchor?
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes
-        in image pixel coordinates for all counted Scene icons
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[438,162,498,222],[602,302,670,370]],"answer":2}'
-      json_example_answer_only: '{"answer":2}'

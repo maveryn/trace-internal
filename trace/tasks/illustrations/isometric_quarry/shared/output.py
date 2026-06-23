@@ -119,7 +119,11 @@ def isometric_quarry_object_count_render_map(
     level_object_counts: dict[str, dict[str, int]] = {}
     for entity in scene.entities:
         level_key = str(int(entity.level))
-        object_key = str(entity.object_type)
+        object_key = (
+            str(entity.metadata.get("quarry_object_type", ""))
+            if str(entity.object_type) == "quarry_object"
+            else str(entity.object_type)
+        )
         level_object_counts.setdefault(level_key, {})
         level_object_counts[level_key][object_key] = int(level_object_counts[level_key].get(object_key, 0)) + 1
     counted_ids = [str(entity_id) for entity_id in counted_entity_ids]
@@ -131,7 +135,15 @@ def isometric_quarry_object_count_render_map(
         "counted_entity_ids": counted_ids,
         "counted_entity_bboxes_px": counted_bboxes,
         "entity_levels_by_id": {str(entity.entity_id): int(entity.level) for entity in scene.entities},
-        "entity_object_types_by_id": {str(entity.entity_id): str(entity.object_type) for entity in scene.entities},
+        "entity_object_types_by_id": {
+            str(entity.entity_id): (
+                str(entity.metadata.get("quarry_object_type", ""))
+                if str(entity.object_type) == "quarry_object"
+                else str(entity.object_type)
+            )
+            for entity in scene.entities
+        },
+        "entity_base_object_types_by_id": {str(entity.entity_id): str(entity.object_type) for entity in scene.entities},
         "level_object_counts": level_object_counts,
         "answer_count": len(counted_ids),
     }

@@ -28,6 +28,17 @@ def tile_label_bbox(tile: IsoQuarryTile) -> tuple[float, float, float, float]:
     return (float(cx) - 18.0, float(cy) - 15.0, float(cx) + 18.0, float(cy) + 13.0)
 
 
+def worker_reference_bbox(tile: IsoQuarryTile) -> tuple[float, float, float, float]:
+    """Approximate the quarry worker reference sprite bbox for clearance checks."""
+
+    cx, cy = tile.center_xy
+    tile_w = float(tile.bbox_xyxy[2]) - float(tile.bbox_xyxy[0])
+    tile_h = float(tile.bbox_xyxy[3]) - float(tile.bbox_xyxy[1])
+    width = tile_w * 0.5
+    height = tile_w * 0.7
+    return (cx - width * 0.5, cy - height + tile_h * 0.15, cx + width * 0.5, cy + tile_h * 0.15)
+
+
 def boxes_intersect(left: Sequence[float], right: Sequence[float], *, pad: float = 0.0) -> bool:
     """Return true when two bboxes overlap after optional padding."""
 
@@ -158,4 +169,5 @@ __all__ = [
     "same_level_component_sizes",
     "tile_inside_canvas",
     "tile_label_bbox",
+    "worker_reference_bbox",
 ]

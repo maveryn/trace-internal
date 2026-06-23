@@ -1,0 +1,47 @@
+# `task_illustrations__isometric_quarry__terrain_level_object_count`
+
+## Summary
+- Domain: `illustrations`
+- Scene id: `isometric_quarry`
+- Implementation scene package: `isometric_quarry`
+- Implementation source: `trace/tasks/illustrations/isometric_quarry/terrain_level_object_count.py`
+
+## Task Contract
+Counts quarry objects of a sampled subtype on either the highest or lowest terrain level in an isometric quarry scene.
+
+## Program Contract
+`count(object where subtype in {ore_vein,mine_cart} and level(object_base)=extremum(levels), mode=highest|lowest); scene=isometric_quarry; scope=terrain_level_object_count`
+
+## Query Branches
+
+| Query id | Program schema |
+| --- | --- |
+| `highest_terrain_object_count` | `count(object where subtype=target_object_type and level(object_base)=max(levels)); scene=isometric_quarry; scope=terrain_level_object_count` |
+| `lowest_terrain_object_count` | `count(object where subtype=target_object_type and level(object_base)=min(levels)); scene=isometric_quarry; scope=terrain_level_object_count` |
+
+## Program Metadata
+- Program signatures: `count.spatial_elevation_object_filter`
+- Base program contract: `count(object where subtype=target_object_type and level(object_base)=extremum(levels)); scene=isometric_quarry; scope=terrain_level_object_count`
+- Parameter axes: `canvas_profile`, `target_object_type`, `target_count`, `active_level_range`, `layout_family`, `quarry_patch_placement`, `context_object_placement`
+- Arguments:
+  - `target_object_type`: sampled quarry object subtype; allowed `ore_vein|mine_cart`; source `query_spec.params`
+  - `level`: terrain elevation of the object's base tile; source `scene_ir.entities[].level`
+  - `mode`: extremum operator; allowed `highest|lowest`; source `query_id`
+- Argument metadata status: `curated`
+- Supported query ids: `highest_terrain_object_count`, `lowest_terrain_object_count`
+- `scalar_annotation_checked`: not applicable; annotation schema is `bbox_set`
+
+## Answer Contract
+- Answer schema: `integer`
+- Generator `answer_gt.type`: `integer`
+- Answer range: `0..5`
+
+## Annotation Contract
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
+- Annotation contains one bounding box for each counted quarry object; use `[]` when the answer is `0`.
+
+## Prompt And Trace Requirements
+- Prompt text must come from `prompts/illustrations/isometric_quarry/illustrations_isometric_quarry_v0.json`.
+- Prompts must name the sampled object label (`ore veins` or `mine carts`) and the elevation extremum.
+- Render-only attributes such as palette, canvas profile, active max level, layout family, quarry patch placement, and distractor context object placement must not be query ids.

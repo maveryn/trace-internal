@@ -8,12 +8,44 @@
       "",
       "",
       ""
+    ],
+    "terrain_level_object_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "worker_same_level_tile_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "highest_terrain_tile_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
     "scene:isometric_quarry_elevation_canvas": [],
+    "scene:isometric_quarry_object_count_canvas": [],
+    "scene:isometric_quarry_worker_reference_canvas": [],
+    "scene:isometric_quarry_tile_count_canvas": [],
     "query:highest_terrain_tile": [],
     "query:lowest_terrain_tile": [],
+    "query:highest_terrain_object_count": [
+      "object_label"
+    ],
+    "query:lowest_terrain_object_count": [
+      "object_label"
+    ],
+    "query:worker_same_level_tile": [],
+    "query:highest_terrain_tile_count": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -49,6 +81,27 @@
       "The picture shows an isometric excavation quarry where terrain tiles sit at different elevations and some ground tiles are labeled with letters.",
       "The canvas contains an isometric quarry scene with multiple rock heights, industrial context objects, and lettered candidate ground tiles.",
       "This illustration shows a quarry drawn on isometric tiles, with raised rock shelves, gravel cuts, and lettered terrain tiles."
+    ],
+    "isometric_quarry_object_count_canvas": [
+      "The image shows an isometric quarry made of raised terrain tiles, ore rocks, mine carts, and other quarry equipment.",
+      "The scene shows a pixel-art isometric quarry with varied rock levels and quarry objects placed on the ground.",
+      "The picture shows an isometric quarry where terrain tiles sit at different elevations with ore veins and mine carts visible.",
+      "The canvas contains an isometric quarry scene with multiple rock heights and countable quarry objects.",
+      "This illustration shows a quarry drawn on isometric tiles, with stepped rock levels and mining equipment."
+    ],
+    "isometric_quarry_worker_reference_canvas": [
+      "The image shows an isometric quarry made of raised terrain tiles, one unlettered hard-hat worker, and several lettered ground tiles.",
+      "The scene shows a pixel-art isometric quarry with varied rock levels, an unlettered worker reference, and lettered candidate ground tiles.",
+      "The picture shows an isometric quarry where terrain tiles sit at different elevations and one worker stands on a ground tile.",
+      "The canvas contains an isometric quarry scene with multiple rock heights, a worker reference object, and lettered terrain tiles.",
+      "This illustration shows a quarry drawn on isometric tiles, with a worker and lettered candidate ground tiles."
+    ],
+    "isometric_quarry_tile_count_canvas": [
+      "The image shows an isometric quarry made of visible terrain tiles at different elevation levels.",
+      "The scene shows a pixel-art isometric quarry with a clean highest terrace and lower surrounding rock terrain.",
+      "The picture shows an isometric quarry where terrain tiles form raised layers with visible tile borders.",
+      "The canvas contains an isometric quarry scene with multiple rock heights and a clearly visible highest layer.",
+      "This illustration shows a quarry drawn on isometric tiles, including one highest elevated top layer."
     ]
   },
   "query_templates": {
@@ -65,6 +118,34 @@
       "Among the lettered ground tiles, which one is at the lowest elevation?",
       "Which candidate letter marks the lowest terrain tile?",
       "Select the lettered quarry tile with the smallest ground elevation."
+    ],
+    "highest_terrain_object_count": [
+      "How many {object_label} are on the highest terrain level?",
+      "Count the {object_label} placed on the highest quarry terrace.",
+      "What is the number of {object_label} on the highest ground level?",
+      "How many {object_label} sit on the highest elevated terrain?",
+      "Count only the {object_label} whose base is on the highest terrain level."
+    ],
+    "lowest_terrain_object_count": [
+      "How many {object_label} are on the lowest terrain level?",
+      "Count the {object_label} placed on the lowest quarry floor.",
+      "What is the number of {object_label} on the lowest ground level?",
+      "How many {object_label} sit on the lowest terrain?",
+      "Count only the {object_label} whose base is on the lowest terrain level."
+    ],
+    "worker_same_level_tile": [
+      "Which lettered ground tile is at the same terrain level as the worker?",
+      "Choose the letter of the ground tile that sits at the worker's elevation level.",
+      "Which candidate terrain tile is on the same raised level as the worker?",
+      "Among the lettered ground tiles, which one matches the worker's terrain elevation?",
+      "Select the lettered quarry tile whose ground level matches the worker's tile."
+    ],
+    "highest_terrain_tile_count": [
+      "How many visible terrain tiles are on the highest elevation layer?",
+      "Count the top-surface terrain tiles that make up the highest quarry terrace.",
+      "What is the number of visible ground tiles on the highest raised layer?",
+      "How many tile tops belong to the highest terrain level?",
+      "Count only the visible top-surface tiles on the highest elevated quarry layer."
     ]
   },
   "allow_empty_task_templates": true

@@ -14,6 +14,7 @@ from trace.tasks.illustrations.shared.pixel_world_objects import (
     draw_pixel_crate,
     draw_pixel_mine_cart,
     draw_pixel_ore_vein,
+    draw_pixel_person,
     draw_pixel_rail_track,
     draw_pixel_sign,
     draw_pixel_wood_support,
@@ -54,6 +55,7 @@ QUARRY_OBJECT_TYPES: tuple[str, ...] = (
     "rail_track",
     "sign",
 )
+COUNTABLE_QUARRY_OBJECT_TYPES: tuple[str, ...] = ("ore_vein", "mine_cart")
 
 RGB = tuple[int, int, int]
 TileRect = tuple[int, int, int, int]
@@ -591,6 +593,10 @@ def _bbox_inside_canvas(bbox: Sequence[float], *, width: int, height: int) -> bo
 
 def _object_sprite_bbox(layout: IsoLayout, tile: IsoQuarryTile, *, object_type: str, subtype: str) -> BBox:
     cx, cy = tile.center_xy
+    if str(object_type) == "worker":
+        width = float(layout.tile_w) * 0.5
+        height = float(layout.tile_w) * 0.7
+        return (cx - width * 0.5, cy - height + float(layout.tile_h) * 0.15, cx + width * 0.5, cy + float(layout.tile_h) * 0.15)
     if str(subtype) in {"mine_cart", "wood_support"}:
         width = float(layout.tile_w) * 0.96
         height = float(layout.tile_w) * 0.52
@@ -634,6 +640,23 @@ def _quarry_object_sprite(object_type: str, *, rng: random.Random) -> Image.Imag
     return sprite
 
 
+def _worker_sprite(*, rng: random.Random) -> Image.Image:
+    sprite = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    sprite_draw = ImageDraw.Draw(sprite, "RGBA")
+    draw_pixel_person(
+        sprite_draw,
+        (0, 0, 1, 1),
+        skin_rgb=rng.choice(((225, 171, 109), (189, 127, 80), (237, 190, 133))),
+        shirt_rgb=rng.choice(((210, 118, 51), (58, 126, 176), (117, 132, 74))),
+        pants_rgb=rng.choice(((54, 67, 82), (73, 70, 62), (46, 82, 93))),
+        hair_rgb=rng.choice(((82, 50, 33), (116, 75, 35), (54, 38, 28))),
+        gender_id=str(rng.choice(("male", "female"))),
+        facing="down",
+        person_variant_id="worker",
+    )
+    return sprite
+
+
 def _patches_with_bboxes(patches: Sequence[Mapping[str, Any]], tiles_by_id: Mapping[str, IsoQuarryTile]) -> list[dict[str, Any]]:
     resolved: list[dict[str, Any]] = []
     for patch in patches:
@@ -672,7 +695,9 @@ def _draw_context_entities(
     *,
     transition_tile_ids: set[str],
     quarry_patch_tile_ids: set[str],
+    required_entity_counts_by_level_type: Mapping[str, Mapping[int | str, int]] | None = None,
     object_unsafe_tile_ids: set[str] | None = None,
+    reference_worker_tile_id: str | None = None,
     reserved_tile_ids: set[str] | None = None,
 ) -> tuple[list[IsoQuarryEntity], set[str]]:
     """Draw reusable quarry context objects and return occupied terrain tile ids."""
@@ -680,10 +705,13 @@ def _draw_context_entities(
     entities: list[IsoQuarryEntity] = []
     occupied: set[str] = set()
     blocked = set(transition_tile_ids) | set(reserved_tile_ids or set())
+    if reference_worker_tile_id:
+        blocked.add(str(reference_worker_tile_id))
     width, height = image.size
+    tiles_by_id = {str(tile.tile_id): tile for tile in tiles}
     object_unsafe_tile_ids = set(object_unsafe_tile_ids or _lower_tiles_adjacent_to_higher(tiles))
     drawable: list[tuple[float, str, str, str, IsoQuarryTile, BBox]] = []
-    candidates = [
+    base_candidates = [
         tile
         for tile in tiles
         if str(tile.tile_id) not in blocked
@@ -691,23 +719,87 @@ def _draw_context_entities(
         and str(tile.tile_id) not in quarry_patch_tile_ids
         and str(tile.terrain) == "rock"
     ]
-    rng.shuffle(candidates)
-    context_count = min(len(candidates), rng.randint(5, 9))
+    required_counts_raw = required_entity_counts_by_level_type or {}
+
+    def required_counts(subtype: str) -> dict[int, int]:
+        raw_counts = required_counts_raw.get(str(subtype), {})
+        return {int(level): int(count) for level, count in dict(raw_counts).items()}
+
+    def candidate_tiles_for_level(candidates: Sequence[IsoQuarryTile], level: int) -> list[IsoQuarryTile]:
+        return [tile for tile in candidates if int(tile.level) == int(level) and str(tile.tile_id) not in occupied]
+
+    quarry_object_index = 0
+    required_levels_by_subtype: dict[str, set[int]] = {}
+    for subtype in QUARRY_OBJECT_TYPES:
+        subtype_counts = required_counts(str(subtype))
+        if subtype_counts:
+            required_levels_by_subtype[str(subtype)] = set(int(level) for level in subtype_counts)
+        for level, required_count in sorted(subtype_counts.items()):
+            candidates = candidate_tiles_for_level(base_candidates, int(level))
+            rng.shuffle(candidates)
+            placed = 0
+            for tile in candidates:
+                if placed >= int(required_count):
+                    break
+                bbox = _object_sprite_bbox(layout, tile, object_type="quarry_object", subtype=str(subtype))
+                if not _bbox_inside_canvas(bbox, width=width, height=height):
+                    continue
+                occupied.add(str(tile.tile_id))
+                drawable.append((float(bbox[3]), f"quarry_object_{quarry_object_index:02d}", "quarry_object", str(subtype), tile, bbox))
+                quarry_object_index += 1
+                placed += 1
+            if placed < int(required_count):
+                raise ValueError(f"could not place required quarry object count {required_count} for {subtype} on level {level}")
+
+    random_candidates = [tile for tile in base_candidates if str(tile.tile_id) not in occupied]
+    rng.shuffle(random_candidates)
+    required_total = len(drawable)
+    context_count = min(len(random_candidates) + int(required_total), rng.randint(5, 9))
     object_cycle = list(QUARRY_OBJECT_TYPES)
     rng.shuffle(object_cycle)
-    for index, tile in enumerate(candidates):
+    for tile in random_candidates:
         if len(drawable) >= context_count:
             break
-        subtype = str(object_cycle[index % len(object_cycle)])
+        available_subtypes = [
+            subtype
+            for subtype in object_cycle
+            if int(tile.level) not in required_levels_by_subtype.get(str(subtype), set())
+        ]
+        if not available_subtypes:
+            continue
+        subtype = str(available_subtypes[(quarry_object_index + int(tile.col) + int(tile.row)) % len(available_subtypes)])
         bbox = _object_sprite_bbox(layout, tile, object_type="quarry_object", subtype=subtype)
         if not _bbox_inside_canvas(bbox, width=width, height=height):
             continue
         occupied.add(str(tile.tile_id))
-        drawable.append((float(bbox[3]), f"quarry_object_{len(drawable):02d}", "quarry_object", subtype, tile, bbox))
+        drawable.append((float(bbox[3]), f"quarry_object_{quarry_object_index:02d}", "quarry_object", subtype, tile, bbox))
+        quarry_object_index += 1
+
+    if reference_worker_tile_id:
+        worker_tile = tiles_by_id.get(str(reference_worker_tile_id))
+        if worker_tile is None:
+            raise ValueError(f"reference_worker_tile_id does not name a rendered tile: {reference_worker_tile_id!r}")
+        if str(worker_tile.tile_id) in occupied or str(worker_tile.tile_id) in quarry_patch_tile_ids:
+            raise ValueError(f"reference worker tile is unavailable: {reference_worker_tile_id!r}")
+        if str(worker_tile.tile_id) in object_unsafe_tile_ids or str(worker_tile.terrain) != "rock":
+            raise ValueError(f"reference worker tile is not a safe rock tile: {reference_worker_tile_id!r}")
+        worker_bbox = _object_sprite_bbox(layout, worker_tile, object_type="worker", subtype="worker")
+        if not _bbox_inside_canvas(worker_bbox, width=width, height=height):
+            raise ValueError(f"reference worker bbox is outside canvas: {reference_worker_tile_id!r}")
+        occupied.add(str(worker_tile.tile_id))
+        drawable.append((float(worker_bbox[3]), "worker_00", "worker", "worker", worker_tile, worker_bbox))
 
     for _, entity_id, object_type, subtype, tile, bbox in sorted(drawable, key=lambda item: item[0]):
-        _paste_sprite(image, bbox, _quarry_object_sprite(subtype, rng=rng))
-        public_name = subtype.replace("_", " ")
+        if object_type == "worker":
+            _paste_sprite(image, bbox, _worker_sprite(rng=rng))
+            public_name = "worker"
+            role = "reference"
+            metadata = {"base_level": int(tile.level), "person_variant_id": "worker", "role": "reference"}
+        else:
+            _paste_sprite(image, bbox, _quarry_object_sprite(subtype, rng=rng))
+            public_name = subtype.replace("_", " ")
+            role = "context"
+            metadata = {"base_level": int(tile.level), "quarry_object_type": subtype}
         _add_entity(
             entities,
             entity_id=entity_id,
@@ -716,8 +808,8 @@ def _draw_context_entities(
             tile_ids=[str(tile.tile_id)],
             level=int(tile.level),
             bbox=bbox,
-            role="context",
-            metadata={"base_level": int(tile.level), "quarry_object_type": subtype},
+            role=role,
+            metadata=metadata,
         )
     return entities, occupied
 
@@ -762,6 +854,8 @@ def render_isometric_quarry_scene(
     canvas_profile_probabilities: Mapping[str, float] | None = None,
     candidate_labels_by_tile_id: Mapping[str, str] | None = None,
     label_font_family: str | None = None,
+    required_entity_counts_by_level_type: Mapping[str, Mapping[int | str, int]] | None = None,
+    reference_worker_tile_id: str | None = None,
     highest_level_tile_count: int | None = None,
     reserve_highest_level_tiles: bool = False,
 ) -> IsoQuarryScene:
@@ -815,7 +909,9 @@ def render_isometric_quarry_scene(
         rng,
         transition_tile_ids=set(transition_tile_ids),
         quarry_patch_tile_ids=set(quarry_patch_tile_ids),
+        required_entity_counts_by_level_type=required_entity_counts_by_level_type,
         object_unsafe_tile_ids=set(object_unsafe_tile_ids),
+        reference_worker_tile_id=reference_worker_tile_id,
         reserved_tile_ids=set(reserved_highest_tile_ids),
     )
 
@@ -874,6 +970,7 @@ def render_isometric_quarry_scene(
         "quarry_patches": quarry_patches_with_bboxes,
         "quarry_patch_tile_ids": sorted(quarry_patch_tile_ids),
         "object_unsafe_low_adjacent_higher_tile_ids": sorted(object_unsafe_tile_ids),
+        "reference_worker_tile_id": str(reference_worker_tile_id or ""),
         "transition_tile_ids": sorted(transition_tile_ids),
         "occupied_tile_ids": sorted(occupied_tile_ids),
         "eligible_tile_ids": [
@@ -885,6 +982,16 @@ def render_isometric_quarry_scene(
         "entity_count": len(entities),
         "context_object_counts": {
             "quarry_object": sum(1 for entity in entities if entity.object_type == "quarry_object"),
+            "worker": sum(1 for entity in entities if entity.object_type == "worker"),
+            **{
+                subtype: sum(
+                    1
+                    for entity in entities
+                    if entity.object_type == "quarry_object"
+                    and str(entity.metadata.get("quarry_object_type", "")) == str(subtype)
+                )
+                for subtype in QUARRY_OBJECT_TYPES
+            },
         },
         "retaining_wall_faces": face_records,
         "label_bboxes_by_tile_id": {key: [round(float(value), 3) for value in bbox] for key, bbox in label_bboxes.items()},

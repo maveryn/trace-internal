@@ -1,0 +1,45 @@
+# `task_illustrations__isometric_quarry__highest_terrain_tile_count`
+
+## Summary
+- Domain: `illustrations`
+- Scene id: `isometric_quarry`
+- Implementation scene package: `isometric_quarry`
+- Implementation source: `trace/tasks/illustrations/isometric_quarry/highest_terrain_tile_count.py`
+
+## Task Contract
+Counts the visible top-surface terrain tiles that make up the highest elevation layer in an isometric quarry scene.
+
+## Program Contract
+`count(tile where level(tile)=max(levels)); scene=isometric_quarry; scope=highest_terrain_tile_count`
+
+## Query Branches
+
+| Query id | Program schema |
+| --- | --- |
+| `single` | `count(tile where level(tile)=max(levels)); scene=isometric_quarry; scope=highest_terrain_tile_count` |
+
+## Program Metadata
+- Program signatures: `count.spatial_elevation_tile_layer`
+- Base program contract: `count(tile where level(tile)=max(levels)); scene=isometric_quarry; scope=highest_terrain_tile_count`
+- Parameter axes: `canvas_profile`, `target_count`, `active_level_range`, `layout_family=count_plateau`, `highest_layer_shape`
+- Arguments:
+  - `tile`: visible top-surface terrain tile; source `scene_ir.tiles`
+  - `level`: integer terrain elevation; source `scene_ir.tiles`
+- Argument metadata status: `curated`
+- Supported query ids: `single`
+- `scalar_annotation_checked`: true
+
+## Answer Contract
+- Answer schema: `integer`
+- Generator `answer_gt.type`: `integer`
+- Answer range: `6..20`
+
+## Annotation Contract
+- Annotation schema: `bbox`
+- Generator `annotation_gt.type`: `bbox`
+- Annotation contains one bounding box around the whole highest-elevation top layer.
+
+## Prompt And Trace Requirements
+- Prompt text must come from `prompts/illustrations/isometric_quarry/illustrations_isometric_quarry_v0.json`.
+- The renderer must reserve highest-layer tiles from quarry patches and context objects for this task.
+- Counted tile ids, counted tile bboxes, target level, answer count, and scalar bbox annotation must be recorded in trace metadata.

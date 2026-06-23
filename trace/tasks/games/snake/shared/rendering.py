@@ -9,7 +9,8 @@ from PIL import Image, ImageDraw
 
 from ...shared.layout import apply_games_layout_jitter_to_bbox
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
-from .common import Coord, SnakeState, all_coords, coord_to_cell_id
+from .rules import all_coords, coord_to_cell_id
+from .state import Coord, SnakeState
 
 
 @dataclass(frozen=True)
@@ -249,7 +250,7 @@ def _draw_head(
     eye_radius_px: int,
     facing: Tuple[int, int],
 ) -> None:
-    """Draw the snake head."""
+    """Draw the directional snake head from adjacent path geometry."""
 
     width = max(2, int(round((float(bbox[2]) - float(bbox[0])) * 0.055)))
     draw.rounded_rectangle(
@@ -390,7 +391,7 @@ def render_snake_grid_scene(
     params: SnakeRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedSnakeScene:
-    """Render one visible Snake board."""
+    """Render one metadata-bound Snake board shared by every objective."""
 
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")

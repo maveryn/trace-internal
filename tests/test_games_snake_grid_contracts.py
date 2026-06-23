@@ -8,13 +8,10 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.snake.shared.common import safe_next_directions, shortest_static_path_to_food, simulate_snake_moves
-from trace.tasks.games.snake.safe_direction_count import (
-    GamesSnakeGridTask,
-    GamesSnakeMoveSafetyTask,
-    GamesSnakePathOutcomeTask,
-    GamesSnakeShortestFoodPathLengthTask,
-)
+from trace.tasks.games.snake.path_outcome_option_label import GamesSnakePathOutcomeTask
+from trace.tasks.games.snake.safe_direction_count import GamesSnakeMoveSafetyTask
+from trace.tasks.games.snake.shared.rules import safe_next_directions, shortest_static_path_to_food, simulate_snake_moves
+from trace.tasks.games.snake.shortest_food_path_length import GamesSnakeShortestFoodPathLengthTask
 from tests.helpers import read_jsonl
 
 
@@ -23,26 +20,26 @@ from tests.helpers import read_jsonl
     (
         (
             GamesSnakeMoveSafetyTask,
-            {"query_id": "safe_direction_count", "target_safe_direction_count": 2, "board_size": 8},
-            "safe_direction_count",
+            {"query_id": "single", "target_safe_direction_count": 2, "board_size": 8},
+            "single",
             "integer",
         ),
         (
             GamesSnakeShortestFoodPathLengthTask,
-            {"query_id": "shortest_food_path_length", "target_shortest_food_path_length": 5, "board_size": 8},
-            "shortest_food_path_length",
+            {"query_id": "single", "target_shortest_food_path_length": 5, "board_size": 8},
+            "single",
             "integer",
         ),
         (
             GamesSnakePathOutcomeTask,
-            {"query_id": "path_result_option_label", "target_planned_outcome": "game_over", "board_size": 8},
-            "path_result_option_label",
+            {"query_id": "single", "target_planned_outcome": "game_over", "board_size": 8},
+            "single",
             "option_letter",
         ),
     ),
 )
 def test_games_snake_public_tasks_emit_expected_contract(
-    task_cls: type[GamesSnakeGridTask],
+    task_cls: type,
     params: dict[str, int | str],
     expected_query: str,
     expected_type: str,
@@ -73,11 +70,11 @@ def test_games_snake_public_tasks_emit_expected_contract(
 def test_games_snake_safe_count_matches_trace() -> None:
     out = GamesSnakeMoveSafetyTask().generate(
         98210,
-        params={"query_id": "safe_direction_count", "target_safe_direction_count": 3},
+        params={"query_id": "single", "target_safe_direction_count": 3},
         max_attempts=512,
     )
     state_payload = out.trace_payload["execution_trace"]["state"]
-    from trace.tasks.games.snake.shared.common import SnakeState
+    from trace.tasks.games.snake.shared.state import SnakeState
 
     state = SnakeState(
         board_size=int(state_payload["board_size"]),
@@ -94,12 +91,12 @@ def test_games_snake_safe_count_matches_trace() -> None:
 def test_games_snake_path_result_option_matches_simulation() -> None:
     out = GamesSnakePathOutcomeTask().generate(
         98230,
-        params={"query_id": "path_result_option_label", "target_planned_outcome": "point"},
+        params={"query_id": "single", "target_planned_outcome": "point"},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
     state_payload = execution["state"]
-    from trace.tasks.games.snake.shared.common import SnakeState
+    from trace.tasks.games.snake.shared.state import SnakeState
 
     state = SnakeState(
         board_size=int(state_payload["board_size"]),
@@ -119,12 +116,12 @@ def test_games_snake_path_result_option_matches_simulation() -> None:
 def test_games_snake_shortest_food_path_length_matches_trace(target_length: int) -> None:
     out = GamesSnakeShortestFoodPathLengthTask().generate(
         98250 + int(target_length),
-        params={"query_id": "shortest_food_path_length", "target_shortest_food_path_length": int(target_length)},
+        params={"query_id": "single", "target_shortest_food_path_length": int(target_length)},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
     state_payload = execution["state"]
-    from trace.tasks.games.snake.shared.common import SnakeState
+    from trace.tasks.games.snake.shared.state import SnakeState
 
     state = SnakeState(
         board_size=int(state_payload["board_size"]),

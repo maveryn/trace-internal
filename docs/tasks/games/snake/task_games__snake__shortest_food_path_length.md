@@ -1,16 +1,16 @@
 # `task_games__snake__shortest_food_path_length`
 
-## Contract
+## Program Contract
 1. Domain: `games`
 2. Scene: `snake`
-3. Scene id: `snake`
-4. Public task id: `task_games__snake__shortest_food_path_length`
-5. Supported `query_id` values: `shortest_food_path_length`
-6. Answer schema: `integer_value`
-7. Annotation schema: `bbox_set`
-8. Program schema: `length(shortest_path(head, food, blocked=current_body_or_wall)); scene=snake; scope=shortest_food_path_length`
+3. Public task id: `task_games__snake__shortest_food_path_length`
+4. Supported `query_id` values: `single`
+5. Answer schema: `integer`
+6. Annotation schema: `bbox_set`
+7. Program schema: `path.shortest_path_value(head, food, blockers=current_body_or_wall_cells); scene=snake; scope=shortest_food_path_length`
+8. Scalar annotation checked: `true`
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is a set of cells on one shortest safe path from the head to the food, excluding the head cell and including the food cell.
-4. The path treats current snake body cells and gray wall cells as fixed blockers.
+1. Find the shortest cardinal path from the head to the red food while treating current body cells and gray wall cells as fixed blockers.
+2. Annotation is the bbox set for one shortest path, excluding the starting head cell and including the food cell.
+3. Prompt wording comes from `prompts/games/snake/games_snake_v1.json`.

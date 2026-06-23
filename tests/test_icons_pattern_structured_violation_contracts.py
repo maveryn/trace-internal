@@ -9,14 +9,16 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.pattern.sequence_rotation_violation import IconsPatternSequenceRotationViolationTask
+from trace.tasks.icons.sequence_strip.rotation_sequence_violation_index import (
+    IconsSequenceStripRotationSequenceViolationTask,
+)
 from trace.tasks.icons.pattern_grid.attribute_pattern_violation_index import IconsPatternGridAttributePatternViolationTask
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
     "task_cls",
-    (IconsPatternSequenceRotationViolationTask, IconsPatternGridAttributePatternViolationTask),
+    (IconsSequenceStripRotationSequenceViolationTask, IconsPatternGridAttributePatternViolationTask),
 )
 def test_icons_pattern_violation_is_deterministic(task_cls) -> None:
     task = task_cls()

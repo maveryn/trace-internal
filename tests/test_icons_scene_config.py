@@ -562,7 +562,7 @@ def test_icons_sequence_defaults_loaded() -> None:
     assert int(generation_shared['step_abs_min']) == 1
     assert int(generation_shared['step_abs_max']) == 3
     assert bool(generation_shared['balanced_sampling']) is True
-    assert 'task_icons__sequence_strip__missing_count_value' in cfg['generation']['task_overrides']
+    assert 'task_icons__sequence_strip__missing_count_value' not in cfg['generation']['task_overrides']
     assert 'task_icons__named_strip__shape_run_length' in cfg['generation']['task_overrides']
     render_shared = cfg['rendering']['shared']
     assert int(render_shared['scene_icon_size_min_px']) == 24
@@ -582,17 +582,6 @@ def test_icons_sequence_defaults_loaded() -> None:
     assert str(prompt_shared['task_key']).strip()
     assert str(prompt_shared['json_output_contract']).strip()
     assert str(prompt_shared['json_output_contract_answer_only']).strip()
-    generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__sequence_strip__missing_count_value')
-    assert str(generation['pool_manifest']).strip() == 'all_icons.txt'
-    assert list(generation['rotation_candidates_degrees']) == [0, 90, 180, 270]
-    assert int(rendering['scene_icon_size_min_px']) == 24
-    assert int(rendering['scene_icon_size_max_px']) == 40
-    assert str(prompt['object_description']).strip()
-    assert str(prompt['question_text']).strip()
-    assert str(prompt['annotation_hint']).strip()
-    assert str(prompt['answer_hint']).strip()
-    assert str(prompt['json_example']).strip()
-    assert str(prompt['json_example_answer_only']).strip()
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__named_strip__shape_run_length')
     assert sorted(generation['query_id_weights'].keys()) == ['longest_shape_run_length', 'shortest_shape_run_length']
     assert int(generation['strip_length_min']) == 12
@@ -613,6 +602,41 @@ def test_icons_sequence_defaults_loaded() -> None:
     assert str(prompt['json_example']).strip()
     assert str(prompt['json_example_answer_only']).strip()
 
+def test_icons_sequence_strip_scene_defaults_loaded() -> None:
+    cfg = get_scene_defaults('icons', 'sequence_strip')
+    missing_task_id = 'task_icons__sequence_strip__missing_count_value'
+    rotation_task_id = 'task_icons__sequence_strip__rotation_sequence_violation_index'
+    assert missing_task_id in cfg['generation']['task_overrides']
+    assert rotation_task_id in cfg['generation']['task_overrides']
+    missing_generation, missing_rendering, missing_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id=missing_task_id,
+    )
+    assert str(missing_generation['pool_manifest']).strip() == 'all_icons.txt'
+    assert list(missing_generation['rotation_candidates_degrees']) == [0, 90, 180, 270]
+    assert int(missing_rendering['scene_icon_size_min_px']) == 24
+    assert int(missing_rendering['scene_icon_size_max_px']) == 40
+    assert str(missing_prompt['bundle_id']) == 'icons_sequence_strip_v1'
+    assert str(missing_prompt['scene_key']) == 'sequence_strip'
+    assert str(missing_prompt['task_key']) == 'sequence_strip_query'
+    rotation_generation, rotation_rendering, rotation_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id=rotation_task_id,
+    )
+    assert str(rotation_generation['pool_manifest']).strip() == 'non_symmetry.txt'
+    assert list(rotation_generation['step_candidates_degrees']) == [90, 180]
+    assert int(rotation_generation['sequence_length_min']) == 10
+    assert int(rotation_generation['sequence_length_max']) == 10
+    assert int(rotation_generation['answer_index_max']) == 6
+    assert int(rotation_rendering['scene_icon_size_min_px']) == 72
+    assert int(rotation_rendering['scene_icon_size_max_px']) == 92
+    assert str(rotation_prompt['bundle_id']) == 'icons_sequence_strip_v1'
+    bundle = load_scene_prompt_bundle('icons', 'sequence_strip', 'icons_sequence_strip_v1')
+    assert bundle.bundle_id == 'icons_sequence_strip_v1'
+    assert bundle.schema_version == 'v1'
+    assert set(bundle.scene_templates.keys()) == {'sequence_strip'}
+    assert set(bundle.query_templates.keys()) == {'missing_count_value', 'rotation_sequence_violation_index'}
+
 def test_icons_pattern_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'pattern')
     generation_shared = cfg['generation']['shared']
@@ -622,7 +646,7 @@ def test_icons_pattern_defaults_loaded() -> None:
     assert int(generation_shared['answer_index_max']) == 9
     assert bool(generation_shared['balanced_sampling']) is True
     assert 'task_icons__pattern_grid__attribute_pattern_violation_index' not in cfg['generation']['task_overrides']
-    assert 'task_icons__sequence_strip__rotation_sequence_violation_index' in cfg['generation']['task_overrides']
+    assert 'task_icons__sequence_strip__rotation_sequence_violation_index' not in cfg['generation']['task_overrides']
     render_shared = cfg['rendering']['shared']
     assert int(render_shared['scene_icon_size_min_px']) == 48
     assert int(render_shared['scene_icon_size_max_px']) == 72
@@ -639,17 +663,6 @@ def test_icons_pattern_defaults_loaded() -> None:
     assert str(prompt_shared['task_key']).strip() == 'structured_violation_query'
     assert str(prompt_shared['json_output_contract']).strip()
     assert str(prompt_shared['json_output_contract_answer_only']).strip()
-    generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__sequence_strip__rotation_sequence_violation_index')
-    assert str(generation['pool_manifest']).strip() == 'non_symmetry.txt'
-    assert list(generation['step_candidates_degrees']) == [90, 180]
-    assert int(generation['sequence_length_min']) == 10
-    assert int(generation['sequence_length_max']) == 10
-    assert int(generation['answer_index_max']) == 6
-    assert int(rendering['scene_icon_size_min_px']) == 72
-    assert int(rendering['scene_icon_size_max_px']) == 92
-    assert str(prompt['object_description']).strip()
-    assert str(prompt['question_text']).strip()
-
 def test_icons_pattern_grid_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'pattern_grid')
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(

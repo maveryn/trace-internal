@@ -802,11 +802,11 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_icons__overlap_grid__occlusion_order_count": _entry("icons", "overlap_grid", "icons", "relation"),
     "task_icons__two_anchor__between_anchors_count": _entry("icons", "two_anchor", "icons", "relation"),
     "task_icons__pattern_grid__attribute_pattern_violation_index": _entry("icons", "pattern_grid", "icons", "pattern"),
-    "task_icons__sequence_strip__rotation_sequence_violation_index": _entry("icons", "sequence_strip", "icons", "pattern"),
+    "task_icons__sequence_strip__rotation_sequence_violation_index": _entry("icons", "sequence_strip", "icons", "sequence_strip"),
     "task_icons__wallpaper_panels__motif_violation_label": _entry("icons", "wallpaper_panels", "icons", "pattern"),
     "task_icons__wallpaper_panels__same_pattern_as_reference_label": _entry("icons", "wallpaper_panels", "icons", "pattern"),
     "task_icons__wallpaper_panels__reference_pattern_match_count": _entry("icons", "wallpaper_panels", "icons", "pattern"),
-    "task_icons__sequence_strip__missing_count_value": _entry("icons", "sequence_strip", "icons", "sequence"),
+    "task_icons__sequence_strip__missing_count_value": _entry("icons", "sequence_strip", "icons", "sequence_strip"),
     "task_icons__named_strip__shape_run_length": _entry("icons", "named_strip", "icons", "sequence"),
     # Illustrations.
     "task_illustrations__environment__lit_window_count": _entry(

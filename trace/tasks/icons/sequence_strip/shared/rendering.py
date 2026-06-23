@@ -7,12 +7,12 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_legibility import draw_centered_traced_text
-from ...shared.text_rendering import load_font
-from .icon_assets import render_icon_rgba
-from .icon_grid_scene import resolve_horizontal_row_slots
-from .icon_noise import NoiseEdit, serialize_icon_noise_edits
-from .icon_scene import (
+from ....shared.text_legibility import draw_centered_traced_text
+from ....shared.text_rendering import load_font
+from ...shared.icon_assets import render_icon_rgba
+from ...shared.icon_grid_scene import resolve_horizontal_row_slots
+from ...shared.icon_noise import NoiseEdit, serialize_icon_noise_edits
+from ...shared.icon_scene import (
     IconInstanceSpec,
     RenderedIconInstance,
     SingleIconPanelLayout,
@@ -21,7 +21,7 @@ from .icon_scene import (
     random_paste_bbox,
     resolve_single_panel_layout,
 )
-from .scene_style import IconCanvasStyle
+from ...shared.scene_style import IconCanvasStyle
 
 
 BBox = Tuple[int, int, int, int]
@@ -68,13 +68,11 @@ def resolve_sequence_canvas_size(
     cell_padding_px = int(render_params["cell_padding_px"])
     panel_padding_px = int(render_params["panel_padding_px"])
     outer_margin_px = int(render_params["outer_margin_px"])
-    title_font_size_px = int(render_params["panel_title_font_size_px"])
-    title_band_height = max(40, int(round(float(title_font_size_px) * 1.8)))
 
     content_width = int(sequence_length) * int(int(cell_box_width_px) + (2 * cell_padding_px))
     content_height = int(int(cell_box_height_px) + (2 * cell_padding_px))
     panel_width = int(content_width + (2 * panel_padding_px))
-    panel_height = int(content_height + title_band_height + panel_padding_px + (panel_padding_px // 2))
+    panel_height = int(content_height + (2 * panel_padding_px))
     canvas_width = int(panel_width + (2 * outer_margin_px))
     canvas_height = int(panel_height + (2 * outer_margin_px))
     return canvas_width, canvas_height
@@ -296,10 +294,55 @@ def render_icon_sequence_scene(
     )
 
 
+def render_sequence_scene_from_params(
+    *,
+    rng,
+    scene_cells: Sequence[IconSequenceCellSpec],
+    canvas_width: int,
+    canvas_height: int,
+    render_params: Mapping[str, Any],
+    cell_labels_enabled: bool = False,
+) -> RenderedIconSequenceScene:
+    """Render a sequence row from resolved scene-level render parameters."""
+
+    label_font_size = int(render_params["cell_label_font_size_px"]) if bool(cell_labels_enabled) else 0
+    label_color = tuple(int(v) for v in render_params["cell_label_color_rgb"]) if bool(cell_labels_enabled) else None
+    return render_icon_sequence_scene(
+        rng=rng,
+        scene_cells=tuple(scene_cells),
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        outer_margin_px=int(render_params["outer_margin_px"]),
+        panel_padding_px=int(render_params["panel_padding_px"]),
+        panel_corner_radius_px=int(render_params["panel_corner_radius_px"]),
+        cell_padding_px=int(render_params["cell_padding_px"]),
+        cell_icon_padding_px=int(render_params["cell_icon_padding_px"]),
+        cell_corner_radius_px=int(render_params["cell_corner_radius_px"]),
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
+        scene_placement_max_attempts=int(render_params["scene_placement_max_attempts"]),
+        scene_size_shrink_rounds=int(render_params["scene_size_shrink_rounds"]),
+        scene_size_shrink_factor=float(render_params["scene_size_shrink_factor"]),
+        panel_title_font_size_px=int(render_params["panel_title_font_size_px"]),
+        missing_mark_font_size_px=int(render_params["missing_mark_font_size_px"]),
+        background_rgb=tuple(int(v) for v in render_params["background_color_rgb"]),
+        panel_fill_rgb=tuple(int(v) for v in render_params["panel_fill_rgb"]),
+        panel_border_rgb=tuple(int(v) for v in render_params["panel_border_rgb"]),
+        title_color_rgb=tuple(int(v) for v in render_params["header_text_rgb"]),
+        cell_border_rgb=tuple(int(v) for v in render_params["cell_border_rgb"]),
+        missing_mark_color_rgb=tuple(int(v) for v in render_params["missing_mark_color_rgb"]),
+        cell_label_font_size_px=int(label_font_size),
+        cell_label_color_rgb=label_color,
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
+    )
+
+
 __all__ = [
     "IconSequenceCellSpec",
     "RenderedIconSequenceScene",
     "RenderedSequenceCell",
     "render_icon_sequence_scene",
+    "render_sequence_scene_from_params",
     "resolve_sequence_canvas_size",
 ]

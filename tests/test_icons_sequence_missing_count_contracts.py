@@ -7,7 +7,7 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.sequence.missing_count import IconsSequenceMissingCountTask
+from trace.tasks.icons.sequence_strip.missing_count_value import IconsSequenceMissingCountTask
 from tests.helpers import read_jsonl
 
 
@@ -22,7 +22,7 @@ def test_icons_sequence_missing_count_deterministic() -> None:
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.answer_gt.type == "integer"
-    assert out_a.annotation_gt.type == "bbox_set"
+    assert out_a.annotation_gt.type == "bbox"
 
 
 def test_icons_sequence_missing_count_build_smoke(tmp_path: Path) -> None:
@@ -48,7 +48,7 @@ def test_icons_sequence_missing_count_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "icons" for record in train_records)
-    assert all(record["scene_id"] == "sequence" for record in train_records)
+    assert all(record["scene_id"] == "sequence_strip" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_icons__sequence_strip__missing_count_value"]) == 4

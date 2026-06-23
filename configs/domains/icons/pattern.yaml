@@ -6,20 +6,6 @@ generation:
     answer_index_max: 9
     balanced_sampling: true
   task_overrides:
-    task_icons__sequence_strip__rotation_sequence_violation_index:
-      sequence_length_min: 10
-      sequence_length_max: 10
-      answer_index_min: 2
-      answer_index_max: 6
-      pool_manifest: non_symmetry.txt
-      rotation_candidates_degrees:
-      - 0
-      - 90
-      - 180
-      - 270
-      step_candidates_degrees:
-      - 90
-      - 180
     task_icons__wallpaper_panels__motif_violation_label:
       option_count_choices:
       - 6
@@ -231,16 +217,6 @@ rendering:
     scene_content_bottom_padding_px: 10
     scene_content_top_offset_px: 40
   task_overrides:
-    task_icons__sequence_strip__rotation_sequence_violation_index:
-      scene_icon_size_min_px: 72
-      scene_icon_size_max_px: 92
-      cell_box_width_min_px: 108
-      cell_box_width_max_px: 132
-      cell_box_height_min_px: 112
-      cell_box_height_max_px: 144
-      icon_noise_edit_count_range:
-      - 0
-      - 0
     task_icons__wallpaper_panels__motif_violation_label:
       canvas_width: 1104
       canvas_height: 640
@@ -333,14 +309,6 @@ prompt:
     scene_key: structured_violation_scene
     task_key: structured_violation_query
   task_overrides:
-    task_icons__sequence_strip__rotation_sequence_violation_index:
-      object_description: a horizontal row of numbered boxes with one icon per box
-      question_text: Which numbered box breaks the rotation sequence?
-      annotation_hint: set "annotation" to one [x0, y0, x1, y1] box in image pixel
-        coordinates for the violating numbered box
-      answer_hint: set "answer" to the violating box index as an integer
-      json_example: '{"annotation":[540,126,654,458],"answer":5}'
-      json_example_answer_only: '{"answer":5}'
     task_icons__wallpaper_panels__motif_violation_label:
       scene_key: wallpaper_panel_violation_scene
       object_description: six labeled wallpaper panels filled with repeated icon motifs

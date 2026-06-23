@@ -8,7 +8,9 @@ from collections import Counter
 import pytest
 
 from trace.core.seed import hash64
-from trace.tasks.icons.pattern.sequence_rotation_violation import IconsPatternSequenceRotationViolationTask
+from trace.tasks.icons.sequence_strip.rotation_sequence_violation_index import (
+    IconsSequenceStripRotationSequenceViolationTask,
+)
 from trace.tasks.icons.pattern_grid.attribute_pattern_violation_index import IconsPatternGridAttributePatternViolationTask
 
 
@@ -78,7 +80,7 @@ def _uniform_color_violation_indices(levels: list[int], *, grid_rows: int, grid_
 
 
 def test_icons_pattern_structured_violation_row_rotation_contract_matches_scene() -> None:
-    task = IconsPatternSequenceRotationViolationTask()
+    task = IconsSequenceStripRotationSequenceViolationTask()
     out = task.generate(
         24110,
         params={
@@ -91,22 +93,20 @@ def test_icons_pattern_structured_violation_row_rotation_contract_matches_scene(
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
-    assert out.query_id == "row_rotation_violation"
-    assert trace["scene_ir"]["scene_kind"] == "icons_pattern_sequence_rotation_violation"
+    assert out.query_id == "single"
+    assert trace["scene_ir"]["scene_kind"] == "icons_sequence_rotation_violation"
     assert trace["scene_ir"]["scene_id"] == "sequence_strip"
-    assert trace["query_spec"]["query_id"] == "row_rotation_violation"
+    assert trace["query_spec"]["query_id"] == "single"
     assert "source_task_id" not in execution
     assert "source_query_id" not in execution
     assert execution["scene_variant"] == "sequence_row"
-    assert execution["query_id"] == "row_rotation_violation"
-    assert trace["query_spec"]["template_id"] == "icons_pattern_v0"
+    assert execution["query_id"] == "single"
+    assert trace["query_spec"]["template_id"] == "icons_sequence_strip_v1"
     assert int(out.answer_gt.value) == 4
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 1
-    assert trace["projected_annotation"]["type"] == "bbox_set"
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
-    assert len(trace["projected_annotation"]["pixel_point_set"]) == 1
+    assert out.annotation_gt.type == "bbox"
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
     drawn_text_roles = {
         str(record.get("role"))
         for record in trace["render_spec"]["drawn_text"]["text_legibility"]["records"]
@@ -230,7 +230,7 @@ def test_icons_pattern_structured_violation_prompt_example_matches_contract() ->
 @pytest.mark.parametrize(
     ("task_cls", "params", "expected_answers"),
     (
-        (IconsPatternSequenceRotationViolationTask, {}, set(range(2, 7))),
+        (IconsSequenceStripRotationSequenceViolationTask, {}, set(range(2, 7))),
         (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_size_violation"}, set(range(1, 10))),
         (IconsPatternGridAttributePatternViolationTask, {"query_id": "grid_color_violation"}, set(range(1, 10))),
     ),

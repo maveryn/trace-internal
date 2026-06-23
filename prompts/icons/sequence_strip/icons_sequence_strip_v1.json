@@ -1,0 +1,89 @@
+{
+  "bundle_id": "icons_sequence_strip_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "sequence_strip": [
+        "The image shows {object_description}.",
+        "The figure shows {object_description}.",
+        "This image shows {object_description}.",
+        "The scene shows {object_description}.",
+        "The picture shows {object_description}."
+      ]
+    },
+    "task": {
+      "sequence_strip_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "missing_count_value": [
+        "How many icons should be in the missing box to continue the sequence?",
+        "What count belongs in the question-mark box so the sequence continues?",
+        "Find the number of icons that should appear in the missing box.",
+        "How many icons are needed in the missing box for the row to follow the sequence?",
+        "What is the missing icon count in the question-mark box?"
+      ],
+      "rotation_sequence_violation_index": [
+        "Which numbered box breaks the rotation sequence?",
+        "Which box number contains the icon that violates the rotation pattern?",
+        "Identify the numbered box that does not follow the rotation sequence.",
+        "What is the number of the box that breaks the rotation rule?",
+        "Which numbered cell is the rotation-sequence violation?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Use a valid JSON object with key \"answer\" for the final answer.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Use a valid JSON object with key \"answer\" for the final answer.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Use a valid JSON object with key \"answer\" for the final answer.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Use a valid JSON object with key \"answer\" for the final answer.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Use a valid JSON object with key \"answer\" for the final answer.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "scene:sequence_strip": {
+      "object_description": "a horizontal row of boxed icons"
+    },
+    "query:missing_count_value": {
+      "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box in image pixel coordinates for the missing box",
+      "answer_hint": "set \"answer\" to the missing count as an integer",
+      "json_example": "{\"annotation\":[540,126,654,458],\"answer\":5}",
+      "json_example_answer_only": "{\"answer\":5}"
+    },
+    "query:rotation_sequence_violation_index": {
+      "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box in image pixel coordinates for the violating numbered box",
+      "answer_hint": "set \"answer\" to the violating box index as an integer",
+      "json_example": "{\"annotation\":[540,126,654,458],\"answer\":5}",
+      "json_example_answer_only": "{\"answer\":5}"
+    }
+  },
+  "dynamic_slots": {},
+  "required_slots_by_key": {
+    "scene:sequence_strip": [
+      "object_description"
+    ],
+    "output:answer_only": [
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  }
+}

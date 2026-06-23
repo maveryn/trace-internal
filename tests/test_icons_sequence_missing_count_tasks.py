@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections import Counter
 from trace.core.seed import hash64
-from trace.tasks.icons.sequence.missing_count import IconsSequenceMissingCountTask
+from trace.tasks.icons.sequence_strip.missing_count_value import IconsSequenceMissingCountTask
 
 def _overlap_fraction_smaller(left: list[int], right: list[int]) -> float:
     ix0 = max(int(left[0]), int(right[0]))
@@ -33,12 +33,11 @@ def test_icons_sequence_missing_count_contract_matches_scene() -> None:
     icon_entities = [entity for entity in entities if str(entity['entity_kind']) == 'scene_icon']
     assert out.answer_gt.type == 'integer'
     assert int(out.answer_gt.value) == 4
-    assert out.annotation_gt.type == 'bbox_set'
-    assert len(out.annotation_gt.value) == 1
+    assert out.annotation_gt.type == 'bbox'
     assert trace['scene_ir']['scene_kind'] == 'icons_sequence_missing_count'
     assert execution['question_format'] == 'infer_missing_sequence_count'
-    assert out.query_id == 'arithmetic_progression'
-    assert execution['query_id'] == 'arithmetic_progression'
+    assert out.query_id == 'single'
+    assert execution['query_id'] == 'single'
     assert int(execution['sequence_length']) == 5
     assert int(execution['missing_cell_index']) == 2
     assert int(execution['step_delta']) == 1
@@ -58,16 +57,15 @@ def test_icons_sequence_missing_count_contract_matches_scene() -> None:
         assert int(entity['rotation_degrees']) in {0, 90, 180, 270}
         assert isinstance(entity['noise_edits'], list)
     assert len(scene_colors) == 1
-    missing_boxes = out.annotation_gt.value
-    assert trace['projected_annotation']['type'] == 'bbox_set'
-    assert missing_boxes == trace['projected_annotation']['bbox_set']
-    assert missing_boxes == trace['projected_annotation']['pixel_bbox_set']
-    assert len(trace['projected_annotation']['pixel_point_set']) == 1
+    missing_box = out.annotation_gt.value
+    assert trace['projected_annotation']['type'] == 'bbox'
+    assert missing_box == trace['projected_annotation']['bbox']
+    assert missing_box == trace['projected_annotation']['pixel_bbox']
     drawn_text_roles = {str(record.get('role')) for record in trace['render_spec']['drawn_text']['text_legibility']['records']}
     assert 'icon_missing_mark_text' in drawn_text_roles
     missing_cell = [entity for entity in cell_entities if bool(entity['is_missing'])]
     assert len(missing_cell) == 1
-    assert missing_boxes[0] == missing_cell[0]['cell_bbox_xyxy']
+    assert missing_box == missing_cell[0]['cell_bbox_xyxy']
     assert int(missing_cell[0]['cell_index']) == 2
     assert int(missing_cell[0]['target_icon_count']) == 4
     assert int(missing_cell[0]['rendered_icon_count']) == 0
@@ -93,7 +91,7 @@ def test_icons_sequence_missing_count_supports_end_missing_cell_and_zero_answer(
     out = task.generate(15111, params={'sequence_length': 4, 'missing_cell_index': 3, 'target_count': 0, 'step_delta': -1}, max_attempts=200)
     execution = out.trace_payload['execution_trace']
     assert int(out.answer_gt.value) == 0
-    assert len(out.annotation_gt.value) == 1
+    assert out.annotation_gt.type == 'bbox'
     assert int(execution['missing_cell_index']) == 3
     assert execution['full_sequence_counts'] == [3, 2, 1, 0]
 
@@ -105,7 +103,7 @@ def test_icons_sequence_missing_count_prompt_example_matches_contract() -> None:
     assert answer_only == {'answer': 5}
     assert list(answer_and_annotation.keys()) == ['annotation', 'answer']
     assert isinstance(answer_and_annotation['annotation'], list)
-    assert len(answer_and_annotation['annotation']) == 1
+    assert len(answer_and_annotation['annotation']) == 4
     assert answer_and_annotation['answer'] == 5
 
 def test_icons_sequence_missing_count_balanced_sampling_defaults() -> None:

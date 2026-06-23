@@ -6,41 +6,29 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from ....core.query_ids import SINGLE_QUERY_ID
 from ....core.seed import spawn_rng
-from ....core.scene_config import get_scene_defaults
-from ....core.taxonomy import resolve_task_taxonomy
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import (
-    group_default,
-    required_group_defaults,
-    split_generation_rendering_prompt_defaults,
-)
+from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import (
-    PROMPT_OUTPUT_MODES,
-    build_prompt_trace_artifacts,
-    render_task_prompt_variants,
-)
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.annotation import bbox_set_annotation
-from ..shared.icon_assets import resolve_icon_pool
 from ..shared.icon_scene import (
     IconInstanceSpec,
     serialize_rendered_icon_instance,
     single_panel_geometry_to_trace,
-    sort_bboxes_reading_order,
 )
-from ..shared.icon_sequence_scene import (
+from .shared.annotations import scalar_bbox_artifacts
+from .shared.rendering import (
     IconSequenceCellSpec,
-    render_icon_sequence_scene,
-    resolve_sequence_canvas_size,
+    render_sequence_scene_from_params,
 )
-from ..shared.icon_style import sample_single_icon_tint
+from .shared.prompts import render_sequence_strip_prompt_artifacts
+from .shared.sampling import sample_sequence_icon_appearance
+from .shared.output import bbox_anchor_render_map, sequence_render_spec
 from ..shared.icon_task_rendering import (
-    icon_render_style_trace,
     resolve_icon_cell_render_params,
     sample_icon_instance_noise,
 )
@@ -136,13 +124,18 @@ class _ScenePayload:
     violating_cell_bbox: Tuple[int, int, int, int]
 
 
-_DEFAULTS = _TaskDefaults()
 TASK_ID = "task_icons__sequence_strip__rotation_sequence_violation_index"
-QUERY_ID = "row_rotation_violation"
+DOMAIN = "icons"
+SCENE_ID = "sequence_strip"
+QUERY_ID = SINGLE_QUERY_ID
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
+_SEQUENCE_RULE = "constant_rotation_step"
+PROMPT_QUERY_KEY = "rotation_sequence_violation_index"
 
-_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "pattern")
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+_DEFAULTS = _TaskDefaults()
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    DOMAIN,
+    SCENE_ID,
     task_id=TASK_ID,
 )
 
@@ -184,13 +177,6 @@ def _rotation_sequence(*, start_rotation_degrees: int, step_delta_degrees: int, 
         int((int(start_rotation_degrees) + (int(index) * int(step_delta_degrees))) % 360)
         for index in range(int(sequence_length))
     )
-
-
-def _minimal_rotation_difference_degrees(left: int, right: int) -> int:
-    """Return the smallest absolute angular distance between two rotations."""
-
-    diff = abs((int(left) - int(right)) % 360)
-    return int(min(diff, 360 - diff))
 
 
 def _rotation_violation_explanations(
@@ -366,56 +352,28 @@ def _sample_scene(
 ) -> Tuple[_ScenePayload, Any]:
     """Sample and render one single-panel rotation-violation sequence row."""
 
-    pool = list(resolve_icon_pool(str(pool_manifest)))
-    if not pool:
-        raise ValueError("rotation sequence pool resolved no icons")
-    sequence_icon_id = str(rng.choice(pool))
-    tint_rgb, sampled_palette_rgb = sample_single_icon_tint(
+    appearance = sample_sequence_icon_appearance(
         rng,
-        channel_min=int(render_params["color_channel_min"]),
-        channel_max=int(render_params["color_channel_max"]),
-        anchor_colors=(
-            tuple(int(v) for v in render_params["background_color_rgb"]),
-            tuple(int(v) for v in render_params["panel_fill_rgb"]),
-            tuple(int(v) for v in render_params["panel_border_rgb"]),
-            tuple(int(v) for v in render_params["header_text_rgb"]),
-        ),
-        min_color_distance=float(render_params["min_color_distance"]),
-        distance_space=str(render_params["color_distance_space"]),
-    )
-    cell_box_width_px = int(
-        rng.randint(
-            int(render_params["cell_box_width_min_px"]),
-            int(render_params["cell_box_width_max_px"]),
-        )
-    )
-    cell_box_height_px = int(
-        rng.randint(
-            int(render_params["cell_box_height_min_px"]),
-            int(render_params["cell_box_height_max_px"]),
-        )
-    )
-    canvas_width, canvas_height = resolve_sequence_canvas_size(
-        sequence_length=int(sequence_spec.sequence_length),
-        cell_box_width_px=int(cell_box_width_px),
-        cell_box_height_px=int(cell_box_height_px),
+        pool_manifest=str(pool_manifest),
         render_params=render_params,
+        sequence_length=int(sequence_spec.sequence_length),
+        empty_pool_message="rotation sequence pool resolved no icons",
     )
 
     cell_specs: List[IconSequenceCellSpec] = []
     for cell_index, observed_rotation_degrees in enumerate(sequence_spec.observed_sequence_rotations_degrees):
         noise_edits, noise_seed = sample_icon_instance_noise(
             instance_seed=int(instance_seed),
-            namespace=f"{IconsPatternSequenceRotationViolationTask.task_id}:scene_cell_{int(cell_index)}_icon_0",
+            namespace=f"{TASK_ID}:scene_cell_{int(cell_index)}_icon_0",
             render_params=render_params,
         )
         cell_specs.append(
             IconSequenceCellSpec(
                 icon_instances=(
                     IconInstanceSpec(
-                        icon_id=str(sequence_icon_id),
+                        icon_id=str(appearance.sequence_icon_id),
                         rotation_degrees=int(observed_rotation_degrees),
-                        tint_rgb=tuple(int(value) for value in tint_rgb),
+                        tint_rgb=tuple(int(value) for value in appearance.tint_rgb),
                         noise_edits=tuple(noise_edits),
                         noise_seed=int(noise_seed),
                     ),
@@ -425,35 +383,13 @@ def _sample_scene(
             )
         )
 
-    rendered = render_icon_sequence_scene(
+    rendered = render_sequence_scene_from_params(
         rng=rng,
         scene_cells=tuple(cell_specs),
-        canvas_width=int(canvas_width),
-        canvas_height=int(canvas_height),
-        outer_margin_px=int(render_params["outer_margin_px"]),
-        panel_padding_px=int(render_params["panel_padding_px"]),
-        panel_corner_radius_px=int(render_params["panel_corner_radius_px"]),
-        cell_padding_px=int(render_params["cell_padding_px"]),
-        cell_icon_padding_px=int(render_params["cell_icon_padding_px"]),
-        cell_corner_radius_px=int(render_params["cell_corner_radius_px"]),
-        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
-        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
-        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
-        scene_placement_max_attempts=int(render_params["scene_placement_max_attempts"]),
-        scene_size_shrink_rounds=int(render_params["scene_size_shrink_rounds"]),
-        scene_size_shrink_factor=float(render_params["scene_size_shrink_factor"]),
-        panel_title_font_size_px=int(render_params["panel_title_font_size_px"]),
-        missing_mark_font_size_px=int(render_params["missing_mark_font_size_px"]),
-        background_rgb=tuple(int(v) for v in render_params["background_color_rgb"]),
-        panel_fill_rgb=tuple(int(v) for v in render_params["panel_fill_rgb"]),
-        panel_border_rgb=tuple(int(v) for v in render_params["panel_border_rgb"]),
-        title_color_rgb=tuple(int(v) for v in render_params["header_text_rgb"]),
-        cell_border_rgb=tuple(int(v) for v in render_params["cell_border_rgb"]),
-        missing_mark_color_rgb=tuple(int(v) for v in render_params["missing_mark_color_rgb"]),
-        cell_label_font_size_px=int(render_params["cell_label_font_size_px"]),
-        cell_label_color_rgb=tuple(int(v) for v in render_params["cell_label_color_rgb"]),
-        scene_title="Sequence",
-        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
+        canvas_width=int(appearance.canvas_width),
+        canvas_height=int(appearance.canvas_height),
+        render_params=render_params,
+        cell_labels_enabled=True,
     )
 
     scene_cells: List[Dict[str, Any]] = []
@@ -501,10 +437,10 @@ def _sample_scene(
         violation_rotation_degrees=int(sequence_spec.violation_rotation_degrees),
         expected_sequence_rotations_degrees=tuple(int(value) for value in sequence_spec.expected_sequence_rotations_degrees),
         observed_sequence_rotations_degrees=tuple(int(value) for value in sequence_spec.observed_sequence_rotations_degrees),
-        sequence_icon_id=str(sequence_icon_id),
-        sampled_palette_rgb=tuple(tuple(int(channel) for channel in color) for color in sampled_palette_rgb),
-        cell_box_width_px=int(cell_box_width_px),
-        cell_box_height_px=int(cell_box_height_px),
+        sequence_icon_id=str(appearance.sequence_icon_id),
+        sampled_palette_rgb=tuple(tuple(int(channel) for channel in color) for color in appearance.sampled_palette_rgb),
+        cell_box_width_px=int(appearance.cell_box_width_px),
+        cell_box_height_px=int(appearance.cell_box_height_px),
         panel_geometry=single_panel_geometry_to_trace(rendered.layout),
         scene_cells=tuple(scene_cells),
         scene_icon_instances=tuple(scene_icon_instances),
@@ -513,12 +449,13 @@ def _sample_scene(
 
 
 @register_task
-class IconsPatternSequenceRotationViolationTask:
+class IconsSequenceStripRotationSequenceViolationTask:
     """Identify the numbered cell that breaks a constant-rotation sequence."""
 
     task_id = TASK_ID
-    domain = "icons"
-    scene_id = "pattern"
+    domain = DOMAIN
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic icon sequence rotation-violation instance."""
@@ -556,78 +493,44 @@ class IconsPatternSequenceRotationViolationTask:
         if scene_payload is None or image is None:
             raise RuntimeError(f"failed to generate {self.task_id} instance") from last_error
 
-        prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
-            (
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "question_text",
-                "annotation_hint",
-                "answer_hint",
-                "json_example",
-                "json_example_answer_only",
-            ),
-            context=f"prompt defaults for {self.task_id}",
-        )
-        prompt_selection = render_task_prompt_variants(
-            domain=self.domain,
-            scene_id=self.scene_id,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "question_text": str(prompt_defaults["question_text"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
-            },
+        prompt_defaults, prompt_artifacts = render_sequence_strip_prompt_artifacts(
             instance_seed=int(instance_seed),
+            prompt_defaults=_PROMPT_DEFAULTS,
+            prompt_query_key=PROMPT_QUERY_KEY,
         )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        annotation_bboxes = sort_bboxes_reading_order((scene_payload.violating_cell_bbox,))
-        annotation_payload = bbox_set_annotation(annotation_bboxes)
-        taxonomy = resolve_task_taxonomy(str(self.task_id))
+        annotation_payload = scalar_bbox_artifacts(
+            (scene_payload.violating_cell_bbox,),
+            error_message="rotation violation annotation must contain exactly one bbox",
+        )
         query_id = QUERY_ID
         answer_gt = TypedValue(type="integer", value=int(scene_payload.answer_index))
-        annotation_gt = TypedValue(
-            type=str(annotation_payload["annotation_type"]),
-            value=list(annotation_payload["annotation_value"]),
-        )
+        annotation_gt = annotation_payload.annotation_gt
         common_ids = {
-            "domain": taxonomy.domain,
-            "scene_id": taxonomy.scene_id,
+            "domain": DOMAIN,
+            "scene_id": SCENE_ID,
             "task_id": str(self.task_id),
             "query_id": str(query_id),
         }
         trace_payload = {
             "taxonomy": {
-                "domain": taxonomy.domain,
-                "scene_id": taxonomy.scene_id,
+                "domain": DOMAIN,
+                "scene_id": SCENE_ID,
                 "task_id": str(self.task_id),
-                "source_domain": taxonomy.source_domain,
-                "source_scene_id": taxonomy.source_scene_id,
+                "source_domain": DOMAIN,
+                "source_scene_id": SCENE_ID,
                 "query_id": str(query_id),
             },
             "scene_ir": {
                 **common_ids,
-                "scene_kind": "icons_pattern_sequence_rotation_violation",
+                "scene_kind": "icons_sequence_rotation_violation",
                 "entities": [
                     *[dict(cell) for cell in scene_payload.scene_cells],
                     *[dict(instance) for instance in scene_payload.scene_icon_instances],
                 ],
                 "relations": {
                     "query_id": str(query_id),
-                    "sequence_rule": "constant_rotation_step",
+                    "sequence_rule": _SEQUENCE_RULE,
                     "sequence_icon_id": str(scene_payload.sequence_icon_id),
                     "start_rotation_degrees": int(scene_payload.start_rotation_degrees),
                     "step_delta_degrees": int(scene_payload.step_delta_degrees),
@@ -647,9 +550,10 @@ class IconsPatternSequenceRotationViolationTask:
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "scene_id": taxonomy.scene_id,
+                    "scene_id": SCENE_ID,
                     "query_id": str(query_id),
                     "query_id_probabilities": {str(query_id): 1.0},
+                    "sequence_rule": _SEQUENCE_RULE,
                     "sequence_length": int(scene_payload.sequence_length),
                     "sequence_length_probabilities": dict(sequence_spec.sequence_length_probabilities),
                     "answer_index": int(scene_payload.answer_index),
@@ -665,45 +569,27 @@ class IconsPatternSequenceRotationViolationTask:
                     "cell_box_height_px": int(scene_payload.cell_box_height_px),
                 },
             },
-            "render_spec": {
-                **common_ids,
-                "canvas_size": list(scene_payload.panel_geometry["canvas_size"]),
-                "coord_space": "pixel",
-                "panel_geometry": dict(scene_payload.panel_geometry),
-                "style": {
-                    **icon_render_style_trace(
-                        render_params=render_params,
-                        sampled_palette_rgb=scene_payload.sampled_palette_rgb,
-                    ),
-                    "cell_padding_px": int(render_params["cell_padding_px"]),
-                    "cell_icon_padding_px": int(render_params["cell_icon_padding_px"]),
-                    "cell_corner_radius_px": int(render_params["cell_corner_radius_px"]),
-                    "cell_box_width_range_px": [
-                        int(render_params["cell_box_width_min_px"]),
-                        int(render_params["cell_box_width_max_px"]),
-                    ],
-                    "cell_box_height_range_px": [
-                        int(render_params["cell_box_height_min_px"]),
-                        int(render_params["cell_box_height_max_px"]),
-                    ],
-                    "sampled_cell_box_size_px": [
-                        int(scene_payload.cell_box_width_px),
-                        int(scene_payload.cell_box_height_px),
-                    ],
+            "render_spec": sequence_render_spec(
+                common_ids=common_ids,
+                panel_geometry=scene_payload.panel_geometry,
+                render_params=render_params,
+                sampled_palette_rgb=scene_payload.sampled_palette_rgb,
+                cell_box_width_px=int(scene_payload.cell_box_width_px),
+                cell_box_height_px=int(scene_payload.cell_box_height_px),
+                extra_style={
                     "cell_label_font_size_px": int(render_params["cell_label_font_size_px"]),
                     "cell_label_color_rgb": list(render_params["cell_label_color_rgb"]),
                 },
-            },
-            "render_map": {
-                "image_id": "img0",
-                "anchors": {
-                    "violating_cell_bbox": list(annotation_payload["annotation_value"][0]),
-                },
-            },
+            ),
+            "render_map": bbox_anchor_render_map(
+                anchor_name="violating_cell_bbox",
+                bbox_xyxy=annotation_payload.value,
+            ),
             "execution_trace": {
                 **common_ids,
                 "scene_variant": "sequence_row",
                 "query_id_probabilities": {str(query_id): 1.0},
+                "sequence_rule": _SEQUENCE_RULE,
                 "sequence_length": int(scene_payload.sequence_length),
                 "answer_index": int(scene_payload.answer_index),
                 "violation_cell_index": int(scene_payload.violation_cell_index),
@@ -718,20 +604,16 @@ class IconsPatternSequenceRotationViolationTask:
                 "question_format": "identify_rotation_sequence_violation",
             },
             "witness_symbolic": {
-                "sequence_rule": "constant_rotation_step",
+                "query_id": str(query_id),
+                "sequence_rule": _SEQUENCE_RULE,
                 "start_rotation_degrees": int(scene_payload.start_rotation_degrees),
                 "step_delta_degrees": int(scene_payload.step_delta_degrees),
                 "expected_sequence_rotations_degrees": list(scene_payload.expected_sequence_rotations_degrees),
                 "observed_sequence_rotations_degrees": list(scene_payload.observed_sequence_rotations_degrees),
                 "violation_cell_index": int(scene_payload.violation_cell_index),
             },
-            "projected_annotation": dict(annotation_payload["projected_annotation"]),
+            "projected_annotation": dict(annotation_payload.projected_annotation),
         }
-        expected_rotation = int(scene_payload.expected_sequence_rotations_degrees[scene_payload.violation_cell_index])
-        violation_rotation_difference_degrees = _minimal_rotation_difference_degrees(
-            int(expected_rotation),
-            int(scene_payload.violation_rotation_degrees),
-        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -740,10 +622,10 @@ class IconsPatternSequenceRotationViolationTask:
             image_id="img0",
             trace_payload=trace_payload,
             task_versions=default_task_versions(),
-            scene_id=taxonomy.scene_id,
+            scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
 
-__all__ = ["IconsPatternSequenceRotationViolationTask"]
+__all__ = ["IconsSequenceStripRotationSequenceViolationTask"]

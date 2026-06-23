@@ -1,4 +1,4 @@
-"""Contract tests for analytical 2D function-property label task."""
+"""Contract tests for geometry function-panel property label tasks."""
 
 from __future__ import annotations
 
@@ -8,112 +8,88 @@ import pytest
 
 from trace.core.seed import hash64
 from trace.tasks.geometry.function_panels.function_status_label import (
-    SUPPORTED_QUERY_IDS,
-    TASK_ID,
-    GeometryAnalyticalFunctionPropertyLabelTask,
+    TASK_ID as FUNCTION_TASK_ID,
+    GeometryFunctionPanelsFunctionStatusLabelTask,
 )
+from trace.tasks.geometry.function_panels.one_to_one_status_label import GeometryFunctionPanelsOneToOneStatusLabelTask
+from trace.tasks.geometry.function_panels.range_match_label import GeometryFunctionPanelsRangeMatchLabelTask
+from trace.tasks.geometry.function_panels.x_axis_symmetry_label import GeometryFunctionPanelsXAxisSymmetryLabelTask
 
 
-def _matching_labels(variant: str, relations_by_label: dict[str, dict], answer_label: str) -> list[str]:
-    if variant == "function_status_label":
+def _matching_labels(rule: str, relations_by_label: dict[str, dict], answer_label: str) -> list[str]:
+    if rule == "function_test":
         return [label for label, relation in relations_by_label.items() if bool(relation["is_function"])]
-    if variant == "one_to_one_status_label":
+    if rule == "injective_function_test":
         return [
             label
             for label, relation in relations_by_label.items()
             if bool(relation["is_function"]) and bool(relation["is_one_to_one"])
         ]
-    if variant == "y_axis_symmetry_label":
-        return [label for label, relation in relations_by_label.items() if bool(relation["symmetric_about_y_axis"])]
-    if variant == "x_axis_symmetry_label":
+    if rule == "horizontal_axis_symmetry":
         return [label for label, relation in relations_by_label.items() if bool(relation["symmetric_about_x_axis"])]
-    if variant == "origin_symmetry_label":
-        return [label for label, relation in relations_by_label.items() if bool(relation["symmetric_about_origin"])]
-    if variant == "domain_match_label":
-        target = relations_by_label[str(answer_label)]["domain"]
-        return [label for label, relation in relations_by_label.items() if relation["domain"] == target]
-    if variant == "range_match_label":
+    if rule == "range_interval_match":
         target = relations_by_label[str(answer_label)]["range"]
         return [label for label, relation in relations_by_label.items() if relation["range"] == target]
-    if variant in {"monotonic_interval_increasing_label", "monotonic_interval_decreasing_label"}:
-        increasing = variant == "monotonic_interval_increasing_label"
-        labels: list[str] = []
-        for label, relation in relations_by_label.items():
-            points = [point for point in relation["points"] if -2.0 <= float(point[0]) <= 2.0]
-            y_values = [float(point[1]) for point in sorted(points, key=lambda point: float(point[0]))]
-            if len(y_values) >= 2 and all(
-                (right > left if increasing else right < left)
-                for left, right in zip(y_values, y_values[1:])
-            ):
-                labels.append(label)
-        return labels
-    if variant in {"sign_interval_positive_label", "sign_interval_negative_label"}:
-        positive = variant == "sign_interval_positive_label"
-        return [
-            label
-            for label, relation in relations_by_label.items()
-            if relation["points"]
-            and all((float(point[1]) > 0.0 if positive else float(point[1]) < 0.0) for point in relation["points"])
-        ]
-    raise AssertionError(f"unsupported variant in test: {variant}")
+    raise AssertionError(f"unsupported rule in test: {rule}")
 
 
-@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
-def test_geometry_analytical_function_property_label_contract(query_id: str) -> None:
-    task = GeometryAnalyticalFunctionPropertyLabelTask()
+@pytest.mark.parametrize(
+    "task_cls",
+    (
+        GeometryFunctionPanelsFunctionStatusLabelTask,
+        GeometryFunctionPanelsOneToOneStatusLabelTask,
+        GeometryFunctionPanelsRangeMatchLabelTask,
+        GeometryFunctionPanelsXAxisSymmetryLabelTask,
+    ),
+)
+def test_geometry_function_panel_property_label_contract(task_cls) -> None:
+    task = task_cls()
     out = task.generate(
-        hash64(93210, TASK_ID, 3),
-        params={"query_id": query_id, "winner_label": "C"},
+        hash64(93210, task.task_id, 3),
+        params={"query_id": "single", "winner_label": "C"},
         max_attempts=10,
     )
 
-    assert out.query_id == query_id
+    assert out.query_id == "single"
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 1
-    assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert out.trace_payload["query_spec"]["template_id"] == "geometry_analytical_function_property_v0"
+    assert out.annotation_gt.type == "bbox"
+    assert len(out.annotation_gt.value) == 4
+    assert out.trace_payload["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert out.trace_payload["query_spec"]["template_id"] == "geometry_analytical_function_property_v1"
+    assert out.trace_payload["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
     assert out.image.size == (1024, 720)
 
     relations = out.trace_payload["execution_trace"]["relations_by_label"]
     assert 4 <= len(relations) <= 6
     assert "C" in relations
     assert set(relations).issubset({"A", "B", "C", "D", "E", "F"})
-    assert _matching_labels(query_id, relations, "C") == ["C"]
+    rule = out.trace_payload["execution_trace"]["property_rule"]
+    assert _matching_labels(str(rule), relations, "C") == ["C"]
 
 
-def test_geometry_analytical_function_property_label_balances_variants_and_answers() -> None:
-    task = GeometryAnalyticalFunctionPropertyLabelTask()
-    per_query_id_labels = {variant: Counter() for variant in SUPPORTED_QUERY_IDS}
+def test_geometry_function_panel_property_label_balances_answers() -> None:
+    task = GeometryFunctionPanelsFunctionStatusLabelTask()
+    labels = Counter()
 
-    total = len(SUPPORTED_QUERY_IDS) * 30
-    for index in range(total):
-        out = task.generate(
-            hash64(93220, TASK_ID, index),
-            params={},
-            max_attempts=10,
-        )
-        per_query_id_labels[str(out.query_id)][str(out.answer_gt.value)] += 1
+    for index in range(60):
+        out = task.generate(hash64(93220, FUNCTION_TASK_ID, index), params={}, max_attempts=10)
+        labels[str(out.answer_gt.value)] += 1
 
-    query_id_counts = {variant: sum(counter.values()) for variant, counter in per_query_id_labels.items()}
-    assert set(query_id_counts) == set(SUPPORTED_QUERY_IDS)
-    assert all(20 <= count <= 40 for count in query_id_counts.values())
-    for counts in per_query_id_labels.values():
-        assert set(counts.keys()).issubset({"A", "B", "C", "D", "E", "F"})
-        assert len(counts) >= 5
-        assert max(counts.values()) <= 12
+    assert set(labels.keys()).issubset({"A", "B", "C", "D", "E", "F"})
+    assert len(labels) >= 5
+    assert max(labels.values()) <= 16
 
 
-def test_geometry_analytical_function_property_label_randomizes_relation_geometry() -> None:
-    task = GeometryAnalyticalFunctionPropertyLabelTask()
+def test_geometry_function_panel_property_label_randomizes_relation_geometry() -> None:
+    task = GeometryFunctionPanelsOneToOneStatusLabelTask()
     observed_winner_points = set()
     observed_domains = set()
 
     for index in range(12):
         out = task.generate(
-            hash64(93230, TASK_ID, index),
-            params={"query_id": "one_to_one_status_label", "winner_label": "A"},
+            hash64(93230, task.task_id, index),
+            params={"query_id": "single", "winner_label": "A"},
             max_attempts=10,
         )
         winner = out.trace_payload["execution_trace"]["winner_relation"]

@@ -3,19 +3,20 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `function_panels`
-5. Query id: `one_to_one_status_label`
-6. Answer schema: `option_letter`
-7. Annotation schema: `bbox_set`
+3. Public task id: `task_geometry__function_panels__one_to_one_status_label`
+4. Supported `query_id`: `single`
+5. Answer schema: `option_letter`
+6. Annotation schema: `bbox`
 
 ## Program Contract
-- `label(select_panel(candidate_function_panels, function_property_rule=one_to_one_status_label)); scene=function_panels; scope=one_to_one_status_label`
+- `label(select_panel(candidate_coordinate_relations, relation_is_one_to_one_function)); scene=function_panels; scope=one_to_one_status_label`
 
 ## Prompt Bundle
-- Prompt text is loaded from the scene prompt bundle configured for `function_panels`.
+- Prompt text is loaded from `geometry_analytical_function_property_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+The annotation is the scalar pixel bounding box `[x0,y0,x1,y1]` of the selected panel.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

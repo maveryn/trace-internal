@@ -1,123 +1,28 @@
 generation:
   shared:
     balanced_sampling: true
-  task_overrides:
-    task_geometry__function_panels__function_status_label:
-      panel_count_weights:
-        '4': 1.0
-        '6': 1.0
-      candidate_label_pool:
-      - A
-      - B
-      - C
-      - D
-      - E
-      - F
-    task_geometry__function_panels__one_to_one_status_label:
-      panel_count_weights:
-        '4': 1.0
-        '6': 1.0
-      candidate_label_pool:
-      - A
-      - B
-      - C
-      - D
-      - E
-      - F
-    task_geometry__function_panels__range_match_label:
-      panel_count_weights:
-        '4': 1.0
-        '6': 1.0
-      candidate_label_pool:
-      - A
-      - B
-      - C
-      - D
-      - E
-      - F
-    task_geometry__function_panels__sign_interval_label:
-      panel_count_weights:
-        '4': 1.0
-        '6': 1.0
-      candidate_label_pool:
-      - A
-      - B
-      - C
-      - D
-      - E
-      - F
-    task_geometry__function_panels__x_axis_symmetry_label:
-      panel_count_weights:
-        '4': 1.0
-        '6': 1.0
-      candidate_label_pool:
-      - A
-      - B
-      - C
-      - D
-      - E
-      - F
-    task_geometry__function_panels__intersection_property_label:
-      panel_count_weights:
-        '4': 1.0
-        '6': 1.0
-        '9': 1.0
-      candidate_label_pool:
-      - A
-      - B
-      - C
-      - D
-      - E
-      - F
-      - G
-      - H
-      - I
+    candidate_label_pool:
+    - A
+    - B
+    - C
+    - D
+    - E
+    - F
+    - G
+    - H
+    - I
 rendering:
   shared:
     canvas_width: 1024
     canvas_height: 720
     line_width: 4
-  task_overrides:
-    task_geometry__function_panels__intersection_property_label:
-      canvas_width: 1024
-      canvas_height: 1024
-      line_width: 4
 prompt:
   shared:
-    bundle_id: geometry_analytical_function_property_v0
-    scene_key: analytical_function_property_grid
-    task_key: analytical_function_property_query
-    object_description: labeled coordinate-plane panels, each showing one relation
-    json_output_contract: Return one JSON object with keys "answer" and "annotation".
-    json_output_contract_answer_only: Return one JSON object with key "answer".
-    annotation_hint_selected_panel_bbox: set "annotation" to a JSON array containing
-      the selected panel bounding box as [x0,y0,x1,y1] in pixels
-    answer_hint_option_letter: set "answer" to the single selected panel label as
-      a capital letter shown in the image
-    json_example: '{"annotation":[[40,40,310,320]],"answer":"B"}'
-    json_example_answer_only: '{"answer":"B"}'
+    bundle_id: geometry_analytical_function_property_v1
+    scene_key: function_panel_grid
+    task_key: function_panel_query
   task_overrides:
-    task_geometry__function_panels__function_status_label:
-      bundle_id: geometry_analytical_function_property_v0
-      scene_key: analytical_function_property_grid
-      task_key: analytical_function_property_query
-    task_geometry__function_panels__one_to_one_status_label:
-      bundle_id: geometry_analytical_function_property_v0
-      scene_key: analytical_function_property_grid
-      task_key: analytical_function_property_query
-    task_geometry__function_panels__range_match_label:
-      bundle_id: geometry_analytical_function_property_v0
-      scene_key: analytical_function_property_grid
-      task_key: analytical_function_property_query
-    task_geometry__function_panels__sign_interval_label:
-      bundle_id: geometry_analytical_function_property_v0
-      scene_key: analytical_function_property_grid
-      task_key: analytical_function_property_query
-    task_geometry__function_panels__x_axis_symmetry_label:
-      bundle_id: geometry_analytical_function_property_v0
-      scene_key: analytical_function_property_grid
-      task_key: analytical_function_property_query
     task_geometry__function_panels__intersection_property_label:
-      bundle_id: geometry_analytical_intersection_property_v0
-      scene_key: analytical_intersection_property_grid
-      task_key: analytical_intersection_property_query
+      bundle_id: geometry_analytical_intersection_property_v1
+      scene_key: intersection_panel_grid
+      task_key: intersection_panel_query

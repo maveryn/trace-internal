@@ -3,19 +3,20 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `function_panels`
-5. Query id: `circle_circle_two_intersections_label`, `line_circle_tangent_label`, `line_circle_two_intersections_label`
-6. Answer schema: `option_letter`
-7. Annotation schema: `bbox_set`
+3. Public task id: `task_geometry__function_panels__intersection_property_label`
+4. Supported `query_id`: `line_circle_tangent_label`, `line_circle_two_intersections_label`, `circle_circle_two_intersections_label`
+5. Answer schema: `option_letter`
+6. Annotation schema: `bbox_set_map`
 
 ## Program Contract
-- `label(select_panel(candidate_function_panels, primitive_pair_type, intersection_condition)); scene=function_panels; scope=intersection_property_label`
+- `label(select_panel(candidate_coordinate_primitive_pairs, requested_intersection_condition)); scene=function_panels; scope=intersection_property_label`
 
 ## Prompt Bundle
-- Prompt text is loaded from the scene prompt bundle configured for `function_panels`.
+- Prompt text is loaded from `geometry_analytical_intersection_property_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+The annotation is a `bbox_set_map` with `selected_panel` containing the selected panel bbox and `intersection_points` containing the visible intersection point bboxes for that panel.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

@@ -6,26 +6,26 @@ import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from ...shared.color_distance import coerce_rgb as _rgb
-from ...shared.config_defaults import group_default
-from ..shared.task_support import float_value as _float_value
-from ..shared.task_support import int_value as _int_value
-from ..shared.canvas import resolve_three_d_canvas_spec
-from ..shared.object_resources import (
+from ....shared.color_distance import coerce_rgb as _rgb
+from ....shared.config_defaults import group_default
+from ...shared.task_support import float_value as _float_value
+from ...shared.task_support import int_value as _int_value
+from ...shared.canvas import resolve_three_d_canvas_spec
+from ...shared.object_resources import (
     BUILDING_STYLE_DIMENSION_FACTORS,
     BUILDING_STYLE_POOLS,
     BUILDING_STYLES,
 )
-from ..shared.camera_projection import (
+from ...shared.camera_projection import (
     canvas_floor_polygon_xy as _canvas_floor_polygon_xy,
     project_screen as _project_screen,
 )
-from ..shared.object_scene import (
+from ...shared.object_scene import (
     _bbox_intersection_area,
     _object_reference_points,
     _object_screen_bbox,
 )
-from ..shared.street_object_rendering_common import (
+from ...shared.street_object_rendering_common import (
     PEDESTRIAN_OBJECT_TYPES,
     _street_object_name,
     _base_street_object_dimensions,
@@ -142,6 +142,8 @@ def _resolve_render_params(
     instance_seed: int = 0,
     namespace: str = "three_d.street.canvas",
 ) -> _StreetRenderParams:
+    """Resolve deterministic canvas and street render parameters for one sample."""
+
     merged = dict(render_defaults)
     merged.update(dict(params))
     canvas = resolve_three_d_canvas_spec(
@@ -234,6 +236,8 @@ def _make_street_object_spec(
     label: str | None,
     dimension_scale: float,
 ) -> Dict[str, Any]:
+    """Create canonical object metadata shared by street task samplers."""
+
     width, depth, height = (float(value) for value in dimensions_xyz)
     x, y = float(xy[0]), float(xy[1])
     center_x, center_y = float(intersection_center_xy[0]), float(intersection_center_xy[1])
@@ -289,6 +293,8 @@ def _sample_context_specs(
     road_half_width: float,
     street_extent: float,
 ) -> List[Dict[str, Any]]:
+    """Sample background buildings and street furniture away from answer grammar."""
+
     building_height_ranges = {
         "downtown_intersection": (1.12, 1.78),
         "neighborhood_intersection": (0.76, 1.22),
@@ -516,6 +522,50 @@ def _candidate_context_visibility_ok(
     return True
 
 
+def _reference_visibility_ok(
+    reference_spec: Mapping[str, Any],
+    candidate_specs: Sequence[Mapping[str, Any]],
+    context_specs: Sequence[Mapping[str, Any]],
+    *,
+    camera,
+    frame,
+    render_params: _StreetRenderParams,
+    min_center_separation_px: float,
+    max_reference_candidate_bbox_intersection_px: float,
+    min_visible_px: float = MIN_CANDIDATE_VISIBLE_PX,
+) -> bool:
+    """Validate that one marked reference object remains readable and separated."""
+
+    reference_bbox = _object_screen_bbox(reference_spec, camera, frame, pad_px=16.0)
+    width = float(reference_bbox[2]) - float(reference_bbox[0])
+    height = float(reference_bbox[3]) - float(reference_bbox[1])
+    if width < float(min_visible_px) or height < float(min_visible_px):
+        return False
+    if (
+        float(reference_bbox[0]) < -24.0
+        or float(reference_bbox[1]) < -24.0
+        or float(reference_bbox[2]) > float(render_params.canvas_width + 24)
+        or float(reference_bbox[3]) > float(render_params.canvas_height + 24)
+    ):
+        return False
+    ref_center = (float(reference_spec["screen_xy"][0]), float(reference_spec["screen_xy"][1]))
+    for candidate in candidate_specs:
+        cand_center = (float(candidate["screen_xy"][0]), float(candidate["screen_xy"][1]))
+        if math.hypot(ref_center[0] - cand_center[0], ref_center[1] - cand_center[1]) < float(min_center_separation_px):
+            return False
+        candidate_bbox = _object_screen_bbox(candidate, camera, frame, pad_px=16.0)
+        if _bbox_intersection_area(reference_bbox, candidate_bbox) > float(max_reference_candidate_bbox_intersection_px):
+            return False
+    for context in context_specs:
+        if float(context["camera_distance"]) >= float(reference_spec["camera_distance"]) - 0.05:
+            continue
+        context_bbox = _object_screen_bbox(context, camera, frame, pad_px=10.0)
+        overlap = _bbox_intersection_area(reference_bbox, context_bbox)
+        if overlap > 900.0 and overlap / max(1.0, (width * height)) > 0.10:
+            return False
+    return True
+
+
 def _canvas_floor_polygon_available(
     *,
     camera,
@@ -577,6 +627,7 @@ __all__ = [
     "_object_reference_points",
     "_object_screen_bbox",
     "_orientation_axis_for_xy",
+    "_reference_visibility_ok",
     "_resolve_render_params",
     "_sample_context_specs",
     "_sample_intersection_center",

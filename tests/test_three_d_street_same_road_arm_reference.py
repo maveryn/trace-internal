@@ -7,8 +7,8 @@ import pytest
 import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
-from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.street.same_road_arm_reference import (
+from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
+from trace.tasks.three_d.street.same_road_arm_reference_label import (
     ROAD_ARMS,
     SCENE_ID,
     STREET_OBJECT_TYPES,
@@ -34,7 +34,7 @@ def test_street_same_road_arm_reference_answer_annotation_and_geometry(
     output = task.generate(
         20260522,
         params={
-            "query_id": "same_road_arm_as_reference",
+            "query_id": "single",
             "scene_variant": scene_variant,
             "intersection_layout": intersection_layout,
             "candidate_count": 6,
@@ -60,13 +60,13 @@ def test_street_same_road_arm_reference_answer_annotation_and_geometry(
         if bool(flag)
     ]
 
-    assert output.query_id == "same_road_arm_as_reference"
+    assert output.query_id == "single"
     assert output.scene_id == SCENE_ID
-    assert output.query_id == "same_road_arm_as_reference"
+    assert output.query_id == "single"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.annotation_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         candidates,
@@ -109,8 +109,9 @@ def test_street_same_road_arm_reference_answer_annotation_and_geometry(
 def test_street_same_road_arm_reference_registered() -> None:
     taxonomy = resolve_task_taxonomy(TASK_ID)
 
-    assert TASK_ID in list_default_task_ids()
+    ensure_scene_tasks_registered("three_d", "street")
+    assert TASK_ID in TASK_REGISTRY
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_scene_id == "street"
-    assert SUPPORTED_QUERY_IDS == ("same_road_arm_as_reference",)
+    assert taxonomy.source_scene_id == ""
+    assert SUPPORTED_QUERY_IDS == ("single",)

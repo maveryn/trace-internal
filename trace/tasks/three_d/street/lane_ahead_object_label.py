@@ -42,7 +42,7 @@ from ..shared.object_scene import (
     _object_reference_points,
     _sample_camera,
 )
-from .intersection_scene import (
+from .shared.state import (
     MIN_CANDIDATE_VISIBLE_PX,
     SCENE_ID,
     STREET_CAMERA_YAW_BANDS_DEGREES,
@@ -59,16 +59,19 @@ from .intersection_scene import (
     _min_pairwise,
     _missing_arm_for_layout,
     _object_screen_bbox as _street_object_screen_bbox,
+    _reference_visibility_ok,
     _resolve_render_params,
     _sample_context_specs,
     _sample_intersection_center,
     _translate_scene_xy,
 )
-from .intersection_rendering import render_street_intersection_scene_3d
+from .shared.rendering import render_street_intersection_scene_3d
 
 
 TASK_ID = "task_three_d__street__lane_ahead_object_label"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("ahead_along_lane",)
+QUERY_ID = "single"
+PROMPT_QUERY_KEY = "ahead_along_lane"
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
 SUPPORTED_TRAVEL_MODES: Tuple[str, ...] = ("toward_intersection", "away_from_intersection")
 ROAD_ARMS: Tuple[str, ...] = ("north", "south", "east", "west")
 REFERENCE_OBJECT_TYPE = STREET_LANE_AHEAD_REFERENCE_OBJECT_TYPE
@@ -177,6 +180,8 @@ def _make_lane_object_spec(
     jitter: float,
     scale_range: Tuple[float, float],
 ) -> Dict[str, Any]:
+    """Create a lane-bound street object while preserving road-arm semantics."""
+
     jittered_xy = (
         float(relative_xy[0]) + float(rng.uniform(-float(jitter), float(jitter))),
         float(relative_xy[1]) + float(rng.uniform(-float(jitter), float(jitter))),
@@ -252,6 +257,8 @@ def _sample_reference_and_candidate_specs(
     lane_side: int,
     street_extent: float,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], Tuple[float, float]]:
+    """Sample one reference vehicle and candidates with exactly one ahead target."""
+
     present_arms = _present_road_arms(str(intersection_layout))
     if str(reference_road_arm) not in set(present_arms):
         raise ValueError("reference road arm is not present in this layout")
@@ -392,45 +399,6 @@ def _sample_reference_and_candidate_specs(
     return dict(reference_spec), list(candidate_specs), tuple(float(value) for value in direction_xy)
 
 
-def _reference_visibility_ok(
-    reference_spec: Mapping[str, Any],
-    candidate_specs: Sequence[Mapping[str, Any]],
-    context_specs: Sequence[Mapping[str, Any]],
-    *,
-    camera,
-    frame,
-    render_params: _StreetRenderParams,
-) -> bool:
-    reference_bbox = _street_object_screen_bbox(reference_spec, camera, frame, pad_px=16.0)
-    width = float(reference_bbox[2]) - float(reference_bbox[0])
-    height = float(reference_bbox[3]) - float(reference_bbox[1])
-    if width < MIN_CANDIDATE_VISIBLE_PX or height < MIN_CANDIDATE_VISIBLE_PX:
-        return False
-    if (
-        float(reference_bbox[0]) < -24.0
-        or float(reference_bbox[1]) < -24.0
-        or float(reference_bbox[2]) > float(render_params.canvas_width + 24)
-        or float(reference_bbox[3]) > float(render_params.canvas_height + 24)
-    ):
-        return False
-    ref_center = (float(reference_spec["screen_xy"][0]), float(reference_spec["screen_xy"][1]))
-    for candidate in candidate_specs:
-        cand_center = (float(candidate["screen_xy"][0]), float(candidate["screen_xy"][1]))
-        if math.hypot(ref_center[0] - cand_center[0], ref_center[1] - cand_center[1]) < MIN_REFERENCE_CENTER_SEPARATION_PX:
-            return False
-        candidate_bbox = _street_object_screen_bbox(candidate, camera, frame, pad_px=16.0)
-        if _bbox_intersection_area(reference_bbox, candidate_bbox) > MAX_REFERENCE_CANDIDATE_BBOX_INTERSECTION_PX:
-            return False
-    for context in context_specs:
-        if float(context["camera_distance"]) >= float(reference_spec["camera_distance"]) - 0.05:
-            continue
-        context_bbox = _street_object_screen_bbox(context, camera, frame, pad_px=10.0)
-        overlap = _bbox_intersection_area(reference_bbox, context_bbox)
-        if overlap > 900.0 and overlap / max(1.0, (width * height)) > 0.10:
-            return False
-    return True
-
-
 def _lane_candidate_screen_separation_ok(
     specs: Sequence[Mapping[str, Any]],
     *,
@@ -476,6 +444,8 @@ def _build_lane_ahead_dataset(
     render_params: _StreetRenderParams,
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Build a finalized lane-ahead scene with one same-lane forward candidate."""
+
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     present_arms = _present_road_arms(str(intersection_layout))
     for _attempt in range(520):
@@ -542,6 +512,8 @@ def _build_lane_ahead_dataset(
             camera=camera,
             frame=frame,
             render_params=render_params,
+            min_center_separation_px=MIN_REFERENCE_CENTER_SEPARATION_PX,
+            max_reference_candidate_bbox_intersection_px=MAX_REFERENCE_CANDIDATE_BBOX_INTERSECTION_PX,
         ):
             continue
         if not _candidate_context_visibility_ok(
@@ -869,8 +841,8 @@ class ThreeDStreetLaneAheadObjectLabelTask:
 
     task_id = TASK_ID
     domain = "three_d"
-    scene_id = "street"
     default_dataset_enabled = True
+    supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(
         self,
@@ -901,6 +873,8 @@ class ThreeDStreetLaneAheadObjectLabelTask:
         )
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
+        """Generate one lane-ahead sample with a single scalar bbox target."""
+
         query_id, query_probabilities = _resolve_axis_variant(
             params,
             task_id=TASK_ID,
@@ -1019,37 +993,18 @@ class ThreeDStreetLaneAheadObjectLabelTask:
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
-            (
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
-            ),
+            ("bundle_id", "scene_key", "task_key"),
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            scene_id=self.scene_id,
+            scene_id=SCENE_ID,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_id),
+            query_key=PROMPT_QUERY_KEY,
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
-            },
+            dynamic_slots={},
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)

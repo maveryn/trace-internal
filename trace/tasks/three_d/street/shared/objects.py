@@ -7,15 +7,15 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
-from ..shared.camera_projection import (
+from ...shared.camera_projection import (
     canvas_floor_polygon_xy as _canvas_floor_polygon_xy,
     polygon_axis_line_segment as _polygon_axis_line_segment,
     project_screen as _project_screen,
     project_xy as _project_xy,
     screen_to_floor_xy as _screen_to_floor_xy,
 )
-from ..shared.color_variation import resolve_three_d_object_fill_rgb
-from ..shared.object_resources import (
+from ...shared.color_variation import resolve_three_d_object_fill_rgb
+from ...shared.object_resources import (
     BUILDING_STYLE_BASE_COLORS,
     BUILDING_STYLE_DIMENSION_FACTORS,
     BUILDING_STYLE_DISPLAY_NAMES,
@@ -25,7 +25,7 @@ from ..shared.object_resources import (
     STREET_RADIAL_OBJECT_TYPES,
     STREET_VEHICLE_OBJECT_TYPES,
 )
-from ..shared.object_scene_rendering import (
+from ...shared.object_scene_rendering import (
     _bbox_union,
     _draw_box_object,
     _draw_box_parts_object,
@@ -37,9 +37,9 @@ from ..shared.object_scene_rendering import (
     _sub_box_spec,
     _tint,
 )
-from ..shared.object_scene import _object_screen_bbox
+from ...shared.object_scene import _object_screen_bbox
 
-from ..shared.street_object_rendering_common import *  # noqa: F403
+from ...shared.street_object_rendering_common import *  # noqa: F403
 
 def _draw_building_face_rect(
     draw: ImageDraw.ImageDraw,
@@ -57,6 +57,8 @@ def _draw_building_face_rect(
     outline: Tuple[int, int, int] | None = None,
     width: int = 1,
 ) -> List[float]:
+    """Project one normalized facade rectangle onto a visible building face."""
+
     x, y, base_z = (float(value) for value in spec["base_xyz"])
     building_w, building_d, building_h = (float(value) for value in spec["dimensions_xyz"])
     span0 = max(0.0, min(1.0, float(span0)))
@@ -109,6 +111,8 @@ def _draw_building_window_grid(
     outline: Tuple[int, int, int],
     span_margin: float = 0.12,
 ) -> List[List[float]]:
+    """Draw repeated facade windows and return their projected bboxes."""
+
     cols = max(1, int(cols))
     rows = max(1, int(rows))
     span_width = max(0.12, 1.0 - 2.0 * float(span_margin))
@@ -154,6 +158,8 @@ def _draw_building_vertical_glass(
     fill: Tuple[int, int, int],
     outline: Tuple[int, int, int],
 ) -> List[List[float]]:
+    """Draw tower-like vertical glass panels on one facade."""
+
     bboxes: List[List[float]] = []
     cols = max(2, int(cols))
     for col in range(cols):
@@ -245,6 +251,8 @@ def _draw_retail_front(
     face_side: int,
     fill: Tuple[int, int, int],
 ) -> List[List[float]]:
+    """Draw storefront awning, window, and doorway details on a facade."""
+
     awning_palette = [(176, 59, 62), (63, 127, 112), (201, 159, 68), (70, 95, 145)]
     accent = awning_palette[_stable_palette_index(str(spec.get("object_id", "")), len(awning_palette))]
     outline = (82, 64, 48)
@@ -308,6 +316,8 @@ def _draw_shopfront(
     style: str,
     fill: Tuple[int, int, int],
 ) -> List[List[float]]:
+    """Draw shop-specific facade bands, windows, door, and awning stripes."""
+
     accents = {
         "cafe_shop": (176, 75, 66),
         "market_shop": (72, 135, 86),
@@ -426,6 +436,8 @@ def _draw_styled_building_object(
     frame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
+    """Draw one building body plus style-specific facade geometry."""
+
     style = str(spec.get("building_style", "concrete_midrise"))
     bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])

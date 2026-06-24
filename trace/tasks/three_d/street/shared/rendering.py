@@ -8,31 +8,31 @@ from typing import Any, Dict, List, Mapping, Sequence
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_rendering import load_font
-from ..shared.camera_projection import project_xy as _project_xy
-from ..shared.canvas import (
+from ....shared.text_rendering import load_font
+from ...shared.camera_projection import project_xy as _project_xy
+from ...shared.canvas import (
     bbox_dict_transform,
     bbox_transform,
     entities_transform,
     point_dict_transform,
     resize_image_to_fit_pixel_cap,
 )
-from ..shared.object_rendering import (
+from ...shared.object_rendering import (
     ThreeDObjectSpec,
     ThreeDRenderContext,
     rendered_three_d_object_from_bbox,
     render_three_d_object,
 )
-from ..shared.object_scene_rendering import _bbox_union, _draw_option_label
-from ..shared.option_panel import append_text_option_panel, empty_option_panel_metadata
-from ..shared.street_object_rendering_common import (
+from ...shared.object_scene_rendering import _bbox_union, _draw_option_label
+from ...shared.option_panel import append_text_option_panel, empty_option_panel_metadata
+from ...shared.street_object_rendering_common import (
     STREET_BUILDING_CONTEXT_OBJECT_TYPES,
     _draw_shadow,
     _street_object_fill_rgb,
 )
-from .intersection_building_rendering import _draw_styled_building_object
-from .intersection_road_rendering import _draw_street_shell
-from .intersection_scene import _StreetRenderParams, _camera_from_dataset, _frame_from_dataset
+from .objects import _draw_styled_building_object
+from .components import _draw_street_shell
+from .state import _StreetRenderParams, _camera_from_dataset, _frame_from_dataset
 
 
 @dataclass(frozen=True)
@@ -62,6 +62,8 @@ def render_street_intersection_scene_3d(
     render_params: _StreetRenderParams,
     option_choices: Sequence[Mapping[str, Any]] = (),
 ) -> _RenderedStreetScene:
+    """Render street surface, objects, labels, options, and annotation bboxes."""
+
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     camera = _camera_from_dataset(dataset)

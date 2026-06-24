@@ -7,15 +7,15 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
-from ..shared.camera_projection import (
+from ...shared.camera_projection import (
     canvas_floor_polygon_xy as _canvas_floor_polygon_xy,
     polygon_axis_line_segment as _polygon_axis_line_segment,
     project_screen as _project_screen,
     project_xy as _project_xy,
     screen_to_floor_xy as _screen_to_floor_xy,
 )
-from ..shared.color_variation import resolve_three_d_object_fill_rgb
-from ..shared.object_resources import (
+from ...shared.color_variation import resolve_three_d_object_fill_rgb
+from ...shared.object_resources import (
     BUILDING_STYLE_BASE_COLORS,
     BUILDING_STYLE_DIMENSION_FACTORS,
     BUILDING_STYLE_DISPLAY_NAMES,
@@ -25,7 +25,7 @@ from ..shared.object_resources import (
     STREET_RADIAL_OBJECT_TYPES,
     STREET_VEHICLE_OBJECT_TYPES,
 )
-from ..shared.object_scene_rendering import (
+from ...shared.object_scene_rendering import (
     _bbox_union,
     _draw_box_object,
     _draw_box_parts_object,
@@ -37,9 +37,9 @@ from ..shared.object_scene_rendering import (
     _sub_box_spec,
     _tint,
 )
-from ..shared.object_scene import _object_screen_bbox
+from ...shared.object_scene import _object_screen_bbox
 
-from ..shared.street_object_rendering_common import *  # noqa: F403
+from ...shared.street_object_rendering_common import *  # noqa: F403
 
 def _world_polygon(
     points: Sequence[Sequence[float]],
@@ -238,6 +238,8 @@ def _draw_crosswalks(
     intersection_center_xy: Sequence[float],
     intersection_layout: str,
 ) -> None:
+    """Draw visible crosswalk stripes only for roads present in layout."""
+
     road = float(render_params.road_half_width)
     cx, cy = float(intersection_center_xy[0]), float(intersection_center_xy[1])
     z = 0.018
@@ -296,6 +298,8 @@ def _draw_lane_markings(
     intersection_center_xy: Sequence[float],
     intersection_layout: str,
 ) -> None:
+    """Draw clipped lane dashes along each present road arm."""
+
     road = float(render_params.road_half_width)
     cx, cy = float(intersection_center_xy[0]), float(intersection_center_xy[1])
     z = 0.022
@@ -398,6 +402,8 @@ def _draw_street_shell(
     intersection_center_xy: Sequence[float],
     intersection_layout: str,
 ) -> Tuple[List[float], List[Dict[str, Any]]]:
+    """Render the full-bleed street surface and return its grounding entity."""
+
     extent = float(render_params.street_extent)
     road = float(render_params.road_half_width)
     cx, cy = float(intersection_center_xy[0]), float(intersection_center_xy[1])

@@ -7,8 +7,8 @@ import pytest
 import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
-from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.street.lane_ahead_object import (
+from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
+from trace.tasks.three_d.street.lane_ahead_object_label import (
     MIN_FORWARD_DISTANCE,
     REFERENCE_OBJECT_TYPE,
     SCENE_ID,
@@ -36,7 +36,7 @@ def test_street_lane_ahead_answer_annotation_and_geometry(
     output = task.generate(
         20260522,
         params={
-            "query_id": "ahead_along_lane",
+            "query_id": "single",
             "scene_variant": scene_variant,
             "intersection_layout": intersection_layout,
             "travel_mode": travel_mode,
@@ -63,13 +63,13 @@ def test_street_lane_ahead_answer_annotation_and_geometry(
         if bool(flag)
     ]
 
-    assert output.query_id == "ahead_along_lane"
+    assert output.query_id == "single"
     assert output.scene_id == SCENE_ID
-    assert output.query_id == "ahead_along_lane"
+    assert output.query_id == "single"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.annotation_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         candidates,
@@ -112,9 +112,10 @@ def test_street_lane_ahead_answer_annotation_and_geometry(
 def test_street_lane_ahead_registered() -> None:
     taxonomy = resolve_task_taxonomy(TASK_ID)
 
-    assert TASK_ID in list_default_task_ids()
+    ensure_scene_tasks_registered("three_d", "street")
+    assert TASK_ID in TASK_REGISTRY
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_scene_id == "street"
-    assert SUPPORTED_QUERY_IDS == ("ahead_along_lane",)
+    assert taxonomy.source_scene_id == ""
+    assert SUPPORTED_QUERY_IDS == ("single",)
     assert SUPPORTED_TRAVEL_MODES == ("toward_intersection", "away_from_intersection")

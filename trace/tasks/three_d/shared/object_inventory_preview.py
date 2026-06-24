@@ -29,9 +29,9 @@ from .warehouse_object_rendering import _draw_ground_shadow as _draw_warehouse_g
 from .warehouse_object_rendering import _fill_for_object as _warehouse_fill_for_object
 from ..room.shared import state as room_scene
 from ..room.shared.rendering import _draw_room_shell
-from ..street import intersection_scene as street_scene
-from ..street.intersection_building_rendering import _draw_styled_building_object
-from ..street.intersection_road_rendering import _draw_street_shell
+from ..street.shared import state as street_scene
+from ..street.shared.objects import _draw_styled_building_object
+from ..street.shared.components import _draw_street_shell
 from ..warehouse import warehouse_scene_common as warehouse_scene
 from ..warehouse.warehouse_support_rendering import _draw_shelf_rack_object
 from .street_object_rendering_common import (

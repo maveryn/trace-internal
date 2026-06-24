@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from collections import Counter
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
@@ -12,31 +11,16 @@ from ....core.scene_config import (
     get_scene_defaults,
     resolve_scene_section_defaults,
 )
-from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
-from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.config_defaults import (
-    group_default,
-    required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.deterministic_sampling import (
     resolve_selection_index,
     uniform_probability_map,
 )
-from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import (
-    PROMPT_OUTPUT_MODES,
-    build_prompt_trace_artifacts,
-    render_task_prompt_variants,
-)
-from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.object_resources import STREET_OBJECT_TYPES
-from ..shared.option_panel import build_text_option_choices
-from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_scene import (
@@ -45,15 +29,14 @@ from ..shared.object_scene import (
     _object_reference_points,
     _sample_camera,
 )
-from .intersection_scene import (
-    MIN_CANDIDATE_VISIBLE_PX,
+from ._lifecycle import build_street_option_label_task_output
+from .shared.state import (
     SCENE_ID,
     STREET_CAMERA_YAW_BANDS_DEGREES,
     SUPPORTED_INTERSECTION_LAYOUTS,
     SUPPORTED_SCENE_VARIANTS,
     _StreetRenderParams,
     _arm_is_present,
-    _bbox_intersection_area,
     _canvas_floor_polygon_available,
     _candidate_context_visibility_ok,
     _candidate_screen_separation_ok,
@@ -64,16 +47,18 @@ from .intersection_scene import (
     _missing_arm_for_layout,
     _object_screen_bbox as _street_object_screen_bbox,
     _orientation_axis_for_xy,
+    _reference_visibility_ok,
     _resolve_render_params,
     _sample_context_specs,
     _sample_intersection_center,
     _translate_scene_xy,
 )
-from .intersection_rendering import render_street_intersection_scene_3d
 
 
 TASK_ID = "task_three_d__street__same_road_arm_reference_label"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("same_road_arm_as_reference",)
+QUERY_ID = "single"
+PROMPT_QUERY_KEY = "same_road_arm_as_reference"
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
 ROAD_ARMS: Tuple[str, ...] = ("north", "south", "east", "west")
 ROAD_ARM_SLOTS: Dict[str, Tuple[Tuple[float, float], ...]] = {
     "north": ((-0.42, 1.78), (0.36, 2.30), (-0.20, 2.88), (0.48, 3.34)),
@@ -172,6 +157,8 @@ def _make_arm_object_spec(
     label: str | None,
     jitter: float,
 ) -> Dict[str, Any]:
+    """Place one arm-bound street object while preserving road-arm metadata."""
+
     jittered_xy = (
         float(relative_xy[0]) + float(rng.uniform(-float(jitter), float(jitter))),
         float(relative_xy[1]) + float(rng.uniform(-float(jitter), float(jitter))),
@@ -215,6 +202,8 @@ def _sample_reference_and_candidate_specs(
     reference_object_type: str,
     street_extent: float,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
+    """Sample one unique reference arm answer plus off-arm distractor candidates."""
+
     present_arms = _present_road_arms(str(intersection_layout))
     if str(reference_road_arm) not in set(present_arms):
         raise ValueError("reference road arm is not present in this layout")
@@ -284,45 +273,6 @@ def _sample_reference_and_candidate_specs(
     return dict(reference_spec), list(candidate_specs)
 
 
-def _reference_visibility_ok(
-    reference_spec: Mapping[str, Any],
-    candidate_specs: Sequence[Mapping[str, Any]],
-    context_specs: Sequence[Mapping[str, Any]],
-    *,
-    camera,
-    frame,
-    render_params: _StreetRenderParams,
-) -> bool:
-    reference_bbox = _street_object_screen_bbox(reference_spec, camera, frame, pad_px=16.0)
-    width = float(reference_bbox[2]) - float(reference_bbox[0])
-    height = float(reference_bbox[3]) - float(reference_bbox[1])
-    if width < MIN_CANDIDATE_VISIBLE_PX or height < MIN_CANDIDATE_VISIBLE_PX:
-        return False
-    if (
-        float(reference_bbox[0]) < -24.0
-        or float(reference_bbox[1]) < -24.0
-        or float(reference_bbox[2]) > float(render_params.canvas_width + 24)
-        or float(reference_bbox[3]) > float(render_params.canvas_height + 24)
-    ):
-        return False
-    ref_center = (float(reference_spec["screen_xy"][0]), float(reference_spec["screen_xy"][1]))
-    for candidate in candidate_specs:
-        cand_center = (float(candidate["screen_xy"][0]), float(candidate["screen_xy"][1]))
-        if math.hypot(ref_center[0] - cand_center[0], ref_center[1] - cand_center[1]) < MIN_REFERENCE_CENTER_SEPARATION_PX:
-            return False
-        candidate_bbox = _street_object_screen_bbox(candidate, camera, frame, pad_px=16.0)
-        if _bbox_intersection_area(reference_bbox, candidate_bbox) > MAX_REFERENCE_CANDIDATE_BBOX_INTERSECTION_PX:
-            return False
-    for context in context_specs:
-        if float(context["camera_distance"]) >= float(reference_spec["camera_distance"]) - 0.05:
-            continue
-        context_bbox = _street_object_screen_bbox(context, camera, frame, pad_px=10.0)
-        overlap = _bbox_intersection_area(reference_bbox, context_bbox)
-        if overlap > 900.0 and overlap / max(1.0, (width * height)) > 0.10:
-            return False
-    return True
-
-
 def _build_street_same_road_arm_dataset(
     *,
     params: Mapping[str, Any],
@@ -338,6 +288,8 @@ def _build_street_same_road_arm_dataset(
     render_params: _StreetRenderParams,
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Build one finalized same-road-arm dataset with a unique option label."""
+
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     for _attempt in range(440):
         intersection_center_xy = _sample_intersection_center(
@@ -404,6 +356,8 @@ def _build_street_same_road_arm_dataset(
             camera=camera,
             frame=frame,
             render_params=render_params,
+            min_center_separation_px=MIN_REFERENCE_CENTER_SEPARATION_PX,
+            max_reference_candidate_bbox_intersection_px=MAX_REFERENCE_CANDIDATE_BBOX_INTERSECTION_PX,
         ):
             continue
         if not _candidate_context_visibility_ok(
@@ -609,8 +563,8 @@ class ThreeDStreetSameRoadArmReferenceLabelTask:
 
     task_id = TASK_ID
     domain = "three_d"
-    scene_id = "street"
     default_dataset_enabled = True
+    supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(
         self,
@@ -640,6 +594,8 @@ class ThreeDStreetSameRoadArmReferenceLabelTask:
         )
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
+        """Generate one same-road-arm sample with scalar bbox annotation."""
+
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
@@ -732,227 +688,55 @@ class ThreeDStreetSameRoadArmReferenceLabelTask:
             render_params=render_params,
             instance_seed=int(instance_seed),
         )
-        background, background_meta = make_background_canvas(
-            canvas_width=int(render_params.canvas_width),
-            canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=_BACKGROUND_DEFAULTS,
-        )
-        option_choices = build_text_option_choices(dataset["candidate_object_specs"])
-        rendered_scene = render_street_intersection_scene_3d(
-            background,
-            dataset=dataset,
-            render_params=render_params,
-            option_choices=option_choices,
-        )
-        image, post_noise_meta = apply_post_image_noise(
-            rendered_scene.image,
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=_NOISE_DEFAULTS,
-        )
-
-        prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
-            (
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
-            ),
-            context=f"prompt defaults for {self.task_id}",
-        )
-        reference_object_name = str(dataset["reference_object"]["prompt_name"])
-        prompt_selection = render_task_prompt_variants(
+        return build_street_option_label_task_output(
+            task_id=TASK_ID,
             domain=self.domain,
-            scene_id=self.scene_id,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_id),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "reference_object_name": str(reference_object_name),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
-            },
+            scene_id=SCENE_ID,
+            prompt_defaults=_PROMPT_DEFAULTS,
+            prompt_query_key=PROMPT_QUERY_KEY,
+            background_defaults=_BACKGROUND_DEFAULTS,
+            noise_defaults=_NOISE_DEFAULTS,
+            params=params,
             instance_seed=int(instance_seed),
-        )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
-        answer_label = str(dataset["answer_label"])
-        answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        annotation_bboxes = [
-            [round(float(value), 3) for value in bbox]
-            for bbox in rendered_scene.annotation_bboxes
-        ]
-        if len(annotation_bboxes) != 1:
-            raise RuntimeError(f"{TASK_ID} expected exactly one annotation bbox")
-        annotation_payload = bbox_annotation_artifacts(annotation_bboxes[0])
-        annotation_gt = annotation_payload.annotation_gt
-        solver_trace = dict(dataset["solver_trace"])
-        trace_payload = {
-            "scene_ir": {
-                "scene_kind": "three_d_street_intersection",
-                "entities": [dict(entity) for entity in rendered_scene.entities],
-                "relations": {
-                    "scene_variant": str(scene_variant),
-                    "candidate_count": int(dataset["candidate_count"]),
-                    "context_object_count": int(dataset["context_object_count"]),
-                    "object_count": int(dataset["object_count"]),
-                    "intersection_center_xy": list(dataset["intersection_center_xy"]),
-                    "intersection_layout": str(dataset["intersection_layout"]),
-                    "missing_road_arm": dataset["missing_road_arm"],
-                    "present_road_arms": list(dataset["present_road_arms"]),
-                    "reference_object": dict(dataset["reference_object"]),
-                    "same_road_arm_as_reference_by_label": dict(dataset["same_road_arm_as_reference_by_label"]),
-                    "candidate_road_arm_by_label": dict(dataset["candidate_road_arm_by_label"]),
-                    "candidate_ground_xy_by_label": dict(dataset["candidate_ground_xy_by_label"]),
-                    "candidate_object_types_by_label": dict(dataset["candidate_object_types_by_label"]),
-                    "answer_label": str(answer_label),
-                    "answer_object_id": str(dataset["answer_object_id"]),
-                    "view_family": "synthetic_perspective_3d_street",
-                },
-            },
-            "query_spec": {
-                "query_id": str(query_id),
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "query_id": str(query_id),
-                    "query_id_probabilities": dict(query_probabilities),
-                    "scene_variant": str(scene_variant),
-                    "scene_variant_probabilities": dict(scene_probabilities),
-                    "intersection_layout": str(intersection_layout),
-                    "intersection_layout_probabilities": dict(intersection_layout_probabilities),
-                    "candidate_count": int(candidate_count),
-                    "candidate_count_probabilities": dict(candidate_count_probabilities),
-                    "context_object_count": int(context_object_count),
-                    "context_object_count_probabilities": dict(context_object_count_probabilities),
-                    "reference_road_arm": str(dataset["reference_object"]["road_arm"]),
-                    "reference_road_arm_probabilities": dict(reference_road_arm_probabilities),
-                    "reference_object_type": str(dataset["reference_object"]["object_type"]),
-                    "reference_object_type_probabilities": dict(reference_object_type_probabilities),
-                    "reference_object_name": str(reference_object_name),
-                    "camera_yaw_band": str(camera_yaw_band_index),
-                    "camera_yaw_band_index": int(camera_yaw_band_index),
-                    "camera_yaw_band_probabilities": dict(camera_yaw_probabilities),
-                    "intersection_center_xy": list(dataset["intersection_center_xy"]),
-                    "object_count": int(dataset["object_count"]),
-                    "answer_label_probabilities": {
-                        str(label): round(1.0 / float(candidate_count), 8)
-                        for label in POINT_LABELS[: int(candidate_count)]
-                    },
-                },
-            },
-            "render_spec": {
-                "canvas_width": int(render_params.canvas_width),
-                "canvas_height": int(image.height),
-                "scene_canvas_preset": str(render_params.canvas_preset),
-                "scene_canvas_width": int(render_params.canvas_width),
-                "scene_canvas_height": int(render_params.canvas_height),
-                "scene_canvas_policy": str(render_params.canvas_policy),
-                "final_canvas_width": int(image.width),
-                "final_canvas_height": int(image.height),
-                "final_canvas_pixels": int(image.width) * int(image.height),
-                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
-                "coord_space": "pixel",
-                "scene_variant": str(scene_variant),
-                "intersection_layout": str(dataset["intersection_layout"]),
-                "missing_road_arm": dataset["missing_road_arm"],
+            query_id=str(query_id),
+            query_probabilities=query_probabilities,
+            scene_variant=str(scene_variant),
+            scene_probabilities=scene_probabilities,
+            intersection_layout=str(intersection_layout),
+            intersection_layout_probabilities=intersection_layout_probabilities,
+            candidate_count=int(candidate_count),
+            candidate_count_probabilities=candidate_count_probabilities,
+            context_object_count=int(context_object_count),
+            context_object_count_probabilities=context_object_count_probabilities,
+            camera_yaw_band_index=int(camera_yaw_band_index),
+            camera_yaw_probabilities=camera_yaw_probabilities,
+            render_params=render_params,
+            dataset=dataset,
+            scene_relation_fields={
                 "present_road_arms": list(dataset["present_road_arms"]),
-                "intersection_center_xy": list(dataset["intersection_center_xy"]),
-                "background_style": dict(background_meta),
-                "post_image_noise": dict(post_noise_meta),
-                "camera": dict(dataset["camera"]),
-                "projection_frame": dict(dataset["projection_frame"]),
-                "label_font_size_px": int(render_params.label_font_size_px),
+                "reference_object": dict(dataset["reference_object"]),
+                "same_road_arm_as_reference_by_label": dict(dataset["same_road_arm_as_reference_by_label"]),
+                "candidate_road_arm_by_label": dict(dataset["candidate_road_arm_by_label"]),
+                "candidate_ground_xy_by_label": dict(dataset["candidate_ground_xy_by_label"]),
+                "candidate_object_types_by_label": dict(dataset["candidate_object_types_by_label"]),
             },
-            "render_map": {
-                "image_id": "img0",
-                "scene_bbox_px": list(rendered_scene.scene_bbox_px),
-                "street_bbox_px": list(rendered_scene.street_bbox_px),
-                "object_bboxes_px": {
-                    str(key): list(value)
-                    for key, value in rendered_scene.object_bboxes_px.items()
-                },
-                "object_centers_px": {
-                    str(key): list(value)
-                    for key, value in rendered_scene.object_centers_px.items()
-                },
-                "candidate_bboxes_px": {
-                    str(key): list(value)
-                    for key, value in rendered_scene.candidate_bboxes_px.items()
-                },
-                "candidate_centers_px": {
-                    str(key): list(value)
-                    for key, value in rendered_scene.candidate_centers_px.items()
-                },
-                "option_panel_bbox_px": list(rendered_scene.option_panel_bbox_px),
-                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
-                "option_choice_bboxes_px": {
-                    str(key): list(value)
-                    for key, value in rendered_scene.option_choice_bboxes_px.items()
-                },
-                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
-                "context_object_bboxes_px": {
-                    str(key): list(value)
-                    for key, value in rendered_scene.context_object_bboxes_px.items()
-                },
-                "context_object_centers_px": {
-                    str(key): list(value)
-                    for key, value in rendered_scene.context_object_centers_px.items()
-                },
-                "target_object_bboxes_px": {
-                    str(key): list(rendered_scene.object_bboxes_px[str(key)])
-                    for key in dataset["target_object_ids"]
-                },
-                "reference_object_bbox_px": list(
-                    rendered_scene.object_bboxes_px[str(dataset["reference_object"]["object_id"])]
-                ),
+            query_param_fields={
+                "reference_road_arm": str(dataset["reference_object"]["road_arm"]),
+                "reference_road_arm_probabilities": dict(reference_road_arm_probabilities),
+                "reference_object_type": str(dataset["reference_object"]["object_type"]),
+                "reference_object_type_probabilities": dict(reference_object_type_probabilities),
+                "reference_object_name": str(dataset["reference_object"]["prompt_name"]),
             },
-            "execution_trace": {
-                "query_id": str(query_id),
-                "scene_id": SCENE_ID,
-                "scene_variant": str(scene_variant),
-                "candidate_count": int(dataset["candidate_count"]),
-                "context_object_count": int(dataset["context_object_count"]),
-                "object_count": int(dataset["object_count"]),
-                "intersection_layout": str(dataset["intersection_layout"]),
-                "missing_road_arm": dataset["missing_road_arm"],
+            render_spec_fields={
                 "present_road_arms": list(dataset["present_road_arms"]),
-                "answer_label": str(answer_label),
-                "answer_object_id": str(dataset["answer_object_id"]),
-                "answer_object_type": str(dataset["answer_object_type"]),
+            },
+            execution_trace_fields={
+                "present_road_arms": list(dataset["present_road_arms"]),
                 "answer_road_arm": str(dataset["answer_road_arm"]),
-                "target_object_ids": [str(value) for value in dataset["target_object_ids"]],
                 "reference_object": dict(dataset["reference_object"]),
                 "reference_object_specs": [
                     dict(spec) for spec in dataset["reference_object_specs"]
                 ],
-                "candidate_object_specs": [dict(spec) for spec in dataset["candidate_object_specs"]],
-                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
-                "option_descriptor_by_label": {
-                    str(choice["label"]): str(choice["descriptor"])
-                    for choice in rendered_scene.option_choices
-                },
-                "context_object_specs": [dict(spec) for spec in dataset["context_object_specs"]],
-                "object_specs": [dict(spec) for spec in dataset["object_specs"]],
-                "intersection_center_xy": list(dataset["intersection_center_xy"]),
                 "same_road_arm_as_reference_by_label": dict(dataset["same_road_arm_as_reference_by_label"]),
                 "same_road_arm_candidate_labels": list(dataset["same_road_arm_candidate_labels"]),
                 "candidate_road_arm_by_label": dict(dataset["candidate_road_arm_by_label"]),
@@ -962,33 +746,7 @@ class ThreeDStreetSameRoadArmReferenceLabelTask:
                 "road_arm_candidate_counts": dict(dataset["road_arm_candidate_counts"]),
                 "object_type_counts": dict(dataset["object_type_counts"]),
                 "min_pairwise_candidate_ground_gap": float(dataset["min_pairwise_candidate_ground_gap"]),
-                "camera": dict(dataset["camera"]),
-                "projection_frame": dict(dataset["projection_frame"]),
-                "question_format": str(query_id),
-                "view_family": "synthetic_perspective_3d_street",
-                "solver_trace": dict(solver_trace),
             },
-            "witness_symbolic": {
-                "type": "object",
-                "id": str(dataset["answer_object_id"]),
-                "answer": str(answer_label),
-            },
-            "projected_annotation": dict(annotation_payload.projected_annotation),
-            "background": dict(background_meta),
-            "post_image_noise": dict(post_noise_meta),
-        }
-
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-            answer_gt=answer_gt,
-            annotation_gt=annotation_gt,
-            image=image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
         )
 
 

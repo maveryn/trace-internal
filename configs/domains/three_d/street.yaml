@@ -1,8 +1,6 @@
 generation:
   task_overrides:
     task_three_d__street__intersection_nearest_label:
-      query_id_weights:
-        closest_to_intersection: 1.0
       scene_variant_weights:
         downtown_intersection: 1.0
         neighborhood_intersection: 1.0
@@ -19,12 +17,9 @@ generation:
       candidate_count_max: 6
       context_object_count_min: 10
       context_object_count_max: 10
-      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_intersection_layout_sampling: true
     task_three_d__street__same_road_arm_reference_label:
-      query_id_weights:
-        same_road_arm_as_reference: 1.0
       scene_variant_weights:
         downtown_intersection: 1.0
         neighborhood_intersection: 1.0
@@ -41,12 +36,9 @@ generation:
       candidate_count_max: 6
       context_object_count_min: 10
       context_object_count_max: 10
-      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_intersection_layout_sampling: true
     task_three_d__street__lane_ahead_object_label:
-      query_id_weights:
-        ahead_along_lane: 1.0
       scene_variant_weights:
         downtown_intersection: 1.0
         neighborhood_intersection: 1.0
@@ -66,7 +58,6 @@ generation:
       candidate_count_max: 5
       context_object_count_min: 8
       context_object_count_max: 8
-      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_intersection_layout_sampling: true
       balanced_travel_mode_sampling: true
@@ -194,39 +185,12 @@ rendering:
       - 255
 prompt:
   shared:
-    bundle_id: three_d_street_v0
+    bundle_id: three_d_street_v1
+    scene_key: street
   task_overrides:
     task_three_d__street__intersection_nearest_label:
-      scene_key: street
       task_key: street_intersection_nearest_query
-      object_description: a perspective street intersection or T intersection with
-        roads, sidewalks, crosswalk markings, street context, candidate street objects,
-        and an option list below the scene
-      annotation_hint: set "annotation" to the bounding box [x0, y0, x1, y1] around
-        the selected street object in the scene
-      answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":[142,118,238,178],"answer":"C"}'
-      json_example_answer_only: '{"answer":"C"}'
     task_three_d__street__lane_ahead_object_label:
-      scene_key: street
       task_key: street_lane_ahead_object_query
-      object_description: a perspective street intersection or T intersection with
-        roads, sidewalks, crosswalk markings, street context, one red-boxed reference
-        street object with a red travel-direction arrow, candidate street objects,
-        and an option list below the scene
-      annotation_hint: set "annotation" to the bounding box [x0, y0, x1, y1] around
-        the selected street object in the scene
-      answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":[142,118,238,178],"answer":"C"}'
-      json_example_answer_only: '{"answer":"C"}'
     task_three_d__street__same_road_arm_reference_label:
-      scene_key: street
       task_key: street_same_road_arm_reference_query
-      object_description: a perspective street intersection or T intersection with
-        roads, sidewalks, crosswalk markings, street context, one red-boxed reference
-        street object, candidate street objects, and an option list below the scene
-      annotation_hint: set "annotation" to the bounding box [x0, y0, x1, y1] around
-        the selected street object in the scene
-      answer_hint: set "answer" to the selected option letter
-      json_example: '{"annotation":[142,118,238,178],"answer":"C"}'
-      json_example_answer_only: '{"answer":"C"}'

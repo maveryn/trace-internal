@@ -7,9 +7,9 @@ import pytest
 import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
-from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.street.intersection_nearest import (
-    BUILDING_STYLES,
+from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
+from trace.tasks.three_d.shared.object_resources import BUILDING_STYLES
+from trace.tasks.three_d.street.intersection_nearest_label import (
     MIN_NEAREST_DISTANCE_MARGIN,
     SCENE_ID,
     STREET_OBJECT_TYPES,
@@ -28,7 +28,7 @@ def test_street_intersection_nearest_answer_annotation_and_geometry(scene_varian
     output = task.generate(
         20260522,
         params={
-            "query_id": "closest_to_intersection",
+            "query_id": "single",
             "scene_variant": scene_variant,
             "candidate_count": 6,
             "context_object_count": 10,
@@ -58,11 +58,11 @@ def test_street_intersection_nearest_answer_annotation_and_geometry(scene_varian
     sorted_labels = sorted(distances, key=lambda label: (distances[label], label))
 
     assert output.scene_id == SCENE_ID
-    assert output.query_id == "closest_to_intersection"
+    assert output.query_id == "single"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.annotation_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         candidates,
@@ -104,11 +104,12 @@ def test_street_intersection_nearest_answer_annotation_and_geometry(scene_varian
 def test_street_intersection_nearest_registered() -> None:
     taxonomy = resolve_task_taxonomy(TASK_ID)
 
-    assert TASK_ID in list_default_task_ids()
+    ensure_scene_tasks_registered("three_d", "street")
+    assert TASK_ID in TASK_REGISTRY
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_scene_id == "street"
-    assert SUPPORTED_QUERY_IDS == ("closest_to_intersection",)
+    assert taxonomy.source_scene_id == ""
+    assert SUPPORTED_QUERY_IDS == ("single",)
     assert {
         "motorcycle",
         "fire_hydrant",

@@ -66,7 +66,7 @@ def test_scene_render_loops_delegate_reusable_objects_to_shared_renderer() -> No
             {"_draw_wall_object", "_draw_floor_object"},
         ),
         (
-            "trace/tasks/three_d/street/intersection_rendering.py",
+            "trace/tasks/three_d/street/shared/rendering.py",
             "render_street_intersection_scene_3d",
             {"_draw_candidate_object", "_draw_context_object"},
         ),

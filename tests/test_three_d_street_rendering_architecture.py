@@ -3,16 +3,16 @@ from pathlib import Path
 
 
 STREET_TASK_OR_COMMON_FILES = (
-    Path("trace/tasks/three_d/street/intersection_scene.py"),
-    Path("trace/tasks/three_d/street/intersection_nearest.py"),
-    Path("trace/tasks/three_d/street/lane_ahead_object.py"),
-    Path("trace/tasks/three_d/street/same_road_arm_reference.py"),
+    Path("trace/tasks/three_d/street/shared/state.py"),
+    Path("trace/tasks/three_d/street/intersection_nearest_label.py"),
+    Path("trace/tasks/three_d/street/lane_ahead_object_label.py"),
+    Path("trace/tasks/three_d/street/same_road_arm_reference_label.py"),
 )
 
 STREET_RENDERER_FILES = (
-    Path("trace/tasks/three_d/street/intersection_rendering.py"),
-    Path("trace/tasks/three_d/street/intersection_road_rendering.py"),
-    Path("trace/tasks/three_d/street/intersection_building_rendering.py"),
+    Path("trace/tasks/three_d/street/shared/rendering.py"),
+    Path("trace/tasks/three_d/street/shared/components.py"),
+    Path("trace/tasks/three_d/street/shared/objects.py"),
     Path("trace/tasks/three_d/shared/street_object_rendering.py"),
     Path("trace/tasks/three_d/shared/street_vehicle_object_rendering.py"),
     Path("trace/tasks/three_d/shared/street_fixture_object_rendering.py"),

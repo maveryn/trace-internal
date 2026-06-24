@@ -18,6 +18,6 @@ rendering:
       max_attempts: 6
 prompt:
   shared:
-    bundle_id: geometry_split_triangle_patterns_v0
+    bundle_id: geometry_split_triangle_trig_chain_v1
     scene_key: split_triangle_trig_chain_scene
     task_key: side_length_value_query

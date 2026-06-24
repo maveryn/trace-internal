@@ -1,0 +1,115 @@
+{
+  "bundle_id": "geometry_split_triangle_trig_chain_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "split_triangle_trig_chain_scene": [
+        "The diagram shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The image shows {object_description}.",
+        "This geometry diagram shows {object_description}.",
+        "The labeled diagram shows {object_description}."
+      ]
+    },
+    "task": {
+      "side_length_value_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "shared_altitude_two_angles_side": [
+        "Use the known base segment, shared altitude, and two visible angles to find side \"{target_name}\".",
+        "Find the length of side \"{target_name}\" from the marked altitude and angle measurements.",
+        "Use the two right-triangle relationships in the split diagram. What is the length of \"{target_name}\"?",
+        "Determine side \"{target_name}\" using the visible segment and the two angle labels.",
+        "Use the shared altitude construction to solve for side \"{target_name}\"."
+      ],
+      "shared_altitude_side_then_hypotenuse": [
+        "Use the known slanted side, shared altitude, and visible angles to find side \"{target_name}\".",
+        "Find the length of side \"{target_name}\" from the marked side and angle measurements.",
+        "Use the left right triangle to get the shared altitude, then solve for \"{target_name}\".",
+        "Determine side \"{target_name}\" using the visible slanted side and two angle labels.",
+        "Use the split right-triangle construction to solve for side \"{target_name}\"."
+      ],
+      "isosceles_altitude_trig_side": [
+        "Use the isosceles altitude construction and the visible angle to find side \"{target_name}\".",
+        "Find the length of side \"{target_name}\" from the marked half-base and angle.",
+        "Use the right triangle formed by the altitude in the isosceles triangle. What is \"{target_name}\"?",
+        "Determine side \"{target_name}\" using the visible half-base and angle label.",
+        "Use the marked isosceles-triangle altitude to solve for side \"{target_name}\"."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_key_list}; each value must be the pixel point [x,y] at that labeled point.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_key_list}; each value must be the pixel point [x,y] at that labeled point.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_key_list}; each value must be the pixel point [x,y] at that labeled point.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_key_list}; each value must be the pixel point [x,y] at that labeled point.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: set \"annotation\" to a JSON object with exactly these visible point-label keys: {annotation_key_list}; each value must be the pixel point [x,y] at that labeled point.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "scene:split_triangle_trig_chain_scene": {
+      "object_description": "a split right-triangle diagram with a shared altitude, visible side or angle measurements, and one marked target side"
+    },
+    "global": {
+      "json_output_contract": "Return a JSON object with exactly two keys: \"annotation\" and \"answer\".",
+      "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."
+    },
+    "task:side_length_value_query": {
+      "answer_hint": "set \"answer\" to the target side length as a number rounded to one decimal place"
+    }
+  },
+  "dynamic_slots": {
+    "target_name": {
+      "type": "string"
+    },
+    "annotation_key_list": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {
+    "scene:split_triangle_trig_chain_scene": [
+      "object_description"
+    ],
+    "query:shared_altitude_two_angles_side": [
+      "target_name"
+    ],
+    "query:shared_altitude_side_then_hypotenuse": [
+      "target_name"
+    ],
+    "query:isosceles_altitude_trig_side": [
+      "target_name"
+    ],
+    "output:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_key_list",
+      "answer_hint",
+      "json_example"
+    ]
+  }
+}

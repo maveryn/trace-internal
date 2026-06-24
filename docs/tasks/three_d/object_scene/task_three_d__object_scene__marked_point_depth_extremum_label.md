@@ -4,25 +4,25 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query id: `single`
+- Supported `query_id`: `single`
 - Answer type: `option_letter`
-- Annotation type: role-keyed `keyed_point_map`
+- Annotation type: `point`
+- Annotation schema: `point`
+
+## Program Contract
+`select(label(marked_points, extremum(camera_distance, requested_extremum))); scene=object_scene; scope=marked_point_depth_extremum_label`
 
 ## Contract
-The image shows one synthetic perspective 3D object scene with a full-canvas gridded floor/table/platform, unlettered context objects, and lettered point markers in the scene. The prompt asks which marked point is closest to or farthest from the camera.
+The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
 
-The verifier computes the answer from the finalized 3D camera distance of each marked point, not from pixels. The marker labels are assigned after the true extremum point is selected so the answer label distribution remains broad instead of being tied to a fixed layout position.
-
-Each default instance renders six marked points, with a mix of floor points and object-surface points when feasible. The context objects remain unlettered and are not answer candidates.
+The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
 ## Annotation Contract
-Annotation is a `keyed_point_map` with:
-- `selected_point`: the pixel center of the selected marker letter.
-
-The marker label text, context objects, floor grid, shadows, and background geometry are not annotation.
+Annotation is a scalar `point` at the selected marked point center.
+The selected marker center is the only visual witness; marker label text is used only to identify the answer option.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`. The trace records camera pose, projection frame, context object metadata, marked-point world coordinates, projected marker centers, camera distances by point label, and the near-to-far marker-label order used by the verifier.
+The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and annotation come from the same finalized 3D scene trace.

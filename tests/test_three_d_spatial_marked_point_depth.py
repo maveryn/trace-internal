@@ -39,13 +39,12 @@ def test_marked_point_depth_answer_and_annotation(query_id: str) -> None:
     assert_three_d_canvas_contract(output)
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == expected_label
-    assert output.annotation_gt.type == "keyed_point_map"
-    assert set(output.annotation_gt.value) == {"selected_point"}
-    assert output.annotation_gt.value["selected_point"] == render_map["selected_point_px"]
-    assert output.annotation_gt.value["selected_point"] == render_map["marked_point_centers_px"][expected_label]
-    assert output.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
-    assert output.trace_payload["projected_annotation"]["keyed_point_map"] == output.annotation_gt.value
-    assert output.trace_payload["projected_annotation"]["pixel_keyed_point_map"] == output.annotation_gt.value
+    assert output.annotation_gt.type == "point"
+    assert output.annotation_gt.value == render_map["selected_point_px"]
+    assert output.annotation_gt.value == render_map["marked_point_centers_px"][expected_label]
+    assert output.trace_payload["projected_annotation"]["type"] == "point"
+    assert output.trace_payload["projected_annotation"]["point"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["pixel_point"] == output.annotation_gt.value
     assert trace["point_specs"] == []
     assert len(marked_points) == 6
     assert len(trace["context_object_specs"]) == 6
@@ -65,4 +64,4 @@ def test_marked_point_depth_task_registered_in_three_d_taxonomy() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_scene_id == "object_scene"
+    assert not taxonomy.source_scene_id

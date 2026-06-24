@@ -42,10 +42,10 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
     assert all(spec["is_answer_candidate"] for spec in point_specs)
     assert all(not spec["is_answer_candidate"] for spec in context_specs)
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_label)
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_label] == (
-        output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
-    )
+    expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
+    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_label] == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         point_specs,
@@ -90,4 +90,4 @@ def test_height_extremum_task_registered_in_three_d_taxonomy() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_scene_id == "object_scene"
+    assert not taxonomy.source_scene_id

@@ -20,7 +20,6 @@ def test_landmark_correspondence_answer_and_annotation() -> None:
     output = task.generate(
         20260531,
         params={
-            "query_id": "landmark_correspondence",
             "scene_variant": "floor_grid_room",
             "post_image_noise_apply_prob": 0.0,
         },
@@ -35,16 +34,16 @@ def test_landmark_correspondence_answer_and_annotation() -> None:
     candidate_landmarks = dict(right_view["candidate_landmarks_by_label"])
 
     assert output.scene_id == "object_scene"
-    assert output.query_id == "landmark_correspondence"
+    assert output.query_id == "single"
     assert output.answer_gt.type == "option_letter"
     assert answer_label in {"A", "B", "C", "D"}
-    assert output.annotation_gt.type == "keyed_point_map"
+    assert output.annotation_gt.type == "point_map"
     assert set(output.annotation_gt.value) == {"reference_landmark", "matched_landmark"}
     assert output.annotation_gt.value["reference_landmark"] == render_map["reference_landmark_point_px"]
     assert output.annotation_gt.value["matched_landmark"] == render_map["matched_landmark_point_px"]
-    assert output.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
-    assert output.trace_payload["projected_annotation"]["keyed_point_map"] == output.annotation_gt.value
-    assert output.trace_payload["projected_annotation"]["pixel_keyed_point_map"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["type"] == "point_map"
+    assert output.trace_payload["projected_annotation"]["point_map"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["pixel_point_map"] == output.annotation_gt.value
     assert set(candidate_landmarks) == {"A", "B", "C", "D"}
     assert output.trace_payload["query_spec"]["params"]["answer_support"] == ["A", "B", "C", "D"]
     assert candidate_landmarks[answer_label]["landmark_id"] == trace["target_landmark_id"]
@@ -73,4 +72,4 @@ def test_landmark_correspondence_task_registered_in_three_d_taxonomy() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_scene_id == "object_scene"
+    assert not taxonomy.source_scene_id

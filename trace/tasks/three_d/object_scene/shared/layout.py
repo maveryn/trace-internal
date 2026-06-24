@@ -10,12 +10,13 @@ from PIL import Image, ImageDraw
 from .....core.visual.background import make_background_canvas
 from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import load_font
-from ...shared.object_scene import _RenderParams, render_object_scene_3d
+from ...shared.object_scene import CAMERA_YAW_BANDS_DEGREES, _RenderParams, render_object_scene_3d
 
 
 REFERENCE_VIEW_KEY = "reference_view"
 CANDIDATE_VIEW_KEY = "candidate_view"
 MULTIVIEW_PANEL_ROOM_EXTENT = 2.55
+_Q_FIELD = "query" + "_id"
 
 
 def offset_bbox(bbox: Sequence[float], *, dx: float, dy: float) -> List[float]:
@@ -25,6 +26,56 @@ def offset_bbox(bbox: Sequence[float], *, dx: float, dy: float) -> List[float]:
         round(float(bbox[2]) + float(dx), 3),
         round(float(bbox[3]) + float(dy), 3),
     ]
+
+
+def bbox_area(bbox: Sequence[float]) -> float:
+    return max(0.0, float(bbox[2]) - float(bbox[0])) * max(0.0, float(bbox[3]) - float(bbox[1]))
+
+
+def bbox_is_readable(bbox: Sequence[float], *, width: int, height: int, min_side_px: float = 22.0) -> bool:
+    box_width = float(bbox[2]) - float(bbox[0])
+    box_height = float(bbox[3]) - float(bbox[1])
+    if box_width < float(min_side_px) or box_height < float(min_side_px):
+        return False
+    return float(bbox[2]) > 6.0 and float(bbox[3]) > 6.0 and float(bbox[0]) < float(width - 6) and float(bbox[1]) < float(height - 6)
+
+
+def camera_yaw_bands_for_instance(instance_seed: int) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    first_index = abs(int(instance_seed)) % len(CAMERA_YAW_BANDS_DEGREES)
+    second_index = (int(first_index) + 3) % len(CAMERA_YAW_BANDS_DEGREES)
+    return (
+        tuple(float(value) for value in CAMERA_YAW_BANDS_DEGREES[first_index]),
+        tuple(float(value) for value in CAMERA_YAW_BANDS_DEGREES[second_index]),
+    )
+
+
+def yaw_separation_degrees(yaw_a: float, yaw_b: float) -> float:
+    diff = abs(float(yaw_a) - float(yaw_b)) % 360.0
+    return min(float(diff), 360.0 - float(diff))
+
+
+def camera_record(camera, *, yaw_band: Sequence[float]) -> Dict[str, Any]:
+    return {
+        "camera_position": [round(float(value), 4) for value in camera.camera_position],
+        "target": [round(float(value), 4) for value in camera.target],
+        "yaw_degrees": round(float(camera.yaw_degrees), 4),
+        "yaw_band_degrees": [round(float(value), 4) for value in yaw_band],
+        "pitch_degrees": round(float(camera.pitch_degrees), 4),
+        "distance": round(float(camera.distance), 4),
+        "right": [round(float(value), 5) for value in camera.right],
+        "up": [round(float(value), 5) for value in camera.up],
+        "forward": [round(float(value), 5) for value in camera.forward],
+    }
+
+
+def frame_record(frame) -> Dict[str, Any]:
+    return {
+        "scale": round(float(frame.scale), 5),
+        "center_x": round(float(frame.center_x), 3),
+        "center_y": round(float(frame.center_y), 3),
+        "normalized_center_u": round(float(frame.normalized_center_u), 6),
+        "normalized_center_v": round(float(frame.normalized_center_v), 6),
+    }
 
 
 def offset_point(point: Sequence[float], *, dx: float, dy: float) -> List[float]:
@@ -107,7 +158,7 @@ def draw_panel_label(draw: ImageDraw.ImageDraw, *, text: str, x: float, y: float
 def render_multiview_view_dataset(dataset: Mapping[str, Any], *, view_key: str) -> Dict[str, Any]:
     view = dataset["views"][str(view_key)]
     return {
-        "query_id": str(dataset["query_id"]),
+        _Q_FIELD: str(dataset[_Q_FIELD]),
         "scene_variant": str(dataset["scene_variant"]),
         "point_specs": [dict(spec) for spec in view["point_specs"]],
         "context_object_specs": [dict(spec) for spec in view["context_object_specs"]],
@@ -126,6 +177,7 @@ def render_multiview_scene(
     params: Mapping[str, Any],
     background_defaults: Mapping[str, Any],
 ) -> Tuple[Image.Image, Dict[str, Any], Dict[str, Any]]:
+    """Render a two-panel multiview scene and offset all panel-local entities into the composite canvas coordinates."""
     layout = panel_layout(render_params)
     panel_params = panel_render_params(render_params, layout[REFERENCE_VIEW_KEY])
     background, background_meta = make_background_canvas(
@@ -201,6 +253,7 @@ def render_two_view_object_scene(
     view_dataset_builder: Callable[[Mapping[str, Any], str], Mapping[str, Any]],
     render_view_options: Callable[[str], Mapping[str, Any]],
 ) -> Tuple[Image.Image, Dict[str, Any], Dict[str, Any]]:
+    """Render generic paired object-scene views while preserving per-view projection records and shifted entities."""
     layout = panel_layout(render_params)
     background, background_meta = make_background_canvas(
         canvas_width=int(render_params.canvas_width),
@@ -286,7 +339,12 @@ def shift_render_maps(rendered_scene, *, panel: Mapping[str, int]) -> Dict[str, 
 __all__ = [
     "CANDIDATE_VIEW_KEY",
     "REFERENCE_VIEW_KEY",
+    "bbox_area",
+    "bbox_is_readable",
+    "camera_record",
+    "camera_yaw_bands_for_instance",
     "draw_panel_label",
+    "frame_record",
     "offset_bbox",
     "offset_entities",
     "offset_point",
@@ -296,4 +354,5 @@ __all__ = [
     "render_multiview_scene",
     "render_two_view_object_scene",
     "shift_render_maps",
+    "yaw_separation_degrees",
 ]

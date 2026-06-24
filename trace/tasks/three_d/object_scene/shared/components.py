@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw
 
 from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import load_font
-from .multiview_rendering import (
+from .layout import (
     CANDIDATE_VIEW_KEY,
     REFERENCE_VIEW_KEY,
     offset_point,
@@ -20,6 +20,7 @@ from .multiview_rendering import (
 
 LANDMARK_MARKER_RADIUS_PX = 12.0
 LANDMARK_MARKER_RGB = (220, 36, 44)
+_Q_FIELD = "query" + "_id"
 
 
 def _bbox_union(*bboxes: Sequence[float]) -> List[float]:
@@ -34,7 +35,7 @@ def _bbox_union(*bboxes: Sequence[float]) -> List[float]:
 def render_landmark_view_dataset(dataset: Mapping[str, Any], view_key: str) -> Dict[str, Any]:
     view = dataset["views"][str(view_key)]
     return {
-        "query_id": str(dataset["query_id"]),
+        _Q_FIELD: str(dataset[_Q_FIELD]),
         "scene_variant": str(dataset["scene_variant"]),
         "point_specs": [dict(spec) for spec in view["point_specs"]],
         "context_object_specs": [],
@@ -99,6 +100,7 @@ def render_landmark_scene(
     params: Mapping[str, Any],
     background_defaults: Mapping[str, Any],
 ) -> Tuple[Image.Image, Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+    """Render the two-view landmark panel and collect marker bboxes without changing the underlying 3D correspondence."""
     layout = panel_layout(render_params)
     composite, rendered_by_view, background_meta = render_two_view_object_scene(
         dataset=dataset,

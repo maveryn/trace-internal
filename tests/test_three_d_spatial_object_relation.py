@@ -48,10 +48,10 @@ def test_object_relation_answer_and_annotation(query_id: str) -> None:
     assert not any(spec["is_answer_candidate"] for spec in context_specs)
     assert reference_spec["nameable_for_prompt"]
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_labels[0])
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_labels[0]] == (
-        output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
-    )
+    expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
+    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_labels[0]] == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         point_specs,
@@ -83,4 +83,4 @@ def test_object_relation_task_registered_in_three_d_taxonomy() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_scene_id == "object_scene"
+    assert not taxonomy.source_scene_id

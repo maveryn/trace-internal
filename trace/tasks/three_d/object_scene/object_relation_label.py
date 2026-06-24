@@ -163,6 +163,7 @@ def _build_relation_scene_dataset(
     instance_seed: int,
     camera_yaw_band: Tuple[float, float] | None = None,
 ) -> Dict[str, Any]:
+    """Build an object-relation scene where exactly one labeled candidate satisfies the target spatial relation."""
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     relation_index = SUPPORTED_QUERY_IDS.index(str(query_id))
     selected_camera_yaw_band = (
@@ -384,6 +385,7 @@ class ThreeDSpatialObjectRelationLabelTask:
     """Choose the small lettered 3D object in a relation to a named prop."""
 
     task_id = TASK_ID
+    supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True
 
@@ -409,6 +411,7 @@ class ThreeDSpatialObjectRelationLabelTask:
         params: Dict[str, Any],
         camera_yaw_band: Tuple[float, float] | None = None,
     ) -> TaskOutput:
+        """Generate one object-relation instance from a relation-valid dataset and scalar target bbox annotation."""
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
@@ -500,13 +503,6 @@ class ThreeDSpatialObjectRelationLabelTask:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -518,15 +514,8 @@ class ThreeDSpatialObjectRelationLabelTask:
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
+            dynamic_slots={
                 "reference_name": str(dataset["reference_object_name"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
             instance_seed=int(instance_seed),
         )

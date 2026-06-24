@@ -49,7 +49,7 @@ from ..shared.object_scene import (
     _sample_camera,
     _sample_scene_object_specs,
 )
-from .shared.multiview_rendering import (
+from .shared.layout import (
     CANDIDATE_VIEW_KEY,
     REFERENCE_VIEW_KEY,
     offset_bbox as _offset_bbox,
@@ -147,6 +147,7 @@ def _canonicalize_specs(
     target_index: int,
     rng,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], str]:
+    """Canonicalize multiview object specs so both views share stable object identity and comparable distractors."""
     labels = [str(label) for label in POINT_LABELS[: len(candidate_specs)]]
     remaining_labels = [str(label) for label in labels if str(label) != str(answer_label)]
     rng.shuffle(remaining_labels)
@@ -215,6 +216,7 @@ def _view_is_valid(
     frame,
     panel_params: _RenderParams,
 ) -> bool:
+    """Validate one projected view against readability and uniqueness constraints before accepting a multiview sample."""
     candidate_bboxes_by_id = {
         str(spec["object_id"]): _object_screen_bbox(spec, camera, frame, pad_px=12.0)
         for spec in candidate_specs
@@ -261,6 +263,7 @@ def _build_multiview_scene_dataset(
     render_params: _RenderParams,
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Build two camera views of the same 3D scene with one answer candidate matching the reference object."""
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     view_a_yaw_band, view_b_yaw_band = _camera_yaw_bands_for_instance(int(instance_seed))
     answer_label = str(POINT_LABELS[abs(int(instance_seed)) % int(point_count)])
@@ -412,6 +415,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
     """Match a red-boxed object across two camera views of the same 3D scene."""
 
     task_id = TASK_ID
+    supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True
 
@@ -430,6 +434,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts: {last_error}")
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
+        """Generate one multiview object-match instance with answer label and bbox map tied to the two accepted panels."""
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
@@ -529,13 +534,6 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -547,21 +545,14 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
+            dynamic_slots={
             },
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        annotation_gt = TypedValue(type="keyed_bbox_map", value=dict(annotation_bbox_map))
+        annotation_gt = TypedValue(type="bbox_map", value=dict(annotation_bbox_map))
         solver_trace = dict(dataset["solver_trace"])
         reference_maps = _shift_render_maps(rendered_reference, panel=reference_panel)
         candidate_maps = _shift_render_maps(rendered_candidate, panel=candidate_panel)
@@ -698,9 +689,9 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
                 "answer_label": str(answer_label),
             },
             "projected_annotation": {
-                "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(annotation_bbox_map),
-                "pixel_keyed_bbox_map": dict(annotation_bbox_map),
+                "type": "bbox_map",
+                "bbox_map": dict(annotation_bbox_map),
+                "pixel_bbox_map": dict(annotation_bbox_map),
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),

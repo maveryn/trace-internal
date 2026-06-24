@@ -35,7 +35,6 @@ def test_counterfactual_attribute_count_answer_and_annotation() -> None:
     output = task.generate(
         20260529,
         params={
-            "query_id": "attribute_count_after_edits",
             "scene_variant": "floor_grid_room",
             "object_count": 13,
             "target_count": 4,
@@ -54,7 +53,7 @@ def test_counterfactual_attribute_count_answer_and_annotation() -> None:
     target_delta = sum(int(step["target_delta"]) for step in trace["counterfactual_steps"])
 
     assert output.scene_id == "object_scene"
-    assert output.query_id == "attribute_count_after_edits"
+    assert output.query_id == "single"
     assert output.answer_gt.type == "integer"
     assert output.annotation_gt.type == "bbox_set"
     assert trace["target_predicate_kind"] == "color_object"
@@ -90,7 +89,6 @@ def test_counterfactual_attribute_count_generates_object_only_target_with_two_st
     output = task.generate(
         20260530,
         params={
-            "query_id": "attribute_count_after_edits",
             "scene_variant": "studio_platform",
             "object_count": 12,
             "target_count": 3,
@@ -123,7 +121,6 @@ def test_counterfactual_attribute_count_generates_color_only_target_with_one_ste
     output = task.generate(
         20260531,
         params={
-            "query_id": "attribute_count_after_edits",
             "scene_variant": "tabletop_room",
             "object_count": 12,
             "target_count": 3,
@@ -157,4 +154,4 @@ def test_counterfactual_attribute_count_task_registered_in_three_d_taxonomy() ->
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_scene_id == "object_scene"
+    assert not taxonomy.source_scene_id

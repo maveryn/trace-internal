@@ -4,20 +4,25 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query id: `single`
+- Supported `query_id`: `single`
 - Answer type: `integer`
-- Annotation type: unordered `bbox_set`
+- Annotation type: `bbox_set`
+- Annotation schema: `bbox_set`
+
+## Program Contract
+`count(filter(object_scene_objects, object_type = target_type OR color = target_color)); scene=object_scene; scope=multi_attribute_or_count`
 
 ## Contract
-The image shows the shared open synthetic perspective 3D object scene with many unlettered small 3D objects.
+The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
 
-The prompt asks for the count of objects satisfying an inclusive OR over object type and color, such as objects that are cubes or red. Objects satisfying both attributes are counted once. Generation includes objects matching type only, color only, both, and neither so the inclusive-OR contract is visually grounded.
+The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
 ## Annotation Contract
-Annotation is a `bbox_set` containing one whole-object bounding box for each counted object. Annotation cardinality equals the integer answer.
+Annotation is an unordered `bbox_set` containing one box around each counted object. The set may be empty when the answer is zero.
+All witnesses have the same counted-object role, so ordering is not meaningful.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`. The trace records color/type metadata, target predicate spec, per-object predicate status, target object ids, projected object boxes, and the solver count predicate.
+The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and annotation come from the same finalized 3D scene trace.

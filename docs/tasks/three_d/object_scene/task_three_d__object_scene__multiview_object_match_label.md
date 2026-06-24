@@ -4,26 +4,25 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query id: `single`
+- Supported `query_id`: `single`
 - Answer type: `option_letter`
-- Annotation type: role-keyed `keyed_bbox_map`
+- Annotation type: `bbox_map`
+- Annotation schema: `bbox_map`
+
+## Program Contract
+`select(label(second_view_objects, canonical_object_id = reference_view_object_id)); scene=object_scene; scope=multiview_object_match_label`
 
 ## Contract
-The image shows two side-by-side perspective views of the same finalized synthetic 3D object scene. The left view hides option letters and marks one source object with a red box. The right view shows the same answer-candidate objects with option letters.
+The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
 
-The prompt asks which lettered object in the right view is the same physical object as the red-boxed object in the left view. The answer is computed from stable object identity in metadata: the right-view candidate whose `canonical_object_id` matches the red-boxed left-view object. The task does not use pixels as verifier source of truth.
-
-Each instance uses `6` compact lettered candidate objects by default. Larger props are omitted in this first multiview task so candidate visibility stays reliable across both camera projections. Candidate placement and dimensions use a multiview readability profile that keeps objects closer to the panel camera and large enough after projection. Candidate colors and dimensions are fixed per canonical object before both camera projections, so the same object has consistent appearance across views. The two cameras are sampled from separated orbit bands and generation records both camera poses, projection frames, per-view object specs, and yaw separation.
+The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
 ## Annotation Contract
-Annotation is a `keyed_bbox_map` with:
-- `reference_view_object`: bbox around the red-boxed object in the left/source view.
-- `second_view_match`: bbox around the matched lettered object in the right/candidate view.
-
-Keyed annotation is required because the two witness boxes have distinct source-vs-target roles. The red-box annotation itself is render guidance; the verifier uses finalized object metadata and projected object boxes.
+Annotation is a `bbox_map` with distinct reference-view and second-view matched object roles.
+Map keys bind the source-view object and the matching second-view object, which are not interchangeable.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`. The trace records canonical object ids, answer label, target object id/name/shape, both view cameras, both projection frames, per-view projected object boxes, and the candidate-label map used by the verifier.
+The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and annotation come from the same finalized 3D scene trace.

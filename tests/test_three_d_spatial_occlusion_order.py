@@ -15,7 +15,6 @@ def test_occlusion_order_answer_and_annotation() -> None:
     output = task.generate(
         20260521,
         params={
-            "query_id": "in_front_of_reference",
             "scene_variant": "floor_grid_room",
             "point_count": 6,
             "context_object_count": 1,
@@ -32,7 +31,7 @@ def test_occlusion_order_answer_and_annotation() -> None:
     reference_id = str(trace["reference_object_id"])
     reference_spec = next(spec for spec in context_specs if str(spec["object_id"]) == reference_id)
     assert output.scene_id == "object_scene"
-    assert output.query_id == "in_front_of_reference"
+    assert output.query_id == "single"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == expected_labels[0]
     assert len(expected_labels) == 1
@@ -45,10 +44,10 @@ def test_occlusion_order_answer_and_annotation() -> None:
     assert str(reference_spec["prompt_name"]) == str(trace["reference_object_name"])
     assert str(reference_spec["shape_type"]) != "open_box"
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_labels[0])
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_labels[0]] == (
-        output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
-    )
+    expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
+    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_labels[0]] == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         point_specs,
@@ -76,4 +75,4 @@ def test_occlusion_order_task_registered_in_three_d_taxonomy() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_scene_id == "object_scene"
+    assert not taxonomy.source_scene_id

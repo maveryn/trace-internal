@@ -6,33 +6,33 @@ import math
 from collections import Counter
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from .....core.seed import spawn_rng
-from .....core.scene_config import (
+from ....core.seed import spawn_rng
+from ....core.scene_config import (
     get_domain_defaults,
     get_scene_defaults,
     resolve_scene_section_defaults,
 )
-from .....core.types import TypedValue
-from .....core.visual.background import make_background_canvas
-from .....core.visual.noise import apply_post_image_noise
-from ....base import TaskOutput
-from ....shared.config_defaults import (
+from ....core.types import TypedValue
+from ....core.visual.background import make_background_canvas
+from ....core.visual.noise import apply_post_image_noise
+from ...base import TaskOutput
+from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
-from ....shared.deterministic_sampling import resolve_selection_index
-from ....shared.named_colors import available_named_colors
-from ....shared.output_metadata import default_task_versions
-from ....shared.prompt_variants import (
+from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.named_colors import available_named_colors
+from ...shared.output_metadata import default_task_versions
+from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
-from ...shared.task_support import normalize_unit as _normalize_unit
-from ...shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
-from ...shared.task_support import resolve_count as _shared_resolve_count
-from ...shared.object_scene import (
+from .task_support import normalize_unit as _normalize_unit
+from .task_support import resolve_axis_variant as _shared_resolve_axis_variant
+from .task_support import resolve_count as _shared_resolve_count
+from .object_scene import (
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
     _RenderParams,
@@ -701,6 +701,8 @@ def _resolve_task_defaults(task_id: str) -> Tuple[Mapping[str, Any], Mapping[str
         _SCENE_DEFAULTS if isinstance(_SCENE_DEFAULTS, Mapping) else {},
         task_id=str(task_id),
     )
+    visual_defaults = _DOMAIN_DEFAULTS.get("visual", {}) if isinstance(_DOMAIN_DEFAULTS, Mapping) else {}
+    return dict(gen_defaults), dict(render_defaults), dict(prompt_defaults), dict(visual_defaults)
 
 
 class _ThreeDSpatialLogicalPredicateCountBase:
@@ -728,6 +730,7 @@ class _ThreeDSpatialLogicalPredicateCountBase:
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
         task_id = str(self.task_id)
+        gen_defaults, render_defaults, prompt_defaults_config, _visual_defaults = _resolve_task_defaults(task_id)
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=task_id,
@@ -823,13 +826,6 @@ class _ThreeDSpatialLogicalPredicateCountBase:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -841,8 +837,7 @@ class _ThreeDSpatialLogicalPredicateCountBase:
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
+            dynamic_slots={
                 "target_shape_type": str(dataset.get("target_shape_type") or ""),
                 "target_object_name": str(dataset.get("target_object_name") or ""),
                 "target_object_plural": str(dataset.get("target_object_plural") or ""),
@@ -850,12 +845,6 @@ class _ThreeDSpatialLogicalPredicateCountBase:
                 "target_color_name": str(dataset.get("target_color_name") or ""),
                 "target_color_union_phrase": str(dataset.get("target_color_union_phrase") or ""),
                 "target_property_phrase": str(dataset["target_property_phrase"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
             instance_seed=int(instance_seed),
         )

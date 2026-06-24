@@ -28,7 +28,11 @@ def assert_option_panel_matches_candidates(
     choice_by_label = {str(choice["label"]): choice for choice in choices}
     option_bboxes = dict(render_map["option_choice_bboxes_px"])
     panel_bbox = [float(value) for value in render_map["option_panel_bbox_px"]]
-    annotation_bbox = [float(value) for value in output.annotation_gt.value[0]]
+    if output.annotation_gt.type == "bbox":
+        annotation_bboxes = [list(output.annotation_gt.value)]
+    else:
+        annotation_bboxes = [list(bbox) for bbox in output.annotation_gt.value]
+    annotation_bbox = [float(value) for value in annotation_bboxes[0]]
     image_width, image_height = output.image.size
 
     assert_three_d_canvas_contract(output)
@@ -50,7 +54,7 @@ def assert_option_panel_matches_candidates(
         assert str(choice_by_label[label]["descriptor"]).strip()
         assert str(choice_by_label[label]["object_name"]).strip()
 
-    assert output.annotation_gt.value == [render_map["object_bboxes_px"][str(answer_object_id)]]
+    assert annotation_bboxes == [render_map["object_bboxes_px"][str(answer_object_id)]]
     assert str(answer_label) in option_bboxes
     assert annotation_bbox[3] <= panel_bbox[1]
-    assert output.annotation_gt.value[0] != option_bboxes[str(answer_label)]
+    assert annotation_bboxes[0] != option_bboxes[str(answer_label)]

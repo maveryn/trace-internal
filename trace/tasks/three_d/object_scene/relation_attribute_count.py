@@ -136,6 +136,7 @@ def _make_sampled_object(
     base_z: float = 0.0,
     matches_query: bool = False,
 ) -> Dict[str, Any]:
+    """Create one relation-count object spec with attributes recorded for metadata-based relation filtering."""
     dimensions_xyz, dimension_scale = _sample_shape_dimensions(str(shape_type), object_role=str(object_role), rng=rng)
     if str(object_role) == "candidate":
         dimensions_xyz = _scale_dimensions(dimensions_xyz, RELATION_SMALL_DIMENSION_SCALE)
@@ -278,6 +279,7 @@ def _sample_countable_specs(
     target_count: int,
     object_count: int,
 ) -> List[Dict[str, Any]]:
+    """Sample candidate and distractor specs so the scoped relation count has the requested unique answer range."""
     target_base_z = _target_base_z(str(query_id), reference_spec)
     ref_x, ref_y, _ref_z = (float(value) for value in reference_spec["world_xyz"])
     target_shape_pool = list(_countable_shape_pool(str(query_id), matches_query=True))
@@ -406,6 +408,7 @@ def _build_relation_count_scene_dataset(
     render_params: _RenderParams,
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Build a relation-count scene whose countable set is defined by spatial relation and object metadata."""
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     selected_camera_yaw_band = _camera_yaw_band_for_instance(int(instance_seed))
     for _attempt in range(520):
@@ -535,6 +538,7 @@ class ThreeDObjectSceneRelationAttributeCountTask:
     """Count small objects in a spatial relation to one named prop."""
 
     task_id = TASK_ID
+    supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True
 
@@ -560,6 +564,7 @@ class ThreeDObjectSceneRelationAttributeCountTask:
         params: Dict[str, Any],
         camera_yaw_band: Tuple[float, float] | None = None,
     ) -> TaskOutput:
+        """Generate one relation-count instance with bbox-set annotation for exactly the counted objects."""
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
@@ -666,13 +671,6 @@ class ThreeDObjectSceneRelationAttributeCountTask:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -684,15 +682,8 @@ class ThreeDObjectSceneRelationAttributeCountTask:
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
+            dynamic_slots={
                 "reference_name": str(dataset["reference_object_name"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
             instance_seed=int(instance_seed),
         )

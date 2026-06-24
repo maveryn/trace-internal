@@ -4,20 +4,25 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query ids: `left_of_reference_in_view_count`, `right_of_reference_in_view_count`
+- Supported `query_id`: `left_of_reference_in_view_count`, `right_of_reference_in_view_count`
 - Answer type: `integer`
-- Annotation type: unordered `bbox_set`
+- Annotation type: `bbox_set`
+- Annotation schema: `bbox_set`
+
+## Program Contract
+`count(filter(candidate_objects, image_plane_side_of_reference = requested_side)); scene=object_scene; scope=image_plane_lateral_relation_count`
 
 ## Contract
-The image shows the shared open synthetic perspective 3D object scene with many unlettered prompt-name-safe small 3D objects.
+The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
 
-The prompt names one unique reference object and asks how many other small objects appear to its left or right in the final image. Left/right is explicitly image-plane relative, not world-axis relative and not the reference object's own left/right. The answer is computed from finalized projected screen-center x coordinates with minimum margins around the reference.
+The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
 ## Annotation Contract
-Annotation is a `bbox_set` containing one whole-object bounding box for each counted object. The named reference object is recorded in trace metadata but excluded from prompt-facing annotation.
+Annotation is an unordered `bbox_set` containing one box around each counted object. The set may be empty when the answer is zero.
+All witnesses have the same counted-object role, so ordering is not meaningful.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`. Left/right templates must include `in the image` or equivalent image-plane wording. The trace records camera pose, projected centers, reference id/name, per-object relation status, target object ids, projected boxes, and the solver count predicate.
+The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and annotation come from the same finalized 3D scene trace.

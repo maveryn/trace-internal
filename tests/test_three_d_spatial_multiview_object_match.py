@@ -19,7 +19,6 @@ def test_multiview_object_match_answer_and_annotation() -> None:
     output = task.generate(
         20260529,
         params={
-            "query_id": "same_object_in_second_view",
             "scene_variant": "floor_grid_room",
             "point_count": 6,
             "context_object_count": 0,
@@ -36,16 +35,16 @@ def test_multiview_object_match_answer_and_annotation() -> None:
     candidate_labels = dict(solver_trace["candidate_labels_by_object_id"])
 
     assert output.scene_id == "object_scene"
-    assert output.query_id == "same_object_in_second_view"
+    assert output.query_id == "single"
     assert output.answer_gt.type == "option_letter"
     assert answer_label == str(candidate_labels[target_object_id])
-    assert output.annotation_gt.type == "keyed_bbox_map"
+    assert output.annotation_gt.type == "bbox_map"
     assert set(output.annotation_gt.value) == {"reference_view_object", "second_view_match"}
     assert output.annotation_gt.value["reference_view_object"] == render_map["reference_view_object_bbox_px"]
     assert output.annotation_gt.value["second_view_match"] == render_map["second_view_match_bbox_px"]
-    assert output.trace_payload["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert output.trace_payload["projected_annotation"]["keyed_bbox_map"] == output.annotation_gt.value
-    assert output.trace_payload["projected_annotation"]["pixel_keyed_bbox_map"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["type"] == "bbox_map"
+    assert output.trace_payload["projected_annotation"]["bbox_map"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["pixel_bbox_map"] == output.annotation_gt.value
     assert len(trace["canonical_point_specs"]) == 6
     assert len(trace["canonical_context_object_specs"]) == 0
     assert set(trace["views"]) == {REFERENCE_VIEW_KEY, CANDIDATE_VIEW_KEY}
@@ -66,4 +65,4 @@ def test_multiview_object_match_task_registered_in_three_d_taxonomy() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_scene_id == "object_scene"
+    assert not taxonomy.source_scene_id

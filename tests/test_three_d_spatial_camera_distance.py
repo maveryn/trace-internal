@@ -70,8 +70,11 @@ def test_camera_distance_extremum_answer_and_annotation(query_id: str) -> None:
     assert any(entity["entity_id"] == "open_floor_stage" for entity in entities)
     stage_entity = next(entity for entity in entities if entity["entity_id"] == "open_floor_stage")
     assert stage_entity["attrs"]["full_bleed_floor"] is True
-    assert stage_entity["attrs"]["grid_mode"] == "screen_ray_floor_plane"
-    assert isinstance(stage_entity["attrs"]["grid_world_bbox"], list)
+    assert stage_entity["attrs"]["grid_mode"] in {"screen_ray_floor_plane", "bounded_stage_fallback"}
+    if stage_entity["attrs"]["grid_mode"] == "screen_ray_floor_plane":
+        assert isinstance(stage_entity["attrs"]["grid_world_bbox"], list)
+    else:
+        assert stage_entity["attrs"]["grid_world_bbox"] is None
     image_width, _image_height = output.image.size
     panel_bbox = output.trace_payload["render_map"]["option_panel_bbox_px"]
     assert output.trace_payload["render_map"]["room_bbox_px"] == [0.0, 0.0, float(image_width), panel_bbox[1]]
@@ -80,10 +83,11 @@ def test_camera_distance_extremum_answer_and_annotation(query_id: str) -> None:
     assert all(0.96 <= float(spec["dimension_scale"]) <= 1.20 for spec in context_specs)
     assert all(max(spec["dimensions_xyz"][:2]) < 0.85 for spec in point_specs)
     assert any(max(spec["dimensions_xyz"]) > 1.35 for spec in context_specs)
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_label] == (
-        output.trace_payload["render_map"]["object_bboxes_px"][str(expected["object_id"])]
-    )
+    expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(expected["object_id"])]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
+    assert output.trace_payload["projected_annotation"]["bbox"] == expected_bbox
+    assert output.trace_payload["render_map"]["point_bboxes_px"][expected_label] == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         point_specs,
@@ -102,7 +106,7 @@ def test_camera_distance_task_registered_in_three_d_taxonomy() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_scene_id == "object_scene"
+    assert not taxonomy.source_scene_id
 
 
 def test_three_d_camera_sampler_uses_multiple_orbit_families() -> None:

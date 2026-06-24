@@ -4,24 +4,25 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query id: `single`
+- Supported `query_id`: `single`
 - Answer type: `option_letter`
-- Annotation type: role-keyed `keyed_point_map`
+- Annotation type: `point`
+- Annotation schema: `point`
+
+## Program Contract
+`select(label(marked_points, vertically_above(reference_object))); scene=object_scene; scope=marked_point_vertical_relation_label`
 
 ## Contract
-The image shows the shared open synthetic perspective 3D object scene with a gridded floor or platform, uniquely named unlettered small 3D objects, and six lettered point markers `A-F`.
+The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
 
-The prompt names one unique small reference object and asks which lettered point is directly above that object in 3D space. The reference object is chosen from a restricted stable-reference small-object pool where a vertical center/top relation is visually meaningful. Other scene objects may use the full prompt-name-safe small-object pool.
-
-The relation is world-vertical, not screen-relative. The answer marker has the same floor-plane `x/y` center as the reference object and a greater `z` coordinate above the reference. Distractor markers are offset from the reference in floor-plane coordinates by a recorded minimum margin.
+The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
 ## Annotation Contract
-Annotation is a `keyed_point_map` with key `selected_point`; the value is the pixel point at the center of the selected marker letter. The reference object id, name, projected bbox, and center are recorded in trace/render metadata but are not prompt-facing annotation.
+Annotation is a scalar `point` at the selected marked point center.
+The selected marker center is the only visual witness; marker label text is used only to identify the answer option.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`. Query templates must say `directly above`, `vertically above`, or equivalent wording and include the named reference object.
-
-The trace records camera pose, projection frame, reference object id/name/shape, reference prompt-name count, per-object world coordinates and projected bboxes, per-marker world coordinates, projected marker centers, the answer marker id/label, and per-label floor-plane offsets from the reference object.
+The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and annotation come from the same finalized 3D scene trace.

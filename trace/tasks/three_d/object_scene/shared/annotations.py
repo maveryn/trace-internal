@@ -34,6 +34,7 @@ def draw_marked_points(
     marked_points: Sequence[Mapping[str, Any]],
     render_params: _RenderParams,
 ) -> Tuple[Image.Image, Dict[str, Any], List[Dict[str, Any]]]:
+    """Draw marked-point labels and return their visual records; marker glyph bboxes are the annotation witnesses."""
     output = image.convert("RGB")
     draw = ImageDraw.Draw(output)
     marker_radius = max(12.0, float(render_params.marker_radius_px) * 0.66)

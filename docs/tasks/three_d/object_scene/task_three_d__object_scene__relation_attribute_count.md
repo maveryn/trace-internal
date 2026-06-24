@@ -4,27 +4,25 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query ids: `on_top_of_reference_count`, `under_reference_count`, `inside_reference_count`
+- Supported `query_id`: `single`
 - Answer type: `integer`
-- Annotation type: unordered `bbox_set`
+- Annotation type: `bbox_set`
+- Annotation schema: `bbox_set`
+
+## Program Contract
+`count(filter(candidate_objects, spatial_relation_to_reference = requested_relation)); scene=object_scene; scope=relation_attribute_count`
 
 ## Contract
-The image shows the shared open synthetic perspective 3D object scene with a gridded floor or platform, one named unlettered reference prop, and many unlettered small 3D objects.
+The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
 
-The prompt asks how many small objects satisfy one relation to the named reference prop:
-- `on_top_of_reference_count`: count small objects on top of a table or shelf.
-- `under_reference_count`: count small objects under a table or arch.
-- `inside_reference_count`: count small objects inside an open box.
-
-The reference-prop pool is intentionally narrow. Furniture-sized props such as refrigerators, vending machines, sofas, cabinets, lockers, pianos, barrels, and trash bins are excluded because their support/container relation is visually ambiguous or likely to hide countable objects.
-
-Generation places `10-12` small countable objects by default, with `2-3` true relation matches. No option letters are drawn. The answer is computed from finalized 3D metadata: each countable object's world coordinates, base height, footprint relation to the reference prop, and relation branch. Pixels are render output, not verifier source of truth.
+The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
 ## Annotation Contract
-Annotation is a `bbox_set` containing one whole-object bounding box for each counted small object. The reference prop is named in the prompt and recorded in trace metadata, but it is not included in prompt-facing annotation.
+Annotation is an unordered `bbox_set` containing one box around each counted object. The set may be empty when the answer is zero.
+All witnesses have the same counted-object role, so ordering is not meaningful.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`. The trace records camera pose, projection frame, reference prop id/name/shape, per-object world coordinates, relation truth values, target object ids, projected boxes, and the solver count predicate.
+The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and annotation come from the same finalized 3D scene trace.

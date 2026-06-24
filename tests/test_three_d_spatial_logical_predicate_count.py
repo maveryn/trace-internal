@@ -9,7 +9,7 @@ from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.shared.named_colors import available_named_colors
-from trace.tasks.three_d.object_scene.shared.logical_predicate_count import (
+from trace.tasks.three_d.shared.object_scene_logical_predicate_count import (
     MULTI_ATTRIBUTE_AND_COUNT_TASK_ID,
     MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
     MULTI_ATTRIBUTE_OR_COUNT_TASK_ID,
@@ -83,16 +83,18 @@ def _spec_matches_target(spec: dict, target_spec: dict) -> bool:
 )
 def test_logical_predicate_count_answer_and_annotation(query_id: str, params: dict) -> None:
     task = create_task(TASK_ID_BY_QUERY_ID[query_id])
+    request_params = {
+        "scene_variant": "floor_grid_room",
+        "object_count": 13,
+        "target_count": 4,
+        "post_image_noise_apply_prob": 0.0,
+        **params,
+    }
+    if len(tuple(getattr(task, "supported_query_ids", ()))) > 1:
+        request_params["query_id"] = query_id
     output = task.generate(
         20260531 + len(query_id),
-        params={
-            "query_id": query_id,
-            "scene_variant": "floor_grid_room",
-            "object_count": 13,
-            "target_count": 4,
-            "post_image_noise_apply_prob": 0.0,
-            **params,
-        },
+        params=request_params,
         max_attempts=220,
     )
 
@@ -108,7 +110,8 @@ def test_logical_predicate_count_answer_and_annotation(query_id: str, params: di
     ]
 
     assert output.scene_id == "object_scene"
-    assert output.query_id == query_id
+    assert output.query_id == (query_id if "query_id" in request_params else "single")
+    assert target_spec["query_id"] == query_id
     assert output.answer_gt.type == "integer"
     assert output.answer_gt.value == 4
     assert output.answer_gt.value == len(target_object_ids)
@@ -134,4 +137,4 @@ def test_logical_predicate_count_task_registered_in_three_d_taxonomy(task_id: st
     assert task_id in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == "object_scene"
-    assert taxonomy.source_scene_id == "object_scene"
+    assert not taxonomy.source_scene_id

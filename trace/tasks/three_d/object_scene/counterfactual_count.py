@@ -259,6 +259,7 @@ def _sample_shape_color_sequence(
     target_count: int,
     object_count: int,
 ) -> List[Tuple[str, str, bool]]:
+    """Sample a deterministic object/color sequence for counterfactual edits while preserving unique count outcomes."""
     color_names = list(PROMPT_COLOR_RGB)
     shape_types = list(COLOR_SAFE_SHAPE_TYPES)
     matching_pairs = [key for key in _all_exact_property_keys() if _predicate_matches_key(target_predicate, key)]
@@ -448,6 +449,7 @@ def _sample_edit_step(
     target_predicate: Mapping[str, Any],
     relation: str,
 ) -> Dict[str, Any]:
+    """Sample one textual edit whose before and after counts remain metadata-defined and uniquely answerable."""
     candidate_predicates = _candidate_edit_predicates(target_predicate, relation=str(relation))
     rng.shuffle(candidate_predicates)
     prefer_remove = bool(rng.random() < 0.45)
@@ -546,6 +548,7 @@ def _build_counterfactual_count_scene_dataset(
     render_params: _RenderParams,
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Build the visible pre-edit scene and counterfactual trace from the same object records used by the verifier."""
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     selected_camera_yaw_band = _camera_yaw_band_for_instance(int(instance_seed))
     for _attempt in range(520):
@@ -672,6 +675,7 @@ class ThreeDObjectSceneCounterfactualCountTask:
     """Count a color/object property after textual add/remove edits."""
 
     task_id = TASK_ID
+    supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True
 
@@ -693,6 +697,7 @@ class ThreeDObjectSceneCounterfactualCountTask:
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts: {last_error}")
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
+        """Generate one counterfactual count instance with the edit, prompt, answer, and annotation bound to the accepted scene trace."""
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
@@ -869,13 +874,6 @@ class ThreeDObjectSceneCounterfactualCountTask:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -887,16 +885,9 @@ class ThreeDObjectSceneCounterfactualCountTask:
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
+            dynamic_slots={
                 "target_property_phrase": str(dataset["target_property_phrase"]),
                 "edit_steps_text": str(dataset["edit_steps_text"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
             instance_seed=int(instance_seed),
         )

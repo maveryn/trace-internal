@@ -180,6 +180,7 @@ def _build_height_scene_dataset(
     answer_label_index: int | None = None,
     camera_yaw_band: Tuple[float, float] | None = None,
 ) -> Dict[str, Any]:
+    """Build a height-extremum scene where rendered object heights yield exactly one highest or lowest labeled candidate."""
     if int(point_count) != len(SUPPORT_PLACEMENTS):
         raise ValueError(f"{TASK_ID} expects {len(SUPPORT_PLACEMENTS)} option-panel candidates")
     if int(context_object_count) != len(SUPPORT_PLACEMENTS) - 1:
@@ -411,6 +412,7 @@ class ThreeDSpatialHeightExtremumLabelTask:
     """Choose the lettered 3D object highest or lowest above the floor."""
 
     task_id = TASK_ID
+    supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True
 
@@ -443,6 +445,7 @@ class ThreeDSpatialHeightExtremumLabelTask:
         camera_yaw_band: Tuple[float, float] | None = None,
         answer_seed: int | None = None,
     ) -> TaskOutput:
+        """Generate one height-extremum instance, preserving the accepted object-height ordering in answer and annotation."""
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
@@ -540,13 +543,6 @@ class ThreeDSpatialHeightExtremumLabelTask:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -558,14 +554,7 @@ class ThreeDSpatialHeightExtremumLabelTask:
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
+            dynamic_slots={
             },
             instance_seed=int(instance_seed),
         )

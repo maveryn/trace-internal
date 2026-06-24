@@ -10,7 +10,7 @@ OBJECT_SCENE_TASK_FILES = (
     Path("trace/tasks/three_d/object_scene/multiview_object_match_label.py"),
     Path("trace/tasks/three_d/object_scene/landmark_correspondence_label.py"),
     Path("trace/tasks/three_d/object_scene/camera_distance_extremum_label.py"),
-    Path("trace/tasks/three_d/object_scene/shared/marked_point_common.py"),
+    Path("trace/tasks/three_d/object_scene/shared/labels.py"),
 )
 
 SURFACE_FIXTURE_TASK_FILES = (
@@ -23,9 +23,9 @@ SURFACE_FIXTURE_TASK_FILES = (
 
 
 OBJECT_SCENE_RENDERING_FILES = (
-    Path("trace/tasks/three_d/object_scene/shared/marked_point_rendering.py"),
-    Path("trace/tasks/three_d/object_scene/shared/multiview_rendering.py"),
-    Path("trace/tasks/three_d/object_scene/shared/landmark_rendering.py"),
+    Path("trace/tasks/three_d/object_scene/shared/annotations.py"),
+    Path("trace/tasks/three_d/object_scene/shared/layout.py"),
+    Path("trace/tasks/three_d/object_scene/shared/components.py"),
     Path("trace/tasks/three_d/surface_fixture/shared/rendering.py"),
 )
 

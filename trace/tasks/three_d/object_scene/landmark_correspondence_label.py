@@ -45,20 +45,17 @@ from ..shared.object_scene import (
     _sample_camera,
     _sample_shape_dimensions,
 )
-from .shared.landmark_rendering import LANDMARK_MARKER_RADIUS_PX, render_landmark_scene as _render_landmark_scene
+from .shared.components import LANDMARK_MARKER_RADIUS_PX, render_landmark_scene as _render_landmark_scene
 from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
-from .multiview_object_match_label import (
-    _bbox_area,
-    _bbox_is_readable,
-    _camera_record,
-    _camera_yaw_bands_for_instance,
-    _frame_record,
-    _yaw_separation_degrees,
-)
-from .shared.multiview_rendering import (
+from .shared.layout import (
     CANDIDATE_VIEW_KEY,
     REFERENCE_VIEW_KEY,
+    bbox_area as _bbox_area,
+    bbox_is_readable as _bbox_is_readable,
+    camera_record as _camera_record,
+    camera_yaw_bands_for_instance as _camera_yaw_bands_for_instance,
+    frame_record as _frame_record,
     offset_bbox as _offset_bbox,
     offset_entities as _offset_entities,
     offset_point as _offset_point,
@@ -66,6 +63,7 @@ from .shared.multiview_rendering import (
     panel_layout as _panel_layout,
     panel_render_params as _panel_render_params,
     shift_render_maps as _shift_render_maps,
+    yaw_separation_degrees as _yaw_separation_degrees,
 )
 
 
@@ -250,6 +248,7 @@ def _build_landmark_dataset(
     render_params: _RenderParams,
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Build paired camera views with one reference landmark and one matching candidate landmark under shared 3D geometry."""
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     view_a_yaw_band, view_b_yaw_band = _camera_yaw_bands_for_instance(int(instance_seed) + 11)
     panel_layout = _panel_layout(render_params)
@@ -409,6 +408,7 @@ class ThreeDSpatialLandmarkCorrespondenceLabelTask:
     """Match a marked local landmark across two object views."""
 
     task_id = TASK_ID
+    supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True
 
@@ -427,6 +427,7 @@ class ThreeDSpatialLandmarkCorrespondenceLabelTask:
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts: {last_error}")
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
+        """Generate one landmark correspondence instance where both panels, labels, and point-map annotation share one dataset."""
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
@@ -505,13 +506,6 @@ class ThreeDSpatialLandmarkCorrespondenceLabelTask:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -523,21 +517,14 @@ class ThreeDSpatialLandmarkCorrespondenceLabelTask:
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
+            dynamic_slots={
             },
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        annotation_gt = TypedValue(type="keyed_point_map", value=dict(annotation_point_map))
+        annotation_gt = TypedValue(type="point_map", value=dict(annotation_point_map))
         solver_trace = dict(dataset["solver_trace"])
         reference_maps = _shift_render_maps(rendered_reference, panel=reference_panel)
         candidate_maps = _shift_render_maps(rendered_candidate, panel=candidate_panel)
@@ -736,9 +723,9 @@ class ThreeDSpatialLandmarkCorrespondenceLabelTask:
                 "answer_label": str(answer_label),
             },
             "projected_annotation": {
-                "type": "keyed_point_map",
-                "keyed_point_map": dict(annotation_point_map),
-                "pixel_keyed_point_map": dict(annotation_point_map),
+                "type": "point_map",
+                "point_map": dict(annotation_point_map),
+                "pixel_point_map": dict(annotation_point_map),
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),

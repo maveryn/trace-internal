@@ -4,20 +4,25 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Query ids: `object_type_and_not_color_count`, `color_and_not_object_type_count`
+- Supported `query_id`: `object_type_and_not_color_count`, `color_and_not_object_type_count`
 - Answer type: `integer`
-- Annotation type: unordered `bbox_set`
+- Annotation type: `bbox_set`
+- Annotation schema: `bbox_set`
+
+## Program Contract
+`count(filter(object_scene_objects, requested_attribute AND NOT excluded_attribute)); scene=object_scene; scope=multi_attribute_exclusion_count`
 
 ## Contract
-The image shows the shared open synthetic perspective 3D object scene with many unlettered small 3D objects.
+The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
 
-The prompt asks for the count of objects satisfying one visible attribute while excluding another, such as cubes that are not red or red objects that are not cubes. Generation includes excluded-overlap distractors so the task requires applying the negative condition.
+The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
 ## Annotation Contract
-Annotation is a `bbox_set` containing one whole-object bounding box for each counted object. Objects matching the excluded attribute are not annotation.
+Annotation is an unordered `bbox_set` containing one box around each counted object. The set may be empty when the answer is zero.
+All witnesses have the same counted-object role, so ordering is not meaningful.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_object_scene_v0` under `prompts/three_d/object_scene/`. The trace records color/type metadata, target predicate spec, per-object exclusion status, target object ids, projected object boxes, and the solver count predicate.
+The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and annotation come from the same finalized 3D scene trace.

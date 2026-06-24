@@ -10,30 +10,16 @@ from ....core.seed import spawn_rng
 from ....core.scene_config import (
     get_domain_defaults,
     get_scene_defaults,
-    resolve_scene_section_defaults,
 )
-from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
-from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
-    required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
 from ...shared.deterministic_sampling import resolve_selection_index
-from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import (
-    PROMPT_OUTPUT_MODES,
-    build_prompt_trace_artifacts,
-    render_scene_prompt_variants,
-)
-from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.color_variation import resolve_three_d_object_fill_rgb
-from ..shared.option_panel import apply_independent_prompt_colors_to_dataset, build_text_option_choices
 from ..shared.camera_projection import (
     CameraSpec as _CameraSpec,
     ProjectionFrame as _ProjectionFrame,
@@ -93,8 +79,8 @@ from ..shared.object_scene import (
     _resolve_render_params,
     _sample_scene_object_specs,
     _sample_shape_dimensions,
-    render_object_scene_3d,
 )
+from ..shared.object_scene_output import build_option_label_object_scene_output as _build_option_label_object_scene_output
 
 
 TASK_ID = "task_three_d__object_scene__camera_distance_extremum_label"
@@ -162,6 +148,7 @@ def _build_scene_dataset(
     instance_seed: int,
     camera_yaw_band: Tuple[float, float] | None = None,
 ) -> Dict[str, Any]:
+    """Build a camera-distance extremum scene with one readable nearest or farthest candidate in the rendered view."""
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     selected_camera_yaw_band = (
         tuple(float(value) for value in camera_yaw_band)
@@ -317,6 +304,7 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
     """Choose the lettered 3D object closest to or farthest from the camera."""
 
     task_id = TASK_ID
+    supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True
 
@@ -342,6 +330,7 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
         params: Dict[str, Any],
         camera_yaw_band: Tuple[float, float] | None = None,
     ) -> TaskOutput:
+        """Generate one camera-distance extremum instance from a single accepted projection and scalar target bbox."""
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
@@ -389,202 +378,38 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
             instance_seed=int(instance_seed),
             camera_yaw_band=camera_yaw_band,
         )
-        dataset = apply_independent_prompt_colors_to_dataset(
-            dataset,
-            rng=spawn_rng(int(instance_seed), f"{TASK_ID}.prompt_colors"),
-        )
-        background, background_meta = make_background_canvas(
-            canvas_width=int(render_params.canvas_width),
-            canvas_height=int(render_params.canvas_height),
+        return _build_option_label_object_scene_output(
+            objective_name=TASK_ID,
+            task_domain=self.domain,
             instance_seed=int(instance_seed),
             params=params,
-            default_config=_BACKGROUND_DEFAULTS,
-        )
-        option_choices = build_text_option_choices(dataset["point_specs"])
-        rendered_scene = render_object_scene_3d(
-            background,
             dataset=dataset,
+            branch_key=str(query_id),
+            scene_variant=str(scene_variant),
+            point_count=int(point_count),
+            context_object_count=int(context_object_count),
             render_params=render_params,
-            draw_candidate_labels=False,
-            option_choices=option_choices,
-        )
-        image, post_noise_meta = apply_post_image_noise(
-            rendered_scene.image,
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=_NOISE_DEFAULTS,
+            prompt_defaults_config=_PROMPT_DEFAULTS,
+            background_defaults=_BACKGROUND_DEFAULTS,
+            noise_defaults=_NOISE_DEFAULTS,
+            query_probabilities=query_probabilities,
+            scene_probabilities=scene_probabilities,
+            point_count_probabilities=point_count_probabilities,
+            context_object_count_probabilities=context_object_count_probabilities,
+            dynamic_slots={},
+            relation_fields={
+                "shape_types": [str(spec["shape_type"]) for spec in dataset["object_specs"]],
+                "nameable_candidate_object_names": [
+                    str(spec["object_name"]) for spec in dataset["point_specs"] if bool(spec.get("nameable_for_prompt", False))
+                ],
+                "nameable_context_object_names": [
+                    str(spec["object_name"]) for spec in dataset["context_object_specs"] if bool(spec.get("nameable_for_prompt", False))
+                ],
+            },
+            query_params_extra={},
+            execution_extra={},
         )
 
-        prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
-            (
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
-            ),
-            context=f"prompt defaults for {self.task_id}",
-        )
-        prompt_selection = render_scene_prompt_variants(
-            domain=self.domain,
-            scene_id=SCENE_ID,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_id),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
-            },
-            instance_seed=int(instance_seed),
-        )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
-        answer_label = str(dataset["answer_label"])
-        answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
-        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
-        solver_trace = dict(dataset["solver_trace"])
-
-        trace_payload = {
-            "scene_ir": {
-                "scene_kind": "three_d_object_scene",
-                "entities": [dict(entity) for entity in rendered_scene.entities],
-                "relations": {
-                    "scene_variant": str(scene_variant),
-                    "point_count": int(point_count),
-                    "candidate_count": int(point_count),
-                    "context_object_count": int(context_object_count),
-                    "object_count": int(dataset["object_count"]),
-                    "candidate_shape_types": [str(spec["shape_type"]) for spec in dataset["point_specs"]],
-                    "context_shape_types": [str(spec["shape_type"]) for spec in dataset["context_object_specs"]],
-                    "shape_types": [str(spec["shape_type"]) for spec in dataset["object_specs"]],
-                    "candidate_object_names": [str(spec["object_name"]) for spec in dataset["point_specs"]],
-                    "context_object_names": [str(spec["object_name"]) for spec in dataset["context_object_specs"]],
-                    "nameable_candidate_object_names": [
-                        str(spec["object_name"]) for spec in dataset["point_specs"] if bool(spec.get("nameable_for_prompt", False))
-                    ],
-                    "nameable_context_object_names": [
-                        str(spec["object_name"]) for spec in dataset["context_object_specs"] if bool(spec.get("nameable_for_prompt", False))
-                    ],
-                    "view_family": "synthetic_perspective_3d_scene",
-                    "answer_point_id": str(dataset["answer_point_id"]),
-                    "answer_label": str(answer_label),
-                },
-            },
-            "query_spec": {
-                "query_id": str(query_id),
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "query_id": str(query_id),
-                    "query_id_probabilities": dict(query_probabilities),
-                    "scene_variant": str(scene_variant),
-                    "scene_variant_probabilities": dict(scene_probabilities),
-                    "point_count": int(point_count),
-                    "candidate_count": int(point_count),
-                    "object_count": int(dataset["object_count"]),
-                    "point_count_probabilities": dict(point_count_probabilities),
-                    "context_object_count": int(context_object_count),
-                    "context_object_count_probabilities": dict(context_object_count_probabilities),
-                },
-            },
-            "render_spec": {
-                "canvas_width": int(render_params.canvas_width),
-                "canvas_height": int(image.height),
-                "scene_canvas_preset": str(render_params.canvas_preset),
-                "scene_canvas_width": int(render_params.canvas_width),
-                "scene_canvas_height": int(render_params.canvas_height),
-                "scene_canvas_policy": str(render_params.canvas_policy),
-                "final_canvas_width": int(image.width),
-                "final_canvas_height": int(image.height),
-                "final_canvas_pixels": int(image.width) * int(image.height),
-                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
-                "coord_space": "pixel",
-                "scene_variant": str(scene_variant),
-                "background_style": dict(background_meta),
-                "post_image_noise": dict(post_noise_meta),
-                "camera": dict(dataset["camera"]),
-                "projection_frame": dict(dataset["projection_frame"]),
-                "label_font_size_px": int(render_params.label_font_size_px),
-            },
-            "render_map": {
-                "image_id": "img0",
-                "scene_bbox_px": list(rendered_scene.scene_bbox_px),
-                "room_bbox_px": list(rendered_scene.room_bbox_px),
-                "point_bboxes_px": {str(key): list(value) for key, value in rendered_scene.point_bboxes_px.items()},
-                "point_centers_px": {str(key): list(value) for key, value in rendered_scene.point_centers_px.items()},
-                "option_panel_bbox_px": list(rendered_scene.option_panel_bbox_px),
-                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
-                "option_choice_bboxes_px": {
-                    str(key): list(value) for key, value in rendered_scene.option_choice_bboxes_px.items()
-                },
-                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
-                "object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.object_bboxes_px.items()},
-                "object_centers_px": {str(key): list(value) for key, value in rendered_scene.object_centers_px.items()},
-                "context_object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.context_object_bboxes_px.items()},
-                "context_object_centers_px": {str(key): list(value) for key, value in rendered_scene.context_object_centers_px.items()},
-            },
-            "execution_trace": {
-                "query_id": str(query_id),
-                "scene_variant": str(scene_variant),
-                "point_count": int(point_count),
-                "candidate_count": int(point_count),
-                "context_object_count": int(context_object_count),
-                "object_count": int(dataset["object_count"]),
-                "point_specs": [dict(spec) for spec in dataset["point_specs"]],
-                "context_object_specs": [dict(spec) for spec in dataset["context_object_specs"]],
-                "object_specs": [dict(spec) for spec in dataset["object_specs"]],
-                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
-                "option_descriptor_by_label": {
-                    str(choice["label"]): str(choice["descriptor"])
-                    for choice in rendered_scene.option_choices
-                },
-                "answer_label": str(answer_label),
-                "answer_point_id": str(dataset["answer_point_id"]),
-                "camera": dict(dataset["camera"]),
-                "projection_frame": dict(dataset["projection_frame"]),
-                "question_format": str(query_id),
-                "view_family": "synthetic_perspective_3d_scene",
-                "solver_trace": dict(solver_trace),
-            },
-            "witness_symbolic": {
-                "type": "object_set",
-                "ids": [str(item) for item in rendered_scene.annotation_entity_ids],
-            },
-            "projected_annotation": {
-                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
-            },
-            "background": dict(background_meta),
-            "post_image_noise": dict(post_noise_meta),
-        }
-
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-            answer_gt=answer_gt,
-            annotation_gt=annotation_gt,
-            image=image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
-        )
 
 
 __all__ = ["ThreeDSpatialCameraDistanceExtremumLabelTask"]

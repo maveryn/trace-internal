@@ -119,10 +119,6 @@ def resolve_target_answer(
     return int(target_answer), tuple(int(value) for value in support), dict(probabilities)
 
 
-def _entity_dx(rng) -> float:
-    return float(rng.uniform(-0.20, 0.20))
-
-
 def _entity_dy(rng) -> float:
     return float(rng.uniform(-8.0, 8.0))
 
@@ -133,7 +129,7 @@ def _make_enemy(*, enemy_index: int, lane: int, y_slot: int, rng, score_value: i
         label=str(ENEMY_LABELS[int(enemy_index) % len(ENEMY_LABELS)]),
         lane=int(lane),
         y_slot=int(y_slot),
-        dx_frac=_entity_dx(rng),
+        dx_frac=0.0,
         dy_px=_entity_dy(rng),
         score_value=None if score_value is None else int(score_value),
     )

@@ -7,6 +7,13 @@ from typing import Any, Mapping, Sequence
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
+def _bbox_center(bbox: Sequence[float]) -> tuple[float, float]:
+    return (
+        (float(bbox[0]) + float(bbox[2])) * 0.5,
+        (float(bbox[1]) + float(bbox[3])) * 0.5,
+    )
+
+
 def assert_option_panel_matches_candidates(
     output: Any,
     candidate_specs: Sequence[Mapping[str, Any]],
@@ -46,6 +53,18 @@ def assert_option_panel_matches_candidates(
     assert trace["option_descriptor_by_label"] == {
         str(choice["label"]): str(choice["descriptor"]) for choice in choices
     }
+    text_records = list(
+        output.trace_payload.get("render_spec", {})
+        .get("drawn_text", {})
+        .get("text_legibility", {})
+        .get("records", [])
+    )
+    option_label_records = {
+        str(record.get("option_label")): dict(record)
+        for record in text_records
+        if str(record.get("role")) == "three_d_option_label" and record.get("option_label") is not None
+    }
+    assert sorted(option_label_records) == labels
 
     for spec in candidate_specs:
         label = str(spec["point_label"])
@@ -53,6 +72,11 @@ def assert_option_panel_matches_candidates(
         assert str(choice_by_label[label]["object_id"]) == object_id
         assert str(choice_by_label[label]["descriptor"]).strip()
         assert str(choice_by_label[label]["object_name"]).strip()
+        label_record = option_label_records[label]
+        text_center = _bbox_center(label_record["bbox_px"])
+        badge_center = _bbox_center(label_record["badge_bbox_px"])
+        assert abs(float(text_center[0]) - float(badge_center[0])) <= 1.25
+        assert abs(float(text_center[1]) - float(badge_center[1])) <= 1.25
 
     assert annotation_bboxes == [render_map["object_bboxes_px"][str(answer_object_id)]]
     assert str(answer_label) in option_bboxes

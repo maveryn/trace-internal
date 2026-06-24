@@ -246,20 +246,28 @@ def append_text_option_panel(
             outline=(14, 19, 30),
             width=1,
         )
-        label_bbox = draw.textbbox((0, 0), label, font=font, stroke_width=0)
-        label_w = float(label_bbox[2] - label_bbox[0])
-        label_h = float(label_bbox[3] - label_bbox[1])
+        badge_center = (
+            float(badge_bbox[0] + badge_size * 0.5),
+            float(badge_bbox[1] + badge_size * 0.5),
+        )
+        label_bbox = draw.textbbox(badge_center, label, font=font, stroke_width=0, anchor="mm")
+        label_center = (
+            float(badge_center[0] * 2.0 - (float(label_bbox[0]) + float(label_bbox[2])) * 0.5),
+            float(badge_center[1] * 2.0 - (float(label_bbox[1]) + float(label_bbox[3])) * 0.5),
+        )
         draw_text_traced(
             draw,
-            (
-                float(badge_bbox[0] + badge_size * 0.5 - label_w * 0.5),
-                float(badge_bbox[1] + badge_size * 0.5 - label_h * 0.5 - 1.0),
-            ),
+            label_center,
             label,
             font=font,
             fill=label_text_fill,
+            anchor="mm",
             role="three_d_option_label",
             required=True,
+            extra_metadata={
+                "option_label": str(label),
+                "badge_bbox_px": [round(float(value), 3) for value in badge_bbox],
+            },
         )
         text_xy = (float(x0 + badge_size + 11), float(y0 + 6))
         draw_text_traced(

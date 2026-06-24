@@ -135,7 +135,7 @@ def test_rpg_tactical_map_movement_reachable_tile_contract() -> None:
     assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_tactical_map"
 
 
-def test_rpg_tactical_map_movement_distractors_stay_near_answer() -> None:
+def test_rpg_tactical_map_movement_distractors_are_plausible_and_spread() -> None:
     task = create_task(TASK_ID)
     for seed in (2026062401, 2026062402, 2026062403, 23, 93):
         for profile in ("landscape", "square", "portrait"):
@@ -150,7 +150,6 @@ def test_rpg_tactical_map_movement_distractors_stay_near_answer() -> None:
             render_map = out.trace_payload["render_map"]
             tiles_by_id = {str(tile["tile_id"]): tile for tile in out.trace_payload["scene_ir"]["tiles"]}
             answer_label = str(out.answer_gt.value)
-            answer_tile = tiles_by_id[str(render_map["candidate_tile_ids_by_label"][answer_label])]
 
             reachable_labels = [
                 label
@@ -159,13 +158,17 @@ def test_rpg_tactical_map_movement_distractors_stay_near_answer() -> None:
             ]
             assert reachable_labels == [answer_label]
 
-            distractor_distances = []
+            candidate_coords: list[tuple[int, int]] = []
             for label, tile_id in render_map["candidate_tile_ids_by_label"].items():
-                if str(label) == answer_label:
-                    continue
                 tile = tiles_by_id[str(tile_id)]
-                distractor_distances.append(
-                    abs(int(tile["row"]) - int(answer_tile["row"]))
-                    + abs(int(tile["col"]) - int(answer_tile["col"]))
-                )
-            assert max(distractor_distances) <= 4
+                candidate_coords.append((int(tile["row"]), int(tile["col"])))
+                cost = render_map["candidate_shortest_costs_by_label"][str(label)]
+                if str(label) != answer_label and cost is not None:
+                    assert int(render_map["movement_budget"]) < int(cost) <= int(render_map["movement_budget"]) + 5
+
+            pairwise_distances = []
+            for index, first in enumerate(candidate_coords):
+                for second in candidate_coords[index + 1 :]:
+                    pairwise_distances.append(abs(first[0] - second[0]) + abs(first[1] - second[1]))
+            assert pairwise_distances
+            assert min(pairwise_distances) >= 2

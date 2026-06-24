@@ -95,6 +95,14 @@ def _tile_manhattan(first: RpgTacticalTile, second: RpgTacticalTile) -> int:
     return abs(int(first.row) - int(second.row)) + abs(int(first.col) - int(second.col))
 
 
+def _direction_bucket(origin: RpgTacticalTile, tile: RpgTacticalTile) -> str:
+    drow = int(tile.row) - int(origin.row)
+    dcol = int(tile.col) - int(origin.col)
+    row_part = "s" if drow > 0 else "n" if drow < 0 else ""
+    col_part = "e" if dcol > 0 else "w" if dcol < 0 else ""
+    return f"{row_part}{col_part}" or "same"
+
+
 def _select_candidate_tiles(
     *,
     scene: RpgTacticalMapScene,
@@ -160,30 +168,88 @@ def _select_candidate_tiles(
 
     answer_tile = sorted(answer_pool, key=answer_sort_key)[0]
 
-    def invalid_sort_key(tile: RpgTacticalTile) -> tuple[int, int, int, int, float]:
+    reachable_cost_tiles = [tile for tile in scene.tiles if str(tile.tile_id) in movement_costs]
+
+    def movement_proxy_cost(tile: RpgTacticalTile) -> int | None:
         cost = movement_costs.get(str(tile.tile_id))
-        if cost is None:
-            over_budget_gap = int(movement_budget) + 10
-            blocked_penalty = 1
-        else:
-            over_budget_gap = max(0, int(cost) - int(movement_budget))
-            blocked_penalty = 0
+        if cost is not None:
+            return int(cost)
+        if not reachable_cost_tiles:
+            return None
+        return min(
+            int(movement_costs[str(reachable_tile.tile_id)]) + _tile_manhattan(tile, reachable_tile)
+            for reachable_tile in reachable_cost_tiles
+        )
+
+    proxy_cost_by_tile_id = {
+        str(tile.tile_id): movement_proxy_cost(tile)
+        for tile in invalid_tiles
+    }
+
+    def plausible_invalid_tiles(tiles: Sequence[RpgTacticalTile]) -> list[RpgTacticalTile]:
+        plausible: list[RpgTacticalTile] = []
+        for tile in tiles:
+            proxy_cost = proxy_cost_by_tile_id.get(str(tile.tile_id))
+            if proxy_cost is None:
+                continue
+            if int(movement_budget) < int(proxy_cost) <= int(movement_budget) + 5:
+                plausible.append(tile)
+        return plausible
+
+    def invalid_sort_key(tile: RpgTacticalTile) -> tuple[int, int, int, float]:
+        proxy_cost = proxy_cost_by_tile_id.get(str(tile.tile_id))
+        blocked_penalty = 0 if bool(tile.passable) else 1
         return (
-            _tile_manhattan(answer_tile, tile),
-            _tile_manhattan(start_tile, tile),
+            abs(int(proxy_cost if proxy_cost is not None else int(movement_budget) + 99) - (int(movement_budget) + 1)),
             blocked_penalty,
-            over_budget_gap,
+            _tile_manhattan(start_tile, tile),
             tile_jitter[str(tile.tile_id)],
         )
 
+    def spread_score(tile: RpgTacticalTile, selected: Sequence[RpgTacticalTile], used_buckets: set[str]) -> tuple[int, int, int, int, float]:
+        min_distance = min(_tile_manhattan(tile, existing) for existing in selected)
+        bucket = _direction_bucket(start_tile, tile)
+        proxy_cost = proxy_cost_by_tile_id.get(str(tile.tile_id))
+        cost_gap = abs(int(proxy_cost if proxy_cost is not None else int(movement_budget) + 99) - (int(movement_budget) + 1))
+        blocked_penalty = 0 if bool(tile.passable) else 1
+        return (
+            1 if bucket not in used_buckets else 0,
+            min_distance,
+            -cost_gap,
+            -blocked_penalty,
+            -tile_jitter[str(tile.tile_id)],
+        )
+
+    def choose_spread_distractors(pool: Sequence[RpgTacticalTile], *, minimum_distance: int) -> list[RpgTacticalTile]:
+        selected = [answer_tile]
+        distractor_tiles: list[RpgTacticalTile] = []
+        selected_tile_ids = {str(answer_tile.tile_id), start_tile_id}
+        used_buckets = {_direction_bucket(start_tile, answer_tile)}
+        remaining = sorted(pool, key=invalid_sort_key)
+        while len(distractor_tiles) < int(candidate_count) - 1:
+            eligible = [
+                tile
+                for tile in remaining
+                if str(tile.tile_id) not in selected_tile_ids
+                and min(_tile_manhattan(tile, existing) for existing in selected) >= int(minimum_distance)
+            ]
+            if not eligible:
+                break
+            chosen = max(eligible, key=lambda tile: spread_score(tile, selected, used_buckets))
+            distractor_tiles.append(chosen)
+            selected.append(chosen)
+            selected_tile_ids.add(str(chosen.tile_id))
+            used_buckets.add(_direction_bucket(start_tile, chosen))
+            remaining = [tile for tile in remaining if str(tile.tile_id) != str(chosen.tile_id)]
+        return distractor_tiles
+
+    plausible_distractors = plausible_invalid_tiles(invalid_tiles)
     distractors: list[RpgTacticalTile] = []
-    selected_ids = {str(answer_tile.tile_id), start_tile_id}
-    for tile in sorted(invalid_tiles, key=invalid_sort_key):
-        tile_id = str(tile.tile_id)
-        if tile_id in selected_ids:
-            continue
-        distractors.append(tile)
-        selected_ids.add(tile_id)
+    for pool in (plausible_distractors, invalid_tiles):
+        for minimum_distance in (3, 2, 1):
+            distractors = choose_spread_distractors(pool, minimum_distance=minimum_distance)
+            if len(distractors) >= int(candidate_count) - 1:
+                break
         if len(distractors) >= int(candidate_count) - 1:
             break
     if len(distractors) < int(candidate_count) - 1:

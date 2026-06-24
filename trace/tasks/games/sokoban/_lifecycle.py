@@ -170,7 +170,7 @@ def build_box_goal_status_count_objective(
         option_count_support=[int(value) for value in answer_count_support],
         option_count_probabilities=dict(answer_count_probabilities),
         build_annotation=lambda rendered: cell_bbox_set(rendered, cells=annotation_cells),
-        answer_hint_key="answer_hint_integer_0_5",
+        answer_hint_key="answer_hint_box_goal_count",
         json_example_answer_only_key="json_example_answer_only_integer",
         trace_extra_params=dict(trace_extra_params or {}),
         execution_extra={

@@ -232,14 +232,14 @@ def sample_box_goal_status_dataset(
         fallback_min=3,
         fallback_max=5,
     )
-    box_min = max(1, min(5, int(box_min)))
-    box_max = max(box_min, min(5, int(box_max)))
+    box_min = max(2, min(6, int(box_min)))
+    box_max = max(box_min, min(6, int(box_max)))
     target_answer = int(answer_count)
-    if target_answer < 0 or target_answer > box_max:
+    if target_answer < 1 or target_answer > 5:
         raise ValueError(f"unsupported Sokoban box-goal status answer count: {answer_count}")
 
     for attempt in range(256):
-        minimum_boxes = max(box_min, target_answer)
+        minimum_boxes = max(box_min, target_answer + 1)
         if minimum_boxes > box_max:
             continue
         box_count = int(rng.randint(minimum_boxes, box_max))
@@ -247,6 +247,8 @@ def sample_box_goal_status_dataset(
         if on_goal_count < 0 or on_goal_count > box_count:
             continue
         off_goal_count = box_count - on_goal_count
+        if on_goal_count < 1 or off_goal_count < 1:
+            continue
         board = sample_base_board(
             params=params,
             instance_seed=int(instance_seed) + attempt,

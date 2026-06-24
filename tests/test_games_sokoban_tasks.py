@@ -65,10 +65,12 @@ def test_sokoban_tasks_emit_public_contracts() -> None:
             assert execution["goal_status_count"] == int(out.answer_gt.value)
             assert len(out.annotation_gt.value) == int(out.answer_gt.value)
             assert trace["query_spec"]["params"]["prompt_query_key"] == query_id
-            assert 0 <= int(out.answer_gt.value) <= 5
+            assert 1 <= int(out.answer_gt.value) <= 5
             assert execution["walls"]
             assert execution["boxes_start"]
             assert execution["targets"]
+            assert len(execution["boxes_on_matching_goals"]) >= 1
+            assert len(execution["boxes_off_matching_goals"]) >= 1
 
             for bbox in _annotation_bboxes(out.annotation_gt.value):
                 assert len(bbox) == 4

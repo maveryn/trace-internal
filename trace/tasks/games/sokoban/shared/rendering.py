@@ -344,7 +344,7 @@ def _draw_board(
             cell = (row, col)
             bbox = _cell_bbox(origin, cell_size, cell)
             cell_bbox_map[cell_id(cell)] = bbox
-            fill = style["wall"] if cell in walls else (style["floor_alt"] if (row + col) % 2 else style["floor"])
+            fill = style["wall"] if cell in walls else style["floor"]
             outline = style["grid"] if cell not in walls else style["wall_dark"]
             draw.rectangle(bbox, fill=fill, outline=outline, width=max(1, int(params.grid_width_px)))
     if show_coordinates:
@@ -444,14 +444,14 @@ def _draw_board(
         if on_matching_goal:
             target_color = target_color_map.get(str(target_label), box_color)
             center = ((box_bbox[0] + box_bbox[2]) * 0.5, (box_bbox[1] + box_bbox[3]) * 0.5)
-            radius = cell_size * 0.18
+            radius = cell_size * 0.23
             dot = (
                 center[0] - radius,
                 center[1] - radius,
                 center[0] + radius,
                 center[1] + radius,
             )
-            draw.ellipse(dot, fill=target_color, outline=(255, 255, 255), width=max(2, int(cell_size * 0.05)))
+            draw.ellipse(dot, fill=target_color, outline=(255, 255, 255), width=max(3, int(cell_size * 0.07)))
         if show_labels:
             draw_centered_text(draw, text=str(box_label), center=((bbox[0] + bbox[2]) * 0.5, (bbox[1] + bbox[3]) * 0.5), font=small_font, fill=(255, 255, 255), stroke_fill=style["wall_dark"], stroke_width=1)
         if str(box_label) == str(marked_box_label):

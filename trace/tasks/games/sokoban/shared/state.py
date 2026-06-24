@@ -32,7 +32,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
 
 PATH_OPTION_COUNT_SUPPORT: Tuple[int, ...] = (4, 6)
 RELATION_OPTION_COUNT_SUPPORT: Tuple[int, ...] = (4, 5, 6)
-BOX_GOAL_STATUS_COUNT_SUPPORT: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
+BOX_GOAL_STATUS_COUNT_SUPPORT: Tuple[int, ...] = (1, 2, 3, 4, 5)
 
 Cell = Tuple[int, int]
 Color = Tuple[int, int, int]

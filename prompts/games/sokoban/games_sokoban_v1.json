@@ -103,7 +103,7 @@
   },
   "code_prompt_defaults": {
     "object_description_box_goal_status_count": "a Sokoban board with walls, a player, colored boxes, and colored goal dots; a box on its matching goal has the goal dot drawn on top of the box",
-    "answer_hint_integer_0_5": "set \"answer\" to the number of boxes satisfying the question",
+    "answer_hint_box_goal_count": "set \"answer\" to the number of boxes satisfying the question",
     "annotation_hint_counted_box_bbox_set": "set \"annotation\" to a JSON array of image-pixel box-cell bounding boxes [x0,y0,x1,y1], one for each counted box; use [] if none are counted",
     "json_example_counted_box_bbox_set": "{\"annotation\":[[180,160,232,212],[300,220,352,272]],\"answer\":2}",
     "json_example_answer_only_integer": "{\"answer\":2}"

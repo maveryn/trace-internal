@@ -250,24 +250,49 @@ def _draw_enemy(
     label_font_size_px: int,
     font_family: str = "",
 ) -> None:
-    """Draw one enemy ship."""
+    """Draw a downward enemy fighter while preserving a readable center label."""
 
     left, top, right, bottom = bbox
     width = float(right - left)
     height = float(bottom - top)
-    body = [
-        (left + 0.10 * width, top + 0.38 * height),
-        (left + 0.24 * width, top + 0.18 * height),
-        (left + 0.76 * width, top + 0.18 * height),
-        (left + 0.90 * width, top + 0.38 * height),
-        (left + 0.72 * width, top + 0.82 * height),
-        (left + 0.50 * width, top + 0.68 * height),
-        (left + 0.28 * width, top + 0.82 * height),
+    fill = tuple(int(v) for v in theme.enemy_fill_rgb)
+    outline = tuple(int(v) for v in theme.enemy_outline_rgb)
+    stroke = max(2, int(round(0.045 * height)))
+    left_wing = [
+        (left + 0.06 * width, top + 0.43 * height),
+        (left + 0.34 * width, top + 0.28 * height),
+        (left + 0.41 * width, top + 0.62 * height),
+        (left + 0.19 * width, top + 0.75 * height),
     ]
-    draw.polygon(body, fill=tuple(int(v) for v in theme.enemy_fill_rgb), outline=tuple(int(v) for v in theme.enemy_outline_rgb))
-    draw.line(body + [body[0]], fill=tuple(int(v) for v in theme.enemy_outline_rgb), width=max(2, int(round(0.05 * height))))
+    right_wing = [
+        (right - 0.06 * width, top + 0.43 * height),
+        (right - 0.34 * width, top + 0.28 * height),
+        (right - 0.41 * width, top + 0.62 * height),
+        (right - 0.19 * width, top + 0.75 * height),
+    ]
+    hull = [
+        (left + 0.50 * width, top + 0.10 * height),
+        (left + 0.66 * width, top + 0.31 * height),
+        (left + 0.61 * width, top + 0.72 * height),
+        (left + 0.50 * width, bottom - 0.04 * height),
+        (left + 0.39 * width, top + 0.72 * height),
+        (left + 0.34 * width, top + 0.31 * height),
+    ]
+    tail_left = [
+        (left + 0.27 * width, top + 0.16 * height),
+        (left + 0.42 * width, top + 0.18 * height),
+        (left + 0.36 * width, top + 0.38 * height),
+    ]
+    tail_right = [
+        (right - 0.27 * width, top + 0.16 * height),
+        (right - 0.42 * width, top + 0.18 * height),
+        (right - 0.36 * width, top + 0.38 * height),
+    ]
+    for poly in (left_wing, right_wing, tail_left, tail_right, hull):
+        draw.polygon(poly, fill=fill, outline=outline)
+        draw.line(poly + [poly[0]], fill=outline, width=stroke)
     display_text = str(int(enemy.score_value)) if enemy.score_value is not None else str(enemy.label)
-    label_box = (left + 0.18 * width, top + 0.24 * height, right - 0.18 * width, bottom - 0.28 * height)
+    label_box = (left + 0.22 * width, top + 0.26 * height, right - 0.22 * width, bottom - 0.34 * height)
     _fit_text(
         draw,
         bbox=label_box,
@@ -299,16 +324,20 @@ def _draw_projectile(
     outline = tuple(int(v) for v in theme.projectile_outline_rgb)
     tip_h = max(5.0, 0.20 * height)
     body_h = height - tip_h
-    outline_width = max(2, int(round(0.08 * width)))
+    body_w = max(8.0, 0.46 * width)
+    body_left = cx - (0.5 * body_w)
+    body_right = cx + (0.5 * body_w)
+    tip_half_w = max(5.0, 0.32 * width)
+    outline_width = max(1, int(round(0.05 * width)))
     if str(projectile.owner) == "player":
-        body = (left + 0.08 * width, top + tip_h, right - 0.08 * width, bottom)
-        tip = [(cx, top), (left + 0.18 * width, top + tip_h + 1.0), (right - 0.18 * width, top + tip_h + 1.0)]
+        body = (body_left, top + tip_h, body_right, bottom)
+        tip = [(cx, top), (cx - tip_half_w, top + tip_h + 1.0), (cx + tip_half_w, top + tip_h + 1.0)]
     else:
-        body = (left + 0.08 * width, top, right - 0.08 * width, top + body_h)
-        tip = [(left + 0.18 * width, top + body_h - 1.0), (right - 0.18 * width, top + body_h - 1.0), (cx, bottom)]
+        body = (body_left, top, body_right, top + body_h)
+        tip = [(cx - tip_half_w, top + body_h - 1.0), (cx + tip_half_w, top + body_h - 1.0), (cx, bottom)]
     draw.rounded_rectangle(
         body,
-        radius=max(3, int(round(0.28 * width))),
+        radius=max(2, int(round(0.22 * body_w))),
         fill=fill,
         outline=outline,
         width=outline_width,

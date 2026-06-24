@@ -91,6 +91,10 @@ def _tile_by_id(scene: RpgTacticalMapScene) -> dict[str, RpgTacticalTile]:
     return {str(tile.tile_id): tile for tile in scene.tiles}
 
 
+def _tile_manhattan(first: RpgTacticalTile, second: RpgTacticalTile) -> int:
+    return abs(int(first.row) - int(second.row)) + abs(int(first.col) - int(second.col))
+
+
 def _select_candidate_tiles(
     *,
     scene: RpgTacticalMapScene,
@@ -132,29 +136,56 @@ def _select_candidate_tiles(
         raise ValueError("not enough unreachable candidate distractors")
 
     rng = random.Random(f"{int(instance_seed)}:movement_reachable_candidates:{int(movement_budget)}")
-    rng.shuffle(reachable)
-    rng.shuffle(unreachable_passable)
-    rng.shuffle(blocked)
+    tile_jitter = {str(tile.tile_id): float(rng.random()) for tile in scene.tiles}
     answer_pool = [
         tile
         for tile in reachable
         if int(movement_costs[str(tile.tile_id)]) >= min(2, int(movement_budget))
     ] or reachable
-    answer_tile = answer_pool[0]
+
+    invalid_tiles = list(unreachable_passable) + list(blocked)
+    nearby_radius = max(3, min(5, int(movement_budget) + 1))
+
+    def invalid_neighbor_count(tile: RpgTacticalTile) -> int:
+        return sum(1 for invalid in invalid_tiles if _tile_manhattan(tile, invalid) <= nearby_radius)
+
+    def answer_sort_key(tile: RpgTacticalTile) -> tuple[int, int, int, float]:
+        tile_cost = int(movement_costs[str(tile.tile_id)])
+        return (
+            -tile_cost,
+            -invalid_neighbor_count(tile),
+            _tile_manhattan(start_tile, tile),
+            tile_jitter[str(tile.tile_id)],
+        )
+
+    answer_tile = sorted(answer_pool, key=answer_sort_key)[0]
+
+    def invalid_sort_key(tile: RpgTacticalTile) -> tuple[int, int, int, int, float]:
+        cost = movement_costs.get(str(tile.tile_id))
+        if cost is None:
+            over_budget_gap = int(movement_budget) + 10
+            blocked_penalty = 1
+        else:
+            over_budget_gap = max(0, int(cost) - int(movement_budget))
+            blocked_penalty = 0
+        return (
+            _tile_manhattan(answer_tile, tile),
+            _tile_manhattan(start_tile, tile),
+            blocked_penalty,
+            over_budget_gap,
+            tile_jitter[str(tile.tile_id)],
+        )
 
     distractors: list[RpgTacticalTile] = []
-    if blocked:
-        distractors.append(blocked[0])
-    for tile in unreachable_passable:
-        if str(tile.tile_id) not in {str(existing.tile_id) for existing in distractors}:
-            distractors.append(tile)
+    selected_ids = {str(answer_tile.tile_id), start_tile_id}
+    for tile in sorted(invalid_tiles, key=invalid_sort_key):
+        tile_id = str(tile.tile_id)
+        if tile_id in selected_ids:
+            continue
+        distractors.append(tile)
+        selected_ids.add(tile_id)
         if len(distractors) >= int(candidate_count) - 1:
             break
-    for tile in blocked[1:]:
-        if len(distractors) >= int(candidate_count) - 1:
-            break
-        if str(tile.tile_id) not in {str(existing.tile_id) for existing in distractors}:
-            distractors.append(tile)
     if len(distractors) < int(candidate_count) - 1:
         raise ValueError("could not build enough candidate distractors")
 

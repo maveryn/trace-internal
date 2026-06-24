@@ -133,3 +133,39 @@ def test_rpg_tactical_map_movement_reachable_tile_contract() -> None:
     assert sorted(render_map["candidate_tile_ids_by_label"]) == ["A", "B", "C", "D"]
     assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_tactical_map_v0"
     assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_tactical_map"
+
+
+def test_rpg_tactical_map_movement_distractors_stay_near_answer() -> None:
+    task = create_task(TASK_ID)
+    for seed in (2026062401, 2026062402, 2026062403, 23, 93):
+        for profile in ("landscape", "square", "portrait"):
+            out = task.generate(
+                seed,
+                params={
+                    "canvas_profile": profile,
+                    "movement_budget": 5,
+                },
+                max_attempts=30,
+            )
+            render_map = out.trace_payload["render_map"]
+            tiles_by_id = {str(tile["tile_id"]): tile for tile in out.trace_payload["scene_ir"]["tiles"]}
+            answer_label = str(out.answer_gt.value)
+            answer_tile = tiles_by_id[str(render_map["candidate_tile_ids_by_label"][answer_label])]
+
+            reachable_labels = [
+                label
+                for label, cost in render_map["candidate_shortest_costs_by_label"].items()
+                if cost is not None and int(cost) <= int(render_map["movement_budget"])
+            ]
+            assert reachable_labels == [answer_label]
+
+            distractor_distances = []
+            for label, tile_id in render_map["candidate_tile_ids_by_label"].items():
+                if str(label) == answer_label:
+                    continue
+                tile = tiles_by_id[str(tile_id)]
+                distractor_distances.append(
+                    abs(int(tile["row"]) - int(answer_tile["row"]))
+                    + abs(int(tile["col"]) - int(answer_tile["col"]))
+                )
+            assert max(distractor_distances) <= 4

@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import networkx as nx
 
-from trace.tasks.graph.counting.pipe_bridge_count import GraphCountingPipeBridgeCountTask
-from trace.tasks.graph.path.pipe_shortest_path_length import GraphPathPipeShortestPathLengthTask
-from trace.tasks.graph.relation.junction_path_count import (
-    GraphRelationPipeExactDistanceCountTask,
-    GraphRelationPipeReachableJunctionCountTask,
-)
+from trace.tasks.graph.pipe_network.bridge_count import GraphCountingPipeBridgeCountTask
+from trace.tasks.graph.pipe_network.pipe_exact_distance_count import GraphRelationPipeExactDistanceCountTask
+from trace.tasks.graph.pipe_network.pipe_reachable_junction_count import GraphRelationPipeReachableJunctionCountTask
+from trace.tasks.graph.pipe_network.shortest_path_length import GraphPathPipeShortestPathLengthTask
 
 
 def _open_graph_from_trace(trace_payload: dict) -> nx.Graph:
@@ -28,7 +26,7 @@ def test_pipe_shortest_path_contract() -> None:
     goal = str(trace["goal_label"])
     paths = list(nx.all_shortest_paths(graph, source=source, target=goal))
     assert out.scene_id == "pipe_network"
-    assert out.query_id == "pipe_shortest_path_length"
+    assert out.query_id == "single"
     assert len(paths) == 1
     assert out.answer_gt.value == len(paths[0]) - 1
     assert out.annotation_gt.type == "point_sequence"
@@ -46,7 +44,7 @@ def test_pipe_reachable_count_contract() -> None:
     query_label = str(out.trace_payload["execution_trace"]["query_label"])
     reachable = nx.node_connected_component(graph, query_label)
     assert out.scene_id == "pipe_network"
-    assert out.query_id == "pipe_reachable_junction_count"
+    assert out.query_id == "single"
     assert 1 <= int(out.answer_gt.value) <= 5
     assert out.answer_gt.value == len(reachable)
     assert out.annotation_gt.type == "point_set"
@@ -58,7 +56,7 @@ def test_pipe_bridge_count_contract() -> None:
     graph = _open_graph_from_trace(out.trace_payload)
     bridge_count = len(list(nx.bridges(graph)))
     assert out.scene_id == "pipe_network"
-    assert out.query_id == "pipe_bridge_count"
+    assert out.query_id == "single"
     assert 0 <= int(out.answer_gt.value) <= 5
     assert out.answer_gt.value == bridge_count
     assert out.annotation_gt.type == "segment_set"
@@ -78,7 +76,7 @@ def test_pipe_exact_distance_count_contract() -> None:
     distances = nx.single_source_shortest_path_length(graph, query_label)
     exact_count = sum(1 for distance in distances.values() if int(distance) == query_distance)
     assert out.scene_id == "pipe_network"
-    assert out.query_id == "pipe_exact_distance_count"
+    assert out.query_id == "single"
     assert out.answer_gt.value == exact_count
     assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == exact_count

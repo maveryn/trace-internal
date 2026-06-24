@@ -1,78 +1,90 @@
-"""Count junctions at an exact open-pipe distance."""
-
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Tuple
-
-from ....core.types import TypedValue
-from ...base import TaskOutput
+from ....core.query_ids import SINGLE_QUERY_ID
 from ...registry import register_task
-from ...shared.fixed_query import force_query_id_params, select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.instance import PUBLIC_PIPE_SCENE_ID, build_pipe_junction_instance
+from ._lifecycle import (
+    FALLBACK_DEFAULTS,
+    bind_pipe_point_set,
+    pipe_query_distance_support,
+    resolve_pipe_target_axes,
+    run_pipe_objective,
+    sample_pipe_target_network,
+)
+from .shared.sampling import sample_pipe_exact_distance_network
 
 
 TASK_ID = "task_graph__pipe_network__pipe_exact_distance_count"
-QUERY_ID = "pipe_exact_distance_count"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
+PROMPT_QUERY_KEY = "pipe_exact_distance_count"
+PROMPT_ANNOTATION_KEY = "annotation_hint_exact_distance_count"
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
 
 
-def _trace_for_public_task(trace_payload: Mapping[str, Any], query_probs: Mapping[str, float]) -> Dict[str, Any]:
-    """Attach public task-owned metadata to a neutral pipe instance trace."""
+def _resolve_exact_distance_axes(*, instance_seed, params, gen_defaults):
+    distance_support = pipe_query_distance_support(params=params, gen_defaults=gen_defaults)
+    return resolve_pipe_target_axes(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        owner_id=TASK_ID,
+        target_low_key="target_exact_distance_count_min",
+        target_high_key="target_exact_distance_count_max",
+        default_target_low=FALLBACK_DEFAULTS.target_exact_distance_count_min,
+        default_target_high=FALLBACK_DEFAULTS.target_exact_distance_count_max,
+        explicit_target_keys=("target_exact_distance_count", "target_count"),
+        target_namespace="target_exact_distance_count",
+        minimum_nodes_for_target=lambda target, distance: max(5, target + distance + 1),
+        query_distance_support=tuple(distance_support),
+    )
 
-    trace = dict(trace_payload)
-    scene_ir = dict(trace.get("scene_ir") or {})
-    scene_ir["task_id"] = TASK_ID
-    trace["scene_ir"] = scene_ir
-    query_spec = dict(trace.get("query_spec") or {})
-    params = dict(query_spec.get("params") or {})
-    params["query_id_probabilities"] = {str(key): float(value) for key, value in query_probs.items()}
-    query_spec["params"] = params
-    trace["query_spec"] = query_spec
-    return trace
+
+def _bind_exact_distance_result(sample, rendered):
+    return bind_pipe_point_set(
+        sample,
+        rendered,
+        labels=sample.target_labels,
+        answer_value=int(sample.target_exact_distance_count),
+        answer_key="target_exact_distance_count",
+        relation_key="exact_distance_junction_labels",
+        witness_extra={"source_label": str(sample.query_label), "distance": int(sample.query_distance)},
+        prompt_slots={"query_distance": int(sample.query_distance)},
+        trace_extra={"query_distance": int(sample.query_distance)},
+    )
+
+
+def _sample_exact_distance_network(instance_seed, _params, max_attempts, axes):
+    return sample_pipe_target_network(
+        owner_id=TASK_ID,
+        instance_seed=instance_seed,
+        max_attempts=max_attempts,
+        axes=axes,
+        sampler=sample_pipe_exact_distance_network,
+        target_keyword="target_exact_distance_count",
+        query_distance_keyword="query_distance",
+        attempt_floor=400,
+        attempt_multiplier=2,
+    )
 
 
 @register_task
 class GraphRelationPipeExactDistanceCountTask:
-    """Count junctions exactly k open-pipe segments from a queried junction."""
-
     task_id = TASK_ID
     domain = "graph"
-    scene_id = PUBLIC_PIPE_SCENE_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probs, task_params = select_task_query_id(
+    def generate(self, instance_seed, *, params, max_attempts):
+        return run_pipe_objective(
+            owner_id=TASK_ID,
+            prompt_query_key=PROMPT_QUERY_KEY,
+            prompt_annotation_key=PROMPT_ANNOTATION_KEY,
+            supported_branch_names=SUPPORTED_QUERY_IDS,
+            default_branch_name=SINGLE_QUERY_ID,
             instance_seed=int(instance_seed),
             params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        forced_params = force_query_id_params(task_params, query_id=str(query_id))
-        bundle = build_pipe_junction_instance(
-            config_scope_key=TASK_ID,
-            query_id=str(query_id),
-            prompt_annotation_key="annotation_hint_exact_distance_count",
-            prompt_task_key_fallback="exact_distance_count_query",
-            instance_seed=int(instance_seed),
-            params=forced_params,
             max_attempts=int(max_attempts),
-            domain=self.domain,
-        )
-        return TaskOutput(
-            prompt=str(bundle.prompt),
-            answer_gt=TypedValue(type=str(bundle.answer_type), value=bundle.answer_value),
-            annotation_gt=TypedValue(type=str(bundle.annotation_type), value=list(bundle.annotation_value)),
-            image=bundle.image,
-            image_id="img0",
-            trace_payload=_trace_for_public_task(bundle.trace_payload, query_probs),
-            task_versions=default_task_versions(),
-            scene_id=PUBLIC_PIPE_SCENE_ID,
-            query_id=str(bundle.query_id),
-            prompt_variants=dict(bundle.prompt_variants),
+            resolve_axes=_resolve_exact_distance_axes,
+            sample_network=_sample_exact_distance_network,
+            bind_result=_bind_exact_distance_result,
         )
 
 

@@ -199,10 +199,10 @@ GRAPH_QUERY_IDS = {
     "task_graph__phylogeny_tree__mrca_clade_membership_count": ("mrca_leaf_count",),
     "task_graph__phylogeny_tree__sister_leaf_label": ("sister_leaf_label",),
     "task_graph__phylogeny_tree__topology_outlier_label": ("topology_outlier_label",),
-    "task_graph__pipe_network__bridge_count": ("pipe_bridge_count",),
-    "task_graph__pipe_network__pipe_exact_distance_count": ("pipe_exact_distance_count",),
-    "task_graph__pipe_network__pipe_reachable_junction_count": ("pipe_reachable_junction_count",),
-    "task_graph__pipe_network__shortest_path_length": ("pipe_shortest_path_length",),
+    "task_graph__pipe_network__bridge_count": ("single",),
+    "task_graph__pipe_network__pipe_exact_distance_count": ("single",),
+    "task_graph__pipe_network__pipe_reachable_junction_count": ("single",),
+    "task_graph__pipe_network__shortest_path_length": ("single",),
 }
 
 

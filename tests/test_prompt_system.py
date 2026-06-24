@@ -752,6 +752,38 @@ def test_graph_phylogeny_tree_scene_bundle_supports_tree_queries() -> None:
     assert rendered.metadata["prompt_bundle_id"] == "graph_phylogeny_tree_v1"
 
 
+def test_graph_pipe_network_scene_bundle_supports_pipe_queries() -> None:
+    bundle = load_scene_prompt_bundle("graph", "pipe_network", "graph_pipe_network_v1")
+    assert "pipe_network" in bundle.scene_templates
+    assert len(bundle.task_templates["pipe_network_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["pipe_shortest_path_length"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["pipe_bridge_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["pipe_reachable_junction_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["pipe_exact_distance_count"]) == REQUIRED_PROMPT_VARIANTS
+    rendered = render_prompt(
+        domain="graph",
+        scene_id="pipe_network",
+        bundle_id="graph_pipe_network_v1",
+        scene_key="pipe_network",
+        task_key="pipe_network_query",
+        query_key="pipe_shortest_path_length",
+        dynamic_slots={
+            "object_description": "a labeled pipe-junction network with open pipes and blocked pipes",
+            "source_label": "A",
+            "goal_label": "F",
+            "json_output_contract": ANSWER_AND_ANNOTATION_CONTRACT,
+            "json_output_contract_answer_only": ANSWER_ONLY_CONTRACT,
+            "annotation_hint": 'set "annotation" to an ordered array of [x,y] junction-center points',
+            "answer_hint": 'set "answer" to the route length as an integer',
+            "json_example": '{"annotation":[[1,2],[3,4]],"answer":1}',
+            "json_example_answer_only": '{"answer":1}',
+        },
+        instance_seed=8126,
+    )
+    assert rendered.metadata["prompt_scene_id"] == "pipe_network"
+    assert rendered.metadata["prompt_bundle_id"] == "graph_pipe_network_v1"
+
+
 def test_graph_automaton_scene_bundle_supports_state_machine_queries() -> None:
     bundle = load_scene_prompt_bundle("graph", "automaton", "automaton_v1")
     assert "automaton" in bundle.scene_templates

@@ -644,7 +644,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
         "geometry": frozenset((*expected_candidate_scenes["geometry"], "parallel_segment_proportion", "polygon_angle_chase", "pythagorean_dissection", "pythagorean_tree", "rectangular_solid", "regular_polygon_decomposition", "right_triangle_altitude_theorem", "sector", "shape_gallery", "similar_figure_measure_transfer", "solid_cross_section", "solid_formula", "solid_revolution", "special_quadrilateral")),
         "icons": frozenset((*expected_candidate_scenes["icons"], "named_strip", "overlap_grid", "wallpaper_panels")),
         "illustrations": frozenset((*expected_candidate_scenes["illustrations"], "rpg_tactical_map")),
-        "graph": frozenset((*expected_candidate_scenes["graph"], "phylogeny_tree")),
+        "graph": frozenset((*expected_candidate_scenes["graph"], "phylogeny_tree", "pipe_network")),
         "three_d": frozenset((*expected_candidate_scenes["three_d"], "object_scene", "room", "street")),
     }
     assert MIGRATED_SCENE_PACKAGE_SCENES == expected_candidate_scenes

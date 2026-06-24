@@ -1,30 +1,42 @@
 # `task_graph__pipe_network__shortest_path_length`
 
-## 1) Identity
+## Summary
 1. Domain: `graph`
-2. Scene: `path`
-3. Scene id: `pipe_network`
-4. Task id: `task_graph__pipe_network__shortest_path_length`
-5. Objective: count open pipe segments in the unique shortest open route between two labeled junctions.
+2. Scene id: `pipe_network`
+3. Task id: `task_graph__pipe_network__shortest_path_length`
+4. Objective: count open pipe segments in the unique shortest open route between two labeled junctions.
+5. Implementation: `trace/tasks/graph/pipe_network/shortest_path_length.py`.
 
-## 2) Scene + Task Contract
-1. Branch metadata: `query_id`
-2. `query_id`: `pipe_shortest_path_length`
-3. `answer_gt.type`: `integer`
-4. `annotation_gt.type`: `point_sequence`
-5. The image shows labeled junctions connected by open pipes and blocked pipes.
-6. Only open pipes are traversable; blocked pipes are visible distractors.
-7. Annotation is the ordered pixel-point sequence of junction centers along the unique shortest open route, including both endpoints.
-8. Rendering uses compact letter/number junction labels and physical pipe-board styling with cylindrical tubes, flanged junction fittings, sampled board treatments, and clear blocked-pipe valve/X markers.
+## Query IDs
+1. Supported `query_id` values: `single`.
+2. Internal prompt key: `pipe_shortest_path_length`.
+3. Public sampling is at the task-id level.
 
-## 3) Prompt Contract
-1. Bundle: `graph_path_v0`
-2. `scene_key`: `single_graph_path`
-3. `task_key`: `shortest_path_length_query`
-4. Answer-only JSON: `{"answer":2}`
-5. Answer+annotation JSON: `{"annotation":[[180,220],[310,220],[430,300]],"answer":2}`
+## Taxonomy Contract
+1. Program contract: find the unique shortest path in the open-pipe graph between the named source and goal, then output its edge length.
+2. Answer schema: `integer`.
+3. Annotation schema: `point_sequence`.
+4. Target path length, node count, grid shape, label style, color, font, background, context text, and noise are generation/render metadata, not public query branches.
 
-## 4) Verification
-1. The verifier payload records the open adjacency, blocked pipe labels, source/goal labels, and witness path.
-2. `answer_gt.value == len(annotation_gt.value) - 1`.
-3. Answers and annotation are computed from the same open-pipe graph.
+## Program Contract
+- `length(unique_shortest_open_pipe_path(source, goal)); output=integer; annotation=point_sequence(path_junction_centers_in_order); scene=pipe_network; scope=shortest_path_length`
+
+## Answer And Annotation
+1. Answer type: `integer`.
+2. Annotation type: `point_sequence`.
+3. Annotation marks the ordered junction-center points along the shortest path, including both endpoints.
+4. `answer == len(annotation) - 1`, and both come from the same finalized open-pipe graph.
+
+## Rendering Contract
+1. The scene shows labeled junction fittings connected by open pipes and visible blocked pipes.
+2. Only open pipes are traversable; blocked pipes are visible distractors.
+3. Visual style, fonts, panel treatment, layout jitter, context text, and post-render noise are non-semantic and recorded in trace metadata.
+4. Annotation projection is computed after final layout and style placement.
+
+## Prompt Contract
+1. Prompt text comes from `prompts/graph/pipe_network/graph_pipe_network_v1.json`.
+2. `scene_key`: `pipe_network`.
+3. `task_key`: `pipe_network_query`.
+4. `query_key`: `pipe_shortest_path_length`.
+5. Answer-only mode emits `{"answer": ...}`.
+6. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with `annotation` matching the `point_sequence` schema.

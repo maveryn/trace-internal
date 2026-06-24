@@ -3,26 +3,40 @@
 ## Summary
 1. Domain: `graph`
 2. Scene id: `pipe_network`
-3. Scene: `relation`
-4. Task id: `task_graph__pipe_network__pipe_exact_distance_count`
-5. Objective: count pipe junctions at an exact shortest open-pipe distance.
+3. Task id: `task_graph__pipe_network__pipe_exact_distance_count`
+4. Objective: count junctions at an exact shortest open-pipe distance from a named junction.
+5. Implementation: `trace/tasks/graph/pipe_network/pipe_exact_distance_count.py`.
 
 ## Query IDs
-1. `pipe_exact_distance_count`
-2. Query ids are internal replay metadata; public sampling is at the task-id level.
+1. Supported `query_id` values: `single`.
+2. Internal prompt key: `pipe_exact_distance_count`.
+3. Public sampling is at the task-id level.
+
+## Taxonomy Contract
+1. Program contract: compute shortest-path distances from the named junction using only open pipes, then count junctions at the sampled exact distance.
+2. Answer schema: `integer`.
+3. Annotation schema: `point_set`.
+4. Query distance, target count, node count, grid shape, label style, color, font, background, context text, and noise are generation/render metadata, not public query branches.
+
+## Program Contract
+- `count(junction where shortest_open_pipe_distance(query_junction, junction) == k); output=integer; annotation=point_set(exact_distance_junction_centers); scene=pipe_network; scope=pipe_exact_distance_count`
 
 ## Answer And Annotation
 1. Answer type: `integer`.
 2. Annotation type: `point_set`.
-3. Annotation marks minimal pixel-space visual witnesses for the answer, not answer labels or non-witness annotations.
-4. Count tasks require `answer_gt.value == len(annotation_gt.value)` unless the annotation schema is keyed or sequence based.
+3. Annotation marks one `[x,y]` junction-center point per junction at the queried shortest open-pipe distance.
+4. The answer equals the number of annotation points, and both come from the same finalized open-pipe graph.
 
 ## Rendering Contract
-1. The scene uses the graph-domain renderer for `pipe_network`.
-2. Visual style, fonts, panel treatment, layout jitter, and post-render noise are non-semantic and must be recorded in trace metadata.
-3. Annotation projection is computed after final layout and style placement.
+1. The scene shows labeled junction fittings connected by open pipes and visible blocked pipes.
+2. Only open pipes are used for shortest-distance computation; blocked pipes are visible distractors.
+3. Visual style, fonts, panel treatment, layout jitter, context text, and post-render noise are non-semantic and recorded in trace metadata.
+4. Annotation projection is computed after final layout and style placement.
 
 ## Prompt Contract
-1. Prompt text comes from graph prompt templates and scene config, not hardcoded user-facing text.
-2. Answer-only mode emits `{"answer": ...}`.
-3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the schema above.
+1. Prompt text comes from `prompts/graph/pipe_network/graph_pipe_network_v1.json`.
+2. `scene_key`: `pipe_network`.
+3. `task_key`: `pipe_network_query`.
+4. `query_key`: `pipe_exact_distance_count`.
+5. Answer-only mode emits `{"answer": ...}`.
+6. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with `annotation` matching the `point_set` schema.

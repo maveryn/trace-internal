@@ -7,9 +7,9 @@
       "object_cluster": [
         "The image shows {object_description}.",
         "The picture shows {object_description}.",
-        "A close view shows {object_description}.",
-        "Visible in the image is {object_description}.",
-        "The scene shows {object_description}."
+        "The scene shows {object_description}.",
+        "The image contains {object_description}.",
+        "The visible scene contains {object_description}."
       ]
     },
     "task": {

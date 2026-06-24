@@ -410,24 +410,24 @@ def test_graph_pedigree_chart_scene_defaults_loaded() -> None:
 def test_graph_phylogeny_tree_scene_defaults_loaded() -> None:
     cfg = get_scene_defaults('graph', 'phylogeny_tree')
     clade_generation, clade_rendering, clade_prompt = split_scene_generation_rendering_prompt_defaults(cfg, task_id='task_graph__phylogeny_tree__clade_leaf_count')
-    assert sorted(clade_generation['query_id_weights'].keys()) == ['marked_clade_leaf_count']
+    assert 'query_id_weights' not in clade_generation
     assert sorted(clade_generation['scene_variant_weights'].keys()) == ['diagonal_cladogram', 'paper_cladogram', 'rectangular_cladogram']
     assert int(clade_generation['target_clade_leaf_count_min']) == 2
     assert int(clade_generation['target_clade_leaf_count_max']) == 6
     assert int(clade_rendering['canvas_width']) == 920
     assert int(clade_rendering['canvas_height']) == 660
-    assert str(clade_prompt['bundle_id']) == 'phylogeny_tree_v0'
-    assert str(clade_prompt['scene_key']) == 'phylogeny_tree'
-    assert str(clade_prompt['task_key']) == 'clade_leaf_count_query'
-    assert str(clade_prompt['annotation_hint']).strip()
+    assert str(clade_prompt['bundle_id']) == 'graph_phylogeny_tree_v1'
+    assert 'scene_key' not in clade_prompt
+    assert 'task_key' not in clade_prompt
+    assert 'annotation_hint' not in clade_prompt
     topology_generation, topology_rendering, topology_prompt = split_scene_generation_rendering_prompt_defaults(cfg, task_id='task_graph__phylogeny_tree__topology_outlier_label')
-    assert sorted(topology_generation['query_id_weights'].keys()) == ['topology_outlier_label']
+    assert 'query_id_weights' not in topology_generation
     assert int(topology_generation['option_count']) == 6
     assert int(topology_rendering['canvas_width']) == 1260
     assert int(topology_rendering['canvas_height']) == 920
-    assert str(topology_prompt['bundle_id']) == 'phylogeny_tree_v0'
-    assert str(topology_prompt['scene_key']) == 'phylogeny_tree_options'
-    assert str(topology_prompt['task_key']) == 'topology_outlier_label_query'
+    assert str(topology_prompt['bundle_id']) == 'graph_phylogeny_tree_v1'
+    assert 'scene_key' not in topology_prompt
+    assert 'task_key' not in topology_prompt
 
 def test_graph_automaton_scene_defaults_loaded() -> None:
     cfg = get_scene_defaults('graph', 'automaton')

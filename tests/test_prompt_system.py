@@ -727,13 +727,10 @@ def test_graph_pedigree_chart_scene_bundle_supports_label_queries() -> None:
 
 
 def test_graph_phylogeny_tree_scene_bundle_supports_tree_queries() -> None:
-    bundle = load_scene_prompt_bundle("graph", "phylogeny_tree", "phylogeny_tree_v0")
+    bundle = load_scene_prompt_bundle("graph", "phylogeny_tree", "graph_phylogeny_tree_v1")
     assert "phylogeny_tree" in bundle.scene_templates
     assert "phylogeny_tree_options" in bundle.scene_templates
-    assert len(bundle.task_templates["clade_leaf_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["sister_leaf_label_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["mrca_clade_membership_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["topology_outlier_label_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["phylogeny_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["marked_clade_leaf_count"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["sister_leaf_label"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["mrca_leaf_count"]) == REQUIRED_PROMPT_VARIANTS
@@ -741,24 +738,18 @@ def test_graph_phylogeny_tree_scene_bundle_supports_tree_queries() -> None:
     rendered = render_prompt(
         domain="graph",
         scene_id="phylogeny_tree",
-        bundle_id="phylogeny_tree_v0",
+        bundle_id="graph_phylogeny_tree_v1",
         scene_key="phylogeny_tree",
-        task_key="sister_leaf_label_query",
+        task_key="phylogeny_query",
         query_key="sister_leaf_label",
-        slots={
+        dynamic_slots={
             "object_description": "a rooted phylogeny cladogram with labeled taxa",
             "query_label": "A",
-            "json_output_contract": ANSWER_AND_ANNOTATION_CONTRACT,
-            "json_output_contract_answer_only": ANSWER_ONLY_CONTRACT,
-            "annotation_hint": 'set "annotation" to a keyed leaf and parent bbox map',
-            "answer_hint": "set \"answer\" to the sister taxon label",
-            "json_example": '{"annotation":{"target_leaf":[1,2,3,4],"sister_leaf":[5,6,7,8],"shared_parent":[9,10,11,12]},"answer":"B"}',
-            "json_example_answer_only": '{"answer":"B"}',
         },
         instance_seed=8124,
     )
     assert rendered.metadata["prompt_scene_id"] == "phylogeny_tree"
-    assert rendered.metadata["prompt_bundle_id"] == "phylogeny_tree_v0"
+    assert rendered.metadata["prompt_bundle_id"] == "graph_phylogeny_tree_v1"
 
 
 def test_graph_automaton_scene_bundle_supports_state_machine_queries() -> None:

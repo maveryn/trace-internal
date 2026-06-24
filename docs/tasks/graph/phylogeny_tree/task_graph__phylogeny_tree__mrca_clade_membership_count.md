@@ -7,22 +7,25 @@
 4. Task id: `task_graph__phylogeny_tree__mrca_clade_membership_count`
 5. Objective: count descendant taxa of the most recent common ancestor of two queried taxa.
 
+## Program Contract
+count(leaves(descendant_of(mrca(query_leaf_1,query_leaf_2)))); output=integer; annotation=bbox_map(query_leaf_1,query_leaf_2,mrca); scene=phylogeny_tree; scope=mrca_clade_membership_count
+
 ## Query IDs
-1. `mrca_leaf_count`
-2. Query ids are internal replay metadata; public sampling is at the task-id level.
+1. Supported `query_id`: `single`.
+2. The prompt objective key is `mrca_leaf_count`; it is trace metadata, not a public query branch.
 
 ## Answer And Annotation
 1. Answer type: `integer`.
-2. Annotation type: `keyed_bbox_map`.
-3. Annotation keys are `query_leaf_1`, `query_leaf_2`, and `mrca`; descendant leaf labels are recorded in trace metadata.
-4. Annotation marks minimal visual witnesses for the MRCA relation.
+2. Annotation schema: `bbox_map`.
+3. Annotation keys are `query_leaf_1`, `query_leaf_2`, and `mrca`.
+4. Descendant leaf labels are recorded in trace metadata; annotation marks only the role-bound visual witnesses.
 
 ## Rendering Contract
-1. The scene uses the graph-domain renderer for `phylogeny_tree`.
-2. The MRCA clade may be highlighted as a visual aid, but the answer is derived from the tree topology metadata.
+1. The scene renders a rooted cladogram with labeled terminal taxa.
+2. The MRCA clade may be highlighted as a visual aid, but the answer is derived from the generated tree topology.
 3. Annotation projection is computed after final layout and style placement.
 
 ## Prompt Contract
-1. Prompt text comes from `prompts/graph/phylogeny_tree/phylogeny_tree_v0.json` and `configs/domains/graph/phylogeny_tree.yaml`, not hardcoded user-facing text.
+1. Prompt text comes from `prompts/graph/phylogeny_tree/graph_phylogeny_tree_v1.json`.
 2. Answer-only mode emits `{"answer": ...}`.
 3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the schema above.

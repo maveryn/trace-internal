@@ -5,24 +5,27 @@
 2. Scene id: `phylogeny_tree`
 3. Source package: `phylogeny_tree`
 4. Task id: `task_graph__phylogeny_tree__clade_leaf_count`
-5. Objective: count descendant taxon leaves in a marked clade.
+5. Objective: count terminal taxa descending from the marked clade.
+
+## Program Contract
+count(leaves(descendant_of(marked_clade))); output=integer; annotation=point_set(descendant_leaf_terminal_centers); scene=phylogeny_tree; scope=clade_leaf_count
 
 ## Query IDs
-1. `marked_clade_leaf_count`
-2. Query ids are internal replay metadata; public sampling is at the task-id level.
+1. Supported `query_id`: `single`.
+2. The prompt objective key is `marked_clade_leaf_count`; it is trace metadata, not a public query branch.
 
 ## Answer And Annotation
 1. Answer type: `integer`.
-2. Annotation type: `point_set`.
+2. Annotation schema: `point_set`.
 3. Annotation marks terminal centers for every descendant taxon in the marked clade.
-4. Count tasks require `answer_gt.value == len(annotation_gt.value)` unless the annotation schema is keyed or sequence based.
+4. Count tasks require `answer_gt.value == len(annotation_gt.value)`.
 
 ## Rendering Contract
-1. The scene uses the graph-domain renderer for `phylogeny_tree`.
-2. Branch rotation, child order, branch length, style, fonts, panel treatment, and post-render noise are non-semantic and recorded in trace metadata.
+1. The scene renders a rooted cladogram with leaf labels and one marked clade.
+2. Branch routing, child order, fonts, panel treatment, color, background, and post-render noise are nonsemantic and recorded in trace metadata.
 3. Annotation projection is computed after final layout and style placement.
 
 ## Prompt Contract
-1. Prompt text comes from `prompts/graph/phylogeny_tree/phylogeny_tree_v0.json` and `configs/domains/graph/phylogeny_tree.yaml`, not hardcoded user-facing text.
+1. Prompt text comes from `prompts/graph/phylogeny_tree/graph_phylogeny_tree_v1.json`.
 2. Answer-only mode emits `{"answer": ...}`.
 3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the schema above.

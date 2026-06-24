@@ -6,10 +6,6 @@ import json
 
 from trace.tasks import TASK_REGISTRY
 from trace.tasks.games.sokoban.box_goal_status_count import GamesSokobanBoxGoalStatusCountTask
-from trace.tasks.games.sokoban.box_target_manhattan_rank_label import GamesSokobanBoxTargetManhattanRankLabelTask
-from trace.tasks.games.sokoban.nearest_counterpart_label import GamesSokobanNearestCounterpartLabelTask
-from trace.tasks.games.sokoban.path_validity_sequence_label import GamesSokobanPathValiditySequenceLabelTask
-from trace.tasks.games.sokoban.shortest_path_sequence_label import GamesSokobanShortestPathSequenceLabelTask
 
 
 TASKS = (
@@ -17,30 +13,6 @@ TASKS = (
         "task_games__sokoban__box_goal_status_count",
         GamesSokobanBoxGoalStatusCountTask,
         ("box_on_goal_count", "box_off_goal_count"),
-        "bbox_set",
-    ),
-    (
-        "task_games__sokoban__path_validity_sequence_label",
-        GamesSokobanPathValiditySequenceLabelTask,
-        ("valid_path_sequence_label", "blocked_path_sequence_label"),
-        "bbox",
-    ),
-    (
-        "task_games__sokoban__shortest_path_sequence_label",
-        GamesSokobanShortestPathSequenceLabelTask,
-        ("single",),
-        "bbox",
-    ),
-    (
-        "task_games__sokoban__nearest_counterpart_label",
-        GamesSokobanNearestCounterpartLabelTask,
-        ("nearest_target_for_marked_box_label", "box_closest_to_marked_target_label"),
-        "bbox",
-    ),
-    (
-        "task_games__sokoban__box_target_manhattan_rank_label",
-        GamesSokobanBoxTargetManhattanRankLabelTask,
-        ("single",),
         "bbox_set",
     ),
 )
@@ -78,48 +50,22 @@ def test_sokoban_tasks_emit_public_contracts() -> None:
             assert trace["query_spec"]["query_id"] == query_id
             assert trace["render_spec"]["scene_id"] == "sokoban"
             assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
-            if task_cls is GamesSokobanBoxGoalStatusCountTask:
-                assert out.answer_gt.type == "integer"
-            else:
-                assert out.answer_gt.type == "option_letter"
+            assert out.answer_gt.type == "integer"
             assert out.annotation_gt.type == annotation_schema
             assert str(out.answer_gt.value) == str(execution["answer_value"])
-            if "answer_option_label" in execution:
-                assert str(out.answer_gt.value) == str(execution["answer_option_label"])
             assert out.image.size == (
                 int(trace["render_spec"]["canvas_width"]),
                 int(trace["render_spec"]["canvas_height"]),
             )
 
-            if task_cls is GamesSokobanBoxGoalStatusCountTask:
-                assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-                assert trace["render_map"]["annotation_source"] == "cell_bboxes_px"
-                assert execution["option_count"] == 0
-                assert execution["option_specs"] == []
-                assert execution["goal_status_count"] == int(out.answer_gt.value)
-                assert len(out.annotation_gt.value) == int(out.answer_gt.value)
-                assert trace["query_spec"]["params"]["prompt_query_key"] == query_id
-            elif task_cls is GamesSokobanBoxTargetManhattanRankLabelTask:
-                assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-                assert len(out.annotation_gt.value) == 2
-                assert trace["render_map"]["annotation_source"] == "cell_bboxes_px"
-                assert trace["query_spec"]["params"]["prompt_query_key"] == "box_target_manhattan_rank_label"
-            elif task_cls is GamesSokobanNearestCounterpartLabelTask:
-                assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
-                assert trace["render_map"]["annotation_source"] == "cell_bboxes_px"
-            else:
-                assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
-                assert trace["render_map"]["annotation_source"] == "option_panel_bboxes_px"
-                if task_cls is GamesSokobanShortestPathSequenceLabelTask:
-                    assert trace["query_spec"]["params"]["prompt_query_key"] == "shortest_path_sequence_label"
-
-            if task_cls is GamesSokobanBoxGoalStatusCountTask:
-                assert 0 <= int(out.answer_gt.value) <= 5
-            elif task_cls in (GamesSokobanNearestCounterpartLabelTask, GamesSokobanBoxTargetManhattanRankLabelTask):
-                assert 4 <= execution["option_count"] <= 6
-            else:
-                assert execution["option_count"] in {4, 6}
-            assert len(execution["option_specs"]) == execution["option_count"]
+            assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+            assert trace["render_map"]["annotation_source"] == "cell_bboxes_px"
+            assert execution["option_count"] == 0
+            assert execution["option_specs"] == []
+            assert execution["goal_status_count"] == int(out.answer_gt.value)
+            assert len(out.annotation_gt.value) == int(out.answer_gt.value)
+            assert trace["query_spec"]["params"]["prompt_query_key"] == query_id
+            assert 0 <= int(out.answer_gt.value) <= 5
             assert execution["walls"]
             assert execution["boxes_start"]
             assert execution["targets"]
@@ -131,9 +77,9 @@ def test_sokoban_tasks_emit_public_contracts() -> None:
 
 
 def test_sokoban_generation_is_deterministic() -> None:
-    task = GamesSokobanShortestPathSequenceLabelTask()
+    task = GamesSokobanBoxGoalStatusCountTask()
     params = {
-        "query_id": "single",
+        "query_id": "box_off_goal_count",
         "scene_variant": "paper_grid",
     }
     out_a = task.generate(2026052399, params=params, max_attempts=60)

@@ -15,7 +15,8 @@
 
 ## Generation Notes
 1. The board shows paired colored boxes and matching colored goal dots.
-2. The task asks either for boxes on their matching colored goal dots or boxes not on their matching colored goal dots.
-3. The answer is an integer from `0` to `5`.
-4. Annotation is the bbox set of the counted box cells; cardinality equals the answer.
-5. Prompt wording comes from `prompts/games/sokoban/games_sokoban_v1.json`.
+2. A box on its matching goal has the goal dot drawn on top of the box so the covered goal remains visible.
+3. The task asks either for boxes on their matching colored goal dots or boxes not on their matching colored goal dots.
+4. The answer is an integer from `0` to `5`.
+5. Annotation is the bbox set of the counted box cells; cardinality equals the answer.
+6. Prompt wording comes from `prompts/games/sokoban/games_sokoban_v1.json`.

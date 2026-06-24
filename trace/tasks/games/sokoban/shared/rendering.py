@@ -443,20 +443,15 @@ def _draw_board(
         )
         if on_matching_goal:
             target_color = target_color_map.get(str(target_label), box_color)
-            badge = (
-                box_bbox[0] + cell_size * 0.28,
-                box_bbox[1] + cell_size * 0.28,
-                box_bbox[2] - cell_size * 0.28,
-                box_bbox[3] - cell_size * 0.28,
-            )
+            center = ((box_bbox[0] + box_bbox[2]) * 0.5, (box_bbox[1] + box_bbox[3]) * 0.5)
+            radius = cell_size * 0.18
             dot = (
-                badge[0] + cell_size * 0.10,
-                badge[1] + cell_size * 0.10,
-                badge[2] - cell_size * 0.10,
-                badge[3] - cell_size * 0.10,
+                center[0] - radius,
+                center[1] - radius,
+                center[0] + radius,
+                center[1] + radius,
             )
-            draw.ellipse(badge, fill=(255, 255, 255), outline=target_color, width=max(2, int(cell_size * 0.04)))
-            draw.ellipse(dot, fill=target_color)
+            draw.ellipse(dot, fill=target_color, outline=(255, 255, 255), width=max(2, int(cell_size * 0.05)))
         if show_labels:
             draw_centered_text(draw, text=str(box_label), center=((bbox[0] + bbox[2]) * 0.5, (bbox[1] + bbox[3]) * 0.5), font=small_font, fill=(255, 255, 255), stroke_fill=style["wall_dark"], stroke_width=1)
         if str(box_label) == str(marked_box_label):
@@ -560,12 +555,12 @@ def render_sokoban_scene(
         float(board_x0 + render_params.board_panel_width_px),
         float(render_params.scene_margin_top_px + render_params.board_panel_height_px),
     )
-    available_w = float(render_params.board_panel_width_px - render_params.coord_gutter_px - 42)
-    available_h = float(render_params.board_panel_height_px - render_params.coord_gutter_px - 122)
+    available_w = float(render_params.board_panel_width_px)
+    available_h = float(render_params.board_panel_height_px)
     cell_size = min(float(render_params.main_cell_size_px), available_w / max(1, cols), available_h / max(1, rows))
     board_origin = (
-        float(board_panel[0] + render_params.coord_gutter_px + (available_w - (cell_size * cols)) * 0.5),
-        float(board_panel[1] + render_params.coord_gutter_px + 34),
+        float(board_panel[0] + (available_w - (cell_size * cols)) * 0.5),
+        float(board_panel[1] + (available_h - (cell_size * rows)) * 0.5),
     )
     start_cell = tuple(dataset["path_start"]) if "path_start" in dataset else None
     goal_cell = tuple(dataset["path_goal"]) if "path_goal" in dataset else None
@@ -654,7 +649,7 @@ def render_sokoban_scene(
             )
     for option_entity_id, bbox in option_panel_bbox_map.items():
         entities.append({"entity_id": option_entity_id, "type": "sokoban_option_panel", "bbox_px": list(bbox)})
-    scene_bbox = _bbox_union([board_panel, *option_panel_bbox_map.values()])
+    scene_bbox = _bbox_union([board_bbox, *option_panel_bbox_map.values()])
     return RenderedSokobanScene(
         image=image,
         entities=tuple(entities),

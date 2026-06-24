@@ -3,19 +3,25 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `tangent_packing`
-5. Query id: `circle_in_square_gap_area`
-6. Answer schema: `decimal_value_1dp`
-7. Annotation schema: `bbox_set`
+5. Query id: `single`
+6. Answer schema: `number` rounded to one decimal place
+7. Annotation schema: `bbox_map`
 
 ## Program Contract
-- `difference(value(circle_in_square_gap_area_source_a), value(circle_in_square_gap_area_source_b), mode=absolute); scene=tangent_packing; scope=circle_in_square_gap_area`
+- `curvilinear_gap_area(container=square, packed_shape=circle, given=square_side, target=shaded_area); scene=tangent_packing; scope=circle_in_square_gap_area`
 
 ## Prompt Bundle
-- Prompt text is loaded from the scene prompt bundle configured for `tangent_packing`.
+- Prompt text is loaded from the v1 scene prompt bundle configured for `tangent_packing`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+Prompt-facing annotation uses a role-bound pixel bbox map with exactly these keys:
+
+- `target_cue`
+- `packing_region`
+- `support_measurement`
+
+Numeric labels and formula metadata remain private verifier metadata unless they are visible witnesses.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

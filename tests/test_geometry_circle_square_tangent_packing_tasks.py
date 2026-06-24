@@ -6,6 +6,7 @@ import math
 
 import pytest
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.geometry.tangent_packing.circle_in_square_gap_area import (
     SCENE_ID,
     GeometryCircleInSquareGapAreaTask,
@@ -26,12 +27,25 @@ TASK_CLASSES = (
 )
 
 QUERY_IDS_BY_TASK = {
-    GeometryCircleInSquareRadiusFromGapAreaTask: ("circle_in_square_radius_from_gap_area",),
-    GeometrySquareInCircleSideFromGapAreaTask: ("square_in_circle_side_from_gap_area",),
-    GeometryTwoCirclesInRectangleRadiusFromGapAreaTask: ("two_circles_in_rectangle_radius_from_gap_area",),
-    GeometryCircleInSquareGapAreaTask: ("circle_in_square_gap_area",),
-    GeometrySquareInCircleGapAreaTask: ("square_in_circle_gap_area",),
-    GeometryTwoCirclesInRectangleGapAreaTask: ("two_circles_in_rectangle_gap_area",),
+    GeometryCircleInSquareRadiusFromGapAreaTask: (SINGLE_QUERY_ID,),
+    GeometrySquareInCircleSideFromGapAreaTask: (SINGLE_QUERY_ID,),
+    GeometryTwoCirclesInRectangleRadiusFromGapAreaTask: (SINGLE_QUERY_ID,),
+    GeometryCircleInSquareGapAreaTask: (SINGLE_QUERY_ID,),
+    GeometrySquareInCircleGapAreaTask: (SINGLE_QUERY_ID,),
+    GeometryTwoCirclesInRectangleGapAreaTask: (SINGLE_QUERY_ID,),
+}
+
+ANNOTATION_KEYS = {"target_cue", "packing_region", "support_measurement"}
+
+EXPECTED_FORMULA_BY_TASK = {
+    GeometryCircleInSquareRadiusFromGapAreaTask: lambda radius: float(radius),
+    GeometrySquareInCircleSideFromGapAreaTask: lambda radius: _round1(radius * math.sqrt(2.0)),
+    GeometryTwoCirclesInRectangleRadiusFromGapAreaTask: lambda radius: float(radius),
+    GeometryCircleInSquareGapAreaTask: lambda radius: _round1((2 * radius) ** 2 - math.pi * radius * radius),
+    GeometrySquareInCircleGapAreaTask: lambda radius: _round1(math.pi * radius * radius - 2 * radius * radius),
+    GeometryTwoCirclesInRectangleGapAreaTask: lambda radius: _round1(
+        (4 * radius) * (2 * radius) - 2 * math.pi * radius * radius
+    ),
 }
 
 
@@ -47,8 +61,8 @@ def test_tangent_packing_tasks_emit_public_contract(task_cls) -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id in QUERY_IDS_BY_TASK[task_cls]
     assert out.answer_gt.type == "number"
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 3
+    assert out.annotation_gt.type == "bbox_map"
+    assert set(out.annotation_gt.value) == ANNOTATION_KEYS
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
@@ -58,7 +72,9 @@ def test_tangent_packing_tasks_emit_public_contract(task_cls) -> None:
     assert trace["witness_symbolic"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert set(trace["projected_annotation"]["bbox_map"]) == ANNOTATION_KEYS
+    assert trace["witness_symbolic"]["source_witness_type"] == "bbox_map"
 
     radius = int(trace["execution_trace"]["radius"])
     square_side = int(trace["execution_trace"]["square_side"])
@@ -66,36 +82,11 @@ def test_tangent_packing_tasks_emit_public_contract(task_cls) -> None:
     container_height = int(trace["execution_trace"]["container_height"])
 
     assert square_side == 2 * radius
-    if out.query_id in {
-        "two_circles_in_rectangle_radius_from_width",
-        "two_circles_in_rectangle_gap_area",
-    }:
+    if task_cls in {GeometryTwoCirclesInRectangleRadiusFromGapAreaTask, GeometryTwoCirclesInRectangleGapAreaTask}:
         assert container_width == 4 * radius
         assert container_height == 2 * radius
 
-    if out.query_id in {
-        "circle_in_square_radius_from_side",
-        "circle_in_square_radius_from_gap_area",
-    }:
-        assert out.answer_gt.value == pytest.approx(float(radius))
-    elif out.query_id in {
-        "square_in_circle_side_from_radius",
-        "square_in_circle_side_from_gap_area",
-    }:
-        assert out.answer_gt.value == pytest.approx(_round1(radius * math.sqrt(2.0)))
-    elif out.query_id in {
-        "two_circles_in_rectangle_radius_from_width",
-        "two_circles_in_rectangle_radius_from_gap_area",
-    }:
-        assert out.answer_gt.value == pytest.approx(float(radius))
-    elif out.query_id == "circle_in_square_gap_area":
-        assert out.answer_gt.value == pytest.approx(_round1((2 * radius) ** 2 - math.pi * radius * radius))
-    elif out.query_id == "square_in_circle_gap_area":
-        assert out.answer_gt.value == pytest.approx(_round1(math.pi * radius * radius - 2 * radius * radius))
-    elif out.query_id == "two_circles_in_rectangle_gap_area":
-        assert out.answer_gt.value == pytest.approx(_round1((4 * radius) * (2 * radius) - 2 * math.pi * radius * radius))
-    else:
-        raise AssertionError(f"unexpected query id: {out.query_id}")
+    assert out.answer_gt.value == pytest.approx(EXPECTED_FORMULA_BY_TASK[task_cls](radius))
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -153,7 +144,8 @@ def test_tangent_packing_annotation_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.annotation_gt.value:
+        assert set(out.annotation_gt.value) == ANNOTATION_KEYS
+        for x0, y0, x1, y1 in out.annotation_gt.value.values():
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0

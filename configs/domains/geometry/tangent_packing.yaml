@@ -17,6 +17,5 @@ rendering:
       max_attempts: 6
 prompt:
   shared:
-    bundle_id: geometry_circle_square_tangent_packing_v0
+    bundle_id: geometry_tangent_packing_v1
     scene_key: tangent_packing_scene
-    task_key: tangent_packing_value_query

@@ -3,26 +3,28 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `special_quadrilateral`
-5. Query id: `parallelogram_opposite_side_expression`, `rhombus_all_sides_expression`, `kite_adjacent_equal_side_expression`, or `parallelogram_diagonal_bisection_expression`
-6. Answer schema: `integer`
-7. Annotation schema: `keyed_point_map`
+3. Task id: `task_geometry__special_quadrilateral__segment_length_value`
+4. Supported `query_id`: `parallelogram_opposite_side_expression`, `rhombus_all_sides_expression`, `kite_adjacent_equal_side_expression`, `parallelogram_diagonal_bisection_expression`
+5. Answer schema: `integer`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(visible_special_quadrilateral_algebraic_segment_relation, unknown_role=target_segment_length, formula_schema=special_quadrilateral_segment_equation); scene=special_quadrilateral; scope=segment_length_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from `geometry_special_quadrilateral_v0`.
+- Prompt text is loaded from `geometry_special_quadrilateral_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses keyed pixel points for the endpoints of the target and support segments:
+Prompt-facing annotation maps each visible witness point label to its pixel point `[x,y]`.
+The keys are the visible point labels required by the active construction: `A`, `B`, `C`, `D`, and `O` when a diagonal intersection is shown.
+The task keeps `point_map` rather than scalar segment annotation because the same scene contract also binds support points used by the algebraic relation.
 
-- `target_segment_start`
-- `target_segment_end`
-- `support_segment_start`
-- `support_segment_end`
-
-Expression labels, solved `x`, and theorem names remain private verifier metadata.
+## Query Semantics
+- `parallelogram_opposite_side_expression`: opposite side lengths in a parallelogram are equal.
+- `rhombus_all_sides_expression`: all side lengths in a rhombus are equal.
+- `kite_adjacent_equal_side_expression`: marked adjacent side lengths in a kite are equal.
+- `parallelogram_diagonal_bisection_expression`: diagonals of a parallelogram bisect each other.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

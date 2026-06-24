@@ -3,25 +3,28 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `special_quadrilateral`
-5. Query id: `parallelogram_opposite_angle_expression`, `parallelogram_consecutive_angle_expression`, `rhombus_diagonal_half_angle_expression`, or `kite_opposite_angle_expression`
-6. Answer schema: `integer`
-7. Annotation schema: `keyed_point_map`
+3. Task id: `task_geometry__special_quadrilateral__algebraic_angle_value`
+4. Supported `query_id`: `parallelogram_opposite_angle_expression`, `parallelogram_consecutive_angle_expression`, `rhombus_diagonal_half_angle_expression`, `kite_opposite_angle_expression`
+5. Answer schema: `integer`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(visible_special_quadrilateral_algebraic_angle_relation, unknown_role=target_angle_value, formula_schema=special_quadrilateral_angle_equation); scene=special_quadrilateral; scope=algebraic_angle_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from `geometry_special_quadrilateral_v0`.
+- Prompt text is loaded from `geometry_special_quadrilateral_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses keyed pixel points for the target and support angle vertices:
+Prompt-facing annotation maps each visible witness point label to its pixel point `[x,y]`.
+The keys are the visible point labels required by the active construction: `A`, `B`, `C`, `D`, and `O` when a diagonal intersection is shown.
+The task keeps `point_map` rather than scalar annotation because multiple role-bound labeled points are required.
 
-- `target_angle_vertex`
-- `support_angle_vertex`
-- diagonal endpoints when the active query uses a diagonal angle bisector
-
-Expression labels, solved `x`, and theorem names remain private verifier metadata.
+## Query Semantics
+- `parallelogram_opposite_angle_expression`: equal opposite angles in a parallelogram.
+- `parallelogram_consecutive_angle_expression`: supplementary consecutive angles in a parallelogram.
+- `rhombus_diagonal_half_angle_expression`: rhombus diagonal bisects a vertex angle.
+- `kite_opposite_angle_expression`: equal marked non-vertex opposite angles in a kite.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

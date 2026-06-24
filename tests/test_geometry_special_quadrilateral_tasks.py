@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import trace.tasks  # noqa: F401
-from trace.tasks.registry import create_task, list_task_ids
+from trace.tasks.registry import create_task
 
 
 TASK_QUERIES = {
@@ -31,12 +31,11 @@ def _generate(task_id: str, query_id: str, seed: int = 20260605):
 
 
 def test_special_quadrilateral_tasks_are_registered() -> None:
-    registered = set(list_task_ids())
     for task_id in TASK_QUERIES:
-        assert task_id in registered
+        assert create_task(task_id).task_id == task_id
 
 
-def test_special_quadrilateral_queries_emit_keyed_point_annotation() -> None:
+def test_special_quadrilateral_queries_emit_point_map_annotation() -> None:
     for task_id, query_ids in TASK_QUERIES.items():
         for index, query_id in enumerate(query_ids):
             output = _generate(task_id, query_id, seed=20260605 + index)
@@ -44,7 +43,7 @@ def test_special_quadrilateral_queries_emit_keyed_point_annotation() -> None:
             assert output.query_id == query_id
             assert output.answer_gt.type == "integer"
             assert isinstance(output.answer_gt.value, int)
-            assert output.annotation_gt.type == "keyed_point_map"
+            assert output.annotation_gt.type == "point_map"
             assert isinstance(output.annotation_gt.value, dict)
             assert output.annotation_gt.value
             width, height = output.image.size
@@ -56,8 +55,11 @@ def test_special_quadrilateral_queries_emit_keyed_point_annotation() -> None:
             trace = output.trace_payload
             assert trace["execution_trace"]["query_id"] == query_id
             assert trace["execution_trace"]["answer"] == output.answer_gt.value
-            assert trace["projected_annotation"]["type"] == "keyed_point_map"
-            assert trace["projected_annotation"]["keyed_point_map"] == output.annotation_gt.value
+            assert trace["projected_annotation"]["type"] == "point_map"
+            assert trace["projected_annotation"]["point_map"] == output.annotation_gt.value
+            assert set(output.annotation_gt.value).issuperset({"A", "B", "C", "D"})
+            assert trace["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
+            assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_special_quadrilateral_v1"
             assert "task_variant" not in trace["query_spec"]["params"]
 
 
@@ -82,3 +84,13 @@ def test_special_quadrilateral_generation_is_deterministic() -> None:
     assert first.answer_gt == second.answer_gt
     assert first.annotation_gt == second.annotation_gt
     assert first.trace_payload["execution_trace"] == second.trace_payload["execution_trace"]
+
+
+def test_special_quadrilateral_rejects_unsupported_query() -> None:
+    task = create_task("task_geometry__special_quadrilateral__diagonal_angle_value")
+    try:
+        task.generate(20260605, params={"query_id": "__bad__"}, max_attempts=3)
+    except ValueError as exc:
+        assert "query_id" in str(exc)
+    else:
+        raise AssertionError("unsupported query id was accepted")

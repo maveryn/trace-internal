@@ -64,6 +64,28 @@ class FlowNetworkAxes:
 
 
 @dataclass(frozen=True)
+class ResolvedFlowNetworkAxes:
+    """Resolved semantic and visual axes for one rendered network."""
+
+    node_count: int
+    target_cut_edge_count: int
+    target_flow_value: int
+    distractor_edge_count: int
+    layout_variant: str
+    layout_transform_variant: str
+    edge_routing_variant: str
+    node_color_name: str
+    node_count_probabilities: Dict[str, float]
+    target_cut_edge_count_probabilities: Dict[str, float]
+    target_flow_value_probabilities: Dict[str, float]
+    distractor_edge_count_probabilities: Dict[str, float]
+    layout_variant_probabilities: Dict[str, float]
+    layout_transform_variant_probabilities: Dict[str, float]
+    edge_routing_variant_probabilities: Dict[str, float]
+    node_color_name_probabilities: Dict[str, float]
+
+
+@dataclass(frozen=True)
 class CutResult:
     """One verified source-sink cut."""
 
@@ -96,6 +118,22 @@ class FlowNetworkRender:
     post_noise_meta: Mapping[str, Any]
 
 
+@dataclass(frozen=True)
+class FlowNetworkSceneBundle:
+    """Scene-level render bundle before public task answer binding."""
+
+    axes: ResolvedFlowNetworkAxes
+    render_params: Any
+    flow_sample: FlowNetworkSample
+    render: FlowNetworkRender
+    annotation_edges: Tuple[Tuple[str, str], ...]
+    annotation_projection: Mapping[str, Any]
+    annotation_segments: Tuple[Any, ...]
+    capacity_label_font_size_px: int
+    capacity_label_offset_px: int
+    capacity_label_padding_px: int
+
+
 __all__ = [
     "SCENE_ID",
     "SUPPORTED_FLOW_LAYOUT_VARIANTS",
@@ -105,4 +143,6 @@ __all__ = [
     "FlowNetworkDefaults",
     "FlowNetworkRender",
     "FlowNetworkSample",
+    "FlowNetworkSceneBundle",
+    "ResolvedFlowNetworkAxes",
 ]

@@ -14,10 +14,8 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.optimization.max_flow_value import (
-    GraphOptimizationMaxFlowValueTask,
-    GraphOptimizationMinCutEdgeCountTask,
-)
+from trace.tasks.graph.flow_network.max_flow_value import GraphFlowNetworkMaxFlowValueTask
+from trace.tasks.graph.flow_network.min_cut_edge_count import GraphFlowNetworkMinCutEdgeCountTask
 from tests.helpers import read_jsonl
 
 
@@ -64,11 +62,11 @@ def _unique_min_cut(graph: nx.DiGraph, source: str = "S", sink: str = "T") -> tu
 
 
 def test_graph_optimization_max_flow_contract_matches_trace() -> None:
-    task = GraphOptimizationMaxFlowValueTask()
+    task = GraphFlowNetworkMaxFlowValueTask()
     out = task.generate(
         32001,
         params={
-            "query_id": "max_flow_value",
+            "query_id": "single",
             "target_answer": 5,
             "target_cut_edge_count": 2,
             "node_count": 6,
@@ -82,7 +80,7 @@ def test_graph_optimization_max_flow_contract_matches_trace() -> None:
 
     assert "task_graph__flow_network__max_flow_value" in TASK_REGISTRY
     assert out.scene_id == "flow_network"
-    assert out.query_id == "max_flow_value"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "segment_set"
     assert int(out.answer_gt.value) == 5
@@ -108,10 +106,10 @@ def test_graph_optimization_max_flow_contract_matches_trace() -> None:
 
 def test_graph_optimization_max_flow_all_query_contracts() -> None:
     cases = (
-        (GraphOptimizationMaxFlowValueTask(), "max_flow_value", 5, 2),
-        (GraphOptimizationMinCutEdgeCountTask(), "minimum_cut_edge_count", 3, 3),
+        (GraphFlowNetworkMaxFlowValueTask(), "max_flow_value", 5, 2),
+        (GraphFlowNetworkMinCutEdgeCountTask(), "minimum_cut_edge_count", 3, 3),
     )
-    for offset, (task, query_id, target_answer, cut_count) in enumerate(cases):
+    for offset, (task, objective, target_answer, cut_count) in enumerate(cases):
         out = task.generate(
             32010 + offset,
             params={
@@ -126,9 +124,10 @@ def test_graph_optimization_max_flow_all_query_contracts() -> None:
         graph = _capacity_graph_from_trace(trace)
         min_cut_value, min_cut_edges = _unique_min_cut(graph)
 
-        assert out.query_id == query_id
+        assert out.query_id == "single"
+        assert execution["objective"] == objective
         assert int(nx.maximum_flow_value(graph, "S", "T", capacity="capacity")) == int(min_cut_value)
-        if query_id == "minimum_cut_edge_count":
+        if objective == "minimum_cut_edge_count":
             assert int(out.answer_gt.value) == len(min_cut_edges) == int(target_answer)
         else:
             assert int(out.answer_gt.value) == int(min_cut_value) == int(target_answer)
@@ -137,21 +136,21 @@ def test_graph_optimization_max_flow_all_query_contracts() -> None:
 
 
 def test_graph_optimization_max_flow_prompt_examples_match_contract() -> None:
-    task = GraphOptimizationMinCutEdgeCountTask()
+    task = GraphFlowNetworkMinCutEdgeCountTask()
     out = task.generate(32020, params={}, max_attempts=100)
 
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     assert answer_only == {"answer": 2}
     assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
-    assert answer_and_annotation["annotation"] == [[[180, 220], [310, 180]], [[310, 180], [430, 260]]]
+    assert answer_and_annotation["annotation"] == [[[170, 280], [330, 210]], [[170, 280], [330, 350]]]
     assert answer_and_annotation["answer"] == 2
-    assert "pixel centers of the two endpoint nodes" in out.prompt_variants["answer_and_annotation"]
+    assert "endpoint node centers" in out.prompt_variants["answer_and_annotation"]
 
 
 def test_graph_optimization_max_flow_rejects_removed_edge_query() -> None:
-    task = GraphOptimizationMaxFlowValueTask()
-    with pytest.raises(ValueError, match="public task query_id must match"):
+    task = GraphFlowNetworkMaxFlowValueTask()
+    with pytest.raises(ValueError, match="unsupported query_id"):
         task.generate(
             32025,
             params={"query_id": "max_flow_after_edge_removal_value"},
@@ -160,7 +159,7 @@ def test_graph_optimization_max_flow_rejects_removed_edge_query() -> None:
 
 
 def test_graph_optimization_max_flow_balanced_sampling_covers_queries() -> None:
-    task = GraphOptimizationMaxFlowValueTask()
+    task = GraphFlowNetworkMaxFlowValueTask()
     answers: Counter[int] = Counter()
     node_counts: Counter[int] = Counter()
     layout_variants: Counter[str] = Counter()
@@ -172,7 +171,7 @@ def test_graph_optimization_max_flow_balanced_sampling_covers_queries() -> None:
             max_attempts=100,
         )
         execution = out.trace_payload["execution_trace"]
-        assert out.query_id == "max_flow_value"
+        assert out.query_id == "single"
         answers[int(out.answer_gt.value)] += 1
         node_counts[int(execution["node_count"])] += 1
         layout_variants[str(execution["layout_variant_requested"])] += 1
@@ -208,7 +207,6 @@ def test_graph_optimization_max_flow_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
-    assert all(record["scene_id"] == "optimization" for record in train_records)
     assert all(record["scene_id"] == "flow_network" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))

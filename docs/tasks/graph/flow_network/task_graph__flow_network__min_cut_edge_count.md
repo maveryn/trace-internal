@@ -1,57 +1,42 @@
 # `task_graph__flow_network__min_cut_edge_count`
 
-## 1) Identity
+## Summary
 1. Domain: `graph`
-2. Scene: `optimization`
-3. Scene id: `flow_network`
-4. Task id: `task_graph__flow_network__min_cut_edge_count`
-5. Objective: count the directed edges in the unique minimum cut of a capacity network.
+2. Scene id: `flow_network`
+3. Task id: `task_graph__flow_network__min_cut_edge_count`
+4. Objective: count the directed edges in the unique minimum `S`-`T` cut.
+5. Implementation: `trace/tasks/graph/flow_network/min_cut_edge_count.py`.
 
-## 2) Scene + Task Contract
-1. Branch metadata: `query_id`
-2. `query_id`: `minimum_cut_edge_count`
-3. `answer_gt.type`: `integer`
-4. `annotation_gt.type`: `segment_set`
-5. Scene contract:
-   - one single-panel directed capacity graph,
-   - node `S` is the source and node `T` is the sink,
-   - every arrow has a visible integer capacity,
-   - the source-sink minimum cut used for annotation is unique by construction,
-   - default node count is `5..6`,
-   - answer support is `1..5`.
-6. Query contract:
-   - `minimum_cut_edge_count` asks how many directed edges are in the unique minimum cut.
+## Query IDs
+1. Supported `query_id` values: `single`
+2. Internal prompt key: `minimum_cut_edge_count`.
+3. Public sampling is at the task-id level.
 
-## 3) Prompt Contract
-1. Bundle: `graph_optimization_v0`
-2. `scene_key`: `single_graph_optimization`
-3. `task_key`: `max_flow_query`
-4. Modes: `answer_only`, `answer_and_annotation`
-5. Answer-only JSON shape: `{"answer":2}`
-6. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}`
-7. Prompt-facing annotation is a `segment_set` for the unique minimum cut; each segment is `[[x1, y1], [x2, y2]]` using the endpoint node centers of one directed edge.
+## Taxonomy Contract
+1. Program contract: read a directed capacity graph, find the unique minimum `S`-`T` cut, and count the directed edges in that cut.
+2. Answer schema: `integer`.
+3. Annotation schema: `segment_set`.
+4. Node count, capacity values, target cut-edge count, target flow value, distractor-edge count, graph style, font, background, and layout transform are generation/render metadata, not public query branches.
 
-## 4) Annotation + Trace Contract
-1. Prompt-facing annotation is a `segment_set` over directed minimum-cut edges.
-2. `answer_gt.value` equals `execution_trace.answer`.
-3. `execution_trace.capacity_by_edge` records every visible capacity.
-4. `execution_trace.original_max_flow_value` and `original_min_cut_edges` record the network solution.
-5. `scene_ir.entities` stores node geometry, edge geometry, capacity-label bboxes, source/sink roles, and cut-edge flags.
-6. `projected_annotation` includes the public `segment_set`.
+## Program Contract
+- `count(edges(unique_minimum_cut(source=S, sink=T, directed_capacity_graph))); output=integer; annotation=segment_set(unique_minimum_cut_edges); scene=flow_network; scope=min_cut_edge_count`
 
-## 5) Visual Policy
-1. Rendering uses the shared graph light-panel style and role-appropriate shared font pool from `configs/domains/graph/base.yaml`.
-2. Source `S` and sink `T` are visually highlighted.
-3. Title, node labels, and capacity labels use readable text styles with recorded contrast metadata.
-4. Flow-network generation uses a layered left-to-right layout with straight arrows so the source/sink direction remains readable.
-5. Optional graph context text can appear as non-answer visual context.
-6. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.
+## Answer And Annotation
+1. Answer type: `integer`.
+2. Annotation type: `segment_set`.
+3. Annotation marks every directed edge in the unique minimum `S`-`T` cut as a pixel-space segment between endpoint node centers.
+4. Count tasks require `answer_gt.value == len(annotation_gt.value)`.
 
-## 6) Determinism + Constraints
-1. Deterministic sampling/rendering from `instance_seed`.
-2. Answers and annotation come from the same finalized capacity graph and cut enumeration.
-3. No semantic auto-relaxation: failures do not weaken unique-cut, capacity, or edge constraints.
+## Rendering Contract
+1. The scene shows one directed capacity network with highlighted `S` and `T` nodes.
+2. Every visible directed edge has a readable integer capacity label.
+3. Visual style, fonts, context text, background, layout transform, and post-render noise are non-semantic and recorded in trace metadata.
+4. Annotation projection is computed after final graph layout and image-level variation.
 
-## 7) Complexity + Tests
-1. Complexity components: `topology_reasoning`, `visual_scan`, `ambiguity`, `clutter`
-2. Tests: `tests/test_graph_optimization_max_flow_value_tasks.py`
+## Prompt Contract
+1. Prompt text comes from `prompts/graph/flow_network/graph_flow_network_v1.json`.
+2. `scene_key`: `capacity_network`.
+3. `task_key`: `flow_network_query`.
+4. `query_key`: `minimum_cut_edge_count`.
+5. Answer-only mode emits `{"answer": ...}`.
+6. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with `annotation` matching the `segment_set` schema.

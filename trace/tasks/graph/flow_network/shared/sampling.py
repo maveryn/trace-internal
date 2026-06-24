@@ -8,18 +8,196 @@ from typing import Dict, Mapping, Sequence, Tuple
 
 import networkx as nx
 
+from .....core.seed import spawn_rng
+from ....shared.config_defaults import group_default
+from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ....shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.graph_scene import SUPPORTED_EDGE_ROUTING_VARIANTS, SUPPORTED_LAYOUT_TRANSFORM_VARIANTS
 from ...shared.graph_sample_types import (
     GraphTopologySample,
     canonicalize_graph_edge_label,
     graph_label_sort_key,
 )
+from ...shared.style import SUPPORTED_NODE_COLOR_NAMES
 from .state import (
     FLOW_INTERNAL_LABELS,
+    SUPPORTED_FLOW_LAYOUT_VARIANTS,
     CutResult,
     FlowNetworkAxes,
     FlowNetworkDefaults,
     FlowNetworkSample,
+    ResolvedFlowNetworkAxes,
 )
+
+
+def integer_probability_map(values: Sequence[int], *, selected: int | None = None) -> Dict[str, float]:
+    """Return a JSON-stable probability map over an integer support."""
+
+    return dict(uniform_probability_map(tuple(int(value) for value in values), selected=selected))
+
+
+def resolve_integer_axis(
+    *,
+    params: Mapping[str, object],
+    instance_seed: int,
+    namespace: str,
+    support: Sequence[int],
+    explicit_key: str,
+) -> Tuple[int, Dict[str, float]]:
+    """Resolve one integer generation axis using TRACE's deterministic cursor policy."""
+
+    support_tuple = tuple(int(value) for value in support)
+    if not support_tuple:
+        raise ValueError(f"empty support for {namespace}")
+    explicit = params.get(str(explicit_key))
+    if explicit is not None:
+        value = int(explicit)
+        if int(value) not in set(support_tuple):
+            raise ValueError(f"{explicit_key} is outside feasible support")
+        return int(value), integer_probability_map(support_tuple, selected=int(value))
+    index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
+    value = int(support_tuple[int(index % len(support_tuple))])
+    return int(value), integer_probability_map(support_tuple)
+
+
+def _resolve_named_axis(
+    *,
+    params: Mapping[str, object],
+    gen_defaults: Mapping[str, object],
+    instance_seed: int,
+    namespace: str,
+    explicit_key: str,
+    weights_key: str,
+    balance_flag_key: str,
+    supported: Sequence[str],
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve one visual/style axis without depending on public task identity."""
+
+    supported_values = tuple(str(value) for value in supported)
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected_variant, probabilities = resolve_variant(
+        rng,
+        params=params,
+        gen_defaults=gen_defaults,
+        supported_variants=supported_values,
+        explicit_key=str(explicit_key),
+        weights_key=str(weights_key),
+    )
+    variant = apply_balanced_variant_sampling(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=gen_defaults,
+        selected_variant=str(selected_variant),
+        variant_probabilities=probabilities,
+        supported_variants=supported_values,
+        balance_flag_key=str(balance_flag_key),
+        explicit_key=str(explicit_key),
+        weights_key=str(weights_key),
+        sampling_namespace=str(namespace),
+    )
+    return str(variant), {str(key): float(value) for key, value in sorted(probabilities.items())}
+
+
+def resolve_flow_network_axes(
+    *,
+    instance_seed: int,
+    params: Mapping[str, object],
+    gen_defaults: Mapping[str, object],
+    namespace: str,
+    target_cut_edge_count: int,
+    target_cut_edge_count_probabilities: Mapping[str, float],
+    target_flow_value: int,
+    target_flow_value_probabilities: Mapping[str, float],
+    distractor_support: Sequence[int],
+    defaults: FlowNetworkDefaults,
+) -> ResolvedFlowNetworkAxes:
+    """Resolve scene-level axes common to flow-network objectives."""
+
+    node_count_min = int(
+        params.get(
+            "node_count_min",
+            group_default(gen_defaults, "node_count_min", int(defaults.node_count_min)),
+        )
+    )
+    node_count_max = int(
+        params.get(
+            "node_count_max",
+            group_default(gen_defaults, "node_count_max", int(defaults.node_count_max)),
+        )
+    )
+    node_support = tuple(range(max(4, int(node_count_min)), int(node_count_max) + 1))
+    node_count, node_count_probabilities = resolve_integer_axis(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.node_count",
+        support=node_support,
+        explicit_key="node_count",
+    )
+    distractor_edge_count, distractor_edge_count_probabilities = resolve_integer_axis(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.distractor_edge_count",
+        support=tuple(int(value) for value in distractor_support),
+        explicit_key="distractor_edge_count",
+    )
+    layout_variant, layout_variant_probabilities = _resolve_named_axis(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.layout_variant",
+        explicit_key="layout_variant",
+        weights_key="layout_variant_weights",
+        balance_flag_key="balanced_layout_variant_sampling",
+        supported=SUPPORTED_FLOW_LAYOUT_VARIANTS,
+    )
+    layout_transform_variant, layout_transform_variant_probabilities = _resolve_named_axis(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.layout_transform_variant",
+        explicit_key="layout_transform_variant",
+        weights_key="layout_transform_variant_weights",
+        balance_flag_key="balanced_layout_transform_variant_sampling",
+        supported=SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
+    )
+    edge_routing_variant, edge_routing_variant_probabilities = _resolve_named_axis(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.edge_routing_variant",
+        explicit_key="edge_routing_variant",
+        weights_key="edge_routing_variant_weights",
+        balance_flag_key="balanced_edge_routing_variant_sampling",
+        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
+    )
+    node_color_name, node_color_name_probabilities = _resolve_named_axis(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.node_color_name",
+        explicit_key="node_color_name",
+        weights_key="node_color_name_weights",
+        balance_flag_key="balanced_node_color_name_sampling",
+        supported=SUPPORTED_NODE_COLOR_NAMES,
+    )
+    return ResolvedFlowNetworkAxes(
+        node_count=int(node_count),
+        target_cut_edge_count=int(target_cut_edge_count),
+        target_flow_value=int(target_flow_value),
+        distractor_edge_count=int(distractor_edge_count),
+        layout_variant=str(layout_variant),
+        layout_transform_variant=str(layout_transform_variant),
+        edge_routing_variant=str(edge_routing_variant),
+        node_color_name=str(node_color_name),
+        node_count_probabilities=dict(node_count_probabilities),
+        target_cut_edge_count_probabilities=dict(target_cut_edge_count_probabilities),
+        target_flow_value_probabilities=dict(target_flow_value_probabilities),
+        distractor_edge_count_probabilities=dict(distractor_edge_count_probabilities),
+        layout_variant_probabilities=dict(layout_variant_probabilities),
+        layout_transform_variant_probabilities=dict(layout_transform_variant_probabilities),
+        edge_routing_variant_probabilities=dict(edge_routing_variant_probabilities),
+        node_color_name_probabilities=dict(node_color_name_probabilities),
+    )
 
 
 def node_labels(node_count: int) -> Tuple[str, ...]:
@@ -301,8 +479,11 @@ def sample_flow_network(
 __all__ = [
     "all_st_cuts",
     "build_topology_sample",
+    "integer_probability_map",
     "node_labels",
     "positive_capacity_parts",
+    "resolve_flow_network_axes",
+    "resolve_integer_axis",
     "sample_flow_network",
     "unique_min_cut",
 ]

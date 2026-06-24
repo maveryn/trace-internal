@@ -2,68 +2,170 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from collections.abc import Mapping
+from typing import Any
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.output import build_style_legend_task_components
-from .shared.style_legend_common import EXTREMUM_QUERY_IDS
+from trace.core.seed import spawn_rng
+from trace.tasks.charts.style_legend._lifecycle import (
+    package_style_legend_plan,
+    run_style_legend_lifecycle,
+)
+from trace.tasks.charts.style_legend.shared.defaults import balanced_choice, gen_int
+from trace.tasks.charts.style_legend.shared.prompts import (
+    ANSWER_HINT_LABEL,
+    ANSWER_ONLY_EXAMPLES,
+    JSON_EXAMPLES,
+    POINT_HINT,
+)
+from trace.tasks.charts.style_legend.shared.sampling import (
+    base_series,
+    common_setup,
+    package_dataset,
+    replace_series_value,
+)
+from trace.tasks.charts.style_legend.shared.state import DOMAIN, point_id
+from trace.tasks.registry import register_task
 
 
+TASK_ID = "task_charts__style_legend__x_position_extremum_series_label"
+SUPPORTED_QUERY_IDS = (
+    "x_position_highest_series_label",
+    "x_position_lowest_series_label",
+)
 DEFAULT_QUERY_ID = "x_position_highest_series_label"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+TASK_PARAM_DEFAULTS: dict[str, Any] = {}
+PROGRAM_CODE = "arg_extremum(series, value(series, x_position), direction={highest,lowest}); output=string_label; annotation=point; scene=style_legend; scope=x_position_extremum_series_label"
+
+
+def _direction(selected: str) -> str:
+    if str(selected) == "x_position_highest_series_label":
+        return "highest"
+    if str(selected) == "x_position_lowest_series_label":
+        return "lowest"
+    raise ValueError(f"unsupported query_id: {selected}")
+
+
+def _build_plan(params: Mapping[str, Any], seed: int, selected: str, probabilities: Mapping[str, float]):
+    """Sample one extremal marker objective and bind the selected point."""
+
+    task_params = {**TASK_PARAM_DEFAULTS, **dict(params)}
+    (
+        x_count,
+        series_count,
+        labels_x,
+        meta_x,
+        labels_series,
+        meta_series,
+        palette_mode,
+        palette_probs,
+        legend_position,
+        legend_probs,
+        styles,
+    ) = common_setup(task_params, instance_seed=int(seed))
+    value_min = int(gen_int(task_params, "style_legend_value_min", 0))
+    value_max = int(gen_int(task_params, "style_legend_value_max", 100))
+    if int(value_min) >= int(value_max):
+        raise ValueError("style_legend_value_min must be lower than style_legend_value_max")
+    x_index = int(
+        balanced_choice(
+            tuple(range(1, max(2, int(x_count) - 1))),
+            task_params,
+            instance_seed=int(seed),
+            namespace=f"{TASK_ID}.x_index",
+        )
+    )
+    answer_index = int(
+        balanced_choice(
+            tuple(range(int(series_count))),
+            task_params,
+            instance_seed=int(seed),
+            namespace=f"{TASK_ID}.answer_series",
+        )
+    )
+    series = base_series(
+        labels=labels_series,
+        x_count=int(x_count),
+        styles=styles,
+        instance_seed=int(seed),
+        value_min=int(value_min),
+        value_max=int(value_max),
+    )
+    rng = spawn_rng(int(seed), f"{TASK_ID}.force")
+    direction = _direction(str(selected))
+    target_value = int(rng.randint(72, 92)) if direction == "highest" else int(rng.randint(8, 28))
+    gap_min = max(3, int(gen_int(task_params, "style_legend_extremum_gap_min", 8)))
+    gap_max = max(int(gap_min), int(gen_int(task_params, "style_legend_extremum_gap_max", 26)))
+    updated = []
+    for index, item in enumerate(series):
+        if int(index) == int(answer_index):
+            value = int(target_value)
+        elif direction == "highest":
+            value = max(int(value_min) + 3, int(target_value) - int(rng.randint(int(gap_min), int(gap_max))))
+        else:
+            value = min(int(value_max) - 3, int(target_value) + int(rng.randint(int(gap_min), int(gap_max))))
+        updated.append(replace_series_value(item, x_index=int(x_index), value=int(value)))
+    answer_series = updated[int(answer_index)]
+    dataset = package_dataset(
+        x_labels_value=labels_x,
+        x_label_meta=meta_x,
+        series=updated,
+        series_label_meta=meta_series,
+        target_x_index=int(x_index),
+        threshold_value=None,
+        palette_mode=str(palette_mode),
+        palette_mode_probabilities=palette_probs,
+        legend_position=str(legend_position),
+        legend_position_probabilities=legend_probs,
+    )
+    return package_style_legend_plan(
+        dataset=dataset,
+        params=task_params,
+        answer_value=str(answer_series.label),
+        answer_type="string",
+        annotation_type="point",
+        annotation_marker_ids=(point_id(str(answer_series.series_id), int(x_index)),),
+        prompt_key=str(selected),
+        prompt_slots={
+            "x_label": str(labels_x[int(x_index)]),
+            "extremum_direction": str(direction),
+        },
+        answer_hint=ANSWER_HINT_LABEL,
+        annotation_hint=POINT_HINT,
+        json_example=str(JSON_EXAMPLES["extremum_label"]),
+        json_example_answer_only=str(ANSWER_ONLY_EXAMPLES["extremum_label"]),
+        program_code=PROGRAM_CODE,
+        reasoning_load=0.58,
+        objective_trace={
+            "x_label": str(labels_x[int(x_index)]),
+            "extremum_direction": str(direction),
+            "answer_series_id": str(answer_series.series_id),
+            "answer_series_label": str(answer_series.label),
+            "answer_support": [str(label) for label in labels_series],
+            "query_id_probabilities": dict(probabilities),
+        },
+    )
 
 
 @register_task
 class ChartsStyleLegendXPositionExtremumSeriesLabelTask:
     """Select the styled legend series with an extremal value at one x position."""
 
-    task_id = "task_charts__style_legend__x_position_extremum_series_label"
-    domain = "charts"
-    scene_id = "style_legend"
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "x_position_extremum_series_label"
-    supported_query_ids = EXTREMUM_QUERY_IDS
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = DEFAULT_QUERY_ID
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        return run_style_legend_lifecycle(
+            task=self,
             instance_seed=int(instance_seed),
             params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=self.task_id,
+            max_attempts=int(max_attempts),
+            default_query_id=self.default_query_id,
+            build_plan=_build_plan,
         )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_style_legend_task_components(
-                    task_id=self.task_id,
-                    selected_query_id=str(selected_query_id),
-                    query_id_probabilities=query_probabilities,
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                    max_attempts=1,
-                )
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=components.answer_value),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=components.annotation_value),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id="style_legend",
-                    query_id=str(components.query_id),
-                )
-            except Exception as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
 
 
 __all__ = ["ChartsStyleLegendXPositionExtremumSeriesLabelTask"]

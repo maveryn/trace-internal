@@ -77,23 +77,3 @@ rendering:
 prompt:
   shared:
     bundle_id: charts_style_legend_v1
-    scene_key_style_legend: style_legend_single_axis
-    task_key_style_legend: style_legend_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
-      in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
-      the final answer.
-    object_description_style_legend: a scientific line chart where series are identified
-      by legend style, including line pattern, marker shape, and color or grayscale
-      tone
-    answer_hint_count: set "answer" to the requested count as an integer
-    answer_hint_label: set "answer" to the exact visible series label as a string
-    answer_hint_value: set "answer" to the requested value as an integer
-    annotation_hint_style_legend_point_set: set "annotation" to an array of [x,y]
-      pixel points at the centers of the plotted points used to answer
-    json_example_style_legend_extremum_label: '{"annotation":[[420,260],[420,340],[420,410]],"answer":"M7"}'
-    json_example_style_legend_pairwise_gap_value: '{"annotation":[[510,230],[510,390]],"answer":28}'
-    json_example_style_legend_threshold_count: '{"annotation":[[610,210],[610,285],[610,360]],"answer":3}'
-    json_example_answer_only_style_legend_extremum_label: '{"answer":"M7"}'
-    json_example_answer_only_style_legend_pairwise_gap_value: '{"answer":28}'
-    json_example_answer_only_style_legend_threshold_count: '{"answer":3}'

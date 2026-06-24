@@ -15,6 +15,13 @@
       "",
       "",
       ""
+    ],
+    "terrain_type_tile_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -27,6 +34,9 @@
     "query:movement_reachable_tile_count": [
       "movement_points",
       "terrain_rules"
+    ],
+    "query:terrain_type_tile_count": [
+      "terrain_label"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -86,6 +96,13 @@
       "With up to {movement_points} movement points, count the tiles the blue unit can reach, excluding its starting tile. {terrain_rules}",
       "{terrain_rules} How many non-starting tiles are reachable by the blue unit within {movement_points} movement points?",
       "The blue unit may spend up to {movement_points} movement points. {terrain_rules} Count every reachable tile except the starting tile."
+    ],
+    "terrain_type_tile_count": [
+      "How many visible {terrain_label} tiles are in the map?",
+      "Count the {terrain_label} terrain tiles in the tactical map.",
+      "What is the number of visible {terrain_label} tiles?",
+      "How many grid cells are {terrain_label} terrain?",
+      "Count every visible tile whose terrain type is {terrain_label}."
     ]
   },
   "allow_empty_task_templates": true

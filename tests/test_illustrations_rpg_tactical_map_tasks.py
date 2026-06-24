@@ -3,6 +3,7 @@ from __future__ import annotations
 from trace.tasks.registry import create_task
 from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_count import TASK_ID as COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_label import TASK_ID as LABEL_TASK_ID
+from trace.tasks.illustrations.rpg_tactical_map.terrain_type_tile_count import TASK_ID as TERRAIN_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.shared.relations import (
     TERRAIN_GRASS,
     TERRAIN_MOUNTAIN,
@@ -222,3 +223,44 @@ def test_rpg_tactical_map_movement_reachable_tile_count_contract() -> None:
         cost = costs_by_tile_id.get(tile_id)
         if cost is not None and int(cost) <= movement_budget:
             assert tile_id in set(counted_tile_ids)
+
+
+def test_rpg_tactical_map_terrain_type_tile_count_contract() -> None:
+    task = create_task(TERRAIN_COUNT_TASK_ID)
+    out = task.generate(
+        2026062405,
+        params={
+            "canvas_profile": "square",
+            "target_terrain": "forest",
+        },
+        max_attempts=30,
+    )
+    assert out.scene_id == "rpg_tactical_map"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "integer"
+    assert 1 <= int(out.answer_gt.value) <= 18
+    assert out.annotation_gt.type == "bbox_set"
+    width, height = out.image.size
+    for bbox in out.annotation_gt.value:
+        _assert_bbox_inside_canvas(bbox, width=width, height=height)
+    assert "forest" in out.prompt
+
+    trace = out.trace_payload
+    render_map = trace["render_map"]
+    target_terrain = str(render_map["target_terrain"])
+    counted_tile_ids = [str(tile_id) for tile_id in render_map["counted_tile_ids"]]
+    assert target_terrain == "forest"
+    assert int(render_map["answer_count"]) == int(out.answer_gt.value)
+    assert len(counted_tile_ids) == int(out.answer_gt.value)
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert render_map["counted_tile_bboxes_px"] == out.annotation_gt.value
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_tactical_map_v0"
+    assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_tactical_map"
+
+    terrain_by_tile_id = trace["execution_trace"]["terrain_by_tile_id"]
+    assert set(counted_tile_ids) == {
+        str(tile_id)
+        for tile_id, terrain in terrain_by_tile_id.items()
+        if str(terrain) == target_terrain
+    }

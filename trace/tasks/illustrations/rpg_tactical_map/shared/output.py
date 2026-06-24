@@ -143,6 +143,29 @@ def movement_reachable_count_render_map(
     }
 
 
+def terrain_type_count_render_map(
+    *,
+    scene: RpgTacticalMapScene,
+    target_terrain: str,
+    counted_tile_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Return task render-map fields for counting one terrain type."""
+
+    tiles_by_id = {str(tile.tile_id): tile for tile in scene.tiles}
+    counted_ids = [str(tile_id) for tile_id in counted_tile_ids]
+    return {
+        "image_id": "img0",
+        "target_terrain": str(target_terrain),
+        "counted_tile_ids": list(counted_ids),
+        "counted_tile_bboxes_px": [
+            rounded_bbox(tiles_by_id[str(tile_id)].bbox_xyxy)
+            for tile_id in counted_ids
+        ],
+        "answer_count": int(len(counted_ids)),
+        "player_unit": scene.units[0].as_dict() if scene.units else {},
+    }
+
+
 __all__ = [
     "bbox_projection",
     "bbox_set_projection",
@@ -151,4 +174,5 @@ __all__ = [
     "rounded_bbox",
     "rpg_tactical_map_render_spec",
     "rpg_tactical_map_scene_ir",
+    "terrain_type_count_render_map",
 ]

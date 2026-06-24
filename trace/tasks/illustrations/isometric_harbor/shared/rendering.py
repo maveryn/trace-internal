@@ -12,7 +12,7 @@ from .state import BBox, IsoHarborEntity, IsoHarborScene, IsoHarborTile
 
 
 SCENE_ID = "isometric_harbor"
-RENDERER_ID = "isometric_harbor_v1"
+RENDERER_ID = "isometric_harbor_v2"
 BACKGROUND_RGB = (207, 220, 190)
 SUPPORTED_CANVAS_PROFILES: Mapping[str, tuple[int, int, int, int, float, float]] = {
     "landscape": (16, 12, 60, 30, 0.5, 0.17),
@@ -226,17 +226,6 @@ def _draw_barrel(draw: ImageDraw.ImageDraw, cx: float, cy: float, scale: float) 
     return bbox
 
 
-def _boat_polygon(cx: float, cy: float, w: float, h: float) -> tuple[tuple[float, float], ...]:
-    return (
-        (float(cx) - float(w) * 0.5, float(cy)),
-        (float(cx) - float(w) * 0.32, float(cy) - float(h) * 0.5),
-        (float(cx) + float(w) * 0.32, float(cy) - float(h) * 0.5),
-        (float(cx) + float(w) * 0.5, float(cy)),
-        (float(cx) + float(w) * 0.28, float(cy) + float(h) * 0.5),
-        (float(cx) - float(w) * 0.28, float(cy) + float(h) * 0.5),
-    )
-
-
 def _draw_polygon_with_outline(
     draw: ImageDraw.ImageDraw,
     points: Sequence[Sequence[float]],
@@ -248,6 +237,51 @@ def _draw_polygon_with_outline(
     polygon = [(float(x), float(y)) for x, y in points]
     draw.polygon(polygon, fill=fill)
     draw.line([*polygon, polygon[0]], fill=outline, width=int(width))
+
+
+def _boat_iso_point(cx: float, cy: float, x: float, y: float) -> tuple[float, float]:
+    """Project local boat coordinates onto the dock-aligned isometric axes."""
+
+    return (
+        float(cx) + float(x) * -0.9 + float(y) * 0.9,
+        float(cy) + float(x) * 0.45 + float(y) * 0.45,
+    )
+
+
+def _boat_local_polygon(
+    cx: float,
+    cy: float,
+    coords: Sequence[tuple[float, float]],
+) -> tuple[tuple[float, float], ...]:
+    return tuple(_boat_iso_point(cx, cy, float(x), float(y)) for x, y in coords)
+
+
+def _draw_local_line(
+    draw: ImageDraw.ImageDraw,
+    cx: float,
+    cy: float,
+    start: tuple[float, float],
+    end: tuple[float, float],
+    *,
+    fill: tuple[int, int, int],
+    width: int,
+) -> None:
+    draw.line((_boat_iso_point(cx, cy, *start), _boat_iso_point(cx, cy, *end)), fill=fill, width=int(width))
+
+
+def _draw_local_poly(
+    draw: ImageDraw.ImageDraw,
+    cx: float,
+    cy: float,
+    coords: Sequence[tuple[float, float]],
+    *,
+    fill: tuple[int, int, int],
+    outline: tuple[int, int, int],
+    width: int,
+) -> tuple[tuple[float, float], ...]:
+    points = _boat_local_polygon(cx, cy, coords)
+    _draw_polygon_with_outline(draw, points, fill=fill, outline=outline, width=width)
+    return points
 
 
 def _draw_boat(
@@ -263,60 +297,124 @@ def _draw_boat(
 ) -> BBox:
     """Draw one countable boat hull; returned bbox tracks the boat body, not wake or rope."""
 
-    w = float(scale) * (1.12 if str(boat_type) == "cargo_boat" else 0.96)
-    h = float(scale) * (0.66 if str(boat_type) == "cargo_boat" else 0.56)
-    draw.ellipse(
-        (cx - w * 0.58, cy + h * 0.08, cx + w * 0.58, cy + h * 0.54),
-        fill=(30, 96, 127),
+    length = float(scale) * (1.34 if str(boat_type) == "cargo_boat" else 1.18)
+    beam = float(scale) * (0.55 if str(boat_type) == "cargo_boat" else 0.48)
+    half_l = length * 0.5
+    half_b = beam * 0.5
+    side_drop = max(5.0, float(scale) * 0.12)
+
+    hull_coords = (
+        (-half_l * 0.84, -half_b * 0.72),
+        (-half_l * 0.55, -half_b),
+        (half_l * 0.48, -half_b * 0.94),
+        (half_l, 0.0),
+        (half_l * 0.48, half_b * 0.94),
+        (-half_l * 0.55, half_b),
+        (-half_l * 0.84, half_b * 0.72),
+        (-half_l, 0.0),
     )
-    wake_fill = (118, 202, 218)
-    draw.arc((cx - w * 0.72, cy + h * 0.18, cx - w * 0.32, cy + h * 0.58), 210, 20, fill=wake_fill, width=1)
-    draw.arc((cx + w * 0.32, cy + h * 0.18, cx + w * 0.72, cy + h * 0.58), 160, 330, fill=wake_fill, width=1)
-    hull = _boat_polygon(cx, cy, w, h)
-    _draw_polygon_with_outline(draw, hull, fill=hull_fill, outline=(33, 34, 32), width=3)
-    inner = _boat_polygon(cx, cy, w * 0.68, h * 0.5)
-    _draw_polygon_with_outline(draw, inner, fill=(220, 181, 118), outline=trim, width=2)
-    draw.line((cx - w * 0.44, cy - h * 0.05, cx + w * 0.44, cy - h * 0.05), fill=_shade(trim, -24), width=2)
-    draw.line((cx - w * 0.36, cy + h * 0.18, cx + w * 0.36, cy + h * 0.18), fill=_shade(trim, -32), width=2)
+    hull_screen = _boat_local_polygon(cx, cy, hull_coords)
+    side_screen = tuple((x, y + side_drop) for x, y in hull_screen)
+    draw.ellipse(
+        (
+            min(x for x, _ in side_screen) - 3,
+            min(y for _, y in side_screen) + 2,
+            max(x for x, _ in side_screen) + 3,
+            max(y for _, y in side_screen) + 8,
+        ),
+        fill=(28, 95, 128),
+    )
+    wake_fill = (122, 207, 221)
+    draw.arc(
+        (
+            min(x for x, _ in side_screen) - 6,
+            max(y for _, y in side_screen) - 9,
+            max(x for x, _ in side_screen) + 7,
+            max(y for _, y in side_screen) + 12,
+        ),
+        180,
+        350,
+        fill=wake_fill,
+        width=1,
+    )
+    draw.polygon(side_screen, fill=_shade(hull_fill, -42))
+    draw.line([*side_screen, side_screen[0]], fill=(30, 37, 36), width=2)
+    _draw_polygon_with_outline(draw, hull_screen, fill=hull_fill, outline=(28, 30, 29), width=3)
+    deck_coords = (
+        (-half_l * 0.62, -half_b * 0.52),
+        (half_l * 0.3, -half_b * 0.5),
+        (half_l * 0.72, 0.0),
+        (half_l * 0.3, half_b * 0.5),
+        (-half_l * 0.62, half_b * 0.52),
+        (-half_l * 0.82, 0.0),
+    )
+    deck_fill = (236, 225, 195) if str(boat_type) == "cargo_boat" else (219, 174, 105)
+    _draw_local_poly(draw, cx, cy, deck_coords, fill=deck_fill, outline=trim, width=2)
+    _draw_local_line(draw, cx, cy, (-half_l * 0.68, 0.0), (half_l * 0.68, 0.0), fill=_shade(trim, -28), width=2)
+    _draw_local_line(draw, cx, cy, (half_l * 0.5, -half_b * 0.38), (half_l * 0.72, 0.0), fill=(245, 245, 232), width=2)
     if str(boat_type) == "cargo_boat":
-        cabin_w = w * 0.24
-        cabin_h = h * 0.34
-        draw.rectangle(
-            (cx - cabin_w, cy - cabin_h * 0.6, cx + cabin_w, cy + cabin_h * 0.35),
-            fill=(226, 214, 178),
-            outline=(64, 62, 56),
+        cabin = _draw_local_poly(
+            draw,
+            cx,
+            cy - side_drop * 0.7,
+            (
+                (-half_l * 0.55, -half_b * 0.36),
+                (-half_l * 0.18, -half_b * 0.36),
+                (-half_l * 0.08, -half_b * 0.03),
+                (-half_l * 0.45, 0.0),
+            ),
+            fill=(241, 237, 220),
+            outline=(58, 62, 61),
+            width=2,
         )
-        draw.rectangle(
-            (cx - cabin_w * 0.55, cy - cabin_h * 0.32, cx - cabin_w * 0.08, cy + cabin_h * 0.02),
-            fill=(72, 138, 166),
-            outline=(39, 72, 87),
-        )
-        draw.rectangle(
-            (cx + cabin_w * 0.08, cy - cabin_h * 0.32, cx + cabin_w * 0.55, cy + cabin_h * 0.02),
-            fill=(72, 138, 166),
-            outline=(39, 72, 87),
-        )
-        cargo_w = w * 0.15
-        cargo_h = h * 0.2
-        for ox, oy in ((-0.3, 0.12), (0.28, 0.16)):
-            draw.rectangle(
-                (cx + ox * w - cargo_w, cy + oy * h - cargo_h, cx + ox * w + cargo_w, cy + oy * h + cargo_h),
-                fill=(174, 111, 54),
-                outline=(76, 47, 26),
+        roof = tuple((x, y - side_drop * 0.75) for x, y in cabin)
+        draw.polygon(roof, fill=_shade(trim, 16))
+        draw.line([*roof, roof[0]], fill=(58, 62, 61), width=1)
+        for wx in (-0.45, -0.31):
+            window = _boat_local_polygon(
+                cx,
+                cy - side_drop * 0.4,
+                (
+                    (half_l * wx, -half_b * 0.28),
+                    (half_l * (wx + 0.08), -half_b * 0.28),
+                    (half_l * (wx + 0.08), -half_b * 0.08),
+                    (half_l * wx, -half_b * 0.08),
+                ),
+            )
+            draw.polygon(window, fill=(65, 140, 170), outline=(35, 72, 86))
+        cargo_colors = ((222, 77, 57), (241, 179, 56), (75, 153, 87))
+        for index, ox in enumerate((-0.02, 0.2, 0.42)):
+            _draw_local_poly(
+                draw,
+                cx,
+                cy - 1.0,
+                (
+                    (half_l * ox, half_b * 0.05),
+                    (half_l * (ox + 0.16), half_b * 0.05),
+                    (half_l * (ox + 0.16), half_b * 0.38),
+                    (half_l * ox, half_b * 0.38),
+                ),
+                fill=cargo_colors[index % len(cargo_colors)],
+                outline=(73, 58, 45),
+                width=1,
             )
     else:
-        for offset in (-0.22, 0.0, 0.22):
-            draw.line(
-                [(cx + offset * w - w * 0.15, cy - h * 0.06), (cx + offset * w + w * 0.15, cy + h * 0.1)],
+        for offset in (-0.32, 0.0, 0.32):
+            _draw_local_line(
+                draw,
+                cx,
+                cy,
+                (half_l * offset, -half_b * 0.45),
+                (half_l * offset, half_b * 0.45),
                 fill=(92, 58, 34),
                 width=3,
             )
-        draw.line((cx - w * 0.43, cy + h * 0.31, cx + w * 0.42, cy - h * 0.29), fill=(96, 63, 38), width=2)
-        draw.ellipse((cx + w * 0.4 - 3, cy - h * 0.3 - 2, cx + w * 0.4 + 6, cy - h * 0.3 + 4), fill=(146, 96, 53))
-    line_end_x = cx + (w * 0.58 if str(side) == "left" else -w * 0.58)
-    draw.line([(cx, cy - h * 0.04), (line_end_x, cy - h * 0.46)], fill=(231, 218, 178), width=2)
-    bbox = _bbox_for_points(hull)
-    pad = 4.0
+        _draw_local_line(draw, cx, cy, (-half_l * 0.28, -half_b * 0.86), (half_l * 0.28, half_b * 0.86), fill=(96, 63, 38), width=2)
+        _draw_local_line(draw, cx, cy, (-half_l * 0.12, half_b * 0.86), (half_l * 0.42, -half_b * 0.86), fill=(96, 63, 38), width=2)
+    rope_target = _boat_iso_point(cx, cy, 0.0, -half_b * 1.25 if str(side) == "left" else half_b * 1.25)
+    draw.line([_boat_iso_point(cx, cy, -half_l * 0.08, 0.0), rope_target], fill=(231, 218, 178), width=2)
+    bbox = _bbox_for_points(hull_screen)
+    pad = 5.0
     return (bbox[0] - pad, bbox[1] - pad, bbox[2] + pad, bbox[3] + pad)
 
 

@@ -22,7 +22,7 @@
 - The `Reference` panel is shown above the candidate grid and has the same size as each candidate panel.
 - Exactly one candidate panel shares the Reference wallpaper group; every distractor uses a distinct non-reference wallpaper group.
 - Wallpaper groups are rendered with exactly one visible curated-icon motif per cell on an invisible `4 x 4` lattice, for 16 motif icons per panel.
-- Wallpaper group id, icon id, canvas treatment, palette, and selected answer label are generation metadata, not public query ids.
+- Wallpaper group id, sampled icon id, canvas treatment, palette, and selected answer label are generation metadata, not public query ids.
 
 ## Generation
 
@@ -30,7 +30,7 @@
 - The reference-match canvas is `1104 x 960` pixels, below the 1,200,000-pixel cap.
 - The Reference and correct candidate share one wallpaper group.
 - Nonmatching candidate groups are distinct from the Reference group and from each other.
-- Each panel, including Reference, uses a distinct curated icon from `non_symmetry.txt`.
+- Reference and all candidate panels in one instance reuse the same sampled curated icon from `non_symmetry.txt`; icon type and color are held constant so the answer depends on wallpaper arrangement only.
 - Wallpaper panels use quiet canvas treatments only, with no visible internal grid or tile outline.
 - Generation rejects unsupported option counts, unsupported wallpaper groups, unsafe canvas treatments, too-small group supports, collapsed layouts, insufficient icon pools, and palette/style failures.
 

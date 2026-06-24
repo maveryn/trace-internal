@@ -21,13 +21,13 @@
 - The image contains four labeled panels `A..D`.
 - Three panels share one wallpaper-group arrangement and exactly one panel uses a different wallpaper-group arrangement.
 - Wallpaper groups are rendered with exactly one visible curated-icon motif per cell on an invisible `4 x 4` lattice, for 16 motif icons per panel.
-- Wallpaper group id, icon id, canvas treatment, palette, and the selected odd panel are generation metadata, not public query ids.
+- Wallpaper group id, sampled icon id, canvas treatment, palette, and the selected odd panel are generation metadata, not public query ids.
 
 ## Generation
 
 - Option count is fixed at four.
 - The shared wallpaper group and odd wallpaper group are distinct by construction.
-- Each panel uses a distinct curated icon from `non_symmetry.txt`.
+- All panels in one instance reuse the same sampled curated icon from `non_symmetry.txt`; icon type and color are held constant so the answer depends on wallpaper arrangement only.
 - Wallpaper panels use quiet canvas treatments only, with no visible internal grid or tile outline.
 - Generation rejects unsupported option counts, unsupported wallpaper groups, unsafe canvas treatments, collapsed layouts, insufficient icon pools, and palette/style failures.
 

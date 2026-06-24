@@ -230,12 +230,20 @@ def centered_sprite_bbox(
     return (int(paste_x0), int(paste_y0), int(paste_x0 + sprite_w), int(paste_y0 + sprite_h))
 
 
-def select_distinct_icon_ids(rng: Any, *, pool_manifest: str, labels: Sequence[str]) -> Dict[str, str]:
+def select_shared_icon_ids(rng: Any, *, pool_manifest: str, labels: Sequence[str]) -> Dict[str, str]:
+    """Select one motif icon and assign it to every wallpaper panel.
+
+    Wallpaper tasks compare spatial/orientation repeat patterns. Reusing the
+    same icon within an instance keeps icon identity from becoming a competing
+    visual cue.
+    """
+
     pool = list(resolve_icon_pool(str(pool_manifest)))
-    if len(pool) < len(labels):
-        raise ValueError("wallpaper icon pool must contain at least one unique icon per labeled panel")
+    if not pool:
+        raise ValueError("wallpaper icon pool must contain at least one supported icon")
     rng.shuffle(pool)
-    return {str(label): str(icon_id) for label, icon_id in zip(labels, pool[: len(labels)])}
+    icon_id = str(pool[0])
+    return {str(label): icon_id for label in labels}
 
 
 def draw_wallpaper_motifs(
@@ -415,7 +423,7 @@ def _render_wallpaper_scene(
     """
 
     answer_label_set = set(str(label) for label in answer_labels)
-    icon_ids_by_label = select_distinct_icon_ids(rng, pool_manifest=str(pool_manifest), labels=panel_labels)
+    icon_ids_by_label = select_shared_icon_ids(rng, pool_manifest=str(pool_manifest), labels=panel_labels)
     tint_rgb, sampled_palette_rgb = sample_single_icon_tint(
         rng,
         channel_min=int(render_params["color_channel_min"]),
@@ -533,7 +541,7 @@ __all__ = [
     "resolve_wallpaper_group_support",
     "render_option_wallpaper_scene",
     "render_reference_wallpaper_scene",
-    "select_distinct_icon_ids",
+    "select_shared_icon_ids",
     "uniform_str_probability_map",
     "wallpaper_chrome_policy_trace",
     "wallpaper_safe_canvas_params",

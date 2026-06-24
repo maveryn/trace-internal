@@ -13,6 +13,24 @@ generation:
         - 3
         - 4
         - 5
+    task_illustrations__isometric_harbor__boat_mooring_status_count:
+      query_id_support:
+        - moored_boat_count
+        - open_water_boat_count
+      answer_count_support:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+      other_count_support:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
 
 rendering:
   shared:
@@ -26,3 +44,7 @@ prompt:
       bundle_id: illustrations_isometric_harbor_v1
       scene_key: isometric_harbor_dock_canvas
       task_key: boat_side_count_task
+    task_illustrations__isometric_harbor__boat_mooring_status_count:
+      bundle_id: illustrations_isometric_harbor_v1
+      scene_key: isometric_harbor_dock_canvas
+      task_key: boat_mooring_status_count_task

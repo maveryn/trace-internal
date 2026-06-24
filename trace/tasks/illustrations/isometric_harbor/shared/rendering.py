@@ -12,13 +12,15 @@ from .state import BBox, IsoHarborEntity, IsoHarborScene, IsoHarborTile
 
 
 SCENE_ID = "isometric_harbor"
-RENDERER_ID = "isometric_harbor_v2"
+RENDERER_ID = "isometric_harbor_v3"
 BACKGROUND_RGB = (207, 220, 190)
 SUPPORTED_CANVAS_PROFILES: Mapping[str, tuple[int, int, int, int, float, float]] = {
     "landscape": (16, 12, 60, 30, 0.5, 0.17),
     "square": (14, 14, 58, 29, 0.5, 0.18),
 }
 BOAT_SIDE_VALUES: tuple[str, ...] = ("left", "right")
+BOAT_MOORING_STATUS_VALUES: tuple[str, ...] = ("moored", "open_water")
+OPEN_WATER_BOAT_ORIENTATIONS: tuple[str, ...] = ("dock_parallel", "dock_cross", "screen_horizontal", "screen_vertical")
 BOAT_COLOR_PALETTES: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...] = (
     ((164, 67, 50), (244, 196, 84)),
     ((35, 91, 143), (236, 108, 70)),
@@ -239,12 +241,23 @@ def _draw_polygon_with_outline(
     draw.line([*polygon, polygon[0]], fill=outline, width=int(width))
 
 
-def _boat_iso_point(cx: float, cy: float, x: float, y: float) -> tuple[float, float]:
-    """Project local boat coordinates onto the dock-aligned isometric axes."""
+def _boat_axes(orientation: str) -> tuple[tuple[float, float], tuple[float, float]]:
+    if str(orientation) == "dock_cross":
+        return (0.9, 0.45), (-0.9, 0.45)
+    if str(orientation) == "screen_horizontal":
+        return (1.0, 0.0), (0.0, 0.52)
+    if str(orientation) == "screen_vertical":
+        return (0.0, 0.78), (0.7, 0.0)
+    return (-0.9, 0.45), (0.9, 0.45)
 
+
+def _boat_iso_point(cx: float, cy: float, x: float, y: float, *, orientation: str = "dock_parallel") -> tuple[float, float]:
+    """Project local boat coordinates onto the requested boat orientation axes."""
+
+    x_axis, y_axis = _boat_axes(str(orientation))
     return (
-        float(cx) + float(x) * -0.9 + float(y) * 0.9,
-        float(cy) + float(x) * 0.45 + float(y) * 0.45,
+        float(cx) + float(x) * float(x_axis[0]) + float(y) * float(y_axis[0]),
+        float(cy) + float(x) * float(x_axis[1]) + float(y) * float(y_axis[1]),
     )
 
 
@@ -252,8 +265,10 @@ def _boat_local_polygon(
     cx: float,
     cy: float,
     coords: Sequence[tuple[float, float]],
+    *,
+    orientation: str = "dock_parallel",
 ) -> tuple[tuple[float, float], ...]:
-    return tuple(_boat_iso_point(cx, cy, float(x), float(y)) for x, y in coords)
+    return tuple(_boat_iso_point(cx, cy, float(x), float(y), orientation=str(orientation)) for x, y in coords)
 
 
 def _draw_local_line(
@@ -265,8 +280,16 @@ def _draw_local_line(
     *,
     fill: tuple[int, int, int],
     width: int,
+    orientation: str = "dock_parallel",
 ) -> None:
-    draw.line((_boat_iso_point(cx, cy, *start), _boat_iso_point(cx, cy, *end)), fill=fill, width=int(width))
+    draw.line(
+        (
+            _boat_iso_point(cx, cy, *start, orientation=str(orientation)),
+            _boat_iso_point(cx, cy, *end, orientation=str(orientation)),
+        ),
+        fill=fill,
+        width=int(width),
+    )
 
 
 def _draw_local_poly(
@@ -278,8 +301,9 @@ def _draw_local_poly(
     fill: tuple[int, int, int],
     outline: tuple[int, int, int],
     width: int,
+    orientation: str = "dock_parallel",
 ) -> tuple[tuple[float, float], ...]:
-    points = _boat_local_polygon(cx, cy, coords)
+    points = _boat_local_polygon(cx, cy, coords, orientation=str(orientation))
     _draw_polygon_with_outline(draw, points, fill=fill, outline=outline, width=width)
     return points
 
@@ -294,6 +318,8 @@ def _draw_boat(
     side: str,
     hull_fill: tuple[int, int, int],
     trim: tuple[int, int, int],
+    orientation: str = "dock_parallel",
+    draw_rope: bool = True,
 ) -> BBox:
     """Draw one countable boat hull; returned bbox tracks the boat body, not wake or rope."""
 
@@ -313,7 +339,7 @@ def _draw_boat(
         (-half_l * 0.84, half_b * 0.72),
         (-half_l, 0.0),
     )
-    hull_screen = _boat_local_polygon(cx, cy, hull_coords)
+    hull_screen = _boat_local_polygon(cx, cy, hull_coords, orientation=str(orientation))
     side_screen = tuple((x, y + side_drop) for x, y in hull_screen)
     draw.ellipse(
         (
@@ -349,9 +375,27 @@ def _draw_boat(
         (-half_l * 0.82, 0.0),
     )
     deck_fill = (236, 225, 195) if str(boat_type) == "cargo_boat" else (219, 174, 105)
-    _draw_local_poly(draw, cx, cy, deck_coords, fill=deck_fill, outline=trim, width=2)
-    _draw_local_line(draw, cx, cy, (-half_l * 0.68, 0.0), (half_l * 0.68, 0.0), fill=_shade(trim, -28), width=2)
-    _draw_local_line(draw, cx, cy, (half_l * 0.5, -half_b * 0.38), (half_l * 0.72, 0.0), fill=(245, 245, 232), width=2)
+    _draw_local_poly(draw, cx, cy, deck_coords, fill=deck_fill, outline=trim, width=2, orientation=str(orientation))
+    _draw_local_line(
+        draw,
+        cx,
+        cy,
+        (-half_l * 0.68, 0.0),
+        (half_l * 0.68, 0.0),
+        fill=_shade(trim, -28),
+        width=2,
+        orientation=str(orientation),
+    )
+    _draw_local_line(
+        draw,
+        cx,
+        cy,
+        (half_l * 0.5, -half_b * 0.38),
+        (half_l * 0.72, 0.0),
+        fill=(245, 245, 232),
+        width=2,
+        orientation=str(orientation),
+    )
     if str(boat_type) == "cargo_boat":
         cabin = _draw_local_poly(
             draw,
@@ -366,6 +410,7 @@ def _draw_boat(
             fill=(241, 237, 220),
             outline=(58, 62, 61),
             width=2,
+            orientation=str(orientation),
         )
         roof = tuple((x, y - side_drop * 0.75) for x, y in cabin)
         draw.polygon(roof, fill=_shade(trim, 16))
@@ -380,6 +425,7 @@ def _draw_boat(
                     (half_l * (wx + 0.08), -half_b * 0.08),
                     (half_l * wx, -half_b * 0.08),
                 ),
+                orientation=str(orientation),
             )
             draw.polygon(window, fill=(65, 140, 170), outline=(35, 72, 86))
         cargo_colors = ((222, 77, 57), (241, 179, 56), (75, 153, 87))
@@ -397,6 +443,7 @@ def _draw_boat(
                 fill=cargo_colors[index % len(cargo_colors)],
                 outline=(73, 58, 45),
                 width=1,
+                orientation=str(orientation),
             )
     else:
         for offset in (-0.32, 0.0, 0.32):
@@ -408,11 +455,38 @@ def _draw_boat(
                 (half_l * offset, half_b * 0.45),
                 fill=(92, 58, 34),
                 width=3,
+                orientation=str(orientation),
             )
-        _draw_local_line(draw, cx, cy, (-half_l * 0.28, -half_b * 0.86), (half_l * 0.28, half_b * 0.86), fill=(96, 63, 38), width=2)
-        _draw_local_line(draw, cx, cy, (-half_l * 0.12, half_b * 0.86), (half_l * 0.42, -half_b * 0.86), fill=(96, 63, 38), width=2)
-    rope_target = _boat_iso_point(cx, cy, 0.0, -half_b * 1.25 if str(side) == "left" else half_b * 1.25)
-    draw.line([_boat_iso_point(cx, cy, -half_l * 0.08, 0.0), rope_target], fill=(231, 218, 178), width=2)
+        _draw_local_line(
+            draw,
+            cx,
+            cy,
+            (-half_l * 0.28, -half_b * 0.86),
+            (half_l * 0.28, half_b * 0.86),
+            fill=(96, 63, 38),
+            width=2,
+            orientation=str(orientation),
+        )
+        _draw_local_line(
+            draw,
+            cx,
+            cy,
+            (-half_l * 0.12, half_b * 0.86),
+            (half_l * 0.42, -half_b * 0.86),
+            fill=(96, 63, 38),
+            width=2,
+            orientation=str(orientation),
+        )
+    if bool(draw_rope):
+        rope_target = _boat_iso_point(
+            cx,
+            cy,
+            0.0,
+            -half_b * 1.25 if str(side) == "left" else half_b * 1.25,
+            orientation=str(orientation),
+        )
+        rope_start = _boat_iso_point(cx, cy, -half_l * 0.08, 0.0, orientation=str(orientation))
+        draw.line([rope_start, rope_target], fill=(231, 218, 178), width=2)
     bbox = _bbox_for_points(hull_screen)
     pad = 5.0
     return (bbox[0] - pad, bbox[1] - pad, bbox[2] + pad, bbox[3] + pad)
@@ -459,6 +533,14 @@ def _select_boat_rows(
         rows = list(range(int(dock_meta["row_start"]) + 1, int(dock_meta["row_end_exclusive"]) - 1))
     rng.shuffle(rows)
     return sorted(rows[: int(count)])
+
+
+def _split_moored_count_by_side(*, rng: Any, total: int) -> dict[str, int]:
+    total_count = max(0, min(10, int(total)))
+    min_left = max(0, int(total_count) - 5)
+    max_left = min(5, int(total_count))
+    left = int(rng.randrange(int(min_left), int(max_left) + 1)) if int(max_left) >= int(min_left) else int(min_left)
+    return {"left": int(left), "right": int(total_count) - int(left)}
 
 
 def _draw_context_objects(
@@ -594,6 +676,8 @@ def _draw_boats(
                     "boat_type": boat_type,
                     "hull_rgb": [int(value) for value in hull_fill],
                     "trim_rgb": [int(value) for value in trim],
+                    "mooring_status": "moored",
+                    "orientation": "dock_parallel",
                     "dock_side": side,
                     "water_tile_id": str(water_tile.tile_id),
                     "dock_tile_id": str(dock_tile.tile_id),
@@ -604,6 +688,96 @@ def _draw_boats(
     return counts
 
 
+def _open_water_candidate_cells(
+    *,
+    tiles_by_cell: Mapping[tuple[int, int], IsoHarborTile],
+    dock_meta: Mapping[str, Any],
+    cols: int,
+    rows: int,
+) -> list[tuple[int, int]]:
+    candidates: list[tuple[int, int]] = []
+    left_col = int(dock_meta["left_col"])
+    right_col = int(dock_meta["right_col"])
+    for row in range(max(2, int(dock_meta["row_start"]) + 2), max(2, int(rows) - 1)):
+        for col in range(1, max(1, int(cols) - 1)):
+            tile = tiles_by_cell.get((int(col), int(row)))
+            if tile is None or str(tile.terrain) != "water":
+                continue
+            if int(left_col) - 2 <= int(col) <= int(right_col) + 2:
+                continue
+            candidates.append((int(col), int(row)))
+    return candidates
+
+
+def _draw_open_water_boats(
+    *,
+    draw: ImageDraw.ImageDraw,
+    rng: Any,
+    tiles_by_cell: Mapping[tuple[int, int], IsoHarborTile],
+    dock_meta: Mapping[str, Any],
+    count: int,
+    entities: list[IsoHarborEntity],
+    canvas_size: tuple[int, int],
+    tile_w: float,
+    cols: int,
+    rows: int,
+) -> int:
+    """Draw free-floating boats away from the dock and shoreline."""
+
+    target_count = max(0, min(5, int(count)))
+    if int(target_count) <= 0:
+        return 0
+    candidates = _open_water_candidate_cells(tiles_by_cell=tiles_by_cell, dock_meta=dock_meta, cols=int(cols), rows=int(rows))
+    rng.shuffle(candidates)
+    selected: list[tuple[int, int]] = []
+    for cell in candidates:
+        if all(abs(int(cell[0]) - int(other[0])) + abs(int(cell[1]) - int(other[1])) >= 2 for other in selected):
+            selected.append((int(cell[0]), int(cell[1])))
+        if len(selected) >= int(target_count):
+            break
+    entity_offset = sum(1 for entity in entities if str(entity.object_type) == "boat")
+    for index, cell in enumerate(selected):
+        tile = tiles_by_cell[cell]
+        cx, cy = tile.center_xy
+        offset_x = float(rng.choice((-0.1, 0.0, 0.1))) * float(tile_w)
+        offset_y = float(rng.choice((-0.08, 0.0, 0.08))) * float(tile_w)
+        boat_type = str(rng.choice(("rowboat", "cargo_boat")))
+        orientation = str(rng.choice(OPEN_WATER_BOAT_ORIENTATIONS))
+        hull_fill, trim = rng.choice(BOAT_COLOR_PALETTES)
+        bbox = _draw_boat(
+            draw,
+            cx + offset_x,
+            cy + offset_y,
+            scale=float(tile_w) * 0.94,
+            boat_type=boat_type,
+            side="",
+            hull_fill=tuple(hull_fill),
+            trim=tuple(trim),
+            orientation=orientation,
+            draw_rope=False,
+        )
+        _add_entity(
+            entities,
+            entity_id=f"open_water_boat_{int(entity_offset) + int(index):02d}",
+            public_name="boat",
+            object_type="boat",
+            tile_ids=(tile.tile_id,),
+            bbox=bbox,
+            point=(cx + offset_x, cy + offset_y),
+            role="queryable",
+            metadata={
+                "boat_type": boat_type,
+                "hull_rgb": [int(value) for value in hull_fill],
+                "trim_rgb": [int(value) for value in trim],
+                "mooring_status": "open_water",
+                "orientation": orientation,
+                "water_tile_id": str(tile.tile_id),
+            },
+            canvas_size=canvas_size,
+        )
+    return len(selected)
+
+
 def render_isometric_harbor_scene(
     instance_seed: int,
     *,
@@ -612,6 +786,8 @@ def render_isometric_harbor_scene(
     canvas_profile: str = "landscape",
     canvas_profile_probabilities: Mapping[str, float] | None = None,
     required_boat_counts_by_side: Mapping[str, int] | None = None,
+    required_moored_boat_count: int | None = None,
+    required_open_water_boat_count: int | None = None,
 ) -> IsoHarborScene:
     """Render a deterministic full-bleed isometric harbor scene."""
 
@@ -660,15 +836,30 @@ def render_isometric_harbor_scene(
         canvas_size=(int(width), int(height)),
         tile_w=tile_w,
     )
+    side_requirements = {str(key): int(value) for key, value in (required_boat_counts_by_side or {}).items()}
+    if required_moored_boat_count is not None and not side_requirements:
+        side_requirements = _split_moored_count_by_side(rng=rng, total=int(required_moored_boat_count))
     side_counts = _draw_boats(
         draw=draw,
         rng=rng,
         tiles_by_cell=tiles_by_cell,
         dock_meta=dock_meta,
-        required_boat_counts_by_side={str(key): int(value) for key, value in (required_boat_counts_by_side or {}).items()},
+        required_boat_counts_by_side=side_requirements,
         entities=entities,
         canvas_size=(int(width), int(height)),
         tile_w=tile_w,
+    )
+    open_water_count = _draw_open_water_boats(
+        draw=draw,
+        rng=rng,
+        tiles_by_cell=tiles_by_cell,
+        dock_meta=dock_meta,
+        count=0 if required_open_water_boat_count is None else int(required_open_water_boat_count),
+        entities=entities,
+        canvas_size=(int(width), int(height)),
+        tile_w=tile_w,
+        cols=int(cols),
+        rows=int(rows),
     )
 
     dock_tile_ids = [tile.tile_id for tile in tiles if str(tile.terrain) == "dock"]
@@ -696,6 +887,10 @@ def render_isometric_harbor_scene(
         },
         "dock_meta": dict(dock_meta),
         "boat_counts_by_side": {str(side): int(side_counts.get(side, 0)) for side in BOAT_SIDE_VALUES},
+        "boat_counts_by_mooring_status": {
+            "moored": sum(1 for entity in entities if entity.object_type == "boat" and str(entity.metadata.get("mooring_status", "")) == "moored"),
+            "open_water": int(open_water_count),
+        },
         "entity_count": len(entities),
         "context_object_counts": {
             "boat": sum(1 for entity in entities if entity.object_type == "boat"),
@@ -719,6 +914,8 @@ def render_isometric_harbor_scene(
 
 __all__ = [
     "BOAT_SIDE_VALUES",
+    "BOAT_MOORING_STATUS_VALUES",
+    "OPEN_WATER_BOAT_ORIENTATIONS",
     "RENDERER_ID",
     "SCENE_ID",
     "SUPPORTED_CANVAS_PROFILES",

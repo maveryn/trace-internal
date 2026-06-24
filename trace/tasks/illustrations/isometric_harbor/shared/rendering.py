@@ -724,7 +724,7 @@ def _draw_open_water_boats(
 ) -> int:
     """Draw free-floating boats away from the dock and shoreline."""
 
-    target_count = max(0, min(5, int(count)))
+    target_count = max(0, min(6, int(count)))
     if int(target_count) <= 0:
         return 0
     candidates = _open_water_candidate_cells(tiles_by_cell=tiles_by_cell, dock_meta=dock_meta, cols=int(cols), rows=int(rows))

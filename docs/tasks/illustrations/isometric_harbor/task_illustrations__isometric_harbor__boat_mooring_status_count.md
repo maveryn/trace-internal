@@ -34,7 +34,7 @@ Counts boats by mooring status in an isometric harbor scene: tied along the main
 ## Answer Contract
 - Answer schema: `integer`
 - Generator `answer_gt.type`: `integer`
-- Answer range: `0..5`
+- Answer range: `1..6`
 
 ## Annotation Contract
 - Annotation schema: `bbox_set`

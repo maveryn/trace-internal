@@ -109,7 +109,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         defaults=_GEN_DEFAULTS,
         support_key="answer_count_support",
         explicit_key="target_count",
-        fallback=(0, 1, 2, 3, 4, 5),
+        fallback=(1, 2, 3, 4, 5, 6),
         namespace=f"{TASK_ID}:target_count",
     )
     other_count, other_count_probabilities = _select_other_count(

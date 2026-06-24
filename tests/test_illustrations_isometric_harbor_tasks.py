@@ -74,14 +74,14 @@ def test_isometric_harbor_renderer_supports_open_water_boats() -> None:
         height=800,
         canvas_profile="landscape",
         required_moored_boat_count=3,
-        required_open_water_boat_count=5,
+        required_open_water_boat_count=6,
     )
     boats = [entity for entity in scene.entities if entity.object_type == "boat"]
     moored = [entity for entity in boats if entity.metadata.get("mooring_status") == "moored"]
     open_water = [entity for entity in boats if entity.metadata.get("mooring_status") == "open_water"]
     assert len(moored) == 3
-    assert len(open_water) == 5
-    assert scene.trace["boat_counts_by_mooring_status"] == {"moored": 3, "open_water": 5}
+    assert len(open_water) == 6
+    assert scene.trace["boat_counts_by_mooring_status"] == {"moored": 3, "open_water": 6}
     assert {str(entity.metadata.get("orientation")) for entity in open_water}
     for entity in open_water:
         assert "dock_side" not in entity.metadata
@@ -128,8 +128,8 @@ def test_isometric_harbor_boat_side_count_contract() -> None:
 def test_isometric_harbor_boat_mooring_status_count_contract() -> None:
     task = create_task(MOORING_TASK_ID)
     cases = (
-        ("moored_boat_count", 0, 3, "landscape", "tied along the main dock"),
-        ("open_water_boat_count", 5, 2, "square", "open water"),
+        ("moored_boat_count", 1, 3, "landscape", "tied along the main dock"),
+        ("open_water_boat_count", 6, 2, "square", "open water"),
     )
     for query_id, target_count, other_count, profile, prompt_text in cases:
         out = task.generate(

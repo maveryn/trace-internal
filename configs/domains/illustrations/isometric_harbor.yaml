@@ -18,12 +18,12 @@ generation:
         - moored_boat_count
         - open_water_boat_count
       answer_count_support:
-        - 0
         - 1
         - 2
         - 3
         - 4
         - 5
+        - 6
       other_count_support:
         - 0
         - 1

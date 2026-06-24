@@ -15,8 +15,23 @@ from trace.tasks.geometry.solid_cross_section.square_pyramid_parallel_slice_area
 TASK_CLASSES = (GeometryConeParallelSliceAreaTask, GeometrySquarePyramidParallelSliceAreaTask)
 
 QUERY_IDS_BY_TASK = {
-    GeometryConeParallelSliceAreaTask: ("cone_parallel_slice_area",),
-    GeometrySquarePyramidParallelSliceAreaTask: ("square_pyramid_parallel_slice_area",),
+    GeometryConeParallelSliceAreaTask: ("single",),
+    GeometrySquarePyramidParallelSliceAreaTask: ("single",),
+}
+
+ANNOTATION_KEYS_BY_TASK = {
+    GeometryConeParallelSliceAreaTask: {
+        "cross_section",
+        "base_radius_label",
+        "height_label",
+        "slice_distance_label",
+    },
+    GeometrySquarePyramidParallelSliceAreaTask: {
+        "cross_section",
+        "base_side_label",
+        "height_label",
+        "slice_distance_label",
+    },
 }
 
 
@@ -26,10 +41,10 @@ def test_solid_cross_section_tasks_emit_public_contract(task_cls) -> None:
     out = task.generate(65001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id
+    assert out.query_id == "single"
     assert out.answer_gt.type == "number"
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 5
+    assert out.annotation_gt.type == "bbox_map"
+    assert set(out.annotation_gt.value) == ANNOTATION_KEYS_BY_TASK[task_cls]
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
@@ -37,8 +52,10 @@ def test_solid_cross_section_tasks_emit_public_contract(task_cls) -> None:
     assert trace["query_spec"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
     assert trace["execution_trace"]["answer_rounding"] == "one_decimal"
+    assert trace["execution_trace"]["answer_support_size"] >= 50
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -75,12 +92,12 @@ def test_solid_cross_section_tasks_support_every_explicit_query(task_cls) -> Non
 
         scale = float(trace["slice_distance_from_apex"]) / float(trace["solid_height"])
         assert trace["similarity_scale"] == pytest.approx(scale)
-        if query_id == "cone_parallel_slice_area":
+        if task_cls is GeometryConeParallelSliceAreaTask:
             base_radius = float(trace["base_radius"])
             slice_radius = base_radius * scale
             assert trace["slice_radius"] == pytest.approx(round(slice_radius, 1))
             assert out.answer_gt.value == pytest.approx(round(math.pi * slice_radius**2, 1))
-        elif query_id == "square_pyramid_parallel_slice_area":
+        elif task_cls is GeometrySquarePyramidParallelSliceAreaTask:
             base_side = float(trace["base_side"])
             exact_slice_side = base_side * scale
             assert trace["slice_side"] == pytest.approx(round(exact_slice_side + 1e-9, 1))
@@ -97,7 +114,7 @@ def test_solid_cross_section_annotation_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.annotation_gt.value:
+        for x0, y0, x1, y1 in out.annotation_gt.value.values():
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0

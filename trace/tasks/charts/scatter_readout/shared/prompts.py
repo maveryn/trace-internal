@@ -4,24 +4,28 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from trace.tasks.charts.shared.unanswerable import UNANSWERABLE_ANSWER
 from trace.tasks.shared.prompt_variants import (
     PromptTraceArtifacts,
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
 
-from .series_readout import UNANSWERABLE_ANSWER, _Dataset, _PROMPT_DEFAULTS
+from .defaults import PROMPT_DEFAULTS
+from .state import DOMAIN, SCENE_ID, QueryBinding
 
 
-DOMAIN = "charts"
-SCENE_ID = "scatter_readout"
 PROMPT_BUNDLE_ID = "charts_scatter_readout_v1"
 
 
-def dynamic_slots(*, dataset: _Dataset) -> dict[str, Any]:
-    trace = dict(dataset.query.trace)
+def dynamic_slots(
+    *,
+    binding: QueryBinding,
+    include_unanswerable_instruction: bool,
+) -> dict[str, Any]:
+    trace = dict(binding.trace)
     unanswerable_instruction = ""
-    if str(dataset.query.query_id) in {"series_highest_x_label", "series_lowest_x_label"}:
+    if include_unanswerable_instruction:
         unanswerable_instruction = (
             f'If the requested series is not visible in the legend, answer exactly "{UNANSWERABLE_ANSWER}".'
         )
@@ -45,7 +49,7 @@ def build_prompt_artifacts(
     rendered_prompt = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
-        bundle_id=str(_PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
+        bundle_id=str(PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
         scene_key="scatter_readout",
         task_key="scatter_series_readout_query",
         query_key=str(prompt_query_key),

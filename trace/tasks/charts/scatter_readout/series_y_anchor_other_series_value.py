@@ -2,87 +2,73 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from collections.abc import Mapping
+from typing import Any
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.output import build_scatter_readout_task_components
-from .shared.series_readout import _build_dataset
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.tasks.charts.scatter_readout._lifecycle import (
+    ScatterReadoutTaskPlan,
+    numeric_pair_readout_plan,
+    run_scatter_readout_lifecycle,
+)
+from trace.tasks.charts.scatter_readout.shared.state import DOMAIN
+from trace.tasks.registry import register_task
 
 
-QUERY_ID = "series_y_anchor_other_series_value"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {"_enable_unanswerable": False}
+TASK_ID = "task_charts__scatter_readout__series_y_anchor_other_series_value"
+PROMPT_QUERY_KEY = "series_y_anchor_other_series_value"
+QUESTION_FORMAT = "scatter_series_readout_query"
+PROGRAM_CODE = (
+    "value(comparison_series, x_label(point in anchor_series where y_value=anchor_value)); "
+    "output=integer_value; annotation=bbox_map(target_point_readout,comparison_point_readout,x_axis_label); "
+    "scene=scatter_readout; scope=series_y_anchor_other_series_value"
+)
+QUERY_IDS = (SINGLE_QUERY_ID,)
+DEFAULT_QUERY_ID = SINGLE_QUERY_ID
+REASONING_LOAD = 0.74
+
+
+def _build_anchor_transfer_plan(
+    params: Mapping[str, Any],
+    instance_seed: int,
+    selected_query_id: str,
+    query_probabilities: Mapping[str, float],
+) -> ScatterReadoutTaskPlan:
+    """Bind the same-x pair as an anchor-to-comparison value transfer objective."""
+
+    return numeric_pair_readout_plan(
+        params=params,
+        instance_seed=int(instance_seed),
+        query_probabilities=query_probabilities,
+        namespace=f"{TASK_ID}.target",
+        prompt_query_key=PROMPT_QUERY_KEY,
+        question_format=QUESTION_FORMAT,
+        program_code=PROGRAM_CODE,
+        operation="same_x_transfer_value",
+        reasoning_load=REASONING_LOAD,
+        answer_fn=lambda _target, comparison: int(comparison.y_value),
+    )
 
 
 @register_task
 class ChartsScatterSeriesYAnchorOtherSeriesValueTask:
     """Use a value in one series to find the same-x value in a second series."""
 
-    task_id = "task_charts__scatter_readout__series_y_anchor_other_series_value"
-    domain = "charts"
-    scene_id = "scatter_readout"
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "series_y_anchor_other_series_value"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = QUERY_IDS
+    default_query_id = DEFAULT_QUERY_ID
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        return run_scatter_readout_lifecycle(
+            task=self,
             instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=QUERY_ID,
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                return self._generate_once(
-                    int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                    selected_query_id=str(selected_query_id),
-                    query_probabilities=query_probabilities,
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
-
-    def _generate_once(
-        self,
-        instance_seed: int,
-        *,
-        params: Dict[str, Any],
-        selected_query_id: str,
-        query_probabilities: Dict[str, float],
-    ) -> TaskOutput:
-        dataset = _build_dataset(
             params=params,
-            instance_seed=int(instance_seed),
-            query_id=str(selected_query_id),
-            query_probabilities=query_probabilities,
-        )
-        components = build_scatter_readout_task_components(
-            dataset=dataset,
-            params=params,
-            instance_seed=int(instance_seed),
-            query_id=str(selected_query_id),
-            query_id_probabilities=query_probabilities,
-        )
-        return TaskOutput(
-            prompt=str(components.prompt),
-            prompt_variants=dict(components.prompt_variants),
-            answer_gt=TypedValue(type=str(components.answer_type), value=components.answer_value),
-            annotation_gt=TypedValue(type=str(components.annotation_type), value=dict(components.annotation_value)),
-            image=components.image,
-            image_id="img0",
-            trace_payload=dict(components.trace_payload),
-            task_versions=default_task_versions(),
-            scene_id="scatter_readout",
-            query_id=str(components.query_id),
+            max_attempts=int(max_attempts),
+            default_query_id=DEFAULT_QUERY_ID,
+            build_plan=_build_anchor_transfer_plan,
         )
 
 

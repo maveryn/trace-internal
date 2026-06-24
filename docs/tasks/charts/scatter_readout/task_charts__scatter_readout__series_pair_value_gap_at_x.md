@@ -3,24 +3,27 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `scatter_readout`
-3. Source implementation domain/group: `charts/scatter`
-4. Query id: `series_pair_value_gap_at_x`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Public task id: `task_charts__scatter_readout__series_pair_value_gap_at_x`
+4. Supported `query_id` values: `single`
+5. The task always computes an absolute y-value gap between two visible series at one resolved x-axis label.
+
+## Program Contract
+- `abs(value(series_a,x_label)-value(series_b,x_label)); output=integer_value; annotation=bbox_map(target_point_readout,comparison_point_readout,x_axis_label); scene=scatter_readout; scope=series_pair_value_gap_at_x`
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.scatter.series_readout.ChartsScatterSeriesPairValueGapAtXTask`
-2. Prompt lookup domain/group: `charts/scatter`
+1. Registered class: `trace.tasks.charts.scatter_readout.series_pair_value_gap_at_x.ChartsScatterSeriesPairValueGapAtXTask`
+2. Prompt bundle: `prompts/charts/scatter_readout/charts_scatter_readout_v1.json`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
 1. Answer schema: `integer_value`.
-2. Annotation schema: `keyed_bbox_map`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+2. Annotation schema: `bbox_map`.
+3. Annotation maps `target_point_readout`, `comparison_point_readout`, and `x_axis_label` to the supporting [x0,y0,x1,y1] pixel boxes.
+4. Axes, legends, titles, and distractor text are metadata unless named as one of the annotation roles.
 
 ## Query Details
 
-| Query id | Program signature | Answer schema | Annotation schema |
+| Query id | Program arguments | Answer schema | Annotation schema |
 |---|---|---|---|
-| `series_pair_value_gap_at_x` | `numeric.difference_or_change` | `integer_value` | `keyed_bbox_map` |
+| `single` | `operation=absolute_difference` | `integer_value` | `bbox_map` |

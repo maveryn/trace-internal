@@ -22,6 +22,7 @@ rendering:
     readout_value_font_size_px: 16
     readout_legend_font_size_px: 21
     readout_title_font_size_px: 26
+    readout_title_probability: 0.35
     readout_legend_gap_px: 80
     series_palette_rgb:
     - - 45

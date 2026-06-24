@@ -55,4 +55,6 @@ def test_games_space_shooter_defaults_present() -> None:
     assert "shield" not in json.dumps(bundle).lower()
     assert "asteroid" not in json.dumps(bundle).lower()
     assert "total score" in str(code_defaults["answer_hint_clear_shot_score_value"]).lower()
+    assert "visible enemy ships" in str(code_defaults["answer_hint_enemy_ship_count"]).lower()
+    assert "every visible enemy ship" in str(code_defaults["annotation_hint_enemy_ship_count"]).lower()
     assert "bounding boxes" in str(code_defaults["annotation_hint_safe_lane_count"])

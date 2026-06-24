@@ -36,6 +36,13 @@
         "{space_shooter_lane_rule_text} Clear-shot enemies score their printed value. Score enemy ships with no enemy ship or blue player shot below them.",
         "Clear-shot enemies score their printed value. Clear-shot enemies have no lower enemy ship or blue player shot in their lane. {space_shooter_lane_rule_text} Sum their printed values."
       ],
+      "enemy_ship_count": [
+        "Count all visible enemy ships. Ignore the player ship and all shots.",
+        "How many enemy ships are visible in the playfield? Do not count the player ship or projectiles.",
+        "Count the labeled enemy ships only. Ignore red enemy shots, blue player shots, and the player ship.",
+        "What is the total number of visible enemy ships?",
+        "Count every enemy ship shown in the playfield; do not count lane pads, shots, or the player ship."
+      ],
       "projectile_intercept_count": [
         "{space_shooter_lane_rule_text} Count red enemy shots in the same lane as the player ship.",
         "Red enemy shots fall straight down within their lane. {space_shooter_lane_rule_text} How many red enemy shots are aligned with the player ship?",
@@ -85,6 +92,7 @@
     "query:clear_shot_score_value": [
       "space_shooter_lane_rule_text"
     ],
+    "query:enemy_ship_count": [],
     "query:projectile_intercept_count": [
       "space_shooter_lane_rule_text"
     ],
@@ -139,6 +147,8 @@
     "answer_hint_clear_shot_score_value": "set \"answer\" to the integer total score from clear-shot enemy ships",
     "annotation_hint_clear_shot_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for the enemy ships counted as clear shots",
     "answer_hint_clear_shot_count": "set \"answer\" to the number of enemy ships that have no enemy ship or blue player shot below them in the same lane",
+    "annotation_hint_enemy_ship_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for every visible enemy ship",
+    "answer_hint_enemy_ship_count": "set \"answer\" to the number of visible enemy ships",
     "annotation_hint_projectile_intercept_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for red enemy shots aligned with the player ship",
     "answer_hint_projectile_intercept_count": "set \"answer\" to the number of red enemy shots in the same lane as the player ship",
     "annotation_hint_highest_threat_label": "set \"annotation\" to the selected enemy ship bounding box [x0, y0, x1, y1]",

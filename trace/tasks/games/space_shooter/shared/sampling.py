@@ -312,6 +312,88 @@ def sample_clear_shot_scene(
     return sample
 
 
+def sample_enemy_ship_count_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample:
+    """Construct a scene where every visible enemy ship is counted."""
+
+    lane_count = int(axes.lane_count)
+    enemy_count = int(axes.enemy_count)
+    occupied: set[Tuple[int, int]] = set()
+    enemies: list[SpaceEnemy] = []
+    while len(enemies) < enemy_count:
+        lane, slot = _claim_position(
+            rng=rng,
+            occupied=occupied,
+            lane_candidates=range(lane_count),
+            slot_candidates=(0, 1, 2, 3, 4, 5),
+        )
+        enemies.append(_make_enemy(enemy_index=len(enemies), lane=lane, y_slot=slot, rng=rng))
+
+    projectiles: list[SpaceProjectile] = []
+    for _ in range(max(1, lane_count // 3)):
+        try:
+            lane, slot = _claim_enemy_projectile_position(
+                rng=rng,
+                occupied=occupied,
+                lane_candidates=range(lane_count),
+                slot_candidates=(2, 3, 4, 5),
+                enemies=enemies,
+            )
+        except ValueError:
+            continue
+        projectiles.append(
+            _make_projectile(
+                projectile_index=len(projectiles),
+                lane=lane,
+                y_slot=slot,
+                owner="enemy",
+                rng=rng,
+            )
+        )
+    for _ in range(max(1, lane_count // 4)):
+        try:
+            lane, slot = _claim_position(
+                rng=rng,
+                occupied=occupied,
+                lane_candidates=range(lane_count),
+                slot_candidates=(4, 5),
+            )
+        except ValueError:
+            continue
+        projectiles.append(
+            _make_projectile(
+                projectile_index=len(projectiles),
+                lane=lane,
+                y_slot=slot,
+                owner="player",
+                rng=rng,
+            )
+        )
+
+    annotation_ids = tuple(str(enemy.enemy_id) for enemy in enemies)
+    sample = SpaceShooterSample(
+        lane_count=lane_count,
+        scene_variant=str(axes.scene_variant),
+        answer=int(len(enemies)),
+        player_lane=int(rng.randrange(lane_count)),
+        enemies=tuple(enemies),
+        projectiles=tuple(projectiles),
+        clear_enemy_ids=tuple(),
+        intercept_projectile_ids=tuple(),
+        lowest_enemy_id=str(enemies[0].enemy_id),
+        lowest_enemy_label=str(enemies[0].label),
+        safe_lane_indices=tuple(),
+        annotation_entity_ids=annotation_ids,
+        target_answer=int(len(enemies)),
+        construction_mode="visible_enemy_ship_count",
+        metadata={
+            "target_answer": int(len(enemies)),
+            "target_answer_support": list(DEFAULTS.enemy_count_support),
+        },
+    )
+    validate_basic_space_shooter_sample(sample)
+    return sample
+
+
 def sample_projectile_intercept_scene(
     *,
     rng,

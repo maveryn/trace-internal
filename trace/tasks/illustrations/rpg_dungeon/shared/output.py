@@ -191,14 +191,6 @@ def player_entity(scene: RpgDungeonScene) -> Any | None:
     return None
 
 
-def bbox_set_map_projection(keyed_bboxes: Mapping[str, Sequence[Sequence[float]]]) -> dict[str, Any]:
-    values = {
-        str(key): [[round(float(value), 3) for value in bbox] for bbox in bboxes]
-        for key, bboxes in keyed_bboxes.items()
-    }
-    return {"type": "bbox_set_map", "bbox_set_map": values, "pixel_bbox_set_map": values}
-
-
 def bbox_set_projection(bboxes: Sequence[Sequence[float]]) -> dict[str, Any]:
     values = [[round(float(value), 3) for value in bbox] for bbox in bboxes]
     return {"type": "bbox_set", "bbox_set": values, "pixel_bbox_set": values}
@@ -206,7 +198,6 @@ def bbox_set_projection(bboxes: Sequence[Sequence[float]]) -> dict[str, Any]:
 
 __all__ = [
     "bbox_set_projection",
-    "bbox_set_map_projection",
     "blocker_bbox_map",
     "blocker_point_map",
     "entity_bbox_map",

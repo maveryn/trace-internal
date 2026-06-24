@@ -79,7 +79,7 @@ def test_rpg_dungeon_renderer_supports_distinct_monsters() -> None:
         height=864,
         total_chest_count=6,
         reachable_chest_count=6,
-        monster_chamber_count=3,
+        monster_chamber_count=4,
     )
     second = render_rpg_dungeon_scene(
         2026062201,
@@ -87,16 +87,16 @@ def test_rpg_dungeon_renderer_supports_distinct_monsters() -> None:
         height=864,
         total_chest_count=6,
         reachable_chest_count=6,
-        monster_chamber_count=3,
+        monster_chamber_count=4,
     )
     assert first.image.tobytes() == second.image.tobytes()
     monsters = [entity for entity in first.entities if str(entity.object_type).startswith("monster_")]
-    assert len(monsters) == 3
-    assert first.trace["monster_count"] == 3
+    assert len(monsters) == 4
+    assert first.trace["monster_count"] == 4
     assert set(first.trace["monster_entity_ids"]) == {str(entity.entity_id) for entity in monsters}
     assert set(first.trace["monster_chamber_ids"]) == {str(entity.chamber_id) for entity in monsters}
     assert {str(entity.object_type) for entity in monsters}.issubset(set(MONSTER_OBJECT_TYPES))
-    assert len({str(entity.chamber_id) for entity in monsters}) == 3
+    assert len({str(entity.chamber_id) for entity in monsters}) == 4
     for entity in monsters:
         _assert_bbox_inside_canvas(list(entity.bbox_xyxy), width=1296, height=864)
         assert entity.role == "queryable"
@@ -171,23 +171,25 @@ def test_rpg_dungeon_reachable_chest_count_contract() -> None:
         assert out.query_id == "single"
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == count
-        assert out.annotation_gt.type == "bbox_set_map"
-        assert sorted(out.annotation_gt.value) == ["player", "reachable_chests"]
-        assert len(out.annotation_gt.value["player"]) == 1
-        assert len(out.annotation_gt.value["reachable_chests"]) == count
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) == count
         assert "red-outlined" not in out.prompt
         assert "lettered candidate" not in out.prompt
         width, height = out.image.size
-        for bboxes in out.annotation_gt.value.values():
-            for bbox in bboxes:
-                _assert_bbox_inside_canvas(list(bbox), width=width, height=height)
+        for bbox in out.annotation_gt.value:
+            _assert_bbox_inside_canvas(list(bbox), width=width, height=height)
 
         trace = out.trace_payload
         assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_dungeon_v0"
         assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_dungeon"
-        assert trace["projected_annotation"]["type"] == "bbox_set_map"
-        assert trace["projected_annotation"]["bbox_set_map"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_bbox_set_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+        assert trace["render_map"]["reachable_chest_bboxes_px"] == {
+            entity_id: bbox
+            for entity_id, bbox in trace["render_map"]["chest_bboxes_px"].items()
+            if entity_id in trace["render_map"]["reachable_chest_ids"]
+        }
         assert trace["render_map"]["reachable_count"] == count
         assert trace["render_map"]["total_chest_count"] == total_count
         assert len(trace["render_map"]["chest_entity_ids"]) == total_count
@@ -216,9 +218,9 @@ def test_rpg_dungeon_reachable_chest_count_contract() -> None:
 def test_rpg_dungeon_monster_chamber_count_contract() -> None:
     task = create_task(MONSTER_CHAMBER_COUNT_TASK_ID)
     for profile, total_count, count, seed in (
-        ("landscape", 4, 0, 2026062211),
+        ("landscape", 4, 1, 2026062211),
         ("square", 5, 2, 2026062212),
-        ("portrait", 6, 3, 2026062213),
+        ("portrait", 6, 4, 2026062213),
     ):
         out = task.generate(
             seed,
@@ -280,23 +282,25 @@ def test_rpg_dungeon_safe_reachable_chest_count_contract() -> None:
         assert out.query_id == "single"
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == count
-        assert out.annotation_gt.type == "bbox_set_map"
-        assert sorted(out.annotation_gt.value) == ["counted_chests", "player"]
-        assert len(out.annotation_gt.value["player"]) == 1
-        assert len(out.annotation_gt.value["counted_chests"]) == count
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) == count
         assert "rooms" not in out.prompt.lower()
         assert "boulder" in out.prompt.lower() or "blocked" in out.prompt.lower()
         assert "monster" in out.prompt.lower()
         width, height = out.image.size
-        for bboxes in out.annotation_gt.value.values():
-            for bbox in bboxes:
-                _assert_bbox_inside_canvas(list(bbox), width=width, height=height)
+        for bbox in out.annotation_gt.value:
+            _assert_bbox_inside_canvas(list(bbox), width=width, height=height)
 
         trace = out.trace_payload
         assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_dungeon_v0"
-        assert trace["projected_annotation"]["type"] == "bbox_set_map"
-        assert trace["projected_annotation"]["bbox_set_map"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_bbox_set_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "bbox_set"
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+        assert trace["render_map"]["counted_chest_bboxes_px"] == {
+            entity_id: bbox
+            for entity_id, bbox in trace["render_map"]["chest_bboxes_px"].items()
+            if entity_id in trace["render_map"]["counted_chest_ids"]
+        }
         assert trace["render_map"]["counted_count"] == count
         assert trace["render_map"]["total_chest_count"] == total_count
         assert len(trace["render_map"]["counted_chest_ids"]) == count

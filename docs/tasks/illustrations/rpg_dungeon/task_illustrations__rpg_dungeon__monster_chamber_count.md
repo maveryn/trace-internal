@@ -26,7 +26,7 @@ Counts the treasure chambers that contain a visible monster in a top-down RPG du
   - `chamber`: treasure chamber; allowed visible generated chest chambers; source `scene_ir.chambers`
   - `monster`: visible RPG dungeon monster; allowed generated slime, bat, or spider monsters; source `scene_ir.entities`
   - `total_chest_count`: integer; allowed `4|5|6`; source `parameter_axes`
-  - `monster_chamber_count`: integer; allowed `0|1|2|3` and never greater than `total_chest_count`; source `parameter_axes`
+  - `monster_chamber_count`: integer; allowed `1|2|3|4` and never greater than `total_chest_count`; source `parameter_axes`
 - Argument metadata status: `curated`
 - Supported query ids: `single`
 
@@ -34,12 +34,12 @@ Counts the treasure chambers that contain a visible monster in a top-down RPG du
 - Answer schema: `integer`
 - Generator `answer_gt.type`: `integer`
 - The answer is the number of visible treasure chambers containing at least one monster. Each monster-containing chamber has exactly one visible monster by construction.
+- Answer range: `1..4`
 
 ## Annotation Contract
 - Annotation schema: `bbox_set`
 - Generator `annotation_gt.type`: `bbox_set`
 - Annotation contains one bounding box around each visible monster in a counted treasure chamber.
-- Annotation is an empty list when the answer is zero.
 - Annotation excludes chests, player, walls, floors, corridors, and empty chambers.
 
 ## Prompt And Trace Requirements

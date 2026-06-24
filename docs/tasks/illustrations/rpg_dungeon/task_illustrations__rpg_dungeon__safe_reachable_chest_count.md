@@ -38,10 +38,9 @@ Counts treasure chests that are reachable from the player through unblocked dung
 - Each generated instance contains at least one boulder blocker and at least one monster, so the task requires both path reachability and chamber filtering.
 
 ## Annotation Contract
-- Annotation schema: `bbox_set_map`
-- Generator `annotation_gt.type`: `bbox_set_map`
-- Annotation key `player` contains one bounding box around the visible player marker.
-- Annotation key `counted_chests` contains one bounding box around each counted reachable treasure chest and is empty when the answer is zero.
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
+- Annotation contains one bounding box around each counted reachable treasure chest and is empty when the answer is zero.
 - Annotation excludes excluded reachable chests in monster chambers, unreachable chests, monsters, blockers, walls, floors, corridors, and background stone.
 
 ## Prompt And Trace Requirements
@@ -49,4 +48,4 @@ Counts treasure chests that are reachable from the player through unblocked dung
 - Public prompts must mention both unblocked/boulder-free reachability and excluding monster chambers.
 - Public prompts use `chambers`, not `rooms`, for this scene.
 - Render-only attributes such as palette, monster type, chamber positions, layout orientation, side counts, blocker type, and canvas profile must not be query ids.
-- Floor tiles, graph edge ids, blocked edge ids, blocked tiles, layout orientation, side counts, total chest count, player entity, reachable chest ids, monster chamber ids, counted chest ids, projected keyed bbox-set annotation, and diagnostic blocker/entity bboxes must be recorded in the trace.
+- Floor tiles, graph edge ids, blocked edge ids, blocked tiles, layout orientation, side counts, total chest count, player entity, reachable chest ids, monster chamber ids, counted chest ids, projected bbox-set annotation, and diagnostic blocker/entity bboxes must be recorded in the trace.

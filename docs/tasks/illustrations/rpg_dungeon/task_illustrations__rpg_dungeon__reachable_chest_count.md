@@ -37,14 +37,13 @@ Counts the treasure chests reachable from the player by following only unblocked
 - The answer is the number of visible treasure chests reachable from the player without crossing boulders or wall/background tiles. Each scene contains four to six visible treasure chests.
 
 ## Annotation Contract
-- Annotation schema: `bbox_set_map`
-- Generator `annotation_gt.type`: `bbox_set_map`
-- Annotation key `player` contains one bounding box around the visible player marker.
-- Annotation key `reachable_chests` contains one bounding box around each counted reachable treasure chest and is empty when the answer is zero.
+- Annotation schema: `bbox_set`
+- Generator `annotation_gt.type`: `bbox_set`
+- Annotation contains one bounding box around each counted reachable treasure chest and is empty when the answer is zero.
 - Annotation excludes unreachable chests, blockers, walls, and background stone.
 
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/rpg_dungeon/illustrations_rpg_dungeon_v0.json`.
 - Public prompts refer to the player and require following only unblocked/open floor paths.
 - Render-only attributes such as palette, chamber positions, layout orientation, side counts, blocker type, and canvas profile must not be query ids.
-- Floor tiles, graph edge ids, blocked edge ids, blocked tiles, layout orientation, side counts, total chest count, player entity, all chest entities, reachable chest ids, projected keyed bbox-set annotation, and diagnostic blocker/entity bboxes must be recorded in the trace.
+- Floor tiles, graph edge ids, blocked edge ids, blocked tiles, layout orientation, side counts, total chest count, player entity, all chest entities, reachable chest ids, projected bbox-set annotation, and diagnostic blocker/entity bboxes must be recorded in the trace.

@@ -7,6 +7,9 @@ rendering:
     line_width: 3
     label_font_size: 22
     small_label_font_size: 18
+    label_stroke_width: 1
+    label_stroke_width_min: 1
+    label_stroke_width_max: 1
     single_object_scene_rotation:
       enabled: true
       probability: 0.5
@@ -17,6 +20,5 @@ rendering:
       max_attempts: 6
 prompt:
   shared:
-    bundle_id: geometry_pythagorean_tree_v0
+    bundle_id: geometry_pythagorean_tree_v1
     scene_key: pythagorean_tree_scene
-    task_key: pythagorean_tree_square_area_query

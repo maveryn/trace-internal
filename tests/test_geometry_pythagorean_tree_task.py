@@ -8,6 +8,7 @@ import pytest
 
 from trace.tasks import TASK_REGISTRY
 from trace.tasks.geometry.pythagorean_tree.missing_square_area_value import (
+    SUPPORTED_QUERY_IDS,
     TASK_ID,
     GeometryPythagoreanTreeMissingSquareAreaValueTask,
     _TRIPLES,
@@ -22,6 +23,13 @@ def _generate(seed: int, **params):
 def test_pythagorean_tree_registered_public_task() -> None:
     assert TASK_ID in TASK_REGISTRY
     assert TASK_REGISTRY[TASK_ID] is GeometryPythagoreanTreeMissingSquareAreaValueTask
+
+
+def test_pythagorean_tree_supports_expected_public_queries() -> None:
+    task = GeometryPythagoreanTreeMissingSquareAreaValueTask()
+
+    assert tuple(task.supported_query_ids) == SUPPORTED_QUERY_IDS
+    assert SUPPORTED_QUERY_IDS == ("hypotenuse_square_area", "leg_square_area")
 
 
 def test_pythagorean_tree_default_pool_has_distinct_square_area_support() -> None:
@@ -47,8 +55,9 @@ def test_pythagorean_tree_hypotenuse_square_area_formula() -> None:
     assert out.answer_gt.value == 25 == execution["answer"]
     assert execution["leg_square_1_area"] + execution["leg_square_2_area"] == execution["hypotenuse_square_area"]
     assert execution["target_role"] == "hypotenuse_square"
+    assert out.trace_payload["render_spec"]["prompt"]["prompt_bundle_id"] == "geometry_pythagorean_tree_v1"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
     assert set(annotation) == {"unknown_hypotenuse_square", "known_leg_square_1", "known_leg_square_2"}
     _assert_no_duplicate_public_bboxes(annotation)
@@ -77,6 +86,7 @@ def test_pythagorean_tree_leg_square_area_formula(target_role: str, expected: in
         execution["leg_square_1_area"],
         execution["leg_square_2_area"],
     }
+    assert out.trace_payload["render_spec"]["prompt"]["prompt_bundle_id"] == "geometry_pythagorean_tree_v1"
 
     annotation = out.annotation_gt.value
     assert set(annotation) == {"unknown_leg_square", "known_leg_square", "known_hypotenuse_square"}
@@ -94,6 +104,17 @@ def test_pythagorean_tree_generation_is_deterministic() -> None:
     assert first.answer_gt == second.answer_gt
     assert first.annotation_gt == second.annotation_gt
     assert first.trace_payload["execution_trace"] == second.trace_payload["execution_trace"]
+
+
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_pythagorean_tree_explicit_queries_generate(query_id: str) -> None:
+    out = _generate(20260606, query_id=query_id, triple=(5, 12, 13))
+
+    assert out.query_id == query_id
+    assert out.scene_id == "pythagorean_tree"
+    assert out.answer_gt.type == "integer"
+    assert out.annotation_gt.type == "bbox_map"
+    _assert_bbox_map_inside_image(out.annotation_gt.value, out.image.size)
 
 
 def _assert_bbox_map_inside_image(annotation: dict[str, list[float]], image_size: tuple[int, int]) -> None:

@@ -21,13 +21,12 @@ SUPPORTED_CANVAS_PROFILES: Mapping[str, tuple[int, int, int, int, float, float]]
 }
 BOAT_SIDE_VALUES: tuple[str, ...] = ("left", "right")
 BOAT_MOORING_STATUS_VALUES: tuple[str, ...] = ("moored", "open_water")
-BOAT_HEADING_STATUS_VALUES: tuple[str, ...] = ("toward_shoreline", "away_from_shoreline", "parallel_to_shoreline")
+BOAT_HEADING_STATUS_VALUES: tuple[str, ...] = ("toward_shoreline", "away_from_shoreline")
 DEFAULT_BOAT_CANDIDATE_LABELS: tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 OPEN_WATER_BOAT_ORIENTATIONS: tuple[str, ...] = ("dock_parallel", "dock_cross", "screen_horizontal", "screen_vertical")
 BOAT_HEADING_STATUS_ORIENTATION: Mapping[str, str] = {
     "toward_shoreline": "shore_facing",
     "away_from_shoreline": "shore_away",
-    "parallel_to_shoreline": "shore_parallel",
 }
 BOAT_COLOR_PALETTES: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...] = (
     ((164, 67, 50), (244, 196, 84)),
@@ -253,11 +252,9 @@ def _boat_axes(orientation: str) -> tuple[tuple[float, float], tuple[float, floa
     if str(orientation) == "dock_cross":
         return (0.9, 0.45), (-0.9, 0.45)
     if str(orientation) == "shore_facing":
-        return (0.0, -0.78), (0.7, 0.0)
+        return (0.9, -0.45), (0.9, 0.45)
     if str(orientation) == "shore_away":
-        return (0.0, 0.78), (0.7, 0.0)
-    if str(orientation) == "shore_parallel":
-        return (1.0, 0.0), (0.0, 0.52)
+        return (-0.9, 0.45), (0.9, 0.45)
     if str(orientation) == "screen_horizontal":
         return (1.0, 0.0), (0.0, 0.52)
     if str(orientation) == "screen_vertical":
@@ -343,16 +340,27 @@ def _draw_boat(
     half_b = beam * 0.5
     side_drop = max(5.0, float(scale) * 0.12)
 
-    hull_coords = (
-        (-half_l * 0.84, -half_b * 0.72),
-        (-half_l * 0.55, -half_b),
-        (half_l * 0.48, -half_b * 0.94),
-        (half_l, 0.0),
-        (half_l * 0.48, half_b * 0.94),
-        (-half_l * 0.55, half_b),
-        (-half_l * 0.84, half_b * 0.72),
-        (-half_l, 0.0),
-    )
+    if str(boat_type) == "cargo_boat":
+        hull_coords = (
+            (-half_l * 0.9, -half_b * 0.72),
+            (-half_l * 0.62, -half_b),
+            (half_l * 0.48, -half_b * 0.94),
+            (half_l, 0.0),
+            (half_l * 0.48, half_b * 0.94),
+            (-half_l * 0.62, half_b),
+            (-half_l * 0.9, half_b * 0.72),
+            (-half_l * 0.94, 0.0),
+        )
+    else:
+        hull_coords = (
+            (-half_l * 0.88, -half_b * 0.58),
+            (-half_l * 0.58, -half_b),
+            (half_l * 0.48, -half_b * 0.94),
+            (half_l, 0.0),
+            (half_l * 0.48, half_b * 0.94),
+            (-half_l * 0.58, half_b),
+            (-half_l * 0.88, half_b * 0.58),
+        )
     hull_screen = _boat_local_polygon(cx, cy, hull_coords, orientation=str(orientation))
     side_screen = tuple((x, y + side_drop) for x, y in hull_screen)
     if not bool(draw_rope):
@@ -414,13 +422,18 @@ def _draw_boat(
         cx,
         cy - 0.5,
         (
-            (half_l * 0.62, -half_b * 0.42),
-            (half_l * 1.02, 0.0),
-            (half_l * 0.62, half_b * 0.42),
+            (half_l * 0.5, -half_b * 0.62),
+            (half_l * 1.1, 0.0),
+            (half_l * 0.5, half_b * 0.62),
         ),
         orientation=str(orientation),
     )
     draw.polygon(bow_marker, fill=(255, 255, 245), outline=(24, 29, 30))
+    stern_line = (
+        _boat_iso_point(cx, cy, -half_l * 0.82, -half_b * 0.46, orientation=str(orientation)),
+        _boat_iso_point(cx, cy, -half_l * 0.82, half_b * 0.46, orientation=str(orientation)),
+    )
+    draw.line(stern_line, fill=(22, 28, 28), width=2)
     if str(boat_type) == "cargo_boat":
         cabin = _draw_local_poly(
             draw,
@@ -740,6 +753,48 @@ def _open_water_candidate_cells(
     return candidates
 
 
+def _heading_status_candidate_cells(
+    *,
+    tiles_by_cell: Mapping[tuple[int, int], IsoHarborTile],
+    dock_meta: Mapping[str, Any],
+    cols: int,
+    rows: int,
+    count: int,
+) -> list[tuple[int, int]]:
+    """Return compact open-water cells for shoreline-heading boats."""
+
+    left_col = int(dock_meta["left_col"])
+    right_col = int(dock_meta["right_col"])
+    first_row = max(3, int(dock_meta["row_start"]) + 2)
+    row_pool = [row for row in (first_row, first_row + 2, first_row + 4) if 0 <= int(row) < int(rows) - 1]
+    col_offsets = (3, 5, 7, 9)
+    candidates: list[tuple[int, int]] = []
+    for row in row_pool:
+        for offset in col_offsets:
+            for col in (left_col - int(offset), right_col + int(offset)):
+                if not (1 <= int(col) < int(cols) - 1):
+                    continue
+                tile = tiles_by_cell.get((int(col), int(row)))
+                if tile is None or str(tile.terrain) != "water":
+                    continue
+                cell = (int(col), int(row))
+                if cell not in candidates:
+                    candidates.append(cell)
+                if len(candidates) >= int(count):
+                    return candidates
+    for cell in _open_water_candidate_cells(
+        tiles_by_cell=tiles_by_cell,
+        dock_meta=dock_meta,
+        cols=int(cols),
+        rows=int(rows),
+    ):
+        if all(abs(int(cell[0]) - int(other[0])) + abs(int(cell[1]) - int(other[1])) >= 2 for other in candidates):
+            candidates.append((int(cell[0]), int(cell[1])))
+        if len(candidates) >= int(count):
+            break
+    return candidates
+
+
 def _draw_open_water_boats(
     *,
     draw: ImageDraw.ImageDraw,
@@ -836,22 +891,21 @@ def _draw_heading_status_boats(
         statuses.extend([str(status)] * int(counts[status]))
     rng.shuffle(statuses)
 
-    candidates = _open_water_candidate_cells(tiles_by_cell=tiles_by_cell, dock_meta=dock_meta, cols=int(cols), rows=int(rows))
-    rng.shuffle(candidates)
-    selected: list[tuple[int, int]] = []
-    for cell in candidates:
-        if all(abs(int(cell[0]) - int(other[0])) + abs(int(cell[1]) - int(other[1])) >= 2 for other in selected):
-            selected.append((int(cell[0]), int(cell[1])))
-        if len(selected) >= len(statuses):
-            break
+    selected = _heading_status_candidate_cells(
+        tiles_by_cell=tiles_by_cell,
+        dock_meta=dock_meta,
+        cols=int(cols),
+        rows=int(rows),
+        count=len(statuses),
+    )
     if len(selected) < len(statuses):
         raise ValueError("not enough separated open-water cells for heading-status boats")
 
     for index, (status, cell) in enumerate(zip(statuses, selected)):
         tile = tiles_by_cell[cell]
         cx, cy = tile.center_xy
-        offset_x = float(rng.choice((-0.08, 0.0, 0.08))) * float(tile_w)
-        offset_y = float(rng.choice((-0.04, 0.0, 0.04))) * float(tile_w)
+        offset_x = float(rng.choice((-0.04, 0.0, 0.04))) * float(tile_w)
+        offset_y = float(rng.choice((-0.02, 0.0, 0.02))) * float(tile_w)
         boat_type = "rowboat"
         orientation = str(BOAT_HEADING_STATUS_ORIENTATION[str(status)])
         hull_fill, trim = BOAT_COLOR_PALETTES[int(index) % len(BOAT_COLOR_PALETTES)]
@@ -953,6 +1007,36 @@ def _shoreline_candidate_cell_for_row(
     raise ValueError("could not place shoreline candidate boat")
 
 
+def _shoreline_candidate_lane_cell_for_row(
+    *,
+    row: int,
+    tiles_by_cell: Mapping[tuple[int, int], IsoHarborTile],
+    dock_meta: Mapping[str, Any],
+    cols: int,
+    preferred_side: str,
+) -> tuple[int, int]:
+    """Pick a stable open-water lane so shoreline-distance candidates read along the shore normal."""
+
+    left_col = int(dock_meta["left_col"])
+    right_col = int(dock_meta["right_col"])
+    right_lane = min(int(cols) - 2, int(right_col) + 4)
+    left_lane = max(1, int(left_col) - 4)
+    lane_order = (right_lane, left_lane) if str(preferred_side) == "right" else (left_lane, right_lane)
+    for col in lane_order:
+        tile = tiles_by_cell.get((int(col), int(row)))
+        if tile is not None and str(tile.terrain) == "water":
+            return (int(col), int(row))
+    return _shoreline_candidate_cell_for_row(
+        rng=spawn_rng(int(row), f"{SCENE_ID}:shoreline_lane_fallback"),
+        row=int(row),
+        side=str(preferred_side),
+        tiles_by_cell=tiles_by_cell,
+        dock_meta=dock_meta,
+        cols=int(cols),
+        selected_cells=(),
+    )
+
+
 def _draw_shoreline_candidate_boats(
     *,
     draw: ImageDraw.ImageDraw,
@@ -989,15 +1073,12 @@ def _draw_shoreline_candidate_boats(
     boat_type = "rowboat"
     half_l = _boat_half_length(scale=scale, boat_type=boat_type)
     for rank, (label, row) in enumerate(zip(labels_by_rank, rows_by_rank)):
-        side = "left" if int(rank) % 2 == 0 else "right"
-        cell = _shoreline_candidate_cell_for_row(
-            rng=rng,
+        cell = _shoreline_candidate_lane_cell_for_row(
             row=int(row),
-            side=side,
             tiles_by_cell=tiles_by_cell,
             dock_meta=dock_meta,
             cols=int(cols),
-            selected_cells=selected_cells,
+            preferred_side="right",
         )
         selected_cells.append(cell)
         tile = tiles_by_cell[cell]

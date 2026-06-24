@@ -26,7 +26,6 @@ QUERY_TO_HEADING_STATUS: Mapping[str, str] = {
 HEADING_STATUS_LABELS: Mapping[str, str] = {
     "toward_shoreline": "toward the shoreline",
     "away_from_shoreline": "away from the shoreline",
-    "parallel_to_shoreline": "parallel to the shoreline",
 }
 _REQUIRED_PROMPT_KEYS = (
     "bundle_id",

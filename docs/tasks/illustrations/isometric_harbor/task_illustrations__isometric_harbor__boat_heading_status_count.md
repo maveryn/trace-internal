@@ -45,4 +45,4 @@ Counts open-water boats by whether their bow faces toward or away from the shore
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/isometric_harbor/illustrations_isometric_harbor_v1.json`.
 - Prompts must refer to boats facing toward or away from the shoreline, not screen-up/down.
-- Render-only attributes such as boat color, exact open-water tile, dock jitter, canvas profile, distractor heading split, and water/land palette must not be query ids.
+- Render-only attributes such as boat color, exact open-water tile, dock jitter, canvas profile, opposite-heading count, and water/land palette must not be query ids.

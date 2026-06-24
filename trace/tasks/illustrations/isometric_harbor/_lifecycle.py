@@ -99,14 +99,17 @@ def _heading_status_counts(
     if int(remaining) < 0:
         raise ValueError("target_count cannot exceed total heading-status boats")
     other_statuses = [str(status) for status in BOAT_HEADING_STATUS_VALUES if str(status) != str(target_status)]
-    split_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{config.public_id}:other_heading_split:{target_status}",
-    )
-    first_count = int(split_index) % (int(remaining) + 1)
-    counts[other_statuses[0]] = int(first_count)
-    counts[other_statuses[1]] = int(remaining) - int(first_count)
+    if len(other_statuses) == 1:
+        counts[other_statuses[0]] = int(remaining)
+    elif len(other_statuses) > 1:
+        split_index = resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{config.public_id}:other_heading_split:{target_status}",
+        )
+        first_count = int(split_index) % (int(remaining) + 1)
+        counts[other_statuses[0]] = int(first_count)
+        counts[other_statuses[1]] = int(remaining) - int(first_count)
     return counts
 
 

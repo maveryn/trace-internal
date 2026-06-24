@@ -131,7 +131,7 @@ def test_isometric_harbor_renderer_supports_shoreline_candidate_boats() -> None:
 
 
 def test_isometric_harbor_renderer_supports_heading_status_boats() -> None:
-    counts = {"toward_shoreline": 2, "away_from_shoreline": 3, "parallel_to_shoreline": 1}
+    counts = {"toward_shoreline": 2, "away_from_shoreline": 4}
     scene = render_isometric_harbor_scene(
         2026062901,
         width=1200,
@@ -148,6 +148,7 @@ def test_isometric_harbor_renderer_supports_heading_status_boats() -> None:
         heading_status = str(entity.metadata.get("heading_status"))
         assert heading_status in counts
         assert entity.metadata.get("orientation") == BOAT_HEADING_STATUS_ORIENTATION[heading_status]
+        assert entity.metadata.get("orientation") in {"shore_facing", "shore_away"}
         assert entity.metadata.get("mooring_status") == "open_water"
         tile = next(tile for tile in scene.tiles if tile.tile_id == entity.tile_ids[0])
         assert tile.terrain == "water"
@@ -249,6 +250,8 @@ def test_isometric_harbor_boat_heading_status_count_contract() -> None:
         assert trace["query_spec"]["params"]["target_heading_status"] == QUERY_TO_HEADING_STATUS[query_id]
         assert trace["query_spec"]["params"]["heading_status_counts"][QUERY_TO_HEADING_STATUS[query_id]] == int(target_count)
         assert sum(int(value) for value in trace["query_spec"]["params"]["heading_status_counts"].values()) == 6
+        assert set(trace["query_spec"]["params"]["heading_status_counts"]) == {"toward_shoreline", "away_from_shoreline"}
+        assert set(trace["query_spec"]["params"]["allowed_heading_statuses"]) == {"toward_shoreline", "away_from_shoreline"}
         assert trace["execution_trace"]["answer"] == int(target_count)
         assert trace["render_map"]["answer_count"] == int(target_count)
         assert trace["render_map"]["target_heading_status"] == QUERY_TO_HEADING_STATUS[query_id]

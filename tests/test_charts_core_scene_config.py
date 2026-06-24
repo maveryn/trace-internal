@@ -21,8 +21,8 @@ def test_chart_scene_task_overrides_are_resolved() -> None:
     cfg = get_scene_defaults('charts', 'single_series')
     generation = resolve_scene_section_defaults(cfg, 'generation', task_id='task_charts__single_series__observed_threshold_crossing_label')
     assert generation
-    assert generation != cfg['generation']['shared']
-    assert 'query_id_weights' in generation
+    assert generation == cfg['generation']['shared']
+    assert 'query_id_weights' not in generation
     assert int(generation['mark_count_min']) <= int(generation['mark_count_max'])
 
 def test_chart_scene_required_bound_helpers_work_on_scene_defaults() -> None:

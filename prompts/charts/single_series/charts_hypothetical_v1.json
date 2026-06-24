@@ -65,24 +65,6 @@
     "aggregate_labels_text": {
       "type": "string"
     },
-    "annotation_hint": {
-      "type": "string"
-    },
-    "answer_hint": {
-      "type": "string"
-    },
-    "json_example": {
-      "type": "string"
-    },
-    "json_example_answer_only": {
-      "type": "string"
-    },
-    "json_output_contract": {
-      "type": "string"
-    },
-    "json_output_contract_answer_only": {
-      "type": "string"
-    },
     "object_description": {
       "type": "string"
     },
@@ -99,5 +81,29 @@
       "type": "string"
     }
   },
-  "required_slots_by_key": {}
+  "required_slots_by_key": {},
+  "static_slots_by_key": {
+    "global": {
+      "json_output_contract": "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.",
+      "json_output_contract_answer_only": "Use a valid JSON object with key \"answer\" for the final answer."
+    },
+    "query:remaining_mean_after_removal": {
+      "answer_hint": "set \"answer\" to the requested integer value; for percentage questions, omit the percent sign",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on the chart marks whose values remain in the average after the stated removals",
+      "json_example": "{\"annotation\":[[180,360],[320,240],[460,300]],\"answer\":18}",
+      "json_example_answer_only": "{\"answer\":18}"
+    },
+    "query:target_share_after_removal": {
+      "answer_hint": "set \"answer\" to the requested integer value; for percentage questions, omit the percent sign",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on the chart marks whose values remain in the total after the stated removals",
+      "json_example": "{\"annotation\":[[180,260],[320,340],[460,220]],\"answer\":25}",
+      "json_example_answer_only": "{\"answer\":25}"
+    },
+    "query:baseline_from_aggregate_percent_change": {
+      "answer_hint": "set \"answer\" to the requested integer value; for percentage questions, omit the percent sign",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on the chart marks whose values are combined before solving for the baseline",
+      "json_example": "{\"annotation\":[[220,340],[360,280],[500,220]],\"answer\":40}",
+      "json_example_answer_only": "{\"answer\":40}"
+    }
+  }
 }

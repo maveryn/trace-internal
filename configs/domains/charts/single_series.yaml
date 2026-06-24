@@ -6,17 +6,6 @@ generation:
     value_max: 20
     target_answer_min: 0
     target_answer_max: 20
-    query_id_weights:
-      threshold_count: 1.0
-      in_interval: 1.0
-      remaining_mean_after_removal: 1.0
-      target_share_after_removal: 1.0
-      baseline_from_aggregate_percent_change: 1.0
-      order_statistic_value: 1.0
-      order_statistic_label: 1.0
-    comparison_weights:
-      greater_than: 1.0
-      less_than: 1.0
     scene_variant_weights:
       area: 1.0
       bar: 1.0
@@ -25,183 +14,19 @@ generation:
       horizontal_bar: 1.0
       dot_plot: 1.0
       lollipop: 1.0
-    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     value_window_enabled: false
-    removed_count_min: 1
-    removed_count_max: 2
-    aggregate_count_min: 2
-    aggregate_count_max: 3
-    share_percent_values:
-    - 10
-    - 15
-    - 20
-    - 25
-    - 30
-    - 40
-    - 50
-    - 60
-    baseline_percent_values:
-    - 25
-    - 50
-    - 75
-    - 100
-    statistic_kind_weights:
-      median: 1.0
-      nth_highest: 1.0
-      nth_lowest: 1.0
-    balanced_statistic_kind_sampling: true
-  task_overrides:
-    charts_counting_value_count_base:
-      mark_count_max: 20
-    charts_statistics_summary_query_base:
-      mark_count_min: 15
-      mark_count_max: 25
-      value_max: 99
-      value_window_enabled: true
-      value_window_span_min: 24
-      value_window_span_max: 25
-      rank_n_min: 3
-      rank_n_max: 8
-      query_id_weights:
-        order_statistic_value: 1.0
-        order_statistic_label: 1.0
-      statistic_kind_weights:
-        median: 1.0
-        nth_highest: 1.0
-        nth_lowest: 1.0
-      balanced_statistic_kind_sampling: true
-      scene_variant_weights:
-        area: 1.0
-        bar: 1.0
-        line: 1.0
-        scatter: 1.0
-        horizontal_bar: 1.0
-        dot_plot: 1.0
-        lollipop: 1.0
-    task_charts__single_series__order_statistic_value:
-      mark_count_min: 15
-      mark_count_max: 17
-      rank_n_min: 3
-      rank_n_max: 3
-      scene_variant_weights:
-        area: 0.0
-        bar: 1.0
-        line: 1.0
-        scatter: 0.0
-        horizontal_bar: 0.0
-        dot_plot: 1.0
-        lollipop: 0.0
-    task_charts__single_series__order_statistic_label:
-      mark_count_min: 15
-      mark_count_max: 17
-      rank_n_min: 3
-      rank_n_max: 3
-      scene_variant_weights:
-        area: 0.0
-        bar: 1.0
-        line: 1.0
-        scatter: 0.0
-        horizontal_bar: 0.0
-        dot_plot: 1.0
-        lollipop: 0.0
-    charts_trend_value_base:
-      structure_mark_count_min: 6
-      structure_mark_count_max: 10
-      structure_value_min: 1
-      structure_value_max: 99
-      structure_value_window_span_min: 20
-      structure_value_window_span_max: 25
-      interval_mark_count_min: 8
-      interval_mark_count_max: 14
-      interval_value_window_span_min: 25
-      interval_value_window_span_max: 25
-      interval_value_min: 1
-      interval_value_max: 80
-      interval_gap_min: 2
-      interval_gap_max: 6
-      change_abs_min: 5
-      change_abs_max: 60
-      percent_change_min: -75
-      percent_change_max: 150
-      percent_change_step: 5
-      average_rate_abs_min: 2
-      average_rate_abs_max: 12
-      query_id_weights:
-        turning_point_count: 1.0
-        longest_monotone_streak: 1.0
-        endpoint_change_value: 1.0
-        interval_rate_value: 1.0
-        threshold_crossing: 1.0
-      turning_point_type_weights:
-        peak: 1.0
-        trough: 1.0
-      streak_direction_weights:
-        increasing: 1.0
-        decreasing: 1.0
-      endpoint_change_kind_weights:
-        absolute: 1.0
-        signed: 1.0
-        percent: 1.0
-      balanced_endpoint_change_kind_sampling: true
-      threshold_mark_count_min: 8
-      threshold_mark_count_max: 14
-      threshold_value_window_enabled: false
-      threshold_value_window_span_min: 25
-      threshold_value_window_span_max: 25
-      threshold_value_min: 1
-      threshold_value_max: 80
-      threshold_threshold_edge_margin: 8
-      threshold_threshold_min: 20
-      threshold_threshold_max: 60
-      threshold_crossing_index_min: 2
-      threshold_crossing_index_max: 10
-      threshold_observed_count_min: 3
-      threshold_observed_count_max: 5
-      threshold_projection_count_min: 4
-      threshold_projection_count_max: 6
-      threshold_projection_step_min: 1
-      threshold_projection_step_max: 5
-      crossing_mode_weights:
-        observed: 3.0
-        linear_projection: 1.0
-      balanced_crossing_mode_sampling: true
-      crossing_direction_weights:
-        above: 1.0
-        below: 1.0
-      balanced_crossing_direction_sampling: true
-      scene_variant_weights:
-        area: 1.0
-        bar: 1.0
-        horizontal_bar: 1.0
-        line: 1.0
-        dot_plot: 1.0
-        lollipop: 1.0
-    task_charts__single_series__endpoint_change_value:
-      query_id_weights:
-        endpoint_change_value: 1.0
-        interval_rate_value: 0.0
-      endpoint_change_kind_weights:
-        absolute: 1.0
-        signed: 1.0
-        percent: 1.0
-      balanced_endpoint_change_kind_sampling: true
-    task_charts__single_series__observed_threshold_crossing_label:
-      query_id_weights:
-        threshold_crossing: 1.0
-      crossing_mode_weights:
-        observed: 1.0
-        linear_projection: 0.0
-    task_charts__single_series__projected_threshold_crossing_label:
-      query_id_weights:
-        threshold_crossing: 1.0
-      crossing_mode_weights:
-        observed: 0.0
-        linear_projection: 1.0
+    share_percent_values: [10, 15, 20, 25, 30, 40, 50, 60]
+    baseline_percent_values: [25, 50, 75, 100]
 rendering:
   shared:
-    canvas_width: 800
-    canvas_height: 600
+    chart_context_profile: report_paragraph
+    chart_context_mode_weights:
+      clean: 0.3
+      minimal: 0.4
+      paragraph_box: 0.3
+    canvas_width: 1000
+    canvas_height: 640
     plot_margin_left_px: 92
     plot_margin_right_px: 46
     plot_margin_top_px: 44
@@ -209,8 +34,8 @@ rendering:
     axis_line_width_px: 2
     grid_line_width_px: 1
     tick_length_px: 8
-    label_font_size_px: 22
-    tick_font_size_px: 18
+    label_font_size_px: 20
+    tick_font_size_px: 17
     label_stroke_width_px: 2
     mark_outline_width_px: 2
     line_width_px: 4
@@ -227,147 +52,26 @@ rendering:
     line_width_px_max: 4
     point_radius_px_min: 5
     point_radius_px_max: 8
-  task_overrides:
-    charts_statistics_summary_query_base:
-      canvas_width: 1000
-      canvas_height: 640
-      label_font_size_px: 20
-      tick_font_size_px: 17
-      guide_line_mode: always
-    charts_trend_value_base:
-      canvas_width: 1000
-      canvas_height: 640
-      label_font_size_px: 20
-      tick_font_size_px: 17
-      value_axis_major_tick_step: 10
-      guide_line_mode: always
+    value_axis_major_tick_step: 10
+    layout_jitter_enabled: true
+    layout_jitter_x_px_min: -14
+    layout_jitter_x_px_max: 14
+    layout_jitter_y_px_min: -10
+    layout_jitter_y_px_max: 10
+    layout_jitter_min_margin_px: 26
 prompt:
   shared:
     bundle_id: charts_trend_v1
-    scene_key: ordered_chart_trend
-    task_key: trend_value_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
-      in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
-      the final answer.
-    answer_hint: set "answer" to the requested trend value as an integer
-    object_description_area: an ordered labeled area chart where point labels identify
-      y-values from left to right
-    object_description_bar: an ordered labeled bar chart where each bar height is
-      read from the vertical axis from left to right
-    object_description_horizontal_bar: an ordered labeled horizontal bar chart where
-      each bar length is read from the horizontal axis from top to bottom
-    object_description_line: an ordered labeled line chart where point labels identify
-      y-values from left to right
-    object_description_scatter: a labeled scatter plot where point labels identify
-      y-values on the vertical axis
-    object_description_dot_plot: an ordered labeled dot plot where point labels identify
-      y-values from left to right
-    object_description_lollipop: an ordered labeled lollipop chart where point labels
-      identify y-values from left to right
-    annotation_hint_threshold_count: set "annotation" to an array of [x, y] pixel
-      points at the centers of all marks with values matching the strict threshold
-      comparison
-    annotation_hint_in_interval: set "annotation" to an array of [x, y] pixel points
-      at the centers of all marks with values in the inclusive interval
-    json_example_threshold_count: '{"annotation":[[180,260],[390,180],[610,320]],"answer":3}'
-    json_example_in_interval: '{"annotation":[[165,310],[380,250],[590,285]],"answer":3}'
-    json_example_answer_only_threshold_count: '{"answer":3}'
-    json_example_answer_only_in_interval: '{"answer":3}'
-    annotation_hint_remaining_mean_after_removal: set "annotation" to an array of
-      [x,y] pixel points for the chart marks whose values remain in the average after
-      the stated removals
-    annotation_hint_target_share_after_removal: set "annotation" to an array of [x,y]
-      pixel points for the chart marks whose values remain in the total after the
-      stated removals
-    annotation_hint_baseline_from_aggregate_percent_change: set "annotation" to an
-      array of [x,y] pixel points for the chart marks whose values are combined before
-      solving for the baseline
-    json_example_remaining_mean_after_removal: '{"annotation":[[180,360],[320,240],[460,300]],"answer":18}'
-    json_example_target_share_after_removal: '{"annotation":[[180,260],[320,340],[460,220]],"answer":25}'
-    json_example_baseline_from_aggregate_percent_change: '{"annotation":[[220,340],[360,280],[500,220]],"answer":40}'
-    json_example_answer_only_remaining_mean_after_removal: '{"answer":18}'
-    json_example_answer_only_target_share_after_removal: '{"answer":25}'
-    json_example_answer_only_baseline_from_aggregate_percent_change: '{"answer":40}'
-    annotation_hint_median: set "annotation" to an array of [x, y] pixel points at
-      the center of the median mark
-    annotation_hint_nth_highest: set "annotation" to an array of [x, y] pixel points
-      at the center of the requested ranked mark
-    annotation_hint_nth_lowest: set "annotation" to an array of [x, y] pixel points
-      at the center of the requested ranked mark
-    json_example_median: '{"annotation":[[300,240]],"answer":6}'
-    json_example_nth_highest: '{"annotation":[[420,180]],"answer":7}'
-    json_example_nth_lowest: '{"annotation":[[260,360]],"answer":4}'
-    json_example_answer_only_median: '{"answer":6}'
-    json_example_answer_only_nth_highest: '{"answer":7}'
-    json_example_answer_only_nth_lowest: '{"answer":4}'
-    threshold_task_key: threshold_crossing_label_query
-    answer_hint_crossing_label: set "answer" to the requested crossing label as a
-      string
-    unanswerable_instruction: If no visible or projected label satisfies the threshold
-      rule, answer exactly "unanswerable".
-    annotation_hint_turning_point_count: set "annotation" to an array of [x,y] pixel
-      points for all local turning points matching the requested type
-    annotation_hint_longest_monotone_streak: set "annotation" to an array of [x,y]
-      pixel points for all marks in the unique longest strictly monotone streak matching
-      the requested direction
-    annotation_hint_endpoint_change_value: set "annotation" to an object mapping "start_mark"
-      and "end_mark" to [x,y] pixel points at the centers of the two endpoint marks
-    annotation_hint_interval_rate_value: set "annotation" to an object mapping "start_mark"
-      and "end_mark" to [x,y] pixel points at the centers of the two endpoint marks
-    annotation_hint_first_crosses_above_threshold: set "annotation" to an array of
-      [x,y] pixel points for marks up to and including the first threshold-crossing
-      mark; if the answer is "unanswerable", use an empty array
-    annotation_hint_first_crosses_below_threshold: set "annotation" to an array of
-      [x,y] pixel points for marks up to and including the first threshold-crossing
-      mark; if the answer is "unanswerable", use an empty array
-    annotation_hint_linear_projection_crosses_above: set "annotation" to an array
-      of [x,y] pixel points for the last two plotted marks from the linear series
-      and future label slots up to and including the first threshold-crossing label;
-      if the answer is "unanswerable", use an empty array
-    annotation_hint_linear_projection_crosses_below: set "annotation" to an array
-      of [x,y] pixel points for the last two plotted marks from the linear series
-      and future label slots up to and including the first threshold-crossing label;
-      if the answer is "unanswerable", use an empty array
-    json_example_turning_point_count: '{"annotation":[[220,180],[520,210]],"answer":2}'
-    json_example_longest_monotone_streak: '{"annotation":[[180,420],[300,350],[420,260],[540,170]],"answer":4}'
-    json_example_endpoint_change_value: '{"annotation":{"start_mark":[160,420],"end_mark":[460,220]},"answer":20}'
-    json_example_interval_rate_value: '{"annotation":{"start_mark":[200,420],"end_mark":[500,240]},"answer":6}'
-    json_example_first_crosses_above_threshold: '{"annotation":[[160,420],[260,360],[360,240]],"answer":"C4A7"}'
-    json_example_first_crosses_below_threshold: '{"annotation":[[180,180],[280,260],[380,390]],"answer":"F8Q2"}'
-    json_example_linear_projection_crosses_above: '{"annotation":[[300,320],[420,260],[540,180]],"answer":"M6P4"}'
-    json_example_linear_projection_crosses_below: '{"annotation":[[300,180],[420,260],[540,340]],"answer":"Q9R2"}'
-    json_example_answer_only_turning_point_count: '{"answer":2}'
-    json_example_answer_only_longest_monotone_streak: '{"answer":4}'
-    json_example_answer_only_endpoint_change_value: '{"answer":20}'
-    json_example_answer_only_interval_rate_value: '{"answer":6}'
-    json_example_answer_only_first_crosses_above_threshold: '{"answer":"C4A7"}'
-    json_example_answer_only_first_crosses_below_threshold: '{"answer":"F8Q2"}'
-    json_example_answer_only_linear_projection_crosses_above: '{"answer":"M6P4"}'
-    json_example_answer_only_linear_projection_crosses_below: '{"answer":"Q9R2"}'
-  task_overrides:
-    charts_counting_value_count_base:
-      bundle_id: charts_counting_v1
-      scene_key: labeled_chart_counting
-      task_key: value_count_query
-      answer_hint: set "answer" to the requested count as an integer
-    charts_statistics_summary_query_base:
-      bundle_id: charts_statistics_v1
-      scene_key: labeled_chart_statistics
-      task_key_value: summary_value_query
-      task_key_label: summary_label_query
-      answer_hint_value: set "answer" to the requested statistic as an integer
-      answer_hint_label: set "answer" to the single uppercase label of the requested
-        mark
-      annotation_hint_label_median: set "annotation" to an array of [x, y] pixel points
-        at the center of the median mark
-      annotation_hint_label_nth_highest: set "annotation" to an array of [x, y] pixel
-        points at the center of the requested ranked mark
-      annotation_hint_label_nth_lowest: set "annotation" to an array of [x, y] pixel
-        points at the center of the requested ranked mark
-      json_example_label_median: '{"annotation":[[300,240]],"answer":"M4K8"}'
-      json_example_label_nth_highest: '{"annotation":[[420,180]],"answer":"K7P2"}'
-      json_example_label_nth_lowest: '{"annotation":[[260,360]],"answer":"R6T4"}'
-      json_example_answer_only_label_median: '{"answer":"M4K8"}'
-      json_example_answer_only_label_nth_highest: '{"answer":"K7P2"}'
-      json_example_answer_only_label_nth_lowest: '{"answer":"R6T4"}'
+visual:
+  noise:
+    apply_prob: 0.5
+    edit_count_range: [1, 1]
+    value_ranges:
+      blur:
+        radius: [0.04, 0.16]
+      downsample:
+        scale: [0.97, 0.99]
+      jpeg:
+        quality: [89.0, 96.0]
+      noise:
+        alpha: [0.004, 0.012]

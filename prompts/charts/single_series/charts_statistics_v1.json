@@ -126,6 +126,48 @@
         "Determine which labeled mark has the {rank_n_ordinal}-lowest distinct chart value.",
         "What label corresponds to the {rank_n_ordinal}-lowest distinct value shown?",
         "Identify the label whose value is the {rank_n_ordinal}-lowest distinct value."
+      ],
+      "median_order_statistic_value": [
+        "What is the {statistic_prompt}?",
+        "Find the {statistic_prompt} among the labeled marks.",
+        "Determine the {statistic_prompt} from the displayed values.",
+        "What is the displayed {statistic_prompt}?",
+        "Compute the {statistic_prompt} for the displayed values."
+      ],
+      "nth_highest_order_statistic_value": [
+        "What is the {statistic_prompt}?",
+        "Find the {statistic_prompt} among the labeled marks.",
+        "Determine the {statistic_prompt} from the displayed values.",
+        "What is the displayed {statistic_prompt}?",
+        "Compute the {statistic_prompt} for the displayed values."
+      ],
+      "nth_lowest_order_statistic_value": [
+        "What is the {statistic_prompt}?",
+        "Find the {statistic_prompt} among the labeled marks.",
+        "Determine the {statistic_prompt} from the displayed values.",
+        "What is the displayed {statistic_prompt}?",
+        "Compute the {statistic_prompt} for the displayed values."
+      ],
+      "median_order_statistic_label": [
+        "Which label has the {statistic_prompt}?",
+        "Find the label of the mark with the {statistic_prompt}.",
+        "Determine which labeled mark has the {statistic_prompt}.",
+        "What label corresponds to the {statistic_prompt} shown?",
+        "Identify the label whose value is the {statistic_prompt}."
+      ],
+      "nth_highest_order_statistic_label": [
+        "Which label has the {statistic_prompt}?",
+        "Find the label of the mark with the {statistic_prompt}.",
+        "Determine which labeled mark has the {statistic_prompt}.",
+        "What label corresponds to the {statistic_prompt} shown?",
+        "Identify the label whose value is the {statistic_prompt}."
+      ],
+      "nth_lowest_order_statistic_label": [
+        "Which label has the {statistic_prompt}?",
+        "Find the label of the mark with the {statistic_prompt}.",
+        "Determine which labeled mark has the {statistic_prompt}.",
+        "What label corresponds to the {statistic_prompt} shown?",
+        "Identify the label whose value is the {statistic_prompt}."
       ]
     },
     "output": {
@@ -146,24 +188,6 @@
     }
   },
   "dynamic_slots": {
-    "annotation_hint": {
-      "type": "string"
-    },
-    "answer_hint": {
-      "type": "string"
-    },
-    "json_example": {
-      "type": "string"
-    },
-    "json_example_answer_only": {
-      "type": "string"
-    },
-    "json_output_contract": {
-      "type": "string"
-    },
-    "json_output_contract_answer_only": {
-      "type": "string"
-    },
     "object_description": {
       "type": "string"
     },
@@ -174,5 +198,47 @@
       "type": "string"
     }
   },
-  "required_slots_by_key": {}
+  "required_slots_by_key": {},
+  "static_slots_by_key": {
+    "global": {
+      "json_output_contract": "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.",
+      "json_output_contract_answer_only": "Use a valid JSON object with key \"answer\" for the final answer."
+    },
+    "query:median_order_statistic_value": {
+      "answer_hint": "set \"answer\" to the requested statistic as an integer",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the selected statistic mark",
+      "json_example": "{\"annotation\":[300,240],\"answer\":6}",
+      "json_example_answer_only": "{\"answer\":6}"
+    },
+    "query:nth_highest_order_statistic_value": {
+      "answer_hint": "set \"answer\" to the requested statistic as an integer",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the selected statistic mark",
+      "json_example": "{\"annotation\":[300,240],\"answer\":6}",
+      "json_example_answer_only": "{\"answer\":6}"
+    },
+    "query:nth_lowest_order_statistic_value": {
+      "answer_hint": "set \"answer\" to the requested statistic as an integer",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the selected statistic mark",
+      "json_example": "{\"annotation\":[300,240],\"answer\":6}",
+      "json_example_answer_only": "{\"answer\":6}"
+    },
+    "query:median_order_statistic_label": {
+      "answer_hint": "set \"answer\" to the exact visible label of the selected mark as a string",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the selected statistic mark",
+      "json_example": "{\"annotation\":[420,180],\"answer\":\"K7P2\"}",
+      "json_example_answer_only": "{\"answer\":\"K7P2\"}"
+    },
+    "query:nth_highest_order_statistic_label": {
+      "answer_hint": "set \"answer\" to the exact visible label of the selected mark as a string",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the selected statistic mark",
+      "json_example": "{\"annotation\":[420,180],\"answer\":\"K7P2\"}",
+      "json_example_answer_only": "{\"answer\":\"K7P2\"}"
+    },
+    "query:nth_lowest_order_statistic_label": {
+      "answer_hint": "set \"answer\" to the exact visible label of the selected mark as a string",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the selected statistic mark",
+      "json_example": "{\"annotation\":[420,180],\"answer\":\"K7P2\"}",
+      "json_example_answer_only": "{\"answer\":\"K7P2\"}"
+    }
+  }
 }

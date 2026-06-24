@@ -3,24 +3,30 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `single_series`
-3. Source implementation domain/group: `charts/statistics`
-4. Query id: `order_statistic_label`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Source implementation: `trace/tasks/charts/single_series/order_statistic_label.py`
+4. Public task id: `task_charts__single_series__order_statistic_label`
+5. Supported `query_id` values: `median_order_statistic_label`, `nth_highest_order_statistic_label`, `nth_lowest_order_statistic_label`
+6. Query ids are internal replay/review metadata; scene style, label pool, mark count, and context mode are generation metadata.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.statistics.summary_query.ChartsSingleSeriesOrderStatisticLabelTask`
-2. Prompt lookup domain/group: `charts/statistics`
+1. Registered class: `trace.tasks.charts.single_series.order_statistic_label.ChartsSingleSeriesOrderStatisticLabelTask`
+2. Prompt lookup: `prompts/charts/single_series/charts_statistics_v1.json`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
+## Program Contract
+`label(select_ranked_mark(marks, statistic_kind)); output=string_label; annotation=point(selected_mark); scene=single_series; scope=order_statistic_label`
+
 ## Annotation Contract
 1. Answer schema: `string_label`.
-2. Annotation schema: `point_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+2. Annotation schema: `point`.
+3. Annotation marks the selected ranked-statistic mark point only.
+4. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `order_statistic_label` | `selection.ranked_item` | `string_label` | `point_set` |
+| `median_order_statistic_label` | `label.selected_median_mark` | `string_label` | `point` |
+| `nth_highest_order_statistic_label` | `label.selected_nth_highest_mark` | `string_label` | `point` |
+| `nth_lowest_order_statistic_label` | `label.selected_nth_lowest_mark` | `string_label` | `point` |

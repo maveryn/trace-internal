@@ -35,6 +35,20 @@
         "Determine how many marks have values between {interval_min} and {interval_max}, inclusive.",
         "What number of labeled marks lie in the inclusive interval [{interval_min}, {interval_max}]?",
         "Find how many labeled marks have values from {interval_min} to {interval_max}, inclusive."
+      ],
+      "above_threshold_count": [
+        "How many labeled marks have value {threshold_comparison_phrase} {threshold}?",
+        "Count the labeled marks with values {threshold_comparison_phrase} {threshold}.",
+        "Determine how many marks show values strictly {threshold_comparison_phrase} {threshold}.",
+        "What number of labeled marks have values {threshold_comparison_phrase} {threshold}?",
+        "Find how many labeled marks are {threshold_comparison_phrase} {threshold}."
+      ],
+      "below_threshold_count": [
+        "How many labeled marks have value {threshold_comparison_phrase} {threshold}?",
+        "Count the labeled marks with values {threshold_comparison_phrase} {threshold}.",
+        "Determine how many marks show values strictly {threshold_comparison_phrase} {threshold}.",
+        "What number of labeled marks have values {threshold_comparison_phrase} {threshold}?",
+        "Find how many labeled marks are {threshold_comparison_phrase} {threshold}."
       ]
     },
     "output": {
@@ -55,28 +69,10 @@
     }
   },
   "dynamic_slots": {
-    "annotation_hint": {
-      "type": "string"
-    },
-    "answer_hint": {
-      "type": "string"
-    },
     "interval_max": {
       "type": "string"
     },
     "interval_min": {
-      "type": "string"
-    },
-    "json_example": {
-      "type": "string"
-    },
-    "json_example_answer_only": {
-      "type": "string"
-    },
-    "json_output_contract": {
-      "type": "string"
-    },
-    "json_output_contract_answer_only": {
       "type": "string"
     },
     "object_description": {
@@ -89,5 +85,29 @@
       "type": "string"
     }
   },
-  "required_slots_by_key": {}
+  "required_slots_by_key": {},
+  "static_slots_by_key": {
+    "global": {
+      "json_output_contract": "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.",
+      "json_output_contract_answer_only": "Use a valid JSON object with key \"answer\" for the final answer."
+    },
+    "query:above_threshold_count": {
+      "answer_hint": "set \"answer\" to the requested count as an integer",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on every mark whose value is strictly greater than the threshold",
+      "json_example": "{\"annotation\":[[180,260],[390,180],[610,320]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:below_threshold_count": {
+      "answer_hint": "set \"answer\" to the requested count as an integer",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on every mark whose value is strictly less than the threshold",
+      "json_example": "{\"annotation\":[[160,420],[280,360],[520,390]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:in_interval": {
+      "answer_hint": "set \"answer\" to the requested count as an integer",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on every mark whose value is inside the inclusive interval",
+      "json_example": "{\"annotation\":[[165,310],[380,250],[590,285]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    }
+  }
 }

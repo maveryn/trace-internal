@@ -3,24 +3,28 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `single_series`
-3. Source implementation domain/group: `charts/counting`
-4. Query id: `interval_value_count`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Source implementation: `trace/tasks/charts/single_series/interval_value_count.py`
+4. Public task id: `task_charts__single_series__interval_value_count`
+5. Supported `query_id` values: `single`
+6. Query ids are internal replay/review metadata; scene style, label pool, mark count, and context mode are generation metadata.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.counting.value_count.ChartsCountingIntervalValueCountTask`
-2. Prompt lookup domain/group: `charts/counting`
+1. Registered class: `trace.tasks.charts.single_series.interval_value_count.ChartsCountingIntervalValueCountTask`
+2. Prompt lookup: `prompts/charts/single_series/charts_counting_v1.json`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
+
+## Program Contract
+`count(filter(marks, lower_bound <= value(mark) <= upper_bound)); output=integer_count; annotation=point_set(matching_marks); scene=single_series; scope=interval_value_count`
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `point_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+3. Annotation marks every visible mark whose value falls inside the inclusive interval.
+4. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `interval_value_count` | `count.interval_predicate` | `integer_count` | `point_set` |
+| `single` | `count.inclusive_value_interval` | `integer_count` | `point_set` |

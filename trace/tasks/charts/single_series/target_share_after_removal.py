@@ -1,67 +1,24 @@
-"""Compute a target share after removing labeled chart values."""
-
+"""Compute target_share_after_removal over labeled chart values."""
 from __future__ import annotations
-
-from typing import Any, Dict
-
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.counterfactual_value import build_counterfactual_task_components
-
-
-QUERY_ID = "target_share_after_removal"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
-
+from trace.core.query_ids import SINGLE_QUERY_ID
+from ._lifecycle import build_counterfactual_plan as B, run_single_series_lifecycle as R
+from .shared.state import DOMAIN
+from trace.tasks.registry import register_task
+T = "task_charts__single_series__target_share_after_removal"
+D = dict(mark_count_min=4, mark_count_max=10, value_min=5, value_max=80, removed_count_min=1, removed_count_max=2)
+PGM = "percent_share(value(target_label), sum(values(marks excluding removed_labels))); output=integer_value; annotation=point_set(retained_marks); scene=single_series; scope=target_share_after_removal"
+def _build_plan(params, seed, query_id, _):
+    if query_id != SINGLE_QUERY_ID: raise ValueError(f"unsupported query_id for {T}: {query_id}")
+    return B(params=params, seed=seed, namespace=T, operation="target_share", prompt_key="target_share_after_removal", dynamic_slots={"removed_labels_text":"trace:quoted:removed_labels", "retained_labels_text":"trace:quoted:retained_labels", "target_label":"trace:str:target_label"}, relation_params={"counterfactual_operation":"remove_labels_then_target_share_percent", "removed_labels":"trace:list:removed_labels", "retained_labels":"trace:list:retained_labels", "target_label":"trace:str:target_label"}, program_code=PGM, reasoning_load=0.78)
 
 @register_task
 class ChartsHypotheticalTargetShareAfterRemovalPublicTask:
-    """Compute a target share after removing one or more labeled values."""
-
-    task_id = "task_charts__single_series__target_share_after_removal"
-    domain = "charts"
-    scene_id = "single_series"
+    task_id = T
+    domain = DOMAIN
     objective_contract = "target_share_after_removal"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = (SINGLE_QUERY_ID,)
+    default_query_id = SINGLE_QUERY_ID
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=QUERY_ID,
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_counterfactual_task_components(
-                    task_id=self.task_id,
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                    selected_query_id=str(selected_query_id),
-                    query_id_probabilities=query_probabilities,
-                )
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=int(components.answer_value)),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=list(components.annotation_value)),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id="single_series",
-                    query_id=str(components.query_id),
-                )
-            except Exception as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
-
-
-__all__ = ["ChartsHypotheticalTargetShareAfterRemovalPublicTask"]
+    def generate(self, instance_seed, *, params, max_attempts):
+        return R(task=self, instance_seed=instance_seed, params={**D, **params}, max_attempts=max_attempts, default_query_id=self.default_query_id, build_plan=_build_plan)

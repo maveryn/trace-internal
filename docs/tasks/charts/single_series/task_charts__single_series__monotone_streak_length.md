@@ -3,24 +3,29 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `single_series`
-3. Source implementation domain/group: `charts/trend`
-4. Query id: `longest_monotone_streak`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Source implementation: `trace/tasks/charts/single_series/monotone_streak_length.py`
+4. Public task id: `task_charts__single_series__monotone_streak_length`
+5. Supported `query_id` values: `longest_increasing_streak_length`, `longest_decreasing_streak_length`
+6. Query ids are internal replay/review metadata; scene style, label pool, mark count, and context mode are generation metadata.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.trend.value.ChartsTrendMonotoneStreakLengthTask`
-2. Prompt lookup domain/group: `charts/trend`
+1. Registered class: `trace.tasks.charts.single_series.monotone_streak_length.ChartsTrendMonotoneStreakLengthTask`
+2. Prompt lookup: `prompts/charts/single_series/charts_trend_v1.json`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
+
+## Program Contract
+`length(unique_longest_monotone_run(sequence(values), direction)); output=integer_value; annotation=point_set(run_marks); scene=single_series; scope=monotone_streak_length`
 
 ## Annotation Contract
 1. Answer schema: `integer_value`.
 2. Annotation schema: `point_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+3. Annotation marks every visible mark in the unique longest monotone run.
+4. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `longest_monotone_streak` | `sequence.longest_run_length` | `integer_value` | `point_set` |
+| `longest_increasing_streak_length` | `length.unique_longest_increasing_run` | `integer_value` | `point_set` |
+| `longest_decreasing_streak_length` | `length.unique_longest_decreasing_run` | `integer_value` | `point_set` |

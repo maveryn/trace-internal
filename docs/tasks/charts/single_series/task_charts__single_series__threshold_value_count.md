@@ -3,24 +3,29 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `single_series`
-3. Source implementation domain/group: `charts/counting`
-4. Query id: `threshold_value_count`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Source implementation: `trace/tasks/charts/single_series/threshold_value_count.py`
+4. Public task id: `task_charts__single_series__threshold_value_count`
+5. Supported `query_id` values: `above_threshold_count`, `below_threshold_count`
+6. Query ids are internal replay/review metadata; scene style, label pool, mark count, and context mode are generation metadata.
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.counting.value_count.ChartsCountingThresholdValueCountTask`
-2. Prompt lookup domain/group: `charts/counting`
+1. Registered class: `trace.tasks.charts.single_series.threshold_value_count.ChartsCountingThresholdValueCountTask`
+2. Prompt lookup: `prompts/charts/single_series/charts_counting_v1.json`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
+
+## Program Contract
+`count(filter(marks, value(mark) comparison threshold)); output=integer_count; annotation=point_set(matching_marks); scene=single_series; scope=threshold_value_count`
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `point_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+3. Annotation marks every visible mark satisfying the strict threshold predicate.
+4. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `threshold_value_count` | `count.one_bound_threshold` | `integer_count` | `point_set` |
+| `above_threshold_count` | `count.above_threshold` | `integer_count` | `point_set` |
+| `below_threshold_count` | `count.below_threshold` | `integer_count` | `point_set` |

@@ -41,6 +41,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
             "marked_polygon_equation",
             "measuring_tools",
             "paper_fold",
+            "parallel_segment_proportion",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
@@ -76,6 +77,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
             "marked_polygon_equation",
             "measuring_tools",
             "paper_fold",
+            "parallel_segment_proportion",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),

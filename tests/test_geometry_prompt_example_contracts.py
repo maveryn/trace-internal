@@ -16,8 +16,6 @@ _AFFECTED_KEYED_POINT_TASKS = (
     "task_geometry__marked_polygon_equation__angle_variable_value",
     "task_geometry__marked_polygon_equation__side_length_value",
     "task_geometry__marked_polygon_equation__side_variable_value",
-    "task_geometry__parallel_segment_proportion__segment_length_value",
-    "task_geometry__parallel_segment_proportion__variable_value",
     "task_geometry__regular_polygon_decomposition__central_angle_value",
     "task_geometry__regular_polygon_decomposition__perimeter_value",
     "task_geometry__regular_polygon_decomposition__piece_area_value",
@@ -35,6 +33,11 @@ _AFFECTED_KEYED_POINT_TASKS = (
     "task_geometry__triangle_congruence_correspondence__algebraic_side_value",
     "task_geometry__triangle_congruence_correspondence__corresponding_angle_value",
     "task_geometry__triangle_congruence_correspondence__corresponding_side_value",
+)
+
+_AFFECTED_SEGMENT_SET_TASKS = (
+    "task_geometry__parallel_segment_proportion__segment_length_value",
+    "task_geometry__parallel_segment_proportion__variable_value",
 )
 
 
@@ -70,6 +73,33 @@ def test_geometry_keyed_point_prompt_examples_are_not_degenerate(task_id: str) -
                 offenders.append(str(query_id))
 
     assert not offenders, f"{task_id} has degenerate point examples for query ids: {sorted(offenders)}"
+
+
+@pytest.mark.parametrize("task_id", _AFFECTED_SEGMENT_SET_TASKS)
+def test_geometry_segment_set_prompt_examples_are_valid(task_id: str) -> None:
+    collected = collect_query_id_samples(
+        task_id=str(task_id),
+        target_count_per_query_id=1,
+        seed=int(hash64(20260609, f"geometry.prompt_examples.{task_id}", 0)),
+        max_attempts_per_instance=200,
+        max_total_samples_per_task=2000,
+        workers=1,
+        collector=_prompt_record,
+    )
+
+    assert collected["incomplete_query_ids"] == []
+    offenders: list[str] = []
+    for query_id, samples in collected["samples_by_query_id"].items():
+        for sample in samples:
+            issues = _audit_annotation_prompt(
+                str(sample["prompt"]),
+                annotation_type=str(sample["annotation_type"]),
+                mode="answer_and_annotation",
+            )
+            if issues:
+                offenders.extend(f"{query_id}:{issue['code']}" for issue in issues)
+
+    assert not offenders, f"{task_id} has invalid segment-set prompt examples: {sorted(offenders)}"
 
 
 def test_survey_traverse_bearing_prompt_uses_query_specific_annotation_keys() -> None:

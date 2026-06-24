@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 import trace.tasks  # noqa: F401
 from trace.tasks.registry import create_task, list_task_ids
 
@@ -27,12 +29,10 @@ TASK_QUERIES = {
         "single",
     ),
     "task_geometry__parallel_segment_proportion__variable_value": (
-        "triangle_side_splitter_variable",
-        "parallel_transversal_segment_variable",
+        "single",
     ),
     "task_geometry__parallel_segment_proportion__segment_length_value": (
-        "triangle_side_splitter_segment_length",
-        "parallel_transversal_segment_length",
+        "single",
     ),
 }
 
@@ -60,6 +60,25 @@ MARKED_CONSTRUCTION_FAMILIES = {
     ),
 }
 
+PARALLEL_CONSTRUCTION_FAMILIES = (
+    "triangle_side_splitter",
+    "parallel_transversals",
+)
+
+PARALLEL_TASK_IDS = frozenset(
+    {
+        "task_geometry__parallel_segment_proportion__variable_value",
+        "task_geometry__parallel_segment_proportion__segment_length_value",
+    }
+)
+
+RETIRED_PARALLEL_QUERY_IDS = (
+    "triangle_side_splitter_variable",
+    "parallel_transversal_segment_variable",
+    "triangle_side_splitter_segment_length",
+    "parallel_transversal_segment_length",
+)
+
 
 def _generate(task_id: str, query_id: str, seed: int = 20260607, **extra_params):
     task = create_task(task_id)
@@ -79,6 +98,30 @@ def test_geo3k_marked_equation_queries_emit_keyed_point_annotation() -> None:
             assert output.query_id == query_id
             assert output.answer_gt.type == "number"
             assert isinstance(output.answer_gt.value, (int, float))
+
+            if task_id in PARALLEL_TASK_IDS:
+                assert output.annotation_gt.type == "segment_set"
+                assert isinstance(output.annotation_gt.value, list)
+                assert len(output.annotation_gt.value) == 4
+                width, height = output.image.size
+                for segment in output.annotation_gt.value:
+                    assert isinstance(segment, list)
+                    assert len(segment) == 2
+                    for point in segment:
+                        assert isinstance(point, list)
+                        assert len(point) == 2
+                        assert 0.0 <= float(point[0]) <= float(width)
+                        assert 0.0 <= float(point[1]) <= float(height)
+                trace = output.trace_payload
+                assert trace["execution_trace"]["query_id"] == query_id
+                assert trace["execution_trace"]["answer"] == output.answer_gt.value
+                assert trace["projected_annotation"]["type"] == "segment_set"
+                assert trace["projected_annotation"]["segment_set"] == output.annotation_gt.value
+                assert trace["projected_annotation"]["pixel_segment_set"] == output.annotation_gt.value
+                assert "task_variant" not in trace["query_spec"]["params"]
+                assert "query_variant" not in trace["query_spec"]["params"]
+                continue
+
             assert output.annotation_gt.type == "point_map"
             assert isinstance(output.annotation_gt.value, dict)
             assert output.annotation_gt.value
@@ -109,15 +152,15 @@ def test_geo3k_marked_equation_queries_use_expected_scene_ids() -> None:
     ).scene_id == "marked_polygon_equation"
     assert _generate(
         "task_geometry__parallel_segment_proportion__variable_value",
-        "parallel_transversal_segment_variable",
+        "single",
+        construction_family="parallel_transversals",
     ).scene_id == "parallel_segment_proportion"
 
 
 def test_geo3k_marked_equation_generation_is_deterministic() -> None:
     task_id = "task_geometry__parallel_segment_proportion__segment_length_value"
-    query_id = "triangle_side_splitter_segment_length"
-    first = _generate(task_id, query_id, seed=817)
-    second = _generate(task_id, query_id, seed=817)
+    first = _generate(task_id, "single", seed=817, construction_family="triangle_side_splitter")
+    second = _generate(task_id, "single", seed=817, construction_family="triangle_side_splitter")
     assert first.answer_gt == second.answer_gt
     assert first.annotation_gt == second.annotation_gt
     assert first.trace_payload["execution_trace"] == second.trace_payload["execution_trace"]
@@ -137,3 +180,27 @@ def test_marked_polygon_equation_construction_families_are_trace_metadata() -> N
             assert trace["execution_trace"]["construction_family"] == family
             assert trace["query_spec"]["params"]["construction_family"] == family
             assert trace["query_spec"]["params"]["query_id"] == "single"
+
+
+def test_parallel_segment_proportion_construction_families_are_trace_metadata() -> None:
+    for task_id in sorted(PARALLEL_TASK_IDS):
+        for index, family in enumerate(PARALLEL_CONSTRUCTION_FAMILIES):
+            output = _generate(
+                task_id,
+                "single",
+                seed=20260618 + index,
+                construction_family=family,
+            )
+            assert output.query_id == "single"
+            assert output.annotation_gt.type == "segment_set"
+            trace = output.trace_payload
+            assert trace["execution_trace"]["construction_family"] == family
+            assert trace["query_spec"]["params"]["construction_family"] == family
+            assert trace["query_spec"]["params"]["query_id"] == "single"
+
+
+@pytest.mark.parametrize("retired_query_id", RETIRED_PARALLEL_QUERY_IDS)
+def test_parallel_segment_proportion_rejects_retired_query_ids(retired_query_id: str) -> None:
+    task = create_task("task_geometry__parallel_segment_proportion__variable_value")
+    with pytest.raises(ValueError, match="unsupported query_id"):
+        task.generate(20260619, params={"query_id": retired_query_id}, max_attempts=1)

@@ -18,10 +18,10 @@ rendering:
       max_attempts: 6
 prompt:
   shared:
-    bundle_id: geometry_geo3k_marked_equations_v0
+    bundle_id: geometry_parallel_segment_proportion_v1
     scene_key: parallel_segment_proportion_scene
   task_overrides:
     task_geometry__parallel_segment_proportion__variable_value:
-      task_key: variable_value_query
+      task_key: variable_value
     task_geometry__parallel_segment_proportion__segment_length_value:
-      task_key: segment_length_value_query
+      task_key: segment_length_value

@@ -640,6 +640,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     expected_candidate_scenes = {
         **expected_candidate_scenes,
         "games": frozenset((*expected_candidate_scenes["games"], "tetris", "tic_tac_toe_3d", "tower_defense", "tower_draughts_board")),
+        "geometry": frozenset((*expected_candidate_scenes["geometry"], "parallel_segment_proportion")),
         "icons": frozenset((*expected_candidate_scenes["icons"], "named_strip", "wallpaper_panels")),
     }
     assert MIGRATED_SCENE_PACKAGE_SCENES == expected_candidate_scenes
@@ -671,6 +672,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     assert scene_package_migration.is_scene_package_task('task_geometry__marked_polygon_equation__side_variable_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__measuring_tools__shape_length_value_polygon_side_ruler_reading', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__paper_fold__paper_fold_angle_value', domain='geometry')
+    assert scene_package_migration.is_scene_package_task('task_geometry__parallel_segment_proportion__variable_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_graph__adjacency__traversal_kth_label', domain='graph')
     assert scene_package_migration.is_scene_package_task('task_graph__automaton__state_after_input_label', domain='graph')
     assert scene_package_migration.is_scene_package_task('task_icons__icon_cutout__partial_match_label', domain='icons')

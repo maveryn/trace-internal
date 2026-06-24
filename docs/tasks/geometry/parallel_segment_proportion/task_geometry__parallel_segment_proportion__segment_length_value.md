@@ -3,30 +3,28 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `parallel_segment_proportion`
-5. Query id: `triangle_side_splitter_segment_length` or `parallel_transversal_segment_length`
-6. Answer schema: `number`
-7. Annotation schema: `keyed_point_map`
+3. Task id: `task_geometry__parallel_segment_proportion__segment_length_value`
+4. Query id: `single`
+5. Answer schema: `number`
+6. Annotation schema: `segment_set`
 
 ## Program Contract
-- `solve_formula(visible_parallel_segment_proportion_equation, unknown_role=target_segment_length, formula_schema=parallel_segment_ratio); scene=parallel_segment_proportion; scope=segment_length_value`
+- `solve_formula(visible_parallel_segment_proportion_segments, unknown_role=target_segment_length, formula_schema=parallel_segment_ratio, output=number); scene=parallel_segment_proportion; scope=segment_length_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from `geometry_geo3k_marked_equations_v0`.
+- Prompt text is loaded from `geometry_parallel_segment_proportion_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses keyed pixel points for the endpoints of all proportional segment witnesses:
+Prompt-facing annotation uses a `segment_set` containing exactly four pixel line segments.
+The four segments are the proportional segment witnesses shown in the diagram.
 
-- `left_top_segment_start`
-- `left_top_segment_end`
-- `left_bottom_segment_start`
-- `left_bottom_segment_end`
-- `right_top_segment_start`
-- `right_top_segment_end`
-- `right_bottom_segment_start`
-- `right_bottom_segment_end`
+The construction family is internal replay metadata, not a public query id:
 
-Expression labels, parallel marks, vertex labels, and solved variable values remain visible annotations plus private verifier metadata.
+- `triangle_side_splitter`
+- `parallel_transversals`
+
+Expression labels, parallel marks, vertex labels, and solved values remain visible diagram annotations plus private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

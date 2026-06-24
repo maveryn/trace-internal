@@ -1,0 +1,104 @@
+{
+  "bundle_id": "geometry_parallel_segment_proportion_v1",
+  "schema_version": "v1",
+  "templates": {
+    "scene": {
+      "parallel_segment_proportion_scene": [
+        "The diagram shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The image shows {object_description}.",
+        "This diagram shows {object_description}.",
+        "This figure shows {object_description}."
+      ]
+    },
+    "task": {
+      "variable_value": [
+        "Find {variable_name}.",
+        "Find the value of {variable_name}.",
+        "What is {variable_name}?",
+        "Determine {variable_name}.",
+        "Solve for {variable_name}."
+      ],
+      "segment_length_value": [
+        "Find {target_name}.",
+        "Find the length of {target_name}.",
+        "What is {target_name}?",
+        "Determine {target_name}.",
+        "Solve for {target_name}."
+      ]
+    },
+    "query": {},
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "required_slots_by_key": {
+    "scene:parallel_segment_proportion_scene": [
+      "object_description"
+    ],
+    "task:variable_value": [
+      "variable_name"
+    ],
+    "task:segment_length_value": [
+      "target_name"
+    ],
+    "output:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "static_slots_by_key": {
+    "task:variable_value": {
+      "answer_hint": "set \"answer\" to the value of the variable as a number"
+    },
+    "task:segment_length_value": {
+      "answer_hint": "set \"answer\" to the requested segment length as a number"
+    },
+    "output:answer_only": {
+      "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."
+    },
+    "output:answer_and_annotation": {
+      "json_output_contract": "Return a JSON object with exactly two keys: \"annotation\" and \"answer\"."
+    }
+  },
+  "dynamic_slots": {
+    "annotation_hint": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    },
+    "object_description": {
+      "type": "string"
+    },
+    "target_name": {
+      "type": "string"
+    },
+    "variable_name": {
+      "type": "string"
+    }
+  }
+}

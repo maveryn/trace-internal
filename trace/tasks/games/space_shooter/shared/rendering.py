@@ -310,7 +310,7 @@ def _draw_projectile(
     projectile: SpaceProjectile,
     theme: SpaceShooterTheme,
 ) -> None:
-    """Draw one projectile with a shaped tip showing travel direction."""
+    """Draw one glowing tapered laser bolt with a clear travel direction."""
 
     left, top, right, bottom = bbox
     cx = float((left + right) / 2.0)
@@ -322,28 +322,97 @@ def _draw_projectile(
         else tuple(int(v) for v in theme.enemy_projectile_fill_rgb)
     )
     outline = tuple(int(v) for v in theme.projectile_outline_rgb)
-    tip_h = max(5.0, 0.20 * height)
-    body_h = height - tip_h
-    body_w = max(5.0, 0.22 * width)
-    body_left = cx - (0.5 * body_w)
-    body_right = cx + (0.5 * body_w)
-    tip_half_w = max(4.0, 0.18 * width)
-    outline_width = max(1, int(round(0.05 * width)))
-    if str(projectile.owner) == "player":
-        body = (body_left, top + tip_h, body_right, bottom)
-        tip = [(cx, top), (cx - tip_half_w, top + tip_h + 1.0), (cx + tip_half_w, top + tip_h + 1.0)]
-    else:
-        body = (body_left, top, body_right, top + body_h)
-        tip = [(cx - tip_half_w, top + body_h - 1.0), (cx + tip_half_w, top + body_h - 1.0), (cx, bottom)]
-    draw.rounded_rectangle(
-        body,
-        radius=max(2, int(round(0.22 * body_w))),
-        fill=fill,
-        outline=outline,
-        width=outline_width,
+    owner = str(projectile.owner)
+    hot_core = (245, 252, 255) if owner == "player" else (255, 242, 206)
+    outline_width = max(1, int(round(0.04 * width)))
+
+    glow_half_w = max(4.5, 0.22 * width)
+    glow_bbox = (
+        cx - glow_half_w,
+        top + (0.04 * height),
+        cx + glow_half_w,
+        bottom - (0.04 * height),
     )
-    draw.polygon(tip, fill=fill, outline=outline)
-    draw.line(tip + [tip[0]], fill=outline, width=outline_width)
+    draw.rounded_rectangle(
+        glow_bbox,
+        radius=max(4, int(round(0.38 * glow_half_w))),
+        fill=fill + (70,),
+    )
+    draw.rounded_rectangle(
+        (
+            cx - (0.58 * glow_half_w),
+            top + (0.13 * height),
+            cx + (0.58 * glow_half_w),
+            bottom - (0.13 * height),
+        ),
+        radius=max(3, int(round(0.24 * glow_half_w))),
+        fill=fill + (104,),
+    )
+
+    shell_half_w = max(3.6, 0.16 * width)
+    core_half_w = max(1.7, 0.065 * width)
+    if str(projectile.owner) == "player":
+        shell = [
+            (cx, top + 0.02 * height),
+            (cx + shell_half_w, top + 0.31 * height),
+            (cx + 0.72 * shell_half_w, bottom - 0.16 * height),
+            (cx + 0.30 * shell_half_w, bottom - 0.03 * height),
+            (cx - 0.30 * shell_half_w, bottom - 0.03 * height),
+            (cx - 0.72 * shell_half_w, bottom - 0.16 * height),
+            (cx - shell_half_w, top + 0.31 * height),
+        ]
+        core = [
+            (cx, top + 0.12 * height),
+            (cx + core_half_w, top + 0.36 * height),
+            (cx + 0.58 * core_half_w, bottom - 0.19 * height),
+            (cx, bottom - 0.07 * height),
+            (cx - 0.58 * core_half_w, bottom - 0.19 * height),
+            (cx - core_half_w, top + 0.36 * height),
+        ]
+        tail_y = bottom - 0.08 * height
+        draw.line(
+            (cx - 0.34 * width, bottom - 0.02 * height, cx - 0.12 * width, tail_y),
+            fill=fill + (150,),
+            width=outline_width,
+        )
+        draw.line(
+            (cx + 0.34 * width, bottom - 0.02 * height, cx + 0.12 * width, tail_y),
+            fill=fill + (150,),
+            width=outline_width,
+        )
+    else:
+        shell = [
+            (cx - 0.30 * shell_half_w, top + 0.03 * height),
+            (cx + 0.30 * shell_half_w, top + 0.03 * height),
+            (cx + 0.72 * shell_half_w, top + 0.16 * height),
+            (cx + shell_half_w, bottom - 0.31 * height),
+            (cx, bottom - 0.02 * height),
+            (cx - shell_half_w, bottom - 0.31 * height),
+            (cx - 0.72 * shell_half_w, top + 0.16 * height),
+        ]
+        core = [
+            (cx, top + 0.07 * height),
+            (cx + 0.58 * core_half_w, top + 0.19 * height),
+            (cx + core_half_w, bottom - 0.36 * height),
+            (cx, bottom - 0.12 * height),
+            (cx - core_half_w, bottom - 0.36 * height),
+            (cx - 0.58 * core_half_w, top + 0.19 * height),
+        ]
+        tail_y = top + 0.08 * height
+        draw.line(
+            (cx - 0.34 * width, top + 0.02 * height, cx - 0.12 * width, tail_y),
+            fill=fill + (150,),
+            width=outline_width,
+        )
+        draw.line(
+            (cx + 0.34 * width, top + 0.02 * height, cx + 0.12 * width, tail_y),
+            fill=fill + (150,),
+            width=outline_width,
+        )
+
+    draw.polygon(shell, fill=fill + (238,), outline=outline + (238,))
+    draw.line(shell + [shell[0]], fill=outline + (232,), width=outline_width)
+    draw.polygon(core, fill=hot_core + (245,))
 
 
 def _draw_player(

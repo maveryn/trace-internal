@@ -26,7 +26,10 @@ hard failures unless they affect task correctness or consistency.
 Check these for every task/query:
 
 - The question asks for exactly the task's answer contract.
-- The answer hint matches `answer_gt.type`.
+- The answer hint matches `answer_gt.type` and tells the model what value to
+  compute or select. It must not merely expose the answer support/range, such
+  as “integer from 0 to 5,” when the useful instruction is “the number of
+  counted boxes” or another task-specific value.
 - The annotation hint matches `annotation_gt.type`.
 - JSON examples are valid for the active answer and annotation schemas.
 - Prompt examples are internally coherent, even though they are not the sampled
@@ -41,6 +44,13 @@ Check these for every task/query:
 - The prompt does not ask for labels, option text, decorative context, or
   unrelated regions as annotation unless those are the actual visual witnesses.
 - The prompt includes only the visual/rule details needed to solve the task.
+- The prompt does not mention incidental operand attributes such as clothing,
+  style, marker absence, or object rendering details unless they are required
+  to identify the target or answer the question.
+- The question names the task operands directly when the operands are known.
+  Prefer “What total flow leaves \"A\" for target nodes \"B\" and \"C\"?” over
+  indirect wording such as “Using only the curved bands from \"A\" to \"B\" and
+  \"C\", sum the printed values.”
 
 ## Example Consistency
 
@@ -105,6 +115,9 @@ Mark a prompt `borderline` when it is correct but:
 
 - repeats the same scene or task noun across layers;
 - explains obvious visual conventions that the image already makes clear;
+- phrases a simple operand-bound lookup or arithmetic task indirectly when a
+  direct source/target, row/column, panel/category, or node/edge wording would
+  be clearer;
 - includes long rule text when a shorter rule is enough;
 - mixes too many parentheticals, caveats, or implementation details;
 - says “image,” “question,” “answer,” or “task” repeatedly without adding
@@ -121,6 +134,8 @@ Mark a task `bad` when any of these is true:
 
 - The prompt question and answer schema disagree.
 - The prompt question and generated answer semantics disagree.
+- The answer hint only states the answer range/support instead of the
+  task-specific value being requested.
 - The annotation hint and generated `annotation_gt.type` disagree.
 - The prompt asks for point annotation but generated annotation is bbox-family,
   or vice versa.

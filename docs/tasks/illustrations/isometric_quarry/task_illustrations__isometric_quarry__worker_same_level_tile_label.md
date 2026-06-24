@@ -7,7 +7,7 @@
 - Implementation source: `trace/tasks/illustrations/isometric_quarry/worker_same_level_tile_label.py`
 
 ## Task Contract
-Selects the lettered terrain tile at the same elevation level as the unlettered quarry worker.
+Selects the lettered terrain tile at the same elevation level as the quarry worker.
 
 ## Program Contract
 `select(label, tile where level(tile)=level(reference_worker_tile), tile in lettered_ground_tiles); scene=isometric_quarry; scope=worker_same_level_tile_label`
@@ -23,7 +23,7 @@ Selects the lettered terrain tile at the same elevation level as the unlettered 
 - Base program contract: `select(label, tile where level(tile)=level(reference_worker_tile), tile in lettered_ground_tiles); scene=isometric_quarry; scope=worker_same_level_tile_label`
 - Parameter axes: `canvas_profile`, `candidate_count=4`, `candidate_tile_ids`, `reference_worker_tile_id`, `active_level_range`, `layout_family`
 - Arguments:
-  - `reference_worker_tile`: one unlettered hard-hat worker on a safe rock tile; source `scene_ir.entities[role=reference]`
+  - `reference_worker_tile`: one worker on a safe rock tile; source `scene_ir.entities[role=reference]`
   - `tile`: visible lettered rock terrain tile; source `scene_ir.tiles`
   - `level`: integer terrain elevation; source `scene_ir.tiles`
 - Argument metadata status: `curated`

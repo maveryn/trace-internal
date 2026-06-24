@@ -66,16 +66,16 @@
       ],
       "box_on_goal_count": [
         "How many boxes are on their matching colored goal dots?",
-        "Count the boxes that are sitting on their matching colored goal dots.",
+        "How many boxes are sitting on their matching colored goal dots?",
         "How many crates have been pushed onto their matching colored goal dots?",
-        "Count only the boxes currently on their matching colored goal dots.",
+        "How many boxes currently rest on their matching colored goal dots?",
         "How many boxes are correctly placed on matching colored goal dots?"
       ],
       "box_off_goal_count": [
         "How many boxes are not on their matching colored goal dots?",
-        "Count the boxes that are off their matching colored goal dots.",
+        "How many boxes are off their matching colored goal dots?",
         "How many crates have not been pushed onto their matching colored goal dots?",
-        "Count only the boxes currently away from their matching colored goal dots.",
+        "How many boxes are currently away from their matching colored goal dots?",
         "How many boxes are not correctly placed on matching colored goal dots?"
       ]
     },
@@ -156,7 +156,7 @@
     "object_description_box_target_relation_label": "a Sokoban-style grid with walls, labeled boxes, labeled targets, and option letters on candidate cells or pairs",
     "object_description_box_goal_status_count": "a Sokoban board with walls, a player, colored boxes, and matching colored goal dots",
     "answer_hint_option_letter": "set \"answer\" to only the selected option letter",
-    "answer_hint_integer_0_5": "set \"answer\" to an integer from 0 to 5",
+    "answer_hint_integer_0_5": "set \"answer\" to the number of boxes satisfying the question",
     "annotation_hint_option_panel_bbox": "set \"annotation\" to the selected option-panel bounding box as [x0,y0,x1,y1] in image pixels",
     "annotation_hint_relation_cell_bbox": "set \"annotation\" to the selected option-marked cell bounding box as [x0,y0,x1,y1] in image pixels",
     "annotation_hint_relation_pair_bbox_set": "set \"annotation\" to a JSON array of two image-pixel bounding boxes [x0,y0,x1,y1] for the selected same-letter box and target cells",

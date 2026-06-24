@@ -17,6 +17,5 @@ rendering:
       max_attempts: 6
 prompt:
   shared:
-    bundle_id: geometry_trapezoid_extension_v0
+    bundle_id: geometry_trapezoid_extension_v1
     scene_key: trapezoid_extension_scene
-    task_key: trapezoid_extension_value_query

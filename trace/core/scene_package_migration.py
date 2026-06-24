@@ -59,6 +59,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
             "split_triangle_trig_chain",
             "survey_traverse",
             "tangent_packing",
+            "trapezoid_extension",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "flow_network", "graph_options", "metro", "node_link", "pedigree_chart", "phylogeny_tree", "pipe_network"}),
@@ -112,6 +113,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
             "split_triangle_trig_chain",
             "survey_traverse",
             "tangent_packing",
+            "trapezoid_extension",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "flow_network", "graph_options", "metro", "node_link", "pedigree_chart", "phylogeny_tree", "pipe_network"}),

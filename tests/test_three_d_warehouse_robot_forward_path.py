@@ -8,12 +8,12 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.warehouse.robot_forward_path import (
+from trace.tasks.three_d.warehouse.robot_forward_path_label import (
     MIN_FIRST_OBJECT_MARGIN,
     SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
-from trace.tasks.three_d.warehouse.warehouse_scene_common import (
+from trace.tasks.three_d.warehouse.shared.state import (
     SCENE_ID,
     SUPPORTED_ROBOT_DESIGNS,
     SUPPORTED_ROBOT_HEADINGS,
@@ -38,7 +38,7 @@ def test_warehouse_robot_forward_path_answer_annotation_and_geometry(
     output = task.generate(
         20260524,
         params={
-            "query_id": "first_object_ahead",
+            "query_id": "single",
             "scene_variant": scene_variant,
             "robot_heading": robot_heading,
             "candidate_count": 5,
@@ -62,11 +62,11 @@ def test_warehouse_robot_forward_path_answer_annotation_and_geometry(
         if bool(flag)
     ]
     assert output.scene_id == SCENE_ID
-    assert output.query_id == "first_object_ahead"
+    assert output.query_id == "single"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.annotation_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         candidates,
@@ -126,7 +126,7 @@ def test_warehouse_robot_forward_path_registered() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_scene_id == "warehouse"
+    assert taxonomy.source_scene_id == ""
     assert SUPPORTED_QUERY_IDS == ("first_object_ahead",)
     assert SUPPORTED_ROBOT_HEADINGS == ("east", "north", "west", "south")
     assert SUPPORTED_ROBOT_DESIGNS == ("low_cart", "sensor_tower", "stacker_bot")

@@ -2,16 +2,16 @@ from pathlib import Path
 
 
 WAREHOUSE_TASK_OR_COMMON_FILES = (
-    Path("trace/tasks/three_d/warehouse/robot_forward_path.py"),
-    Path("trace/tasks/three_d/warehouse/robot_nearest_object.py"),
-    Path("trace/tasks/three_d/warehouse/shelf_level_object_count.py"),
-    Path("trace/tasks/three_d/warehouse/warehouse_scene_common.py"),
+    Path("trace/tasks/three_d/warehouse/robot_forward_path_label.py"),
+    Path("trace/tasks/three_d/warehouse/nearest_candidate_to_reference_label.py"),
+    Path("trace/tasks/three_d/warehouse/scoped_attribute_count.py"),
+    Path("trace/tasks/three_d/warehouse/shared/state.py"),
 )
 
 WAREHOUSE_RENDERER_FILES = (
-    Path("trace/tasks/three_d/warehouse/warehouse_rendering.py"),
-    Path("trace/tasks/three_d/warehouse/warehouse_shelf_rendering.py"),
-    Path("trace/tasks/three_d/warehouse/warehouse_support_rendering.py"),
+    Path("trace/tasks/three_d/warehouse/shared/rendering.py"),
+    Path("trace/tasks/three_d/warehouse/shared/annotations.py"),
+    Path("trace/tasks/three_d/warehouse/shared/components.py"),
 )
 
 
@@ -26,7 +26,7 @@ def test_warehouse_public_task_modules_are_drawing_free() -> None:
         "draw.",
     )
     forbidden_imports = (
-        "from .warehouse_support_rendering import _draw_",
+        "from .shared.components import _draw_",
         "from ..shared.warehouse_object_rendering import _draw_",
         "from ..shared.object_scene_rendering import _draw_",
     )
@@ -45,6 +45,8 @@ def test_warehouse_renderer_modules_are_explicit_scene_boundaries() -> None:
 
     robot_renderer = WAREHOUSE_RENDERER_FILES[0].read_text()
     shelf_renderer = WAREHOUSE_RENDERER_FILES[1].read_text()
+    support_renderer = WAREHOUSE_RENDERER_FILES[2].read_text()
     assert "render_warehouse_robot_scene_3d" in robot_renderer
     assert "render_warehouse_robot_nearest_scene_3d" in robot_renderer
     assert "render_warehouse_shelf_level_count_scene_3d" in shelf_renderer
+    assert "_draw_shelf_rack_object" in support_renderer

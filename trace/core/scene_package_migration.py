@@ -60,7 +60,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "flow_network", "graph_options", "metro", "node_link", "pedigree_chart", "phylogeny_tree", "pipe_network"}),
     "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path", "named_ring", "named_strip", "overlap_grid", "pair_grid", "paired_canvas", "pattern_grid", "reference_canvas", "sequence_strip", "single_transform_options", "venn_field", "wallpaper_panels"}),
     "illustrations": frozenset({"construction_site", "environment", "indoor_room", "isometric_farmstead", "isometric_harbor", "isometric_quarry", "library", "park_playground", "pixel_village", "rpg_dungeon", "rpg_house", "rpg_tactical_map"}),
-    "three_d": frozenset({"object_cluster", "object_scene", "room", "street", "surface_fixture"}),
+    "three_d": frozenset({"object_cluster", "object_scene", "room", "street", "surface_fixture", "warehouse"}),
 }
 SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
     "charts": frozenset({"annotated_series", "area", "bar_3d", "boxplot", "candlestick", "combo_mark", "contour_density", "curve_panels", "dashboard", "density_curve", "dumbbell", "error_interval", "errorbar_series", "heatmap", "hexbin_density", "histogram", "marker_map", "matrix", "multiseries", "parallel_coords", "part_whole", "pictogram", "population_pyramid", "radar", "radial_progress", "radial_sankey", "region_map", "sankey", "scatter_cluster", "scatter_facet_grid", "scatter_points", "scatter_readout", "scientific_axis_frame", "single_series", "size_encoding", "small_multiple", "style_legend", "sunburst", "surface_3d", "table", "treemap", "uncertainty_band", "violin", "waterfall"}),
@@ -109,7 +109,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "flow_network", "graph_options", "metro", "node_link", "pedigree_chart", "phylogeny_tree", "pipe_network"}),
     "icons": frozenset({"icon_cutout", "icon_field", "mirror_grid", "named_field", "named_grid", "named_path", "named_ring", "named_strip", "overlap_grid", "pair_grid", "paired_canvas", "pattern_grid", "reference_canvas", "sequence_strip", "single_transform_options", "venn_field", "wallpaper_panels"}),
     "illustrations": frozenset({"construction_site", "environment", "indoor_room", "isometric_farmstead", "isometric_harbor", "isometric_quarry", "library", "park_playground", "pixel_village", "rpg_dungeon", "rpg_house", "rpg_tactical_map"}),
-    "three_d": frozenset({"object_cluster", "object_scene", "room", "street", "surface_fixture"}),
+    "three_d": frozenset({"object_cluster", "object_scene", "room", "street", "surface_fixture", "warehouse"}),
 }
 SCENE_PACKAGE_PILOT_TASK_IDS: frozenset[str] = frozenset()
 

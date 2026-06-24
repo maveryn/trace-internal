@@ -7,9 +7,9 @@ from typing import Any, Dict, List, Mapping, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.color_distance import coerce_rgb as _rgb
-from ..shared.object_rendering import ThreeDObjectSpec, ThreeDRenderContext, render_three_d_object
-from ..shared.object_scene import (
+from ....shared.color_distance import coerce_rgb as _rgb
+from ...shared.object_rendering import ThreeDObjectSpec, ThreeDRenderContext, render_three_d_object
+from ...shared.object_scene import (
     _CameraSpec,
     _ProjectionFrame,
     _canvas_floor_polygon_xy,
@@ -17,16 +17,16 @@ from ..shared.object_scene import (
     _polygon_axis_line_segment,
     _project_xy,
 )
-from ..shared.object_scene_rendering import _draw_line
-from ..shared.warehouse_object_rendering import _draw_ground_shadow, _fill_for_object
-from .warehouse_scene_common import (
+from ...shared.object_scene_rendering import _draw_line
+from ...shared.warehouse_object_rendering import _draw_ground_shadow, _fill_for_object
+from .state import (
     _WarehouseRenderParams,
     _camera_from_dataset,
     _frame_from_dataset,
     _projected_bbox,
     _scene_palette,
 )
-from .warehouse_support_rendering import _draw_shelf_rack_object
+from .components import _draw_shelf_rack_object
 
 
 @dataclass(frozen=True)
@@ -56,6 +56,7 @@ def _draw_shelf_floor(
     scene_variant: str,
     dataset: Mapping[str, Any],
 ) -> Tuple[Image.Image, List[float], List[Dict[str, Any]]]:
+    """Draw the shelf-count floor, aisle, and context polygons."""
     draw = ImageDraw.Draw(image)
     floor_rgb, grid_rgb, aisle_rgb, shelf_zone_rgb = _scene_palette(str(scene_variant), render_params)
     draw.rectangle((0, 0, int(render_params.canvas_width), int(render_params.canvas_height)), fill=floor_rgb)
@@ -121,6 +122,7 @@ def render_warehouse_shelf_level_count_scene_3d(
     dataset: Mapping[str, Any],
     render_params: _WarehouseRenderParams,
 ) -> _RenderedShelfScene:
+    """Render colored racks and project shelf-item annotations."""
     image = background.convert("RGB")
     camera = _camera_from_dataset(dataset)
     frame = _frame_from_dataset(dataset)

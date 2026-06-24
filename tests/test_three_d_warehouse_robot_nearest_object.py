@@ -8,8 +8,8 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.warehouse.warehouse_scene_common import SCENE_ID, SUPPORTED_ROBOT_DESIGNS
-from trace.tasks.three_d.warehouse.robot_nearest_object import (
+from trace.tasks.three_d.warehouse.shared.state import SCENE_ID, SUPPORTED_ROBOT_DESIGNS
+from trace.tasks.three_d.warehouse.nearest_candidate_to_reference_label import (
     MIN_NEAREST_OBJECT_MARGIN,
     MIN_NEAREST_ROBOT_MARGIN,
     SUPPORTED_AISLE_HEADINGS,
@@ -62,8 +62,8 @@ def test_warehouse_robot_nearest_object_answer_annotation_and_geometry(
     assert output.query_id == "closest_robot_to_reference"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.annotation_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         candidates,
@@ -154,8 +154,8 @@ def test_warehouse_object_nearest_robot_answer_annotation_and_geometry(
     assert output.query_id == "closest_object_to_robot"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.annotation_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         candidates,
@@ -210,6 +210,6 @@ def test_warehouse_robot_nearest_object_registered() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_scene_id == "warehouse"
+    assert taxonomy.source_scene_id == ""
     assert SUPPORTED_QUERY_IDS == ("closest_robot_to_reference", "closest_object_to_robot")
     assert SUPPORTED_AISLE_HEADINGS == ("east", "north", "west", "south")

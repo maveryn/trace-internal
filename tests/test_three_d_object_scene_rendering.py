@@ -71,17 +71,17 @@ def test_scene_render_loops_delegate_reusable_objects_to_shared_renderer() -> No
             {"_draw_candidate_object", "_draw_context_object"},
         ),
         (
-            "trace/tasks/three_d/warehouse/warehouse_rendering.py",
+            "trace/tasks/three_d/warehouse/shared/rendering.py",
             "render_warehouse_robot_scene_3d",
             {"_draw_warehouse_object"},
         ),
         (
-            "trace/tasks/three_d/warehouse/warehouse_rendering.py",
+            "trace/tasks/three_d/warehouse/shared/rendering.py",
             "render_warehouse_robot_nearest_scene_3d",
             {"_draw_warehouse_object", "_draw_reference_object"},
         ),
         (
-            "trace/tasks/three_d/warehouse/warehouse_shelf_rendering.py",
+            "trace/tasks/three_d/warehouse/shared/annotations.py",
             "render_warehouse_shelf_level_count_scene_3d",
             {"_draw_warehouse_object"},
         ),

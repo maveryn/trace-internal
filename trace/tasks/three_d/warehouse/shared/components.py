@@ -6,14 +6,14 @@ from typing import Any, List, Mapping, Tuple
 
 from PIL import ImageDraw
 
-from ..shared.object_scene import _CameraSpec, _ProjectionFrame
-from ..shared.object_scene_rendering import (
+from ...shared.object_scene import _CameraSpec, _ProjectionFrame
+from ...shared.object_scene_rendering import (
     _bbox_union,
     _draw_box_object,
     _draw_box_parts_object,
     _sub_box_spec,
 )
-from .warehouse_scene_common import SHELF_LOAD_COLORS
+from .state import SHELF_LOAD_COLORS
 
 
 def _draw_shelf_rack_object(
@@ -24,6 +24,7 @@ def _draw_shelf_rack_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
+    """Draw one shelf rack from frame and load components."""
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
     shelf_style = str(spec.get("shelf_style", "open_frame"))
     level_fracs = [float(value) for value in spec.get("shelf_level_fracs", (0.10, 0.48, 0.86))]

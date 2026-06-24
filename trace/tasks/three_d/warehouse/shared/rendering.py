@@ -8,25 +8,25 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_rendering import load_font
-from ..shared.canvas import (
+from ....shared.text_rendering import load_font
+from ...shared.canvas import (
     bbox_dict_transform,
     bbox_transform,
     entities_transform,
     point_dict_transform,
     resize_image_to_fit_pixel_cap,
 )
-from ..shared.object_rendering import (
+from ...shared.object_rendering import (
     ThreeDObjectSpec,
     ThreeDRenderContext,
     rendered_three_d_object_from_bbox,
     render_three_d_object,
 )
-from ..shared.object_resources import (
+from ...shared.object_resources import (
     WAREHOUSE_NEAREST_REFERENCE_OBJECT_RGB,
     WAREHOUSE_NEAREST_REFERENCE_OBJECT_TYPE,
 )
-from ..shared.object_scene import (
+from ...shared.object_scene import (
     _CameraSpec,
     _ProjectionFrame,
     _canvas_floor_polygon_xy,
@@ -35,17 +35,17 @@ from ..shared.object_scene import (
     _polygon_axis_line_segment,
     _project_xy,
 )
-from ..shared.object_scene_rendering import _bbox_union, _draw_line, _draw_option_label
-from ..shared.option_panel import append_text_option_panel, empty_option_panel_metadata
-from ..shared.warehouse_object_rendering import _draw_ground_shadow, _fill_for_object
-from .warehouse_scene_common import (
+from ...shared.object_scene_rendering import _bbox_union, _draw_line, _draw_option_label
+from ...shared.option_panel import append_text_option_panel, empty_option_panel_metadata
+from ...shared.warehouse_object_rendering import _draw_ground_shadow, _fill_for_object
+from .state import (
     _WarehouseRenderParams,
     _camera_from_dataset,
     _frame_from_dataset,
     _projected_bbox,
     _scene_palette,
 )
-from .warehouse_support_rendering import _draw_shelf_rack_object
+from .components import _draw_shelf_rack_object
 
 
 @dataclass(frozen=True)
@@ -100,6 +100,7 @@ def _draw_warehouse_floor(
     dataset: Mapping[str, Any],
     include_path: bool,
 ) -> Tuple[Image.Image, List[float], List[Dict[str, Any]]]:
+    """Draw the warehouse floor, grid, aisles, and path context."""
     draw = ImageDraw.Draw(image)
     floor_rgb, grid_rgb, aisle_rgb, shelf_zone_rgb = _scene_palette(str(scene_variant), render_params)
     draw.rectangle((0, 0, int(render_params.canvas_width), int(render_params.canvas_height)), fill=floor_rgb)
@@ -215,6 +216,7 @@ def render_warehouse_robot_scene_3d(
     render_params: _WarehouseRenderParams,
     option_choices: Sequence[Mapping[str, Any]] = (),
 ) -> _RenderedWarehouseScene:
+    """Render the robot path scene and project candidate annotations."""
     image = background.convert("RGB")
     camera = _camera_from_dataset(dataset)
     frame = _frame_from_dataset(dataset)
@@ -429,6 +431,7 @@ def render_warehouse_robot_nearest_scene_3d(
     render_params: _WarehouseRenderParams,
     option_choices: Sequence[Mapping[str, Any]] = (),
 ) -> _RenderedWarehouseScene:
+    """Render nearest-reference candidates and project option annotations."""
     image = background.convert("RGB")
     camera = _camera_from_dataset(dataset)
     frame = _frame_from_dataset(dataset)

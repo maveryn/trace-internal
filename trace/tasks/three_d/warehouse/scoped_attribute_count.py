@@ -39,7 +39,7 @@ from ..shared.object_resources import WAREHOUSE_SHELF_LOAD_COLORS
 from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
-from .warehouse_scene_common import (
+from .shared.state import (
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
     WAREHOUSE_CAMERA_YAW_BANDS_DEGREES,
@@ -53,7 +53,7 @@ from .warehouse_scene_common import (
     _make_object_spec,
     _resolve_render_params,
 )
-from .warehouse_shelf_rendering import render_warehouse_shelf_level_count_scene_3d
+from .shared.annotations import render_warehouse_shelf_level_count_scene_3d
 
 
 TASK_ID = "task_three_d__warehouse__scoped_attribute_count"
@@ -177,6 +177,7 @@ def _make_shelf_item_spec(
     matches_query: bool,
     orientation_axis: str,
 ) -> Dict[str, Any]:
+    """Create one shelf item with rack and level metadata."""
     rack_x, rack_y, _rack_z = (float(value) for value in rack_spec["base_xyz"])
     rack_width, rack_depth, rack_height = (float(value) for value in rack_spec["dimensions_xyz"])
     width_axis_span = rack_width if str(orientation_axis) == "x" else rack_depth
@@ -256,6 +257,7 @@ def _sample_racks_and_items(
     rack_count: int,
     target_count: int,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, Any]]:
+    """Sample racks, shelf items, and the target scoped level."""
     shelf_level_name, shelf_level_index = SHELF_LEVELS_BY_QUERY_ID[str(query_id)]
     target_rack_index, target_rack_probabilities = _select_target_rack_index(
         params=params,
@@ -437,6 +439,7 @@ def _build_dataset(
     render_params: _WarehouseRenderParams,
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Sample a visible shelf-count scene with bound answers."""
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     for _attempt in range(520):
         camera = _sample_camera(rng, yaw_band_degrees=tuple(float(value) for value in camera_yaw_band))
@@ -557,6 +560,7 @@ _NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAUL
 
 
 def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) -> Dict[str, Any]:
+    """Lock generation axes once for stable retry semantics."""
     locked_params = dict(params)
     query_id, _query_probabilities = _shared_resolve_axis_variant(
         params=params,
@@ -638,7 +642,7 @@ class ThreeDWarehouseScopedAttributeCountTask:
 
     task_id = TASK_ID
     domain = "three_d"
-    scene_id = "warehouse"
+    supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -653,6 +657,7 @@ class ThreeDWarehouseScopedAttributeCountTask:
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts: {last_error}")
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
+        """Resolve axes, sample a scene, and assemble verifier output."""
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params=params,
             task_id=TASK_ID,
@@ -752,39 +757,21 @@ class ThreeDWarehouseScopedAttributeCountTask:
         )
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
-            (
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
-            ),
+            ("bundle_id", "scene_key", "task_key"),
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
-            scene_id=self.scene_id,
+            scene_id=SCENE_ID,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query_id),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
+            dynamic_slots={
                 "shelf_level_name": str(dataset["target_shelf_level"]),
                 "rack_color_name": str(dataset["target_rack_color_name"]),
                 "rack_color_label": str(dataset["target_rack_color_label"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
             instance_seed=int(instance_seed),
         )

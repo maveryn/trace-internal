@@ -8,7 +8,7 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.warehouse.shelf_level_object_count import (
+from trace.tasks.three_d.warehouse.scoped_attribute_count import (
     SCENE_ID,
     SHELF_LEVELS_BY_QUERY_ID,
     SHELF_LEVEL_NAMES,
@@ -103,7 +103,7 @@ def test_warehouse_shelf_level_count_registered() -> None:
     assert TASK_ID in list_default_task_ids()
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_scene_id == "warehouse"
+    assert taxonomy.source_scene_id == ""
     assert SUPPORTED_QUERY_IDS == (
         "top_shelf_item_count",
         "middle_shelf_item_count",

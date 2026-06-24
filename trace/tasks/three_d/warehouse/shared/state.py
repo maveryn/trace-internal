@@ -6,8 +6,8 @@ from dataclasses import dataclass
 import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from ...shared.color_distance import coerce_rgb as _rgb
-from ..shared.object_resources import (
+from ....shared.color_distance import coerce_rgb as _rgb
+from ...shared.object_resources import (
     WAREHOUSE_CONTEXT_OBJECT_TYPES,
     WAREHOUSE_OBJECT_BASE_DIMENSIONS,
     WAREHOUSE_OBJECT_COLORS,
@@ -22,10 +22,10 @@ from ..shared.object_resources import (
     WAREHOUSE_SHELF_LOAD_COLORS,
     WAREHOUSE_SHELF_RACK_STYLES,
 )
-from ..shared.object_scene import _CameraSpec, _ProjectionFrame, _project_screen
-from ..shared.canvas import resolve_three_d_canvas_spec
-from ..shared.task_support import float_value as _float_value
-from ..shared.task_support import int_value as _int_value
+from ...shared.object_scene import _CameraSpec, _ProjectionFrame, _project_screen
+from ...shared.canvas import resolve_three_d_canvas_spec
+from ...shared.task_support import float_value as _float_value
+from ...shared.task_support import int_value as _int_value
 
 
 SCENE_ID = "warehouse"
@@ -292,6 +292,7 @@ def _sample_reference_and_objects(
     robot_heading: str,
     render_params: _WarehouseRenderParams,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, Any]]:
+    """Sample robot reference, candidates, context, and aisle geometry."""
     del render_params
     forward_xy = _heading_vector(str(robot_heading))
     orientation_axis = _heading_axis(str(robot_heading))

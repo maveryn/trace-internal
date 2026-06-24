@@ -12,22 +12,10 @@ from ....core.scene_config import (
     get_scene_defaults,
     resolve_scene_section_defaults,
 )
-from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
-from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import (
-    required_group_defaults,
-    split_generation_rendering_prompt_defaults,
-)
+from ...shared.config_defaults import split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
-from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import (
-    PROMPT_OUTPUT_MODES,
-    build_prompt_trace_artifacts,
-    render_task_prompt_variants,
-)
 from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
@@ -42,8 +30,8 @@ from ..shared.object_scene import (
     _object_screen_bbox,
     _sample_camera,
 )
-from ..shared.option_panel import build_text_option_choices
-from .warehouse_scene_common import (
+from ._lifecycle import build_warehouse_option_label_task_output
+from .shared.state import (
     MAX_CANDIDATE_BBOX_INTERSECTION_PX,
     MIN_CANDIDATE_CENTER_SEPARATION_PX,
     MIN_CANDIDATE_VISIBLE_PX,
@@ -58,11 +46,12 @@ from .warehouse_scene_common import (
     _resolve_render_params,
     _sample_reference_and_objects,
 )
-from .warehouse_rendering import render_warehouse_robot_scene_3d
+from .shared.rendering import render_warehouse_robot_scene_3d
 
 
 TASK_ID = "task_three_d__warehouse__robot_forward_path_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("first_object_ahead",)
+PROMPT_QUERY_KEY = "first_object_ahead"
 MIN_FIRST_OBJECT_MARGIN = 0.52
 
 
@@ -100,6 +89,7 @@ def _visibility_ok(
     frame: _ProjectionFrame,
     render_params: _WarehouseRenderParams,
 ) -> bool:
+    """Reject forward-path layouts with unclear candidates or occlusion."""
     bboxes = [_object_screen_bbox(spec, camera, frame, pad_px=16.0) for spec in candidate_specs]
     centers = [(float(spec["screen_xy"][0]), float(spec["screen_xy"][1])) for spec in candidate_specs]
     for bbox in bboxes:
@@ -165,6 +155,7 @@ def _attach_path_answers(
     instance_seed: int,
     candidate_count: int,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    """Assign option labels while preserving the first forward object."""
     path_candidates = [
         dict(spec)
         for spec in candidate_specs
@@ -228,6 +219,7 @@ def _build_dataset(
     render_params: _WarehouseRenderParams,
     instance_seed: int,
 ) -> Dict[str, Any]:
+    """Sample a visible robot path scene with bound answers."""
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     for _attempt in range(420):
         camera = _sample_camera(rng, yaw_band_degrees=tuple(float(value) for value in camera_yaw_band))
@@ -374,6 +366,7 @@ _NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAUL
 
 
 def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) -> Dict[str, Any]:
+    """Lock generation axes once for stable retry semantics."""
     locked_params = dict(params)
     query_id, _query_probabilities = _shared_resolve_axis_variant(
         params=params,
@@ -455,7 +448,6 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
 
     task_id = TASK_ID
     domain = "three_d"
-    scene_id = "warehouse"
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
@@ -470,6 +462,7 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts: {last_error}")
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
+        """Resolve axes, sample a scene, and assemble verifier output."""
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params=params,
             task_id=TASK_ID,
@@ -549,170 +542,52 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
             render_params=render_params,
             instance_seed=int(instance_seed),
         )
-        background, background_meta = make_background_canvas(
-            canvas_width=int(render_params.canvas_width),
-            canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=_BACKGROUND_DEFAULTS,
-        )
-        option_choices = build_text_option_choices(dataset["candidate_object_specs"])
-        rendered_scene = render_warehouse_robot_scene_3d(
-            background,
-            dataset=dataset,
-            render_params=render_params,
-            option_choices=option_choices,
-        )
-        image, post_noise_meta = apply_post_image_noise(
-            rendered_scene.image,
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=_NOISE_DEFAULTS,
-        )
-        prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
-            (
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "answer_hint",
-                "annotation_hint",
-                "json_example",
-                "json_example_answer_only",
-            ),
-            context=f"prompt defaults for {self.task_id}",
-        )
-        prompt_selection = render_task_prompt_variants(
+        return build_warehouse_option_label_task_output(
             domain=self.domain,
-            scene_id=self.scene_id,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_id),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
-            },
+            scene_id=SCENE_ID,
+            prompt_defaults=_PROMPT_DEFAULTS,
+            prompt_query_key=PROMPT_QUERY_KEY,
+            dynamic_prompt_slots={},
+            background_defaults=_BACKGROUND_DEFAULTS,
+            noise_defaults=_NOISE_DEFAULTS,
+            params=params,
             instance_seed=int(instance_seed),
-        )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        answer_label = str(dataset["answer_label"])
-        answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
-        annotation_gt = TypedValue(type="bbox_set", value=list(annotation_bboxes))
-        solver_trace = dict(dataset["solver_trace"])
-        trace_payload = {
-            "scene_ir": {
-                "scene_kind": "three_d_warehouse_robot",
-                "entities": [dict(entity) for entity in rendered_scene.entities],
-                "relations": {
-                    "scene_variant": str(scene_variant),
-                    "candidate_count": int(dataset["candidate_count"]),
-                    "context_object_count": int(dataset["context_object_count"]),
-                    "robot_heading": str(dataset["robot_heading"]),
-                    "robot_design": str(dataset["robot_design"]),
-                    "travel_direction_vector_xy": list(dataset["travel_direction_vector_xy"]),
-                    "first_reached_by_label": dict(dataset["first_reached_by_label"]),
-                    "answer_label": str(answer_label),
-                    "answer_object_id": str(dataset["answer_object_id"]),
-                    "view_family": "synthetic_perspective_3d_warehouse_robot",
-                },
+            query_id=str(query_id),
+            query_probabilities=query_probabilities,
+            scene_variant=str(scene_variant),
+            scene_probabilities=scene_probabilities,
+            candidate_count=int(candidate_count),
+            candidate_count_probabilities=candidate_count_probabilities,
+            context_object_count=int(context_object_count),
+            context_object_count_probabilities=context_count_probabilities,
+            camera_yaw_band_index=int(camera_yaw_band_index),
+            camera_yaw_probabilities=camera_yaw_probabilities,
+            render_params=render_params,
+            dataset=dataset,
+            render_scene=render_warehouse_robot_scene_3d,
+            candidate_specs=dataset["candidate_object_specs"],
+            scene_kind="three_d_warehouse_robot",
+            view_family="synthetic_perspective_3d_warehouse_robot",
+            scene_relation_fields={
+                "robot_heading": str(dataset["robot_heading"]),
+                "robot_design": str(dataset["robot_design"]),
+                "travel_direction_vector_xy": list(dataset["travel_direction_vector_xy"]),
+                "first_reached_by_label": dict(dataset["first_reached_by_label"]),
             },
-            "query_spec": {
-                "query_id": str(query_id),
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "query_id": str(query_id),
-                    "query_id_probabilities": dict(query_probabilities),
-                    "scene_variant": str(scene_variant),
-                    "scene_variant_probabilities": dict(scene_probabilities),
-                    "robot_heading": str(robot_heading),
-                    "robot_heading_probabilities": dict(robot_heading_probabilities),
-                    "candidate_count": int(candidate_count),
-                    "candidate_count_probabilities": dict(candidate_count_probabilities),
-                    "context_object_count": int(context_object_count),
-                    "context_object_count_probabilities": dict(context_count_probabilities),
-                    "camera_yaw_band_index": int(camera_yaw_band_index),
-                    "camera_yaw_band_probabilities": dict(camera_yaw_probabilities),
-                    "answer_label_probabilities": {str(label): round(1.0 / float(candidate_count), 8) for label in POINT_LABELS[: int(candidate_count)]},
-                },
+            query_param_fields={
+                "robot_heading": str(robot_heading),
+                "robot_heading_probabilities": dict(robot_heading_probabilities),
             },
-            "render_spec": {
-                "canvas_width": int(render_params.canvas_width),
-                "canvas_height": int(image.height),
-                "scene_canvas_preset": str(render_params.canvas_preset),
-                "scene_canvas_width": int(render_params.canvas_width),
-                "scene_canvas_height": int(render_params.canvas_height),
-                "scene_canvas_policy": str(render_params.canvas_policy),
-                "final_canvas_width": int(image.width),
-                "final_canvas_height": int(image.height),
-                "final_canvas_pixels": int(image.width) * int(image.height),
-                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
-                "coord_space": "pixel",
-                "scene_variant": str(scene_variant),
-                "background_style": dict(background_meta),
-                "post_image_noise": dict(post_noise_meta),
-                "camera": dict(dataset["camera"]),
-                "projection_frame": dict(dataset["projection_frame"]),
-                "label_font_size_px": int(render_params.label_font_size_px),
+            render_spec_fields={
                 "robot_heading": str(dataset["robot_heading"]),
                 "robot_design": str(dataset["robot_design"]),
                 "travel_direction_vector_xy": list(dataset["travel_direction_vector_xy"]),
                 "path_corridor_half_width": float(dataset["path_corridor_half_width"]),
             },
-            "render_map": {
-                "image_id": "img0",
-                "scene_bbox_px": list(rendered_scene.scene_bbox_px),
-                "warehouse_bbox_px": list(rendered_scene.warehouse_bbox_px),
-                "object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.object_bboxes_px.items()},
-                "object_centers_px": {str(key): list(value) for key, value in rendered_scene.object_centers_px.items()},
-                "candidate_bboxes_px": {str(key): list(value) for key, value in rendered_scene.candidate_bboxes_px.items()},
-                "candidate_centers_px": {str(key): list(value) for key, value in rendered_scene.candidate_centers_px.items()},
-                "option_panel_bbox_px": list(rendered_scene.option_panel_bbox_px),
-                "option_panel_height_px": int(rendered_scene.option_panel_height_px),
-                "option_choice_bboxes_px": {
-                    str(key): list(value) for key, value in rendered_scene.option_choice_bboxes_px.items()
-                },
-                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
-                "context_object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.context_object_bboxes_px.items()},
-                "context_object_centers_px": {str(key): list(value) for key, value in rendered_scene.context_object_centers_px.items()},
-                "reference_object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.reference_object_bboxes_px.items()},
-                "reference_object_centers_px": {str(key): list(value) for key, value in rendered_scene.reference_object_centers_px.items()},
-                "target_object_bboxes_px": {str(key): list(rendered_scene.object_bboxes_px[str(key)]) for key in dataset["target_object_ids"]},
-            },
-            "execution_trace": {
-                "query_id": str(query_id),
-                "scene_id": SCENE_ID,
-                "scene_variant": str(scene_variant),
-                "candidate_count": int(dataset["candidate_count"]),
-                "context_object_count": int(dataset["context_object_count"]),
-                "object_count": int(dataset["object_count"]),
-                "answer_label": str(answer_label),
-                "answer_object_id": str(dataset["answer_object_id"]),
-                "answer_object_type": str(dataset["answer_object_type"]),
-                "target_object_ids": [str(value) for value in dataset["target_object_ids"]],
+            execution_trace_fields={
                 "reference_object": dict(dataset["reference_object"]),
                 "reference_object_specs": [dict(spec) for spec in dataset["reference_object_specs"]],
                 "candidate_object_specs": [dict(spec) for spec in dataset["candidate_object_specs"]],
-                "option_choices": [dict(choice) for choice in rendered_scene.option_choices],
-                "option_descriptor_by_label": {
-                    str(choice["label"]): str(choice["descriptor"])
-                    for choice in rendered_scene.option_choices
-                },
-                "context_object_specs": [dict(spec) for spec in dataset["context_object_specs"]],
-                "object_specs": [dict(spec) for spec in dataset["object_specs"]],
                 "robot_heading": str(dataset["robot_heading"]),
                 "robot_design": str(dataset["robot_design"]),
                 "travel_direction_vector_xy": list(dataset["travel_direction_vector_xy"]),
@@ -728,29 +603,7 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
                 "first_reached_margin": float(dataset["first_reached_margin"]),
                 "candidate_object_types_by_label": dict(dataset["candidate_object_types_by_label"]),
                 "candidate_projected_bboxes_by_label": dict(dataset["candidate_projected_bboxes_by_label"]),
-                "object_type_counts": dict(dataset["object_type_counts"]),
-                "camera": dict(dataset["camera"]),
-                "projection_frame": dict(dataset["projection_frame"]),
-                "question_format": str(query_id),
-                "view_family": "synthetic_perspective_3d_warehouse_robot",
-                "solver_trace": dict(solver_trace),
             },
-            "witness_symbolic": {"type": "object", "id": str(dataset["answer_object_id"]), "answer": str(answer_label)},
-            "projected_annotation": {"bbox_set": [list(bbox) for bbox in annotation_bboxes]},
-            "background": dict(background_meta),
-            "post_image_noise": dict(post_noise_meta),
-        }
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-            answer_gt=answer_gt,
-            annotation_gt=annotation_gt,
-            image=image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(query_id),
         )
 
 

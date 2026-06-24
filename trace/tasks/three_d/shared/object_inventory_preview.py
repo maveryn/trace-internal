@@ -32,8 +32,8 @@ from ..room.shared.rendering import _draw_room_shell
 from ..street.shared import state as street_scene
 from ..street.shared.objects import _draw_styled_building_object
 from ..street.shared.components import _draw_street_shell
-from ..warehouse import warehouse_scene_common as warehouse_scene
-from ..warehouse.warehouse_support_rendering import _draw_shelf_rack_object
+from ..warehouse.shared import state as warehouse_scene
+from ..warehouse.shared.components import _draw_shelf_rack_object
 from .street_object_rendering_common import (
     STREET_BUILDING_CONTEXT_OBJECT_TYPES,
     _draw_shadow as _draw_street_shadow,

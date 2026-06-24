@@ -645,7 +645,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
         "icons": frozenset((*expected_candidate_scenes["icons"], "named_strip", "overlap_grid", "wallpaper_panels")),
         "illustrations": frozenset((*expected_candidate_scenes["illustrations"], "rpg_tactical_map")),
         "graph": frozenset((*expected_candidate_scenes["graph"], "phylogeny_tree", "pipe_network")),
-        "three_d": frozenset((*expected_candidate_scenes["three_d"], "object_scene", "room", "street")),
+        "three_d": frozenset((*expected_candidate_scenes["three_d"], "object_scene", "room", "street", "warehouse")),
     }
     assert MIGRATED_SCENE_PACKAGE_SCENES == expected_candidate_scenes
     assert SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES == expected_candidate_scenes

@@ -1,0 +1,519 @@
+"""Scene-local renderer for top-down tactical RPG movement maps."""
+
+from __future__ import annotations
+
+import random
+from typing import Any, Mapping, Sequence
+
+from PIL import Image, ImageDraw
+
+from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.tasks.illustrations.shared.canvas_profiles import (
+    CANVAS_PROFILE_LANDSCAPE,
+    CANVAS_PROFILE_PORTRAIT,
+    CANVAS_PROFILE_SQUARE,
+)
+from trace.tasks.illustrations.shared.object_variants import RENDERER_STYLE_TOP_DOWN_PIXEL_RPG
+from trace.tasks.illustrations.shared.option_rendering import draw_label_badge
+
+from .relations import (
+    TERRAIN_BRIDGE,
+    TERRAIN_FOREST,
+    TERRAIN_GRASS,
+    TERRAIN_MOUNTAIN,
+    TERRAIN_MOVEMENT_COSTS,
+    TERRAIN_ROAD,
+    TERRAIN_WATER,
+    movement_cost_for_terrain,
+)
+from .state import BBox, RpgTacticalMapScene, RpgTacticalTile, RpgTacticalUnit
+
+
+SCENE_ID = "rpg_tactical_map"
+RENDERER_ID = "rpg_tactical_map_top_down_v0"
+DEFAULT_TILE_PX = 80
+DEFAULT_CANDIDATE_LABELS: tuple[str, ...] = ("A", "B", "C", "D")
+TACTICAL_PROFILE_GRIDS: Mapping[str, tuple[int, int]] = {
+    CANVAS_PROFILE_LANDSCAPE: (12, 8),
+    CANVAS_PROFILE_SQUARE: (10, 10),
+    CANVAS_PROFILE_PORTRAIT: (8, 12),
+}
+TACTICAL_PROFILE_SUPPORT: tuple[str, ...] = (
+    CANVAS_PROFILE_LANDSCAPE,
+    CANVAS_PROFILE_SQUARE,
+    CANVAS_PROFILE_PORTRAIT,
+)
+
+RGB = tuple[int, int, int]
+
+THEMES: Mapping[str, Mapping[str, RGB]] = {
+    "emerald_field": {
+        "grass": (96, 167, 91),
+        "grass_alt": (108, 177, 99),
+        "grid": (52, 91, 57),
+        "road": (188, 151, 91),
+        "road_dark": (137, 103, 63),
+        "forest": (39, 113, 62),
+        "forest_dark": (25, 77, 48),
+        "water": (60, 135, 194),
+        "water_dark": (36, 86, 142),
+        "bridge": (143, 89, 47),
+        "bridge_dark": (86, 54, 36),
+        "mountain": (137, 132, 122),
+        "mountain_dark": (76, 76, 77),
+        "mountain_light": (191, 188, 172),
+    },
+    "autumn_plain": {
+        "grass": (139, 164, 82),
+        "grass_alt": (153, 176, 92),
+        "grid": (84, 97, 50),
+        "road": (194, 142, 83),
+        "road_dark": (126, 86, 55),
+        "forest": (71, 112, 57),
+        "forest_dark": (42, 72, 40),
+        "water": (67, 126, 176),
+        "water_dark": (42, 79, 126),
+        "bridge": (139, 82, 43),
+        "bridge_dark": (82, 50, 34),
+        "mountain": (145, 126, 112),
+        "mountain_dark": (82, 71, 68),
+        "mountain_light": (205, 189, 169),
+    },
+    "highland": {
+        "grass": (89, 148, 106),
+        "grass_alt": (101, 160, 116),
+        "grid": (50, 84, 66),
+        "road": (174, 157, 101),
+        "road_dark": (112, 103, 73),
+        "forest": (38, 105, 79),
+        "forest_dark": (24, 70, 56),
+        "water": (54, 123, 177),
+        "water_dark": (34, 78, 126),
+        "bridge": (126, 88, 50),
+        "bridge_dark": (77, 54, 38),
+        "mountain": (130, 137, 133),
+        "mountain_dark": (70, 78, 78),
+        "mountain_light": (184, 196, 185),
+    },
+}
+
+
+def resolve_tactical_map_render_params(
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    *,
+    instance_seed: int | None = None,
+    namespace: str = "illustrations:rpg_tactical_map:canvas_profile",
+) -> dict[str, Any]:
+    """Resolve the small-grid tactical-map profile and tile size."""
+
+    tile_px = int(params.get("tile_px", group_default(render_defaults, "rpg_tactical_map_tile_px", DEFAULT_TILE_PX)))
+    if tile_px <= 0:
+        raise ValueError("rpg_tactical_map tile size must be positive")
+    if "grid_cols" in params or "grid_rows" in params:
+        cols = int(params.get("grid_cols", TACTICAL_PROFILE_GRIDS[CANVAS_PROFILE_LANDSCAPE][0]))
+        rows = int(params.get("grid_rows", TACTICAL_PROFILE_GRIDS[CANVAS_PROFILE_LANDSCAPE][1]))
+        if cols <= 0 or rows <= 0:
+            raise ValueError("custom tactical-map grid dimensions must be positive")
+        return {
+            "canvas_profile": "custom",
+            "canvas_width": int(cols) * int(tile_px),
+            "canvas_height": int(rows) * int(tile_px),
+            "tile_px": int(tile_px),
+            "grid_cols": int(cols),
+            "grid_rows": int(rows),
+            "canvas_profile_size": [int(cols) * int(tile_px), int(rows) * int(tile_px)],
+            "canvas_profile_probabilities": {"custom": 1.0},
+        }
+
+    support = _profile_support(params, render_defaults)
+    explicit = params.get("canvas_profile", group_default(render_defaults, "canvas_profile", None))
+    if explicit is not None:
+        profile_id = str(explicit)
+        if profile_id not in set(support):
+            raise ValueError(f"canvas_profile must be one of {support}")
+        probabilities = {profile_id: 1.0}
+    else:
+        if params.get("_sample_cursor") is not None:
+            index = abs(int(params["_sample_cursor"])) % len(support)
+        elif instance_seed is not None:
+            index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)) % len(support)
+        else:
+            index = 0
+        profile_id = str(support[int(index)])
+        probabilities = _uniform_probability_map(support)
+    cols, rows = TACTICAL_PROFILE_GRIDS[profile_id]
+    return {
+        "canvas_profile": str(profile_id),
+        "canvas_width": int(cols) * int(tile_px),
+        "canvas_height": int(rows) * int(tile_px),
+        "tile_px": int(tile_px),
+        "grid_cols": int(cols),
+        "grid_rows": int(rows),
+        "canvas_profile_size": [int(cols) * int(tile_px), int(rows) * int(tile_px)],
+        "canvas_profile_probabilities": dict(probabilities),
+    }
+
+
+def render_rpg_tactical_map_scene(
+    seed: int,
+    *,
+    width: int,
+    height: int,
+    grid_cols: int,
+    grid_rows: int,
+    tile_px: int = DEFAULT_TILE_PX,
+    player_tile_id: str | None = None,
+    candidate_tile_ids_by_label: Mapping[str, str] | None = None,
+    label_font_family: str | None = None,
+    label_font_trace: Mapping[str, Any] | None = None,
+    render_metadata: Mapping[str, Any] | None = None,
+) -> RpgTacticalMapScene:
+    """Render one full-bleed tactical map with optional lettered candidate tiles."""
+
+    rng = random.Random(int(seed))
+    cols = int(grid_cols)
+    rows = int(grid_rows)
+    tile_size = int(tile_px)
+    if int(width) != cols * tile_size or int(height) != rows * tile_size:
+        raise ValueError("tactical map canvas must exactly match grid_cols/grid_rows * tile_px")
+    theme_id = str(_choose(rng, tuple(THEMES)))
+    theme = THEMES[theme_id]
+    terrain_grid = _make_terrain_grid(cols=cols, rows=rows, rng=rng)
+    tiles = _make_tiles(terrain_grid=terrain_grid, tile_px=tile_size)
+    tiles_by_id = {str(tile.tile_id): tile for tile in tiles}
+    resolved_player_tile_id = str(player_tile_id or _select_player_tile_id(tiles, rng=rng))
+    if resolved_player_tile_id not in tiles_by_id or not bool(tiles_by_id[resolved_player_tile_id].passable):
+        raise ValueError("player_tile_id must name a passable tile")
+
+    image = Image.new("RGB", (int(width), int(height)), theme["grass"])
+    draw = ImageDraw.Draw(image)
+    for tile in tiles:
+        _draw_tile(draw, tile=tile, tile_px=tile_size, theme=theme, rng=rng)
+    _draw_grid(draw, cols=cols, rows=rows, tile_px=tile_size, theme=theme)
+
+    player_unit = _draw_player_unit(
+        draw,
+        tile=tiles_by_id[resolved_player_tile_id],
+        tile_px=tile_size,
+    )
+    label_bboxes = _draw_candidate_labels(
+        draw,
+        tiles_by_id=tiles_by_id,
+        candidate_tile_ids_by_label=candidate_tile_ids_by_label or {},
+        tile_px=tile_size,
+        font_family=label_font_family,
+    )
+    trace = {
+        "renderer_id": RENDERER_ID,
+        "renderer_style": RENDERER_STYLE_TOP_DOWN_PIXEL_RPG,
+        "theme_id": theme_id,
+        "width": int(width),
+        "height": int(height),
+        "grid_cols": cols,
+        "grid_rows": rows,
+        "tile_px": tile_size,
+        "terrain_movement_costs": {str(key): int(value) for key, value in TERRAIN_MOVEMENT_COSTS.items()},
+        "blocked_terrain": [TERRAIN_WATER],
+        "terrain_rows": [[str(value) for value in row] for row in terrain_grid],
+        "player_tile_id": resolved_player_tile_id,
+        "candidate_tile_ids_by_label": {str(label): str(tile_id) for label, tile_id in (candidate_tile_ids_by_label or {}).items()},
+        "label_font": dict(label_font_trace or {}),
+        **dict(render_metadata or {}),
+    }
+    return RpgTacticalMapScene(
+        image=image,
+        tiles=tiles,
+        units=(player_unit,),
+        label_bboxes_by_tile_id=label_bboxes,
+        trace=trace,
+    )
+
+
+def _profile_support(params: Mapping[str, Any], defaults: Mapping[str, Any]) -> tuple[str, ...]:
+    raw = params.get("canvas_profile_support", group_default(defaults, "canvas_profile_support", TACTICAL_PROFILE_SUPPORT))
+    if isinstance(raw, str):
+        values = (raw,)
+    elif isinstance(raw, Sequence):
+        values = tuple(raw)
+    else:
+        values = tuple(TACTICAL_PROFILE_SUPPORT)
+    support = tuple(dict.fromkeys(str(value) for value in values if str(value) in set(TACTICAL_PROFILE_SUPPORT)))
+    if not support:
+        raise ValueError("canvas_profile_support must include at least one tactical-map canvas profile")
+    return support
+
+
+def _uniform_probability_map(values: Sequence[str]) -> dict[str, float]:
+    support = tuple(str(value) for value in values)
+    probability = 1.0 / float(len(support))
+    return {str(value): float(probability) for value in support}
+
+
+def _choose(rng: random.Random, values: Sequence[Any]) -> Any:
+    if not values:
+        raise ValueError("cannot choose from an empty sequence")
+    return values[int(rng.randrange(len(values)))]
+
+
+def _make_terrain_grid(*, cols: int, rows: int, rng: random.Random) -> list[list[str]]:
+    grid = [[TERRAIN_GRASS for _ in range(int(cols))] for _ in range(int(rows))]
+    _paint_water_feature(grid, rng=rng)
+    _paint_road_feature(grid, rng=rng)
+    for _ in range(rng.randint(2, 4)):
+        _paint_blob(grid, rng=rng, terrain=TERRAIN_FOREST, size=rng.randint(4, 8), avoid={TERRAIN_WATER, TERRAIN_BRIDGE, TERRAIN_ROAD})
+    for _ in range(rng.randint(1, 3)):
+        _paint_blob(grid, rng=rng, terrain=TERRAIN_MOUNTAIN, size=rng.randint(3, 6), avoid={TERRAIN_WATER, TERRAIN_BRIDGE, TERRAIN_ROAD})
+    return grid
+
+
+def _paint_water_feature(grid: list[list[str]], *, rng: random.Random) -> None:
+    rows = len(grid)
+    cols = len(grid[0])
+    orientation = str(_choose(rng, ("horizontal", "vertical", "pond")))
+    if orientation == "horizontal" and rows >= 6:
+        row = rng.randrange(1, rows - 1)
+        for col in range(cols):
+            if rng.random() < 0.88:
+                grid[row][col] = TERRAIN_WATER
+            if row + 1 < rows and rng.random() < 0.25:
+                grid[row + 1][col] = TERRAIN_WATER
+    elif orientation == "vertical" and cols >= 6:
+        col = rng.randrange(1, cols - 1)
+        for row in range(rows):
+            if rng.random() < 0.88:
+                grid[row][col] = TERRAIN_WATER
+            if col + 1 < cols and rng.random() < 0.25:
+                grid[row][col + 1] = TERRAIN_WATER
+    else:
+        center_row = rng.randrange(max(1, rows // 4), max(2, rows - rows // 4))
+        center_col = rng.randrange(max(1, cols // 4), max(2, cols - cols // 4))
+        for row in range(max(0, center_row - 1), min(rows, center_row + 2)):
+            for col in range(max(0, center_col - 2), min(cols, center_col + 3)):
+                if rng.random() < 0.78:
+                    grid[row][col] = TERRAIN_WATER
+
+
+def _paint_road_feature(grid: list[list[str]], *, rng: random.Random) -> None:
+    rows = len(grid)
+    cols = len(grid[0])
+    road_row = rng.randrange(rows)
+    road_col = rng.randrange(cols)
+    style = str(_choose(rng, ("horizontal", "vertical", "cross", "elbow")))
+    if style in {"horizontal", "cross"}:
+        for col in range(cols):
+            grid[road_row][col] = TERRAIN_BRIDGE if grid[road_row][col] == TERRAIN_WATER else TERRAIN_ROAD
+    if style in {"vertical", "cross"}:
+        for row in range(rows):
+            grid[row][road_col] = TERRAIN_BRIDGE if grid[row][road_col] == TERRAIN_WATER else TERRAIN_ROAD
+    if style == "elbow":
+        for col in range(road_col + 1):
+            grid[road_row][col] = TERRAIN_BRIDGE if grid[road_row][col] == TERRAIN_WATER else TERRAIN_ROAD
+        for row in range(road_row, rows):
+            grid[row][road_col] = TERRAIN_BRIDGE if grid[row][road_col] == TERRAIN_WATER else TERRAIN_ROAD
+
+
+def _paint_blob(
+    grid: list[list[str]],
+    *,
+    rng: random.Random,
+    terrain: str,
+    size: int,
+    avoid: set[str],
+) -> None:
+    rows = len(grid)
+    cols = len(grid[0])
+    row = rng.randrange(rows)
+    col = rng.randrange(cols)
+    for _ in range(int(size)):
+        if grid[row][col] not in avoid:
+            grid[row][col] = str(terrain)
+        drow, dcol = _choose(rng, ((1, 0), (-1, 0), (0, 1), (0, -1), (0, 0)))
+        row = min(rows - 1, max(0, row + int(drow)))
+        col = min(cols - 1, max(0, col + int(dcol)))
+
+
+def _make_tiles(*, terrain_grid: Sequence[Sequence[str]], tile_px: int) -> tuple[RpgTacticalTile, ...]:
+    tiles: list[RpgTacticalTile] = []
+    for row, values in enumerate(terrain_grid):
+        for col, terrain in enumerate(values):
+            x0 = int(col) * int(tile_px)
+            y0 = int(row) * int(tile_px)
+            bbox = (float(x0), float(y0), float(x0 + int(tile_px)), float(y0 + int(tile_px)))
+            cost = movement_cost_for_terrain(str(terrain))
+            tile = RpgTacticalTile(
+                tile_id=f"r{int(row):02d}_c{int(col):02d}",
+                row=int(row),
+                col=int(col),
+                terrain=str(terrain),
+                movement_cost=cost,
+                passable=cost is not None,
+                bbox_xyxy=bbox,
+                point_xy=(float(x0 + int(tile_px) * 0.5), float(y0 + int(tile_px) * 0.5)),
+                metadata={"tile_px": int(tile_px)},
+            )
+            tiles.append(tile)
+    return tuple(tiles)
+
+
+def _select_player_tile_id(tiles: Sequence[RpgTacticalTile], *, rng: random.Random) -> str:
+    passable = [tile for tile in tiles if bool(tile.passable) and str(tile.terrain) != TERRAIN_BRIDGE]
+    if not passable:
+        raise ValueError("tactical map has no passable player tile")
+    interior = [
+        tile
+        for tile in passable
+        if int(tile.row) not in {0, max(int(other.row) for other in tiles)}
+        and int(tile.col) not in {0, max(int(other.col) for other in tiles)}
+    ]
+    pool = interior or passable
+    return str(_choose(rng, pool).tile_id)
+
+
+def _draw_tile(
+    draw: ImageDraw.ImageDraw,
+    *,
+    tile: RpgTacticalTile,
+    tile_px: int,
+    theme: Mapping[str, RGB],
+    rng: random.Random,
+) -> None:
+    x0, y0, x1, y1 = [int(round(value)) for value in tile.bbox_xyxy]
+    terrain = str(tile.terrain)
+    if terrain == TERRAIN_GRASS:
+        fill = theme["grass_alt"] if (int(tile.row) + int(tile.col)) % 2 == 0 else theme["grass"]
+        draw.rectangle((x0, y0, x1, y1), fill=fill)
+        _draw_grass_marks(draw, x0, y0, int(tile_px), theme)
+    elif terrain == TERRAIN_ROAD:
+        draw.rectangle((x0, y0, x1, y1), fill=theme["road"])
+        for offset in (0.28, 0.56, 0.82):
+            yy = y0 + int(tile_px * offset)
+            draw.line((x0 + 8, yy, x1 - 8, yy + rng.randint(-2, 2)), fill=theme["road_dark"], width=2)
+    elif terrain == TERRAIN_FOREST:
+        draw.rectangle((x0, y0, x1, y1), fill=theme["grass"])
+        _draw_forest_tile(draw, x0, y0, int(tile_px), theme)
+    elif terrain == TERRAIN_WATER:
+        draw.rectangle((x0, y0, x1, y1), fill=theme["water"])
+        for offset in (0.28, 0.52, 0.76):
+            yy = y0 + int(tile_px * offset)
+            draw.arc((x0 + 10, yy - 8, x0 + int(tile_px * 0.48), yy + 8), 10, 170, fill=theme["water_dark"], width=2)
+            draw.arc((x0 + int(tile_px * 0.52), yy - 8, x1 - 10, yy + 8), 10, 170, fill=theme["water_dark"], width=2)
+    elif terrain == TERRAIN_BRIDGE:
+        draw.rectangle((x0, y0, x1, y1), fill=theme["bridge"])
+        draw.rectangle((x0 + 5, y0 + 8, x1 - 5, y1 - 8), outline=theme["bridge_dark"], width=3)
+        for xx in range(x0 + 16, x1, max(12, int(tile_px // 4))):
+            draw.line((xx, y0 + 8, xx, y1 - 8), fill=theme["bridge_dark"], width=2)
+    elif terrain == TERRAIN_MOUNTAIN:
+        draw.rectangle((x0, y0, x1, y1), fill=theme["grass"])
+        _draw_mountain_tile(draw, x0, y0, int(tile_px), theme)
+    else:
+        draw.rectangle((x0, y0, x1, y1), fill=theme["grass"])
+
+
+def _draw_grass_marks(draw: ImageDraw.ImageDraw, x0: int, y0: int, tile_px: int, theme: Mapping[str, RGB]) -> None:
+    mark = (64, 129, 66)
+    for dx, dy in ((18, 22), (46, 17), (58, 51), (26, 58)):
+        if dx + 4 < tile_px and dy + 7 < tile_px:
+            draw.line((x0 + dx, y0 + dy + 5, x0 + dx + 3, y0 + dy), fill=mark, width=2)
+            draw.line((x0 + dx + 3, y0 + dy, x0 + dx + 7, y0 + dy + 5), fill=mark, width=2)
+
+
+def _draw_forest_tile(draw: ImageDraw.ImageDraw, x0: int, y0: int, tile_px: int, theme: Mapping[str, RGB]) -> None:
+    centers = ((0.33, 0.39), (0.58, 0.34), (0.48, 0.62))
+    for cx_ratio, cy_ratio in centers:
+        cx = x0 + int(tile_px * cx_ratio)
+        cy = y0 + int(tile_px * cy_ratio)
+        radius = max(10, int(tile_px * 0.18))
+        draw.ellipse((cx - radius, cy - radius, cx + radius, cy + radius), fill=theme["forest_dark"])
+        draw.ellipse((cx - radius + 4, cy - radius + 3, cx + radius - 4, cy + radius - 5), fill=theme["forest"])
+    trunk_w = max(4, int(tile_px * 0.06))
+    draw.rectangle((x0 + int(tile_px * 0.46), y0 + int(tile_px * 0.57), x0 + int(tile_px * 0.46) + trunk_w, y0 + int(tile_px * 0.78)), fill=(83, 56, 34))
+
+
+def _draw_mountain_tile(draw: ImageDraw.ImageDraw, x0: int, y0: int, tile_px: int, theme: Mapping[str, RGB]) -> None:
+    base_y = y0 + int(tile_px * 0.78)
+    peak = (x0 + int(tile_px * 0.48), y0 + int(tile_px * 0.18))
+    left = (x0 + int(tile_px * 0.16), base_y)
+    right = (x0 + int(tile_px * 0.86), base_y)
+    draw.polygon((left, peak, right), fill=theme["mountain"], outline=theme["mountain_dark"])
+    draw.polygon((peak, (x0 + int(tile_px * 0.40), y0 + int(tile_px * 0.43)), (x0 + int(tile_px * 0.55), y0 + int(tile_px * 0.43))), fill=theme["mountain_light"])
+    draw.line((x0 + int(tile_px * 0.48), y0 + int(tile_px * 0.23), x0 + int(tile_px * 0.34), base_y - 6), fill=theme["mountain_dark"], width=2)
+    draw.line((x0 + int(tile_px * 0.58), y0 + int(tile_px * 0.48), x0 + int(tile_px * 0.74), base_y - 4), fill=theme["mountain_dark"], width=2)
+
+
+def _draw_grid(draw: ImageDraw.ImageDraw, *, cols: int, rows: int, tile_px: int, theme: Mapping[str, RGB]) -> None:
+    line = theme["grid"]
+    for col in range(1, int(cols)):
+        x = int(col) * int(tile_px)
+        draw.line((x, 0, x, int(rows) * int(tile_px)), fill=line, width=2)
+    for row in range(1, int(rows)):
+        y = int(row) * int(tile_px)
+        draw.line((0, y, int(cols) * int(tile_px), y), fill=line, width=2)
+
+
+def _draw_player_unit(draw: ImageDraw.ImageDraw, *, tile: RpgTacticalTile, tile_px: int) -> RpgTacticalUnit:
+    cx, cy = float(tile.point_xy[0]), float(tile.point_xy[1])
+    radius = float(tile_px) * 0.27
+    shadow = (cx - radius * 0.95, cy + radius * 0.45, cx + radius * 0.95, cy + radius * 0.78)
+    draw.ellipse(shadow, fill=(30, 40, 46))
+    bbox = (cx - radius, cy - radius, cx + radius, cy + radius)
+    draw.ellipse(bbox, fill=(34, 89, 198), outline=(15, 33, 87), width=max(2, int(tile_px * 0.04)))
+    draw.pieslice((cx - radius * 0.72, cy - radius * 0.75, cx + radius * 0.72, cy + radius * 0.34), 180, 360, fill=(91, 155, 238), outline=(15, 33, 87), width=2)
+    draw.rectangle((cx - radius * 0.32, cy + radius * 0.18, cx + radius * 0.32, cy + radius * 0.70), fill=(17, 57, 150))
+    return RpgTacticalUnit(
+        unit_id="blue_unit",
+        public_name="blue unit",
+        team="blue",
+        tile_id=str(tile.tile_id),
+        bbox_xyxy=(round(bbox[0], 3), round(bbox[1], 3), round(bbox[2], 3), round(bbox[3], 3)),
+        point_xy=(round(cx, 3), round(cy, 3)),
+        metadata={"role": "reference", "tile_coord": [int(tile.row), int(tile.col)]},
+    )
+
+
+def _draw_candidate_labels(
+    draw: ImageDraw.ImageDraw,
+    *,
+    tiles_by_id: Mapping[str, RpgTacticalTile],
+    candidate_tile_ids_by_label: Mapping[str, str],
+    tile_px: int,
+    font_family: str | None,
+) -> dict[str, BBox]:
+    label_bboxes: dict[str, BBox] = {}
+    for label, tile_id in candidate_tile_ids_by_label.items():
+        tile = tiles_by_id[str(tile_id)]
+        size = max(28, int(tile_px * 0.42))
+        cx, cy = float(tile.point_xy[0]), float(tile.point_xy[1])
+        bbox = (
+            round(cx - size * 0.5, 3),
+            round(cy - size * 0.5, 3),
+            round(cx + size * 0.5, 3),
+            round(cy + size * 0.5, 3),
+        )
+        draw_label_badge(
+            draw,
+            str(label),
+            bbox,
+            font_family=font_family,
+            fill=(255, 244, 180),
+            outline=(54, 48, 34),
+            text_fill=(24, 22, 18),
+            radius=6,
+            width=3,
+        )
+        label_bboxes[str(tile.tile_id)] = bbox
+    return label_bboxes
+
+
+__all__ = [
+    "DEFAULT_CANDIDATE_LABELS",
+    "DEFAULT_TILE_PX",
+    "RENDERER_ID",
+    "SCENE_ID",
+    "TACTICAL_PROFILE_GRIDS",
+    "TACTICAL_PROFILE_SUPPORT",
+    "THEMES",
+    "render_rpg_tactical_map_scene",
+    "resolve_tactical_map_render_params",
+]

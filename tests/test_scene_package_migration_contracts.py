@@ -643,6 +643,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
         "games": frozenset((*expected_candidate_scenes["games"], "tetris", "tic_tac_toe_3d", "tower_defense", "tower_draughts_board")),
         "geometry": frozenset((*expected_candidate_scenes["geometry"], "parallel_segment_proportion", "polygon_angle_chase", "pythagorean_dissection", "pythagorean_tree", "rectangular_solid", "regular_polygon_decomposition", "right_triangle_altitude_theorem", "sector")),
         "icons": frozenset((*expected_candidate_scenes["icons"], "named_strip", "overlap_grid", "wallpaper_panels")),
+        "illustrations": frozenset((*expected_candidate_scenes["illustrations"], "rpg_tactical_map")),
         "three_d": frozenset((*expected_candidate_scenes["three_d"], "object_scene")),
     }
     assert MIGRATED_SCENE_PACKAGE_SCENES == expected_candidate_scenes
@@ -688,6 +689,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     assert scene_package_migration.is_scene_package_task('task_icons__named_ring__scoped_attribute_count', domain='icons')
     assert scene_package_migration.is_scene_package_task('task_icons__pattern_grid__attribute_pattern_violation_index', domain='icons')
     assert scene_package_migration.is_scene_package_task('task_illustrations__rpg_house__swapped_tile_pair_label', domain='illustrations')
+    assert scene_package_migration.is_scene_package_task('task_illustrations__rpg_tactical_map__movement_reachable_tile_label', domain='illustrations')
     assert scene_package_migration.is_scene_package_task('task_three_d__surface_fixture__repeated_element_count', domain='three_d')
 
 def test_task_classes_do_not_claim_scene_package_migration_independently() -> None:

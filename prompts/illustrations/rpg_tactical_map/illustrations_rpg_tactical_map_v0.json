@@ -1,0 +1,66 @@
+{
+  "bundle_id": "illustrations_rpg_tactical_map_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "movement_reachable_tile_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:rpg_tactical_map_canvas": [],
+    "query:movement_reachable_tile": [
+      "movement_points",
+      "terrain_rules"
+    ],
+    "answer_or_annotation:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_annotation:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_annotation_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_annotation": [
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "rpg_tactical_map_canvas": [
+      "The image shows a top-down tactical RPG map with terrain tiles, one blue unit, and lettered candidate tiles.",
+      "The scene shows a grid-based tactical map from above, with a blue unit, varied terrain, and lettered target tiles.",
+      "The picture shows a pixel-art tactical movement map containing terrain tiles, a blue unit, and lettered candidate tiles.",
+      "The canvas contains a top-down RPG battle map with grass, roads, forests, water, bridges, mountains, one blue unit, and lettered tiles.",
+      "This illustration shows a tactical RPG grid map where a blue unit can move across terrain toward lettered tiles."
+    ]
+  },
+  "query_templates": {
+    "movement_reachable_tile": [
+      "{terrain_rules} With {movement_points} movement points, which lettered tile can the blue unit reach?",
+      "Using {movement_points} movement points, choose the lettered tile the blue unit can reach. {terrain_rules}",
+      "The blue unit starts on its current tile. It has {movement_points} movement points. {terrain_rules} Which lettered tile is reachable?",
+      "{terrain_rules} Which candidate letter marks a tile reachable by the blue unit with {movement_points} movement points?",
+      "The blue unit may spend up to {movement_points} movement points. {terrain_rules} Select the reachable lettered tile."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

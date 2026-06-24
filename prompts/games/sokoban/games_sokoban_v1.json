@@ -154,7 +154,7 @@
   "code_prompt_defaults": {
     "object_description_path_sequence_label": "a Sokoban-style grid with walls, boxes, a start cell S, a goal cell G, and labeled move-sequence options",
     "object_description_box_target_relation_label": "a Sokoban-style grid with walls, labeled boxes, labeled targets, and option letters on candidate cells or pairs",
-    "object_description_box_goal_status_count": "a Sokoban board with walls, a player, colored boxes, and matching colored goal dots",
+    "object_description_box_goal_status_count": "a Sokoban board with walls, a player, colored boxes, and colored goal dots; a box on its matching goal has the goal dot drawn on top of the box",
     "answer_hint_option_letter": "set \"answer\" to only the selected option letter",
     "answer_hint_integer_0_5": "set \"answer\" to the number of boxes satisfying the question",
     "annotation_hint_option_panel_bbox": "set \"annotation\" to the selected option-panel bounding box as [x0,y0,x1,y1] in image pixels",

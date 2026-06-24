@@ -443,20 +443,20 @@ def _draw_board(
         )
         if on_matching_goal:
             target_color = target_color_map.get(str(target_label), box_color)
-            goal_ring = (
-                bbox[0] + cell_size * 0.08,
-                bbox[1] + cell_size * 0.08,
-                bbox[2] - cell_size * 0.08,
-                bbox[3] - cell_size * 0.08,
+            badge = (
+                box_bbox[0] + cell_size * 0.28,
+                box_bbox[1] + cell_size * 0.28,
+                box_bbox[2] - cell_size * 0.28,
+                box_bbox[3] - cell_size * 0.28,
             )
-            draw.ellipse(goal_ring, outline=target_color, width=max(3, int(cell_size * 0.08)))
-            _draw_check(
-                draw,
-                box_bbox,
-                fill=(255, 255, 255),
-                shadow=box_dark,
-                width=max(3, int(cell_size * 0.09)),
+            dot = (
+                badge[0] + cell_size * 0.10,
+                badge[1] + cell_size * 0.10,
+                badge[2] - cell_size * 0.10,
+                badge[3] - cell_size * 0.10,
             )
+            draw.ellipse(badge, fill=(255, 255, 255), outline=target_color, width=max(2, int(cell_size * 0.04)))
+            draw.ellipse(dot, fill=target_color)
         if show_labels:
             draw_centered_text(draw, text=str(box_label), center=((bbox[0] + bbox[2]) * 0.5, (bbox[1] + bbox[3]) * 0.5), font=small_font, fill=(255, 255, 255), stroke_fill=style["wall_dark"], stroke_width=1)
         if str(box_label) == str(marked_box_label):

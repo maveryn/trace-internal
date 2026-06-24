@@ -2,23 +2,120 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any, Mapping
 
-from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
 
-from .shared.triangle_congruence_runtime import ANGLE_OBJECTIVE, SCENE_ID, TriangleCongruenceCorrespondenceRuntime
+from ._lifecycle import TriangleCongruenceObjectivePlan, run_triangle_congruence_public_entry
+from .shared.construction import angle_witness_labels, build_angle_case
+from .shared.rendering import render_triangle_congruence_scene
+from .shared.sampling import choose_case_by_answer
+from .shared.state import DOMAIN, TriangleCongruenceCase, TriangleCongruenceProblem
 
 
 TASK_ID = "task_geometry__triangle_congruence_correspondence__corresponding_angle_value"
 TASK_PROMPT_KEY = "corresponding_angle_value_query"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
-    'angle_mark_transfer',
-    'congruence_statement_angle_transfer',
-    'overlapping_triangle_angle_transfer',
+ANSWER_HINT_KEY = "answer_hint_integer_angle"
+SUPPORTED_QUERY_IDS: tuple[str, ...] = (
+    "angle_mark_transfer",
+    "congruence_statement_angle_transfer",
+    "overlapping_triangle_angle_transfer",
 )
+
+_BRANCH_CONFIGS = {
+    "angle_mark_transfer": {
+        "layout_kind": "separated",
+        "source_index": 0,
+        "target_index": 0,
+        "show_statement": False,
+        "cue_family": "matching_angle_marks",
+        "values": tuple(range(25, 111, 5)),
+    },
+    "congruence_statement_angle_transfer": {
+        "layout_kind": "statement",
+        "source_index": 1,
+        "target_index": 1,
+        "show_statement": True,
+        "cue_family": "visible_congruence_statement",
+        "values": tuple(range(30, 116, 5)),
+    },
+    "overlapping_triangle_angle_transfer": {
+        "layout_kind": "overlap",
+        "source_index": 0,
+        "target_index": 0,
+        "show_statement": True,
+        "cue_family": "overlapping_congruent_triangles",
+        "values": tuple(range(25, 111, 5)),
+    },
+}
+
+
+def _angle_cases(selected_branch: str) -> tuple[TriangleCongruenceCase, ...]:
+    """Build angle-transfer cases for the selected semantic branch."""
+
+    if str(selected_branch) not in _BRANCH_CONFIGS:
+        raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_branch}")
+    config = _BRANCH_CONFIGS[str(selected_branch)]
+    return tuple(
+        build_angle_case(
+            layout_kind=str(config["layout_kind"]),
+            value=int(value),
+            source_index=int(config["source_index"]),
+            target_index=int(config["target_index"]),
+            show_statement=bool(config["show_statement"]),
+        )
+        for value in config["values"]  # type: ignore[union-attr]
+    )
+
+
+def _prepare_corresponding_angle_value(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    selected_branch: str,
+    branch_probabilities: Mapping[str, float],
+) -> TriangleCongruenceObjectivePlan:
+    """Bind a CPCTC angle-measure transfer from task-owned query semantics."""
+
+    config = _BRANCH_CONFIGS[str(selected_branch)]
+    case, answer_probabilities = choose_case_by_answer(
+        cases=_angle_cases(str(selected_branch)),
+        answer_fn=lambda item: int(item.answer),
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.{selected_branch}",
+    )
+    annotation_labels = angle_witness_labels(
+        case.layout_kind,
+        source_angle_index=case.source_angle_index,
+        target_angle_index=case.target_angle_index,
+    )
+    trace_values = {
+        "formula_family": "cpctc_angle_equality",
+        "formula": "target angle measure = corresponding source angle measure",
+        "cue_family": str(config["cue_family"]),
+        "layout_kind": str(case.layout_kind),
+        "angle_witness_labels": list(annotation_labels),
+        "source_angle_value": int(case.source_angle_value or 0),
+        "target_angle_value": int(case.target_angle_value or 0),
+        "target_support_probabilities": dict(answer_probabilities),
+        "query_id_probabilities": dict(branch_probabilities),
+    }
+    return TriangleCongruenceObjectivePlan(
+        prompt_key=TASK_PROMPT_KEY,
+        answer_hint_key=ANSWER_HINT_KEY,
+        problem=TriangleCongruenceProblem(
+            case=case,
+            reasoning_steps=1,
+            layout_seed=int(instance_seed),
+            answer_support_probabilities=dict(answer_probabilities),
+        ),
+        render_scene=render_triangle_congruence_scene,
+        answer_value=int(case.answer),
+        annotation_labels=annotation_labels,
+        query_params=trace_values,
+        trace_values=trace_values,
+    )
 
 
 @register_task
@@ -26,43 +123,14 @@ class GeometryTriangleCongruenceCorrespondenceAngleValueTask:
     """Infer a corresponding angle measure from congruent triangles."""
 
     task_id = TASK_ID
-    domain = "geometry"
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
+    domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = SUPPORTED_QUERY_IDS[0]
+    prepare_objective = staticmethod(_prepare_corresponding_angle_value)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, _query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=SUPPORTED_QUERY_IDS[0],
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        artifact = TriangleCongruenceCorrespondenceRuntime().generate_artifact(
-            int(instance_seed),
-            params={**dict(task_params), "query_id": str(query_id)},
-            max_attempts=int(max_attempts),
-            public_task_id=TASK_ID,
-            objective_id=ANGLE_OBJECTIVE,
-            task_prompt_key=TASK_PROMPT_KEY,
-            query_ids=SUPPORTED_QUERY_IDS,
-        )
-        final_output = TaskOutput(
-            prompt=str(artifact.prompt),
-            answer_gt=TypedValue(type=str(artifact.answer_type), value=artifact.answer_value),
-            annotation_gt=TypedValue(type=str(artifact.annotation_type), value=artifact.annotation_value),
-            image=artifact.image,
-            image_id="img0",
-            trace_payload=artifact.trace_payload,
-            task_versions=artifact.task_versions,
-            scene_id=SCENE_ID,
-            query_id=str(artifact.query_id),
-            prompt_variants=dict(artifact.prompt_variants),
-        )
-        return final_output
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        return run_triangle_congruence_public_entry(self, int(instance_seed), params=params, max_attempts=int(max_attempts))
 
 
 __all__ = ["GeometryTriangleCongruenceCorrespondenceAngleValueTask", "SUPPORTED_QUERY_IDS", "TASK_ID"]

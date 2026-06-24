@@ -42,7 +42,7 @@ def test_triangle_congruence_correspondence_queries_emit_keyed_point_annotation(
             assert output.query_id == query_id
             assert output.answer_gt.type == "integer"
             assert isinstance(output.answer_gt.value, int)
-            assert output.annotation_gt.type == "keyed_point_map"
+            assert output.annotation_gt.type == "point_map"
             assert isinstance(output.annotation_gt.value, dict)
             assert output.annotation_gt.value
             width, height = output.image.size
@@ -54,9 +54,11 @@ def test_triangle_congruence_correspondence_queries_emit_keyed_point_annotation(
             trace = output.trace_payload
             assert trace["execution_trace"]["query_id"] == query_id
             assert trace["execution_trace"]["answer"] == output.answer_gt.value
-            assert trace["projected_annotation"]["type"] == "keyed_point_map"
-            assert trace["projected_annotation"]["keyed_point_map"] == output.annotation_gt.value
-            assert trace["projected_annotation"]["pixel_keyed_point_map"] == output.annotation_gt.value
+            assert trace["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
+            assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_triangle_congruence_correspondence_v1"
+            assert trace["projected_annotation"]["type"] == "point_map"
+            assert trace["projected_annotation"]["point_map"] == output.annotation_gt.value
+            assert trace["projected_annotation"]["pixel_point_map"] == output.annotation_gt.value
             assert "task_variant" not in trace["query_spec"]["params"]
             assert "query_variant" not in trace["query_spec"]["params"]
 
@@ -87,3 +89,14 @@ def test_triangle_congruence_correspondence_generation_is_deterministic() -> Non
     assert first.answer_gt == second.answer_gt
     assert first.annotation_gt == second.annotation_gt
     assert first.trace_payload["execution_trace"] == second.trace_payload["execution_trace"]
+
+
+def test_triangle_congruence_correspondence_rejects_unsupported_queries() -> None:
+    task_id = "task_geometry__triangle_congruence_correspondence__corresponding_side_value"
+    task = create_task(task_id)
+    try:
+        task.generate(20260619, params={"query_id": "not_a_triangle_congruence_branch"}, max_attempts=3)
+    except ValueError as exc:
+        assert "query_id" in str(exc)
+    else:
+        raise AssertionError("unsupported query_id should fail")

@@ -3,34 +3,28 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `triangle_congruence_correspondence`
-5. Query id: `single_expression_equal_sides`, `two_expression_equal_sides`, or `shared_side_congruence_expression`
-6. Answer schema: `integer`
-7. Annotation schema: `keyed_point_map`
+3. Task id: `task_geometry__triangle_congruence_correspondence__algebraic_side_value`
+4. Supported `query_id` values: `single_expression_equal_sides`, `two_expression_equal_sides`, `shared_side_congruence_expression`
+5. Answer schema: `integer`
+6. Annotation schema: `point_map`
+7. Scalar annotation checked: `true` (not scalar-eligible; the task binds multiple labeled point witnesses)
 
 ## Program Contract
 - `solve_formula(visible_congruent_triangle_algebraic_side_correspondence, unknown_role=target_side_length, formula_schema=cpctc_algebraic_side_equality); scene=triangle_congruence_correspondence; scope=algebraic_side_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from `geometry_triangle_congruence_correspondence_v0`.
+- Prompt text is loaded from `prompts/geometry/triangle_congruence_correspondence/geometry_triangle_congruence_correspondence_v1.json`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses keyed pixel points for the target side, corresponding source side, and algebraic support side pair:
+Prompt-facing annotation uses a role-bound pixel point map keyed by the visible point labels needed for the target side, the corresponding source side, and the algebraic support side pair.
 
-- `target_side_start`
-- `target_side_end`
-- `source_corresponding_side_start`
-- `source_corresponding_side_end`
-- `support_source_side_start`
-- `support_source_side_end`
-- `support_target_side_start`
-- `support_target_side_end`
-
-Algebraic labels, solved `x`, tick marks, labels, and congruence statements remain visible annotations plus private verifier metadata.
+The visible keys vary with the sampled triangle correspondence, but they are always direct point labels such as `A`, `B`, `C`, `D`, `E`, and `F`; each value is the pixel point at that labeled vertex. Algebraic labels, solved `x`, tick marks, and congruence statements remain visible support plus private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 
 ## Source
 - Config: `configs/domains/geometry/triangle_congruence_correspondence.yaml`
+- Prompt bundle: `prompts/geometry/triangle_congruence_correspondence/geometry_triangle_congruence_correspondence_v1.json`
 - Task module: `trace/tasks/geometry/triangle_congruence_correspondence/algebraic_side_value.py`

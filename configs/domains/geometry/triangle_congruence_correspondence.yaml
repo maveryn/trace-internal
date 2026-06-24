@@ -18,6 +18,5 @@ rendering:
       max_attempts: 6
 prompt:
   shared:
-    bundle_id: geometry_triangle_congruence_correspondence_v0
+    bundle_id: geometry_triangle_congruence_correspondence_v1
     scene_key: triangle_congruence_correspondence_scene
-    task_key: corresponding_side_value_query

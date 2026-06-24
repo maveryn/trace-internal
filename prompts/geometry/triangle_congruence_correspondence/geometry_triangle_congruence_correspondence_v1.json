@@ -1,0 +1,180 @@
+{
+  "bundle_id": "geometry_triangle_congruence_correspondence_v1",
+  "schema_version": "v1",
+  "templates": {
+    "scene": {
+      "triangle_congruence_correspondence_scene": [
+        "The diagram shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The image shows {object_description}.",
+        "This geometry diagram shows {object_description}.",
+        "The labeled diagram shows {object_description}."
+      ]
+    },
+    "task": {
+      "corresponding_side_value_query": [
+        "What is the length of \"{target_name}\"?",
+        "Find the length of \"{target_name}\".",
+        "Determine the length of \"{target_name}\".",
+        "What is the corresponding side length for \"{target_name}\"?",
+        "Use the correspondence to find the length of \"{target_name}\"."
+      ],
+      "corresponding_angle_value_query": [
+        "What is the measure of \"{target_name}\"?",
+        "Find the measure of \"{target_name}\".",
+        "Determine the measure of \"{target_name}\".",
+        "What is the corresponding angle measure for \"{target_name}\"?",
+        "Use the correspondence to find the measure of \"{target_name}\"."
+      ],
+      "algebraic_side_value_query": [
+        "What is the length of \"{target_name}\"?",
+        "Solve the visible side relationship and find \"{target_name}\".",
+        "Use the congruent-triangle side expressions to find \"{target_name}\".",
+        "Determine the target side length for \"{target_name}\".",
+        "Find \"{target_name}\" after solving the corresponding side expressions."
+      ]
+    },
+    "query": {
+      "tick_mark_side_transfer": [
+        "Use the matching side tick marks in the congruent triangles.",
+        "Use the marked corresponding sides.",
+        "Use the equal side marks to transfer the length.",
+        "Use the visible congruent side markings.",
+        "Use the side tick marks that identify corresponding sides."
+      ],
+      "congruence_statement_side_transfer": [
+        "Use the congruence statement order and the side labels.",
+        "Use the visible congruence statement to match corresponding sides.",
+        "Use the stated triangle congruence to transfer the side length.",
+        "Use the triangle correspondence shown in the statement.",
+        "Use the congruent-triangle correspondence indicated above the diagram."
+      ],
+      "overlapping_triangle_side_transfer": [
+        "Use the overlapping congruent triangles.",
+        "Use the shared-side congruent-triangle diagram.",
+        "Use the correspondence in the overlapping triangles.",
+        "Use the visible overlapping congruent-triangle construction.",
+        "Use the overlapping-triangle correspondence."
+      ],
+      "angle_mark_transfer": [
+        "Use the matching angle marks in the congruent triangles.",
+        "Use the marked corresponding angles.",
+        "Use the equal angle marks to transfer the measure.",
+        "Use the visible congruent angle markings.",
+        "Use the angle marks that identify corresponding angles."
+      ],
+      "congruence_statement_angle_transfer": [
+        "Use the congruence statement order and the angle labels.",
+        "Use the visible congruence statement to match corresponding angles.",
+        "Use the stated triangle congruence to transfer the angle measure.",
+        "Use the triangle correspondence shown in the statement.",
+        "Use the congruent-triangle correspondence indicated above the diagram."
+      ],
+      "overlapping_triangle_angle_transfer": [
+        "Use the overlapping congruent triangles.",
+        "Use the shared-side congruent-triangle diagram.",
+        "Use the correspondence in the overlapping triangles.",
+        "Use the visible overlapping congruent-triangle construction.",
+        "Use the overlapping-triangle correspondence."
+      ],
+      "single_expression_equal_sides": [
+        "Use the single side expression and its equal numeric support side.",
+        "Solve the equal side relation with one expression and one number.",
+        "Use the marked equal support sides to solve for x.",
+        "Use the corresponding side expression and support-side equality.",
+        "Solve x from the support side pair, then use the corresponding target side."
+      ],
+      "two_expression_equal_sides": [
+        "Use the two equal side expressions to solve for x.",
+        "Solve the paired support-side expressions, then transfer the side length.",
+        "Use the marked corresponding side expressions.",
+        "Use the two visible expressions on equal support sides.",
+        "Solve x from the equal side-expression pair."
+      ],
+      "shared_side_congruence_expression": [
+        "Use the overlapping congruent triangles and side expressions.",
+        "Use the shared-side diagram to solve the corresponding expressions.",
+        "Use the overlapping-triangle correspondence to find the target side.",
+        "Solve x from the visible shared-side construction.",
+        "Use the overlapping congruent-triangle side labels."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_instruction}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_instruction}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_instruction}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_instruction}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_instruction}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "scene:triangle_congruence_correspondence_scene": {
+      "object_description": "a pair of congruent triangles with visible markings, measurements, or expressions"
+    },
+    "global": {
+      "json_output_contract": "Return a JSON object with exactly two keys: \"annotation\" and \"answer\".",
+      "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."
+    },
+    "task:corresponding_side_value_query": {
+      "answer_hint": "set \"answer\" to the requested side length as an integer"
+    },
+    "task:corresponding_angle_value_query": {
+      "answer_hint": "set \"answer\" to the requested angle measure as an integer number of degrees"
+    },
+    "task:algebraic_side_value_query": {
+      "answer_hint": "set \"answer\" to the requested side length as an integer"
+    }
+  },
+  "dynamic_slots": {
+    "annotation_instruction": {
+      "type": "string"
+    },
+    "annotation_key_list": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    },
+    "target_name": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {
+    "scene:triangle_congruence_correspondence_scene": [
+      "object_description"
+    ],
+    "query:tick_mark_side_transfer": [],
+    "query:congruence_statement_side_transfer": [],
+    "query:overlapping_triangle_side_transfer": [],
+    "query:angle_mark_transfer": [],
+    "query:congruence_statement_angle_transfer": [],
+    "query:overlapping_triangle_angle_transfer": [],
+    "query:single_expression_equal_sides": [],
+    "query:two_expression_equal_sides": [],
+    "query:shared_side_congruence_expression": [],
+    "output:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_instruction",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

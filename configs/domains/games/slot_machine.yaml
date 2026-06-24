@@ -1,0 +1,37 @@
+generation:
+  shared:
+    scene_variant_weights:
+      front_cabinet: 1.0
+    style_variant_weights:
+      classic_red: 1.0
+      chrome_blue: 1.0
+      neon_night: 1.0
+      candy_arcade: 1.0
+      paper_ticket: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_winning_payline_count_sampling: true
+    winning_payline_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+rendering:
+  shared:
+    canvas_width: 900
+    canvas_height: 720
+    cabinet_width_px: 660
+    cabinet_height_px: 560
+    reel_cell_width_px: 104
+    reel_cell_height_px: 106
+    reel_gap_px: 10
+    row_gap_px: 10
+    cabinet_pad_px: 34
+    payline_width_px: 6
+    label_font_size_px: 24
+    symbol_font_size_px: 28
+prompt:
+  shared:
+    bundle_id: games_slot_machine_v1
+    scene_key: visible_slot_machine
+    task_key: slot_machine_query

@@ -26,6 +26,10 @@ from .rules import (
     shortest_path,
 )
 from .state import (
+    BOX_GOAL_STATUS_CONTRACT_KIND,
+    BOX_GOAL_STATUS_COUNT_SUPPORT,
+    BOX_GOAL_STATUS_MODE_OFF,
+    BOX_GOAL_STATUS_MODE_ON,
     DIRECTIONS,
     PATH_CONTRACT_KIND,
     PATH_MODE_BLOCKED,
@@ -40,6 +44,15 @@ from .state import (
     SUPPORTED_SCENE_VARIANTS,
     Cell,
     SokobanAxes,
+)
+
+
+BOX_GOAL_PAIR_COLORS: Tuple[Tuple[int, int, int], ...] = (
+    (210, 64, 72),
+    (45, 116, 205),
+    (55, 150, 88),
+    (184, 98, 210),
+    (224, 142, 46),
 )
 
 
@@ -109,6 +122,34 @@ def select_rank(option_count: int, *, instance_seed: int) -> int:
     return 2 + (int(instance_seed) % min(3, int(option_count) - 1))
 
 
+def select_box_goal_status_answer_count(
+    params: Mapping[str, Any],
+    *,
+    instance_seed: int,
+    namespace: str,
+) -> tuple[int, tuple[int, ...], dict[str, float]]:
+    """Resolve the requested box-on-goal/off-goal answer count."""
+
+    answer_count, probabilities = resolve_integer_choice(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=GEN_DEFAULTS,
+        support_key="box_goal_status_count_support",
+        explicit_key="target_count",
+        fallback_support=BOX_GOAL_STATUS_COUNT_SUPPORT,
+        namespace=f"{namespace}.box_goal_status.answer_count",
+        balanced_flag_key="balanced_box_goal_status_count_sampling",
+        namespace_support_permutation=True,
+    )
+    support = resolve_integer_support(
+        params,
+        gen_defaults=GEN_DEFAULTS,
+        key="box_goal_status_count_support",
+        fallback=BOX_GOAL_STATUS_COUNT_SUPPORT,
+    )
+    return int(answer_count), tuple(int(value) for value in support), dict(probabilities)
+
+
 def sample_base_board(
     *,
     params: Mapping[str, Any],
@@ -168,6 +209,111 @@ def sample_base_board(
                 "component": list(component),
             }
     raise ValueError("could not sample connected Sokoban board")
+
+
+def sample_box_goal_status_dataset(
+    *,
+    status_mode: str,
+    answer_count: int,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> Dict[str, Any]:
+    """Build a paired-color Sokoban board with a controlled box-goal status count."""
+
+    if str(status_mode) not in {BOX_GOAL_STATUS_MODE_ON, BOX_GOAL_STATUS_MODE_OFF}:
+        raise ValueError(f"unsupported Sokoban box-goal status mode: {status_mode}")
+    rng = spawn_rng(int(instance_seed), f"{namespace}.box_goal_status.{status_mode}.{answer_count}")
+    box_min, box_max = _get_range(
+        params,
+        GEN_DEFAULTS,
+        min_key="box_goal_status_box_count_min",
+        max_key="box_goal_status_box_count_max",
+        fallback_min=3,
+        fallback_max=5,
+    )
+    box_min = max(1, min(5, int(box_min)))
+    box_max = max(box_min, min(5, int(box_max)))
+    target_answer = int(answer_count)
+    if target_answer < 0 or target_answer > box_max:
+        raise ValueError(f"unsupported Sokoban box-goal status answer count: {answer_count}")
+
+    for attempt in range(256):
+        minimum_boxes = max(box_min, target_answer)
+        if minimum_boxes > box_max:
+            continue
+        box_count = int(rng.randint(minimum_boxes, box_max))
+        on_goal_count = target_answer if str(status_mode) == BOX_GOAL_STATUS_MODE_ON else box_count - target_answer
+        if on_goal_count < 0 or on_goal_count > box_count:
+            continue
+        off_goal_count = box_count - on_goal_count
+        board = sample_base_board(
+            params=params,
+            instance_seed=int(instance_seed) + attempt,
+            namespace=f"{namespace}.box_goal_status.board",
+            open_bias=True,
+        )
+        rows, cols, walls = int(board["rows"]), int(board["cols"]), set(board["walls"])
+        component = list(board["component"])
+        needed_cells = int(box_count + off_goal_count + 1)
+        if len(component) < needed_cells:
+            continue
+        cells = _sample_distinct_cells(rng, component, needed_cells, forbidden=())
+        labels = [f"B{idx}" for idx in range(1, box_count + 1)]
+        target_labels = {box_label: f"T{box_label[1:]}" for box_label in labels}
+        shuffled_labels = list(labels)
+        rng.shuffle(shuffled_labels)
+        on_goal_labels = set(shuffled_labels[:on_goal_count])
+        target_cells = {target_labels[box_label]: tuple(cells[index]) for index, box_label in enumerate(labels)}
+        off_cells = iter(cells[box_count : box_count + off_goal_count])
+        boxes: Dict[str, Cell] = {}
+        for box_label in labels:
+            target_label = target_labels[box_label]
+            boxes[box_label] = tuple(target_cells[target_label]) if box_label in on_goal_labels else tuple(next(off_cells))
+        player = tuple(cells[-1])
+        counted_labels = [
+            box_label
+            for box_label in labels
+            if (box_label in on_goal_labels) == (str(status_mode) == BOX_GOAL_STATUS_MODE_ON)
+        ]
+        colors = {
+            box_label: list(BOX_GOAL_PAIR_COLORS[(index - 1) % len(BOX_GOAL_PAIR_COLORS)])
+            for index, box_label in enumerate(labels, start=1)
+        }
+        target_colors = {
+            target_labels[box_label]: list(colors[box_label])
+            for box_label in labels
+        }
+        matching_targets = {box_label: target_labels[box_label] for box_label in labels}
+        return {
+            "contract_kind": BOX_GOAL_STATUS_CONTRACT_KIND,
+            "status_mode": str(status_mode),
+            "rows": rows,
+            "cols": cols,
+            "walls": sorted([list(cell) for cell in walls]),
+            "component_cells": sorted([list(cell) for cell in component]),
+            "player_start": list(player),
+            "boxes_start": {label: list(cell) for label, cell in sorted(boxes.items())},
+            "targets": {label: list(cell) for label, cell in sorted(target_cells.items())},
+            "matching_targets": dict(sorted(matching_targets.items())),
+            "box_colors": dict(sorted(colors.items())),
+            "target_colors": dict(sorted(target_colors.items())),
+            "goal_status_count": int(target_answer),
+            "box_count": int(box_count),
+            "boxes_on_matching_goals": sorted(on_goal_labels),
+            "boxes_off_matching_goals": sorted(label for label in labels if label not in on_goal_labels),
+            "counted_box_labels": sorted(counted_labels),
+            "annotation_cells": [list(boxes[label]) for label in sorted(counted_labels)],
+            "option_count": 0,
+            "option_specs": [],
+            "solver_trace": {
+                "box_count": int(box_count),
+                "on_goal_count": int(on_goal_count),
+                "off_goal_count": int(off_goal_count),
+                "counted_box_labels": sorted(counted_labels),
+            },
+        }
+    raise ValueError(f"could not build Sokoban box-goal status dataset for {status_mode}")
 
 
 def _choose_option_labels(option_count: int) -> List[str]:
@@ -526,8 +672,10 @@ def sample_relation_dataset(
 
 __all__ = [
     "sample_base_board",
+    "sample_box_goal_status_dataset",
     "sample_path_sequence_dataset",
     "sample_relation_dataset",
+    "select_box_goal_status_answer_count",
     "select_option_count",
     "select_rank",
     "select_scene_axes",

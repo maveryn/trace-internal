@@ -63,4 +63,19 @@ def _candidate_cells_for_answer(
     raise ValueError(f"missing option spec for answer label {answer_label}")
 
 
-__all__ = ["option_cell_bbox", "option_pair_bbox_set", "option_panel_bbox"]
+def cell_bbox_set(
+    rendered_scene: RenderedSokobanScene,
+    *,
+    cells: Sequence[Sequence[int]],
+) -> AnnotationArtifacts:
+    """Return an unordered bbox-set for a homogeneous set of grid cells."""
+
+    return bbox_set_annotation_artifacts(
+        [
+            rendered_scene.cell_bbox_map[cell_id(tuple(int(value) for value in cell))]
+            for cell in cells
+        ]
+    )
+
+
+__all__ = ["cell_bbox_set", "option_cell_bbox", "option_pair_bbox_set", "option_panel_bbox"]

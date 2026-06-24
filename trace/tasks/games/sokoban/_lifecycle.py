@@ -13,7 +13,7 @@ from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID, select_task_query_i
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import option_cell_bbox, option_pair_bbox_set, option_panel_bbox
+from .shared.annotations import cell_bbox_set, option_cell_bbox, option_pair_bbox_set, option_panel_bbox
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS
 from .shared.output import build_sokoban_trace_payload
 from .shared.prompts import build_sokoban_prompt_artifacts
@@ -41,6 +41,8 @@ class SokobanObjective:
     option_count_support: list[int]
     option_count_probabilities: Mapping[str, float]
     build_annotation: AnnotationBuilder
+    answer_hint_key: str = "answer_hint_option_letter"
+    json_example_answer_only_key: str = "json_example_answer_only_option_label"
     prompt_dynamic_values: Mapping[str, Any] = field(default_factory=dict)
     trace_extra_params: Mapping[str, Any] = field(default_factory=dict)
     execution_extra: Mapping[str, Any] = field(default_factory=dict)
@@ -145,6 +147,39 @@ def build_relation_pair_objective(
     )
 
 
+def build_box_goal_status_count_objective(
+    *,
+    dataset: Mapping[str, Any],
+    prompt_query_key: str,
+    answer_count_support: list[int],
+    answer_count_probabilities: Mapping[str, float],
+    trace_extra_params: Mapping[str, Any] | None = None,
+) -> SokobanObjective:
+    """Bind a box-goal status board to an integer count and counted box bboxes."""
+
+    annotation_cells = tuple(list(cell) for cell in dataset.get("annotation_cells", []))
+    answer_value = int(dataset["goal_status_count"])
+    return SokobanObjective(
+        dataset=dict(dataset),
+        answer_gt=TypedValue(type="integer", value=answer_value),
+        prompt_query_key=str(prompt_query_key),
+        object_description_key="object_description_box_goal_status_count",
+        annotation_hint_key="annotation_hint_counted_box_bbox_set",
+        json_example_key="json_example_counted_box_bbox_set",
+        annotation_source="cell_bboxes_px",
+        option_count_support=[int(value) for value in answer_count_support],
+        option_count_probabilities=dict(answer_count_probabilities),
+        build_annotation=lambda rendered: cell_bbox_set(rendered, cells=annotation_cells),
+        answer_hint_key="answer_hint_integer_0_5",
+        json_example_answer_only_key="json_example_answer_only_integer",
+        trace_extra_params=dict(trace_extra_params or {}),
+        execution_extra={
+            "goal_status_count": int(answer_value),
+            "counted_box_labels": list(dataset.get("counted_box_labels", [])),
+        },
+    )
+
+
 def run_sokoban_lifecycle(
     *,
     namespace: str,
@@ -211,6 +246,8 @@ def run_sokoban_lifecycle(
         object_description_key=str(objective.object_description_key),
         annotation_hint_key=str(objective.annotation_hint_key),
         json_example_key=str(objective.json_example_key),
+        answer_hint_key=str(objective.answer_hint_key),
+        json_example_answer_only_key=str(objective.json_example_answer_only_key),
         dynamic_values=dict(objective.prompt_dynamic_values),
         instance_seed=int(instance_seed),
     )
@@ -259,6 +296,7 @@ def run_sokoban_lifecycle(
 __all__ = [
     "SokobanLifecycleTask",
     "SokobanObjective",
+    "build_box_goal_status_count_objective",
     "build_path_option_objective",
     "build_relation_cell_objective",
     "build_relation_pair_objective",

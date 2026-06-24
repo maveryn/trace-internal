@@ -487,6 +487,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__sliding_block__sliding_block_blocker_count": _entry("games", "sliding_block", "games", "sliding_block"),
     "task_games__sliding_block__movable_block_count": _entry("games", "sliding_block", "games", "sliding_block"),
     "task_games__sliding_block__sliding_block_move_result_label": _entry("games", "sliding_block", "games", "sliding_block"),
+    "task_games__sokoban__box_goal_status_count": _entry("games", "sokoban", "games", "sokoban"),
     "task_games__sokoban__box_target_manhattan_rank_label": _entry("games", "sokoban", "games", "sokoban"),
     "task_games__sokoban__nearest_counterpart_label": _entry("games", "sokoban", "games", "sokoban"),
     "task_games__sokoban__path_validity_sequence_label": _entry("games", "sokoban", "games", "sokoban"),

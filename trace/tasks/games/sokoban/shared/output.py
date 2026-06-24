@@ -27,13 +27,15 @@ def sokoban_trace_params(
         "scene_variant": str(axes.scene_variant),
         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
         "prompt_query_key": str(prompt_query_key),
-        "option_count": int(dataset["option_count"]),
+        "option_count": int(dataset.get("option_count", len(dataset.get("option_specs", [])))),
         "option_count_support": [int(value) for value in option_count_support],
         "option_count_probabilities": dict(option_count_probabilities),
         "public_query_probabilities": dict(public_query_probabilities),
-        "answer_option_label": str(answer_value),
+        "answer_value": str(answer_value),
         "move_count": int(len(dataset.get("move_sequence", []))),
     }
+    if "answer_option_label" in dataset:
+        params["answer_option_label"] = str(answer_value)
     if trace_extra_params:
         params.update(dict(trace_extra_params))
     return params
@@ -81,11 +83,26 @@ def build_sokoban_trace_payload(
         "answer_cell": json_safe(dataset.get("answer_cell")),
         "relation_support": json_safe(dataset.get("relation_support", {})),
         "option_specs": json_safe(dataset.get("option_specs", [])),
-        "option_count": int(dataset["option_count"]),
-        "answer_option_label": str(answer_value),
+        "option_count": int(dataset.get("option_count", len(dataset.get("option_specs", [])))),
+        "answer_value": json_safe(answer_value),
         "view_family": SCENE_ID,
         "solver_trace": json_safe(dataset.get("solver_trace", {})),
     }
+    if "answer_option_label" in dataset:
+        execution_trace["answer_option_label"] = str(answer_value)
+    for key in (
+        "matching_targets",
+        "box_colors",
+        "target_colors",
+        "status_mode",
+        "goal_status_count",
+        "box_count",
+        "boxes_on_matching_goals",
+        "boxes_off_matching_goals",
+        "counted_box_labels",
+    ):
+        if key in dataset:
+            execution_trace[key] = json_safe(dataset[key])
     if execution_extra:
         execution_trace.update(dict(execution_extra))
 

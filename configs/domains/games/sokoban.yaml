@@ -13,8 +13,18 @@ generation:
     - 4
     - 5
     - 6
+    box_goal_status_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    box_goal_status_box_count_min: 3
+    box_goal_status_box_count_max: 5
     balanced_path_option_count_sampling: true
     balanced_relation_option_count_sampling: true
+    balanced_box_goal_status_count_sampling: true
     path_length_min: 4
     path_length_max: 12
     balanced_scene_variant_sampling: true

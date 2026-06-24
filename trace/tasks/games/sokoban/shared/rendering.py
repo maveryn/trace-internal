@@ -171,6 +171,28 @@ def _draw_x(draw: ImageDraw.ImageDraw, bbox: BBox, *, fill: Color, width: int) -
     draw.line((bbox[0] + pad, bbox[3] - pad, bbox[2] - pad, bbox[1] + pad), fill=fill, width=max(1, int(width)))
 
 
+def _mix_color(a: Color, b: Color, amount: float) -> Color:
+    amount = max(0.0, min(1.0, float(amount)))
+    return tuple(int(round((float(a[index]) * (1.0 - amount)) + (float(b[index]) * amount))) for index in range(3))
+
+
+def _color_map(raw: Any) -> Dict[str, Color]:
+    if not isinstance(raw, Mapping):
+        return {}
+    return {str(key): coerce_rgb(value, (120, 120, 120)) for key, value in raw.items()}
+
+
+def _draw_check(draw: ImageDraw.ImageDraw, bbox: BBox, *, fill: Color, shadow: Color, width: int) -> None:
+    size = min(float(bbox[2] - bbox[0]), float(bbox[3] - bbox[1]))
+    points = (
+        (float(bbox[0]) + size * 0.26, float(bbox[1]) + size * 0.54),
+        (float(bbox[0]) + size * 0.43, float(bbox[1]) + size * 0.69),
+        (float(bbox[0]) + size * 0.74, float(bbox[1]) + size * 0.33),
+    )
+    draw.line(points, fill=shadow, width=max(2, int(width) + 2), joint="curve")
+    draw.line(points, fill=fill, width=max(1, int(width)), joint="curve")
+
+
 def _draw_player(draw: ImageDraw.ImageDraw, bbox: BBox, *, fill: Color, width: int) -> None:
     cx = (float(bbox[0]) + float(bbox[2])) * 0.5
     cy = (float(bbox[1]) + float(bbox[3])) * 0.5
@@ -292,6 +314,9 @@ def _draw_board(
     walls: set[Cell],
     boxes: Mapping[str, Cell],
     targets: Mapping[str, Cell],
+    box_colors: Mapping[str, Color] | None = None,
+    target_colors: Mapping[str, Color] | None = None,
+    matching_targets: Mapping[str, str] | None = None,
     player: Cell | None,
     origin: Tuple[float, float],
     cell_size: float,
@@ -310,6 +335,10 @@ def _draw_board(
     cell_bbox_map: Dict[str, BBox] = {}
     label_font = load_font(max(9, int(cell_size * 0.30)), bold=True)
     small_font = load_font(max(8, int(cell_size * 0.24)), bold=True)
+    box_color_map = {str(key): tuple(value) for key, value in dict(box_colors or {}).items()}
+    target_color_map = {str(key): tuple(value) for key, value in dict(target_colors or {}).items()}
+    matching_target_map = {str(key): str(value) for key, value in dict(matching_targets or {}).items()}
+    targets_by_label = {str(label): tuple(cell) for label, cell in targets.items()}
     for row in range(int(rows)):
         for col in range(int(cols)):
             cell = (row, col)
@@ -344,7 +373,21 @@ def _draw_board(
             )
     for target_label, cell in targets.items():
         bbox = cell_bbox_map[cell_id(tuple(cell))]
-        _draw_x(draw, bbox, fill=style["target"], width=max(2, int(cell_size * 0.08)))
+        target_color = target_color_map.get(str(target_label), style["target"])
+        ring = (
+            bbox[0] + cell_size * 0.22,
+            bbox[1] + cell_size * 0.22,
+            bbox[2] - cell_size * 0.22,
+            bbox[3] - cell_size * 0.22,
+        )
+        dot = (
+            bbox[0] + cell_size * 0.38,
+            bbox[1] + cell_size * 0.38,
+            bbox[2] - cell_size * 0.38,
+            bbox[3] - cell_size * 0.38,
+        )
+        draw.ellipse(ring, outline=target_color, width=max(2, int(cell_size * 0.08)))
+        draw.ellipse(dot, fill=target_color)
         if show_labels:
             draw_centered_text(
                 draw,
@@ -379,8 +422,41 @@ def _draw_board(
         bbox = cell_bbox_map[cell_id(tuple(cell))]
         pad = max(3.0, cell_size * 0.12)
         box_bbox = (bbox[0] + pad, bbox[1] + pad, bbox[2] - pad, bbox[3] - pad)
-        draw.rectangle(box_bbox, fill=style["box"], outline=style["box_light"], width=max(2, int(cell_size * 0.05)))
-        _draw_x(draw, box_bbox, fill=style["wall_dark"], width=max(1, int(cell_size * 0.04)))
+        box_color = box_color_map.get(str(box_label), style["box"])
+        box_light = _mix_color(box_color, (255, 255, 255), 0.28)
+        box_dark = _mix_color(box_color, (25, 28, 34), 0.38)
+        draw.rectangle(box_bbox, fill=box_light, outline=box_dark, width=max(2, int(cell_size * 0.05)))
+        inner = (
+            box_bbox[0] + cell_size * 0.10,
+            box_bbox[1] + cell_size * 0.10,
+            box_bbox[2] - cell_size * 0.10,
+            box_bbox[3] - cell_size * 0.10,
+        )
+        draw.rectangle(inner, outline=box_color, width=max(2, int(cell_size * 0.04)))
+        draw.line((box_bbox[0], box_bbox[1], box_bbox[2], box_bbox[3]), fill=box_dark, width=max(1, int(cell_size * 0.035)))
+        draw.line((box_bbox[0], box_bbox[3], box_bbox[2], box_bbox[1]), fill=box_dark, width=max(1, int(cell_size * 0.035)))
+        target_label = matching_target_map.get(str(box_label))
+        on_matching_goal = bool(
+            target_label
+            and target_label in targets_by_label
+            and tuple(targets_by_label[target_label]) == tuple(cell)
+        )
+        if on_matching_goal:
+            target_color = target_color_map.get(str(target_label), box_color)
+            goal_ring = (
+                bbox[0] + cell_size * 0.08,
+                bbox[1] + cell_size * 0.08,
+                bbox[2] - cell_size * 0.08,
+                bbox[3] - cell_size * 0.08,
+            )
+            draw.ellipse(goal_ring, outline=target_color, width=max(3, int(cell_size * 0.08)))
+            _draw_check(
+                draw,
+                box_bbox,
+                fill=(255, 255, 255),
+                shadow=box_dark,
+                width=max(3, int(cell_size * 0.09)),
+            )
         if show_labels:
             draw_centered_text(draw, text=str(box_label), center=((bbox[0] + bbox[2]) * 0.5, (bbox[1] + bbox[3]) * 0.5), font=small_font, fill=(255, 255, 255), stroke_fill=style["wall_dark"], stroke_width=1)
         if str(box_label) == str(marked_box_label):
@@ -471,12 +547,15 @@ def render_sokoban_scene(
     style.update({str(key): tuple(value) for key, value in dict(render_params.style_overrides or {}).items()})
     rows, cols = int(dataset["rows"]), int(dataset["cols"])
     is_relation_family = str(dataset.get("contract_kind")) == RELATION_CONTRACT_KIND
-    uses_board_options = is_relation_family
+    uses_side_options = str(dataset.get("contract_kind")) == PATH_CONTRACT_KIND
+    uses_board_options = bool(is_relation_family)
     board_x0 = (
-        float(render_params.canvas_width - render_params.board_panel_width_px) * 0.5
-        if uses_board_options
+        float(render_params.scene_margin_left_px)
+        if uses_side_options
         else float(render_params.scene_margin_left_px)
     )
+    if not uses_side_options:
+        board_x0 = float(render_params.canvas_width - render_params.board_panel_width_px) * 0.5
     board_panel = (
         board_x0,
         float(render_params.scene_margin_top_px),
@@ -500,12 +579,15 @@ def render_sokoban_scene(
         walls={tuple(cell) for cell in dataset["walls"]},
         boxes={str(k): tuple(v) for k, v in dict(dataset.get("boxes_start", {})).items()},
         targets={str(k): tuple(v) for k, v in dict(dataset.get("targets", {})).items()},
+        box_colors=_color_map(dataset.get("box_colors")),
+        target_colors=_color_map(dataset.get("target_colors")),
+        matching_targets={str(k): str(v) for k, v in dict(dataset.get("matching_targets", {})).items()},
         player=tuple(dataset["player_start"]) if "player_start" in dataset else None,
         origin=board_origin,
         cell_size=cell_size,
         style=style,
         params=render_params,
-        show_coordinates=True,
+        show_coordinates=False,
         show_labels=False,
         marked_box_label=str(dataset.get("marked_box_label", "")),
         marked_target_label=str(dataset.get("marked_target_label", "")),
@@ -545,9 +627,17 @@ def render_sokoban_scene(
     for cell_key, bbox in cell_bbox_map.items():
         entities.append({"entity_id": cell_key, "type": "sokoban_cell", "bbox_px": list(bbox)})
     for label, cell in dict(dataset.get("boxes_start", {})).items():
-        entities.append({"entity_id": box_id(str(label)), "type": "sokoban_box", "cell": list(cell), "bbox_px": list(cell_bbox_map[cell_id(tuple(cell))])})
+        entity = {"entity_id": box_id(str(label)), "type": "sokoban_box", "cell": list(cell), "bbox_px": list(cell_bbox_map[cell_id(tuple(cell))])}
+        if str(label) in dict(dataset.get("box_colors", {})):
+            entity["color_rgb"] = list(dataset["box_colors"][str(label)])
+        if str(label) in dict(dataset.get("matching_targets", {})):
+            entity["matching_target"] = str(dataset["matching_targets"][str(label)])
+        entities.append(entity)
     for label, cell in dict(dataset.get("targets", {})).items():
-        entities.append({"entity_id": target_id(str(label)), "type": "sokoban_target", "cell": list(cell), "bbox_px": list(cell_bbox_map[cell_id(tuple(cell))])})
+        entity = {"entity_id": target_id(str(label)), "type": "sokoban_target", "cell": list(cell), "bbox_px": list(cell_bbox_map[cell_id(tuple(cell))])}
+        if str(label) in dict(dataset.get("target_colors", {})):
+            entity["color_rgb"] = list(dataset["target_colors"][str(label)])
+        entities.append(entity)
     if "player_start" in dataset:
         entities.append({"entity_id": "player", "type": "sokoban_player", "cell": list(dataset["player_start"]), "bbox_px": list(cell_bbox_map[cell_id(tuple(dataset["player_start"]))])})
     if uses_board_options:

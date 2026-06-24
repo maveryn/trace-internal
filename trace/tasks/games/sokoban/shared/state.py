@@ -17,9 +17,12 @@ PATH_MODE_BLOCKED = "blocked_route"
 RELATION_MODE_NEAREST_TARGET = "nearest_target"
 RELATION_MODE_NEAREST_BOX = "nearest_box"
 RELATION_MODE_RANKED_PAIR = "ranked_pair_distance"
+BOX_GOAL_STATUS_MODE_ON = "box_on_goal"
+BOX_GOAL_STATUS_MODE_OFF = "box_off_goal"
 
 PATH_CONTRACT_KIND = "path_options"
 RELATION_CONTRACT_KIND = "relation_options"
+BOX_GOAL_STATUS_CONTRACT_KIND = "matching_goal_status"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "warehouse_classic",
@@ -29,6 +32,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
 
 PATH_OPTION_COUNT_SUPPORT: Tuple[int, ...] = (4, 6)
 RELATION_OPTION_COUNT_SUPPORT: Tuple[int, ...] = (4, 5, 6)
+BOX_GOAL_STATUS_COUNT_SUPPORT: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
 
 Cell = Tuple[int, int]
 Color = Tuple[int, int, int]
@@ -99,6 +103,10 @@ class RenderedSokobanScene:
 
 __all__ = [
     "BBox",
+    "BOX_GOAL_STATUS_CONTRACT_KIND",
+    "BOX_GOAL_STATUS_COUNT_SUPPORT",
+    "BOX_GOAL_STATUS_MODE_OFF",
+    "BOX_GOAL_STATUS_MODE_ON",
     "Cell",
     "Color",
     "DIRECTION_NAMES",

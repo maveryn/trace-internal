@@ -261,8 +261,8 @@ def _make_terrain_grid(*, cols: int, rows: int, rng: random.Random) -> list[list
     grid = [[TERRAIN_GRASS for _ in range(int(cols))] for _ in range(int(rows))]
     _paint_water_feature(grid, rng=rng)
     _paint_road_feature(grid, rng=rng)
-    for _ in range(rng.randint(2, 4)):
-        _paint_blob(grid, rng=rng, terrain=TERRAIN_FOREST, size=rng.randint(4, 8), avoid={TERRAIN_WATER, TERRAIN_BRIDGE, TERRAIN_ROAD})
+    for _ in range(rng.randint(3, 5)):
+        _paint_blob(grid, rng=rng, terrain=TERRAIN_FOREST, size=rng.randint(4, 12), avoid={TERRAIN_WATER, TERRAIN_BRIDGE, TERRAIN_ROAD})
     for _ in range(rng.randint(1, 3)):
         _paint_blob(grid, rng=rng, terrain=TERRAIN_MOUNTAIN, size=rng.randint(3, 6), avoid={TERRAIN_WATER, TERRAIN_BRIDGE, TERRAIN_ROAD})
     return grid

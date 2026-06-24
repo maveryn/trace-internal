@@ -61,17 +61,3 @@ rendering:
 prompt:
   shared:
     bundle_id: charts_violin_v1
-    scene_key: violin_distribution
-    task_key: violin_label_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
-      in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
-      the final answer.
-    answer_hint: set "answer" to the exact visible label string of the requested violin
-      plot
-    object_description: a set of labeled violin plots. Wider parts of each shape show
-      where that label's values are denser on the vertical axis
-    annotation_hint: set "annotation" to an array containing one [x0, y0, x1, y1]
-      pixel box around the winning violin plot
-    json_example: '{"annotation":[[240,140,330,520]],"answer":"H9H3"}'
-    json_example_answer_only: '{"answer":"H9H3"}'

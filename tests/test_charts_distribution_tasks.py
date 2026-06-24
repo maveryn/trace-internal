@@ -264,16 +264,23 @@ def test_chart_distribution_boxplot_public_role_bound_tasks_use_keyed_annotation
     assert paired_shift.trace_payload['projected_annotation']['keyed_point_map'] == paired_shift.annotation_gt.value
 
 def test_chart_distribution_violin_variants_match_contract() -> None:
-    task = ChartsDistributionViolinLabelTask()
-    for seed, query_id in enumerate(('highest_mode', 'lowest_mode', 'bimodal_label', 'widest_support', 'narrowest_support'), start=11210):
-        out = task.generate(seed, params={'query_id': query_id}, max_attempts=10)
+    cases = (
+        (ChartsDistributionViolinModeExtremumLabelTask, 'highest_mode'),
+        (ChartsDistributionViolinModeExtremumLabelTask, 'lowest_mode'),
+        (ChartsDistributionViolinModalityLabelTask, 'single'),
+        (ChartsDistributionViolinSupportWidthExtremumLabelTask, 'widest_support'),
+        (ChartsDistributionViolinSupportWidthExtremumLabelTask, 'narrowest_support'),
+    )
+    for seed, (task_cls, query_id) in enumerate(cases, start=11210):
+        out = task_cls().generate(seed, params={'query_id': query_id}, max_attempts=10)
         trace = out.trace_payload
         execution = trace['execution_trace']
         render = trace['render_spec']
         support_by_label = {str(label): dict(values) for label, values in execution['support_by_label'].items()}
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == 'string'
-        assert out.annotation_gt.type == 'bbox_set'
+        assert out.annotation_gt.type == 'bbox'
+        assert len(out.annotation_gt.value) == 4
         assert str(execution['scene_variant']) == 'violin'
         assert str(render['scene_variant']) == 'violin'
         assert str(render['violin_style']['mode_line_style']) in {'full', 'short', 'dot', 'none'}
@@ -281,9 +288,9 @@ def test_chart_distribution_violin_variants_match_contract() -> None:
         assert str(render['violin_style']['palette_mode']) in {'single', 'per_violin_muted'}
         assert str(render['font_assets']['chart_font_family']).strip()
         assert str(trace['scene_ir']['scene_kind']) == 'chart_violin_distribution'
-        assert trace['projected_annotation']['type'] == 'bbox_set'
-        assert trace['projected_annotation']['bbox_set'] == [list(bbox) for bbox in out.annotation_gt.value]
-        assert len(trace['projected_annotation']['bbox_set']) == 1
+        assert trace['projected_annotation']['type'] == 'bbox'
+        assert trace['projected_annotation']['bbox'] == out.annotation_gt.value
+        assert trace['projected_annotation']['pixel_bbox'] == out.annotation_gt.value
         assert out.image.size == (int(render['canvas_width']), int(render['canvas_height']))
         assert len(trace['scene_ir']['entities']) == int(execution['category_count'])
         assert set(trace['render_map']['label_centers_px'].keys()) == set(execution['labels'])
@@ -291,7 +298,8 @@ def test_chart_distribution_violin_variants_match_contract() -> None:
             expected = max(support_by_label, key=lambda label: int(support_by_label[label]['mode_values'][0]))
         elif str(query_id) == 'lowest_mode':
             expected = min(support_by_label, key=lambda label: int(support_by_label[label]['mode_values'][0]))
-        elif str(query_id) == 'bimodal_label':
+        elif str(query_id) == 'single':
+            assert str(execution['prompt_query_key']) == 'bimodal_label'
             expected = next((label for label, values in support_by_label.items() if bool(values['bimodal'])))
             assert len(execution['annotation_values']) == 2
         elif str(query_id) == 'widest_support':
@@ -301,7 +309,7 @@ def test_chart_distribution_violin_variants_match_contract() -> None:
         assert str(out.answer_gt.value) == str(expected)
 
 def test_chart_distribution_violin_public_task_contract() -> None:
-    cases = ((ChartsDistributionViolinModeExtremumLabelTask, {'highest_mode', 'lowest_mode'}), (ChartsDistributionViolinSupportWidthExtremumLabelTask, {'widest_support', 'narrowest_support'}), (ChartsDistributionViolinModalityLabelTask, {'bimodal_label'}))
+    cases = ((ChartsDistributionViolinModeExtremumLabelTask, {'highest_mode', 'lowest_mode'}), (ChartsDistributionViolinSupportWidthExtremumLabelTask, {'widest_support', 'narrowest_support'}), (ChartsDistributionViolinModalityLabelTask, {'single'}))
     for task_cls, allowed_query_ids in cases:
         out = task_cls().generate(11280 + len(task_cls.task_id), params={}, max_attempts=10)
         execution = out.trace_payload['execution_trace']
@@ -310,4 +318,5 @@ def test_chart_distribution_violin_public_task_contract() -> None:
         assert str(execution['query_id']) == str(out.query_id)
         assert str(query_spec['params']['query_id']) == str(out.query_id)
         assert out.answer_gt.type == 'string'
-        assert out.annotation_gt.type == 'bbox_set'
+        assert out.annotation_gt.type == 'bbox'
+        assert out.trace_payload['projected_annotation']['bbox'] == out.annotation_gt.value

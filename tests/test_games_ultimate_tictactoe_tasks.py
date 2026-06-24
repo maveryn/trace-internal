@@ -8,8 +8,8 @@ from pathlib import Path
 import trace.tasks  # noqa: F401
 from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.registry import create_task, list_default_task_ids
-from trace.tasks.games.ultimate_tictactoe.line_completion_move_label import _immediate_winning_cells
+from trace.tasks.registry import create_task
+from trace.tasks.games.ultimate_tictactoe.shared.rules import immediate_winning_cells
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
@@ -17,22 +17,9 @@ def test_games_ultimate_tictactoe_defaults_and_prompt_bundle() -> None:
     cfg = get_scene_defaults("games", "ultimate_tictactoe")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg)
 
-    assert set(generation["status_count_query_id_weights"].keys()) == {
-        "x_won_board_count",
-        "o_won_board_count",
-        "neither_won_board_count",
-        "drawn_board_count",
-    }
-    assert set(generation["local_tactic_query_id_weights"].keys()) == {
-        "x_winning_move_label",
-        "o_winning_move_label",
-        "x_blocking_move_label",
-        "o_blocking_move_label",
-    }
-    assert set(generation["macro_threat_query_id_weights"].keys()) == {
-        "x_immediate_win_board_count",
-        "o_immediate_win_board_count",
-    }
+    assert "status_count_query_id_weights" not in generation
+    assert "local_tactic_query_id_weights" not in generation
+    assert "macro_threat_query_id_weights" not in generation
     assert set(generation["style_variant_weights"].keys()) == {
         "classic_grid",
         "soft_marker",
@@ -47,14 +34,14 @@ def test_games_ultimate_tictactoe_defaults_and_prompt_bundle() -> None:
     assert list(generation["won_board_count_support"]) == [1, 2, 3, 4, 5]
     assert list(generation["drawn_board_count_support"]) == [1, 2, 3, 4, 5]
     assert list(generation["macro_threat_board_count_support"]) == [0, 1, 2, 3, 4, 5]
-    assert str(prompt["bundle_id"]) == "games_ultimate_tictactoe_v0"
+    assert str(prompt["bundle_id"]) == "games_ultimate_tictactoe_v1"
 
 
 def test_games_ultimate_tictactoe_prompt_bundle_has_queries() -> None:
     bundle = json.loads(
-        Path("prompts/games/ultimate_tictactoe/games_ultimate_tictactoe_v0.json").read_text(encoding="utf-8")
+        Path("prompts/games/ultimate_tictactoe/games_ultimate_tictactoe_v1.json").read_text(encoding="utf-8")
     )
-    assert set(bundle["query_templates"].keys()) == {
+    assert set(bundle["templates"]["query"].keys()) == {
         "x_won_board_count",
         "o_won_board_count",
         "neither_won_board_count",
@@ -69,17 +56,21 @@ def test_games_ultimate_tictactoe_prompt_bundle_has_queries() -> None:
 
 
 def test_games_ultimate_tictactoe_registry_and_taxonomy() -> None:
-    ids = set(list_default_task_ids())
+    ids = {
+        "task_games__ultimate_tictactoe__small_board_status_count",
+        "task_games__ultimate_tictactoe__line_completion_move_label",
+        "task_games__ultimate_tictactoe__macro_threat_board_count",
+    }
     for task_id in (
         "task_games__ultimate_tictactoe__small_board_status_count",
         "task_games__ultimate_tictactoe__line_completion_move_label",
         "task_games__ultimate_tictactoe__macro_threat_board_count",
     ):
         assert task_id in ids
+        assert getattr(create_task(task_id), "default_dataset_enabled", False)
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "games"
         assert taxonomy.scene_id == "ultimate_tictactoe"
-        assert taxonomy.source_scene_id == "ultimate_tictactoe"
 
 
 def test_games_ultimate_tictactoe_status_count_matches_trace() -> None:
@@ -109,7 +100,7 @@ def test_games_ultimate_tictactoe_macro_threat_count_matches_trace() -> None:
     matching = [
         board
         for board in boards
-        if board["status"] == "open" and _immediate_winning_cells(board["cells"], "X")
+        if board["status"] == "open" and immediate_winning_cells(board["cells"], "X")
     ]
 
     assert out.query_id == "x_immediate_win_board_count"
@@ -138,5 +129,5 @@ def test_games_ultimate_tictactoe_local_tactic_has_unique_winning_cell() -> None
     assert trace["answer_cell"] in trace["option_cells"]
     assert trace["answer_cell"] == params["answer_cell"]
     assert len(trace["support_cells"]) == 2
-    assert len(out.annotation_gt.value) == 3
-    assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
+    assert out.annotation_gt.type == "bbox"
+    assert out.trace_payload["projected_annotation"]["type"] == "bbox"

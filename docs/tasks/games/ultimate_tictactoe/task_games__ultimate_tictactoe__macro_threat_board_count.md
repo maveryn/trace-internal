@@ -8,8 +8,12 @@
 5. Supported `query_id` values: `x_immediate_win_board_count`, `o_immediate_win_board_count`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
-8. Program schema: `count(filter(local_boards, status=open and immediate_win_exists(player))); scene=ultimate_tictactoe; scope=macro_threat_board_count`
+
+## Program Contract
+`count(filter(local_boards, status=open and immediate_win_exists(player))); scene=ultimate_tictactoe; scope=macro_threat_board_count`
 
 ## Generation Notes
-2. Query ids choose the player whose one-move local wins are counted.
-3. Annotation contains the small-board bounding boxes for every counted board; empty annotation is valid when the answer is `0`.
+1. Query ids choose whether X or O immediate-win boards are counted.
+2. Annotation contains the small-board bboxes for every counted board.
+3. Empty annotation is valid when the answer is `0`.
+4. `scalar_annotation_checked=true`

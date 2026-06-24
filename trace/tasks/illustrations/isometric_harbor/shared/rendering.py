@@ -12,7 +12,7 @@ from .state import BBox, IsoHarborEntity, IsoHarborScene, IsoHarborTile
 
 
 SCENE_ID = "isometric_harbor"
-RENDERER_ID = "isometric_harbor_v3"
+RENDERER_ID = "isometric_harbor_v4"
 BACKGROUND_RGB = (207, 220, 190)
 SUPPORTED_CANVAS_PROFILES: Mapping[str, tuple[int, int, int, int, float, float]] = {
     "landscape": (16, 12, 60, 30, 0.5, 0.17),
@@ -341,28 +341,28 @@ def _draw_boat(
     )
     hull_screen = _boat_local_polygon(cx, cy, hull_coords, orientation=str(orientation))
     side_screen = tuple((x, y + side_drop) for x, y in hull_screen)
-    draw.ellipse(
-        (
-            min(x for x, _ in side_screen) - 3,
-            min(y for _, y in side_screen) + 2,
-            max(x for x, _ in side_screen) + 3,
-            max(y for _, y in side_screen) + 8,
-        ),
-        fill=(28, 95, 128),
-    )
-    wake_fill = (122, 207, 221)
-    draw.arc(
-        (
-            min(x for x, _ in side_screen) - 6,
-            max(y for _, y in side_screen) - 9,
-            max(x for x, _ in side_screen) + 7,
-            max(y for _, y in side_screen) + 12,
-        ),
-        180,
-        350,
-        fill=wake_fill,
-        width=1,
-    )
+    if not bool(draw_rope):
+        draw.ellipse(
+            (
+                min(x for x, _ in side_screen) - 3,
+                min(y for _, y in side_screen) + 2,
+                max(x for x, _ in side_screen) + 3,
+                max(y for _, y in side_screen) + 8,
+            ),
+            fill=(28, 95, 128),
+        )
+        draw.arc(
+            (
+                min(x for x, _ in side_screen) - 6,
+                max(y for _, y in side_screen) - 9,
+                max(x for x, _ in side_screen) + 7,
+                max(y for _, y in side_screen) + 12,
+            ),
+            180,
+            350,
+            fill=(122, 207, 221),
+            width=1,
+        )
     draw.polygon(side_screen, fill=_shade(hull_fill, -42))
     draw.line([*side_screen, side_screen[0]], fill=(30, 37, 36), width=2)
     _draw_polygon_with_outline(draw, hull_screen, fill=hull_fill, outline=(28, 30, 29), width=3)

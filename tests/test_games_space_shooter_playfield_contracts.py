@@ -247,6 +247,24 @@ def test_games_space_shooter_non_lane_entities_do_not_share_lane_slots() -> None
     assert "blockers" not in execution
 
 
+def test_games_space_shooter_projectiles_are_centered_on_lane_pads() -> None:
+    out = GamesSpaceShooterProjectileInterceptCountTask().generate(
+        88155,
+        params={"target_answer": 5, "lane_count": 8, "enemy_count": 14},
+        max_attempts=256,
+    )
+    execution = out.trace_payload["execution_trace"]
+    render_map = out.trace_payload["render_map"]
+    lane_bboxes = render_map["lane_bboxes_px"]
+    projectile_bboxes = render_map["projectile_bboxes_px"]
+    for projectile in execution["projectiles"]:
+        projectile_bbox = projectile_bboxes[str(projectile["projectile_id"])]
+        lane_bbox = lane_bboxes[f"lane_{int(projectile['lane'])}"]
+        projectile_cx = 0.5 * (float(projectile_bbox[0]) + float(projectile_bbox[2]))
+        lane_cx = 0.5 * (float(lane_bbox[0]) + float(lane_bbox[2]))
+        assert abs(projectile_cx - lane_cx) <= 0.75
+
+
 def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:
     output_root = tmp_path / "task_games__space_shooter"
     config = BuildConfig(

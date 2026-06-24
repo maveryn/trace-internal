@@ -146,14 +146,13 @@ def _make_projectile(
     y_slot: int,
     owner: str,
     rng,
-    centered: bool = False,
 ) -> SpaceProjectile:
     return SpaceProjectile(
         projectile_id=f"{str(owner)}_projectile_{int(projectile_index)}",
         owner=str(owner),
         lane=int(lane),
         y_slot=int(y_slot),
-        dx_frac=0.0 if bool(centered) else float(rng.uniform(-0.08, 0.08)),
+        dx_frac=0.0,
         dy_px=_entity_dy(rng),
     )
 
@@ -221,7 +220,6 @@ def sample_clear_shot_scene(
                     y_slot=player_shot_slot,
                     owner="player",
                     rng=rng,
-                    centered=True,
                 )
             )
             upper_slots = tuple(slot for slot in (1, 2, 3) if int(slot) < int(player_shot_slot))
@@ -317,7 +315,6 @@ def sample_projectile_intercept_scene(
                 y_slot=int(slot),
                 owner="enemy",
                 rng=rng,
-                centered=True,
             )
         )
     enemies: list[SpaceEnemy] = []

@@ -324,10 +324,10 @@ def _draw_projectile(
     outline = tuple(int(v) for v in theme.projectile_outline_rgb)
     tip_h = max(5.0, 0.20 * height)
     body_h = height - tip_h
-    body_w = max(8.0, 0.46 * width)
+    body_w = max(5.0, 0.22 * width)
     body_left = cx - (0.5 * body_w)
     body_right = cx + (0.5 * body_w)
-    tip_half_w = max(5.0, 0.32 * width)
+    tip_half_w = max(4.0, 0.18 * width)
     outline_width = max(1, int(round(0.05 * width)))
     if str(projectile.owner) == "player":
         body = (body_left, top + tip_h, body_right, bottom)

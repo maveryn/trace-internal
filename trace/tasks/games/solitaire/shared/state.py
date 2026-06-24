@@ -82,7 +82,7 @@ class Foundation:
 
     @property
     def label(self) -> str:
-        return f"{SUIT_SHORT[str(self.suit_name)]} pile"
+        return f"{SUIT_DISPLAY[str(self.suit_name)]} pile"
 
 
 @dataclass(frozen=True)

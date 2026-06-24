@@ -8,20 +8,13 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ....shared.text_rendering import load_font, resolve_text_stroke_fill, temporary_default_font_family
+from ....shared.text_rendering import load_font, temporary_default_font_family
+from ...shared.card_rendering import SUIT_SYMBOLS, draw_playing_card_face
 from ...shared.text import draw_game_text_traced as draw_text_traced
 from ...shared.layout import apply_games_layout_jitter_to_bbox
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
-from ...shared.style import CardTheme, build_games_card_theme, suit_color
+from ...shared.style import CardTheme, build_games_card_theme
 from .state import CardInstance
-
-
-SUIT_SYMBOLS: Dict[str, str] = {
-    "spades": "♠",
-    "hearts": "♥",
-    "diamonds": "♦",
-    "clubs": "♣",
-}
 
 
 @dataclass(frozen=True)
@@ -119,156 +112,21 @@ def _draw_card_face(
 ) -> None:
     """Draw one face-up card inside the provided bounding box."""
 
-    draw = ImageDraw.Draw(image)
-    left, top, right, bottom = bbox_px
-    radius = int(params.card_corner_radius_px)
-    draw.rounded_rectangle(
-        [left, top, right, bottom],
-        radius=radius,
-        fill=tuple(int(value) for value in theme.card_fill_rgb),
-        outline=tuple(int(value) for value in theme.card_border_rgb),
-        width=int(theme.card_border_width_px),
-    )
-
     badge_text = str(card.badge_text) if card.badge_text is not None else ("REF" if bool(card.is_reference) else "")
-    banner_height_px = int(params.reference_banner_height_px) if str(badge_text).strip() else 0
-    if str(badge_text).strip():
-        banner_bottom = float(top + params.reference_banner_height_px)
-        draw.rounded_rectangle(
-            [left, top, right, banner_bottom],
-            radius=radius,
-            fill=tuple(int(value) for value in theme.reference_fill_rgb),
-        )
-        banner_font = load_font(int(params.reference_font_size_px), bold=True)
-        banner_text = str(badge_text)
-        banner_bbox = draw.textbbox((0, 0), banner_text, font=banner_font, stroke_width=1)
-        banner_width = float(banner_bbox[2] - banner_bbox[0])
-        banner_height = float(banner_bbox[3] - banner_bbox[1])
-        banner_origin = (
-            float(left + (0.5 * ((right - left) - banner_width))),
-            float(top + (0.5 * (params.reference_banner_height_px - banner_height))),
-        )
-        draw_text_traced(draw,
-            banner_origin,
-            banner_text,
-            font=banner_font,
-            fill=tuple(int(value) for value in theme.reference_text_rgb),
-            stroke_width=1,
-            stroke_fill=(0, 0, 0),
-         role="readout", required=False,)
-
-    suit_symbol = SUIT_SYMBOLS[str(card.suit_name)]
-    pip_rgb = suit_color(theme, suit_name=str(card.suit_name))
-    rank_rgb = (
-        tuple(int(value) for value in theme.rank_rgb_red)
-        if str(card.suit_name) in {"hearts", "diamonds"}
-        else tuple(int(value) for value in theme.rank_rgb_black)
+    draw_playing_card_face(
+        image,
+        bbox_px=bbox_px,
+        rank_label=str(card.rank_label),
+        suit_name=str(card.suit_name),
+        theme=theme,
+        corner_radius_px=int(params.card_corner_radius_px),
+        rank_font_size_px=int(params.rank_font_size_px),
+        center_symbol_font_size_px=int(params.center_symbol_font_size_px),
+        center_label_mode=str(params.center_label_mode),
+        banner_text=str(badge_text),
+        banner_height_px=int(params.reference_banner_height_px),
+        banner_font_size_px=int(params.reference_font_size_px),
     )
-    small_font = load_font(int(params.rank_font_size_px), bold=True)
-    small_suit_font = _load_suit_symbol_font(int(params.rank_font_size_px))
-    rank_text = str(card.rank_label)
-    label_stroke = resolve_text_stroke_fill(rank_rgb)
-
-    def _rank_suit_size(*, rank_font, suit_font, stroke_width: int) -> Tuple[float, float]:
-        rank_bbox = draw.textbbox((0, 0), rank_text, font=rank_font, stroke_width=int(stroke_width))
-        suit_bbox = draw.textbbox((0, 0), suit_symbol, font=suit_font, stroke_width=int(stroke_width))
-        rank_width = float(rank_bbox[2] - rank_bbox[0])
-        rank_height = float(rank_bbox[3] - rank_bbox[1])
-        suit_width = float(suit_bbox[2] - suit_bbox[0])
-        suit_height = float(suit_bbox[3] - suit_bbox[1])
-        gap_px = float(max(2, int(0.12 * float(params.rank_font_size_px))))
-        return (
-            float(rank_width + gap_px + suit_width),
-            float(max(rank_height, suit_height)),
-        )
-
-    def _draw_rank_suit(
-        origin: Tuple[float, float],
-        *,
-        rank_font,
-        suit_font,
-        stroke_width: int,
-    ) -> None:
-        rank_bbox = draw.textbbox((0, 0), rank_text, font=rank_font, stroke_width=int(stroke_width))
-        suit_bbox = draw.textbbox((0, 0), suit_symbol, font=suit_font, stroke_width=int(stroke_width))
-        rank_width = float(rank_bbox[2] - rank_bbox[0])
-        rank_height = float(rank_bbox[3] - rank_bbox[1])
-        suit_height = float(suit_bbox[3] - suit_bbox[1])
-        total_height = max(float(rank_height), float(suit_height))
-        gap_px = float(max(2, int(0.12 * float(params.rank_font_size_px))))
-        rank_origin = (float(origin[0]), float(origin[1] + (0.5 * (total_height - rank_height))))
-        suit_origin = (
-            float(origin[0] + rank_width + gap_px),
-            float(origin[1] + (0.5 * (total_height - suit_height))),
-        )
-        draw_text_traced(draw,
-            rank_origin,
-            rank_text,
-            font=rank_font,
-            fill=rank_rgb,
-            stroke_width=int(stroke_width),
-            stroke_fill=tuple(int(value) for value in label_stroke),
-         role="readout", required=False,)
-        draw_text_traced(draw,
-            suit_origin,
-            suit_symbol,
-            font=suit_font,
-            fill=rank_rgb,
-            stroke_width=int(stroke_width),
-            stroke_fill=tuple(int(value) for value in label_stroke),
-         role="readout", required=False,)
-
-    top_label_inset_px = 10
-    top_label_origin = (
-        float(left + 10),
-        float(top + banner_height_px + top_label_inset_px),
-    )
-    _draw_rank_suit(top_label_origin, rank_font=small_font, suit_font=small_suit_font, stroke_width=1)
-
-    bottom_width, bottom_height = _rank_suit_size(rank_font=small_font, suit_font=small_suit_font, stroke_width=1)
-    bottom_origin = (
-        float(right - bottom_width - 10),
-        float(bottom - bottom_height - 10),
-    )
-    _draw_rank_suit(bottom_origin, rank_font=small_font, suit_font=small_suit_font, stroke_width=1)
-
-    center_font_size_px = int(params.center_symbol_font_size_px)
-    if str(params.center_label_mode) == "rank_suit":
-        center_font_size_px = max(int(params.rank_font_size_px) + 8, int(0.78 * float(params.center_symbol_font_size_px)))
-        center_rank_font = load_font(int(center_font_size_px), bold=True)
-        center_suit_font = _load_suit_symbol_font(int(center_font_size_px))
-        center_width, center_height = _rank_suit_size(
-            rank_font=center_rank_font,
-            suit_font=center_suit_font,
-            stroke_width=1,
-        )
-    else:
-        center_font = _load_suit_symbol_font(int(center_font_size_px))
-        center_bbox = draw.textbbox((0, 0), suit_symbol, font=center_font, stroke_width=1)
-        center_width = float(center_bbox[2] - center_bbox[0])
-        center_height = float(center_bbox[3] - center_bbox[1])
-    center_vertical_nudge_px = float(max(6, int(0.05 * float(bottom - top))))
-    center_origin = (
-        float(left + (0.5 * ((right - left) - center_width))),
-        float(
-            top
-            + banner_height_px
-            + 20
-            + (0.5 * ((bottom - top - banner_height_px - 40) - center_height))
-            - center_vertical_nudge_px
-        ),
-    )
-    if str(params.center_label_mode) == "rank_suit":
-        _draw_rank_suit(center_origin, rank_font=center_rank_font, suit_font=center_suit_font, stroke_width=1)
-    else:
-        draw_text_traced(draw,
-            center_origin,
-            suit_symbol,
-            font=center_font,
-            fill=pip_rgb,
-            stroke_width=1,
-            stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(pip_rgb)),
-         role="readout", required=False,)
 
 
 def _row_card_positions(
@@ -413,13 +271,6 @@ def _draw_centered_text(
         stroke_width=int(stroke_width),
         stroke_fill=stroke_fill,
      role="readout", required=False,)
-
-
-def _load_suit_symbol_font(size_px: int):
-    """Load a stable fallback font for suit symbols, independent of sampled text font."""
-
-    with temporary_default_font_family(""):
-        return load_font(int(size_px), bold=True)
 
 
 def _draw_move_options(

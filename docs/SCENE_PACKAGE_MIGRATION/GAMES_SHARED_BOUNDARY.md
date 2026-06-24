@@ -8,6 +8,7 @@ Use this with `SCENE_MIGRATION_GUIDE.md` when migrating a games scene.
 
 - layout jitter and unit-size scaling
 - shared panel/style adapters
+- shared playing-card face rendering for card-family game scenes
 - readable text wrappers
 - semantic marker wrappers
 - visual option-grid layout

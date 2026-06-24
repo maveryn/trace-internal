@@ -4,18 +4,24 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from PIL import ImageDraw
+from PIL import Image, ImageDraw
 
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.font_assets import get_font_family_record, sample_font_family
 from trace.tasks.shared.text_rendering import load_font, resolve_text_stroke_fill
+from trace.tasks.games.shared.card_rendering import (
+    SUIT_SYMBOLS,
+    draw_playing_card_face,
+    load_playing_card_suit_symbol_font,
+)
 from trace.tasks.games.shared.layout import apply_games_layout_jitter_to_bbox, resolve_games_layout_jitter
 from trace.tasks.games.shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from trace.tasks.games.shared.style import build_games_card_theme
 from trace.tasks.games.shared.text import draw_game_text_traced as draw_text_traced
 
 from .defaults import DEFAULTS, GEN_DEFAULTS, RENDER_DEFAULTS, int_default
 from .rules import card_color
-from .state import RANK_LABEL, SUIT_SHORT, Card, Foundation, RenderedSolitaireScene, SolitaireSample, SolitaireVisualStyle, SUPPORTED_PANEL_STYLE_VARIANTS
+from .state import RANK_LABEL, Card, Foundation, RenderedSolitaireScene, SolitaireSample, SolitaireVisualStyle, SUPPORTED_PANEL_STYLE_VARIANTS
 
 def rgb(values: Sequence[int]) -> Tuple[int, int, int]:
     return tuple(max(0, min(255, int(value))) for value in values[:3])  # type: ignore[return-value]
@@ -73,45 +79,32 @@ def draw_text_center(
 
 
 def draw_card(
+    image: Image.Image,
     draw: ImageDraw.ImageDraw,
     bbox: Tuple[float, float, float, float],
     card: Card,
     *,
-    fill_rgb: Tuple[int, int, int],
-    border_rgb: Tuple[int, int, int],
     radius_px: int,
-    rank_font,
-    center_font,
+    card_theme,
+    rank_font_size_px: int,
+    center_symbol_font_size_px: int,
     badge_font,
     badge_fill_rgb: Tuple[int, int, int],
     badge_text_rgb: Tuple[int, int, int],
-    red_suit_rgb: Tuple[int, int, int],
-    black_suit_rgb: Tuple[int, int, int],
 ) -> None:
-    """Draw one card face with rank/suit corners, center label, and optional exposed-card badge."""
+    """Draw one solitaire card with the shared playing-card face and optional badge."""
 
     x0, y0, x1, y1 = bbox
-    draw.rounded_rectangle(
-        [x0, y0, x1, y1],
-        radius=int(radius_px),
-        fill=tuple(int(value) for value in fill_rgb),
-        outline=tuple(int(value) for value in border_rgb),
-        width=2,
+    draw_playing_card_face(
+        image,
+        bbox_px=bbox,
+        rank_label=str(card.rank_label),
+        suit_name=str(card.suit_name),
+        theme=card_theme,
+        corner_radius_px=int(radius_px),
+        rank_font_size_px=int(rank_font_size_px),
+        center_symbol_font_size_px=int(center_symbol_font_size_px),
     )
-    suit_rgb = tuple(red_suit_rgb) if card_color(str(card.suit_name)) == "red" else tuple(black_suit_rgb)
-    label = str(card.label)
-    stroke = tuple(int(value) for value in resolve_text_stroke_fill(suit_rgb))
-    draw_text_traced(draw,(float(x0 + 8), float(y0 + 8)), label, font=rank_font, fill=suit_rgb, stroke_width=1, stroke_fill=stroke, role="readout", required=False)
-    bottom_bbox = draw.textbbox((0, 0), label, font=rank_font, stroke_width=1)
-    draw_text_traced(draw,
-        (float(x1 - (bottom_bbox[2] - bottom_bbox[0]) - 8), float(y1 - (bottom_bbox[3] - bottom_bbox[1]) - 8)),
-        label,
-        font=rank_font,
-        fill=suit_rgb,
-        stroke_width=1,
-        stroke_fill=stroke,
-     role="readout", required=False,)
-    draw_text_center(draw, (x0 + 6, y0 + 28, x1 - 6, y1 - 20), label, font=center_font, fill=suit_rgb)
     if card.badge_text:
         badge_w = 28
         badge_h = 22
@@ -120,7 +113,7 @@ def draw_card(
             badge_box,
             radius=7,
             fill=tuple(int(value) for value in badge_fill_rgb),
-            outline=tuple(int(value) for value in border_rgb),
+            outline=tuple(int(value) for value in card_theme.card_border_rgb),
             width=1,
         )
         draw_text_center(draw, badge_box, str(card.badge_text), font=badge_font, fill=badge_text_rgb, stroke_width=0)
@@ -153,6 +146,7 @@ def draw_card_back(
 
 
 def draw_foundation(
+    image: Image.Image,
     draw: ImageDraw.ImageDraw,
     bbox: Tuple[float, float, float, float],
     foundation: Foundation,
@@ -160,11 +154,26 @@ def draw_foundation(
     panel_fill_rgb: Tuple[int, int, int],
     border_rgb: Tuple[int, int, int],
     text_rgb: Tuple[int, int, int],
-    rank_font,
     label_font,
+    card_theme,
     radius_px: int,
+    rank_font_size_px: int,
+    center_symbol_font_size_px: int,
 ) -> None:
     x0, y0, x1, y1 = bbox
+    if int(foundation.top_rank_value) > 0:
+        draw_playing_card_face(
+            image,
+            bbox_px=bbox,
+            rank_label=str(RANK_LABEL[int(foundation.top_rank_value)]),
+            suit_name=str(foundation.suit_name),
+            theme=card_theme,
+            corner_radius_px=int(radius_px),
+            rank_font_size_px=int(rank_font_size_px),
+            center_symbol_font_size_px=int(center_symbol_font_size_px),
+        )
+        return
+
     draw.rounded_rectangle(
         [x0, y0, x1, y1],
         radius=int(radius_px),
@@ -172,10 +181,17 @@ def draw_foundation(
         outline=tuple(int(value) for value in border_rgb),
         width=2,
     )
-    suit_rgb = (172, 35, 45) if card_color(str(foundation.suit_name)) == "red" else tuple(int(v) for v in text_rgb)
-    top_label = "empty" if int(foundation.top_rank_value) == 0 else f"{RANK_LABEL[int(foundation.top_rank_value)]}{SUIT_SHORT[str(foundation.suit_name)]}"
-    draw_text_center(draw, (x0 + 4, y0 + 8, x1 - 4, y0 + 36), str(foundation.label), font=label_font, fill=text_rgb, stroke_width=0)
-    draw_text_center(draw, (x0 + 4, y0 + 36, x1 - 4, y1 - 4), top_label, font=rank_font, fill=suit_rgb)
+    suit_rgb = tuple(card_theme.rank_rgb_red) if card_color(str(foundation.suit_name)) == "red" else tuple(card_theme.rank_rgb_black)
+    suit_font = load_playing_card_suit_symbol_font(max(26, int(center_symbol_font_size_px)))
+    draw_text_center(
+        draw,
+        (x0 + 4, y0 + 14, x1 - 4, y1 - 24),
+        SUIT_SYMBOLS[str(foundation.suit_name)],
+        font=suit_font,
+        fill=suit_rgb,
+        stroke_width=1,
+    )
+    draw_text_center(draw, (x0 + 4, y1 - 30, x1 - 4, y1 - 6), "empty", font=label_font, fill=text_rgb, stroke_width=0)
 
 
 
@@ -256,6 +272,19 @@ def resolve_solitaire_visual_style(style_variant: str, panel_style) -> Tuple[Sol
         "card_style_policy": "scene_local_solitaire_card_tableau_palette",
     }
 
+
+def solitaire_card_face_style_variant(style_variant: str) -> str:
+    """Map solitaire table styles to the shared games playing-card face themes."""
+
+    return {
+        "classic_cards": "classic",
+        "ivory_table": "ivory",
+        "casino_felt": "soft",
+        "slate_cards": "slate",
+        "paper_tableau": "outlined",
+    }.get(str(style_variant), "classic")
+
+
 def render_solitaire_scene(
     *,
     sample: SolitaireSample,
@@ -318,15 +347,14 @@ def render_solitaire_scene(
         namespace=f"{str(namespace)}.solitaire.font_family",
         params=params,
     )
-    rank_font = load_font(int_default(params, "rank_font_size_px", DEFAULTS.rank_font_size_px), bold=True, font_family=str(font_family))
-    center_font = load_font(int_default(params, "card_center_font_size_px", DEFAULTS.card_center_font_size_px), bold=True, font_family=str(font_family))
     badge_font = load_font(int_default(params, "badge_font_size_px", DEFAULTS.badge_font_size_px), bold=True, font_family=str(font_family))
     label_font = load_font(int_default(params, "label_font_size_px", DEFAULTS.label_font_size_px), bold=True, font_family=str(font_family))
     option_font = load_font(int_default(params, "option_font_size_px", DEFAULTS.option_font_size_px), bold=True, font_family=str(font_family))
     solitaire_style, solitaire_style_meta = resolve_solitaire_visual_style(str(style_variant), style)
+    card_face_style_variant = solitaire_card_face_style_variant(str(style_variant))
+    card_theme = build_games_card_theme(style_variant=str(card_face_style_variant))
     text_rgb = tuple(int(value) for value in solitaire_style.text_rgb)
     border_rgb = tuple(int(value) for value in solitaire_style.card_border_rgb)
-    card_fill = tuple(int(value) for value in solitaire_style.card_fill_rgb)
     back_fill = tuple(int(value) for value in solitaire_style.card_back_rgb)
     badge_fill = tuple(int(value) for value in solitaire_style.badge_fill_rgb)
     badge_text = tuple(int(value) for value in solitaire_style.badge_text_rgb)
@@ -339,15 +367,18 @@ def render_solitaire_scene(
         x0 = foundation_start_x + index * (card_width + foundation_gap)
         bbox = (float(x0), float(foundation_y), float(x0 + card_width), float(foundation_y + card_height))
         draw_foundation(
+            image,
             draw,
             bbox,
             foundation,
             panel_fill_rgb=tuple(int(value) for value in solitaire_style.foundation_fill_rgb),
             border_rgb=border_rgb,
             text_rgb=text_rgb,
-            rank_font=rank_font,
             label_font=label_font,
+            card_theme=card_theme,
             radius_px=radius,
+            rank_font_size_px=int_default(params, "rank_font_size_px", DEFAULTS.rank_font_size_px),
+            center_symbol_font_size_px=int_default(params, "card_center_font_size_px", DEFAULTS.card_center_font_size_px),
         )
         foundation_bboxes[str(foundation.foundation_id)] = [float(value) for value in bbox]
         entities.append(
@@ -355,6 +386,7 @@ def render_solitaire_scene(
                 "entity_id": str(foundation.foundation_id),
                 "entity_type": "foundation",
                 "suit_name": str(foundation.suit_name),
+                "suit_symbol": str(SUIT_SYMBOLS[str(foundation.suit_name)]),
                 "top_rank_value": int(foundation.top_rank_value),
                 "bbox_px": [float(value) for value in bbox],
             }
@@ -407,19 +439,17 @@ def render_solitaire_scene(
             y0 = tableau_y + int(row_index) * column_step_y
             bbox = (float(x0), float(y0), float(x0 + card_width), float(y0 + card_height))
             draw_card(
+                image,
                 draw,
                 bbox,
                 card,
-                fill_rgb=card_fill,
-                border_rgb=border_rgb,
                 radius_px=radius,
-                rank_font=rank_font,
-                center_font=center_font,
+                card_theme=card_theme,
+                rank_font_size_px=int_default(params, "rank_font_size_px", DEFAULTS.rank_font_size_px),
+                center_symbol_font_size_px=int_default(params, "card_center_font_size_px", DEFAULTS.card_center_font_size_px),
                 badge_font=badge_font,
                 badge_fill_rgb=badge_fill,
                 badge_text_rgb=badge_text,
-                red_suit_rgb=tuple(int(value) for value in solitaire_style.red_suit_rgb),
-                black_suit_rgb=tuple(int(value) for value in solitaire_style.black_suit_rgb),
             )
             if str(card.card_id) == marked_card_id:
                 marker_bottom = min(float(y0 + card_height), float(y0 + column_step_y + 6))
@@ -437,6 +467,7 @@ def render_solitaire_scene(
                     "rank_value": int(card.rank_value),
                     "rank_label": str(card.rank_label),
                     "suit_name": str(card.suit_name),
+                    "suit_symbol": str(SUIT_SYMBOLS[str(card.suit_name)]),
                     "suit_short": str(card.suit_short),
                     "badge_text": None if card.badge_text is None else str(card.badge_text),
                     "column_index": int(col_index),
@@ -498,6 +529,10 @@ def render_solitaire_scene(
         "style": dict(style_meta),
         "panel_scene_style": dict(style_meta),
         "solitaire_tableau_style": dict(solitaire_style_meta),
+        "card_face_style": {
+            "style_variant": str(card_face_style_variant),
+            "source": "games_shared_card_face",
+        },
         "font_family": str(font_family),
         "text_style": {"font_family": str(font_family)},
         "layout_jitter": dict(resolved_jitter),
@@ -509,6 +544,10 @@ def render_solitaire_scene(
         style_meta={
             "panel_scene_style": dict(style_meta),
             "solitaire_tableau_style": dict(solitaire_style_meta),
+            "card_face_style": {
+                "style_variant": str(card_face_style_variant),
+                "source": "games_shared_card_face",
+            },
             "text_style": {
                 "font_family": str(font_family),
                 "font_asset": get_font_family_record(str(font_family)).to_trace(),
@@ -516,4 +555,3 @@ def render_solitaire_scene(
         },
         background_meta=dict(background_meta),
     )
-

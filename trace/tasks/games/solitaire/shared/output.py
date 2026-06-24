@@ -111,6 +111,7 @@ def build_solitaire_trace_payload(
             "style": dict(rendered.style_meta),
             "panel_scene_style": dict(rendered.style_meta.get("panel_scene_style", {})),
             "solitaire_tableau_style": dict(rendered.style_meta.get("solitaire_tableau_style", {})),
+            "card_face_style": dict(rendered.style_meta.get("card_face_style", {})),
             "text_style": dict(rendered.style_meta.get("text_style", {})),
             "layout_jitter": dict(rendered.render_map.get("layout_jitter", {})),
         },

@@ -11,11 +11,17 @@ from trace.tasks.illustrations.isometric_harbor.boat_mooring_status_count import
     SUPPORTED_QUERY_IDS as MOORING_SUPPORTED_QUERY_IDS,
     TASK_ID as MOORING_TASK_ID,
 )
+from trace.tasks.illustrations.isometric_harbor.boat_heading_status_count import (
+    QUERY_TO_HEADING_STATUS,
+    SUPPORTED_QUERY_IDS as HEADING_SUPPORTED_QUERY_IDS,
+    TASK_ID as HEADING_TASK_ID,
+)
 from trace.tasks.illustrations.isometric_harbor.shoreline_nearest_boat_label import (
     SUPPORTED_QUERY_IDS as SHORELINE_SUPPORTED_QUERY_IDS,
     TASK_ID as SHORELINE_TASK_ID,
 )
 from trace.tasks.illustrations.isometric_harbor.shared.rendering import (
+    BOAT_HEADING_STATUS_ORIENTATION,
     DEFAULT_BOAT_CANDIDATE_LABELS,
     RENDERER_ID,
     SCENE_ID,
@@ -124,6 +130,30 @@ def test_isometric_harbor_renderer_supports_shoreline_candidate_boats() -> None:
         _assert_bbox_inside_canvas(list(entity.bbox_xyxy), width=scene.image.size[0], height=scene.image.size[1])
 
 
+def test_isometric_harbor_renderer_supports_heading_status_boats() -> None:
+    counts = {"toward_shoreline": 2, "away_from_shoreline": 3, "parallel_to_shoreline": 1}
+    scene = render_isometric_harbor_scene(
+        2026062901,
+        width=1200,
+        height=800,
+        canvas_profile="landscape",
+        required_heading_status_counts=counts,
+    )
+    boats = [entity for entity in scene.entities if entity.object_type == "boat"]
+    assert len(boats) == 6
+    assert scene.trace["boat_counts_by_heading_status"] == counts
+    assert scene.trace["boat_counts_by_mooring_status"] == {"moored": 0, "open_water": 6}
+    assert scene.trace["boat_counts_by_side"] == {"left": 0, "right": 0}
+    for entity in boats:
+        heading_status = str(entity.metadata.get("heading_status"))
+        assert heading_status in counts
+        assert entity.metadata.get("orientation") == BOAT_HEADING_STATUS_ORIENTATION[heading_status]
+        assert entity.metadata.get("mooring_status") == "open_water"
+        tile = next(tile for tile in scene.tiles if tile.tile_id == entity.tile_ids[0])
+        assert tile.terrain == "water"
+        _assert_bbox_inside_canvas(list(entity.bbox_xyxy), width=scene.image.size[0], height=scene.image.size[1])
+
+
 def test_isometric_harbor_boat_side_count_contract() -> None:
     task = create_task(TASK_ID)
     cases = (
@@ -194,6 +224,40 @@ def test_isometric_harbor_boat_mooring_status_count_contract() -> None:
             _assert_bbox_inside_canvas(list(bbox), width=out.image.size[0], height=out.image.size[1])
 
 
+def test_isometric_harbor_boat_heading_status_count_contract() -> None:
+    task = create_task(HEADING_TASK_ID)
+    cases = (
+        ("toward_shoreline_boat_count", 2, "landscape", "toward"),
+        ("away_from_shoreline_boat_count", 5, "square", "away"),
+    )
+    for query_id, target_count, profile, prompt_text in cases:
+        out = task.generate(
+            2026062911 + int(target_count),
+            params={"query_id": query_id, "target_count": target_count, "canvas_profile": profile},
+            max_attempts=4,
+        )
+        assert out.scene_id == SCENE_ID
+        assert out.query_id == query_id
+        assert out.answer_gt.type == "integer"
+        assert int(out.answer_gt.value) == int(target_count)
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) == int(target_count)
+        assert prompt_text in out.prompt
+        trace = out.trace_payload
+        assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_isometric_harbor_v1"
+        assert trace["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
+        assert trace["query_spec"]["params"]["target_heading_status"] == QUERY_TO_HEADING_STATUS[query_id]
+        assert trace["query_spec"]["params"]["heading_status_counts"][QUERY_TO_HEADING_STATUS[query_id]] == int(target_count)
+        assert sum(int(value) for value in trace["query_spec"]["params"]["heading_status_counts"].values()) == 6
+        assert trace["execution_trace"]["answer"] == int(target_count)
+        assert trace["render_map"]["answer_count"] == int(target_count)
+        assert trace["render_map"]["target_heading_status"] == QUERY_TO_HEADING_STATUS[query_id]
+        assert len(trace["render_map"]["counted_entity_ids"]) == int(target_count)
+        assert len(trace["projected_annotation"]["bbox_set"]) == int(target_count)
+        for bbox in out.annotation_gt.value:
+            _assert_bbox_inside_canvas(list(bbox), width=out.image.size[0], height=out.image.size[1])
+
+
 def test_isometric_harbor_shoreline_nearest_boat_label_contract() -> None:
     task = create_task(SHORELINE_TASK_ID)
     out = task.generate(
@@ -227,13 +291,17 @@ def test_isometric_harbor_shoreline_nearest_boat_label_contract() -> None:
 def test_isometric_harbor_task_registered() -> None:
     task = create_task(TASK_ID)
     mooring_task = create_task(MOORING_TASK_ID)
+    heading_task = create_task(HEADING_TASK_ID)
     shoreline_task = create_task(SHORELINE_TASK_ID)
     assert TASK_ID in TASK_REGISTRY
     assert MOORING_TASK_ID in TASK_REGISTRY
+    assert HEADING_TASK_ID in TASK_REGISTRY
     assert SHORELINE_TASK_ID in TASK_REGISTRY
     assert task.domain == "illustrations"
     assert mooring_task.domain == "illustrations"
+    assert heading_task.domain == "illustrations"
     assert shoreline_task.domain == "illustrations"
     assert tuple(task.supported_query_ids) == SUPPORTED_QUERY_IDS
     assert tuple(mooring_task.supported_query_ids) == MOORING_SUPPORTED_QUERY_IDS
+    assert tuple(heading_task.supported_query_ids) == HEADING_SUPPORTED_QUERY_IDS
     assert tuple(shoreline_task.supported_query_ids) == SHORELINE_SUPPORTED_QUERY_IDS

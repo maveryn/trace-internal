@@ -21,8 +21,14 @@ SUPPORTED_CANVAS_PROFILES: Mapping[str, tuple[int, int, int, int, float, float]]
 }
 BOAT_SIDE_VALUES: tuple[str, ...] = ("left", "right")
 BOAT_MOORING_STATUS_VALUES: tuple[str, ...] = ("moored", "open_water")
+BOAT_HEADING_STATUS_VALUES: tuple[str, ...] = ("toward_shoreline", "away_from_shoreline", "parallel_to_shoreline")
 DEFAULT_BOAT_CANDIDATE_LABELS: tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 OPEN_WATER_BOAT_ORIENTATIONS: tuple[str, ...] = ("dock_parallel", "dock_cross", "screen_horizontal", "screen_vertical")
+BOAT_HEADING_STATUS_ORIENTATION: Mapping[str, str] = {
+    "toward_shoreline": "shore_facing",
+    "away_from_shoreline": "shore_away",
+    "parallel_to_shoreline": "shore_parallel",
+}
 BOAT_COLOR_PALETTES: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...] = (
     ((164, 67, 50), (244, 196, 84)),
     ((35, 91, 143), (236, 108, 70)),
@@ -248,6 +254,10 @@ def _boat_axes(orientation: str) -> tuple[tuple[float, float], tuple[float, floa
         return (0.9, 0.45), (-0.9, 0.45)
     if str(orientation) == "shore_facing":
         return (0.0, -0.78), (0.7, 0.0)
+    if str(orientation) == "shore_away":
+        return (0.0, 0.78), (0.7, 0.0)
+    if str(orientation) == "shore_parallel":
+        return (1.0, 0.0), (0.0, 0.52)
     if str(orientation) == "screen_horizontal":
         return (1.0, 0.0), (0.0, 0.52)
     if str(orientation) == "screen_vertical":
@@ -400,6 +410,17 @@ def _draw_boat(
         width=2,
         orientation=str(orientation),
     )
+    bow_marker = _boat_local_polygon(
+        cx,
+        cy - 0.5,
+        (
+            (half_l * 0.62, -half_b * 0.42),
+            (half_l * 1.02, 0.0),
+            (half_l * 0.62, half_b * 0.42),
+        ),
+        orientation=str(orientation),
+    )
+    draw.polygon(bow_marker, fill=(255, 255, 245), outline=(24, 29, 30))
     if str(boat_type) == "cargo_boat":
         cabin = _draw_local_poly(
             draw,
@@ -788,6 +809,89 @@ def _draw_open_water_boats(
     return len(selected)
 
 
+def _draw_heading_status_boats(
+    *,
+    draw: ImageDraw.ImageDraw,
+    rng: Any,
+    tiles_by_cell: Mapping[tuple[int, int], IsoHarborTile],
+    dock_meta: Mapping[str, Any],
+    required_heading_status_counts: Mapping[str, int],
+    entities: list[IsoHarborEntity],
+    canvas_size: tuple[int, int],
+    tile_w: float,
+    cols: int,
+    rows: int,
+) -> dict[str, int]:
+    """Draw open-water boats with exact shoreline-relative heading-status counts."""
+
+    counts = {status: int(required_heading_status_counts.get(status, 0)) for status in BOAT_HEADING_STATUS_VALUES}
+    if any(int(value) < 0 for value in counts.values()):
+        raise ValueError("heading status counts must be nonnegative")
+    total_count = sum(int(value) for value in counts.values())
+    if int(total_count) <= 0 or int(total_count) > 6:
+        raise ValueError("heading status counts must sum to 1..6")
+
+    statuses: list[str] = []
+    for status in BOAT_HEADING_STATUS_VALUES:
+        statuses.extend([str(status)] * int(counts[status]))
+    rng.shuffle(statuses)
+
+    candidates = _open_water_candidate_cells(tiles_by_cell=tiles_by_cell, dock_meta=dock_meta, cols=int(cols), rows=int(rows))
+    rng.shuffle(candidates)
+    selected: list[tuple[int, int]] = []
+    for cell in candidates:
+        if all(abs(int(cell[0]) - int(other[0])) + abs(int(cell[1]) - int(other[1])) >= 2 for other in selected):
+            selected.append((int(cell[0]), int(cell[1])))
+        if len(selected) >= len(statuses):
+            break
+    if len(selected) < len(statuses):
+        raise ValueError("not enough separated open-water cells for heading-status boats")
+
+    for index, (status, cell) in enumerate(zip(statuses, selected)):
+        tile = tiles_by_cell[cell]
+        cx, cy = tile.center_xy
+        offset_x = float(rng.choice((-0.08, 0.0, 0.08))) * float(tile_w)
+        offset_y = float(rng.choice((-0.04, 0.0, 0.04))) * float(tile_w)
+        boat_type = "rowboat"
+        orientation = str(BOAT_HEADING_STATUS_ORIENTATION[str(status)])
+        hull_fill, trim = BOAT_COLOR_PALETTES[int(index) % len(BOAT_COLOR_PALETTES)]
+        if int(index) >= len(BOAT_COLOR_PALETTES):
+            hull_fill = _shade(hull_fill, int(rng.randrange(-18, 19)))
+        bbox = _draw_boat(
+            draw,
+            float(cx) + float(offset_x),
+            float(cy) + float(offset_y),
+            scale=float(tile_w) * 0.95,
+            boat_type=boat_type,
+            side="",
+            hull_fill=tuple(hull_fill),
+            trim=tuple(trim),
+            orientation=orientation,
+            draw_rope=False,
+        )
+        _add_entity(
+            entities,
+            entity_id=f"heading_boat_{int(index):02d}",
+            public_name="boat",
+            object_type="boat",
+            tile_ids=(tile.tile_id,),
+            bbox=bbox,
+            point=(float(cx) + float(offset_x), float(cy) + float(offset_y)),
+            role="queryable",
+            metadata={
+                "boat_type": boat_type,
+                "hull_rgb": [int(value) for value in hull_fill],
+                "trim_rgb": [int(value) for value in trim],
+                "mooring_status": "open_water",
+                "heading_status": str(status),
+                "orientation": orientation,
+                "water_tile_id": str(tile.tile_id),
+            },
+            canvas_size=canvas_size,
+        )
+    return {str(status): int(counts[str(status)]) for status in BOAT_HEADING_STATUS_VALUES}
+
+
 def _shoreline_candidate_rows(*, rows: int, count: int) -> list[int]:
     """Return row indices from nearest-to-farthest visible shoreline distance."""
 
@@ -989,6 +1093,7 @@ def render_isometric_harbor_scene(
     required_boat_counts_by_side: Mapping[str, int] | None = None,
     required_moored_boat_count: int | None = None,
     required_open_water_boat_count: int | None = None,
+    required_heading_status_counts: Mapping[str, int] | None = None,
     shoreline_candidate_labels: Sequence[str] | None = None,
     shoreline_nearest_label: str | None = None,
     shoreline_label_font_family: str | None = None,
@@ -1042,6 +1147,21 @@ def render_isometric_harbor_scene(
         )
         side_counts = {side: 0 for side in BOAT_SIDE_VALUES}
         open_water_count = len(labels)
+    elif required_heading_status_counts is not None:
+        heading_counts = _draw_heading_status_boats(
+            draw=draw,
+            rng=rng,
+            tiles_by_cell=tiles_by_cell,
+            dock_meta=dock_meta,
+            required_heading_status_counts=required_heading_status_counts,
+            entities=entities,
+            canvas_size=(int(width), int(height)),
+            tile_w=tile_w,
+            cols=int(cols),
+            rows=int(rows),
+        )
+        side_counts = {side: 0 for side in BOAT_SIDE_VALUES}
+        open_water_count = sum(int(value) for value in heading_counts.values())
     else:
         _draw_dock_posts(
             draw=draw,
@@ -1116,6 +1236,14 @@ def render_isometric_harbor_scene(
             "moored": sum(1 for entity in entities if entity.object_type == "boat" and str(entity.metadata.get("mooring_status", "")) == "moored"),
             "open_water": int(open_water_count),
         },
+        "boat_counts_by_heading_status": {
+            str(status): sum(
+                1
+                for entity in entities
+                if entity.object_type == "boat" and str(entity.metadata.get("heading_status", "")) == str(status)
+            )
+            for status in BOAT_HEADING_STATUS_VALUES
+        },
         "entity_count": len(entities),
         "context_object_counts": {
             "boat": sum(1 for entity in entities if entity.object_type == "boat"),
@@ -1133,6 +1261,8 @@ def render_isometric_harbor_scene(
         trace["shoreline_reference"] = "first water row next to the land shoreline"
         trace["shoreline_candidate_count"] = len(shoreline_candidate_trace["candidate_boat_ids_by_label"])
         trace.update(shoreline_candidate_trace)
+    if required_heading_status_counts is not None:
+        trace["shoreline_reference"] = "first water row next to the land shoreline"
     return IsoHarborScene(
         image=image,
         tiles=tuple(tiles),
@@ -1142,6 +1272,8 @@ def render_isometric_harbor_scene(
 
 
 __all__ = [
+    "BOAT_HEADING_STATUS_ORIENTATION",
+    "BOAT_HEADING_STATUS_VALUES",
     "BOAT_SIDE_VALUES",
     "BOAT_MOORING_STATUS_VALUES",
     "DEFAULT_BOAT_CANDIDATE_LABELS",

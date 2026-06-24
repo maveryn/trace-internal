@@ -8,12 +8,20 @@ from typing import Any, Callable, Mapping, Sequence
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.config_defaults import required_group_defaults
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.illustrations.shared.canvas_profiles import resolve_canvas_profile
 
-from .shared.output import bbox_set_projection, isometric_harbor_render_spec, isometric_harbor_scene_ir
+from .shared.output import (
+    bbox_set_projection,
+    isometric_harbor_heading_status_count_render_map,
+    isometric_harbor_render_spec,
+    isometric_harbor_scene_ir,
+)
 from .shared.prompts import build_isometric_harbor_prompt_artifacts
-from .shared.rendering import SCENE_ID
-from .shared.sampling import CountTaskSampleSpec
+from .shared.rendering import BOAT_HEADING_STATUS_VALUES, SCENE_ID, render_isometric_harbor_scene
+from .shared.sampling import CountTaskSampleSpec, select_count
 from .shared.spatial_primitives import rounded_bbox
 from .shared.state import IsoHarborEntity, IsoHarborScene
 
@@ -35,6 +43,29 @@ class HarborCountPlan:
     scene_validator: Callable[[IsoHarborScene, CountTaskSampleSpec], None] | None = None
 
 
+@dataclass(frozen=True)
+class HarborHeadingCountConfig:
+    """Task-owned parameters for the generic heading-status count lifecycle."""
+
+    public_id: str
+    supported_query_ids: tuple[str, ...]
+    query_to_heading_status: Mapping[str, str]
+    heading_status_labels: Mapping[str, str]
+    required_prompt_keys: tuple[str, ...]
+    generation_defaults: Mapping[str, Any]
+    rendering_defaults: Mapping[str, Any]
+    total_boats: int = 6
+
+
+@dataclass(frozen=True)
+class HarborHeadingCountSampleSpec(CountTaskSampleSpec):
+    """Resolved heading-status count sample owned by one public task."""
+
+    target_heading_status: str
+    target_heading_label: str
+    heading_status_counts: dict[str, int]
+
+
 def sorted_harbor_boats(
     scene: IsoHarborScene,
     *,
@@ -51,6 +82,187 @@ def sorted_harbor_boats(
             ),
             key=lambda entity: (float(entity.bbox_xyxy[1]), float(entity.bbox_xyxy[0]), str(entity.entity_id)),
         )
+    )
+
+
+def _heading_status_counts(
+    *,
+    config: HarborHeadingCountConfig,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    target_status: str,
+    target_count: int,
+) -> dict[str, int]:
+    counts = {str(status): 0 for status in BOAT_HEADING_STATUS_VALUES}
+    counts[str(target_status)] = int(target_count)
+    remaining = int(config.total_boats) - int(target_count)
+    if int(remaining) < 0:
+        raise ValueError("target_count cannot exceed total heading-status boats")
+    other_statuses = [str(status) for status in BOAT_HEADING_STATUS_VALUES if str(status) != str(target_status)]
+    split_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{config.public_id}:other_heading_split:{target_status}",
+    )
+    first_count = int(split_index) % (int(remaining) + 1)
+    counts[other_statuses[0]] = int(first_count)
+    counts[other_statuses[1]] = int(remaining) - int(first_count)
+    return counts
+
+
+def _heading_sample_spec(
+    *,
+    config: HarborHeadingCountConfig,
+    instance_seed: int,
+    params: Mapping[str, Any],
+) -> HarborHeadingCountSampleSpec:
+    """Resolve the heading query, target count, distractor split, and canvas profile."""
+
+    selected_query, query_probabilities, task_params = select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=config.supported_query_ids,
+        default_query_id=str(config.supported_query_ids[0]),
+        task_id=config.public_id,
+        namespace=f"{config.public_id}:query",
+    )
+    target_count, target_count_probabilities, answer_count_support = select_count(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        defaults=config.generation_defaults,
+        support_key="answer_count_support",
+        explicit_key="target_count",
+        fallback=(1, 2, 3, 4, 5),
+        namespace=f"{config.public_id}:target_count",
+    )
+    profile = resolve_canvas_profile(
+        params=task_params,
+        defaults=config.rendering_defaults,
+        fallback_width=1200,
+        fallback_height=800,
+        instance_seed=int(instance_seed),
+        namespace=f"{config.public_id}:canvas_profile",
+    )
+    target_status = str(config.query_to_heading_status[str(selected_query)])
+    counts = _heading_status_counts(
+        config=config,
+        instance_seed=int(instance_seed),
+        params=task_params,
+        target_status=target_status,
+        target_count=int(target_count),
+    )
+    return HarborHeadingCountSampleSpec(
+        selected_key=str(selected_query),
+        prompt_query_key=str(selected_query),
+        query_probabilities=dict(query_probabilities),
+        target_count=int(target_count),
+        target_count_probabilities=dict(target_count_probabilities),
+        answer_count_support=tuple(int(value) for value in answer_count_support),
+        answer_count_probabilities=dict(uniform_probability_map(answer_count_support)),
+        canvas_width=int(profile.width),
+        canvas_height=int(profile.height),
+        canvas_profile=str(profile.profile_id),
+        canvas_profile_probabilities=dict(profile.probabilities),
+        target_heading_status=target_status,
+        target_heading_label=str(config.heading_status_labels[target_status]),
+        heading_status_counts=counts,
+    )
+
+
+def _heading_prompt_slots(
+    prompt_defaults: Mapping[str, Any],
+    sample: CountTaskSampleSpec,
+) -> dict[str, str]:
+    heading_sample = sample if isinstance(sample, HarborHeadingCountSampleSpec) else None
+    target_heading_label = "" if heading_sample is None else str(heading_sample.target_heading_label)
+    return {
+        "target_heading_label": target_heading_label,
+        "json_output_contract": str(prompt_defaults["json_output_contract"]),
+        "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
+        "answer_hint": str(prompt_defaults["answer_hint_boat_heading_status_count"]).format(
+            target_heading_label=target_heading_label
+        ),
+        "annotation_hint": str(prompt_defaults["annotation_hint_boat_heading_status_count"]).format(
+            target_heading_label=target_heading_label
+        ),
+        "json_example": str(prompt_defaults["json_example_boat_heading_status_count"]),
+        "json_example_answer_only": str(prompt_defaults["json_example_answer_only_boat_heading_status_count"]),
+    }
+
+
+def _heading_identity_fields(sample: CountTaskSampleSpec) -> dict[str, Any]:
+    heading_sample = sample if isinstance(sample, HarborHeadingCountSampleSpec) else None
+    return {
+        "target_heading_status": "" if heading_sample is None else str(heading_sample.target_heading_status),
+        "target_heading_label": "" if heading_sample is None else str(heading_sample.target_heading_label),
+    }
+
+
+def _heading_extra_query_params(sample: CountTaskSampleSpec) -> dict[str, Any]:
+    if not isinstance(sample, HarborHeadingCountSampleSpec):
+        return {"allowed_heading_statuses": list(BOAT_HEADING_STATUS_VALUES)}
+    return {
+        "allowed_heading_statuses": list(BOAT_HEADING_STATUS_VALUES),
+        "heading_status_counts": dict(sample.heading_status_counts),
+        "total_boats": int(sum(int(value) for value in sample.heading_status_counts.values())),
+    }
+
+
+def _render_heading_scene_from_sample(scene_seed: int, sample: CountTaskSampleSpec) -> IsoHarborScene:
+    """Render open-water boats with exact shoreline-relative heading counts."""
+
+    if not isinstance(sample, HarborHeadingCountSampleSpec):
+        raise TypeError("heading-status sample expected")
+    return render_isometric_harbor_scene(
+        scene_seed,
+        width=sample.canvas_width,
+        height=sample.canvas_height,
+        canvas_profile=sample.canvas_profile,
+        canvas_profile_probabilities=sample.canvas_profile_probabilities,
+        required_heading_status_counts=sample.heading_status_counts,
+    )
+
+
+def _validate_heading_scene_from_sample(scene: IsoHarborScene, sample: CountTaskSampleSpec) -> None:
+    """Validate renderer heading counts against the sampled exact count map."""
+
+    if not isinstance(sample, HarborHeadingCountSampleSpec):
+        raise TypeError("heading-status sample expected")
+    rendered_counts = dict(scene.trace.get("boat_counts_by_heading_status", {}))
+    for status, count in sample.heading_status_counts.items():
+        if int(rendered_counts.get(str(status), -1)) != int(count):
+            raise ValueError(f"rendered heading count for {status} did not match request")
+
+
+def build_harbor_heading_count_plan(config: HarborHeadingCountConfig) -> HarborCountPlan:
+    """Build a public-owned count plan for shoreline-relative boat headings."""
+
+    return HarborCountPlan(
+        public_id=str(config.public_id),
+        operation="count_boats_by_shoreline_relative_heading",
+        required_prompt_keys=tuple(str(key) for key in config.required_prompt_keys),
+        sample_spec=lambda instance_seed, params: _heading_sample_spec(
+            config=config,
+            instance_seed=int(instance_seed),
+            params=params,
+        ),
+        prompt_slots=_heading_prompt_slots,
+        scene_builder=_render_heading_scene_from_sample,
+        entity_selector=lambda scene, sample: sorted_harbor_boats(
+            scene,
+            predicate=lambda entity: (
+                isinstance(sample, HarborHeadingCountSampleSpec)
+                and str(entity.metadata.get("heading_status", "")) == str(sample.target_heading_status)
+            ),
+        ),
+        render_map=lambda scene, sample, counted_ids: isometric_harbor_heading_status_count_render_map(
+            scene=scene,
+            target_status=str(sample.target_heading_status) if isinstance(sample, HarborHeadingCountSampleSpec) else "",
+            counted_entity_ids=counted_ids,
+        ),
+        identity_fields=_heading_identity_fields,
+        extra_query_params=_heading_extra_query_params,
+        scene_validator=_validate_heading_scene_from_sample,
     )
 
 
@@ -173,4 +385,10 @@ def run_harbor_count_lifecycle(
     )
 
 
-__all__ = ["HarborCountPlan", "run_harbor_count_lifecycle", "sorted_harbor_boats"]
+__all__ = [
+    "HarborCountPlan",
+    "HarborHeadingCountConfig",
+    "build_harbor_heading_count_plan",
+    "run_harbor_count_lifecycle",
+    "sorted_harbor_boats",
+]

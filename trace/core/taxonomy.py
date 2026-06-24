@@ -917,6 +917,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__isometric_harbor__boat_mooring_status_count": _entry(
         "illustrations", "isometric_harbor", "illustrations", "isometric_harbor"
     ),
+    "task_illustrations__isometric_harbor__boat_heading_status_count": _entry(
+        "illustrations", "isometric_harbor", "illustrations", "isometric_harbor"
+    ),
     "task_illustrations__isometric_harbor__shoreline_nearest_boat_label": _entry(
         "illustrations", "isometric_harbor", "illustrations", "isometric_harbor"
     ),

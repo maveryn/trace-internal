@@ -127,6 +127,38 @@ def isometric_harbor_mooring_status_count_render_map(
     }
 
 
+def isometric_harbor_heading_status_count_render_map(
+    *,
+    scene: IsoHarborScene,
+    target_status: str,
+    counted_entity_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Return task render-map fields for boat heading-status counting."""
+
+    entities_by_id = {str(entity.entity_id): entity for entity in scene.entities}
+    counted_ids = [str(entity_id) for entity_id in counted_entity_ids]
+    counted_bboxes = [rounded_bbox(entities_by_id[entity_id].bbox_xyxy) for entity_id in counted_ids if entity_id in entities_by_id]
+    boat_statuses = {
+        str(entity.entity_id): str(entity.metadata.get("heading_status", ""))
+        for entity in scene.entities
+        if str(entity.object_type) == "boat"
+    }
+    return {
+        "image_id": "img0",
+        "target_heading_status": str(target_status),
+        "counted_entity_ids": counted_ids,
+        "counted_entity_bboxes_px": counted_bboxes,
+        "boat_heading_status_by_id": boat_statuses,
+        "boat_bboxes_px_by_id": {
+            str(entity.entity_id): rounded_bbox(entity.bbox_xyxy)
+            for entity in scene.entities
+            if str(entity.object_type) == "boat"
+        },
+        "boat_counts_by_heading_status": dict(scene.trace.get("boat_counts_by_heading_status", {})),
+        "answer_count": len(counted_ids),
+    }
+
+
 def isometric_harbor_shoreline_nearest_boat_render_map(
     *,
     scene: IsoHarborScene,
@@ -166,6 +198,7 @@ __all__ = [
     "bbox_projection",
     "bbox_set_projection",
     "isometric_harbor_boat_count_render_map",
+    "isometric_harbor_heading_status_count_render_map",
     "isometric_harbor_mooring_status_count_render_map",
     "isometric_harbor_shoreline_nearest_boat_render_map",
     "isometric_harbor_render_spec",

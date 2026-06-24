@@ -31,6 +31,16 @@ generation:
         - 3
         - 4
         - 5
+    task_illustrations__isometric_harbor__boat_heading_status_count:
+      query_id_support:
+        - toward_shoreline_boat_count
+        - away_from_shoreline_boat_count
+      answer_count_support:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
     task_illustrations__isometric_harbor__shoreline_nearest_boat_label:
       query_id_support:
         - single
@@ -51,6 +61,10 @@ prompt:
       bundle_id: illustrations_isometric_harbor_v1
       scene_key: isometric_harbor_dock_canvas
       task_key: boat_mooring_status_count_task
+    task_illustrations__isometric_harbor__boat_heading_status_count:
+      bundle_id: illustrations_isometric_harbor_v1
+      scene_key: isometric_harbor_open_water_canvas
+      task_key: boat_heading_status_count_task
     task_illustrations__isometric_harbor__shoreline_nearest_boat_label:
       bundle_id: illustrations_isometric_harbor_v1
       scene_key: isometric_harbor_open_water_canvas

@@ -10,14 +10,9 @@ from PIL import Image, ImageDraw
 
 from trace.tasks.illustrations.shared.pixel_world_objects import (
     draw_pixel_barrel,
-    draw_pixel_boulder,
     draw_pixel_crate,
-    draw_pixel_mine_cart,
-    draw_pixel_ore_vein,
     draw_pixel_person,
-    draw_pixel_rail_track,
     draw_pixel_sign,
-    draw_pixel_wood_support,
 )
 from trace.tasks.illustrations.shared.option_rendering import draw_label_badge, sample_visual_label_font_trace
 
@@ -44,18 +39,17 @@ LAYOUT_FAMILIES: tuple[str, ...] = (
     "corner_plateau",
     "split_field",
 )
-QUARRY_PATCH_TERRAINS: tuple[str, ...] = ("gravel", "dark_rock", "ore_dust", "railbed")
+QUARRY_PATCH_TERRAINS: tuple[str, ...] = ("gravel",)
 QUARRY_OBJECT_TYPES: tuple[str, ...] = (
-    "boulder",
     "ore_vein",
     "barrel",
     "crate",
     "mine_cart",
-    "wood_support",
-    "rail_track",
     "sign",
 )
 COUNTABLE_QUARRY_OBJECT_TYPES: tuple[str, ...] = ("ore_vein", "mine_cart")
+OBJECT_COUNT_DISTRACTOR_TYPES: tuple[str, ...] = ("barrel", "crate", "sign")
+OBJECT_COUNT_QUARRY_OBJECT_TYPES: tuple[str, ...] = COUNTABLE_QUARRY_OBJECT_TYPES + OBJECT_COUNT_DISTRACTOR_TYPES
 
 RGB = tuple[int, int, int]
 TileRect = tuple[int, int, int, int]
@@ -479,12 +473,6 @@ def _terrain_colors(terrain: str, level: int) -> tuple[RGB, RGB, RGB]:
     fill = base_by_level.get(int(level), base_by_level[0])
     if terrain == "gravel":
         fill = (133, 130, 120)
-    elif terrain == "dark_rock":
-        fill = (91, 91, 88)
-    elif terrain == "ore_dust":
-        fill = (136, 114, 83)
-    elif terrain == "railbed":
-        fill = (105, 94, 82)
     return fill, _shade(fill, -48), _shade(fill, 38)
 
 
@@ -505,15 +493,6 @@ def _draw_tile_top(draw: ImageDraw.ImageDraw, layout: IsoLayout, tile: IsoQuarry
     elif tile.terrain == "gravel":
         for dx, dy in ((-12, 3), (-4, -2), (7, 1), (13, -3)):
             draw.rectangle((int(cx + dx), int(cy + dy), int(cx + dx + 2), int(cy + dy + 1)), fill=(88, 86, 81))
-    elif tile.terrain == "dark_rock":
-        draw.line((int(cx - 12), int(cy + 3), int(cx + 11), int(cy - 3)), fill=(61, 61, 59), width=2)
-        draw.point((int(cx + 3), int(cy + 4)), fill=(140, 137, 129))
-    elif tile.terrain == "ore_dust":
-        draw.line((int(cx - 9), int(cy + 2), int(cx + 10), int(cy - 2)), fill=(182, 139, 65), width=2)
-        draw.point((int(cx - 2), int(cy + 1)), fill=(231, 184, 82))
-    elif tile.terrain == "railbed":
-        draw.line((int(cx - 18), int(cy + 2), int(cx + 18), int(cy - 2)), fill=(68, 68, 66), width=2)
-        draw.line((int(cx - 15), int(cy + 7), int(cx + 14), int(cy + 3)), fill=(68, 68, 66), width=2)
 
 
 def _draw_level_faces(draw: ImageDraw.ImageDraw, layout: IsoLayout, level_grid: Mapping[tuple[int, int], int], *, open_edges: set[tuple[int, int, str]]) -> list[dict[str, Any]]:
@@ -597,12 +576,9 @@ def _object_sprite_bbox(layout: IsoLayout, tile: IsoQuarryTile, *, object_type: 
         width = float(layout.tile_w) * 0.5
         height = float(layout.tile_w) * 0.7
         return (cx - width * 0.5, cy - height + float(layout.tile_h) * 0.15, cx + width * 0.5, cy + float(layout.tile_h) * 0.15)
-    if str(subtype) in {"mine_cart", "wood_support"}:
+    if str(subtype) == "mine_cart":
         width = float(layout.tile_w) * 0.96
         height = float(layout.tile_w) * 0.52
-    elif str(subtype) == "rail_track":
-        width = float(layout.tile_w) * 0.78
-        height = float(layout.tile_w) * 0.26
     else:
         width = float(layout.tile_w) * 0.52
         height = float(layout.tile_w) * 0.48
@@ -617,24 +593,61 @@ def _paste_sprite(image: Image.Image, bbox: Sequence[float], sprite: Image.Image
     image.paste(scaled, (x0, y0), scaled)
 
 
+def _draw_countable_ore_vein(sprite_draw: ImageDraw.ImageDraw, *, ore_rgb: RGB) -> None:
+    """Draw a high-contrast ore cluster that does not read as a generic rock."""
+
+    outline = _shade(ore_rgb, -90)
+    dark = _shade(ore_rgb, -42)
+    light = _shade(ore_rgb, 52)
+    base = (64, 61, 58)
+    sprite_draw.ellipse((2, 11, 14, 15), fill=base, outline=(38, 37, 35))
+    crystals = (
+        ((3, 12), (5, 4), (8, 12)),
+        ((6, 13), (9, 2), (12, 13)),
+        ((9, 12), (13, 6), (15, 12)),
+    )
+    for points in crystals:
+        sprite_draw.polygon(points, fill=ore_rgb, outline=outline)
+    sprite_draw.line((5, 7, 6, 11), fill=light)
+    sprite_draw.line((9, 5, 10, 12), fill=light)
+    sprite_draw.polygon(((9, 2), (12, 13), (10, 13)), fill=dark)
+    sprite_draw.point((4, 5), fill=(255, 250, 180))
+    sprite_draw.point((10, 4), fill=(255, 250, 180))
+
+
+def _draw_countable_mine_cart(sprite_draw: ImageDraw.ImageDraw) -> None:
+    """Draw a broad mine cart with clear wheels and ore payload."""
+
+    body = (70, 82, 88)
+    body_dark = (24, 30, 35)
+    body_light = (130, 146, 151)
+    ore = (214, 155, 56)
+    ore_dark = (120, 77, 28)
+    sprite_draw.polygon(((4, 6), (28, 6), (25, 13), (7, 13)), fill=body, outline=body_dark)
+    sprite_draw.polygon(((6, 4), (26, 4), (28, 7), (4, 7)), fill=body_light, outline=body_dark)
+    sprite_draw.line((7, 8, 25, 8), fill=(168, 181, 185))
+    for x in (7, 20):
+        sprite_draw.ellipse((x, 11, x + 6, 16), fill=body_dark, outline=(0, 0, 0))
+        sprite_draw.point((x + 3, 13), fill=body_light)
+    for px, py in ((10, 5), (14, 4), (18, 5), (22, 6)):
+        sprite_draw.rectangle((px - 1, py - 1, px + 2, py + 1), fill=ore, outline=ore_dark)
+
+
 def _quarry_object_sprite(object_type: str, *, rng: random.Random) -> Image.Image:
-    tile_width = 2 if str(object_type) in {"mine_cart", "wood_support"} else 1
+    tile_width = 2 if str(object_type) == "mine_cart" else 1
     sprite = Image.new("RGBA", (16 * tile_width, 16), (0, 0, 0, 0))
     sprite_draw = ImageDraw.Draw(sprite, "RGBA")
-    if str(object_type) == "boulder":
-        draw_pixel_boulder(sprite_draw, (0, 0, 1, 1), stone_rgb=rng.choice(((113, 112, 104), (126, 119, 104), (95, 96, 92))))
-    elif str(object_type) == "ore_vein":
-        draw_pixel_ore_vein(sprite_draw, (0, 0, 1, 1), ore_rgb=rng.choice(((218, 171, 71), (107, 184, 203), (169, 134, 215))))
+    if str(object_type) == "ore_vein":
+        _draw_countable_ore_vein(
+            sprite_draw,
+            ore_rgb=rng.choice(((229, 176, 56), (99, 194, 224), (178, 129, 230))),
+        )
     elif str(object_type) == "barrel":
         draw_pixel_barrel(sprite_draw, (0, 0, 1, 1), barrel_rgb=rng.choice(((151, 86, 45), (116, 92, 70), (97, 103, 106))))
     elif str(object_type) == "crate":
         draw_pixel_crate(sprite_draw, (0, 0, 1, 1))
     elif str(object_type) == "mine_cart":
-        draw_pixel_mine_cart(sprite_draw, (0, 0, 2, 1), orientation=str(rng.choice(("horizontal", "horizontal", "vertical"))))
-    elif str(object_type) == "wood_support":
-        draw_pixel_wood_support(sprite_draw, (0, 0, 2, 1), wood_rgb=rng.choice(((128, 78, 43), (105, 74, 49), (145, 91, 48))))
-    elif str(object_type) == "rail_track":
-        draw_pixel_rail_track(sprite_draw, (0, 0, 1, 1), track_shape=str(rng.choice(("horizontal", "vertical", "corner"))))
+        _draw_countable_mine_cart(sprite_draw)
     else:
         draw_pixel_sign(sprite_draw, (0, 0, 1, 1))
     return sprite
@@ -696,6 +709,7 @@ def _draw_context_entities(
     transition_tile_ids: set[str],
     quarry_patch_tile_ids: set[str],
     required_entity_counts_by_level_type: Mapping[str, Mapping[int | str, int]] | None = None,
+    context_object_types: Sequence[str] | None = None,
     object_unsafe_tile_ids: set[str] | None = None,
     reference_worker_tile_id: str | None = None,
     reserved_tile_ids: set[str] | None = None,
@@ -720,6 +734,16 @@ def _draw_context_entities(
         and str(tile.terrain) == "rock"
     ]
     required_counts_raw = required_entity_counts_by_level_type or {}
+    required_subtypes = tuple(str(subtype) for subtype in dict(required_counts_raw))
+    object_types = tuple(
+        dict.fromkeys(
+            str(subtype)
+            for subtype in tuple(context_object_types or QUARRY_OBJECT_TYPES) + required_subtypes
+            if str(subtype) in set(QUARRY_OBJECT_TYPES)
+        )
+    )
+    if not object_types:
+        raise ValueError("context_object_types must include at least one quarry object subtype")
 
     def required_counts(subtype: str) -> dict[int, int]:
         raw_counts = required_counts_raw.get(str(subtype), {})
@@ -730,7 +754,7 @@ def _draw_context_entities(
 
     quarry_object_index = 0
     required_levels_by_subtype: dict[str, set[int]] = {}
-    for subtype in QUARRY_OBJECT_TYPES:
+    for subtype in object_types:
         subtype_counts = required_counts(str(subtype))
         if subtype_counts:
             required_levels_by_subtype[str(subtype)] = set(int(level) for level in subtype_counts)
@@ -754,9 +778,14 @@ def _draw_context_entities(
     random_candidates = [tile for tile in base_candidates if str(tile.tile_id) not in occupied]
     rng.shuffle(random_candidates)
     required_total = len(drawable)
-    context_count = min(len(random_candidates) + int(required_total), rng.randint(5, 9))
-    object_cycle = list(QUARRY_OBJECT_TYPES)
+    requested_context_count = rng.randint(5, 9)
+    if required_counts_raw:
+        requested_context_count = max(int(requested_context_count), int(required_total) + 2)
+    context_count = min(len(random_candidates) + int(required_total), int(requested_context_count))
+    object_cycle = list(object_types)
     rng.shuffle(object_cycle)
+    neutral_distractor_count = 0
+    required_subtype_set = {str(subtype) for subtype in required_subtypes}
     for tile in random_candidates:
         if len(drawable) >= context_count:
             break
@@ -765,12 +794,17 @@ def _draw_context_entities(
             for subtype in object_cycle
             if int(tile.level) not in required_levels_by_subtype.get(str(subtype), set())
         ]
+        neutral_subtypes = [subtype for subtype in available_subtypes if str(subtype) not in required_subtype_set]
+        if required_counts_raw and neutral_distractor_count < 2 and neutral_subtypes:
+            available_subtypes = neutral_subtypes
         if not available_subtypes:
             continue
         subtype = str(available_subtypes[(quarry_object_index + int(tile.col) + int(tile.row)) % len(available_subtypes)])
         bbox = _object_sprite_bbox(layout, tile, object_type="quarry_object", subtype=subtype)
         if not _bbox_inside_canvas(bbox, width=width, height=height):
             continue
+        if str(subtype) not in required_subtype_set:
+            neutral_distractor_count += 1
         occupied.add(str(tile.tile_id))
         drawable.append((float(bbox[3]), f"quarry_object_{quarry_object_index:02d}", "quarry_object", subtype, tile, bbox))
         quarry_object_index += 1
@@ -855,6 +889,8 @@ def render_isometric_quarry_scene(
     candidate_labels_by_tile_id: Mapping[str, str] | None = None,
     label_font_family: str | None = None,
     required_entity_counts_by_level_type: Mapping[str, Mapping[int | str, int]] | None = None,
+    context_object_types: Sequence[str] | None = None,
+    quarry_patch_mode: str = "standard",
     reference_worker_tile_id: str | None = None,
     highest_level_tile_count: int | None = None,
     reserve_highest_level_tiles: bool = False,
@@ -880,15 +916,20 @@ def render_isometric_quarry_scene(
         for (col, row), level in level_grid.items()
         if bool(reserve_highest_level_tiles) and int(level) == int(active_max_level)
     }
-    quarry_patches, quarry_terrain_by_cell, quarry_patch_tile_ids = _sample_quarry_patches(
-        rng,
-        cols=cols,
-        rows=rows,
-        active_levels=active_levels,
-        level_grid=level_grid,
-        blocked_tile_ids=set(transition_tile_ids),
-        skip_levels={int(active_max_level)} if bool(reserve_highest_level_tiles) else set(),
-    )
+    if str(quarry_patch_mode) == "none":
+        quarry_patches: list[dict[str, Any]] = []
+        quarry_terrain_by_cell: dict[tuple[int, int], str] = {}
+        quarry_patch_tile_ids: set[str] = set()
+    else:
+        quarry_patches, quarry_terrain_by_cell, quarry_patch_tile_ids = _sample_quarry_patches(
+            rng,
+            cols=cols,
+            rows=rows,
+            active_levels=active_levels,
+            level_grid=level_grid,
+            blocked_tile_ids=set(transition_tile_ids),
+            skip_levels={int(active_max_level)} if bool(reserve_highest_level_tiles) else set(),
+        )
     layout = _layout_for_scene(width=int(width), height=int(height), cols=cols, rows=rows, level_grid=level_grid)
     tile_rng = random.Random(int(seed) + 17011)
     tiles = _build_tiles(layout, level_grid, quarry_terrain_by_cell)
@@ -910,6 +951,7 @@ def render_isometric_quarry_scene(
         transition_tile_ids=set(transition_tile_ids),
         quarry_patch_tile_ids=set(quarry_patch_tile_ids),
         required_entity_counts_by_level_type=required_entity_counts_by_level_type,
+        context_object_types=context_object_types,
         object_unsafe_tile_ids=set(object_unsafe_tile_ids),
         reference_worker_tile_id=reference_worker_tile_id,
         reserved_tile_ids=set(reserved_highest_tile_ids),
@@ -968,7 +1010,9 @@ def render_isometric_quarry_scene(
             for level, rects in sorted(level_shapes.items())
         },
         "quarry_patches": quarry_patches_with_bboxes,
+        "quarry_patch_mode": str(quarry_patch_mode),
         "quarry_patch_tile_ids": sorted(quarry_patch_tile_ids),
+        "quarry_object_type_pool": list(context_object_types or QUARRY_OBJECT_TYPES),
         "object_unsafe_low_adjacent_higher_tile_ids": sorted(object_unsafe_tile_ids),
         "reference_worker_tile_id": str(reference_worker_tile_id or ""),
         "transition_tile_ids": sorted(transition_tile_ids),
@@ -1070,6 +1114,7 @@ def render_isometric_quarry_labeled_scene_with_retry(
 
 __all__ = [
     "DEFAULT_CANDIDATE_LABELS",
+    "OBJECT_COUNT_QUARRY_OBJECT_TYPES",
     "RENDERER_ID",
     "RENDERER_STYLE",
     "SCENE_ID",

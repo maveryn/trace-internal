@@ -27,7 +27,7 @@ from .shared.output import (
     rounded_bbox,
 )
 from .shared.prompts import build_isometric_quarry_prompt_artifacts
-from .shared.rendering import SCENE_ID, render_isometric_quarry_scene
+from .shared.rendering import OBJECT_COUNT_QUARRY_OBJECT_TYPES, SCENE_ID, render_isometric_quarry_scene
 from .shared.state import IsoQuarryEntity, IsoQuarryScene
 
 
@@ -271,6 +271,8 @@ class IllustrationsIsometricQuarryTerrainLevelObjectCountTask:
                     height=sample.canvas_height,
                     canvas_profile=sample.canvas_profile,
                     canvas_profile_probabilities=sample.canvas_profile_probabilities,
+                    context_object_types=OBJECT_COUNT_QUARRY_OBJECT_TYPES,
+                    quarry_patch_mode="none",
                 )
                 target_level, extremum_mode = _target_level(base_scene, selected_query=sample.selected_query)
                 scene = render_isometric_quarry_scene(
@@ -282,6 +284,8 @@ class IllustrationsIsometricQuarryTerrainLevelObjectCountTask:
                     required_entity_counts_by_level_type={
                         str(sample.target_object_type): {int(target_level): int(sample.target_count)}
                     },
+                    context_object_types=OBJECT_COUNT_QUARRY_OBJECT_TYPES,
+                    quarry_patch_mode="none",
                 )
                 target_level, extremum_mode = _target_level(scene, selected_query=sample.selected_query)
                 matching_entities = _matching_entities(

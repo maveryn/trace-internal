@@ -22,7 +22,7 @@ Counts quarry objects of a sampled subtype on either the highest or lowest terra
 ## Program Metadata
 - Program signatures: `count.spatial_elevation_object_filter`
 - Base program contract: `count(object where subtype=target_object_type and level(object_base)=extremum(levels)); scene=isometric_quarry; scope=terrain_level_object_count`
-- Parameter axes: `canvas_profile`, `target_object_type`, `target_count`, `active_level_range`, `layout_family`, `quarry_patch_placement`, `context_object_placement`
+- Parameter axes: `canvas_profile`, `target_object_type`, `target_count`, `active_level_range`, `layout_family`, `context_object_placement`
 - Arguments:
   - `target_object_type`: sampled quarry object subtype; allowed `ore_vein|mine_cart`; source `query_spec.params`
   - `level`: terrain elevation of the object's base tile; source `scene_ir.entities[].level`
@@ -44,4 +44,6 @@ Counts quarry objects of a sampled subtype on either the highest or lowest terra
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/isometric_quarry/illustrations_isometric_quarry_v0.json`.
 - Prompts must name the sampled object label (`ore veins` or `mine carts`) and the elevation extremum.
-- Render-only attributes such as palette, canvas profile, active max level, layout family, quarry patch placement, and distractor context object placement must not be query ids.
+- The object-count renderer uses a clean quarry object pool: countable `ore_vein|mine_cart` objects plus visually distinct `barrel|crate|sign` distractors.
+- The object-count renderer disables quarry patch terrain so rocks, ore-dust patches, rails, and support clutter cannot be mistaken for count targets.
+- Render-only attributes such as palette, canvas profile, active max level, layout family, and distractor context object placement must not be query ids.

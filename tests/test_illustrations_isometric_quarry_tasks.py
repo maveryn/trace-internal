@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from trace.tasks.registry import TASK_REGISTRY, create_task
 from trace.tasks.illustrations.isometric_quarry.shared.rendering import (
+    OBJECT_COUNT_QUARRY_OBJECT_TYPES,
     SCENE_ID,
     SUPPORTED_LEVELS,
     render_isometric_quarry_scene,
@@ -238,6 +239,11 @@ def test_isometric_quarry_terrain_level_object_count_contract() -> None:
         assert trace["render_map"]["counted_entity_bboxes_px"] == out.annotation_gt.value
         assert trace["projected_annotation"]["type"] == "bbox_set"
         assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        renderer_trace = trace["execution_trace"]["renderer"]
+        assert renderer_trace["quarry_patch_mode"] == "none"
+        assert renderer_trace["quarry_patches"] == []
+        assert tuple(renderer_trace["quarry_object_type_pool"]) == tuple(OBJECT_COUNT_QUARRY_OBJECT_TYPES)
+        assert set(renderer_trace["context_object_counts"]).issuperset(set(OBJECT_COUNT_QUARRY_OBJECT_TYPES))
 
         entity_by_id = {str(entity["entity_id"]): entity for entity in trace["scene_ir"]["entities"]}
         counted_ids = list(trace["render_map"]["counted_entity_ids"])

@@ -44,12 +44,17 @@ def test_isometric_harbor_renderer_is_deterministic_and_profile_safe() -> None:
         assert first.image.tobytes() == second.image.tobytes()
         assert first.trace["renderer_id"] == RENDERER_ID
         assert first.trace["renderer_style"] == "isometric_pixel_harbor"
+        assert first.trace["theme_id"] == "isometric_harbor_shoreline_dock"
+        assert first.trace["background_rgb"] == [207, 220, 190]
         assert first.trace["projection"]["type"] == "2:1_isometric"
         assert (int(first.trace["grid_cols"]), int(first.trace["grid_rows"])) == expected_grid
         assert first.trace["boat_counts_by_side"] == {"left": 5, "right": 0}
         assert first.trace["context_object_counts"]["boat"] == 5
         assert dock_is_connected(first)
-        assert {str(tile.terrain) for tile in first.tiles} == {"dock", "water"}
+        assert {str(tile.terrain) for tile in first.tiles} == {"dock", "land", "water"}
+        assert first.trace["terrain_tile_counts"]["land"] > 0
+        assert first.trace["terrain_tile_counts"]["water"] > first.trace["terrain_tile_counts"]["land"]
+        assert first.trace["terrain_tile_counts"]["dock"] == len(first.trace["dock_tile_ids"])
         for tile in first.tiles:
             _assert_bbox_inside_canvas(list(tile.bbox_xyxy), width=width, height=height)
         for entity in first.entities:

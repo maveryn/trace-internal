@@ -49,6 +49,8 @@ def isometric_harbor_render_spec(scene: IsoHarborScene, *, scene_id: str) -> dic
             "canvas_profile_probabilities": dict(scene.trace.get("canvas_profile_probabilities", {})),
             "projection": projection,
             "tile_count": int(scene.trace.get("tile_count", 0)),
+            "background_rgb": list(scene.trace.get("background_rgb", [])),
+            "terrain_tile_counts": dict(scene.trace.get("terrain_tile_counts", {})),
             "entity_count": int(scene.trace.get("entity_count", 0)),
         },
     }

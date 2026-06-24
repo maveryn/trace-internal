@@ -5,11 +5,11 @@
   "templates": {
     "scene": {
       "isometric_harbor_dock_canvas": [
-        "The image shows an isometric harbor with blue water, a connected wooden main dock, dock posts, cargo objects, and small boats.",
-        "The scene shows a pixel-art isometric harbor where boats are moored beside a main dock in the water.",
-        "The picture shows an isometric dockyard with water tiles, a wooden pier, dock objects, and boats tied along the dock.",
-        "The canvas contains an isometric harbor scene with a central wooden dock and boats on either side.",
-        "This illustration shows a harbor drawn on isometric tiles, with a main dock running through the water and boats beside it."
+        "The image shows an isometric harbor with a shoreline, blue water tiles, a connected wooden main dock, dock posts, cargo objects, and small boats.",
+        "The scene shows a pixel-art isometric harbor where boats are moored beside a main dock that extends from land into the water.",
+        "The picture shows an isometric dockyard with shoreline tiles, water tiles, a wooden pier, dock objects, and boats tied along the dock.",
+        "The canvas contains an isometric harbor scene with a wooden dock connected to land and boats on either side.",
+        "This illustration shows a harbor drawn on isometric tiles, with a main dock running from the shore into the water and boats beside it."
       ]
     },
     "task": {

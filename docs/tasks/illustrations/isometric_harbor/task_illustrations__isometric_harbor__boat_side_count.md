@@ -22,7 +22,7 @@ Counts boats docked on the image-left or image-right side of the main dock in an
 ## Program Metadata
 - Program signatures: `count.spatial_side_object_filter`
 - Base program contract: `count(boat where dock_side(boat, main_dock)=side); scene=isometric_harbor; scope=boat_side_count`
-- Parameter axes: `canvas_profile`, `target_count`, `dock_position`, `boat_type`, `dock_context_object_placement`, `palette`
+- Parameter axes: `canvas_profile`, `target_count`, `dock_position`, `boat_type`, `boat_palette`, `dock_context_object_placement`, `shoreline_tiles`, `palette`
 - Arguments:
   - `side`: image-relative dock side; allowed `image_left|image_right`; source `query_id`
   - `boat`: entity with `object_type=boat`; source `scene_ir.entities[]`
@@ -44,4 +44,4 @@ Counts boats docked on the image-left or image-right side of the main dock in an
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/isometric_harbor/illustrations_isometric_harbor_v1.json`.
 - Prompts must say `image-left side` or `image-right side` of the main dock to avoid world-frame ambiguity.
-- Render-only attributes such as boat style, dock jitter, canvas profile, cargo placement, dock-post placement, and water palette must not be query ids.
+- Render-only attributes such as boat style, dock jitter, canvas profile, shoreline placement, cargo placement, dock-post placement, and water/land palette must not be query ids.

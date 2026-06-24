@@ -272,6 +272,30 @@ def test_games_space_shooter_ships_and_projectiles_are_centered_on_lane_pads() -
         assert abs(projectile_cx - lane_cx) <= 0.75
 
 
+@pytest.mark.parametrize(
+    ("task_cls", "params"),
+    (
+        (GamesSpaceShooterClearShotCountTask, {"target_answer": 5, "lane_count": 8, "enemy_count": 16}),
+        (GamesSpaceShooterClearShotScoreValueTask, {"target_answer": 4, "lane_count": 8, "enemy_count": 16}),
+        (GamesSpaceShooterProjectileInterceptCountTask, {"target_answer": 5, "lane_count": 8, "enemy_count": 14}),
+        (GamesSpaceShooterHighestThreatLabelTask, {"lane_count": 8, "enemy_count": 14}),
+        (GamesSpaceShooterSafeLaneCountTask, {"target_answer": 3, "lane_count": 7, "enemy_count": 12}),
+    ),
+)
+def test_games_space_shooter_enemy_projectiles_have_visible_same_lane_shooter(task_cls, params) -> None:
+    out = task_cls().generate(88165, params=params, max_attempts=256)
+    execution = out.trace_payload["execution_trace"]
+    enemies = tuple(execution["enemies"])
+    for projectile in execution["projectiles"]:
+        if str(projectile["owner"]) != "enemy":
+            continue
+        assert any(
+            int(enemy["lane"]) == int(projectile["lane"])
+            and int(enemy["y_slot"]) < int(projectile["y_slot"])
+            for enemy in enemies
+        )
+
+
 def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:
     output_root = tmp_path / "task_games__space_shooter"
     config = BuildConfig(

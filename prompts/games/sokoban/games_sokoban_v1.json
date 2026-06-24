@@ -37,11 +37,11 @@
         "How many boxes are not correctly placed on matching colored goal dots?"
       ],
       "closest_box_goal_label": [
-        "Which labeled box is closest to its matching colored goal dot? Grid distance means row steps plus column steps.",
-        "Select the box label whose box is nearest to its same-colored goal dot by grid distance. Grid distance means row steps plus column steps.",
-        "Using row-plus-column grid distance, which labeled box is closest to its matching colored goal dot?",
-        "Compare each labeled box with its same-colored goal dot. Which box has the smallest row-plus-column grid distance?",
-        "Which box label identifies the box closest to its matching colored goal dot, counting grid distance as row steps plus column steps?"
+        "Which labeled box is closest to its matching colored goal dot by Manhattan distance? Ignore walls, boxes, the player, and other board objects.",
+        "Select the box label whose box is nearest to its same-colored goal dot by Manhattan distance, ignoring walls, boxes, the player, and other objects.",
+        "Using Manhattan distance between each box and its matching colored goal dot, which labeled box is closest? Ignore all walls and objects on the board.",
+        "Compare each labeled box with its same-colored goal dot. Which box has the smallest Manhattan distance when walls, boxes, and other objects are ignored?",
+        "Which box label identifies the box closest to its matching colored goal dot by Manhattan distance? Ignore walls and any other board objects."
       ]
     },
     "output": {

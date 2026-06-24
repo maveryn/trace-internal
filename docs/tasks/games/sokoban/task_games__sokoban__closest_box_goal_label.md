@@ -17,7 +17,7 @@
 1. The board shows lettered colored boxes and matching colored goal dots.
 2. No box starts on its matching goal.
 3. The task asks which labeled box is closest to its matching colored goal dot.
-4. Distance is Manhattan grid distance: row steps plus column steps. Walls do not change the distance.
+4. Distance is Manhattan grid distance: row steps plus column steps, ignoring walls, boxes, the player, and other board objects.
 5. The closest box is unique by construction.
 6. Annotation is the scalar bbox of the selected box cell.
 7. Prompt wording comes from `prompts/games/sokoban/games_sokoban_v1.json`.

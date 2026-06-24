@@ -9,6 +9,6 @@ rendering:
     small_label_font_size: 18
 prompt:
   shared:
-    bundle_id: geometry_solid_formula_v0
+    bundle_id: geometry_solid_formula_v1
     scene_key: solid_formula_scene
     task_key: solid_formula_value_query

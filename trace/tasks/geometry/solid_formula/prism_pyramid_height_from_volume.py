@@ -1,63 +1,92 @@
-"""Compute prism-pyramid height from volume."""
+"""Compute prism height from a prism-plus-pyramid volume."""
 
-from __future__ import annotations
-
-from typing import Any, Dict, Tuple
-
-from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
 
-from .shared.formula_runtime import SCENE_ID, SolidFormulaRuntime
-
+from ._lifecycle import build_solid_formula_plan, run_solid_formula_public_entry
+from .shared.measurements import answer_support_probability_map, decimal_support, round1
+from .shared.rendering import render_prism_pyramid
+from .shared.sampling import select_case_option, select_support_value
+from .shared.state import SolidFormulaProblem
 
 TASK_ID = "task_geometry__solid_formula__prism_pyramid_height_from_volume"
-QUERY_ID = "prism_pyramid_height_from_volume"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
+ANNOTATION_KEYS = (
+    "target_prism_height_label",
+    "volume_label",
+    "known_length_label",
+    "known_width_label",
+    "pyramid_height_label",
+)
+ANSWER_SUPPORT = decimal_support(2, 61, step=1)
+CONSTRUCTION_OPTIONS = (
+    (5.0, 4.0, 3.0),
+    (6.0, 5.0, 6.0),
+    (7.0, 4.0, 9.0),
+    (8.0, 6.0, 3.0),
+    (9.0, 5.0, 6.0),
+    (10.0, 7.0, 9.0),
+)
+
+
+def _prepare_prism_height_objective(
+    *,
+    instance_seed,
+    params,
+    selected_query,
+    branch_probabilities,
+):
+    # This task binds prism height as the answer before rendering.
+    prism_height = select_support_value(
+        instance_seed=instance_seed,
+        params=params,
+        namespace=f"{TASK_ID}.{selected_query}.answer",
+        support=ANSWER_SUPPORT,
+    )
+    (side_a, side_b, pyramid_height), construction_count = select_case_option(
+        instance_seed=instance_seed,
+        params=params,
+        namespace=f"{TASK_ID}.{selected_query}.construction",
+        options=CONSTRUCTION_OPTIONS,
+    )
+    base_area = side_a * side_b
+    volume = base_area * (prism_height + (pyramid_height / 3.0))
+    support_probabilities = answer_support_probability_map(ANSWER_SUPPORT, prism_height)
+    problem = SolidFormulaProblem(
+        solid_kind="prism_pyramid",
+        answer=round1(prism_height),
+        unknown_dimension="prism_height",
+        formula_family="prism_pyramid_height_from_volume",
+        formula="V = lwx + (1/3)lwp, solve prism height x from V, l, w, and pyramid height p",
+        side_a=round1(side_a),
+        side_b=round1(side_b),
+        prism_height=round1(prism_height),
+        pyramid_height=round1(pyramid_height),
+        volume=round1(volume),
+        answer_support_probabilities=support_probabilities,
+        construction_case_count_for_answer=construction_count,
+    )
+    return build_solid_formula_plan(
+        prompt_key="single",
+        problem=problem,
+        render_scene=render_prism_pyramid,
+        annotation_keys=ANNOTATION_KEYS,
+        branch_probabilities=branch_probabilities,
+        support_probabilities=support_probabilities,
+    )
 
 
 @register_task
 class GeometrySolidFormulaPrismPyramidHeightFromVolumeTask:
-    """Compute prism-pyramid height from volume."""
-
     task_id = TASK_ID
     domain = "geometry"
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
     default_dataset_enabled = True
-    supported_query_ids = SUPPORTED_QUERY_IDS
+    supported_query_ids = ("single",)
+    default_query_id = "single"
+    prepare_objective = staticmethod(_prepare_prism_height_objective)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
+    def generate(self, instance_seed, *, params, max_attempts):
+        return run_solid_formula_public_entry(
+            self,
+            instance_seed,
             params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
+            max_attempts=max_attempts,
         )
-        artifact = SolidFormulaRuntime().generate_artifact(
-            int(instance_seed),
-            params=task_params,
-            max_attempts=int(max_attempts),
-            runtime_namespace=TASK_ID,
-            query_id=str(query_id),
-            query_id_probabilities=query_probabilities,
-        )
-        final_output = TaskOutput(
-            prompt=str(artifact.prompt),
-            answer_gt=TypedValue(type=str(artifact.answer_type), value=artifact.answer_value),
-            annotation_gt=TypedValue(type=str(artifact.annotation_type), value=artifact.annotation_value),
-            image=artifact.image,
-            image_id="img0",
-            trace_payload=artifact.trace_payload,
-            task_versions=artifact.task_versions,
-            scene_id=SCENE_ID,
-            query_id=str(artifact.query_id),
-            prompt_variants=dict(artifact.prompt_variants),
-        )
-        return final_output
-
-
-__all__ = ["GeometrySolidFormulaPrismPyramidHeightFromVolumeTask", "SUPPORTED_QUERY_IDS", "TASK_ID"]

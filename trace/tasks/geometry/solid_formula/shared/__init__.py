@@ -1,1 +1,1 @@
-"""Shared implementation helpers for solid-formula geometry tasks."""
+"""Shared scene primitives for solid-formula geometry tasks."""

@@ -4,12 +4,25 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Tuple
 
+from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.fixed_query import force_query_id_params, select_task_query_id
 from ...shared.output_metadata import default_task_versions
-from .shared.instance import PUBLIC_METRO_SCENE_ID, build_metro_route_instance
+from ._lifecycle import (
+    FALLBACK_DEFAULTS,
+    load_metro_defaults,
+    prepare_metro_assets,
+    resolve_style_axes,
+    route_count_support_for_target,
+    select_support_value,
+    support_from_bounds,
+)
+from .shared.output import MetroRouteResolvedAxes
+from .shared.state import SCENE_ID
+from .shared.algorithms import feasible_single_route_station_counts, feasible_transfer_station_counts
+from .shared.sampling import sample_single_route_station_network, sample_transfer_station_network
 
 
 TASK_ID = "task_graph__metro__station_membership_count"
@@ -17,37 +30,15 @@ TRANSFER_QUERY_ID = "metro_transfer_station_count"
 SINGLE_ROUTE_QUERY_ID = "metro_single_route_station_count"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (TRANSFER_QUERY_ID, SINGLE_ROUTE_QUERY_ID)
 
-_QUERY_ALIASES: Dict[str, str] = {
-    "transfer_station_count": TRANSFER_QUERY_ID,
-    "single_route_station_count": SINGLE_ROUTE_QUERY_ID,
-    "non_transfer_station_count": SINGLE_ROUTE_QUERY_ID,
-}
-
 _QUERY_PROMPT_KEYS: Dict[str, Tuple[str, str]] = {
-    TRANSFER_QUERY_ID: ("annotation_hint_transfer_station_count", "metro_transfer_station_count_query"),
-    SINGLE_ROUTE_QUERY_ID: ("annotation_hint_single_route_station_count", "metro_single_route_station_count_query"),
+    TRANSFER_QUERY_ID: ("metro_transfer_station_count", "annotation_hint_transfer_station_count"),
+    SINGLE_ROUTE_QUERY_ID: ("metro_single_route_station_count", "annotation_hint_single_route_station_count"),
 }
 
 
-def _selection_params(params: Mapping[str, Any]) -> Dict[str, Any]:
-    """Normalize local query aliases before using the shared query selector."""
-
-    normalized = dict(params)
-    for selector_key in ("query_id", "query_variant"):
-        requested = normalized.get(selector_key)
-        if requested is not None:
-            normalized[selector_key] = _QUERY_ALIASES.get(str(requested), str(requested))
-    has_explicit_selector = any(str(normalized.get(key, "")) not in {"", "None"} for key in ("query_id", "query_variant"))
-    if not has_explicit_selector and normalized.get("target_transfer_count") is not None:
-        normalized["query_id"] = TRANSFER_QUERY_ID
-    return normalized
-
-
-def _branch_params(params: Mapping[str, Any], *, query_id: str) -> Dict[str, Any]:
-    """Apply objective-owned sampling constraints for one station-membership query."""
-
+def _branch_params(params: Mapping[str, Any], *, branch_name: str) -> Dict[str, Any]:
     branch = dict(params)
-    if str(query_id) == SINGLE_ROUTE_QUERY_ID:
+    if str(branch_name) == SINGLE_ROUTE_QUERY_ID:
         branch.setdefault("target_count_min", 8)
         branch.setdefault("target_count_max", 12)
         branch.setdefault("route_count_min", 2)
@@ -60,15 +51,41 @@ def _branch_params(params: Mapping[str, Any], *, query_id: str) -> Dict[str, Any
     return branch
 
 
-def _trace_with_query_probabilities(trace_payload: Mapping[str, Any], query_probs: Mapping[str, float]) -> Dict[str, Any]:
-    """Return trace payload with public local-query probabilities recorded."""
+def _resolve_axes(instance_seed: int, params: Mapping[str, Any], *, branch_name: str) -> MetroRouteResolvedAxes:
+    """Membership invariant: both branches count stations by route-cardinality."""
 
+    gen_defaults, _render_defaults, _prompt_defaults, _background_defaults, _noise_defaults = load_metro_defaults(TASK_ID)
+    route_low = int(params.get("route_count_min", gen_defaults.get("route_count_min", FALLBACK_DEFAULTS.route_count_min)))
+    route_high = int(params.get("route_count_max", gen_defaults.get("route_count_max", FALLBACK_DEFAULTS.route_count_max)))
+    if str(branch_name) == SINGLE_ROUTE_QUERY_ID:
+        feasible = feasible_single_route_station_counts(route_count_min=route_low, route_count_max=route_high)
+        feasible_for_route = lambda route_count: feasible_single_route_station_counts(route_count_min=int(route_count), route_count_max=int(route_count))
+    else:
+        feasible = feasible_transfer_station_counts(route_count_min=route_low, route_count_max=route_high)
+        feasible_for_route = lambda route_count: feasible_transfer_station_counts(route_count_min=int(route_count), route_count_max=int(route_count))
+    target_support = support_from_bounds(
+        params=params,
+        gen_defaults=gen_defaults,
+        low_key="target_count_min",
+        high_key="target_count_max",
+        default_low=FALLBACK_DEFAULTS.target_count_min,
+        default_high=FALLBACK_DEFAULTS.target_count_max,
+        feasible=feasible,
+    )
+    target_count, target_probs = select_support_value(params=params, instance_seed=int(instance_seed), owner_id=TASK_ID, support=target_support, explicit_keys=("target_count", "target_transfer_count"), namespace_suffix=f"{branch_name}_target_support_v0")
+    route_support = route_count_support_for_target(params=params, gen_defaults=gen_defaults, target_value=int(target_count), feasible_for_route_count=feasible_for_route)
+    route_count, route_probs = select_support_value(params=params, instance_seed=int(instance_seed), owner_id=TASK_ID, support=route_support, explicit_keys=("route_count",), namespace_suffix=f"{branch_name}_route_count_v0")
+    label_variant, label_probs, node_color_name, color_probs = resolve_style_axes(params=params, gen_defaults=gen_defaults, instance_seed=int(instance_seed), owner_id=TASK_ID)
+    return MetroRouteResolvedAxes(int(target_count), int(route_count), str(label_variant), str(node_color_name), 0, dict(target_probs), dict(route_probs), dict(label_probs), dict(color_probs))
+
+
+def _trace_with_branch_probabilities(trace_payload: Mapping[str, Any], branch_probs: Mapping[str, float]) -> Dict[str, Any]:
     trace = dict(trace_payload)
-    query_spec = dict(trace.get("query_spec") or {})
-    params = dict(query_spec.get("params") or {})
-    params["query_id_probabilities"] = {str(key): float(value) for key, value in query_probs.items()}
-    query_spec["params"] = params
-    trace["query_spec"] = query_spec
+    spec = dict(trace.get("query_spec") or {})
+    params = dict(spec.get("params") or {})
+    params["query_id_probabilities"] = {str(key): float(value) for key, value in branch_probs.items()}
+    spec["params"] = params
+    trace["query_spec"] = spec
     return trace
 
 
@@ -78,44 +95,60 @@ class GraphCountingMetroStationMembershipCountTask:
 
     task_id = TASK_ID
     domain = "graph"
-    scene_id = PUBLIC_METRO_SCENE_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Select the membership predicate, sample a matching map, and bind matching stations."""
+
         del max_attempts
-        query_id, query_probs, task_params = select_task_query_id(
+        branch_name, branch_probs, task_params = select_task_query_id(
             instance_seed=int(instance_seed),
-            params=_selection_params(params),
+            params=params,
             supported_query_ids=SUPPORTED_QUERY_IDS,
             default_query_id=TRANSFER_QUERY_ID,
             task_id=TASK_ID,
             namespace=f"{TASK_ID}.query",
         )
-        prompt_annotation_key, prompt_task_key_fallback = _QUERY_PROMPT_KEYS[str(query_id)]
-        branch_params = _branch_params(task_params, query_id=str(query_id))
-        forced_params = force_query_id_params(branch_params, query_id=str(query_id))
-        bundle = build_metro_route_instance(
-            instance_key=TASK_ID,
-            query_id=str(query_id),
+        branch_params = _branch_params(task_params, branch_name=str(branch_name))
+        forced_params = force_query_id_params(branch_params, query_id=str(branch_name))
+        axes = _resolve_axes(int(instance_seed), forced_params, branch_name=str(branch_name))
+        sample_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.metro_network")
+        if str(branch_name) == SINGLE_ROUTE_QUERY_ID:
+            sample = sample_single_route_station_network(sample_rng, target_count=int(axes.target_count), route_count=int(axes.route_count), label_variant=str(axes.label_variant))
+            answer_value = int(sample.target_single_route_count)
+        else:
+            sample = sample_transfer_station_network(sample_rng, target_count=int(axes.target_count), route_count=int(axes.route_count), label_variant=str(axes.label_variant))
+            answer_value = int(sample.target_transfer_count)
+        prompt_query_key, prompt_annotation_key = _QUERY_PROMPT_KEYS[str(branch_name)]
+        assets = prepare_metro_assets(
+            owner_id=TASK_ID,
+            branch_name=str(branch_name),
+            prompt_query_key=str(prompt_query_key),
             prompt_annotation_key=str(prompt_annotation_key),
-            prompt_task_key_fallback=str(prompt_task_key_fallback),
             instance_seed=int(instance_seed),
             params=forced_params,
-            domain=self.domain,
+            sample=sample,
+            axes=axes,
+            answer_value=int(answer_value),
+            annotation_labels=tuple(sample.target_labels),
+            ordered_annotation=False,
         )
         return TaskOutput(
-            prompt=str(bundle.prompt),
-            answer_gt=TypedValue(type="integer", value=int(bundle.answer_value)),
-            annotation_gt=TypedValue(type=str(bundle.annotation_type), value=list(bundle.annotation_value)),
-            image=bundle.image,
+            prompt=str(assets.prompt),
+            answer_gt=TypedValue(type="integer", value=int(assets.answer_annotation.answer_value)),
+            annotation_gt=TypedValue(type=str(assets.answer_annotation.annotation_type), value=list(assets.answer_annotation.annotation_value)),
+            image=assets.image,
             image_id="img0",
-            trace_payload=_trace_with_query_probabilities(bundle.trace_payload, query_probs),
+            trace_payload=_trace_with_branch_probabilities(assets.trace_payload, branch_probs),
             task_versions=default_task_versions(),
-            scene_id=PUBLIC_METRO_SCENE_ID,
-            query_id=str(bundle.query_id),
-            prompt_variants=dict(bundle.prompt_variants),
+            scene_id=SCENE_ID,
+            query_id=str(branch_name),
+            prompt_variants=dict(assets.prompt_variants),
         )
 
 
-__all__ = ["GraphCountingMetroStationMembershipCountTask", "TASK_ID"]
+GraphCountingTransferStationCountTask = GraphCountingMetroStationMembershipCountTask
+GraphCountingSingleRouteStationCountTask = GraphCountingMetroStationMembershipCountTask
+
+__all__ = ["GraphCountingMetroStationMembershipCountTask", "GraphCountingTransferStationCountTask", "GraphCountingSingleRouteStationCountTask", "TASK_ID"]

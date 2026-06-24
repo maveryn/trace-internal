@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.counting.metro_single_route_station_count import GraphCountingSingleRouteStationCountTask
-from trace.tasks.graph.counting.metro_transfer_station_count import GraphCountingTransferStationCountTask
-from trace.tasks.graph.path.metro_shortest_path_length import GraphPathMetroShortestPathLengthTask
-from trace.tasks.graph.path.metro_transfer_count import GraphPathMetroTransferCountTask
-from trace.tasks.graph.relation.metro_exact_distance_count import GraphRelationMetroExactDistanceCountTask
+from trace.tasks.graph.metro.exact_distance_station_count import GraphRelationMetroExactDistanceCountTask
+from trace.tasks.graph.metro.shortest_path_length import GraphPathMetroShortestPathLengthTask
+from trace.tasks.graph.metro.station_membership_count import (
+    GraphCountingSingleRouteStationCountTask,
+    GraphCountingTransferStationCountTask,
+)
+from trace.tasks.graph.metro.transfer_count import GraphPathMetroTransferCountTask
 
 
 def test_metro_transfer_station_count_contract() -> None:
@@ -39,7 +41,7 @@ def test_metro_transfer_station_count_is_registered() -> None:
 def test_metro_single_route_station_count_contract() -> None:
     out = GraphCountingSingleRouteStationCountTask().generate(
         2026051909,
-        params={"target_count": 11, "route_count": 3, "label_variant": "letters"},
+        params={"query_id": "metro_single_route_station_count", "target_count": 11, "route_count": 3, "label_variant": "letters"},
         max_attempts=100,
     )
     station_routes = out.trace_payload["execution_trace"]["station_route_ids_by_label"]
@@ -72,7 +74,7 @@ def test_metro_exact_distance_count_contract() -> None:
                 queue.append(str(neighbor))
     exact_labels = sorted(label for label, distance in distances.items() if int(distance) == query_distance)
     assert out.scene_id == "metro"
-    assert out.query_id == "metro_exact_distance_count"
+    assert out.query_id == "single"
     assert out.answer_gt.value == len(exact_labels) == 4
     assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == len(exact_labels)
@@ -86,7 +88,7 @@ def test_metro_shortest_path_length_contract() -> None:
     )
     trace = out.trace_payload["execution_trace"]
     assert out.scene_id == "metro"
-    assert out.query_id == "metro_shortest_path_length"
+    assert out.query_id == "single"
     assert out.answer_gt.value == int(trace["target_shortest_path_length"]) == 4
     assert out.annotation_gt.type == "point_sequence"
     assert len(out.annotation_gt.value) == out.answer_gt.value + 1
@@ -108,7 +110,7 @@ def test_metro_transfer_count_contract() -> None:
         if str(left) != str(right)
     )
     assert out.scene_id == "metro"
-    assert out.query_id == "metro_transfer_count"
+    assert out.query_id == "single"
     assert out.answer_gt.value == int(trace["target_route_transfer_count"]) == route_change_count == 4
     assert out.annotation_gt.type == "point_sequence"
     assert len(out.annotation_gt.value) == len(trace["matching_labels"])
@@ -119,7 +121,7 @@ def test_metro_transfer_count_contract() -> None:
 
 def test_metro_transfer_station_count_is_deterministic() -> None:
     task = GraphCountingTransferStationCountTask()
-    params = {"target_count": 5, "route_count": 5, "label_variant": "numbers"}
+    params = {"query_id": "metro_transfer_station_count", "target_count": 5, "route_count": 5, "label_variant": "numbers"}
     left = task.generate(2026051908, params=params, max_attempts=100)
     right = task.generate(2026051908, params=params, max_attempts=100)
     assert left.answer_gt.value == right.answer_gt.value

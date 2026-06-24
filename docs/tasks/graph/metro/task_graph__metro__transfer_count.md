@@ -1,28 +1,42 @@
 # `task_graph__metro__transfer_count`
 
-## 1) Identity
+## Summary
 1. Domain: `graph`
-2. Scene: `path`
-3. Scene id: `metro`
-4. Task id: `task_graph__metro__transfer_count`
-5. Objective: count the minimum colored-route changes for a metro trip from a source station to a goal station through a required via station.
+2. Scene id: `metro`
+3. Task id: `task_graph__metro__transfer_count`
+4. Objective: count the minimum colored-route changes for a metro trip from a source station to a goal station through a required via station.
+5. Implementation: `trace/tasks/graph/metro/transfer_count.py`.
 
-## 2) Scene + Task Contract
-1. Branch metadata: `query_id`
-2. `query_id`: `metro_transfer_count`
-3. `answer_gt.type`: `integer`
-4. `annotation_gt.type`: `point_sequence`
-5. The sampled source, via, and goal stations have one selected minimum-transfer station path after shortest-path tie-breaking.
-6. Annotation is the ordered station-center pixel sequence along the selected path in travel order: source first, via somewhere in the sequence, and goal last.
+## Query IDs
+1. Supported `query_id` values: `single`.
+2. Internal prompt key: `metro_transfer_count`.
+3. Public sampling is at the task-id level.
 
-## 3) Prompt Contract
-1. Bundle: `graph_path_v0`
-2. `scene_key`: `metro_route_path`
-3. `task_key`: `metro_transfer_count_query`
-4. Answer-only JSON: `{"answer":2}`
-5. Answer+annotation JSON: `{"annotation":[[180,220],[310,180],[430,260]],"answer":2}`
+## Taxonomy Contract
+1. Program contract: find the selected minimum-transfer station path from source to goal through the via station and output the number of route changes.
+2. Answer schema: `integer`.
+3. Annotation schema: `point_sequence`.
+4. Transfer-count target, route count, station labels, route colors, style, font, background, and layout jitter are generation/render metadata, not public query branches.
 
-## 4) Verification
-1. The verifier payload records source, via, goal, station adjacency, selected route sequence, route-change station labels, and the projected station path.
-2. `answer_gt.value` equals the number of route-id changes in the selected route sequence.
-3. Answers and annotation are computed from the same finalized metro route membership and adjacency metadata.
+## Program Contract
+- `min_route_changes(path from source through via to goal); output=integer; annotation=point_sequence(selected_path_station_centers_in_order); scene=metro; scope=transfer_count`
+
+## Answer And Annotation
+1. Answer type: `integer`.
+2. Annotation type: `point_sequence`.
+3. Annotation marks ordered station-center points along the selected source-via-goal route, including endpoints and the via station.
+4. The answer equals the number of route-id changes along the annotated route sequence, and both come from the same finalized metro-route graph.
+
+## Rendering Contract
+1. The scene shows a labeled metro route map with colored routes and station nodes.
+2. The via station is visually highlighted.
+3. Visual style, fonts, panel treatment, layout jitter, context text, and post-render noise are non-semantic and recorded in trace metadata.
+4. Annotation projection is computed after final layout and style placement.
+
+## Prompt Contract
+1. Prompt text comes from `prompts/graph/metro/graph_metro_v1.json`.
+2. `scene_key`: `metro_route_map`.
+3. `task_key`: `metro_route_query`.
+4. `query_key`: `metro_transfer_count`.
+5. Answer-only mode emits `{"answer": ...}`.
+6. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with `annotation` matching the `point_sequence` schema.

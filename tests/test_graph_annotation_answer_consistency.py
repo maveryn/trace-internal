@@ -109,13 +109,13 @@ GRAPH_QUERY_IDS = {
     "task_graph__flow_network__min_cut_edge_count": ("single",),
     "task_graph__graph_options__contained_subgraph_label": ("single",),
     "task_graph__graph_options__same_structure_label": ("single",),
-    "task_graph__metro__exact_distance_station_count": ("metro_exact_distance_count",),
-    "task_graph__metro__shortest_path_length": ("metro_shortest_path_length",),
+    "task_graph__metro__exact_distance_station_count": ("single",),
+    "task_graph__metro__shortest_path_length": ("single",),
     "task_graph__metro__station_membership_count": (
         "metro_single_route_station_count",
         "metro_transfer_station_count",
     ),
-    "task_graph__metro__transfer_count": ("metro_transfer_count",),
+    "task_graph__metro__transfer_count": ("single",),
     "task_graph__node_link__articulation_point_count": ("single",),
     "task_graph__node_link__bridge_count": ("single",),
     "task_graph__node_link__common_related_node_count": (

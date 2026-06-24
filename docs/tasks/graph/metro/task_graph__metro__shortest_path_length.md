@@ -1,28 +1,41 @@
 # `task_graph__metro__shortest_path_length`
 
-## 1) Identity
+## Summary
 1. Domain: `graph`
-2. Scene: `path`
-3. Scene id: `metro`
-4. Task id: `task_graph__metro__shortest_path_length`
-5. Objective: count route segments in the unique shortest station path between two labeled stations.
+2. Scene id: `metro`
+3. Task id: `task_graph__metro__shortest_path_length`
+4. Objective: count route segments in the unique shortest station path between two labeled stations.
+5. Implementation: `trace/tasks/graph/metro/shortest_path_length.py`.
 
-## 2) Scene + Task Contract
-1. Branch metadata: `query_id`
-2. `query_id`: `metro_shortest_path_length`
-3. `answer_gt.type`: `integer`
-4. `annotation_gt.type`: `point_sequence`
-5. The sampled source and goal have exactly one shortest path in the metro adjacency graph.
-6. Annotation is the ordered station-center pixel sequence along that unique shortest path, including both endpoints.
+## Query IDs
+1. Supported `query_id` values: `single`.
+2. Internal prompt key: `metro_shortest_path_length`.
+3. Public sampling is at the task-id level.
 
-## 3) Prompt Contract
-1. Bundle: `graph_path_v0`
-2. `scene_key`: `metro_route_path`
-3. `task_key`: `shortest_path_length_query`
-4. Answer-only JSON: `{"answer":2}`
-5. Answer+annotation JSON: `{"annotation":[[180,220],[310,180],[430,260]],"answer":2}`
+## Taxonomy Contract
+1. Program contract: find the unique shortest station path between the named source and goal, then output its route-segment length.
+2. Answer schema: `integer`.
+3. Annotation schema: `point_sequence`.
+4. Path length target, route count, station labels, route colors, style, font, background, and layout jitter are generation/render metadata, not public query branches.
 
-## 4) Verification
-1. The verifier payload records the source, goal, metro adjacency map, and ordered witness path.
-2. `answer_gt.value == len(annotation_gt.value) - 1`.
-3. Answers and annotation are computed from the same finalized metro adjacency map.
+## Program Contract
+- `length(unique_shortest_station_path(source, goal)); output=integer; annotation=point_sequence(path_station_centers_in_order); scene=metro; scope=shortest_path_length`
+
+## Answer And Annotation
+1. Answer type: `integer`.
+2. Annotation type: `point_sequence`.
+3. Annotation marks the ordered station-center points along the unique shortest path, including both endpoints.
+4. `answer == len(annotation) - 1`, and both come from the same finalized metro-route graph.
+
+## Rendering Contract
+1. The scene shows a labeled metro route map with colored routes and station nodes.
+2. Visual style, fonts, panel treatment, layout jitter, context text, and post-render noise are non-semantic and recorded in trace metadata.
+3. Annotation projection is computed after final layout and style placement.
+
+## Prompt Contract
+1. Prompt text comes from `prompts/graph/metro/graph_metro_v1.json`.
+2. `scene_key`: `metro_route_map`.
+3. `task_key`: `metro_route_query`.
+4. `query_key`: `metro_shortest_path_length`.
+5. Answer-only mode emits `{"answer": ...}`.
+6. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with `annotation` matching the `point_sequence` schema.

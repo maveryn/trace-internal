@@ -3,19 +3,29 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `solid_revolution`
-5. Query id: `cone_volume_from_right_triangle`
-6. Answer schema: `decimal_value_1dp`
-7. Annotation schema: `bbox_set`
+3. Query id: `single`
+4. Answer schema: `decimal_value_1dp`
+5. Annotation schema: `bbox_map`
 
 ## Program Contract
-- `solve_formula(visible_solid_revolution_measurements, unknown_role=volume_measure, formula_schema=cone_volume_from_right_triangle); scene=solid_revolution; scope=revolution_cone_volume_value`
+- `solve_formula(visible_solid_revolution_measurements, formula_schema=cone_volume_from_right_triangle, target=volume); scene=solid_revolution; scope=revolution_cone_volume_value`
+
+## Query IDs
+- `single`: a right triangle is rotated 360 degrees around the marked leg; solve the resulting cone volume from the visible height and slant height.
 
 ## Prompt Bundle
-- Prompt text is loaded from the scene prompt bundle configured for `solid_revolution`.
+- Bundle: `geometry_solid_revolution_v1`
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+The annotation is a `bbox_map` with role-bound pixel boxes:
+
+- `generating_shape`
+- `rotation_axis`
+- `solid_preview`
+- `target_volume_cue`
+- `height_label`
+- `slant_height_label`
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

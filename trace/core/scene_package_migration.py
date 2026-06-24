@@ -53,6 +53,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
             "similar_figure_measure_transfer",
             "solid_cross_section",
             "solid_formula",
+            "solid_revolution",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "flow_network", "graph_options", "metro", "node_link", "pedigree_chart"}),
@@ -100,6 +101,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
             "similar_figure_measure_transfer",
             "solid_cross_section",
             "solid_formula",
+            "solid_revolution",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "flow_network", "graph_options", "metro", "node_link", "pedigree_chart"}),

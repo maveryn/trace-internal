@@ -641,7 +641,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
         **expected_candidate_scenes,
         "charts": frozenset((*expected_candidate_scenes["charts"], "size_encoding", "small_multiple", "style_legend", "sunburst", "table", "treemap", "uncertainty_band")),
         "games": frozenset((*expected_candidate_scenes["games"], "tetris", "tic_tac_toe_3d", "tower_defense", "tower_draughts_board", "ultimate_tictactoe")),
-        "geometry": frozenset((*expected_candidate_scenes["geometry"], "parallel_segment_proportion", "polygon_angle_chase", "pythagorean_dissection", "pythagorean_tree", "rectangular_solid", "regular_polygon_decomposition", "right_triangle_altitude_theorem", "sector", "shape_gallery", "similar_figure_measure_transfer", "solid_cross_section", "solid_formula")),
+        "geometry": frozenset((*expected_candidate_scenes["geometry"], "parallel_segment_proportion", "polygon_angle_chase", "pythagorean_dissection", "pythagorean_tree", "rectangular_solid", "regular_polygon_decomposition", "right_triangle_altitude_theorem", "sector", "shape_gallery", "similar_figure_measure_transfer", "solid_cross_section", "solid_formula", "solid_revolution")),
         "icons": frozenset((*expected_candidate_scenes["icons"], "named_strip", "overlap_grid", "wallpaper_panels")),
         "illustrations": frozenset((*expected_candidate_scenes["illustrations"], "rpg_tactical_map")),
         "three_d": frozenset((*expected_candidate_scenes["three_d"], "object_scene", "room")),
@@ -679,6 +679,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     assert scene_package_migration.is_scene_package_task('task_geometry__parallel_segment_proportion__variable_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__right_triangle_altitude_theorem__altitude_to_hypotenuse_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__sector__sector_area_value', domain='geometry')
+    assert scene_package_migration.is_scene_package_task('task_geometry__solid_revolution__revolution_cylinder_volume_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_graph__adjacency__traversal_kth_label', domain='graph')
     assert scene_package_migration.is_scene_package_task('task_graph__automaton__state_after_input_label', domain='graph')
     assert scene_package_migration.is_scene_package_task('task_graph__flow_network__max_flow_value', domain='graph')

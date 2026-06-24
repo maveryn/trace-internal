@@ -3,19 +3,30 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `solid_revolution`
-5. Query id: `frustum_volume_from_trapezoid`
-6. Answer schema: `decimal_value_1dp`
-7. Annotation schema: `bbox_set`
+3. Query id: `single`
+4. Answer schema: `decimal_value_1dp`
+5. Annotation schema: `bbox_map`
 
 ## Program Contract
-- `solve_formula(visible_solid_revolution_measurements, unknown_role=volume_measure, formula_schema=frustum_volume_from_trapezoid); scene=solid_revolution; scope=revolution_frustum_volume_value`
+- `solve_formula(visible_solid_revolution_measurements, formula_schema=frustum_volume_from_trapezoid, target=volume); scene=solid_revolution; scope=revolution_frustum_volume_value`
+
+## Query IDs
+- `single`: a right trapezoid is rotated 360 degrees around the marked side; solve the resulting frustum volume from the visible height and radii.
 
 ## Prompt Bundle
-- Prompt text is loaded from the scene prompt bundle configured for `solid_revolution`.
+- Bundle: `geometry_solid_revolution_v1`
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+The annotation is a `bbox_map` with role-bound pixel boxes:
+
+- `generating_shape`
+- `rotation_axis`
+- `solid_preview`
+- `target_volume_cue`
+- `height_label`
+- `top_radius_label`
+- `bottom_radius_label`
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

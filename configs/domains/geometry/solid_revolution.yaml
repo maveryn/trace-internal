@@ -9,6 +9,6 @@ rendering:
     small_label_font_size: 18
 prompt:
   shared:
-    bundle_id: geometry_solid_revolution_v0
+    bundle_id: geometry_solid_revolution_v1
     scene_key: solid_revolution_scene
     task_key: solid_revolution_value_query

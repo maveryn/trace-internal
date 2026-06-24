@@ -1,1 +1,1 @@
-"""Shared implementation helpers for solid-revolution geometry tasks."""
+"""Shared primitives for solid-revolution geometry tasks."""

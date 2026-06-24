@@ -15,7 +15,7 @@ from ...shared.text import draw_game_text_traced as draw_text_traced
 from ...shared.layout import apply_games_layout_jitter_to_bbox, resolve_games_layout_jitter
 from ...shared.scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .defaults import DEFAULTS, RENDER_DEFAULTS
-from .state import SpaceBlocker, SpaceEnemy, SpaceProjectile, lane_entity_id
+from .state import SpaceEnemy, SpaceProjectile, lane_entity_id
 
 
 @dataclass(frozen=True)
@@ -34,8 +34,6 @@ class SpaceShooterRenderParams:
     enemy_height_px: int
     projectile_width_px: int
     projectile_height_px: int
-    blocker_width_px: int
-    blocker_height_px: int
     player_ship_width_px: int
     player_ship_height_px: int
     label_font_size_px: int
@@ -53,9 +51,9 @@ class SpaceShooterTheme:
     enemy_fill_rgb: Tuple[int, int, int]
     enemy_outline_rgb: Tuple[int, int, int]
     enemy_text_rgb: Tuple[int, int, int]
-    projectile_fill_rgb: Tuple[int, int, int]
-    blocker_fill_rgb: Tuple[int, int, int]
-    blocker_outline_rgb: Tuple[int, int, int]
+    enemy_projectile_fill_rgb: Tuple[int, int, int]
+    player_projectile_fill_rgb: Tuple[int, int, int]
+    projectile_outline_rgb: Tuple[int, int, int]
     lane_fill_rgb: Tuple[int, int, int]
     lane_outline_rgb: Tuple[int, int, int]
     player_fill_rgb: Tuple[int, int, int]
@@ -94,8 +92,6 @@ def resolve_space_shooter_render_params(params: Mapping[str, Any], *, instance_s
         enemy_height_px=int(params.get("enemy_height_px", group_default(RENDER_DEFAULTS, "enemy_height_px", DEFAULTS.enemy_height_px))),
         projectile_width_px=int(params.get("projectile_width_px", group_default(RENDER_DEFAULTS, "projectile_width_px", DEFAULTS.projectile_width_px))),
         projectile_height_px=int(params.get("projectile_height_px", group_default(RENDER_DEFAULTS, "projectile_height_px", DEFAULTS.projectile_height_px))),
-        blocker_width_px=int(params.get("blocker_width_px", group_default(RENDER_DEFAULTS, "blocker_width_px", DEFAULTS.blocker_width_px))),
-        blocker_height_px=int(params.get("blocker_height_px", group_default(RENDER_DEFAULTS, "blocker_height_px", DEFAULTS.blocker_height_px))),
         player_ship_width_px=int(params.get("player_ship_width_px", group_default(RENDER_DEFAULTS, "player_ship_width_px", DEFAULTS.player_ship_width_px))),
         player_ship_height_px=int(params.get("player_ship_height_px", group_default(RENDER_DEFAULTS, "player_ship_height_px", DEFAULTS.player_ship_height_px))),
         label_font_size_px=int(params.get("label_font_size_px", group_default(RENDER_DEFAULTS, "label_font_size_px", DEFAULTS.label_font_size_px))),
@@ -121,9 +117,9 @@ def build_games_space_shooter_theme(*, style_variant: str) -> SpaceShooterTheme:
             enemy_fill_rgb=(82, 177, 232),
             enemy_outline_rgb=(206, 238, 255),
             enemy_text_rgb=(8, 18, 32),
-            projectile_fill_rgb=(255, 92, 91),
-            blocker_fill_rgb=(84, 98, 119),
-            blocker_outline_rgb=(193, 205, 221),
+            enemy_projectile_fill_rgb=(242, 66, 67),
+            player_projectile_fill_rgb=(70, 170, 255),
+            projectile_outline_rgb=(228, 243, 255),
             lane_fill_rgb=(18, 42, 72),
             lane_outline_rgb=(119, 183, 232),
             player_fill_rgb=(86, 230, 164),
@@ -138,9 +134,9 @@ def build_games_space_shooter_theme(*, style_variant: str) -> SpaceShooterTheme:
             enemy_fill_rgb=(230, 230, 214),
             enemy_outline_rgb=(24, 24, 24),
             enemy_text_rgb=(18, 18, 18),
-            projectile_fill_rgb=(242, 85, 65),
-            blocker_fill_rgb=(120, 130, 128),
-            blocker_outline_rgb=(238, 238, 225),
+            enemy_projectile_fill_rgb=(238, 63, 57),
+            player_projectile_fill_rgb=(76, 166, 245),
+            projectile_outline_rgb=(242, 242, 230),
             lane_fill_rgb=(36, 38, 42),
             lane_outline_rgb=(225, 225, 210),
             player_fill_rgb=(215, 242, 120),
@@ -155,9 +151,9 @@ def build_games_space_shooter_theme(*, style_variant: str) -> SpaceShooterTheme:
             enemy_fill_rgb=(246, 160, 58),
             enemy_outline_rgb=(255, 223, 143),
             enemy_text_rgb=(45, 24, 8),
-            projectile_fill_rgb=(255, 82, 56),
-            blocker_fill_rgb=(120, 88, 54),
-            blocker_outline_rgb=(235, 184, 104),
+            enemy_projectile_fill_rgb=(237, 61, 52),
+            player_projectile_fill_rgb=(66, 166, 244),
+            projectile_outline_rgb=(255, 232, 182),
             lane_fill_rgb=(68, 43, 20),
             lane_outline_rgb=(221, 141, 58),
             player_fill_rgb=(255, 214, 110),
@@ -172,9 +168,9 @@ def build_games_space_shooter_theme(*, style_variant: str) -> SpaceShooterTheme:
             enemy_fill_rgb=(66, 221, 122),
             enemy_outline_rgb=(190, 255, 210),
             enemy_text_rgb=(3, 30, 16),
-            projectile_fill_rgb=(255, 88, 92),
-            blocker_fill_rgb=(41, 93, 62),
-            blocker_outline_rgb=(112, 232, 160),
+            enemy_projectile_fill_rgb=(244, 67, 70),
+            player_projectile_fill_rgb=(78, 180, 255),
+            projectile_outline_rgb=(196, 255, 220),
             lane_fill_rgb=(14, 54, 32),
             lane_outline_rgb=(79, 220, 135),
             player_fill_rgb=(166, 255, 184),
@@ -188,9 +184,9 @@ def build_games_space_shooter_theme(*, style_variant: str) -> SpaceShooterTheme:
         enemy_fill_rgb=(255, 76, 174),
         enemy_outline_rgb=(255, 211, 239),
         enemy_text_rgb=(37, 5, 32),
-        projectile_fill_rgb=(255, 235, 87),
-        blocker_fill_rgb=(75, 67, 118),
-        blocker_outline_rgb=(197, 184, 255),
+        enemy_projectile_fill_rgb=(242, 65, 67),
+        player_projectile_fill_rgb=(68, 178, 255),
+        projectile_outline_rgb=(220, 230, 255),
         lane_fill_rgb=(30, 24, 76),
         lane_outline_rgb=(132, 116, 255),
         player_fill_rgb=(69, 230, 245),
@@ -286,47 +282,39 @@ def _draw_projectile(
     draw: ImageDraw.ImageDraw,
     *,
     bbox: Tuple[float, float, float, float],
+    projectile: SpaceProjectile,
     theme: SpaceShooterTheme,
 ) -> None:
-    """Draw one enemy projectile."""
+    """Draw one projectile with a shaped tip showing travel direction."""
 
     left, top, right, bottom = bbox
     cx = float((left + right) / 2.0)
-    draw.rounded_rectangle(
-        (left, top, right, bottom),
-        radius=max(2, int(round(0.30 * float(right - left)))),
-        fill=tuple(int(v) for v in theme.projectile_fill_rgb),
+    width = float(right - left)
+    height = float(bottom - top)
+    fill = (
+        tuple(int(v) for v in theme.player_projectile_fill_rgb)
+        if str(projectile.owner) == "player"
+        else tuple(int(v) for v in theme.enemy_projectile_fill_rgb)
     )
-    draw.line((cx, bottom, cx, bottom + (0.35 * float(bottom - top))), fill=tuple(int(v) for v in theme.projectile_fill_rgb), width=2)
-
-
-def _draw_blocker(
-    draw: ImageDraw.ImageDraw,
-    *,
-    bbox: Tuple[float, float, float, float],
-    blocker: SpaceBlocker,
-    theme: SpaceShooterTheme,
-) -> None:
-    """Draw one shield or asteroid blocker."""
-
-    left, top, right, bottom = bbox
-    fill = tuple(int(v) for v in theme.blocker_fill_rgb)
-    outline = tuple(int(v) for v in theme.blocker_outline_rgb)
-    width = max(2, int(round(0.045 * min(float(right - left), float(bottom - top)))))
-    if str(blocker.blocker_type) == "shield":
-        draw.rounded_rectangle((left, top, right, bottom), radius=8, fill=fill, outline=outline, width=width)
-        draw.arc((left + 4, top + 4, right - 4, bottom + 18), start=200, end=340, fill=outline, width=width)
-        return
-    points = [
-        (left + 0.15 * (right - left), top + 0.32 * (bottom - top)),
-        (left + 0.35 * (right - left), top + 0.08 * (bottom - top)),
-        (left + 0.74 * (right - left), top + 0.16 * (bottom - top)),
-        (right - 0.08 * (right - left), top + 0.54 * (bottom - top)),
-        (left + 0.66 * (right - left), bottom - 0.08 * (bottom - top)),
-        (left + 0.24 * (right - left), bottom - 0.18 * (bottom - top)),
-    ]
-    draw.polygon(points, fill=fill, outline=outline)
-    draw.line(points + [points[0]], fill=outline, width=width)
+    outline = tuple(int(v) for v in theme.projectile_outline_rgb)
+    tip_h = max(5.0, 0.20 * height)
+    body_h = height - tip_h
+    outline_width = max(2, int(round(0.08 * width)))
+    if str(projectile.owner) == "player":
+        body = (left + 0.08 * width, top + tip_h, right - 0.08 * width, bottom)
+        tip = [(cx, top), (left + 0.18 * width, top + tip_h + 1.0), (right - 0.18 * width, top + tip_h + 1.0)]
+    else:
+        body = (left + 0.08 * width, top, right - 0.08 * width, top + body_h)
+        tip = [(left + 0.18 * width, top + body_h - 1.0), (right - 0.18 * width, top + body_h - 1.0), (cx, bottom)]
+    draw.rounded_rectangle(
+        body,
+        radius=max(3, int(round(0.28 * width))),
+        fill=fill,
+        outline=outline,
+        width=outline_width,
+    )
+    draw.polygon(tip, fill=fill, outline=outline)
+    draw.line(tip + [tip[0]], fill=outline, width=outline_width)
 
 
 def _draw_player(
@@ -358,7 +346,6 @@ def render_space_shooter_scene(
     player_lane: int,
     enemies: Tuple[SpaceEnemy, ...],
     projectiles: Tuple[SpaceProjectile, ...],
-    blockers: Tuple[SpaceBlocker, ...],
     background: Image.Image,
     style_variant: str,
     params: SpaceShooterRenderParams,
@@ -426,16 +413,6 @@ def render_space_shooter_scene(
     entity_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     scene_entities: list[Dict[str, Any]] = []
     pad_top = float(clip_bottom - float(params.lane_pad_height_px) - 24.0)
-    if bool(highlight_player_lane):
-        lane_left = float(clip_left + (int(player_lane) * lane_width) + float(params.lane_pad_gap_px) * 0.55)
-        lane_right = float(clip_left + ((int(player_lane) + 1) * lane_width) - float(params.lane_pad_gap_px) * 0.55)
-        draw.rounded_rectangle(
-            (lane_left, clip_top + 10.0, lane_right, pad_top + float(params.lane_pad_height_px) + 4.0),
-            radius=10,
-            fill=tuple(int(v) for v in theme.accent_rgb) + (30,),
-            outline=tuple(int(v) for v in theme.accent_rgb) + (156,),
-            width=2,
-        )
     for lane in range(int(lane_count)):
         pad_left = float(clip_left + (lane * lane_width) + float(params.lane_pad_gap_px))
         pad_right = float(clip_left + ((lane + 1) * lane_width) - float(params.lane_pad_gap_px))
@@ -463,19 +440,6 @@ def render_space_shooter_scene(
                 "bbox_px": list(bbox),
             }
         )
-        guide_x = float(clip_left + ((lane + 0.5) * lane_width))
-        draw.line(
-            (guide_x, clip_top + 14.0, guide_x, pad_top - 8.0),
-            fill=tuple(int(v) for v in theme.lane_outline_rgb) + (54,),
-            width=2,
-        )
-        if lane > 0:
-            separator_x = float(clip_left + (lane * lane_width))
-            draw.line(
-                (separator_x, clip_top + 12.0, separator_x, pad_top + float(params.lane_pad_height_px)),
-                fill=tuple(int(v) for v in theme.screen_outline_rgb) + (42,),
-                width=1,
-            )
 
     player_cx = float(clip_left + ((int(player_lane) + 0.5) * lane_width))
     player_top = float(pad_top - float(params.player_ship_height_px) - 10)
@@ -512,30 +476,6 @@ def render_space_shooter_scene(
             round(cy + (0.5 * float(height_px)), 3),
         )
 
-    blocker_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
-    for blocker in blockers:
-        bbox = object_bbox(
-            lane=int(blocker.lane),
-            y_slot=int(blocker.y_slot),
-            width_px=float(params.blocker_width_px),
-            height_px=float(params.blocker_height_px),
-            dx_frac=float(blocker.dx_frac),
-            dy_px=float(blocker.dy_px),
-        )
-        _draw_blocker(draw, bbox=bbox, blocker=blocker, theme=theme)
-        blocker_bboxes[str(blocker.blocker_id)] = bbox
-        entity_bboxes[str(blocker.blocker_id)] = bbox
-        scene_entities.append(
-            {
-                "entity_id": str(blocker.blocker_id),
-                "entity_type": "space_blocker",
-                "blocker_type": str(blocker.blocker_type),
-                "lane": int(blocker.lane),
-                "y_slot": int(blocker.y_slot),
-                "bbox_px": list(bbox),
-            }
-        )
-
     projectile_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     for projectile in projectiles:
         bbox = object_bbox(
@@ -546,13 +486,15 @@ def render_space_shooter_scene(
             dx_frac=float(projectile.dx_frac),
             dy_px=float(projectile.dy_px),
         )
-        _draw_projectile(draw, bbox=bbox, theme=theme)
+        _draw_projectile(draw, bbox=bbox, projectile=projectile, theme=theme)
         projectile_bboxes[str(projectile.projectile_id)] = bbox
         entity_bboxes[str(projectile.projectile_id)] = bbox
         scene_entities.append(
             {
                 "entity_id": str(projectile.projectile_id),
-                "entity_type": "enemy_projectile",
+                "entity_type": f"{str(projectile.owner)}_projectile",
+                "owner": str(projectile.owner),
+                "direction": "up" if str(projectile.owner) == "player" else "down",
                 "lane": int(projectile.lane),
                 "y_slot": int(projectile.y_slot),
                 "bbox_px": list(bbox),
@@ -598,7 +540,6 @@ def render_space_shooter_scene(
         "lane_bboxes_px": {str(key): list(value) for key, value in lane_bboxes.items()},
         "enemy_bboxes_px": {str(key): list(value) for key, value in enemy_bboxes.items()},
         "projectile_bboxes_px": {str(key): list(value) for key, value in projectile_bboxes.items()},
-        "blocker_bboxes_px": {str(key): list(value) for key, value in blocker_bboxes.items()},
         "entity_bboxes_px": {str(key): list(value) for key, value in entity_bboxes.items()},
         "player_ship_bbox_px": list(player_bbox),
         "layout_jitter": dict(layout_jitter),

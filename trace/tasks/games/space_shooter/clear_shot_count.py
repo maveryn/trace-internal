@@ -54,7 +54,7 @@ def _prepare_clear_shot_count_objective(rng, params: Mapping[str, Any], axes: Sc
 
 @register_task
 class GamesSpaceShooterClearShotCountTask(SpaceShooterLifecycleTask):
-    """Count enemy ships with clear vertical shot lanes from bottom pads."""
+    """Count enemy ships not blocked below by ships or player shots."""
 
     task_id = TASK_ID
     supported_query_ids = SUPPORTED_QUERY_IDS

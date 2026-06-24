@@ -55,7 +55,7 @@ def _prepare_clear_shot_score_objective(rng, params: Mapping[str, Any], axes: Sc
 
 @register_task
 class GamesSpaceShooterClearShotScoreValueTask(SpaceShooterLifecycleTask):
-    """Sum printed scores for enemy ships with clear vertical shot lanes."""
+    """Sum printed scores for enemy ships not blocked by ships or player shots."""
 
     task_id = TASK_ID
     supported_query_ids = SUPPORTED_QUERY_IDS

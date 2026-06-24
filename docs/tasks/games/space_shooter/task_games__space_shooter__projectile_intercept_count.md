@@ -10,9 +10,9 @@
 7. Annotation schema: `bbox_set`
 
 ## Program Contract
-`count(filter(projectiles, same_lane(projectile, player_ship)=True)); scene=space_shooter; scope=projectile_intercept_count`
+`count(filter(enemy_projectiles, same_lane(projectile, player_ship)=True)); scene=space_shooter; scope=projectile_intercept_count`
 
 ## Generation Notes
 1. `single` is the only public query id; the task-specific prompt key is trace metadata.
-2. Annotation is the bbox set of enemy shots aligned with the player ship lane.
+2. Annotation is the bbox set of red enemy shots aligned with the player ship lane; blue player shots are distractors.
 3. Scalar annotation checked: true.

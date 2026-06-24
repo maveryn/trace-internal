@@ -39,6 +39,8 @@ def test_games_space_shooter_defaults_present() -> None:
     assert int(rendering["canvas_height"]) == 820
     assert int(rendering["enemy_width_px"]) > 0
     assert int(rendering["projectile_width_px"]) == 28
+    assert "blocker_width_px" not in rendering
+    assert "blocker_height_px" not in rendering
     assert set(generation["style_variant_weights"].keys()) == {
         "neon",
         "deep_space",
@@ -50,5 +52,7 @@ def test_games_space_shooter_defaults_present() -> None:
     bundle = json.loads(Path("prompts/games/space_shooter/games_space_shooter_v1.json").read_text(encoding="utf-8"))
     code_defaults = bundle["code_prompt_defaults"]
     assert "bottom lane pads" in str(code_defaults["space_shooter_lane_rule_text"]).lower()
+    assert "shield" not in json.dumps(bundle).lower()
+    assert "asteroid" not in json.dumps(bundle).lower()
     assert "total score" in str(code_defaults["answer_hint_clear_shot_score_value"]).lower()
     assert "bounding boxes" in str(code_defaults["annotation_hint_safe_lane_count"])

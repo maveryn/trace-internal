@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .state import SpaceBlocker, SpaceEnemy, SpaceProjectile
+from .state import SpaceEnemy, SpaceProjectile
 
 
 def lower_enemy_exists(enemy: SpaceEnemy, enemies: tuple[SpaceEnemy, ...]) -> bool:
@@ -15,34 +15,38 @@ def lower_enemy_exists(enemy: SpaceEnemy, enemies: tuple[SpaceEnemy, ...]) -> bo
     )
 
 
-def lower_blocker_exists(enemy: SpaceEnemy, blockers: tuple[SpaceBlocker, ...]) -> bool:
-    """Return whether a shield or asteroid blocks this enemy from below."""
+def lower_player_projectile_exists(enemy: SpaceEnemy, projectiles: tuple[SpaceProjectile, ...]) -> bool:
+    """Return whether an upward player shot blocks this enemy from below."""
 
     return any(
-        int(blocker.lane) == int(enemy.lane) and int(blocker.y_slot) > int(enemy.y_slot)
-        for blocker in blockers
+        str(projectile.owner) == "player"
+        and int(projectile.lane) == int(enemy.lane)
+        and int(projectile.y_slot) > int(enemy.y_slot)
+        for projectile in projectiles
     )
 
 
-def clear_shot_enemy_ids(enemies: tuple[SpaceEnemy, ...], blockers: tuple[SpaceBlocker, ...]) -> tuple[str, ...]:
-    """Return enemy ids with no lower enemy or blocker in their lane."""
+def clear_shot_enemy_ids(enemies: tuple[SpaceEnemy, ...], projectiles: tuple[SpaceProjectile, ...]) -> tuple[str, ...]:
+    """Return enemy ids with no lower enemy or player shot in their lane."""
 
     return tuple(
         str(enemy.enemy_id)
         for enemy in enemies
-        if not lower_enemy_exists(enemy, enemies) and not lower_blocker_exists(enemy, blockers)
+        if not lower_enemy_exists(enemy, enemies) and not lower_player_projectile_exists(enemy, projectiles)
     )
 
 
-def projectile_ids_in_lane(projectiles: tuple[SpaceProjectile, ...], lane: int) -> tuple[str, ...]:
-    """Return projectile ids in one lane."""
+def enemy_projectile_ids_in_lane(projectiles: tuple[SpaceProjectile, ...], lane: int) -> tuple[str, ...]:
+    """Return enemy projectile ids in one lane."""
 
-    return tuple(str(projectile.projectile_id) for projectile in projectiles if int(projectile.lane) == int(lane))
+    return tuple(
+        str(projectile.projectile_id)
+        for projectile in projectiles
+        if str(projectile.owner) == "enemy" and int(projectile.lane) == int(lane)
+    )
 
 
-def blocked_pad_lanes(projectiles: tuple[SpaceProjectile, ...], blockers: tuple[SpaceBlocker, ...]) -> set[int]:
-    """Return lanes made unsafe by a projectile or bottom-pad asteroid."""
+def enemy_projectile_lanes(projectiles: tuple[SpaceProjectile, ...]) -> set[int]:
+    """Return lanes threatened by falling enemy shots."""
 
-    lanes = {int(projectile.lane) for projectile in projectiles}
-    lanes.update(int(blocker.lane) for blocker in blockers if int(blocker.y_slot) >= 6)
-    return lanes
+    return {int(projectile.lane) for projectile in projectiles if str(projectile.owner) == "enemy"}

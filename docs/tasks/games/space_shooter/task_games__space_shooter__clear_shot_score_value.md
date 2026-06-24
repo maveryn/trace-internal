@@ -10,9 +10,9 @@
 7. Annotation schema: `bbox_set`
 
 ## Program Contract
-`sum(score(enemy) for enemy in enemy_targets if shot_line_blocked(enemy)=False); scene=space_shooter; scope=clear_shot_score_value`
+`sum(score(enemy) for enemy in enemy_targets if lower_enemy_or_player_shot_below(enemy)=False); scene=space_shooter; scope=clear_shot_score_value`
 
 ## Generation Notes
 1. `single` is the only public query id; the task-specific prompt key is trace metadata.
-2. Annotation is the bbox set of enemy ships whose printed score contributes to the answer.
+2. Annotation is the bbox set of enemy ships whose printed score contributes to the answer; red enemy shots are distractors, while blue player shots below an enemy block that enemy's clear shot.
 3. Scalar annotation checked: true.

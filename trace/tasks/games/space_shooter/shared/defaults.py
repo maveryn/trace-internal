@@ -35,8 +35,6 @@ class SpaceShooterDefaults:
     enemy_height_px: int = 48
     projectile_width_px: int = 28
     projectile_height_px: int = 42
-    blocker_width_px: int = 70
-    blocker_height_px: int = 42
     player_ship_width_px: int = 72
     player_ship_height_px: int = 58
     label_font_size_px: int = 24

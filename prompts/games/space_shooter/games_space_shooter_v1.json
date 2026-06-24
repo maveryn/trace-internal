@@ -23,25 +23,25 @@
     },
     "query": {
       "clear_shot_count": [
-        "{space_shooter_lane_rule_text} Count enemy ships with no enemy ship, shield, or asteroid below them in the same lane.",
+        "{space_shooter_lane_rule_text} Count enemy ships with no enemy ship or blue player shot below them in the same lane.",
         "{space_shooter_lane_rule_text} How many enemy ships have a clear straight lane downward to a bottom lane pad? Enemy shots do not block this count.",
-        "Count the enemy ships that are not blocked below by another enemy ship, shield, or asteroid in their lane. {space_shooter_lane_rule_text}",
-        "{space_shooter_lane_rule_text} A clear-shot enemy has no lower enemy ship, shield, or asteroid in its lane. How many clear-shot enemies are shown?",
-        "For each lane, count only the lowest enemy ship if no shield or asteroid is below it. {space_shooter_lane_rule_text} What is the total?"
+        "Count the enemy ships that are not blocked below by another enemy ship or blue player shot in their lane. {space_shooter_lane_rule_text}",
+        "{space_shooter_lane_rule_text} A clear-shot enemy has no lower enemy ship or blue player shot in its lane. How many clear-shot enemies are shown?",
+        "For each lane, count only enemy ships with no enemy ship or blue player shot below. {space_shooter_lane_rule_text} What is the total?"
       ],
       "clear_shot_score_value": [
         "{space_shooter_lane_rule_text} Clear-shot enemies score their printed value. What is the total score from clear-shot enemies?",
-        "{space_shooter_lane_rule_text} Clear-shot enemies score their printed value. Add the values on enemy ships with no enemy ship, shield, or asteroid below them in the same lane.",
+        "{space_shooter_lane_rule_text} Clear-shot enemies score their printed value. Add the values on enemy ships with no enemy ship or blue player shot below them in the same lane.",
         "Clear-shot enemies score their printed value. {space_shooter_lane_rule_text} Enemy shots do not block this score. What is the total?",
-        "{space_shooter_lane_rule_text} Clear-shot enemies score their printed value. For each lane, score only the lowest enemy ship if no shield or asteroid is below it.",
-        "Clear-shot enemies score their printed value. Clear-shot enemies have no lower enemy ship, shield, or asteroid in their lane. {space_shooter_lane_rule_text} Sum their printed values."
+        "{space_shooter_lane_rule_text} Clear-shot enemies score their printed value. Score enemy ships with no enemy ship or blue player shot below them.",
+        "Clear-shot enemies score their printed value. Clear-shot enemies have no lower enemy ship or blue player shot in their lane. {space_shooter_lane_rule_text} Sum their printed values."
       ],
       "projectile_intercept_count": [
-        "{space_shooter_lane_rule_text} Count enemy shots in the same lane as the player ship.",
-        "Enemy shots fall straight down within their lane. {space_shooter_lane_rule_text} How many enemy shots are aligned with the player ship?",
-        "{space_shooter_lane_rule_text} Determine the number of enemy shots that would reach the player's lane if they continue straight down.",
-        "Only count enemy-shot markers in the player ship's lane. {space_shooter_lane_rule_text} How many are there?",
-        "{space_shooter_lane_rule_text} How many falling enemy shots share the player's vertical lane?"
+        "{space_shooter_lane_rule_text} Count red enemy shots in the same lane as the player ship.",
+        "Red enemy shots fall straight down within their lane. {space_shooter_lane_rule_text} How many red enemy shots are aligned with the player ship?",
+        "{space_shooter_lane_rule_text} Determine the number of red enemy shots that would reach the player's lane if they continue straight down.",
+        "Only count red enemy-shot markers in the player ship's lane. {space_shooter_lane_rule_text} How many are there?",
+        "{space_shooter_lane_rule_text} How many falling red enemy shots share the player's vertical lane?"
       ],
       "highest_threat_label": [
         "{space_shooter_lane_rule_text} Which labeled enemy ship is closest to the player baseline at the bottom?",
@@ -51,11 +51,11 @@
         "{space_shooter_lane_rule_text} What is the label of the lowest visible enemy ship?"
       ],
       "safe_lane_count": [
-        "{space_shooter_lane_rule_text} Count bottom lane pads with no enemy shot in that lane and no asteroid sitting on the pad.",
-        "A safe bottom lane pad has no falling enemy shot in its lane and no asteroid on the pad. {space_shooter_lane_rule_text} How many safe pads are shown?",
-        "{space_shooter_lane_rule_text} How many bottom lane pads are safe from enemy shots and bottom-pad asteroids?",
-        "Count the bottom lane pads that are not threatened by an enemy shot in the same lane and are not occupied by an asteroid. {space_shooter_lane_rule_text}",
-        "{space_shooter_lane_rule_text} Determine the number of safe bottom lane pads."
+        "{space_shooter_lane_rule_text} Count bottom lane pads with no red enemy shot in that lane.",
+        "A safe bottom lane pad has no falling red enemy shot in its lane. {space_shooter_lane_rule_text} How many safe pads are shown?",
+        "{space_shooter_lane_rule_text} How many bottom lane pads are safe from red enemy shots?",
+        "Count the bottom lane pads that are not threatened by a red enemy shot in the same lane. {space_shooter_lane_rule_text}",
+        "{space_shooter_lane_rule_text} Blue player shots do not make a lane unsafe. How many bottom lane pads have no red enemy shot in their lane?"
       ]
     },
     "output": {
@@ -133,17 +133,17 @@
     }
   },
   "code_prompt_defaults": {
-    "object_description_defense_wave": "a retro space-shooter playfield with labeled or scored enemy ships, enemy shots, shields or asteroids, a player ship, and bottom lane pads",
-    "space_shooter_lane_rule_text": "Bottom lane pads define the vertical lanes. Enemy ships and enemy shots stay in their own lane.",
+    "object_description_defense_wave": "a retro space-shooter playfield with labeled or scored enemy ships, red downward enemy shots, blue upward player shots, a player ship, and bottom lane pads",
+    "space_shooter_lane_rule_text": "Bottom lane pads define the vertical lanes. Enemy ships and shots stay in their own lane; red enemy shots move downward and blue player shots move upward.",
     "annotation_hint_clear_shot_score_value": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for every enemy ship contributing to the clear-shot score",
     "answer_hint_clear_shot_score_value": "set \"answer\" to the integer total score from clear-shot enemy ships",
     "annotation_hint_clear_shot_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for the enemy ships counted as clear shots",
-    "answer_hint_clear_shot_count": "set \"answer\" to the number of enemy ships that have no enemy ship, shield, or asteroid below them in the same lane",
-    "annotation_hint_projectile_intercept_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for enemy shots aligned with the player ship",
-    "answer_hint_projectile_intercept_count": "set \"answer\" to the number of enemy shots in the same lane as the player ship",
+    "answer_hint_clear_shot_count": "set \"answer\" to the number of enemy ships that have no enemy ship or blue player shot below them in the same lane",
+    "annotation_hint_projectile_intercept_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for red enemy shots aligned with the player ship",
+    "answer_hint_projectile_intercept_count": "set \"answer\" to the number of red enemy shots in the same lane as the player ship",
     "annotation_hint_highest_threat_label": "set \"annotation\" to the selected enemy ship bounding box [x0, y0, x1, y1]",
     "answer_hint_highest_threat_label": "set \"answer\" to the selected enemy label as a string",
     "annotation_hint_safe_lane_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for the safe bottom lane pads",
-    "answer_hint_safe_lane_count": "set \"answer\" to the number of bottom lane pads with no enemy shot in that lane and no asteroid on that pad"
+    "answer_hint_safe_lane_count": "set \"answer\" to the number of bottom lane pads with no red enemy shot in that lane"
   }
 }

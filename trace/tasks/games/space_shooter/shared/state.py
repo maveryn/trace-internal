@@ -34,23 +34,12 @@ class SpaceEnemy:
 
 @dataclass(frozen=True)
 class SpaceProjectile:
-    """One visible enemy projectile."""
+    """One visible projectile with an explicit side and direction."""
 
     projectile_id: str
+    owner: str
     lane: int
     y_slot: int
-    dx_frac: float
-    dy_px: float
-
-
-@dataclass(frozen=True)
-class SpaceBlocker:
-    """One visible shield or asteroid blocker."""
-
-    blocker_id: str
-    lane: int
-    y_slot: int
-    blocker_type: str
     dx_frac: float
     dy_px: float
 
@@ -65,7 +54,6 @@ class SpaceShooterSample:
     player_lane: int
     enemies: Tuple[SpaceEnemy, ...]
     projectiles: Tuple[SpaceProjectile, ...]
-    blockers: Tuple[SpaceBlocker, ...]
     clear_enemy_ids: Tuple[str, ...]
     intercept_projectile_ids: Tuple[str, ...]
     lowest_enemy_id: str
@@ -108,16 +96,15 @@ def validate_basic_space_shooter_sample(sample: SpaceShooterSample) -> None:
         raise ValueError("space shooter player_lane out of range")
     enemy_ids = [str(enemy.enemy_id) for enemy in sample.enemies]
     projectile_ids = [str(projectile.projectile_id) for projectile in sample.projectiles]
-    blocker_ids = [str(blocker.blocker_id) for blocker in sample.blockers]
     if len(enemy_ids) != len(set(enemy_ids)):
         raise ValueError("space shooter enemy ids must be unique")
     if len(projectile_ids) != len(set(projectile_ids)):
         raise ValueError("space shooter projectile ids must be unique")
-    if len(blocker_ids) != len(set(blocker_ids)):
-        raise ValueError("space shooter blocker ids must be unique")
+    if any(str(projectile.owner) not in {"enemy", "player"} for projectile in sample.projectiles):
+        raise ValueError("space shooter projectile owner must be enemy or player")
     if len(set(str(enemy.label) for enemy in sample.enemies)) != len(sample.enemies):
         raise ValueError("space shooter enemy labels must be unique")
-    known_entities = set(enemy_ids) | set(projectile_ids) | set(blocker_ids) | {
+    known_entities = set(enemy_ids) | set(projectile_ids) | {
         lane_entity_id(lane) for lane in range(lane_count)
     }
     if not set(str(entity_id) for entity_id in sample.annotation_entity_ids) <= known_entities:

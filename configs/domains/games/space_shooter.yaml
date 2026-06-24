@@ -77,8 +77,6 @@ rendering:
     enemy_height_px: 48
     projectile_width_px: 28
     projectile_height_px: 42
-    blocker_width_px: 70
-    blocker_height_px: 42
     player_ship_width_px: 72
     player_ship_height_px: 58
     label_font_size_px: 24

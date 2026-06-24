@@ -107,8 +107,8 @@ def test_games_space_shooter_clear_shot_count_matches_trace() -> None:
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
-    blockers = execution["blockers"]
     enemies = execution["enemies"]
+    projectiles = execution["projectiles"]
     expected_ids = []
     for enemy in enemies:
         lane = int(enemy["lane"])
@@ -117,11 +117,13 @@ def test_games_space_shooter_clear_shot_count_matches_trace() -> None:
             int(other["lane"]) == lane and int(other["y_slot"]) > y_slot
             for other in enemies
         )
-        lower_blocker_exists = any(
-            int(blocker["lane"]) == lane and int(blocker["y_slot"]) > y_slot
-            for blocker in blockers
+        lower_player_projectile_exists = any(
+            str(projectile["owner"]) == "player"
+            and int(projectile["lane"]) == lane
+            and int(projectile["y_slot"]) > y_slot
+            for projectile in projectiles
         )
-        if not lower_enemy_exists and not lower_blocker_exists:
+        if not lower_enemy_exists and not lower_player_projectile_exists:
             expected_ids.append(str(enemy["enemy_id"]))
 
     assert int(out.answer_gt.value) == len(execution["clear_enemy_ids"]) == 5
@@ -136,8 +138,8 @@ def test_games_space_shooter_clear_shot_score_value_matches_trace() -> None:
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
-    blockers = execution["blockers"]
     enemies = execution["enemies"]
+    projectiles = execution["projectiles"]
     clear_ids = []
     for enemy in enemies:
         lane = int(enemy["lane"])
@@ -146,11 +148,13 @@ def test_games_space_shooter_clear_shot_score_value_matches_trace() -> None:
             int(other["lane"]) == lane and int(other["y_slot"]) > y_slot
             for other in enemies
         )
-        lower_blocker_exists = any(
-            int(blocker["lane"]) == lane and int(blocker["y_slot"]) > y_slot
-            for blocker in blockers
+        lower_player_projectile_exists = any(
+            str(projectile["owner"]) == "player"
+            and int(projectile["lane"]) == lane
+            and int(projectile["y_slot"]) > y_slot
+            for projectile in projectiles
         )
-        if not lower_enemy_exists and not lower_blocker_exists:
+        if not lower_enemy_exists and not lower_player_projectile_exists:
             clear_ids.append(str(enemy["enemy_id"]))
 
     enemy_by_id = {str(enemy["enemy_id"]): enemy for enemy in enemies}
@@ -181,7 +185,7 @@ def test_games_space_shooter_projectile_intercept_count_matches_trace() -> None:
     aligned = [
         str(projectile["projectile_id"])
         for projectile in execution["projectiles"]
-        if int(projectile["lane"]) == player_lane
+        if str(projectile["owner"]) == "enemy" and int(projectile["lane"]) == player_lane
     ]
 
     assert int(out.answer_gt.value) == len(aligned) == 4
@@ -221,7 +225,8 @@ def test_games_space_shooter_safe_lane_count_matches_trace() -> None:
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
-    expected_ids = [f"lane_{int(lane)}" for lane in execution["safe_lane_indices"]]
+    threatened_lanes = {int(projectile["lane"]) for projectile in execution["projectiles"] if str(projectile["owner"]) == "enemy"}
+    expected_ids = [f"lane_{int(lane)}" for lane in range(int(execution["lane_count"])) if int(lane) not in threatened_lanes]
 
     assert int(out.answer_gt.value) == len(expected_ids) == 3
     assert list(execution["annotation_entity_ids"]) == expected_ids
@@ -235,10 +240,11 @@ def test_games_space_shooter_non_lane_entities_do_not_share_lane_slots() -> None
     )
     execution = out.trace_payload["execution_trace"]
     occupied: list[tuple[int, int]] = []
-    for key in ("enemies", "projectiles", "blockers"):
+    for key in ("enemies", "projectiles"):
         occupied.extend((int(row["lane"]), int(row["y_slot"])) for row in execution[key])
 
     assert len(occupied) == len(set(occupied))
+    assert "blockers" not in execution
 
 
 def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:

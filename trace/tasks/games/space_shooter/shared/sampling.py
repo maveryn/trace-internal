@@ -7,13 +7,12 @@ from typing import Any, Mapping, Sequence, Tuple
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 
 from .defaults import DEFAULTS, GEN_DEFAULTS
-from .rules import clear_shot_enemy_ids, projectile_ids_in_lane
+from .rules import clear_shot_enemy_ids, enemy_projectile_ids_in_lane
 from .state import (
     ENEMY_LABELS,
     SUPPORTED_SCENE_VARIANTS,
     SUPPORTED_STYLE_VARIANTS,
     SceneAxes,
-    SpaceBlocker,
     SpaceEnemy,
     SpaceProjectile,
     SpaceShooterSample,
@@ -140,23 +139,21 @@ def _make_enemy(*, enemy_index: int, lane: int, y_slot: int, rng, score_value: i
     )
 
 
-def _make_projectile(*, projectile_index: int, lane: int, y_slot: int, rng, centered: bool = False) -> SpaceProjectile:
+def _make_projectile(
+    *,
+    projectile_index: int,
+    lane: int,
+    y_slot: int,
+    owner: str,
+    rng,
+    centered: bool = False,
+) -> SpaceProjectile:
     return SpaceProjectile(
-        projectile_id=f"projectile_{int(projectile_index)}",
+        projectile_id=f"{str(owner)}_projectile_{int(projectile_index)}",
+        owner=str(owner),
         lane=int(lane),
         y_slot=int(y_slot),
         dx_frac=0.0 if bool(centered) else float(rng.uniform(-0.08, 0.08)),
-        dy_px=_entity_dy(rng),
-    )
-
-
-def _make_blocker(*, blocker_index: int, lane: int, y_slot: int, rng, blocker_type: str | None = None) -> SpaceBlocker:
-    return SpaceBlocker(
-        blocker_id=f"blocker_{int(blocker_index)}",
-        lane=int(lane),
-        y_slot=int(y_slot),
-        blocker_type=str(blocker_type or rng.choice(("shield", "asteroid"))),
-        dx_frac=float(rng.uniform(-0.12, 0.12)),
         dy_px=_entity_dy(rng),
     )
 
@@ -200,7 +197,6 @@ def sample_clear_shot_scene(
     clear_lanes = set(lanes[:target])
     blocked_lanes = [lane for lane in lanes[target:]]
     enemies: list[SpaceEnemy] = []
-    blockers: list[SpaceBlocker] = []
     projectiles: list[SpaceProjectile] = []
     occupied: set[Tuple[int, int]] = set()
 
@@ -217,9 +213,18 @@ def sample_clear_shot_scene(
                 )
             )
         else:
-            _, blocker_slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=(4, 5))
-            blockers.append(_make_blocker(blocker_index=len(blockers), lane=lane, y_slot=blocker_slot, rng=rng))
-            upper_slots = tuple(slot for slot in (1, 2, 3) if int(slot) < int(blocker_slot))
+            _, player_shot_slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=(4, 5))
+            projectiles.append(
+                _make_projectile(
+                    projectile_index=len(projectiles),
+                    lane=lane,
+                    y_slot=player_shot_slot,
+                    owner="player",
+                    rng=rng,
+                    centered=True,
+                )
+            )
+            upper_slots = tuple(slot for slot in (1, 2, 3) if int(slot) < int(player_shot_slot))
             _, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=upper_slots)
             enemies.append(
                 _make_enemy(
@@ -230,14 +235,6 @@ def sample_clear_shot_scene(
                     score_value=int(rng.choice(axes.clear_shot_score_value_support)) if score_query else None,
                 )
             )
-    for _ in range(max(1, lane_count // 3)):
-        lane = int(rng.randrange(lane_count))
-        if lane not in clear_lanes and rng.random() < 0.70:
-            try:
-                _, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=(3, 4, 5))
-            except ValueError:
-                continue
-            blockers.append(_make_blocker(blocker_index=len(blockers), lane=lane, y_slot=slot, rng=rng))
     for index in range(max(1, lane_count // 4)):
         try:
             lane, slot = _claim_position(
@@ -248,9 +245,17 @@ def sample_clear_shot_scene(
             )
         except ValueError:
             continue
-        projectiles.append(_make_projectile(projectile_index=index, lane=lane, y_slot=slot, rng=rng))
+        projectiles.append(
+            _make_projectile(
+                projectile_index=len(projectiles),
+                lane=lane,
+                y_slot=slot,
+                owner="enemy",
+                rng=rng,
+            )
+        )
 
-    clear_ids = clear_shot_enemy_ids(tuple(enemies), tuple(blockers))
+    clear_ids = clear_shot_enemy_ids(tuple(enemies), tuple(projectiles))
     clear_id_set = set(clear_ids)
     answer = (
         sum(int(enemy.score_value or 0) for enemy in enemies if str(enemy.enemy_id) in clear_id_set)
@@ -264,7 +269,6 @@ def sample_clear_shot_scene(
         player_lane=int(rng.randrange(lane_count)),
         enemies=tuple(enemies),
         projectiles=tuple(projectiles),
-        blockers=tuple(blockers),
         clear_enemy_ids=tuple(clear_ids),
         intercept_projectile_ids=tuple(),
         lowest_enemy_id=str(enemies[0].enemy_id),
@@ -306,7 +310,16 @@ def sample_projectile_intercept_scene(
     rng.shuffle(target_slots)
     for slot in target_slots[:target]:
         occupied.add((int(player_lane), int(slot)))
-        projectiles.append(_make_projectile(projectile_index=len(projectiles), lane=player_lane, y_slot=int(slot), rng=rng, centered=True))
+        projectiles.append(
+            _make_projectile(
+                projectile_index=len(projectiles),
+                lane=player_lane,
+                y_slot=int(slot),
+                owner="enemy",
+                rng=rng,
+                centered=True,
+            )
+        )
     enemies: list[SpaceEnemy] = []
     while len(enemies) < int(axes.enemy_count):
         lane, slot = _claim_position(
@@ -324,21 +337,36 @@ def sample_projectile_intercept_scene(
                 _, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=(2, 3, 4, 5))
             except ValueError:
                 continue
-            projectiles.append(_make_projectile(projectile_index=len(projectiles), lane=lane, y_slot=slot, rng=rng))
-    blockers: list[SpaceBlocker] = []
+            projectiles.append(
+                _make_projectile(
+                    projectile_index=len(projectiles),
+                    lane=lane,
+                    y_slot=slot,
+                    owner="enemy",
+                    rng=rng,
+                )
+            )
     non_player_lanes = tuple(lane for lane in range(lane_count) if int(lane) != int(player_lane))
-    for _ in range(max(1, lane_count // 3)):
+    for _ in range(max(1, lane_count // 4)):
         try:
             lane, slot = _claim_position(
                 rng=rng,
                 occupied=occupied,
                 lane_candidates=non_player_lanes,
-                slot_candidates=(3, 4, 5),
+                slot_candidates=(4, 5),
             )
         except ValueError:
             continue
-        blockers.append(_make_blocker(blocker_index=len(blockers), lane=lane, y_slot=slot, rng=rng))
-    intercept_ids = projectile_ids_in_lane(tuple(projectiles), int(player_lane))
+        projectiles.append(
+            _make_projectile(
+                projectile_index=len(projectiles),
+                lane=lane,
+                y_slot=slot,
+                owner="player",
+                rng=rng,
+            )
+        )
+    intercept_ids = enemy_projectile_ids_in_lane(tuple(projectiles), int(player_lane))
     sample = SpaceShooterSample(
         lane_count=lane_count,
         scene_variant=str(axes.scene_variant),
@@ -346,7 +374,6 @@ def sample_projectile_intercept_scene(
         player_lane=int(player_lane),
         enemies=tuple(enemies),
         projectiles=tuple(projectiles),
-        blockers=tuple(blockers),
         clear_enemy_ids=tuple(),
         intercept_projectile_ids=intercept_ids,
         lowest_enemy_id=str(enemies[0].enemy_id),
@@ -391,20 +418,21 @@ def sample_unique_lowest_enemy_scene(*, rng, axes: SceneAxes) -> SpaceShooterSam
                 slot_candidates=(0, 1, 2, 3, 4),
             )
         enemies.append(_make_enemy(enemy_index=index, lane=lane, y_slot=y_slot, rng=rng))
-    blockers: list[SpaceBlocker] = []
-    for _ in range(max(1, lane_count // 3)):
-        try:
-            lane, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=range(lane_count), slot_candidates=(3, 4))
-        except ValueError:
-            continue
-        blockers.append(_make_blocker(blocker_index=len(blockers), lane=lane, y_slot=slot, rng=rng))
     projectiles: list[SpaceProjectile] = []
     for _ in range(max(2, lane_count // 2)):
         try:
             lane, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=range(lane_count), slot_candidates=(3, 4, 5))
         except ValueError:
             continue
-        projectiles.append(_make_projectile(projectile_index=len(projectiles), lane=lane, y_slot=slot, rng=rng))
+        projectiles.append(
+            _make_projectile(
+                projectile_index=len(projectiles),
+                lane=lane,
+                y_slot=slot,
+                owner="enemy" if rng.random() < 0.65 else "player",
+                rng=rng,
+            )
+        )
     target_enemy = enemies[target_index]
     sample = SpaceShooterSample(
         lane_count=lane_count,
@@ -413,7 +441,6 @@ def sample_unique_lowest_enemy_scene(*, rng, axes: SceneAxes) -> SpaceShooterSam
         player_lane=int(rng.randrange(lane_count)),
         enemies=tuple(enemies),
         projectiles=tuple(projectiles),
-        blockers=tuple(blockers),
         clear_enemy_ids=tuple(),
         intercept_projectile_ids=tuple(),
         lowest_enemy_id=str(target_enemy.enemy_id),
@@ -439,14 +466,32 @@ def sample_safe_lane_scene(*, rng, axes: SceneAxes, target_answer: int) -> Space
     unsafe_lanes = [lane for lane in range(lane_count) if lane not in set(safe_lanes)]
     occupied: set[Tuple[int, int]] = set()
     projectiles: list[SpaceProjectile] = []
-    blockers: list[SpaceBlocker] = []
     for lane in unsafe_lanes:
-        if rng.random() < 0.70:
-            _, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=(3, 4, 5))
-            projectiles.append(_make_projectile(projectile_index=len(projectiles), lane=lane, y_slot=slot, rng=rng))
-        else:
-            occupied.add((int(lane), 6))
-            blockers.append(_make_blocker(blocker_index=len(blockers), lane=lane, y_slot=6, rng=rng, blocker_type="asteroid"))
+        _, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=(3, 4, 5))
+        projectiles.append(
+            _make_projectile(
+                projectile_index=len(projectiles),
+                lane=lane,
+                y_slot=slot,
+                owner="enemy",
+                rng=rng,
+            )
+        )
+    for lane in safe_lanes:
+        if rng.random() < 0.45:
+            try:
+                _, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=(4, 5))
+            except ValueError:
+                continue
+            projectiles.append(
+                _make_projectile(
+                    projectile_index=len(projectiles),
+                    lane=lane,
+                    y_slot=slot,
+                    owner="player",
+                    rng=rng,
+                )
+            )
     enemies: list[SpaceEnemy] = []
     enemy_target = min(int(axes.enemy_count), lane_count + int(rng.randrange(0, 3)))
     while len(enemies) < enemy_target:
@@ -460,7 +505,6 @@ def sample_safe_lane_scene(*, rng, axes: SceneAxes, target_answer: int) -> Space
         player_lane=int(rng.randrange(lane_count)),
         enemies=tuple(enemies),
         projectiles=tuple(projectiles),
-        blockers=tuple(blockers),
         clear_enemy_ids=tuple(),
         intercept_projectile_ids=tuple(),
         lowest_enemy_id=str(enemies[0].enemy_id),

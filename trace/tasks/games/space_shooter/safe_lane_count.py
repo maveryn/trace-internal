@@ -54,7 +54,7 @@ def _prepare_safe_lane_objective(rng, params: Mapping[str, Any], axes: SceneAxes
 
 @register_task
 class GamesSpaceShooterSafeLaneCountTask(SpaceShooterLifecycleTask):
-    """Count bottom lane pads not threatened by shots or pad asteroids."""
+    """Count bottom lane pads not threatened by enemy shots."""
 
     task_id = TASK_ID
     supported_query_ids = SUPPORTED_QUERY_IDS

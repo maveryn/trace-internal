@@ -10,9 +10,9 @@
 7. Annotation schema: `bbox_set`
 
 ## Program Contract
-`count(filter(bottom_lane_pads, lane_threat_count(lane)=0 and pad_blocker(lane)=False)); scene=space_shooter; scope=safe_lane_count`
+`count(filter(bottom_lane_pads, enemy_projectile_count(lane)=0)); scene=space_shooter; scope=safe_lane_count`
 
 ## Generation Notes
 1. `single` is the only public query id; the task-specific prompt key is trace metadata.
-2. Annotation is the bbox set of safe bottom lane pads.
+2. Annotation is the bbox set of safe bottom lane pads; only red enemy shots make a lane unsafe.
 3. Scalar annotation checked: true.

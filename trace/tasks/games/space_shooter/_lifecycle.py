@@ -120,7 +120,6 @@ def run_space_shooter_lifecycle(
         player_lane=int(objective.sample.player_lane),
         enemies=objective.sample.enemies,
         projectiles=objective.sample.projectiles,
-        blockers=objective.sample.blockers,
         background=background,
         style_variant=str(axes.style_variant),
         params=render_params,

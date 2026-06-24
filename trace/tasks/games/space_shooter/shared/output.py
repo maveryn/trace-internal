@@ -27,29 +27,17 @@ def enemy_specs(sample: SpaceShooterSample) -> list[dict[str, Any]]:
 
 
 def projectile_specs(sample: SpaceShooterSample) -> list[dict[str, Any]]:
-    """Serialize enemy projectiles with lane positions."""
+    """Serialize projectiles with side, direction, and lane positions."""
 
     return [
         {
             "projectile_id": str(projectile.projectile_id),
+            "owner": str(projectile.owner),
+            "direction": "up" if str(projectile.owner) == "player" else "down",
             "lane": int(projectile.lane),
             "y_slot": int(projectile.y_slot),
         }
         for projectile in sample.projectiles
-    ]
-
-
-def blocker_specs(sample: SpaceShooterSample) -> list[dict[str, Any]]:
-    """Serialize shields and asteroids with lane positions."""
-
-    return [
-        {
-            "blocker_id": str(blocker.blocker_id),
-            "lane": int(blocker.lane),
-            "y_slot": int(blocker.y_slot),
-            "blocker_type": str(blocker.blocker_type),
-        }
-        for blocker in sample.blockers
     ]
 
 
@@ -77,7 +65,8 @@ def space_shooter_trace_params(
         "enemy_count": len(sample.enemies),
         "enemy_count_probabilities": dict(enemy_count_probabilities),
         "projectile_count": len(sample.projectiles),
-        "blocker_count": len(sample.blockers),
+        "enemy_projectile_count": sum(1 for projectile in sample.projectiles if str(projectile.owner) == "enemy"),
+        "player_projectile_count": sum(1 for projectile in sample.projectiles if str(projectile.owner) == "player"),
         "public_query_probabilities": dict(public_query_probabilities),
         **dict(sample.metadata),
     }
@@ -128,7 +117,6 @@ def build_space_shooter_trace_payload(
             "target_answer": sample.target_answer,
             "enemies": enemy_specs(sample),
             "projectiles": projectile_specs(sample),
-            "blockers": blocker_specs(sample),
             "clear_enemy_ids": [str(value) for value in sample.clear_enemy_ids],
             "intercept_projectile_ids": [str(value) for value in sample.intercept_projectile_ids],
             "lowest_enemy_id": str(sample.lowest_enemy_id),

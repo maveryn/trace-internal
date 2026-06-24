@@ -20,7 +20,7 @@
 - Annotation schema: `bbox_map`.
 - The image contains one `Reference` panel and six candidate panels `A..F`.
 - Exactly one candidate panel shares the Reference wallpaper group; every distractor uses a distinct non-reference wallpaper group.
-- Wallpaper groups are rendered with repeated curated-icon motifs on an invisible `4 x 4` lattice.
+- Wallpaper groups are rendered with exactly one visible curated-icon motif per cell on an invisible `4 x 4` lattice, for 16 motif icons per panel.
 - Wallpaper group id, icon id, canvas treatment, palette, and selected answer label are generation metadata, not public query ids.
 
 ## Generation

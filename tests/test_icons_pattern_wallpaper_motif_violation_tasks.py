@@ -1,5 +1,6 @@
 """Behavior tests for the curated-icon wallpaper motif-violation task."""
 from __future__ import annotations
+from collections import Counter
 import json
 from pathlib import Path
 import pytest
@@ -13,7 +14,9 @@ from trace.tasks.icons.wallpaper_panels.motif_violation_label import (
 from trace.tasks.icons.wallpaper_panels.shared.rendering import (
     SAFE_WALLPAPER_CANVAS_TREATMENTS,
     WALLPAPER_PANEL_CHROME_POLICY,
+    elements_for_group,
 )
+from trace.tasks.icons.wallpaper_panels.shared.defaults import WALLPAPER_GROUP_IDS
 from trace.tasks.icons.shared.icon_assets import resolve_icon_pool
 from tests.helpers import read_jsonl
 
@@ -21,6 +24,29 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     marker = 'Example JSON:\n'
     assert marker in str(prompt)
     return json.loads(str(prompt).split(marker, 1)[1].strip())
+
+def _assert_sixteen_motif_icons_per_panel(trace: dict) -> None:
+    motif_icons = [
+        entity
+        for entity in trace['scene_ir']['entities']
+        if str(entity.get('entity_kind')) == 'wallpaper_motif_icon'
+    ]
+    counts = Counter(str(entity['panel_label']) for entity in motif_icons)
+    panel_labels = [
+        str(entity['label'])
+        for entity in trace['scene_ir']['entities']
+        if str(entity.get('entity_kind')) == 'wallpaper_panel'
+    ]
+    assert counts == Counter({label: 16 for label in panel_labels})
+
+def test_wallpaper_groups_emit_one_visible_motif_per_lattice_cell() -> None:
+    for group_id in WALLPAPER_GROUP_IDS:
+        elements = elements_for_group(group_id=str(group_id), rows=4, cols=4)
+        assert len(elements) == 16
+        assert {(element.lattice_row, element.lattice_col) for element in elements} == {
+            (row, col) for row in range(4) for col in range(4)
+        }
+        assert {int(element.local_index) for element in elements} == {0}
 
 def test_icons_wallpaper_motif_violation_contract_matches_scene() -> None:
     task = IconsWallpaperPanelsMotifViolationLabelTask()
@@ -46,6 +72,7 @@ def test_icons_wallpaper_motif_violation_contract_matches_scene() -> None:
     assert trace['render_spec']['style']['wallpaper_panel_chrome_policy'] == WALLPAPER_PANEL_CHROME_POLICY
     assert trace['render_spec']['style']['safe_canvas_treatments'] == list(SAFE_WALLPAPER_CANVAS_TREATMENTS)
     assert trace['render_spec']['style']['icon_canvas_style']['treatment'] in SAFE_WALLPAPER_CANVAS_TREATMENTS
+    assert trace['render_spec']['panel_geometry']['motif_lattice'] == {'rows': 4, 'cols': 4, 'visible_grid': False}
     assert len(scene_panels) == 6
     assert [str(panel['label']) for panel in scene_panels] == list('ABCDEF')
     assert [str(panel['wallpaper_group_id']) for panel in scene_panels if str(panel['label']) == 'D'] == ['p4']
@@ -61,6 +88,7 @@ def test_icons_wallpaper_motif_violation_contract_matches_scene() -> None:
     assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
     assert 'wallpaper' in out.prompt
     assert 'pattern' in out.prompt
+    _assert_sixteen_motif_icons_per_panel(trace)
 
 def test_icons_wallpaper_motif_violation_rejects_four_option_layout() -> None:
     task = IconsWallpaperPanelsMotifViolationLabelTask()

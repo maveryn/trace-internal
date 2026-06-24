@@ -104,54 +104,55 @@ def wallpaper_chrome_policy_trace() -> Dict[str, Any]:
     }
 
 
-def local_elements_for_group(group_id: str, *, row: int) -> Tuple[Tuple[float, float, int, bool, str], ...]:
-    """Return motif placements for one visually distinct wallpaper-group approximation."""
+def cell_element_for_group(group_id: str, *, row: int, col: int) -> Tuple[float, float, int, bool, str]:
+    """Return the single visible motif placement for one lattice cell.
+
+    These tasks need distinguishable repeat arrangements, not faithful
+    wallpaper-group construction. One motif per lattice cell keeps every group
+    at exactly 16 visible icons on the fixed 4 x 4 panel.
+    """
 
     group = str(group_id)
+    row_i = int(row)
+    col_i = int(col)
+    parity = int((row_i + col_i) % 2)
     if group == "p1":
-        return ((0.50, 0.50, 0, False, "translation"),)
+        return (0.50, 0.50, 0, False, "translation_center")
     if group == "p2":
-        return (
-            (0.34, 0.34, 0, False, "twofold_rotation_a"),
-            (0.66, 0.66, 180, False, "twofold_rotation_b"),
-        )
+        offset = 0.60 if parity else 0.40
+        return (offset, offset, 180 if parity else 0, False, "twofold_checker")
     if group == "pm":
-        return (
-            (0.30, 0.50, 0, False, "mirror_left"),
-            (0.70, 0.50, 0, True, "mirror_right"),
-        )
+        mirror = bool(col_i % 2)
+        return (0.62 if mirror else 0.38, 0.50, 0, mirror, "vertical_mirror_stripe")
     if group == "pg":
-        row_shift = 0.08 if int(row) % 2 else -0.08
-        return (
-            (0.34 + row_shift, 0.34, 0, False, "glide_source"),
-            (0.66 + row_shift, 0.66, 0, True, "glide_reflection"),
-        )
+        mirror = bool(row_i % 2)
+        return (0.64 if mirror else 0.36, 0.50, 180 if mirror else 0, mirror, "row_glide_shift")
     if group == "cm":
-        row_shift = 0.10 if int(row) % 2 else -0.10
         return (
-            (0.36 + row_shift, 0.32, 0, False, "centered_mirror_a"),
-            (0.64 + row_shift, 0.68, 0, True, "centered_mirror_b"),
+            0.38 if parity == 0 else 0.62,
+            0.34 if row_i % 2 == 0 else 0.66,
+            0,
+            bool(parity),
+            "centered_checker_mirror",
         )
     if group == "pmm":
         return (
-            (0.30, 0.30, 0, False, "mirror_quadrant_a"),
-            (0.70, 0.30, 0, True, "mirror_quadrant_b"),
-            (0.30, 0.70, 180, False, "mirror_quadrant_c"),
-            (0.70, 0.70, 180, True, "mirror_quadrant_d"),
+            0.38 if col_i % 2 == 0 else 0.62,
+            0.38 if row_i % 2 == 0 else 0.62,
+            180 if row_i % 2 else 0,
+            bool(col_i % 2),
+            "quadrant_mirror_grid",
         )
     if group == "p4":
-        return (
-            (0.34, 0.34, 0, False, "quarter_turn_0"),
-            (0.66, 0.34, 90, False, "quarter_turn_90"),
-            (0.66, 0.66, 180, False, "quarter_turn_180"),
-            (0.34, 0.66, 270, False, "quarter_turn_270"),
-        )
+        phase = int((row_i + col_i) % 4)
+        positions = ((0.50, 0.32), (0.68, 0.50), (0.50, 0.68), (0.32, 0.50))
+        u, v = positions[phase]
+        return (u, v, int(phase * 90), False, "quarter_turn_cycle")
     if group == "p3":
-        return (
-            (0.50, 0.26, 0, False, "third_turn_0"),
-            (0.28, 0.66, 120, False, "third_turn_120"),
-            (0.72, 0.66, 240, False, "third_turn_240"),
-        )
+        phase = int((row_i + (2 * col_i)) % 3)
+        positions = ((0.50, 0.32), (0.34, 0.66), (0.66, 0.66))
+        u, v = positions[phase]
+        return (u, v, int(phase * 120), False, "third_turn_cycle")
     raise ValueError(f"unsupported wallpaper group id: {group_id}")
 
 
@@ -159,20 +160,20 @@ def elements_for_group(*, group_id: str, rows: int, cols: int) -> Tuple[Wallpape
     elements: List[WallpaperElementSpec] = []
     for row in range(int(rows)):
         for col in range(int(cols)):
-            for local_index, (u, v, rotation, mirror_x, role) in enumerate(local_elements_for_group(str(group_id), row=row)):
-                elements.append(
-                    WallpaperElementSpec(
-                        element_index=len(elements),
-                        lattice_row=int(row),
-                        lattice_col=int(col),
-                        local_index=int(local_index),
-                        u=float(u),
-                        v=float(v),
-                        rotation_degrees=int(rotation) % 360,
-                        mirror_x=bool(mirror_x),
-                        group_role=str(role),
-                    )
+            u, v, rotation, mirror_x, role = cell_element_for_group(str(group_id), row=row, col=col)
+            elements.append(
+                WallpaperElementSpec(
+                    element_index=len(elements),
+                    lattice_row=int(row),
+                    lattice_col=int(col),
+                    local_index=0,
+                    u=float(u),
+                    v=float(v),
+                    rotation_degrees=int(rotation) % 360,
+                    mirror_x=bool(mirror_x),
+                    group_role=str(role),
                 )
+            )
     return tuple(elements)
 
 
@@ -524,6 +525,7 @@ __all__ = [
     "WALLPAPER_GROUP_IDS",
     "WallpaperElementSpec",
     "centered_sprite_bbox",
+    "cell_element_for_group",
     "draw_wallpaper_motifs",
     "element_center_xy",
     "element_to_trace",

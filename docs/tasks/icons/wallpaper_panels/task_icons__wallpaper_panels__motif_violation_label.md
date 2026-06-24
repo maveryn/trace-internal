@@ -20,7 +20,7 @@
 - Annotation schema: `bbox`.
 - The image contains six labeled panels `A..F`.
 - Five panels share one wallpaper-group arrangement and exactly one panel uses a different wallpaper-group arrangement.
-- Wallpaper groups are rendered with repeated curated-icon motifs on an invisible `4 x 4` lattice.
+- Wallpaper groups are rendered with exactly one visible curated-icon motif per cell on an invisible `4 x 4` lattice, for 16 motif icons per panel.
 - Wallpaper group id, icon id, canvas treatment, palette, and the selected odd panel are generation metadata, not public query ids.
 
 ## Generation

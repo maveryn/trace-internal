@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 import json
 from pathlib import Path
 
@@ -25,6 +26,21 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     marker = "Example JSON:\n"
     assert marker in str(prompt)
     return json.loads(str(prompt).split(marker, 1)[1].strip())
+
+
+def _assert_sixteen_motif_icons_per_panel(trace: dict) -> None:
+    motif_icons = [
+        entity
+        for entity in trace["scene_ir"]["entities"]
+        if str(entity.get("entity_kind")) == "wallpaper_motif_icon"
+    ]
+    counts = Counter(str(entity["panel_label"]) for entity in motif_icons)
+    panel_labels = [
+        str(entity["label"])
+        for entity in trace["scene_ir"]["entities"]
+        if str(entity.get("entity_kind")) == "wallpaper_panel"
+    ]
+    assert counts == Counter({label: 16 for label in panel_labels})
 
 
 def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
@@ -58,6 +74,7 @@ def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
     assert trace["render_spec"]["style"]["wallpaper_panel_chrome_policy"] == WALLPAPER_PANEL_CHROME_POLICY
     assert trace["render_spec"]["style"]["safe_canvas_treatments"] == list(SAFE_WALLPAPER_CANVAS_TREATMENTS)
     assert trace["render_spec"]["style"]["icon_canvas_style"]["treatment"] in SAFE_WALLPAPER_CANVAS_TREATMENTS
+    assert trace["render_spec"]["panel_geometry"]["motif_lattice"] == {"rows": 4, "cols": 4, "visible_grid": False}
 
     reference_panels = [panel for panel in scene_panels if bool(panel["is_reference"])]
     candidate_panels = [panel for panel in scene_panels if str(panel["panel_role"]) == "candidate"]
@@ -88,6 +105,7 @@ def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
     assert "Reference" in out.prompt
     assert "wallpaper" in out.prompt
     assert "pattern" in out.prompt
+    _assert_sixteen_motif_icons_per_panel(trace)
 
 
 def test_icons_wallpaper_reference_match_prompt_example_matches_contract() -> None:

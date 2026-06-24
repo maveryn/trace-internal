@@ -4,25 +4,39 @@ from __future__ import annotations
 
 from typing import Any, Dict, Tuple
 
-from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.fixed_query import force_query_id_params, select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.structure_match import SCENE_ID, build_structure_match_instance
+from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
+from ..shared.visual_defaults import load_graph_scene_background_defaults, load_graph_scene_noise_defaults
+from ._lifecycle import GraphOptionsObjectivePlan, run_graph_options_plan
+from .shared.prompts import PROMPT_BUNDLE_ID as GRAPH_OPTIONS_PROMPT_BUNDLE_ID
+from .shared.sampling import build_contained_subgraph_dataset
+from .shared.state import GraphOptionsDefaults, SCENE_ID
 
 
 TASK_ID = "task_graph__graph_options__contained_subgraph_label"
-QUERY_ID = "contained_subgraph_label"
+QUERY_ID = "single"
+PROMPT_KEY = "contained_subgraph_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
+SAMPLING_NAMESPACE = "graph.graph_options.contained_subgraph_label"
+
+_DEFAULTS = GraphOptionsDefaults()
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    "graph",
+    SCENE_ID,
+    task_id=TASK_ID,
+)
+PROMPT_BUNDLE_ID = str(group_default(_PROMPT_DEFAULTS, "bundle_id", GRAPH_OPTIONS_PROMPT_BUNDLE_ID))
+POST_IMAGE_BACKGROUND_DEFAULTS = load_graph_scene_background_defaults(scene_id=SCENE_ID)
+POST_IMAGE_NOISE_DEFAULTS = load_graph_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.5)
 
 
-def _with_public_task_id(trace_payload: Dict[str, Any]) -> Dict[str, Any]:
-    payload = dict(trace_payload)
-    for section in ("scene_ir", "query_spec", "execution_trace"):
-        if isinstance(payload.get(section), dict):
-            payload[section] = {**payload[section], "task_id": TASK_ID}
-    return payload
+def _object_description(edge_mode: str) -> str:
+    """Return objective-specific scene wording from prompt defaults."""
+
+    if str(edge_mode) == "directed":
+        return "a Target Graph above six labeled directed-graph options; arrow directions matter"
+    return "a Target Graph above six labeled graph options"
 
 
 @register_task
@@ -31,41 +45,37 @@ class GraphRelationGraphOptionsContainedSubgraphLabelTask:
 
     task_id = TASK_ID
     domain = "graph"
-    scene_id = SCENE_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
+    default_dataset_enabled = True
+
+    def _build_plan(self) -> GraphOptionsObjectivePlan:
+        """Return the task-owned objective hooks for contained-subgraph matching."""
+
+        return GraphOptionsObjectivePlan(
+            owner_id=TASK_ID,
+            supported_branch_names=SUPPORTED_QUERY_IDS,
+            default_branch_name=QUERY_ID,
+            prompt_key=PROMPT_KEY,
+            prompt_bundle_id=PROMPT_BUNDLE_ID,
+            sampling_namespace=SAMPLING_NAMESPACE,
+            dataset_factory=build_contained_subgraph_dataset,
+            defaults=_DEFAULTS,
+            object_description=_object_description,
+        )
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        bundle = build_structure_match_instance(
+        """Generate one contained-subgraph option-selection instance."""
+
+        return run_graph_options_plan(
+            plan=self._build_plan(),
             domain=self.domain,
-            query_id=str(query_id),
-            query_id_probabilities=dict(query_probabilities),
-            params=force_query_id_params(task_params, query_id=str(query_id)),
+            gen_defaults=_GEN_DEFAULTS,
+            render_defaults=_RENDER_DEFAULTS,
+            background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
+            noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
             instance_seed=int(instance_seed),
+            params=dict(params),
             max_attempts=int(max_attempts),
-        )
-        answer_gt = TypedValue(type="option_letter", value=str(bundle.answer_value))
-        annotation_gt = TypedValue(type="bbox_set", value=list(bundle.annotation_bboxes))
-        trace_payload = _with_public_task_id(dict(bundle.trace_payload))
-        prompt_variants = dict(bundle.prompt_variants)
-        return TaskOutput(
-            prompt=str(bundle.prompt),
-            answer_gt=answer_gt,
-            annotation_gt=annotation_gt,
-            image=bundle.image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=SCENE_ID,
-            query_id=str(bundle.query_id),
-            prompt_variants=prompt_variants,
         )
 
 

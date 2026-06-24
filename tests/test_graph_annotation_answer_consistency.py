@@ -107,8 +107,8 @@ GRAPH_QUERY_IDS = {
     ),
     "task_graph__flow_network__max_flow_value": ("single",),
     "task_graph__flow_network__min_cut_edge_count": ("single",),
-    "task_graph__graph_options__contained_subgraph_label": ("contained_subgraph_label",),
-    "task_graph__graph_options__same_structure_label": ("same_structure_label",),
+    "task_graph__graph_options__contained_subgraph_label": ("single",),
+    "task_graph__graph_options__same_structure_label": ("single",),
     "task_graph__metro__exact_distance_station_count": ("metro_exact_distance_count",),
     "task_graph__metro__shortest_path_length": ("metro_shortest_path_length",),
     "task_graph__metro__station_membership_count": (
@@ -246,7 +246,26 @@ def _directed_edge(edge: Any) -> tuple[str, ...]:
 
 def _check_annotation_shape(annotation_type: str, annotation_value: Any) -> list[str]:
     errors: list[str] = []
-    if annotation_type in {"point_set", "point_sequence"}:
+    if annotation_type == "point":
+        if not (
+            isinstance(annotation_value, list)
+            and len(annotation_value) == 2
+            and all(_is_num(component) for component in annotation_value)
+        ):
+            errors.append(f"{annotation_type} value is not [x,y]: {annotation_value!r}")
+    elif annotation_type == "bbox":
+        if not (
+            isinstance(annotation_value, list)
+            and len(annotation_value) == 4
+            and all(_is_num(component) for component in annotation_value)
+        ):
+            errors.append(f"{annotation_type} value is not [x0,y0,x1,y1]: {annotation_value!r}")
+        elif not (
+            float(annotation_value[2]) > float(annotation_value[0])
+            and float(annotation_value[3]) > float(annotation_value[1])
+        ):
+            errors.append(f"{annotation_type} value has non-positive extent: {annotation_value!r}")
+    elif annotation_type in {"point_set", "point_sequence"}:
         if not isinstance(annotation_value, list):
             return [f"{annotation_type} value is not a list"]
         for index, point in enumerate(annotation_value):
@@ -348,7 +367,9 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
     execution_trace = row["execution_trace"]
     projected_annotation = row["projected_annotation"]
     annotation_len = (
-        len(annotation_value) if isinstance(annotation_value, (list, Mapping)) else None
+        1
+        if annotation_type in {"point", "bbox", "segment"}
+        else (len(annotation_value) if isinstance(annotation_value, (list, Mapping)) else None)
     )
 
     errors = _check_annotation_shape(annotation_type, annotation_value)
@@ -377,6 +398,10 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
             errors.append(
                 "keyed_point_map annotation does not match projected_annotation.keyed_point_map"
             )
+        if annotation_type == "bbox" and projected_annotation.get("bbox") != annotation_value:
+            errors.append("bbox annotation does not match projected_annotation.bbox")
+        if annotation_type == "point" and projected_annotation.get("point") != annotation_value:
+            errors.append("point annotation does not match projected_annotation.point")
 
     if task_id in LEN_EQ_ANSWER_TASKS:
         if answer_type != "integer":

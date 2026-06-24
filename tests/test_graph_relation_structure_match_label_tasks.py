@@ -18,13 +18,14 @@ def test_graph_options_directed_samples_avoid_overlapped_reverse_arrows() -> Non
         "same_structure_label": create_task("task_graph__graph_options__same_structure_label"),
         "contained_subgraph_label": create_task("task_graph__graph_options__contained_subgraph_label"),
     }
-    for query_id, task in tasks.items():
+    for semantic_name, task in tasks.items():
         for index in range(20):
             out = task.generate(
-                int(hash64(19244, f"graph_options_directed_no_antiparallel:{query_id}", index)),
-                params={"query_id": query_id, "edge_mode": "directed"},
+                int(hash64(19244, f"graph_options_directed_no_antiparallel:{semantic_name}", index)),
+                params={"query_id": "single", "edge_mode": "directed"},
                 max_attempts=240,
             )
+            assert out.query_id == "single"
             execution = out.trace_payload["execution_trace"]
             specs = [execution["query_structure_spec"], *[option["structure_spec"] for option in execution["option_specs"]]]
             assert all(not _has_antiparallel_edges(spec["edges"]) for spec in specs)

@@ -424,10 +424,9 @@ def _draw_forest_tile(draw: ImageDraw.ImageDraw, x0: int, y0: int, tile_px: int,
 
     draw.rectangle((x0, y0, x0 + tile_px, y0 + tile_px), fill=_mix_rgb(theme["grass"], theme["forest"], 0.18))
     tree_specs = (
-        (0.28, 0.38, 0.20),
-        (0.55, 0.31, 0.22),
-        (0.72, 0.56, 0.18),
-        (0.42, 0.68, 0.19),
+        (0.36, 0.40, 0.165),
+        (0.58, 0.36, 0.175),
+        (0.48, 0.62, 0.155),
     )
     trunk_rgb = (92, 56, 32)
     outline = theme["forest_dark"]
@@ -435,8 +434,8 @@ def _draw_forest_tile(draw: ImageDraw.ImageDraw, x0: int, y0: int, tile_px: int,
         cx = x0 + int(tile_px * cx_ratio)
         cy = y0 + int(tile_px * cy_ratio)
         canopy_r = max(10, int(tile_px * scale))
-        trunk_w = max(4, int(tile_px * 0.075))
-        trunk_h = max(10, int(tile_px * 0.22))
+        trunk_w = max(3, int(tile_px * 0.060))
+        trunk_h = max(8, int(tile_px * 0.18))
         draw.ellipse(
             (cx - canopy_r + 2, cy + canopy_r * 0.38, cx + canopy_r - 2, cy + canopy_r * 0.72),
             fill=(35, 72, 43),
@@ -538,7 +537,7 @@ def _draw_player_unit(draw: ImageDraw.ImageDraw, *, tile: RpgTacticalTile, tile_
     """Draw the blue reference unit as a compact player sprite centered in one tile."""
 
     cx, cy = float(tile.point_xy[0]), float(tile.point_xy[1])
-    radius = float(tile_px) * 0.30
+    radius = float(tile_px) * 0.36
     outline = (13, 27, 76)
     blue = (28, 82, 202)
     blue_light = (83, 151, 246)

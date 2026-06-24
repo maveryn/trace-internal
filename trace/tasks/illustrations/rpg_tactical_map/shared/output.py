@@ -20,6 +20,13 @@ def bbox_projection(bbox: Sequence[float]) -> dict[str, Any]:
     return {"type": "bbox", "bbox": value, "pixel_bbox": value, "value": value}
 
 
+def bbox_set_projection(bboxes: Sequence[Sequence[float]]) -> dict[str, Any]:
+    """Return the unordered bbox-set projection payload."""
+
+    values = [rounded_bbox(bbox) for bbox in bboxes]
+    return {"type": "bbox_set", "bbox_set": values, "pixel_bbox_set": values}
+
+
 def rpg_tactical_map_scene_ir(
     *,
     domain: str,
@@ -108,8 +115,38 @@ def movement_reachable_render_map(
     }
 
 
+def movement_reachable_count_render_map(
+    *,
+    scene: RpgTacticalMapScene,
+    counted_tile_ids: Sequence[str],
+    movement_costs_by_tile_id: Mapping[str, int],
+    movement_budget: int,
+) -> dict[str, Any]:
+    """Return task render-map fields for movement-reachability counting."""
+
+    tiles_by_id = {str(tile.tile_id): tile for tile in scene.tiles}
+    counted_ids = [str(tile_id) for tile_id in counted_tile_ids]
+    return {
+        "image_id": "img0",
+        "movement_budget": int(movement_budget),
+        "counted_tile_ids": list(counted_ids),
+        "counted_tile_bboxes_px": [
+            rounded_bbox(tiles_by_id[str(tile_id)].bbox_xyxy)
+            for tile_id in counted_ids
+        ],
+        "counted_tile_costs_by_id": {
+            str(tile_id): int(movement_costs_by_tile_id[str(tile_id)])
+            for tile_id in counted_ids
+        },
+        "answer_count": int(len(counted_ids)),
+        "player_unit": scene.units[0].as_dict() if scene.units else {},
+    }
+
+
 __all__ = [
     "bbox_projection",
+    "bbox_set_projection",
+    "movement_reachable_count_render_map",
     "movement_reachable_render_map",
     "rounded_bbox",
     "rpg_tactical_map_render_spec",

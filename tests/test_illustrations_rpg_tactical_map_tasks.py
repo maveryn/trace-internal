@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from trace.tasks.registry import create_task
-from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_label import TASK_ID
+from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_count import TASK_ID as COUNT_TASK_ID
+from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_label import TASK_ID as LABEL_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.shared.relations import (
     TERRAIN_GRASS,
     TERRAIN_MOUNTAIN,
@@ -93,7 +94,7 @@ def test_rpg_tactical_map_renderer_is_deterministic_and_profile_safe() -> None:
 
 
 def test_rpg_tactical_map_movement_reachable_tile_contract() -> None:
-    task = create_task(TASK_ID)
+    task = create_task(LABEL_TASK_ID)
     out = task.generate(
         2026062401,
         params={
@@ -136,7 +137,7 @@ def test_rpg_tactical_map_movement_reachable_tile_contract() -> None:
 
 
 def test_rpg_tactical_map_movement_distractors_are_plausible_and_spread() -> None:
-    task = create_task(TASK_ID)
+    task = create_task(LABEL_TASK_ID)
     for seed in (2026062401, 2026062402, 2026062403, 23, 93):
         for profile in ("landscape", "square", "portrait"):
             out = task.generate(
@@ -172,3 +173,52 @@ def test_rpg_tactical_map_movement_distractors_are_plausible_and_spread() -> Non
                     pairwise_distances.append(abs(first[0] - second[0]) + abs(first[1] - second[1]))
             assert pairwise_distances
             assert min(pairwise_distances) >= 2
+
+
+def test_rpg_tactical_map_movement_reachable_tile_count_contract() -> None:
+    task = create_task(COUNT_TASK_ID)
+    out = task.generate(
+        2026062404,
+        params={
+            "canvas_profile": "square",
+            "movement_budget": 3,
+        },
+        max_attempts=30,
+    )
+    assert out.scene_id == "rpg_tactical_map"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "integer"
+    assert 3 <= int(out.answer_gt.value) <= 15
+    assert out.annotation_gt.type == "bbox_set"
+    width, height = out.image.size
+    for bbox in out.annotation_gt.value:
+        _assert_bbox_inside_canvas(bbox, width=width, height=height)
+    assert "mountains cost 3" in out.prompt
+    assert "water cannot be entered" in out.prompt
+    assert "Do not count the tile the unit starts on" in out.prompt or "excluding" in out.prompt
+
+    trace = out.trace_payload
+    render_map = trace["render_map"]
+    relations = trace["scene_ir"]["relations"]
+    start_tile_id = str(relations["start_tile_id"])
+    counted_tile_ids = [str(tile_id) for tile_id in render_map["counted_tile_ids"]]
+    assert start_tile_id not in set(counted_tile_ids)
+    assert int(render_map["answer_count"]) == int(out.answer_gt.value)
+    assert len(counted_tile_ids) == int(out.answer_gt.value)
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert render_map["counted_tile_bboxes_px"] == out.annotation_gt.value
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_tactical_map_v0"
+    assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_tactical_map"
+
+    costs_by_tile_id = trace["execution_trace"]["movement_costs_by_tile_id"]
+    movement_budget = int(render_map["movement_budget"])
+    for tile_id in counted_tile_ids:
+        assert int(costs_by_tile_id[tile_id]) <= movement_budget
+    for tile in trace["scene_ir"]["tiles"]:
+        tile_id = str(tile["tile_id"])
+        if tile_id == start_tile_id:
+            continue
+        cost = costs_by_tile_id.get(tile_id)
+        if cost is not None and int(cost) <= movement_budget:
+            assert tile_id in set(counted_tile_ids)

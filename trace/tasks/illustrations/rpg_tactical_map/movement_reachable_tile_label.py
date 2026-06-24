@@ -26,6 +26,7 @@ from .shared.output import (
     rpg_tactical_map_scene_ir,
 )
 from .shared.prompts import build_rpg_tactical_map_task_prompt_with_default_slots
+from .shared.prompts import rpg_tactical_map_terrain_rules_text
 from .shared.relations import (
     TERRAIN_MOVEMENT_COSTS,
     TERRAIN_WATER,
@@ -38,6 +39,7 @@ from .shared.rendering import (
     render_rpg_tactical_map_scene,
     resolve_tactical_map_render_params,
 )
+from .shared.sampling import select_int_from_support
 from .shared.state import RpgTacticalMapScene, RpgTacticalTile
 
 
@@ -52,35 +54,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rende
     _SCENE_DEFAULTS if isinstance(_SCENE_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-
-
-def _select_from_support(
-    *,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    support_key: str,
-    explicit_key: str,
-    fallback_support: Sequence[int],
-    namespace: str,
-) -> tuple[int, dict[str, float]]:
-    support_raw = params.get(str(support_key), group_default(defaults, str(support_key), fallback_support))
-    if isinstance(support_raw, str):
-        support = (int(support_raw),)
-    else:
-        support = tuple(int(value) for value in support_raw)
-    if not support:
-        raise ValueError(f"{support_key} must contain at least one value")
-    explicit = params.get(str(explicit_key), None)
-    if explicit is not None:
-        value = int(explicit)
-        if value not in set(support):
-            raise ValueError(f"{explicit_key} must be in {support}")
-        return value, {str(value): 1.0}
-    rng = random.Random(f"{int(instance_seed)}:{namespace}")
-    value = int(support[int(rng.randrange(len(support)))])
-    probability = 1.0 / float(len(support))
-    return value, {str(item): probability for item in support}
 
 
 def _tiles_by_coord(scene: RpgTacticalMapScene) -> dict[tuple[int, int], RpgTacticalTile]:
@@ -285,7 +258,7 @@ class IllustrationsRpgTacticalMapMovementReachableTileLabelTask:
             task_id=TASK_ID,
             namespace=f"{TASK_ID}:query",
         )
-        movement_budget, movement_budget_probabilities = _select_from_support(
+        movement_budget, movement_budget_probabilities = select_int_from_support(
             instance_seed=int(instance_seed),
             params=task_params,
             defaults=_GEN_DEFAULTS,
@@ -323,7 +296,7 @@ class IllustrationsRpgTacticalMapMovementReachableTileLabelTask:
             context_label=TASK_ID,
             slots={
                 "movement_points": str(int(movement_budget)),
-                "terrain_rules": _terrain_rules_text(),
+                "terrain_rules": rpg_tactical_map_terrain_rules_text(),
             },
             instance_seed=int(instance_seed),
         )
@@ -459,10 +432,6 @@ class IllustrationsRpgTacticalMapMovementReachableTileLabelTask:
             scene_id=SCENE_ID,
             query_id=str(resolved_query_id),
         )
-
-
-def _terrain_rules_text() -> str:
-    return "Grass, roads, and bridges cost 1 movement point; forests cost 2; mountains cost 3; water cannot be entered. Moves are only up, down, left, or right."
 
 
 __all__ = [

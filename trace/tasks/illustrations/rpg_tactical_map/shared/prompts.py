@@ -12,6 +12,12 @@ from trace.tasks.shared.prompt_variants import (
 )
 
 
+def rpg_tactical_map_terrain_rules_text() -> str:
+    """Return the public terrain-cost rule sentence shared by tactical map tasks."""
+
+    return "Grass, roads, and bridges cost 1 movement point; forests cost 2; mountains cost 3; water cannot be entered. Moves are only up, down, left, or right."
+
+
 def build_rpg_tactical_map_prompt_artifacts(
     *,
     domain: str,
@@ -92,4 +98,5 @@ def build_rpg_tactical_map_task_prompt_with_default_slots(
 __all__ = [
     "build_rpg_tactical_map_prompt_artifacts",
     "build_rpg_tactical_map_task_prompt_with_default_slots",
+    "rpg_tactical_map_terrain_rules_text",
 ]

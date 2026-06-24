@@ -11,9 +11,6 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
 from trace.tasks.graph.node_link.edge_between_nodes_label import GraphRelationEdgeBetweenNodesLabelTask
-from trace.tasks.graph.node_link.shortest_path_first_edge_label import (
-    GraphRelationShortestPathFirstEdgeLabelTask,
-)
 from tests.helpers import read_jsonl
 
 
@@ -117,48 +114,6 @@ def test_graph_relation_edge_attribute_label_undirected_prompt_and_example_contr
     assert list(answer_and_annotation.keys()) == ["annotation", "answer"]
     assert answer_and_annotation["annotation"] == [180, 220, 230, 245]
     assert answer_and_annotation["answer"] == "alpha"
-
-
-def test_graph_relation_edge_attribute_label_shortest_path_first_edge_contract() -> None:
-    task = GraphRelationShortestPathFirstEdgeLabelTask()
-    out = task.generate(
-        20903,
-        params={
-            "query_id": "single",
-            "graph_directionality": "directed",
-            "target_edge_label": "routes",
-            "edge_label_support": ["feeds", "blocks", "joins", "routes", "checks", "updates"],
-            "target_shortest_path_length": 3,
-            "label_variant": "letters",
-        },
-        max_attempts=100,
-    )
-    execution = out.trace_payload["execution_trace"]
-    render_spec = out.trace_payload["render_spec"]
-
-    assert out.query_id == "single"
-    assert out.answer_gt.value == "routes"
-    assert "unique shortest path" in str(out.prompt)
-    assert "first edge" in str(out.prompt)
-    assert render_spec["canvas_size"] == [960, 720]
-    assert render_spec["style"]["label_font_size_px"] == 20
-    assert render_spec["style"]["edge_text_label_font_size_px"] == 22
-    assert render_spec["style"]["resolved_edge_text_label_font_size_px"] == 22
-    query_edge = tuple(str(value) for value in out.trace_payload["witness_symbolic"]["edge_labels"][0])
-    labels_by_edge = {
-        tuple(str(value) for value in entry["edge"]): str(entry["edge_label"])
-        for entry in execution["edge_attribute_labels_by_label_pair"]
-    }
-    assert labels_by_edge[tuple(query_edge)] == "routes"
-    query_entity = [
-        entity
-        for entity in out.trace_payload["scene_ir"]["entities"]
-        if entity["entity_kind"] == "graph_edge"
-        and (str(entity["node_u_label"]), str(entity["node_v_label"])) == tuple(query_edge)
-    ][0]
-    assert out.annotation_gt.type == "bbox"
-    assert query_entity["label_bbox_xyxy"] == out.annotation_gt.value
-    assert _bbox_min_side(out.annotation_gt.value) >= 24
 
 
 def test_graph_relation_edge_attribute_label_balanced_sampling_covers_label_support() -> None:

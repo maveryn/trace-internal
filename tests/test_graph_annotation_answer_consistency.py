@@ -57,7 +57,6 @@ SINGLE_ANNOTATION_LABEL_TASKS = {
     "task_graph__graph_options__contained_subgraph_label",
     "task_graph__graph_options__same_structure_label",
     "task_graph__node_link__edge_between_nodes_label",
-    "task_graph__node_link__shortest_path_first_edge_label",
     "task_graph__node_link__unique_related_node_label",
 }
 
@@ -176,7 +175,6 @@ GRAPH_QUERY_IDS = {
         "reachable_count_after_edge_removal",
     ),
     "task_graph__node_link__same_component_count": ("single",),
-    "task_graph__node_link__shortest_path_first_edge_label": ("single",),
     "task_graph__node_link__shortest_path_length": (
         "directed_shortest_path_length",
         "undirected_shortest_path_length",
@@ -720,7 +718,6 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
 
     if task_id in {
         "task_graph__node_link__edge_between_nodes_label",
-        "task_graph__node_link__shortest_path_first_edge_label",
     }:
         if str(answer_value) != str(execution_trace.get("target_edge_label")):
             errors.append("edge-attribute answer does not match target_edge_label")

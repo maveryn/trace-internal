@@ -327,16 +327,6 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(edge_attribute_prompt_defaults['object_description_directed']).strip()
     assert str(edge_attribute_prompt_defaults['annotation_hint_edge_between_nodes_label']).strip()
     assert str(edge_attribute_prompt_defaults['annotation_hint_directed_edge_between_nodes_label']).strip()
-    assert str(edge_attribute_prompt_defaults['annotation_hint_shortest_path_first_edge_label']).strip()
-    shortest_edge_generation_defaults, _, shortest_edge_prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='task_graph__node_link__shortest_path_first_edge_label')
-    assert 'query_id_weights' not in shortest_edge_generation_defaults
-    assert int(shortest_edge_generation_defaults['edge_label_support_size']) == 16
-    assert int(shortest_edge_generation_defaults['edge_label_min_chars']) == 3
-    assert int(shortest_edge_generation_defaults['edge_label_max_chars']) == 5
-    assert int(shortest_edge_generation_defaults['max_labeled_edge_count']) == 12
-    assert int(shortest_edge_generation_defaults['target_shortest_path_length_min']) == 2
-    assert int(shortest_edge_generation_defaults['target_shortest_path_length_max']) == 3
-    assert str(shortest_edge_prompt_defaults['task_key']).strip() == 'edge_attribute_label_query'
     edge_edit_generation_defaults, edge_edit_rendering_defaults, edge_edit_prompt_defaults = split_generation_rendering_prompt_defaults(cfg, task_id='graph_node_link_component_size_after_edge_edit_internal')
     assert sorted(edge_edit_generation_defaults['edge_edit_operation_weights'].keys()) == ['edge_addition', 'edge_removal']
     assert set(edge_edit_generation_defaults['label_variant_weights'].keys()) == {'letters', 'numbers', 'named'}

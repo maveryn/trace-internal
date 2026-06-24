@@ -206,12 +206,6 @@
       "source_label",
       "target_label"
     ],
-    "query:shortest_path_first_edge_label": [
-      "source_label",
-      "target_label",
-      "path_edge_term",
-      "path_follow_clause"
-    ],
     "query:unique_neighbor_label": [
       "query_label"
     ],
@@ -444,13 +438,6 @@
       "Which text label appears on the arrow from {source_label} to {target_label}?",
       "Find the arrow from node {source_label} to node {target_label}. What label does it show?",
       "What is the visible label attached to the arrow from node {source_label} to node {target_label}?"
-    ],
-    "shortest_path_first_edge_label": [
-      "Along the unique shortest path from node {source_label} to node {target_label}{path_follow_clause}, what label is on the first {path_edge_term}?",
-      "Start at node {source_label} and take the unique shortest path to node {target_label}{path_follow_clause}. What label appears on the first {path_edge_term}?",
-      "On the unique shortest path from {source_label} to {target_label}{path_follow_clause}, read the first {path_edge_term}. What label does it show?",
-      "Following the unique shortest path from node {source_label} to node {target_label}{path_follow_clause}, what label is attached to the first {path_edge_term}?",
-      "What label is on the first {path_edge_term} of the unique shortest path from node {source_label} to node {target_label}{path_follow_clause}?"
     ],
     "unique_neighbor_label": [
       "Which node is the only neighbor of node {query_label}?",

@@ -753,7 +753,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_graph__node_link__reachable_count": _entry("graph", "node_link", "graph", "node_link"),
     "task_graph__node_link__reachable_count_after_edge_edit": _entry("graph", "node_link", "graph", "node_link"),
     "task_graph__node_link__same_component_count": _entry("graph", "node_link", "graph", "node_link"),
-    "task_graph__node_link__shortest_path_first_edge_label": _entry("graph", "node_link", "graph", "node_link"),
     "task_graph__pipe_network__pipe_exact_distance_count": _entry("graph", "pipe_network", "graph", "pipe_network"),
     "task_graph__pipe_network__pipe_reachable_junction_count": _entry("graph", "pipe_network", "graph", "pipe_network"),
     "task_graph__metro__exact_distance_station_count": _entry("graph", "metro", "graph", "metro"),

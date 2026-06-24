@@ -511,7 +511,6 @@ generation:
       query_id_weights:
         edge_between_nodes_label: 1.0
         directed_edge_between_nodes_label: 1.0
-        shortest_path_first_edge_label: 1.0
       graph_directionality_weights:
         undirected: 1.0
         directed: 1.0
@@ -3447,89 +3446,6 @@ generation:
         straight: 1.0
         mixed_arc: 1.0
       balanced_edge_routing_variant_sampling: true
-    task_graph__node_link__shortest_path_first_edge_label:
-      balanced_query_id_sampling: true
-      node_count_min: 5
-      node_count_max: 8
-      component_count_min: 2
-      component_count_max: 4
-      target_component_size_min: 2
-      target_component_size_max: 7
-      topology_profile_weights:
-        balanced: 1.0
-        low_degree: 1.0
-        hub_heavy: 1.0
-      label_variant_weights:
-        letters: 1.0
-        numbers: 1.0
-        named: 2.0
-      layout_variant_weights:
-        circular: 1.0
-        shell: 1.0
-        spring: 1.0
-        grid_jitter: 1.0
-        layered: 1.0
-        component_clustered: 1.0
-        path_spine: 1.0
-        radial_tree: 1.0
-      node_shape_variant_weights:
-        circle: 1.0
-        rounded_square: 1.0
-        hexagon: 1.0
-      layout_transform_variant_weights:
-        identity: 1.0
-        rotate_90: 1.0
-        rotate_180: 1.0
-        rotate_270: 1.0
-        mirror_left_right: 1.0
-        mirror_up_down: 1.0
-      node_color_name_weights:
-        red: 1.0
-        blue: 1.0
-        green: 1.0
-        yellow: 1.0
-        orange: 1.0
-        purple: 1.0
-        brown: 1.0
-        cyan: 1.0
-        magenta: 1.0
-        maroon: 1.0
-      balanced_topology_profile_sampling: true
-      balanced_label_variant_sampling: true
-      balanced_layout_variant_sampling: true
-      balanced_node_shape_variant_sampling: true
-      balanced_layout_transform_variant_sampling: true
-      balanced_node_color_name_sampling: true
-      query_id_weights:
-        shortest_path_first_edge_label: 1.0
-      graph_directionality_weights:
-        undirected: 1.0
-        directed: 1.0
-      edge_label_support_size: 6
-      edge_label_min_chars: 3
-      edge_label_max_chars: 12
-      edge_label_bucket_weights:
-        people_first: 1.0
-        people_surnames: 1.0
-        places_countries: 1.0
-        places_cities: 1.0
-        organizations_tickers: 1.0
-        organizations_terms: 1.0
-        occupations: 1.0
-        industries: 1.0
-        mixed_proper: 1.0
-        mixed_compact: 1.0
-      edge_routing_variant_weights:
-        straight: 1.0
-        mixed_arc: 1.0
-      balanced_graph_directionality_sampling: true
-      balanced_target_edge_label_sampling: true
-      balanced_edge_routing_variant_sampling: true
-      directed_node_count_max: 8
-      target_shortest_path_length_min: 2
-      target_shortest_path_length_max: 3
-      degree_sequence_max_degree: 4
-      directed_degree_sequence_max_degree: 4
     task_graph__node_link__shortest_path_length:
       node_count_min: 5
       node_count_max: 15
@@ -4805,9 +4721,6 @@ prompt:
       annotation_hint_directed_edge_between_nodes_label: set "annotation" to an array
         containing one [x0,y0,x1,y1] box around the visible text label on the arrow
         from {source_label} to {target_label}
-      annotation_hint_shortest_path_first_edge_label: set "annotation" to an array
-        containing one [x0,y0,x1,y1] box around the visible text label on the first
-        {path_edge_term} along the unique shortest path from {source_label} to {target_label}{path_follow_clause}
     graph_node_link_reachable_count_after_edge_edit_internal:
       bundle_id: graph_relation_v0
       scene_key: single_graph_relation
@@ -5531,9 +5444,6 @@ prompt:
       annotation_hint_directed_edge_between_nodes_label: set "annotation" to an array
         containing one [x0,y0,x1,y1] box around the visible text label on the arrow
         from {source_label} to {target_label}
-      annotation_hint_shortest_path_first_edge_label: set "annotation" to an array
-        containing one [x0,y0,x1,y1] box around the visible text label on the first
-        {path_edge_term} along the unique shortest path from {source_label} to {target_label}{path_follow_clause}
     task_graph__node_link__edge_color_count:
       bundle_id: graph_counting_v0
       scene_key: single_graph_counting
@@ -5814,34 +5724,6 @@ prompt:
         array of [x,y] pixel points at the centers of all nodes that would be reachable
         from {query_label} after adding an arrow from {edit_label_a} to {edit_label_b},
         including {query_label}
-    task_graph__node_link__shortest_path_first_edge_label:
-      bundle_id: graph_relation_v0
-      scene_key: single_graph_relation
-      task_key: edge_attribute_label_query
-      json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
-        in that order for the final answer.
-      json_output_contract_answer_only: Use a valid JSON object with key "answer"
-        for the final answer.
-      object_description: a labeled undirected graph
-      object_description_directed: a directed graph with text labels on its arrows
-      question_text_same_component_count: How many nodes, including node {query_label}
-        itself, are in the same connected component as {query_label}?
-      annotation_hint: set "annotation" to an array of [x,y] pixel points at the centers
-        of all nodes in the connected component containing the asked node, including
-        the asked node itself
-      answer_hint: set "answer" to that edge label as a lowercase string
-      json_example: '{"annotation":[[240,190,308,214]],"answer":"feeds"}'
-      json_example_answer_only: '{"answer":"feeds"}'
-      object_description_undirected: a graph with text labels on its edges
-      annotation_hint_edge_between_nodes_label: set "annotation" to an array containing
-        one [x0,y0,x1,y1] box around the visible text label on the edge between {source_label}
-        and {target_label}
-      annotation_hint_directed_edge_between_nodes_label: set "annotation" to an array
-        containing one [x0,y0,x1,y1] box around the visible text label on the arrow
-        from {source_label} to {target_label}
-      annotation_hint_shortest_path_first_edge_label: set "annotation" to an array
-        containing one [x0,y0,x1,y1] box around the visible text label on the first
-        {path_edge_term} along the unique shortest path from {source_label} to {target_label}{path_follow_clause}
     task_graph__node_link__unique_cycle_size:
       bundle_id: graph_relation_v0
       scene_key: single_graph_relation

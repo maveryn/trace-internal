@@ -45,9 +45,6 @@ from trace.tasks.graph.binary_tree.lowest_common_ancestor_label import (
 from trace.tasks.graph.node_link.component_size_after_edge_edit import (
     GraphRelationComponentSizeAfterEdgeEditTask,
 )
-from trace.tasks.graph.node_link.shortest_path_first_edge_label import (
-    GraphRelationShortestPathFirstEdgeLabelTask,
-)
 from trace.tasks.graph.node_link.reachable_count_after_edge_edit import (
     GraphRelationReachableCountAfterEdgeEditTask,
 )
@@ -227,16 +224,6 @@ def _annotation_sentence(prompt: str) -> str:
                 "node_count": 7,
             },
             ("after removing the edge",),
-        ),
-        (
-            GraphRelationShortestPathFirstEdgeLabelTask,
-            30118,
-            {
-                "query_id": "single",
-                "target_shortest_path_length": 2,
-                "node_count": 6,
-            },
-            ("first", "unique shortest path"),
         ),
         (
             GraphRelationUniqueNodeLabelTask,

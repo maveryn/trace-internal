@@ -3,19 +3,19 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `survey_traverse`
-5. Query id: `bearing_from_back_bearing` or `closed_traverse_missing_bearing`
-6. Answer schema: `integer`
-7. Annotation schema: `keyed_point_map`
+3. Supported `query_id`s: `bearing_from_back_bearing`, `closed_traverse_missing_bearing`
+4. Answer schema: `integer`
+5. Annotation schema: `point_map`
 
 ## Program Contract
-- `solve_formula(visible_survey_station_bearings, unknown_role=marked_bearing, formula_schema=survey_bearing_angle); scene=survey_traverse; scope=bearing_angle_value`
+- `survey_bearing_angle_value(visible_station_line, visible_north_reference, known_bearing, branch=bearing_from_back_bearing|closed_traverse_missing_bearing) -> marked_bearing_degrees; scene=survey_traverse; scope=bearing_angle_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from the scene prompt bundle configured for `survey_traverse`.
+- Prompt text is loaded from the v1 scene prompt bundle configured for `survey_traverse`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation binds station and bearing roles:
+Prompt-facing annotation uses pixel-space point witnesses. Map annotation binds station and bearing roles:
 
 - `station_a`
 - `station_b`

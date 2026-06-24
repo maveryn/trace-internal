@@ -3,19 +3,19 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `survey_traverse`
-5. Query id: `leveling_station_elevation` or `slope_distance_elevation_change`
-6. Answer schema: `integer`
-7. Annotation schema: `keyed_point_map`
+3. Supported `query_id`s: `leveling_station_elevation`, `slope_distance_elevation_change`
+4. Answer schema: `integer`
+5. Annotation schema: `point_map`
 
 ## Program Contract
-- `solve_formula(visible_survey_station_elevation_notes, unknown_role=target_station_elevation, formula_schema=survey_station_elevation); scene=survey_traverse; scope=station_elevation_value`
+- `survey_station_elevation_value(visible_station_profile, visible_field_note, branch=leveling_station_elevation|slope_distance_elevation_change) -> target_station_elevation; scene=survey_traverse; scope=station_elevation_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from the scene prompt bundle configured for `survey_traverse`.
+- Prompt text is loaded from the v1 scene prompt bundle configured for `survey_traverse`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation binds station and measurement roles:
+Prompt-facing annotation uses pixel-space point witnesses. Map annotation binds station and measurement roles:
 
 - `reference_station`
 - `target_station`

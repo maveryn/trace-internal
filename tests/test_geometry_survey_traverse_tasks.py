@@ -8,19 +8,22 @@ import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.survey_traverse.bearing_angle_value import GeometrySurveyTraverseBearingAngleValueTask
-from trace.tasks.geometry.survey_traverse.shared.measurement.survey_traverse_common import (
-    AREA_QUERY_IDS,
-    ELEVATION_QUERY_IDS,
-    QUERY_IDS,
-    SCENE_ID,
-    TASK_ID,
-    TASK_ID_BEARING_ANGLE,
-    TASK_ID_STATION_ELEVATION,
-    TASK_ID_TRAVERSE_AREA,
+from trace.tasks.geometry.survey_traverse.bearing_angle_value import (
+    SUPPORTED_QUERY_IDS as BEARING_QUERY_IDS,
+    TASK_ID as TASK_ID_BEARING_ANGLE,
+    GeometrySurveyTraverseBearingAngleValueTask,
 )
-from trace.tasks.geometry.survey_traverse.station_elevation_value import GeometrySurveyTraverseStationElevationValueTask
-from trace.tasks.geometry.survey_traverse.traverse_area_value import GeometrySurveyTraverseTraverseAreaValueTask
+from trace.tasks.geometry.survey_traverse.shared.state import SCENE_ID
+from trace.tasks.geometry.survey_traverse.station_elevation_value import (
+    SUPPORTED_QUERY_IDS as ELEVATION_QUERY_IDS,
+    TASK_ID as TASK_ID_STATION_ELEVATION,
+    GeometrySurveyTraverseStationElevationValueTask,
+)
+from trace.tasks.geometry.survey_traverse.traverse_area_value import (
+    SUPPORTED_QUERY_IDS as AREA_QUERY_IDS,
+    TASK_ID as TASK_ID_TRAVERSE_AREA,
+    GeometrySurveyTraverseTraverseAreaValueTask,
+)
 
 
 def _generate(seed: int, *, task_id: str = TASK_ID_BEARING_ANGLE, **params):
@@ -29,7 +32,6 @@ def _generate(seed: int, *, task_id: str = TASK_ID_BEARING_ANGLE, **params):
 
 
 def test_survey_traverse_bearing_angle_registered_public_task() -> None:
-    assert TASK_ID == TASK_ID_BEARING_ANGLE
     assert TASK_ID_BEARING_ANGLE in TASK_REGISTRY
     assert TASK_ID_STATION_ELEVATION in TASK_REGISTRY
     assert TASK_ID_TRAVERSE_AREA in TASK_REGISTRY
@@ -67,7 +69,7 @@ def test_back_bearing_contract_and_formula() -> None:
     assert execution["known_back_bearing"] == 230
     assert execution["target_forward_bearing"] == 50
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert set(out.annotation_gt.value) == {
         "station_a",
         "station_b",
@@ -99,7 +101,7 @@ def test_closed_traverse_contract_and_formula() -> None:
     assert execution["turn_direction"] == "right"
     assert execution["target_bearing"] == 145
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert set(out.annotation_gt.value) == {
         "station_a",
         "station_b",
@@ -134,15 +136,15 @@ def test_leveling_station_elevation_contract_and_formula() -> None:
     assert execution["target_elevation"] == 117
     assert execution["formula_family"] == "survey_leveling_station_elevation"
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert tuple(out.annotation_gt.value) == (
         "reference_station",
         "target_station",
         "measurement_line",
         "field_note_region",
     )
-    assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["point_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_map"] == out.annotation_gt.value
     _assert_point_map_inside_image(out.annotation_gt.value, out.image.size)
     assert "task_variant" not in json.dumps(trace)
 
@@ -169,14 +171,14 @@ def test_slope_distance_elevation_change_contract_and_formula() -> None:
     assert execution["target_elevation"] == 111
     assert execution["formula_family"] == "survey_slope_distance_elevation_change"
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert tuple(out.annotation_gt.value) == (
         "reference_station",
         "target_station",
         "measurement_line",
         "field_note_region",
     )
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_survey_traverse_v0"
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_survey_traverse_v1"
     _assert_point_map_inside_image(out.annotation_gt.value, out.image.size)
     assert "task_variant" not in json.dumps(trace)
 
@@ -200,14 +202,14 @@ def test_coordinate_traverse_area_contract_and_formula() -> None:
     assert execution["coordinate_points"] == [[0, 0], [6, 0], [7, 4], [0, 6]]
     assert execution["answer"] == 33
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert tuple(out.annotation_gt.value) == (
         "traverse_region",
         "field_note_region",
         "area_reference_region",
     )
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_map"] == out.annotation_gt.value
     _assert_bbox_map_inside_image(out.annotation_gt.value, out.image.size)
     assert "task_variant" not in json.dumps(trace)
 
@@ -232,18 +234,18 @@ def test_offset_trapezoid_area_contract_and_formula() -> None:
     assert execution["offsets"] == [3, 5, 4, 2]
     assert execution["answer"] == 230
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert tuple(out.annotation_gt.value) == (
         "traverse_region",
         "field_note_region",
         "area_reference_region",
     )
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_survey_traverse_v0"
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_survey_traverse_v1"
     _assert_bbox_map_inside_image(out.annotation_gt.value, out.image.size)
     assert "task_variant" not in json.dumps(trace)
 
 
-@pytest.mark.parametrize("query_id", QUERY_IDS)
+@pytest.mark.parametrize("query_id", BEARING_QUERY_IDS)
 def test_survey_traverse_bearing_generation_is_deterministic(query_id: str) -> None:
     params = {"query_id": query_id}
     first = _generate(20260613, **params)

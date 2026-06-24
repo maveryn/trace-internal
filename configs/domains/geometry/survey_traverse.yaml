@@ -11,26 +11,5 @@ rendering:
     readout_font_family: roboto
 prompt:
   shared:
-    bundle_id: geometry_survey_traverse_v0
+    bundle_id: geometry_survey_traverse_v1
     scene_key: survey_traverse_scene
-    json_output_contract: 'Return one JSON object with keys "answer" and "annotation".'
-    json_output_contract_answer_only: 'Return one JSON object with key "answer".'
-    object_description_bearing: 'station labels, north arrows, a known bearing, and one bearing marked ?'
-    annotation_hint_bearing: 'set "annotation" to a JSON object with keys for the visible witnesses. For back-bearing questions, use exactly "station_a", "station_b", "reference_north", and "target_direction". For traverse-turn questions, use those keys plus "turn_vertex". Each value must be the pixel point [x,y] at that station, north reference, target bearing ray, or turn vertex'
-    annotation_hint_bearing_from_back_bearing: 'set "annotation" to a JSON object with exactly these keys: "station_a", "station_b", "reference_north", and "target_direction"; each value must be the pixel point [x,y] at the visible station, north reference, or target bearing ray'
-    annotation_hint_closed_traverse_missing_bearing: 'set "annotation" to a JSON object with exactly these keys: "station_a", "station_b", "reference_north", "target_direction", and "turn_vertex"; each value must be the pixel point [x,y] at the visible station, north reference, target bearing ray, or turn vertex'
-    answer_hint_bearing: 'set "answer" to the marked survey bearing as an integer number of degrees clockwise from north'
-    json_example_bearing: '{"annotation":{"station_a":[250,365],"station_b":[460,190],"reference_north":[250,285],"target_direction":[300,305]},"answer":45}'
-    json_example_bearing_from_back_bearing: '{"annotation":{"station_a":[250,365],"station_b":[460,190],"reference_north":[250,285],"target_direction":[300,305]},"answer":45}'
-    json_example_closed_traverse_missing_bearing: '{"annotation":{"station_a":[180,370],"station_b":[360,250],"reference_north":[360,170],"target_direction":[470,210],"turn_vertex":[360,250]},"answer":125}'
-    json_example_answer_only_bearing: '{"answer":45}'
-    object_description_elevation: 'station labels, a measurement line or slope segment, a field note, and one elevation marked ?'
-    annotation_hint_elevation: 'set "annotation" to a JSON object with exactly these keys: "reference_station", "target_station", "measurement_line", and "field_note_region"; each value must be the pixel point [x,y] at that station, line midpoint, or note center'
-    answer_hint_elevation: 'set "answer" to the missing station elevation as an integer value in the same units shown'
-    json_example_elevation: '{"annotation":{"reference_station":[190,390],"target_station":[560,350],"measurement_line":[375,250],"field_note_region":[625,130]},"answer":117}'
-    json_example_answer_only_elevation: '{"answer":117}'
-    object_description_area: 'station labels, an enclosed traverse or offset shape, a field note, and the area marked ?'
-    annotation_hint_area: 'set "annotation" to a JSON object with exactly these keys: "traverse_region", "field_note_region", and "area_reference_region". Each value must be the pixel bounding box [x0,y0,x1,y1] around the traverse or offset shape, the field-note table, or the coordinate axes/baseline reference'
-    answer_hint_area: 'set "answer" to the marked survey area as an integer number of square units'
-    json_example_area: '{"annotation":{"traverse_region":[112,140,478,420],"field_note_region":[548,83,752,220],"area_reference_region":[82,96,510,464]},"answer":230}'
-    json_example_answer_only_area: '{"answer":230}'

@@ -3,19 +3,19 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `survey_traverse`
-5. Query id: `coordinate_traverse_area` or `offset_trapezoid_area`
-6. Answer schema: `integer`
-7. Annotation schema: `keyed_bbox_map`
+3. Supported `query_id`s: `coordinate_traverse_area`, `offset_trapezoid_area`
+4. Answer schema: `integer`
+5. Annotation schema: `bbox_map`
 
 ## Program Contract
-- `solve_formula(visible_survey_traverse_field_notes, unknown_role=enclosed_area, formula_schema=survey_traverse_area); scene=survey_traverse; scope=traverse_area_value`
+- `survey_traverse_area_value(visible_traverse_shape, visible_field_note, branch=coordinate_traverse_area|offset_trapezoid_area) -> enclosed_area; scene=survey_traverse; scope=traverse_area_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from the scene prompt bundle configured for `survey_traverse`.
+- Prompt text is loaded from the v1 scene prompt bundle configured for `survey_traverse`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation binds the visual area witnesses:
+Prompt-facing annotation uses pixel-space box witnesses. Map annotation binds the visual area witnesses:
 
 - `traverse_region`
 - `field_note_region`

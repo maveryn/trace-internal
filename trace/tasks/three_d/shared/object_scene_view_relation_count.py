@@ -75,7 +75,8 @@ COUNTABLE_DIMENSION_SCALE = 1.08
 MIN_PROJECTED_OBJECT_AREA_PX = 520.0
 MAX_PAIRWISE_OVERLAP_PX = 3600.0
 MIN_REFERENCE_X_MARGIN_PX = 60.0
-MIN_REFERENCE_DEPTH_MARGIN = 0.28
+MIN_REFERENCE_X_BBOX_GAP_PX = 14.0
+MIN_REFERENCE_DEPTH_MARGIN = 0.48
 
 
 def _uniform_string_probability_map(values: Sequence[str]) -> Dict[str, float]:
@@ -94,6 +95,13 @@ def _bbox_is_readable(bbox: Sequence[float], *, width: int, height: int, min_sid
     if box_width < float(min_side_px) or box_height < float(min_side_px):
         return False
     return float(bbox[2]) > 4.0 and float(bbox[3]) > 4.0 and float(bbox[0]) < float(width - 4) and float(bbox[1]) < float(height - 4)
+
+
+def _screen_bbox(spec: Mapping[str, Any]) -> Tuple[float, float, float, float]:
+    raw_bbox = spec.get("screen_bbox_px")
+    if not isinstance(raw_bbox, Sequence) or isinstance(raw_bbox, (str, bytes)) or len(raw_bbox) != 4:
+        raise ValueError("view-relation object is missing screen_bbox_px")
+    return tuple(float(value) for value in raw_bbox)  # type: ignore[return-value]
 
 
 def _scale_dimensions(dimensions_xyz: Sequence[float], scale: float) -> Tuple[float, float, float]:
@@ -191,10 +199,12 @@ def _finalize_specs(
     finalized_specs: List[Dict[str, Any]] = []
     for spec in specs:
         screen = _project_screen(spec["world_xyz"], camera, frame)
+        screen_bbox = _object_screen_bbox(spec, camera, frame, pad_px=8.0)
         finalized = dict(spec)
         finalized.update(
             {
                 "screen_xy": [round(float(screen[0]), 3), round(float(screen[1]), 3)],
+                "screen_bbox_px": [round(float(value), 3) for value in screen_bbox],
                 "camera_xyz": [round(float(screen[5]), 4), round(float(screen[6]), 4), round(float(screen[4]), 4)],
                 "camera_distance": round(float(screen[7]), 4),
             }
@@ -233,35 +243,50 @@ def _select_reference_and_targets(
 ) -> Tuple[Dict[str, Any], List[str], Dict[str, bool], float]:
     if str(query_id) in SCREEN_SIDE_QUERY_IDS:
         ordered = sorted(specs, key=lambda spec: (float(spec["screen_xy"][0]), str(spec["object_id"])))
-        if str(query_id) == "left_of_reference_in_view_count":
-            reference_index = int(target_count)
-        else:
-            reference_index = len(ordered) - int(target_count) - 1
-        if reference_index <= 0 or reference_index >= len(ordered) - 1:
-            raise ValueError("reference would be too close to the horizontal edge of the object set")
-
-        reference = dict(ordered[reference_index])
-        reference_x = float(reference["screen_xy"][0])
-        relation_status_by_object_id: Dict[str, bool] = {}
-        target_specs: List[Mapping[str, Any]] = []
-        min_relation_margin = float("inf")
-        for spec in ordered:
-            object_id = str(spec["object_id"])
-            if object_id == str(reference["object_id"]):
-                relation_status_by_object_id[object_id] = False
+        valid_choices: List[Tuple[Mapping[str, Any], List[Mapping[str, Any]], Dict[str, bool], float]] = []
+        for candidate_reference in ordered[1:-1]:
+            reference = dict(candidate_reference)
+            reference_bbox = _screen_bbox(reference)
+            relation_status_by_object_id: Dict[str, bool] = {}
+            target_specs: List[Mapping[str, Any]] = []
+            min_relation_margin = float("inf")
+            left_count = 0
+            right_count = 0
+            ambiguous = False
+            for spec in ordered:
+                object_id = str(spec["object_id"])
+                if object_id == str(reference["object_id"]):
+                    relation_status_by_object_id[object_id] = False
+                    continue
+                object_bbox = _screen_bbox(spec)
+                left_gap = float(reference_bbox[0]) - float(object_bbox[2])
+                right_gap = float(object_bbox[0]) - float(reference_bbox[2])
+                if left_gap >= MIN_REFERENCE_X_BBOX_GAP_PX:
+                    is_target = str(query_id) == "left_of_reference_in_view_count"
+                    relation_margin = float(left_gap)
+                    left_count += 1
+                elif right_gap >= MIN_REFERENCE_X_BBOX_GAP_PX:
+                    is_target = str(query_id) == "right_of_reference_in_view_count"
+                    relation_margin = float(right_gap)
+                    right_count += 1
+                else:
+                    ambiguous = True
+                    break
+                min_relation_margin = min(float(min_relation_margin), float(relation_margin))
+                relation_status_by_object_id[object_id] = bool(is_target)
+                if is_target:
+                    target_specs.append(spec)
+            if ambiguous or left_count <= 0 or right_count <= 0:
                 continue
-            dx = float(spec["screen_xy"][0]) - reference_x
-            min_relation_margin = min(float(min_relation_margin), abs(float(dx)))
-            if abs(float(dx)) < MIN_REFERENCE_X_MARGIN_PX:
-                raise ValueError("object center too close to reference x-position")
-            is_target = bool(dx < 0.0) if str(query_id) == "left_of_reference_in_view_count" else bool(dx > 0.0)
-            relation_status_by_object_id[object_id] = bool(is_target)
-            if is_target:
-                target_specs.append(spec)
-        if len(target_specs) != int(target_count):
-            raise ValueError("screen-side target count does not match requested target count")
+            if len(target_specs) == int(target_count):
+                valid_choices.append((reference, list(target_specs), relation_status_by_object_id, float(min_relation_margin)))
+        if not valid_choices:
+            raise ValueError("screen-side bbox relation could not satisfy requested target count")
+        reference, target_specs, relation_status_by_object_id, min_relation_margin = valid_choices[
+            abs(int(target_count)) % len(valid_choices)
+        ]
         return (
-            reference,
+            dict(reference),
             [str(spec["object_id"]) for spec in sorted(target_specs, key=lambda item: str(item["object_id"]))],
             relation_status_by_object_id,
             float(min_relation_margin),
@@ -315,15 +340,15 @@ def _relation_metadata(query_id: str) -> Dict[str, str]:
         return {
             "view_relation": "left",
             "relation_frame": "image_view",
-            "relation_axis": "screen_x",
-            "count_predicate": "projected object center is image-left of the red-boxed reference object in the final image",
+            "relation_axis": "rendered_bbox_x",
+            "count_predicate": "rendered object bbox is fully image-left of the red-boxed reference object in the final image",
         }
     if str(query_id) == "right_of_reference_in_view_count":
         return {
             "view_relation": "right",
             "relation_frame": "image_view",
-            "relation_axis": "screen_x",
-            "count_predicate": "projected object center is image-right of the red-boxed reference object in the final image",
+            "relation_axis": "rendered_bbox_x",
+            "count_predicate": "rendered object bbox is fully image-right of the red-boxed reference object in the final image",
         }
     if str(query_id) == "closer_to_camera_than_reference_count":
         return {
@@ -341,6 +366,31 @@ def _relation_metadata(query_id: str) -> Dict[str, str]:
         }
     else:
         raise ValueError(f"unsupported query_id: {query_id}")
+
+
+def _validate_rendered_screen_side_relation(
+    *,
+    rendered_bboxes: Mapping[str, Sequence[float]],
+    reference_object_id: str,
+    target_object_ids: Sequence[str],
+    query_id: str,
+) -> None:
+    reference_bbox = rendered_bboxes[str(reference_object_id)]
+    target_set = {str(object_id) for object_id in target_object_ids}
+    for object_id, bbox in rendered_bboxes.items():
+        object_id = str(object_id)
+        if object_id == str(reference_object_id):
+            continue
+        left_gap = float(reference_bbox[0]) - float(bbox[2])
+        right_gap = float(bbox[0]) - float(reference_bbox[2])
+        if left_gap >= MIN_REFERENCE_X_BBOX_GAP_PX:
+            expected = str(query_id) == "left_of_reference_in_view_count"
+        elif right_gap >= MIN_REFERENCE_X_BBOX_GAP_PX:
+            expected = str(query_id) == "right_of_reference_in_view_count"
+        else:
+            raise ValueError("rendered bbox is too close to or overlaps the reference bbox in x")
+        if bool(object_id in target_set) != bool(expected):
+            raise ValueError("rendered bbox side relation does not match dataset target ids")
 
 
 def _build_view_relation_count_scene_dataset(
@@ -401,9 +451,9 @@ def _build_view_relation_count_scene_dataset(
             "minimum_pairwise_camera_distance_margin": round(float(_min_pairwise(distances)), 4),
             "unique_integer_answer": True,
         }
-        if str(relation_meta["relation_axis"]) == "screen_x":
+        if str(relation_meta["relation_axis"]) == "rendered_bbox_x":
             solver_trace["screen_axis"] = "x"
-            solver_trace["minimum_reference_x_margin_px"] = round(float(min_relation_margin), 3)
+            solver_trace["minimum_reference_bbox_x_gap_px"] = round(float(min_relation_margin), 3)
         else:
             solver_trace["minimum_reference_camera_distance_margin"] = round(float(min_relation_margin), 4)
         return {
@@ -575,6 +625,13 @@ class _ThreeDSpatialViewRelationCountBase:
             compute_single_annotation=False,
             highlight_object_ids=[str(dataset["reference_object_id"])],
         )
+        if str(query_id) in SCREEN_SIDE_QUERY_IDS:
+            _validate_rendered_screen_side_relation(
+                rendered_bboxes=rendered.object_bboxes_px,
+                reference_object_id=str(dataset["reference_object_id"]),
+                target_object_ids=[str(object_id) for object_id in dataset["target_object_ids"]],
+                query_id=str(query_id),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -747,6 +804,7 @@ __all__ = [
     "CAMERA_DEPTH_RELATION_COUNT_TASK_ID",
     "IMAGE_PLANE_LATERAL_RELATION_COUNT_TASK_ID",
     "SCREEN_SIDE_QUERY_IDS",
+    "MIN_REFERENCE_X_BBOX_GAP_PX",
     "MIN_REFERENCE_DEPTH_MARGIN",
     "MIN_REFERENCE_X_MARGIN_PX",
     "_ThreeDSpatialViewRelationCountBase",

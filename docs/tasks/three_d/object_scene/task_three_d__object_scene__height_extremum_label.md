@@ -4,7 +4,7 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Supported `query_id`: `single`
+- Supported `query_id`: `highest_above_floor`, `lowest_above_floor`
 - Answer type: `option_letter`
 - Annotation type: `bbox`
 - Annotation schema: `bbox`
@@ -21,6 +21,7 @@ The verifier computes the answer from finalized scene metadata and projection re
 Annotation is a scalar `bbox` around the selected visible object.
 The selected object is the only visual witness; option text is not annotation.
 The rendered task presents four option-panel candidates.
+Candidate supports are limited to visually reliable floor/open-box/chair/shelf placements; tabletop placement is excluded because it can make objects appear under the table from some camera views.
 
 ## Prompt And Trace
 The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.

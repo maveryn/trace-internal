@@ -85,6 +85,11 @@ from ..shared.object_scene_output import build_option_label_object_scene_output 
 
 TASK_ID = "task_three_d__object_scene__camera_distance_extremum_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("closest_to_camera", "farthest_from_camera")
+UNRELIABLE_CAMERA_DISTANCE_ANSWER_SHAPES: Tuple[str, ...] = ("horseshoe",)
+MIN_ANSWER_BBOX_SIDE_PX = 28.0
+MIN_ANSWER_BBOX_AREA_PX = 1800.0
+MAX_ANSWER_CONTEXT_OVERLAP_FRACTION = 0.18
+MAX_CANDIDATE_CONTEXT_OVERLAP_FRACTION = 0.48
 
 
 def _resolve_point_count(params: Mapping[str, Any], *, gen_defaults: Mapping[str, Any], instance_seed: int) -> Tuple[int, Dict[str, float]]:
@@ -136,6 +141,24 @@ def _resolve_context_object_count(
     return int(selected), {str(value): float(probability) for value in support}
 
 
+def _bbox_area(bbox: Sequence[float]) -> float:
+    return max(0.0, float(bbox[2]) - float(bbox[0])) * max(0.0, float(bbox[3]) - float(bbox[1]))
+
+
+def _bbox_min_side(bbox: Sequence[float]) -> float:
+    return min(max(0.0, float(bbox[2]) - float(bbox[0])), max(0.0, float(bbox[3]) - float(bbox[1])))
+
+
+def _max_context_overlap_fraction(candidate_bbox: Sequence[float], context_bboxes: Sequence[Sequence[float]]) -> float:
+    candidate_area = max(1.0, _bbox_area(candidate_bbox))
+    if not context_bboxes:
+        return 0.0
+    return max(
+        float(_bbox_intersection_area(candidate_bbox, context_bbox)) / float(candidate_area)
+        for context_bbox in context_bboxes
+    )
+
+
 
 
 def _build_scene_dataset(
@@ -169,6 +192,8 @@ def _build_scene_dataset(
         context_screens = [_project_screen(spec["world_xyz"], camera, frame) for spec in context_object_specs]
         screen_centers = [(screen[0], screen[1]) for screen in screens]
         screen_bboxes = [_object_screen_bbox(spec, camera, frame, pad_px=16.0) for spec in point_specs]
+        candidate_readability_bboxes = [_object_screen_bbox(spec, camera, frame, pad_px=4.0) for spec in point_specs]
+        context_readability_bboxes = [_object_screen_bbox(spec, camera, frame, pad_px=4.0) for spec in context_object_specs]
         all_screen_bboxes = [_object_screen_bbox(spec, camera, frame, pad_px=16.0) for spec in all_specs]
         if any(
             math.hypot(a[0] - b[0], a[1] - b[1]) < 54.0
@@ -220,6 +245,22 @@ def _build_scene_dataset(
             answer_object_id = str(pre_label_sorted_by_distance[0]["object_id"])
         else:
             answer_object_id = str(pre_label_sorted_by_distance[-1]["object_id"])
+        answer_pre_label_index = next(
+            index for index, spec in enumerate(point_specs) if str(spec["object_id"]) == str(answer_object_id)
+        )
+        answer_bbox = candidate_readability_bboxes[int(answer_pre_label_index)]
+        answer_overlap_fraction = _max_context_overlap_fraction(answer_bbox, context_readability_bboxes)
+        if str(point_specs[int(answer_pre_label_index)]["shape_type"]) in set(UNRELIABLE_CAMERA_DISTANCE_ANSWER_SHAPES):
+            continue
+        if _bbox_min_side(answer_bbox) < MIN_ANSWER_BBOX_SIDE_PX or _bbox_area(answer_bbox) < MIN_ANSWER_BBOX_AREA_PX:
+            continue
+        if float(answer_overlap_fraction) > MAX_ANSWER_CONTEXT_OVERLAP_FRACTION:
+            continue
+        if any(
+            _max_context_overlap_fraction(candidate_bbox, context_readability_bboxes) > MAX_CANDIDATE_CONTEXT_OVERLAP_FRACTION
+            for candidate_bbox in candidate_readability_bboxes
+        ):
+            continue
         query_offset = 0 if str(query_id) == "closest_to_camera" else 3
         answer_label_index = abs(int(instance_seed) + int(query_offset)) % int(point_count)
         answer_label = str(POINT_LABELS[answer_label_index])
@@ -279,6 +320,7 @@ def _build_scene_dataset(
                 "context_object_ids": [str(spec["object_id"]) for spec in sorted(finalized_context_specs, key=lambda spec: str(spec["object_id"]))],
                 "context_shape_types": [str(spec["shape_type"]) for spec in sorted(finalized_context_specs, key=lambda spec: str(spec["object_id"]))],
                 "unique_camera_distance_margin": round(float(_min_pairwise([float(spec["camera_distance"]) for spec in finalized_specs])), 4),
+                "answer_context_overlap_fraction": round(float(answer_overlap_fraction), 4),
             },
         }
     raise ValueError("could not construct a valid 3D camera-distance scene")

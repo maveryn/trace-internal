@@ -12,7 +12,7 @@ from trace.tasks.three_d.shared.object_scene_view_relation_count import (
     CAMERA_DEPTH_RELATION_COUNT_TASK_ID,
     IMAGE_PLANE_LATERAL_RELATION_COUNT_TASK_ID,
     MIN_REFERENCE_DEPTH_MARGIN,
-    MIN_REFERENCE_X_MARGIN_PX,
+    MIN_REFERENCE_X_BBOX_GAP_PX,
 )
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
@@ -42,8 +42,7 @@ def test_view_relation_count_answer_and_annotation() -> None:
     render_map = output.trace_payload["render_map"]
     target_object_ids = [str(object_id) for object_id in trace["target_object_ids"]]
     reference_object_id = str(trace["reference_object_id"])
-    reference_spec = next(spec for spec in trace["object_specs"] if str(spec["object_id"]) == reference_object_id)
-    reference_x = float(reference_spec["screen_xy"][0])
+    reference_bbox = render_map["object_bboxes_px"][reference_object_id]
     target_set = set(target_object_ids)
     reference_highlight_entity_id = f"red_reference_box_{reference_object_id}"
 
@@ -66,9 +65,11 @@ def test_view_relation_count_answer_and_annotation() -> None:
         object_id = str(spec["object_id"])
         if object_id == reference_object_id:
             continue
-        dx = float(spec["screen_xy"][0]) - reference_x
-        assert abs(dx) >= MIN_REFERENCE_X_MARGIN_PX
-        assert (object_id in target_set) == (dx < 0.0)
+        bbox = render_map["object_bboxes_px"][object_id]
+        left_gap = float(reference_bbox[0]) - float(bbox[2])
+        right_gap = float(bbox[0]) - float(reference_bbox[2])
+        assert left_gap >= MIN_REFERENCE_X_BBOX_GAP_PX or right_gap >= MIN_REFERENCE_X_BBOX_GAP_PX
+        assert (object_id in target_set) == (left_gap >= MIN_REFERENCE_X_BBOX_GAP_PX)
         assert bool(trace["view_relation_status_by_object_id"][object_id]) == (object_id in target_set)
     assert_three_d_canvas_contract(output)
 
@@ -97,7 +98,7 @@ def test_view_relation_count_query_variants_generate() -> None:
         render_map = output.trace_payload["render_map"]
         reference_id = str(trace["reference_object_id"])
         reference_spec = next(spec for spec in trace["object_specs"] if str(spec["object_id"]) == reference_id)
-        reference_x = float(reference_spec["screen_xy"][0])
+        reference_bbox = render_map["object_bboxes_px"][reference_id]
         reference_distance = float(reference_spec["camera_distance"])
         target_ids = {str(object_id) for object_id in trace["target_object_ids"]}
 
@@ -112,9 +113,15 @@ def test_view_relation_count_query_variants_generate() -> None:
             if object_id == reference_id:
                 continue
             if query_id in {"left_of_reference_in_view_count", "right_of_reference_in_view_count"}:
-                dx = float(spec["screen_xy"][0]) - reference_x
-                assert abs(dx) >= MIN_REFERENCE_X_MARGIN_PX
-                expected = dx < 0.0 if query_id == "left_of_reference_in_view_count" else dx > 0.0
+                bbox = render_map["object_bboxes_px"][object_id]
+                left_gap = float(reference_bbox[0]) - float(bbox[2])
+                right_gap = float(bbox[0]) - float(reference_bbox[2])
+                assert left_gap >= MIN_REFERENCE_X_BBOX_GAP_PX or right_gap >= MIN_REFERENCE_X_BBOX_GAP_PX
+                expected = (
+                    left_gap >= MIN_REFERENCE_X_BBOX_GAP_PX
+                    if query_id == "left_of_reference_in_view_count"
+                    else right_gap >= MIN_REFERENCE_X_BBOX_GAP_PX
+                )
             else:
                 distance_delta = float(spec["camera_distance"]) - reference_distance
                 assert abs(distance_delta) >= MIN_REFERENCE_DEPTH_MARGIN

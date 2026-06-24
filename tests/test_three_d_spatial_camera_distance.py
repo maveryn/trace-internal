@@ -11,11 +11,14 @@ from trace.tasks import create_task
 from trace.tasks.three_d.object_scene.camera_distance_extremum_label import (
     CAMERA_YAW_BANDS_DEGREES,
     LARGE_CONTEXT_SHAPE_TYPES,
+    MAX_ANSWER_CONTEXT_OVERLAP_FRACTION,
     NAMEABLE_CONTEXT_SHAPE_TYPES,
     NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
     OBJECT_NAME_BY_SHAPE_TYPE,
     SMALL_OBJECT_SHAPE_TYPES,
+    UNRELIABLE_CAMERA_DISTANCE_ANSWER_SHAPES,
     _camera_yaw_band_for_instance,
+    _max_context_overlap_fraction,
     _sample_camera,
 )
 from trace.tasks.registry import list_default_task_ids
@@ -84,8 +87,11 @@ def test_camera_distance_extremum_answer_and_annotation(query_id: str) -> None:
     assert all(max(spec["dimensions_xyz"][:2]) < 0.85 for spec in point_specs)
     assert any(max(spec["dimensions_xyz"]) > 1.35 for spec in context_specs)
     expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(expected["object_id"])]
+    context_bboxes = list(output.trace_payload["render_map"]["context_object_bboxes_px"].values())
     assert output.annotation_gt.type == "bbox"
     assert output.annotation_gt.value == expected_bbox
+    assert str(expected["shape_type"]) not in set(UNRELIABLE_CAMERA_DISTANCE_ANSWER_SHAPES)
+    assert _max_context_overlap_fraction(expected_bbox, context_bboxes) <= MAX_ANSWER_CONTEXT_OVERLAP_FRACTION
     assert output.trace_payload["projected_annotation"]["bbox"] == expected_bbox
     assert output.trace_payload["render_map"]["point_bboxes_px"][expected_label] == expected_bbox
     assert_option_panel_matches_candidates(

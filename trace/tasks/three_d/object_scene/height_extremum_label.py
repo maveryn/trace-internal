@@ -61,10 +61,14 @@ from ..shared.object_scene import (
 
 TASK_ID = "task_three_d__object_scene__height_extremum_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("highest_above_floor", "lowest_above_floor")
-SUPPORT_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, float]], ...] = SPATIAL_HEIGHT_SUPPORT_PLACEMENTS
+SUPPORT_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, float]], ...] = tuple(
+    placement for placement in SPATIAL_HEIGHT_SUPPORT_PLACEMENTS if str(placement[0]) != "table_top"
+)
 HEIGHT_OPTION_COUNT = 4
 FLOOR_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_HEIGHT_FLOOR_CANDIDATE_SHAPE_TYPES
-ELEVATED_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_HEIGHT_ELEVATED_CANDIDATE_SHAPE_TYPES
+ELEVATED_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(
+    shape_type for shape_type in SPATIAL_HEIGHT_ELEVATED_CANDIDATE_SHAPE_TYPES if str(shape_type) != "hat"
+)
 
 
 

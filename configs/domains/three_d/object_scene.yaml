@@ -89,8 +89,8 @@ generation:
         studio_platform: 1.0
       point_count_min: 4
       point_count_max: 4
-      context_object_count_min: 4
-      context_object_count_max: 4
+      context_object_count_min: 3
+      context_object_count_max: 3
       balanced_scene_variant_sampling: true
     task_three_d__object_scene__landmark_correspondence_label:
       scene_variant_weights:

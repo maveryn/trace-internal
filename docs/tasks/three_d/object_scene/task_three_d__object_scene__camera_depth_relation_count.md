@@ -21,6 +21,7 @@ The verifier computes the answer from finalized scene metadata and projection re
 Annotation is an unordered `bbox_set` containing one box around each counted object. The set may be empty when the answer is zero.
 All witnesses have the same counted-object role, so ordering is not meaningful.
 The red reference box identifies the comparison object but is not part of the annotation.
+Candidate objects must be separated from the red-boxed reference by the configured minimum camera-distance margin so near-tie depth cases are rejected during construction.
 
 ## Prompt And Trace
 The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.

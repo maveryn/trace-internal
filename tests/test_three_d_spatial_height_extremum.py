@@ -21,7 +21,7 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
             "query_id": query_id,
             "scene_variant": "floor_grid_room",
             "point_count": 4,
-            "context_object_count": 4,
+            "context_object_count": 3,
             "post_image_noise_apply_prob": 0.0,
         },
         max_attempts=220,
@@ -38,9 +38,11 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == expected_label
     assert len(point_specs) == 4
-    assert len(context_specs) == 4
+    assert len(context_specs) == 3
     assert all(spec["is_answer_candidate"] for spec in point_specs)
     assert all(not spec["is_answer_candidate"] for spec in context_specs)
+    assert not any(str(spec.get("support_name")) == "table" for spec in point_specs)
+    assert not any(str(spec.get("shape_type")) == "hat" and spec.get("support_name") for spec in point_specs)
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_label)
     expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
     assert output.annotation_gt.type == "bbox"
@@ -70,7 +72,7 @@ def test_height_extremum_answer_color_and_shape_vary_across_seeds() -> None:
                 "query_id": "highest_above_floor",
                 "scene_variant": "floor_grid_room",
                 "point_count": 4,
-                "context_object_count": 4,
+                "context_object_count": 3,
                 "post_image_noise_apply_prob": 0.0,
             },
             max_attempts=220,

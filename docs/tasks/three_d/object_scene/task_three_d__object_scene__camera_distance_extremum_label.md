@@ -4,7 +4,7 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Supported `query_id`: `single`
+- Supported `query_id`: `closest_to_camera`, `farthest_from_camera`
 - Answer type: `option_letter`
 - Annotation type: `bbox`
 - Annotation schema: `bbox`
@@ -20,6 +20,7 @@ The verifier computes the answer from finalized scene metadata and projection re
 ## Annotation Contract
 Annotation is a scalar `bbox` around the selected visible object.
 The selected object is the only visual witness; option text is not annotation.
+The selected extremum object must be visually readable and not substantially overlapped by large context objects.
 
 ## Prompt And Trace
 The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.

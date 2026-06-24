@@ -420,26 +420,108 @@ def _draw_grass_marks(draw: ImageDraw.ImageDraw, x0: int, y0: int, tile_px: int,
 
 
 def _draw_forest_tile(draw: ImageDraw.ImageDraw, x0: int, y0: int, tile_px: int, theme: Mapping[str, RGB]) -> None:
-    centers = ((0.33, 0.39), (0.58, 0.34), (0.48, 0.62))
-    for cx_ratio, cy_ratio in centers:
+    """Draw a readable slow-terrain forest while preserving visible tile bounds."""
+
+    draw.rectangle((x0, y0, x0 + tile_px, y0 + tile_px), fill=_mix_rgb(theme["grass"], theme["forest"], 0.18))
+    tree_specs = (
+        (0.28, 0.38, 0.20),
+        (0.55, 0.31, 0.22),
+        (0.72, 0.56, 0.18),
+        (0.42, 0.68, 0.19),
+    )
+    trunk_rgb = (92, 56, 32)
+    outline = theme["forest_dark"]
+    for cx_ratio, cy_ratio, scale in tree_specs:
         cx = x0 + int(tile_px * cx_ratio)
         cy = y0 + int(tile_px * cy_ratio)
-        radius = max(10, int(tile_px * 0.18))
-        draw.ellipse((cx - radius, cy - radius, cx + radius, cy + radius), fill=theme["forest_dark"])
-        draw.ellipse((cx - radius + 4, cy - radius + 3, cx + radius - 4, cy + radius - 5), fill=theme["forest"])
-    trunk_w = max(4, int(tile_px * 0.06))
-    draw.rectangle((x0 + int(tile_px * 0.46), y0 + int(tile_px * 0.57), x0 + int(tile_px * 0.46) + trunk_w, y0 + int(tile_px * 0.78)), fill=(83, 56, 34))
+        canopy_r = max(10, int(tile_px * scale))
+        trunk_w = max(4, int(tile_px * 0.075))
+        trunk_h = max(10, int(tile_px * 0.22))
+        draw.ellipse(
+            (cx - canopy_r + 2, cy + canopy_r * 0.38, cx + canopy_r - 2, cy + canopy_r * 0.72),
+            fill=(35, 72, 43),
+        )
+        draw.rectangle(
+            (cx - trunk_w // 2, cy + canopy_r // 4, cx + trunk_w // 2, cy + canopy_r // 4 + trunk_h),
+            fill=trunk_rgb,
+            outline=(55, 35, 24),
+        )
+        draw.polygon(
+            (
+                (cx, cy - canopy_r),
+                (cx - canopy_r, cy + canopy_r // 3),
+                (cx + canopy_r, cy + canopy_r // 3),
+            ),
+            fill=outline,
+        )
+        draw.polygon(
+            (
+                (cx, cy - canopy_r + max(3, canopy_r // 4)),
+                (cx - canopy_r + 5, cy + canopy_r // 3 - 2),
+                (cx + canopy_r - 5, cy + canopy_r // 3 - 2),
+            ),
+            fill=theme["forest"],
+        )
+        draw.polygon(
+            (
+                (cx, cy - canopy_r // 2),
+                (cx - canopy_r + 4, cy + canopy_r // 2),
+                (cx + canopy_r - 4, cy + canopy_r // 2),
+            ),
+            fill=_mix_rgb(theme["forest"], (255, 255, 255), 0.10),
+        )
+        draw.line(
+            (cx - canopy_r // 4, cy - canopy_r // 5, cx + canopy_r // 4, cy + canopy_r // 5),
+            fill=_mix_rgb(theme["forest"], (255, 255, 255), 0.22),
+            width=max(1, int(tile_px * 0.025)),
+        )
 
 
 def _draw_mountain_tile(draw: ImageDraw.ImageDraw, x0: int, y0: int, tile_px: int, theme: Mapping[str, RGB]) -> None:
-    base_y = y0 + int(tile_px * 0.78)
-    peak = (x0 + int(tile_px * 0.48), y0 + int(tile_px * 0.18))
-    left = (x0 + int(tile_px * 0.16), base_y)
-    right = (x0 + int(tile_px * 0.86), base_y)
-    draw.polygon((left, peak, right), fill=theme["mountain"], outline=theme["mountain_dark"])
-    draw.polygon((peak, (x0 + int(tile_px * 0.40), y0 + int(tile_px * 0.43)), (x0 + int(tile_px * 0.55), y0 + int(tile_px * 0.43))), fill=theme["mountain_light"])
-    draw.line((x0 + int(tile_px * 0.48), y0 + int(tile_px * 0.23), x0 + int(tile_px * 0.34), base_y - 6), fill=theme["mountain_dark"], width=2)
-    draw.line((x0 + int(tile_px * 0.58), y0 + int(tile_px * 0.48), x0 + int(tile_px * 0.74), base_y - 4), fill=theme["mountain_dark"], width=2)
+    """Draw mountain as rough passable terrain, not as an impassable wall."""
+
+    ground = _mix_rgb(theme["grass"], theme["mountain"], 0.48)
+    draw.rectangle((x0, y0, x0 + tile_px, y0 + tile_px), fill=ground)
+    shadow = _mix_rgb(theme["mountain_dark"], (0, 0, 0), 0.15)
+    rock_groups = (
+        ((0.19, 0.63), (0.34, 0.35), (0.48, 0.68)),
+        ((0.47, 0.48), (0.61, 0.19), (0.80, 0.54)),
+        ((0.38, 0.80), (0.55, 0.56), (0.72, 0.82)),
+    )
+    for left_ratio, peak_ratio, right_ratio in rock_groups:
+        left = (x0 + int(tile_px * left_ratio[0]), y0 + int(tile_px * left_ratio[1]))
+        peak = (x0 + int(tile_px * peak_ratio[0]), y0 + int(tile_px * peak_ratio[1]))
+        right = (x0 + int(tile_px * right_ratio[0]), y0 + int(tile_px * right_ratio[1]))
+        mid = (x0 + int(tile_px * ((peak_ratio[0] + right_ratio[0]) * 0.5)), y0 + int(tile_px * ((peak_ratio[1] + right_ratio[1]) * 0.5)))
+        draw.polygon((left, peak, right), fill=theme["mountain"], outline=theme["mountain_dark"])
+        draw.polygon((peak, left, mid), fill=theme["mountain_light"])
+        draw.polygon((peak, mid, right), fill=_mix_rgb(theme["mountain"], shadow, 0.35))
+    crack_width = max(2, int(tile_px * 0.025))
+    cracks = (
+        ((0.22, 0.30), (0.34, 0.42), (0.29, 0.52)),
+        ((0.72, 0.25), (0.64, 0.38), (0.70, 0.48)),
+        ((0.18, 0.78), (0.28, 0.74), (0.36, 0.82)),
+    )
+    for start, mid, end in cracks:
+        draw.line(
+            (
+                x0 + int(tile_px * start[0]),
+                y0 + int(tile_px * start[1]),
+                x0 + int(tile_px * mid[0]),
+                y0 + int(tile_px * mid[1]),
+                x0 + int(tile_px * end[0]),
+                y0 + int(tile_px * end[1]),
+            ),
+            fill=shadow,
+            width=crack_width,
+            joint="curve",
+        )
+    pebble_rgb = _mix_rgb(theme["mountain_dark"], theme["mountain"], 0.35)
+    for px_ratio, py_ratio in ((0.16, 0.20), (0.88, 0.34), (0.12, 0.88), (0.84, 0.78)):
+        px = x0 + int(tile_px * px_ratio)
+        py = y0 + int(tile_px * py_ratio)
+        r = max(2, int(tile_px * 0.035))
+        draw.ellipse((px - r, py - r, px + r, py + r), fill=pebble_rgb)
 
 
 def _draw_grid(draw: ImageDraw.ImageDraw, *, cols: int, rows: int, tile_px: int, theme: Mapping[str, RGB]) -> None:
@@ -453,14 +535,75 @@ def _draw_grid(draw: ImageDraw.ImageDraw, *, cols: int, rows: int, tile_px: int,
 
 
 def _draw_player_unit(draw: ImageDraw.ImageDraw, *, tile: RpgTacticalTile, tile_px: int) -> RpgTacticalUnit:
+    """Draw the blue reference unit as a compact player sprite centered in one tile."""
+
     cx, cy = float(tile.point_xy[0]), float(tile.point_xy[1])
-    radius = float(tile_px) * 0.27
-    shadow = (cx - radius * 0.95, cy + radius * 0.45, cx + radius * 0.95, cy + radius * 0.78)
-    draw.ellipse(shadow, fill=(30, 40, 46))
+    radius = float(tile_px) * 0.30
+    outline = (13, 27, 76)
+    blue = (28, 82, 202)
+    blue_light = (83, 151, 246)
+    armor = (214, 224, 231)
+    skin = (226, 176, 130)
+    boot = (42, 43, 54)
     bbox = (cx - radius, cy - radius, cx + radius, cy + radius)
-    draw.ellipse(bbox, fill=(34, 89, 198), outline=(15, 33, 87), width=max(2, int(tile_px * 0.04)))
-    draw.pieslice((cx - radius * 0.72, cy - radius * 0.75, cx + radius * 0.72, cy + radius * 0.34), 180, 360, fill=(91, 155, 238), outline=(15, 33, 87), width=2)
-    draw.rectangle((cx - radius * 0.32, cy + radius * 0.18, cx + radius * 0.32, cy + radius * 0.70), fill=(17, 57, 150))
+    draw.ellipse(
+        (cx - radius * 0.95, cy + radius * 0.58, cx + radius * 0.95, cy + radius * 0.86),
+        fill=(29, 45, 52),
+    )
+    # Legs and boots.
+    leg_w = radius * 0.24
+    leg_top = cy + radius * 0.22
+    leg_bottom = cy + radius * 0.78
+    draw.rounded_rectangle((cx - radius * 0.42, leg_top, cx - radius * 0.10, leg_bottom), radius=3, fill=outline)
+    draw.rounded_rectangle((cx + radius * 0.10, leg_top, cx + radius * 0.42, leg_bottom), radius=3, fill=outline)
+    draw.rectangle((cx - radius * 0.48, leg_bottom - leg_w, cx - radius * 0.04, leg_bottom + leg_w * 0.2), fill=boot)
+    draw.rectangle((cx + radius * 0.04, leg_bottom - leg_w, cx + radius * 0.48, leg_bottom + leg_w * 0.2), fill=boot)
+    # Shoulders, arms, and shield/sword silhouettes.
+    draw.ellipse((cx - radius * 0.78, cy - radius * 0.10, cx - radius * 0.34, cy + radius * 0.36), fill=outline)
+    draw.ellipse((cx + radius * 0.34, cy - radius * 0.10, cx + radius * 0.78, cy + radius * 0.36), fill=outline)
+    draw.polygon(
+        (
+            (cx - radius * 0.92, cy + radius * 0.02),
+            (cx - radius * 0.62, cy - radius * 0.24),
+            (cx - radius * 0.42, cy + radius * 0.20),
+            (cx - radius * 0.70, cy + radius * 0.44),
+        ),
+        fill=(200, 214, 220),
+        outline=outline,
+    )
+    draw.line((cx + radius * 0.70, cy - radius * 0.34, cx + radius * 0.96, cy - radius * 0.72), fill=(218, 224, 229), width=max(2, int(tile_px * 0.035)))
+    draw.line((cx + radius * 0.68, cy - radius * 0.34, cx + radius * 0.88, cy - radius * 0.13), fill=outline, width=max(2, int(tile_px * 0.025)))
+    # Torso armor and blue tunic.
+    draw.rounded_rectangle(
+        (cx - radius * 0.46, cy - radius * 0.18, cx + radius * 0.46, cy + radius * 0.50),
+        radius=max(4, int(tile_px * 0.055)),
+        fill=blue,
+        outline=outline,
+        width=max(2, int(tile_px * 0.035)),
+    )
+    draw.polygon(
+        (
+            (cx - radius * 0.38, cy - radius * 0.12),
+            (cx + radius * 0.38, cy - radius * 0.12),
+            (cx + radius * 0.24, cy + radius * 0.18),
+            (cx - radius * 0.24, cy + radius * 0.18),
+        ),
+        fill=armor,
+    )
+    draw.rectangle((cx - radius * 0.14, cy + radius * 0.18, cx + radius * 0.14, cy + radius * 0.50), fill=(18, 56, 158))
+    # Head and helmet.
+    head_r = radius * 0.30
+    draw.ellipse((cx - head_r, cy - radius * 0.72, cx + head_r, cy - radius * 0.12), fill=skin, outline=outline, width=2)
+    draw.pieslice(
+        (cx - head_r * 1.22, cy - radius * 0.82, cx + head_r * 1.22, cy - radius * 0.18),
+        180,
+        360,
+        fill=blue_light,
+        outline=outline,
+        width=2,
+    )
+    draw.rectangle((cx - head_r * 0.95, cy - radius * 0.49, cx + head_r * 0.95, cy - radius * 0.37), fill=blue_light, outline=outline)
+    draw.line((cx, cy - radius * 0.78, cx, cy - radius * 0.24), fill=(235, 243, 255), width=max(2, int(tile_px * 0.025)))
     return RpgTacticalUnit(
         unit_id="blue_unit",
         public_name="blue unit",
@@ -469,6 +612,14 @@ def _draw_player_unit(draw: ImageDraw.ImageDraw, *, tile: RpgTacticalTile, tile_
         bbox_xyxy=(round(bbox[0], 3), round(bbox[1], 3), round(bbox[2], 3), round(bbox[3], 3)),
         point_xy=(round(cx, 3), round(cy, 3)),
         metadata={"role": "reference", "tile_coord": [int(tile.row), int(tile.col)]},
+    )
+
+
+def _mix_rgb(left: RGB, right: RGB, amount: float) -> RGB:
+    ratio = max(0.0, min(1.0, float(amount)))
+    return tuple(
+        int(round(float(a) * (1.0 - ratio) + float(b) * ratio))
+        for a, b in zip(left, right, strict=True)
     )
 
 

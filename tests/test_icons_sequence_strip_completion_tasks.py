@@ -48,9 +48,9 @@ def _extract_prompt_json_example(prompt: str) -> dict[str, Any]:
         ),
         (
             IconsSequenceStripSizeProgressionCompletionTask,
-            {"missing_index": 1, "answer_size_px": 56, "size_step_px": 8},
+            {"missing_index": 1, "answer_size_px": 56, "size_step_px": 12},
             "size",
-            [48, 56, 64, 72],
+            [44, 56, 68, 80],
             56,
         ),
         (

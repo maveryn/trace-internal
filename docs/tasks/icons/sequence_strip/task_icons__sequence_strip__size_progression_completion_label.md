@@ -19,7 +19,7 @@
 - Annotation schema: scalar `bbox` around the correct bottom-row option box.
 - The top row has four boxed sequence cells and one question-mark cell.
 - The bottom row has four fixed option boxes labeled `A` through `D`.
-- Icon sizes follow a constant pixel-size step.
+- Icon sizes follow a constant pixel-size step of at least 12 pixels.
 
 ## Trace
 

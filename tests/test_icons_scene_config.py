@@ -581,7 +581,7 @@ def test_icons_sequence_strip_scene_defaults_loaded() -> None:
     assert int(rotation_rendering['scene_icon_size_max_px']) == 72
     assert str(rotation_prompt['bundle_id']) == 'icons_sequence_strip_v1'
     size_generation, size_rendering, _ = split_generation_rendering_prompt_defaults(cfg, task_id=size_task_id)
-    assert list(size_generation['size_step_candidates_px']) == [-12, -8, 8, 12]
+    assert list(size_generation['size_step_candidates_px']) == [-16, -12, 12, 16]
     assert int(size_rendering['scene_icon_size_max_px']) == 92
     hue_generation, hue_rendering, _ = split_generation_rendering_prompt_defaults(cfg, task_id=hue_task_id)
     assert list(hue_generation['hue_step_candidates_degrees']) == [30, 60, 300, 330]

@@ -36,10 +36,10 @@ generation:
       size_value_min_px: 36
       size_value_max_px: 88
       size_step_candidates_px:
+      - -16
       - -12
-      - -8
-      - 8
       - 12
+      - 16
       pool_manifest: all_icons.txt
     task_icons__sequence_strip__hue_progression_completion_label:
       hue_value_candidates_degrees:

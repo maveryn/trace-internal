@@ -43,7 +43,7 @@ _DEFAULTS = SequenceCompletionDefaults(scene_icon_size_min_px=32, scene_icon_siz
 
 
 def _step_candidates(params: Mapping[str, Any], generation_defaults: Mapping[str, Any]) -> Tuple[int, ...]:
-    raw = params.get("size_step_candidates_px", group_default(generation_defaults, "size_step_candidates_px", (-12, -8, 8, 12)))
+    raw = params.get("size_step_candidates_px", group_default(generation_defaults, "size_step_candidates_px", (-16, -12, 12, 16)))
     values = tuple(int(value) for value in raw)
     values = tuple(value for value in dict.fromkeys(values) if int(value) != 0)
     if not values:
@@ -62,8 +62,8 @@ def _validate_size_values(*, sequence: Tuple[int, ...], option_map: Mapping[str,
     if len(set(int(value) for value in option_map.values())) != len(option_map):
         raise ValueError("size completion options must be unique")
     for left, right in zip(sequence, sequence[1:]):
-        if abs(int(right) - int(left)) < 8:
-            raise ValueError("size progression steps must differ by at least 8 px")
+        if abs(int(right) - int(left)) < 12:
+            raise ValueError("size progression steps must differ by at least 12 px")
 
 
 def _build_plan(
@@ -109,7 +109,7 @@ def _build_plan(
     answer_size, step, sequence = feasible[int(selection_index % len(feasible))]
     icon_id = sample_sequence_icon_id(rng, params=params, generation_defaults=generation_defaults, fallback=fallback_defaults.pool_manifest)
     tint_rgb, palette = sample_sequence_tint(rng, render_params=render_params)
-    distractors = [value for value in size_support if int(value) != int(answer_size) and abs(int(value) - int(answer_size)) >= 8]
+    distractors = [value for value in size_support if int(value) != int(answer_size) and abs(int(value) - int(answer_size)) >= 12]
     correct_label, option_map = option_values(rng, correct_value=int(answer_size), distractor_values=distractors)
     _validate_size_values(sequence=sequence, option_map={label: int(value) for label, value in option_map.items()})
     sequence_cells, option_cells = single_icon_completion_cells(

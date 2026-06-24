@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Mapping, Tuple
 
 from trace.tasks.shared.config_defaults import required_group_defaults
 from trace.tasks.shared.prompt_variants import (
@@ -21,6 +21,7 @@ def build_solitaire_prompt(
     json_example: str,
     json_example_answer_only: str,
     instance_seed: int,
+    prompt_slots: Mapping[str, Any] | None = None,
 ) -> Tuple[str, Dict[str, str], Dict[str, Any]]:
     """Render v1 solitaire prompts from task-owned prompt keys and examples."""
     prompt_defaults = required_group_defaults(
@@ -36,7 +37,6 @@ def build_solitaire_prompt(
             f"annotation_hint_{str(prompt_query_key)}",
             "tableau_rule_text",
             "foundation_rule_text",
-            "same_suit_run_rule_text",
         ),
         context=f"prompt defaults for {str(prompt_query_key)}",
     )
@@ -50,8 +50,9 @@ def build_solitaire_prompt(
         "json_example_answer_only": str(json_example_answer_only),
         "tableau_rule_text": str(prompt_defaults["tableau_rule_text"]),
         "foundation_rule_text": str(prompt_defaults["foundation_rule_text"]),
-        "same_suit_run_rule_text": str(prompt_defaults["same_suit_run_rule_text"]),
     }
+    if prompt_slots:
+        dynamic_slots.update({str(key): str(value) for key, value in prompt_slots.items()})
     prompt_selection = render_scene_prompt_variants(
         domain="games",
         scene_id=SCENE_ID,
@@ -71,6 +72,4 @@ def build_solitaire_prompt(
         "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
         "prompt_variants_for_trace": dict(prompt_artifacts.prompt_variants_for_trace),
     }
-
-
 

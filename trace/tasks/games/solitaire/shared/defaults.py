@@ -33,10 +33,9 @@ class SolitaireDefaults:
     option_font_size_px: int = 22
     option_height_px: int = 46
     option_gap_px: int = 10
-    move_option_count_support: Tuple[int, ...] = (4, 6)
+    move_option_count_support: Tuple[int, ...] = (4,)
     foundation_ready_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
-    tableau_sequence_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
-    same_suit_run_length_target_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
+    column_card_count_target_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
     tableau_column_count_support: Tuple[int, ...] = (7, 8)
 
 

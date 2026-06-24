@@ -15,5 +15,5 @@
 
 ## Generation Notes
 1. Count only exposed tableau cards, using the visible foundation suit and top-rank state.
-2. Annotation contains bboxes for the counted exposed cards plus the foundation piles used to decide the count.
+2. Annotation contains only the bboxes for the counted exposed cards.
 3. Prompt wording comes from `prompts/games/solitaire/games_solitaire_v1.json`.

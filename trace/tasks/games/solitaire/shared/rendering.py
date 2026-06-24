@@ -160,6 +160,8 @@ def draw_foundation(
     rank_font_size_px: int,
     center_symbol_font_size_px: int,
 ) -> None:
+    """Draw one foundation slot, preserving the same card-face style as tableau cards."""
+
     x0, y0, x1, y1 = bbox
     if int(foundation.top_rank_value) > 0:
         draw_playing_card_face(

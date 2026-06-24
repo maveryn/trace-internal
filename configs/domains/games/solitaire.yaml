@@ -15,20 +15,13 @@ generation:
     balanced_option_count_sampling: true
     move_option_count_support:
     - 4
-    - 6
     foundation_ready_target_answer_support:
     - 0
     - 1
     - 2
     - 3
     - 4
-    tableau_sequence_target_answer_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    same_suit_run_length_target_answer_support:
+    column_card_count_target_answer_support:
     - 1
     - 2
     - 3

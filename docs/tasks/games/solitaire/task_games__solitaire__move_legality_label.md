@@ -15,6 +15,6 @@
 
 ## Generation Notes
 1. The scene shows tableau columns, four foundation piles, and move options.
-2. Exactly one visible option is legal by solitaire tableau/foundation rules.
+2. Exactly four visible options are shown, and exactly one option is legal by solitaire tableau/foundation rules.
 3. Annotation is a bbox map with `source_card` and `target` roles for the legal move.
 4. Prompt wording comes from `prompts/games/solitaire/games_solitaire_v1.json`.

@@ -13,7 +13,6 @@ from .rules import (
     deck,
     is_legal_foundation_move,
     is_legal_tableau_move,
-    is_same_suit_descending_next,
     remove_card,
 )
 from .state import (
@@ -424,7 +423,7 @@ def sample_foundation_ready(
             foundations=tuple(foundations),
             answer=int(target_answer),
             answer_type="integer",
-            annotation_entity_ids=tuple([*ready_ids, *[str(f.foundation_id) for f in foundations]]),
+            annotation_entity_ids=tuple(ready_ids),
             move_options=(),
             metadata={
                 "target_answer": int(target_answer),
@@ -436,73 +435,7 @@ def sample_foundation_ready(
     raise ValueError("failed to sample solitaire foundation-ready scene")
 
 
-def make_sequence_columns(
-    rng,
-    *,
-    target_answer: int,
-    scene_variant: str,
-) -> Tuple[Tuple[Card, ...], Tuple[Tuple[str, str], ...]]:
-    """Build tableau columns with an exact number of adjacent alternating-color descending pairs."""
-
-    column_count = 7 if str(scene_variant) == "klondike_tableau" else 8
-    lengths = [int(rng.randrange(3, 6)) for _ in range(int(column_count))]
-    pair_slots = [(col, pos) for col, length in enumerate(lengths) for pos in range(int(length) - 1)]
-    if int(target_answer) > len(pair_slots):
-        raise ValueError("target answer exceeds visible adjacent-pair slots")
-    rng.shuffle(pair_slots)
-    valid_slot_set = set(pair_slots[: int(target_answer)])
-    pool = deck()
-    columns: List[Tuple[Card, ...]] = []
-    valid_pairs: List[Tuple[str, str]] = []
-    for col_index, length in enumerate(lengths):
-        cards: List[Card] = []
-        for pos in range(int(length)):
-            card_id = f"col_{col_index + 1:02d}_card_{pos + 1:02d}"
-            badge = str(CARD_BADGE_LABELS[col_index]) if pos == int(length) - 1 else None
-            if pos == 0:
-                raw_candidates = [raw for raw in pool if int(raw[0]) >= 4]
-                if not raw_candidates:
-                    raise ValueError("empty sequence-card candidate pool")
-                raw = raw_candidates[int(rng.randrange(len(raw_candidates)))]
-            else:
-                previous = cards[-1]
-                should_be_valid = (int(col_index), int(pos - 1)) in valid_slot_set
-                if should_be_valid and int(previous.rank_value) > 1:
-                    candidates = [
-                        raw
-                        for raw in pool
-                        if int(raw[0]) == int(previous.rank_value) - 1
-                        and card_color(str(raw[1])) != card_color(str(previous.suit_name))
-                    ]
-                    if not candidates:
-                        raise ValueError("no valid descending sequence candidate")
-                    raw = candidates[int(rng.randrange(len(candidates)))]
-                else:
-                    candidates = [
-                        raw
-                        for raw in pool
-                        if not (
-                            int(raw[0]) == int(previous.rank_value) - 1
-                            and card_color(str(raw[1])) != card_color(str(previous.suit_name))
-                        )
-                    ]
-                    if not candidates:
-                        raise ValueError("no invalid sequence candidate")
-                    raw = candidates[int(rng.randrange(len(candidates)))]
-            remove_card(pool, raw)
-            card = Card(card_id=str(card_id), rank_value=int(raw[0]), suit_name=str(raw[1]), badge_text=badge)
-            if pos > 0:
-                previous = cards[-1]
-                if is_legal_tableau_move(card, previous):
-                    valid_pairs.append((str(previous.card_id), str(card.card_id)))
-            cards.append(card)
-        columns.append(tuple(cards))
-    if len(valid_pairs) != int(target_answer):
-        raise ValueError("constructed sequence count mismatch")
-    return tuple(columns), tuple(valid_pairs)
-
-
-def sample_tableau_sequence(
+def sample_column_card_count(
     rng,
     *,
     namespace: str,
@@ -510,192 +443,65 @@ def sample_tableau_sequence(
     params: Mapping[str, Any],
     scene_variant: str,
 ) -> SolitaireSample:
-    """Sample the exact-count adjacent tableau sequence objective and its card witnesses."""
+    """Construct a tableau and count visible cards in one numbered column."""
 
     target_answer, target_probabilities = sample_integer_axis(
         namespace=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
-        support_key="tableau_sequence_target_answer_support",
+        support_key="column_card_count_target_answer_support",
         explicit_key="target_answer",
-        fallback_support=DEFAULTS.tableau_sequence_target_answer_support,
-        axis_name="tableau_sequence_target_answer",
+        fallback_support=DEFAULTS.column_card_count_target_answer_support,
+        axis_name="column_card_count_target_answer",
         balanced_flag_key="balanced_target_answer_sampling",
     )
-    for _attempt in range(400):
-        try:
-            columns, valid_pairs = make_sequence_columns(
-                rng,
-                target_answer=int(target_answer),
-                scene_variant=str(scene_variant),
-            )
-        except ValueError:
+    column_count = 7 if str(scene_variant) == "klondike_tableau" else 8
+    explicit_column = params.get("target_column")
+    if explicit_column is not None:
+        target_col_index = int(explicit_column) - 1
+        if target_col_index < 0 or target_col_index >= int(column_count):
+            raise ValueError(f"target_column out of range for solitaire scene: {explicit_column}")
+    else:
+        target_col_index = int(rng.randrange(column_count))
+    for _attempt in range(300):
+        pool = deck()
+        columns: List[Tuple[Card, ...]] = []
+        for col_index in range(column_count):
+            if int(col_index) == int(target_col_index):
+                length = int(target_answer)
+            else:
+                length = int(rng.randrange(1, 7))
+            if len(pool) < int(length):
+                raise ValueError("not enough cards to sample solitaire column-card count")
+            cards: List[Card] = []
+            for row_index in range(int(length)):
+                raw = pool.pop(int(rng.randrange(len(pool))))
+                cards.append(
+                    Card(
+                        card_id=f"col_{col_index + 1:02d}_card_{row_index + 1:02d}",
+                        rank_value=int(raw[0]),
+                        suit_name=str(raw[1]),
+                        badge_text=str(CARD_BADGE_LABELS[col_index]) if int(row_index) == int(length) - 1 else None,
+                    )
+                )
+            columns.append(tuple(cards))
+        target_ids = tuple(str(card.card_id) for card in columns[int(target_col_index)])
+        if len(target_ids) != int(target_answer):
             continue
-        annotation_ids = tuple(dict.fromkeys([card_id for pair in valid_pairs for card_id in pair]))
         return SolitaireSample(
             scene_variant=str(scene_variant),
             columns=tuple(columns),
             foundations=sample_foundations(rng),
             answer=int(target_answer),
             answer_type="integer",
-            annotation_entity_ids=tuple(annotation_ids),
+            annotation_entity_ids=tuple(target_ids),
             move_options=(),
             metadata={
                 "target_answer": int(target_answer),
                 "target_answer_probabilities": dict(target_probabilities),
-                "valid_sequence_pairs": [[str(a), str(b)] for a, b in valid_pairs],
-                "valid_sequence_pair_count": int(len(valid_pairs)),
+                "target_column_index": int(target_col_index),
+                "target_column_number": int(target_col_index) + 1,
+                "target_column_card_ids": list(target_ids),
             },
         )
-    raise ValueError("failed to sample solitaire tableau-sequence scene")
-
-
-def sample_same_suit_run_length(
-    rng,
-    *,
-    namespace: str,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    scene_variant: str,
-) -> SolitaireSample:
-    """Construct one marked card whose downward same-suit run has the requested length."""
-
-    target_answer, target_probabilities = sample_integer_axis(
-        namespace=str(namespace),
-        instance_seed=int(instance_seed),
-        params=params,
-        support_key="same_suit_run_length_target_answer_support",
-        explicit_key="target_answer",
-        fallback_support=DEFAULTS.same_suit_run_length_target_answer_support,
-        axis_name="same_suit_run_length_target_answer",
-        balanced_flag_key="balanced_target_answer_sampling",
-    )
-    column_count = 7 if str(scene_variant) == "klondike_tableau" else 8
-    for _attempt in range(500):
-        target_length = int(target_answer)
-        if target_length < 1:
-            continue
-        pool = deck()
-        target_col_index = int(rng.randrange(column_count))
-        target_suit = str(SUITS[int(rng.randrange(len(SUITS)))])
-        min_start_rank = min(13, max(target_length + 1, target_length))
-        if min_start_rank > 13:
-            continue
-        start_rank = int(rng.randrange(min_start_rank, 14))
-        prefix_count = int(rng.randrange(0, 3))
-        run_raw = [(int(start_rank - offset), str(target_suit)) for offset in range(target_length)]
-        if any(raw not in pool for raw in run_raw):
-            continue
-        for raw in run_raw:
-            remove_card(pool, raw)
-
-        breaker_candidates = [
-            raw
-            for raw in pool
-            if not (int(raw[0]) == int(start_rank - target_length) and str(raw[1]) == str(target_suit))
-        ]
-        if not breaker_candidates:
-            continue
-        breaker_raw = breaker_candidates[int(rng.randrange(len(breaker_candidates)))]
-        remove_card(pool, breaker_raw)
-
-        prefix_raw: List[Tuple[int, str]] = []
-        for prefix_index in range(prefix_count):
-            candidates = list(pool)
-            if prefix_index == int(prefix_count) - 1:
-                candidates = [
-                    raw
-                    for raw in candidates
-                    if not (int(raw[0]) == int(start_rank + 1) and str(raw[1]) == str(target_suit))
-                ]
-            if not candidates:
-                break
-            raw = candidates[int(rng.randrange(len(candidates)))]
-            remove_card(pool, raw)
-            prefix_raw.append(raw)
-        if len(prefix_raw) != int(prefix_count):
-            continue
-
-        columns: List[Tuple[Card, ...]] = []
-        marked_card_id = ""
-        run_card_ids: List[str] = []
-        run_card_labels: List[str] = []
-        for col_index in range(column_count):
-            if int(col_index) == int(target_col_index):
-                raw_cards = [*prefix_raw, *run_raw, breaker_raw]
-            else:
-                length = int(rng.randrange(3, 6))
-                if len(pool) < length:
-                    raise ValueError("not enough cards for solitaire same-suit run distractor columns")
-                raw_cards = []
-                for _ in range(length):
-                    raw = pool.pop(int(rng.randrange(len(pool))))
-                    raw_cards.append(raw)
-            cards: List[Card] = []
-            for row_index, raw in enumerate(raw_cards):
-                card_id = f"col_{col_index + 1:02d}_card_{row_index + 1:02d}"
-                badge = str(CARD_BADGE_LABELS[col_index]) if int(row_index) == len(raw_cards) - 1 else None
-                card = Card(card_id=str(card_id), rank_value=int(raw[0]), suit_name=str(raw[1]), badge_text=badge)
-                cards.append(card)
-                if int(col_index) == int(target_col_index):
-                    run_start = int(prefix_count)
-                    run_end = int(prefix_count) + int(target_length)
-                    if int(row_index) == run_start:
-                        marked_card_id = str(card_id)
-                    if run_start <= int(row_index) < run_end:
-                        run_card_ids.append(str(card_id))
-                        run_card_labels.append(str(card.label))
-            columns.append(tuple(cards))
-
-        if not marked_card_id or len(run_card_ids) != int(target_length):
-            continue
-        card_map = card_by_id(columns)
-        measured_ids = [str(marked_card_id)]
-        current_id = str(marked_card_id)
-        while True:
-            current = card_map[str(current_id)]
-            current_spec = next(
-                spec
-                for spec in (
-                    {
-                        "card_id": str(card.card_id),
-                        "column_index": int(col_index),
-                        "row_index": int(row_index),
-                    }
-                    for col_index, column in enumerate(columns)
-                    for row_index, card in enumerate(column)
-                )
-                if str(spec["card_id"]) == str(current_id)
-            )
-            next_row_index = int(current_spec["row_index"]) + 1
-            column = columns[int(current_spec["column_index"])]
-            if next_row_index >= len(column):
-                break
-            next_card = column[next_row_index]
-            if not is_same_suit_descending_next(current, next_card):
-                break
-            measured_ids.append(str(next_card.card_id))
-            current_id = str(next_card.card_id)
-        if tuple(measured_ids) != tuple(run_card_ids):
-            continue
-        return SolitaireSample(
-            scene_variant=str(scene_variant),
-            columns=tuple(columns),
-            foundations=sample_foundations(rng),
-            answer=int(target_length),
-            answer_type="integer",
-            annotation_entity_ids=tuple(run_card_ids),
-            move_options=(),
-            metadata={
-                "target_answer": int(target_length),
-                "target_answer_probabilities": dict(target_probabilities),
-                "marked_card_id": str(marked_card_id),
-                "marked_card_column_index": int(target_col_index),
-                "marked_card_row_index": int(prefix_count),
-                "same_suit_run_card_ids": list(run_card_ids),
-                "same_suit_run_card_labels": list(run_card_labels),
-                "same_suit_run_length": int(target_length),
-                "same_suit_run_suit": str(target_suit),
-            },
-        )
-    raise ValueError("failed to sample solitaire same-suit run-length scene")
+    raise ValueError("failed to sample solitaire column-card count scene")

@@ -65,6 +65,7 @@ class SolitaireObjective:
     build_annotation: AnnotationBuilder
     json_example: str
     json_example_answer_only: str
+    prompt_slots: Mapping[str, Any] | None = None
 
 
 class SolitaireLifecycleTask:
@@ -139,6 +140,7 @@ def run_solitaire_lifecycle(
         json_example=str(objective.json_example),
         json_example_answer_only=str(objective.json_example_answer_only),
         instance_seed=int(instance_seed),
+        prompt_slots=objective.prompt_slots,
     )
     trace_params = solitaire_trace_params(
         sample=objective.sample,

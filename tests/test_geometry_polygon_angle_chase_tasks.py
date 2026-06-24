@@ -7,14 +7,18 @@ import json
 import pytest
 
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.geometry.polygon_angle_chase.parallel_line_angle_value import GeometryPolygonAngleChaseParallelLineAngleValueTask
+from trace.tasks.geometry.polygon_angle_chase.parallel_line_angle_value import (
+    TASK_ID as PARALLEL_TASK_ID,
+    GeometryPolygonAngleChaseParallelLineAngleValueTask,
+)
 from trace.tasks.geometry.polygon_angle_chase.polygon_interior_angle_value import (
-    PARALLEL_TASK_ID,
-    SYMMETRY_TASK_ID,
     TASK_ID,
     GeometryPolygonAngleChaseInteriorAngleValueTask,
 )
-from trace.tasks.geometry.polygon_angle_chase.symmetry_angle_value import GeometryPolygonAngleChaseSymmetryAngleValueTask
+from trace.tasks.geometry.polygon_angle_chase.symmetry_angle_value import (
+    TASK_ID as SYMMETRY_TASK_ID,
+    GeometryPolygonAngleChaseSymmetryAngleValueTask,
+)
 
 
 def _generate(seed: int, **params):
@@ -75,11 +79,9 @@ def test_polygon_angle_chase_contract_branches(query_id: str, side_count: int, p
     assert execution["x"] > 0
     assert execution["answer"] == execution["expression_values"][execution["target_vertex"]]
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     annotation = out.annotation_gt.value
-    assert set(annotation) == {"target_vertex"} | {
-        f"known_angle_{index}_vertex" for index in range(1, side_count)
-    }
+    assert set(annotation) == set(execution["annotation_keys"]) == set("ABCDEF"[:side_count])
     width, height = out.image.size
     for point in annotation.values():
         assert isinstance(point, list)
@@ -120,9 +122,9 @@ def test_parallel_line_angle_single_transversal_formula(relation_id: str) -> Non
     assert out.answer_gt.value == expected == execution["answer"]
     assert execution["relation_id"] == relation_id
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     annotation = out.annotation_gt.value
-    assert set(annotation) == {"target_vertex", "support_vertex", "bridge_vertex"}
+    assert set(annotation) == set(execution["annotation_keys"]) == {"P", "Q", "R"}
     intersections = {
         key: tuple(float(coord) for coord in point)
         for key, point in trace["render_map"]["intersections"].items()
@@ -145,9 +147,9 @@ def test_parallel_line_angle_two_transversal_formula() -> None:
     assert out.answer_gt.value == expected == execution["answer"]
     assert execution["relation_id"] == "angle_sum"
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     annotation = out.annotation_gt.value
-    assert set(annotation) == {"target_vertex", "support_vertex_1", "support_vertex_2"}
+    assert set(annotation) == set(execution["annotation_keys"]) == {"P", "Q", "R"}
     width, height = out.image.size
     for point in annotation.values():
         assert len(point) == 2
@@ -174,13 +176,13 @@ def test_parallel_line_angle_generation_is_deterministic() -> None:
             "rectangle_diagonal_angle",
             35,
             55,
-            {"target_vertex", "known_angle_vertex", "diagonal_endpoint_1", "diagonal_endpoint_2"},
+            {"A", "B", "C", "D"},
         ),
         (
             "reflection_axis_angle",
             35,
             70,
-            {"target_vertex", "support_vertex", "axis_point_1", "axis_point_2"},
+            {"P", "Q", "R"},
         ),
     ],
 )
@@ -200,9 +202,9 @@ def test_symmetry_angle_direct_formulas(
     assert out.answer_gt.value == expected == execution["answer"]
     assert execution["support_angle"] == support_angle
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     annotation = out.annotation_gt.value
-    assert set(annotation) == expected_keys
+    assert set(annotation) == set(execution["annotation_keys"]) == expected_keys
     width, height = out.image.size
     for point in annotation.values():
         assert len(point) == 2
@@ -240,14 +242,8 @@ def test_symmetry_angle_isosceles_formulas(
     assert execution["relation_id"] == relation_id
     assert execution["target_role"] == target_role
 
-    assert out.annotation_gt.type == "keyed_point_map"
-    assert set(out.annotation_gt.value) == {
-        "target_vertex",
-        "support_vertex",
-        "apex_vertex",
-        "base_left_vertex",
-        "base_right_vertex",
-    }
+    assert out.annotation_gt.type == "point_map"
+    assert set(out.annotation_gt.value) == set(execution["annotation_keys"]) == {"A", "B", "C"}
     assert "task_variant" not in json.dumps(trace)
 
 

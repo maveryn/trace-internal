@@ -39,12 +39,12 @@ rendering:
       max_attempts: 6
 prompt:
   shared:
-    bundle_id: geometry_polygon_angle_chase_v0
+    bundle_id: geometry_polygon_angle_chase_v1
     scene_key: polygon_angle_chase_scene
   task_overrides:
     task_geometry__polygon_angle_chase__polygon_interior_angle_value:
-      task_key: polygon_interior_angle_value_query
+      task_key: polygon_interior_angle_value
     task_geometry__polygon_angle_chase__parallel_line_angle_value:
-      task_key: parallel_line_angle_value_query
+      task_key: parallel_line_angle_value
     task_geometry__polygon_angle_chase__symmetry_angle_value:
-      task_key: symmetry_angle_value_query
+      task_key: symmetry_angle_value

@@ -641,7 +641,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
         **expected_candidate_scenes,
         "charts": frozenset((*expected_candidate_scenes["charts"], "size_encoding", "small_multiple", "style_legend", "sunburst")),
         "games": frozenset((*expected_candidate_scenes["games"], "tetris", "tic_tac_toe_3d", "tower_defense", "tower_draughts_board")),
-        "geometry": frozenset((*expected_candidate_scenes["geometry"], "parallel_segment_proportion", "polygon_angle_chase", "pythagorean_dissection", "pythagorean_tree", "rectangular_solid", "regular_polygon_decomposition", "right_triangle_altitude_theorem", "sector", "shape_gallery")),
+        "geometry": frozenset((*expected_candidate_scenes["geometry"], "parallel_segment_proportion", "polygon_angle_chase", "pythagorean_dissection", "pythagorean_tree", "rectangular_solid", "regular_polygon_decomposition", "right_triangle_altitude_theorem", "sector", "shape_gallery", "similar_figure_measure_transfer")),
         "icons": frozenset((*expected_candidate_scenes["icons"], "named_strip", "overlap_grid", "wallpaper_panels")),
         "illustrations": frozenset((*expected_candidate_scenes["illustrations"], "rpg_tactical_map")),
         "three_d": frozenset((*expected_candidate_scenes["three_d"], "object_scene")),

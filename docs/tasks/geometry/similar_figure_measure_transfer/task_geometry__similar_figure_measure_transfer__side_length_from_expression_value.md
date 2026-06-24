@@ -3,9 +3,9 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `similar_figure_measure_transfer`
-5. Query id: `similar_triangles_target_side_from_expression` or `similar_polygons_target_side_from_expression`
+5. Query id: `single`
 6. Answer schema: `number`
-7. Annotation schema: `keyed_point_map`
+7. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(visible_similar_figure_marked_side_equation, unknown_role=target_side_length, formula_schema=similar_side_ratio_with_expression); scene=similar_figure_measure_transfer; scope=side_length_from_expression_value`
@@ -14,19 +14,14 @@
 - Prompt text is loaded from `geometry_geo3k_marked_equations_v0`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
+## Query and Construction Axes
+- `single` is the only public query id.
+- `construction_family` is replay metadata and may be `triangle_target_expression` or `polygon_target_expression`.
+
 ## Annotation
-Prompt-facing annotation uses keyed pixel points for the queried side, its corresponding side, and the supporting side-ratio pair:
+Prompt-facing annotation uses a `point_map` keyed by visible point labels for the queried side, its corresponding side, and the supporting side-ratio pair.
 
-- `target_side_start`
-- `target_side_end`
-- `corresponding_side_start`
-- `corresponding_side_end`
-- `support_source_side_start`
-- `support_source_side_end`
-- `support_target_side_start`
-- `support_target_side_end`
-
-Expression labels, tick marks, vertex labels, and solved variable values remain visible annotations plus private verifier metadata.
+Expression labels, tick marks, vertex labels, and solved variable values remain visible scene content plus private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

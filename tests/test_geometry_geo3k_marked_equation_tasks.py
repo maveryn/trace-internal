@@ -3,18 +3,15 @@ from __future__ import annotations
 import pytest
 
 import trace.tasks  # noqa: F401
-from trace.tasks.registry import create_task, list_task_ids
+from trace.tasks.registry import create_task
 
 
 TASK_QUERIES = {
     "task_geometry__similar_figure_measure_transfer__variable_value": (
-        "similar_triangles_side_ratio_variable",
-        "similar_polygons_side_ratio_variable",
-        "two_expression_side_ratio_variable",
+        "single",
     ),
     "task_geometry__similar_figure_measure_transfer__side_length_from_expression_value": (
-        "similar_triangles_target_side_from_expression",
-        "similar_polygons_target_side_from_expression",
+        "single",
     ),
     "task_geometry__marked_polygon_equation__side_variable_value": (
         "single",
@@ -72,6 +69,18 @@ PARALLEL_TASK_IDS = frozenset(
     }
 )
 
+SIMILAR_CONSTRUCTION_FAMILIES = {
+    "task_geometry__similar_figure_measure_transfer__variable_value": (
+        "triangle_ratio",
+        "polygon_ratio",
+        "two_expression_ratio",
+    ),
+    "task_geometry__similar_figure_measure_transfer__side_length_from_expression_value": (
+        "triangle_target_expression",
+        "polygon_target_expression",
+    ),
+}
+
 RETIRED_PARALLEL_QUERY_IDS = (
     "triangle_side_splitter_variable",
     "parallel_transversal_segment_variable",
@@ -86,9 +95,8 @@ def _generate(task_id: str, query_id: str, seed: int = 20260607, **extra_params)
 
 
 def test_geo3k_marked_equation_tasks_are_registered() -> None:
-    registered = set(list_task_ids())
     for task_id in TASK_QUERIES:
-        assert task_id in registered
+        assert create_task(task_id).task_id == task_id
 
 
 def test_geo3k_marked_equation_queries_emit_keyed_point_annotation() -> None:
@@ -144,7 +152,7 @@ def test_geo3k_marked_equation_queries_emit_keyed_point_annotation() -> None:
 def test_geo3k_marked_equation_queries_use_expected_scene_ids() -> None:
     assert _generate(
         "task_geometry__similar_figure_measure_transfer__variable_value",
-        "similar_triangles_side_ratio_variable",
+        "single",
     ).scene_id == "similar_figure_measure_transfer"
     assert _generate(
         "task_geometry__marked_polygon_equation__side_variable_value",
@@ -173,6 +181,22 @@ def test_marked_polygon_equation_construction_families_are_trace_metadata() -> N
                 task_id,
                 "single",
                 seed=20260617 + index,
+                construction_family=family,
+            )
+            assert output.query_id == "single"
+            trace = output.trace_payload
+            assert trace["execution_trace"]["construction_family"] == family
+            assert trace["query_spec"]["params"]["construction_family"] == family
+            assert trace["query_spec"]["params"]["query_id"] == "single"
+
+
+def test_similar_figure_equation_construction_families_are_trace_metadata() -> None:
+    for task_id, families in SIMILAR_CONSTRUCTION_FAMILIES.items():
+        for index, family in enumerate(families):
+            output = _generate(
+                task_id,
+                "single",
+                seed=20260616 + index,
                 construction_family=family,
             )
             assert output.query_id == "single"

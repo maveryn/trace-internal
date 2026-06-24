@@ -1,64 +1,68 @@
-"""Find a side length from expression-labeled similar figures."""
+"""Find a side length in similar figures with expression-labeled sides."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
+from trace.core.seed import spawn_rng
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
 
-from .shared.equation_runtime import SCENE_ID, EquationRuntime
+from ._lifecycle import SimilarFigureObjectivePlan, forced_or_sampled_family, run_similar_figure_public_entry
+from .shared.algebra import side_expression_case
 
 
 TASK_ID = "task_geometry__similar_figure_measure_transfer__side_length_from_expression_value"
-OBJECTIVE_KEY = "side_length_from_expression_value"
-SUPPORTED_QUERY_IDS = ('similar_triangles_target_side_from_expression', 'similar_polygons_target_side_from_expression')
-DEFAULT_QUERY_ID = SUPPORTED_QUERY_IDS[0]
+SUPPORTED_QUERY_IDS = ("single",)
+DEFAULT_QUERY_ID = "single"
+CONFIG_GROUP_KEY = "side_length_from_expression_value"
+PROMPT_BRANCH_KEY = "single"
+CONSTRUCTION_FAMILIES = ("triangle_target_expression", "polygon_target_expression")
+
+
+def _prepare_side_length_from_expression_objective(instance_seed: int, selected_branch: str, branch_probabilities: dict[str, float], task_params: dict) -> SimilarFigureObjectivePlan:
+    """Bind the side-length objective to one expression-labeled side setup."""
+
+    family = forced_or_sampled_family(
+        context_label=TASK_ID,
+        options=CONSTRUCTION_FAMILIES,
+        instance_seed=int(instance_seed),
+        params=task_params,
+        namespace=f"{TASK_ID}.construction_family",
+    )
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.{family}.case")
+    shape_kind = "triangle" if family == "triangle_target_expression" else str(rng.choice(("quadrilateral", "pentagon")))
+    case = side_expression_case(
+        construction_family=family,
+        shape_kind=shape_kind,
+        answer=int(rng.randint(8, 31)),
+        scale_factor=int(rng.randint(2, 5)),
+        coefficient=int(rng.randint(1, 4)),
+        variable_value=int(rng.randint(2, 10)),
+        support_source=int(rng.randint(3, 12)),
+    )
+    return SimilarFigureObjectivePlan(
+        case=case,
+        config_group_key=CONFIG_GROUP_KEY,
+        prompt_branch_key=PROMPT_BRANCH_KEY,
+        answer_type="number",
+        answer_hint_key="answer_hint_number",
+        program_scope="side_length_from_expression_value",
+        public_branch=str(selected_branch),
+        branch_probabilities=dict(branch_probabilities),
+    )
 
 
 @register_task
 class GeometrySimilarFigureMeasureTransferSideLengthFromExpressionValueTask:
-    """Find a side length from expression-labeled similar figures."""
+    """Find a side length in similar figures with expression-labeled sides."""
 
     task_id = TASK_ID
     domain = "geometry"
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = DEFAULT_QUERY_ID
+    prepare_objective = staticmethod(_prepare_side_length_from_expression_objective)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, _query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        artifact = EquationRuntime().generate_artifact(
-            int(instance_seed),
-            params=task_params,
-            max_attempts=int(max_attempts),
-            runtime_namespace=TASK_ID,
-            objective_key=OBJECTIVE_KEY,
-            query_id=str(query_id),
-        )
-        final_output = TaskOutput(
-            prompt=str(artifact.prompt),
-            answer_gt=TypedValue(type=str(artifact.answer_type), value=artifact.answer_value),
-            annotation_gt=TypedValue(type=str(artifact.annotation_type), value=artifact.annotation_value),
-            image=artifact.image,
-            image_id="img0",
-            trace_payload=artifact.trace_payload,
-            task_versions=artifact.task_versions,
-            scene_id=str(artifact.scene_id),
-            query_id=str(artifact.query_id),
-            prompt_variants=dict(artifact.prompt_variants),
-        )
-        return final_output
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        return run_similar_figure_public_entry(self, int(instance_seed), params=params, max_attempts=int(max_attempts))
 
 
 __all__ = ["GeometrySimilarFigureMeasureTransferSideLengthFromExpressionValueTask", "SUPPORTED_QUERY_IDS", "TASK_ID"]

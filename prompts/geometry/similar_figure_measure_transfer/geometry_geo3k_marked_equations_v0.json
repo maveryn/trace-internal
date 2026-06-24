@@ -65,6 +65,10 @@
     "query:similar_triangles_side_ratio_variable": [
       "variable_name"
     ],
+    "query:single": [
+      "target_name",
+      "variable_name"
+    ],
     "query:similar_polygons_side_ratio_variable": [
       "variable_name"
     ],
@@ -186,6 +190,13 @@
       "What is {variable_name}?",
       "Determine {variable_name}.",
       "Solve for {variable_name}."
+    ],
+    "single": [
+      "Find {target_name}.",
+      "Find the value of {target_name}.",
+      "What is {target_name}?",
+      "Determine {target_name}.",
+      "Solve for {target_name}."
     ],
     "similar_polygons_side_ratio_variable": [
       "The two polygons are similar. Find {variable_name}.",

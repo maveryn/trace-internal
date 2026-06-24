@@ -31,6 +31,9 @@
     "query:direct_side_transfer": [
       "target_name"
     ],
+    "query:single": [
+      "target_name"
+    ],
     "query:two_pair_side_transfer": [
       "target_name"
     ],
@@ -94,6 +97,13 @@
   },
   "query_templates": {
     "direct_side_transfer": [
+      "Use the corresponding side marks in the similar figures. What is the length of \"{target_name}\"?",
+      "Use the matching sides in the two similar figures. What is the length of \"{target_name}\"?",
+      "Find the missing corresponding side length in the similar figures. What is the length of \"{target_name}\"?",
+      "Based on the visible corresponding side labels, what is the length of \"{target_name}\"?",
+      "Use the similarity scale shown by the marked sides. What is the length of \"{target_name}\"?"
+    ],
+    "single": [
       "Use the corresponding side marks in the similar figures. What is the length of \"{target_name}\"?",
       "Use the matching sides in the two similar figures. What is the length of \"{target_name}\"?",
       "Find the missing corresponding side length in the similar figures. What is the length of \"{target_name}\"?",

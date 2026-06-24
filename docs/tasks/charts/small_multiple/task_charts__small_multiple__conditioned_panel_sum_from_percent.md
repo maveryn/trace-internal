@@ -3,24 +3,25 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `small_multiple`
-3. Source implementation domain/group: `charts/composition`
-4. Query id: `conditioned_panel_sum_from_percent`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Public task id: `task_charts__small_multiple__conditioned_panel_sum_from_percent`
+4. Query id: `single`
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.composition.small_multiples_aggregate_value.ChartsCompositionSmallMultiplesConditionedPanelSumFromPercentTask`
-2. Prompt lookup domain/group: `charts/composition`
+1. Registered class: `trace.tasks.charts.small_multiple.conditioned_panel_sum_from_percent.ChartsCompositionSmallMultiplesConditionedPanelSumFromPercentTask`
+2. Prompt bundle: `charts_small_multiple_v1`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
 1. Answer schema: `integer_value`.
-2. Annotation schema: `keyed_point_map`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+2. Annotation schema: `point_map`.
+3. Annotation marks the selected panels' condition segment labels, target segment labels, and total-count text.
+
+## Program Contract
+`sum(count(panel,target_segment) for panel in filter(panels, share(panel,condition_segment) > threshold)); output=integer_value; annotation=point_map(condition_segment,target_segment,total for selected_panels); scene=small_multiple; scope=conditioned_panel_sum_from_percent`
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `conditioned_panel_sum_from_percent` | `numeric.aggregate_sum` | `integer_value` | `keyed_point_map` |
+| `single` | `sum(count(panel,target_segment) for panel in filter(panels, share(panel,condition_segment) > threshold))` | `integer_value` | `point_map` |

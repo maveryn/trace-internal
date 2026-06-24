@@ -26,26 +26,18 @@ generation:
       report_topics: 0.75
       technical_topics: 1.0
       condition_labels: 0.5
-    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     scene_variant_weights:
       small_multiple_pie: 1.0
       small_multiple_donut: 1.0
-  task_overrides:
-    task_charts__small_multiple__average_top_k_minus_average_bottom_k:
-      panel_count_min: 4
-      panel_count_max: 7
-      segment_count_min: 5
-      segment_count_max: 5
-    task_charts__small_multiple__composition_shift_l1_distance:
-      panel_count_min: 4
-      panel_count_max: 7
-      segment_count_min: 5
-      segment_count_max: 5
 rendering:
   shared:
     canvas_width: 1384
     canvas_height: 888
+    chart_context_profile: dense_clean_minimal
+    chart_context_mode_weights:
+      clean: 0.7
+      minimal: 0.3
     plot_margin_left_px: 54
     plot_margin_right_px: 54
     plot_margin_top_px: 38
@@ -58,39 +50,3 @@ rendering:
 prompt:
   shared:
     bundle_id: charts_small_multiple_v1
-    scene_key: composition_small_multiples
-    task_key: small_multiples_aggregate_value_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
-      in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
-      the final answer.
-    answer_hint: set "answer" to the requested integer; for percentage-point questions,
-      omit the percent sign
-    object_description_small_multiple_pie: several small pie charts. Each panel has
-      the same segment legend, slice numbers are percentages, and each panel title
-      includes its total count
-    object_description_small_multiple_donut: several small donut charts. Each panel
-      has the same segment legend, slice numbers are percentages, and each panel title
-      includes its total count
-    annotation_hint_top_k_by_segment_then_sum_other_segment_count: 'set "annotation"
-      to an object using exactly these keys: {annotation_key_list}. Put [x,y] pixel
-      points at the centers of the corresponding selected-panel percentage labels
-      or total-count text'
-    annotation_hint_conditioned_panel_sum_from_percent: 'set "annotation" to an object
-      using exactly these keys: {annotation_key_list}. Put [x,y] pixel points at the
-      centers of the corresponding selected-panel percentage labels or total-count
-      text'
-    annotation_hint_average_top_k_minus_average_bottom_k: 'set "annotation" to an
-      object using exactly these keys: {annotation_key_list}. Put [x,y] pixel points
-      at the centers of the corresponding highest/lowest panel percentage labels'
-    annotation_hint_composition_shift_l1_distance: 'set "annotation" to an object
-      using exactly these keys: {annotation_key_list}. Put [x,y] pixel points at the
-      centers of the corresponding start/end panel segment percentage labels'
-    json_example_top_k_by_segment_then_sum_other_segment_count: '{"annotation":{"rank|2020|A":[230,250],"target|2020|B":[260,280],"total|2020":[245,110],"rank|2021|A":[500,255],"target|2021|B":[520,300],"total|2021":[505,112]},"answer":780}'
-    json_example_conditioned_panel_sum_from_percent: '{"annotation":{"condition|2020|A":[210,260],"target|2020|B":[240,290],"total|2020":[225,110],"condition|2021|A":[450,280],"target|2021|B":[480,310],"total|2021":[465,112]},"answer":720}'
-    json_example_average_top_k_minus_average_bottom_k: '{"annotation":{"rank|2020|A":[220,240],"target|2020|B":[240,260],"rank|2021|A":[460,260],"target|2021|B":[480,280],"rank|2022|A":[700,340],"target|2022|B":[720,360],"rank|2023|A":[940,360],"target|2023|B":[960,380]},"answer":20}'
-    json_example_composition_shift_l1_distance: '{"annotation":{"start|2020|A":[240,250],"end|2023|A":[620,250],"start|2020|B":[240,310],"end|2023|B":[620,310]},"answer":28}'
-    json_example_answer_only_top_k_by_segment_then_sum_other_segment_count: '{"answer":780}'
-    json_example_answer_only_conditioned_panel_sum_from_percent: '{"answer":720}'
-    json_example_answer_only_average_top_k_minus_average_bottom_k: '{"answer":20}'
-    json_example_answer_only_composition_shift_l1_distance: '{"answer":28}'

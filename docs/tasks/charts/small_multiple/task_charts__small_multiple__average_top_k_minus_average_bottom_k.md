@@ -3,24 +3,25 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `small_multiple`
-3. Source implementation domain/group: `charts/composition`
-4. Query id: `average_top_k_minus_average_bottom_k`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Public task id: `task_charts__small_multiple__average_top_k_minus_average_bottom_k`
+4. Query id: `single`
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.composition.small_multiples_aggregate_value.ChartsCompositionSmallMultiplesAverageTopKMinusAverageBottomKTask`
-2. Prompt lookup domain/group: `charts/composition`
+1. Registered class: `trace.tasks.charts.small_multiple.average_top_k_minus_average_bottom_k.ChartsCompositionSmallMultiplesAverageTopKMinusAverageBottomKTask`
+2. Prompt bundle: `charts_small_multiple_v1`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
 1. Answer schema: `integer_value`.
-2. Annotation schema: `keyed_point_map`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+2. Annotation schema: `point_map`.
+3. Annotation marks rank-segment and target-segment labels in the selected top and bottom panels.
+
+## Program Contract
+`difference(mean(share(panel,target_segment) for panel in top_k(panels, share(panel,rank_segment), k)), mean(share(panel,target_segment) for panel in bottom_k(panels, share(panel,rank_segment), k))); output=integer_value; annotation=point_map(rank_segment,target_segment for top_bottom_panels); scene=small_multiple; scope=average_top_k_minus_average_bottom_k`
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `average_top_k_minus_average_bottom_k` | `numeric.summary_statistic` | `integer_value` | `keyed_point_map` |
+| `single` | `difference(mean(top_k target shares), mean(bottom_k target shares))` | `integer_value` | `point_map` |

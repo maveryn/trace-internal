@@ -520,55 +520,32 @@ def test_icons_named_path_defaults_loaded() -> None:
     assert str(prompt_defaults['json_example']).strip()
     assert str(prompt_defaults['json_example_answer_only']).strip()
 
-def test_icons_sequence_defaults_loaded() -> None:
-    cfg = get_scene_defaults('icons', 'sequence')
-    generation_shared = cfg['generation']['shared']
-    assert int(generation_shared['sequence_length_min']) == 4
-    assert int(generation_shared['sequence_length_max']) == 6
-    assert int(generation_shared['target_count_min']) == 0
-    assert int(generation_shared['target_count_max']) == 10
-    assert int(generation_shared['step_abs_min']) == 1
-    assert int(generation_shared['step_abs_max']) == 3
-    assert bool(generation_shared['balanced_sampling']) is True
-    assert 'task_icons__sequence_strip__missing_count_value' not in cfg['generation']['task_overrides']
-    assert 'task_icons__named_strip__shape_run_length' in cfg['generation']['task_overrides']
-    render_shared = cfg['rendering']['shared']
-    assert int(render_shared['scene_icon_size_min_px']) == 24
-    assert int(render_shared['scene_icon_size_max_px']) == 40
-    assert float(render_shared['scene_max_overlap_fraction']) == pytest.approx(0.2, rel=1e-09)
-    assert int(render_shared['cell_padding_px']) > 0
-    assert int(render_shared['cell_icon_padding_px']) >= 0
-    assert int(render_shared['cell_box_width_min_px']) == 112
-    assert int(render_shared['cell_box_width_max_px']) == 160
-    assert int(render_shared['cell_box_height_min_px']) == 96
-    assert int(render_shared['cell_box_height_max_px']) == 144
-    assert int(render_shared['cell_label_font_size_px']) > 0
-    assert int(render_shared['missing_mark_font_size_px']) > 0
-    prompt_shared = cfg['prompt']['shared']
-    assert str(prompt_shared['bundle_id']).strip()
-    assert str(prompt_shared['scene_key']).strip()
-    assert str(prompt_shared['task_key']).strip()
-    assert str(prompt_shared['json_output_contract']).strip()
-    assert str(prompt_shared['json_output_contract_answer_only']).strip()
-    generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__named_strip__shape_run_length')
-    assert sorted(generation['query_id_weights'].keys()) == ['longest_shape_run_length', 'shortest_shape_run_length']
+def test_icons_named_strip_scene_defaults_loaded() -> None:
+    cfg = get_scene_defaults('icons', 'named_strip')
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id='task_icons__named_strip__shape_run_length',
+    )
     assert int(generation['strip_length_min']) == 12
     assert int(generation['strip_length_max']) == 16
     assert int(generation['longest_run_length_min']) == 2
     assert int(generation['longest_run_length_max']) == 6
     assert int(generation['shortest_run_length_min']) == 1
     assert int(generation['shortest_run_length_max']) == 5
+    assert list(generation['named_icon_fill_style_support']) == ['solid', 'striped', 'dotted']
+    assert 'query_id_weights' not in generation
     assert int(rendering['scene_icon_size_min_px']) == 42
     assert int(rendering['scene_icon_size_max_px']) == 58
+    assert int(rendering['cell_box_width_min_px']) == 58
+    assert int(rendering['cell_box_width_max_px']) == 72
+    assert int(rendering['cell_box_height_min_px']) == 88
+    assert int(rendering['cell_box_height_max_px']) == 108
     assert int(rendering['cell_padding_px']) == 4
+    assert int(rendering['cell_icon_padding_px']) == 8
+    assert float(rendering['scene_max_overlap_fraction']) == pytest.approx(0.0, rel=1e-09)
+    assert str(prompt['bundle_id']).strip() == 'icons_named_strip_v1'
     assert str(prompt['scene_key']).strip() == 'named_strip_run_length'
-    assert str(prompt['task_key']).strip() == 'run_length_query'
-    assert str(prompt['question_text_longest_shape_run_length']).strip()
-    assert str(prompt['question_text_shortest_shape_run_length']).strip()
-    assert str(prompt['annotation_hint']).strip()
-    assert str(prompt['answer_hint']).strip()
-    assert str(prompt['json_example']).strip()
-    assert str(prompt['json_example_answer_only']).strip()
+    assert str(prompt['task_key']).strip() == 'shape_run_length'
 
 def test_icons_sequence_strip_scene_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'sequence_strip')

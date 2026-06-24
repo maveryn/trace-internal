@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections import Counter
 from trace.core.seed import hash64
-from trace.tasks.icons.sequence.named_shape_run_length import IconsSequenceNamedShapeRunLengthTask
+from trace.tasks.icons.named_strip.shape_run_length import IconsNamedStripShapeRunLengthTask
 QUERY_IDS = ('longest_shape_run_length', 'shortest_shape_run_length')
 
 def _extract_prompt_json_example(prompt: str) -> dict:
@@ -25,7 +25,7 @@ def _target_run_lengths(shape_ids: list[str], target_shape_id: str) -> list[int]
     return runs
 
 def test_icons_sequence_named_shape_run_length_longest_contract_matches_scene() -> None:
-    task = IconsSequenceNamedShapeRunLengthTask()
+    task = IconsNamedStripShapeRunLengthTask()
     out = task.generate(2026052810, params={'query_id': 'longest_shape_run_length', 'target_shape_id': 'star', 'target_run_length': 5, 'strip_length': 15}, max_attempts=100)
     trace = out.trace_payload
     execution = trace['execution_trace']
@@ -61,7 +61,7 @@ def test_icons_sequence_named_shape_run_length_longest_contract_matches_scene() 
     assert style['text_legibility']['failure_count'] == 0
 
 def test_icons_sequence_named_shape_run_length_shortest_contract_matches_scene() -> None:
-    task = IconsSequenceNamedShapeRunLengthTask()
+    task = IconsNamedStripShapeRunLengthTask()
     out = task.generate(2026052811, params={'query_id': 'shortest_shape_run_length', 'target_shape_id': 'bell', 'target_run_length': 2, 'strip_length': 14}, max_attempts=100)
     execution = out.trace_payload['execution_trace']
     shape_ids = [str(value) for value in execution['shape_ids_by_cell']]
@@ -74,7 +74,7 @@ def test_icons_sequence_named_shape_run_length_shortest_contract_matches_scene()
     assert all((shape_ids[int(index)] == 'bell' for index in execution['selected_run_indices']))
 
 def test_icons_sequence_named_shape_run_length_prompt_example_matches_contract() -> None:
-    task = IconsSequenceNamedShapeRunLengthTask()
+    task = IconsNamedStripShapeRunLengthTask()
     out = task.generate(2026052812, params={'query_id': 'longest_shape_run_length', 'target_shape_id': 'guitar', 'target_run_length': 3}, max_attempts=100)
     assert '"guitar"' in out.prompt
     answer_only = _extract_prompt_json_example(out.prompt_variants['answer_only'])
@@ -86,12 +86,12 @@ def test_icons_sequence_named_shape_run_length_prompt_example_matches_contract()
     assert answer_and_annotation['answer'] == 3
 
 def test_icons_sequence_named_shape_run_length_sampling_smoke() -> None:
-    task = IconsSequenceNamedShapeRunLengthTask()
+    task = IconsNamedStripShapeRunLengthTask()
     query_counts: Counter[str] = Counter()
     answer_counts: Counter[int] = Counter()
     strip_lengths: Counter[int] = Counter()
     for index in range(80):
-        out = task.generate(hash64(2026052813, 'icons_sequence_named_shape_run_length', index), params={}, max_attempts=100)
+        out = task.generate(hash64(2026052813, 'icons_named_strip_shape_run_length', index), params={}, max_attempts=100)
         execution = out.trace_payload['execution_trace']
         query_id = str(out.query_id)
         answer = int(out.answer_gt.value)

@@ -805,7 +805,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_icons__wallpaper_panels__same_pattern_as_reference_label": _entry("icons", "wallpaper_panels", "icons", "wallpaper_panels"),
     "task_icons__wallpaper_panels__reference_pattern_match_count": _entry("icons", "wallpaper_panels", "icons", "wallpaper_panels"),
     "task_icons__sequence_strip__missing_count_value": _entry("icons", "sequence_strip", "icons", "sequence_strip"),
-    "task_icons__named_strip__shape_run_length": _entry("icons", "named_strip", "icons", "sequence"),
+    "task_icons__named_strip__shape_run_length": _entry("icons", "named_strip", "icons", "named_strip"),
     # Illustrations.
     "task_illustrations__environment__lit_window_count": _entry(
         "illustrations", "environment", "illustrations", "environment"

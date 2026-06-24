@@ -473,12 +473,14 @@ def test_icons_relation_bundle_supports_anchor_relation_query() -> None:
     assert "reference_grid_mirror_symmetry_relation" in bundle.scene_templates
 
 
-def test_icons_sequence_bundle_supports_missing_count_query() -> None:
-    bundle = load_prompt_bundle("icons", "sequence", "icons_sequence_v0")
-    assert len(bundle.task_templates["missing_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task:missing_count_query"]) == ["question_text"]
-    assert len(bundle.task_templates["run_length_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task:run_length_query"]) == ["question_text"]
+def test_icons_named_strip_bundle_supports_run_length_queries() -> None:
+    bundle = load_prompt_bundle("icons", "named_strip", "icons_named_strip_v1")
+    assert bundle.schema_version == "v1"
+    assert bundle.allow_empty_task_templates is True
+    assert len(bundle.task_templates["shape_run_length"]) == REQUIRED_PROMPT_VARIANTS
+    assert set(bundle.query_templates.keys()) == {"longest_shape_run_length", "shortest_shape_run_length"}
+    assert list(bundle.required_slots_by_key["query:longest_shape_run_length"]) == ["target_shape_name"]
+    assert list(bundle.required_slots_by_key["query:shortest_shape_run_length"]) == ["target_shape_name"]
     assert "named_strip_run_length" in bundle.scene_templates
 
 

@@ -213,9 +213,8 @@ and decompose any that construct final public outputs:
 Current icons configs still include old reasoning-group files:
 
 - `configs/domains/icons/relation.yaml`
-- `configs/domains/icons/sequence.yaml`
 
-`pattern_grid` and `wallpaper_panels` now have scene-scoped config files.
+`named_strip`, `pattern_grid`, and `wallpaper_panels` now have scene-scoped config files.
 
 Scene-package migration should create or update one config per public scene:
 

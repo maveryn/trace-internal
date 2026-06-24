@@ -42,6 +42,13 @@
         "Using Manhattan distance between each box and its matching colored goal dot, which labeled box is closest? Ignore all walls and objects on the board.",
         "Compare each labeled box with its same-colored goal dot. Which box has the smallest Manhattan distance when walls, boxes, and other objects are ignored?",
         "Which box label identifies the box closest to its matching colored goal dot by Manhattan distance? Ignore walls and any other board objects."
+      ],
+      "push_stand_cell_label": [
+        "Which labeled square should the player stand on to push the {target_color_label} box straight onto its matching {target_color_label} goal dot?",
+        "Where should the player stand to push the {target_color_label} box straight into its matching {target_color_label} goal dot?",
+        "Select the labeled square where the player needs to stand so the {target_color_label} box can be pushed straight onto its matching goal dot.",
+        "Which labeled player position lets the {target_color_label} box be pushed in a straight line to its matching {target_color_label} goal dot?",
+        "Choose the labeled square the player should stand on before pushing the {target_color_label} box straight into its matching goal dot."
       ]
     },
     "output": {
@@ -68,6 +75,9 @@
     "query:box_on_goal_count": [],
     "query:box_off_goal_count": [],
     "query:closest_box_goal_label": [],
+    "query:push_stand_cell_label": [
+      "target_color_label"
+    ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -107,17 +117,24 @@
     },
     "rank_word": {
       "type": "string"
+    },
+    "target_color_label": {
+      "type": "string"
     }
   },
   "code_prompt_defaults": {
     "object_description_box_goal_status_count": "a Sokoban board with walls, a player, colored boxes, and colored goal dots; a box on its matching goal has the goal dot drawn on top of the box",
     "object_description_closest_box_goal_label": "a Sokoban board with walls, a player, lettered colored boxes, and matching colored goal dots; no box is already on its matching goal",
+    "object_description_push_stand_cell_label": "a Sokoban board with walls, a player, colored boxes, matching colored goal dots, and four labeled candidate standing squares around one box",
     "answer_hint_box_goal_count": "set \"answer\" to the number of boxes satisfying the question",
     "answer_hint_option_letter": "set \"answer\" to the selected box letter",
+    "answer_hint_option_letter_stand_cell": "set \"answer\" to the selected standing-square letter",
     "annotation_hint_counted_box_bbox_set": "set \"annotation\" to a JSON array of image-pixel box-cell bounding boxes [x0,y0,x1,y1], one for each counted box; use [] if none are counted",
     "annotation_hint_selected_box_bbox": "set \"annotation\" to the selected box-cell bounding box as [x0,y0,x1,y1] in image pixels",
+    "annotation_hint_selected_stand_cell_bbox": "set \"annotation\" to the selected standing-square cell bounding box as [x0,y0,x1,y1] in image pixels",
     "json_example_counted_box_bbox_set": "{\"annotation\":[[180,160,232,212],[300,220,352,272]],\"answer\":2}",
     "json_example_selected_box_bbox": "{\"annotation\":[220,180,280,240],\"answer\":\"B\"}",
+    "json_example_selected_stand_cell_bbox": "{\"annotation\":[160,220,212,272],\"answer\":\"C\"}",
     "json_example_answer_only_integer": "{\"answer\":2}",
     "json_example_answer_only_option_label": "{\"answer\":\"B\"}"
   }

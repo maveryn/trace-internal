@@ -7,6 +7,15 @@ import json
 from trace.tasks import TASK_REGISTRY
 from trace.tasks.games.sokoban.box_goal_status_count import GamesSokobanBoxGoalStatusCountTask
 from trace.tasks.games.sokoban.closest_box_goal_label import GamesSokobanClosestBoxGoalLabelTask
+from trace.tasks.games.sokoban.push_stand_cell_label import GamesSokobanPushStandCellLabelTask
+
+
+DIRECTIONS = {
+    "U": (-1, 0),
+    "D": (1, 0),
+    "L": (0, -1),
+    "R": (0, 1),
+}
 
 
 TASKS = (
@@ -20,6 +29,13 @@ TASKS = (
     (
         "task_games__sokoban__closest_box_goal_label",
         GamesSokobanClosestBoxGoalLabelTask,
+        ("single",),
+        "option_letter",
+        "bbox",
+    ),
+    (
+        "task_games__sokoban__push_stand_cell_label",
+        GamesSokobanPushStandCellLabelTask,
         ("single",),
         "option_letter",
         "bbox",
@@ -42,7 +58,7 @@ def test_sokoban_tasks_are_registered() -> None:
 
 
 def test_sokoban_tasks_emit_public_contracts() -> None:
-    for task_index, (_task_id, task_cls, queries, answer_schema, annotation_schema) in enumerate(TASKS):
+    for task_index, (task_id, task_cls, queries, answer_schema, annotation_schema) in enumerate(TASKS):
         for query_index, query_id in enumerate(queries):
             out = task_cls().generate(
                 2026052300 + (task_index * 30) + query_index,
@@ -82,7 +98,7 @@ def test_sokoban_tasks_emit_public_contracts() -> None:
                 assert 1 <= int(out.answer_gt.value) <= 5
                 assert len(execution["boxes_on_matching_goals"]) >= 1
                 assert len(execution["boxes_off_matching_goals"]) >= 1
-            elif query_id == "single":
+            elif task_id == "task_games__sokoban__closest_box_goal_label":
                 assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
                 support = execution["relation_support"]
                 distances = {
@@ -100,6 +116,39 @@ def test_sokoban_tasks_emit_public_contracts() -> None:
                 assert sum(1 for value in distances.values() if value == distances[answer]) == 1
                 assert len(out.annotation_gt.value) == 4
                 assert len(execution["boxes_on_matching_goals"]) == 0
+            elif task_id == "task_games__sokoban__push_stand_cell_label":
+                assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+                support = execution["relation_support"]
+                answer = str(out.answer_gt.value)
+                box_cell = tuple(int(value) for value in support["target_box_cell"])
+                stand_cell = tuple(int(value) for value in support["stand_cell"])
+                goal_cell = tuple(int(value) for value in support["target_goal_cell"])
+                push_direction = str(support["push_direction"])
+                push_delta = DIRECTIONS[push_direction]
+                expected_stand = (box_cell[0] - push_delta[0], box_cell[1] - push_delta[1])
+                assert execution["query_id"] == "single"
+                assert execution["internal_query_id"] == "push_stand_cell_label"
+                assert trace["query_spec"]["params"]["prompt_query_key"] == "push_stand_cell_label"
+                assert int(execution["option_count"]) == 4
+                assert [str(option["option_label"]) for option in execution["option_specs"]] == ["A", "B", "C", "D"]
+                assert answer == str(support["correct_option_label"])
+                assert stand_cell == expected_stand
+                assert stand_cell != box_cell
+                assert goal_cell != box_cell
+                assert support["target_color_label"] in out.prompt
+                correct_options = [
+                    option
+                    for option in execution["option_specs"]
+                    if str(option["option_label"]) == answer
+                ]
+                assert len(correct_options) == 1
+                assert correct_options[0]["candidate_cells"] == [list(stand_cell)]
+                wall_cells = {tuple(cell) for cell in execution["walls"]}
+                box_cells = {tuple(cell) for cell in execution["boxes_start"].values()}
+                for path_cell in support["straight_path_cells"]:
+                    cell = tuple(path_cell)
+                    assert cell not in wall_cells
+                    assert cell not in box_cells
 
             for bbox in _annotation_bboxes(out.annotation_gt.value):
                 assert len(bbox) == 4
@@ -115,6 +164,10 @@ def test_sokoban_generation_is_deterministic() -> None:
         ),
         (
             GamesSokobanClosestBoxGoalLabelTask(),
+            {"query_id": "single", "scene_variant": "paper_grid"},
+        ),
+        (
+            GamesSokobanPushStandCellLabelTask(),
             {"query_id": "single", "scene_variant": "paper_grid"},
         ),
     )

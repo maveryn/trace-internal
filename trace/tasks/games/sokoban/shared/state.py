@@ -24,6 +24,7 @@ PATH_CONTRACT_KIND = "path_options"
 RELATION_CONTRACT_KIND = "relation_options"
 BOX_GOAL_STATUS_CONTRACT_KIND = "matching_goal_status"
 BOX_GOAL_DISTANCE_CONTRACT_KIND = "matching_goal_distance"
+PUSH_STAND_CONTRACT_KIND = "push_stand_cell"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "warehouse_classic",
@@ -35,6 +36,7 @@ PATH_OPTION_COUNT_SUPPORT: Tuple[int, ...] = (4, 6)
 RELATION_OPTION_COUNT_SUPPORT: Tuple[int, ...] = (4, 5, 6)
 BOX_GOAL_STATUS_COUNT_SUPPORT: Tuple[int, ...] = (1, 2, 3, 4, 5)
 BOX_GOAL_DISTANCE_OPTION_COUNT_SUPPORT: Tuple[int, ...] = (4, 6)
+PUSH_STAND_OPTION_COUNT_SUPPORT: Tuple[int, ...] = (4,)
 
 Cell = Tuple[int, int]
 Color = Tuple[int, int, int]
@@ -121,6 +123,8 @@ __all__ = [
     "PATH_MODE_SHORTEST",
     "PATH_MODE_VALID",
     "PATH_OPTION_COUNT_SUPPORT",
+    "PUSH_STAND_CONTRACT_KIND",
+    "PUSH_STAND_OPTION_COUNT_SUPPORT",
     "RELATION_CONTRACT_KIND",
     "RELATION_MODE_NEAREST_BOX",
     "RELATION_MODE_NEAREST_TARGET",

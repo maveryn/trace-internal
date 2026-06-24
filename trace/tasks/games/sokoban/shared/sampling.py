@@ -6,6 +6,8 @@ from string import ascii_uppercase
 from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
+from trace.tasks.shared.color_format import format_named_color_with_hex
+from trace.tasks.shared.named_colors import sample_named_color_palette
 from trace.tasks.games.shared.sampling import (
     get_games_int_param as _get_int,
     get_games_int_range as _get_range,
@@ -38,6 +40,8 @@ from .state import (
     PATH_MODE_SHORTEST,
     PATH_MODE_VALID,
     PATH_OPTION_COUNT_SUPPORT,
+    PUSH_STAND_CONTRACT_KIND,
+    PUSH_STAND_OPTION_COUNT_SUPPORT,
     RELATION_CONTRACT_KIND,
     RELATION_MODE_NEAREST_BOX,
     RELATION_MODE_NEAREST_TARGET,
@@ -57,6 +61,13 @@ BOX_GOAL_PAIR_COLORS: Tuple[Tuple[int, int, int], ...] = (
     (224, 142, 46),
     (42, 156, 170),
 )
+
+_OPPOSITE_DIRECTIONS: Mapping[str, str] = {
+    "U": "D",
+    "D": "U",
+    "L": "R",
+    "R": "L",
+}
 
 
 def select_scene_axes(params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> SokobanAxes:
@@ -447,6 +458,154 @@ def sample_closest_box_goal_dataset(
     raise ValueError("could not build Sokoban closest box-goal dataset")
 
 
+def sample_push_stand_cell_dataset(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> Dict[str, Any]:
+    """Build a straight-push setup with four labeled player stand cells."""
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.push_stand_cell")
+    for attempt in range(512):
+        board = sample_base_board(
+            params=params,
+            instance_seed=int(instance_seed) + attempt,
+            namespace=f"{namespace}.push_stand_cell.board",
+            open_bias=True,
+        )
+        rows, cols, walls = int(board["rows"]), int(board["cols"]), set(board["walls"])
+        component = set(tuple(cell) for cell in board["component"])
+        if len(component) < 12:
+            continue
+
+        candidate_boxes = list(component)
+        rng.shuffle(candidate_boxes)
+        direction_keys = list(DIRECTIONS)
+        rng.shuffle(direction_keys)
+        for box_cell in candidate_boxes:
+            adjacent_cells = {
+                direction: add_cells(box_cell, delta)
+                for direction, delta in DIRECTIONS.items()
+            }
+            if any(cell not in component for cell in adjacent_cells.values()):
+                continue
+            for push_direction in direction_keys:
+                push_delta = DIRECTIONS[str(push_direction)]
+                stand_direction = _OPPOSITE_DIRECTIONS[str(push_direction)]
+                stand_cell = adjacent_cells[str(stand_direction)]
+                target_distance_options = [2, 3, 4]
+                rng.shuffle(target_distance_options)
+                for target_distance in target_distance_options:
+                    path_cells = [
+                        add_cells(box_cell, (push_delta[0] * step, push_delta[1] * step))
+                        for step in range(1, int(target_distance) + 1)
+                    ]
+                    if any(cell not in component for cell in path_cells):
+                        continue
+                    target_cell = path_cells[-1]
+                    forbidden = {box_cell, target_cell, stand_cell, *adjacent_cells.values(), *path_cells}
+                    palette = sample_named_color_palette(rng, palette_size=4)
+                    if len(palette) < 4:
+                        continue
+                    target_color_name, target_color_rgb = palette[0]
+                    distractor_colors = palette[1:]
+                    open_cells = [cell for cell in component if cell not in forbidden]
+                    if len(open_cells) < 3 + (2 * len(distractor_colors)):
+                        continue
+
+                    boxes: Dict[str, Cell] = {"target_box": tuple(box_cell)}
+                    targets: Dict[str, Cell] = {"target_goal": tuple(target_cell)}
+                    box_colors: Dict[str, List[int]] = {"target_box": list(target_color_rgb)}
+                    target_colors: Dict[str, List[int]] = {"target_goal": list(target_color_rgb)}
+                    matching_targets: Dict[str, str] = {"target_box": "target_goal"}
+
+                    rng.shuffle(open_cells)
+                    cursor = 0
+                    for index, (color_name, color_rgb) in enumerate(distractor_colors[:2], start=1):
+                        box_label = f"distractor_box_{index}"
+                        target_label = f"distractor_goal_{index}"
+                        boxes[box_label] = tuple(open_cells[cursor])
+                        targets[target_label] = tuple(open_cells[cursor + 1])
+                        box_colors[box_label] = list(color_rgb)
+                        target_colors[target_label] = list(color_rgb)
+                        matching_targets[box_label] = target_label
+                        cursor += 2
+
+                    occupied_by_boxes = set(boxes.values())
+                    passable = set(component) - occupied_by_boxes
+                    player_candidates = [
+                        cell
+                        for cell in open_cells[cursor:]
+                        if cell in passable and shortest_path(passable, cell, stand_cell) is not None
+                    ]
+                    if not player_candidates:
+                        continue
+                    player = tuple(player_candidates[int(rng.randrange(len(player_candidates)))])
+
+                    correct = {
+                        "kind": "stand_cell",
+                        "display_text": "stand",
+                        "candidate_cells": [list(stand_cell)],
+                        "stand_direction": str(stand_direction),
+                    }
+                    distractors = [
+                        {
+                            "kind": "stand_cell",
+                            "display_text": "stand",
+                            "candidate_cells": [list(cell)],
+                            "stand_direction": str(direction),
+                        }
+                        for direction, cell in adjacent_cells.items()
+                        if tuple(cell) != tuple(stand_cell)
+                    ]
+                    option_specs, answer_label = _assign_option_labels(
+                        correct=correct,
+                        distractors=distractors,
+                        option_count=4,
+                        instance_seed=int(instance_seed),
+                    )
+                    color_label = format_named_color_with_hex(str(target_color_name), target_color_rgb)
+                    support = {
+                        "target_color_name": str(target_color_name),
+                        "target_color_rgb": list(target_color_rgb),
+                        "target_color_label": str(color_label),
+                        "target_box_label": "target_box",
+                        "target_goal_label": "target_goal",
+                        "target_box_cell": list(box_cell),
+                        "target_goal_cell": list(target_cell),
+                        "push_direction": str(push_direction),
+                        "stand_direction": str(stand_direction),
+                        "stand_cell": list(stand_cell),
+                        "straight_path_cells": [list(cell) for cell in path_cells],
+                        "correct_option_label": str(answer_label),
+                    }
+                    return {
+                        "contract_kind": PUSH_STAND_CONTRACT_KIND,
+                        "rows": rows,
+                        "cols": cols,
+                        "walls": sorted([list(cell) for cell in walls]),
+                        "component_cells": sorted([list(cell) for cell in component]),
+                        "player_start": list(player),
+                        "boxes_start": {label: list(cell) for label, cell in sorted(boxes.items())},
+                        "targets": {label: list(cell) for label, cell in sorted(targets.items())},
+                        "matching_targets": dict(sorted(matching_targets.items())),
+                        "box_colors": dict(sorted(box_colors.items())),
+                        "target_colors": dict(sorted(target_colors.items())),
+                        "option_count": 4,
+                        "option_specs": option_specs,
+                        "answer_option_label": str(answer_label),
+                        "answer_cell": list(stand_cell),
+                        "target_color_name": str(target_color_name),
+                        "target_color_label": str(color_label),
+                        "target_box_label": "target_box",
+                        "target_goal_label": "target_goal",
+                        "relation_support": support,
+                        "solver_trace": dict(support),
+                    }
+    raise ValueError("could not build Sokoban push stand-cell dataset")
+
+
 def _choose_option_labels(option_count: int) -> List[str]:
     return list(ascii_uppercase[: int(option_count)])
 
@@ -805,6 +964,7 @@ __all__ = [
     "sample_base_board",
     "sample_box_goal_status_dataset",
     "sample_closest_box_goal_dataset",
+    "sample_push_stand_cell_dataset",
     "sample_path_sequence_dataset",
     "sample_relation_dataset",
     "select_box_goal_distance_option_count",

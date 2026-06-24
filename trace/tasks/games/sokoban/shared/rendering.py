@@ -17,6 +17,7 @@ from .defaults import RENDER_DEFAULTS
 from .rules import box_id, cell_id, option_id, target_id
 from .state import (
     PATH_CONTRACT_KIND,
+    PUSH_STAND_CONTRACT_KIND,
     RELATION_CONTRACT_KIND,
     RELATION_MODE_RANKED_PAIR,
     BBox,
@@ -549,9 +550,11 @@ def render_sokoban_scene(
     style = dict(SCENE_STYLES.get(str(scene_variant), SCENE_STYLES["warehouse_classic"]))
     style.update({str(key): tuple(value) for key, value in dict(render_params.style_overrides or {}).items()})
     rows, cols = int(dataset["rows"]), int(dataset["cols"])
-    is_relation_family = str(dataset.get("contract_kind")) == RELATION_CONTRACT_KIND
-    uses_side_options = str(dataset.get("contract_kind")) == PATH_CONTRACT_KIND
-    uses_board_options = bool(is_relation_family)
+    contract_kind = str(dataset.get("contract_kind"))
+    is_relation_family = contract_kind == RELATION_CONTRACT_KIND
+    is_push_stand_family = contract_kind == PUSH_STAND_CONTRACT_KIND
+    uses_side_options = contract_kind == PATH_CONTRACT_KIND
+    uses_board_options = bool(is_relation_family or is_push_stand_family)
     board_x0 = (
         float(render_params.scene_margin_left_px)
         if uses_side_options
@@ -597,7 +600,7 @@ def render_sokoban_scene(
         start_cell=start_cell,
         goal_cell=goal_cell,
     )
-    if is_relation_family:
+    if uses_board_options:
         _draw_relation_option_overlays(draw, dataset=dataset, cell_bbox_map=cell_bbox_map, style=style, params=render_params)
     board_bbox = _bbox_union(cell_bbox_map.values())
     subtitle_font = load_font(16, bold=False)

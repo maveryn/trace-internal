@@ -14,7 +14,6 @@ rendering:
     axis_frame_margin_right_px: 68
     axis_frame_margin_top_px: 90
     axis_frame_margin_bottom_px: 112
-    axis_frame_title_font_size_px: 24
     axis_frame_axis_label_font_size_px: 17
     axis_frame_tick_font_size_px: 16
     axis_frame_axis_line_width_px_min: 1
@@ -25,12 +24,11 @@ rendering:
     axis_frame_line_width_px_max: 4
     axis_frame_point_radius_px_min: 3
     axis_frame_point_radius_px_max: 5
-    axis_frame_title_options:
-    - Experimental Response
-    - Measurement Trace
-    - Parameter Sweep
-    - Scientific Figure
-    - Observed Profile
+    chart_context_profile: report_paragraph
+    chart_context_mode_weights:
+      clean: 0.3
+      minimal: 0.4
+      paragraph_box: 0.3
     layout_jitter_enabled: true
     layout_jitter_x_px_min: -14
     layout_jitter_x_px_max: 14

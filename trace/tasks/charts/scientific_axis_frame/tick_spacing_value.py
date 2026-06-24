@@ -2,73 +2,88 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from collections.abc import Mapping
+from typing import Any
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.axis_frame_query import TICK_SPACING_QUERY_IDS, _build_dataset
-from .shared.output import build_axis_frame_task_components
+from trace.tasks.charts.scientific_axis_frame._lifecycle import (
+    AxisFrameTaskPlan,
+    run_axis_frame_lifecycle,
+)
+from trace.tasks.charts.scientific_axis_frame.shared.prompts import dynamic_slots
+from trace.tasks.charts.scientific_axis_frame.shared.sampling import build_tick_spacing_dataset
+from trace.tasks.charts.scientific_axis_frame.shared.state import DOMAIN
+from trace.tasks.registry import register_task
 
 
-DEFAULT_QUERY_ID = "x_tick_spacing_value"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+TASK_ID = "task_charts__scientific_axis_frame__tick_spacing_value"
+PROGRAM_CODE = (
+    "difference(next_adjacent_tick(axis), first_adjacent_tick(axis)); "
+    "output=integer_value; annotation=bbox_map(first_tick,next_tick); "
+    "scene=scientific_axis_frame; scope=tick_spacing_value"
+)
+TICK_SPACING_QUERY_IDS = (
+    "x_tick_spacing_value",
+    "y_tick_spacing_value",
+)
+REASONING_LOAD = 0.38
+DEFAULT_QUERY_ID = TICK_SPACING_QUERY_IDS[0]
+
+
+def _build_tick_spacing_plan(
+    params: Mapping[str, Any],
+    instance_seed: int,
+    selected_query_id: str,
+    query_probabilities: Mapping[str, float],
+) -> AxisFrameTaskPlan:
+    """Bind one public query id to an adjacent-tick spacing objective."""
+
+    if str(selected_query_id) not in set(TICK_SPACING_QUERY_IDS):
+        raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_query_id}")
+    axis = str(selected_query_id)[0]
+    dataset = build_tick_spacing_dataset(
+        params=params,
+        instance_seed=int(instance_seed),
+        axis=str(axis),
+    )
+    return AxisFrameTaskPlan(
+        dataset=dataset,
+        params=dict(params),
+        prompt_key=str(selected_query_id),
+        dynamic_slots=dynamic_slots(axis_name=str(dataset.binding.trace["axis_name"])),
+        question_format="scientific_axis_frame",
+        program_code=PROGRAM_CODE,
+        query_params={
+            "axis": str(axis),
+            "query_id_probabilities": dict(query_probabilities),
+        },
+        reasoning_load=REASONING_LOAD,
+        highlight_tick_keys=tuple(str(value) for value in dataset.binding.annotation_roles.values()),
+    )
 
 
 @register_task
 class ChartsScientificAxisFrameTickSpacingValueTask:
     """Compute spacing between highlighted adjacent numeric tick labels."""
 
-    task_id = "task_charts__scientific_axis_frame__tick_spacing_value"
-    domain = "charts"
-    scene_id = "scientific_axis_frame"
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "tick_spacing_value"
     supported_query_ids = TICK_SPACING_QUERY_IDS
+    default_query_id = DEFAULT_QUERY_ID
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        return run_axis_frame_lifecycle(
+            task=self,
             instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
+            params=dict(params),
+            max_attempts=int(max_attempts),
             default_query_id=DEFAULT_QUERY_ID,
-            task_id=self.task_id,
+            build_plan=_build_tick_spacing_plan,
         )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                dataset = _build_dataset(
-                    {**dict(task_params), "_attempt_index": int(attempt_index)},
-                    instance_seed=int(attempt_seed),
-                    query_id=str(selected_query_id),
-                    query_probabilities=query_probabilities,
-                )
-                components = build_axis_frame_task_components(
-                    dataset=dataset,
-                    params=task_params,
-                    instance_seed=int(attempt_seed),
-                    query_id=str(selected_query_id),
-                    query_id_probabilities=query_probabilities,
-                )
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=int(components.answer_value)),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=dict(components.annotation_value)),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id="scientific_axis_frame",
-                    query_id=str(components.query_id),
-                )
-            except Exception as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
 
 
-__all__ = ["ChartsScientificAxisFrameTickSpacingValueTask"]
+__all__ = [
+    "ChartsScientificAxisFrameTickSpacingValueTask",
+    "TICK_SPACING_QUERY_IDS",
+]

@@ -7,10 +7,8 @@ from tests.helpers import extract_prompt_json_example
 from trace.core.seed import hash64
 from trace.core.scene_config import get_scene_defaults
 from trace.tasks import create_task
-from trace.tasks.charts.scientific_axis_frame.shared.axis_frame_query import (
-    AXIS_SPAN_QUERY_IDS,
-    TICK_SPACING_QUERY_IDS,
-)
+from trace.tasks.charts.scientific_axis_frame.axis_span_value import AXIS_SPAN_QUERY_IDS
+from trace.tasks.charts.scientific_axis_frame.tick_spacing_value import TICK_SPACING_QUERY_IDS
 
 SUPPORTED_SCENE_VARIANTS = ("multipanel_line_grid",)
 CURVE_PANEL_QUERY_TO_TASK_ID = {
@@ -338,7 +336,7 @@ def test_charts_scientific_axis_frame_variants_match_contract(query_id: str) -> 
     assert out.query_id == query_id
     assert out.scene_id == "scientific_axis_frame"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert sorted(out.prompt_variants.keys()) == [
         "answer_and_annotation",
         "answer_only",
@@ -376,10 +374,10 @@ def test_charts_scientific_axis_frame_variants_match_contract(query_id: str) -> 
     assert int(out.answer_gt.value) == int(expected_answer)
     assert execution["answer_value"] == int(expected_answer)
     assert out.annotation_gt.value == expected_annotation
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
     assert (
-        trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+        trace["projected_annotation"]["pixel_bbox_map"] == out.annotation_gt.value
     )
     _assert_keyed_bbox_map_inside_canvas(
         out.annotation_gt.value,

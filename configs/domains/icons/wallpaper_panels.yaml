@@ -170,6 +170,8 @@ rendering:
     task_icons__wallpaper_panels__motif_violation_label:
       scene_icon_size_min_px: 40
       scene_icon_size_max_px: 44
+    task_icons__wallpaper_panels__same_pattern_as_reference_label:
+      canvas_height: 960
 prompt:
   shared:
     bundle_id: icons_wallpaper_panels_v1

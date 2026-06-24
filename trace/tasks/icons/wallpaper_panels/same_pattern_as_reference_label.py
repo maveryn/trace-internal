@@ -165,7 +165,7 @@ class IconsWallpaperPanelsSamePatternAsReferenceLabelTask:
                 "reference_wallpaper_group_id": str(spec.reference_wallpaper_group_id),
             },
             projected_annotation=dict(annotation["projected_annotation"]),
-            include_reference_panel_width=True,
+            include_reference_panel_width=False,
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),

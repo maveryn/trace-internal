@@ -607,6 +607,13 @@ def test_icons_wallpaper_panels_defaults_loaded() -> None:
     assert int(render_shared['scene_icon_size_min_px']) == 40
     assert int(render_shared['scene_icon_size_max_px']) == 44
     assert list(render_shared['icon_noise_edit_count_range']) == [0, 0]
+    _, reference_rendering, _ = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id='task_icons__wallpaper_panels__same_pattern_as_reference_label',
+    )
+    assert int(reference_rendering['canvas_width']) == 1104
+    assert int(reference_rendering['canvas_height']) == 960
+    assert int(reference_rendering['canvas_width']) * int(reference_rendering['canvas_height']) < 1200000
     prompt_shared = cfg['prompt']['shared']
     assert str(prompt_shared['bundle_id']).strip() == 'icons_wallpaper_panels_v1'
     prompt_overrides = cfg['prompt']['task_overrides']

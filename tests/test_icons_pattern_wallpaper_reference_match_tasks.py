@@ -75,6 +75,9 @@ def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
     assert trace["render_spec"]["style"]["safe_canvas_treatments"] == list(SAFE_WALLPAPER_CANVAS_TREATMENTS)
     assert trace["render_spec"]["style"]["icon_canvas_style"]["treatment"] in SAFE_WALLPAPER_CANVAS_TREATMENTS
     assert trace["render_spec"]["panel_geometry"]["motif_lattice"] == {"rows": 4, "cols": 4, "visible_grid": False}
+    assert trace["render_spec"]["panel_geometry"]["reference_panel_position"] == "above_candidate_grid"
+    canvas_width, canvas_height = trace["render_spec"]["canvas_size"]
+    assert int(canvas_width) * int(canvas_height) < 1_200_000
 
     reference_panels = [panel for panel in scene_panels if bool(panel["is_reference"])]
     candidate_panels = [panel for panel in scene_panels if str(panel["panel_role"]) == "candidate"]
@@ -85,6 +88,11 @@ def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
     reference = reference_panels[0]
     answer = next(panel for panel in candidate_panels if str(panel["label"]) == "D")
     distractors = [panel for panel in candidate_panels if str(panel["label"]) != "D"]
+    ref_bbox = [int(value) for value in reference["panel_bbox_xyxy"]]
+    candidate_bboxes = [[int(value) for value in panel["panel_bbox_xyxy"]] for panel in candidate_panels]
+    ref_size = (int(ref_bbox[2] - ref_bbox[0]), int(ref_bbox[3] - ref_bbox[1]))
+    assert all((int(bbox[2] - bbox[0]), int(bbox[3] - bbox[1])) == ref_size for bbox in candidate_bboxes)
+    assert all(int(ref_bbox[3]) < int(bbox[1]) for bbox in candidate_bboxes)
     assert str(reference["wallpaper_group_id"]) == "p1"
     assert str(answer["wallpaper_group_id"]) == "p1"
     assert all(str(panel["wallpaper_group_id"]) != "p1" for panel in distractors)

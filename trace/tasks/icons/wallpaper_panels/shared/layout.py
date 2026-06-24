@@ -56,28 +56,32 @@ def reference_panel_geometry(
     render_params: Mapping[str, Any],
     option_labels: Sequence[str],
 ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]]]:
-    """Return panel geometry for one Reference panel plus four candidate panels."""
+    """Return same-size Reference and candidate panels with Reference above."""
 
     width = int(render_params["canvas_width"])
     height = int(render_params["canvas_height"])
     margin = max(0, int(render_params["outer_margin_px"]))
     gap = max(0, int(render_params["option_panel_gap_px"]))
-    reference_width = max(220, int(render_params["reference_panel_width_px"]))
-    reference_bbox = (int(margin), int(margin), int(margin + reference_width), int(height - margin))
-    options_bbox = (
-        int(reference_bbox[2] + gap),
-        int(margin),
-        int(width - margin),
-        int(height - margin),
-    )
-    if options_bbox[2] <= options_bbox[0]:
-        raise ValueError("wallpaper reference-match option area collapsed")
-    panel_slots = resolve_fixed_grid_cell_slots(
-        options_bbox,
-        rows=2,
+    outer_bbox = (int(margin), int(margin), int(width - margin), int(height - margin))
+    grid_slots = resolve_fixed_grid_cell_slots(
+        outer_bbox,
+        rows=3,
         cols=2,
         cell_padding_px=max(0, int(gap // 2)),
-    )[: len(option_labels)]
+    )
+    if len(grid_slots) < 6:
+        raise ValueError("wallpaper reference-match grid collapsed")
+    top_left = grid_slots[0]
+    panel_width = int(top_left[2] - top_left[0])
+    panel_height = int(top_left[3] - top_left[1])
+    reference_center_x = int(round((float(outer_bbox[0]) + float(outer_bbox[2])) / 2.0))
+    reference_bbox = (
+        int(reference_center_x - (panel_width // 2)),
+        int(top_left[1]),
+        int(reference_center_x - (panel_width // 2) + panel_width),
+        int(top_left[1] + panel_height),
+    )
+    panel_slots = tuple(grid_slots[2: 2 + len(option_labels)])
     panels = _panel_payloads(
         panel_specs=((REFERENCE_LABEL, reference_bbox), *tuple(zip((str(label) for label in option_labels), panel_slots))),
         render_params=render_params,
@@ -87,6 +91,7 @@ def reference_panel_geometry(
         {
             "canvas_size": [int(width), int(height)],
             "reference_panel_label": REFERENCE_LABEL,
+            "reference_panel_position": "above_candidate_grid",
             "candidate_panel_grid": {"rows": 2, "cols": 2, "option_count": int(len(option_labels))},
             "motif_lattice": {
                 "rows": int(render_params["lattice_rows"]),

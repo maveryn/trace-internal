@@ -13,7 +13,7 @@
       ]
     },
     "task": {
-      "size_comparison_label_query": [
+      "size_encoding_label_query": [
         "",
         "",
         "",
@@ -22,7 +22,14 @@
       ]
     },
     "query": {
-      "filtered_item_extremum_label": [
+      "largest_size_item_in_category_label": [
+        "Within category \"{category_label}\", which item has the {extremum_phrase} size?",
+        "Looking only at category \"{category_label}\", what item is visually {extremum_phrase}?",
+        "Among the \"{category_label}\" items, which label corresponds to the {extremum_phrase} item?",
+        "Filter to category \"{category_label}\". Which item has the {extremum_phrase} displayed value?",
+        "For category \"{category_label}\", name the item with the {extremum_phrase} visible size."
+      ],
+      "smallest_size_item_in_category_label": [
         "Within category \"{category_label}\", which item has the {extremum_phrase} size?",
         "Looking only at category \"{category_label}\", what item is visually {extremum_phrase}?",
         "Among the \"{category_label}\" items, which label corresponds to the {extremum_phrase} item?",
@@ -36,7 +43,14 @@
         "Compare \"{reference_label}\" with the other items in category \"{category_label}\". Which one is closest in size?",
         "In category \"{category_label}\", find the item whose visible size most closely matches \"{reference_label}\"."
       ],
-      "category_total_extremum_label": [
+      "largest_category_total_label": [
+        "Which category has the {extremum_phrase} total displayed size across all its items?",
+        "By combining the visible item sizes within each category, which category is {extremum_phrase} overall?",
+        "Compare the categories by their total displayed size. Which category is {extremum_phrase}?",
+        "Across all items, which category has the {extremum_phrase} combined size?",
+        "Using all items in each category, name the category with the {extremum_phrase} total size."
+      ],
+      "smallest_category_total_label": [
         "Which category has the {extremum_phrase} total displayed size across all its items?",
         "By combining the visible item sizes within each category, which category is {extremum_phrase} overall?",
         "Compare the categories by their total displayed size. Which category is {extremum_phrase}?",
@@ -56,7 +70,7 @@
         "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
         "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
       ]
     }
@@ -100,7 +114,11 @@
     "scene:size_encoded_chart_scene": [
       "object_description"
     ],
-    "query:filtered_item_extremum_label": [
+    "query:largest_size_item_in_category_label": [
+      "category_label",
+      "extremum_phrase"
+    ],
+    "query:smallest_size_item_in_category_label": [
       "category_label",
       "extremum_phrase"
     ],
@@ -108,7 +126,10 @@
       "category_label",
       "reference_label"
     ],
-    "query:category_total_extremum_label": [
+    "query:largest_category_total_label": [
+      "extremum_phrase"
+    ],
+    "query:smallest_category_total_label": [
       "extremum_phrase"
     ],
     "answer_or_annotation:answer_only": [

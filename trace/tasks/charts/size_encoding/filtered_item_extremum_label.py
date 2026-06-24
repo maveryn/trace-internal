@@ -2,67 +2,42 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from trace.tasks.charts.size_encoding._lifecycle import package_size_encoding_plan as P, run_size_encoding_lifecycle as R
+from trace.tasks.charts.size_encoding.shared.annotations import item_bbox as B
+from trace.tasks.charts.size_encoding.shared.defaults import resolve_scene_variant as V
+from trace.tasks.charts.size_encoding.shared.sampling import build_size_encoding_dataset as DSET, select_extreme_item_in_category as SEL
+from trace.tasks.charts.size_encoding.shared.state import DOMAIN
+from trace.tasks.registry import register_task
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.output import build_size_encoding_task_components
+T = "task_charts__size_encoding__filtered_item_extremum_label"
+Q = {"largest_size_item_in_category_label": "largest", "smallest_size_item_in_category_label": "smallest"}
+PGM = "select_label(arg_extreme(filter(items, category=target_category), encoded_value(item), direction)); output=string_label; annotation=bbox(answer_item); scene=size_encoding; scope=filtered_item_extremum_label"
 
 
-QUERY_ID = "filtered_item_extremum_label"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+def _build_plan(params, seed, query_id, _probs):
+    direction = Q[str(query_id)]
+    variant, variant_probs = V(params, instance_seed=seed)
+    dataset = DSET(scene_variant=variant, params=params, instance_seed=seed, attempt_index=int(params.get("_attempt_index", 0)))
+    selection = SEL(dataset, direction=direction, params=params, instance_seed=seed)
+    return P(dataset=dataset, selection=selection, params=params, scene_variant=variant, scene_variant_probabilities=variant_probs, prompt_key=query_id, annotation_kind="answer_item_bbox", question_format="size_encoded_label_comparison", program_code=PGM, reasoning_load=0.44)
+
+
+def _bind_annotation(plan, rendered):
+    box = B(rendered, plan.selection.annotation_item_ids[0])
+    return "bbox", box, {"type": "bbox", "bbox": box, "pixel_bbox": box, "bbox_set": [box]}
 
 
 @register_task
 class ChartsSizeEncodingFilteredItemExtremumLabelTask:
-    """Return the size-encoded item label with an extremal value inside a category."""
-
-    task_id = "task_charts__size_encoding__filtered_item_extremum_label"
-    domain = "charts"
-    scene_id = "size_encoding"
+    task_id = T
+    domain = DOMAIN
     objective_contract = "filtered_item_extremum_label"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = tuple(Q)
+    default_query_id = "largest_size_item_in_category_label"
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=QUERY_ID,
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_size_encoding_task_components(
-                    task_id=self.task_id,
-                    selected_query_id=str(selected_query_id),
-                    query_id_probabilities=query_probabilities,
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                    max_attempts=1,
-                )
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=str(components.answer_value)),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=components.annotation_value),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id="size_encoding",
-                    query_id=str(components.query_id),
-                )
-            except Exception as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
+    def generate(self, instance_seed, *, params, max_attempts):
+        return R(task=self, instance_seed=instance_seed, params=dict(params), max_attempts=max_attempts, default_query_id=self.default_query_id, build_plan=_build_plan, bind_annotation=_bind_annotation)
 
 
 __all__ = ["ChartsSizeEncodingFilteredItemExtremumLabelTask"]

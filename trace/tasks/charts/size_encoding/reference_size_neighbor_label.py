@@ -2,67 +2,42 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.tasks.charts.size_encoding._lifecycle import package_size_encoding_plan as P, run_size_encoding_lifecycle as R
+from trace.tasks.charts.size_encoding.shared.annotations import reference_answer_bbox_map as MAP
+from trace.tasks.charts.size_encoding.shared.defaults import resolve_scene_variant as V
+from trace.tasks.charts.size_encoding.shared.sampling import build_size_encoding_dataset as DSET, select_nearest_size_neighbor as SEL
+from trace.tasks.charts.size_encoding.shared.state import DOMAIN
+from trace.tasks.registry import register_task
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.output import build_size_encoding_task_components
+T = "task_charts__size_encoding__reference_size_neighbor_label"
+PGM = "select_label(argmin(filter(items, category=target_category and item != reference_item), abs(encoded_value(item) - encoded_value(reference_item)))); output=string_label; annotation=bbox_map(reference_item,answer_item); scene=size_encoding; scope=reference_size_neighbor_label"
 
 
-QUERY_ID = "reference_size_neighbor_label"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+def _build_plan(params, seed, _query_id, _probs):
+    variant, variant_probs = V(params, instance_seed=seed)
+    dataset = DSET(scene_variant=variant, params=params, instance_seed=seed, attempt_index=int(params.get("_attempt_index", 0)))
+    selection = SEL(dataset, params=params, instance_seed=seed)
+    return P(dataset=dataset, selection=selection, params=params, scene_variant=variant, scene_variant_probabilities=variant_probs, prompt_key="reference_size_neighbor_label", annotation_kind="reference_answer_bbox_map", question_format="size_encoded_label_comparison", program_code=PGM, reasoning_load=0.72)
+
+
+def _bind_annotation(plan, rendered):
+    reference_id, answer_id = tuple(plan.selection.annotation_item_ids)
+    boxes = MAP(rendered, reference_item_id=reference_id, answer_item_id=answer_id)
+    return "bbox_map", boxes, {"type": "bbox_map", "bbox_map": boxes, "pixel_bbox_map": boxes, "bbox_set": list(boxes.values())}
 
 
 @register_task
 class ChartsSizeEncodingReferenceSizeNeighborLabelTask:
-    """Return the category item closest in displayed size to a reference item."""
-
-    task_id = "task_charts__size_encoding__reference_size_neighbor_label"
-    domain = "charts"
-    scene_id = "size_encoding"
+    task_id = T
+    domain = DOMAIN
     objective_contract = "reference_size_neighbor_label"
-    supported_query_ids = (QUERY_ID,)
+    supported_query_ids = (SINGLE_QUERY_ID,)
+    default_query_id = SINGLE_QUERY_ID
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=QUERY_ID,
-            task_id=self.task_id,
-        )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_size_encoding_task_components(
-                    task_id=self.task_id,
-                    selected_query_id=str(selected_query_id),
-                    query_id_probabilities=query_probabilities,
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                    max_attempts=1,
-                )
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=str(components.answer_value)),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=components.annotation_value),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id="size_encoding",
-                    query_id=str(components.query_id),
-                )
-            except Exception as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
+    def generate(self, instance_seed, *, params, max_attempts):
+        return R(task=self, instance_seed=instance_seed, params=dict(params), max_attempts=max_attempts, default_query_id=self.default_query_id, build_plan=_build_plan, bind_annotation=_bind_annotation)
 
 
 __all__ = ["ChartsSizeEncodingReferenceSizeNeighborLabelTask"]

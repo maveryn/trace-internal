@@ -21,19 +21,21 @@ from ....shared.text_legibility import (
     text_legibility_summary,
 )
 from ....shared.text_rendering import fit_font_to_box, load_font, resolve_text_stroke_fill
-from .comparison_label_common import (
+from .defaults import (
     POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
-    TASK_ID,
+    RENDER_DEFAULTS,
+    category_palette,
+    resolve_int,
+    resolve_rgb,
+)
+from .state import (
     BBox,
     RGB,
-    _Dataset,
-    _Item,
-    _RENDER_DEFAULTS,
-    _Rendered,
-    _category_palette,
-    _resolve_int,
-    _resolve_rgb,
+    SCENE_NAMESPACE,
+    SizeEncodingDataset,
+    SizeEncodingItem,
+    RenderedSizeEncodingScene,
 )
 
 def _lighten(color: RGB, factor: float) -> RGB:
@@ -131,7 +133,7 @@ def _cell_centers(
     rng.shuffle(cells)
     return cells[: int(count)]
 
-def _value_scale(items: Sequence[_Item]) -> Tuple[int, int]:
+def _value_scale(items: Sequence[SizeEncodingItem]) -> Tuple[int, int]:
     values = [int(item.value) for item in items]
     return min(values), max(values)
 
@@ -149,8 +151,10 @@ def _draw_legend(
     params: Mapping[str, Any],
     text_style,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]], List[Dict[str, Any]]]:
+    """Draw category swatches and labels without making them task witnesses."""
+
     x1, y1, x2, y2 = (float(value) for value in bbox)
-    font = load_font(_resolve_int(params, "legend_font_size_px", 18), bold=False)
+    font = load_font(resolve_int(params, "legend_font_size_px", 18), bold=False)
     entities: List[Dict[str, Any]] = []
     text_records: List[Dict[str, Any]] = []
     bboxes: Dict[str, List[float]] = {}
@@ -194,7 +198,7 @@ def _draw_legend(
 def _draw_word_cloud(
     draw: ImageDraw.ImageDraw,
     *,
-    items: Sequence[_Item],
+    items: Sequence[SizeEncodingItem],
     bbox: BBox,
     category_colors: Mapping[str, RGB],
     params: Mapping[str, Any],
@@ -202,20 +206,22 @@ def _draw_word_cloud(
     circular: bool,
     text_style,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]], List[Dict[str, Any]]]:
+    """Render text-size encoded items and preserve each item bbox."""
+
     item_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
     text_records: List[Dict[str, Any]] = []
     value_min, value_max = _value_scale(items)
-    min_font = _resolve_int(params, "min_word_font_size_px", 18)
-    max_font = _resolve_int(params, "max_word_font_size_px", 52)
-    stroke_width = _resolve_int(params, "word_text_stroke_width_px", 1)
+    min_font = resolve_int(params, "min_word_font_size_px", 18)
+    max_font = resolve_int(params, "max_word_font_size_px", 52)
+    stroke_width = resolve_int(params, "word_text_stroke_width_px", 1)
     if circular:
         draw.ellipse(bbox, outline=(210, 216, 226), width=2)
     cells = _cell_centers(
         bbox,
         count=len(items),
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.word_cells.{int(circular)}",
+        namespace=f"{SCENE_NAMESPACE}.word_cells.{int(circular)}",
         circular=bool(circular),
     )
     for item, (cx, cy, cell_w, cell_h) in zip(items, cells):
@@ -286,23 +292,25 @@ def _draw_word_cloud(
 def _draw_bubbles(
     draw: ImageDraw.ImageDraw,
     *,
-    items: Sequence[_Item],
+    items: Sequence[SizeEncodingItem],
     bbox: BBox,
     category_colors: Mapping[str, RGB],
     params: Mapping[str, Any],
     instance_seed: int,
     text_styles: Mapping[str, Any],
 ) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]], List[Dict[str, Any]]]:
+    """Render bubble-size encoded items and preserve each circle bbox."""
+
     item_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
     text_records: List[Dict[str, Any]] = []
     value_min, value_max = _value_scale(items)
-    stroke_width = _resolve_int(params, "bubble_label_stroke_width_px", 1)
+    stroke_width = resolve_int(params, "bubble_label_stroke_width_px", 1)
     cells = _cell_centers(
         bbox,
         count=len(items),
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.bubble_cells",
+        namespace=f"{SCENE_NAMESPACE}.bubble_cells",
         circular=False,
     )
     for item, (cx, cy, cell_w, cell_h) in zip(items, cells):
@@ -322,7 +330,7 @@ def _draw_bubbles(
             max_height=float(radius) * 0.80,
             bold=True,
             min_size_px=9,
-            max_size_px=_resolve_int(params, "bubble_label_font_size_px", 19),
+            max_size_px=resolve_int(params, "bubble_label_font_size_px", 19),
             fill_ratio=0.92,
         )
         text_records.append(
@@ -370,16 +378,18 @@ def _panel_layout(plot_bbox: BBox, panel_count: int, gap: float) -> List[BBox]:
         bboxes.append((px1, py1, px1 + cell_w, py1 + cell_h))
     return bboxes
 
-def _render_dataset(
-    dataset: _Dataset,
+def render_size_encoding_scene(
+    dataset: SizeEncodingDataset,
     *,
     scene_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
-) -> _Rendered:
+) -> RenderedSizeEncodingScene:
+    """Render one size-encoding dataset without reading public task identity."""
+
     params = {**dict(params), "_render_style_seed": int(instance_seed)}
-    canvas_width = _resolve_int(params, "canvas_width", 1320)
-    canvas_height = _resolve_int(params, "canvas_height", 900)
+    canvas_width = resolve_int(params, "canvas_width", 1320)
+    canvas_height = resolve_int(params, "canvas_height", 900)
     background, background_meta = make_background_canvas(
         canvas_width=int(canvas_width),
         canvas_height=int(canvas_height),
@@ -389,32 +399,32 @@ def _render_dataset(
     )
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
-    outer = _resolve_int(params, "outer_margin_px", 44)
+    outer = resolve_int(params, "outer_margin_px", 44)
     margin_left, margin_right, margin_top, margin_bottom, layout_jitter_meta = apply_layout_jitter_to_margins(
         left_px=int(outer),
         right_px=int(outer),
         top_px=int(outer),
         bottom_px=int(outer),
         params=params,
-        defaults=_RENDER_DEFAULTS,
+        defaults=RENDER_DEFAULTS,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.layout",
+        namespace=f"{SCENE_NAMESPACE}.layout",
     )
-    title_band = _resolve_int(params, "title_band_height_px", 74)
-    legend_height = _resolve_int(params, "legend_height_px", 58)
-    panel_gap = _resolve_int(params, "panel_gap_px", 28)
-    panel_padding = _resolve_int(params, "panel_padding_px", 18)
-    title_rgb = _resolve_rgb(params, "title_rgb", (42, 50, 66))
-    subtitle_rgb = _resolve_rgb(params, "subtitle_rgb", (88, 96, 112))
-    panel_fill = _resolve_rgb(params, "panel_fill_rgb", (255, 255, 255))
-    panel_border = _resolve_rgb(params, "panel_border_rgb", (196, 204, 216))
-    category_palette = _category_palette(params, len(dataset.categories))
-    category_colors = {str(category): category_palette[index] for index, category in enumerate(dataset.categories)}
+    title_band = resolve_int(params, "title_band_height_px", 74)
+    legend_height = resolve_int(params, "legend_height_px", 58)
+    panel_gap = resolve_int(params, "panel_gap_px", 28)
+    panel_padding = resolve_int(params, "panel_padding_px", 18)
+    title_rgb = resolve_rgb(params, "title_rgb", (42, 50, 66))
+    subtitle_rgb = resolve_rgb(params, "subtitle_rgb", (88, 96, 112))
+    panel_fill = resolve_rgb(params, "panel_fill_rgb", (255, 255, 255))
+    panel_border = resolve_rgb(params, "panel_border_rgb", (196, 204, 216))
+    palette = category_palette(params, len(dataset.categories))
+    category_colors = {str(category): palette[index] for index, category in enumerate(dataset.categories)}
     background_rgb = tuple(int(channel) for channel in image.getpixel((0, 0))[:3])
     word_text_surfaces: Tuple[RGB, ...] = (tuple(panel_fill), background_rgb)
     title_text_style = resolve_readable_text_style(
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.title_text",
+        namespace=f"{SCENE_NAMESPACE}.title_text",
         role="read_required_chart_title",
         surface_rgbs=(background_rgb, tuple(panel_fill)),
         preferred_rgbs=(title_rgb,),
@@ -423,7 +433,7 @@ def _render_dataset(
     )
     subtitle_text_style = resolve_readable_text_style(
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.subtitle_text",
+        namespace=f"{SCENE_NAMESPACE}.subtitle_text",
         role="read_required_chart_subtitle",
         surface_rgbs=(background_rgb, tuple(panel_fill)),
         preferred_rgbs=(subtitle_rgb, title_rgb),
@@ -433,7 +443,7 @@ def _render_dataset(
     )
     word_text_style = resolve_readable_text_style(
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.word_text",
+        namespace=f"{SCENE_NAMESPACE}.word_text",
         role="read_required_size_encoding_word_label",
         surface_rgbs=word_text_surfaces,
         preferred_rgbs=((38, 44, 58), title_rgb),
@@ -443,7 +453,7 @@ def _render_dataset(
     bubble_text_styles = {
         str(category): resolve_readable_text_style(
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.bubble_text.{category}",
+            namespace=f"{SCENE_NAMESPACE}.bubble_text.{category}",
             role="read_required_size_encoding_bubble_label",
             surface_rgbs=(_lighten(color, 0.25),),
             preferred_rgbs=((38, 44, 58), title_rgb),
@@ -455,7 +465,7 @@ def _render_dataset(
     }
     secondary_text_style = resolve_readable_text_style(
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.secondary_text",
+        namespace=f"{SCENE_NAMESPACE}.secondary_text",
         role="read_required_size_encoding_secondary_label",
         surface_rgbs=(background_rgb, tuple(panel_fill)),
         preferred_rgbs=((50, 58, 74), subtitle_rgb),
@@ -465,8 +475,8 @@ def _render_dataset(
     )
     text_records: List[Dict[str, Any]] = []
 
-    title_font = load_font(_resolve_int(params, "title_font_size_px", 28), bold=True)
-    subtitle_font = load_font(_resolve_int(params, "subtitle_font_size_px", 18), bold=False)
+    title_font = load_font(resolve_int(params, "title_font_size_px", 28), bold=True)
+    subtitle_font = load_font(resolve_int(params, "subtitle_font_size_px", 18), bold=False)
     text_records.append(
         draw_readable_text(
             draw,
@@ -511,16 +521,16 @@ def _render_dataset(
     item_bboxes: Dict[str, List[float]] = {}
     panel_title_bboxes: Dict[str, List[float]] = {}
     panel_bboxes = _panel_layout(tuple(plot_bbox), panel_count=len(dataset.panels), gap=float(panel_gap))
-    panel_title_font = load_font(_resolve_int(params, "panel_title_font_size_px", 20), bold=True)
+    panel_title_font = load_font(resolve_int(params, "panel_title_font_size_px", 20), bold=True)
 
     for panel_index, (panel, panel_bbox) in enumerate(zip(dataset.panels, panel_bboxes)):
         px1, py1, px2, py2 = (float(value) for value in panel_bbox)
         draw.rounded_rectangle(
             [px1, py1, px2, py2],
-            radius=_resolve_int(params, "panel_corner_radius_px", 10),
+            radius=resolve_int(params, "panel_corner_radius_px", 10),
             fill=panel_fill,
             outline=panel_border,
-            width=_resolve_int(params, "panel_border_width_px", 2),
+            width=resolve_int(params, "panel_border_width_px", 2),
         )
         if len(dataset.panels) > 1:
             title_xy = (px1 + 14, py1 + 10)
@@ -587,7 +597,7 @@ def _render_dataset(
         params=params,
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
-    return _Rendered(
+    return RenderedSizeEncodingScene(
         image=image,
         entities=tuple(entities),
         item_bboxes=dict(item_bboxes),

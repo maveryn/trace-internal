@@ -6,6 +6,9 @@ rendering:
     canvas_height: 560
     label_font_size: 22
     small_label_font_size: 18
+    label_stroke_width: 1
+    label_stroke_width_min: 1
+    label_stroke_width_max: 1
     single_object_scene_rotation:
       enabled: true
       probability: 0.5
@@ -16,6 +19,5 @@ rendering:
       max_attempts: 6
 prompt:
   shared:
-    bundle_id: geometry_pythagorean_square_dissection_v0
-    scene_key: pythagorean_square_dissection_scene
-    task_key: pythagorean_square_dissection_value_query
+    bundle_id: geometry_pythagorean_dissection_v1
+    scene_key: pythagorean_dissection_scene

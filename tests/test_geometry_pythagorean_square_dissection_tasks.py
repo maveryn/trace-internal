@@ -13,7 +13,7 @@ TASK_CLASSES = (GeometryPythagoreanSquareAreaValueTask,)
 
 QUERY_IDS_BY_TASK = {
     GeometryPythagoreanSquareAreaValueTask: (
-        "central_square_area_from_triangle_legs",
+        "single",
     ),
 }
 
@@ -25,9 +25,13 @@ def test_pythagorean_square_dissection_tasks_emit_public_contract(task_cls) -> N
 
     assert out.scene_id == SCENE_ID
     assert out.query_id
-    assert out.answer_gt.type == "number"
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 3
+    assert out.answer_gt.type == "integer"
+    assert out.annotation_gt.type == "bbox_map"
+    assert set(out.annotation_gt.value) == {
+        "central_square",
+        "leg_a_label",
+        "leg_b_label",
+    }
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
@@ -35,23 +39,20 @@ def test_pythagorean_square_dissection_tasks_emit_public_contract(task_cls) -> N
     assert trace["query_spec"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["type"] == "bbox_map"
 
-    vertical_leg = trace["execution_trace"]["leg_vertical"]
-    horizontal_leg = trace["execution_trace"]["leg_horizontal"]
+    vertical_leg = trace["execution_trace"]["leg_a"]
+    horizontal_leg = trace["execution_trace"]["leg_b"]
     outer_side = trace["execution_trace"]["outer_square_side"]
     corner_area = trace["execution_trace"]["corner_triangle_area_each"]
     central_area = outer_side**2 - (4.0 * corner_area)
-    assert out.query_id == "central_square_area_from_triangle_legs"
+    assert out.query_id == "single"
     assert outer_side == vertical_leg + horizontal_leg
-    assert trace["execution_trace"]["given_leg"] == vertical_leg
-    assert trace["execution_trace"]["visible_other_leg"] == horizontal_leg
+    assert out.answer_gt.value == int(vertical_leg**2 + horizontal_leg**2)
     assert out.answer_gt.value == pytest.approx(float(central_area))
     assert trace["execution_trace"]["vertical_square_area"] == vertical_leg**2
     assert trace["execution_trace"]["horizontal_square_area"] == horizontal_leg**2
-    assert trace["execution_trace"]["central_square_area"] == pytest.approx(
-        central_area
-    )
+    assert trace["execution_trace"]["central_square_area"] == int(out.answer_gt.value)
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -82,7 +83,7 @@ def test_pythagorean_square_dissection_tasks_support_every_explicit_query(
             max_attempts=20,
         )
         assert out.query_id == query_id
-        assert out.answer_gt.type == "number"
+        assert out.answer_gt.type == "integer"
         assert out.trace_payload["query_spec"]["params"][
             "query_id_probabilities"
         ] == {query_id: 1.0}
@@ -98,7 +99,7 @@ def test_pythagorean_square_dissection_annotation_stays_inside_canvas(task_cls) 
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.annotation_gt.value:
+        for x0, y0, x1, y1 in out.annotation_gt.value.values():
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0
@@ -123,7 +124,7 @@ def test_pythagorean_square_dissection_target_orientation_varies() -> None:
         )
         trace = out.trace_payload
         orientations.add(trace["render_spec"]["orientation"])
-        x0, y0, x1, y1 = trace["render_map"]["label_bboxes"]["given_triangle_leg"]
+        x0, y0, x1, y1 = trace["render_map"]["label_bboxes"]["leg_a_label"]
         annotation_centers.add((round((x0 + x1) / 20.0), round((y0 + y1) / 20.0)))
 
     assert len(orientations) == 4

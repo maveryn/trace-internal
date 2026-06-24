@@ -640,7 +640,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     expected_candidate_scenes = {
         **expected_candidate_scenes,
         "games": frozenset((*expected_candidate_scenes["games"], "tetris", "tic_tac_toe_3d", "tower_defense", "tower_draughts_board")),
-        "geometry": frozenset((*expected_candidate_scenes["geometry"], "parallel_segment_proportion", "polygon_angle_chase")),
+        "geometry": frozenset((*expected_candidate_scenes["geometry"], "parallel_segment_proportion", "polygon_angle_chase", "pythagorean_dissection")),
         "icons": frozenset((*expected_candidate_scenes["icons"], "named_strip", "overlap_grid", "wallpaper_panels")),
     }
     assert MIGRATED_SCENE_PACKAGE_SCENES == expected_candidate_scenes

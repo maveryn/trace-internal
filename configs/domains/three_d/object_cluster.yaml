@@ -17,9 +17,8 @@ generation:
       single_type_count_max: 20
     task_three_d__object_cluster__single_attribute_membership_count:
       composition_mode_weights:
-        single_type_cluster: 0.6
-        near_homogeneous_cluster: 0.3
-        mixed_type_cluster: 0.1
+        near_homogeneous_cluster: 0.7
+        mixed_type_cluster: 0.3
       answer_count_bin_weights:
         '4_8': 1.0
       target_count_min: 4

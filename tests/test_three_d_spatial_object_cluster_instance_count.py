@@ -7,9 +7,11 @@ import inspect
 from pathlib import Path
 
 import trace.tasks  # noqa: F401 - registers tasks.
+from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
+from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.named_colors import available_named_colors
 from trace.tasks.three_d.shared.object_inventory_preview import render_three_d_object_profile_preview
 from trace.tasks.three_d.shared.object_resources import OBJECT_CLUSTER_EXTRA_SHAPE_TYPES, object_profiles
@@ -364,6 +366,33 @@ def test_object_cluster_instance_count_answer_and_annotation() -> None:
     assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
     assert output.trace_payload["projected_annotation"]["pixel_bbox_set"] == output.annotation_gt.value
     assert_three_d_canvas_contract(output)
+
+
+def test_object_cluster_instance_count_default_composition_has_distractors() -> None:
+    scene_defaults = get_scene_defaults("three_d", "object_cluster")
+    gen_defaults, _render_defaults, _prompt_defaults = split_scene_generation_rendering_prompt_defaults(
+        scene_defaults,
+        task_id=TASK_ID,
+    )
+
+    assert dict(gen_defaults["composition_mode_weights"]) == {
+        "near_homogeneous_cluster": 0.7,
+        "mixed_type_cluster": 0.3,
+    }
+
+    task = create_task(TASK_ID)
+    for seed in range(20260620, 20260626):
+        output = task.generate(
+            seed,
+            params={
+                "query_id": "single",
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=240,
+        )
+        trace = output.trace_payload["execution_trace"]
+        assert trace["cluster_composition_mode"] in {"near_homogeneous_cluster", "mixed_type_cluster"}
+        assert int(trace["distractor_count"]) > 0
 
 
 def test_object_cluster_single_type_mode_counts_every_object() -> None:

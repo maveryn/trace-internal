@@ -14,7 +14,11 @@ generation:
     - 5
     box_goal_status_box_count_min: 3
     box_goal_status_box_count_max: 6
+    box_goal_distance_option_count_support:
+    - 4
+    - 6
     balanced_box_goal_status_count_sampling: true
+    balanced_box_goal_distance_option_count_sampling: true
     balanced_scene_variant_sampling: true
     scene_variant_weights:
       warehouse_classic: 1.0

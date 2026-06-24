@@ -23,6 +23,7 @@ BOX_GOAL_STATUS_MODE_OFF = "box_off_goal"
 PATH_CONTRACT_KIND = "path_options"
 RELATION_CONTRACT_KIND = "relation_options"
 BOX_GOAL_STATUS_CONTRACT_KIND = "matching_goal_status"
+BOX_GOAL_DISTANCE_CONTRACT_KIND = "matching_goal_distance"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "warehouse_classic",
@@ -33,6 +34,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
 PATH_OPTION_COUNT_SUPPORT: Tuple[int, ...] = (4, 6)
 RELATION_OPTION_COUNT_SUPPORT: Tuple[int, ...] = (4, 5, 6)
 BOX_GOAL_STATUS_COUNT_SUPPORT: Tuple[int, ...] = (1, 2, 3, 4, 5)
+BOX_GOAL_DISTANCE_OPTION_COUNT_SUPPORT: Tuple[int, ...] = (4, 6)
 
 Cell = Tuple[int, int]
 Color = Tuple[int, int, int]
@@ -105,6 +107,8 @@ __all__ = [
     "BBox",
     "BOX_GOAL_STATUS_CONTRACT_KIND",
     "BOX_GOAL_STATUS_COUNT_SUPPORT",
+    "BOX_GOAL_DISTANCE_CONTRACT_KIND",
+    "BOX_GOAL_DISTANCE_OPTION_COUNT_SUPPORT",
     "BOX_GOAL_STATUS_MODE_OFF",
     "BOX_GOAL_STATUS_MODE_ON",
     "Cell",

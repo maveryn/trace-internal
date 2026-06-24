@@ -324,6 +324,7 @@ def _draw_board(
     params: SokobanRenderParams,
     show_coordinates: bool,
     show_labels: bool,
+    show_box_labels: bool = False,
     marked_box_label: str = "",
     marked_target_label: str = "",
     start_cell: Cell | None = None,
@@ -452,8 +453,16 @@ def _draw_board(
                 center[1] + radius,
             )
             draw.ellipse(dot, fill=target_color, outline=(255, 255, 255), width=max(3, int(cell_size * 0.07)))
-        if show_labels:
-            draw_centered_text(draw, text=str(box_label), center=((bbox[0] + bbox[2]) * 0.5, (bbox[1] + bbox[3]) * 0.5), font=small_font, fill=(255, 255, 255), stroke_fill=style["wall_dark"], stroke_width=1)
+        if show_labels or show_box_labels:
+            draw_centered_text(
+                draw,
+                text=str(box_label),
+                center=((bbox[0] + bbox[2]) * 0.5, (bbox[1] + bbox[3]) * 0.5),
+                font=label_font if show_box_labels else small_font,
+                fill=(255, 255, 255),
+                stroke_fill=box_dark,
+                stroke_width=max(1, int(cell_size * 0.045)),
+            )
         if str(box_label) == str(marked_box_label):
             draw.rectangle(bbox, outline=style["accent"], width=max(3, int(cell_size * 0.08)))
     if player is not None:
@@ -510,6 +519,7 @@ def _draw_sokoban_option(
             params=params,
             show_coordinates=False,
             show_labels=False,
+            show_box_labels=False,
             candidate_cell=tuple(option["candidate_cell"]),
         )
     else:
@@ -581,6 +591,7 @@ def render_sokoban_scene(
         params=render_params,
         show_coordinates=False,
         show_labels=False,
+        show_box_labels=bool(dataset.get("show_box_labels", False)),
         marked_box_label=str(dataset.get("marked_box_label", "")),
         marked_target_label=str(dataset.get("marked_target_label", "")),
         start_cell=start_cell,

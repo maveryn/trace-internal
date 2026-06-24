@@ -20,12 +20,17 @@ PROMPT_REQUIRED_KEYS = (
     "scene_key",
     "task_key",
     "object_description_box_goal_status_count",
+    "object_description_closest_box_goal_label",
     "json_output_contract",
     "json_output_contract_answer_only",
     "answer_hint_box_goal_count",
+    "answer_hint_option_letter",
     "annotation_hint_counted_box_bbox_set",
+    "annotation_hint_selected_box_bbox",
     "json_example_counted_box_bbox_set",
+    "json_example_selected_box_bbox",
     "json_example_answer_only_integer",
+    "json_example_answer_only_option_label",
 )
 
 

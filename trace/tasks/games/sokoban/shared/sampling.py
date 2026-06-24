@@ -26,6 +26,8 @@ from .rules import (
     shortest_path,
 )
 from .state import (
+    BOX_GOAL_DISTANCE_CONTRACT_KIND,
+    BOX_GOAL_DISTANCE_OPTION_COUNT_SUPPORT,
     BOX_GOAL_STATUS_CONTRACT_KIND,
     BOX_GOAL_STATUS_COUNT_SUPPORT,
     BOX_GOAL_STATUS_MODE_OFF,
@@ -53,6 +55,7 @@ BOX_GOAL_PAIR_COLORS: Tuple[Tuple[int, int, int], ...] = (
     (55, 150, 88),
     (184, 98, 210),
     (224, 142, 46),
+    (42, 156, 170),
 )
 
 
@@ -148,6 +151,34 @@ def select_box_goal_status_answer_count(
         fallback=BOX_GOAL_STATUS_COUNT_SUPPORT,
     )
     return int(answer_count), tuple(int(value) for value in support), dict(probabilities)
+
+
+def select_box_goal_distance_option_count(
+    params: Mapping[str, Any],
+    *,
+    instance_seed: int,
+    namespace: str,
+) -> tuple[int, tuple[int, ...], dict[str, float]]:
+    """Resolve how many labeled box-goal pairs appear in a distance comparison."""
+
+    option_count, probabilities = resolve_integer_choice(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=GEN_DEFAULTS,
+        support_key="box_goal_distance_option_count_support",
+        explicit_key="option_count",
+        fallback_support=BOX_GOAL_DISTANCE_OPTION_COUNT_SUPPORT,
+        namespace=f"{namespace}.box_goal_distance.option_count",
+        balanced_flag_key="balanced_box_goal_distance_option_count_sampling",
+        namespace_support_permutation=True,
+    )
+    support = resolve_integer_support(
+        params,
+        gen_defaults=GEN_DEFAULTS,
+        key="box_goal_distance_option_count_support",
+        fallback=BOX_GOAL_DISTANCE_OPTION_COUNT_SUPPORT,
+    )
+    return int(option_count), tuple(int(value) for value in support), dict(probabilities)
 
 
 def sample_base_board(
@@ -316,6 +347,104 @@ def sample_box_goal_status_dataset(
             },
         }
     raise ValueError(f"could not build Sokoban box-goal status dataset for {status_mode}")
+
+
+def sample_closest_box_goal_dataset(
+    *,
+    option_count: int,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> Dict[str, Any]:
+    """Build a labeled box-goal board with a unique closest Manhattan pair."""
+
+    if int(option_count) not in BOX_GOAL_DISTANCE_OPTION_COUNT_SUPPORT:
+        raise ValueError(f"unsupported Sokoban box-goal distance option count: {option_count}")
+    rng = spawn_rng(int(instance_seed), f"{namespace}.closest_box_goal.{option_count}")
+    for attempt in range(256):
+        board = sample_base_board(
+            params=params,
+            instance_seed=int(instance_seed) + attempt,
+            namespace=f"{namespace}.closest_box_goal.board",
+            open_bias=True,
+        )
+        rows, cols, walls = int(board["rows"]), int(board["cols"]), set(board["walls"])
+        component = list(board["component"])
+        needed_cells = (2 * int(option_count)) + 1
+        if len(component) < needed_cells:
+            continue
+        cells = _sample_distinct_cells(rng, component, needed_cells, forbidden=())
+        labels = _choose_option_labels(int(option_count))
+        boxes = {label: tuple(cells[index]) for index, label in enumerate(labels)}
+        targets = {f"T{label}": tuple(cells[int(option_count) + index]) for index, label in enumerate(labels)}
+        matching_targets = {label: f"T{label}" for label in labels}
+        distances = {
+            label: manhattan(boxes[label], targets[matching_targets[label]])
+            for label in labels
+        }
+        min_distance = min(distances.values())
+        if sum(1 for value in distances.values() if int(value) == int(min_distance)) != 1:
+            continue
+        answer_label = min(distances, key=lambda label: (int(distances[label]), str(label)))
+        colors = {
+            label: list(BOX_GOAL_PAIR_COLORS[index % len(BOX_GOAL_PAIR_COLORS)])
+            for index, label in enumerate(labels)
+        }
+        target_colors = {matching_targets[label]: list(colors[label]) for label in labels}
+        option_specs = [
+            {
+                "kind": "box_goal_distance",
+                "option_label": str(label),
+                "box_label": str(label),
+                "target_label": str(matching_targets[label]),
+                "candidate_cells": [list(boxes[label])],
+                "target_cell": list(targets[matching_targets[label]]),
+                "distance": int(distances[label]),
+                "is_correct": bool(str(label) == str(answer_label)),
+                "option_id": f"option_{label}",
+            }
+            for label in labels
+        ]
+        return {
+            "contract_kind": BOX_GOAL_DISTANCE_CONTRACT_KIND,
+            "rows": rows,
+            "cols": cols,
+            "walls": sorted([list(cell) for cell in walls]),
+            "component_cells": sorted([list(cell) for cell in component]),
+            "player_start": list(cells[-1]),
+            "boxes_start": {label: list(cell) for label, cell in sorted(boxes.items())},
+            "targets": {label: list(cell) for label, cell in sorted(targets.items())},
+            "matching_targets": dict(sorted(matching_targets.items())),
+            "box_colors": dict(sorted(colors.items())),
+            "target_colors": dict(sorted(target_colors.items())),
+            "boxes_on_matching_goals": [],
+            "boxes_off_matching_goals": list(labels),
+            "show_box_labels": True,
+            "option_count": int(option_count),
+            "option_specs": option_specs,
+            "answer_option_label": str(answer_label),
+            "answer_cell": list(boxes[str(answer_label)]),
+            "relation_support": {
+                "distance_kind": "manhattan",
+                "answer_box_label": str(answer_label),
+                "answer_distance": int(distances[str(answer_label)]),
+                "pair_distances": [
+                    {
+                        "box_label": str(label),
+                        "target_label": str(matching_targets[label]),
+                        "distance": int(distances[label]),
+                    }
+                    for label in labels
+                ],
+            },
+            "solver_trace": {
+                "distance_kind": "manhattan",
+                "distances": {str(label): int(value) for label, value in sorted(distances.items())},
+                "answer_box_label": str(answer_label),
+                "answer_cell": list(boxes[str(answer_label)]),
+            },
+        }
+    raise ValueError("could not build Sokoban closest box-goal dataset")
 
 
 def _choose_option_labels(option_count: int) -> List[str]:
@@ -675,8 +804,10 @@ def sample_relation_dataset(
 __all__ = [
     "sample_base_board",
     "sample_box_goal_status_dataset",
+    "sample_closest_box_goal_dataset",
     "sample_path_sequence_dataset",
     "sample_relation_dataset",
+    "select_box_goal_distance_option_count",
     "select_box_goal_status_answer_count",
     "select_option_count",
     "select_rank",

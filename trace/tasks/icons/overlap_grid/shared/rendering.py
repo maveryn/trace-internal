@@ -7,13 +7,13 @@ from typing import Any, Dict, List, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_rendering import load_font
-from ...shared.text_legibility import draw_text_traced
-from .icon_assets import render_icon_rgba
-from .icon_grid_scene import resolve_grid_cell_slots
-from .icon_noise import NoiseEdit, serialize_icon_noise_edits
-from .icon_scene import IconInstanceSpec, IconPanelLayout, draw_two_panel_panels, resolve_two_panel_layout
-from .scene_style import IconCanvasStyle
+from ....shared.text_rendering import load_font
+from ....shared.text_legibility import draw_text_traced
+from ...shared.icon_assets import render_icon_rgba
+from ...shared.icon_grid_scene import resolve_grid_cell_slots
+from ...shared.icon_noise import NoiseEdit, serialize_icon_noise_edits
+from ...shared.icon_scene import IconInstanceSpec, IconPanelLayout, draw_two_panel_panels, resolve_two_panel_layout
+from ...shared.scene_style import IconCanvasStyle
 
 
 BBox = Tuple[int, int, int, int]

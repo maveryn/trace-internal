@@ -398,38 +398,34 @@ def test_icons_mirror_grid_scene_defaults_loaded() -> None:
     assert str(prompt['task_key']).strip() == 'mirror_symmetry_match_label'
 
 
-def test_icons_relation_defaults_loaded() -> None:
-    cfg = get_scene_defaults('icons', 'relation')
+def test_icons_overlap_grid_scene_defaults_loaded() -> None:
+    cfg = get_scene_defaults('icons', 'overlap_grid')
     generation_shared = cfg['generation']['shared']
-    assert int(generation_shared['object_count_min']) >= 1
-    assert int(generation_shared['object_count_max']) >= int(generation_shared['object_count_min'])
+    assert int(generation_shared['object_count_min']) == 2
+    assert int(generation_shared['object_count_max']) == 8
     assert int(generation_shared['target_count_min']) == 0
-    assert int(generation_shared['target_count_max']) == 5
+    assert int(generation_shared['target_count_max']) == 4
     assert int(generation_shared['distractor_count_min']) == 1
-    assert int(generation_shared['distractor_count_max']) == 10
-    assert int(generation_shared['distractor_margin_over_target']) == 1
+    assert int(generation_shared['distractor_count_max']) == 5
+    assert int(generation_shared['distractor_margin_over_target']) == 0
     assert bool(generation_shared['balanced_sampling']) is True
-    assert bool(generation_shared['balanced_variant_sampling']) is True
-    assert 'task_icons__overlap_grid__occlusion_order_count' in cfg['generation']['task_overrides']
-    assert 'task_icons__named_field__reference_distance_rank_label' not in cfg['generation']['task_overrides']
-    assert 'task_icons__named_path__path_neighbor_label' not in cfg['generation']['task_overrides']
+    assert str(generation_shared['pool_manifest']).strip() == 'all_icons.txt'
     named_cfg = get_scene_defaults('icons', 'named_field')
     assert 'task_icons__named_field__reference_distance_rank_label' in named_cfg['generation']['task_overrides']
     render_shared = cfg['rendering']['shared']
-    assert int(render_shared['canvas_width']) > 0
-    assert int(render_shared['canvas_height']) > 0
-    assert int(render_shared['reference_panel_width_px']) > 0
+    assert int(render_shared['canvas_width']) == 1104
+    assert int(render_shared['canvas_height']) == 640
+    assert int(render_shared['reference_panel_width_px']) == 296
     assert int(render_shared['scene_icon_size_min_px']) > 0
     assert int(render_shared['scene_icon_size_max_px']) >= int(render_shared['scene_icon_size_min_px'])
-    assert 0.0 <= float(render_shared['scene_max_overlap_fraction']) <= 1.0
-    assert int(render_shared['anchor_gap_px_directional']) > 0
-    assert float(render_shared['anchor_target_area_ratio_min']) > 0.0
-    assert float(render_shared['anchor_target_area_ratio_max']) >= float(render_shared['anchor_target_area_ratio_min'])
-    assert float(render_shared['anchor_opposite_area_ratio_min']) > 0.0
+    assert int(render_shared['reference_icon_size_px']) == 110
+    assert float(render_shared['min_color_distance']) == 40.0
+    assert float(render_shared['pair_min_color_distance']) == 80.0
+    assert list(render_shared['overlap_ratio_range']) == [0.4, 0.6]
     prompt_shared = cfg['prompt']['shared']
-    assert str(prompt_shared['bundle_id']).strip()
-    assert str(prompt_shared['scene_key']).strip()
-    assert str(prompt_shared['task_key']).strip()
+    assert str(prompt_shared['bundle_id']).strip() == 'icons_overlap_grid_v1'
+    assert str(prompt_shared['scene_key']).strip() == 'overlap_grid_occlusion_order'
+    assert str(prompt_shared['task_key']).strip() == 'occlusion_order_count'
     assert str(prompt_shared['json_output_contract']).strip()
     assert str(prompt_shared['json_output_contract_answer_only']).strip()
     occlusion_generation, occlusion_rendering, occlusion_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_icons__overlap_grid__occlusion_order_count')
@@ -444,13 +440,20 @@ def test_icons_relation_defaults_loaded() -> None:
     assert float(occlusion_rendering['min_color_distance']) == 40.0
     assert float(occlusion_rendering['pair_min_color_distance']) == 80.0
     assert list(occlusion_rendering['overlap_ratio_range']) == [0.4, 0.6]
-    assert str(occlusion_prompt['scene_key']).strip() == 'reference_grid_occlusion_relation'
-    assert str(occlusion_prompt['object_description']).strip()
-    assert str(occlusion_prompt['question_text']).strip()
-    assert str(occlusion_prompt['annotation_hint']).strip()
-    assert str(occlusion_prompt['answer_hint']).strip()
-    assert str(occlusion_prompt['json_example']).strip()
-    assert str(occlusion_prompt['json_example_answer_only']).strip()
+    assert str(occlusion_prompt['bundle_id']).strip() == 'icons_overlap_grid_v1'
+    assert str(occlusion_prompt['scene_key']).strip() == 'overlap_grid_occlusion_order'
+    assert str(occlusion_prompt['task_key']).strip() == 'occlusion_order_count'
+    prompt_required = required_group_defaults(
+        occlusion_prompt,
+        ('object_description', 'question_text', 'annotation_hint', 'answer_hint', 'json_example', 'json_example_answer_only'),
+        context='overlap-grid prompt defaults',
+    )
+    assert str(prompt_required['object_description']).strip()
+    assert str(prompt_required['question_text']).strip()
+    assert str(prompt_required['annotation_hint']).strip()
+    assert str(prompt_required['answer_hint']).strip()
+    assert str(prompt_required['json_example']).strip()
+    assert str(prompt_required['json_example_answer_only']).strip()
     distance_generation, distance_rendering, distance_prompt = split_generation_rendering_prompt_defaults(named_cfg, task_id='task_icons__named_field__reference_distance_rank_label')
     assert int(distance_generation['candidate_count']) == 6
     assert int(distance_generation['distractor_count_min']) == 4

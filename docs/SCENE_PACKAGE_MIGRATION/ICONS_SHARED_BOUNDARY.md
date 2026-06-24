@@ -104,7 +104,6 @@ scene is migrated:
 | Module | Scene-local target |
 |---|---|
 | `icon_pair_grid_scene.py` | `trace/tasks/icons/pair_grid/shared/{state,layout,rendering,annotations}.py` as needed. |
-| `icon_overlap_grid_scene.py` | `trace/tasks/icons/overlap_grid/shared/{state,layout,rendering,annotations}.py` as needed. |
 | `icon_sequence_scene.py` | `trace/tasks/icons/sequence_strip/shared/{state,layout,rendering,annotations}.py` as needed. |
 | `icon_single_panel_labeled_grid_scene.py` | `trace/tasks/icons/pattern_grid/shared/{state,layout,rendering,annotations}.py` as needed. |
 | `procedural_named_icon_field_scene.py` | Mostly `trace/tasks/icons/named_field/shared/`; extract only small bbox/fill-style helpers if multiple named scenes truly need them. |
@@ -210,11 +209,11 @@ and decompose any that construct final public outputs:
 
 ## Config And Prompt Migration
 
-Current icons configs still include old reasoning-group files:
+Current icons configs should not introduce old reasoning-group files such as
+`relation.yaml`, `sequence.yaml`, or `pattern.yaml`.
 
-- `configs/domains/icons/relation.yaml`
-
-`named_strip`, `pattern_grid`, and `wallpaper_panels` now have scene-scoped config files.
+`named_strip`, `overlap_grid`, `pattern_grid`, and `wallpaper_panels` now have
+scene-scoped config files.
 
 Scene-package migration should create or update one config per public scene:
 
@@ -254,7 +253,7 @@ Start with a small scene whose renderer is already close to scene-local:
    - direct move target for `icon_sequence_scene.py`.
 4. `overlap_grid`
    - one public task;
-   - direct move target for `icon_overlap_grid_scene.py`.
+   - migrated to scene-local overlap rendering helpers.
 
 Avoid migrating `named_field`, `reference_canvas`, or `paired_canvas` first.
 They are high-value scenes but contain the most legacy task/query plumbing and

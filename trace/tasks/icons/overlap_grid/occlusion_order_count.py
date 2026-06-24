@@ -2,113 +2,41 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Tuple
 
-from ....core.seed import hash64, spawn_rng
-from ....core.scene_config import get_scene_defaults
+from ....core.query_ids import SINGLE_QUERY_ID
+from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
-    required_group_defaults,
-    split_generation_rendering_prompt_defaults,
+    load_scene_generation_rendering_prompt_defaults,
 )
-from ...shared.color_distance import color_distance
 from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
 from ...shared.labeling import LABEL_POOL_A_L
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import (
-    PROMPT_OUTPUT_MODES,
-    build_prompt_trace_artifacts,
-    render_task_prompt_variants,
-)
 from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
 from ..shared.icon_assets import resolve_icon_pool
-from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.icon_overlap_grid_scene import IconOverlapPairSpec, render_two_panel_icon_overlap_grid_scene
 from ..shared.icon_scene import IconInstanceSpec, panel_geometry_to_trace
 from ..shared.icon_task_rendering import resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
 from ..shared.icon_style import icon_palette_meets_distance_constraints, sample_icon_palette
-from ..shared.icon_noise import default_icon_noise_value_ranges
-from ..shared.annotation import matching_scene_cell_bbox_annotation
-from ..shared.public_query_task import rewrite_icons_query_output
+from .shared.annotations import matching_overlap_cell_bbox_set_annotation
+from .shared.defaults import DOMAIN, FIXED_RELATION_ID, OverlapGridDefaults, SCENE_ID
+from .shared.output import overlap_grid_style_trace
+from .shared.prompts import render_overlap_grid_prompt_artifacts
+from .shared.rendering import IconOverlapPairSpec, render_two_panel_icon_overlap_grid_scene
+from .shared.sampling import order_id_for_front_role, sample_overlap_offsets, sample_tint_pair
+from .shared.state import OverlapGridScenePayload
 
 
-_ORDER_MATCH_VARIANT = "same_front_to_back_order"
+TASK_ID = "task_icons__overlap_grid__occlusion_order_count"
 
-
-@dataclass(frozen=True)
-class _TaskDefaults:
-    """Stable fallback defaults for occlusion-order counting scenes."""
-
-    object_count_min: int = 2
-    object_count_max: int = 9
-    target_count_min: int = 0
-    target_count_max: int = 5
-    distractor_count_min: int = 1
-    distractor_count_max: int = 6
-    canvas_width: int = 1104
-    canvas_height: int = 640
-    reference_panel_width_px: int = 296
-    panel_gap_px: int = ICON_SHARED_DEFAULTS.panel_gap_px
-    outer_margin_px: int = ICON_SHARED_DEFAULTS.outer_margin_px
-    panel_padding_px: int = ICON_SHARED_DEFAULTS.panel_padding_px
-    panel_corner_radius_px: int = ICON_SHARED_DEFAULTS.panel_corner_radius_px
-    scene_icon_size_min_px: int = ICON_SHARED_DEFAULTS.scene_icon_size_min_px
-    scene_icon_size_max_px: int = ICON_SHARED_DEFAULTS.scene_icon_size_max_px
-    reference_icon_size_px: int = 110
-    panel_title_font_size_px: int = ICON_SHARED_DEFAULTS.panel_title_font_size_px
-    cell_padding_px: int = 10
-    cell_border_rgb: Tuple[int, int, int] = (218, 223, 233)
-    cell_label_color_rgb: Tuple[int, int, int] = (52, 60, 77)
-    cell_label_font_size_px: int = 22
-    pool_manifest: str = "all_icons.txt"
-    palette_size_min: int = 8
-    palette_size_max: int = 12
-    color_channel_min: int = 24
-    color_channel_max: int = 220
-    min_color_distance: float = 40.0
-    pair_min_color_distance: float = 80.0
-    color_distance_space: str = "lab"
-    background_color_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.background_color_rgb
-    panel_fill_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.panel_fill_rgb
-    panel_border_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.panel_border_rgb
-    header_text_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.header_text_rgb
-    overlap_ratio_range: Tuple[float, float] = (0.40, 0.60)
-    icon_noise_edit_types: Tuple[str, ...] = ICON_SHARED_DEFAULTS.icon_noise_edit_types
-    icon_noise_edit_count_range: Tuple[int, int] = ICON_SHARED_DEFAULTS.icon_noise_edit_count_range
-    icon_noise_value_ranges: Dict[str, Dict[str, Tuple[float, float]]] = field(
-        default_factory=default_icon_noise_value_ranges
-    )
-
-
-@dataclass(frozen=True)
-class _ScenePayload:
-    """Trace-ready payload for one occlusion-order scene."""
-
-    object_count: int
-    target_count: int
-    distractor_count: int
-    reference_order_id: str
-    icon_a_id: str
-    icon_b_id: str
-    cell_labels: Tuple[str, ...]
-    matching_labels: Tuple[str, ...]
-    cell_order_ids: Tuple[str, ...]
-    sampled_palette_rgb: Tuple[Tuple[int, int, int], ...]
-    panel_geometry: Dict[str, Any]
-    reference_pair: Dict[str, Any]
-    scene_cells: Tuple[Dict[str, Any], ...]
-
-
-_DEFAULTS = _TaskDefaults()
-_REVIEW_TARGET_COUNT_BALANCE_NAMESPACE = "task_icons__overlap_grid__occlusion_order_count:target_count_balance"
-_TASK_GROUP_DEFAULTS = get_scene_defaults("icons", "relation")
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_icons__overlap_grid__occlusion_order_count",
+_DEFAULTS = OverlapGridDefaults()
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    DOMAIN,
+    SCENE_ID,
+    task_id=TASK_ID,
 )
 
 
@@ -184,118 +112,6 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
     return render_params
 
 
-def _sample_tint_pair(
-    rng,
-    *,
-    palette: Sequence[Tuple[int, int, int]],
-    pair_min_color_distance: float,
-    distance_space: str,
-) -> Tuple[Tuple[int, int, int], Tuple[int, int, int]]:
-    """Sample two distinct icon tints from one already-separated palette."""
-
-    if len(palette) < 2:
-        raise ValueError("occlusion task requires at least two palette colors")
-    qualifying_pairs = [
-        (left, right)
-        for left_index, left in enumerate(palette)
-        for right in palette[left_index + 1 :]
-        if float(color_distance(left, right, distance_space=str(distance_space))) >= float(pair_min_color_distance)
-    ]
-    if not qualifying_pairs:
-        raise ValueError("occlusion task palette resolved no pair with sufficient color separation")
-    first, second = rng.choice(qualifying_pairs)
-    if bool(rng.randint(0, 1)):
-        first, second = second, first
-    return tuple(int(channel) for channel in first), tuple(int(channel) for channel in second)
-
-
-def _sample_overlap_offsets(
-    rng,
-    *,
-    overlap_ratio_range: Sequence[float],
-    max_offset_frac: float = 0.45,
-) -> Tuple[float, float, float]:
-    """Sample normalized icon offsets whose nominal overlap stays in the requested range."""
-
-    overlap_min = max(0.0, min(0.95, float(overlap_ratio_range[0])))
-    overlap_max = max(overlap_min, min(0.95, float(overlap_ratio_range[1])))
-    for _ in range(120):
-        dx_abs = float(rng.uniform(0.08, float(max_offset_frac)))
-        dy_abs = float(rng.uniform(0.08, float(max_offset_frac)))
-        overlap_ratio = float((1.0 - dx_abs) * (1.0 - dy_abs))
-        if overlap_min <= overlap_ratio <= overlap_max:
-            dx = dx_abs * float(rng.choice((-1.0, 1.0)))
-            dy = dy_abs * float(rng.choice((-1.0, 1.0)))
-            return float(dx), float(dy), float(overlap_ratio)
-    target = 0.5 * float(overlap_min + overlap_max)
-    dx_abs = min(float(max_offset_frac), max(0.08, 1.0 - target))
-    dy_abs = min(float(max_offset_frac), max(0.08, 1.0 - (target / max(1e-6, 1.0 - dx_abs))))
-    overlap_ratio = float((1.0 - dx_abs) * (1.0 - dy_abs))
-    return (
-        float(dx_abs * float(rng.choice((-1.0, 1.0)))),
-        float(dy_abs * float(rng.choice((-1.0, 1.0)))),
-        float(overlap_ratio),
-    )
-
-
-def _order_id_for_front_role(front_role: str) -> str:
-    """Return a stable order id from one front-role token."""
-
-    if str(front_role) == "a":
-        return "a_over_b"
-    if str(front_role) == "b":
-        return "b_over_a"
-    raise ValueError(f"unsupported front_role: {front_role}")
-
-
-def _occlusion_style_trace(
-    *,
-    render_params: Mapping[str, Any],
-    sampled_palette_rgb: Tuple[Tuple[int, int, int], ...],
-) -> Dict[str, Any]:
-    """Return the canonical render-style trace block for occlusion-order grids."""
-
-    return {
-        "background_color_rgb": list(render_params["background_color_rgb"]),
-        "panel_fill_rgb": list(render_params["panel_fill_rgb"]),
-        "panel_border_rgb": list(render_params["panel_border_rgb"]),
-        "header_text_rgb": list(render_params["header_text_rgb"]),
-        "header_text_stroke_rgb": list(render_params.get("header_text_stroke_rgb", render_params["panel_fill_rgb"])),
-        "text_color_policy": str(
-            render_params.get("text_color_policy", "read_required_text_uses_random_nonsemantic_readable_ink")
-        ),
-        "text_legibility": dict(render_params.get("text_legibility", {})),
-        "icon_canvas_style": dict(render_params.get("icon_canvas_style", {"enabled": False})),
-        "sampled_palette_rgb": [list(color) for color in sampled_palette_rgb],
-        "color_channel_min": int(render_params["color_channel_min"]),
-        "color_channel_max": int(render_params["color_channel_max"]),
-        "min_color_distance": float(render_params["min_color_distance"]),
-        "pair_min_color_distance": float(render_params["pair_min_color_distance"]),
-        "color_distance_space": str(render_params["color_distance_space"]),
-        "overlap_ratio_range": [
-            float(render_params["overlap_ratio_range"][0]),
-            float(render_params["overlap_ratio_range"][1]),
-        ],
-        "cell_padding_px": int(render_params["cell_padding_px"]),
-        "cell_border_rgb": list(render_params["cell_border_rgb"]),
-        "cell_label_color_rgb": list(render_params["cell_label_color_rgb"]),
-        "cell_label_stroke_rgb": list(render_params.get("cell_label_stroke_rgb", render_params["panel_fill_rgb"])),
-        "cell_label_font_size_px": int(render_params["cell_label_font_size_px"]),
-        "icon_noise_edit_types": [str(value) for value in render_params["icon_noise_edit_types"]],
-        "icon_noise_edit_count_range": [
-            int(render_params["icon_noise_edit_count_range"][0]),
-            int(render_params["icon_noise_edit_count_range"][1]),
-        ],
-        "icon_noise_value_ranges": {
-            str(edit_type): {
-                str(param): [float(bounds[0]), float(bounds[1])]
-                for param, bounds in params.items()
-            }
-            for edit_type, params in render_params["icon_noise_value_ranges"].items()
-        },
-    }
-
-
 def _sample_scene(
     rng,
     *,
@@ -304,7 +120,7 @@ def _sample_scene(
     target_count: int,
     pool_manifest: str,
     render_params: Mapping[str, Any],
-) -> Tuple[_ScenePayload, Any]:
+) -> Tuple[OverlapGridScenePayload, Any]:
     """Sample and render one occlusion-order counting scene."""
 
     pool = list(resolve_icon_pool(str(pool_manifest)))
@@ -312,7 +128,7 @@ def _sample_scene(
         raise ValueError("icon pool is too small for occlusion-order scene")
     icon_a_id, icon_b_id = rng.sample(pool, 2)
     reference_front_role = str(rng.choice(("a", "b")))
-    reference_order_id = _order_id_for_front_role(reference_front_role)
+    reference_order_id = order_id_for_front_role(reference_front_role)
     labels = tuple(str(value) for value in LABEL_POOL_A_L[: int(object_count)])
     match_indices = set(rng.sample(list(range(int(object_count))), int(target_count)))
 
@@ -352,24 +168,24 @@ def _sample_scene(
         ):
         raise ValueError("sampled occlusion palette did not satisfy strict distance constraints")
 
-    reference_a_tint, reference_b_tint = _sample_tint_pair(
+    reference_a_tint, reference_b_tint = sample_tint_pair(
         rng,
         palette=sampled_palette_rgb,
         pair_min_color_distance=float(render_params["pair_min_color_distance"]),
         distance_space=str(render_params["color_distance_space"]),
     )
-    reference_dx_frac, reference_dy_frac, reference_overlap_ratio = _sample_overlap_offsets(
+    reference_dx_frac, reference_dy_frac, reference_overlap_ratio = sample_overlap_offsets(
         rng,
         overlap_ratio_range=render_params["overlap_ratio_range"],
     )
     reference_a_noise_edits, reference_a_noise_seed = sample_icon_instance_noise(
         instance_seed=int(instance_seed),
-        namespace=f"{IconsRelationOcclusionOrderTask.task_id}:reference_a",
+        namespace=f"{TASK_ID}:reference_a",
         render_params=render_params,
     )
     reference_b_noise_edits, reference_b_noise_seed = sample_icon_instance_noise(
         instance_seed=int(instance_seed),
-        namespace=f"{IconsRelationOcclusionOrderTask.task_id}:reference_b",
+        namespace=f"{TASK_ID}:reference_b",
         render_params=render_params,
     )
     reference_pair = IconOverlapPairSpec(
@@ -398,24 +214,24 @@ def _sample_scene(
         front_role = str(reference_front_role if int(index) in match_indices else ("b" if str(reference_front_role) == "a" else "a"))
         if int(index) in match_indices:
             matching_labels.append(str(label))
-        icon_a_tint, icon_b_tint = _sample_tint_pair(
+        icon_a_tint, icon_b_tint = sample_tint_pair(
             rng,
             palette=sampled_palette_rgb,
             pair_min_color_distance=float(render_params["pair_min_color_distance"]),
             distance_space=str(render_params["color_distance_space"]),
         )
-        dx_frac, dy_frac, overlap_ratio = _sample_overlap_offsets(
+        dx_frac, dy_frac, overlap_ratio = sample_overlap_offsets(
             rng,
             overlap_ratio_range=render_params["overlap_ratio_range"],
         )
         icon_a_noise_edits, icon_a_noise_seed = sample_icon_instance_noise(
             instance_seed=int(instance_seed),
-            namespace=f"{IconsRelationOcclusionOrderTask.task_id}:scene_{int(index)}_a",
+            namespace=f"{TASK_ID}:scene_{int(index)}_a",
             render_params=render_params,
         )
         icon_b_noise_edits, icon_b_noise_seed = sample_icon_instance_noise(
             instance_seed=int(instance_seed),
-            namespace=f"{IconsRelationOcclusionOrderTask.task_id}:scene_{int(index)}_b",
+            namespace=f"{TASK_ID}:scene_{int(index)}_b",
             render_params=render_params,
         )
         scene_pairs.append(
@@ -438,7 +254,7 @@ def _sample_scene(
                 overlap_ratio=float(overlap_ratio),
             )
         )
-        cell_order_ids.append(_order_id_for_front_role(front_role))
+        cell_order_ids.append(order_id_for_front_role(front_role))
 
     rendered = render_two_panel_icon_overlap_grid_scene(
         reference_pair=reference_pair,
@@ -495,7 +311,7 @@ def _sample_scene(
             "icon_a_id": str(cell.icon_a_id),
             "icon_b_id": str(cell.icon_b_id),
             "front_role": str(cell.front_role),
-            "order_id": str(_order_id_for_front_role(str(cell.front_role))),
+            "order_id": str(order_id_for_front_role(str(cell.front_role))),
             "overlap_ratio": float(cell.overlap_ratio),
             "cell_bbox_xyxy": list(cell.cell_bbox_xyxy),
             "icon_a_bbox_xyxy": list(cell.icon_a_bbox_xyxy),
@@ -511,7 +327,7 @@ def _sample_scene(
         }
         for index, cell in enumerate(rendered.scene_cells)
     )
-    return _ScenePayload(
+    return OverlapGridScenePayload(
         object_count=int(object_count),
         target_count=int(target_count),
         distractor_count=int(object_count) - int(target_count),
@@ -529,12 +345,13 @@ def _sample_scene(
 
 
 @register_task
-class IconsRelationOcclusionOrderTask:
+class IconsOverlapGridOcclusionOrderCountTask:
     """Count labeled scene cells that match the Reference front-to-back icon order."""
 
-    task_id = "task_icons__overlap_grid__occlusion_order_count"
-    domain = "icons"
-    scene_id = "relation"
+    task_id = TASK_ID
+    domain = DOMAIN
+    supported_query_ids = (SINGLE_QUERY_ID,)
+    default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic icon occlusion-order instance."""
@@ -583,46 +400,13 @@ class IconsRelationOcclusionOrderTask:
         if scene_payload is None or image is None:
             raise RuntimeError("failed to generate task_icons__overlap_grid__occlusion_order_count instance") from last_error
 
-        prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
-            (
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "question_text",
-                "annotation_hint",
-                "answer_hint",
-                "json_example",
-                "json_example_answer_only",
-            ),
-            context=f"prompt defaults for {self.task_id}",
-        )
-        prompt_selection = render_task_prompt_variants(
-            domain=self.domain,
-            scene_id=self.scene_id,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "question_text": str(prompt_defaults["question_text"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
-            },
+        prompt_defaults, prompt_artifacts = render_overlap_grid_prompt_artifacts(
             instance_seed=int(instance_seed),
+            prompt_defaults=_PROMPT_DEFAULTS,
         )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         annotation_labels = list(scene_payload.matching_labels)
-        annotation_artifacts = matching_scene_cell_bbox_annotation(
+        annotation_artifacts = matching_overlap_cell_bbox_set_annotation(
             scene_cells=scene_payload.scene_cells,
             matching_labels=annotation_labels,
         )
@@ -646,12 +430,13 @@ class IconsRelationOcclusionOrderTask:
                 },
             },
             "query_spec": {
-                "query_id": _ORDER_MATCH_VARIANT,
+                "query_id": SINGLE_QUERY_ID,
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
+                    "fixed_relation_id": FIXED_RELATION_ID,
                     "object_count": int(object_count),
                     "object_count_probabilities": dict(object_count_probabilities),
                     "target_count": int(target_count),
@@ -665,7 +450,7 @@ class IconsRelationOcclusionOrderTask:
                 "canvas_size": [int(render_params["canvas_width"]), int(render_params["canvas_height"])],
                 "coord_space": "pixel",
                 "panel_geometry": dict(scene_payload.panel_geometry),
-                "style": _occlusion_style_trace(
+                "style": overlap_grid_style_trace(
                     render_params=render_params,
                     sampled_palette_rgb=scene_payload.sampled_palette_rgb,
                 ),
@@ -680,7 +465,8 @@ class IconsRelationOcclusionOrderTask:
             },
             "execution_trace": {
                 "scene_variant": "reference_overlap_grid",
-                "query_id": _ORDER_MATCH_VARIANT,
+                "query_id": SINGLE_QUERY_ID,
+                "fixed_relation_id": FIXED_RELATION_ID,
                 "object_count": int(scene_payload.object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(scene_payload.target_count),
@@ -709,14 +495,11 @@ class IconsRelationOcclusionOrderTask:
             image_id="img0",
             trace_payload=trace_payload,
             task_versions=default_task_versions(),
-            query_id=_ORDER_MATCH_VARIANT,
+            scene_id=SCENE_ID,
+            query_id=SINGLE_QUERY_ID,
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
-        return rewrite_icons_query_output(
-            output,
-            query_id=_ORDER_MATCH_VARIANT,
-            scene_id="overlap_grid",
-        )
+        return output
 
 
-__all__ = ["IconsRelationOcclusionOrderTask"]
+__all__ = ["IconsOverlapGridOcclusionOrderCountTask"]

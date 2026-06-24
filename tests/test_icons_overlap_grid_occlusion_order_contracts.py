@@ -1,4 +1,4 @@
-"""Contract tests for icon relation occlusion-order task."""
+"""Contract tests for icon overlap-grid occlusion-order task."""
 
 from __future__ import annotations
 
@@ -7,12 +7,12 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.relation.occlusion_order import IconsRelationOcclusionOrderTask
+from trace.tasks.icons.overlap_grid.occlusion_order_count import IconsOverlapGridOcclusionOrderCountTask
 from tests.helpers import read_jsonl
 
 
-def test_icons_relation_occlusion_order_deterministic() -> None:
-    task = IconsRelationOcclusionOrderTask()
+def test_icons_overlap_grid_occlusion_order_deterministic() -> None:
+    task = IconsOverlapGridOcclusionOrderCountTask()
     out_a = task.generate(14700, params={}, max_attempts=200)
     out_b = task.generate(14700, params={}, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -25,7 +25,7 @@ def test_icons_relation_occlusion_order_deterministic() -> None:
     assert out_a.annotation_gt.type == "bbox_set"
 
 
-def test_icons_relation_occlusion_order_build_smoke(tmp_path: Path) -> None:
+def test_icons_overlap_grid_occlusion_order_build_smoke(tmp_path: Path) -> None:
     output_root = tmp_path / "task_icons__overlap_grid__occlusion_order_count"
     config = BuildConfig(
         output_root=str(output_root),
@@ -43,12 +43,12 @@ def test_icons_relation_occlusion_order_build_smoke(tmp_path: Path) -> None:
         max_attempts_per_instance=200,
         sampling_seed=37,
     )
-    final_path = build_dataset(config, code_hash="icons-relation-occlusion-order-smoke")
+    final_path = build_dataset(config, code_hash="icons-overlap-grid-occlusion-order-smoke")
     assert final_path.exists()
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "icons" for record in train_records)
-    assert all(record["scene_id"] == "relation" for record in train_records)
+    assert all(record["scene_id"] == "overlap_grid" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_icons__overlap_grid__occlusion_order_count"]) == 4

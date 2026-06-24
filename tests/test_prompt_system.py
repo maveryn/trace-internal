@@ -473,6 +473,15 @@ def test_icons_relation_bundle_supports_anchor_relation_query() -> None:
     assert "reference_grid_mirror_symmetry_relation" in bundle.scene_templates
 
 
+def test_icons_overlap_grid_bundle_supports_occlusion_order_count() -> None:
+    bundle = load_prompt_bundle("icons", "overlap_grid", "icons_overlap_grid_v1")
+    assert bundle.schema_version == "v1"
+    assert len(bundle.task_templates["occlusion_order_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert "overlap_grid_occlusion_order" in bundle.scene_templates
+    assert list(bundle.required_slots_by_key["scene:overlap_grid_occlusion_order"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["task:occlusion_order_count"]) == ["question_text"]
+
+
 def test_icons_named_strip_bundle_supports_run_length_queries() -> None:
     bundle = load_prompt_bundle("icons", "named_strip", "icons_named_strip_v1")
     assert bundle.schema_version == "v1"

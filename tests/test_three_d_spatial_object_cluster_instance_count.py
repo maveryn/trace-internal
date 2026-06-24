@@ -18,6 +18,7 @@ from trace.tasks.three_d.shared.object_resources import OBJECT_CLUSTER_EXTRA_SHA
 from trace.tasks.three_d.shared import object_scene_glyphs_tools_devices as tools_glyphs
 from trace.tasks.three_d.object_cluster.color_membership_count import TASK_ID as COLOR_MEMBERSHIP_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.count_arithmetic import TASK_ID as COUNT_ARITHMETIC_TASK_ID
+from trace.tasks.three_d.object_cluster.counterfactual_count import TASK_ID as COUNTERFACTUAL_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.multi_attribute_and_count import TASK_ID as MULTI_ATTRIBUTE_AND_TASK_ID
 from trace.tasks.three_d.object_cluster.multi_attribute_exclusion_count import (
     TASK_ID as MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
@@ -654,6 +655,70 @@ def test_object_cluster_color_membership_count_answer_and_annotation() -> None:
     assert max_overlap_pixels <= float(MAX_RENDERED_PAIRWISE_OVERLAP_PX)
 
 
+def test_object_cluster_counterfactual_count_answer_and_starting_annotation() -> None:
+    task = create_task(COUNTERFACTUAL_COUNT_TASK_ID)
+    output = task.generate(
+        20260624,
+        params={
+            "query_id": "single",
+            "scene_variant": "cluster_mat",
+            "predicate_kind": "color_object",
+            "target_shape_type": "button",
+            "target_color_name": "blue",
+            "target_count": 4,
+            "distractor_count": 8,
+            "edit_operation": "add",
+            "edit_amount": 2,
+            "post_image_noise_apply_prob": 0.0,
+        },
+        max_attempts=300,
+    )
+
+    trace = output.trace_payload["execution_trace"]
+    render_map = output.trace_payload["render_map"]
+    solver_trace = trace["solver_trace"]
+    target_object_ids = [str(object_id) for object_id in trace["target_object_ids"]]
+    object_specs = list(trace["object_specs"])
+    blue_button_phrase = f"{semantic_color_label('blue')} buttons"
+
+    assert output.scene_id == "object_cluster"
+    assert output.query_id == "single"
+    assert trace["internal_query_id"] == "attribute_count_after_edit"
+    assert output.answer_gt.type == "integer"
+    assert output.answer_gt.value == 6
+    assert trace["target_count"] == 4
+    assert solver_trace["initial_target_count"] == 4
+    assert solver_trace["final_target_count"] == 6
+    assert solver_trace["counterfactual_steps"] == [
+        {
+            "operation": "add",
+            "amount": 2,
+            "predicate_kind": "color_object",
+            "target_shape_type": "button",
+            "target_color_name": "blue",
+            "target_property_phrase": "blue buttons",
+            "target_property_prompt_phrase": blue_button_phrase,
+            "step_text": f"Add 2 {blue_button_phrase}.",
+            "target_delta": 2,
+        }
+    ]
+    assert trace["target_spec"]["mode"] == "count_after_edit"
+    assert trace["target_spec"]["base_predicate_mode"] == "by_type_and_color"
+    assert trace["target_spec"]["target_property_prompt_phrase"] == blue_button_phrase
+    assert output.annotation_gt.type == "bbox_set"
+    assert len(output.annotation_gt.value) == 4
+    assert len(output.annotation_gt.value) != int(output.answer_gt.value)
+    assert output.annotation_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in target_object_ids]
+    assert all(
+        str(spec["shape_type"]) == "button" and str(spec["color_name"]) == "blue"
+        for spec in object_specs
+        if str(spec["object_id"]) in set(target_object_ids)
+    )
+    assert f"Add 2 {blue_button_phrase}" in output.prompt
+    assert blue_button_phrase in output.prompt
+    assert_three_d_canvas_contract(output)
+
+
 def test_object_cluster_multi_attribute_or_count_counts_overlap_once() -> None:
     task = create_task(MULTI_ATTRIBUTE_OR_COUNT_TASK_ID)
     output = task.generate(
@@ -792,6 +857,7 @@ def test_object_cluster_first_wave_tasks_registered_in_three_d_taxonomy() -> Non
     ensure_scene_tasks_registered("three_d", "object_cluster")
     for task_id in (
         COLOR_MEMBERSHIP_COUNT_TASK_ID,
+        COUNTERFACTUAL_COUNT_TASK_ID,
         MULTI_ATTRIBUTE_OR_COUNT_TASK_ID,
         MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
         COUNT_ARITHMETIC_TASK_ID,

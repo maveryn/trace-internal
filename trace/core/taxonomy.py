@@ -1044,6 +1044,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_three_d__object_scene__multiview_object_match_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
     "task_three_d__object_cluster__multi_attribute_and_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
     "task_three_d__object_cluster__color_membership_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
+    "task_three_d__object_cluster__counterfactual_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
     "task_three_d__object_cluster__count_arithmetic": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
     "task_three_d__object_cluster__multi_attribute_exclusion_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
     "task_three_d__object_cluster__multi_attribute_or_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),

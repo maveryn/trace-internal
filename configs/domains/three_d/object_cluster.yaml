@@ -46,6 +46,14 @@ generation:
       object_count_max: 20
       target_count_min: 3
       target_count_max: 8
+    task_three_d__object_cluster__counterfactual_count:
+      object_count_min: 12
+      object_count_max: 20
+      target_count_min: 3
+      target_count_max: 8
+      distractor_count_min: 5
+      distractor_count_max: 10
+      edit_amount_max: 3
     task_three_d__object_cluster__multi_attribute_or_count:
       object_count_min: 16
       object_count_max: 20
@@ -116,6 +124,8 @@ prompt:
       task_key: object_cluster_multi_attribute_count_query
     task_three_d__object_cluster__color_membership_count:
       task_key: object_cluster_color_count_query
+    task_three_d__object_cluster__counterfactual_count:
+      task_key: object_cluster_counterfactual_count_query
     task_three_d__object_cluster__multi_attribute_or_count:
       task_key: object_cluster_multi_attribute_or_count_query
     task_three_d__object_cluster__multi_attribute_exclusion_count:

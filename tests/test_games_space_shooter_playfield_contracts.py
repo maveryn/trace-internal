@@ -121,6 +121,15 @@ def test_games_space_shooter_enemy_ship_count_matches_trace() -> None:
 
     assert int(out.answer_gt.value) == len(enemy_ids) == 11
     assert list(execution["annotation_entity_ids"]) == enemy_ids
+    assert out.trace_payload["render_map"]["show_enemy_labels"] is False
+    enemy_entities = [
+        entity
+        for entity in out.trace_payload["scene_ir"]["entities"]
+        if entity["entity_type"] == "enemy_ship"
+    ]
+    assert len(enemy_entities) == 11
+    assert all(entity["text_visible"] is False for entity in enemy_entities)
+    assert all(entity["display_text"] is None for entity in enemy_entities)
     assert len(out.annotation_gt.value) == len(enemy_ids)
     for bbox in out.annotation_gt.value:
         assert float(bbox[2]) - float(bbox[0]) >= 24.0
@@ -243,6 +252,7 @@ def test_games_space_shooter_highest_threat_label_matches_unique_lowest_enemy() 
     assert all(slot < 5 for slot in other_slots)
     assert list(execution["annotation_entity_ids"]) == [target_id]
     assert out.annotation_gt.type == "bbox"
+    assert out.trace_payload["render_map"]["show_enemy_labels"] is True
 
 
 def test_games_space_shooter_safe_lane_count_matches_trace() -> None:

@@ -249,8 +249,9 @@ def _draw_enemy(
     theme: SpaceShooterTheme,
     label_font_size_px: int,
     font_family: str = "",
+    show_label: bool = True,
 ) -> None:
-    """Draw a downward enemy fighter while preserving a readable center label."""
+    """Draw a downward enemy fighter, with optional task-visible text."""
 
     left, top, right, bottom = bbox
     width = float(right - left)
@@ -291,6 +292,8 @@ def _draw_enemy(
     for poly in (left_wing, right_wing, tail_left, tail_right, hull):
         draw.polygon(poly, fill=fill, outline=outline)
         draw.line(poly + [poly[0]], fill=outline, width=stroke)
+    if not bool(show_label):
+        return
     display_text = str(int(enemy.score_value)) if enemy.score_value is not None else str(enemy.label)
     label_box = (left + 0.22 * width, top + 0.26 * height, right - 0.22 * width, bottom - 0.34 * height)
     _fit_text(
@@ -448,6 +451,7 @@ def render_space_shooter_scene(
     style_variant: str,
     params: SpaceShooterRenderParams,
     highlight_player_lane: bool = False,
+    show_enemy_labels: bool = True,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedSpaceShooterScene:
     """Render one playfield and record every object box used by annotations."""
@@ -616,16 +620,19 @@ def render_space_shooter_scene(
             theme=theme,
             label_font_size_px=int(params.label_font_size_px),
             font_family=str(params.font_family),
+            show_label=bool(show_enemy_labels),
         )
         enemy_bboxes[str(enemy.enemy_id)] = bbox
         entity_bboxes[str(enemy.enemy_id)] = bbox
+        display_text = str(int(enemy.score_value)) if enemy.score_value is not None else str(enemy.label)
         scene_entities.append(
             {
                 "entity_id": str(enemy.enemy_id),
                 "entity_type": "enemy_ship",
                 "label": str(enemy.label),
                 "score_value": None if enemy.score_value is None else int(enemy.score_value),
-                "display_text": str(int(enemy.score_value)) if enemy.score_value is not None else str(enemy.label),
+                "display_text": display_text if bool(show_enemy_labels) else None,
+                "text_visible": bool(show_enemy_labels),
                 "lane": int(enemy.lane),
                 "y_slot": int(enemy.y_slot),
                 "bbox_px": list(bbox),
@@ -644,6 +651,7 @@ def render_space_shooter_scene(
         "font_family": str(params.font_family),
         "text_style": {"font_family": str(params.font_family)},
         "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
+        "show_enemy_labels": bool(show_enemy_labels),
     }
     return RenderedSpaceShooterScene(
         image=image.convert("RGB"),

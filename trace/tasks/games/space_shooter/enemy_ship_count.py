@@ -30,6 +30,7 @@ def _prepare_enemy_ship_count_objective(rng, params: Mapping[str, Any], axes: Sc
         prompt_query_key=PROMPT_QUERY_KEY,
         json_example=JSON_EXAMPLE,
         json_example_answer_only=JSON_EXAMPLE_ANSWER_ONLY,
+        show_enemy_labels=False,
     )
 
 

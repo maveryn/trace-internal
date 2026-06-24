@@ -39,7 +39,7 @@
       "enemy_ship_count": [
         "Count all visible enemy ships. Ignore the player ship and all shots.",
         "How many enemy ships are visible in the playfield? Do not count the player ship or projectiles.",
-        "Count the labeled enemy ships only. Ignore red enemy shots, blue player shots, and the player ship.",
+        "Count the enemy ships only. Ignore red enemy shots, blue player shots, and the player ship.",
         "What is the total number of visible enemy ships?",
         "Count every enemy ship shown in the playfield; do not count lane pads, shots, or the player ship."
       ],
@@ -141,7 +141,7 @@
     }
   },
   "code_prompt_defaults": {
-    "object_description_defense_wave": "a retro space-shooter playfield with labeled or scored enemy ships, red downward enemy shots, blue upward player shots, a player ship, and bottom lane pads",
+    "object_description_defense_wave": "a retro space-shooter playfield with enemy ships, red downward enemy shots, blue upward player shots, a player ship, and bottom lane pads",
     "space_shooter_lane_rule_text": "Bottom lane pads define the vertical lanes. Enemy ships and shots stay in their own lane; red enemy shots move downward and blue player shots move upward.",
     "annotation_hint_clear_shot_score_value": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for every enemy ship contributing to the clear-shot score",
     "answer_hint_clear_shot_score_value": "set \"answer\" to the integer total score from clear-shot enemy ships",

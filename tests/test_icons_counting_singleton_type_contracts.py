@@ -7,13 +7,14 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.icon_field.type_frequency_count import IconsIconFieldTypeFrequencyCountTask
+from trace.tasks.icons.icon_field.most_frequent_type_count import IconsIconFieldMostFrequentTypeCountTask
+from trace.tasks.icons.icon_field.singleton_type_count import IconsIconFieldSingletonTypeCountTask
 from tests.helpers import read_jsonl
 
 
 def test_icons_counting_singleton_type_deterministic() -> None:
-    task = IconsIconFieldTypeFrequencyCountTask()
-    params = {"query_id": "singleton_type_count"}
+    task = IconsIconFieldSingletonTypeCountTask()
+    params = {}
     out_a = task.generate(18320, params=params, max_attempts=200)
     out_b = task.generate(18320, params=params, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -27,8 +28,8 @@ def test_icons_counting_singleton_type_deterministic() -> None:
 
 
 def test_icons_counting_most_frequent_type_deterministic() -> None:
-    task = IconsIconFieldTypeFrequencyCountTask()
-    params = {"query_id": "most_frequent_type_count"}
+    task = IconsIconFieldMostFrequentTypeCountTask()
+    params = {}
     out_a = task.generate(18321, params=params, max_attempts=200)
     out_b = task.generate(18321, params=params, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -38,7 +39,7 @@ def test_icons_counting_most_frequent_type_deterministic() -> None:
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.scene_id == "icon_field"
-    assert out_a.query_id == "most_frequent_type_count"
+    assert out_a.query_id == "single"
     assert out_a.answer_gt.type == "integer"
     assert out_a.annotation_gt.type == "bbox_set"
 
@@ -50,17 +51,23 @@ def test_icons_counting_most_frequent_type_deterministic() -> None:
 
 
 def test_icons_counting_singleton_type_build_smoke(tmp_path: Path) -> None:
-    task_id = "task_icons__icon_field__type_frequency_count"
-    output_root = tmp_path / task_id
+    singleton_task_id = "task_icons__icon_field__singleton_type_count"
+    most_frequent_task_id = "task_icons__icon_field__most_frequent_type_count"
+    output_root = tmp_path / "task_icons__icon_field__frequency_split"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_icons__icon_field__type_frequency_count",
+        dataset_name="build_smoke_task_icons__icon_field__frequency_split",
         instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id=task_id,
-                count=8,
+                task_id=singleton_task_id,
+                count=4,
+                params={},
+            ),
+            BuildTaskConfig(
+                task_id=most_frequent_task_id,
+                count=4,
                 params={},
             )
         ],
@@ -76,7 +83,8 @@ def test_icons_counting_singleton_type_build_smoke(tmp_path: Path) -> None:
     assert all(record["scene_id"] == "icon_field" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"][task_id]) == 8
+    assert int(build_report["accepted_counts_by_task"][singleton_task_id]) == 4
+    assert int(build_report["accepted_counts_by_task"][most_frequent_task_id]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

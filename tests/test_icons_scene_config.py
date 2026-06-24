@@ -79,27 +79,31 @@ def test_icons_reference_canvas_scene_defaults_loaded() -> None:
 
 def test_icons_icon_field_scene_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'icon_field')
-    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+    singleton_generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id='task_icons__icon_field__type_frequency_count',
+        task_id='task_icons__icon_field__singleton_type_count',
     )
-    assert str(generation['pool_manifest']).strip() == 'all_icons.txt'
-    singleton_params = generation['variant_generation_params']['singleton_type_count']
-    assert int(singleton_params['object_count_min']) == 5
-    assert int(singleton_params['object_count_max']) == 10
-    assert int(singleton_params['target_count_min']) == 0
-    assert int(singleton_params['target_count_max']) == 4
-    assert int(singleton_params['repeated_type_count_min']) == 1
-    assert int(singleton_params['repeated_type_count_max']) == 4
-    assert int(singleton_params['repeated_type_multiplicity_min']) == 2
-    assert int(singleton_params['repeated_type_multiplicity_max']) == 4
-    most_frequent_params = generation['variant_generation_params']['most_frequent_type_count']
-    assert str(most_frequent_params['pool_manifest']).strip() == 'all_icons.txt'
-    assert int(most_frequent_params['object_count_min']) == 7
-    assert int(most_frequent_params['object_count_max']) == 12
-    assert int(most_frequent_params['target_count_min']) == 2
-    assert int(most_frequent_params['target_count_max']) == 6
-    assert int(most_frequent_params['other_repeated_type_count_max']) == 3
+    most_frequent_generation, _, _ = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id='task_icons__icon_field__most_frequent_type_count',
+    )
+    assert str(singleton_generation['pool_manifest']).strip() == 'all_icons.txt'
+    assert 'variant_generation_params' not in singleton_generation
+    assert int(singleton_generation['object_count_min']) == 5
+    assert int(singleton_generation['object_count_max']) == 10
+    assert int(singleton_generation['target_count_min']) == 0
+    assert int(singleton_generation['target_count_max']) == 4
+    assert int(singleton_generation['repeated_type_count_min']) == 1
+    assert int(singleton_generation['repeated_type_count_max']) == 4
+    assert int(singleton_generation['repeated_type_multiplicity_min']) == 2
+    assert int(singleton_generation['repeated_type_multiplicity_max']) == 4
+    assert str(most_frequent_generation['pool_manifest']).strip() == 'all_icons.txt'
+    assert 'variant_generation_params' not in most_frequent_generation
+    assert int(most_frequent_generation['object_count_min']) == 7
+    assert int(most_frequent_generation['object_count_max']) == 12
+    assert int(most_frequent_generation['target_count_min']) == 2
+    assert int(most_frequent_generation['target_count_max']) == 6
+    assert int(most_frequent_generation['other_repeated_type_count_max']) == 3
     assert int(rendering['canvas_width']) == 960
     assert int(rendering['canvas_height']) == 544
     assert int(rendering['scene_icon_size_min_px']) == 64

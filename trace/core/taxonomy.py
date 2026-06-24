@@ -760,7 +760,8 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_graph__node_link__largest_chordless_cycle_size": _entry("graph", "node_link", "graph", "node_link"),
     "task_graph__node_link__unique_cycle_size": _entry("graph", "node_link", "graph", "node_link"),
     # Icons.
-    "task_icons__icon_field__type_frequency_count": _entry("icons", "icon_field", "icons", "icon_field"),
+    "task_icons__icon_field__singleton_type_count": _entry("icons", "icon_field", "icons", "icon_field"),
+    "task_icons__icon_field__most_frequent_type_count": _entry("icons", "icon_field", "icons", "icon_field"),
     "task_icons__icon_cutout__partial_match_label": _entry("icons", "icon_cutout", "icons", "icon_cutout"),
     "task_icons__reference_canvas__reference_attribute_match_count": _entry("icons", "reference_canvas", "icons", "reference_canvas"),
     "task_icons__reference_canvas__reference_metric_relation_count": _entry("icons", "reference_canvas", "icons", "reference_canvas"),

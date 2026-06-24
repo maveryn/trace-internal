@@ -3,7 +3,8 @@ from __future__ import annotations
 import json
 from collections import Counter
 from trace.core.seed import hash64
-from trace.tasks.icons.icon_field.type_frequency_count import IconsIconFieldTypeFrequencyCountTask
+from trace.tasks.icons.icon_field.most_frequent_type_count import IconsIconFieldMostFrequentTypeCountTask
+from trace.tasks.icons.icon_field.singleton_type_count import IconsIconFieldSingletonTypeCountTask
 
 def _overlap_fraction_smaller(left: list[int], right: list[int]) -> float:
     ix0 = max(int(left[0]), int(right[0]))
@@ -24,8 +25,8 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 def test_icons_counting_singleton_type_contract_matches_scene() -> None:
-    task = IconsIconFieldTypeFrequencyCountTask()
-    out = task.generate(18310, params={'object_count': 9, 'target_count': 3, 'query_id': 'singleton_type_count'}, max_attempts=200)
+    task = IconsIconFieldSingletonTypeCountTask()
+    out = task.generate(18310, params={'object_count': 9, 'target_count': 3}, max_attempts=200)
     trace = out.trace_payload
     execution = trace['execution_trace']
     scene_entities = trace['scene_ir']['entities']
@@ -37,9 +38,10 @@ def test_icons_counting_singleton_type_contract_matches_scene() -> None:
     assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
     assert trace['query_spec']['prompt_variant_active_key'] == 'answer_and_annotation'
     assert trace['scene_ir']['scene_kind'] == 'icons_singleton_type_counting'
-    assert out.query_id == 'singleton_type_count'
+    assert out.query_id == 'single'
     assert execution['question_format'] == 'count_singleton_type_icons'
-    assert execution['query_id'] == 'singleton_type_count'
+    assert execution['query_id'] == 'single'
+    assert execution['prompt_query_key'] == 'singleton_type_count'
     assert execution['scene_variant'] == 'single_panel_scene'
     assert int(execution['object_count']) == 9
     assert int(execution['target_count']) == 3
@@ -77,16 +79,16 @@ def test_icons_counting_singleton_type_contract_matches_scene() -> None:
             assert _overlap_fraction_smaller(left['bbox_xyxy'], right['bbox_xyxy']) <= 0.1 + 1e-06
 
 def test_icons_counting_singleton_type_supports_zero_singletons() -> None:
-    task = IconsIconFieldTypeFrequencyCountTask()
-    out = task.generate(18311, params={'object_count': 8, 'target_count': 0, 'query_id': 'singleton_type_count'}, max_attempts=200)
+    task = IconsIconFieldSingletonTypeCountTask()
+    out = task.generate(18311, params={'object_count': 8, 'target_count': 0}, max_attempts=200)
     execution = out.trace_payload['execution_trace']
     assert int(out.answer_gt.value) == 0
     assert out.annotation_gt.value == []
     assert execution['singleton_indices'] == []
 
 def test_icons_counting_singleton_type_prompt_example_matches_contract() -> None:
-    task = IconsIconFieldTypeFrequencyCountTask()
-    out = task.generate(18312, params={'object_count': 9, 'target_count': 2, 'query_id': 'singleton_type_count'}, max_attempts=200)
+    task = IconsIconFieldSingletonTypeCountTask()
+    out = task.generate(18312, params={'object_count': 9, 'target_count': 2}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants['answer_only'])
     answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
     assert answer_only == {'answer': 2}
@@ -97,8 +99,8 @@ def test_icons_counting_singleton_type_prompt_example_matches_contract() -> None
     assert answer_and_annotation['answer'] == 2
 
 def test_icons_counting_singleton_type_repeated_distractors_share_visual_style() -> None:
-    task = IconsIconFieldTypeFrequencyCountTask()
-    out = task.generate(18314, params={'object_count': 8, 'target_count': 2, 'query_id': 'singleton_type_count'}, max_attempts=200)
+    task = IconsIconFieldSingletonTypeCountTask()
+    out = task.generate(18314, params={'object_count': 8, 'target_count': 2}, max_attempts=200)
     trace = out.trace_payload
     execution = trace['execution_trace']
     assert int(out.answer_gt.value) == 2
@@ -124,33 +126,41 @@ def test_icons_counting_singleton_type_repeated_distractors_share_visual_style()
     assert repeated_styles
     assert all((len(styles) == 1 for styles in repeated_styles.values()))
 
-def test_icons_counting_type_frequency_sampling_defaults() -> None:
-    task = IconsIconFieldTypeFrequencyCountTask()
+def test_icons_counting_singleton_type_sampling_defaults() -> None:
+    task = IconsIconFieldSingletonTypeCountTask()
     object_counts: Counter[int] = Counter()
-    query_id_counts: Counter[str] = Counter()
     target_counts: Counter[int] = Counter()
-    singleton_targets: Counter[int] = Counter()
-    most_frequent_targets: Counter[int] = Counter()
     for index in range(80):
         out = task.generate(hash64(18313, 'icons_counting_singleton_type', index), params={}, max_attempts=200)
         execution = out.trace_payload['execution_trace']
         object_count = int(execution['object_count'])
         target_count = int(execution['target_count'])
-        query_id = str(execution['query_id'])
         object_counts[object_count] += 1
-        query_id_counts[query_id] += 1
         target_counts[target_count] += 1
-        if query_id == 'singleton_type_count':
-            singleton_targets[target_count] += 1
-            assert 5 <= object_count <= 10
-            assert 0 <= target_count <= 4
-        else:
-            most_frequent_targets[target_count] += 1
-            assert query_id == 'most_frequent_type_count'
-            assert 7 <= object_count <= 12
-            assert 2 <= target_count <= 6
-    assert set(query_id_counts.keys()) == {'singleton_type_count', 'most_frequent_type_count'}
-    assert set(singleton_targets.keys()) == set(range(0, 5))
-    assert set(most_frequent_targets.keys()) == set(range(2, 7))
+        assert execution['query_id'] == 'single'
+        assert execution['prompt_query_key'] == 'singleton_type_count'
+        assert 5 <= object_count <= 10
+        assert 0 <= target_count <= 4
+    assert set(target_counts.keys()) == set(range(0, 5))
     assert min(object_counts.keys()) >= 5
+    assert max(object_counts.keys()) <= 10
+
+
+def test_icons_counting_most_frequent_type_sampling_defaults() -> None:
+    task = IconsIconFieldMostFrequentTypeCountTask()
+    object_counts: Counter[int] = Counter()
+    target_counts: Counter[int] = Counter()
+    for index in range(80):
+        out = task.generate(hash64(18315, 'icons_counting_most_frequent_type', index), params={}, max_attempts=200)
+        execution = out.trace_payload['execution_trace']
+        object_count = int(execution['object_count'])
+        target_count = int(execution['target_count'])
+        object_counts[object_count] += 1
+        target_counts[target_count] += 1
+        assert execution['query_id'] == 'single'
+        assert execution['prompt_query_key'] == 'most_frequent_type_count'
+        assert 7 <= object_count <= 12
+        assert 2 <= target_count <= 6
+    assert set(target_counts.keys()) == set(range(2, 7))
+    assert min(object_counts.keys()) >= 7
     assert max(object_counts.keys()) <= 12

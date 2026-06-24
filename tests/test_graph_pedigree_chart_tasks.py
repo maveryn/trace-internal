@@ -6,9 +6,10 @@ from io import BytesIO
 
 import trace.tasks  # noqa: F401
 from trace.core.taxonomy import resolve_task_taxonomy
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.graph.pedigree_chart.relatedness_coefficient_label import RELATEDNESS_TASK_ID
 from trace.tasks.graph.pedigree_chart.relationship_label import RELATIONSHIP_TASK_ID
-from trace.tasks.registry import TASK_REGISTRY, create_task
+from trace.tasks.registry import TASK_REGISTRY, create_task, ensure_scene_tasks_registered
 
 
 RETIRED_PEDIGREE_TASK_IDS = {
@@ -27,7 +28,8 @@ def _png_bytes(output) -> bytes:
 
 
 def test_pedigree_public_task_set_is_relationship_and_relatedness_only() -> None:
-    active = {task_id for task_id in TASK_REGISTRY if "__pedigree_chart__" in str(task_id)}
+    ensure_scene_tasks_registered("graph", "pedigree_chart")
+    active = {task_id for task_id in dict.keys(TASK_REGISTRY) if "__pedigree_chart__" in str(task_id)}
     assert active == {RELATIONSHIP_TASK_ID, RELATEDNESS_TASK_ID}
     assert not RETIRED_PEDIGREE_TASK_IDS.intersection(TASK_REGISTRY)
 
@@ -36,7 +38,6 @@ def test_pedigree_public_task_set_is_relationship_and_relatedness_only() -> None
         assert taxonomy.domain == "graph"
         assert taxonomy.scene_id == "pedigree_chart"
         assert taxonomy.source_domain == "graph"
-        assert taxonomy.source_scene_id == "pedigree_chart"
 
 
 def test_pedigree_relationship_label_branches() -> None:
@@ -55,10 +56,12 @@ def test_pedigree_relationship_label_branches() -> None:
         assert execution["answer_relationship"] == relationship
         assert len(option_values) == 6
         assert len(set(option_values.values())) == 6
-        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert out.annotation_gt.type == "bbox_map"
         assert {"person_a", "person_b"}.issubset(set(out.annotation_gt.value))
         assert "selected_option" not in out.annotation_gt.value
         assert execution["answer"] == out.answer_gt.value
+        assert out.query_id == SINGLE_QUERY_ID
+        assert out.trace_payload["query_spec"]["internal_query_id"] == "relationship_label_between_two_people"
 
 
 def test_pedigree_relatedness_coefficient_label_branches() -> None:
@@ -77,10 +80,11 @@ def test_pedigree_relatedness_coefficient_label_branches() -> None:
         assert option_values[out.answer_gt.value] == relatedness
         assert len(option_values) == 6
         assert len(set(option_values.values())) == 6
-        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert out.annotation_gt.type == "bbox_map"
         assert {"person_a", "person_b"}.issubset(set(out.annotation_gt.value))
         assert "selected_option" not in out.annotation_gt.value
-        assert out.query_id == "relatedness_coefficient_between_two_people"
+        assert out.query_id == SINGLE_QUERY_ID
+        assert out.trace_payload["query_spec"]["internal_query_id"] == "relatedness_coefficient_between_two_people"
 
 
 def test_pedigree_relatedness_is_deterministic_for_same_seed() -> None:

@@ -697,20 +697,19 @@ def test_graph_relation_bundle_supports_hamiltonian_cycle_neighbor_label_query()
 
 
 def test_graph_pedigree_chart_scene_bundle_supports_label_queries() -> None:
-    bundle = load_scene_prompt_bundle("graph", "pedigree_chart", "pedigree_chart_v0")
+    bundle = load_scene_prompt_bundle("graph", "pedigree_chart", "graph_pedigree_chart_v1")
     assert "pedigree_chart" in bundle.scene_templates
-    assert len(bundle.task_templates["relationship_label_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["relatedness_coefficient_label_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["pedigree_chart_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["relationship_label_between_two_people"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["relatedness_coefficient_between_two_people"]) == REQUIRED_PROMPT_VARIANTS
     rendered = render_prompt(
         domain="graph",
         scene_id="pedigree_chart",
-        bundle_id="pedigree_chart_v0",
+        bundle_id="graph_pedigree_chart_v1",
         scene_key="pedigree_chart",
-        task_key="relationship_label_query",
+        task_key="pedigree_chart_query",
         query_key="relationship_label_between_two_people",
-        slots={
+        dynamic_slots={
             "object_description": "a pedigree chart with six relationship options",
             "person_label_a": "A",
             "person_label_b": "B",
@@ -724,7 +723,7 @@ def test_graph_pedigree_chart_scene_bundle_supports_label_queries() -> None:
         instance_seed=8123,
     )
     assert rendered.metadata["prompt_scene_id"] == "pedigree_chart"
-    assert rendered.metadata["prompt_bundle_id"] == "pedigree_chart_v0"
+    assert rendered.metadata["prompt_bundle_id"] == "graph_pedigree_chart_v1"
 
 
 def test_graph_phylogeny_tree_scene_bundle_supports_tree_queries() -> None:

@@ -390,23 +390,22 @@ def test_graph_relation_defaults_loaded() -> None:
 def test_graph_pedigree_chart_scene_defaults_loaded() -> None:
     cfg = get_scene_defaults('graph', 'pedigree_chart')
     relationship_generation, relationship_rendering, relationship_prompt = split_scene_generation_rendering_prompt_defaults(cfg, task_id='task_graph__pedigree_chart__relationship_label')
-    assert sorted(relationship_generation['query_id_weights'].keys()) == ['relationship_label_between_two_people']
+    assert 'query_id_weights' not in relationship_generation
     assert sorted(relationship_generation['relationship_label_weights'].keys()) == ['child', 'grandchild', 'grandparent', 'parent', 'partner', 'sibling']
     assert sorted(relationship_generation['scene_variant_weights'].keys()) == ['classic_pedigree', 'paper_pedigree', 'row_guided_pedigree']
     assert int(relationship_rendering['canvas_width']) == 980
     assert int(relationship_rendering['canvas_height']) == 700
-    assert str(relationship_prompt['bundle_id']) == 'pedigree_chart_v0'
-    assert str(relationship_prompt['scene_key']) == 'pedigree_chart'
-    assert str(relationship_prompt['task_key']) == 'relationship_label_query'
-    assert str(relationship_prompt['annotation_hint']).strip()
+    assert str(relationship_prompt['bundle_id']) == 'graph_pedigree_chart_v1'
+    assert 'scene_key' not in relationship_prompt
+    assert 'task_key' not in relationship_prompt
+    assert 'annotation_hint' not in relationship_prompt
     relatedness_generation, _, relatedness_prompt = split_scene_generation_rendering_prompt_defaults(cfg, task_id='task_graph__pedigree_chart__relatedness_coefficient_label')
-    assert sorted(relatedness_generation['query_id_weights'].keys()) == ['relatedness_coefficient_between_two_people']
+    assert 'query_id_weights' not in relatedness_generation
     assert sorted(relatedness_generation['relatedness_label_weights'].keys()) == ['0', '1/2', '1/4', '1/8', '3/8']
-    assert int(relatedness_generation['option_count']) == 6
-    assert str(relatedness_prompt['bundle_id']) == 'pedigree_chart_v0'
-    assert str(relatedness_prompt['scene_key']) == 'pedigree_chart'
-    assert str(relatedness_prompt['task_key']) == 'relatedness_coefficient_label_query'
-    assert str(relatedness_prompt['annotation_hint']).strip()
+    assert str(relatedness_prompt['bundle_id']) == 'graph_pedigree_chart_v1'
+    assert 'scene_key' not in relatedness_prompt
+    assert 'task_key' not in relatedness_prompt
+    assert 'annotation_hint' not in relatedness_prompt
 
 def test_graph_phylogeny_tree_scene_defaults_loaded() -> None:
     cfg = get_scene_defaults('graph', 'phylogeny_tree')

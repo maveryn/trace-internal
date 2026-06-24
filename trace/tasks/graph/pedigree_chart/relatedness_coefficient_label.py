@@ -4,19 +4,19 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
+from ....core.query_ids import SINGLE_QUERY_ID
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.output_metadata import default_task_versions
-from .shared.task_common import (
+from ._lifecycle import (
     OPTION_LABELS,
     PEDIGREE_RELATEDNESS_LABELS,
     PEDIGREE_RELATEDNESS_OPTION_LABELS,
-    RELATEDNESS_QUERY_ID,
     SCENE_ID,
     PedigreeRelatednessQuerySample,
     _common_slots,
-    _draw_pedigree_options,
+    draw_pedigree_options,
     _person_label,
     _prompt_artifacts,
     _render_sample,
@@ -32,6 +32,7 @@ from .shared.task_common import (
 
 RELATEDNESS_TASK_ID = "task_graph__pedigree_chart__relatedness_coefficient_label"
 SCENE_ID = "pedigree_chart"
+RELATEDNESS_QUERY_KEY = "relatedness_coefficient_between_two_people"
 
 
 @register_task
@@ -40,13 +41,15 @@ class GraphPedigreeRelatednessCoefficientLabelTask:
 
     task_id = RELATEDNESS_TASK_ID
     domain = "graph"
-    scene_id = "pedigree_chart"
-    supported_query_ids = ("relatedness_coefficient_between_two_people",)
+    default_dataset_enabled = True
+    supported_query_ids = (SINGLE_QUERY_ID,)
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Sample one relatedness objective and bind fraction-option answer plus keyed path witnesses."""
+
         for selector_key in ("query_id", "query_variant"):
             requested = params.get(selector_key)
-            if requested is not None and str(requested) not in {"", "default", RELATEDNESS_QUERY_ID}:
+            if requested is not None and str(requested) not in {"", "default", SINGLE_QUERY_ID}:
                 raise ValueError(f"unsupported query_id for {self.task_id}: {requested}")
         gen_defaults, render_defaults, prompt_defaults = _sections_for_task(self.task_id)
         style = _resolve_style(int(instance_seed), params=params, gen_defaults=gen_defaults, rng_namespace=self.task_id)
@@ -79,7 +82,7 @@ class GraphPedigreeRelatednessCoefficientLabelTask:
             highlighted_person_ids=(sample_query.person_a_id, sample_query.person_b_id),
             bottom_reserved_px=88,
         )
-        _draw_pedigree_options(
+        draw_pedigree_options(
             image=image,
             render_params=render_params,
             option_values_by_label=option_values,
@@ -89,7 +92,7 @@ class GraphPedigreeRelatednessCoefficientLabelTask:
             domain=self.domain,
             scene_id=SCENE_ID,
             prompt_defaults=prompt_defaults,
-            query_id=str(sample_query.query_id),
+            query_id=RELATEDNESS_QUERY_KEY,
             slots={
                 **_common_slots(
                     prompt_defaults,
@@ -117,7 +120,7 @@ class GraphPedigreeRelatednessCoefficientLabelTask:
         execution_trace = {
             "task_id": self.task_id,
             "scene_id": SCENE_ID,
-            "query_id": str(sample_query.query_id),
+            "query_id": RELATEDNESS_QUERY_KEY,
             "answer": str(correct_option),
             "answer_fraction": str(sample_query.answer),
             "option_values_by_label": dict(option_values),
@@ -131,7 +134,7 @@ class GraphPedigreeRelatednessCoefficientLabelTask:
         }
         trace_payload = _trace_payload(
             task_identifier=self.task_id,
-            query_id=str(sample_query.query_id),
+            query_id=RELATEDNESS_QUERY_KEY,
             prompt_defaults=prompt_defaults,
             prompt_artifacts=prompt_artifacts,
             sample=sample_query.sample,
@@ -154,8 +157,8 @@ class GraphPedigreeRelatednessCoefficientLabelTask:
         )
         answer_gt = TypedValue(type="option_letter", value=str(correct_option))
         annotation_gt = TypedValue(
-            type="keyed_bbox_map",
-            value=dict(annotation_projection["keyed_bbox_map"]),
+            type="bbox_map",
+            value=dict(annotation_projection["bbox_map"]),
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -166,7 +169,7 @@ class GraphPedigreeRelatednessCoefficientLabelTask:
             trace_payload=dict(trace_payload),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
-            query_id=str(sample_query.query_id),
+            query_id=RELATEDNESS_QUERY_KEY,
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

@@ -1,4 +1,4 @@
-"""Scene-local helpers for pedigree-chart graph tasks."""
+"""Private lifecycle helpers for pedigree-chart graph tasks."""
 
 from __future__ import annotations
 
@@ -6,41 +6,31 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
-from PIL import ImageDraw
-
-from .....core.seed import spawn_rng
-from .....core.scene_config import get_scene_defaults
-from .....core.visual.background import make_background_canvas
-from .....core.visual.noise import apply_post_image_noise
-from ....shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from ....shared.mcq import option_label_for_index
-from ....shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
-from ....shared.text_rendering import load_font
-from ....shared.text_legibility import draw_text_traced
-from ....shared.variant_sampling import resolve_variant
-from ...shared.style import SUPPORTED_NODE_COLOR_NAMES
-from ...shared.task_support import resolve_graph_render_params
-from ...shared.visual_defaults import load_graph_scene_background_defaults, load_graph_scene_noise_defaults
-from .scene_common import (
+from ....core.seed import spawn_rng
+from ....core.scene_config import get_scene_defaults
+from ....core.visual.background import make_background_canvas
+from ....core.visual.noise import apply_post_image_noise
+from ...shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
+from ...shared.mcq import option_label_for_index
+from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
+from ...shared.variant_sampling import resolve_variant
+from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
+from ..shared.task_support import resolve_graph_render_params
+from ..shared.visual_defaults import load_graph_scene_background_defaults, load_graph_scene_noise_defaults
+from .shared.annotations import projected_keyed_pedigree_person_annotation
+from .shared.option_rendering import OPTION_LABELS, draw_pedigree_options
+from .shared.rendering import pedigree_connector_relations, pedigree_scene_entities, render_pedigree_chart_scene
+from .shared.sampling import sample_pedigree_relatedness, sample_pedigree_relationship
+from .shared.state import (
     PEDIGREE_RELATEDNESS_LABELS,
     PEDIGREE_RELATEDNESS_OPTION_LABELS,
     PEDIGREE_RELATIONSHIP_LABELS,
-    SUPPORTED_PEDIGREE_RELATIONSHIP_QUERY_IDS,
     SUPPORTED_PEDIGREE_SCENE_VARIANTS,
     PedigreeRelatednessQuerySample,
     PedigreeRelationshipQuerySample,
-    pedigree_connector_relations,
-    pedigree_scene_entities,
-    projected_keyed_pedigree_person_annotation,
-    render_pedigree_chart_scene,
-    sample_pedigree_relatedness,
-    sample_pedigree_relationship,
 )
 
-
 SCENE_ID = "pedigree_chart"
-RELATEDNESS_QUERY_ID = "relatedness_coefficient_between_two_people"
-OPTION_LABELS = tuple(option_label_for_index(index) for index in range(6))
 
 
 @dataclass(frozen=True)
@@ -170,6 +160,8 @@ def _render_sample(
     highlighted_person_ids=(),
     bottom_reserved_px: int = 0,
 ):
+    """Render one neutral pedigree scene while preserving projected person-symbol geometry."""
+
     render_params = resolve_graph_render_params(
         params,
         instance_seed=int(instance_seed),
@@ -274,57 +266,6 @@ def _common_slots(
     }
 
 
-def _draw_pedigree_options(
-    *,
-    image,
-    render_params,
-    option_values_by_label: Mapping[str, str],
-) -> Dict[str, list[int]]:
-    """Draw the fixed six-option strip and return option bboxes."""
-
-    draw = ImageDraw.Draw(image)
-    panel_left = int(render_params.outer_margin_px + render_params.panel_padding_px + 18)
-    panel_right = int(render_params.canvas_width - render_params.outer_margin_px - render_params.panel_padding_px - 18)
-    panel_bottom = int(render_params.canvas_height - render_params.outer_margin_px - render_params.panel_padding_px - 12)
-    panel_top = int(panel_bottom - 42)
-    gap = 8
-    option_count = len(OPTION_LABELS)
-    cell_width = int((panel_right - panel_left - ((option_count - 1) * gap)) / option_count)
-    option_font = load_font(
-        max(15, int(round(render_params.label_font_size_px * 0.92))),
-        bold=True,
-        font_family=str(render_params.font_family),
-    )
-    option_bboxes: Dict[str, list[int]] = {}
-    for index, option_label in enumerate(OPTION_LABELS):
-        x0 = int(panel_left + (index * (cell_width + gap)))
-        y0 = int(panel_top)
-        x1 = int(x0 + cell_width)
-        y1 = int(panel_bottom)
-        draw.rounded_rectangle(
-            (x0, y0, x1, y1),
-            radius=10,
-            fill=tuple(int(value) for value in render_params.panel_fill_rgb),
-            outline=tuple(int(value) for value in render_params.panel_border_rgb),
-            width=2,
-        )
-        text = f"{option_label}: {option_values_by_label[str(option_label)]}"
-        text_bbox = draw.textbbox((0, 0), text, font=option_font)
-        text_width = int(text_bbox[2] - text_bbox[0])
-        text_height = int(text_bbox[3] - text_bbox[1])
-        draw_text_traced(
-            draw,
-            (int(x0 + ((cell_width - text_width) / 2)), int(y0 + ((y1 - y0 - text_height) / 2) - 1)),
-            text,
-            fill=tuple(int(value) for value in render_params.title_color_rgb),
-            font=option_font,
-            role="graph_pedigree_option_text",
-            required=False,
-        )
-        option_bboxes[str(option_label)] = [int(x0), int(y0), int(x1), int(y1)]
-    return dict(option_bboxes)
-
-
 def _select_relationship_options(answer: str) -> Tuple[Dict[str, str], str]:
     option_values = {
         str(option_label_for_index(index)): str(value)
@@ -370,6 +311,8 @@ def _trace_payload(
     witness_symbolic: Mapping[str, Any],
     projected_annotation: Mapping[str, Any],
 ) -> Dict[str, Any]:
+    """Assemble shared scene/render trace fields around task-owned answer and annotation bindings."""
+
     return {
         "scene_ir": {
             "task_id": str(task_identifier),
@@ -420,8 +363,5 @@ def _trace_payload(
         "render_map": {"image_id": "img0", "anchors": {}},
         "execution_trace": dict(execution_trace),
         "witness_symbolic": dict(witness_symbolic),
-        "projected_annotation": {"type": "keyed_bbox_map", **dict(projected_annotation)},
+        "projected_annotation": {"type": "bbox_map", **dict(projected_annotation)},
     }
-
-
-

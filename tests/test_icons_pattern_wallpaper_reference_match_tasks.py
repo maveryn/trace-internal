@@ -97,11 +97,11 @@ def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
     assert str(answer["wallpaper_group_id"]) == "p1"
     assert all(str(panel["wallpaper_group_id"]) != "p1" for panel in distractors)
     assert len({str(panel["wallpaper_group_id"]) for panel in distractors}) == 3
-    assert len({str(panel["icon_id"]) for panel in scene_panels}) == 1
+    assert len({str(panel["icon_id"]) for panel in scene_panels}) == 5
 
     non_symmetry_pool = set(resolve_icon_pool("non_symmetry.txt"))
     assert set(execution["icon_ids_by_label"].keys()) == {"Reference", *set("ABCD")}
-    assert len(set(execution["icon_ids_by_label"].values())) == 1
+    assert len(set(execution["icon_ids_by_label"].values())) == 5
     assert set(execution["icon_ids_by_label"].values()).issubset(non_symmetry_pool)
     assert out.annotation_gt.value == {
         "reference_panel": list(reference["panel_bbox_xyxy"]),

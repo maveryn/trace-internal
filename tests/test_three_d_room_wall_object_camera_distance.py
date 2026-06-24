@@ -5,8 +5,8 @@ from __future__ import annotations
 import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
-from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.room.wall_object_camera_distance import (
+from trace.tasks.registry import is_default_dataset_task
+from trace.tasks.three_d.room.wall_object_camera_distance_label import (
     LETTERED_WALL_OBJECT_MIN_VISIBLE_PX,
     SCENE_ID,
     SUPPORTED_QUERY_IDS,
@@ -20,7 +20,7 @@ def test_room_wall_object_camera_distance_answer_and_annotation() -> None:
     output = task.generate(
         20261003,
         params={
-            "query_id": "closest_to_camera",
+            "query_id": "single",
             "scene_variant": "studio_room",
             "candidate_count": 6,
             "context_wall_count": 4,
@@ -37,11 +37,11 @@ def test_room_wall_object_camera_distance_answer_and_annotation() -> None:
     nearest = min(candidates, key=lambda spec: (float(spec["camera_distance"]), str(spec["point_label"])))
     expected_bbox = render_map["object_bboxes_px"][str(nearest["object_id"])]
     assert output.scene_id == SCENE_ID
-    assert output.query_id == "closest_to_camera"
+    assert output.query_id == "single"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == str(nearest["point_label"])
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.annotation_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         candidates,
@@ -77,8 +77,8 @@ def test_room_wall_object_camera_distance_answer_and_annotation() -> None:
 def test_room_wall_object_camera_distance_registered() -> None:
     taxonomy = resolve_task_taxonomy(TASK_ID)
 
-    assert TASK_ID in list_default_task_ids()
+    assert is_default_dataset_task(TASK_ID)
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_scene_id == "room"
-    assert SUPPORTED_QUERY_IDS == ("closest_to_camera",)
+    assert taxonomy.source_scene_id == ""
+    assert SUPPORTED_QUERY_IDS == ("single",)

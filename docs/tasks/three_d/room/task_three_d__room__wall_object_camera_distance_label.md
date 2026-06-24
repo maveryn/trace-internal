@@ -4,9 +4,9 @@
 - Domain: `three_d`
 - Scene id: `room`
 - Scene: `room`
-- Query id: `single`
+- Supported `query_id`: `single`
 - Answer type: `option_letter`
-- Annotation type: one-box `bbox_set`
+- Annotation schema: `bbox`
 
 ## Contract
 The image shows a synthetic perspective 3D indoor room with a floor, back/side walls, furniture, unlettered room context, unlettered wall-mounted candidate objects, and a below-scene text option panel. The prompt asks which option describes the wall-mounted object closest to the camera.
@@ -19,11 +19,16 @@ The renderer uses a lower interior camera, extends the open/front floor toward t
 
 The answer is computed from finalized metadata using the minimum `camera_distance` among candidate wall-mounted objects. Generation enforces a unique nearest candidate and records the full near-to-far option-label order, per-label camera distances, candidate walls, and nearest margin.
 
+## Program Contract
+`select(label(candidate_wall_objects, argmin(camera_distance))); scene=room; scope=wall_object_camera_distance_label`
+
+The public query id is `single`; closest-to-camera is the fixed objective contract.
+
 ## Annotation Contract
 Annotation is the bounding box of the selected wall-mounted object in the room scene. The option panel and option text are not annotation.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_room_v0` under `prompts/three_d/room/`. The trace records camera pose, projection frame, room scene variant, render-only floor front (`render_front_y`), render-only side-wall front (`render_side_wall_front_y`), bounded semantic room front (`semantic_front_y`), wall and floor object specs, per-label camera distances, candidate wall assignments, candidate projected bboxes, near-to-far order, selected object id/type/wall, projected object bboxes, and option-panel descriptors/bboxes.
+The prompt bundle is `three_d_room_v1` under `prompts/three_d/room/`. The trace records camera pose, projection frame, room scene variant, render-only floor front (`render_front_y`), render-only side-wall front (`render_side_wall_front_y`), bounded semantic room front (`semantic_front_y`), wall and floor object specs, per-label camera distances, candidate wall assignments, candidate projected bboxes, near-to-far order, selected object id/type/wall, projected object bboxes, and option-panel descriptors/bboxes.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and annotation come from the same finalized 3D room scene trace.

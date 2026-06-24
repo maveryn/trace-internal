@@ -1,20 +1,19 @@
-"""Dataset construction for shared room-wall 3D scenes."""
+"""Scene-local dataset construction for 3D room wall-object count tasks."""
 
 from __future__ import annotations
 
 from collections import Counter
 from typing import Any, Dict, List, Mapping, Tuple
 
-from ....core.seed import spawn_rng
-from ...shared.config_defaults import group_default
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
-from ..shared.camera_projection import build_projection_frame
-from ..shared.object_scene import ObjectSceneRenderParams, object_reference_points
-from .wall_mounted_common import (
+from .....core.seed import spawn_rng
+from ....shared.config_defaults import group_default
+from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.camera_projection import build_projection_frame
+from ...shared.object_scene import ObjectSceneRenderParams, object_reference_points
+from .state import (
     FLOOR_PROP_SHAPES,
     FRONT_FLOOR_PROP_SHAPES,
     FRONT_FLOOR_PROP_SLOTS,
-    QUERY_OBJECT_TYPE_BY_VARIANT,
     QUERY_TARGET_TYPES,
     ROOM_FRONT_Y,
     ROOM_HEIGHT,
@@ -23,7 +22,6 @@ from .wall_mounted_common import (
     SURFACE_DISTRACTOR_TYPES,
     SURFACE_PROP_SHAPES_BY_SCENE,
     SURFACE_PROP_TYPES,
-    TASK_ID,
     WALL_BACK_Y,
     WALL_X,
     EXTRA_WALL_TYPES,
@@ -45,6 +43,7 @@ from .wall_mounted_common import (
 def _resolve_target_count(
     params: Mapping[str, Any],
     *,
+    namespace: str,
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
 ) -> Tuple[int, Dict[str, float]]:
@@ -62,21 +61,45 @@ def _resolve_target_count(
     selection_index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.target_count",
+        namespace=f"{namespace}.target_count",
     )
     selected = int(support[abs(int(selection_index)) % len(support)])
     return int(selected), dict(uniform_probability_map(support))
 
+
+def _resolve_target_object_type(
+    params: Mapping[str, Any],
+    *,
+    namespace: str,
+    instance_seed: int,
+) -> Tuple[str, Dict[str, float]]:
+    support = tuple(str(value) for value in QUERY_TARGET_TYPES)
+    explicit = params.get("target_object_type")
+    if explicit is not None:
+        selected = str(explicit)
+        if selected not in set(support):
+            raise ValueError(f"unsupported target_object_type: {selected}")
+        return selected, {value: (1.0 if value == selected else 0.0) for value in support}
+    selection_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.target_object_type",
+    )
+    selected = support[abs(int(selection_index)) % len(support)]
+    probability = round(1.0 / float(len(support)), 8)
+    return selected, {value: probability for value in support}
+
 def _build_room_dataset(
     *,
-    query_id: str,
+    target_object_type: str,
     scene_variant: str,
     target_count: int,
     render_params: ObjectSceneRenderParams,
+    namespace: str,
     instance_seed: int,
 ) -> Dict[str, Any]:
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
-    target_type = str(QUERY_OBJECT_TYPE_BY_VARIANT[str(query_id)])
+    rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
+    target_type = str(target_object_type)
     camera = _sample_room_camera(rng, scene_variant=str(scene_variant))
     wall_slots = [
         ("back", -2.35, 1.25),
@@ -269,7 +292,6 @@ def _build_room_dataset(
         key=lambda spec: (str(spec.get("wall", "")), float(spec["base_xyz"][2]), float(spec["world_xyz"][0]), float(spec["world_xyz"][1])),
     )
     return {
-        "query_id": str(query_id),
         "scene_variant": str(scene_variant),
         "target_object_type": str(target_type),
         "target_object_name": _object_name(str(target_type)),
@@ -320,4 +342,4 @@ def _build_room_dataset(
         },
     }
 
-__all__ = ["_resolve_target_count", "_build_room_dataset"]
+__all__ = ["_resolve_target_count", "_resolve_target_object_type", "_build_room_dataset"]

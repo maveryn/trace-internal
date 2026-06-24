@@ -1,4 +1,4 @@
-"""Final scene rendering orchestration for shared room-wall 3D scenes."""
+"""Final scene rendering orchestration for the 3D room scene."""
 
 from __future__ import annotations
 
@@ -7,22 +7,22 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_legibility import draw_text_traced
-from ...shared.text_rendering import load_font
-from ..shared.camera_projection import project_screen, screen_to_floor_xy
-from ..shared.canvas import (
+from ....shared.text_legibility import draw_text_traced
+from ....shared.text_rendering import load_font
+from ...shared.camera_projection import project_screen, screen_to_floor_xy
+from ...shared.canvas import (
     bbox_dict_transform,
     bbox_transform,
     entities_transform,
     point_dict_transform,
     resize_image_to_fit_pixel_cap,
 )
-from ..shared.object_rendering import ThreeDObjectSpec, ThreeDRenderContext, render_three_d_object
-from ..shared.object_scene import ObjectSceneRenderParams
-from ..shared.object_scene_primitives import bbox_union, draw_line, shade_rgb, tint_rgb
-from ..shared.option_panel import append_text_option_panel, empty_option_panel_metadata
-from ..shared.room_wall_rendering_geometry import _draw_poly, _draw_poly_fill_only
-from .wall_mounted_common import (
+from ...shared.object_rendering import ThreeDObjectSpec, ThreeDRenderContext, render_three_d_object
+from ...shared.object_scene import ObjectSceneRenderParams
+from ...shared.object_scene_primitives import bbox_union, draw_line, shade_rgb, tint_rgb
+from ...shared.option_panel import append_text_option_panel, empty_option_panel_metadata
+from ...shared.room_wall_rendering_geometry import _draw_poly, _draw_poly_fill_only
+from .state import (
     ROOM_FRONT_Y,
     ROOM_HEIGHT,
     ROOM_RENDER_FRONT_MAX_EXTENSION,
@@ -32,7 +32,7 @@ from .wall_mounted_common import (
     WALL_X,
     _wall_spec,
 )
-from ..shared.room_wall_object_rendering import _draw_wall_flat_object
+from ...shared.room_wall_object_rendering import _draw_wall_flat_object
 
 
 @dataclass(frozen=True)

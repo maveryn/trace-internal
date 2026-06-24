@@ -1,12 +1,11 @@
-"""Shared constants and geometry helpers for room-wall 3D scenes."""
+"""Scene-local constants and geometry helpers for the 3D room scene."""
 
 from __future__ import annotations
 
 import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from ..shared.task_support import normalize_unit as _normalize_unit
-from ..shared.object_resources import (
+from ...shared.object_resources import (
     ROOM_EXTRA_WALL_TYPES,
     ROOM_FLOOR_DISTRACTOR_SPECS,
     ROOM_FLOOR_DISTRACTOR_TYPES,
@@ -14,7 +13,6 @@ from ..shared.object_resources import (
     ROOM_FLOOR_PROP_SPECS,
     ROOM_FRONT_FLOOR_PROP_SHAPES,
     ROOM_OBJECT_PROMPT_NAMES,
-    ROOM_QUERY_OBJECT_TYPE_BY_VARIANT,
     ROOM_QUERY_TARGET_TYPES,
     ROOM_SURFACE_DISTRACTOR_SPECS,
     ROOM_SURFACE_DISTRACTOR_TYPES,
@@ -22,38 +20,26 @@ from ..shared.object_resources import (
     ROOM_SURFACE_PROP_TYPES,
     ROOM_WALL_BASE_DIMENSIONS,
 )
-from ..shared.camera_projection import (
+from ...shared.camera_projection import (
     CameraSpec,
     project_screen,
     vec_cross,
     vec_norm,
     vec_sub,
 )
-from ..shared.object_scene import (
+from ...shared.object_scene import (
     make_object_spec,
     object_screen_bbox,
 )
-from ..shared.room_wall_rendering_geometry import (
+from ...shared.room_wall_rendering_geometry import (
     _add_vec,
     _projected_polygon_bbox,
     _wall_axes,
     _wall_rect_points,
 )
 
-TASK_ID = "task_three_d__room__multi_attribute_and_count"
 SCENE_ID = "room"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
-    "tv_wall_mounted_count",
-    "clock_wall_mounted_count",
-    "picture_frame_wall_mounted_count",
-    "mirror_wall_mounted_count",
-    "wall_shelf_wall_mounted_count",
-    "wall_fan_wall_mounted_count",
-    "air_conditioner_wall_mounted_count",
-    "hanging_coat_wall_mounted_count",
-)
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("living_room", "office_room", "studio_room")
-QUERY_OBJECT_TYPE_BY_VARIANT: Dict[str, str] = dict(ROOM_QUERY_OBJECT_TYPE_BY_VARIANT)
 OBJECT_PROMPT_NAMES: Dict[str, Tuple[str, str]] = dict(ROOM_OBJECT_PROMPT_NAMES)
 QUERY_TARGET_TYPES: Tuple[str, ...] = ROOM_QUERY_TARGET_TYPES
 EXTRA_WALL_TYPES: Tuple[str, ...] = ROOM_EXTRA_WALL_TYPES
@@ -431,5 +417,3 @@ def _wall_object_visible_size_ok(
         if width < float(min_width_px) or height < float(min_height_px):
             return False
     return True
-
-

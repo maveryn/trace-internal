@@ -7,11 +7,11 @@ import pytest
 import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
-from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.room.wall_object_camera_distance import (
+from trace.tasks.registry import is_default_dataset_task
+from trace.tasks.three_d.room.wall_object_camera_distance_label import (
     LETTERED_WALL_OBJECT_MIN_VISIBLE_PX,
 )
-from trace.tasks.three_d.room.wall_object_same_wall_reference import (
+from trace.tasks.three_d.room.wall_object_same_wall_reference_label import (
     SCENE_ID,
     SUPPORTED_QUERY_IDS,
     TASK_ID,
@@ -27,7 +27,7 @@ def test_room_wall_object_same_wall_reference_answer_annotation_and_unique_refer
     output = task.generate(
         20260522,
         params={
-            "query_id": "same_wall_as_reference",
+            "query_id": "single",
             "scene_variant": "studio_room",
             "candidate_count": 6,
             "context_wall_count": 4,
@@ -54,11 +54,11 @@ def test_room_wall_object_same_wall_reference_answer_annotation_and_unique_refer
         if bool(is_same_wall)
     ]
     assert output.scene_id == SCENE_ID
-    assert output.query_id == "same_wall_as_reference"
+    assert output.query_id == "single"
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.annotation_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         candidates,
@@ -95,8 +95,8 @@ def test_room_wall_object_same_wall_reference_answer_annotation_and_unique_refer
 def test_room_wall_object_same_wall_reference_registered() -> None:
     taxonomy = resolve_task_taxonomy(TASK_ID)
 
-    assert TASK_ID in list_default_task_ids()
+    assert is_default_dataset_task(TASK_ID)
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_scene_id == "room"
-    assert SUPPORTED_QUERY_IDS == ("same_wall_as_reference",)
+    assert taxonomy.source_scene_id == ""
+    assert SUPPORTED_QUERY_IDS == ("single",)

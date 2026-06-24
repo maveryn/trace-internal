@@ -7,26 +7,22 @@ import pytest
 import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
-from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.room.wall_mounted_object_count import (
-    QUERY_OBJECT_TYPE_BY_VARIANT,
-    ROOM_FRONT_Y,
-    SCENE_ID,
-    SUPPORTED_QUERY_IDS,
-    TASK_ID,
-)
+from trace.tasks.registry import is_default_dataset_task
+from trace.tasks.three_d.room.shared.state import QUERY_TARGET_TYPES, ROOM_FRONT_Y
+from trace.tasks.three_d.room.multi_attribute_and_count import SCENE_ID, SUPPORTED_QUERY_IDS, TASK_ID
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
-@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
-def test_wall_mounted_object_count_answer_and_annotation(query_id: str) -> None:
+@pytest.mark.parametrize("target_type", QUERY_TARGET_TYPES)
+def test_wall_mounted_object_count_answer_and_annotation(target_type: str) -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260521,
         params={
-            "query_id": query_id,
+            "query_id": "single",
             "scene_variant": "living_room",
             "target_count": 2,
+            "target_object_type": target_type,
             "post_image_noise_apply_prob": 0.0,
         },
         max_attempts=80,
@@ -34,7 +30,6 @@ def test_wall_mounted_object_count_answer_and_annotation(query_id: str) -> None:
 
     trace = output.trace_payload["execution_trace"]
     render_map = output.trace_payload["render_map"]
-    target_type = QUERY_OBJECT_TYPE_BY_VARIANT[query_id]
     target_specs = [
         spec
         for spec in trace["wall_object_specs"]
@@ -48,7 +43,7 @@ def test_wall_mounted_object_count_answer_and_annotation(query_id: str) -> None:
     mounted_query_type_context = [
         spec
         for spec in trace["wall_object_specs"]
-        if str(spec["object_type"]) in set(QUERY_OBJECT_TYPE_BY_VARIANT.values())
+        if str(spec["object_type"]) in set(QUERY_TARGET_TYPES)
         and str(spec["object_type"]) != str(target_type)
     ]
     expected_ids = [str(spec["object_id"]) for spec in sorted(
@@ -56,7 +51,7 @@ def test_wall_mounted_object_count_answer_and_annotation(query_id: str) -> None:
         key=lambda spec: (str(spec.get("wall", "")), float(spec["base_xyz"][2]), float(spec["world_xyz"][0]), float(spec["world_xyz"][1])),
     )]
     assert output.scene_id == SCENE_ID
-    assert output.query_id == query_id
+    assert output.query_id == "single"
     assert output.answer_gt.type == "integer"
     assert output.answer_gt.value == len(target_specs) == 2
     assert output.annotation_gt.type == "bbox_set"
@@ -91,7 +86,8 @@ def test_wall_mounted_object_count_allows_zero_targets() -> None:
     output = task.generate(
         20260522,
         params={
-            "query_id": "tv_wall_mounted_count",
+            "query_id": "single",
+            "target_object_type": "tv",
             "scene_variant": "studio_room",
             "target_count": 0,
             "post_image_noise_apply_prob": 0.0,
@@ -110,7 +106,8 @@ def test_wall_mounted_object_count_allows_zero_targets() -> None:
 def test_wall_mounted_object_count_registered_in_three_d_taxonomy() -> None:
     taxonomy = resolve_task_taxonomy(TASK_ID)
 
-    assert TASK_ID in list_default_task_ids()
+    assert is_default_dataset_task(TASK_ID)
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_scene_id == "room"
+    assert taxonomy.source_scene_id == ""
+    assert SUPPORTED_QUERY_IDS == ("single",)

@@ -27,8 +27,8 @@ from ..surface_fixture.shared.state import ELEMENT_TYPE_BY_SCENE_VARIANT, SEMANT
 from ..surface_fixture.shared.rendering import render_surface_fixture
 from .warehouse_object_rendering import _draw_ground_shadow as _draw_warehouse_ground_shadow
 from .warehouse_object_rendering import _fill_for_object as _warehouse_fill_for_object
-from ..room import wall_mounted_common as room_scene
-from ..room.wall_mounted_rendering import _draw_room_shell
+from ..room.shared import state as room_scene
+from ..room.shared.rendering import _draw_room_shell
 from ..street import intersection_scene as street_scene
 from ..street.intersection_building_rendering import _draw_styled_building_object
 from ..street.intersection_road_rendering import _draw_street_shell

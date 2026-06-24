@@ -7,11 +7,11 @@ import pytest
 import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
-from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.room.wall_object_camera_distance import (
+from trace.tasks.registry import is_default_dataset_task
+from trace.tasks.three_d.room.wall_object_camera_distance_label import (
     LETTERED_WALL_OBJECT_MIN_VISIBLE_PX,
 )
-from trace.tasks.three_d.room.wall_object_side_relation import (
+from trace.tasks.three_d.room.wall_object_side_relation_label import (
     REFERENCE_OBJECT_TYPE,
     SCENE_ID,
     SUPPORTED_QUERY_IDS,
@@ -80,8 +80,8 @@ def test_room_wall_object_side_relation_answer_annotation_and_unique_reference(
     assert output.query_id == query_id
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
-    assert output.annotation_gt.type == "bbox_set"
-    assert output.annotation_gt.value == [expected_bbox]
+    assert output.annotation_gt.type == "bbox"
+    assert output.annotation_gt.value == expected_bbox
     assert_option_panel_matches_candidates(
         output,
         candidates,
@@ -131,10 +131,10 @@ def test_room_wall_object_side_relation_answer_annotation_and_unique_reference(
 def test_room_wall_object_side_relation_registered() -> None:
     taxonomy = resolve_task_taxonomy(TASK_ID)
 
-    assert TASK_ID in list_default_task_ids()
+    assert is_default_dataset_task(TASK_ID)
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
-    assert taxonomy.source_scene_id == "room"
+    assert taxonomy.source_scene_id == ""
     assert SUPPORTED_QUERY_IDS == (
         "left_of_reference_on_wall",
         "right_of_reference_on_wall",

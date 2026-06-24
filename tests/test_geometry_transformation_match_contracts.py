@@ -7,22 +7,26 @@ from itertools import combinations
 import pytest
 
 from trace.core.seed import hash64
-from trace.tasks.geometry.shape_gallery.reflection_match import GeometryTransformationMatchTask
+from trace.tasks.geometry.shape_gallery.reflection_match import GeometryShapeGalleryReflectionMatchTask
+from trace.tasks.geometry.shape_gallery.rotation_match import GeometryShapeGalleryRotationMatchTask
+from trace.tasks.geometry.shape_gallery.translation_match import GeometryShapeGalleryTranslationMatchTask
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_point_count"),
+    ("task_cls", "params", "expected_point_count", "expected_rule"),
     (
-        ({"scene_variant": "triangle", "query_id": "translation_match"}, 3),
-        ({"scene_variant": "quadrilateral", "query_id": "reflection_match"}, 4),
-        ({"scene_variant": "triangle", "query_id": "rotation_match"}, 3),
+        (GeometryShapeGalleryTranslationMatchTask, {"scene_variant": "triangle"}, 3, "translation"),
+        (GeometryShapeGalleryReflectionMatchTask, {"scene_variant": "quadrilateral"}, 4, "reflection"),
+        (GeometryShapeGalleryRotationMatchTask, {"scene_variant": "triangle"}, 3, "rotation"),
     ),
 )
 def test_geometry_transformation_match_emits_expected_contract(
+    task_cls,
     params: dict[str, str],
     expected_point_count: int,
+    expected_rule: str,
 ) -> None:
-    out = GeometryTransformationMatchTask().generate(23101, params=params, max_attempts=20)
+    out = task_cls().generate(23101, params=params, max_attempts=20)
     assert out.answer_gt.type == "option_letter"
     assert isinstance(out.answer_gt.value, str)
     assert len(str(out.answer_gt.value)) == 1
@@ -30,6 +34,8 @@ def test_geometry_transformation_match_emits_expected_contract(
     assert len(out.annotation_gt.value) == expected_point_count
     assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert out.trace_payload["query_spec"]["params"]["query_id"] == out.query_id
+    assert out.query_id == "single"
+    assert out.trace_payload["execution_trace"]["transform_rule"] == expected_rule
     assert out.trace_payload["execution_trace"]["required_annotation_labels"] == [
         f"vertex_{index}" for index in range(1, expected_point_count + 1)
     ]
@@ -37,16 +43,16 @@ def test_geometry_transformation_match_emits_expected_contract(
 
 def test_geometry_transformation_match_rejects_unsupported_scene_variant() -> None:
     with pytest.raises(ValueError):
-        GeometryTransformationMatchTask().generate(
+        GeometryShapeGalleryTranslationMatchTask().generate(
             23111,
-            params={"scene_variant": "circle", "query_id": "translation_match"},
+            params={"scene_variant": "circle"},
             max_attempts=20,
         )
 
 
 def test_geometry_transformation_match_rejects_unsupported_query_id() -> None:
     with pytest.raises(ValueError):
-        GeometryTransformationMatchTask().generate(
+        GeometryShapeGalleryTranslationMatchTask().generate(
             23112,
             params={"scene_variant": "triangle", "query_id": "largest_area"},
             max_attempts=20,
@@ -54,7 +60,7 @@ def test_geometry_transformation_match_rejects_unsupported_query_id() -> None:
 
 
 def test_geometry_transformation_match_keeps_candidate_polygons_separated() -> None:
-    task = GeometryTransformationMatchTask()
+    task = GeometryShapeGalleryReflectionMatchTask()
 
     for index in range(30):
         out = task.generate(
@@ -84,12 +90,12 @@ def test_geometry_transformation_match_keeps_candidate_polygons_separated() -> N
 
 
 def test_geometry_transformation_match_translation_cue_is_above_reference_and_left_of_y_axis() -> None:
-    task = GeometryTransformationMatchTask()
+    task = GeometryShapeGalleryTranslationMatchTask()
 
     for index in range(30):
         out = task.generate(
             int(hash64(0, "geometry_transformation_match_base.translation", index)),
-            params={"query_id": "translation_match"},
+            params={},
             max_attempts=100,
         )
         cue = out.trace_payload["render_map"]["cue"]

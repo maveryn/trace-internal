@@ -49,6 +49,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
             "regular_polygon_decomposition",
             "right_triangle_altitude_theorem",
             "sector",
+            "shape_gallery",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
@@ -92,6 +93,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
             "regular_polygon_decomposition",
             "right_triangle_altitude_theorem",
             "sector",
+            "shape_gallery",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),

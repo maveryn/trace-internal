@@ -9,9 +9,6 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from trace.core.seed import hash64, spawn_rng
 from trace.core.scene_config import get_scene_defaults
 from trace.tasks.shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.prompt_json_example import build_prompt_json_examples
-from trace.tasks.shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 from trace.tasks.shared.text_rendering import draw_text_centered, load_font, resolve_scene_label_font_size_px
 from trace.tasks.shared.geometry_primitives import Point, point_inside_square_canvas
 from trace.tasks.shared.drawing import draw_arrow, draw_dashed_line
@@ -50,13 +47,13 @@ from trace.tasks.geometry.shared.single_object_scene import (
 )
 
 
-SCENE_NAMESPACE = "shape_gallery_transformation_match"
+SCENE_NAMESPACE = "shape_gallery_transform_selection"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("triangle", "quadrilateral")
-TRANSFORMATION_RULES: Tuple[str, ...] = ("translation_match", "reflection_match", "rotation_match")
+TRANSFORM_RULES: Tuple[str, ...] = ("translation", "reflection", "rotation")
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "triangle": TRANSFORMATION_RULES,
-    "quadrilateral": TRANSFORMATION_RULES,
+    "triangle": TRANSFORM_RULES,
+    "quadrilateral": TRANSFORM_RULES,
 }
 
 POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id="transformation")
@@ -71,22 +68,6 @@ _TRANSFORM_RECIPE_ROTATE_180 = "rotate_180"
 
 _LOCAL_TRANSFORM_RECIPES: Tuple[str, ...] = tuple(RIGID_TRANSFORM_RECIPE_IDS)
 
-
-
-@dataclass(frozen=True)
-class TransformationMatchArtifact:
-    """Generated data needed by a public transformation-match task."""
-
-    prompt: str
-    answer_type: str
-    answer_value: Any
-    annotation_type: str
-    annotation_value: Any
-    image: Any
-    trace_payload: Dict[str, Any]
-    task_versions: Dict[str, Any]
-    query_id: str
-    prompt_variants: Dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -175,10 +156,10 @@ class _ResolvedQuery:
     """Resolved scene/query axes and answer-label support for one instance."""
 
     scene_variant: str
-    query_id: str
+    transform_rule: str
     winner_label: str
     scene_variant_probabilities: Dict[str, float]
-    query_id_probabilities: Dict[str, float]
+    transform_rule_probabilities: Dict[str, float]
     winner_label_probabilities: Dict[str, float]
     candidate_label_pool: Tuple[str, ...]
     candidate_count_probabilities: Dict[str, float]
@@ -211,6 +192,22 @@ class _RenderedTransformationScene:
     translation_vector: Tuple[int, int] | None
 
 
+@dataclass(frozen=True)
+class TransformationSceneBundle:
+    """Rendered transform-selection scene plus neutral metadata for public tasks."""
+
+    resolved: _ResolvedQuery
+    rendered_scene: _RenderedTransformationScene
+    image: Any
+    context: GraphSceneContext
+    background_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+    shape_style_trace: Dict[str, Any]
+    line_width: int
+    label_font_size_px: int
+    label_stroke_width_px: int
+
+
 _DEFAULTS = _TaskDefaults()
 _SCENE_DEFAULTS = get_scene_defaults("geometry", "shape_gallery")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
@@ -225,17 +222,17 @@ def _apply_local_transform(template: Polygon, *, recipe: str) -> Polygon:
     return apply_rigid_transform_recipe(template, recipe=str(recipe))
 
 
-def _winner_recipe_for_query(*, query_id: str, rotation_mode: _RotationMode | None) -> str:
-    """Return the correct local transform recipe for the requested query."""
+def _winner_recipe_for_rule(*, transform_rule: str, rotation_mode: _RotationMode | None) -> str:
+    """Return the correct local transform recipe for the requested rule."""
 
-    normalized_query = str(query_id)
-    if normalized_query == "translation_match":
+    normalized_rule = str(transform_rule)
+    if normalized_rule == "translation":
         return _TRANSFORM_RECIPE_IDENTITY
-    if normalized_query == "reflection_match":
+    if normalized_rule == "reflection":
         return _TRANSFORM_RECIPE_REFLECT_VERTICAL
-    if normalized_query == "rotation_match":
+    if normalized_rule == "rotation":
         if rotation_mode is None:
-            raise ValueError("rotation_match requires one resolved rotation_mode")
+            raise ValueError("rotation requires one resolved rotation_mode")
         quarter_turns = int(rotation_mode.quarter_turns) % 4
         if quarter_turns == 1:
             return _TRANSFORM_RECIPE_ROTATE_90_CW
@@ -243,7 +240,7 @@ def _winner_recipe_for_query(*, query_id: str, rotation_mode: _RotationMode | No
             return _TRANSFORM_RECIPE_ROTATE_180
         if quarter_turns == 3:
             return _TRANSFORM_RECIPE_ROTATE_90_CCW
-    raise ValueError(f"unsupported transformation query_id: {query_id}")
+    raise ValueError(f"unsupported transform_rule: {transform_rule}")
 
 
 def _local_distractor_recipes(*, winner_recipe: str) -> Tuple[str, ...]:
@@ -534,31 +531,31 @@ def _decoupled_winner_label_params(*, params: Mapping[str, Any]) -> Mapping[str,
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    """Resolve scene/query axes plus balanced answer-label support."""
+    """Resolve scene and transform axes plus balanced answer-label support."""
 
     axis_rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.axes")
     scene_supported = [str(value) for value in SUPPORTED_SCENE_VARIANTS]
-    rule_supported = [str(value) for value in TRANSFORMATION_RULES]
-    explicit_query = params.get("query_id")
-    if explicit_query is None:
+    rule_supported = [str(value) for value in TRANSFORM_RULES]
+    explicit_rule = params.get("transform_rule")
+    if explicit_rule is None:
         raise ValueError("shape-gallery transformation rule must be resolved by the public task")
-    query_id = str(explicit_query)
-    if query_id not in set(rule_supported):
-        raise ValueError(f"unsupported transformation rule: {query_id}")
+    transform_rule = str(explicit_rule)
+    if transform_rule not in set(rule_supported):
+        raise ValueError(f"unsupported transform_rule: {transform_rule}")
     explicit_scene = params.get("scene_variant")
     if explicit_scene is not None:
         scene_variant = str(explicit_scene)
         if scene_variant not in set(scene_supported):
             raise ValueError(f"unsupported scene_variant: {scene_variant}")
-        if query_id not in set(str(value) for value in COMPATIBILITY.get(scene_variant, ())):
-            raise ValueError(f"incompatible scene/rule combination: {scene_variant} + {query_id}")
+        if transform_rule not in set(str(value) for value in COMPATIBILITY.get(scene_variant, ())):
+            raise ValueError(f"incompatible scene/rule combination: {scene_variant} + {transform_rule}")
         scene_probs = {scene: (1.0 if scene == scene_variant else 0.0) for scene in scene_supported}
     else:
         selected_scene, restricted_scene_probs = resolve_variant(
             axis_rng,
             params=params,
             gen_defaults=_GEN_DEFAULTS,
-            supported_variants=[scene for scene in scene_supported if query_id in set(COMPATIBILITY.get(scene, ()))],
+            supported_variants=[scene for scene in scene_supported if transform_rule in set(COMPATIBILITY.get(scene, ()))],
             explicit_key="scene_variant",
             weights_key="scene_variant_weights",
         )
@@ -568,14 +565,14 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             gen_defaults=_GEN_DEFAULTS,
             selected_variant=str(selected_scene),
             variant_probabilities=restricted_scene_probs,
-            supported_variants=[scene for scene in scene_supported if query_id in set(COMPATIBILITY.get(scene, ()))],
+            supported_variants=[scene for scene in scene_supported if transform_rule in set(COMPATIBILITY.get(scene, ()))],
             balance_flag_key="balanced_scene_variant_sampling",
             explicit_key="scene_variant",
             weights_key="scene_variant_weights",
-            sampling_namespace=f"{SCENE_NAMESPACE}.scene_variant.{query_id}",
+            sampling_namespace=f"{SCENE_NAMESPACE}.scene_variant.{transform_rule}",
         )
         scene_probs = {scene: float(restricted_scene_probs.get(scene, 0.0)) for scene in scene_supported}
-    query_probs = {rule: (1.0 if rule == query_id else 0.0) for rule in rule_supported}
+    rule_probs = {rule: (1.0 if rule == transform_rule else 0.0) for rule in rule_supported}
     label_pool = tuple(
         str(label).upper()
         for label in params.get(
@@ -602,16 +599,16 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         gen_defaults=_GEN_DEFAULTS,
         label_pool=label_pool,
         selection_namespace=(
-            f"{SCENE_NAMESPACE}.winner_label.{str(scene_variant)}.{str(query_id)}"
+            f"{SCENE_NAMESPACE}.winner_label.{str(scene_variant)}.{str(transform_rule)}"
         ),
     )
     visible_labels = _visible_candidate_labels(label_pool, winner_label=str(winner_label), candidate_count=int(candidate_count))
     return _ResolvedQuery(
         scene_variant=str(scene_variant),
-        query_id=str(query_id),
+        transform_rule=str(transform_rule),
         winner_label=str(winner_label),
         scene_variant_probabilities=dict(scene_probs),
-        query_id_probabilities=dict(query_probs),
+        transform_rule_probabilities=dict(rule_probs),
         winner_label_probabilities=dict(winner_probs),
         candidate_label_pool=tuple(visible_labels),
         candidate_count_probabilities=dict(candidate_count_probabilities),
@@ -654,7 +651,7 @@ def _sample_transformation_scene(
 
     slot_indices = list(range(len(slots)))
     rng.shuffle(slot_indices)
-    if str(query.query_id) == "translation_match":
+    if str(query.transform_rule) == "translation":
         candidate_pairs: List[Tuple[int, Tuple[int, int], Point, Tuple[int, int]]] = []
         for slot_index in slot_indices:
             slot_center = slots[int(slot_index)]
@@ -694,7 +691,7 @@ def _sample_transformation_scene(
         if not candidate_pairs:
             raise ValueError("no feasible translation slot/vector pair for current scene context")
         winner_slot_index, translation_vector, reference_center_graph, translation_vector_anchor = rng.choice(candidate_pairs)
-    elif str(query.query_id) == "reflection_match":
+    elif str(query.transform_rule) == "reflection":
         axis_x = int(params.get("reflection_axis_x", group_default(_GEN_DEFAULTS, "reflection_axis_x", _DEFAULTS.reflection_axis_x)))
         for slot_index in slot_indices:
             slot_center = slots[int(slot_index)]
@@ -748,7 +745,7 @@ def _sample_transformation_scene(
     )
     reference_vertices_px = pixel_polygon_from_graph_units(reference_vertices_graph, context=context)
 
-    winner_recipe = _winner_recipe_for_query(query_id=str(query.query_id), rotation_mode=rotation_mode)
+    winner_recipe = _winner_recipe_for_rule(transform_rule=str(query.transform_rule), rotation_mode=rotation_mode)
     distractor_recipes = list(_local_distractor_recipes(winner_recipe=str(winner_recipe)))
     rng.shuffle(distractor_recipes)
 
@@ -850,9 +847,9 @@ def _sample_transformation_scene(
         label_stroke_color=shape_style.label_stroke_color,
     )
 
-    if str(query.query_id) == "translation_match":
+    if str(query.transform_rule) == "translation":
         if translation_vector_anchor is None:
-            raise ValueError("translation_match requires one resolved cue anchor")
+            raise ValueError("translation requires one resolved cue anchor")
         cue_trace = _draw_translation_cue(
             draw,
             context=context,
@@ -863,7 +860,7 @@ def _sample_transformation_scene(
             translation_vector=translation_vector if translation_vector is not None else (0, 0),
             color=shape_style.line_color,
         )
-    elif str(query.query_id) == "reflection_match":
+    elif str(query.transform_rule) == "reflection":
         cue_trace = _draw_reflection_cue(
             draw,
             context=context,
@@ -948,336 +945,158 @@ def _sample_transformation_scene(
     )
 
 
-class TransformationMatchRuntime:
-    """Generate shape-gallery transformation-match artifacts for one objective."""
+def compose_transformation_scene(
+    instance_seed: int,
+    *,
+    params: Mapping[str, Any],
+    max_attempts: int,
+    transform_rule: str,
+    seed_namespace: str,
+) -> TransformationSceneBundle:
+    """Sample, render, and finalize one transform-selection gallery scene."""
 
-    domain = "geometry"
+    runtime_params = dict(params)
+    runtime_params["transform_rule"] = str(transform_rule)
+    resolved = _resolve_axes(int(instance_seed), params=runtime_params)
+    scene_rng = spawn_rng(int(instance_seed), f"{seed_namespace}.scene")
 
-    def generate_artifact(
-        self,
-        instance_seed: int,
-        *,
-        params: Dict[str, Any],
-        max_attempts: int,
-        runtime_namespace: str,
-        query_id: str,
-    ) -> TransformationMatchArtifact:
-        runtime_params = dict(params)
-        runtime_params["query_id"] = str(query_id)
-        query = _resolve_axes(int(instance_seed), params=runtime_params)
-        scene_rng = spawn_rng(int(instance_seed), f"{runtime_namespace}.scene")
-
-        line_width = None
-        label_font_size_px = None
-        label_stroke_width_scene = None
-        context = None
-        image = None
-        background_meta = None
-        shape_style = None
-        rendered_scene = None
-        last_error: Exception | None = None
-
-        for _ in range(max(1, int(max_attempts))):
-            context_attempt = resolve_graph_scene_context(
-                scene_rng,
-                instance_seed=int(instance_seed),
-                params=runtime_params,
-                render_defaults=_RENDER_DEFAULTS,
-                background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
-                fallback_canvas_min=_DEFAULTS.canvas_size_min,
-                fallback_canvas_max=_DEFAULTS.canvas_size_max,
-                fallback_cells_min=_DEFAULTS.graph_cells_min,
-                fallback_cells_max=_DEFAULTS.graph_cells_max,
+    last_error: Exception | None = None
+    for _ in range(max(1, int(max_attempts))):
+        context = resolve_graph_scene_context(
+            scene_rng,
+            instance_seed=int(instance_seed),
+            params=runtime_params,
+            render_defaults=_RENDER_DEFAULTS,
+            background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
+            fallback_canvas_min=_DEFAULTS.canvas_size_min,
+            fallback_canvas_max=_DEFAULTS.canvas_size_max,
+            fallback_cells_min=_DEFAULTS.graph_cells_min,
+            fallback_cells_max=_DEFAULTS.graph_cells_max,
+        )
+        line_width = sample_int_render_param(
+            scene_rng,
+            params=runtime_params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="line_width",
+            fallback=_DEFAULTS.line_width,
+            minimum_value=1,
+        )
+        label_font_size_px = int(
+            runtime_params.get(
+                "label_font_size_px",
+                resolve_scene_label_font_size_px(
+                    canvas_size=int(context.canvas_size),
+                    graph_spacing=int(context.graph_spacing),
+                    scene_scale=int(context.scene_scale),
+                    min_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_min", _DEFAULTS.label_font_size_min)),
+                    max_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_max", _DEFAULTS.label_font_size_max)),
+                ),
             )
-            line_width_attempt = sample_int_render_param(
-                scene_rng,
-                params=runtime_params,
-                render_defaults=_RENDER_DEFAULTS,
-                key="line_width",
-                fallback=_DEFAULTS.line_width,
-                minimum_value=1,
-            )
-            label_font_size_px_attempt = int(
-                params.get(
-                    "label_font_size_px",
-                    resolve_scene_label_font_size_px(
-                        canvas_size=int(context_attempt.canvas_size),
-                        graph_spacing=int(context_attempt.graph_spacing),
-                        scene_scale=int(context_attempt.scene_scale),
-                        min_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_min", _DEFAULTS.label_font_size_min)),
-                        max_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_max", _DEFAULTS.label_font_size_max)),
-                    ),
-                )
-            )
-            label_stroke_width_attempt = sample_int_render_param(
-                scene_rng,
-                params=runtime_params,
-                render_defaults=_RENDER_DEFAULTS,
-                key="label_stroke_width",
-                fallback=_DEFAULTS.label_stroke_width,
-                minimum_value=1,
-            )
-            label_stroke_width_scene_attempt = max(1, int(label_stroke_width_attempt) * int(context_attempt.scene_scale))
-            image_attempt, draw_attempt, background_meta_attempt = make_graph_scene_canvas(
-                instance_seed=int(instance_seed),
-                context=context_attempt,
-                background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
-            )
-            shape_style_attempt = sample_geometry_shape_style(
-                scene_rng,
-                params=runtime_params,
-                render_defaults=_RENDER_DEFAULTS,
-                anchor_colors=extract_background_anchor_colors(background_meta_attempt),
-            )
-            padding_px = float(
-                params.get(
-                    "cue_line_padding_px",
-                    group_default(_RENDER_DEFAULTS, "cue_line_padding_px", _DEFAULTS.cue_line_padding_px),
-                )
-            )
-            try:
-                rendered_scene_attempt = _sample_transformation_scene(
-                    scene_rng,
-                    query=query,
-                    context=context_attempt,
-                    padding_px=float(padding_px),
-                    line_width=int(line_width_attempt) * int(context_attempt.scene_scale),
-                    label_font_size_px=int(label_font_size_px_attempt),
-                    label_stroke_width=int(label_stroke_width_scene_attempt),
-                    reference_label_gap_px=int(
-                        params.get(
-                            "reference_label_gap_px",
-                            group_default(_RENDER_DEFAULTS, "reference_label_gap_px", _DEFAULTS.reference_label_gap_px),
-                        )
-                    ),
-                    cue_label_gap_px=int(
-                        params.get(
-                            "cue_label_gap_px",
-                            group_default(_RENDER_DEFAULTS, "cue_label_gap_px", _DEFAULTS.cue_label_gap_px),
-                        )
-                    ),
-                    cue_dash_px=int(params.get("cue_dash_px", group_default(_RENDER_DEFAULTS, "cue_dash_px", _DEFAULTS.cue_dash_px))),
-                    cue_gap_px=int(params.get("cue_gap_px", group_default(_RENDER_DEFAULTS, "cue_gap_px", _DEFAULTS.cue_gap_px))),
-                    cue_arrow_head_length_px=int(
-                        params.get(
-                            "cue_arrow_head_length_px",
-                            group_default(_RENDER_DEFAULTS, "cue_arrow_head_length_px", _DEFAULTS.cue_arrow_head_length_px),
-                        )
-                    )
-                    * int(context_attempt.scene_scale),
-                    cue_arrow_head_width_px=int(
-                        params.get(
-                            "cue_arrow_head_width_px",
-                            group_default(_RENDER_DEFAULTS, "cue_arrow_head_width_px", _DEFAULTS.cue_arrow_head_width_px),
-                        )
-                    )
-                    * int(context_attempt.scene_scale),
-                    cue_point_radius_px=int(
-                        params.get(
-                            "cue_point_radius_px",
-                            group_default(_RENDER_DEFAULTS, "cue_point_radius_px", _DEFAULTS.cue_point_radius_px),
-                        )
-                    ),
-                    object_label_offset_px=float(
-                        params.get(
-                            "object_label_offset_px",
-                            group_default(_RENDER_DEFAULTS, "object_label_offset_px", _DEFAULTS.object_label_offset_px),
-                        )
-                    ),
-                    draw=draw_attempt,
-                    shape_style=shape_style_attempt,
-                    render_canvas_size=int(context_attempt.canvas_size) * int(context_attempt.scene_scale),
-                    params=runtime_params,
-                )
-                context = context_attempt
-                image = image_attempt
-                background_meta = background_meta_attempt
-                shape_style = shape_style_attempt
-                rendered_scene = rendered_scene_attempt
-                line_width = int(line_width_attempt)
-                label_font_size_px = int(label_font_size_px_attempt)
-                label_stroke_width_scene = int(label_stroke_width_scene_attempt)
-                break
-            except Exception as exc:
-                last_error = exc
-                continue
-
-        if (
-            rendered_scene is None
-            or context is None
-            or image is None
-            or background_meta is None
-            or shape_style is None
-            or line_width is None
-            or label_font_size_px is None
-            or label_stroke_width_scene is None
-        ):
-            raise RuntimeError(f"failed to generate {runtime_namespace} instance") from last_error
-
-        annotation_value = rendered_scene.annotation.get("annotation_value", [])
-        if not isinstance(annotation_value, list) or not annotation_value:
-            raise RuntimeError("geometry transformation annotation must include winning polygon pixel points")
-
-        image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
-            image,
+        )
+        label_stroke_width = sample_int_render_param(
+            scene_rng,
+            params=runtime_params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="label_stroke_width",
+            fallback=_DEFAULTS.label_stroke_width,
+            minimum_value=1,
+        )
+        label_stroke_width_px = max(1, int(label_stroke_width) * int(context.scene_scale))
+        image, draw, background_meta = make_graph_scene_canvas(
             instance_seed=int(instance_seed),
             context=context,
-            background_meta=background_meta,
-            noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
+            background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-
-        prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
-            (
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "object_description",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "annotation_hint_template",
-                "answer_hint",
-            ),
-            context=f"prompt defaults for {runtime_namespace}",
+        shape_style = sample_geometry_shape_style(
+            scene_rng,
+            params=runtime_params,
+            render_defaults=_RENDER_DEFAULTS,
+            anchor_colors=extract_background_anchor_colors(background_meta),
         )
-        json_example, json_example_answer_only = build_prompt_json_examples(
-            annotation_value=annotation_value,
-            answer_type="option_letter",
+        padding_px = float(
+            runtime_params.get(
+                "cue_line_padding_px",
+                group_default(_RENDER_DEFAULTS, "cue_line_padding_px", _DEFAULTS.cue_line_padding_px),
+            )
         )
-        annotation_hint = str(prompt_defaults["annotation_hint_template"]).format(
-            vertex_count=len(rendered_scene.required_annotation_labels),
-        )
-        prompt_slots = {
-            "object_description": str(prompt_defaults["object_description"]),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(annotation_hint),
-            "answer_hint": str(prompt_defaults["answer_hint"]),
-            "json_example": str(json_example),
-            "json_example_answer_only": str(json_example_answer_only),
-        }
-        if str(query.query_id) == "rotation_match":
-            prompt_slots["rotation_instruction"] = str(rendered_scene.rotation_prompt_label or "180° rotation")
-        prompt_selection = render_scene_prompt_variants(
-            domain=self.domain,
-            scene_id=SCENE_ID,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_id),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots=prompt_slots,
-            instance_seed=int(instance_seed),
-        )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
-        answer_value = str(rendered_scene.answer_value)
-        annotation_type = str(rendered_scene.annotation["annotation_type"])
-        annotation_payload = [list(point) for point in annotation_value]
-
-        query_params: Dict[str, Any] = {
-            "scene_variant": str(query.scene_variant),
-            "query_id": str(query.query_id),
-            "query_id_probabilities": dict(query.query_id_probabilities),
-            "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-            "winner_label_probabilities": dict(query.winner_label_probabilities),
-            "candidate_label_pool": list(query.candidate_label_pool),
-            "candidate_count_probabilities": dict(query.candidate_count_probabilities),
-        }
-        if rendered_scene.translation_vector is not None:
-            query_params["translation_vector"] = [int(rendered_scene.translation_vector[0]), int(rendered_scene.translation_vector[1])]
-        if rendered_scene.rotation_mode is not None:
-            query_params["rotation_mode"] = str(rendered_scene.rotation_mode)
-            query_params["rotation_instruction"] = str(rendered_scene.rotation_prompt_label)
-
-        trace_payload = {
-            "scene_ir": {
-                "scene_kind": "geometry_transformation_match",
-                "entities": [dict(entity) for entity in rendered_scene.scene_entities],
-                "relations": {
-                    "scene_variant": str(query.scene_variant),
-                    "winner_label": str(rendered_scene.winner_label),
-                    "cue_kind": str(rendered_scene.cue_kind),
-                    "query_id": str(query.query_id),
-                },
-            },
-            "query_spec": {
-                "query_id": str(query.query_id),
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": dict(query_params),
-            },
-            "render_spec": {
-                "canvas_size": int(context.canvas_size),
-                "coord_space": "pixel",
-                "background_style": dict(background_meta_final),
-                "post_image_noise": dict(post_noise_meta),
-                "shape_style": dict(shape_style.to_trace_dict()),
-                "text_style": {
-                    "font_size_px": int(label_font_size_px),
-                    "stroke_width_px": int(label_stroke_width_scene),
-                },
-                "graph_coordinate_frame": dict(context.graph_frame),
-                "graph_paper_grid": graph_paper_grid_from_frame(context.graph_frame),
-                **dict(context.graph_layout_metadata),
-                "scene_variant": str(query.scene_variant),
-                "candidate_count": int(len(query.candidate_label_pool)),
-                "candidate_count_probabilities": dict(query.candidate_count_probabilities),
-            },
-            "render_map": {
-                **dict(rendered_scene.render_map),
-                "image_id": "img0",
-                "winner_label": str(rendered_scene.winner_label),
-            },
-            "execution_trace": {
-                "scene_variant": str(query.scene_variant),
-                "query_id": str(query.query_id),
-                "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-                "query_id_probabilities": dict(query.query_id_probabilities),
-                "winner_label": str(rendered_scene.winner_label),
-                "winner_label_probabilities": dict(query.winner_label_probabilities),
-                "candidate_count_probabilities": dict(query.candidate_count_probabilities),
-                "cue_kind": str(rendered_scene.cue_kind),
-                "required_annotation_labels": list(rendered_scene.required_annotation_labels),
-                "question_format": "label_choice_no_text_options",
-                "rotation_mode": (str(rendered_scene.rotation_mode) if rendered_scene.rotation_mode is not None else None),
-                "rotation_instruction": (str(rendered_scene.rotation_prompt_label) if rendered_scene.rotation_prompt_label is not None else None),
-                "translation_vector": (
-                    [int(rendered_scene.translation_vector[0]), int(rendered_scene.translation_vector[1])]
-                    if rendered_scene.translation_vector is not None
-                    else None
+        try:
+            rendered_scene = _sample_transformation_scene(
+                scene_rng,
+                query=resolved,
+                context=context,
+                padding_px=float(padding_px),
+                line_width=int(line_width) * int(context.scene_scale),
+                label_font_size_px=int(label_font_size_px),
+                label_stroke_width=int(label_stroke_width_px),
+                reference_label_gap_px=int(
+                    runtime_params.get(
+                        "reference_label_gap_px",
+                        group_default(_RENDER_DEFAULTS, "reference_label_gap_px", _DEFAULTS.reference_label_gap_px),
+                    )
                 ),
-            },
-            "witness_symbolic": {
-                **dict(rendered_scene.annotation["witness_symbolic"]),
-                "winner_label": str(rendered_scene.winner_label),
-            },
-            "projected_annotation": dict(rendered_scene.annotation["projected_annotation"]),
-        }
+                cue_label_gap_px=int(
+                    runtime_params.get(
+                        "cue_label_gap_px",
+                        group_default(_RENDER_DEFAULTS, "cue_label_gap_px", _DEFAULTS.cue_label_gap_px),
+                    )
+                ),
+                cue_dash_px=int(runtime_params.get("cue_dash_px", group_default(_RENDER_DEFAULTS, "cue_dash_px", _DEFAULTS.cue_dash_px))),
+                cue_gap_px=int(runtime_params.get("cue_gap_px", group_default(_RENDER_DEFAULTS, "cue_gap_px", _DEFAULTS.cue_gap_px))),
+                cue_arrow_head_length_px=int(
+                    runtime_params.get(
+                        "cue_arrow_head_length_px",
+                        group_default(_RENDER_DEFAULTS, "cue_arrow_head_length_px", _DEFAULTS.cue_arrow_head_length_px),
+                    )
+                )
+                * int(context.scene_scale),
+                cue_arrow_head_width_px=int(
+                    runtime_params.get(
+                        "cue_arrow_head_width_px",
+                        group_default(_RENDER_DEFAULTS, "cue_arrow_head_width_px", _DEFAULTS.cue_arrow_head_width_px),
+                    )
+                )
+                * int(context.scene_scale),
+                cue_point_radius_px=int(
+                    runtime_params.get(
+                        "cue_point_radius_px",
+                        group_default(_RENDER_DEFAULTS, "cue_point_radius_px", _DEFAULTS.cue_point_radius_px),
+                    )
+                ),
+                object_label_offset_px=float(
+                    runtime_params.get(
+                        "object_label_offset_px",
+                        group_default(_RENDER_DEFAULTS, "object_label_offset_px", _DEFAULTS.object_label_offset_px),
+                    )
+                ),
+                draw=draw,
+                shape_style=shape_style,
+                render_canvas_size=int(context.canvas_size) * int(context.scene_scale),
+                params=runtime_params,
+            )
+            annotation_value = rendered_scene.annotation.get("annotation_value", [])
+            if not isinstance(annotation_value, list) or not annotation_value:
+                raise RuntimeError("geometry transformation annotation must include winning polygon pixel points")
+            final_image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
+                image,
+                instance_seed=int(instance_seed),
+                context=context,
+                background_meta=background_meta,
+                noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
+            )
+            return TransformationSceneBundle(
+                resolved=resolved,
+                rendered_scene=rendered_scene,
+                image=final_image,
+                context=context,
+                background_meta=dict(background_meta_final),
+                post_noise_meta=dict(post_noise_meta),
+                shape_style_trace=dict(shape_style.to_trace_dict()),
+                line_width=int(line_width),
+                label_font_size_px=int(label_font_size_px),
+                label_stroke_width_px=int(label_stroke_width_px),
+            )
+        except Exception as exc:
+            last_error = exc
+            continue
 
-        scene_bonus = 0.08 if str(query.scene_variant) == "quadrilateral" else 0.0
-        visual_scan = 0.56 + scene_bonus
-        ambiguity = {
-            "translation_match": 0.32,
-            "reflection_match": 0.45,
-            "rotation_match": 0.62,
-        }[str(query.query_id)]
-        if str(query.scene_variant) == "quadrilateral":
-            ambiguity = min(1.0, float(ambiguity + 0.05))
-
-        return TransformationMatchArtifact(
-            prompt=str(prompt_artifacts.prompt),
-            answer_type="option_letter",
-            answer_value=str(answer_value),
-            annotation_type=str(annotation_type),
-            annotation_value=list(annotation_payload),
-            image=image,
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            query_id=str(query.query_id),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-        )
-
-
+    raise RuntimeError(f"failed to compose shape-gallery transform scene for {transform_rule}") from last_error

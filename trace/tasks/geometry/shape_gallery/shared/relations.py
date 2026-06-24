@@ -10,9 +10,6 @@ from trace.core.seed import hash64, spawn_rng
 from trace.core.scene_config import get_scene_defaults
 from trace.tasks.shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.deterministic_sampling import uniform_probability_map
-from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.prompt_json_example import resolve_prompt_json_examples
-from trace.tasks.shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 from trace.tasks.shared.text_rendering import resolve_scene_label_font_size_px
 from trace.tasks.shared.variant_sampling import (
     apply_balanced_variant_sampling,
@@ -53,13 +50,13 @@ from trace.tasks.geometry.shared.single_object_scene import (
     resolve_graph_scene_context,
 )
 
-SCENE_NAMESPACE = "shape_gallery_similarity_count"
+SCENE_NAMESPACE = "shape_gallery_relation_count"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("triangle", "quadrilateral")
-SIMILARITY_RELATIONS: Tuple[str, ...] = ("congruent_count", "similar_count")
+RELATION_RULES: Tuple[str, ...] = ("congruent", "similar")
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "triangle": SIMILARITY_RELATIONS,
-    "quadrilateral": SIMILARITY_RELATIONS,
+    "triangle": RELATION_RULES,
+    "quadrilateral": RELATION_RULES,
 }
 
 POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id="similarity")
@@ -67,22 +64,6 @@ POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id="similarity")
 
 _RIGID_RECIPES: Tuple[str, ...] = tuple(RIGID_TRANSFORM_RECIPE_IDS)
 
-
-
-@dataclass(frozen=True)
-class SimilarityCountArtifact:
-    """Generated data needed by a public shape relation-count task."""
-
-    prompt: str
-    answer_type: str
-    answer_value: Any
-    annotation_type: str
-    annotation_value: Any
-    image: Any
-    trace_payload: Dict[str, Any]
-    task_versions: Dict[str, Any]
-    query_id: str
-    prompt_variants: Dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -123,13 +104,13 @@ class _TaskDefaults:
 
 @dataclass(frozen=True)
 class _ResolvedQuery:
-    """Resolved scene/query axes plus target-count support for one instance."""
+    """Resolved scene and relation axes plus target-count support for one instance."""
 
     scene_variant: str
-    query_id: str
+    relation_rule: str
     target_count: int
     scene_variant_probabilities: Dict[str, float]
-    query_id_probabilities: Dict[str, float]
+    relation_rule_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
     candidate_label_pool: Tuple[str, ...]
 
@@ -149,6 +130,22 @@ class _RenderedSimilarityScene:
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
     object_label_centers: Dict[str, List[float]]
+
+
+@dataclass(frozen=True)
+class SimilaritySceneBundle:
+    """Rendered relation-count scene plus neutral metadata for public tasks."""
+
+    resolved: _ResolvedQuery
+    rendered_scene: _RenderedSimilarityScene
+    image: Any
+    context: GraphSceneContext
+    background_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+    shape_style_trace: Dict[str, Any]
+    line_width: int
+    label_font_size_px: int
+    label_stroke_width_px: int
 
 
 _DEFAULTS = _TaskDefaults()
@@ -208,7 +205,7 @@ def _resolve_target_count(
     *,
     instance_seed: int,
     scene_variant: str,
-    query_id: str,
+    relation_rule: str,
     params: Mapping[str, Any],
     selection_namespace: str,
 ) -> Tuple[int, Dict[str, float]]:
@@ -256,46 +253,46 @@ def _decoupled_scene_sampling_params(*, params: Mapping[str, Any], target_count_
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    """Resolve scene/query axes plus balanced target-count support."""
+    """Resolve scene and relation axes plus balanced target-count support."""
 
     axis_rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.axes")
     scene_supported = [str(value) for value in SUPPORTED_SCENE_VARIANTS]
-    query_supported = [str(value) for value in SIMILARITY_RELATIONS]
+    relation_supported = [str(value) for value in RELATION_RULES]
     compatibility_map = {
-        str(scene): tuple(str(query) for query in queries)
-        for scene, queries in COMPATIBILITY.items()
+        str(scene): tuple(str(rule) for rule in rules)
+        for scene, rules in COMPATIBILITY.items()
     }
     explicit_scene = params.get("scene_variant")
-    explicit_query = params.get("query_id")
+    explicit_relation = params.get("relation_rule")
     if explicit_scene is not None and str(explicit_scene) not in set(scene_supported):
         raise ValueError(f"unsupported scene_variant: {explicit_scene}")
-    if explicit_query is not None and str(explicit_query) not in set(query_supported):
-        raise ValueError(f"unsupported query_id: {explicit_query}")
+    if explicit_relation is not None and str(explicit_relation) not in set(relation_supported):
+        raise ValueError(f"unsupported relation_rule: {explicit_relation}")
 
-    if explicit_query is None:
-        raise ValueError("shape-gallery relation mode must be resolved by the public task")
-    query_id = str(explicit_query)
-    query_probs = _full_probability_map(query_supported, {query_id: 1.0})
+    if explicit_relation is None:
+        raise ValueError("shape-gallery relation rule must be resolved by the public task")
+    relation_rule = str(explicit_relation)
+    relation_probs = _full_probability_map(relation_supported, {relation_rule: 1.0})
 
     target_count, target_count_probs = _resolve_target_count(
         axis_rng,
         instance_seed=int(instance_seed),
         scene_variant=str(explicit_scene) if explicit_scene is not None else "",
-        query_id=str(query_id),
+        relation_rule=str(relation_rule),
         params=params,
-        selection_namespace=f"{SCENE_NAMESPACE}.target_count.{query_id}",
+        selection_namespace=f"{SCENE_NAMESPACE}.target_count.{relation_rule}",
     )
 
     if explicit_scene is not None:
         scene_variant = str(explicit_scene)
-        if str(query_id) not in set(compatibility_map.get(scene_variant, ())):
-            raise ValueError(f"incompatible scene/query combination: {scene_variant} + {query_id}")
+        if str(relation_rule) not in set(compatibility_map.get(scene_variant, ())):
+            raise ValueError(f"incompatible scene/relation combination: {scene_variant} + {relation_rule}")
         scene_probs = _full_probability_map(scene_supported, {scene_variant: 1.0})
     else:
         allowed_scenes = [
             scene
             for scene in scene_supported
-            if str(query_id) in set(compatibility_map.get(scene, ()))
+            if str(relation_rule) in set(compatibility_map.get(scene, ()))
         ]
         selected_scene, restricted_scene_probs = resolve_variant(
             axis_rng,
@@ -319,7 +316,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             balance_flag_key="balanced_scene_variant_sampling",
             explicit_key="scene_variant",
             weights_key="scene_variant_weights",
-            sampling_namespace=f"{SCENE_NAMESPACE}.scene_variant.{query_id}.{target_count}",
+            sampling_namespace=f"{SCENE_NAMESPACE}.scene_variant.{relation_rule}.{target_count}",
         )
         scene_probs = _full_probability_map(scene_supported, restricted_scene_probs)
 
@@ -334,10 +331,10 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         raise ValueError("geometry similarity requires exactly five unique candidate labels")
     return _ResolvedQuery(
         scene_variant=str(scene_variant),
-        query_id=str(query_id),
+        relation_rule=str(relation_rule),
         target_count=int(target_count),
         scene_variant_probabilities=dict(scene_probs),
-        query_id_probabilities=dict(query_probs),
+        relation_rule_probabilities=dict(relation_probs),
         target_count_probabilities=dict(target_count_probs),
         candidate_label_pool=tuple(label_pool),
     )
@@ -345,17 +342,17 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 
 def _candidate_is_match(
     *,
-    query_id: str,
+    relation_rule: str,
     reference_vertices_graph: Sequence[Tuple[float, float]],
     candidate_vertices_graph: Sequence[Tuple[float, float]],
 ) -> bool:
     """Return whether one candidate satisfies the requested similarity predicate."""
 
-    if str(query_id) == "congruent_count":
+    if str(relation_rule) == "congruent":
         return bool(polygons_are_congruent(reference_vertices_graph, candidate_vertices_graph))
-    if str(query_id) == "similar_count":
+    if str(relation_rule) == "similar":
         return bool(polygons_are_similar(reference_vertices_graph, candidate_vertices_graph))
-    raise ValueError(f"unsupported similarity query_id: {query_id}")
+    raise ValueError(f"unsupported relation_rule: {relation_rule}")
 
 
 def _sample_match_labels(rng, *, label_pool: Sequence[str], target_count: int) -> Tuple[str, ...]:
@@ -369,7 +366,7 @@ def _sample_match_labels(rng, *, label_pool: Sequence[str], target_count: int) -
 def _build_matching_candidate(
     rng,
     *,
-    query_id: str,
+    relation_rule: str,
     template: Polygon,
     slot_center: Tuple[int, int],
     force_large_scale: bool,
@@ -378,7 +375,7 @@ def _build_matching_candidate(
     """Build one matching candidate polygon by construction."""
 
     scale_factor = 1
-    if str(query_id) == "similar_count":
+    if str(relation_rule) == "similar":
         allowed_scales = [int(value) for value in similar_scale_support if int(value) > 0]
         if not allowed_scales:
             raise ValueError("similar_scale_support must be non-empty")
@@ -395,14 +392,14 @@ def _build_matching_candidate(
 def _build_distractor_candidate(
     rng,
     *,
-    query_id: str,
+    relation_rule: str,
     template: Polygon,
     slot_center: Tuple[int, int],
     non_uniform_pairs: Sequence[Tuple[int, int]],
 ) -> Polygon:
     """Build one distractor candidate polygon."""
 
-    if str(query_id) == "congruent_count" and bool(rng.randint(0, 1)):
+    if str(relation_rule) == "congruent" and bool(rng.randint(0, 1)):
         base_vertices = scale_polygon(template, factor=2)
     else:
         scale_x, scale_y = rng.choice(list(non_uniform_pairs))
@@ -448,7 +445,7 @@ def _sample_similarity_scene(
     )
     matching_label_set = set(matching_labels)
     highlight_large_label: str | None = None
-    if str(query.query_id) == "similar_count" and matching_labels:
+    if str(query.relation_rule) == "similar" and matching_labels:
         highlight_large_label = str(rng.choice(list(matching_labels)))
 
     candidate_vertices_graph_by_label: Dict[str, Polygon] = {}
@@ -489,14 +486,14 @@ def _sample_similarity_scene(
             if is_match:
                 candidate_vertices_graph = _build_matching_candidate(
                     rng,
-                    query_id=str(query.query_id),
+                    relation_rule=str(query.relation_rule),
                     template=template,
                     slot_center=slot_center,
                     force_large_scale=bool(str(label) == str(highlight_large_label)),
                     similar_scale_support=similar_scale_support,
                 )
                 if not _candidate_is_match(
-                    query_id=str(query.query_id),
+                    relation_rule=str(query.relation_rule),
                     reference_vertices_graph=reference_vertices_graph,
                     candidate_vertices_graph=candidate_vertices_graph,
                 ):
@@ -505,13 +502,13 @@ def _sample_similarity_scene(
             else:
                 candidate_vertices_graph = _build_distractor_candidate(
                     rng,
-                    query_id=str(query.query_id),
+                    relation_rule=str(query.relation_rule),
                     template=template,
                     slot_center=slot_center,
                     non_uniform_pairs=non_uniform_pairs,
                 )
                 if _candidate_is_match(
-                    query_id=str(query.query_id),
+                    relation_rule=str(query.relation_rule),
                     reference_vertices_graph=reference_vertices_graph,
                     candidate_vertices_graph=candidate_vertices_graph,
                 ):
@@ -602,288 +599,127 @@ def _sample_similarity_scene(
     )
 
 
-class SimilarityCountRuntime:
-    """Generate shape-gallery relation-count artifacts for one resolved objective."""
+def compose_similarity_scene(
+    instance_seed: int,
+    *,
+    params: Mapping[str, Any],
+    max_attempts: int,
+    relation_rule: str,
+    seed_namespace: str,
+) -> SimilaritySceneBundle:
+    """Sample, render, and finalize one relation-count gallery scene."""
 
-    domain = "geometry"
+    runtime_params = dict(params)
+    runtime_params["relation_rule"] = str(relation_rule)
+    resolved = _resolve_axes(int(instance_seed), params=runtime_params)
+    scene_rng = spawn_rng(int(instance_seed), f"{seed_namespace}.scene")
 
-    def generate_artifact(
-        self,
-        instance_seed: int,
-        *,
-        params: Dict[str, Any],
-        max_attempts: int,
-        runtime_namespace: str,
-        query_id: str,
-    ) -> SimilarityCountArtifact:
-        runtime_params = dict(params)
-        runtime_params["query_id"] = str(query_id)
-        query = _resolve_axes(int(instance_seed), params=runtime_params)
-        scene_rng = spawn_rng(int(instance_seed), f"{runtime_namespace}.scene")
-
-        line_width = None
-        label_font_size_px = None
-        label_stroke_width_scene = None
-        context = None
-        image = None
-        background_meta = None
-        shape_style = None
-        rendered_scene = None
-        last_error: Exception | None = None
-
-        for _ in range(max(1, int(max_attempts))):
-            context_attempt = resolve_graph_scene_context(
-                scene_rng,
-                instance_seed=int(instance_seed),
-                params=runtime_params,
-                render_defaults=_RENDER_DEFAULTS,
-                background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
-                fallback_canvas_min=_DEFAULTS.canvas_size_min,
-                fallback_canvas_max=_DEFAULTS.canvas_size_max,
-                fallback_cells_min=_DEFAULTS.graph_cells_min,
-                fallback_cells_max=_DEFAULTS.graph_cells_max,
+    last_error: Exception | None = None
+    for _ in range(max(1, int(max_attempts))):
+        context = resolve_graph_scene_context(
+            scene_rng,
+            instance_seed=int(instance_seed),
+            params=runtime_params,
+            render_defaults=_RENDER_DEFAULTS,
+            background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
+            fallback_canvas_min=_DEFAULTS.canvas_size_min,
+            fallback_canvas_max=_DEFAULTS.canvas_size_max,
+            fallback_cells_min=_DEFAULTS.graph_cells_min,
+            fallback_cells_max=_DEFAULTS.graph_cells_max,
+        )
+        line_width = sample_int_render_param(
+            scene_rng,
+            params=runtime_params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="line_width",
+            fallback=_DEFAULTS.line_width,
+            minimum_value=1,
+        )
+        label_font_size_px = int(
+            runtime_params.get(
+                "label_font_size_px",
+                resolve_scene_label_font_size_px(
+                    canvas_size=int(context.canvas_size),
+                    graph_spacing=int(context.graph_spacing),
+                    scene_scale=int(context.scene_scale),
+                    min_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_min", _DEFAULTS.label_font_size_min)),
+                    max_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_max", _DEFAULTS.label_font_size_max)),
+                ),
             )
-            line_width_attempt = sample_int_render_param(
-                scene_rng,
-                params=runtime_params,
-                render_defaults=_RENDER_DEFAULTS,
-                key="line_width",
-                fallback=_DEFAULTS.line_width,
-                minimum_value=1,
-            )
-            label_font_size_px_attempt = int(
-                params.get(
-                    "label_font_size_px",
-                    resolve_scene_label_font_size_px(
-                        canvas_size=int(context_attempt.canvas_size),
-                        graph_spacing=int(context_attempt.graph_spacing),
-                        scene_scale=int(context_attempt.scene_scale),
-                        min_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_min", _DEFAULTS.label_font_size_min)),
-                        max_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_max", _DEFAULTS.label_font_size_max)),
-                    ),
-                )
-            )
-            label_stroke_width_attempt = sample_int_render_param(
-                scene_rng,
-                params=runtime_params,
-                render_defaults=_RENDER_DEFAULTS,
-                key="label_stroke_width",
-                fallback=_DEFAULTS.label_stroke_width,
-                minimum_value=1,
-            )
-            label_stroke_width_scene_attempt = max(1, int(label_stroke_width_attempt) * int(context_attempt.scene_scale))
-            image_attempt, draw_attempt, background_meta_attempt = make_graph_scene_canvas(
-                instance_seed=int(instance_seed),
-                context=context_attempt,
-                background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
-            )
-            shape_style_attempt = sample_geometry_shape_style(
-                scene_rng,
-                params=runtime_params,
-                render_defaults=_RENDER_DEFAULTS,
-                anchor_colors=extract_background_anchor_colors(background_meta_attempt),
-            )
-            padding_px = float(
-                params.get(
-                    "cue_line_padding_px",
-                    group_default(_RENDER_DEFAULTS, "cue_line_padding_px", _DEFAULTS.cue_line_padding_px),
-                )
-            )
-            try:
-                rendered_scene_attempt = _sample_similarity_scene(
-                    scene_rng,
-                    query=query,
-                    context=context_attempt,
-                    padding_px=float(padding_px),
-                    line_width=int(line_width_attempt) * int(context_attempt.scene_scale),
-                    label_font_size_px=int(label_font_size_px_attempt),
-                    label_stroke_width=int(label_stroke_width_scene_attempt),
-                    reference_label_gap_px=int(
-                        params.get(
-                            "reference_label_gap_px",
-                            group_default(_RENDER_DEFAULTS, "reference_label_gap_px", _DEFAULTS.reference_label_gap_px),
-                        )
-                    ),
-                    object_label_offset_px=float(
-                        params.get(
-                            "object_label_offset_px",
-                            group_default(_RENDER_DEFAULTS, "object_label_offset_px", _DEFAULTS.object_label_offset_px),
-                        )
-                    ),
-                    draw=draw_attempt,
-                    shape_style=shape_style_attempt,
-                    render_canvas_size=int(context_attempt.canvas_size) * int(context_attempt.scene_scale),
-                    params=runtime_params,
-                )
-                context = context_attempt
-                image = image_attempt
-                background_meta = background_meta_attempt
-                shape_style = shape_style_attempt
-                rendered_scene = rendered_scene_attempt
-                line_width = int(line_width_attempt)
-                label_font_size_px = int(label_font_size_px_attempt)
-                label_stroke_width_scene = int(label_stroke_width_scene_attempt)
-                break
-            except Exception as exc:
-                last_error = exc
-                continue
-
-        if (
-            rendered_scene is None
-            or context is None
-            or image is None
-            or background_meta is None
-            or shape_style is None
-            or line_width is None
-            or label_font_size_px is None
-            or label_stroke_width_scene is None
-        ):
-            raise RuntimeError(f"failed to generate {runtime_namespace} instance") from last_error
-
-        image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
-            image,
+        )
+        label_stroke_width = sample_int_render_param(
+            scene_rng,
+            params=runtime_params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="label_stroke_width",
+            fallback=_DEFAULTS.label_stroke_width,
+            minimum_value=1,
+        )
+        label_stroke_width_px = max(1, int(label_stroke_width) * int(context.scene_scale))
+        image, draw, background_meta = make_graph_scene_canvas(
             instance_seed=int(instance_seed),
             context=context,
-            background_meta=background_meta,
-            noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
+            background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-
-        annotation_labels = list(rendered_scene.matching_labels)
-        prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
-            (
-                "bundle_id",
-                "scene_key",
-                "task_key",
-                "object_description",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "annotation_hint_template",
-                "answer_hint",
-                "json_example",
-                "json_example_answer_only",
-            ),
-            context=f"prompt defaults for {runtime_namespace}",
+        shape_style = sample_geometry_shape_style(
+            scene_rng,
+            params=runtime_params,
+            render_defaults=_RENDER_DEFAULTS,
+            anchor_colors=extract_background_anchor_colors(background_meta),
         )
-        json_example, json_example_answer_only = resolve_prompt_json_examples(
-            prompt_defaults,
-            annotation_value=[list(rendered_scene.candidate_bboxes_px_by_label[str(label)]) for label in annotation_labels],
-            answer_type="integer",
+        padding_px = float(
+            runtime_params.get(
+                "cue_line_padding_px",
+                group_default(_RENDER_DEFAULTS, "cue_line_padding_px", _DEFAULTS.cue_line_padding_px),
+            )
         )
-        annotation_hint = str(prompt_defaults["annotation_hint_template"]).format(
-            label_count=len(query.candidate_label_pool),
-        )
-        prompt_selection = render_scene_prompt_variants(
-            domain=self.domain,
-            scene_id=SCENE_ID,
-            bundle_id=str(prompt_defaults["bundle_id"]),
-            scene_key=str(prompt_defaults["scene_key"]),
-            task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_id),
-            answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "annotation_hint": str(annotation_hint),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(json_example),
-                "json_example_answer_only": str(json_example_answer_only),
-            },
-            instance_seed=int(instance_seed),
-        )
-        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
+        try:
+            rendered_scene = _sample_similarity_scene(
+                scene_rng,
+                query=resolved,
+                context=context,
+                padding_px=float(padding_px),
+                line_width=int(line_width) * int(context.scene_scale),
+                label_font_size_px=int(label_font_size_px),
+                label_stroke_width=int(label_stroke_width_px),
+                reference_label_gap_px=int(
+                    runtime_params.get(
+                        "reference_label_gap_px",
+                        group_default(_RENDER_DEFAULTS, "reference_label_gap_px", _DEFAULTS.reference_label_gap_px),
+                    )
+                ),
+                object_label_offset_px=float(
+                    runtime_params.get(
+                        "object_label_offset_px",
+                        group_default(_RENDER_DEFAULTS, "object_label_offset_px", _DEFAULTS.object_label_offset_px),
+                    )
+                ),
+                draw=draw,
+                shape_style=shape_style,
+                render_canvas_size=int(context.canvas_size) * int(context.scene_scale),
+                params=runtime_params,
+            )
+            final_image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
+                image,
+                instance_seed=int(instance_seed),
+                context=context,
+                background_meta=background_meta,
+                noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
+            )
+            return SimilaritySceneBundle(
+                resolved=resolved,
+                rendered_scene=rendered_scene,
+                image=final_image,
+                context=context,
+                background_meta=dict(background_meta_final),
+                post_noise_meta=dict(post_noise_meta),
+                shape_style_trace=dict(shape_style.to_trace_dict()),
+                line_width=int(line_width),
+                label_font_size_px=int(label_font_size_px),
+                label_stroke_width_px=int(label_stroke_width_px),
+            )
+        except Exception as exc:
+            last_error = exc
+            continue
 
-        answer_value = int(len(annotation_labels))
-
-        annotation_bboxes = [list(rendered_scene.candidate_bboxes_px_by_label[str(label)]) for label in annotation_labels]
-        annotation_centers = [list(rendered_scene.candidate_centers_px_by_label[str(label)]) for label in annotation_labels]
-        query_params = {
-            "scene_variant": str(query.scene_variant),
-            "query_id": str(query.query_id),
-            "query_id_probabilities": dict(query.query_id_probabilities),
-            "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-            "target_count": int(query.target_count),
-            "target_count_probabilities": dict(query.target_count_probabilities),
-            "candidate_label_pool": list(query.candidate_label_pool),
-        }
-
-        trace_payload = {
-            "scene_ir": {
-                "scene_kind": "geometry_similarity_count",
-                "entities": [dict(entity) for entity in rendered_scene.scene_entities],
-                "relations": {
-                    "scene_variant": str(query.scene_variant),
-                    "matching_labels": list(annotation_labels),
-                    "target_count": int(query.target_count),
-                    "query_id": str(query.query_id),
-                },
-            },
-            "query_spec": {
-                "query_id": str(query.query_id),
-                "template_id": str(prompt_defaults["bundle_id"]),
-                "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": dict(query_params),
-            },
-            "render_spec": {
-                "canvas_size": int(context.canvas_size),
-                "coord_space": "pixel",
-                "background_style": dict(background_meta_final),
-                "post_image_noise": dict(post_noise_meta),
-                "shape_style": dict(shape_style.to_trace_dict()),
-                "text_style": {
-                    "font_size_px": int(label_font_size_px),
-                    "stroke_width_px": int(label_stroke_width_scene),
-                },
-                "graph_coordinate_frame": dict(context.graph_frame),
-                "graph_paper_grid": graph_paper_grid_from_frame(context.graph_frame),
-                **dict(context.graph_layout_metadata),
-                "scene_variant": str(query.scene_variant),
-            },
-            "render_map": {
-                **dict(rendered_scene.render_map),
-                "image_id": "img0",
-            },
-            "execution_trace": {
-                "scene_variant": str(query.scene_variant),
-                "query_id": str(query.query_id),
-                "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-                "query_id_probabilities": dict(query.query_id_probabilities),
-                "target_count": int(query.target_count),
-                "target_count_probabilities": dict(query.target_count_probabilities),
-                "matching_labels": list(annotation_labels),
-                "reference_center_graph": list(group_default(_GEN_DEFAULTS, "reference_center", _DEFAULTS.reference_center)),
-                "question_format": "count_matching_labels",
-            },
-            "witness_symbolic": {
-                "type": "geometry_similarity_matching_polygons",
-                "source_witness_type": "object_set",
-                "original_annotation_value": list(annotation_labels),
-                "labels": list(annotation_labels),
-                "label_set": list(annotation_labels),
-            },
-            "projected_annotation": {
-                "type": "bbox_set",
-                "bbox_set": list(annotation_bboxes),
-                "pixel_bbox_set": list(annotation_bboxes),
-                "pixel_point_set": list(annotation_centers),
-            },
-        }
-
-
-        return SimilarityCountArtifact(
-            prompt=str(prompt_artifacts.prompt),
-            answer_type="integer",
-            answer_value=int(answer_value),
-            annotation_type="bbox_set",
-            annotation_value=list(annotation_bboxes),
-            image=image,
-            trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            query_id=str(query.query_id),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
-        )
-
-
+    raise RuntimeError(f"failed to compose shape-gallery relation scene for {relation_rule}") from last_error

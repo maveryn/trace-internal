@@ -13,15 +13,14 @@ from trace.tasks.geometry.coordinate_plane.segment_relation_count import (
     _resolve_axes as _resolve_coordinate_axes,
 )
 from trace.tasks.geometry.graph_paper.angle_type_count import GeometryCountingValueTask
-from trace.tasks.geometry.shape_gallery.congruent_count import (
-    GeometrySimilarityCountTask,
-    _resolve_axes as _resolve_similarity_axes,
-)
+from trace.tasks.geometry.shape_gallery.congruent_count import GeometryShapeGalleryCongruentCountTask
+from trace.tasks.geometry.shape_gallery.reflection_match import GeometryShapeGalleryReflectionMatchTask
+from trace.tasks.geometry.shape_gallery.rotation_match import GeometryShapeGalleryRotationMatchTask
+from trace.tasks.geometry.shape_gallery.similar_count import GeometryShapeGallerySimilarCountTask
 from trace.tasks.shared.fixed_query import select_geometry_query_id
-from trace.tasks.geometry.shape_gallery.reflection_match import (
-    GeometryTransformationMatchTask,
-    _resolve_axes,
-)
+from trace.tasks.geometry.shape_gallery.shared.construction import _resolve_axes as _resolve_transform_axes
+from trace.tasks.geometry.shape_gallery.shared.relations import _resolve_axes as _resolve_relation_axes
+from trace.tasks.geometry.shape_gallery.translation_match import GeometryShapeGalleryTranslationMatchTask
 from trace.tasks import TASK_REGISTRY
 
 REQUIRED_GEOMETRY_SPLIT_TASKS = {
@@ -280,59 +279,61 @@ def test_geometry_consolidated_tasks_reject_incompatible_scene_query_pairs(
 
 
 @pytest.mark.parametrize(
-    ("scene_variant", "query_id", "expected_points"),
+    ("scene_variant", "task_cls", "transform_rule", "expected_points"),
     (
-        ("triangle", "translation_match", 3),
-        ("quadrilateral", "reflection_match", 4),
-        ("triangle", "rotation_match", 3),
+        ("triangle", GeometryShapeGalleryTranslationMatchTask, "translation", 3),
+        ("quadrilateral", GeometryShapeGalleryReflectionMatchTask, "reflection", 4),
+        ("triangle", GeometryShapeGalleryRotationMatchTask, "rotation", 3),
     ),
 )
 def test_geometry_transformation_match_tracks_scene_and_query_ids(
     scene_variant: str,
-    query_id: str,
+    task_cls,
+    transform_rule: str,
     expected_points: int,
 ) -> None:
-    task = GeometryTransformationMatchTask()
+    task = task_cls()
     out = task.generate(
         23061,
-        params={"scene_variant": scene_variant, "query_id": query_id},
+        params={"scene_variant": scene_variant},
         max_attempts=20,
     )
     trace = out.trace_payload
     assert out.answer_gt.type == "option_letter"
     assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == expected_points
-    assert out.query_id == query_id
+    assert out.query_id == "single"
     assert trace["execution_trace"]["scene_variant"] == scene_variant
-    assert trace["execution_trace"]["query_id"] == query_id
-    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id=query_id)
+    assert trace["execution_trace"]["query_id"] == "single"
+    assert trace["execution_trace"]["transform_rule"] == transform_rule
+    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id="single")
     assert trace["scene_ir"]["relations"]["winner_label"] == out.answer_gt.value
-    if query_id == "rotation_match":
+    if transform_rule == "rotation":
         assert trace["execution_trace"]["rotation_mode"]
-    if query_id == "translation_match":
+    if transform_rule == "translation":
         assert trace["execution_trace"]["translation_vector"]
 
 
 @pytest.mark.parametrize(
-    ("scene_variant", "query_id", "target_count"),
+    ("scene_variant", "task_cls", "relation_rule", "target_count"),
     (
-        ("triangle", "congruent_count", 2),
-        ("quadrilateral", "similar_count", 3),
-        ("triangle", "similar_count", 0),
-        ("quadrilateral", "congruent_count", 5),
+        ("triangle", GeometryShapeGalleryCongruentCountTask, "congruent", 2),
+        ("quadrilateral", GeometryShapeGallerySimilarCountTask, "similar", 3),
+        ("triangle", GeometryShapeGallerySimilarCountTask, "similar", 0),
+        ("quadrilateral", GeometryShapeGalleryCongruentCountTask, "congruent", 5),
     ),
 )
 def test_geometry_similarity_count_tracks_scene_and_query_ids(
     scene_variant: str,
-    query_id: str,
+    task_cls,
+    relation_rule: str,
     target_count: int,
 ) -> None:
-    task = GeometrySimilarityCountTask()
+    task = task_cls()
     out = task.generate(
         23071,
         params={
             "scene_variant": scene_variant,
-            "query_id": query_id,
             "target_count": target_count,
         },
         max_attempts=30,
@@ -342,11 +343,12 @@ def test_geometry_similarity_count_tracks_scene_and_query_ids(
     assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == int(target_count)
     assert len(out.annotation_gt.value) == int(target_count)
-    assert out.query_id == query_id
+    assert out.query_id == "single"
     assert trace["execution_trace"]["scene_variant"] == scene_variant
-    assert trace["execution_trace"]["query_id"] == query_id
+    assert trace["execution_trace"]["query_id"] == "single"
+    assert trace["execution_trace"]["relation_rule"] == relation_rule
     assert trace["execution_trace"]["target_count"] == target_count
-    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id=query_id)
+    _assert_consolidated_probability_metadata(trace, scene_variant=scene_variant, query_id="single")
     assert (
         trace["witness_symbolic"]["label_set"]
         == trace["scene_ir"]["relations"]["matching_labels"]
@@ -357,58 +359,56 @@ def test_geometry_similarity_count_tracks_scene_and_query_ids(
 def test_geometry_transformation_match_balances_winner_labels_across_review_seed_stream() -> (
     None
 ):
-    per_query_id_labels: dict[str, Counter[str]] = {
-        "translation_match": Counter(),
-        "reflection_match": Counter(),
-        "rotation_match": Counter(),
+    per_rule_labels: dict[str, Counter[str]] = {
+        "translation": Counter(),
+        "reflection": Counter(),
+        "rotation": Counter(),
     }
-    collected_counts = {key: 0 for key in per_query_id_labels}
+    collected_counts = {key: 0 for key in per_rule_labels}
 
-    for index in range(10_000):
-        if all(int(value) >= 100 for value in collected_counts.values()):
-            break
-        instance_seed = hash64(0, "geometry_transformation_match_base", index)
-        resolved = _resolve_axes(int(instance_seed), params={})
-        query_id = str(resolved.query_id)
-        if int(collected_counts[query_id]) >= 100:
-            continue
-        collected_counts[query_id] += 1
-        per_query_id_labels[query_id][str(resolved.winner_label)] += 1
+    for rule in sorted(per_rule_labels):
+        for index in range(10_000):
+            if int(collected_counts[rule]) >= 100:
+                break
+            instance_seed = hash64(0, "geometry_transformation_match_base", rule, index)
+            resolved = _resolve_transform_axes(int(instance_seed), params={"transform_rule": rule})
+            collected_counts[rule] += 1
+            per_rule_labels[rule][str(resolved.winner_label)] += 1
 
     assert collected_counts == {
-        "translation_match": 100,
-        "reflection_match": 100,
-        "rotation_match": 100,
+        "translation": 100,
+        "reflection": 100,
+        "rotation": 100,
     }
-    for query_id, counts in per_query_id_labels.items():
+    for rule, counts in per_rule_labels.items():
         assert set(counts.keys()) == {"A", "B", "C", "D", "E", "F"}
-        assert max(counts.values()) <= 30, query_id
+        assert max(counts.values()) <= 30, rule
 
 
 def test_geometry_transformation_match_decouplesseeded_sampler_axes() -> None:
-    per_query_id_labels: dict[str, Counter[str]] = {
-        "translation_match": Counter(),
-        "reflection_match": Counter(),
-        "rotation_match": Counter(),
+    per_rule_labels: dict[str, Counter[str]] = {
+        "translation": Counter(),
+        "reflection": Counter(),
+        "rotation": Counter(),
     }
     per_variant_scenes: dict[str, Counter[str]] = {
-        "translation_match": Counter(),
-        "reflection_match": Counter(),
-        "rotation_match": Counter(),
+        "translation": Counter(),
+        "reflection": Counter(),
+        "rotation": Counter(),
     }
 
-    for index in range(100):
-        instance_seed = hash64(0, "geometry_transformation_match_base", index)
-        resolved = _resolve_axes(int(instance_seed), params={})
-        query_id = str(resolved.query_id)
-        per_query_id_labels[query_id][str(resolved.winner_label)] += 1
-        per_variant_scenes[query_id][str(resolved.scene_variant)] += 1
+    for rule in sorted(per_rule_labels):
+        for index in range(100):
+            instance_seed = hash64(0, "geometry_transformation_match_base", rule, index)
+            resolved = _resolve_transform_axes(int(instance_seed), params={"transform_rule": rule})
+            per_rule_labels[rule][str(resolved.winner_label)] += 1
+            per_variant_scenes[rule][str(resolved.scene_variant)] += 1
 
-    assert sum(sum(counter.values()) for counter in per_query_id_labels.values()) == 100
-    for query_id, counts in per_query_id_labels.items():
+    assert sum(sum(counter.values()) for counter in per_rule_labels.values()) == 300
+    for rule, counts in per_rule_labels.items():
         assert set(counts.keys()) == {"A", "B", "C", "D", "E", "F"}
-        assert max(counts.values()) <= 12, query_id
-        assert set(per_variant_scenes[query_id].keys()) == {
+        assert max(counts.values()) <= 30, rule
+        assert set(per_variant_scenes[rule].keys()) == {
             "triangle",
             "quadrilateral",
         }
@@ -417,60 +417,56 @@ def test_geometry_transformation_match_decouplesseeded_sampler_axes() -> None:
 def test_geometry_similarity_count_balances_target_counts_across_review_seed_stream() -> (
     None
 ):
-    per_query_id_counts: dict[str, Counter[int]] = {
-        "congruent_count": Counter(),
-        "similar_count": Counter(),
+    per_rule_counts: dict[str, Counter[int]] = {
+        "congruent": Counter(),
+        "similar": Counter(),
     }
-    collected_counts = {key: 0 for key in per_query_id_counts}
+    collected_counts = {key: 0 for key in per_rule_counts}
 
-    for index in range(10_000):
-        if all(int(value) >= 100 for value in collected_counts.values()):
-            break
-        instance_seed = hash64(0, "geometry_similarity_count_base", index)
-        resolved = _resolve_similarity_axes(int(instance_seed), params={})
-        query_id = str(resolved.query_id)
-        if int(collected_counts[query_id]) >= 100:
-            continue
-        collected_counts[query_id] += 1
-        per_query_id_counts[query_id][int(resolved.target_count)] += 1
+    for rule in sorted(per_rule_counts):
+        for index in range(10_000):
+            if int(collected_counts[rule]) >= 100:
+                break
+            instance_seed = hash64(0, "geometry_similarity_count_base", rule, index)
+            resolved = _resolve_relation_axes(int(instance_seed), params={"relation_rule": rule})
+            collected_counts[rule] += 1
+            per_rule_counts[rule][int(resolved.target_count)] += 1
 
     assert collected_counts == {
-        "congruent_count": 100,
-        "similar_count": 100,
+        "congruent": 100,
+        "similar": 100,
     }
-    for query_id, counts in per_query_id_counts.items():
+    for rule, counts in per_rule_counts.items():
         assert set(counts.keys()) == {0, 1, 2, 3, 4, 5}
-        assert max(counts.values()) <= 25, query_id
+        assert max(counts.values()) <= 25, rule
 
 
 def test_geometry_similarity_count_decouplesseeded_sampler_axes() -> None:
-    per_query_id_counts: dict[str, Counter[int]] = {
-        "congruent_count": Counter(),
-        "similar_count": Counter(),
+    per_rule_counts: dict[str, Counter[int]] = {
+        "congruent": Counter(),
+        "similar": Counter(),
     }
     per_variant_scenes: dict[str, Counter[str]] = {
-        "congruent_count": Counter(),
-        "similar_count": Counter(),
+        "congruent": Counter(),
+        "similar": Counter(),
     }
     combos: Counter[tuple[str, str, int]] = Counter()
 
-    for index in range(100):
-        instance_seed = hash64(0, "geometry_similarity_count_base", index)
-        resolved = _resolve_similarity_axes(
-            int(instance_seed), params={}
-        )
-        query_id = str(resolved.query_id)
-        scene_variant = str(resolved.scene_variant)
-        target_count = int(resolved.target_count)
-        per_query_id_counts[query_id][target_count] += 1
-        per_variant_scenes[query_id][scene_variant] += 1
-        combos[(query_id, scene_variant, target_count)] += 1
+    for rule in sorted(per_rule_counts):
+        for index in range(100):
+            instance_seed = hash64(0, "geometry_similarity_count_base", rule, index)
+            resolved = _resolve_relation_axes(int(instance_seed), params={"relation_rule": rule})
+            scene_variant = str(resolved.scene_variant)
+            target_count = int(resolved.target_count)
+            per_rule_counts[rule][target_count] += 1
+            per_variant_scenes[rule][scene_variant] += 1
+            combos[(rule, scene_variant, target_count)] += 1
 
-    assert all(40 <= sum(counter.values()) <= 60 for counter in per_query_id_counts.values())
-    for query_id, counts in per_query_id_counts.items():
+    assert all(sum(counter.values()) == 100 for counter in per_rule_counts.values())
+    for rule, counts in per_rule_counts.items():
         assert set(counts.keys()) == {0, 1, 2, 3, 4, 5}
-        assert max(counts.values()) <= 16, query_id
-        assert set(per_variant_scenes[query_id].keys()) == {
+        assert max(counts.values()) <= 20, rule
+        assert set(per_variant_scenes[rule].keys()) == {
             "triangle",
             "quadrilateral",
         }

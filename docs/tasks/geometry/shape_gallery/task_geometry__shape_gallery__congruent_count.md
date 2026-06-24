@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `shape_gallery`
-5. Query id: `congruent_count`
+5. Query id: `single`
 6. Answer schema: `integer_count`
 7. Annotation schema: `bbox_set`
 

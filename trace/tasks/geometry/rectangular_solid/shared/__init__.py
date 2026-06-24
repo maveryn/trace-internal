@@ -1,1 +1,1 @@
-"""Shared runtime for rectangular-solid geometry scene."""
+"""Shared primitives for the rectangular-solid geometry scene."""

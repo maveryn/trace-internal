@@ -2,66 +2,81 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Mapping
 
 from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
 
-from .shared.runtime import SURFACE_AREA_TASK_KEY, RectangularSolidRuntime, SCENE_ID
+from ._lifecycle import RectangularSolidObjectivePlan, run_rectangular_solid_public_entry
+from .shared.annotations import point_map_annotation
+from .shared.construction import resolve_cuboid_surface_area
+from .shared.defaults import DOMAIN
+from .shared.rendering import render_cuboid_measure_scene
 
 
 TASK_ID = "task_geometry__rectangular_solid__cuboid_surface_area_value"
-SUPPORTED_QUERY_IDS = (
-    'surface_area_from_dimensions',
-)
-DEFAULT_QUERY_ID = "surface_area_from_dimensions"
+QUERY_ID_SURFACE_AREA = "single"
+SUPPORTED_QUERY_IDS: tuple[str, ...] = (QUERY_ID_SURFACE_AREA,)
+DEFAULT_QUERY_ID = QUERY_ID_SURFACE_AREA
+PROMPT_TASK_KEY = "cuboid_surface_area_value"
+
+
+def _prepare_surface_area_objective(
+    instance_seed,
+    task_params: Mapping[str, object],
+    selected_branch,
+    branch_probabilities,
+):
+    """Bind the total surface-area objective for one cuboid."""
+
+    problem = resolve_cuboid_surface_area(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        sampling_label=f"{TASK_ID}.{selected_branch}",
+    )
+    trace_values = {
+        "target_role": "surface_area",
+        "length": int(problem.length),
+        "width": int(problem.width),
+        "height": int(problem.height),
+        "volume": int(problem.volume),
+        "surface_area": int(problem.surface_area),
+    }
+    return RectangularSolidObjectivePlan(
+        prompt_task_key=PROMPT_TASK_KEY,
+        prompt_branch_key=str(selected_branch),
+        problem=problem,
+        render_scene=render_cuboid_measure_scene,
+        bind_annotation=point_map_annotation,
+        answer_gt=TypedValue(type="integer", value=int(problem.answer)),
+        query_params={
+            "query_id_probabilities": dict(branch_probabilities),
+            "target_role": "surface_area",
+            "cuboid_case_probabilities": dict(problem.case_probabilities),
+            "answer_support_probabilities": dict(problem.answer_support_probabilities),
+            **dict(trace_values),
+        },
+        trace_values=trace_values,
+    )
 
 
 @register_task
 class GeometryRectangularSolidCuboidSurfaceAreaValueTask:
-    """Compute total surface area of a labeled cuboid."""
+    """Compute total surface area from visible cuboid dimensions."""
 
     task_id = TASK_ID
-    domain = "geometry"
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
+    domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = DEFAULT_QUERY_ID
+    prepare_objective = staticmethod(_prepare_surface_area_objective)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_id_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        artifact = RectangularSolidRuntime().generate_artifact(
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        """Generate one cuboid surface-area problem."""
+
+        return run_rectangular_solid_public_entry(
+            self,
             int(instance_seed),
-            params=task_params,
+            params=params,
             max_attempts=int(max_attempts),
-            runtime_namespace=TASK_ID,
-            query_id=str(query_id),
-            query_probabilities=query_id_probabilities,
-            contract_key=SURFACE_AREA_TASK_KEY,
         )
-        answer_gt = TypedValue(type="integer", value=int(artifact.answer))
-        annotation_gt = TypedValue(type=str(artifact.annotation_type), value=dict(artifact.annotation_value))
-        return TaskOutput(
-            prompt=str(artifact.prompt),
-            answer_gt=answer_gt,
-            annotation_gt=annotation_gt,
-            image=artifact.image,
-            image_id="img0",
-            trace_payload=artifact.trace_payload,
-            task_versions=artifact.task_versions,
-            scene_id=SCENE_ID,
-            query_id=str(artifact.query_id),
-            prompt_variants=dict(artifact.prompt_variants),
-        )
-
-
-__all__ = ["GeometryRectangularSolidCuboidSurfaceAreaValueTask", "SUPPORTED_QUERY_IDS", "TASK_ID"]

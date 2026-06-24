@@ -8,29 +8,37 @@ import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.rectangular_solid.cube_edge_from_frame_length_value import GeometryRectangularSolidCubeEdgeFromFrameLengthValueTask
-from trace.tasks.geometry.rectangular_solid.cuboid_surface_area_value import GeometryRectangularSolidCuboidSurfaceAreaValueTask
-from trace.tasks.geometry.rectangular_solid.cuboid_volume_missing_dimension_value import (
-    ANNOTATION_KEYS,
-    FRAME_ANNOTATION_KEYS,
-    NET_ANNOTATION_KEYS,
-    QUERY_ID_OPEN_BOX_DIMENSION,
-    QUERY_ID_OPEN_BOX_VOLUME,
+from trace.tasks.geometry.rectangular_solid.cube_edge_from_frame_length_value import (
     QUERY_ID_CUBE_EDGE_PARTIAL_FRAME,
     QUERY_ID_CUBE_EDGE_TOTAL_FRAME,
+    TASK_ID as TASK_ID_FRAME_EDGE,
+    GeometryRectangularSolidCubeEdgeFromFrameLengthValueTask,
+)
+from trace.tasks.geometry.rectangular_solid.cuboid_surface_area_value import (
+    QUERY_ID_SURFACE_AREA,
+    TASK_ID as TASK_ID_SURFACE_AREA,
+    GeometryRectangularSolidCuboidSurfaceAreaValueTask,
+)
+from trace.tasks.geometry.rectangular_solid.cuboid_volume_missing_dimension_value import (
     QUERY_ID_MISSING_HEIGHT,
     QUERY_ID_MISSING_LENGTH,
     QUERY_ID_MISSING_WIDTH,
-    QUERY_ID_SURFACE_AREA,
-    SCENE_ID,
     TASK_ID,
-    TASK_ID_FRAME_EDGE,
-    TASK_ID_MISSING_DIMENSION,
-    TASK_ID_OPEN_BOX_NET,
-    TASK_ID_SURFACE_AREA,
+    TASK_ID as TASK_ID_MISSING_DIMENSION,
     GeometryRectangularSolidCuboidVolumeMissingDimensionValueTask,
 )
-from trace.tasks.geometry.rectangular_solid.open_box_net_dimension_value import GeometryRectangularSolidOpenBoxNetDimensionValueTask
+from trace.tasks.geometry.rectangular_solid.open_box_net_dimension_value import (
+    QUERY_ID_OPEN_BOX_DIMENSION,
+    QUERY_ID_OPEN_BOX_VOLUME,
+    TASK_ID as TASK_ID_OPEN_BOX_NET,
+    GeometryRectangularSolidOpenBoxNetDimensionValueTask,
+)
+from trace.tasks.geometry.rectangular_solid.shared.defaults import SCENE_ID
+from trace.tasks.geometry.rectangular_solid.shared.rendering import (
+    CUBOID_DIMENSION_ANNOTATION_KEYS as ANNOTATION_KEYS,
+    FRAME_ANNOTATION_KEYS,
+    NET_ANNOTATION_KEYS,
+)
 
 
 def _generate(seed: int, *, task_id: str = TASK_ID, **params):
@@ -84,12 +92,12 @@ def test_rectangular_solid_missing_dimension_formula_and_annotation(
     assert execution["length"] * execution["width"] * execution["height"] == execution["volume"] == 60
     assert execution["formula_family"] == "cuboid_volume_missing_dimension"
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_point_map"] == annotation
-    assert trace["projected_annotation"]["pixel_keyed_point_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v0"
+    assert trace["projected_annotation"]["point_map"] == annotation
+    assert trace["projected_annotation"]["pixel_point_map"] == annotation
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_point_map_inside_image(annotation, out.image.size)
 
@@ -115,11 +123,11 @@ def test_rectangular_solid_surface_area_formula_and_annotation() -> None:
     assert execution["formula_family"] == "cuboid_surface_area"
     assert execution["target_role"] == "surface_area"
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_point_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v0"
+    assert trace["projected_annotation"]["point_map"] == annotation
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_point_map_inside_image(annotation, out.image.size)
 
@@ -167,12 +175,12 @@ def test_rectangular_solid_cube_edge_from_frame_formula_and_annotation(
     assert execution["formula_family"] == "cube_edge_from_frame_length"
     assert execution["target_role"] == "cube_edge"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == FRAME_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size)
 
@@ -210,12 +218,12 @@ def test_rectangular_solid_open_box_dimension_formula_and_annotation(target_role
     assert execution["target_role"] == target_role
     assert execution["formula_family"] == "open_box_net_corner_cut"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == NET_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=NET_ANNOTATION_KEYS)
 
@@ -243,11 +251,11 @@ def test_rectangular_solid_open_box_volume_formula_and_annotation() -> None:
     assert execution["target_role"] == "open_box_volume"
     assert execution["formula_family"] == "open_box_net_corner_cut"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == NET_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=NET_ANNOTATION_KEYS)
 

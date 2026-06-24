@@ -2,68 +2,94 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Mapping
 
 from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
 
-from .shared.runtime import MISSING_DIMENSION_TASK_KEY, RectangularSolidRuntime, SCENE_ID
+from ._lifecycle import RectangularSolidObjectivePlan, run_rectangular_solid_public_entry
+from .shared.annotations import point_map_annotation
+from .shared.construction import resolve_cuboid_missing_dimension
+from .shared.defaults import DOMAIN
+from .shared.rendering import render_cuboid_measure_scene
 
 
 TASK_ID = "task_geometry__rectangular_solid__cuboid_volume_missing_dimension_value"
-SUPPORTED_QUERY_IDS = (
-    'missing_length_from_volume',
-    'missing_width_from_volume',
-    'missing_height_from_volume',
+QUERY_ID_MISSING_LENGTH = "missing_length_from_volume"
+QUERY_ID_MISSING_WIDTH = "missing_width_from_volume"
+QUERY_ID_MISSING_HEIGHT = "missing_height_from_volume"
+SUPPORTED_QUERY_IDS: tuple[str, ...] = (
+    QUERY_ID_MISSING_LENGTH,
+    QUERY_ID_MISSING_WIDTH,
+    QUERY_ID_MISSING_HEIGHT,
 )
-DEFAULT_QUERY_ID = "missing_length_from_volume"
+DEFAULT_QUERY_ID = QUERY_ID_MISSING_LENGTH
+PROMPT_TASK_KEY = "cuboid_volume_missing_dimension_value"
+TARGET_ROLE_BY_QUERY_ID = {
+    QUERY_ID_MISSING_LENGTH: "length",
+    QUERY_ID_MISSING_WIDTH: "width",
+    QUERY_ID_MISSING_HEIGHT: "height",
+}
+
+
+def _prepare_missing_dimension_objective(
+    instance_seed,
+    task_params: Mapping[str, object],
+    selected_branch,
+    branch_probabilities,
+):
+    """Bind the hidden cuboid dimension requested by the selected branch."""
+
+    target_role = TARGET_ROLE_BY_QUERY_ID[str(selected_branch)]
+    problem = resolve_cuboid_missing_dimension(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        target_role=str(target_role),
+        sampling_label=f"{TASK_ID}.{selected_branch}",
+    )
+    trace_values = {
+        "target_role": str(problem.target_role),
+        "length": int(problem.length),
+        "width": int(problem.width),
+        "height": int(problem.height),
+        "volume": int(problem.volume),
+        "surface_area": int(problem.surface_area),
+    }
+    return RectangularSolidObjectivePlan(
+        prompt_task_key=PROMPT_TASK_KEY,
+        prompt_branch_key=str(selected_branch),
+        problem=problem,
+        render_scene=render_cuboid_measure_scene,
+        bind_annotation=point_map_annotation,
+        answer_gt=TypedValue(type="integer", value=int(problem.answer)),
+        query_params={
+            "query_id_probabilities": dict(branch_probabilities),
+            "target_role": str(problem.target_role),
+            "cuboid_case_probabilities": dict(problem.case_probabilities),
+            "answer_support_probabilities": dict(problem.answer_support_probabilities),
+            **dict(trace_values),
+        },
+        trace_values=trace_values,
+    )
 
 
 @register_task
 class GeometryRectangularSolidCuboidVolumeMissingDimensionValueTask:
-    """Solve a missing cuboid dimension from volume and two known dimensions."""
+    """Solve one hidden cuboid dimension from the visible volume."""
 
     task_id = TASK_ID
-    domain = "geometry"
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
+    domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = DEFAULT_QUERY_ID
+    prepare_objective = staticmethod(_prepare_missing_dimension_objective)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_id_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        artifact = RectangularSolidRuntime().generate_artifact(
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        """Generate one cuboid missing-dimension problem."""
+
+        return run_rectangular_solid_public_entry(
+            self,
             int(instance_seed),
-            params=task_params,
+            params=params,
             max_attempts=int(max_attempts),
-            runtime_namespace=TASK_ID,
-            query_id=str(query_id),
-            query_probabilities=query_id_probabilities,
-            contract_key=MISSING_DIMENSION_TASK_KEY,
         )
-        answer_gt = TypedValue(type="integer", value=int(artifact.answer))
-        annotation_gt = TypedValue(type=str(artifact.annotation_type), value=dict(artifact.annotation_value))
-        return TaskOutput(
-            prompt=str(artifact.prompt),
-            answer_gt=answer_gt,
-            annotation_gt=annotation_gt,
-            image=artifact.image,
-            image_id="img0",
-            trace_payload=artifact.trace_payload,
-            task_versions=artifact.task_versions,
-            scene_id=SCENE_ID,
-            query_id=str(artifact.query_id),
-            prompt_variants=dict(artifact.prompt_variants),
-        )
-
-
-__all__ = ["GeometryRectangularSolidCuboidVolumeMissingDimensionValueTask", "SUPPORTED_QUERY_IDS", "TASK_ID"]

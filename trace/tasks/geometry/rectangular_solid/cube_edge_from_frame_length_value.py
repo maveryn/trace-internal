@@ -2,67 +2,88 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Mapping
 
 from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
 
-from .shared.runtime import FRAME_EDGE_TASK_KEY, RectangularSolidRuntime, SCENE_ID
+from ._lifecycle import RectangularSolidObjectivePlan, run_rectangular_solid_public_entry
+from .shared.annotations import bbox_map_annotation
+from .shared.construction import resolve_cube_frame_edge
+from .shared.defaults import DOMAIN
+from .shared.rendering import render_cube_frame_scene
 
 
 TASK_ID = "task_geometry__rectangular_solid__cube_edge_from_frame_length_value"
-SUPPORTED_QUERY_IDS = (
-    'cube_edge_from_total_frame',
-    'cube_edge_from_partial_frame',
+QUERY_ID_CUBE_EDGE_TOTAL_FRAME = "cube_edge_from_total_frame"
+QUERY_ID_CUBE_EDGE_PARTIAL_FRAME = "cube_edge_from_partial_frame"
+SUPPORTED_QUERY_IDS: tuple[str, ...] = (
+    QUERY_ID_CUBE_EDGE_TOTAL_FRAME,
+    QUERY_ID_CUBE_EDGE_PARTIAL_FRAME,
 )
-DEFAULT_QUERY_ID = "cube_edge_from_total_frame"
+DEFAULT_QUERY_ID = QUERY_ID_CUBE_EDGE_TOTAL_FRAME
+PROMPT_TASK_KEY = "cube_edge_from_frame_length_value"
+FRAME_MODE_BY_QUERY_ID = {
+    QUERY_ID_CUBE_EDGE_TOTAL_FRAME: "total",
+    QUERY_ID_CUBE_EDGE_PARTIAL_FRAME: "partial",
+}
+def _prepare_frame_edge_objective(
+    instance_seed,
+    task_params: Mapping[str, object],
+    selected_branch,
+    branch_probabilities,
+):
+    """Bind total-frame or highlighted-frame edge-length solving."""
+
+    frame_mode = FRAME_MODE_BY_QUERY_ID[str(selected_branch)]
+    problem = resolve_cube_frame_edge(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        frame_mode=str(frame_mode),
+        sampling_label=f"{TASK_ID}.{selected_branch}",
+    )
+    trace_values = {
+        "target_role": "cube_edge",
+        "frame_mode": str(problem.frame_mode),
+        "cube_edge": int(problem.cube_edge),
+        "visible_frame_edge_count": int(problem.visible_frame_edge_count),
+        "frame_length": int(problem.frame_length),
+    }
+    return RectangularSolidObjectivePlan(
+        prompt_task_key=PROMPT_TASK_KEY,
+        prompt_branch_key=str(selected_branch),
+        problem=problem,
+        render_scene=render_cube_frame_scene,
+        bind_annotation=bbox_map_annotation,
+        answer_gt=TypedValue(type="integer", value=int(problem.answer)),
+        query_params={
+            "query_id_probabilities": dict(branch_probabilities),
+            "frame_mode": str(problem.frame_mode),
+            "case_probabilities": dict(problem.case_probabilities),
+            "answer_support_probabilities": dict(problem.answer_support_probabilities),
+            **dict(trace_values),
+        },
+        trace_values=trace_values,
+    )
 
 
 @register_task
 class GeometryRectangularSolidCubeEdgeFromFrameLengthValueTask:
-    """Compute cube edge length from total or highlighted frame length."""
+    """Compute cube edge length from a visible wire-frame length."""
 
     task_id = TASK_ID
-    domain = "geometry"
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
+    domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = DEFAULT_QUERY_ID
+    prepare_objective = staticmethod(_prepare_frame_edge_objective)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_id_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        artifact = RectangularSolidRuntime().generate_artifact(
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        """Generate one cube-frame edge-length problem."""
+
+        return run_rectangular_solid_public_entry(
+            self,
             int(instance_seed),
-            params=task_params,
+            params=params,
             max_attempts=int(max_attempts),
-            runtime_namespace=TASK_ID,
-            query_id=str(query_id),
-            query_probabilities=query_id_probabilities,
-            contract_key=FRAME_EDGE_TASK_KEY,
         )
-        answer_gt = TypedValue(type="integer", value=int(artifact.answer))
-        annotation_gt = TypedValue(type=str(artifact.annotation_type), value=dict(artifact.annotation_value))
-        return TaskOutput(
-            prompt=str(artifact.prompt),
-            answer_gt=answer_gt,
-            annotation_gt=annotation_gt,
-            image=artifact.image,
-            image_id="img0",
-            trace_payload=artifact.trace_payload,
-            task_versions=artifact.task_versions,
-            scene_id=SCENE_ID,
-            query_id=str(artifact.query_id),
-            prompt_variants=dict(artifact.prompt_variants),
-        )
-
-
-__all__ = ["GeometryRectangularSolidCubeEdgeFromFrameLengthValueTask", "SUPPORTED_QUERY_IDS", "TASK_ID"]

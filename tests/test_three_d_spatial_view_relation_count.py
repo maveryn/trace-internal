@@ -45,6 +45,7 @@ def test_view_relation_count_answer_and_annotation() -> None:
     reference_spec = next(spec for spec in trace["object_specs"] if str(spec["object_id"]) == reference_object_id)
     reference_x = float(reference_spec["screen_xy"][0])
     target_set = set(target_object_ids)
+    reference_highlight_entity_id = f"red_reference_box_{reference_object_id}"
 
     assert output.scene_id == "object_scene"
     assert output.query_id == "left_of_reference_in_view_count"
@@ -54,7 +55,9 @@ def test_view_relation_count_answer_and_annotation() -> None:
     assert reference_object_id not in target_set
     assert int(trace["reference_prompt_name_count"]) == 1
     assert str(trace["reference_object_name"]) in output.prompt
-    assert "in the image" in output.prompt
+    assert "red-boxed" in output.prompt
+    assert output.trace_payload["render_map"]["reference_highlight_entity_id"] == reference_highlight_entity_id
+    assert any(entity["entity_id"] == reference_highlight_entity_id for entity in output.trace_payload["scene_ir"]["entities"])
     assert len(output.annotation_gt.value) == int(output.answer_gt.value)
     assert output.annotation_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in target_object_ids]
     assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
@@ -91,6 +94,7 @@ def test_view_relation_count_query_variants_generate() -> None:
             max_attempts=220,
         )
         trace = output.trace_payload["execution_trace"]
+        render_map = output.trace_payload["render_map"]
         reference_id = str(trace["reference_object_id"])
         reference_spec = next(spec for spec in trace["object_specs"] if str(spec["object_id"]) == reference_id)
         reference_x = float(reference_spec["screen_xy"][0])
@@ -99,6 +103,9 @@ def test_view_relation_count_query_variants_generate() -> None:
 
         assert output.query_id == query_id
         assert output.answer_gt.type == "integer"
+        assert "red-boxed" in output.prompt
+        assert render_map["reference_highlight_entity_id"] == f"red_reference_box_{reference_id}"
+        assert any(entity["entity_id"] == f"red_reference_box_{reference_id}" for entity in output.trace_payload["scene_ir"]["entities"])
         assert len(output.annotation_gt.value) == int(output.answer_gt.value)
         for spec in trace["object_specs"]:
             object_id = str(spec["object_id"])

@@ -316,28 +316,28 @@ def _relation_metadata(query_id: str) -> Dict[str, str]:
             "view_relation": "left",
             "relation_frame": "image_view",
             "relation_axis": "screen_x",
-            "count_predicate": "projected object center is image-left of the named reference object in the final image",
+            "count_predicate": "projected object center is image-left of the red-boxed reference object in the final image",
         }
     if str(query_id) == "right_of_reference_in_view_count":
         return {
             "view_relation": "right",
             "relation_frame": "image_view",
             "relation_axis": "screen_x",
-            "count_predicate": "projected object center is image-right of the named reference object in the final image",
+            "count_predicate": "projected object center is image-right of the red-boxed reference object in the final image",
         }
     if str(query_id) == "closer_to_camera_than_reference_count":
         return {
             "view_relation": "closer_to_camera",
             "relation_frame": "camera_distance",
             "relation_axis": "camera_distance",
-            "count_predicate": "object camera distance is smaller than the named reference object's camera distance",
+            "count_predicate": "object camera distance is smaller than the red-boxed reference object's camera distance",
         }
     if str(query_id) == "farther_from_camera_than_reference_count":
         return {
             "view_relation": "farther_from_camera",
             "relation_frame": "camera_distance",
             "relation_axis": "camera_distance",
-            "count_predicate": "object camera distance is larger than the named reference object's camera distance",
+            "count_predicate": "object camera distance is larger than the red-boxed reference object's camera distance",
         }
     else:
         raise ValueError(f"unsupported query_id: {query_id}")
@@ -573,6 +573,7 @@ class _ThreeDSpatialViewRelationCountBase:
             render_params=render_params,
             draw_candidate_labels=False,
             compute_single_annotation=False,
+            highlight_object_ids=[str(dataset["reference_object_id"])],
         )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
@@ -685,6 +686,7 @@ class _ThreeDSpatialViewRelationCountBase:
                 },
                 "reference_object_bbox_px": list(rendered.object_bboxes_px[str(dataset["reference_object_id"])]),
                 "reference_object_center_px": list(rendered.object_centers_px[str(dataset["reference_object_id"])]),
+                "reference_highlight_entity_id": f"red_reference_box_{str(dataset['reference_object_id'])}",
             },
             "execution_trace": {
                 "query_id": str(query_id),

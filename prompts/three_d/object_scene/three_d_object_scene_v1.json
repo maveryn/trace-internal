@@ -303,32 +303,32 @@
         "How many of the small objects are within the {reference_name}?"
       ],
       "left_of_reference_in_view_count": [
-        "How many other small objects appear to the left of the {reference_name} in the image?",
-        "In the image, count the other small objects that appear to the left of the {reference_name}. How many are there?",
-        "What is the number of other small objects visible to the left of the {reference_name} in the image?",
-        "Looking at the image, how many other small objects appear image-left of the {reference_name}?",
-        "How many small objects, excluding the {reference_name}, appear to its left in the image?"
+        "How many other small objects appear to the left of the red-boxed {reference_name} in the image?",
+        "In the image, count the other small objects that appear to the left of the red-boxed {reference_name}. How many are there?",
+        "What is the number of other small objects visible to the left of the red-boxed {reference_name}?",
+        "Looking at the image, how many other small objects appear image-left of the red-boxed {reference_name}?",
+        "How many small objects, excluding the red-boxed {reference_name}, appear to its left in the image?"
       ],
       "right_of_reference_in_view_count": [
-        "How many other small objects appear to the right of the {reference_name} in the image?",
-        "In the image, count the other small objects that appear to the right of the {reference_name}. How many are there?",
-        "What is the number of other small objects visible to the right of the {reference_name} in the image?",
-        "Looking at the image, how many other small objects appear image-right of the {reference_name}?",
-        "How many small objects, excluding the {reference_name}, appear to its right in the image?"
+        "How many other small objects appear to the right of the red-boxed {reference_name} in the image?",
+        "In the image, count the other small objects that appear to the right of the red-boxed {reference_name}. How many are there?",
+        "What is the number of other small objects visible to the right of the red-boxed {reference_name}?",
+        "Looking at the image, how many other small objects appear image-right of the red-boxed {reference_name}?",
+        "How many small objects, excluding the red-boxed {reference_name}, appear to its right in the image?"
       ],
       "closer_to_camera_than_reference_count": [
-        "How many other small objects are closer to the camera than the {reference_name}?",
-        "Using the perspective depth cues, count the other small objects that are closer to the camera than the {reference_name}. How many are there?",
-        "What is the number of other small objects with a smaller camera distance than the {reference_name}?",
-        "How many small objects, excluding the {reference_name}, are nearer to the camera than it is?",
-        "From this camera view, how many other small objects are closer than the {reference_name}?"
+        "How many other small objects are closer to the camera than the red-boxed {reference_name}?",
+        "Using the perspective depth cues, count the other small objects that are closer to the camera than the red-boxed {reference_name}. How many are there?",
+        "What is the number of other small objects with a smaller camera distance than the red-boxed {reference_name}?",
+        "How many small objects, excluding the red-boxed {reference_name}, are nearer to the camera than it is?",
+        "From this camera view, how many other small objects are closer than the red-boxed {reference_name}?"
       ],
       "farther_from_camera_than_reference_count": [
-        "How many other small objects are farther from the camera than the {reference_name}?",
-        "Using the perspective depth cues, count the other small objects that are farther from the camera than the {reference_name}. How many are there?",
-        "What is the number of other small objects with a larger camera distance than the {reference_name}?",
-        "How many small objects, excluding the {reference_name}, are farther away from the camera than it is?",
-        "From this camera view, how many other small objects are farther away than the {reference_name}?"
+        "How many other small objects are farther from the camera than the red-boxed {reference_name}?",
+        "Using the perspective depth cues, count the other small objects that are farther from the camera than the red-boxed {reference_name}. How many are there?",
+        "What is the number of other small objects with a larger camera distance than the red-boxed {reference_name}?",
+        "How many small objects, excluding the red-boxed {reference_name}, are farther away from the camera than it is?",
+        "From this camera view, how many other small objects are farther away than the red-boxed {reference_name}?"
       ]
     },
     "output": {
@@ -354,21 +354,21 @@
       "json_output_contract_answer_only": "Use a valid JSON object with key \"answer\" for the final answer."
     },
     "task:camera_distance_extremum_query": {
-      "object_description": "an open perspective setup with a gridded floor or platform, small candidate objects, larger props, and an option list below the scene",
+      "object_description": "a perspective 3D platform scene with several small objects and larger props",
       "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around the selected small object in the scene",
       "answer_hint": "set \"answer\" to the selected option letter",
       "json_example": "{\"annotation\":[[318,260,366,308]],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:marked_point_depth_extremum_query": {
-      "object_description": "an open perspective setup with a gridded floor or platform, objects, and lettered point markers in the scene",
+      "object_description": "a perspective 3D platform scene with objects and lettered point markers",
       "annotation_hint": "set \"annotation\" to an object with key \"selected_point\"; the value is the point [x, y] at the center of the selected marker letter",
       "answer_hint": "set \"answer\" to the selected marked-point letter",
       "json_example": "{\"annotation\":{\"selected_point\":[318,260]},\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:marked_point_vertical_relation_query": {
-      "object_description": "an open perspective setup with a gridded floor or platform, uniquely named small objects, and six lettered point markers in the scene",
+      "object_description": "a perspective 3D platform scene with small objects and lettered point markers",
       "annotation_hint": "set \"annotation\" to an object with key \"selected_point\"; the value is the point [x, y] at the center of the selected marker letter",
       "answer_hint": "set \"answer\" to the selected marked-point letter",
       "json_example": "{\"annotation\":{\"selected_point\":[318,260]},\"answer\":\"C\"}",
@@ -382,35 +382,35 @@
       "json_example_answer_only": "{\"answer\":4}"
     },
     "task:object_relation_query": {
-      "object_description": "an open perspective setup with a gridded floor or platform, small candidate objects, larger props, and an option list below the scene",
+      "object_description": "a perspective 3D platform scene with small objects and larger props",
       "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the selected small object in the scene",
       "answer_hint": "set \"answer\" to the selected option letter",
       "json_example": "{\"annotation\":[318,260,366,308],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:reference_nearest_query": {
-      "object_description": "a gridded platform with perspective depth cues, candidate objects, one named reference object, and an option list below the scene",
+      "object_description": "a perspective 3D platform scene with several objects and one reference object",
       "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around the selected object in the scene",
       "answer_hint": "set \"answer\" to the selected option letter",
       "json_example": "{\"annotation\":[[318,260,366,308]],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:between_references_query": {
-      "object_description": "a gridded platform with perspective depth cues, two named reference objects, candidate objects, and an option list below the scene",
+      "object_description": "a perspective 3D platform scene with several objects and two reference objects",
       "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the selected object in the scene",
       "answer_hint": "set \"answer\" to the selected option letter",
       "json_example": "{\"annotation\":[318,260,366,308],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:occlusion_order_query": {
-      "object_description": "a gridded platform with perspective depth cues, one named reference object, candidate objects, and an option list below the scene",
+      "object_description": "a perspective 3D platform scene with overlapping objects and one reference object",
       "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the selected object in the scene",
       "answer_hint": "set \"answer\" to the selected option letter",
       "json_example": "{\"annotation\":[318,260,366,308],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:height_extremum_query": {
-      "object_description": "a gridded platform with perspective depth cues, larger support props, small candidate objects at different heights above the floor, and an option list below the scene",
+      "object_description": "a perspective 3D platform scene with objects placed at different heights",
       "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the selected object in the scene",
       "answer_hint": "set \"answer\" to the selected option letter",
       "json_example": "{\"annotation\":[318,260,366,308],\"answer\":\"C\"}",
@@ -431,7 +431,7 @@
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:spatial_relation_count_query": {
-      "object_description": "an open perspective setup with a gridded floor or platform, one named reference prop, and many small objects",
+      "object_description": "a perspective 3D platform scene with a reference prop and many small objects",
       "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around each counted small object; use an empty array if there are none",
       "answer_hint": "set \"answer\" to the number of counted small objects",
       "json_example": "{\"annotation\":[[118,442,176,503],[391,316,448,374]],\"answer\":2}",
@@ -445,7 +445,7 @@
       "json_example_answer_only": "{\"answer\":2}"
     },
     "task:view_relation_count_query": {
-      "object_description": "an open perspective setup with a gridded floor or platform, one uniquely named small reference object, and many other small objects",
+      "object_description": "a perspective 3D platform scene with many small objects and one red-boxed reference object",
       "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around each counted small object",
       "answer_hint": "set \"answer\" to the number of counted small objects",
       "json_example": "{\"annotation\":[[118,442,176,503],[391,316,448,374],[702,521,758,579]],\"answer\":3}",

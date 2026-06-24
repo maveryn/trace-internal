@@ -20,7 +20,7 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
         params={
             "query_id": query_id,
             "scene_variant": "floor_grid_room",
-            "point_count": 5,
+            "point_count": 4,
             "context_object_count": 4,
             "post_image_noise_apply_prob": 0.0,
         },
@@ -37,7 +37,7 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
     assert output.query_id == query_id
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == expected_label
-    assert len(point_specs) == 5
+    assert len(point_specs) == 4
     assert len(context_specs) == 4
     assert all(spec["is_answer_candidate"] for spec in point_specs)
     assert all(not spec["is_answer_candidate"] for spec in context_specs)
@@ -69,7 +69,7 @@ def test_height_extremum_answer_color_and_shape_vary_across_seeds() -> None:
             params={
                 "query_id": "highest_above_floor",
                 "scene_variant": "floor_grid_room",
-                "point_count": 5,
+                "point_count": 4,
                 "context_object_count": 4,
                 "post_image_noise_apply_prob": 0.0,
             },

@@ -62,6 +62,7 @@ from ..shared.object_scene import (
 TASK_ID = "task_three_d__object_scene__height_extremum_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("highest_above_floor", "lowest_above_floor")
 SUPPORT_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, float]], ...] = SPATIAL_HEIGHT_SUPPORT_PLACEMENTS
+HEIGHT_OPTION_COUNT = 4
 FLOOR_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_HEIGHT_FLOOR_CANDIDATE_SHAPE_TYPES
 ELEVATED_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_HEIGHT_ELEVATED_CANDIDATE_SHAPE_TYPES
 
@@ -181,8 +182,8 @@ def _build_height_scene_dataset(
     camera_yaw_band: Tuple[float, float] | None = None,
 ) -> Dict[str, Any]:
     """Build a height-extremum scene where rendered object heights yield exactly one highest or lowest labeled candidate."""
-    if int(point_count) != len(SUPPORT_PLACEMENTS):
-        raise ValueError(f"{TASK_ID} expects {len(SUPPORT_PLACEMENTS)} option-panel candidates")
+    if int(point_count) != HEIGHT_OPTION_COUNT:
+        raise ValueError(f"{TASK_ID} expects {HEIGHT_OPTION_COUNT} option-panel candidates")
     if int(context_object_count) != len(SUPPORT_PLACEMENTS) - 1:
         raise ValueError(f"{TASK_ID} expects {len(SUPPORT_PLACEMENTS) - 1} support props")
 
@@ -210,8 +211,11 @@ def _build_height_scene_dataset(
             support_specs_by_name[str(placement_name)] = support_spec
             context_specs.append(support_spec)
 
+        selected_placements = list(SUPPORT_PLACEMENTS)
+        rng.shuffle(selected_placements)
+        selected_placements = selected_placements[:HEIGHT_OPTION_COUNT]
         placement_records: List[Dict[str, Any]] = []
-        for placement_name, _support_shape, xy in SUPPORT_PLACEMENTS:
+        for placement_name, _support_shape, xy in selected_placements:
             support_spec = support_specs_by_name.get(str(placement_name))
             base_z = _support_base_height(support_spec)
             placement_records.append(
@@ -474,10 +478,10 @@ class ThreeDSpatialHeightExtremumLabelTask:
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
             prefix="point_count",
-            minimum_default=len(SUPPORT_PLACEMENTS),
-            maximum_default=len(SUPPORT_PLACEMENTS),
-            lower=len(SUPPORT_PLACEMENTS),
-            upper=len(SUPPORT_PLACEMENTS),
+            minimum_default=HEIGHT_OPTION_COUNT,
+            maximum_default=HEIGHT_OPTION_COUNT,
+            lower=HEIGHT_OPTION_COUNT,
+            upper=HEIGHT_OPTION_COUNT,
         )
         context_object_count, context_object_count_probabilities = _shared_resolve_count(
             params,

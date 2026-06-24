@@ -20,6 +20,7 @@ The verifier computes the answer from finalized scene metadata and projection re
 ## Annotation Contract
 Annotation is a scalar `bbox` around the selected visible object.
 The selected object is the only visual witness; option text is not annotation.
+The rendered task presents four option-panel candidates.
 
 ## Prompt And Trace
 The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.

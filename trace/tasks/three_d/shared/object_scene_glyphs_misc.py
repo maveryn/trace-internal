@@ -80,33 +80,40 @@ def _draw_drum_object(
     frame: _ProjectionFrame,
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    body = _sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.0), dimensions_xyz=(width * 0.88, depth * 0.88, height * 0.76))
-    top_head = _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.70), dimensions_xyz=(width * 1.02, depth * 1.02, height * 0.12))
-    bottom_rim = _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.02), dimensions_xyz=(width * 0.98, depth * 0.98, height * 0.12))
-    top_rim = _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.62), dimensions_xyz=(width * 0.98, depth * 0.98, height * 0.14))
-    bboxes = [
-        _draw_cylinder_object(draw, body, camera=camera, frame=frame, fill=(174, 70, 56)),
-        _draw_cylinder_object(draw, bottom_rim, camera=camera, frame=frame, fill=(64, 67, 72)),
-        _draw_cylinder_object(draw, top_rim, camera=camera, frame=frame, fill=(76, 80, 86)),
-        _draw_cylinder_object(draw, top_head, camera=camera, frame=frame, fill=(232, 226, 206)),
-    ]
-    for px in (-0.46, -0.16, 0.16, 0.46):
-        rod = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(px, -0.70), (px * 0.82, 0.62)])
-        draw.line(rod, fill=(218, 205, 166), width=2)
-        lug_top = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(px * 0.82, 0.50)])[0]
-        lug_bottom = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(px, -0.58)])[0]
-        lug_radius = max(2.0, float(frame.scale) * width * 0.010)
-        for lug in (lug_top, lug_bottom):
-            lug_box = [lug[0] - lug_radius, lug[1] - lug_radius, lug[0] + lug_radius, lug[1] + lug_radius]
-            draw.ellipse(tuple(lug_box), fill=(230, 220, 182), outline=(61, 54, 45), width=1)
-            bboxes.append(lug_box)
+    x, y, _z = (float(value) for value in spec["world_xyz"])
+    raw_base = spec.get("base_xyz", (x, y, 0.0))
+    base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
+    width, _depth, height = (float(value) for value in spec["dimensions_xyz"])
+    base = _project_xy((x, y, base_z), camera, frame)
+    top = _project_xy((x, y, base_z + height), camera, frame)
+    radius = _radius_px_for_object({**dict(spec), "world_xyz": [x, y, base_z + height * 0.5]}, camera, frame)
+    ellipse_h = max(9.0, radius * 0.42)
+    outline = (28, 35, 45)
+    rim = _shade(fill, 0.58)
+    head = (238, 231, 210)
+
+    side = [(top[0] - radius, top[1]), (top[0] + radius, top[1]), (base[0] + radius, base[1]), (base[0] - radius, base[1])]
+    draw.polygon(side, fill=_shade(fill, 0.84))
+    _draw_line(draw, (top[0] - radius, top[1]), (base[0] - radius, base[1]), fill=outline, width=2)
+    _draw_line(draw, (top[0] + radius, top[1]), (base[0] + radius, base[1]), fill=outline, width=2)
+
+    base_ellipse = [base[0] - radius, base[1] - ellipse_h, base[0] + radius, base[1] + ellipse_h]
+    top_ellipse = [top[0] - radius, top[1] - ellipse_h, top[0] + radius, top[1] + ellipse_h]
+    draw.ellipse(tuple(base_ellipse), fill=_shade(fill, 0.68), outline=outline, width=2)
+    draw.ellipse(tuple(top_ellipse), fill=head, outline=outline, width=2)
+    draw.arc(tuple(top_ellipse), start=0, end=180, fill=rim, width=4)
+    draw.arc(tuple(base_ellipse), start=0, end=180, fill=rim, width=4)
+
+    bboxes = [top_ellipse, base_ellipse]
+    for px in (-0.42, -0.14, 0.14, 0.42):
+        rod = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(px, -0.40), (px * 0.86, 0.38)])
+        draw.line(rod, fill=_tint(rim, 0.18), width=2)
         bboxes.append(_bbox_from_screen_points(rod))
-    stick_a = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(-0.62, 0.90), (0.62, 1.08)])
-    stick_b = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(0.62, 0.90), (-0.62, 1.08)])
-    for stick in (stick_a, stick_b):
-        draw.line(stick, fill=(150, 95, 48), width=3)
-        bboxes.append(_bbox_from_screen_points(stick))
+        lug = _upright_screen_points(spec, camera=camera, frame=frame, profile_xz=[(px * 0.92, 0.02)])[0]
+        lug_radius = max(2.0, float(frame.scale) * width * 0.010)
+        lug_box = [lug[0] - lug_radius, lug[1] - lug_radius, lug[0] + lug_radius, lug[1] + lug_radius]
+        draw.ellipse(tuple(lug_box), fill=(226, 213, 177), outline=(61, 54, 45), width=1)
+        bboxes.append(lug_box)
     return _bbox_union(*bboxes)
 
 

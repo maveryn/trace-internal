@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import trace.tasks  # noqa: F401
 from trace.core.taxonomy import resolve_task_taxonomy
+from trace.tasks.games.tetris.active_piece_shape_label import GamesTetrisActivePieceShapeLabelTask
 from trace.tasks.games.tetris.drop_collision_time_value import GamesTetrisDropCollisionTimeValueTask
 from trace.tasks.games.tetris.drop_result_label import GamesTetrisDropResultLabelTask
 from trace.tasks.games.tetris.edge_occupied_row_cell_count import GamesTetrisEdgeOccupiedRowCellCountTask
@@ -143,6 +144,39 @@ def test_games_tetris_drop_result_four_option_layout_stays_in_bounds() -> None:
     x0, y0, x1, y1 = [float(v) for v in out.annotation_gt.value]
     assert 0 <= x0 < x1 <= width
     assert 0 <= y0 < y1 <= height
+
+
+def test_games_tetris_active_piece_shape_label_contract() -> None:
+    out = GamesTetrisActivePieceShapeLabelTask().generate(
+        26052431,
+        params={"target_piece": "T", "board_rows": 12, "board_cols": 8},
+        max_attempts=64,
+    )
+    execution = out.trace_payload["execution_trace"]
+    entity_ids = tuple(str(entity_id) for entity_id in execution["annotation_entity_ids"])
+    cell_bboxes = [
+        [float(v) for v in out.trace_payload["render_map"]["cell_bboxes_px"][str(entity_id)]]
+        for entity_id in entity_ids
+    ]
+    expected_bbox = [
+        min(float(bbox[0]) for bbox in cell_bboxes),
+        min(float(bbox[1]) for bbox in cell_bboxes),
+        max(float(bbox[2]) for bbox in cell_bboxes),
+        max(float(bbox[3]) for bbox in cell_bboxes),
+    ]
+
+    assert out.scene_id == "tetris"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "string"
+    assert str(out.answer_gt.value) == "T"
+    assert execution["prompt_query_key"] == "active_piece_shape_label"
+    assert execution["piece"] == "T"
+    assert execution["target_piece"] == "T"
+    assert execution["shape_options"] == ["I", "O", "T", "L", "J", "S", "Z"]
+    assert out.annotation_gt.type == "bbox"
+    assert out.annotation_gt.value == expected_bbox
+    assert out.trace_payload["projected_annotation"]["type"] == "bbox"
+    assert out.trace_payload["render_map"]["shape_option_labels"] == ["I", "O", "T", "L", "J", "S", "Z"]
 
 
 def test_games_tetris_row_occupancy_status_contract_and_rule_match() -> None:
@@ -287,6 +321,7 @@ def test_games_tetris_edge_occupied_row_cell_count_contract_and_rule_match() -> 
 
 
 def test_games_tetris_taxonomy() -> None:
+    assert resolve_task_taxonomy("task_games__tetris__active_piece_shape_label").scene_id == "tetris"
     assert resolve_task_taxonomy("task_games__tetris__line_clear_count").scene_id == "tetris"
     assert resolve_task_taxonomy("task_games__tetris__drop_result_label").scene_id == "tetris"
     assert resolve_task_taxonomy("task_games__tetris__row_occupancy_status_count").scene_id == "tetris"

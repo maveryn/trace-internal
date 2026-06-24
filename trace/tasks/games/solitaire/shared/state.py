@@ -102,6 +102,16 @@ class MoveOption:
 
 
 @dataclass(frozen=True)
+class CardOption:
+    """One labeled card-face option."""
+
+    option_id: str
+    label: str
+    card: Card
+    is_answer: bool
+
+
+@dataclass(frozen=True)
 class SolitaireSample:
     """Constructed solitaire scene plus objective witness metadata."""
 
@@ -113,6 +123,7 @@ class SolitaireSample:
     annotation_entity_ids: Tuple[str, ...]
     move_options: Tuple[MoveOption, ...]
     metadata: Dict[str, Any]
+    card_options: Tuple[CardOption, ...] = ()
 
 
 @dataclass(frozen=True)

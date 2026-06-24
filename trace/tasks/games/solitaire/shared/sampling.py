@@ -20,6 +20,7 @@ from .state import (
     SUITS,
     SUIT_SHORT,
     Card,
+    CardOption,
     Foundation,
     MoveOption,
     SolitaireSample,
@@ -171,6 +172,143 @@ def answer_option_label(*, instance_seed: int, params: Mapping[str, Any], option
         return str(labels[abs(int(cursor)) % len(labels)])
     rng = spawn_rng(int(instance_seed), "games.solitaire.answer_option_label")
     return str(labels[int(rng.randrange(len(labels)))])
+
+
+def sample_card_option_count(*, namespace: str, instance_seed: int, params: Mapping[str, Any]) -> Tuple[int, Dict[str, float]]:
+    return sample_integer_axis(
+        namespace=str(namespace),
+        instance_seed=int(instance_seed),
+        params=params,
+        support_key="card_option_count_support",
+        explicit_key="option_count",
+        fallback_support=DEFAULTS.card_option_count_support,
+        axis_name="card_option_count",
+        balanced_flag_key="balanced_option_count_sampling",
+    )
+
+
+def ordinal_label(value: int) -> str:
+    """Return a compact English ordinal for a small tableau depth."""
+
+    number = int(value)
+    if 10 <= number % 100 <= 20:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(number % 10, "th")
+    return f"{number}{suffix}"
+
+
+def sample_cascade_card_at_depth(
+    rng,
+    *,
+    namespace: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    scene_variant: str,
+    target_depth: int,
+    target_column: int | None = None,
+) -> SolitaireSample:
+    """Construct a tableau and card-face options for one column/depth lookup."""
+
+    option_count, option_count_probabilities = sample_card_option_count(
+        namespace=str(namespace),
+        instance_seed=int(instance_seed),
+        params=params,
+    )
+    answer_label = answer_option_label(instance_seed=int(instance_seed), params=params, option_count=int(option_count))
+    column_count = 7 if str(scene_variant) == "klondike_tableau" else 8
+    target_col_index = int(target_column) - 1 if target_column is not None else int(rng.randrange(column_count))
+    if target_col_index < 0 or target_col_index >= int(column_count):
+        raise ValueError(f"target_column out of range for solitaire scene: {target_column}")
+    depth = int(target_depth)
+    if depth < 1 or depth > 6:
+        raise ValueError(f"unsupported solitaire target depth: {target_depth}")
+
+    for _attempt in range(300):
+        pool = deck()
+        columns: List[Tuple[Card, ...]] = []
+        for col_index in range(column_count):
+            if int(col_index) == int(target_col_index):
+                length = int(rng.randint(depth, 6))
+            else:
+                length = int(rng.randint(1, 6))
+            if len(pool) < int(length):
+                raise ValueError("not enough cards to sample solitaire cascade-depth scene")
+            cards: List[Card] = []
+            for row_index in range(int(length)):
+                rank, suit = pool.pop(int(rng.randrange(len(pool))))
+                cards.append(
+                    Card(
+                        card_id=f"col_{col_index + 1:02d}_card_{row_index + 1:02d}",
+                        rank_value=int(rank),
+                        suit_name=str(suit),
+                        badge_text=None,
+                    )
+                )
+            columns.append(tuple(cards))
+
+        target_card = columns[int(target_col_index)][int(depth) - 1]
+        visible_cards = [card for column in columns for card in column if str(card.card_id) != str(target_card.card_id)]
+        rng.shuffle(visible_cards)
+        distractor_cards = visible_cards[: max(0, int(option_count) - 1)]
+        if len(distractor_cards) < int(option_count) - 1:
+            continue
+        options: List[CardOption] = []
+        distractor_cursor = 0
+        for label in MOVE_OPTION_LABELS[: int(option_count)]:
+            if str(label) == str(answer_label):
+                option_card = Card(
+                    card_id=f"card_option_{str(label).lower()}_card",
+                    rank_value=int(target_card.rank_value),
+                    suit_name=str(target_card.suit_name),
+                    badge_text=None,
+                )
+                options.append(CardOption(f"card_option_{str(label).lower()}", str(label), option_card, True))
+            else:
+                source = distractor_cards[int(distractor_cursor)]
+                distractor_cursor += 1
+                option_card = Card(
+                    card_id=f"card_option_{str(label).lower()}_card",
+                    rank_value=int(source.rank_value),
+                    suit_name=str(source.suit_name),
+                    badge_text=None,
+                )
+                options.append(CardOption(f"card_option_{str(label).lower()}", str(label), option_card, False))
+        return SolitaireSample(
+            scene_variant=str(scene_variant),
+            columns=tuple(columns),
+            foundations=sample_foundations(rng),
+            answer=str(answer_label),
+            answer_type="option_letter",
+            annotation_entity_ids=(str(target_card.card_id),),
+            move_options=(),
+            metadata={
+                "target_column_index": int(target_col_index),
+                "target_column_number": int(target_col_index) + 1,
+                "target_depth": int(depth),
+                "target_depth_ordinal": ordinal_label(int(depth)),
+                "target_card_id": str(target_card.card_id),
+                "target_card_label": str(target_card.label),
+                "answer_option_label": str(answer_label),
+                "option_count": int(option_count),
+                "option_count_probabilities": dict(option_count_probabilities),
+                "card_options": [
+                    {
+                        "label": str(option.label),
+                        "option_id": str(option.option_id),
+                        "rank_value": int(option.card.rank_value),
+                        "rank_label": str(option.card.rank_label),
+                        "suit_name": str(option.card.suit_name),
+                        "suit_short": str(option.card.suit_short),
+                        "card_label": str(option.card.label),
+                        "is_answer": bool(option.is_answer),
+                    }
+                    for option in options
+                ],
+            },
+            card_options=tuple(options),
+        )
+    raise ValueError("failed to sample solitaire cascade-card-at-depth scene")
 
 
 def sample_move_legality(

@@ -48,6 +48,19 @@ def _entity_bboxes(rendered: RenderedTetrisScene, entity_ids: Sequence[str]) -> 
     return bboxes
 
 
+def _union_bbox(bboxes: Sequence[Sequence[float]]) -> list[float]:
+    """Return one bbox enclosing all projected witness boxes."""
+
+    if not bboxes:
+        raise ValueError("cannot union an empty Tetris bbox list")
+    return [
+        round(min(float(bbox[0]) for bbox in bboxes), 3),
+        round(min(float(bbox[1]) for bbox in bboxes), 3),
+        round(max(float(bbox[2]) for bbox in bboxes), 3),
+        round(max(float(bbox[3]) for bbox in bboxes), 3),
+    ]
+
+
 def tetris_annotation_bundle(sample: TetrisSample, rendered: RenderedTetrisScene) -> TetrisAnnotationBundle:
     """Build the public annotation payload for one task-bound Tetris sample."""
 
@@ -97,6 +110,13 @@ def tetris_annotation_bundle(sample: TetrisSample, rendered: RenderedTetrisScene
             annotation_gt=artifacts.annotation_gt,
             projected_annotation=dict(artifacts.projected_annotation),
             witness_symbolic={"type": artifacts.annotation_type, "ids": [entity_ids[0]]},
+        )
+    if kind == "active_piece_bbox":
+        artifacts = bbox_annotation_artifacts(_union_bbox(_entity_bboxes(rendered, entity_ids)))
+        return TetrisAnnotationBundle(
+            annotation_gt=artifacts.annotation_gt,
+            projected_annotation=dict(artifacts.projected_annotation),
+            witness_symbolic={"type": artifacts.annotation_type, "ids": [str(entity_id) for entity_id in entity_ids]},
         )
     if kind in {"row_set", "cell_set"}:
         artifacts = bbox_set_annotation_artifacts(_entity_bboxes(rendered, entity_ids))

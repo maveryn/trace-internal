@@ -481,6 +481,59 @@ def build_drop_result_sample(
     )
 
 
+def build_active_piece_shape_sample(
+    rng,
+    *,
+    scene_variant: str,
+    board_rows: int,
+    board_cols: int,
+    target_piece: str,
+) -> TetrisSample:
+    """Construct a static Tetris board with one visible active falling piece."""
+
+    piece = str(target_piece)
+    if piece not in PIECE_ORDER:
+        raise ValueError(f"unsupported Tetris target piece: {piece}")
+    for _attempt in range(300):
+        orientation_index = int(rng.randrange(len(TETROMINOES[piece])))
+        piece_shape = TETROMINOES[piece][orientation_index]
+        height, width = shape_size(piece_shape)
+        if int(width) > int(board_cols) or int(height) > int(board_rows):
+            continue
+        col = int(rng.randint(0, int(board_cols) - int(width)))
+        falling = Placement(piece, int(orientation_index), int(col), 0)
+        board = random_stack_board(
+            rng,
+            scene_variant=str(scene_variant),
+            board_rows=int(board_rows),
+            board_cols=int(board_cols),
+        )
+        if not can_place(board, falling):
+            continue
+        falling_ids = tuple(f"main_cell_{int(row)}_{int(col_index)}" for row, col_index in piece_cells(falling))
+        return TetrisSample(
+            answer=str(piece),
+            answer_type="string",
+            board=board,
+            piece=str(piece),
+            preview_orientation_index=int(orientation_index),
+            placement=None,
+            falling_placement=falling,
+            outcome=None,
+            options=(),
+            annotation_entity_ids=tuple(falling_ids),
+            annotation_kind="active_piece_bbox",
+            metadata={
+                **supported_stack_generation_meta(strategy="active_piece_supported_stack"),
+                "target_piece": str(piece),
+                "shape_options": list(PIECE_ORDER),
+                "falling_placement": placement_trace(falling),
+                "falling_piece_cell_ids": [str(entity_id) for entity_id in falling_ids],
+            },
+        )
+    raise ValueError("failed to construct Tetris active-piece shape sample")
+
+
 def row_qualifies_for_status(row: Sequence[str], *, row_status: str) -> bool:
     empty_count = row_empty_count(row)
     if str(row_status) == "full":

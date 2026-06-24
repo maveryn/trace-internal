@@ -42,6 +42,13 @@
         "What is the number of visible cards in column {target_column_number}?",
         "In column {target_column_number}, how many visible cards are shown?",
         "How many cards can you see in column {target_column_number}?"
+      ],
+      "cascade_card_at_depth_label": [
+        "Which option shows the {target_depth_ordinal} visible card from the top of column {target_column_number}?",
+        "Look at column {target_column_number}. Which option is the {target_depth_ordinal} visible card from the top?",
+        "In column {target_column_number}, select the option matching the {target_depth_ordinal} visible card from the top.",
+        "Which labeled option matches the card at visible position {target_depth_ordinal} from the top of column {target_column_number}?",
+        "Find the {target_depth_ordinal} visible card from the top of column {target_column_number}. Which option shows that card?"
       ]
     },
     "output": {
@@ -74,6 +81,10 @@
     ],
     "query:column_card_count": [
       "target_column_number"
+    ],
+    "query:cascade_card_at_depth_label": [
+      "target_column_number",
+      "target_depth_ordinal"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -115,6 +126,9 @@
     "target_column_number": {
       "type": "string"
     },
+    "target_depth_ordinal": {
+      "type": "string"
+    },
     "tableau_rule_text": {
       "type": "string"
     }
@@ -126,8 +140,10 @@
     "annotation_hint_move_legality_label": "set \"annotation\" to an object mapping \"source_card\" and \"target\" to their bounding boxes [x0, y0, x1, y1]",
     "annotation_hint_foundation_ready_count": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for the counted exposed cards; use an empty array when no cards are counted",
     "annotation_hint_column_card_count": "set \"annotation\" to an array of [x, y] image-pixel points, one point on the visible part of each card in the requested column",
+    "annotation_hint_cascade_card_at_depth_label": "set \"annotation\" to the bounding box [x0, y0, x1, y1] of the target card in the tableau column",
     "answer_hint_move_legality_label": "set \"answer\" to only the visible move option letter, for example \"C\"",
     "answer_hint_foundation_ready_count": "set \"answer\" to the number of exposed tableau cards that can move to a foundation pile now",
-    "answer_hint_column_card_count": "set \"answer\" to the number of visible cards in the requested column"
+    "answer_hint_column_card_count": "set \"answer\" to the number of visible cards in the requested column",
+    "answer_hint_cascade_card_at_depth_label": "set \"answer\" to only the option letter showing the requested card"
   }
 }

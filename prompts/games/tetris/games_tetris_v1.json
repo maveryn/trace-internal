@@ -29,6 +29,13 @@
         "{next_piece_rule_text} {line_clear_rule_text} What is the maximum row-clear count over all legal placements?",
         "{next_piece_rule_text} {line_clear_rule_text} If the next piece is placed optimally, how many rows clear?"
       ],
+      "active_piece_shape_label": [
+        "What is the shape label of the falling piece?",
+        "Identify the tetromino shape of the falling piece.",
+        "Which listed shape matches the falling piece on the board?",
+        "What tetromino label describes the active falling piece?",
+        "Choose the shape label for the shown falling piece."
+      ],
       "no_clear_result": [
         "{fixed_drop_rule_text} {line_clear_rule_text} Which labeled board shows the final state?",
         "{fixed_drop_rule_text} {line_clear_rule_text} Choose the result board after the falling piece locks.",
@@ -139,6 +146,7 @@
       "next_piece_rule_text",
       "line_clear_rule_text"
     ],
+    "query:active_piece_shape_label": [],
     "query:no_clear_result": [
       "fixed_drop_rule_text",
       "line_clear_rule_text"
@@ -231,6 +239,8 @@
     "line_clear_rule_text": "After the piece locks, every completely filled row clears and all rows above fall down by the number of cleared rows.",
     "annotation_hint_line_clear_count": "set \"annotation\" to an object mapping \"board\" and \"next_piece\" to their bounding boxes [x0, y0, x1, y1]",
     "answer_hint_line_clear_count": "set \"answer\" to the maximum number of rows the NEXT piece can clear",
+    "annotation_hint_active_piece_shape_label": "set \"annotation\" to the bounding box [x0, y0, x1, y1] enclosing the falling piece on the board",
+    "answer_hint_active_piece_shape_label": "set \"answer\" to the tetromino shape label: \"I\", \"O\", \"T\", \"L\", \"J\", \"S\", or \"Z\"",
     "annotation_hint_drop_result_label": "set \"annotation\" to the selected result-board bounding box [x0, y0, x1, y1]",
     "answer_hint_drop_result_label": "set \"answer\" to only the selected option letter",
     "annotation_hint_row_occupancy_status_count": "set \"annotation\" to an array containing one whole-row bounding box [x0, y0, x1, y1] for each qualifying row",

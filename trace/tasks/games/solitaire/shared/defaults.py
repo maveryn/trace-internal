@@ -34,6 +34,8 @@ class SolitaireDefaults:
     option_height_px: int = 46
     option_gap_px: int = 10
     move_option_count_support: Tuple[int, ...] = (4,)
+    card_option_count_support: Tuple[int, ...] = (4, 6)
+    cascade_depth_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
     foundation_ready_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     column_card_count_target_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
     tableau_column_count_support: Tuple[int, ...] = (7, 8)

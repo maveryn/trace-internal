@@ -39,6 +39,8 @@ def test_games_solitaire_defaults_expose_scene_axes_and_prompt_bundle() -> None:
         "paper_tableau",
     }
     assert list(generation["move_option_count_support"]) == [4]
+    assert list(generation["card_option_count_support"]) == [4, 6]
+    assert list(generation["cascade_depth_support"]) == [1, 2, 3, 4, 5, 6]
     assert list(generation["foundation_ready_target_answer_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["column_card_count_target_answer_support"]) == [1, 2, 3, 4, 5, 6]
     assert int(rendering["canvas_width"]) == 1060
@@ -48,13 +50,14 @@ def test_games_solitaire_defaults_expose_scene_axes_and_prompt_bundle() -> None:
     assert "foundation" in str(bundle["code_prompt_defaults"]["foundation_rule_text"])
 
 
-def test_games_solitaire_prompt_bundle_has_three_queries() -> None:
+def test_games_solitaire_prompt_bundle_has_four_queries() -> None:
     bundle = json.loads(Path("prompts/games/solitaire/games_solitaire_v1.json").read_text(encoding="utf-8"))
     assert bundle["schema_version"] == "v1"
     assert set(bundle["templates"]["query"].keys()) == {
         "move_legality_label",
         "foundation_ready_count",
         "column_card_count",
+        "cascade_card_at_depth_label",
     }
     assert bundle["required_slots_by_key"]["query:move_legality_label"] == [
         "tableau_rule_text",
@@ -144,3 +147,31 @@ def test_games_solitaire_column_card_count_matches_trace() -> None:
     assert len(out.annotation_gt.value) == 4
     assert out.trace_payload["projected_annotation"]["type"] == "point_set"
     assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
+
+
+def test_games_solitaire_cascade_card_at_depth_label_matches_trace() -> None:
+    out = create_task("task_games__solitaire__cascade_card_at_depth_label").generate(
+        81361,
+        params={"target_column": 2, "target_depth": 4, "option_count": 6, "answer_option_label": "D"},
+        max_attempts=200,
+    )
+    execution = out.trace_payload["execution_trace"]
+    target_card_id = str(execution["target_card_id"])
+    target_card = next(card for card in execution["card_specs"] if str(card["card_id"]) == target_card_id)
+    answer_option = next(option for option in execution["card_options"] if bool(option["is_answer"]))
+
+    assert out.answer_gt.type == "option_letter"
+    assert str(out.answer_gt.value) == "D"
+    assert out.query_id == "single"
+    assert execution["prompt_query_key"] == "cascade_card_at_depth_label"
+    assert int(execution["target_column_number"]) == 2
+    assert int(execution["target_depth"]) == 4
+    assert str(execution["target_depth_ordinal"]) == "4th"
+    assert int(target_card["column_index"]) == 1
+    assert int(target_card["row_index"]) == 3
+    assert str(answer_option["label"]) == "D"
+    assert str(answer_option["card_label"]) == str(execution["target_card_label"])
+    assert len(execution["card_options"]) == 6
+    assert out.annotation_gt.type == "bbox"
+    assert out.annotation_gt.value == out.trace_payload["render_map"]["entity_bboxes_px"][target_card_id]
+    assert out.trace_payload["projected_annotation"]["type"] == "bbox"

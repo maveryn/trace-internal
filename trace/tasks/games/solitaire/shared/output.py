@@ -85,6 +85,11 @@ def build_solitaire_trace_payload(
                 "target": str(sample.metadata["legal_target_id"]),
             },
         }
+    elif str(annotation_artifacts.annotation_type) in {"bbox", "point"}:
+        witness_symbolic = {
+            "type": "object",
+            "ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
+        }
     else:
         witness_symbolic = {
             "type": "object_set",

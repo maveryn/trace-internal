@@ -15,6 +15,16 @@ generation:
     balanced_option_count_sampling: true
     move_option_count_support:
     - 4
+    card_option_count_support:
+    - 4
+    - 6
+    cascade_depth_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
     foundation_ready_target_answer_support:
     - 0
     - 1

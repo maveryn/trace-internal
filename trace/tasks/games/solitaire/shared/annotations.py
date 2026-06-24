@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from trace.core.types import TypedValue
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts, point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_annotation_artifacts, bbox_set_annotation_artifacts, point_set_annotation_artifacts
 
 from .state import RenderedSolitaireScene, SolitaireSample
 
@@ -41,6 +41,16 @@ def entity_bbox_set(sample: SolitaireSample, rendered: RenderedSolitaireScene) -
         if str(entity_id) in entity_bboxes
     ]
     return bbox_set_annotation_artifacts(bboxes)
+
+
+def entity_bbox(sample: SolitaireSample, rendered: RenderedSolitaireScene) -> AnnotationArtifacts:
+    """Bind exactly one sampled annotation entity id to a scalar bbox."""
+
+    entity_bboxes: Mapping[str, Any] = rendered.render_map["entity_bboxes_px"]
+    entity_ids = tuple(str(entity_id) for entity_id in sample.annotation_entity_ids)
+    if len(entity_ids) != 1:
+        raise ValueError("scalar solitaire bbox annotation requires exactly one entity id")
+    return bbox_annotation_artifacts(list(entity_bboxes[str(entity_ids[0])]))
 
 
 def entity_point_set(sample: SolitaireSample, rendered: RenderedSolitaireScene) -> AnnotationArtifacts:

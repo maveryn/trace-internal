@@ -314,6 +314,9 @@ def render_solitaire_scene(
             option_height = int_default(params, "option_height_px", DEFAULTS.option_height_px)
             needed_height = max(tableau_bottom, foundation_bottom) + 64 + option_height + margin
             canvas_height = min(int(canvas_height), max(620, int(needed_height)))
+        elif sample.card_options:
+            needed_height = max(tableau_bottom, foundation_bottom) + 64 + card_height + 30 + margin
+            canvas_height = min(int(canvas_height), max(700, int(needed_height)))
         else:
             needed_height = max(tableau_bottom, foundation_bottom) + margin + 28
             canvas_height = min(int(canvas_height), max(560, int(needed_height)))
@@ -522,6 +525,56 @@ def render_solitaire_scene(
                     "target_id": str(option.target_id),
                     "is_answer": bool(option.is_answer),
                     "bbox_px": [float(value) for value in bbox],
+                }
+            )
+    elif sample.card_options:
+        option_count = len(sample.card_options)
+        option_gap = int_default(params, "option_gap_px", DEFAULTS.option_gap_px)
+        total_w = (int(option_count) * card_width) + ((int(option_count) - 1) * option_gap)
+        start_option_x = int((canvas_width - total_w) / 2.0 + round(dx))
+        option_y = int(canvas_height - margin - card_height + round(dy))
+        label_h = 24
+        for index, option in enumerate(sample.card_options):
+            x0 = start_option_x + int(index) * (card_width + option_gap)
+            card_bbox = (float(x0), float(option_y), float(x0 + card_width), float(option_y + card_height))
+            full_bbox = (float(x0), float(option_y - label_h - 4), float(x0 + card_width), float(option_y + card_height))
+            draw_card(
+                image,
+                draw,
+                card_bbox,
+                option.card,
+                radius_px=radius,
+                card_theme=card_theme,
+                rank_font_size_px=int_default(params, "rank_font_size_px", DEFAULTS.rank_font_size_px),
+                center_symbol_font_size_px=int_default(params, "card_center_font_size_px", DEFAULTS.card_center_font_size_px),
+                badge_font=badge_font,
+                badge_fill_rgb=badge_fill,
+                badge_text_rgb=badge_text,
+            )
+            label_bbox = (float(x0 + 14), float(option_y - label_h - 4), float(x0 + card_width - 14), float(option_y - 4))
+            draw.rounded_rectangle(
+                label_bbox,
+                radius=8,
+                fill=tuple(int(value) for value in solitaire_style.option_fill_rgb),
+                outline=border_rgb,
+                width=2,
+            )
+            draw_text_center(draw, label_bbox, str(option.label), font=option_font, fill=text_rgb, stroke_width=0)
+            option_bboxes[str(option.option_id)] = [float(value) for value in full_bbox]
+            entities.append(
+                {
+                    "entity_id": str(option.option_id),
+                    "entity_type": "card_option",
+                    "label": str(option.label),
+                    "rank_value": int(option.card.rank_value),
+                    "rank_label": str(option.card.rank_label),
+                    "suit_name": str(option.card.suit_name),
+                    "suit_symbol": str(SUIT_SYMBOLS[str(option.card.suit_name)]),
+                    "suit_short": str(option.card.suit_short),
+                    "card_label": str(option.card.label),
+                    "is_answer": bool(option.is_answer),
+                    "bbox_px": [float(value) for value in full_bbox],
+                    "card_bbox_px": [float(value) for value in card_bbox],
                 }
             )
 

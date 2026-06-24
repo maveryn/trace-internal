@@ -1,4 +1,4 @@
-"""Prompt assembly for scatter-points chart tasks."""
+"""Prompt assembly for scatter-point chart tasks."""
 
 from __future__ import annotations
 
@@ -10,38 +10,38 @@ from trace.tasks.shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 
-from .points_query import _Dataset, _PROMPT_DEFAULTS
+from .defaults import PROMPT_DEFAULTS
+from .state import Dataset, SCENE_ID
 
 
 DOMAIN = "charts"
-SCENE_ID = "scatter_points"
 PROMPT_BUNDLE_ID = "charts_scatter_points_v1"
 
 
-def _axis_phrase(axis: str) -> str:
+def axis_phrase(axis: str) -> str:
     return "x" if str(axis) == "x" else "y"
 
 
-def _direction_phrase(direction: str) -> str:
+def direction_phrase(direction: str) -> str:
     return "greater than" if str(direction) == "above" else "less than"
 
 
-def _extremum_phrase(extremum: str) -> str:
+def extremum_phrase(extremum: str) -> str:
     return "largest" if str(extremum) == "largest" else "smallest"
 
 
-def dynamic_slots(*, dataset: _Dataset) -> dict[str, Any]:
+def dynamic_slots(*, dataset: Dataset) -> dict[str, Any]:
     trace = dict(dataset.query.trace)
-    if str(dataset.query.query_id) == "axis_threshold_point_count":
-        object_description = "a scatter plot of individual data points with numeric x- and y-axes"
-    else:
+    if dataset.categories:
         object_description = "a categorized scatter plot with individual data points, numeric x- and y-axes, and a legend"
+    else:
+        object_description = "a scatter plot of individual data points with numeric x- and y-axes"
     return {
         "object_description": str(object_description),
-        "axis_phrase": _axis_phrase(str(trace.get("threshold_axis", trace.get("mean_axis", "x")))),
-        "threshold_direction_phrase": _direction_phrase(str(trace.get("threshold_direction", "above"))),
+        "axis_phrase": axis_phrase(str(trace.get("threshold_axis", trace.get("mean_axis", "x")))),
+        "threshold_direction_phrase": direction_phrase(str(trace.get("threshold_direction", "above"))),
         "threshold_value": str(trace.get("threshold_value", "")),
-        "mean_extremum_phrase": _extremum_phrase(str(trace.get("mean_extremum", "largest"))),
+        "mean_extremum_phrase": extremum_phrase(str(trace.get("mean_extremum", "largest"))),
         "target_category_label": str(trace.get("target_category_label", "")),
     }
 
@@ -55,7 +55,7 @@ def build_prompt_artifacts(
     rendered_prompt = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
-        bundle_id=str(_PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
+        bundle_id=str(PROMPT_DEFAULTS.get("bundle_id", PROMPT_BUNDLE_ID)),
         scene_key="scatter_points",
         task_key="scatter_points_query",
         query_key=str(prompt_query_key),
@@ -65,4 +65,10 @@ def build_prompt_artifacts(
     return build_prompt_trace_artifacts(rendered_prompt)
 
 
-__all__ = ["build_prompt_artifacts", "dynamic_slots"]
+__all__ = [
+    "axis_phrase",
+    "build_prompt_artifacts",
+    "direction_phrase",
+    "dynamic_slots",
+    "extremum_phrase",
+]

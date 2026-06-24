@@ -39,6 +39,7 @@ rendering:
     scatter_points_label_font_size_px: 19
     scatter_points_legend_font_size_px: 20
     scatter_points_title_font_size_px: 26
+    scatter_points_title_probability: 0.35
     scatter_points_legend_gap_px: 78
     scatter_points_x_axis_label: X value
     scatter_points_y_axis_label: Y value

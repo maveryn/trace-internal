@@ -1,1 +1,1 @@
-"""Shared runtime for right-triangle altitude theorem geometry scene."""
+"""Shared primitives for right-triangle altitude theorem geometry scene."""

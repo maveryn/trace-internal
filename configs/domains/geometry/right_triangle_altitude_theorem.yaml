@@ -18,11 +18,5 @@ rendering:
       max_attempts: 6
 prompt:
   shared:
-    bundle_id: geometry_right_triangle_altitude_theorem_v0
+    bundle_id: geometry_right_triangle_altitude_theorem_v1
     scene_key: right_triangle_altitude_theorem_scene
-    task_key: altitude_to_hypotenuse_value_query
-  task_overrides:
-    task_geometry__right_triangle_altitude_theorem__altitude_to_hypotenuse_value:
-      task_key: altitude_to_hypotenuse_value_query
-    task_geometry__right_triangle_altitude_theorem__leg_projection_length_value:
-      task_key: leg_projection_length_value_query

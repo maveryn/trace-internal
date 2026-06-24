@@ -594,7 +594,7 @@ def test_icons_sequence_strip_scene_defaults_loaded() -> None:
 def test_icons_wallpaper_panels_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'wallpaper_panels')
     generation_shared = cfg['generation']['shared']
-    assert list(generation_shared['option_count_choices']) == [6]
+    assert list(generation_shared['option_count_choices']) == [4]
     assert int(generation_shared['lattice_rows']) == 4
     assert int(generation_shared['lattice_cols']) == 4
     assert str(generation_shared['pool_manifest']) == 'non_symmetry.txt'
@@ -604,8 +604,8 @@ def test_icons_wallpaper_panels_defaults_loaded() -> None:
     assert int(render_shared['canvas_height']) == 640
     assert int(render_shared['lattice_rows']) == 4
     assert int(render_shared['lattice_cols']) == 4
-    assert int(render_shared['scene_icon_size_min_px']) == 21
-    assert int(render_shared['scene_icon_size_max_px']) == 31
+    assert int(render_shared['scene_icon_size_min_px']) == 40
+    assert int(render_shared['scene_icon_size_max_px']) == 44
     assert list(render_shared['icon_noise_edit_count_range']) == [0, 0]
     prompt_shared = cfg['prompt']['shared']
     assert str(prompt_shared['bundle_id']).strip() == 'icons_wallpaper_panels_v1'

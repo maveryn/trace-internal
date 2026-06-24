@@ -1,7 +1,7 @@
 generation:
   shared:
     option_count_choices:
-    - 6
+    - 4
     lattice_rows: 4
     lattice_cols: 4
     wallpaper_group_ids:
@@ -25,8 +25,8 @@ rendering:
     option_panel_gap_px: 18
     lattice_rows: 4
     lattice_cols: 4
-    scene_icon_size_min_px: 21
-    scene_icon_size_max_px: 31
+    scene_icon_size_min_px: 40
+    scene_icon_size_max_px: 44
     cell_box_width_min_px: 0
     cell_box_width_max_px: 0
     cell_box_height_min_px: 0
@@ -168,8 +168,8 @@ rendering:
         - 0.08
   task_overrides:
     task_icons__wallpaper_panels__motif_violation_label:
-      scene_icon_size_min_px: 22
-      scene_icon_size_max_px: 32
+      scene_icon_size_min_px: 40
+      scene_icon_size_max_px: 44
 prompt:
   shared:
     bundle_id: icons_wallpaper_panels_v1

@@ -9,7 +9,7 @@
 - Domain: `icons`
 - Scene id: `wallpaper_panels`
 - Task id: `task_icons__wallpaper_panels__motif_violation_label`
-- Objective contract: select the labeled wallpaper panel whose repeated motif pattern differs from the other five panels.
+- Objective contract: select the labeled wallpaper panel whose repeated motif pattern differs from the other three panels.
 - Module: `trace/tasks/icons/wallpaper_panels/motif_violation_label.py`
 - Prompt bundle: `prompts/icons/wallpaper_panels/icons_wallpaper_panels_v1.json`
 
@@ -18,14 +18,14 @@
 - Supported `query_id` values: `single`.
 - Answer schema: `option_letter`.
 - Annotation schema: `bbox`.
-- The image contains six labeled panels `A..F`.
-- Five panels share one wallpaper-group arrangement and exactly one panel uses a different wallpaper-group arrangement.
+- The image contains four labeled panels `A..D`.
+- Three panels share one wallpaper-group arrangement and exactly one panel uses a different wallpaper-group arrangement.
 - Wallpaper groups are rendered with exactly one visible curated-icon motif per cell on an invisible `4 x 4` lattice, for 16 motif icons per panel.
 - Wallpaper group id, icon id, canvas treatment, palette, and the selected odd panel are generation metadata, not public query ids.
 
 ## Generation
 
-- Option count is fixed at six.
+- Option count is fixed at four.
 - The shared wallpaper group and odd wallpaper group are distinct by construction.
 - Each panel uses a distinct curated icon from `non_symmetry.txt`.
 - Wallpaper panels use quiet canvas treatments only, with no visible internal grid or tile outline.

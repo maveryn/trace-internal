@@ -66,8 +66,8 @@ def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
     assert out.query_id == "single"
     assert trace["scene_ir"]["scene_kind"] == "icons_wallpaper_panels_reference_match"
     assert execution["question_format"] == "select_candidate_panel_matching_reference_wallpaper_pattern"
-    assert int(execution["option_count"]) == 6
-    assert execution["option_labels"] == list("ABCDEF")
+    assert int(execution["option_count"]) == 4
+    assert execution["option_labels"] == list("ABCD")
     assert str(execution["reference_wallpaper_group_id"]) == "p1"
     assert execution["visible_internal_grid"] is False
     assert trace["render_spec"]["style"]["visible_internal_grid"] is False
@@ -79,8 +79,8 @@ def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
     reference_panels = [panel for panel in scene_panels if bool(panel["is_reference"])]
     candidate_panels = [panel for panel in scene_panels if str(panel["panel_role"]) == "candidate"]
     assert len(reference_panels) == 1
-    assert len(candidate_panels) == 6
-    assert [str(panel["label"]) for panel in candidate_panels] == list("ABCDEF")
+    assert len(candidate_panels) == 4
+    assert [str(panel["label"]) for panel in candidate_panels] == list("ABCD")
 
     reference = reference_panels[0]
     answer = next(panel for panel in candidate_panels if str(panel["label"]) == "D")
@@ -88,12 +88,12 @@ def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
     assert str(reference["wallpaper_group_id"]) == "p1"
     assert str(answer["wallpaper_group_id"]) == "p1"
     assert all(str(panel["wallpaper_group_id"]) != "p1" for panel in distractors)
-    assert len({str(panel["wallpaper_group_id"]) for panel in distractors}) == 5
-    assert len({str(panel["icon_id"]) for panel in scene_panels}) == 7
+    assert len({str(panel["wallpaper_group_id"]) for panel in distractors}) == 3
+    assert len({str(panel["icon_id"]) for panel in scene_panels}) == 5
 
     non_symmetry_pool = set(resolve_icon_pool("non_symmetry.txt"))
-    assert set(execution["icon_ids_by_label"].keys()) == {"Reference", *set("ABCDEF")}
-    assert len(set(execution["icon_ids_by_label"].values())) == 7
+    assert set(execution["icon_ids_by_label"].keys()) == {"Reference", *set("ABCD")}
+    assert len(set(execution["icon_ids_by_label"].values())) == 5
     assert set(execution["icon_ids_by_label"].values()).issubset(non_symmetry_pool)
     assert out.annotation_gt.value == {
         "reference_panel": list(reference["panel_bbox_xyxy"]),

@@ -11,7 +11,7 @@ from ...shared.defaults import ICON_SHARED_DEFAULTS
 DOMAIN = "icons"
 SCENE_ID = "wallpaper_panels"
 REFERENCE_LABEL = "Reference"
-OPTION_LABELS: Tuple[str, ...] = tuple("ABCDEF")
+OPTION_LABELS: Tuple[str, ...] = tuple("ABCD")
 LATTICE_ROWS = 4
 LATTICE_COLS = 4
 WALLPAPER_GROUP_IDS: Tuple[str, ...] = ("p1", "p2", "pm", "pg", "cm", "pmm", "p4", "p3")
@@ -21,8 +21,8 @@ WALLPAPER_GROUP_IDS: Tuple[str, ...] = ("p1", "p2", "pm", "pg", "cm", "pmm", "p4
 class WallpaperPanelDefaults:
     """Stable fallback defaults shared by wallpaper-panel tasks."""
 
-    option_count_choices: Tuple[int, ...] = (6,)
-    match_count_choices: Tuple[int, ...] = (1, 2, 3, 4, 5)
+    option_count_choices: Tuple[int, ...] = (4,)
+    match_count_choices: Tuple[int, ...] = (1, 2, 3)
     lattice_rows: int = LATTICE_ROWS
     lattice_cols: int = LATTICE_COLS
     wallpaper_group_ids: Tuple[str, ...] = WALLPAPER_GROUP_IDS
@@ -33,8 +33,8 @@ class WallpaperPanelDefaults:
     panel_padding_px: int = 16
     panel_corner_radius_px: int = ICON_SHARED_DEFAULTS.panel_corner_radius_px
     option_panel_gap_px: int = 18
-    scene_icon_size_min_px: int = 21
-    scene_icon_size_max_px: int = 31
+    scene_icon_size_min_px: int = 40
+    scene_icon_size_max_px: int = 44
     cell_box_width_min_px: int = 0
     cell_box_width_max_px: int = 0
     cell_box_height_min_px: int = 0

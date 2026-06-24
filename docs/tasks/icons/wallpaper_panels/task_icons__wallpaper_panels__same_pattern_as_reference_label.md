@@ -18,14 +18,14 @@
 - Supported `query_id` values: `single`.
 - Answer schema: `option_letter`.
 - Annotation schema: `bbox_map`.
-- The image contains one `Reference` panel and six candidate panels `A..F`.
+- The image contains one `Reference` panel and four candidate panels `A..D`.
 - Exactly one candidate panel shares the Reference wallpaper group; every distractor uses a distinct non-reference wallpaper group.
 - Wallpaper groups are rendered with exactly one visible curated-icon motif per cell on an invisible `4 x 4` lattice, for 16 motif icons per panel.
 - Wallpaper group id, icon id, canvas treatment, palette, and selected answer label are generation metadata, not public query ids.
 
 ## Generation
 
-- Option count is fixed at six.
+- Option count is fixed at four.
 - The Reference and correct candidate share one wallpaper group.
 - Nonmatching candidate groups are distinct from the Reference group and from each other.
 - Each panel, including Reference, uses a distinct curated icon from `non_symmetry.txt`.

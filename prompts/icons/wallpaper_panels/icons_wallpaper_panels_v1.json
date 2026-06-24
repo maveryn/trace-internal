@@ -4,18 +4,18 @@
   "templates": {
     "scene": {
       "wallpaper_panel_violation_scene": [
-        "The image shows six labeled wallpaper panels filled with repeated icon motifs.",
-        "The figure shows six labeled wallpaper panels filled with repeated icon motifs.",
-        "This image shows six labeled wallpaper panels filled with repeated icon motifs.",
-        "The scene shows six labeled wallpaper panels filled with repeated icon motifs.",
-        "The picture shows six labeled wallpaper panels filled with repeated icon motifs."
+        "The image shows four labeled wallpaper panels filled with repeated icon motifs.",
+        "The figure shows four labeled wallpaper panels filled with repeated icon motifs.",
+        "This image shows four labeled wallpaper panels filled with repeated icon motifs.",
+        "The scene shows four labeled wallpaper panels filled with repeated icon motifs.",
+        "The picture shows four labeled wallpaper panels filled with repeated icon motifs."
       ],
       "wallpaper_reference_match_scene": [
-        "The image shows one Reference wallpaper panel and six labeled wallpaper panels filled with repeated icon motifs.",
-        "The figure shows one Reference wallpaper panel and six labeled wallpaper panels filled with repeated icon motifs.",
-        "This image shows one Reference wallpaper panel and six labeled wallpaper panels filled with repeated icon motifs.",
-        "The scene shows one Reference wallpaper panel and six labeled wallpaper panels filled with repeated icon motifs.",
-        "The picture shows one Reference wallpaper panel and six labeled wallpaper panels filled with repeated icon motifs."
+        "The image shows one Reference wallpaper panel and four labeled wallpaper panels filled with repeated icon motifs.",
+        "The figure shows one Reference wallpaper panel and four labeled wallpaper panels filled with repeated icon motifs.",
+        "This image shows one Reference wallpaper panel and four labeled wallpaper panels filled with repeated icon motifs.",
+        "The scene shows one Reference wallpaper panel and four labeled wallpaper panels filled with repeated icon motifs.",
+        "The picture shows one Reference wallpaper panel and four labeled wallpaper panels filled with repeated icon motifs."
       ]
     },
     "task": {

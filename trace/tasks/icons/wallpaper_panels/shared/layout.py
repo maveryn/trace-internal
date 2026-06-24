@@ -18,7 +18,7 @@ def option_panel_geometry(
     render_params: Mapping[str, Any],
     option_labels: Sequence[str],
 ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]]]:
-    """Return panel geometry for six option-only wallpaper panels."""
+    """Return panel geometry for four option-only wallpaper panels."""
 
     width = int(render_params["canvas_width"])
     height = int(render_params["canvas_height"])
@@ -28,7 +28,7 @@ def option_panel_geometry(
     panel_slots = resolve_fixed_grid_cell_slots(
         outer_bbox,
         rows=2,
-        cols=3,
+        cols=2,
         cell_padding_px=max(0, int(gap // 2)),
     )[: len(option_labels)]
     option_panels = _panel_payloads(
@@ -39,7 +39,7 @@ def option_panel_geometry(
     return (
         {
             "canvas_size": [int(width), int(height)],
-            "option_panel_grid": {"rows": 2, "cols": 3, "option_count": int(len(option_labels))},
+            "option_panel_grid": {"rows": 2, "cols": 2, "option_count": int(len(option_labels))},
             "motif_lattice": {
                 "rows": int(render_params["lattice_rows"]),
                 "cols": int(render_params["lattice_cols"]),
@@ -56,7 +56,7 @@ def reference_panel_geometry(
     render_params: Mapping[str, Any],
     option_labels: Sequence[str],
 ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]]]:
-    """Return panel geometry for one Reference panel plus six candidate panels."""
+    """Return panel geometry for one Reference panel plus four candidate panels."""
 
     width = int(render_params["canvas_width"])
     height = int(render_params["canvas_height"])
@@ -75,7 +75,7 @@ def reference_panel_geometry(
     panel_slots = resolve_fixed_grid_cell_slots(
         options_bbox,
         rows=2,
-        cols=3,
+        cols=2,
         cell_padding_px=max(0, int(gap // 2)),
     )[: len(option_labels)]
     panels = _panel_payloads(
@@ -87,7 +87,7 @@ def reference_panel_geometry(
         {
             "canvas_size": [int(width), int(height)],
             "reference_panel_label": REFERENCE_LABEL,
-            "candidate_panel_grid": {"rows": 2, "cols": 3, "option_count": int(len(option_labels))},
+            "candidate_panel_grid": {"rows": 2, "cols": 2, "option_count": int(len(option_labels))},
             "motif_lattice": {
                 "rows": int(render_params["lattice_rows"]),
                 "cols": int(render_params["lattice_cols"]),

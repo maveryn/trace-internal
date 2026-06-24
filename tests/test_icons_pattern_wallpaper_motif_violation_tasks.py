@@ -62,38 +62,38 @@ def test_icons_wallpaper_motif_violation_contract_matches_scene() -> None:
     assert out.query_id == 'single'
     assert trace['scene_ir']['scene_kind'] == 'icons_wallpaper_panels_global_pattern_outlier'
     assert execution['question_format'] == 'select_panel_with_different_wallpaper_pattern'
-    assert int(execution['option_count']) == 6
-    assert execution['option_labels'] == list('ABCDEF')
+    assert int(execution['option_count']) == 4
+    assert execution['option_labels'] == list('ABCD')
     assert str(execution['shared_wallpaper_group_id']) == 'p1'
     assert str(execution['odd_wallpaper_group_id']) == 'p4'
-    assert execution['wallpaper_group_ids_by_label'] == {'A': 'p1', 'B': 'p1', 'C': 'p1', 'D': 'p4', 'E': 'p1', 'F': 'p1'}
+    assert execution['wallpaper_group_ids_by_label'] == {'A': 'p1', 'B': 'p1', 'C': 'p1', 'D': 'p4'}
     assert execution['visible_internal_grid'] is False
     assert trace['render_spec']['style']['visible_internal_grid'] is False
     assert trace['render_spec']['style']['wallpaper_panel_chrome_policy'] == WALLPAPER_PANEL_CHROME_POLICY
     assert trace['render_spec']['style']['safe_canvas_treatments'] == list(SAFE_WALLPAPER_CANVAS_TREATMENTS)
     assert trace['render_spec']['style']['icon_canvas_style']['treatment'] in SAFE_WALLPAPER_CANVAS_TREATMENTS
     assert trace['render_spec']['panel_geometry']['motif_lattice'] == {'rows': 4, 'cols': 4, 'visible_grid': False}
-    assert len(scene_panels) == 6
-    assert [str(panel['label']) for panel in scene_panels] == list('ABCDEF')
+    assert len(scene_panels) == 4
+    assert [str(panel['label']) for panel in scene_panels] == list('ABCD')
     assert [str(panel['wallpaper_group_id']) for panel in scene_panels if str(panel['label']) == 'D'] == ['p4']
     assert all((str(panel['wallpaper_group_id']) == 'p1' for panel in scene_panels if str(panel['label']) != 'D'))
-    assert len({str(panel['icon_id']) for panel in scene_panels}) == 6
+    assert len({str(panel['icon_id']) for panel in scene_panels}) == 4
     assert out.annotation_gt.value == next((panel['panel_bbox_xyxy'] for panel in scene_panels if str(panel['label']) == 'D'))
     assert trace['projected_annotation']['type'] == 'bbox'
     assert trace['projected_annotation']['bbox'] == out.annotation_gt.value
     non_symmetry_pool = set(resolve_icon_pool('non_symmetry.txt'))
-    assert set(execution['icon_ids_by_label'].keys()) == set('ABCDEF')
-    assert len(set(execution['icon_ids_by_label'].values())) == 6
+    assert set(execution['icon_ids_by_label'].keys()) == set('ABCD')
+    assert len(set(execution['icon_ids_by_label'].values())) == 4
     assert set(execution['icon_ids_by_label'].values()).issubset(non_symmetry_pool)
     assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
     assert 'wallpaper' in out.prompt
     assert 'pattern' in out.prompt
     _assert_sixteen_motif_icons_per_panel(trace)
 
-def test_icons_wallpaper_motif_violation_rejects_four_option_layout() -> None:
+def test_icons_wallpaper_motif_violation_rejects_six_option_layout() -> None:
     task = IconsWallpaperPanelsMotifViolationLabelTask()
     with pytest.raises(ValueError):
-        task.generate(2026060805, params={'option_count': 4, 'answer_label': 'B'}, max_attempts=20)
+        task.generate(2026060805, params={'option_count': 6, 'answer_label': 'B'}, max_attempts=20)
 
 def test_icons_wallpaper_motif_violation_rejects_unsafe_canvas_treatment() -> None:
     task = IconsWallpaperPanelsMotifViolationLabelTask()
@@ -103,14 +103,14 @@ def test_icons_wallpaper_motif_violation_rejects_unsafe_canvas_treatment() -> No
 def test_icons_wallpaper_motif_violation_all_motifs_have_unique_answer() -> None:
     task = IconsWallpaperPanelsMotifViolationLabelTask()
     for index, group_id in enumerate(('p2', 'pm', 'pg', 'cm', 'pmm', 'p4', 'p3')):
-        out = task.generate(hash64(2026060806, group_id, index), params={'shared_wallpaper_group_id': 'p1', 'odd_wallpaper_group_id': group_id, 'answer_label': 'F'}, max_attempts=300)
+        out = task.generate(hash64(2026060806, group_id, index), params={'shared_wallpaper_group_id': 'p1', 'odd_wallpaper_group_id': group_id, 'answer_label': 'D'}, max_attempts=300)
         execution = out.trace_payload['execution_trace']
         group_ids_by_label = execution['wallpaper_group_ids_by_label']
         assert str(execution['shared_wallpaper_group_id']) == 'p1'
         assert str(execution['odd_wallpaper_group_id']) == group_id
-        assert group_ids_by_label['F'] == group_id
+        assert group_ids_by_label['D'] == group_id
         assert sum((1 for value in group_ids_by_label.values() if str(value) == group_id)) == 1
-        assert all((str(value) == 'p1' for label, value in group_ids_by_label.items() if str(label) != 'F'))
+        assert all((str(value) == 'p1' for label, value in group_ids_by_label.items() if str(label) != 'D'))
 
 def test_icons_wallpaper_motif_violation_prompt_example_matches_contract() -> None:
     task = IconsWallpaperPanelsMotifViolationLabelTask()

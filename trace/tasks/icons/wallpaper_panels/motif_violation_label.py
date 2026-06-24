@@ -203,7 +203,7 @@ class IconsWallpaperPanelsMotifViolationLabelTask:
             query_spec=query_spec,
             scene_kind="icons_wallpaper_panels_global_pattern_outlier",
             relations={
-                "motif_policy": "five_panels_share_one_wallpaper_group_one_panel_uses_a_distinct_group",
+                "motif_policy": "three_panels_share_one_wallpaper_group_one_panel_uses_a_distinct_group",
                 "option_labels": list(spec.option_labels),
                 "answer_label": str(spec.answer_label),
                 "shared_wallpaper_group_id": str(spec.shared_wallpaper_group_id),

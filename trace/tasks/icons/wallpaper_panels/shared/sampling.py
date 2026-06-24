@@ -38,7 +38,7 @@ def option_count_support(
     fallback_defaults: WallpaperPanelDefaults,
     context: str,
 ) -> Tuple[int, ...]:
-    """Resolve visible option-count support; wallpaper panels currently use six labels."""
+    """Resolve visible option-count support; wallpaper panels currently use four labels."""
 
     support = tuple(
         int(value)
@@ -50,7 +50,7 @@ def option_count_support(
         )
     )
     if any(value != len(OPTION_LABELS) for value in support):
-        raise ValueError(f"{context} currently supports six option panels")
+        raise ValueError(f"{context} currently supports four option panels")
     return support
 
 
@@ -78,7 +78,7 @@ def active_option_labels(option_count: int) -> Tuple[str, ...]:
 
     count = int(option_count)
     if count != len(OPTION_LABELS):
-        raise ValueError("wallpaper panels currently support exactly six option labels")
+        raise ValueError("wallpaper panels currently support exactly four option labels")
     return tuple(str(label) for label in OPTION_LABELS[:count])
 
 

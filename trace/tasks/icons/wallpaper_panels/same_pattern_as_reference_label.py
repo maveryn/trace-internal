@@ -222,7 +222,7 @@ def _resolve_wallpaper_spec(*, instance_seed: int, params: Mapping[str, Any]) ->
         option_count_choices,
     )
     if len(group_support) < int(option_count):
-        raise ValueError("reference wallpaper matching requires at least six wallpaper groups")
+        raise ValueError("reference wallpaper matching requires at least one wallpaper group per option panel")
     answer_label, answer_index, answer_label_probabilities = choose_panel_label(
         sample_rng,
         params,

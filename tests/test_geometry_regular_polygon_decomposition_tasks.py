@@ -51,7 +51,7 @@ def test_regular_polygon_decomposition_queries_emit_keyed_point_annotation() -> 
             else:
                 assert output.answer_gt.type == "number"
                 assert isinstance(output.answer_gt.value, float)
-            assert output.annotation_gt.type == "keyed_point_map"
+            assert output.annotation_gt.type == "point_map"
             assert isinstance(output.annotation_gt.value, dict)
             assert output.annotation_gt.value
             width, height = output.image.size
@@ -63,9 +63,9 @@ def test_regular_polygon_decomposition_queries_emit_keyed_point_annotation() -> 
             trace = output.trace_payload
             assert trace["execution_trace"]["query_id"] == query_id
             assert trace["execution_trace"]["answer"] == output.answer_gt.value
-            assert trace["projected_annotation"]["type"] == "keyed_point_map"
-            assert trace["projected_annotation"]["keyed_point_map"] == output.annotation_gt.value
-            assert trace["projected_annotation"]["pixel_keyed_point_map"] == output.annotation_gt.value
+            assert trace["projected_annotation"]["type"] == "point_map"
+            assert trace["projected_annotation"]["point_map"] == output.annotation_gt.value
+            assert trace["projected_annotation"]["pixel_point_map"] == output.annotation_gt.value
             assert "task_variant" not in trace["query_spec"]["params"]
             assert "query_variant" not in trace["query_spec"]["params"]
 

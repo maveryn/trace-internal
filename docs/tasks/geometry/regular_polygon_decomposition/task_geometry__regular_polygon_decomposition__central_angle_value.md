@@ -1,28 +1,33 @@
 # `task_geometry__regular_polygon_decomposition__central_angle_value`
 
-## Summary
+## Contract
 1. Domain: `geometry`
 2. Scene id: `regular_polygon_decomposition`
-3. Scene package: `regular_polygon_decomposition`
-4. Task id: `task_geometry__regular_polygon_decomposition__central_angle_value`
-5. Objective: compute the central angle of one wedge or a marked group of wedges in a regular polygon.
+3. Task id: `task_geometry__regular_polygon_decomposition__central_angle_value`
+4. Supported `query_id` values: `single_wedge_central_angle`, `marked_wedges_central_angle`
+5. Answer schema: `integer`
+6. Annotation schema: `point_map`
+7. Scalar annotation checked: `true` (not scalar-eligible; the task binds center and two angle-ray endpoint roles)
 
-## Query IDs
-1. `single_wedge_central_angle`
-2. `marked_wedges_central_angle`
-3. Query ids are internal replay metadata; public sampling is at the task-id level.
+## Program Contract
+- `solve_formula(regular_polygon_equal_wedge_decomposition, target=central_angle_or_adjacent_angle_span, formula_schema=360_degrees_divided_by_side_count); scene=regular_polygon_decomposition; scope=central_angle_value`
 
-## Answer And Annotation
-1. Answer type: `integer`.
-2. Annotation type: `keyed_point_map`.
-3. Annotation maps role names to pixel points at the polygon center and angle-ray endpoints.
+## Query Semantics
+- `single_wedge_central_angle` asks for one center wedge angle of a regular polygon.
+- `marked_wedges_central_angle` asks for the angle spanned by adjacent marked wedges.
+- The number of polygon sides, selected wedge start, style, font, layout jitter, and rotation are internal replay metadata.
 
-## Rendering Contract
-1. The scene renders a regular polygon decomposed into equal triangular wedges from its center.
-2. The target central angle is marked at the polygon center.
-3. Annotation projection is computed after final layout and style placement.
+## Prompt Bundle
+- Prompt text is loaded from `prompts/geometry/regular_polygon_decomposition/geometry_regular_polygon_decomposition_v1.json`.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Prompt Contract
-1. Prompt text comes from `geometry_regular_polygon_decomposition_v0`.
-2. Answer-only mode emits `{"answer": ...}`.
-3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the keyed map schema above.
+## Annotation
+Prompt-facing annotation uses pixel-space point map keys `O`, `A`, and `B`, marking the polygon center and the two visible rays that bound the requested center angle. Angle arcs and `?` markers remain visible diagram content and private verifier metadata.
+
+## Determinism
+Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
+
+## Source
+- Config: `configs/domains/geometry/regular_polygon_decomposition.yaml`
+- Prompt bundle: `prompts/geometry/regular_polygon_decomposition/geometry_regular_polygon_decomposition_v1.json`
+- Task module: `trace/tasks/geometry/regular_polygon_decomposition/central_angle_value.py`

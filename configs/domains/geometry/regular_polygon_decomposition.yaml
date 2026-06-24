@@ -18,14 +18,5 @@ rendering:
       max_attempts: 6
 prompt:
   shared:
-    bundle_id: geometry_regular_polygon_decomposition_v0
+    bundle_id: geometry_regular_polygon_decomposition_v1
     scene_key: regular_polygon_decomposition_scene
-  task_overrides:
-    task_geometry__regular_polygon_decomposition__piece_area_value:
-      task_key: piece_area_value_query
-    task_geometry__regular_polygon_decomposition__central_angle_value:
-      task_key: central_angle_value_query
-    task_geometry__regular_polygon_decomposition__perimeter_value:
-      task_key: perimeter_value_query
-    task_geometry__regular_polygon_decomposition__side_length_value:
-      task_key: side_length_value_query

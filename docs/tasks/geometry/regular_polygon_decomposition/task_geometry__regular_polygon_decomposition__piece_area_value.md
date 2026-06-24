@@ -1,29 +1,34 @@
 # `task_geometry__regular_polygon_decomposition__piece_area_value`
 
-## Summary
+## Contract
 1. Domain: `geometry`
 2. Scene id: `regular_polygon_decomposition`
-3. Scene package: `regular_polygon_decomposition`
-4. Task id: `task_geometry__regular_polygon_decomposition__piece_area_value`
-5. Objective: compute the area of one regular-polygon wedge or shaded wedge group.
+3. Task id: `task_geometry__regular_polygon_decomposition__piece_area_value`
+4. Supported `query_id` values: `single_wedge_area_from_total`, `shaded_wedges_area_from_total`, `wedge_area_from_side_and_apothem`
+5. Answer schema: `number`
+6. Annotation schema: `point_map`
+7. Scalar annotation checked: `true` (not scalar-eligible; the task binds center, wedge boundary vertices, and target wedge-region point roles)
 
-## Query IDs
-1. `single_wedge_area_from_total`
-2. `shaded_wedges_area_from_total`
-3. `wedge_area_from_side_and_apothem`
-4. Query ids are internal replay metadata; public sampling is at the task-id level.
+## Program Contract
+- `solve_formula(regular_polygon_equal_wedge_decomposition, target=wedge_or_adjacent_wedge_group_area, formula_schema=area_from_total_area_or_side_apothem); scene=regular_polygon_decomposition; scope=piece_area_value`
 
-## Answer And Annotation
-1. Answer type: `integer` or `number`, depending on the sampled measurement.
-2. Annotation type: `keyed_point_map`.
-3. Annotation maps role names to pixel points at the polygon center, wedge boundary vertices, and target-region midpoint.
+## Query Semantics
+- `single_wedge_area_from_total` asks for one shaded wedge area from the total area of an equal-wedge regular polygon.
+- `shaded_wedges_area_from_total` asks for an adjacent shaded wedge-group area from the total area of an equal-wedge regular polygon.
+- `wedge_area_from_side_and_apothem` asks for a shaded triangular wedge area from its visible side length and apothem.
+- The number of polygon sides, selected wedge start, style, font, layout jitter, and rotation are internal replay metadata.
 
-## Rendering Contract
-1. The scene renders a regular polygon decomposed into equal triangular wedges from its center.
-2. The target region is marked by shading.
-3. Annotation projection is computed after final layout and style placement.
+## Prompt Bundle
+- Prompt text is loaded from `prompts/geometry/regular_polygon_decomposition/geometry_regular_polygon_decomposition_v1.json`.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Prompt Contract
-1. Prompt text comes from `geometry_regular_polygon_decomposition_v0`.
-2. Answer-only mode emits `{"answer": ...}`.
-3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the keyed map schema above.
+## Annotation
+Prompt-facing annotation uses pixel-space point map keys `O`, `A`, `B`, and `W`, marking the polygon center, target wedge boundary vertices, and target region point. Measurement labels and readout panels remain visible diagram content and private verifier metadata.
+
+## Determinism
+Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
+
+## Source
+- Config: `configs/domains/geometry/regular_polygon_decomposition.yaml`
+- Prompt bundle: `prompts/geometry/regular_polygon_decomposition/geometry_regular_polygon_decomposition_v1.json`
+- Task module: `trace/tasks/geometry/regular_polygon_decomposition/piece_area_value.py`

@@ -1,29 +1,34 @@
 # `task_geometry__regular_polygon_decomposition__side_length_value`
 
-## Summary
+## Contract
 1. Domain: `geometry`
 2. Scene id: `regular_polygon_decomposition`
-3. Scene package: `regular_polygon_decomposition`
-4. Task id: `task_geometry__regular_polygon_decomposition__side_length_value`
-5. Objective: compute the marked side length of a regular polygon from perimeter, total area plus apothem, or shaded wedge area plus apothem.
+3. Task id: `task_geometry__regular_polygon_decomposition__side_length_value`
+4. Supported `query_id` values: `side_length_from_perimeter`, `side_length_from_total_area_and_apothem`, `side_length_from_wedge_area_and_apothem`
+5. Answer schema: `integer`
+6. Annotation schema: `point_map`
+7. Scalar annotation checked: `true` (not scalar-eligible; the task binds polygon center, target side endpoints, and sometimes apothem-foot or wedge-region roles)
 
-## Query IDs
-1. `side_length_from_perimeter`
-2. `side_length_from_total_area_and_apothem`
-3. `side_length_from_wedge_area_and_apothem`
-4. Query ids are internal replay metadata; public sampling is at the task-id level.
+## Program Contract
+- `solve_formula(regular_polygon_equal_wedge_decomposition, target=regular_polygon_side_length, formula_schema=perimeter_divided_by_side_count_or_area_apothem_relation); scene=regular_polygon_decomposition; scope=side_length_value`
 
-## Answer And Annotation
-1. Answer type: `integer`.
-2. Annotation type: `keyed_point_map`.
-3. Annotation maps role names to pixel points at the polygon center, target side endpoints, the apothem foot when needed, and the target-region midpoint for wedge-area queries.
+## Query Semantics
+- `side_length_from_perimeter` asks for one regular-polygon side length from the visible total perimeter.
+- `side_length_from_total_area_and_apothem` asks for one regular-polygon side length from total area and apothem labels.
+- `side_length_from_wedge_area_and_apothem` asks for one regular-polygon side length from shaded wedge area and apothem labels.
+- The number of polygon sides, selected side, style, font, layout jitter, and rotation are internal replay metadata.
 
-## Rendering Contract
-1. The scene renders a regular polygon decomposed into equal triangular wedges from its center.
-2. The target side is visibly marked, and support readouts are visible annotations.
-3. Annotation projection is computed after final layout and style placement.
+## Prompt Bundle
+- Prompt text is loaded from `prompts/geometry/regular_polygon_decomposition/geometry_regular_polygon_decomposition_v1.json`.
+- Prompt modes: `answer_only` and `answer_and_annotation`.
 
-## Prompt Contract
-1. Prompt text comes from `geometry_regular_polygon_decomposition_v0`.
-2. Answer-only mode emits `{"answer": ...}`.
-3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the keyed map schema above.
+## Annotation
+Prompt-facing annotation uses pixel-space point map keys `O`, `A`, `B`, and, when needed, `M` and `W`. These mark the polygon center, target side endpoints, apothem foot, and target wedge-region point. Measurement labels and readout panels remain visible diagram content and private verifier metadata.
+
+## Determinism
+Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
+
+## Source
+- Config: `configs/domains/geometry/regular_polygon_decomposition.yaml`
+- Prompt bundle: `prompts/geometry/regular_polygon_decomposition/geometry_regular_polygon_decomposition_v1.json`
+- Task module: `trace/tasks/geometry/regular_polygon_decomposition/side_length_value.py`

@@ -46,6 +46,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
             "pythagorean_dissection",
             "pythagorean_tree",
             "rectangular_solid",
+            "regular_polygon_decomposition",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),
@@ -86,6 +87,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
             "pythagorean_dissection",
             "pythagorean_tree",
             "rectangular_solid",
+            "regular_polygon_decomposition",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "node_link"}),

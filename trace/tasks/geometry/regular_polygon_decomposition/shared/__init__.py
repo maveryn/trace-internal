@@ -1,1 +1,1 @@
-"""Shared runtime for regular-polygon decomposition geometry scene."""
+"""Shared primitives for the regular-polygon decomposition geometry scene."""

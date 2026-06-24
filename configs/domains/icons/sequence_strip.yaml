@@ -1,55 +1,83 @@
 generation:
   shared:
-    sequence_length_min: 4
-    sequence_length_max: 6
-    target_count_min: 0
-    target_count_max: 10
-    step_abs_min: 1
-    step_abs_max: 3
-    balanced_sampling: true
+    sequence_length: 4
+    option_count: 4
+    missing_index_min: 0
+    missing_index_max: 3
+    pool_manifest: all_icons.txt
   task_overrides:
-    task_icons__sequence_strip__missing_count_value:
-      step_delta_candidates:
+    task_icons__sequence_strip__count_progression_completion_label:
+      count_value_min: 1
+      count_value_max: 9
+      count_step_candidates:
       - -2
       - -1
-      - 0
       - 1
       - 2
       pool_manifest: all_icons.txt
-      rotation_candidates_degrees:
-      - 0
-      - 90
-      - 180
-      - 270
-    task_icons__sequence_strip__rotation_sequence_violation_index:
-      sequence_length_min: 8
-      sequence_length_max: 8
-      answer_index_min: 2
-      answer_index_max: 7
+    task_icons__sequence_strip__rotation_progression_completion_label:
       pool_manifest: non_symmetry.txt
-      rotation_candidates_degrees:
+      rotation_value_candidates_degrees:
       - 0
+      - 45
       - 90
+      - 135
       - 180
+      - 225
       - 270
-      step_candidates_degrees:
+      - 315
+      rotation_step_candidates_degrees:
+      - 45
       - 90
+      - 270
+      - 315
+      rotation_icon_size_px: 66
+    task_icons__sequence_strip__size_progression_completion_label:
+      size_value_min_px: 36
+      size_value_max_px: 88
+      size_step_candidates_px:
+      - -12
+      - -8
+      - 8
+      - 12
+      pool_manifest: all_icons.txt
+    task_icons__sequence_strip__hue_progression_completion_label:
+      hue_value_candidates_degrees:
+      - 0
+      - 30
+      - 60
+      - 90
+      - 120
+      - 150
       - 180
+      - 210
+      - 240
+      - 270
+      - 300
+      - 330
+      hue_step_candidates_degrees:
+      - 30
+      - 60
+      - 300
+      - 330
+      hue_icon_size_px: 68
+      pool_manifest: all_icons.txt
 rendering:
   shared:
     outer_margin_px: 24
     panel_padding_px: 20
     panel_corner_radius_px: 18
     scene_icon_size_min_px: 24
-    scene_icon_size_max_px: 40
-    cell_box_width_min_px: 112
-    cell_box_width_max_px: 160
-    cell_box_height_min_px: 96
-    cell_box_height_max_px: 144
-    scene_max_overlap_fraction: 0.2
-    scene_placement_max_attempts: 160
-    scene_size_shrink_rounds: 6
-    scene_size_shrink_factor: 0.9
+    scene_icon_size_max_px: 88
+    cell_box_width_min_px: 132
+    cell_box_width_max_px: 148
+    cell_box_height_min_px: 136
+    cell_box_height_max_px: 156
+    row_gap_px: 20
+    scene_max_overlap_fraction: 0.0
+    scene_placement_max_attempts: 1
+    scene_size_shrink_rounds: 0
+    scene_size_shrink_factor: 1.0
     palette_size_min: 1
     palette_size_max: 1
     color_channel_min: 24
@@ -74,9 +102,6 @@ rendering:
     - - 244
       - 249
       - 246
-    - - 248
-      - 246
-      - 253
     panel_fill_rgb:
     - 255
     - 255
@@ -128,31 +153,11 @@ rendering:
     - - 68
       - 91
       - 79
-    icon_noise_edit_types:
-    - blur
-    - downsample
-    - jpeg
-    - noise
+    icon_noise_edit_types: []
     icon_noise_edit_count_range:
     - 0
-    - 2
-    icon_noise_value_ranges:
-      blur:
-        radius:
-        - 0.2
-        - 0.6
-      downsample:
-        scale:
-        - 0.85
-        - 0.95
-      jpeg:
-        quality:
-        - 70
-        - 90
-      noise:
-        alpha:
-        - 0.03
-        - 0.08
+    - 0
+    icon_noise_value_ranges: {}
     cell_padding_px: 10
     cell_icon_padding_px: 8
     cell_corner_radius_px: 12
@@ -210,18 +215,20 @@ rendering:
       - 106
       - 89
   task_overrides:
-    task_icons__sequence_strip__rotation_sequence_violation_index:
-      scene_icon_size_min_px: 72
+    task_icons__sequence_strip__count_progression_completion_label:
+      scene_icon_size_min_px: 20
+      scene_icon_size_max_px: 38
+    task_icons__sequence_strip__rotation_progression_completion_label:
+      scene_icon_size_min_px: 62
+      scene_icon_size_max_px: 72
+    task_icons__sequence_strip__size_progression_completion_label:
+      scene_icon_size_min_px: 32
       scene_icon_size_max_px: 92
-      cell_box_width_min_px: 108
-      cell_box_width_max_px: 132
-      cell_box_height_min_px: 112
-      cell_box_height_max_px: 144
-      icon_noise_edit_count_range:
-      - 0
-      - 0
+    task_icons__sequence_strip__hue_progression_completion_label:
+      scene_icon_size_min_px: 62
+      scene_icon_size_max_px: 74
 prompt:
   shared:
     bundle_id: icons_sequence_strip_v1
-    scene_key: sequence_strip
-    task_key: sequence_strip_query
+    scene_key: sequence_completion_options
+    task_key: completion_option_label

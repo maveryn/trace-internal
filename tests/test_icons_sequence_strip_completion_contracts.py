@@ -1,40 +1,63 @@
-"""Contract tests for icon sequence missing-count task."""
+"""Contract tests for icon sequence-strip completion tasks."""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
+import pytest
+
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.sequence_strip.missing_count_value import IconsSequenceMissingCountTask
+from trace.tasks.icons.sequence_strip.count_progression_completion_label import (
+    IconsSequenceStripCountProgressionCompletionTask,
+)
+from trace.tasks.icons.sequence_strip.hue_progression_completion_label import (
+    IconsSequenceStripHueProgressionCompletionTask,
+)
+from trace.tasks.icons.sequence_strip.rotation_progression_completion_label import (
+    IconsSequenceStripRotationProgressionCompletionTask,
+)
+from trace.tasks.icons.sequence_strip.size_progression_completion_label import (
+    IconsSequenceStripSizeProgressionCompletionTask,
+)
 from tests.helpers import read_jsonl
 
 
-def test_icons_sequence_missing_count_deterministic() -> None:
-    task = IconsSequenceMissingCountTask()
+_TASK_CLASSES = (
+    IconsSequenceStripCountProgressionCompletionTask,
+    IconsSequenceStripRotationProgressionCompletionTask,
+    IconsSequenceStripSizeProgressionCompletionTask,
+    IconsSequenceStripHueProgressionCompletionTask,
+)
+
+
+@pytest.mark.parametrize("task_cls", _TASK_CLASSES)
+def test_icons_sequence_completion_is_deterministic(task_cls) -> None:
+    task = task_cls()
     out_a = task.generate(15120, params={}, max_attempts=200)
     out_b = task.generate(15120, params={}, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
     assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+    assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
-    assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
-    assert out_a.answer_gt.type == "integer"
+    assert out_a.answer_gt.type == "string"
     assert out_a.annotation_gt.type == "bbox"
 
 
-def test_icons_sequence_missing_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_icons__sequence_strip__missing_count_value"
+@pytest.mark.parametrize("task_cls", _TASK_CLASSES)
+def test_icons_sequence_completion_build_smoke(tmp_path: Path, task_cls) -> None:
+    task_id = str(task_cls.task_id)
+    output_root = tmp_path / task_id
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_icons__sequence_strip__missing_count_value",
+        dataset_name=f"build_smoke_{task_id}",
         instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_icons__sequence_strip__missing_count_value",
+                task_id=task_id,
                 count=4,
                 params={},
             )
@@ -43,7 +66,7 @@ def test_icons_sequence_missing_count_build_smoke(tmp_path: Path) -> None:
         max_attempts_per_instance=200,
         sampling_seed=31,
     )
-    final_path = build_dataset(config, code_hash="icons-sequence-missing-count-smoke")
+    final_path = build_dataset(config, code_hash="icons-sequence-completion-smoke")
     assert final_path.exists()
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
@@ -51,7 +74,7 @@ def test_icons_sequence_missing_count_build_smoke(tmp_path: Path) -> None:
     assert all(record["scene_id"] == "sequence_strip" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_icons__sequence_strip__missing_count_value"]) == 4
+    assert int(build_report["accepted_counts_by_task"][task_id]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

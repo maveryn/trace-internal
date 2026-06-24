@@ -552,39 +552,50 @@ def test_icons_named_strip_scene_defaults_loaded() -> None:
 
 def test_icons_sequence_strip_scene_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'sequence_strip')
-    missing_task_id = 'task_icons__sequence_strip__missing_count_value'
-    rotation_task_id = 'task_icons__sequence_strip__rotation_sequence_violation_index'
-    assert missing_task_id in cfg['generation']['task_overrides']
+    count_task_id = 'task_icons__sequence_strip__count_progression_completion_label'
+    rotation_task_id = 'task_icons__sequence_strip__rotation_progression_completion_label'
+    size_task_id = 'task_icons__sequence_strip__size_progression_completion_label'
+    hue_task_id = 'task_icons__sequence_strip__hue_progression_completion_label'
+    assert count_task_id in cfg['generation']['task_overrides']
     assert rotation_task_id in cfg['generation']['task_overrides']
-    missing_generation, missing_rendering, missing_prompt = split_generation_rendering_prompt_defaults(
+    assert size_task_id in cfg['generation']['task_overrides']
+    assert hue_task_id in cfg['generation']['task_overrides']
+    count_generation, count_rendering, count_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id=missing_task_id,
+        task_id=count_task_id,
     )
-    assert str(missing_generation['pool_manifest']).strip() == 'all_icons.txt'
-    assert list(missing_generation['step_delta_candidates']) == [-2, -1, 0, 1, 2]
-    assert list(missing_generation['rotation_candidates_degrees']) == [0, 90, 180, 270]
-    assert int(missing_rendering['scene_icon_size_min_px']) == 24
-    assert int(missing_rendering['scene_icon_size_max_px']) == 40
-    assert str(missing_prompt['bundle_id']) == 'icons_sequence_strip_v1'
-    assert str(missing_prompt['scene_key']) == 'sequence_strip'
-    assert str(missing_prompt['task_key']) == 'sequence_strip_query'
+    assert str(count_generation['pool_manifest']).strip() == 'all_icons.txt'
+    assert list(count_generation['count_step_candidates']) == [-2, -1, 1, 2]
+    assert int(count_rendering['scene_icon_size_min_px']) == 20
+    assert int(count_rendering['scene_icon_size_max_px']) == 38
+    assert str(count_prompt['bundle_id']) == 'icons_sequence_strip_v1'
+    assert str(count_prompt['scene_key']) == 'sequence_completion_options'
+    assert str(count_prompt['task_key']) == 'completion_option_label'
     rotation_generation, rotation_rendering, rotation_prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id=rotation_task_id,
     )
     assert str(rotation_generation['pool_manifest']).strip() == 'non_symmetry.txt'
-    assert list(rotation_generation['step_candidates_degrees']) == [90, 180]
-    assert int(rotation_generation['sequence_length_min']) == 8
-    assert int(rotation_generation['sequence_length_max']) == 8
-    assert int(rotation_generation['answer_index_max']) == 7
-    assert int(rotation_rendering['scene_icon_size_min_px']) == 72
-    assert int(rotation_rendering['scene_icon_size_max_px']) == 92
+    assert list(rotation_generation['rotation_step_candidates_degrees']) == [45, 90, 270, 315]
+    assert int(rotation_rendering['scene_icon_size_min_px']) == 62
+    assert int(rotation_rendering['scene_icon_size_max_px']) == 72
     assert str(rotation_prompt['bundle_id']) == 'icons_sequence_strip_v1'
+    size_generation, size_rendering, _ = split_generation_rendering_prompt_defaults(cfg, task_id=size_task_id)
+    assert list(size_generation['size_step_candidates_px']) == [-12, -8, 8, 12]
+    assert int(size_rendering['scene_icon_size_max_px']) == 92
+    hue_generation, hue_rendering, _ = split_generation_rendering_prompt_defaults(cfg, task_id=hue_task_id)
+    assert list(hue_generation['hue_step_candidates_degrees']) == [30, 60, 300, 330]
+    assert int(hue_rendering['scene_icon_size_min_px']) == 62
     bundle = load_scene_prompt_bundle('icons', 'sequence_strip', 'icons_sequence_strip_v1')
     assert bundle.bundle_id == 'icons_sequence_strip_v1'
     assert bundle.schema_version == 'v1'
-    assert set(bundle.scene_templates.keys()) == {'sequence_strip'}
-    assert set(bundle.query_templates.keys()) == {'missing_count_value', 'rotation_sequence_violation_index'}
+    assert set(bundle.scene_templates.keys()) == {'sequence_completion_options'}
+    assert set(bundle.query_templates.keys()) == {
+        'count_progression_completion_label',
+        'rotation_progression_completion_label',
+        'size_progression_completion_label',
+        'hue_progression_completion_label',
+    }
 
 def test_icons_wallpaper_panels_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'wallpaper_panels')

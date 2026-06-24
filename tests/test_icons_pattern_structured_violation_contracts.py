@@ -9,18 +9,12 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.sequence_strip.rotation_sequence_violation_index import (
-    IconsSequenceStripRotationSequenceViolationTask,
-)
 from trace.tasks.icons.pattern_grid.attribute_pattern_violation_index import IconsPatternGridAttributePatternViolationTask
 from tests.helpers import read_jsonl
 
 
-@pytest.mark.parametrize(
-    "task_cls",
-    (IconsSequenceStripRotationSequenceViolationTask, IconsPatternGridAttributePatternViolationTask),
-)
-def test_icons_pattern_violation_is_deterministic(task_cls) -> None:
+def test_icons_pattern_violation_is_deterministic() -> None:
+    task_cls = IconsPatternGridAttributePatternViolationTask
     task = task_cls()
     out_a = task.generate(24120, params={}, max_attempts=200)
     out_b = task.generate(24120, params={}, max_attempts=200)
@@ -35,7 +29,6 @@ def test_icons_pattern_violation_is_deterministic(task_cls) -> None:
 @pytest.mark.parametrize(
     "task_id",
     (
-        "task_icons__sequence_strip__rotation_sequence_violation_index",
         "task_icons__pattern_grid__attribute_pattern_violation_index",
     ),
 )
@@ -62,11 +55,7 @@ def test_icons_pattern_violation_build_smoke(tmp_path: Path, task_id: str) -> No
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "icons" for record in train_records)
-    expected_scene_id = {
-        "task_icons__sequence_strip__rotation_sequence_violation_index": "sequence_strip",
-        "task_icons__pattern_grid__attribute_pattern_violation_index": "pattern_grid",
-    }[str(task_id)]
-    assert all(record["scene_id"] == expected_scene_id for record in train_records)
+    assert all(record["scene_id"] == "pattern_grid" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"][str(task_id)]) == 4

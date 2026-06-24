@@ -49,6 +49,7 @@ def _prepare_safe_lane_objective(rng, params: Mapping[str, Any], axes: SceneAxes
         prompt_query_key=PROMPT_QUERY_KEY,
         json_example=JSON_EXAMPLE,
         json_example_answer_only=JSON_EXAMPLE_ANSWER_ONLY,
+        show_enemy_labels=False,
     )
 
 

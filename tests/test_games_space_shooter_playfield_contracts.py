@@ -267,6 +267,7 @@ def test_games_space_shooter_safe_lane_count_matches_trace() -> None:
 
     assert int(out.answer_gt.value) == len(expected_ids) == 3
     assert list(execution["annotation_entity_ids"]) == expected_ids
+    assert out.trace_payload["render_map"]["show_enemy_labels"] is False
 
 
 def test_games_space_shooter_non_lane_entities_do_not_share_lane_slots() -> None:

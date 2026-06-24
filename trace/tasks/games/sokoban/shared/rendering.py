@@ -471,8 +471,6 @@ def _draw_board(
             outline=style["accent"],
             width=max(3, int(cell_size * 0.10)),
         )
-    board_bbox = _bbox_union(cell_bbox_map.values())
-    draw.rectangle(board_bbox, outline=style["border"], width=max(2, int(params.board_border_width_px)))
     return cell_bbox_map
 
 
@@ -562,7 +560,6 @@ def render_sokoban_scene(
         float(board_x0 + render_params.board_panel_width_px),
         float(render_params.scene_margin_top_px + render_params.board_panel_height_px),
     )
-    draw_rounded_rect(draw, board_panel, radius=int(render_params.panel_corner_radius_px), fill=style["panel"], outline=style["border"], width=2)
     available_w = float(render_params.board_panel_width_px - render_params.coord_gutter_px - 42)
     available_h = float(render_params.board_panel_height_px - render_params.coord_gutter_px - 122)
     cell_size = min(float(render_params.main_cell_size_px), available_w / max(1, cols), available_h / max(1, rows))

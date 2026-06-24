@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import trace.tasks  # noqa: F401
-from trace.tasks.registry import create_task, list_task_ids
+from trace.tasks.registry import create_task
 
 
 TASK_QUERIES = {
@@ -35,9 +34,8 @@ def _generate(task_id: str, query_id: str, seed: int = 20260607):
 
 
 def test_split_triangle_pattern_tasks_are_registered() -> None:
-    registered = set(list_task_ids())
     for task_id in TASK_QUERIES:
-        assert task_id in registered
+        assert create_task(task_id).task_id == task_id
 
 
 def test_split_triangle_pattern_queries_emit_keyed_point_annotation() -> None:
@@ -48,7 +46,7 @@ def test_split_triangle_pattern_queries_emit_keyed_point_annotation() -> None:
             assert output.query_id == query_id
             assert output.answer_gt.type in {"integer", "number"}
             assert isinstance(output.answer_gt.value, (int, float))
-            assert output.annotation_gt.type == "keyed_point_map"
+            assert output.annotation_gt.type == "point_map"
             assert isinstance(output.annotation_gt.value, dict)
             assert output.annotation_gt.value
             width, height = output.image.size
@@ -60,9 +58,9 @@ def test_split_triangle_pattern_queries_emit_keyed_point_annotation() -> None:
             trace = output.trace_payload
             assert trace["execution_trace"]["query_id"] == query_id
             assert trace["execution_trace"]["answer"] == output.answer_gt.value
-            assert trace["projected_annotation"]["type"] == "keyed_point_map"
-            assert trace["projected_annotation"]["keyed_point_map"] == output.annotation_gt.value
-            assert trace["projected_annotation"]["pixel_keyed_point_map"] == output.annotation_gt.value
+            assert trace["projected_annotation"]["type"] == "point_map"
+            assert trace["projected_annotation"]["point_map"] == output.annotation_gt.value
+            assert trace["projected_annotation"]["pixel_point_map"] == output.annotation_gt.value
             assert "task_variant" not in trace["query_spec"]["params"]
             assert "query_variant" not in trace["query_spec"]["params"]
 

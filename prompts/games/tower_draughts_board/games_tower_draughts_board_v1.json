@@ -131,11 +131,11 @@
     "ownership_rule_text": "A stack is controlled by the color of its top disk.",
     "movement_rule_text": "Regular top disks move forward diagonally; crowned top disks move diagonally either direction.",
     "capture_rule_text": "A stack captures by jumping diagonally over an adjacent opponent-controlled stack into the empty playable square immediately beyond it.",
-    "annotation_hint_controlled_stack_count": "set \"annotation\" to [x, y] pixel points at the centers of every stack controlled by the named color; use an empty array if there are none",
+    "annotation_hint_controlled_stack_count": "set \"annotation\" to bounding boxes [[x1, y1, x2, y2], ...] around every stack controlled by the named color; use an empty array if there are none",
     "answer_hint_controlled_stack_count": "set \"answer\" to the number of stacks controlled by the named color",
-    "annotation_hint_marked_stack_destination_count": "set \"annotation\" to [x, y] pixel points at the centers of every empty playable square the X-marked stack can move to; use an empty array if there are none",
+    "annotation_hint_marked_stack_destination_count": "set \"annotation\" to bounding boxes [[x1, y1, x2, y2], ...] around every empty playable square the X-marked stack can move to; use an empty array if there are none",
     "answer_hint_marked_stack_destination_count": "set \"answer\" to the number of legal destinations for the X-marked stack",
-    "annotation_hint_marked_stack_capture_count": "set \"annotation\" to [x, y] pixel points at the centers of every opponent-controlled stack the X-marked stack can capture; use an empty array if there are none",
+    "annotation_hint_marked_stack_capture_count": "set \"annotation\" to bounding boxes [[x1, y1, x2, y2], ...] around every opponent-controlled stack the X-marked stack can capture; use an empty array if there are none",
     "answer_hint_marked_stack_capture_count": "set \"answer\" to the number of immediate captures for the X-marked stack"
   }
 }

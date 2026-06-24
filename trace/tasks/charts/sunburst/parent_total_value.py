@@ -1,68 +1,67 @@
-"""Compute a parent total from outer leaf values in a sunburst hierarchy."""
+"""Public task for `task_charts__sunburst__parent_total_value`."""
 
-from __future__ import annotations
-
-from typing import Any, Dict
-
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.sunburst_hierarchy import PARENT_TOTAL_QUERY_IDS, build_sunburst_task_components
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.core.types import TypedValue
+from trace.tasks.charts.sunburst._lifecycle import SunburstTaskPlan, parent_total_relations, run_sunburst_task_from_public_class
+from trace.tasks.charts.sunburst.shared.prompts import ANSWER_HINT_INTEGER, ANSWER_ONLY_EXAMPLE_TOTAL, JSON_EXAMPLE_TOTAL, render_prompt_artifacts
+from trace.tasks.charts.sunburst.shared.sampling import choose_parent, descendant_leaf_ids, nodes_by_id, sample_tree
+from trace.tasks.charts.sunburst.shared.state import DOMAIN
+from trace.tasks.registry import register_task
 
 
-DEFAULT_QUERY_ID = "parent_total_from_leaves_value"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+PROGRAM_CODE = "sum(value(leaf) for leaf under parent); output=integer_value; annotation=bbox_set(leaf_value_labels); scene=sunburst; scope=parent_total_value"
 
 
 @register_task
-class ChartsCompositionSunburstParentTotalValueTask:
+class ChartsSunburstParentTotalValueTask:
     """Compute a parent total from outer leaf values in a sunburst hierarchy."""
 
     task_id = "task_charts__sunburst__parent_total_value"
-    domain = "charts"
-    scene_id = "sunburst"
+    domain = DOMAIN
     objective_contract = "parent_total_value"
-    supported_query_ids = PARENT_TOTAL_QUERY_IDS
+    supported_query_ids = (SINGLE_QUERY_ID,)
+    default_query_id = SINGLE_QUERY_ID
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
+    def _build_plan(self, instance_seed, params, selected_query_id):
+        """Bind the requested parent and its descendant leaf-value witnesses."""
+
+        tree = sample_tree(params, instance_seed=int(instance_seed))
+        parent = choose_parent(tree, instance_seed=int(instance_seed), namespace="charts.sunburst.parent_total.parent")
+        lookup = nodes_by_id(tree)
+        leaf_ids = descendant_leaf_ids(lookup, str(parent.node_id))
+        leaf_values = [int(lookup[str(leaf_id)].value) for leaf_id in leaf_ids]
+        prompt = render_prompt_artifacts(
+            prompt_key="parent_total_from_leaves_value",
+            answer_hint=ANSWER_HINT_INTEGER,
+            json_example=JSON_EXAMPLE_TOTAL,
+            json_example_answer_only=ANSWER_ONLY_EXAMPLE_TOTAL,
+            dynamic_slot_values={"parent_label": str(parent.label)},
             instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=self.task_id,
         )
-        del query_probabilities
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_sunburst_task_components(
-                    task_id=self.task_id,
-                    selected_query_id=str(selected_query_id),
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                )
-                answer_value = str(components.answer_value) if str(components.answer_type) == "string" else int(components.answer_value)
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=answer_value),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=list(components.annotation_value)),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id="sunburst",
-                    query_id=str(components.query_id),
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
+        relations = parent_total_relations(
+            program_code=PROGRAM_CODE,
+            parent=parent,
+            leaf_ids=leaf_ids,
+            leaf_values=leaf_values,
+        )
+        return SunburstTaskPlan(
+            tree,
+            prompt,
+            TypedValue(type="integer", value=int(parent.value)),
+            int(parent.value),
+            "numeric_open",
+            tuple(str(leaf_id) for leaf_id in leaf_ids),
+            relations,
+            "sunburst_parent_total",
+            {"operation": "sum", "parent_label": str(parent.label), "leaf_values": leaf_values},
+        )
 
-
-__all__ = ["ChartsCompositionSunburstParentTotalValueTask"]
+    def generate(self, instance_seed, *, params, max_attempts):
+        return run_sunburst_task_from_public_class(
+            self,
+            instance_seed=instance_seed,
+            params=params,
+            max_attempts=max_attempts,
+            build_plan=self._build_plan,
+        )

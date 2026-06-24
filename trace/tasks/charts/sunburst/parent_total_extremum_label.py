@@ -1,68 +1,82 @@
-"""Find the parent category with the highest or lowest computed total."""
+"""Public task for `task_charts__sunburst__parent_total_extremum_label`."""
 
-from __future__ import annotations
-
-from typing import Any, Dict
-
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.sunburst_hierarchy import PARENT_EXTREMUM_QUERY_IDS, build_sunburst_task_components
+from trace.core.types import TypedValue
+from trace.tasks.charts.sunburst._lifecycle import SunburstTaskPlan, parent_extremum_relations, run_sunburst_task_from_public_class
+from trace.tasks.charts.sunburst.shared.prompts import ANSWER_HINT_LABEL, ANSWER_ONLY_EXAMPLE_LABEL, JSON_EXAMPLE_LABEL, render_prompt_artifacts
+from trace.tasks.charts.sunburst.shared.sampling import descendant_leaf_ids, nodes_by_id, sample_tree, unique_extreme_parent
+from trace.tasks.charts.sunburst.shared.state import DOMAIN
+from trace.tasks.registry import register_task
 
 
-DEFAULT_QUERY_ID = "highest_parent_total_label"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+PROGRAM_CODE = "arg_extremum(parent, sum(value(leaf) for leaf under parent), direction); output=string_label; annotation=bbox_set(all_leaf_value_labels); scene=sunburst; scope=parent_total_extremum_label"
+
+
+def _direction(selected_query_id):
+    if str(selected_query_id) == "highest_parent_total_label":
+        return "highest"
+    if str(selected_query_id) == "lowest_parent_total_label":
+        return "lowest"
+    raise ValueError(f"unsupported sunburst parent-total query: {selected_query_id}")
 
 
 @register_task
-class ChartsCompositionSunburstParentTotalExtremumLabelTask:
+class ChartsSunburstParentTotalExtremumLabelTask:
     """Find the parent category with the highest or lowest computed total."""
 
     task_id = "task_charts__sunburst__parent_total_extremum_label"
-    domain = "charts"
-    scene_id = "sunburst"
+    domain = DOMAIN
     objective_contract = "parent_total_extremum_label"
-    supported_query_ids = PARENT_EXTREMUM_QUERY_IDS
+    supported_query_ids = ("highest_parent_total_label", "lowest_parent_total_label")
+    default_query_id = "highest_parent_total_label"
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=self.task_id,
+    def _build_plan(self, instance_seed, params, selected_query_id):
+        """Bind all parent totals and annotate all leaf values used to compare them."""
+
+        tree = sample_tree(params, instance_seed=int(instance_seed))
+        direction = _direction(selected_query_id)
+        answer_parent = unique_extreme_parent(tree, direction=direction)
+        lookup = nodes_by_id(tree)
+        answer_leaf_ids = descendant_leaf_ids(lookup, str(answer_parent.node_id))
+        annotation_leaf_ids = tuple(
+            leaf_id
+            for parent_id in tree.parent_ids
+            for leaf_id in descendant_leaf_ids(lookup, str(parent_id))
         )
-        del query_probabilities
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_sunburst_task_components(
-                    task_id=self.task_id,
-                    selected_query_id=str(selected_query_id),
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                )
-                answer_value = str(components.answer_value) if str(components.answer_type) == "string" else int(components.answer_value)
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=answer_value),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=list(components.annotation_value)),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id="sunburst",
-                    query_id=str(components.query_id),
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
+        parent_totals = {str(lookup[parent_id].label): int(lookup[parent_id].value) for parent_id in tree.parent_ids}
+        prompt = render_prompt_artifacts(
+            prompt_key=str(selected_query_id),
+            answer_hint=ANSWER_HINT_LABEL,
+            json_example=JSON_EXAMPLE_LABEL,
+            json_example_answer_only=ANSWER_ONLY_EXAMPLE_LABEL,
+            dynamic_slot_values={},
+            instance_seed=int(instance_seed),
+        )
+        relations = parent_extremum_relations(
+            program_code=PROGRAM_CODE,
+            direction=direction,
+            answer_parent=answer_parent,
+            parent_totals=parent_totals,
+            answer_leaf_ids=answer_leaf_ids,
+            annotation_leaf_ids=annotation_leaf_ids,
+        )
+        return SunburstTaskPlan(
+            tree,
+            prompt,
+            TypedValue(type="string", value=str(answer_parent.label)),
+            str(answer_parent.label),
+            "label_open",
+            annotation_leaf_ids,
+            relations,
+            "sunburst_parent_total_extremum",
+            {"operation": "arg_extremum", "direction": direction, "parent_totals": parent_totals},
+        )
 
-
-__all__ = ["ChartsCompositionSunburstParentTotalExtremumLabelTask"]
+    def generate(self, instance_seed, *, params, max_attempts):
+        return run_sunburst_task_from_public_class(
+            self,
+            instance_seed=instance_seed,
+            params=params,
+            max_attempts=max_attempts,
+            build_plan=self._build_plan,
+        )

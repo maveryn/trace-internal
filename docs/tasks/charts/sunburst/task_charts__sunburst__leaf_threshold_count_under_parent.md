@@ -3,24 +3,27 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `sunburst`
-3. Source implementation domain/group: `charts/composition`
-4. Query id: `leaf_threshold_count_under_parent`
-5. Semantic query details are recorded in `query_id` and trace params.
+3. Public task id: `task_charts__sunburst__leaf_threshold_count_under_parent`
+4. Supported `query_id`: `above_threshold_leaf_count_under_parent`, `below_threshold_leaf_count_under_parent`
 
 ## Implementation
-1. Registered class: `trace.tasks.charts.composition.sunburst_hierarchy.ChartsCompositionSunburstLeafThresholdCountUnderParentTask`
-2. Prompt lookup domain/group: `charts/composition`
+1. Registered class: `trace.tasks.charts.sunburst.leaf_threshold_count_under_parent.ChartsSunburstLeafThresholdCountUnderParentTask`
+2. Prompt bundle: `charts_sunburst_v1`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `bbox_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+3. Annotation marks the printed outer leaf value labels matching the threshold predicate under the requested parent category.
+4. Renderer context such as decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Program Contract
+`count(leaf under parent where compare(value(leaf), threshold, direction={above,below})); output=integer_count; annotation=bbox_set(matching_leaf_value_labels); scene=sunburst; scope=leaf_threshold_count_under_parent`
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `leaf_threshold_count_under_parent` | `count.one_bound_threshold` | `integer_count` | `bbox_set` |
+| `above_threshold_leaf_count_under_parent` | `count(leaf under parent where value(leaf) > threshold)` | `integer_count` | `bbox_set` |
+| `below_threshold_leaf_count_under_parent` | `count(leaf under parent where value(leaf) < threshold)` | `integer_count` | `bbox_set` |

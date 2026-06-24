@@ -43,12 +43,19 @@
         "Which parent category has the least sum of printed outer leaf values?",
         "After adding the outer leaf values within each parent category, which parent category is smallest?"
       ],
-      "leaf_threshold_count_under_parent": [
-        "Under parent category \"{parent_label}\", how many outer leaves have values {comparison_phrase} {threshold_value}?",
-        "Count the outer leaves under \"{parent_label}\" whose printed values are {comparison_phrase} {threshold_value}.",
-        "For parent category \"{parent_label}\", how many printed outer leaf values are {comparison_phrase} {threshold_value}?",
-        "Within \"{parent_label}\", count the outer leaf values that are {comparison_phrase} {threshold_value}.",
-        "How many outer leaves belonging to \"{parent_label}\" have printed values {comparison_phrase} {threshold_value}?"
+      "above_threshold_leaf_count_under_parent": [
+        "Under parent category \"{parent_label}\", how many outer leaves have values above {threshold_value}?",
+        "Count the outer leaves under \"{parent_label}\" whose printed values are above {threshold_value}.",
+        "For parent category \"{parent_label}\", how many printed outer leaf values are above {threshold_value}?",
+        "Within \"{parent_label}\", count the outer leaf values that are above {threshold_value}.",
+        "How many outer leaves belonging to \"{parent_label}\" have printed values above {threshold_value}?"
+      ],
+      "below_threshold_leaf_count_under_parent": [
+        "Under parent category \"{parent_label}\", how many outer leaves have values below {threshold_value}?",
+        "Count the outer leaves under \"{parent_label}\" whose printed values are below {threshold_value}.",
+        "For parent category \"{parent_label}\", how many printed outer leaf values are below {threshold_value}?",
+        "Within \"{parent_label}\", count the outer leaf values that are below {threshold_value}.",
+        "How many outer leaves belonging to \"{parent_label}\" have printed values below {threshold_value}?"
       ],
       "leaf_range_count_under_parent": [
         "Under parent category \"{parent_label}\", how many outer leaves have values from {lower_value} through {upper_value}, inclusive?",
@@ -70,7 +77,7 @@
         "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
         "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
       ]
     }
@@ -80,9 +87,6 @@
       "type": "string"
     },
     "answer_hint": {
-      "type": "string"
-    },
-    "comparison_phrase": {
       "type": "string"
     },
     "json_example": {
@@ -122,9 +126,12 @@
     ],
     "query:highest_parent_total_label": [],
     "query:lowest_parent_total_label": [],
-    "query:leaf_threshold_count_under_parent": [
+    "query:above_threshold_leaf_count_under_parent": [
       "parent_label",
-      "comparison_phrase",
+      "threshold_value"
+    ],
+    "query:below_threshold_leaf_count_under_parent": [
+      "parent_label",
       "threshold_value"
     ],
     "query:leaf_range_count_under_parent": [

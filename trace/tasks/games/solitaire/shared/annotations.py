@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from trace.core.types import TypedValue
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts, point_set_annotation_artifacts
 
 from .state import RenderedSolitaireScene, SolitaireSample
 
@@ -41,3 +41,15 @@ def entity_bbox_set(sample: SolitaireSample, rendered: RenderedSolitaireScene) -
         if str(entity_id) in entity_bboxes
     ]
     return bbox_set_annotation_artifacts(bboxes)
+
+
+def entity_point_set(sample: SolitaireSample, rendered: RenderedSolitaireScene) -> AnnotationArtifacts:
+    """Bind sampled card ids to visible-card points in an unordered point set."""
+
+    entity_points: Mapping[str, Any] = rendered.render_map["entity_points_px"]
+    points = [
+        list(entity_points[str(entity_id)])
+        for entity_id in sample.annotation_entity_ids
+        if str(entity_id) in entity_points
+    ]
+    return point_set_annotation_artifacts(points)

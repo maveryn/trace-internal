@@ -19,7 +19,6 @@ SUPPORTED_PANEL_STYLE_VARIANTS: Tuple[str, ...] = (
     "paper_tableau",
 )
 MOVE_OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
-CARD_BADGE_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H")
 SUITS: Tuple[str, ...] = ("hearts", "diamonds", "spades", "clubs")
 SUIT_SHORT: Dict[str, str] = {
     "hearts": "H",
@@ -92,14 +91,14 @@ class MoveOption:
     option_id: str
     label: str
     source_card_id: str
-    source_badge: str
+    source_label: str
     target_id: str
     target_label: str
     is_answer: bool
 
     @property
     def move_text(self) -> str:
-        return f"{self.source_badge}->{self.target_label}"
+        return f"{self.source_label} -> {self.target_label}"
 
 
 @dataclass(frozen=True)

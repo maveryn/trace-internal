@@ -81,6 +81,8 @@ def test_games_solitaire_move_legality_has_one_legal_option() -> None:
 
     assert out.answer_gt.type == "option_letter"
     assert len(execution["move_options"]) == 4
+    assert all("Col " in str(option["source_label"]) for option in execution["move_options"])
+    assert all(" -> " in str(option["move"]) for option in execution["move_options"])
     assert legal_labels == [str(out.answer_gt.value)]
     assert execution["answer_option_label"] == out.answer_gt.value
     assert out.annotation_gt.type == "bbox_map"
@@ -113,6 +115,7 @@ def test_games_solitaire_foundation_ready_count_matches_trace() -> None:
     assert execution["prompt_query_key"] == "foundation_ready_count"
     assert len(out.annotation_gt.value) == 3
     assert execution["annotation_entity_ids"] == execution["ready_card_ids"]
+    assert all(card["badge_text"] is None for card in execution["card_specs"])
 
 
 def test_games_solitaire_column_card_count_matches_trace() -> None:
@@ -136,6 +139,8 @@ def test_games_solitaire_column_card_count_matches_trace() -> None:
     assert int(execution["target_column_number"]) == 3
     assert execution["target_column_card_ids"] == card_ids
     assert execution["annotation_entity_ids"] == card_ids
-    assert out.annotation_gt.type == "bbox_set"
+    assert all(card["badge_text"] is None for card in execution["card_specs"])
+    assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == 4
-    assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
+    assert out.trace_payload["projected_annotation"]["type"] == "point_set"
+    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value

@@ -30,10 +30,10 @@
         "{tableau_rule_text} {foundation_rule_text} Which option letter shows a legal solitaire move?"
       ],
       "foundation_ready_count": [
-        "{foundation_rule_text} How many labeled exposed tableau cards can move to a foundation pile now?",
-        "{foundation_rule_text} Count the labeled exposed tableau cards that are ready for a foundation.",
+        "{foundation_rule_text} How many exposed tableau cards can move to a foundation pile now?",
+        "{foundation_rule_text} Count the exposed tableau cards that are ready for a foundation.",
         "{foundation_rule_text} What is the number of exposed tableau cards that can be moved to a foundation now?",
-        "{foundation_rule_text} How many labeled exposed cards are legal foundation moves?",
+        "{foundation_rule_text} How many exposed cards are legal foundation moves?",
         "{foundation_rule_text} Count the exposed tableau cards whose suit and rank match a foundation move."
       ],
       "column_card_count": [
@@ -120,12 +120,12 @@
     }
   },
   "code_prompt_defaults": {
-    "object_description_solitaire_tableau": "a solitaire tableau with visible columns, foundation piles, and labeled exposed cards",
+    "object_description_solitaire_tableau": "a solitaire tableau with visible columns and foundation piles",
     "tableau_rule_text": "In tableau moves, a card can be placed on another tableau card only if the target is exactly one rank higher and the opposite color.",
     "foundation_rule_text": "A card can move to a foundation only if it matches that foundation suit and is exactly one rank above the foundation's current top card; an Ace can move to an empty foundation.",
     "annotation_hint_move_legality_label": "set \"annotation\" to an object mapping \"source_card\" and \"target\" to their bounding boxes [x0, y0, x1, y1]",
     "annotation_hint_foundation_ready_count": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for the counted exposed cards; use an empty array when no cards are counted",
-    "annotation_hint_column_card_count": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every visible card in the requested column",
+    "annotation_hint_column_card_count": "set \"annotation\" to an array of [x, y] image-pixel points, one point on the visible part of each card in the requested column",
     "answer_hint_move_legality_label": "set \"answer\" to only the visible move option letter, for example \"C\"",
     "answer_hint_foundation_ready_count": "set \"answer\" to the number of exposed tableau cards that can move to a foundation pile now",
     "answer_hint_column_card_count": "set \"answer\" to the number of visible cards in the requested column"

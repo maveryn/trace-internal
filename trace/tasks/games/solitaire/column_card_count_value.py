@@ -9,14 +9,14 @@ from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
 from ._lifecycle import SolitaireLifecycleTask, SolitaireObjective, run_solitaire_lifecycle
-from .shared.annotations import entity_bbox_set
+from .shared.annotations import entity_point_set
 from .shared.sampling import sample_column_card_count
 
 
 TASK_ID = "task_games__solitaire__column_card_count_value"
 PROMPT_QUERY_KEY = "column_card_count"
 SUPPORTED_QUERY_IDS = (DEFAULT_QUERY_ID,)
-JSON_EXAMPLE = '{"annotation":[[250,220,324,324],[250,252,324,356],[250,284,324,388]],"answer":3}'
+JSON_EXAMPLE = '{"annotation":[[287,236],[287,268],[287,336]],"answer":3}'
 JSON_EXAMPLE_ANSWER_ONLY = '{"answer":3}'
 
 
@@ -34,7 +34,7 @@ def _prepare_column_card_count_objective(rng, params: Mapping[str, Any], scene_v
         sample=sample,
         answer_gt=TypedValue(type="integer", value=int(sample.answer)),
         prompt_query_key=PROMPT_QUERY_KEY,
-        build_annotation=entity_bbox_set,
+        build_annotation=entity_point_set,
         json_example=JSON_EXAMPLE,
         json_example_answer_only=JSON_EXAMPLE_ANSWER_ONLY,
         prompt_slots={"target_column_number": str(sample.metadata["target_column_number"])},

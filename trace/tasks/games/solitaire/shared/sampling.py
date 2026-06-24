@@ -16,7 +16,6 @@ from .rules import (
     remove_card,
 )
 from .state import (
-    CARD_BADGE_LABELS,
     MOVE_OPTION_LABELS,
     SUITS,
     SUIT_SHORT,
@@ -127,6 +126,15 @@ def card_by_id(columns: Sequence[Sequence[Card]]) -> Dict[str, Card]:
     return {str(card.card_id): card for column in columns for card in column}
 
 
+def card_column_label(columns: Sequence[Sequence[Card]], card_id: str) -> str:
+    """Return the visible tableau column label for a sampled card id."""
+
+    for col_index, column in enumerate(columns):
+        if any(str(card.card_id) == str(card_id) for card in column):
+            return f"Col {int(col_index) + 1}"
+    raise KeyError(f"unknown solitaire card id: {card_id}")
+
+
 def target_is_legal(source: Card, target_id: str, *, columns: Sequence[Sequence[Card]], foundations: Sequence[Foundation]) -> bool:
     cards = card_by_id(columns)
     if str(target_id) in cards:
@@ -231,7 +239,7 @@ def sample_move_legality(
                 card_id=f"exposed_{index + 1:02d}",
                 rank_value=int(rank),
                 suit_name=str(suit),
-                badge_text=str(CARD_BADGE_LABELS[index]),
+                badge_text=None,
             )
             for index, (rank, suit) in enumerate(exposed_raw)
         )
@@ -253,17 +261,20 @@ def sample_move_legality(
                 continue
             target_card = legal_targets[0]
             answer_target_id = str(target_card.card_id)
-            answer_target_label = str(target_card.badge_text)
-        answer_source_badge = str(source_card.badge_text)
+            answer_target_label = card_column_label(columns, str(target_card.card_id))
+        answer_source_label = card_column_label(columns, str(source_card.card_id))
 
         all_targets: List[Tuple[str, str]] = [
-            (str(card.card_id), str(card.badge_text))
+            (str(card.card_id), card_column_label(columns, str(card.card_id)))
             for card in visible_exposed_cards(columns)
             if str(card.card_id) != str(source_card.card_id)
         ] + [(str(foundation.foundation_id), str(foundation.label)) for foundation in foundations]
-        all_sources = [(str(card.card_id), str(card.badge_text)) for card in visible_exposed_cards(columns)]
+        all_sources = [
+            (str(card.card_id), card_column_label(columns, str(card.card_id)))
+            for card in visible_exposed_cards(columns)
+        ]
         distractor_pairs: List[Tuple[str, str, str, str]] = []
-        for src_id, src_badge in all_sources:
+        for src_id, src_label in all_sources:
             src_card = card_by_id(columns)[str(src_id)]
             for target_id, target_label in all_targets:
                 if str(src_id) == str(target_id):
@@ -272,7 +283,7 @@ def sample_move_legality(
                 if is_answer_pair:
                     continue
                 if not target_is_legal(src_card, str(target_id), columns=columns, foundations=foundations):
-                    distractor_pairs.append((str(src_id), str(src_badge), str(target_id), str(target_label)))
+                    distractor_pairs.append((str(src_id), str(src_label), str(target_id), str(target_label)))
         rng.shuffle(distractor_pairs)
         if len(distractor_pairs) < int(option_count) - 1:
             continue
@@ -285,21 +296,21 @@ def sample_move_legality(
                         option_id=f"move_option_{str(label).lower()}",
                         label=str(label),
                         source_card_id=str(source_card.card_id),
-                        source_badge=str(answer_source_badge),
+                        source_label=str(answer_source_label),
                         target_id=str(answer_target_id),
                         target_label=str(answer_target_label),
                         is_answer=True,
                     )
                 )
             else:
-                src_id, src_badge, target_id, target_label = distractor_pairs[int(distractor_cursor)]
+                src_id, src_label, target_id, target_label = distractor_pairs[int(distractor_cursor)]
                 distractor_cursor += 1
                 options.append(
                     MoveOption(
                         option_id=f"move_option_{str(label).lower()}",
                         label=str(label),
                         source_card_id=str(src_id),
-                        source_badge=str(src_badge),
+                        source_label=str(src_label),
                         target_id=str(target_id),
                         target_label=str(target_label),
                         is_answer=False,
@@ -327,15 +338,15 @@ def sample_move_legality(
                 "option_count": int(option_count),
                 "option_count_probabilities": dict(option_count_probabilities),
                 "legal_source_id": str(source_card.card_id),
-                "legal_source_label": str(answer_source_badge),
+                "legal_source_label": str(answer_source_label),
                 "legal_target_id": str(answer_target_id),
                 "legal_target_label": str(answer_target_label),
-                "legal_move_answer": f"{str(answer_source_badge)}->{str(answer_target_label)}",
+                "legal_move_answer": f"{str(answer_source_label)} -> {str(answer_target_label)}",
                 "move_options": [
                     {
                         "label": str(option.label),
                         "source_card_id": str(option.source_card_id),
-                        "source_label": str(option.source_badge),
+                        "source_label": str(option.source_label),
                         "target_id": str(option.target_id),
                         "target_label": str(option.target_label),
                         "move": str(option.move_text),
@@ -404,7 +415,7 @@ def sample_foundation_ready(
                 card_id=f"exposed_{index + 1:02d}",
                 rank_value=int(rank),
                 suit_name=str(suit),
-                badge_text=str(CARD_BADGE_LABELS[index]),
+                badge_text=None,
             )
             for index, (rank, suit) in enumerate(exposed_raw)
         )
@@ -429,7 +440,7 @@ def sample_foundation_ready(
                 "target_answer": int(target_answer),
                 "target_answer_probabilities": dict(target_probabilities),
                 "ready_card_ids": list(ready_ids),
-                "ready_card_labels": [str(card_by_id(columns)[card_id].badge_text) for card_id in ready_ids],
+                "ready_card_column_labels": [card_column_label(columns, card_id) for card_id in ready_ids],
             },
         )
     raise ValueError("failed to sample solitaire foundation-ready scene")
@@ -481,7 +492,7 @@ def sample_column_card_count(
                         card_id=f"col_{col_index + 1:02d}_card_{row_index + 1:02d}",
                         rank_value=int(raw[0]),
                         suit_name=str(raw[1]),
-                        badge_text=str(CARD_BADGE_LABELS[col_index]) if int(row_index) == int(length) - 1 else None,
+                        badge_text=None,
                     )
                 )
             columns.append(tuple(cards))

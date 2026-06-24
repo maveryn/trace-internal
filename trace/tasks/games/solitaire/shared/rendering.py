@@ -422,6 +422,7 @@ def render_solitaire_scene(
     total_columns_width = (column_count * card_width) + ((column_count - 1) * column_gap)
     start_x = int((canvas_width - total_columns_width) / 2 + round(dx))
     card_bboxes: Dict[str, List[float]] = {}
+    card_visible_points: Dict[str, List[float]] = {}
     marked_card_id = str(sample.metadata.get("marked_card_id", ""))
     for col_index, column in enumerate(sample.columns):
         x0 = start_x + int(col_index) * (card_width + column_gap)
@@ -462,6 +463,11 @@ def render_solitaire_scene(
                     width=4,
                 )
             card_bboxes[str(card.card_id)] = [float(value) for value in bbox]
+            if row_index < len(column) - 1:
+                visible_y = float(y0 + min(max(8.0, column_step_y / 2.0), card_height - 8.0))
+            else:
+                visible_y = float(y0 + (card_height / 2.0))
+            card_visible_points[str(card.card_id)] = [float(x0 + (card_width / 2.0)), visible_y]
             entities.append(
                 {
                     "entity_id": str(card.card_id),
@@ -521,9 +527,11 @@ def render_solitaire_scene(
 
     render_map = {
         "card_bboxes_px": dict(card_bboxes),
+        "card_visible_points_px": dict(card_visible_points),
         "foundation_bboxes_px": dict(foundation_bboxes),
         "option_bboxes_px": dict(option_bboxes),
         "entity_bboxes_px": {**card_bboxes, **foundation_bboxes, **option_bboxes},
+        "entity_points_px": dict(card_visible_points),
         "marked_card_id": marked_card_id or None,
         "marked_card_bbox_px": None if not marked_card_id else card_bboxes.get(marked_card_id),
         "column_count": int(column_count),

@@ -101,14 +101,6 @@ def test_icons_named_feedback_tasks_render_natural_prompt_text() -> None:
             "task_icons__mirror_grid__mirror_symmetry_match_label",
             {"option_count": 6, "answer_label": "C"},
         ),
-        (
-            "task_icons__wallpaper_panels__reference_pattern_match_count",
-            {
-                "match_count": 3,
-                "matching_labels": ["B", "D", "F"],
-                "reference_wallpaper_group_id": "p1",
-            },
-        ),
     ]
     for index, (task_id, params) in enumerate(examples):
         out = create_task(task_id).generate(

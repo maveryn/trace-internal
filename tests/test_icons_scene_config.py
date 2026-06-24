@@ -555,11 +555,9 @@ def test_icons_sequence_strip_scene_defaults_loaded() -> None:
     count_task_id = 'task_icons__sequence_strip__count_progression_completion_label'
     rotation_task_id = 'task_icons__sequence_strip__rotation_progression_completion_label'
     size_task_id = 'task_icons__sequence_strip__size_progression_completion_label'
-    hue_task_id = 'task_icons__sequence_strip__hue_progression_completion_label'
     assert count_task_id in cfg['generation']['task_overrides']
     assert rotation_task_id in cfg['generation']['task_overrides']
     assert size_task_id in cfg['generation']['task_overrides']
-    assert hue_task_id in cfg['generation']['task_overrides']
     count_generation, count_rendering, count_prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id=count_task_id,
@@ -583,9 +581,6 @@ def test_icons_sequence_strip_scene_defaults_loaded() -> None:
     size_generation, size_rendering, _ = split_generation_rendering_prompt_defaults(cfg, task_id=size_task_id)
     assert list(size_generation['size_step_candidates_px']) == [-16, -12, 12, 16]
     assert int(size_rendering['scene_icon_size_max_px']) == 92
-    hue_generation, hue_rendering, _ = split_generation_rendering_prompt_defaults(cfg, task_id=hue_task_id)
-    assert list(hue_generation['hue_step_candidates_degrees']) == [30, 60, 300, 330]
-    assert int(hue_rendering['scene_icon_size_min_px']) == 62
     bundle = load_scene_prompt_bundle('icons', 'sequence_strip', 'icons_sequence_strip_v1')
     assert bundle.bundle_id == 'icons_sequence_strip_v1'
     assert bundle.schema_version == 'v1'
@@ -594,7 +589,6 @@ def test_icons_sequence_strip_scene_defaults_loaded() -> None:
         'count_progression_completion_label',
         'rotation_progression_completion_label',
         'size_progression_completion_label',
-        'hue_progression_completion_label',
     }
 
 def test_icons_wallpaper_panels_defaults_loaded() -> None:
@@ -605,10 +599,6 @@ def test_icons_wallpaper_panels_defaults_loaded() -> None:
     assert int(generation_shared['lattice_cols']) == 4
     assert str(generation_shared['pool_manifest']) == 'non_symmetry.txt'
     assert len(generation_shared['wallpaper_group_ids']) >= 6
-    count_generation = cfg['generation']['task_overrides'][
-        'task_icons__wallpaper_panels__reference_pattern_match_count'
-    ]
-    assert list(count_generation['match_count_choices']) == [1, 2, 3, 4, 5]
     render_shared = cfg['rendering']['shared']
     assert int(render_shared['canvas_width']) == 1104
     assert int(render_shared['canvas_height']) == 640
@@ -625,9 +615,6 @@ def test_icons_wallpaper_panels_defaults_loaded() -> None:
     )
     assert str(prompt_overrides['task_icons__wallpaper_panels__same_pattern_as_reference_label']['task_key']) == (
         'same_pattern_as_reference_label'
-    )
-    assert str(prompt_overrides['task_icons__wallpaper_panels__reference_pattern_match_count']['task_key']) == (
-        'reference_pattern_match_count'
     )
 def test_icons_pattern_grid_defaults_loaded() -> None:
     cfg = get_scene_defaults('icons', 'pattern_grid')

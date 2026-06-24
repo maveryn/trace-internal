@@ -32,13 +32,6 @@
         "Which panel letter uses the same repeated motif arrangement as the Reference panel?",
         "Find the labeled wallpaper panel that matches the Reference panel's pattern.",
         "Which labeled panel has the same wallpaper arrangement as Reference?"
-      ],
-      "reference_pattern_match_count": [
-        "How many labeled panels use the same wallpaper arrangement as the Reference panel?",
-        "Count the labeled panels whose wallpaper pattern matches the Reference panel.",
-        "How many candidate panels have the same repeated motif arrangement as Reference?",
-        "Find the number of labeled wallpaper panels matching the Reference pattern.",
-        "How many labeled panels share the Reference panel's wallpaper pattern?"
       ]
     },
     "output": {
@@ -70,12 +63,6 @@
       "answer_hint": "set \"answer\" to the selected panel letter",
       "json_example": "{\"annotation\":{\"reference_panel\":[36,36,320,604],\"selected_panel\":[420,220,620,400]},\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
-    },
-    "task:reference_pattern_match_count": {
-      "annotation_hint": "set \"annotation\" to a JSON object with \"reference_panel\" mapped to a one-item list of the Reference panel box and \"matching_candidate_panels\" mapped to the list of matching candidate panel boxes",
-      "answer_hint": "set \"answer\" to the number of matching labeled panels as an integer",
-      "json_example": "{\"annotation\":{\"reference_panel\":[[36,36,320,604]],\"matching_candidate_panels\":[[420,220,620,400],[650,220,850,400]]},\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
     }
   },
   "required_slots_by_key": {

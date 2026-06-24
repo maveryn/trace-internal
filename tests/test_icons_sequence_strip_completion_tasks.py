@@ -11,9 +11,6 @@ from trace.core.seed import hash64
 from trace.tasks.icons.sequence_strip.count_progression_completion_label import (
     IconsSequenceStripCountProgressionCompletionTask,
 )
-from trace.tasks.icons.sequence_strip.hue_progression_completion_label import (
-    IconsSequenceStripHueProgressionCompletionTask,
-)
 from trace.tasks.icons.sequence_strip.rotation_progression_completion_label import (
     IconsSequenceStripRotationProgressionCompletionTask,
 )
@@ -52,13 +49,6 @@ def _extract_prompt_json_example(prompt: str) -> dict[str, Any]:
             "size",
             [44, 56, 68, 80],
             56,
-        ),
-        (
-            IconsSequenceStripHueProgressionCompletionTask,
-            {"missing_index": 3, "start_hue_degrees": 0, "hue_step_degrees": 30},
-            "hue",
-            [0, 30, 60, 90],
-            90,
         ),
     ),
 )
@@ -123,7 +113,6 @@ def test_icons_sequence_completion_prompt_example_matches_mcq_contract() -> None
         IconsSequenceStripCountProgressionCompletionTask,
         IconsSequenceStripRotationProgressionCompletionTask,
         IconsSequenceStripSizeProgressionCompletionTask,
-        IconsSequenceStripHueProgressionCompletionTask,
     ),
 )
 def test_icons_sequence_completion_balances_option_labels_by_default(task_cls) -> None:

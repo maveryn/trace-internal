@@ -41,27 +41,6 @@ generation:
       - 12
       - 16
       pool_manifest: all_icons.txt
-    task_icons__sequence_strip__hue_progression_completion_label:
-      hue_value_candidates_degrees:
-      - 0
-      - 30
-      - 60
-      - 90
-      - 120
-      - 150
-      - 180
-      - 210
-      - 240
-      - 270
-      - 300
-      - 330
-      hue_step_candidates_degrees:
-      - 30
-      - 60
-      - 300
-      - 330
-      hue_icon_size_px: 68
-      pool_manifest: all_icons.txt
 rendering:
   shared:
     outer_margin_px: 24
@@ -224,9 +203,6 @@ rendering:
     task_icons__sequence_strip__size_progression_completion_label:
       scene_icon_size_min_px: 32
       scene_icon_size_max_px: 92
-    task_icons__sequence_strip__hue_progression_completion_label:
-      scene_icon_size_min_px: 62
-      scene_icon_size_max_px: 74
 prompt:
   shared:
     bundle_id: icons_sequence_strip_v1

@@ -12,9 +12,6 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.icons.sequence_strip.count_progression_completion_label import (
     IconsSequenceStripCountProgressionCompletionTask,
 )
-from trace.tasks.icons.sequence_strip.hue_progression_completion_label import (
-    IconsSequenceStripHueProgressionCompletionTask,
-)
 from trace.tasks.icons.sequence_strip.rotation_progression_completion_label import (
     IconsSequenceStripRotationProgressionCompletionTask,
 )
@@ -28,7 +25,6 @@ _TASK_CLASSES = (
     IconsSequenceStripCountProgressionCompletionTask,
     IconsSequenceStripRotationProgressionCompletionTask,
     IconsSequenceStripSizeProgressionCompletionTask,
-    IconsSequenceStripHueProgressionCompletionTask,
 )
 
 

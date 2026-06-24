@@ -509,7 +509,6 @@ def test_icons_wallpaper_panels_bundle_supports_reference_tasks() -> None:
     assert set(bundle.task_templates.keys()) == {
         "motif_violation_label",
         "same_pattern_as_reference_label",
-        "reference_pattern_match_count",
     }
     assert not bundle.query_templates
     assert "answer_hint" in bundle.static_slots_by_key["task:motif_violation_label"]

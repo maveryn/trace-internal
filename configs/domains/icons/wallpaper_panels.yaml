@@ -14,14 +14,6 @@ generation:
     - p4
     - p3
     pool_manifest: non_symmetry.txt
-  task_overrides:
-    task_icons__wallpaper_panels__reference_pattern_match_count:
-      match_count_choices:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
 rendering:
   shared:
     canvas_width: 1104
@@ -188,6 +180,3 @@ prompt:
     task_icons__wallpaper_panels__same_pattern_as_reference_label:
       scene_key: wallpaper_reference_match_scene
       task_key: same_pattern_as_reference_label
-    task_icons__wallpaper_panels__reference_pattern_match_count:
-      scene_key: wallpaper_reference_match_scene
-      task_key: reference_pattern_match_count

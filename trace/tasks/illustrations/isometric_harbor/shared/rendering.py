@@ -755,44 +755,35 @@ def _open_water_candidate_cells(
 
 def _heading_status_candidate_cells(
     *,
+    rng: Any,
     tiles_by_cell: Mapping[tuple[int, int], IsoHarborTile],
     dock_meta: Mapping[str, Any],
     cols: int,
     rows: int,
     count: int,
 ) -> list[tuple[int, int]]:
-    """Return compact open-water cells for shoreline-heading boats."""
+    """Return separated open-water cells for shoreline-heading boats."""
 
-    left_col = int(dock_meta["left_col"])
-    right_col = int(dock_meta["right_col"])
-    first_row = max(3, int(dock_meta["row_start"]) + 2)
-    row_pool = [row for row in (first_row, first_row + 2, first_row + 4) if 0 <= int(row) < int(rows) - 1]
-    col_offsets = (3, 5, 7, 9)
-    candidates: list[tuple[int, int]] = []
-    for row in row_pool:
-        for offset in col_offsets:
-            for col in (left_col - int(offset), right_col + int(offset)):
-                if not (1 <= int(col) < int(cols) - 1):
-                    continue
-                tile = tiles_by_cell.get((int(col), int(row)))
-                if tile is None or str(tile.terrain) != "water":
-                    continue
-                cell = (int(col), int(row))
-                if cell not in candidates:
-                    candidates.append(cell)
-                if len(candidates) >= int(count):
-                    return candidates
-    for cell in _open_water_candidate_cells(
+    candidates = _open_water_candidate_cells(
         tiles_by_cell=tiles_by_cell,
         dock_meta=dock_meta,
         cols=int(cols),
         rows=int(rows),
-    ):
-        if all(abs(int(cell[0]) - int(other[0])) + abs(int(cell[1]) - int(other[1])) >= 2 for other in candidates):
-            candidates.append((int(cell[0]), int(cell[1])))
-        if len(candidates) >= int(count):
+    )
+    rng.shuffle(candidates)
+    selected: list[tuple[int, int]] = []
+    for cell in candidates:
+        if all(abs(int(cell[0]) - int(other[0])) + abs(int(cell[1]) - int(other[1])) >= 2 for other in selected):
+            selected.append((int(cell[0]), int(cell[1])))
+        if len(selected) >= int(count):
             break
-    return candidates
+    if len(selected) < int(count):
+        for cell in candidates:
+            if (int(cell[0]), int(cell[1])) not in selected:
+                selected.append((int(cell[0]), int(cell[1])))
+            if len(selected) >= int(count):
+                break
+    return selected
 
 
 def _draw_open_water_boats(
@@ -892,6 +883,7 @@ def _draw_heading_status_boats(
     rng.shuffle(statuses)
 
     selected = _heading_status_candidate_cells(
+        rng=rng,
         tiles_by_cell=tiles_by_cell,
         dock_meta=dock_meta,
         cols=int(cols),
@@ -1007,36 +999,6 @@ def _shoreline_candidate_cell_for_row(
     raise ValueError("could not place shoreline candidate boat")
 
 
-def _shoreline_candidate_lane_cell_for_row(
-    *,
-    row: int,
-    tiles_by_cell: Mapping[tuple[int, int], IsoHarborTile],
-    dock_meta: Mapping[str, Any],
-    cols: int,
-    preferred_side: str,
-) -> tuple[int, int]:
-    """Pick a stable open-water lane so shoreline-distance candidates read along the shore normal."""
-
-    left_col = int(dock_meta["left_col"])
-    right_col = int(dock_meta["right_col"])
-    right_lane = min(int(cols) - 2, int(right_col) + 4)
-    left_lane = max(1, int(left_col) - 4)
-    lane_order = (right_lane, left_lane) if str(preferred_side) == "right" else (left_lane, right_lane)
-    for col in lane_order:
-        tile = tiles_by_cell.get((int(col), int(row)))
-        if tile is not None and str(tile.terrain) == "water":
-            return (int(col), int(row))
-    return _shoreline_candidate_cell_for_row(
-        rng=spawn_rng(int(row), f"{SCENE_ID}:shoreline_lane_fallback"),
-        row=int(row),
-        side=str(preferred_side),
-        tiles_by_cell=tiles_by_cell,
-        dock_meta=dock_meta,
-        cols=int(cols),
-        selected_cells=(),
-    )
-
-
 def _draw_shoreline_candidate_boats(
     *,
     draw: ImageDraw.ImageDraw,
@@ -1072,13 +1034,18 @@ def _draw_shoreline_candidate_boats(
     scale = float(tile_w) * 0.95
     boat_type = "rowboat"
     half_l = _boat_half_length(scale=scale, boat_type=boat_type)
+    first_side = str(rng.choice(("left", "right")))
+    second_side = "right" if first_side == "left" else "left"
     for rank, (label, row) in enumerate(zip(labels_by_rank, rows_by_rank)):
-        cell = _shoreline_candidate_lane_cell_for_row(
+        side = first_side if int(rank) % 2 == 0 else second_side
+        cell = _shoreline_candidate_cell_for_row(
+            rng=rng,
             row=int(row),
+            side=side,
             tiles_by_cell=tiles_by_cell,
             dock_meta=dock_meta,
             cols=int(cols),
-            preferred_side="right",
+            selected_cells=selected_cells,
         )
         selected_cells.append(cell)
         tile = tiles_by_cell[cell]

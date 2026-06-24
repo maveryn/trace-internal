@@ -120,6 +120,11 @@ def test_isometric_harbor_renderer_supports_shoreline_candidate_boats() -> None:
     distances = {str(key): int(value) for key, value in scene.trace["shoreline_distance_tiles_by_label"].items()}
     assert distances["D"] == min(distances.values())
     assert list(distances.values()).count(distances["D"]) == 1
+    candidate_cols = {
+        int(next(tile for tile in scene.tiles if tile.tile_id == entity.tile_ids[0]).col)
+        for entity in boats
+    }
+    assert len(candidate_cols) >= 3
     for entity in boats:
         assert entity.metadata.get("mooring_status") == "open_water"
         assert entity.metadata.get("orientation") == "shore_facing"
@@ -144,6 +149,12 @@ def test_isometric_harbor_renderer_supports_heading_status_boats() -> None:
     assert scene.trace["boat_counts_by_heading_status"] == counts
     assert scene.trace["boat_counts_by_mooring_status"] == {"moored": 0, "open_water": 6}
     assert scene.trace["boat_counts_by_side"] == {"left": 0, "right": 0}
+    heading_cells = [
+        next(tile for tile in scene.tiles if tile.tile_id == entity.tile_ids[0])
+        for entity in boats
+    ]
+    assert len({int(tile.col) for tile in heading_cells}) >= 3
+    assert len({int(tile.row) for tile in heading_cells}) >= 2
     for entity in boats:
         heading_status = str(entity.metadata.get("heading_status"))
         assert heading_status in counts

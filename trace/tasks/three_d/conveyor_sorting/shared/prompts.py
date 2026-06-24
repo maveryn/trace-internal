@@ -1,0 +1,70 @@
+"""Prompt assembly for conveyor sorting tasks."""
+
+from __future__ import annotations
+
+from typing import Any, Mapping
+
+from trace.tasks.shared.config_defaults import (
+    load_scene_generation_rendering_prompt_defaults,
+    required_group_defaults,
+)
+from trace.tasks.shared.prompt_variants import (
+    PROMPT_OUTPUT_MODES,
+    PromptTraceArtifacts,
+    build_prompt_trace_artifacts,
+    render_scene_prompt_variants,
+)
+
+from .state import SCENE_ID, semantic_color_label
+
+
+DOMAIN = "three_d"
+PROMPT_BUNDLE_ID = "three_d_conveyor_sorting_v1"
+PROMPT_WIRING_KEYS = ("bundle_id", "scene_key", "task_key")
+
+_GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
+    DOMAIN,
+    SCENE_ID,
+)
+
+
+def dynamic_slots_for_conveyor(dataset: Mapping[str, Any]) -> dict[str, Any]:
+    """Return dynamic prompt slots bound to one conveyor dataset."""
+
+    target_color_name = str(dataset.get("target_color_name", ""))
+    return {
+        "lane_label": str(dataset.get("target_lane_label", "")),
+        "segment_label": str(dataset.get("target_segment_label", "")),
+        "target_object_plural": str(dataset.get("target_object_plural", "")),
+        "target_color_label": semantic_color_label(target_color_name) if target_color_name else "",
+    }
+
+
+def build_prompt_artifacts(
+    *,
+    prompt_query_key: str,
+    dynamic_slot_values: Mapping[str, Any],
+    instance_seed: int,
+) -> tuple[dict[str, Any], PromptTraceArtifacts]:
+    """Build prompt artifacts for one conveyor sorting objective."""
+
+    prompt_defaults = required_group_defaults(
+        _PROMPT_DEFAULTS,
+        PROMPT_WIRING_KEYS,
+        context="conveyor_sorting prompt wiring defaults",
+    )
+    rendered_prompt = render_scene_prompt_variants(
+        domain=DOMAIN,
+        scene_id=SCENE_ID,
+        bundle_id=str(prompt_defaults.get("bundle_id", PROMPT_BUNDLE_ID)),
+        scene_key=str(prompt_defaults["scene_key"]),
+        task_key=str(prompt_defaults["task_key"]),
+        query_key=str(prompt_query_key),
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+        dynamic_slots=dict(dynamic_slot_values),
+        instance_seed=int(instance_seed),
+    )
+    return dict(prompt_defaults), build_prompt_trace_artifacts(rendered_prompt)
+
+
+__all__ = ["build_prompt_artifacts", "dynamic_slots_for_conveyor"]

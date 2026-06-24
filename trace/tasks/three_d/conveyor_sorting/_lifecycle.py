@@ -1,0 +1,373 @@
+"""Scene-private lifecycle orchestration for conveyor sorting public tasks."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, Mapping, Sequence
+
+from trace.core.scene_config import get_domain_defaults
+from trace.core.seed import spawn_rng
+from trace.core.types import TypedValue
+from trace.core.visual.background import make_background_canvas
+from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.base import TaskOutput
+from trace.tasks.shared.fixed_query import select_task_query_id
+from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.prompt_variants import build_prompt_query_spec
+from trace.tasks.three_d.shared.object_scene import _resolve_render_params
+
+from .shared.annotations import bbox_set_annotation_for_objects
+from .shared.prompts import build_prompt_artifacts, dynamic_slots_for_conveyor
+from .shared.rendering import RenderedConveyorSorting, render_conveyor_sorting
+from .shared.sampling import (
+    ResolvedConveyorAxes,
+    build_segment_count_dataset,
+    resolve_conveyor_axes,
+)
+from .shared.state import SCENE_ID
+
+
+DatasetBuilder = Callable[
+    [
+        int,
+        Mapping[str, Any],
+        Mapping[str, Any],
+        Any,
+        ResolvedConveyorAxes,
+        str,
+        Mapping[str, float],
+        str,
+    ],
+    Mapping[str, Any],
+]
+
+
+@dataclass(frozen=True)
+class ConveyorTaskPlan:
+    """Task-owned objective data for one conveyor sorting instance."""
+
+    dataset: Mapping[str, Any]
+    answer_gt: TypedValue
+    target_object_ids: tuple[str, ...]
+    objective_params: Mapping[str, Any]
+
+
+_DOMAIN_DEFAULTS = get_domain_defaults("three_d")
+_VISUAL_DEFAULTS = _DOMAIN_DEFAULTS.get("visual", {}) if isinstance(_DOMAIN_DEFAULTS, Mapping) else {}
+_BACKGROUND_DEFAULTS = _VISUAL_DEFAULTS.get("background", {}) if isinstance(_VISUAL_DEFAULTS, Mapping) else {}
+_NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAULTS, Mapping) else {}
+
+
+def _attempt_seed(instance_seed: int, *, public_name: str, attempt_index: int) -> int:
+    if int(attempt_index) == 0:
+        return int(instance_seed)
+    return int(spawn_rng(int(instance_seed), f"{public_name}.attempt_seed.{attempt_index}").randrange(1, 2**62))
+
+
+def _bbox_inside_image(bbox: Sequence[float], *, width: int, height: int) -> bool:
+    x0, y0, x1, y1 = (float(value) for value in bbox[:4])
+    return x0 >= 0.0 and y0 >= 0.0 and x1 <= float(width) and y1 <= float(height) and x1 > x0 and y1 > y0
+
+
+def _rendered_bboxes_are_readable(
+    rendered: RenderedConveyorSorting,
+    *,
+    min_side_px: float,
+) -> bool:
+    width, height = int(rendered.image.width), int(rendered.image.height)
+    for bbox in rendered.object_bboxes_px.values():
+        if not _bbox_inside_image(bbox, width=width, height=height):
+            return False
+        side = min(float(bbox[2]) - float(bbox[0]), float(bbox[3]) - float(bbox[1]))
+        if float(side) < float(min_side_px):
+            return False
+    return True
+
+
+def _build_trace_payload(
+    *,
+    public_name: str,
+    selected_branch: str,
+    axes: ResolvedConveyorAxes,
+    plan: ConveyorTaskPlan,
+    rendered: RenderedConveyorSorting,
+    annotation_artifacts: Any,
+    prompt_artifacts: Any,
+    query_spec: Mapping[str, Any],
+    render_params: Any,
+    image: Any,
+    background_meta: Mapping[str, Any],
+    post_noise_meta: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Assemble public trace sections after rendering and annotation binding.
+
+    The trace preserves both the semantic count predicate and the projected
+    object boxes used for annotation, keeping answer and annotation grounded in
+    the same rendered conveyor objects.
+    """
+
+    dataset = dict(plan.dataset)
+    target_ids = [str(object_id) for object_id in plan.target_object_ids]
+    target_bboxes = {
+        str(object_id): list(rendered.object_bboxes_px[str(object_id)])
+        for object_id in target_ids
+    }
+    target_centers = {
+        str(object_id): list(rendered.object_centers_px[str(object_id)])
+        for object_id in target_ids
+    }
+    solver_trace = dict(dataset["solver_trace"])
+    solver_trace.update(
+        {
+            "answer_value": int(dataset["answer_value"]),
+            "target_object_ids": list(target_ids),
+            "target_object_bboxes_px": dict(target_bboxes),
+            "target_object_centers_px": dict(target_centers),
+        }
+    )
+    execution_trace = {
+        "query_id": str(selected_branch),
+        "scene_id": SCENE_ID,
+        "scene_variant": str(axes.scene_variant),
+        "answer_value": int(dataset["answer_value"]),
+        "target_lane_index": int(dataset["target_lane_index"]),
+        "target_lane_label": str(dataset["target_lane_label"]),
+        "target_segment_key": str(dataset["target_segment_key"]),
+        "target_segment_label": str(dataset["target_segment_label"]),
+        "target_shape_type": str(dataset.get("target_shape_type", "")),
+        "target_object_name": str(dataset.get("target_object_name", "")),
+        "target_object_plural": str(dataset.get("target_object_plural", "")),
+        "target_color_name": str(dataset.get("target_color_name", "")),
+        "target_object_ids": list(target_ids),
+        "target_object_bboxes_px": dict(target_bboxes),
+        "target_object_centers_px": dict(target_centers),
+        "target_segment_object_ids": list(dataset["target_segment_object_ids"]),
+        "object_count": int(dataset["object_count"]),
+        "lane_count": int(dataset["lane_count"]),
+        "lane_records": [dict(record) for record in dataset["lane_records"]],
+        "segment_records": [dict(record) for record in dataset["segment_records"]],
+        "object_specs": [dict(spec) for spec in dataset["object_specs"]],
+        "shape_counts": dict(dataset["shape_counts"]),
+        "color_counts": dict(dataset["color_counts"]),
+        "segment_counts": dict(dataset["segment_counts"]),
+        "camera": dict(dataset["camera"]),
+        "projection_frame": dict(dataset["projection_frame"]),
+        "question_format": str(selected_branch),
+        "solver_trace": dict(solver_trace),
+    }
+    return {
+        "scene_ir": {
+            "scene_kind": f"three_d_conveyor_sorting_{public_name.rsplit('__', 1)[-1]}",
+            "entities": [dict(entity) for entity in rendered.entities],
+            "relations": {
+                "scene_variant": str(axes.scene_variant),
+                "lane_count": int(dataset["lane_count"]),
+                "target_lane_label": str(dataset["target_lane_label"]),
+                "target_segment_label": str(dataset["target_segment_label"]),
+                "target_object_ids": list(target_ids),
+                "answer_value": int(dataset["answer_value"]),
+            },
+        },
+        "query_spec": dict(query_spec),
+        "render_spec": {
+            "canvas_width": int(render_params.canvas_width),
+            "canvas_height": int(render_params.canvas_height),
+            "scene_canvas_preset": str(render_params.canvas_preset),
+            "scene_canvas_width": int(render_params.canvas_width),
+            "scene_canvas_height": int(render_params.canvas_height),
+            "scene_canvas_policy": str(render_params.canvas_policy),
+            "final_canvas_width": int(image.width),
+            "final_canvas_height": int(image.height),
+            "final_canvas_pixels": int(image.width) * int(image.height),
+            "coord_space": "pixel",
+            "scene_variant": str(axes.scene_variant),
+            "background_style": dict(background_meta),
+            "post_image_noise": dict(post_noise_meta),
+            "camera": dict(dataset["camera"]),
+            "projection_frame": dict(dataset["projection_frame"]),
+            "semantic_color_palette": dict(dataset["semantic_color_palette"]),
+        },
+        "render_map": {
+            "image_id": "img0",
+            "scene_bbox_px": list(rendered.scene_bbox_px),
+            "conveyor_bbox_px": list(rendered.conveyor_bbox_px),
+            "object_bboxes_px": dict(rendered.object_bboxes_px),
+            "object_centers_px": dict(rendered.object_centers_px),
+            "target_object_bboxes_px": dict(target_bboxes),
+            "target_object_centers_px": dict(target_centers),
+            "lane_bboxes_px": dict(rendered.lane_bboxes_px),
+            "segment_bboxes_px": dict(rendered.segment_bboxes_px),
+        },
+        "execution_trace": execution_trace,
+        "witness_symbolic": {
+            "type": "conveyor_scoped_object_set",
+            "object_ids": list(target_ids),
+            "count": int(dataset["answer_value"]),
+            "scope": {
+                "lane_label": str(dataset["target_lane_label"]),
+                "segment_key": str(dataset["target_segment_key"]),
+                "segment_label": str(dataset["target_segment_label"]),
+            },
+        },
+        "projected_annotation": dict(annotation_artifacts.projected_annotation),
+        "background": dict(background_meta),
+        "post_image_noise": dict(post_noise_meta),
+    }
+
+
+def _trace_params(
+    *,
+    axes: ResolvedConveyorAxes,
+    dataset: Mapping[str, Any],
+    branch_probabilities: Mapping[str, float],
+) -> Dict[str, Any]:
+    return {
+        "predicate_kind": str(dataset["predicate_kind"]),
+        "query_id_probabilities": dict(branch_probabilities),
+        "scene_variant": str(axes.scene_variant),
+        "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
+        "lane_count": int(dataset["lane_count"]),
+        "lane_count_probabilities": dict(dataset["lane_count_probabilities"]),
+        "target_lane_label": str(dataset["target_lane_label"]),
+        "target_lane_probabilities": dict(dataset["target_lane_probabilities"]),
+        "target_segment_key": str(dataset["target_segment_key"]),
+        "target_segment_probabilities": dict(dataset["target_segment_probabilities"]),
+        "target_count": int(dataset["target_count"]),
+        "target_count_probabilities": dict(dataset["target_count_probabilities"]),
+        "object_count": int(dataset["object_count"]),
+        "object_count_probabilities": dict(dataset["object_count_probabilities"]),
+        "target_shape_type": str(dataset.get("target_shape_type", "")),
+        "target_shape_type_probabilities": dict(dataset["target_shape_type_probabilities"]),
+        "target_color_name": str(dataset.get("target_color_name", "")),
+        "target_color_name_probabilities": dict(dataset["target_color_name_probabilities"]),
+    }
+
+
+def run_conveyor_sorting_lifecycle(
+    *,
+    public_name: str,
+    domain_name: str,
+    prompt_query_key_by_branch: Mapping[str, str],
+    predicate_kind_by_branch: Mapping[str, str],
+    supported_branches: Sequence[str],
+    default_branch: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+) -> TaskOutput:
+    """Run query selection, rendering, prompt, annotation, and output assembly."""
+
+    from trace.core.scene_config import get_scene_defaults
+    from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
+
+    scene_defaults = get_scene_defaults(str(domain_name), SCENE_ID)
+    gen_defaults, render_defaults, _prompt_defaults = split_scene_generation_rendering_prompt_defaults(
+        scene_defaults if isinstance(scene_defaults, Mapping) else {},
+        task_id=str(public_name),
+    )
+    selected_branch, branch_probabilities, clean_params = select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=tuple(str(branch) for branch in supported_branches),
+        default_query_id=str(default_branch),
+        task_id=str(public_name),
+        namespace=f"{public_name}.query",
+    )
+    axes = resolve_conveyor_axes(
+        params=clean_params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(public_name),
+    )
+    prompt_query_key = str(prompt_query_key_by_branch[str(selected_branch)])
+    predicate_kind = str(predicate_kind_by_branch[str(selected_branch)])
+    min_bbox_side_px = float(clean_params.get("min_rendered_bbox_side_px", gen_defaults.get("min_rendered_bbox_side_px", 24.0)))
+    last_error: Exception | None = None
+    for attempt_index in range(max(1, int(max_attempts))):
+        attempt_seed = _attempt_seed(int(instance_seed), public_name=str(public_name), attempt_index=int(attempt_index))
+        try:
+            render_params = _resolve_render_params(
+                clean_params,
+                render_defaults=render_defaults,
+                instance_seed=int(attempt_seed),
+                namespace=f"{public_name}.canvas",
+            )
+            dataset = build_segment_count_dataset(
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                gen_defaults=gen_defaults,
+                render_params=render_params,
+                axes=axes,
+                predicate_kind=str(predicate_kind),
+                namespace=str(public_name),
+            )
+            plan = ConveyorTaskPlan(
+                dataset=dict(dataset),
+                answer_gt=TypedValue(type="integer", value=int(dataset["answer_value"])),
+                target_object_ids=tuple(str(object_id) for object_id in dataset["target_object_ids"]),
+                objective_params={},
+            )
+            background, background_meta = make_background_canvas(
+                canvas_width=int(render_params.canvas_width),
+                canvas_height=int(render_params.canvas_height),
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                default_config=_BACKGROUND_DEFAULTS,
+            )
+            rendered = render_conveyor_sorting(background, dataset=plan.dataset, render_params=render_params)
+            if not _rendered_bboxes_are_readable(rendered, min_side_px=float(min_bbox_side_px)):
+                raise ValueError("rendered conveyor object boxes failed readability constraints")
+            image, post_noise_meta = apply_post_image_noise(
+                rendered.image,
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                default_config=_NOISE_DEFAULTS,
+            )
+            annotation_artifacts = bbox_set_annotation_for_objects(rendered, plan.target_object_ids)
+            _prompt_defaults, prompt_artifacts = build_prompt_artifacts(
+                prompt_query_key=str(prompt_query_key),
+                dynamic_slot_values=dynamic_slots_for_conveyor(plan.dataset),
+                instance_seed=int(attempt_seed),
+            )
+            query_spec = build_prompt_query_spec(
+                prompt_artifacts=prompt_artifacts,
+                query_id=str(selected_branch),
+                params=_trace_params(
+                    axes=axes,
+                    dataset=plan.dataset,
+                    branch_probabilities=branch_probabilities,
+                ),
+            )
+            trace_payload = _build_trace_payload(
+                public_name=str(public_name),
+                selected_branch=str(selected_branch),
+                axes=axes,
+                plan=plan,
+                rendered=rendered,
+                annotation_artifacts=annotation_artifacts,
+                prompt_artifacts=prompt_artifacts,
+                query_spec=query_spec,
+                render_params=render_params,
+                image=image,
+                background_meta=background_meta,
+                post_noise_meta=post_noise_meta,
+            )
+            return TaskOutput(
+                prompt=str(prompt_artifacts.prompt),
+                prompt_variants=dict(prompt_artifacts.prompt_variants),
+                answer_gt=plan.answer_gt,
+                annotation_gt=annotation_artifacts.annotation_gt,
+                image=image,
+                image_id="img0",
+                trace_payload=trace_payload,
+                task_versions=default_task_versions(),
+                scene_id=SCENE_ID,
+                query_id=str(selected_branch),
+            )
+        except Exception as exc:
+            last_error = exc
+            continue
+    raise RuntimeError(f"{public_name} failed to generate a valid conveyor sorting scene after {max_attempts} attempts: {last_error}")
+
+
+__all__ = ["ConveyorTaskPlan", "run_conveyor_sorting_lifecycle"]

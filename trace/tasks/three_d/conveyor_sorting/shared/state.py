@@ -1,0 +1,189 @@
+"""Scene state and catalogs for synthetic 3D conveyor sorting stations."""
+
+from __future__ import annotations
+
+from typing import Mapping, Tuple
+
+from trace.tasks.shared.color_format import format_named_color_with_hex
+from trace.tasks.shared.named_colors import available_named_colors
+from trace.tasks.three_d.shared.object_resources import (
+    OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE,
+    OBJECT_CLUSTER_SHAPE_TYPES,
+)
+
+
+SCENE_ID = "conveyor_sorting"
+
+SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
+    "single_belt_scanner",
+    "dual_lane_sorter",
+    "triple_lane_sorter",
+)
+
+LANE_COUNT_BY_SCENE_VARIANT: Mapping[str, int] = {
+    "single_belt_scanner": 1,
+    "dual_lane_sorter": 2,
+    "triple_lane_sorter": 3,
+}
+
+LANE_LABELS: Tuple[str, ...] = ("A", "B", "C")
+SEGMENT_KEYS: Tuple[str, ...] = ("input", "scan", "output")
+SEGMENT_LABELS: Mapping[str, str] = {
+    "input": "INPUT",
+    "scan": "SCAN",
+    "output": "OUTPUT",
+}
+
+CONVEYOR_OBJECT_SHAPE_TYPES: Tuple[str, ...] = tuple(
+    shape
+    for shape in (
+        "apple",
+        "sphere",
+        "bell",
+        "open_book",
+        "bottle",
+        "bowl",
+        "button",
+        "cactus",
+        "calculator",
+        "candle",
+        "card",
+        "carrot",
+        "mini_chair",
+        "chess_piece",
+        "clock",
+        "cone",
+        "cube",
+        "cup",
+        "cylinder",
+        "dice",
+        "drum",
+        "mail_envelope",
+        "flower",
+        "glove",
+        "hat",
+        "heart",
+        "jar",
+        "key",
+        "lantern",
+        "leaf",
+        "mushroom",
+        "pencil",
+        "plate",
+        "plug",
+        "puzzle_piece",
+        "pyramid",
+        "remote_control",
+        "torus",
+        "ruler",
+        "shield",
+        "star_prism",
+        "stool",
+        "mini_table",
+        "tray",
+        "trophy",
+        "umbrella",
+    )
+    if shape in set(OBJECT_CLUSTER_SHAPE_TYPES)
+)
+
+CONVEYOR_COLOR_READOUT_SHAPE_TYPES: Tuple[str, ...] = tuple(
+    shape
+    for shape in (
+        "sphere",
+        "cube",
+        "cylinder",
+        "cone",
+        "torus",
+        "pyramid",
+        "wedge",
+        "star_prism",
+        "diamond",
+        "heart",
+        "puzzle_piece",
+        "cup",
+        "bowl",
+        "stool",
+        "flower",
+        "tray",
+        "chess_piece",
+        "shield",
+        "dice",
+        "pencil",
+        "ruler",
+        "bell",
+        "candle",
+        "trophy",
+        "mini_chair",
+        "mini_table",
+        "hat",
+        "umbrella",
+        "button",
+        "card",
+        "mail_envelope",
+        "glove",
+        "key",
+        "plate",
+    )
+    if shape in set(CONVEYOR_OBJECT_SHAPE_TYPES)
+)
+
+SEMANTIC_COLOR_RGB: Mapping[str, Tuple[int, int, int]] = {
+    str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+    for name, rgb in available_named_colors()
+}
+SEMANTIC_COLOR_SUPPORT: Tuple[str, ...] = tuple(SEMANTIC_COLOR_RGB.keys())
+
+COLOR_CONFUSION_EXCLUSIONS: Mapping[str, Tuple[str, ...]] = {
+    "blue": ("cyan", "purple"),
+    "red": ("maroon", "magenta"),
+    "yellow": ("orange", "brown"),
+    "orange": ("yellow", "brown"),
+    "cyan": ("blue",),
+    "maroon": ("red", "magenta"),
+    "magenta": ("red", "maroon"),
+    "brown": ("yellow", "orange"),
+}
+
+
+def semantic_color_label(color_name: str) -> str:
+    """Return prompt-facing canonical named color text."""
+
+    return format_named_color_with_hex(str(color_name), SEMANTIC_COLOR_RGB[str(color_name)])
+
+
+def public_object_name(shape_type: str) -> str:
+    """Return the short prompt-facing object name for one conveyor object."""
+
+    return str(OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE.get(str(shape_type), str(shape_type).replace("_", " ")))
+
+
+def public_object_plural(shape_type: str) -> str:
+    """Return the prompt-facing plural object name for one conveyor object."""
+
+    raw = public_object_name(str(shape_type)).strip()
+    if raw in {"fish", "dice"}:
+        return raw
+    if raw.endswith("y") and (len(raw) < 2 or raw[-2].lower() not in {"a", "e", "i", "o", "u"}):
+        return f"{raw[:-1]}ies"
+    if raw.endswith(("s", "x", "z", "ch", "sh")):
+        return f"{raw}es"
+    return f"{raw}s"
+
+
+__all__ = [
+    "COLOR_CONFUSION_EXCLUSIONS",
+    "CONVEYOR_COLOR_READOUT_SHAPE_TYPES",
+    "CONVEYOR_OBJECT_SHAPE_TYPES",
+    "LANE_COUNT_BY_SCENE_VARIANT",
+    "LANE_LABELS",
+    "SCENE_ID",
+    "SEGMENT_KEYS",
+    "SEGMENT_LABELS",
+    "SEMANTIC_COLOR_RGB",
+    "SEMANTIC_COLOR_SUPPORT",
+    "SUPPORTED_SCENE_VARIANTS",
+    "public_object_name",
+    "public_object_plural",
+    "semantic_color_label",
+]

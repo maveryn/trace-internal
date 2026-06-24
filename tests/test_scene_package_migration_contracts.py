@@ -645,7 +645,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
         "icons": frozenset((*expected_candidate_scenes["icons"], "named_strip", "overlap_grid", "wallpaper_panels")),
         "illustrations": frozenset((*expected_candidate_scenes["illustrations"], "rpg_tactical_map")),
         "graph": frozenset((*expected_candidate_scenes["graph"], "phylogeny_tree", "pipe_network")),
-        "three_d": frozenset((*expected_candidate_scenes["three_d"], "object_scene", "room", "street", "warehouse")),
+        "three_d": frozenset((*expected_candidate_scenes["three_d"], "conveyor_sorting", "object_scene", "room", "street", "warehouse")),
     }
     assert MIGRATED_SCENE_PACKAGE_SCENES == expected_candidate_scenes
     assert SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES == expected_candidate_scenes
@@ -699,6 +699,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     assert scene_package_migration.is_scene_package_task('task_icons__pattern_grid__attribute_pattern_violation_index', domain='icons')
     assert scene_package_migration.is_scene_package_task('task_illustrations__rpg_house__swapped_tile_pair_label', domain='illustrations')
     assert scene_package_migration.is_scene_package_task('task_illustrations__rpg_tactical_map__movement_reachable_tile_label', domain='illustrations')
+    assert scene_package_migration.is_scene_package_task('task_three_d__conveyor_sorting__scoped_segment_object_count', domain='three_d')
     assert scene_package_migration.is_scene_package_task('task_three_d__surface_fixture__repeated_element_count', domain='three_d')
     assert scene_package_migration.is_scene_package_task('task_three_d__street__intersection_nearest_label', domain='three_d')
 

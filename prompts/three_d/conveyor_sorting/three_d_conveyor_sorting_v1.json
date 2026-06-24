@@ -1,0 +1,81 @@
+{
+  "bundle_id": "three_d_conveyor_sorting_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "conveyor_sorting": [
+        "The image shows a 3D conveyor sorting station with small objects on labeled conveyor segments.",
+        "The scene shows small 3D objects placed on labeled segments of a conveyor sorting station.",
+        "A 3D sorting station is shown with objects on conveyor lanes and labeled belt segments.",
+        "The picture shows a conveyor sorting station where small 3D objects sit on labeled belt segments.",
+        "The visual shows small objects arranged on labeled conveyor segments in a 3D sorting station."
+      ]
+    },
+    "task": {
+      "conveyor_sorting_count_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "object_type_segment_count": [
+        "How many {target_object_plural} are in the {segment_label} segment of lane {lane_label}?",
+        "Count the {target_object_plural} in lane {lane_label}'s {segment_label} segment. How many are there?",
+        "In the {segment_label} segment of lane {lane_label}, how many {target_object_plural} are visible?",
+        "Looking only at lane {lane_label}, how many {target_object_plural} are in the {segment_label} segment?",
+        "What is the number of {target_object_plural} in the {segment_label} segment on lane {lane_label}?"
+      ],
+      "color_segment_count": [
+        "How many {target_color_label} objects are in the {segment_label} segment of lane {lane_label}?",
+        "Count the {target_color_label} objects in lane {lane_label}'s {segment_label} segment. How many are there?",
+        "In the {segment_label} segment of lane {lane_label}, how many objects are {target_color_label}?",
+        "Looking only at lane {lane_label}, how many {target_color_label} objects are in the {segment_label} segment?",
+        "What is the number of {target_color_label} objects in the {segment_label} segment on lane {lane_label}?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Answer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Final answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "Format for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "query:object_type_segment_count": {
+      "answer_hint": "set \"answer\" to the count as an integer",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted object in the requested conveyor segment",
+      "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:color_segment_count": {
+      "answer_hint": "set \"answer\" to the count as an integer",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted colored object in the requested conveyor segment",
+      "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    }
+  },
+  "dynamic_slots": {
+    "lane_label": {"type": "string"},
+    "segment_label": {"type": "string"},
+    "target_object_plural": {"type": "string"},
+    "target_color_label": {"type": "string"}
+  },
+  "required_slots_by_key": {
+    "query:object_type_segment_count": ["lane_label", "segment_label", "target_object_plural"],
+    "query:color_segment_count": ["lane_label", "segment_label", "target_color_label"]
+  }
+}

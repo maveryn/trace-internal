@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from trace.tasks import TASK_REGISTRY
+from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
 
 
 TREEMAP_TASKS = {
     "task_charts__treemap__group_total_value": {
-        "treemap_group_total_value",
+        "single",
     },
     "task_charts__treemap__repeated_leaf_aggregate_value": {
         "treemap_repeated_leaf_sum_value",
@@ -17,7 +17,9 @@ TREEMAP_TASKS = {
 
 
 def test_treemap_tasks_registered() -> None:
-    assert set(TREEMAP_TASKS).issubset(set(TASK_REGISTRY))
+    ensure_scene_tasks_registered("charts", "treemap")
+    for task_id in TREEMAP_TASKS:
+        assert task_id in TASK_REGISTRY
 
 
 def test_treemap_tasks_generate_default_query_outputs() -> None:

@@ -1,85 +1,35 @@
 generation:
   shared:
-    balanced_query_id_sampling: true
-  task_overrides:
-    charts_composition_treemap_base:
-      treemap_parent_count_min: 4
-      treemap_parent_count_max: 6
-      treemap_leaf_count_min: 4
-      treemap_leaf_count_max: 6
-      treemap_value_min: 16
-      treemap_value_max: 88
+    treemap_parent_count_min: 4
+    treemap_parent_count_max: 6
+    treemap_leaf_count_min: 4
+    treemap_leaf_count_max: 6
+    treemap_value_min: 16
+    treemap_value_max: 88
 rendering:
-  task_overrides:
-    charts_composition_treemap_base:
-      canvas_width: 1280
-      canvas_height: 940
-      plot_margin_left_px: 62
-      plot_margin_right_px: 78
-      plot_margin_top_px: 78
-      plot_margin_bottom_px: 56
-      title_font_size_px: 26
-      parent_font_size_px: 18
-      leaf_font_size_px: 15
-      value_font_size_px: 16
-      note_font_size_px: 14
-      panel_fill_rgb_options:
-      - - 252
-        - 253
-        - 250
-      - - 250
-        - 252
-        - 255
-      - - 255
-        - 252
-        - 247
-      - - 250
-        - 255
-        - 252
-      panel_border_rgb:
-      - 44
-      - 50
-      - 60
-      text_color_rgb:
-      - 26
-      - 31
-      - 38
-      muted_text_rgb:
-      - 78
-      - 86
-      - 98
-      separator_rgb:
-      - 246
-      - 248
-      - 250
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
-      label_stroke_width_px: 1
+  shared:
+    canvas_width: 1280
+    canvas_height: 940
+    plot_margin_left_px: 62
+    plot_margin_right_px: 78
+    plot_margin_top_px: 78
+    plot_margin_bottom_px: 56
+    title_font_size_px: 26
+    parent_font_size_px: 18
+    leaf_font_size_px: 15
+    value_font_size_px: 16
+    note_font_size_px: 14
+    panel_fill_rgb_options:
+      - [252, 253, 250]
+      - [250, 252, 255]
+      - [255, 252, 247]
+      - [250, 255, 252]
+    panel_border_rgb: [44, 50, 60]
+    text_color_rgb: [26, 31, 38]
+    muted_text_rgb: [78, 86, 98]
+    separator_rgb: [246, 248, 250]
+    text_stroke_rgb: [255, 255, 255]
+    label_stroke_width_px: 1
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
-      in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
-      the final answer.
-  task_overrides:
-    charts_composition_treemap_base:
-      bundle_id: charts_treemap_v1
-      scene_key: composition_treemap
-      task_key: treemap_composition_query
-      json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
-        in that order for the final answer.
-      json_output_contract_answer_only: Use a valid JSON object with key "answer"
-        for the final answer.
-      object_description_treemap: a treemap composition chart with parent category
-        rectangles and child rectangles labeled with printed integer values
-      answer_hint_integer: set "answer" to the requested integer
-      annotation_hint_treemap_group_total_value: set "annotation" to [x0,y0,x1,y1]
-        boxes for the child value labels inside the requested parent rectangle
-      annotation_hint_treemap_repeated_leaf_aggregate_value: set "annotation" to [x0,y0,x1,y1]
-        boxes for the matching child value labels across parent rectangles
-      json_example_treemap_group_total_value: '{"annotation":[[150,160,190,184],[210,240,250,264],[310,320,350,344]],"answer":168}'
-      json_example_treemap_repeated_leaf_aggregate_value: '{"annotation":[[150,160,190,184],[410,160,450,184],[680,160,720,184]],"answer":54}'
-      json_example_answer_only_treemap_group_total_value: '{"answer":168}'
-      json_example_answer_only_treemap_repeated_leaf_aggregate_value: '{"answer":54}'
+    bundle_id: charts_treemap_v1

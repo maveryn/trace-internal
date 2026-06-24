@@ -1,67 +1,130 @@
-"""Treemap task for `task_charts__treemap__repeated_leaf_aggregate_value`."""
+"""Aggregate values for one repeated child label across treemap parents."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from collections.abc import Mapping
+from typing import Any
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.treemap_composition import build_treemap_task_components
+from trace.core.types import TypedValue
+from trace.tasks.registry import register_task
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+
+from ._lifecycle import TreemapTaskPlan, run_treemap_task_from_public_class
+from .shared.prompts import (
+    ANNOTATION_HINT_REPEATED_LEAF,
+    JSON_EXAMPLE_ANSWER_ONLY_REPEATED_LEAF,
+    JSON_EXAMPLE_REPEATED_LEAF,
+    render_prompt_artifacts,
+)
+from .shared.sampling import build_treemap_dataset
+from .shared.state import DOMAIN
 
 
-DEFAULT_QUERY_ID = "treemap_repeated_leaf_sum_value"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+TASK_ID = "task_charts__treemap__repeated_leaf_aggregate_value"
+SUM_QUERY_ID = "treemap_repeated_leaf_sum_value"
+AVERAGE_QUERY_ID = "treemap_repeated_leaf_average_value"
+SUPPORTED_QUERY_IDS = (SUM_QUERY_ID, AVERAGE_QUERY_ID)
+QUERY_OPERATIONS = {
+    SUM_QUERY_ID: "sum",
+    AVERAGE_QUERY_ID: "average",
+}
+PROGRAM_CODE = "aggregate(value(child_label across parents), operation=sum_or_average); output=integer_value; annotation=bbox_set(repeated_child_value_boxes); scene=treemap; scope=repeated_leaf_aggregate_value"
+
+
+def _label_probability_map(labels: list[str]) -> dict[str, float]:
+    if not labels:
+        return {}
+    probability = 1.0 / float(len(labels))
+    return {str(label): float(probability) for label in labels}
+
+
+def _build_repeated_leaf_plan(instance_seed: int, params: Mapping[str, Any], selected_branch: str) -> TreemapTaskPlan:
+    """Bind all occurrences of one child label to a sum or average.
+
+    The public task owns operation selection, the repeated child label, all
+    matching leaf witnesses, prompt slots, and the integer aggregate answer.
+    """
+
+    operation = QUERY_OPERATIONS.get(str(selected_branch))
+    if operation is None:
+        raise ValueError(f"unsupported treemap repeated-leaf query_id: {selected_branch}")
+    dataset = build_treemap_dataset(params, instance_seed=int(instance_seed))
+    leaf_labels = sorted({str(leaf.label) for leaf in dataset.leaves})
+    label_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.target_leaf_label",
+    ) % len(leaf_labels)
+    leaf_label = str(leaf_labels[int(label_index)])
+    matching = tuple(leaf for leaf in dataset.leaves if str(leaf.label) == leaf_label)
+    if not matching:
+        raise ValueError("treemap repeated-leaf target has no matching leaves")
+    total = int(sum(int(leaf.value) for leaf in matching))
+    if operation == "average":
+        if total % len(matching) != 0:
+            raise ValueError("treemap repeated-leaf average is not an integer")
+        answer = int(total // len(matching))
+    else:
+        answer = int(total)
+    prompt_artifacts = render_prompt_artifacts(
+        prompt_key=str(selected_branch),
+        annotation_hint=ANNOTATION_HINT_REPEATED_LEAF,
+        json_example=JSON_EXAMPLE_REPEATED_LEAF,
+        json_example_answer_only=JSON_EXAMPLE_ANSWER_ONLY_REPEATED_LEAF,
+        dynamic_slot_values={
+            "parent_label": "",
+            "leaf_label": str(leaf_label),
+        },
+        instance_seed=int(instance_seed),
+    )
+    annotation_leaf_ids = tuple(str(leaf.leaf_id) for leaf in matching)
+    leaf_values = [int(leaf.value) for leaf in matching]
+    parent_labels = [str(leaf.parent_label) for leaf in matching]
+    relations = {
+        "program_code": PROGRAM_CODE,
+        "semantic_operation": "repeated_leaf_aggregate",
+        "operation": str(operation),
+        "leaf_label": str(leaf_label),
+        "leaf_label_index": int(label_index),
+        "leaf_label_probabilities": _label_probability_map(leaf_labels),
+        "leaf_ids": [str(leaf_id) for leaf_id in annotation_leaf_ids],
+        "leaf_values": [int(value) for value in leaf_values],
+        "parent_labels": [str(label) for label in parent_labels],
+    }
+    return TreemapTaskPlan(
+        dataset=dataset,
+        answer_gt=TypedValue(type="integer", value=int(answer)),
+        answer_value=int(answer),
+        annotation_leaf_ids=tuple(annotation_leaf_ids),
+        prompt_artifacts=prompt_artifacts,
+        relations=relations,
+        witness_type="treemap_repeated_leaf_aggregate",
+        witness_calculation={
+            "operation": str(operation),
+            "leaf_label": str(leaf_label),
+            "leaf_values": [int(value) for value in leaf_values],
+            "parent_labels": [str(label) for label in parent_labels],
+        },
+    )
 
 
 @register_task
 class ChartsCompositionTreemapRepeatedLeafAggregateValueTask:
-    """Generate treemap instances for `repeated_leaf_aggregate_value`."""
-
-    task_id = "task_charts__treemap__repeated_leaf_aggregate_value"
-    domain = "charts"
-    scene_id = "treemap"
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "repeated_leaf_aggregate_value"
-    supported_query_ids = ("treemap_repeated_leaf_sum_value", "treemap_repeated_leaf_average_value")
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = SUM_QUERY_ID
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        return run_treemap_task_from_public_class(
+            self,
             instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=self.task_id,
+            params=dict(params),
+            max_attempts=int(max_attempts),
+            build_plan=_build_repeated_leaf_plan,
         )
-        del query_probabilities
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_treemap_task_components(
-                    task_id=self.task_id,
-                    selected_query_id=str(selected_query_id),
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                )
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=components.answer_value),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=list(components.annotation_value)),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id=self.scene_id,
-                    query_id=str(components.query_id),
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
 
 
 __all__ = ["ChartsCompositionTreemapRepeatedLeafAggregateValueTask"]

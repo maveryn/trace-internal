@@ -1,67 +1,132 @@
-"""Treemap task for `task_charts__treemap__group_total_value`."""
+"""Sum all printed child values inside one treemap parent category."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from collections.abc import Mapping
+from typing import Any
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.treemap_composition import build_treemap_task_components
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.core.types import TypedValue
+from trace.tasks.registry import register_task
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+
+from ._lifecycle import TreemapTaskPlan, run_treemap_task_from_public_class
+from .shared.prompts import (
+    ANNOTATION_HINT_GROUP_TOTAL,
+    JSON_EXAMPLE_ANSWER_ONLY_GROUP_TOTAL,
+    JSON_EXAMPLE_GROUP_TOTAL,
+    render_prompt_artifacts,
+)
+from .shared.sampling import build_treemap_dataset
+from .shared.state import DOMAIN
 
 
-DEFAULT_QUERY_ID = "treemap_group_total_value"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+TASK_ID = "task_charts__treemap__group_total_value"
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
+PROMPT_KEY = "treemap_group_total_value"
+PROGRAM_CODE = "sum(value(child) for child in parent); output=integer_value; annotation=bbox_set(parent_child_value_boxes); scene=treemap; scope=group_total_value"
+
+
+def _parent_selection_probabilities(labels: list[str], selected: str) -> dict[str, float]:
+    if not labels:
+        return {}
+    probability = 1.0 / float(len(labels))
+    return {str(label): float(probability) for label in labels if str(label) != str(selected)} | {str(selected): float(probability)}
+
+
+def _parent_leaf_values(dataset, leaf_ids: tuple[str, ...]) -> list[int]:
+    leaves_by_id = {str(leaf.leaf_id): leaf for leaf in dataset.leaves}
+    return [int(leaves_by_id[str(leaf_id)].value) for leaf_id in leaf_ids]
+
+
+def _parent_total_relations(*, dataset, parent, parent_index: int, leaf_ids: tuple[str, ...], leaf_values: list[int]) -> dict[str, Any]:
+    return {
+        "program_code": PROGRAM_CODE,
+        "semantic_operation": "parent_child_sum",
+        "operation": "sum",
+        "parent_id": str(parent.parent_id),
+        "parent_label": str(parent.label),
+        "parent_index": int(parent_index),
+        "parent_selection_probabilities": _parent_selection_probabilities(
+            [str(item.label) for item in dataset.parents],
+            str(parent.label),
+        ),
+        "leaf_ids": [str(leaf_id) for leaf_id in leaf_ids],
+        "leaf_values": [int(value) for value in leaf_values],
+    }
+
+
+def _build_group_total_plan(instance_seed: int, params: Mapping[str, Any], selected_branch: str) -> TreemapTaskPlan:
+    """Bind one parent rectangle to its child values and total.
+
+    The public task owns the selected parent, supporting leaf ids, integer
+    answer, prompt slots, and symbolic witness; rendering remains scene-local.
+    """
+
+    if str(selected_branch) != SINGLE_QUERY_ID:
+        raise ValueError(f"unsupported treemap group-total query_id: {selected_branch}")
+    dataset = build_treemap_dataset(params, instance_seed=int(instance_seed))
+    parent_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.target_parent",
+    ) % len(dataset.parents)
+    parent = dataset.parents[int(parent_index)]
+    annotation_leaf_ids = tuple(str(leaf_id) for leaf_id in parent.leaf_ids)
+    leaf_values = _parent_leaf_values(dataset, annotation_leaf_ids)
+    answer = int(sum(leaf_values))
+    if answer != int(parent.value):
+        raise ValueError("treemap parent total mismatch")
+    prompt_artifacts = render_prompt_artifacts(
+        prompt_key=PROMPT_KEY,
+        annotation_hint=ANNOTATION_HINT_GROUP_TOTAL,
+        json_example=JSON_EXAMPLE_GROUP_TOTAL,
+        json_example_answer_only=JSON_EXAMPLE_ANSWER_ONLY_GROUP_TOTAL,
+        dynamic_slot_values={
+            "parent_label": str(parent.label),
+            "leaf_label": "",
+        },
+        instance_seed=int(instance_seed),
+    )
+    return TreemapTaskPlan(
+        dataset=dataset,
+        answer_gt=TypedValue(type="integer", value=int(answer)),
+        answer_value=int(answer),
+        annotation_leaf_ids=tuple(annotation_leaf_ids),
+        prompt_artifacts=prompt_artifacts,
+        relations=_parent_total_relations(
+            dataset=dataset,
+            parent=parent,
+            parent_index=int(parent_index),
+            leaf_ids=annotation_leaf_ids,
+            leaf_values=leaf_values,
+        ),
+        witness_type="treemap_parent_child_sum",
+        witness_calculation={
+            "operation": "sum",
+            "parent_label": str(parent.label),
+            "leaf_values": [int(value) for value in leaf_values],
+        },
+    )
 
 
 @register_task
 class ChartsCompositionTreemapGroupTotalValueTask:
-    """Generate treemap instances for `group_total_value`."""
-
-    task_id = "task_charts__treemap__group_total_value"
-    domain = "charts"
-    scene_id = "treemap"
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "group_total_value"
-    supported_query_ids = ("treemap_group_total_value",)
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = SINGLE_QUERY_ID
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
+        return run_treemap_task_from_public_class(
+            self,
             instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=self.task_id,
+            params=dict(params),
+            max_attempts=int(max_attempts),
+            build_plan=_build_group_total_plan,
         )
-        del query_probabilities
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_treemap_task_components(
-                    task_id=self.task_id,
-                    selected_query_id=str(selected_query_id),
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                )
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=components.answer_value),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=list(components.annotation_value)),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id=self.scene_id,
-                    query_id=str(components.query_id),
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
 
 
 __all__ = ["ChartsCompositionTreemapGroupTotalValueTask"]

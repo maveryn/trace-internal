@@ -1,26 +1,21 @@
 # `task_charts__treemap__group_total_value`
 
-## Contract
+## Public Contract
+
 1. Domain: `charts`
-2. Scene id: `treemap`
-3. Source implementation domain/group: `charts/composition`
-4. Query id: `treemap_group_total_value`
-5. Semantic query details are recorded in `query_id` and trace params.
+2. Scene: `treemap`
+3. Source file: `trace/tasks/charts/treemap/group_total_value.py`
+4. Prompt assets: `prompts/charts/treemap/charts_treemap_v1.json`
+5. Supported sampled `query_id`: `single`
 
-## Implementation
-1. Registered class: `trace.tasks.charts.composition.treemap_composition.ChartsCompositionTreemapGroupTotalValueTask`
-2. Prompt lookup domain/group: `charts/composition`
-3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
-4. Answers and annotation are produced from the same metadata execution trace.
+## Program Contract
 
-## Annotation Contract
-1. Answer schema: `integer_value`.
-2. Annotation schema: `bbox_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+- Program schema: `sum(value(child) for child in parent); output=integer_value; annotation=bbox_set(parent_child_value_boxes); scene=treemap; scope=group_total_value`.
+- Program: sum every printed child value inside the requested parent category.
+- Answer: `integer`.
+- Annotation schema: `bbox_set` over the child value labels inside the selected parent rectangle.
+- The answer and annotation are bound from the same sampled treemap execution trace.
 
-## Query Details
+## Review Notes
 
-| Query id | Program signature | Answer schema | Annotation schema |
-|---|---|---|---|
-| `treemap_group_total_value` | `numeric.aggregate_sum` | `integer_value` | `bbox_set` |
+This task uses the scene-package layout. The public task file owns target parent selection, answer binding, annotation binding, and prompt slots; scene-local shared code only provides treemap data, rendering, prompt, and projection primitives.

@@ -11,7 +11,12 @@ from trace.tasks.illustrations.isometric_harbor.boat_mooring_status_count import
     SUPPORTED_QUERY_IDS as MOORING_SUPPORTED_QUERY_IDS,
     TASK_ID as MOORING_TASK_ID,
 )
+from trace.tasks.illustrations.isometric_harbor.shoreline_nearest_boat_label import (
+    SUPPORTED_QUERY_IDS as SHORELINE_SUPPORTED_QUERY_IDS,
+    TASK_ID as SHORELINE_TASK_ID,
+)
 from trace.tasks.illustrations.isometric_harbor.shared.rendering import (
+    DEFAULT_BOAT_CANDIDATE_LABELS,
     RENDERER_ID,
     SCENE_ID,
     render_isometric_harbor_scene,
@@ -91,6 +96,34 @@ def test_isometric_harbor_renderer_supports_open_water_boats() -> None:
         _assert_bbox_inside_canvas(list(entity.bbox_xyxy), width=scene.image.size[0], height=scene.image.size[1])
 
 
+def test_isometric_harbor_renderer_supports_shoreline_candidate_boats() -> None:
+    scene = render_isometric_harbor_scene(
+        2026062801,
+        width=1200,
+        height=800,
+        canvas_profile="landscape",
+        shoreline_candidate_labels=DEFAULT_BOAT_CANDIDATE_LABELS,
+        shoreline_nearest_label="D",
+    )
+    boats = [entity for entity in scene.entities if entity.object_type == "boat"]
+    assert len(boats) == 6
+    assert scene.trace["nearest_label"] == "D"
+    assert set(scene.trace["candidate_boat_ids_by_label"]) == set(DEFAULT_BOAT_CANDIDATE_LABELS)
+    assert scene.trace["boat_counts_by_side"] == {"left": 0, "right": 0}
+    assert scene.trace["boat_counts_by_mooring_status"] == {"moored": 0, "open_water": 6}
+    distances = {str(key): int(value) for key, value in scene.trace["shoreline_distance_tiles_by_label"].items()}
+    assert distances["D"] == min(distances.values())
+    assert list(distances.values()).count(distances["D"]) == 1
+    for entity in boats:
+        assert entity.metadata.get("mooring_status") == "open_water"
+        assert entity.metadata.get("orientation") == "shore_facing"
+        assert entity.metadata.get("shoreline_candidate_label") in DEFAULT_BOAT_CANDIDATE_LABELS
+        assert entity.metadata.get("label_bbox_xyxy")
+        tile = next(tile for tile in scene.tiles if tile.tile_id == entity.tile_ids[0])
+        assert tile.terrain == "water"
+        _assert_bbox_inside_canvas(list(entity.bbox_xyxy), width=scene.image.size[0], height=scene.image.size[1])
+
+
 def test_isometric_harbor_boat_side_count_contract() -> None:
     task = create_task(TASK_ID)
     cases = (
@@ -161,12 +194,46 @@ def test_isometric_harbor_boat_mooring_status_count_contract() -> None:
             _assert_bbox_inside_canvas(list(bbox), width=out.image.size[0], height=out.image.size[1])
 
 
+def test_isometric_harbor_shoreline_nearest_boat_label_contract() -> None:
+    task = create_task(SHORELINE_TASK_ID)
+    out = task.generate(
+        2026062811,
+        params={"selected_label": "F", "canvas_profile": "square"},
+        max_attempts=4,
+    )
+    assert out.scene_id == SCENE_ID
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "F"
+    assert out.annotation_gt.type == "bbox"
+    _assert_bbox_inside_canvas(list(out.annotation_gt.value), width=out.image.size[0], height=out.image.size[1])
+    assert "shore" in out.prompt
+    trace = out.trace_payload
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_isometric_harbor_v1"
+    assert trace["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
+    assert trace["query_spec"]["params"]["candidate_count"] == 6
+    assert trace["query_spec"]["params"]["candidate_label"] == "F"
+    assert trace["query_spec"]["params"]["selected_label"] == "F"
+    assert trace["execution_trace"]["answer"] == "F"
+    assert trace["render_map"]["selected_label"] == "F"
+    assert trace["render_map"]["selected_shoreline_distance_tiles"] == min(
+        int(value) for value in trace["render_map"]["shoreline_distance_tiles_by_label"].values()
+    )
+    assert len(trace["render_map"]["candidate_boat_ids_by_label"]) == 6
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["witness_symbolic"]["answer_label"] == "F"
+
+
 def test_isometric_harbor_task_registered() -> None:
     task = create_task(TASK_ID)
     mooring_task = create_task(MOORING_TASK_ID)
+    shoreline_task = create_task(SHORELINE_TASK_ID)
     assert TASK_ID in TASK_REGISTRY
     assert MOORING_TASK_ID in TASK_REGISTRY
+    assert SHORELINE_TASK_ID in TASK_REGISTRY
     assert task.domain == "illustrations"
     assert mooring_task.domain == "illustrations"
+    assert shoreline_task.domain == "illustrations"
     assert tuple(task.supported_query_ids) == SUPPORTED_QUERY_IDS
     assert tuple(mooring_task.supported_query_ids) == MOORING_SUPPORTED_QUERY_IDS
+    assert tuple(shoreline_task.supported_query_ids) == SHORELINE_SUPPORTED_QUERY_IDS

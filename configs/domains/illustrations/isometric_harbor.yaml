@@ -31,6 +31,9 @@ generation:
         - 3
         - 4
         - 5
+    task_illustrations__isometric_harbor__shoreline_nearest_boat_label:
+      query_id_support:
+        - single
 
 rendering:
   shared:
@@ -48,3 +51,7 @@ prompt:
       bundle_id: illustrations_isometric_harbor_v1
       scene_key: isometric_harbor_dock_canvas
       task_key: boat_mooring_status_count_task
+    task_illustrations__isometric_harbor__shoreline_nearest_boat_label:
+      bundle_id: illustrations_isometric_harbor_v1
+      scene_key: isometric_harbor_open_water_canvas
+      task_key: shoreline_nearest_boat_label_task

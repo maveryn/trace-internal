@@ -15,6 +15,13 @@ def bbox_set_projection(bboxes: Sequence[Sequence[float]]) -> dict[str, Any]:
     return {"type": "bbox_set", "bbox_set": values, "pixel_bbox_set": values}
 
 
+def bbox_projection(bbox: Sequence[float]) -> dict[str, Any]:
+    """Return the scalar bbox projection payload."""
+
+    value = rounded_bbox(bbox)
+    return {"type": "bbox", "bbox": value, "pixel_bbox": value, "value": value}
+
+
 def isometric_harbor_scene_ir(
     *,
     domain: str,
@@ -120,10 +127,47 @@ def isometric_harbor_mooring_status_count_render_map(
     }
 
 
+def isometric_harbor_shoreline_nearest_boat_render_map(
+    *,
+    scene: IsoHarborScene,
+    candidate_boat_ids_by_label: Mapping[str, str],
+    selected_label: str,
+) -> dict[str, Any]:
+    """Return task render-map fields for shoreline-nearest boat selection."""
+
+    entities_by_id = {str(entity.entity_id): entity for entity in scene.entities}
+    selected_boat_id = str(candidate_boat_ids_by_label[str(selected_label)])
+    selected_boat = entities_by_id[selected_boat_id]
+    boat_bboxes = {
+        str(label): rounded_bbox(entities_by_id[str(entity_id)].bbox_xyxy)
+        for label, entity_id in candidate_boat_ids_by_label.items()
+        if str(entity_id) in entities_by_id
+    }
+    label_bboxes = {
+        str(label): list(scene.trace.get("candidate_label_bboxes_px_by_label", {}).get(str(label), []))
+        for label in candidate_boat_ids_by_label
+    }
+    return {
+        "image_id": "img0",
+        "candidate_boat_ids_by_label": dict(candidate_boat_ids_by_label),
+        "candidate_boat_bboxes_px_by_label": boat_bboxes,
+        "candidate_label_bboxes_px_by_label": label_bboxes,
+        "shoreline_distance_tiles_by_label": dict(scene.trace.get("shoreline_distance_tiles_by_label", {})),
+        "shoreline_bow_points_px_by_label": dict(scene.trace.get("shoreline_bow_points_px_by_label", {})),
+        "selected_label": str(selected_label),
+        "selected_boat_id": selected_boat_id,
+        "selected_boat_bbox_px": rounded_bbox(selected_boat.bbox_xyxy),
+        "selected_shoreline_distance_tiles": int(selected_boat.metadata.get("shoreline_distance_tiles", 0)),
+        "shoreline_reference": str(scene.trace.get("shoreline_reference", "")),
+    }
+
+
 __all__ = [
+    "bbox_projection",
     "bbox_set_projection",
     "isometric_harbor_boat_count_render_map",
     "isometric_harbor_mooring_status_count_render_map",
+    "isometric_harbor_shoreline_nearest_boat_render_map",
     "isometric_harbor_render_spec",
     "isometric_harbor_scene_ir",
 ]

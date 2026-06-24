@@ -40,7 +40,6 @@ from trace.tasks.three_d.object_cluster.shared.relations import semantic_color_l
 from trace.tasks.three_d.object_cluster.object_type_count import TASK_ID
 from trace.tasks.three_d.object_cluster.total_object_count import TASK_ID as TOTAL_OBJECT_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.type_frequency_count import TASK_ID as TYPE_FREQUENCY_COUNT_TASK_ID
-from trace.tasks.three_d.object_cluster.type_union_count import TASK_ID as TYPE_UNION_COUNT_TASK_ID
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
@@ -722,38 +721,6 @@ def test_object_cluster_multi_attribute_exclusion_count_answer_and_annotation() 
     assert any(str(spec["shape_type"]) == "cube" and str(spec["color_name"]) == "red" for spec in object_specs)
 
 
-def test_object_cluster_type_union_count_answer_and_annotation() -> None:
-    task = create_task(TYPE_UNION_COUNT_TASK_ID)
-    output = task.generate(
-        20260614,
-        params={
-            "query_id": "single",
-            "scene_variant": "tabletop_pile",
-            "object_count": 20,
-            "target_count": 7,
-            "target_shape_types": ["button", "dice"],
-            "post_image_noise_apply_prob": 0.0,
-        },
-        max_attempts=300,
-    )
-
-    trace = output.trace_payload["execution_trace"]
-    object_specs = list(trace["object_specs"])
-    target_object_ids = [str(object_id) for object_id in trace["target_object_ids"]]
-    expected_ids = [
-        str(spec["object_id"])
-        for spec in sorted(object_specs, key=lambda item: str(item["object_id"]))
-        if str(spec["shape_type"]) in {"button", "dice"}
-    ]
-
-    assert output.query_id == "single"
-    assert trace["internal_query_id"] == "two_type_union_count"
-    assert output.answer_gt.value == 7
-    assert target_object_ids == expected_ids
-    assert output.annotation_gt.type == "bbox_set"
-    assert set(trace["target_shape_types"]) == {"button", "dice"}
-
-
 def test_object_cluster_count_arithmetic_keyed_operand_annotation() -> None:
     task = create_task(COUNT_ARITHMETIC_TASK_ID)
     output = task.generate(
@@ -827,7 +794,6 @@ def test_object_cluster_first_wave_tasks_registered_in_three_d_taxonomy() -> Non
         COLOR_MEMBERSHIP_COUNT_TASK_ID,
         MULTI_ATTRIBUTE_OR_COUNT_TASK_ID,
         MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
-        TYPE_UNION_COUNT_TASK_ID,
         COUNT_ARITHMETIC_TASK_ID,
         TYPE_FREQUENCY_COUNT_TASK_ID,
     ):

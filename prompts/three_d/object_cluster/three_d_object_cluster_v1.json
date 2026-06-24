@@ -19,7 +19,6 @@
       "object_cluster_color_count_query": ["", "", "", "", ""],
       "object_cluster_multi_attribute_or_count_query": ["", "", "", "", ""],
       "object_cluster_multi_attribute_exclusion_count_query": ["", "", "", "", ""],
-      "object_cluster_type_union_count_query": ["", "", "", "", ""],
       "object_cluster_count_arithmetic_query": ["", "", "", "", ""],
       "object_cluster_type_frequency_count_query": ["", "", "", "", ""]
     },
@@ -73,40 +72,33 @@
         "How many {target_color_name} objects are not {target_object_plural}?",
         "How many clustered objects are {target_color_name} and not {target_object_plural}?"
       ],
-      "two_type_union_count": [
-        "How many {target_object_union_phrase} are in the cluster in total?",
-        "Count the clustered objects that are {target_object_union_phrase}. How many are there?",
-        "What is the total number of visible {target_object_union_phrase} in the cluster?",
-        "How many objects are {target_object_union_phrase}?",
-        "How many clustered objects belong to either type: {target_object_union_phrase}?"
-      ],
       "two_type_total_count": [
         "How many {left_operand_phrase} and {right_operand_phrase} are there in total?",
-        "Add the count of {left_operand_phrase} to the count of {right_operand_phrase}. What is the total?",
-        "Count the {left_operand_phrase} and the {right_operand_phrase}. How many objects is that altogether?",
-        "What is the combined number of {left_operand_phrase} plus {right_operand_phrase}?",
-        "How many clustered objects are either {left_operand_phrase} or {right_operand_phrase}?"
+        "What is the total count of {left_operand_phrase} and {right_operand_phrase}?",
+        "Count the {left_operand_phrase} and {right_operand_phrase}. What is the total?",
+        "Add the number of {left_operand_phrase} and {right_operand_phrase}. What is the total?",
+        "How many objects are in these two groups: {left_operand_phrase} and {right_operand_phrase}?"
       ],
       "two_type_difference_count": [
         "What is the absolute difference between the number of {left_operand_phrase} and {right_operand_phrase}?",
-        "Count the {left_operand_phrase} and the {right_operand_phrase}. What is the difference between those counts?",
-        "How far apart are the counts of {left_operand_phrase} and {right_operand_phrase}?",
-        "Subtract the smaller count from the larger count for {left_operand_phrase} and {right_operand_phrase}. What is the result?",
-        "What is the count difference between {left_operand_phrase} and {right_operand_phrase}?"
+        "What is the difference between the counts of {left_operand_phrase} and {right_operand_phrase}?",
+        "Count the {left_operand_phrase} and {right_operand_phrase}. What is the count difference?",
+        "After subtracting the smaller count from the larger count for {left_operand_phrase} and {right_operand_phrase}, what is the difference?",
+        "What is the absolute count difference for {left_operand_phrase} and {right_operand_phrase}?"
       ],
       "two_color_total_count": [
         "How many {left_operand_phrase} and {right_operand_phrase} are there in total?",
-        "Add the count of {left_operand_phrase} to the count of {right_operand_phrase}. What is the total?",
-        "Count the {left_operand_phrase} and the {right_operand_phrase}. How many objects is that altogether?",
-        "What is the combined number of {left_operand_phrase} plus {right_operand_phrase}?",
-        "How many clustered objects are either {left_operand_phrase} or {right_operand_phrase}?"
+        "What is the total count of {left_operand_phrase} and {right_operand_phrase}?",
+        "Count the {left_operand_phrase} and {right_operand_phrase}. What is the total?",
+        "Add the number of {left_operand_phrase} and {right_operand_phrase}. What is the total?",
+        "How many objects are in these two groups: {left_operand_phrase} and {right_operand_phrase}?"
       ],
       "two_color_difference_count": [
         "What is the absolute difference between the number of {left_operand_phrase} and {right_operand_phrase}?",
-        "Count the {left_operand_phrase} and the {right_operand_phrase}. What is the difference between those counts?",
-        "How far apart are the counts of {left_operand_phrase} and {right_operand_phrase}?",
-        "Subtract the smaller count from the larger count for {left_operand_phrase} and {right_operand_phrase}. What is the result?",
-        "What is the count difference between {left_operand_phrase} and {right_operand_phrase}?"
+        "What is the difference between the counts of {left_operand_phrase} and {right_operand_phrase}?",
+        "Count the {left_operand_phrase} and {right_operand_phrase}. What is the count difference?",
+        "After subtracting the smaller count from the larger count for {left_operand_phrase} and {right_operand_phrase}, what is the difference?",
+        "What is the absolute count difference for {left_operand_phrase} and {right_operand_phrase}?"
       ],
       "most_frequent_type_count": [
         "How many objects belong to the most frequent object type in the cluster?",
@@ -175,7 +167,6 @@
     "query:type_or_color_count": ["target_object_plural", "target_object_name", "target_color_name"],
     "query:type_and_not_color_count": ["target_object_plural", "target_color_name"],
     "query:color_and_not_type_count": ["target_color_name", "target_object_plural", "target_object_name"],
-    "query:two_type_union_count": ["target_object_union_phrase"],
     "query:two_type_total_count": ["left_operand_phrase", "right_operand_phrase"],
     "query:two_type_difference_count": ["left_operand_phrase", "right_operand_phrase"],
     "query:two_color_total_count": ["left_operand_phrase", "right_operand_phrase"],

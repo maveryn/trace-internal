@@ -614,35 +614,6 @@ def build_exclusion_sequence(
     )
 
 
-def build_type_union_sequence(
-    *,
-    shape_types: Sequence[str],
-    target_count: int,
-    object_count: int,
-    rng,
-) -> tuple[list[ClusterSequenceItem], PredicateTarget]:
-    """Build a two-type union where either requested type is counted."""
-
-    targets = [str(shape) for shape in shape_types[:2]]
-    if len(set(targets)) != 2:
-        raise ValueError("type union needs two distinct target shapes")
-    distractors = [shape for shape in safe_shape_support() if str(shape) not in set(targets)]
-    sequence = [
-        ClusterSequenceItem(str(targets[index % 2]), random_color(rng), True, "target")
-        for index in range(int(target_count))
-    ]
-    while len(sequence) < int(object_count):
-        sequence.append(ClusterSequenceItem(str(rng.choice(distractors)), random_color(rng), False, "distractor"))
-    rng.shuffle(sequence)
-    plural_phrase = " or ".join(shape_plural(shape) for shape in targets)
-    return sequence, PredicateTarget(
-        mode="by_type_union",
-        target_shape_types=tuple(targets),
-        target_object_union_phrase=str(plural_phrase),
-        target_property_phrase=str(plural_phrase),
-    )
-
-
 def build_arithmetic_sequence(
     *,
     operand_kind: str,
@@ -866,7 +837,6 @@ __all__ = [
     "build_total_sequence",
     "build_type_and_color_sequence",
     "build_type_membership_sequence",
-    "build_type_union_sequence",
     "color_readout_shape_support",
     "named_shape_support",
     "resolve_color_choice",

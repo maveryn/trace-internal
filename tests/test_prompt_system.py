@@ -1155,15 +1155,16 @@ def test_charts_radar_bundle_supports_profile_queries() -> None:
 
 
 def test_tables_statistics_bundle_supports_filtered_subset_variants() -> None:
-    bundle = load_prompt_bundle("charts", "table_statistics", "charts_table_statistics_v0")
+    bundle = load_prompt_bundle("charts", "table", "charts_table_statistics_v1")
     assert len(bundle.task_templates["summary_value_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["column_sum"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["column_mean"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["column_median"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["filtered_subset_value_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["filtered_column_sum"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["filtered_column_mean"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:filtered_column_sum"]) == [
+    assert len(bundle.query_templates["above_threshold_filtered_mean"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["below_threshold_filtered_mean"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["interval_filtered_mean"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["query:interval_filtered_mean"]) == [
         "query_filter_column",
         "query_target_column",
         "filter_condition",
@@ -1171,30 +1172,30 @@ def test_tables_statistics_bundle_supports_filtered_subset_variants() -> None:
 
 
 def test_tables_ranking_bundle_supports_kth_label_variants() -> None:
-    bundle = load_prompt_bundle("charts", "table_ranking", "charts_table_ranking_v0")
-    assert len(bundle.task_templates["kth_label_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["kth_rank_in_column"]) == REQUIRED_PROMPT_VARIANTS
+    bundle = load_prompt_bundle("charts", "table", "charts_table_ranking_v1")
+    assert len(bundle.task_templates["rank_label_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["highest_rank_in_column"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["lowest_rank_in_column"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["scene:styled_table_ranking"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["query:kth_rank_in_column"]) == [
+    assert list(bundle.required_slots_by_key["query:highest_rank_in_column"]) == [
         "query_column",
         "query_rank",
         "rank_direction",
-        "unanswerable_instruction",
     ]
 
 
 def test_tables_counting_bundle_supports_value_count_variants() -> None:
-    bundle = load_prompt_bundle("charts", "table_counting", "charts_table_counting_v0")
+    bundle = load_prompt_bundle("charts", "table", "charts_table_counting_v1")
     assert len(bundle.task_templates["value_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["threshold_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["in_interval"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["above_threshold_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["below_threshold_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["interval_value_count"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["categorical_value_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:threshold_count"]) == [
+    assert list(bundle.required_slots_by_key["query:above_threshold_count"]) == [
         "query_column",
         "threshold_value",
-        "comparison_phrase",
     ]
-    assert list(bundle.required_slots_by_key["query:in_interval"]) == [
+    assert list(bundle.required_slots_by_key["query:interval_value_count"]) == [
         "query_column",
         "interval_min",
         "interval_max",
@@ -1206,7 +1207,7 @@ def test_tables_counting_bundle_supports_value_count_variants() -> None:
 
 
 def test_tables_temporal_bundle_supports_year_conditioned_variants() -> None:
-    bundle = load_prompt_bundle("charts", "table_temporal", "charts_table_temporal_v0")
+    bundle = load_prompt_bundle("charts", "table", "charts_table_temporal_v1")
     assert len(bundle.task_templates["temporal_value_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["absolute_difference_between_rows_over_year_interval"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["sum_absolute_differences_between_rows_over_year_interval"]) == REQUIRED_PROMPT_VARIANTS

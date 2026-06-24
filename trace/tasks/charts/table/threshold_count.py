@@ -1,69 +1,61 @@
-"""Table task for `task_charts__table__threshold_count`."""
+"""Public task for `task_charts__table__threshold_count`."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.counting.value_count import build_table_counting_task_components
+from trace.tasks.charts.table._lifecycle import (
+    build_table_numeric_filter_count_plan,
+    run_table_task_from_public_class,
+)
+from trace.tasks.charts.table.shared.state import DOMAIN
+from trace.tasks.registry import register_task
 
 
-DEFAULT_QUERY_ID = "threshold_count"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+TASK_ID = "task_charts__table__threshold_count"
+SUPPORTED_QUERY_IDS = ("above_threshold_count", "below_threshold_count")
+PROGRAM_CODE = "count(row where value(column) threshold_compare threshold); output=integer_count; annotation=bbox_set(matching_cells); scene=table; scope=threshold_count"
+QUERY_OPERATIONS = {
+    "above_threshold_count": "above_threshold",
+    "below_threshold_count": "below_threshold",
+}
+JSON_EXAMPLE = '{"annotation":[[260,180,372,236],[260,236,372,292]],"answer":2}'
+ANSWER_ONLY_EXAMPLE = '{"answer":2}'
+
+
+def _prepare_threshold_count(instance_seed, params, selected_query_id):
+    """Bind threshold direction locally, then let neutral table lifecycle assemble the output."""
+
+    return build_table_numeric_filter_count_plan(
+        public_task_id=TASK_ID,
+        instance_seed=int(instance_seed),
+        params=params,
+        operation=QUERY_OPERATIONS[str(selected_query_id)],
+        prompt_key=str(selected_query_id),
+        program_code=PROGRAM_CODE,
+        question_format="table_threshold_count",
+        json_example=JSON_EXAMPLE,
+        json_example_answer_only=ANSWER_ONLY_EXAMPLE,
+    )
 
 
 @register_task
 class ChartsTableThresholdCountTask:
-    """Generate table instances for `threshold_count`."""
+    """Count rows whose value in one table column is above or below a threshold."""
 
-    task_id = "task_charts__table__threshold_count"
-    domain = "charts"
-    scene_id = "table"
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "threshold_count"
-    supported_query_ids = ("threshold_count",)
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = SUPPORTED_QUERY_IDS[0]
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        return run_table_task_from_public_class(
+            self,
             instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=self.task_id,
+            params=dict(params),
+            max_attempts=int(max_attempts),
+            build_plan=_prepare_threshold_count,
         )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_table_counting_task_components(
-                    task_id=self.task_id,
-                    scene_id=self.scene_id,
-                    prompt_domain=self.domain,
-                    selected_query_id=str(selected_query_id),
-                    query_id_probabilities=query_probabilities,
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                )
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=components.answer_value),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=components.annotation_value),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id=self.scene_id,
-                    query_id=str(components.query_id),
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
 
 
 __all__ = ["ChartsTableThresholdCountTask"]

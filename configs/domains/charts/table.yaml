@@ -11,48 +11,34 @@ generation:
       zebra: 1.0
       ledger: 1.0
       card_table: 1.0
-    balanced_query_id_sampling: true
-    balanced_scene_variant_sampling: true
   task_overrides:
-    charts_table_value_predicate_count_base:
+    task_charts__table__threshold_count:
       row_count_min: 10
       row_count_max: 20
-      query_id_weights:
-        threshold_count: 1.0
-        in_interval: 1.0
-        categorical_value_count: 1.0
-      comparison_weights:
-        greater_than: 1.0
-        less_than: 1.0
       threshold_count_target_count_min: 4
       threshold_count_target_count_max_row_offset: 2
       threshold_count_boundary_distractor_radius: 2
+    task_charts__table__interval_value_count:
+      row_count_min: 10
+      row_count_max: 20
       in_interval_target_count_min: 4
       in_interval_target_count_max_row_offset: 2
       in_interval_boundary_distractor_radius: 2
+    task_charts__table__categorical_value_count:
+      row_count_min: 10
+      row_count_max: 20
     task_charts__table__column_rank_label:
       row_count_min: 10
       row_count_max: 20
-      query_id_weights:
-        kth_rank_in_column: 1.0
-      rank_direction_weights:
-        highest: 1.0
-        lowest: 1.0
-    charts_table_column_summary_base:
+    task_charts__table__column_summary_value:
       row_count_min: 10
       row_count_max: 20
-      query_id_weights:
-        column_sum: 1.0
-        column_mean: 1.0
-        column_median: 1.0
-    charts_table_filtered_column_summary_base:
+    task_charts__table__filtered_column_mean:
       row_count_min: 10
       row_count_max: 20
       selected_row_count_min: 6
       selected_row_count_max: 7
-      query_id_weights:
-        filtered_column_mean: 1.0
-    charts_table_temporal_value_base:
+    task_charts__table__absolute_difference_between_rows_over_year_interval:
       row_count_min: 10
       row_count_max: 20
       numeric_column_count_min: 8
@@ -61,9 +47,15 @@ generation:
       interval_length_max: 5
       value_min: 1
       value_max: 99
-      query_id_weights:
-        absolute_difference_between_rows_over_year_interval: 1.0
-        sum_absolute_differences_between_rows_over_year_interval: 1.0
+    task_charts__table__sum_absolute_differences_between_rows_over_year_interval:
+      row_count_min: 10
+      row_count_max: 20
+      numeric_column_count_min: 8
+      numeric_column_count_max: 16
+      interval_length_min: 4
+      interval_length_max: 5
+      value_min: 1
+      value_max: 99
 rendering:
   shared:
     canvas_width: 940
@@ -99,158 +91,78 @@ rendering:
     cell_padding_px: 14
     cell_padding_px_min: 10
     cell_padding_px_max: 16
-    header_style_options:
-    - light
-    - accent
-    - dark
-    frame_style_options:
-    - flat
-    - shadow
-    inner_rule_style_options:
-    - solid
-    - soft
-    - dashed
-    numeric_alignment_options:
-    - center
-    - right
-    header_fill_rgb:
-    - 232
-    - 236
-    - 243
+    header_style_options: [light, accent, dark]
+    frame_style_options: [flat, shadow]
+    inner_rule_style_options: [solid, soft, dashed]
+    numeric_alignment_options: [center, right]
+    header_fill_rgb: [232, 236, 243]
     header_fill_rgb_options:
-    - - 232
-      - 236
-      - 243
-    - - 229
-      - 239
-      - 237
-    - - 240
-      - 236
-      - 227
-    - - 224
-      - 232
-      - 246
-    - - 237
-      - 228
-      - 240
-    header_dark_fill_rgb:
-    - 63
-    - 72
-    - 86
+      - [232, 236, 243]
+      - [229, 239, 237]
+      - [240, 236, 227]
+      - [224, 232, 246]
+      - [237, 228, 240]
+    header_dark_fill_rgb: [63, 72, 86]
     header_dark_fill_rgb_options:
-    - - 63
-      - 72
-      - 86
-    - - 52
-      - 83
-      - 84
-    - - 91
-      - 72
-      - 58
-    - - 80
-      - 62
-      - 88
-    header_dark_text_rgb:
-    - 255
-    - 255
-    - 255
-    zebra_row_fill_rgb:
-    - 247
-    - 249
-    - 252
+      - [63, 72, 86]
+      - [52, 83, 84]
+      - [91, 72, 58]
+      - [80, 62, 88]
+    header_dark_text_rgb: [255, 255, 255]
+    zebra_row_fill_rgb: [247, 249, 252]
     zebra_row_fill_rgb_options:
-    - - 247
-      - 249
-      - 252
-    - - 246
-      - 250
-      - 248
-    - - 251
-      - 248
-      - 242
-    - - 250
-      - 246
-      - 251
-    card_fill_rgb:
-    - 250
-    - 250
-    - 252
+      - [247, 249, 252]
+      - [246, 250, 248]
+      - [251, 248, 242]
+      - [250, 246, 251]
+    card_fill_rgb: [250, 250, 252]
     card_fill_rgb_options:
-    - - 250
-      - 250
-      - 252
-    - - 248
-      - 251
-      - 252
-    - - 252
-      - 250
-      - 246
-    - - 251
-      - 248
-      - 252
-    border_color_rgb:
-    - 92
-    - 98
-    - 109
+      - [250, 250, 252]
+      - [248, 251, 252]
+      - [252, 250, 246]
+      - [251, 248, 252]
+    border_color_rgb: [92, 98, 109]
     border_color_rgb_options:
-    - - 92
-      - 98
-      - 109
-    - - 84
-      - 101
-      - 104
-    - - 105
-      - 94
-      - 82
-    grid_color_rgb:
-    - 204
-    - 209
-    - 218
+      - [92, 98, 109]
+      - [84, 101, 104]
+      - [105, 94, 82]
+    grid_color_rgb: [204, 209, 218]
     grid_color_rgb_options:
-    - - 204
-      - 209
-      - 218
-    - - 199
-      - 213
-      - 211
-    - - 216
-      - 208
-      - 197
-    text_color_rgb:
-    - 36
-    - 39
-    - 45
-    text_stroke_rgb:
-    - 255
-    - 255
-    - 255
-    shadow_color_rgb:
-    - 214
-    - 218
-    - 224
+      - [204, 209, 218]
+      - [199, 213, 211]
+      - [216, 208, 197]
+    text_color_rgb: [36, 39, 45]
+    text_stroke_rgb: [255, 255, 255]
+    shadow_color_rgb: [214, 218, 224]
     shadow_color_rgb_options:
-    - - 214
-      - 218
-      - 224
-    - - 210
-      - 220
-      - 218
-    - - 224
-      - 217
-      - 207
+      - [214, 218, 224]
+      - [210, 220, 218]
+      - [224, 217, 207]
     shadow_offset_px: 5
     shadow_offset_px_min: 3
     shadow_offset_px_max: 7
   task_overrides:
-    charts_table_value_predicate_count_base:
+    task_charts__table__threshold_count:
+      canvas_height: 900
+    task_charts__table__interval_value_count:
+      canvas_height: 900
+    task_charts__table__categorical_value_count:
       canvas_height: 900
     task_charts__table__column_rank_label:
       canvas_height: 900
-    charts_table_column_summary_base:
+    task_charts__table__column_summary_value:
       canvas_height: 900
-    charts_table_filtered_column_summary_base:
+    task_charts__table__filtered_column_mean:
       canvas_height: 900
-    charts_table_temporal_value_base:
+    task_charts__table__absolute_difference_between_rows_over_year_interval:
+      canvas_width: 1360
+      canvas_height: 872
+      row_label_width_fraction: 0.08
+      row_label_min_width_px: 76
+      label_font_size_px: 18
+      value_font_size_px: 18
+      cell_padding_px: 8
+    task_charts__table__sum_absolute_differences_between_rows_over_year_interval:
       canvas_width: 1360
       canvas_height: 872
       row_label_width_fraction: 0.08
@@ -260,132 +172,40 @@ rendering:
       cell_padding_px: 8
 prompt:
   shared:
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer" in that order for
-      the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    object_description_spreadsheet: a spreadsheet-style table with one Name column, several year columns
-      in chronological order, full grid lines, and a shaded header row
-    object_description_zebra: a zebra-striped table with one Name column, several year columns in chronological
-      order, alternating row shading, and a shaded header row
-    object_description_ledger: a ledger-style table with one Name column, several year columns in chronological
-      order, strong horizontal rules, and minimal vertical separators
-    object_description_card_table: a card-style table with one Name column, several year columns in chronological
-      order, a rounded outer frame, and a shaded header row
-    bundle_id: charts_table_temporal_v1
-    scene_key: styled_table_temporal
-    task_key: temporal_value_query
-    answer_hint: set "answer" to the exact integer temporal result
-    unanswerable_instruction: If the requested column is not visible, answer exactly "unanswerable".
+    bundle_id: charts_table_counting_v1
   task_overrides:
-    charts_table_value_predicate_count_base:
-      bundle_id: charts_table_counting_v1
-      scene_key: styled_table_counting
-      task_key: value_count_query
-      answer_hint: set "answer" to the exact count as an integer
-      annotation_hint_threshold_count: set "annotation" to an array of bounding boxes [x0, y0, x1, y1]
-        for every matching value cell, or [] if none match
-      annotation_hint_in_interval: set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for
-        every matching value cell, or [] if none match
-      annotation_hint_categorical_value_count: set "annotation" to an array of bounding boxes [x0, y0,
-        x1, y1] for every matching category cell, or [] if none match
-      json_example_threshold_count: '{"annotation":[[260,180,372,236],[260,236,372,292]],"answer":2}'
-      json_example_in_interval: '{"annotation":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],"answer":3}'
-      json_example_categorical_value_count: '{"annotation":[[260,180,372,236],[260,292,372,348]],"answer":2}'
-      json_example_answer_only_threshold_count: '{"answer":2}'
-      json_example_answer_only_in_interval: '{"answer":3}'
-      json_example_answer_only_categorical_value_count: '{"answer":2}'
     task_charts__table__column_rank_label:
       bundle_id: charts_table_ranking_v1
-      scene_key: styled_table_ranking
-      task_key: kth_label_query
-      answer_hint: set "answer" to the exact row label as a string, or "unanswerable" when instructed
-      annotation_hint_kth_rank_in_column: set "annotation" to an array containing exactly one bounding
-        box [x0, y0, x1, y1] for the supporting queried-column region
-      json_example_kth_rank_in_column: '{"annotation":[[260,180,372,520]],"answer":"Ava"}'
-      json_example_answer_only_kth_rank_in_column: '{"answer":"Ava"}'
-    charts_table_column_summary_base:
+    task_charts__table__column_summary_value:
       bundle_id: charts_table_statistics_v1
-      scene_key: styled_table_statistics
-      task_key: summary_value_query
-      answer_hint: set "answer" to the exact integer summary value
-      annotation_hint_column_sum: set "annotation" to an array containing exactly one bounding box [x0,
-        y0, x1, y1] for the supporting queried-column region
-      annotation_hint_column_mean: set "annotation" to an array containing exactly one bounding box [x0,
-        y0, x1, y1] for the supporting queried-column region
-      annotation_hint_column_median: set "annotation" to an array containing exactly one bounding box
-        [x0, y0, x1, y1] for the supporting queried-column region
-      json_example_column_sum: '{"annotation":[[260,180,372,520]],"answer":84}'
-      json_example_column_mean: '{"annotation":[[260,180,372,520]],"answer":14}'
-      json_example_column_median: '{"annotation":[[260,180,372,520]],"answer":13}'
-      json_example_answer_only_column_sum: '{"answer":84}'
-      json_example_answer_only_column_mean: '{"answer":14}'
-      json_example_answer_only_column_median: '{"answer":13}'
-    charts_table_filtered_column_summary_base:
+    task_charts__table__filtered_column_mean:
       bundle_id: charts_table_statistics_v1
-      scene_key: styled_table_statistics
-      task_key: filtered_subset_value_query
-      answer_hint: set "answer" to the exact integer filtered summary value
-      annotation_hint_filtered_column_sum: set "annotation" to an array containing [x0, y0, x1, y1] boxes
-        for the filter and target cells used from every selected row
-      annotation_hint_filtered_column_mean: set "annotation" to an array containing [x0, y0, x1, y1] boxes
-        for the filter and target cells used from every selected row
-      json_example_filtered_column_sum: '{"annotation":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":27}'
-      json_example_filtered_column_mean: '{"annotation":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":14}'
-      json_example_answer_only_filtered_column_sum: '{"answer":27}'
-      json_example_answer_only_filtered_column_mean: '{"answer":14}'
-    charts_table_temporal_value_base:
+    task_charts__table__absolute_difference_between_rows_over_year_interval:
       bundle_id: charts_table_temporal_v1
-      scene_key: styled_table_temporal
-      task_key: temporal_value_query
-      answer_hint: set "answer" to the exact integer temporal result
-      annotation_hint_absolute_difference_between_rows_over_year_interval: set "annotation" to [x0, y0,
-        x1, y1] boxes for the queried year cells from both named rows across the interval
-      annotation_hint_sum_absolute_differences_between_rows_over_year_interval: set "annotation" to [x0,
-        y0, x1, y1] boxes for the queried year cells from both named rows across the interval
-      json_example_absolute_difference_between_rows_over_year_interval: '{"annotation":[[260,180,320,220],[322,180,382,220],[384,180,444,220],[260,236,320,276],[322,236,382,276],[384,236,444,276]],"answer":7}'
-      json_example_sum_absolute_differences_between_rows_over_year_interval: '{"annotation":[[260,180,320,220],[322,180,382,220],[384,180,444,220],[260,236,320,276],[322,236,382,276],[384,236,444,276]],"answer":17}'
-      json_example_answer_only_absolute_difference_between_rows_over_year_interval: '{"answer":7}'
-      json_example_answer_only_sum_absolute_differences_between_rows_over_year_interval: '{"answer":17}'
+    task_charts__table__sum_absolute_differences_between_rows_over_year_interval:
+      bundle_id: charts_table_temporal_v1
 visual:
   background:
     enabled: true
     styles:
       solid_light:
         kind: solid
-        color:
-        - 248
-        - 248
-        - 248
+        color: [248, 248, 248]
       cool_light:
         kind: solid
-        color:
-        - 246
-        - 249
-        - 251
+        color: [246, 249, 251]
       warm_light:
         kind: solid
-        color:
-        - 251
-        - 249
-        - 244
+        color: [251, 249, 244]
       paper_light:
         kind: solid
-        color:
-        - 250
-        - 248
-        - 241
+        color: [250, 248, 241]
       mint_light:
         kind: solid
-        color:
-        - 244
-        - 250
-        - 247
+        color: [244, 250, 247]
       lavender_light:
         kind: solid
-        color:
-        - 248
-        - 247
-        - 252
+        color: [248, 247, 252]
     weights:
       solid_light: 1.0
       cool_light: 1.0
@@ -395,23 +215,13 @@ visual:
       lavender_light: 1.0
   noise:
     apply_prob: 0.5
-    edit_count_range:
-    - 1
-    - 1
+    edit_count_range: [1, 1]
     value_ranges:
       blur:
-        radius:
-        - 0.12
-        - 0.35
+        radius: [0.12, 0.35]
       downsample:
-        scale:
-        - 0.9
-        - 0.97
+        scale: [0.9, 0.97]
       jpeg:
-        quality:
-        - 80.0
-        - 94.0
+        quality: [80.0, 94.0]
       noise:
-        alpha:
-        - 0.01
-        - 0.035
+        alpha: [0.01, 0.035]

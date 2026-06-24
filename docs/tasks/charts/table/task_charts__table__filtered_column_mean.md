@@ -1,20 +1,21 @@
 # `task_charts__table__filtered_column_mean`
 
-## Contract
+## Public Contract
+
 1. Domain: `charts`
-2. Scene id: `table`
-3. Source implementation domain/group: `charts/table_statistics`
-4. Query id: `filtered_column_mean`
-5. Semantic query details are recorded in `query_id` and trace params.
+2. Scene: `table`
+3. Source file: `trace/tasks/charts/table/filtered_column_mean.py`
+4. Prompt assets: `prompts/charts/table/*_v1.json`
+5. Query ids: `above_threshold_filtered_mean`, `below_threshold_filtered_mean`, `interval_filtered_mean`
 
-## Implementation
-1. Registered class: `trace.tasks.charts.table.statistics.column_summary_value.ChartsTableFilteredColumnMeanTask`
-2. Prompt lookup domain/group: `charts/table_statistics`
-3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
-4. Answers and annotation are produced from the same metadata execution trace.
+## Program Contract
 
-## Annotation Contract
-1. Answer schema: `integer_value`.
-2. Annotation schema: `bbox_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+- Program schema: `mean(value(target_column) for row where filter_column satisfies predicate); output=integer_value; annotation=bbox_set_map(filter_cells,target_cells); scene=table; scope=filtered_column_mean`.
+- Program: filter rows by one column predicate, then mean the selected target-column values.
+- Answer: `integer`.
+- Annotation schema: `bbox_set_map` with `filter_cells` and `target_cells`.
+- The answer and annotation are bound from the same sampled table execution trace.
+
+## Review Notes
+
+This task uses the scene-package layout. Scene-local reusable code lives under `trace/tasks/charts/table/shared/`; public task files own objective logic, query selection, answer binding, and annotation binding.

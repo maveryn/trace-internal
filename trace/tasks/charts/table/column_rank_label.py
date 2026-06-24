@@ -1,70 +1,62 @@
-"""Table task for `task_charts__table__column_rank_label`."""
+"""Public task for `task_charts__table__column_rank_label`."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.ranking.label import build_table_ranking_task_components
+from trace.tasks.charts.table._lifecycle import (
+    build_table_rank_label_plan,
+    run_table_task_from_public_class,
+)
+from trace.tasks.charts.table.shared.state import DOMAIN
+from trace.tasks.registry import register_task
 
 
-DEFAULT_QUERY_ID = "kth_rank_in_column"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+TASK_ID = "task_charts__table__column_rank_label"
+SUPPORTED_QUERY_IDS = ("highest_rank_in_column", "lowest_rank_in_column")
+PROGRAM_CODE = "rank(rows by value(column), direction, rank_k); output=row_label; annotation=bbox(answer_value_cell); scene=table; scope=column_rank_label"
+QUERY_SPECS = {
+    "highest_rank_in_column": ("descending", "highest"),
+    "lowest_rank_in_column": ("ascending", "lowest"),
+}
+JSON_EXAMPLE = '{"annotation":[260,180,372,236],"answer":"Ava"}'
+ANSWER_ONLY_EXAMPLE = '{"answer":"Ava"}'
+
+
+def _prepare_column_rank_label(instance_seed, params, selected_query_id):
+    """Bind rank direction locally for the table row-label ranking objective."""
+
+    operation, rank_direction = QUERY_SPECS[str(selected_query_id)]
+    return build_table_rank_label_plan(
+        public_task_id=TASK_ID,
+        instance_seed=int(instance_seed),
+        params=params,
+        operation=operation,
+        prompt_key=str(selected_query_id),
+        rank_direction=rank_direction,
+        program_code=PROGRAM_CODE,
+        json_example=JSON_EXAMPLE,
+        json_example_answer_only=ANSWER_ONLY_EXAMPLE,
+    )
 
 
 @register_task
 class ChartsTableKthRankInColumnLabelTask:
-    """Generate table instances for `column_rank_label`."""
+    """Return the row label at a selected rank in one numeric table column."""
 
-    task_id = "task_charts__table__column_rank_label"
-    domain = "charts"
-    scene_id = "table"
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "column_rank_label"
-    supported_query_ids = ("kth_rank_in_column",)
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = SUPPORTED_QUERY_IDS[0]
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        return run_table_task_from_public_class(
+            self,
             instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=self.task_id,
+            params=dict(params),
+            max_attempts=int(max_attempts),
+            build_plan=_prepare_column_rank_label,
         )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_table_ranking_task_components(
-                    task_id=self.task_id,
-                    scene_id=self.scene_id,
-                    prompt_domain=self.domain,
-                    selected_query_id=str(selected_query_id),
-                    query_id_probabilities=query_probabilities,
-                    supports_unanswerable=True,
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                )
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=components.answer_value),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=components.annotation_value),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id=self.scene_id,
-                    query_id=str(components.query_id),
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
 
 
 __all__ = ["ChartsTableKthRankInColumnLabelTask"]

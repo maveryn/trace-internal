@@ -23,7 +23,7 @@ def test_domain_post_noise_policy_defaults_are_mild_and_explicit() -> None:
         ("puzzles", "logic"): 0.15,
         ("puzzles", "spatial"): 0.0,
         ("puzzles", "topology"): 0.15,
-        ("charts", "table_statistics"): 0.50,
+        ("charts", "table"): 0.50,
         ("puzzles", "clock"): 0.0,
         ("puzzles", "cell_board_count"): 0.50,
         ("puzzles", "cell_board_path"): 0.0,

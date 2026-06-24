@@ -1,69 +1,59 @@
-"""Table task for `task_charts__table__sum_absolute_differences_between_rows_over_year_interval`."""
+"""Public task for `task_charts__table__sum_absolute_differences_between_rows_over_year_interval`."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.temporal.value import build_table_temporal_task_components
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.tasks.charts.table._lifecycle import (
+    build_table_temporal_two_row_plan,
+    run_table_task_from_public_class,
+)
+from trace.tasks.charts.table.shared.state import DOMAIN
+from trace.tasks.registry import register_task
 
 
-DEFAULT_QUERY_ID = "sum_absolute_differences_between_rows_over_year_interval"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+TASK_ID = "task_charts__table__sum_absolute_differences_between_rows_over_year_interval"
+PROMPT_KEY = "sum_absolute_differences_between_rows_over_year_interval"
+PROGRAM_CODE = "sum(abs(value(row_a, year) - value(row_b, year)) for year in interval); output=integer_value; annotation=bbox_set(two_row_interval_cells); scene=table; scope=sum_absolute_differences_between_rows_over_year_interval"
+JSON_EXAMPLE = '{"annotation":[[260,180,320,220],[322,180,382,220],[384,180,444,220],[260,236,320,276],[322,236,382,276],[384,236,444,276]],"answer":17}'
+ANSWER_ONLY_EXAMPLE = '{"answer":17}'
+
+
+def _prepare_yearwise_abs_difference_sum(instance_seed, params, selected_query_id):
+    """Bind the year-by-year absolute-difference sum program for two selected rows."""
+
+    del selected_query_id
+    return build_table_temporal_two_row_plan(
+        public_task_id=TASK_ID,
+        instance_seed=int(instance_seed),
+        params=params,
+        operation="yearwise_abs_difference_sum",
+        prompt_key=PROMPT_KEY,
+        program_code=PROGRAM_CODE,
+        question_format="table_sum_absolute_differences_between_rows_over_year_interval",
+        json_example=JSON_EXAMPLE,
+        json_example_answer_only=ANSWER_ONLY_EXAMPLE,
+    )
 
 
 @register_task
 class ChartsTableSumAbsoluteDifferencesBetweenRowsOverYearIntervalTask:
-    """Generate table instances for `sum_absolute_differences_between_rows_over_year_interval`."""
+    """Compute the sum of year-by-year absolute differences between two rows."""
 
-    task_id = "task_charts__table__sum_absolute_differences_between_rows_over_year_interval"
-    domain = "charts"
-    scene_id = "table"
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "sum_absolute_differences_between_rows_over_year_interval"
-    supported_query_ids = ("sum_absolute_differences_between_rows_over_year_interval",)
+    supported_query_ids = (SINGLE_QUERY_ID,)
+    default_query_id = SINGLE_QUERY_ID
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        return run_table_task_from_public_class(
+            self,
             instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=self.task_id,
+            params=dict(params),
+            max_attempts=int(max_attempts),
+            build_plan=_prepare_yearwise_abs_difference_sum,
         )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_table_temporal_task_components(
-                    task_id=self.task_id,
-                    scene_id=self.scene_id,
-                    prompt_domain=self.domain,
-                    selected_query_id=str(selected_query_id),
-                    query_id_probabilities=query_probabilities,
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                )
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=components.answer_value),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=components.annotation_value),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id=self.scene_id,
-                    query_id=str(components.query_id),
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
 
 
 __all__ = ["ChartsTableSumAbsoluteDifferencesBetweenRowsOverYearIntervalTask"]

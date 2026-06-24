@@ -1,4 +1,4 @@
-"""Data-table chart visual-default loader helpers."""
+"""Visual-default helpers for styled table chart tasks."""
 
 from __future__ import annotations
 

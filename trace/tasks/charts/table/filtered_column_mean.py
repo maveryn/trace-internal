@@ -1,69 +1,65 @@
-"""Table task for `task_charts__table__filtered_column_mean`."""
+"""Public task for `task_charts__table__filtered_column_mean`."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.statistics.filtered_subset_value import build_table_filtered_subset_task_components
+from trace.tasks.charts.table._lifecycle import (
+    build_table_filtered_mean_plan,
+    run_table_task_from_public_class,
+)
+from trace.tasks.charts.table.shared.state import DOMAIN
+from trace.tasks.registry import register_task
 
 
-DEFAULT_QUERY_ID = "filtered_column_mean"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+TASK_ID = "task_charts__table__filtered_column_mean"
+SUPPORTED_QUERY_IDS = (
+    "above_threshold_filtered_mean",
+    "below_threshold_filtered_mean",
+    "interval_filtered_mean",
+)
+PROGRAM_CODE = "mean(value(target_column) for row where filter_column satisfies predicate); output=integer_value; annotation=bbox_set_map(filter_cells,target_cells); scene=table; scope=filtered_column_mean"
+QUERY_FILTERS = {
+    "above_threshold_filtered_mean": "above_threshold",
+    "below_threshold_filtered_mean": "below_threshold",
+    "interval_filtered_mean": "in_interval",
+}
+JSON_EXAMPLE = '{"annotation":{"filter_cells":[[260,180,372,236],[260,236,372,292]],"target_cells":[[374,180,486,236],[374,236,486,292]]},"answer":14}'
+ANSWER_ONLY_EXAMPLE = '{"answer":14}'
+
+
+def _prepare_filtered_column_mean(instance_seed, params, selected_query_id):
+    """Bind the row-filter predicate for a filtered target-column mean."""
+
+    return build_table_filtered_mean_plan(
+        public_task_id=TASK_ID,
+        instance_seed=int(instance_seed),
+        params=params,
+        filter_variant=QUERY_FILTERS[str(selected_query_id)],
+        prompt_key=str(selected_query_id),
+        program_code=PROGRAM_CODE,
+        json_example=JSON_EXAMPLE,
+        json_example_answer_only=ANSWER_ONLY_EXAMPLE,
+    )
 
 
 @register_task
 class ChartsTableFilteredColumnMeanTask:
-    """Generate table instances for `filtered_column_mean`."""
+    """Compute the mean of one target column over rows selected by another column."""
 
-    task_id = "task_charts__table__filtered_column_mean"
-    domain = "charts"
-    scene_id = "table"
+    task_id = TASK_ID
+    domain = DOMAIN
     objective_contract = "filtered_column_mean"
-    supported_query_ids = ("filtered_column_mean",)
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = SUPPORTED_QUERY_IDS[0]
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        return run_table_task_from_public_class(
+            self,
             instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=self.task_id,
+            params=dict(params),
+            max_attempts=int(max_attempts),
+            build_plan=_prepare_filtered_column_mean,
         )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_table_filtered_subset_task_components(
-                    task_id=self.task_id,
-                    scene_id=self.scene_id,
-                    prompt_domain=self.domain,
-                    selected_query_id=str(selected_query_id),
-                    query_id_probabilities=query_probabilities,
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                )
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=components.answer_value),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=components.annotation_value),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id=self.scene_id,
-                    query_id=str(components.query_id),
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
 
 
 __all__ = ["ChartsTableFilteredColumnMeanTask"]

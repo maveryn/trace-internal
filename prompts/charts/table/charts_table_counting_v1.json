@@ -22,26 +22,33 @@
       ]
     },
     "query": {
-      "threshold_count": [
-        "How many rows have a value {comparison_phrase} {threshold_value} in the \"{query_column}\" column?",
-        "Count the rows whose \"{query_column}\" value is {comparison_phrase} {threshold_value}.",
-        "How many entries in the \"{query_column}\" column are {comparison_phrase} {threshold_value}?",
-        "Determine how many rows show \"{query_column}\" {comparison_phrase} {threshold_value}.",
-        "Find the number of rows with \"{query_column}\" values {comparison_phrase} {threshold_value}."
-      ],
-      "in_interval": [
-        "How many rows have a value in the inclusive interval [{interval_min}, {interval_max}] in the \"{query_column}\" column?",
-        "Count the rows whose \"{query_column}\" value falls within [{interval_min}, {interval_max}], inclusive.",
-        "How many entries in the \"{query_column}\" column lie between {interval_min} and {interval_max}, inclusive?",
-        "Determine how many rows show \"{query_column}\" within the inclusive range [{interval_min}, {interval_max}].",
-        "Find the number of rows with \"{query_column}\" values in [{interval_min}, {interval_max}], inclusive."
-      ],
       "categorical_value_count": [
         "How many rows have \"{target_category}\" in the \"{query_column}\" column?",
         "Count the rows whose \"{query_column}\" entry is exactly \"{target_category}\".",
         "How many entries in the \"{query_column}\" column are \"{target_category}\"?",
         "Determine how many rows show \"{query_column}\" equal to \"{target_category}\".",
         "Find the number of rows with \"{target_category}\" listed in the \"{query_column}\" column."
+      ],
+      "above_threshold_count": [
+        "How many rows have a value greater than {threshold_value} in the \"{query_column}\" column?",
+        "Count the rows whose \"{query_column}\" value is greater than {threshold_value}.",
+        "How many entries in the \"{query_column}\" column are greater than {threshold_value}?",
+        "Determine how many rows show \"{query_column}\" greater than {threshold_value}.",
+        "Find the number of rows with \"{query_column}\" values greater than {threshold_value}."
+      ],
+      "below_threshold_count": [
+        "How many rows have a value less than {threshold_value} in the \"{query_column}\" column?",
+        "Count the rows whose \"{query_column}\" value is less than {threshold_value}.",
+        "How many entries in the \"{query_column}\" column are less than {threshold_value}?",
+        "Determine how many rows show \"{query_column}\" less than {threshold_value}.",
+        "Find the number of rows with \"{query_column}\" values less than {threshold_value}."
+      ],
+      "interval_value_count": [
+        "How many rows have a value in the inclusive interval [{interval_min}, {interval_max}] in the \"{query_column}\" column?",
+        "Count the rows whose \"{query_column}\" value falls within [{interval_min}, {interval_max}], inclusive.",
+        "How many entries in the \"{query_column}\" column lie between {interval_min} and {interval_max}, inclusive?",
+        "Determine how many rows show \"{query_column}\" within the inclusive range [{interval_min}, {interval_max}].",
+        "Find the number of rows with \"{query_column}\" values in [{interval_min}, {interval_max}], inclusive."
       ]
     },
     "output": {
@@ -56,7 +63,7 @@
         "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
         "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
       ]
     }
@@ -66,9 +73,6 @@
       "type": "string"
     },
     "answer_hint": {
-      "type": "string"
-    },
-    "comparison_phrase": {
       "type": "string"
     },
     "interval_max": {
@@ -106,16 +110,6 @@
     "scene:styled_table_counting": [
       "object_description"
     ],
-    "query:threshold_count": [
-      "query_column",
-      "threshold_value",
-      "comparison_phrase"
-    ],
-    "query:in_interval": [
-      "query_column",
-      "interval_min",
-      "interval_max"
-    ],
     "query:categorical_value_count": [
       "query_column",
       "target_category"
@@ -130,6 +124,19 @@
       "annotation_hint",
       "answer_hint",
       "json_example"
+    ],
+    "query:above_threshold_count": [
+      "query_column",
+      "threshold_value"
+    ],
+    "query:below_threshold_count": [
+      "query_column",
+      "threshold_value"
+    ],
+    "query:interval_value_count": [
+      "query_column",
+      "interval_min",
+      "interval_max"
     ]
   }
 }

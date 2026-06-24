@@ -1,53 +1,18 @@
-"""Shared dataset and config helpers for table tasks."""
+"""Scene-local data sampling helpers for styled table chart tasks."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from trace.core.seed import hash64, spawn_rng
+from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default, resolve_required_int_bounds
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.name_assets import load_short_name_manifest
-from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.label_assets import resolve_chart_category_labels, resolve_chart_text_labels
-from .table_scene import SUPPORTED_TABLE_SCENE_VARIANTS, TableRenderParams
+from .state import TableDefaults
 
 _TEMPORAL_YEAR_MIN: int = 2000
 _TEMPORAL_YEAR_MAX: int = 2026
-
-
-@dataclass(frozen=True)
-class TableDefaults:
-    """Stable fallback defaults shared by table tasks."""
-
-    row_count_min: int = 5
-    row_count_max: int = 10
-    numeric_column_count_min: int = 3
-    numeric_column_count_max: int = 5
-    value_min: int = 1
-    value_max: int = 32
-    canvas_width: int = 940
-    canvas_height: int = 640
-    table_margin_left_px: int = 52
-    table_margin_right_px: int = 52
-    table_margin_top_px: int = 56
-    table_margin_bottom_px: int = 52
-    row_label_width_fraction: float = 0.28
-    row_label_min_width_px: int = 132
-    label_font_size_px: int = 24
-    value_font_size_px: int = 22
-    border_width_px: int = 2
-    grid_width_px: int = 1
-    rounded_corner_radius_px: int = 18
-    cell_padding_px: int = 14
-    header_style: str = "light"
-    frame_style: str = "flat"
-    inner_rule_style: str = "solid"
-    numeric_alignment: str = "center"
-    shadow_offset_px: int = 5
-    balanced_query_id_sampling: bool = True
-    balanced_scene_variant_sampling: bool = True
 
 
 def table_value_cell_id(*, data_row_index: int, numeric_column_index: int) -> str:
@@ -108,7 +73,7 @@ def _resolve_base_table_schema(
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
     defaults: TableDefaults,
-    task_id: str,
+    namespace: str,
     odd_row_count_required: bool = False,
     sample_generic_column_headers: bool = True,
 ) -> Dict[str, Any]:
@@ -118,22 +83,22 @@ def _resolve_base_table_schema(
         params,
         gen_defaults=gen_defaults,
         defaults=defaults,
-        task_id=task_id,
+        namespace=namespace,
     )
     numeric_col_count_min, numeric_col_count_max = resolve_numeric_column_count_bounds(
         params,
         gen_defaults=gen_defaults,
         defaults=defaults,
-        task_id=task_id,
+        namespace=namespace,
     )
     value_min, value_max = resolve_value_bounds(
         params,
         gen_defaults=gen_defaults,
         defaults=defaults,
-        task_id=task_id,
+        namespace=namespace,
     )
 
-    rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
+    rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
     if bool(odd_row_count_required):
         odd_counts = [
             int(value)
@@ -155,7 +120,7 @@ def _resolve_base_table_schema(
     query_col_index = int(resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}:query_column",
+        namespace=f"{namespace}:query_column",
     )) % int(numeric_column_count)
     query_column = str(column_headers[int(query_col_index)])
     return {
@@ -379,21 +344,21 @@ def _build_column_filter_query_values(
 
 def _resolve_counting_target_count(
     *,
-    query_id: str,
+    operation: str,
     row_count: int,
     params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
-    task_id: str,
+    namespace: str,
 ) -> int:
     """Resolve the target answer support for one table-counting variant."""
 
     target_min = 0
     target_max = int(row_count)
-    if str(query_id) in {"above_threshold", "below_threshold"}:
+    if str(operation) in {"above_threshold", "below_threshold"}:
         target_min = int(gen_defaults.get("threshold_count_target_count_min", 0))
         target_max = int(row_count) - int(gen_defaults.get("threshold_count_target_count_max_row_offset", 0))
-    elif str(query_id) == "in_interval":
+    elif str(operation) == "in_interval":
         target_min = int(gen_defaults.get("in_interval_target_count_min", 0))
         target_max = int(row_count) - int(gen_defaults.get("in_interval_target_count_max_row_offset", 0))
     if int(target_min) < 0:
@@ -402,19 +367,19 @@ def _resolve_counting_target_count(
         raise ValueError("target count maximum cannot exceed row_count")
     if int(target_min) > int(target_max):
         raise ValueError(
-            f"invalid target count support for {task_id}/{query_id}: "
+            f"invalid target count support for {namespace}/{operation}: "
             f"{int(target_min)}..{int(target_max)} with row_count={int(row_count)}"
         )
     support_size = int(target_max) - int(target_min) + 1
     selection_index = int(resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}:target_count",
+        namespace=f"{namespace}:target_count",
     ))
     return int(target_min + (selection_index % support_size))
 
 
-def _decouple_sampling_after_query_id(
+def _decouple_sampling_after_operation(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
@@ -430,61 +395,23 @@ def _resolve_balanced_integer_support_value(
     params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
-    task_id: str,
     namespace: str,
+    support_namespace: str,
     support_min: int,
     support_max: int,
 ) -> int:
-    """Resolve one integer target while cycling review-time support by query id."""
+    """Resolve one integer target from a bounded support."""
 
     if int(support_min) > int(support_max):
         raise ValueError("integer support must be non-empty")
-    support_params = _decouple_sampling_after_query_id(params, gen_defaults=gen_defaults)
+    support_params = _decouple_sampling_after_operation(params, gen_defaults=gen_defaults)
     support_size = int(support_max) - int(support_min) + 1
     support_index = int(resolve_selection_index(
         params=support_params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}:{namespace}",
+        namespace=f"{namespace}:{support_namespace}",
     )) % int(support_size)
     return int(support_min) + int(support_index)
-
-
-def resolve_table_axis_variant(
-    *,
-    params: Mapping[str, Any],
-    gen_defaults: Mapping[str, Any],
-    instance_seed: int,
-    supported_variants: Sequence[str],
-    task_id: str,
-    explicit_key: str,
-    weights_key: str,
-    balance_flag_key: str,
-    axis_namespace: str,
-) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced table task/scene variant axis."""
-
-    variant_rng = spawn_rng(int(instance_seed), f"{task_id}.{axis_namespace}")
-    selected_variant, probabilities = resolve_variant(
-        variant_rng,
-        params=params,
-        gen_defaults=gen_defaults,
-        supported_variants=supported_variants,
-        explicit_key=str(explicit_key),
-        weights_key=str(weights_key),
-    )
-    variant = apply_balanced_variant_sampling(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=gen_defaults,
-        selected_variant=str(selected_variant),
-        variant_probabilities=probabilities,
-        supported_variants=supported_variants,
-        balance_flag_key=str(balance_flag_key),
-        explicit_key=str(explicit_key),
-        weights_key=str(weights_key),
-        sampling_namespace=f"{task_id}:{axis_namespace}",
-    )
-    return str(variant), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
 
 def resolve_row_count_bounds(
@@ -492,7 +419,7 @@ def resolve_row_count_bounds(
     *,
     gen_defaults: Mapping[str, Any],
     defaults: TableDefaults,
-    task_id: str,
+    namespace: str,
 ) -> Tuple[int, int]:
     """Resolve inclusive row-count bounds."""
 
@@ -503,7 +430,7 @@ def resolve_row_count_bounds(
         max_key="row_count_max",
         fallback_min=int(defaults.row_count_min),
         fallback_max=int(defaults.row_count_max),
-        context=f"generation defaults for {task_id}",
+        context=f"generation defaults for {namespace}",
     )
 
 
@@ -512,7 +439,7 @@ def resolve_numeric_column_count_bounds(
     *,
     gen_defaults: Mapping[str, Any],
     defaults: TableDefaults,
-    task_id: str,
+    namespace: str,
 ) -> Tuple[int, int]:
     """Resolve inclusive numeric-column-count bounds."""
 
@@ -523,7 +450,7 @@ def resolve_numeric_column_count_bounds(
         max_key="numeric_column_count_max",
         fallback_min=int(defaults.numeric_column_count_min),
         fallback_max=int(defaults.numeric_column_count_max),
-        context=f"generation defaults for {task_id}",
+        context=f"generation defaults for {namespace}",
     )
 
 
@@ -532,7 +459,7 @@ def resolve_value_bounds(
     *,
     gen_defaults: Mapping[str, Any],
     defaults: TableDefaults,
-    task_id: str,
+    namespace: str,
 ) -> Tuple[int, int]:
     """Resolve inclusive numeric cell-value bounds."""
 
@@ -543,7 +470,7 @@ def resolve_value_bounds(
         max_key="value_max",
         fallback_min=int(defaults.value_min),
         fallback_max=int(defaults.value_max),
-        context=f"generation defaults for {task_id}",
+        context=f"generation defaults for {namespace}",
     )
 
 
@@ -619,166 +546,26 @@ def sample_temporal_year_headers(
     return tuple(str(int(start_year) + int(offset)) for offset in range(int(count)))
 
 
-def resolve_table_render_params(
-    params: Mapping[str, Any],
-    *,
-    render_defaults: Mapping[str, Any],
-    defaults: TableDefaults,
-    instance_seed: int | None = None,
-) -> TableRenderParams:
-    """Resolve one normalized table-render parameter block."""
-
-    def _selection_index(key: str) -> int:
-        seed = 0 if instance_seed is None else int(instance_seed)
-        return abs(int(hash64(int(seed), f"table_render:{str(key)}", 45131)))
-
-    def _int_value(key: str, fallback: int, *, minimum: int = 1) -> int:
-        if params.get(str(key)) is not None:
-            return max(int(minimum), int(params[str(key)]))
-        low_raw = params.get(f"{str(key)}_min", group_default(render_defaults, f"{str(key)}_min", None))
-        high_raw = params.get(f"{str(key)}_max", group_default(render_defaults, f"{str(key)}_max", None))
-        if low_raw is not None or high_raw is not None:
-            default_value = int(group_default(render_defaults, str(key), int(fallback)))
-            low = int(default_value if low_raw is None else low_raw)
-            high = int(default_value if high_raw is None else high_raw)
-            if int(low) > int(high):
-                raise ValueError(f"{str(key)}_min must be <= {str(key)}_max")
-            return max(int(minimum), int(low) + (_selection_index(str(key)) % (int(high) - int(low) + 1)))
-        return max(int(minimum), int(group_default(render_defaults, str(key), int(fallback))))
-
-    def _rgb(key: str, fallback: Sequence[int]) -> Tuple[int, int, int]:
-        if params.get(str(key)) is not None:
-            raw = params[str(key)]
-            return (int(raw[0]), int(raw[1]), int(raw[2]))
-        options = params.get(f"{str(key)}_options", group_default(render_defaults, f"{str(key)}_options", None))
-        if isinstance(options, Sequence) and options and not isinstance(options, (str, bytes)):
-            raw = options[_selection_index(str(key)) % len(options)]
-            return (int(raw[0]), int(raw[1]), int(raw[2]))
-        raw = params.get(key, group_default(render_defaults, key, list(fallback)))
-        return (
-            int(raw[0]),
-            int(raw[1]),
-            int(raw[2]),
-        )
-
-    def _choice_value(key: str, fallback: str, *, allowed: Sequence[str]) -> str:
-        if params.get(str(key)) is not None:
-            value = str(params[str(key)])
-            if value not in set(str(item) for item in allowed):
-                raise ValueError(f"unsupported {str(key)}: {value}")
-            return value
-        options = params.get(f"{str(key)}_options", group_default(render_defaults, f"{str(key)}_options", None))
-        if isinstance(options, Sequence) and options and not isinstance(options, (str, bytes)):
-            value = str(options[_selection_index(str(key)) % len(options)])
-        else:
-            value = str(group_default(render_defaults, str(key), str(fallback)))
-        if value not in set(str(item) for item in allowed):
-            raise ValueError(f"unsupported {str(key)}: {value}")
-        return str(value)
-
-    return TableRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(render_defaults, "canvas_width", defaults.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(render_defaults, "canvas_height", defaults.canvas_height))),
-        table_margin_left_px=_int_value("table_margin_left_px", defaults.table_margin_left_px, minimum=0),
-        table_margin_right_px=_int_value("table_margin_right_px", defaults.table_margin_right_px, minimum=0),
-        table_margin_top_px=_int_value("table_margin_top_px", defaults.table_margin_top_px, minimum=0),
-        table_margin_bottom_px=_int_value("table_margin_bottom_px", defaults.table_margin_bottom_px, minimum=0),
-        row_label_width_fraction=float(
-            params.get(
-                "row_label_width_fraction",
-                group_default(render_defaults, "row_label_width_fraction", defaults.row_label_width_fraction),
-            )
-        ),
-        row_label_min_width_px=int(
-            params.get(
-                "row_label_min_width_px",
-                group_default(render_defaults, "row_label_min_width_px", defaults.row_label_min_width_px),
-            )
-        ),
-        header_fill_rgb=_rgb("header_fill_rgb", (232, 236, 243)),
-        zebra_row_fill_rgb=_rgb("zebra_row_fill_rgb", (247, 249, 252)),
-        card_fill_rgb=_rgb("card_fill_rgb", (250, 250, 252)),
-        border_color_rgb=_rgb("border_color_rgb", (92, 98, 109)),
-        grid_color_rgb=_rgb("grid_color_rgb", (204, 209, 218)),
-        text_color_rgb=_rgb("text_color_rgb", (36, 39, 45)),
-        text_stroke_rgb=_rgb("text_stroke_rgb", (255, 255, 255)),
-        header_style=_choice_value(
-            "header_style",
-            defaults.header_style,
-            allowed=("light", "accent", "dark"),
-        ),
-        header_dark_fill_rgb=_rgb("header_dark_fill_rgb", (63, 72, 86)),
-        header_dark_text_rgb=_rgb("header_dark_text_rgb", (255, 255, 255)),
-        frame_style=_choice_value(
-            "frame_style",
-            defaults.frame_style,
-            allowed=("flat", "shadow"),
-        ),
-        shadow_color_rgb=_rgb("shadow_color_rgb", (214, 218, 224)),
-        shadow_offset_px=_int_value("shadow_offset_px", defaults.shadow_offset_px, minimum=1),
-        inner_rule_style=_choice_value(
-            "inner_rule_style",
-            defaults.inner_rule_style,
-            allowed=("solid", "soft", "dashed"),
-        ),
-        numeric_alignment=_choice_value(
-            "numeric_alignment",
-            defaults.numeric_alignment,
-            allowed=("center", "right"),
-        ),
-        label_font_size_px=_int_value("label_font_size_px", defaults.label_font_size_px, minimum=10),
-        value_font_size_px=_int_value("value_font_size_px", defaults.value_font_size_px, minimum=10),
-        border_width_px=_int_value("border_width_px", defaults.border_width_px),
-        grid_width_px=_int_value("grid_width_px", defaults.grid_width_px),
-        rounded_corner_radius_px=_int_value("rounded_corner_radius_px", defaults.rounded_corner_radius_px),
-        cell_padding_px=_int_value("cell_padding_px", defaults.cell_padding_px),
-    )
-
-
-def table_render_style_spec(render_params: TableRenderParams) -> Dict[str, Any]:
-    """Serialize resolved non-semantic table style axes for trace metadata."""
-
-    return {
-        "header_style": str(render_params.header_style),
-        "frame_style": str(render_params.frame_style),
-        "inner_rule_style": str(render_params.inner_rule_style),
-        "numeric_alignment": str(render_params.numeric_alignment),
-        "header_fill_rgb": list(render_params.header_fill_rgb),
-        "header_dark_fill_rgb": list(render_params.header_dark_fill_rgb),
-        "header_dark_text_rgb": list(render_params.header_dark_text_rgb),
-        "zebra_row_fill_rgb": list(render_params.zebra_row_fill_rgb),
-        "card_fill_rgb": list(render_params.card_fill_rgb),
-        "border_color_rgb": list(render_params.border_color_rgb),
-        "grid_color_rgb": list(render_params.grid_color_rgb),
-        "text_color_rgb": list(render_params.text_color_rgb),
-        "text_stroke_rgb": list(render_params.text_stroke_rgb),
-        "shadow_color_rgb": list(render_params.shadow_color_rgb),
-        "shadow_offset_px": int(render_params.shadow_offset_px),
-        "rounded_corner_radius_px": int(render_params.rounded_corner_radius_px),
-        "cell_padding_px": int(render_params.cell_padding_px),
-    }
-
-
 def build_ranking_label_dataset_for_variant(
     *,
-    query_id: str,
+    operation: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
     defaults: TableDefaults,
-    task_id: str,
+    namespace: str,
 ) -> Dict[str, Any]:
     """Construct one deterministic table dataset for kth-order row-label ranking queries."""
 
-    if str(query_id) not in {"kth_highest_in_column", "kth_lowest_in_column"}:
-        raise ValueError(f"unsupported table ranking-label variant: {query_id}")
+    if str(operation) not in {"descending", "ascending"}:
+        raise ValueError(f"unsupported table ranking-label variant: {operation}")
 
     base = _resolve_base_table_schema(
         params=params,
         instance_seed=int(instance_seed),
         gen_defaults=gen_defaults,
         defaults=defaults,
-        task_id=task_id,
+        namespace=namespace,
     )
     rng = base["rng"]
     row_count = int(base["row_count"])
@@ -802,7 +589,7 @@ def build_ranking_label_dataset_for_variant(
                 resolve_selection_index(
                     params=params,
                     instance_seed=int(instance_seed),
-                    namespace=f"{task_id}:query_rank",
+                    namespace=f"{namespace}:query_rank",
                 )
             )
             % len(allowed_ranks)
@@ -835,7 +622,7 @@ def build_ranking_label_dataset_for_variant(
             for row_index, row_label in enumerate(row_labels)
         ),
         key=lambda item: int(item["value"]),
-        reverse=(str(query_id) == "kth_highest_in_column"),
+        reverse=(str(operation) == "descending"),
     )
     answer_row = dict(sorted_rows[int(rank_k) - 1])
     return {
@@ -858,25 +645,25 @@ def build_ranking_label_dataset_for_variant(
 
 def build_summary_value_dataset_for_variant(
     *,
-    query_id: str,
+    operation: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
     defaults: TableDefaults,
-    task_id: str,
+    namespace: str,
 ) -> Dict[str, Any]:
     """Construct one deterministic table dataset for column-summary numeric queries."""
 
-    if str(query_id) not in {"column_sum", "column_mean", "column_median"}:
-        raise ValueError(f"unsupported table summary-value variant: {query_id}")
+    if str(operation) not in {"sum", "mean", "median"}:
+        raise ValueError(f"unsupported table summary-value variant: {operation}")
 
     base = _resolve_base_table_schema(
         params=params,
         instance_seed=int(instance_seed),
         gen_defaults=gen_defaults,
         defaults=defaults,
-        task_id=task_id,
-        odd_row_count_required=(str(query_id) == "column_median"),
+        namespace=namespace,
+        odd_row_count_required=(str(operation) == "median"),
     )
     rng = base["rng"]
     row_count = int(base["row_count"])
@@ -888,7 +675,7 @@ def build_summary_value_dataset_for_variant(
     value_min = int(base["value_min"])
     value_max = int(base["value_max"])
 
-    if str(query_id) == "column_sum":
+    if str(operation) == "sum":
         target_sum = int(rng.randint(int(row_count * value_min), int(row_count * value_max)))
         query_values = _sample_values_with_total(
             count=int(row_count),
@@ -898,13 +685,13 @@ def build_summary_value_dataset_for_variant(
             rng=rng,
         )
         answer_value = int(target_sum)
-    elif str(query_id) == "column_mean":
+    elif str(operation) == "mean":
         target_mean = _resolve_balanced_integer_support_value(
             params=params,
             gen_defaults=gen_defaults,
             instance_seed=int(instance_seed),
-            task_id=task_id,
-            namespace="column_mean_answer",
+            namespace=namespace,
+            support_namespace="column_mean_answer",
             support_min=int(value_min),
             support_max=int(value_max),
         )
@@ -923,8 +710,8 @@ def build_summary_value_dataset_for_variant(
             params=params,
             gen_defaults=gen_defaults,
             instance_seed=int(instance_seed),
-            task_id=task_id,
-            namespace="column_median_answer",
+            namespace=namespace,
+            support_namespace="column_median_answer",
             support_min=int(value_min + 1),
             support_max=int(value_max - 1),
         )
@@ -967,25 +754,25 @@ def build_summary_value_dataset_for_variant(
 
 def build_counting_value_dataset_for_variant(
     *,
-    query_id: str,
+    operation: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
     defaults: TableDefaults,
-    task_id: str,
+    namespace: str,
 ) -> Dict[str, Any]:
     """Construct one deterministic table dataset for column-filter counting queries."""
 
-    supported_variants = {"above_threshold", "below_threshold", "in_interval", "categorical_value_count"}
-    if str(query_id) not in supported_variants:
-        raise ValueError(f"unsupported table counting variant: {query_id}")
+    supported_variants = {"above_threshold", "below_threshold", "in_interval", "category_membership"}
+    if str(operation) not in supported_variants:
+        raise ValueError(f"unsupported table counting variant: {operation}")
 
     base = _resolve_base_table_schema(
         params=params,
         instance_seed=int(instance_seed),
         gen_defaults=gen_defaults,
         defaults=defaults,
-        task_id=task_id,
+        namespace=namespace,
     )
     rng = base["rng"]
     row_count = int(base["row_count"])
@@ -996,22 +783,22 @@ def build_counting_value_dataset_for_variant(
     query_column = str(base["query_column"])
     value_min = int(base["value_min"])
     value_max = int(base["value_max"])
-    support_params = _decouple_sampling_after_query_id(params, gen_defaults=gen_defaults)
+    support_params = _decouple_sampling_after_operation(params, gen_defaults=gen_defaults)
     target_count = _resolve_counting_target_count(
-        query_id=str(query_id),
+        operation=str(operation),
         row_count=int(row_count),
         params=support_params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        task_id=task_id,
+        namespace=namespace,
     )
 
-    if str(query_id) == "categorical_value_count":
+    if str(operation) == "category_membership":
         category_column = sample_category_column_header(instance_seed=int(instance_seed))
         category_value_labels = tuple(
             str(label)
             for label in resolve_chart_category_labels(
-                spawn_rng(int(instance_seed), f"{task_id}.category_values"),
+                spawn_rng(int(instance_seed), f"{namespace}.category_values"),
                 count=6,
                 min_chars=2,
                 max_chars=8,
@@ -1021,7 +808,7 @@ def build_counting_value_dataset_for_variant(
         target_category_index = int(resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:target_category",
+            namespace=f"{namespace}:target_category",
         )) % len(category_value_labels)
         target_category = str(category_value_labels[int(target_category_index)])
         non_target_categories = [
@@ -1071,11 +858,11 @@ def build_counting_value_dataset_for_variant(
             "category_column_index": 0,
             "matching_row_indices": [int(row_index) for row_index in matching_row_indices],
             "matching_row_labels": [str(label) for label in matching_row_labels],
-            "filter_variant": "categorical_value_count",
+            "filter_variant": "category_membership",
         }
 
     filter_query = _build_column_filter_query_values(
-        filter_variant=str(query_id),
+        filter_variant=str(operation),
         row_count=int(row_count),
         target_count=int(target_count),
         value_min=int(value_min),
@@ -1129,24 +916,24 @@ def build_counting_value_dataset_for_variant(
 
 def build_statistics_filtered_subset_dataset_for_variant(
     *,
-    query_id: str,
+    operation: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
     defaults: TableDefaults,
-    task_id: str,
+    namespace: str,
 ) -> Dict[str, Any]:
     """Construct one deterministic table dataset for filtered column aggregation queries."""
 
-    if str(query_id) not in {"filtered_column_sum", "filtered_column_mean"}:
-        raise ValueError(f"unsupported filtered table statistics variant: {query_id}")
+    if str(operation) != "mean":
+        raise ValueError(f"unsupported filtered table statistics variant: {operation}")
 
     base = _resolve_base_table_schema(
         params=params,
         instance_seed=int(instance_seed),
         gen_defaults=gen_defaults,
         defaults=defaults,
-        task_id=task_id,
+        namespace=namespace,
     )
     rng = base["rng"]
     row_count = int(base["row_count"])
@@ -1161,7 +948,7 @@ def build_statistics_filtered_subset_dataset_for_variant(
         primary_column_index=int(filter_column_index),
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}:target_column",
+        namespace=f"{namespace}:target_column",
     )
     value_min = int(base["value_min"])
     value_max = int(base["value_max"])
@@ -1178,27 +965,33 @@ def build_statistics_filtered_subset_dataset_for_variant(
     )
     if int(selected_count_min) > int(selected_count_max):
         raise ValueError("selected_row_count_min must be <= selected_row_count_max and row_count - 1")
-    selected_count_params = _decouple_sampling_after_query_id(params, gen_defaults=gen_defaults)
+    selected_count_params = _decouple_sampling_after_operation(params, gen_defaults=gen_defaults)
     target_count = int(
         resolve_selection_index(
             params=selected_count_params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:selected_row_count",
+            namespace=f"{namespace}:selected_row_count",
         )
     ) % (int(selected_count_max) - int(selected_count_min) + 1) + int(selected_count_min)
     supported_filter_variants = ("above_threshold", "below_threshold", "in_interval")
-    filter_variant = str(
-        supported_filter_variants[
-            int(
-                resolve_selection_index(
-                    params=params,
-                    instance_seed=int(instance_seed),
-                    namespace=f"{task_id}:filter_variant",
+    explicit_filter_variant = params.get("filter_variant")
+    if explicit_filter_variant is None:
+        filter_variant = str(
+            supported_filter_variants[
+                int(
+                    resolve_selection_index(
+                        params=params,
+                        instance_seed=int(instance_seed),
+                        namespace=f"{namespace}:filter_variant",
+                    )
                 )
-            )
-            % len(supported_filter_variants)
-        ]
-    )
+                % len(supported_filter_variants)
+            ]
+        )
+    else:
+        filter_variant = str(explicit_filter_variant)
+        if filter_variant not in set(supported_filter_variants):
+            raise ValueError(f"unsupported filtered table variant: {filter_variant}")
     filter_query = _build_column_filter_query_values(
         filter_variant=str(filter_variant),
         row_count=int(row_count),
@@ -1227,26 +1020,15 @@ def build_statistics_filtered_subset_dataset_for_variant(
     selected_count = int(len(selected_row_indices))
     if int(selected_count) <= 0:
         raise ValueError("filtered subset tasks require at least one selected row")
-    if str(query_id) == "filtered_column_sum":
-        target_total = int(rng.randint(int(selected_count * value_min), int(selected_count * value_max)))
-        target_values = _sample_values_with_total(
-            count=int(selected_count),
-            target_total=int(target_total),
-            min_value=int(value_min),
-            max_value=int(value_max),
-            rng=rng,
-        )
-        answer_value = int(target_total)
-    else:
-        target_mean = int(rng.randint(int(value_min), int(value_max)))
-        target_values = _sample_values_with_total(
-            count=int(selected_count),
-            target_total=int(selected_count * target_mean),
-            min_value=int(value_min),
-            max_value=int(value_max),
-            rng=rng,
-        )
-        answer_value = int(target_mean)
+    target_mean = int(rng.randint(int(value_min), int(value_max)))
+    target_values = _sample_values_with_total(
+        count=int(selected_count),
+        target_total=int(selected_count * target_mean),
+        min_value=int(value_min),
+        max_value=int(value_max),
+        rng=rng,
+    )
+    answer_value = int(target_mean)
 
     for offset, row_index in enumerate(selected_row_indices):
         row_label = str(row_labels[int(row_index)])
@@ -1311,28 +1093,25 @@ def render_table_filter_condition(dataset: Mapping[str, Any]) -> str:
 
 def build_temporal_value_dataset_for_variant(
     *,
-    query_id: str,
+    operation: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
     defaults: TableDefaults,
-    task_id: str,
+    namespace: str,
 ) -> Dict[str, Any]:
     """Construct one deterministic year-column table dataset for temporal queries."""
 
-    supported_variants = {
-        "absolute_difference_between_rows_over_year_interval",
-        "sum_absolute_differences_between_rows_over_year_interval",
-    }
-    if str(query_id) not in supported_variants:
-        raise ValueError(f"unsupported table temporal variant: {query_id}")
+    supported_variants = {"row_interval_sum_difference_abs", "yearwise_abs_difference_sum"}
+    if str(operation) not in supported_variants:
+        raise ValueError(f"unsupported table temporal variant: {operation}")
 
     base = _resolve_base_table_schema(
         params=params,
         instance_seed=int(instance_seed),
         gen_defaults=gen_defaults,
         defaults=defaults,
-        task_id=task_id,
+        namespace=namespace,
         sample_generic_column_headers=False,
     )
     rng = base["rng"]
@@ -1343,7 +1122,7 @@ def build_temporal_value_dataset_for_variant(
         sample_temporal_year_headers(
             count=int(numeric_column_count),
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}.temporal_headers",
+            namespace=f"{namespace}.temporal_headers",
         )
     )
     value_min = int(base["value_min"])
@@ -1361,7 +1140,7 @@ def build_temporal_value_dataset_for_variant(
         resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:query_row",
+            namespace=f"{namespace}:query_row",
         )
     ) % int(row_count)
     query_row_label = str(row_labels[int(query_row_index)])
@@ -1401,7 +1180,7 @@ def build_temporal_value_dataset_for_variant(
         max_key="interval_length_max",
         fallback_min=2,
         fallback_max=int(numeric_column_count),
-        context=f"generation defaults for {task_id}",
+        context=f"generation defaults for {namespace}",
     )
     interval_len_min = max(2, int(interval_len_min))
     interval_len_max = min(int(numeric_column_count), int(interval_len_max))
@@ -1411,14 +1190,14 @@ def build_temporal_value_dataset_for_variant(
         resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:interval_length",
+            namespace=f"{namespace}:interval_length",
         )
     ) % (int(interval_len_max) - int(interval_len_min) + 1) + int(interval_len_min)
     start_index = int(
         resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:interval_start",
+            namespace=f"{namespace}:interval_start",
         )
     ) % int(numeric_column_count - interval_len + 1)
     end_index = int(start_index + interval_len - 1)
@@ -1435,7 +1214,7 @@ def build_temporal_value_dataset_for_variant(
         resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:query_row_b",
+            namespace=f"{namespace}:query_row_b",
         )
     ) % int(row_count - 1)
     if int(query_row_index_b) >= int(query_row_index):
@@ -1460,7 +1239,7 @@ def build_temporal_value_dataset_for_variant(
             sum_b -= 1
     row_interval_sums[str(query_row_label)] = int(sum_a)
     row_interval_sums[str(query_row_label_b)] = int(sum_b)
-    if str(query_id) == "absolute_difference_between_rows_over_year_interval":
+    if str(operation) == "row_interval_sum_difference_abs":
         answer_value = int(abs(int(sum_a) - int(sum_b)))
     else:
         paired_absolute_differences = [
@@ -1516,87 +1295,19 @@ def build_temporal_value_dataset_for_variant(
     }
 
 
-def projected_table_bbox_annotation(
-    rendered_scene,
-    cell_ids: Sequence[str],
-) -> Dict[str, Any]:
-    """Project one ordered table-cell id list into `bbox_set` annotation."""
-
-    requested = [str(cell_id) for cell_id in cell_ids]
-    bbox_by_cell = {
-        str(cell_trace["cell_id"]): [float(value) for value in cell_trace["bbox_px"]]
-        for cell_trace in rendered_scene.cell_traces
-    }
-    return {
-        "type": "bbox_set",
-        "bbox_set": [
-            list(bbox_by_cell[str(cell_id)])
-            for cell_id in requested
-            if str(cell_id) in bbox_by_cell
-        ]
-    }
-
-
-def projected_table_region_bbox_annotation(
-    rendered_scene,
-    *,
-    row_labels: Sequence[str] = (),
-    column_headers: Sequence[str] = (),
-    include_numeric_table_region: bool = False,
-) -> Dict[str, Any]:
-    """Project ordered row/column table regions into `bbox_set` annotation."""
-
-    requested_rows = [str(row_label) for row_label in row_labels]
-    requested_columns = [str(header) for header in column_headers]
-    row_bbox_map = {
-        str(row_label): [float(value) for value in bbox]
-        for row_label, bbox in rendered_scene.row_region_bboxes.items()
-    }
-    column_bbox_map = {
-        str(header): [float(value) for value in bbox]
-        for header, bbox in rendered_scene.column_region_bboxes.items()
-    }
-    return {
-        "type": "bbox_set",
-        "bbox_set": [
-            *[
-                list(row_bbox_map[str(row_label)])
-                for row_label in requested_rows
-                if str(row_label) in row_bbox_map
-            ],
-            *[
-                list(column_bbox_map[str(header)])
-                for header in requested_columns
-                if str(header) in column_bbox_map
-            ],
-            *(
-                [list(rendered_scene.numeric_table_region_bbox)]
-                if bool(include_numeric_table_region)
-                else []
-            ),
-        ]
-    }
-
 
 __all__ = [
-    "SUPPORTED_TABLE_SCENE_VARIANTS",
-    "TableDefaults",
     "build_counting_value_dataset_for_variant",
     "build_ranking_label_dataset_for_variant",
     "build_temporal_value_dataset_for_variant",
     "build_statistics_filtered_subset_dataset_for_variant",
     "build_summary_value_dataset_for_variant",
-    "projected_table_bbox_annotation",
-    "projected_table_region_bbox_annotation",
     "render_table_filter_condition",
     "resolve_numeric_column_count_bounds",
     "resolve_row_count_bounds",
-    "resolve_table_axis_variant",
-    "resolve_table_render_params",
     "sample_category_column_header",
     "sample_numeric_column_headers",
     "sample_table_row_labels",
     "sample_temporal_year_headers",
-    "table_render_style_spec",
     "table_value_cell_id",
 ]

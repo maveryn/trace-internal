@@ -1,4 +1,4 @@
-"""Shared rendering helpers for styled table tasks."""
+"""Scene-local rendering helpers for styled table chart tasks."""
 
 from __future__ import annotations
 
@@ -7,7 +7,11 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.core.seed import hash64
+from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
+
+from .state import TableDefaults
 
 
 SUPPORTED_TABLE_SCENE_VARIANTS: Tuple[str, ...] = (
@@ -363,6 +367,8 @@ def render_table_scene(
         column_header: str | None,
         value: Any | None,
     ) -> List[float]:
+        """Draw one table cell and record the exact annotation/projection bbox."""
+
         bbox = cell_bbox(row_index=int(row_index), col_index=int(col_index))
         fill_rgb = _style_fill_for_cell(
             scene_variant=selected_variant,
@@ -580,9 +586,130 @@ def render_table_scene(
     )
 
 
+def resolve_table_render_params(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    instance_seed: int | None = None,
+) -> TableRenderParams:
+    """Resolve one normalized table-render parameter block."""
+
+    def _selection_index(key: str) -> int:
+        seed = 0 if instance_seed is None else int(instance_seed)
+        return abs(int(hash64(int(seed), f"table_render:{str(key)}", 45131)))
+
+    def _int_value(key: str, fallback: int, *, minimum: int = 1) -> int:
+        if params.get(str(key)) is not None:
+            return max(int(minimum), int(params[str(key)]))
+        low_raw = params.get(f"{str(key)}_min", group_default(render_defaults, f"{str(key)}_min", None))
+        high_raw = params.get(f"{str(key)}_max", group_default(render_defaults, f"{str(key)}_max", None))
+        if low_raw is not None or high_raw is not None:
+            default_value = int(group_default(render_defaults, str(key), int(fallback)))
+            low = int(default_value if low_raw is None else low_raw)
+            high = int(default_value if high_raw is None else high_raw)
+            if int(low) > int(high):
+                raise ValueError(f"{str(key)}_min must be <= {str(key)}_max")
+            return max(int(minimum), int(low) + (_selection_index(str(key)) % (int(high) - int(low) + 1)))
+        return max(int(minimum), int(group_default(render_defaults, str(key), int(fallback))))
+
+    def _rgb(key: str, fallback: Sequence[int]) -> Tuple[int, int, int]:
+        if params.get(str(key)) is not None:
+            raw = params[str(key)]
+            return (int(raw[0]), int(raw[1]), int(raw[2]))
+        options = params.get(f"{str(key)}_options", group_default(render_defaults, f"{str(key)}_options", None))
+        if isinstance(options, Sequence) and options and not isinstance(options, (str, bytes)):
+            raw = options[_selection_index(str(key)) % len(options)]
+            return (int(raw[0]), int(raw[1]), int(raw[2]))
+        raw = params.get(key, group_default(render_defaults, key, list(fallback)))
+        return (int(raw[0]), int(raw[1]), int(raw[2]))
+
+    def _choice_value(key: str, fallback: str, *, allowed: Sequence[str]) -> str:
+        allowed_set = set(str(item) for item in allowed)
+        if params.get(str(key)) is not None:
+            value = str(params[str(key)])
+        else:
+            options = params.get(f"{str(key)}_options", group_default(render_defaults, f"{str(key)}_options", None))
+            if isinstance(options, Sequence) and options and not isinstance(options, (str, bytes)):
+                value = str(options[_selection_index(str(key)) % len(options)])
+            else:
+                value = str(group_default(render_defaults, str(key), str(fallback)))
+        if value not in allowed_set:
+            raise ValueError(f"unsupported {str(key)}: {value}")
+        return str(value)
+
+    return TableRenderParams(
+        canvas_width=int(params.get("canvas_width", group_default(render_defaults, "canvas_width", defaults.canvas_width))),
+        canvas_height=int(params.get("canvas_height", group_default(render_defaults, "canvas_height", defaults.canvas_height))),
+        table_margin_left_px=_int_value("table_margin_left_px", defaults.table_margin_left_px, minimum=0),
+        table_margin_right_px=_int_value("table_margin_right_px", defaults.table_margin_right_px, minimum=0),
+        table_margin_top_px=_int_value("table_margin_top_px", defaults.table_margin_top_px, minimum=0),
+        table_margin_bottom_px=_int_value("table_margin_bottom_px", defaults.table_margin_bottom_px, minimum=0),
+        row_label_width_fraction=float(
+            params.get(
+                "row_label_width_fraction",
+                group_default(render_defaults, "row_label_width_fraction", defaults.row_label_width_fraction),
+            )
+        ),
+        row_label_min_width_px=int(
+            params.get(
+                "row_label_min_width_px",
+                group_default(render_defaults, "row_label_min_width_px", defaults.row_label_min_width_px),
+            )
+        ),
+        header_fill_rgb=_rgb("header_fill_rgb", (232, 236, 243)),
+        zebra_row_fill_rgb=_rgb("zebra_row_fill_rgb", (247, 249, 252)),
+        card_fill_rgb=_rgb("card_fill_rgb", (250, 250, 252)),
+        border_color_rgb=_rgb("border_color_rgb", (92, 98, 109)),
+        grid_color_rgb=_rgb("grid_color_rgb", (204, 209, 218)),
+        text_color_rgb=_rgb("text_color_rgb", (36, 39, 45)),
+        text_stroke_rgb=_rgb("text_stroke_rgb", (255, 255, 255)),
+        header_style=_choice_value("header_style", defaults.header_style, allowed=("light", "accent", "dark")),
+        header_dark_fill_rgb=_rgb("header_dark_fill_rgb", (63, 72, 86)),
+        header_dark_text_rgb=_rgb("header_dark_text_rgb", (255, 255, 255)),
+        frame_style=_choice_value("frame_style", defaults.frame_style, allowed=("flat", "shadow")),
+        shadow_color_rgb=_rgb("shadow_color_rgb", (214, 218, 224)),
+        shadow_offset_px=_int_value("shadow_offset_px", defaults.shadow_offset_px, minimum=1),
+        inner_rule_style=_choice_value("inner_rule_style", defaults.inner_rule_style, allowed=("solid", "soft", "dashed")),
+        numeric_alignment=_choice_value("numeric_alignment", defaults.numeric_alignment, allowed=("center", "right")),
+        label_font_size_px=_int_value("label_font_size_px", defaults.label_font_size_px, minimum=10),
+        value_font_size_px=_int_value("value_font_size_px", defaults.value_font_size_px, minimum=10),
+        border_width_px=_int_value("border_width_px", defaults.border_width_px),
+        grid_width_px=_int_value("grid_width_px", defaults.grid_width_px),
+        rounded_corner_radius_px=_int_value("rounded_corner_radius_px", defaults.rounded_corner_radius_px),
+        cell_padding_px=_int_value("cell_padding_px", defaults.cell_padding_px),
+    )
+
+
+def table_render_style_spec(render_params: TableRenderParams) -> Dict[str, Any]:
+    """Serialize resolved non-semantic table style axes for trace metadata."""
+
+    return {
+        "header_style": str(render_params.header_style),
+        "frame_style": str(render_params.frame_style),
+        "inner_rule_style": str(render_params.inner_rule_style),
+        "numeric_alignment": str(render_params.numeric_alignment),
+        "header_fill_rgb": list(render_params.header_fill_rgb),
+        "header_dark_fill_rgb": list(render_params.header_dark_fill_rgb),
+        "header_dark_text_rgb": list(render_params.header_dark_text_rgb),
+        "zebra_row_fill_rgb": list(render_params.zebra_row_fill_rgb),
+        "card_fill_rgb": list(render_params.card_fill_rgb),
+        "border_color_rgb": list(render_params.border_color_rgb),
+        "grid_color_rgb": list(render_params.grid_color_rgb),
+        "text_color_rgb": list(render_params.text_color_rgb),
+        "text_stroke_rgb": list(render_params.text_stroke_rgb),
+        "shadow_color_rgb": list(render_params.shadow_color_rgb),
+        "shadow_offset_px": int(render_params.shadow_offset_px),
+        "rounded_corner_radius_px": int(render_params.rounded_corner_radius_px),
+        "cell_padding_px": int(render_params.cell_padding_px),
+    }
+
+
 __all__ = [
     "RenderedTableScene",
     "SUPPORTED_TABLE_SCENE_VARIANTS",
     "TableRenderParams",
+    "resolve_table_render_params",
     "render_table_scene",
+    "table_render_style_spec",
 ]

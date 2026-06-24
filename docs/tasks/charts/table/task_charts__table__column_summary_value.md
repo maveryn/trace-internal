@@ -1,28 +1,21 @@
 # `task_charts__table__column_summary_value`
 
-## Contract
+## Public Contract
+
 1. Domain: `charts`
-2. Scene id: `table`
-3. Source implementation domain/group: `charts/table_statistics`
-4. Query id: sampled from `column_mean`, `column_median`, `column_sum`
-5. Semantic query details are recorded in `query_id` and trace params.
+2. Scene: `table`
+3. Source file: `trace/tasks/charts/table/column_summary_value.py`
+4. Prompt assets: `prompts/charts/table/*_v1.json`
+5. Query ids: `column_sum`, `column_mean`, `column_median`
 
-## Implementation
-1. Registered class: `trace.tasks.charts.table.statistics.column_summary_value.ChartsTableColumnSummaryValueTask`
-2. Prompt lookup domain/group: `charts/table_statistics`
-3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
-4. Answers and annotation are produced from the same metadata execution trace.
+## Program Contract
 
-## Annotation Contract
-1. Answer schema: `integer_value`.
-2. Annotation schema: `bbox_set`.
-3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+- Program schema: `aggregate(values(column), operation=sum|mean|median); output=integer_value; annotation=bbox(column_values); scene=table; scope=column_summary_value`.
+- Program: aggregate all values in one numeric column using sum, mean, or median.
+- Answer: `integer`.
+- Annotation schema: `bbox` around the queried column value region.
+- The answer and annotation are bound from the same sampled table execution trace.
 
-## Query Details
+## Review Notes
 
-| Query id | Program signature | Answer schema | Annotation schema |
-|---|---|---|---|
-| `column_mean` | `numeric.summary_statistic` | `integer_value` | `bbox_set` |
-| `column_median` | `numeric.summary_statistic` | `integer_value` | `bbox_set` |
-| `column_sum` | `numeric.summary_statistic` | `integer_value` | `bbox_set` |
+This task uses the scene-package layout. Scene-local reusable code lives under `trace/tasks/charts/table/shared/`; public task files own objective logic, query selection, answer binding, and annotation binding.

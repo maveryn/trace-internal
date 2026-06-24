@@ -13,7 +13,7 @@
       ]
     },
     "task": {
-      "kth_label_query": [
+      "rank_label_query": [
         "",
         "",
         "",
@@ -22,12 +22,19 @@
       ]
     },
     "query": {
-      "kth_rank_in_column": [
-        "Which row has the {query_rank} {rank_direction} value in the \"{query_column}\" column? {unanswerable_instruction}",
-        "Find the row label with the {query_rank} {rank_direction} value in the \"{query_column}\" column. {unanswerable_instruction}",
-        "Which row is {query_rank} {rank_direction} by \"{query_column}\" value? {unanswerable_instruction}",
-        "What row name corresponds to the {query_rank} {rank_direction} value in \"{query_column}\"? {unanswerable_instruction}",
-        "Identify the row with the {query_rank} {rank_direction} \"{query_column}\" value. {unanswerable_instruction}"
+      "highest_rank_in_column": [
+        "Which row has the {query_rank} {rank_direction} value in the \"{query_column}\" column?",
+        "Find the row label with the {query_rank} {rank_direction} value in the \"{query_column}\" column.",
+        "Which row is {query_rank} {rank_direction} by \"{query_column}\" value?",
+        "What row name corresponds to the {query_rank} {rank_direction} value in \"{query_column}\"?",
+        "Identify the row with the {query_rank} {rank_direction} \"{query_column}\" value."
+      ],
+      "lowest_rank_in_column": [
+        "Which row has the {query_rank} {rank_direction} value in the \"{query_column}\" column?",
+        "Find the row label with the {query_rank} {rank_direction} value in the \"{query_column}\" column.",
+        "Which row is {query_rank} {rank_direction} by \"{query_column}\" value?",
+        "What row name corresponds to the {query_rank} {rank_direction} value in \"{query_column}\"?",
+        "Identify the row with the {query_rank} {rank_direction} \"{query_column}\" value."
       ]
     },
     "output": {
@@ -42,7 +49,7 @@
         "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
         "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}",
         "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
       ]
     }
@@ -77,20 +84,11 @@
     },
     "rank_direction": {
       "type": "string"
-    },
-    "unanswerable_instruction": {
-      "type": "string"
     }
   },
   "required_slots_by_key": {
     "scene:styled_table_ranking": [
       "object_description"
-    ],
-    "query:kth_rank_in_column": [
-      "query_column",
-      "query_rank",
-      "rank_direction",
-      "unanswerable_instruction"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -102,6 +100,16 @@
       "annotation_hint",
       "answer_hint",
       "json_example"
+    ],
+    "query:highest_rank_in_column": [
+      "query_column",
+      "query_rank",
+      "rank_direction"
+    ],
+    "query:lowest_rank_in_column": [
+      "query_column",
+      "query_rank",
+      "rank_direction"
     ]
   }
 }

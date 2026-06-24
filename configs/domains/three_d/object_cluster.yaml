@@ -15,7 +15,7 @@ generation:
       object_count_max: 20
       single_type_count_min: 6
       single_type_count_max: 20
-    task_three_d__object_cluster__single_attribute_membership_count:
+    task_three_d__object_cluster__object_type_count:
       composition_mode_weights:
         near_homogeneous_cluster: 0.7
         mixed_type_cluster: 0.3
@@ -115,7 +115,7 @@ prompt:
   task_overrides:
     task_three_d__object_cluster__total_object_count:
       task_key: object_cluster_total_count_query
-    task_three_d__object_cluster__single_attribute_membership_count:
+    task_three_d__object_cluster__object_type_count:
       task_key: object_cluster_instance_count_query
     task_three_d__object_cluster__multi_attribute_and_count:
       task_key: object_cluster_multi_attribute_count_query

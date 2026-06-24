@@ -1,4 +1,4 @@
-# `task_three_d__object_cluster__single_attribute_membership_count`
+# `task_three_d__object_cluster__object_type_count`
 
 ## Summary
 - Domain: `three_d`
@@ -10,7 +10,7 @@
 - Annotation schema: `bbox_set`
 
 ## Program Contract
-`count(filter(object_cluster_objects, shape_type = target_shape_type)); scene=object_cluster; scope=single_attribute_membership_count`
+`count(filter(object_cluster_objects, shape_type = target_shape_type)); scene=object_cluster; scope=object_type_count`
 
 ## Contract
 The image shows many small synthetic perspective 3D objects arranged on a plain surface. This scene is a bare clustered-counting surface: it does not use option labels, named reference objects, relation prompts, or grid-based spatial cues.
@@ -21,11 +21,10 @@ shapes plus CountQA-aligned loose objects such as writing tools, flat packets,
 small tableware, hardware, containers, miniature furniture, plants, and game
 pieces.
 
-Generation samples a `cluster_composition_mode` axis:
+Generation samples a distractor-backed `cluster_composition_mode` axis:
 
-- `single_type_cluster` (`0.6`): all visible objects are the target type, with answer/object count in `4-8`.
-- `near_homogeneous_cluster` (`0.3`): the scene is mostly the target type with `1-4` visually distinct non-target distractors; target answer is in `4-8`.
-- `mixed_type_cluster` (`0.1`): the target type is counted among more varied distractor types, with target answer in `4-8` and total object count capped at `20`.
+- `near_homogeneous_cluster` (`0.7`): the scene is mostly the target type with `1-4` visually distinct non-target distractors; target answer is in `4-8`.
+- `mixed_type_cluster` (`0.3`): the target type is counted among more varied distractor types, with target answer in `4-8` and total object count capped at `20`.
 
 The default answer distribution is weighted over the capped `4-8` support. Visually confusable same-family distractors are excluded for the selected target in modes that use distractors.
 

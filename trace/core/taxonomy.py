@@ -1041,7 +1041,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_three_d__object_cluster__count_arithmetic": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
     "task_three_d__object_cluster__multi_attribute_exclusion_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
     "task_three_d__object_cluster__multi_attribute_or_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
-    "task_three_d__object_cluster__single_attribute_membership_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
+    "task_three_d__object_cluster__object_type_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
     "task_three_d__object_cluster__type_frequency_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
     "task_three_d__object_cluster__type_union_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),
     "task_three_d__object_cluster__total_object_count": _entry("three_d", "object_cluster", "three_d", "object_cluster"),

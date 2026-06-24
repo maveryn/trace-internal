@@ -37,7 +37,7 @@ from trace.tasks.three_d.object_cluster.shared.defaults import (
 )
 from trace.tasks.three_d.object_cluster.shared.objects import screen_span_requirements
 from trace.tasks.three_d.object_cluster.shared.relations import semantic_color_label
-from trace.tasks.three_d.object_cluster.single_attribute_membership_count import TASK_ID
+from trace.tasks.three_d.object_cluster.object_type_count import TASK_ID
 from trace.tasks.three_d.object_cluster.total_object_count import TASK_ID as TOTAL_OBJECT_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.type_frequency_count import TASK_ID as TYPE_FREQUENCY_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.type_union_count import TASK_ID as TYPE_UNION_COUNT_TASK_ID

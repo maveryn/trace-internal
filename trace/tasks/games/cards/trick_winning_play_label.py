@@ -81,6 +81,7 @@ def _prepare_trick_play_objective(instance_seed, task_params, _query_id, _query_
         attempt_namespace="games.cards.trick_winning_play_label",
         prompt_query_key=PROMPT_QUERY_KEY,
         construct_attempt=construct_attempt,
+        scalar_annotation=True,
     )
 
 

@@ -85,6 +85,7 @@ class CardsRuleObjectivePlan:
     prompt_query_key: str
     query_params: Mapping[str, Any]
     construct_attempt: RuleAttemptBuilder
+    scalar_annotation: bool = False
 
 
 def resolve_cards_style_variant(
@@ -272,6 +273,7 @@ def build_cards_rule_objective_plan(
     prompt_query_key: str,
     construct_attempt: RuleAttemptBuilder,
     query_params: Mapping[str, Any] | None = None,
+    scalar_annotation: bool = False,
 ) -> CardsRuleObjectivePlan:
     """Package task-owned rule hooks into the common lifecycle contract."""
 
@@ -280,6 +282,7 @@ def build_cards_rule_objective_plan(
         prompt_query_key=str(prompt_query_key),
         query_params=dict(query_params or {}),
         construct_attempt=construct_attempt,
+        scalar_annotation=bool(scalar_annotation),
     )
 
 
@@ -468,7 +471,12 @@ def run_cards_rule_lifecycle(
             rendered_context.rendered_scene.render_map,
             sample.annotation_card_ids,
         )
-        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
+        if objective.scalar_annotation:
+            if len(annotation_bboxes) != 1:
+                raise RuntimeError(f"{objective.prompt_query_key} scalar annotation must contain exactly one card bbox")
+            annotation_gt = TypedValue(type="bbox", value=list(annotation_bboxes[0]))
+        else:
+            annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
         prompt_defaults, prompt_artifacts = build_cards_prompt_artifacts(
             domain=str(domain),
             prompt_query_key=str(objective.prompt_query_key),

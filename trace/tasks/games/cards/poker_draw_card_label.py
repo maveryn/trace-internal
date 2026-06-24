@@ -67,6 +67,7 @@ def _prepare_poker_draw_objective(instance_seed, task_params, _query_id, _query_
         attempt_namespace="games.cards.poker_draw_card_label",
         prompt_query_key=PROMPT_QUERY_KEY,
         construct_attempt=construct_attempt,
+        scalar_annotation=True,
     )
 
 

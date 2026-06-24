@@ -72,6 +72,7 @@ def _prepare_missing_card_objective(instance_seed, task_params, query_id, query_
         attempt_namespace="games.cards.missing_card_to_complete_hand_label",
         prompt_query_key=str(query_id),
         construct_attempt=construct_attempt,
+        scalar_annotation=True,
     )
 
 

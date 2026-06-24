@@ -1,68 +1,160 @@
-"""Find the labeled 3D point nearest to a reference axis value."""
+"""Public task for `task_charts__surface_3d__reference_nearest_label`."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.core.seed import spawn_rng
+from trace.core.types import TypedValue
+from trace.tasks.charts.surface_3d._lifecycle import Surface3DTaskPlan, run_surface_3d_lifecycle
+from trace.tasks.charts.surface_3d.shared.annotations import bbox_for_single_witness
+from trace.tasks.charts.surface_3d.shared.defaults import DOMAIN, SCATTER_VARIANT
+from trace.tasks.charts.surface_3d.shared.sampling import (
+    PALETTE,
+    balanced_choice,
+    balanced_int,
+    configured_count,
+    sample_entity_labels,
+)
+from trace.tasks.charts.surface_3d.shared.state import Point3D, Surface3DDataset
+from trace.tasks.registry import register_task
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.output import build_surface_3d_task_components
+
+TASK_ID = "task_charts__surface_3d__reference_nearest_label"
+OBJECTIVE_CONTRACT = "reference_nearest_label"
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
+DEFAULT_QUERY_ID = SINGLE_QUERY_ID
+PROMPT_QUERY_KEY = "reference_nearest_label"
 
 
-DEFAULT_QUERY_ID = "reference_nearest_label"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+def _build_reference_dataset(params, instance_seed):
+    """Sample one 3D scatter cloud where exactly one point is nearest to the requested y-axis value."""
 
-
-@register_task
-class ChartsThreeDReferenceNearestLabelTask:
-    """Find the labeled 3D point nearest to a reference axis value."""
-
-    task_id = "task_charts__surface_3d__reference_nearest_label"
-    domain = "charts"
-    scene_id = "surface_3d"
-    objective_contract = "reference_nearest_label"
-    supported_query_ids = (DEFAULT_QUERY_ID,)
-    default_dataset_enabled = True
-
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
+    category_count = balanced_int(
+        low=configured_count(params, "category_count_min", 5),
+        high=configured_count(params, "category_count_max", 8),
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.category_count",
+    )
+    target_value = balanced_int(
+        low=25,
+        high=75,
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.target_value",
+    )
+    labels = sample_entity_labels(int(category_count), instance_seed=int(instance_seed), namespace="reference")
+    answer_label = str(
+        balanced_choice(
+            labels,
+            params=params,
             instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=self.task_id,
+            namespace=f"{TASK_ID}.answer_label",
         )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_surface_3d_task_components(
-                    task_id=self.task_id,
-                    selected_query_id=str(selected_query_id),
-                    query_id_probabilities=query_probabilities,
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                )
-                answer_value = int(components.answer_value) if str(components.answer_type) == "integer" else str(components.answer_value)
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=answer_value),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=list(components.annotation_value)),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id="surface_3d",
-                    query_id=str(components.query_id),
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
+    )
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.points")
+    points: list[Point3D] = []
+    for index, label in enumerate(labels):
+        if str(label) == answer_label:
+            y_value = float(target_value + rng.choice([-2, -1, 1, 2]))
+        else:
+            offset = int(rng.choice([-1, 1])) * int(rng.randint(8, 31))
+            y_value = float(max(5, min(95, int(target_value) + int(offset))))
+            if abs(y_value - float(target_value)) <= 5:
+                y_value = float(max(5, min(95, int(target_value) + (12 if offset >= 0 else -12))))
+        points.append(
+            Point3D(
+                point_id=f"point_{label}",
+                label=str(label),
+                x_value=float(rng.randint(8, 92)),
+                y_value=float(y_value),
+                z_value=float(rng.randint(8, 92)),
+                color_rgb=PALETTE[int(index) % len(PALETTE)],
+            )
+        )
+    distances = {str(point.label): round(abs(float(point.y_value) - float(target_value)), 3) for point in points}
+    dataset = Surface3DDataset(
+        scene_variant=SCATTER_VARIANT,
+        points=tuple(points),
+        surface_cells=(),
+        panels=(),
+        x_axis_label="Score",
+        y_axis_label="Distance",
+        z_axis_label="Volume",
+        x_range=(0.0, 100.0),
+        y_range=(0.0, 100.0),
+        z_range=(0.0, 100.0),
+        x_labels=(),
+        y_labels=(),
+        title="3D Scatter Chart",
+    )
+    return dataset, answer_label, int(target_value), distances
+
+
+def _build_plan(params, instance_seed, selected_branch, query_probabilities):
+    """Bind nearest-reference semantics for the sampled 3D scatter chart."""
+
+    if str(selected_branch) != SINGLE_QUERY_ID:
+        raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_branch}")
+    dataset, answer_label, target_value, distances = _build_reference_dataset(params, int(instance_seed))
+    answer_point_id = f"point_{answer_label}"
+
+    def _bind_annotation(rendered):
+        return bbox_for_single_witness(rendered.point_bboxes_px[str(answer_point_id)])
+
+    return Surface3DTaskPlan(
+        dataset=dataset,
+        answer_gt=TypedValue(type="string", value=str(answer_label)),
+        annotation_builder=_bind_annotation,
+        prompt_query_key=PROMPT_QUERY_KEY,
+        dynamic_slots={
+            "target_axis_label": "Distance",
+            "target_axis_value": int(target_value),
+        },
+        branch_params={
+            "target_axis": "y",
+            "target_axis_label": "Distance",
+            "target_axis_value": int(target_value),
+            "answer_point_id": str(answer_point_id),
+            "answer_label": str(answer_label),
+            "distances_from_target": dict(distances),
+            "category_count": len(dataset.points),
+        },
+        relations={
+            "answer_point_id": str(answer_point_id),
+            "answer_label": str(answer_label),
+            "query_id_probabilities": dict(query_probabilities),
+        },
+        witness_symbolic={
+            "type": "surface_3d_reference_nearest_witness",
+            "point_id": str(answer_point_id),
+            "answer": str(answer_label),
+        },
+        question_format="surface_3d_reference_nearest_label",
+    )
+
+
+class ChartsThreeDReferenceNearestLabelTask:
+    task_id = TASK_ID
+    domain = DOMAIN
+    objective_contract = OBJECTIVE_CONTRACT
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_dataset_enabled = True
+    default_query_id = DEFAULT_QUERY_ID
+    build_plan = staticmethod(_build_plan)
+
+    def generate(self, instance_seed, *, params, max_attempts):
+        return run_surface_3d_lifecycle(
+            task=self,
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+            default_query_id=DEFAULT_QUERY_ID,
+            build_plan=_build_plan,
+        )
+
+
+register_task(ChartsThreeDReferenceNearestLabelTask)
 
 
 __all__ = ["ChartsThreeDReferenceNearestLabelTask"]

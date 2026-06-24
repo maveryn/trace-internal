@@ -18,20 +18,6 @@ generation:
       condition_labels: 0.75
       temporal_sequence: 0.25
       report_topics: 0.5
-    query_id_weights:
-      reference_nearest_label: 1.0
-      surface_extremum_label: 1.0
-      series_trend_label: 1.0
-      panel_variation_label: 1.0
-    extremum_direction_weights:
-      highest: 1.0
-      lowest: 1.0
-    trend_direction_weights:
-      increase: 1.0
-      decrease: 1.0
-    balanced_query_id_sampling: true
-    balanced_extremum_direction_sampling: true
-    balanced_trend_direction_sampling: true
 rendering:
   shared:
     canvas_width: 1280
@@ -184,21 +170,3 @@ rendering:
 prompt:
   shared:
     bundle_id: charts_surface_3d_v1
-    scene_key: surface_3d
-    task_key: three_d_chart_query
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
-      in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
-      the final answer.
-    answer_hint_label: set "answer" to the requested chart label as a string
-    answer_hint_count: set "answer" to the requested count as an integer
-    annotation_hint: 'set "annotation" to an array of [x0,y0,x1,y1] bounding boxes
-      around only the supporting witness marks: the answer panel for panel questions,
-      the answer point marker for nearest-point questions, the answer surface-cell
-      marker for surface extrema, or the first and last point markers for series-trend
-      questions'
-    json_example_label: '{"annotation":[[330,210,356,236]],"answer":"Haidon"}'
-    json_example_count: '{"annotation":[[220,360,238,378],[310,296,328,314]],"answer":2}'
-    json_example_answer_only_label: '{"answer":"Haidon"}'
-    json_example_answer_only_count: '{"answer":2}'
-    object_description: one or more synthetic 3D chart panels

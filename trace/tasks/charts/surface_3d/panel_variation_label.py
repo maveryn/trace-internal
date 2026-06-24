@@ -1,68 +1,166 @@
-"""Find the small 3D panel with the largest vertical range."""
+"""Public task for `task_charts__surface_3d__panel_variation_label`."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.core.seed import spawn_rng
+from trace.core.types import TypedValue
+from trace.tasks.charts.surface_3d._lifecycle import Surface3DTaskPlan, run_surface_3d_lifecycle
+from trace.tasks.charts.surface_3d.shared.annotations import bbox_for_single_witness
+from trace.tasks.charts.surface_3d.shared.defaults import DOMAIN, PANEL_VARIANT
+from trace.tasks.charts.surface_3d.shared.sampling import (
+    PALETTE,
+    balanced_choice,
+    balanced_int,
+    configured_count,
+    sample_panel_labels,
+)
+from trace.tasks.charts.surface_3d.shared.state import Panel3D, Surface3DDataset
+from trace.tasks.registry import register_task
 
-from ....core.seed import hash64
-from ....core.types import TypedValue
-from ...base import TaskOutput
-from ...registry import register_task
-from ...shared.fixed_query import select_task_query_id
-from ...shared.output_metadata import default_task_versions
-from .shared.output import build_surface_3d_task_components
+
+TASK_ID = "task_charts__surface_3d__panel_variation_label"
+OBJECTIVE_CONTRACT = "panel_variation_label"
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
+DEFAULT_QUERY_ID = SINGLE_QUERY_ID
+PROMPT_QUERY_KEY = "panel_variation_label"
 
 
-DEFAULT_QUERY_ID = "panel_variation_label"
-TASK_PARAM_DEFAULTS: Dict[str, Any] = {}
+def _build_panel_dataset(params, instance_seed):
+    """Sample small-multiple 3D panels with one panel having the unique largest vertical range."""
 
-
-@register_task
-class ChartsThreeDPanelVariationLabelTask:
-    """Find the small 3D panel with the largest vertical range."""
-
-    task_id = "task_charts__surface_3d__panel_variation_label"
-    domain = "charts"
-    scene_id = "surface_3d"
-    objective_contract = "panel_variation_label"
-    supported_query_ids = (DEFAULT_QUERY_ID,)
-    default_dataset_enabled = True
-
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected_query_id, query_probabilities, task_params = select_task_query_id(
+    panel_count = balanced_int(
+        low=configured_count(params, "panel_count_min", 4),
+        high=configured_count(params, "panel_count_max", 6),
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.panel_count",
+    )
+    time_count = balanced_int(
+        low=5,
+        high=7,
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.time_count",
+    )
+    labels, label_meta = sample_panel_labels(
+        int(panel_count),
+        params=params,
+        instance_seed=int(instance_seed),
+        reserved_labels=("Step", "Band", "Value"),
+    )
+    answer_label = str(
+        balanced_choice(
+            labels,
+            params=params,
             instance_seed=int(instance_seed),
-            params={**TASK_PARAM_DEFAULTS, **dict(params)},
-            supported_query_ids=self.supported_query_ids,
-            default_query_id=DEFAULT_QUERY_ID,
-            task_id=self.task_id,
+            namespace=f"{TASK_ID}.answer_panel",
         )
-        last_error: Exception | None = None
-        for attempt_index in range(max(1, int(max_attempts))):
-            attempt_seed = int(instance_seed) if attempt_index == 0 else int(hash64(int(instance_seed), self.task_id, attempt_index))
-            try:
-                components = build_surface_3d_task_components(
-                    task_id=self.task_id,
-                    selected_query_id=str(selected_query_id),
-                    query_id_probabilities=query_probabilities,
-                    instance_seed=int(attempt_seed),
-                    params={**dict(task_params), "_attempt_index": int(attempt_index)},
-                )
-                answer_value = int(components.answer_value) if str(components.answer_type) == "integer" else str(components.answer_value)
-                return TaskOutput(
-                    prompt=str(components.prompt),
-                    prompt_variants=dict(components.prompt_variants),
-                    answer_gt=TypedValue(type=str(components.answer_type), value=answer_value),
-                    annotation_gt=TypedValue(type=str(components.annotation_type), value=list(components.annotation_value)),
-                    image=components.image,
-                    image_id="img0",
-                    trace_payload=dict(components.trace_payload),
-                    task_versions=default_task_versions(),
-                    scene_id="surface_3d",
-                    query_id=str(components.query_id),
-                )
-            except ValueError as exc:
-                last_error = exc
-        raise RuntimeError(f"failed to generate {self.task_id}: {last_error}")
+    )
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.panel_values")
+    panels: list[Panel3D] = []
+    ranges: dict[str, int] = {}
+    for index, label in enumerate(labels):
+        if str(label) == answer_label:
+            low = int(rng.randint(8, 20))
+            high = int(rng.randint(80, 96))
+        else:
+            low = int(rng.randint(22, 42))
+            high = int(rng.randint(55, 74))
+        values = [
+            int(round(low + (high - low) * (step / max(1, int(time_count) - 1)) + rng.uniform(-5, 5)))
+            for step in range(int(time_count))
+        ]
+        if str(label) == answer_label:
+            values[0] = low
+            values[-1] = high
+        values = [max(0, min(100, int(value))) for value in values]
+        ranges[str(label)] = int(max(values) - min(values))
+        panels.append(
+            Panel3D(
+                panel_label=str(label),
+                values=tuple(values),
+                color_rgb=PALETTE[int(index) % len(PALETTE)],
+            )
+        )
+    winner = max(ranges, key=lambda label: (int(ranges[label]), str(label)))
+    if str(winner) != str(answer_label):
+        raise ValueError("panel variation answer is not unique")
+    dataset = Surface3DDataset(
+        scene_variant=PANEL_VARIANT,
+        points=(),
+        surface_cells=(),
+        panels=tuple(panels),
+        x_axis_label="Step",
+        y_axis_label="Band",
+        z_axis_label="Value",
+        x_range=(0.0, float(max(1, int(time_count) - 1))),
+        y_range=(0.0, 1.0),
+        z_range=(0.0, 100.0),
+        x_labels=(),
+        y_labels=(),
+        title="3D Panel Comparison",
+    )
+    return dataset, answer_label, ranges, label_meta
+
+
+def _build_plan(params, instance_seed, selected_branch, query_probabilities):
+    """Bind panel-range semantics for the small-multiple 3D chart."""
+
+    if str(selected_branch) != SINGLE_QUERY_ID:
+        raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_branch}")
+    dataset, answer_label, ranges, label_meta = _build_panel_dataset(params, int(instance_seed))
+
+    def _bind_annotation(rendered):
+        return bbox_for_single_witness(rendered.panel_bboxes_px[str(answer_label)])
+
+    return Surface3DTaskPlan(
+        dataset=dataset,
+        answer_gt=TypedValue(type="string", value=str(answer_label)),
+        annotation_builder=_bind_annotation,
+        prompt_query_key=PROMPT_QUERY_KEY,
+        dynamic_slots={},
+        branch_params={
+            "answer_panel_label": str(answer_label),
+            "ranges_by_panel": dict(ranges),
+            "panel_count": len(dataset.panels),
+            "time_count": len(dataset.panels[0].values) if dataset.panels else 0,
+            **dict(label_meta),
+        },
+        relations={
+            "answer_panel_label": str(answer_label),
+            "query_id_probabilities": dict(query_probabilities),
+        },
+        witness_symbolic={
+            "type": "surface_3d_panel_variation_witness",
+            "panel_label": str(answer_label),
+            "answer": str(answer_label),
+        },
+        question_format="surface_3d_panel_variation_label",
+    )
+
+
+class ChartsThreeDPanelVariationLabelTask:
+    task_id = TASK_ID
+    domain = DOMAIN
+    objective_contract = OBJECTIVE_CONTRACT
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_dataset_enabled = True
+    default_query_id = DEFAULT_QUERY_ID
+    build_plan = staticmethod(_build_plan)
+
+    def generate(self, instance_seed, *, params, max_attempts):
+        return run_surface_3d_lifecycle(
+            task=self,
+            instance_seed=int(instance_seed),
+            params=params,
+            max_attempts=int(max_attempts),
+            default_query_id=DEFAULT_QUERY_ID,
+            build_plan=_build_plan,
+        )
+
+
+register_task(ChartsThreeDPanelVariationLabelTask)
 
 
 __all__ = ["ChartsThreeDPanelVariationLabelTask"]

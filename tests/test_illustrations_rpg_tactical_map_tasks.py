@@ -379,9 +379,10 @@ def test_rpg_tactical_map_movement_cost_value_contract() -> None:
     assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert 3 <= int(out.answer_gt.value) <= 10
-    assert out.annotation_gt.type == "bbox_sequence"
+    assert out.annotation_gt.type == "bbox_map"
+    assert set(out.annotation_gt.value) == {"player_cell", "target_cell"}
     width, height = out.image.size
-    for bbox in out.annotation_gt.value:
+    for bbox in out.annotation_gt.value.values():
         _assert_bbox_inside_canvas(bbox, width=width, height=height)
     assert "marked" in out.prompt
     assert "movement" in out.prompt
@@ -389,10 +390,9 @@ def test_rpg_tactical_map_movement_cost_value_contract() -> None:
 
     trace = out.trace_payload
     render_map = trace["render_map"]
-    assert trace["projected_annotation"]["type"] == "bbox_sequence"
-    assert trace["projected_annotation"]["bbox_sequence"] == out.annotation_gt.value
-    assert render_map["shortest_path_tile_bboxes_px"] == out.annotation_gt.value
-    assert render_map["target_tile_bbox_px"] == out.annotation_gt.value[-1]
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+    assert render_map["target_tile_bbox_px"] == out.annotation_gt.value["target_cell"]
     assert int(render_map["answer_value"]) == int(out.answer_gt.value)
     assert int(render_map["target_shortest_movement_cost"]) == int(out.answer_gt.value)
     assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_tactical_map_v0"
@@ -404,12 +404,21 @@ def test_rpg_tactical_map_movement_cost_value_contract() -> None:
     assert target_tile_id != start_tile_id
     assert target_tile_id in tiles_by_id
     assert start_tile_id in tiles_by_id
+    assert out.annotation_gt.value["player_cell"] == tiles_by_id[start_tile_id]["bbox"]
+    assert out.annotation_gt.value["target_cell"] == tiles_by_id[target_tile_id]["bbox"]
+    assert trace["execution_trace"]["annotation_tile_id_map"] == {
+        "player_cell": start_tile_id,
+        "target_cell": target_tile_id,
+    }
+    assert trace["scene_ir"]["relations"]["annotation_tile_id_map"] == {
+        "player_cell": start_tile_id,
+        "target_cell": target_tile_id,
+    }
     path_tile_ids = [str(tile_id) for tile_id in render_map["shortest_path_tile_ids"]]
     assert path_tile_ids[0] == start_tile_id
     assert path_tile_ids[-1] == target_tile_id
     assert trace["execution_trace"]["shortest_path_tile_ids"] == path_tile_ids
-    assert trace["execution_trace"]["annotation_tile_ids"] == path_tile_ids
-    assert len(path_tile_ids) == len(out.annotation_gt.value)
+    assert len(path_tile_ids) == len(render_map["shortest_path_tile_bboxes_px"])
     for left_id, right_id in zip(path_tile_ids, path_tile_ids[1:]):
         left = tiles_by_id[left_id]
         right = tiles_by_id[right_id]

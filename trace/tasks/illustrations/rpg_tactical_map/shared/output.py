@@ -27,6 +27,16 @@ def bbox_set_projection(bboxes: Sequence[Sequence[float]]) -> dict[str, Any]:
     return {"type": "bbox_set", "bbox_set": values, "pixel_bbox_set": values}
 
 
+def bbox_map_projection(bbox_map: Mapping[str, Sequence[float]]) -> dict[str, Any]:
+    """Return the role-keyed bbox-map projection payload."""
+
+    values = {
+        str(key): rounded_bbox(bbox)
+        for key, bbox in bbox_map.items()
+    }
+    return {"type": "bbox_map", "bbox_map": values, "pixel_bbox_map": values}
+
+
 def bbox_sequence_projection(bboxes: Sequence[Sequence[float]]) -> dict[str, Any]:
     """Return the ordered bbox-sequence projection payload."""
 
@@ -311,6 +321,7 @@ def terrain_type_count_render_map(
 
 
 __all__ = [
+    "bbox_map_projection",
     "bbox_projection",
     "bbox_sequence_projection",
     "bbox_set_projection",

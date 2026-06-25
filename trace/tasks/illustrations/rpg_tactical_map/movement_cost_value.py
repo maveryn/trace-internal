@@ -138,7 +138,10 @@ def _select_movement_cost_attempt(
     return RpgTacticalMapValueAttempt(
         target_tile_id=str(target_tile.tile_id),
         answer_value=int(answer_value),
-        annotation_tile_ids=list(shortest_path_tile_ids),
+        annotation_tile_id_map={
+            "player_cell": str(start_tile_id),
+            "target_cell": str(target_tile.tile_id),
+        },
         relation_fields=relation_fields,
         execution_fields=execution_fields,
         witness_fields={

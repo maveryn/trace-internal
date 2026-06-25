@@ -13,8 +13,8 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.illustrations.shared.option_rendering import sample_visual_label_font_trace
 
 from .shared.output import (
+    bbox_map_projection,
     bbox_projection,
-    bbox_sequence_projection,
     bbox_set_projection,
     rounded_bbox,
     rpg_tactical_map_render_spec,
@@ -95,7 +95,7 @@ class RpgTacticalMapValueAttempt:
 
     target_tile_id: str
     answer_value: int
-    annotation_tile_ids: Sequence[str]
+    annotation_tile_id_map: Mapping[str, str]
     relation_fields: Mapping[str, Any]
     execution_fields: Mapping[str, Any]
     witness_fields: Mapping[str, Any]
@@ -532,14 +532,21 @@ def run_rpg_tactical_map_value_lifecycle(
     tiles_by_id = {str(tile.tile_id): tile for tile in selected_scene.tiles}
     target_tile_id = str(selected_attempt.target_tile_id)
     target_tile = tiles_by_id[target_tile_id]
-    annotation_tile_ids = [str(tile_id) for tile_id in selected_attempt.annotation_tile_ids]
-    if not annotation_tile_ids or annotation_tile_ids[-1] != target_tile_id:
-        rejection_detail = "value task annotation sequence must end at the target tile"
-        raise ValueError(rejection_detail)
-    annotation_value = [
-        rounded_bbox(tiles_by_id[str(tile_id)].bbox_xyxy)
-        for tile_id in annotation_tile_ids
-    ]
+    annotation_tile_id_map = {
+        str(key): str(tile_id)
+        for key, tile_id in selected_attempt.annotation_tile_id_map.items()
+    }
+    required_annotation_keys = {"player_cell", "target_cell"}
+    if set(annotation_tile_id_map) != required_annotation_keys:
+        raise ValueError("value task annotation map must contain player_cell and target_cell")
+    if annotation_tile_id_map["target_cell"] != target_tile_id:
+        raise ValueError("value task target_cell annotation must match the marked target tile")
+    if any(str(tile_id) not in tiles_by_id for tile_id in annotation_tile_id_map.values()):
+        raise ValueError("value task annotation map references a missing tile")
+    annotation_value = {
+        key: rounded_bbox(tiles_by_id[str(tile_id)].bbox_xyxy)
+        for key, tile_id in annotation_tile_id_map.items()
+    }
     render_map = dict(plan.build_render_map(selected_scene, selected_attempt))
     query_params = {
         "query_id": str(query_id),
@@ -548,7 +555,7 @@ def run_rpg_tactical_map_value_lifecycle(
         **dict(plan.query_params),
         "answer_value": int(selected_attempt.answer_value),
         "target_tile_id": target_tile_id,
-        "annotation_tile_ids": list(annotation_tile_ids),
+        "annotation_tile_id_map": dict(annotation_tile_id_map),
         "canvas_profile": str(render_params.get("canvas_profile", "")),
         "canvas_profile_probabilities": dict(render_params.get("canvas_profile_probabilities", {})),
     }
@@ -561,7 +568,7 @@ def run_rpg_tactical_map_value_lifecycle(
                 **dict(selected_attempt.relation_fields),
                 "target_tile_id": target_tile_id,
                 "answer_value": int(selected_attempt.answer_value),
-                "annotation_tile_ids": list(annotation_tile_ids),
+                "annotation_tile_id_map": dict(annotation_tile_id_map),
             },
         ),
         "query_spec": {
@@ -581,25 +588,28 @@ def run_rpg_tactical_map_value_lifecycle(
             "scene_id": SCENE_ID,
             "answer": int(selected_attempt.answer_value),
             "target_tile_id": target_tile_id,
-            "annotation_tile_ids": list(annotation_tile_ids),
+            "annotation_tile_id_map": dict(annotation_tile_id_map),
             "renderer": dict(selected_scene.trace),
             **dict(selected_attempt.execution_fields),
         },
         "witness_symbolic": {
             "answer_value": int(selected_attempt.answer_value),
             "target_tile_id": target_tile_id,
-            "annotation_tile_ids": list(annotation_tile_ids),
-            "annotation_tile_bboxes": [list(bbox) for bbox in annotation_value],
+            "annotation_tile_id_map": dict(annotation_tile_id_map),
+            "annotation_tile_bbox_map": {
+                str(key): list(bbox)
+                for key, bbox in annotation_value.items()
+            },
             "target_tile_bbox": rounded_bbox(target_tile.bbox_xyxy),
             **dict(selected_attempt.witness_fields),
         },
-        "projected_annotation": bbox_sequence_projection(annotation_value),
+        "projected_annotation": bbox_map_projection(annotation_value),
     }
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
         prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
         answer_gt=TypedValue(type="integer", value=int(selected_attempt.answer_value)),
-        annotation_gt=TypedValue(type="bbox_sequence", value=[list(bbox) for bbox in annotation_value]),
+        annotation_gt=TypedValue(type="bbox_map", value=dict(annotation_value)),
         image=selected_scene.image,
         image_id="img0",
         trace_payload=trace_payload,

@@ -38,6 +38,7 @@ OPTION_LABELS: Tuple[str, ...] = DEFAULT_OPTION_LABELS[:4]
 TERRITORY_SUPPORT: Tuple[str, ...] = ("cemetery", "orchard")
 TERRITORY_NAMES: Dict[str, str] = {"cemetery": "cemetery", "orchard": "orchard"}
 TERRITORY_FORCE_PARAM: Dict[str, str] = {"cemetery": "cemetery_mode", "orchard": "orchard_mode"}
+MAX_DISTRACTOR_TERRITORY_DISTANCE = 4
 
 
 @dataclass(frozen=True)
@@ -223,18 +224,20 @@ def _select_option_tiles(
     )
     correct_tile = tuple(inside_candidates[int(inside_index) % len(inside_candidates)])
 
-    near = [tile for tile in outside_candidates if _distance_to_territory(tile, territory_tiles) <= 5]
-    far = [tile for tile in outside_candidates if tile not in set(near)]
+    near = [
+        tile
+        for tile in outside_candidates
+        if _distance_to_territory(tile, territory_tiles) <= MAX_DISTRACTOR_TERRITORY_DISTANCE
+    ]
     near.sort(key=lambda tile: (_distance_to_territory(tile, territory_tiles), tile[1], tile[0]))
-    far.sort(key=lambda tile: (_distance_to_territory(tile, territory_tiles), tile[1], tile[0]))
+    if len(near) < len(OPTION_LABELS) - 1:
+        raise ValueError("not enough near outside ground tiles for distractors")
     offset = resolve_selection_index(
         params={},
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}:outside_tiles:{attempt_index}",
     )
-    ordered_pool = tuple(near + far)
-    if len(ordered_pool) < len(OPTION_LABELS) - 1:
-        raise ValueError("not enough outside ground tiles after ordering")
+    ordered_pool = tuple(near)
     distractors: list[tuple[int, int]] = []
     cursor = int(offset) % len(ordered_pool)
     while len(distractors) < len(OPTION_LABELS) - 1:
@@ -257,6 +260,14 @@ def _candidate_membership_by_label(option_tiles: Sequence[tuple[int, int]], targ
     territory_tiles = _territory_footprint(target_territory)
     return {
         str(OPTION_LABELS[index]): tuple(tile) in territory_tiles
+        for index, tile in enumerate(option_tiles)
+    }
+
+
+def _candidate_distance_by_label(option_tiles: Sequence[tuple[int, int]], target_territory: Any) -> Dict[str, int]:
+    territory_tiles = _territory_footprint(target_territory)
+    return {
+        str(OPTION_LABELS[index]): int(_distance_to_territory(tuple(tile), territory_tiles))
         for index, tile in enumerate(option_tiles)
     }
 
@@ -383,6 +394,7 @@ class IllustrationsPixelVillageTerritoryTileMembershipLabelTask:
             for index, tile in enumerate(option_tiles)
         }
         membership_by_label = _candidate_membership_by_label(option_tiles, target_territory)
+        distance_by_label = _candidate_distance_by_label(option_tiles, target_territory)
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             [
@@ -452,10 +464,12 @@ class IllustrationsPixelVillageTerritoryTileMembershipLabelTask:
                     "option_labels": list(OPTION_LABELS),
                     "candidate_tiles_by_label": dict(candidate_tiles_by_label),
                     "candidate_membership_by_label": dict(membership_by_label),
+                    "candidate_distance_to_target_territory_by_label": dict(distance_by_label),
                     "selected_tile": [int(correct_tile[0]), int(correct_tile[1])],
                     "target_territory_tile_xywh": [int(value) for value in target_territory.tile_xywh],
                     "target_territory_bbox_px": [round(float(value), 3) for value in target_territory.bbox_xyxy],
                     "render_constraints": {str(TERRITORY_FORCE_PARAM[str(sample.territory_type)]): "force"},
+                    "distractor_distance_to_target_territory_max": int(MAX_DISTRACTOR_TERRITORY_DISTANCE),
                     "renderer": _render_metadata(scene),
                 },
             },
@@ -468,6 +482,7 @@ class IllustrationsPixelVillageTerritoryTileMembershipLabelTask:
                 "selected_tile_bbox_px": selected_bbox,
                 "candidate_tiles_by_label": dict(candidate_tiles_by_label),
                 "candidate_membership_by_label": dict(membership_by_label),
+                "candidate_distance_to_target_territory_by_label": dict(distance_by_label),
                 "target_territory_bbox_px": [round(float(value), 3) for value in target_territory.bbox_xyxy],
                 "target_territory_tile_xywh": [int(value) for value in target_territory.tile_xywh],
                 "path_tiles": list(scene.trace.get("path_tiles", [])),
@@ -483,6 +498,7 @@ class IllustrationsPixelVillageTerritoryTileMembershipLabelTask:
                 "answer_label": answer_label,
                 "candidate_tiles_by_label": dict(candidate_tiles_by_label),
                 "candidate_membership_by_label": dict(membership_by_label),
+                "candidate_distance_to_target_territory_by_label": dict(distance_by_label),
                 "selected_tile": [int(correct_tile[0]), int(correct_tile[1])],
                 "entities": _scene_entities(scene),
                 "territories": _scene_territories(scene),
@@ -494,6 +510,7 @@ class IllustrationsPixelVillageTerritoryTileMembershipLabelTask:
                 "selected_tile": [int(correct_tile[0]), int(correct_tile[1])],
                 "selected_tile_bbox": selected_bbox,
                 "candidate_membership_by_label": dict(membership_by_label),
+                "candidate_distance_to_target_territory_by_label": dict(distance_by_label),
             },
             "projected_annotation": {
                 **dict(annotation_artifacts.projected_annotation),

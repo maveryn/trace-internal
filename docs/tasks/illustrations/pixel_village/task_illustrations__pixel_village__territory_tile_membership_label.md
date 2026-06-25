@@ -31,6 +31,7 @@ Selects the lettered ground tile that is inside a named semantic pixel-village t
 - Generator `answer_gt.type`: `option_letter`
 - Exactly one candidate ground tile is inside the named target territory.
 - The answer value is the letter for that unique candidate tile.
+- Distractor tiles must be empty ground tiles near the target territory but outside it.
 
 ## Annotation Contract
 - Annotation schema: `bbox`
@@ -42,4 +43,4 @@ Selects the lettered ground tile that is inside a named semantic pixel-village t
 - Prompt text must come from the pixel-village prompt bundle.
 - Public prompts must name the target territory and ask for a lettered ground tile.
 - The relevant territory is forced present by the task, and the scene config keeps cemetery and orchard visible for review diversity.
-- Candidate tile coordinates, candidate tile bboxes, label bboxes, membership booleans, selected tile, target territory bbox, and projected annotation must be recorded in the trace.
+- Candidate tile coordinates, candidate tile bboxes, label bboxes, membership booleans, target-territory distances, selected tile, target territory bbox, and projected annotation must be recorded in the trace.

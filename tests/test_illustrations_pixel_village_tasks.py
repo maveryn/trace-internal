@@ -442,6 +442,7 @@ def test_pixel_village_territory_tile_membership_label_uses_named_territory() ->
         render_map = trace["render_map"]
         answer_label = str(out.answer_gt.value)
         membership = render_map["candidate_membership_by_label"]
+        distances = render_map["candidate_distance_to_target_territory_by_label"]
         territory_tiles = _footprint(render_map["target_territory_tile_xywh"])
         candidate_tiles = {
             str(label): tuple(int(value) for value in tile)
@@ -457,12 +458,14 @@ def test_pixel_village_territory_tile_membership_label_uses_named_territory() ->
         assert sorted(candidate_tiles) == ["A", "B", "C", "D"]
         assert list(membership.values()).count(True) == 1
         assert membership[answer_label] is True
+        assert distances[answer_label] == 0
         assert candidate_tiles[answer_label] in territory_tiles
         for label, tile in candidate_tiles.items():
             if label == answer_label:
                 continue
             assert tile not in territory_tiles
             assert membership[label] is False
+            assert 1 <= int(distances[label]) <= int(params["distractor_distance_to_target_territory_max"])
 
         assert out.annotation_gt.value == render_map["selected_tile_bbox_px"]
         assert out.annotation_gt.value == render_map["candidate_tile_bboxes_px_by_label"][answer_label]

@@ -6,7 +6,7 @@ from typing import Any, Mapping
 
 from trace.tasks.registry import register_task
 
-from ._lifecycle import TriangleCongruenceObjectivePlan, run_triangle_congruence_public_entry
+from ._lifecycle import run_triangle_congruence_public_entry
 from .shared.construction import angle_witness_labels, build_angle_case
 from .shared.rendering import render_triangle_congruence_scene
 from .shared.sampling import choose_case_by_answer
@@ -74,7 +74,7 @@ def _prepare_corresponding_angle_value(
     params: Mapping[str, Any],
     selected_branch: str,
     branch_probabilities: Mapping[str, float],
-) -> TriangleCongruenceObjectivePlan:
+) -> tuple[TriangleCongruenceProblem, int, tuple[str, ...], dict[str, Any]]:
     """Bind a CPCTC angle-measure transfer from task-owned query semantics."""
 
     config = _BRANCH_CONFIGS[str(selected_branch)]
@@ -99,23 +99,14 @@ def _prepare_corresponding_angle_value(
         "source_angle_value": int(case.source_angle_value or 0),
         "target_angle_value": int(case.target_angle_value or 0),
         "target_support_probabilities": dict(answer_probabilities),
-        "query_id_probabilities": dict(branch_probabilities),
     }
-    return TriangleCongruenceObjectivePlan(
-        prompt_key=TASK_PROMPT_KEY,
-        answer_hint_key=ANSWER_HINT_KEY,
-        problem=TriangleCongruenceProblem(
-            case=case,
-            reasoning_steps=1,
-            layout_seed=int(instance_seed),
-            answer_support_probabilities=dict(answer_probabilities),
-        ),
-        render_scene=render_triangle_congruence_scene,
-        answer_value=int(case.answer),
-        annotation_labels=annotation_labels,
-        query_params=trace_values,
-        trace_values=trace_values,
+    problem = TriangleCongruenceProblem(
+        case=case,
+        reasoning_steps=1,
+        layout_seed=int(instance_seed),
+        answer_support_probabilities=dict(answer_probabilities),
     )
+    return problem, int(case.answer), annotation_labels, trace_values
 
 
 @register_task
@@ -127,6 +118,9 @@ class GeometryTriangleCongruenceCorrespondenceAngleValueTask:
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_query_id = SUPPORTED_QUERY_IDS[0]
+    task_prompt_key = TASK_PROMPT_KEY
+    answer_hint_key = ANSWER_HINT_KEY
+    render_scene = staticmethod(render_triangle_congruence_scene)
     prepare_objective = staticmethod(_prepare_corresponding_angle_value)
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

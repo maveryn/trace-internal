@@ -13,13 +13,10 @@ from .state import SCENE_ID
 _SCENE_DEFAULTS = get_scene_defaults("geometry", SCENE_ID)
 
 
-def load_triangle_congruence_defaults(owner: str) -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
-    """Load generation, rendering, and prompt defaults for one public entry."""
+def load_triangle_congruence_defaults() -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+    """Load scene-level generation, rendering, and prompt defaults."""
 
-    return split_scene_generation_rendering_prompt_defaults(
-        _SCENE_DEFAULTS,
-        task_id=str(owner),
-    )
+    return split_scene_generation_rendering_prompt_defaults(_SCENE_DEFAULTS)
 
 
 __all__ = ["POST_IMAGE_NOISE_DEFAULTS", "load_triangle_congruence_defaults"]

@@ -3,9 +3,11 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `solid_formula`
-3. Supported `query_id`: `single`
-4. Answer schema: `decimal_value_1dp`
-5. Annotation schema: `bbox_map`
+3. Task id: `task_geometry__solid_formula__house_prism_length_from_volume`
+4. Supported `query_id` values: `single`
+5. Answer schema: `decimal_value_1dp`
+6. Annotation schema: `bbox_map`
+7. Scalar annotation checked: `true` (not scalar-eligible; the task requires multiple role-bound boxes for the visible measurement labels)
 
 ## Program Contract
 - `solve_formula(visible_solid_formula_measurements, unknown_role=prism_length, formula_schema=house_prism_length_from_volume); scene=solid_formula; scope=house_prism_length_from_volume`
@@ -13,7 +15,7 @@
 - Annotation keys: `target_length_label`, `volume_label`, `triangle_base_label`, `wall_height_label`, `roof_height_label`.
 
 ## Prompt Bundle
-- Prompt text is loaded from `geometry_solid_formula_v1`.
+- Prompt text is loaded from `prompts/geometry/solid_formula/geometry_solid_formula_v1.json`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
@@ -24,4 +26,5 @@ Generation is deterministic for a fixed seed, params, config, and prompt bundle 
 
 ## Source
 - Config: `configs/domains/geometry/solid_formula.yaml`
+- Prompt bundle: `prompts/geometry/solid_formula/geometry_solid_formula_v1.json`
 - Task module: `trace/tasks/geometry/solid_formula/house_prism_length_from_volume.py`

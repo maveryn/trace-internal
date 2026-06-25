@@ -1,23 +1,30 @@
 """Compute cylinder height from compound cylinder-cone volume data."""
 
-from trace.tasks.registry import register_task
+from trace.core import types as core_types
+from trace.tasks import base as task_base
+from trace.tasks import registry as task_registry
+from trace.tasks.shared import fixed_query
 
-from ._lifecycle import build_solid_formula_plan, run_solid_formula_public_entry
-from .shared.defaults import SCENE_ID
+from . import _lifecycle as lifecycle
+from .shared.defaults import DOMAIN, SCENE_ID
 from .shared.measurements import answer_support_probability_map, decimal_support, round1
 from .shared.rendering import render_cylinder_cone_height
-from .shared.sampling import select_case_option, select_support_value
+from .shared import sampling as formula_sampling
 from .shared.state import SolidFormulaProblem
 
-TASK_ID = "task_geometry__solid_formula__cylinder_cone_height_from_volume_radius"
-ANNOTATION_KEYS = (
+HEIGHT_TASK_ID = "task_geometry__solid_formula__cylinder_cone_height_from_volume_radius"
+HEIGHT_QUERY_ID = "single"
+HEIGHT_QUERY_IDS = (HEIGHT_QUERY_ID,)
+HEIGHT_DEFAULT_QUERY_ID = HEIGHT_QUERY_ID
+HEIGHT_PROMPT_KEY = HEIGHT_QUERY_ID
+HEIGHT_ANNOTATION_KEYS = (
     "target_cylinder_height_label",
     "volume_label",
     "radius_label",
     "cone_height_label",
 )
-ANSWER_SUPPORT = decimal_support(2, 61, step=1)
-CONSTRUCTION_OPTIONS = (
+HEIGHT_SUPPORT_VALUES = decimal_support(2, 61, step=1)
+HEIGHT_CONSTRUCTION_CHOICES = (
     (3.0, 3.0),
     (4.0, 6.0),
     (5.0, 9.0),
@@ -35,20 +42,20 @@ def _prepare_height_objective(
     branch_probabilities,
 ):
     # This task binds cylinder height as the answer before rendering.
-    cylinder_height = select_support_value(
+    cylinder_height = formula_sampling.select_support_value(
         instance_seed=instance_seed,
         params=params,
-        namespace=f"{TASK_ID}.{selected_query}.answer",
-        support=ANSWER_SUPPORT,
+        namespace=f"{HEIGHT_TASK_ID}.{selected_query}.answer",
+        support=HEIGHT_SUPPORT_VALUES,
     )
-    (radius, cone_height), construction_count = select_case_option(
+    (radius, cone_height), construction_count = formula_sampling.select_case_option(
         instance_seed=instance_seed,
         params=params,
-        namespace=f"{TASK_ID}.{selected_query}.construction",
-        options=CONSTRUCTION_OPTIONS,
+        namespace=f"{HEIGHT_TASK_ID}.{selected_query}.construction",
+        options=HEIGHT_CONSTRUCTION_CHOICES,
     )
     volume_pi_multiple = radius**2 * (cylinder_height + (cone_height / 3.0))
-    support_probabilities = answer_support_probability_map(ANSWER_SUPPORT, cylinder_height)
+    support_probabilities = answer_support_probability_map(HEIGHT_SUPPORT_VALUES, cylinder_height)
     problem = SolidFormulaProblem(
         solid_kind="cylinder_cone",
         answer=round1(cylinder_height),
@@ -62,29 +69,59 @@ def _prepare_height_objective(
         answer_support_probabilities=support_probabilities,
         construction_case_count_for_answer=construction_count,
     )
-    return build_solid_formula_plan(
-        prompt_key="single",
+    return lifecycle.build_solid_formula_plan(
+        prompt_key=HEIGHT_PROMPT_KEY,
         problem=problem,
         render_scene=render_cylinder_cone_height,
-        annotation_keys=ANNOTATION_KEYS,
+        annotation_keys=HEIGHT_ANNOTATION_KEYS,
         branch_probabilities=branch_probabilities,
         support_probabilities=support_probabilities,
     )
 
 
-@register_task
+@task_registry.register_task
 class GeometrySolidFormulaCylinderConeHeightFromVolumeRadiusTask:
-    task_id = TASK_ID
-    domain = "geometry"
+    task_id = HEIGHT_TASK_ID
+    domain = DOMAIN
     default_dataset_enabled = True
-    supported_query_ids = ("single",)
-    default_query_id = "single"
-    prepare_objective = staticmethod(_prepare_height_objective)
+    supported_query_ids = HEIGHT_QUERY_IDS
+    default_query_id = HEIGHT_DEFAULT_QUERY_ID
 
-    def generate(self, instance_seed, *, params, max_attempts):
-        return run_solid_formula_public_entry(
-            self,
-            instance_seed,
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int) -> task_base.TaskOutput:
+        """Generate one cylinder-cone height task with task-owned output binding."""
+
+        selected_query, query_probabilities, task_params = fixed_query.select_task_query_id(
+            instance_seed=int(instance_seed),
             params=params,
-            max_attempts=max_attempts,
+            supported_query_ids=HEIGHT_QUERY_IDS,
+            default_query_id=HEIGHT_DEFAULT_QUERY_ID,
+            task_id=HEIGHT_TASK_ID,
+            namespace=f"{HEIGHT_TASK_ID}.query",
+        )
+        plan = _prepare_height_objective(
+            instance_seed=int(instance_seed),
+            params=task_params,
+            selected_query=str(selected_query),
+            branch_probabilities=query_probabilities,
+        )
+        parts = lifecycle.prepare_solid_formula_task_parts(
+            task_id=HEIGHT_TASK_ID,
+            selected_query=str(selected_query),
+            branch_probabilities=query_probabilities,
+            params=task_params,
+            plan=plan,
+            instance_seed=int(instance_seed),
+            max_attempts=int(max_attempts),
+        )
+        return task_base.TaskOutput(
+            prompt=parts.prompt,
+            answer_gt=core_types.TypedValue(type="number", value=float(plan.answer_value)),
+            annotation_gt=core_types.TypedValue(type="bbox_map", value=dict(parts.annotation_value)),
+            image=parts.image,
+            image_id="img0",
+            trace_payload=parts.trace_payload,
+            task_versions=parts.task_versions,
+            scene_id=SCENE_ID,
+            query_id=str(selected_query),
+            prompt_variants=dict(parts.prompt_variants),
         )

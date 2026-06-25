@@ -1,14 +1,22 @@
 """Compute length from a house-prism volume."""
 
+from trace.core.types import TypedValue
+from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
+from trace.tasks.shared.fixed_query import select_task_query_id
 
-from ._lifecycle import build_solid_formula_plan, run_solid_formula_public_entry
+from ._lifecycle import build_solid_formula_plan, prepare_solid_formula_task_parts
+from .shared.defaults import DOMAIN, SCENE_ID
 from .shared.measurements import answer_support_probability_map, decimal_support, round1
 from .shared.rendering import render_house_prism
 from .shared.sampling import select_case_option, select_support_value
 from .shared.state import SolidFormulaProblem
 
 TASK_ID = "task_geometry__solid_formula__house_prism_length_from_volume"
+QUERY_ID = "single"
+SUPPORTED_QUERY_IDS = (QUERY_ID,)
+DEFAULT_QUERY_ID = QUERY_ID
+PROMPT_KEY = QUERY_ID
 ANNOTATION_KEYS = (
     "target_length_label",
     "volume_label",
@@ -65,7 +73,7 @@ def _prepare_house_length_objective(
         construction_case_count_for_answer=construction_count,
     )
     return build_solid_formula_plan(
-        prompt_key="single",
+        prompt_key=PROMPT_KEY,
         problem=problem,
         render_scene=render_house_prism,
         annotation_keys=ANNOTATION_KEYS,
@@ -77,16 +85,66 @@ def _prepare_house_length_objective(
 @register_task
 class GeometrySolidFormulaHousePrismLengthFromVolumeTask:
     task_id = TASK_ID
-    domain = "geometry"
+    domain = DOMAIN
     default_dataset_enabled = True
-    supported_query_ids = ("single",)
-    default_query_id = "single"
-    prepare_objective = staticmethod(_prepare_house_length_objective)
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = DEFAULT_QUERY_ID
 
-    def generate(self, instance_seed, *, params, max_attempts):
-        return run_solid_formula_public_entry(
-            self,
-            instance_seed,
+    @staticmethod
+    def _bind_house_plan(instance_seed: int, params: dict, query_id: str, query_probabilities: dict) -> object:
+        """Bind the house-prism formula target and visual witnesses for this objective."""
+
+        plan = _prepare_house_length_objective(
+            instance_seed=int(instance_seed),
             params=params,
-            max_attempts=max_attempts,
+            selected_query=str(query_id),
+            branch_probabilities=query_probabilities,
         )
+        return plan
+
+    @staticmethod
+    def _emit_task_output(*, parts, plan, query_id: str) -> TaskOutput:
+        """Build the verifier payload for the house-prism length public task."""
+
+        annotation_value = dict(parts.annotation_value)
+        prompt_variants = dict(parts.prompt_variants)
+        return TaskOutput(
+            prompt=parts.prompt,
+            answer_gt=TypedValue(type="number", value=float(plan.answer_value)),
+            annotation_gt=TypedValue(type="bbox_map", value=annotation_value),
+            image=parts.image,
+            image_id="img0",
+            trace_payload=parts.trace_payload,
+            task_versions=parts.task_versions,
+            scene_id=SCENE_ID,
+            query_id=str(query_id),
+            prompt_variants=prompt_variants,
+        )
+
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int) -> TaskOutput:
+        """Generate one house-prism length task with task-owned output binding."""
+
+        selected_query, probabilities, task_params = select_task_query_id(
+            instance_seed=int(instance_seed),
+            params=params,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
+            default_query_id=DEFAULT_QUERY_ID,
+            task_id=TASK_ID,
+            namespace=f"{TASK_ID}.query",
+        )
+        plan = self._bind_house_plan(
+            int(instance_seed),
+            task_params,
+            str(selected_query),
+            dict(probabilities),
+        )
+        parts = prepare_solid_formula_task_parts(
+            task_id=TASK_ID,
+            selected_query=str(selected_query),
+            branch_probabilities=probabilities,
+            params=task_params,
+            plan=plan,
+            instance_seed=int(instance_seed),
+            max_attempts=int(max_attempts),
+        )
+        return self._emit_task_output(parts=parts, plan=plan, query_id=str(selected_query))

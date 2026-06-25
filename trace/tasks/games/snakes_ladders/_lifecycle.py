@@ -75,7 +75,6 @@ def resolve_snakes_ladders_scene_axes(
     """Resolve scene-only axes before a public task builds its objective."""
 
     scene_variant, scene_probs = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=GEN_DEFAULTS,
@@ -86,7 +85,6 @@ def resolve_snakes_ladders_scene_axes(
         supported_variants=SUPPORTED_SNAKES_LADDERS_SCENE_VARIANTS,
     )
     style_variant, style_probs = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=GEN_DEFAULTS,

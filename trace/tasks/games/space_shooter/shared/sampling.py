@@ -26,7 +26,6 @@ def resolve_scene_axes(*, namespace: str, instance_seed: int, params: Mapping[st
     from trace.tasks.games.shared.sampling import resolve_games_named_axis
 
     scene_variant, scene_variant_probabilities = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=GEN_DEFAULTS,
@@ -37,7 +36,6 @@ def resolve_scene_axes(*, namespace: str, instance_seed: int, params: Mapping[st
         supported_variants=SUPPORTED_SCENE_VARIANTS,
     )
     style_variant, style_variant_probabilities = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=GEN_DEFAULTS,

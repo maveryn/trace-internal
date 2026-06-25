@@ -6,7 +6,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
-from ...shared.fixed_query import normalize_query_id_params
+from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
 
@@ -39,44 +39,8 @@ def get_games_int_range(
     return int(lower), int(upper)
 
 
-def resolve_games_query_id(
-    *,
-    task_id: str,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    gen_defaults: Mapping[str, Any],
-    supported_variants: Sequence[str],
-) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced semantic query axis, honoring legacy aliases."""
-
-    alias_params = normalize_query_id_params(params)
-    rng = spawn_rng(int(instance_seed), f"{str(task_id)}.query_id")
-    selected, probabilities = resolve_variant(
-        rng,
-        params=alias_params,
-        gen_defaults=gen_defaults,
-        supported_variants=[str(item) for item in supported_variants],
-        explicit_key="query_id",
-        weights_key="query_id_weights",
-    )
-    selected = apply_balanced_variant_sampling(
-        instance_seed=int(instance_seed),
-        params=alias_params,
-        gen_defaults=gen_defaults,
-        selected_variant=str(selected),
-        variant_probabilities=probabilities,
-        supported_variants=[str(item) for item in supported_variants],
-        balance_flag_key="balanced_query_id_sampling",
-        explicit_key="query_id",
-        weights_key="query_id_weights",
-        sampling_namespace=f"{str(task_id)}.query_id",
-    )
-    return str(selected), dict(probabilities)
-
-
 def resolve_games_named_axis(
     *,
-    task_id: str,
     instance_seed: int,
     params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
@@ -88,7 +52,8 @@ def resolve_games_named_axis(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve one balanced named visual or semantic axis for a games task."""
 
-    rng = spawn_rng(int(instance_seed), f"{str(task_id)}.{str(namespace)}")
+    sampling_namespace = str(namespace)
+    rng = spawn_rng(int(instance_seed), sampling_namespace)
     selected, probabilities = resolve_variant(
         rng,
         params=params,
@@ -107,14 +72,47 @@ def resolve_games_named_axis(
         balance_flag_key=str(balance_flag_key),
         explicit_key=str(explicit_key),
         weights_key=str(weights_key),
-        sampling_namespace=f"{str(task_id)}.{str(namespace)}",
+        sampling_namespace=sampling_namespace,
     )
     return str(selected), dict(probabilities)
+
+
+def resolve_games_integer_axis(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    support_key: str,
+    explicit_key: str,
+    fallback_support: Sequence[int],
+    namespace: str,
+    balanced_flag_key: str,
+) -> tuple[int, tuple[int, ...], Dict[str, float]]:
+    """Resolve one integer-valued axis for games scene samplers."""
+
+    support = resolve_integer_support(
+        params,
+        gen_defaults=gen_defaults,
+        key=str(support_key),
+        fallback=tuple(int(value) for value in fallback_support),
+    )
+    value, probabilities = resolve_integer_choice(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=gen_defaults,
+        support_key=str(support_key),
+        explicit_key=str(explicit_key),
+        fallback_support=support,
+        namespace=str(namespace),
+        balanced_flag_key=str(balanced_flag_key),
+        namespace_support_permutation=True,
+    )
+    return int(value), tuple(int(item) for item in support), dict(probabilities)
 
 
 __all__ = [
     "get_games_int_param",
     "get_games_int_range",
+    "resolve_games_integer_axis",
     "resolve_games_named_axis",
-    "resolve_games_query_id",
 ]

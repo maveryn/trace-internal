@@ -56,7 +56,6 @@ def resolve_match3_scene_axes(
     """Sample visual scene and style variants without task-objective branching."""
 
     scene_variant, scene_probs = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,
@@ -67,7 +66,6 @@ def resolve_match3_scene_axes(
         supported_variants=SUPPORTED_SCENE_VARIANTS,
     )
     style_variant, style_probs = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,

@@ -411,7 +411,6 @@ def _resolve_style_variant(
     """Resolve the scene style axis shared by all block-world tasks."""
 
     return resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,

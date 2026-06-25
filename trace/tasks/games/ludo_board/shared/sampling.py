@@ -124,7 +124,6 @@ def resolve_ludo_named_axis(
     """Resolve a scene-local named axis using the shared games sampler."""
 
     return resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,

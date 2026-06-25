@@ -52,7 +52,6 @@ def _prepare_trick_play_objective(instance_seed, task_params, _query_id, _query_
         balanced_flag_key="balanced_trick_played_count_sampling",
     )
     trump_mode, trump_mode_probs = resolve_games_named_axis(
-        task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=task_params,
         gen_defaults=_GEN_DEFAULTS,

@@ -11,6 +11,10 @@ Use this with `SCENE_MIGRATION_GUIDE.md` when migrating a games scene.
 - shared playing-card face rendering for card-family game scenes
 - readable text wrappers
 - semantic marker wrappers
+- prompt artifact and output-slot assembly that only receives scene/task-owned
+  prompt keys and dynamic slots
+- named/integer sampling-axis primitives that receive a fully resolved
+  deterministic sampling namespace, not task identity
 - visual option-grid layout
 - visual defaults
 - approved artifact-family helpers reused by multiple scenes
@@ -69,3 +73,5 @@ domain/shared helpers.
 Migrated games scenes must also not import `resolve_games_query_id` from
 `trace.tasks.games.shared.sampling`; query selection belongs in the public task
 file.
+The helper itself has been removed from games runtime. Do not recreate it under
+another name.

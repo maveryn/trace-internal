@@ -8,9 +8,8 @@ from typing import Any, Dict, Mapping
 from trace.tasks.shared.config_defaults import (
     load_scene_generation_rendering_prompt_defaults,
     required_group_default,
-    required_group_defaults,
 )
-from trace.tasks.shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
+from trace.tasks.games.shared.prompts import build_games_prompt_artifacts, games_prompt_output_slots
 
 from .rules import player_name
 from .defaults import PROMPT_WIRING_KEYS, SCENE_ID
@@ -82,22 +81,13 @@ def connect_four_output_slots(
 ) -> Dict[str, Any]:
     """Return answer/annotation prompt slots for one Connect Four query key."""
 
-    return {
-        "annotation_hint": required_group_default(
-            _PROMPT_DEFAULTS,
-            f"annotation_hint_{str(prompt_query_key)}",
-            context="Connect Four prompt defaults",
-        ),
-        "answer_hint": required_group_default(
-            _PROMPT_DEFAULTS,
-            f"answer_hint_{str(prompt_query_key)}",
-            context="Connect Four prompt defaults",
-        ),
-        "json_output_contract": 'Return JSON with exactly two keys: "annotation" and "answer".',
-        "json_output_contract_answer_only": 'Return JSON with exactly one key: "answer".',
-        "json_example": str(json_example),
-        "json_example_answer_only": str(json_example_answer_only),
-    }
+    return games_prompt_output_slots(
+        prompt_defaults=_PROMPT_DEFAULTS,
+        prompt_query_key=str(prompt_query_key),
+        context="Connect Four prompt defaults",
+        json_example=str(json_example),
+        json_example_answer_only=str(json_example_answer_only),
+    )
 
 
 def build_connect_four_prompt_artifacts(
@@ -109,23 +99,16 @@ def build_connect_four_prompt_artifacts(
 ) -> tuple[Dict[str, Any], Any]:
     """Build prompt artifacts from the external Connect Four prompt bundle."""
 
-    prompt_defaults = required_group_defaults(
-        _PROMPT_DEFAULTS,
-        PROMPT_WIRING_KEYS,
-        context="Connect Four prompt wiring defaults",
-    )
-    prompt_selection = render_scene_prompt_variants(
+    return build_games_prompt_artifacts(
         domain=str(domain),
         scene_id=SCENE_ID,
-        bundle_id=str(prompt_defaults["bundle_id"]),
-        scene_key=str(prompt_defaults["scene_key"]),
-        task_key=str(prompt_defaults["task_key"]),
-        query_key=str(prompt_query_key),
-        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+        prompt_defaults=_PROMPT_DEFAULTS,
+        prompt_wiring_keys=PROMPT_WIRING_KEYS,
+        context="Connect Four prompt wiring defaults",
+        prompt_query_key=str(prompt_query_key),
         dynamic_slots=dict(dynamic_slots),
         instance_seed=int(instance_seed),
     )
-    return dict(prompt_defaults), build_prompt_trace_artifacts(prompt_selection)
 
 
 __all__ = [

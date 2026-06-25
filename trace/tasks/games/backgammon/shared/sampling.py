@@ -65,7 +65,6 @@ def _resolve_named_axis(
     supported: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
     return resolve_games_named_axis(
-        task_id="games_backgammon_scene_axes",
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,

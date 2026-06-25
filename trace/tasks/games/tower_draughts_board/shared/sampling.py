@@ -37,7 +37,6 @@ def _resolve_named_axis(
     supported: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
     return resolve_games_named_axis(
-        task_id=SCENE_NAMESPACE,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=GEN_DEFAULTS,

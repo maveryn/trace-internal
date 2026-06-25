@@ -74,7 +74,6 @@ def select_scene_axes(params: Mapping[str, Any], *, instance_seed: int, namespac
     """Resolve scene-level rendering grammar axes."""
 
     scene_variant, scene_variant_probabilities = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=GEN_DEFAULTS,

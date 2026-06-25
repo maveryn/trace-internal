@@ -34,7 +34,6 @@ def resolve_reversi_visual_axes(
     """Resolve scene and style axes without objective-specific branching."""
 
     scene_variant, scene_variant_probabilities = resolve_games_named_axis(
-        task_id=str(namespace_root),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,
@@ -45,7 +44,6 @@ def resolve_reversi_visual_axes(
         supported_variants=[str(value) for value in SUPPORTED_SCENE_VARIANTS],
     )
     style_variant, style_variant_probabilities = resolve_games_named_axis(
-        task_id=str(namespace_root),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,

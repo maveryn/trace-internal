@@ -333,7 +333,6 @@ def _resolve_named_axis(
     """Resolve one balanced named Mini-golf axis."""
 
     return resolve_games_named_axis(
-        task_id=str(namespace_root),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,

@@ -43,7 +43,6 @@ def resolve_nine_mens_morris_visual_axes(
     """Resolve scene and style axes shared by Morris objectives."""
 
     scene_variant, scene_variant_probabilities = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,
@@ -54,7 +53,6 @@ def resolve_nine_mens_morris_visual_axes(
         supported_variants=SUPPORTED_NINE_MENS_MORRIS_SCENE_VARIANTS,
     )
     style_variant, style_variant_probabilities = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,

@@ -58,7 +58,6 @@ def sample_named_axis(
     supported: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
     return resolve_games_named_axis(
-        task_id=str(namespace_key),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=GEN_DEFAULTS,

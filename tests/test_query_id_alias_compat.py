@@ -4,15 +4,16 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.shared.fixed_query import merged_query_params
-from trace.tasks.games.shared.sampling import resolve_games_query_id
 from trace.tasks.shared.fixed_query import (
+    DEFAULT_QUERY_ID,
     force_query_id_params,
+    merged_query_params,
     normalize_query_id_params,
     resolve_task_query_id_param,
     select_task_query_id,
     strip_query_id_params,
 )
+from trace.tasks.registry import _ensure_supported_query_ids
 from trace.tasks.three_d.shared.task_support import resolve_axis_variant
 
 
@@ -50,23 +51,24 @@ def test_force_query_id_params_checks_legacy_alias_conflicts() -> None:
 
 
 def test_resolve_task_query_id_param_validates_supported_ids_and_strips_aliases() -> None:
+    assert DEFAULT_QUERY_ID == "single"
     assert (
         resolve_task_query_id_param(
             {},
-            supported_query_ids=("default",),
-            default_query_id="default",
+            supported_query_ids=("single",),
+            default_query_id="single",
             task_id="task_test__scene__fixed",
         )
-        == "default"
+        == "single"
     )
     assert (
         resolve_task_query_id_param(
             {"query_variant": "default"},
-            supported_query_ids=("default",),
-            default_query_id="default",
+            supported_query_ids=("single",),
+            default_query_id="single",
             task_id="task_test__scene__fixed",
         )
-        == "default"
+        == "single"
     )
     assert (
         resolve_task_query_id_param(
@@ -80,8 +82,8 @@ def test_resolve_task_query_id_param_validates_supported_ids_and_strips_aliases(
     with pytest.raises(ValueError, match="unsupported query_id"):
         resolve_task_query_id_param(
             {"query_id": "other"},
-            supported_query_ids=("default",),
-            default_query_id="default",
+            supported_query_ids=("single",),
+            default_query_id="single",
             task_id="task_test__scene__fixed",
         )
 
@@ -100,6 +102,58 @@ def test_select_task_query_id_handles_explicit_query_and_strips_selector() -> No
     assert selected == "right"
     assert probabilities == {"left": 0.0, "right": 1.0}
     assert task_params == {"keep": 7}
+
+
+def test_select_task_query_id_uses_single_for_no_branch_tasks() -> None:
+    selected, probabilities, task_params = select_task_query_id(
+        instance_seed=123,
+        params={"query_id": "single", "keep": 7},
+        supported_query_ids=("single",),
+        default_query_id="single",
+        task_id="task_test__scene__fixed",
+    )
+
+    assert selected == "single"
+    assert probabilities == {"single": 1.0}
+    assert task_params == {"keep": 7}
+
+    legacy_selected, legacy_probabilities, legacy_task_params = select_task_query_id(
+        instance_seed=123,
+        params={"query_id": "default", "keep": 7},
+        supported_query_ids=("single",),
+        default_query_id="single",
+        task_id="task_test__scene__fixed",
+    )
+
+    assert legacy_selected == "single"
+    assert legacy_probabilities == {"single": 1.0}
+    assert legacy_task_params == {"keep": 7}
+
+
+def test_registry_normalizes_one_declared_query_to_single() -> None:
+    class SingleQueryTask:
+        supported_query_ids = ("objective_named_query",)
+
+    assert (
+        _ensure_supported_query_ids(
+            SingleQueryTask,
+            task_id="task_test__scene__objective",
+        )
+        == ("single",)
+    )
+    assert SingleQueryTask.supported_query_ids == ("single",)
+    assert SingleQueryTask._trace_internal_supported_query_ids == ("objective_named_query",)
+
+    class MultiQueryTask:
+        supported_query_ids = ("above_threshold", "below_threshold")
+
+    assert (
+        _ensure_supported_query_ids(
+            MultiQueryTask,
+            task_id="task_test__scene__objective",
+        )
+        == ("above_threshold", "below_threshold")
+    )
 
 
 def test_select_task_query_id_cycles_sample_cursor_and_reduces_for_lower_axes() -> None:
@@ -149,19 +203,6 @@ def test_select_task_query_id_rejects_conflicting_aliases() -> None:
             default_query_id="a",
             task_id="task_test__scene__multi",
         )
-
-
-def test_games_query_resolver_honors_legacy_query_variant() -> None:
-    query_id, probabilities = resolve_games_query_id(
-        task_id="test_games_query_alias",
-        instance_seed=123,
-        params={"query_variant": "second"},
-        gen_defaults={},
-        supported_variants=("first", "second"),
-    )
-
-    assert query_id == "second"
-    assert probabilities == {"first": 0.0, "second": 1.0}
 
 
 def test_merged_chart_params_honor_legacy_query_variant_without_leaking_it() -> None:

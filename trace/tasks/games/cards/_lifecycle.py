@@ -98,7 +98,6 @@ def resolve_cards_style_variant(
     """Resolve the shared card-table visual style axis for one public task."""
 
     return resolve_games_named_axis(
-        task_id=str(task_id),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,

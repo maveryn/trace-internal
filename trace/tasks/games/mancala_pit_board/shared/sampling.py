@@ -34,7 +34,6 @@ def resolve_mancala_named_axis(
     """Resolve a named scene axis using the shared games sampler."""
 
     return resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,

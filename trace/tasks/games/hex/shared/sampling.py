@@ -169,7 +169,6 @@ def resolve_hex_scene_axes(
     """Resolve scene-level Hex axes shared by all objectives."""
 
     scene_variant, scene_variant_probabilities = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,
@@ -180,7 +179,6 @@ def resolve_hex_scene_axes(
         supported_variants=SUPPORTED_HEX_SCENE_VARIANTS,
     )
     style_variant, style_variant_probabilities = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,
@@ -191,7 +189,6 @@ def resolve_hex_scene_axes(
         supported_variants=SUPPORTED_HEX_STYLE_VARIANTS,
     )
     player_color, player_color_probabilities = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,

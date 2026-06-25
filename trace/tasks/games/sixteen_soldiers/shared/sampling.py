@@ -50,7 +50,6 @@ def _resolve_named_axis(
     """Resolve one balanced Sixteen Soldiers visual/setup axis."""
 
     return resolve_games_named_axis(
-        task_id=SCENE_NAMESPACE,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,

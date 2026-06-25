@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping
 
-from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults, required_group_defaults
-from trace.tasks.shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
+from trace.tasks.games.shared.prompts import build_games_prompt_artifacts
+from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 
 from .defaults import PROMPT_WIRING_KEYS
 from .state import SCENE_ID
@@ -22,22 +22,15 @@ def build_chess_prompt_artifacts(
 ) -> tuple[Dict[str, Any], Any]:
     """Build prompt artifacts from the external Chess prompt bundle."""
 
-    prompt_defaults = required_group_defaults(
-        _PROMPT_DEFAULTS,
-        PROMPT_WIRING_KEYS,
-        context="Chess prompt wiring defaults",
-    )
-    prompt_selection = render_scene_prompt_variants(
+    return build_games_prompt_artifacts(
         domain=str(domain),
         scene_id=SCENE_ID,
-        bundle_id=str(prompt_defaults["bundle_id"]),
-        scene_key=str(prompt_defaults["scene_key"]),
-        task_key=str(prompt_defaults["task_key"]),
-        query_key=str(prompt_query_key),
-        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+        prompt_defaults=_PROMPT_DEFAULTS,
+        prompt_wiring_keys=PROMPT_WIRING_KEYS,
+        context="Chess prompt wiring defaults",
+        prompt_query_key=str(prompt_query_key),
         dynamic_slots=dict(dynamic_slots),
         instance_seed=int(instance_seed),
     )
-    return dict(prompt_defaults), build_prompt_trace_artifacts(prompt_selection)
 
 __all__ = ["build_chess_prompt_artifacts"]

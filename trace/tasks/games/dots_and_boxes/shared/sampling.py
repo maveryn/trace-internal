@@ -11,12 +11,12 @@ from trace.tasks.games.shared.layout import (
     resolve_games_unit_size_scale,
     scale_games_px,
 )
+from trace.tasks.games.shared.sampling import resolve_games_integer_axis, resolve_games_named_axis
 from trace.tasks.games.shared.style import SUPPORTED_DOTS_AND_BOXES_STYLE_VARIANTS
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.font_assets import sample_font_family
-from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
-from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from trace.tasks.shared.support_sampling import resolve_integer_support
 
 from .defaults import (
     DEFAULTS,
@@ -40,28 +40,16 @@ def _resolve_named_axis(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve one named scene or visual axis without public-task identity."""
 
-    rng = spawn_rng(int(instance_seed), f"{DOTS_AND_BOXES_NAMESPACE}.{str(namespace)}")
-    selected, probabilities = resolve_variant(
-        rng,
-        params=params,
-        gen_defaults=gen_defaults,
-        supported_variants=[str(item) for item in supported],
-        explicit_key=str(explicit_key),
-        weights_key=str(weights_key),
-    )
-    selected = apply_balanced_variant_sampling(
+    return resolve_games_named_axis(
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,
-        selected_variant=str(selected),
-        variant_probabilities=probabilities,
-        supported_variants=[str(item) for item in supported],
-        balance_flag_key=str(balance_flag_key),
+        namespace=f"{DOTS_AND_BOXES_NAMESPACE}.{str(namespace)}",
         explicit_key=str(explicit_key),
         weights_key=str(weights_key),
-        sampling_namespace=f"{DOTS_AND_BOXES_NAMESPACE}.{str(namespace)}",
+        balance_flag_key=str(balance_flag_key),
+        supported_variants=[str(item) for item in supported],
     )
-    return str(selected), dict(probabilities)
 
 
 def resolve_dots_and_boxes_scene_axes(
@@ -113,22 +101,15 @@ def resolve_dots_and_boxes_integer_axis(
 ) -> DotsAndBoxesIntegerAxis:
     """Resolve one task-owned integer axis."""
 
-    support = resolve_integer_support(
-        params,
-        gen_defaults=gen_defaults,
-        key=str(support_key),
-        fallback=tuple(int(value) for value in fallback_support),
-    )
-    value, probabilities = resolve_integer_choice(
+    value, support, probabilities = resolve_games_integer_axis(
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,
         support_key=str(support_key),
         explicit_key=str(explicit_key),
-        fallback_support=support,
+        fallback_support=tuple(int(value) for value in fallback_support),
         namespace=f"{DOTS_AND_BOXES_NAMESPACE}.{str(namespace)}",
         balanced_flag_key=str(balanced_flag_key),
-        namespace_support_permutation=True,
     )
     return DotsAndBoxesIntegerAxis(
         value=int(value),

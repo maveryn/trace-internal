@@ -37,7 +37,6 @@ def _resolve_named_axis(
     """Resolve one named scene axis with a scene-local namespace."""
 
     return resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=GEN_DEFAULTS,

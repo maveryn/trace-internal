@@ -29,7 +29,6 @@ def resolve_lane_runner_scene_axes(
     """Resolve shared row, lane, scene, and style axes."""
 
     scene_variant, scene_variant_probabilities = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,
@@ -40,7 +39,6 @@ def resolve_lane_runner_scene_axes(
         supported_variants=[str(value) for value in SUPPORTED_LANE_RUNNER_SCENE_VARIANTS],
     )
     style_variant, style_variant_probabilities = resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,

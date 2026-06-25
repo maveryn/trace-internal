@@ -41,7 +41,6 @@ def _prepare_poker_best_objective(instance_seed, task_params, _query_id, _query_
         namespace=f"{TASK_ID}.hand_count",
     )
     winning_category, winning_category_probs = resolve_games_named_axis(
-        task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=task_params,
         gen_defaults=_GEN_DEFAULTS,

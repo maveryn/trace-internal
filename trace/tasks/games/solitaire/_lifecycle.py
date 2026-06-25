@@ -29,7 +29,6 @@ ObjectiveBuilder = Callable[[Any, Mapping[str, Any], str, int], "SolitaireObject
 
 def _sample_scene_variant(*, namespace: str, instance_seed: int, params: Mapping[str, Any]):
     return resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=GEN_DEFAULTS,
@@ -43,7 +42,6 @@ def _sample_scene_variant(*, namespace: str, instance_seed: int, params: Mapping
 
 def _sample_panel_style_variant(*, namespace: str, instance_seed: int, params: Mapping[str, Any]):
     return resolve_games_named_axis(
-        task_id=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=GEN_DEFAULTS,

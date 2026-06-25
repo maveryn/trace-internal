@@ -42,7 +42,6 @@ def resolve_rule_override_axes(
     """Resolve scene axes without using public task or query identities."""
 
     board_style, board_style_probabilities = resolve_games_named_axis(
-        task_id=SCENE_NAMESPACE,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,
@@ -53,7 +52,6 @@ def resolve_rule_override_axes(
         supported_variants=SUPPORTED_BOARD_STYLES,
     )
     target_player, target_player_probabilities = resolve_games_named_axis(
-        task_id=SCENE_NAMESPACE,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=gen_defaults,

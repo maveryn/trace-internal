@@ -231,8 +231,7 @@ def sample_slot_reel_completion_scene(
     correct_option_pattern = tuple(int(value) for value in rng.choice(winning_options))
     distractor_patterns = [tuple(int(value) for value in pattern) for pattern in rng.sample(list(nonwinning_options), 3)]
     pattern_items = [correct_option_pattern, *distractor_patterns]
-    shuffled_labels = list(labels)
-    rng.shuffle(shuffled_labels)
+    rng.shuffle(pattern_items)
     sampled_symbols = list(rng.sample(list(SYMBOL_KEYS), 3))
     symbol_by_code = {code: str(symbol) for code, symbol in enumerate(sampled_symbols)}
     base_cells = tuple(
@@ -247,7 +246,7 @@ def sample_slot_reel_completion_scene(
     options: list[SlotCompletionOption] = []
     answer_label = ""
     answer_completed_paylines: tuple[str, ...] = ()
-    for label, option_pattern in zip(shuffled_labels, pattern_items):
+    for label, option_pattern in zip(labels, pattern_items):
         cells = tuple(
             SlotCell(
                 row=int(row),

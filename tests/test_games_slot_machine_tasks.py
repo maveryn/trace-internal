@@ -102,6 +102,7 @@ def test_games_slot_machine_reel_completion_label_contract() -> None:
     )
     execution = out.trace_payload["execution_trace"]
     answer_label = str(out.answer_gt.value)
+    assert [str(record["label"]) for record in execution["options"]] == ["A", "B", "C", "D"]
     option_records = {str(record["label"]): record for record in execution["options"]}
 
     assert out.scene_id == "slot_machine"

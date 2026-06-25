@@ -8,13 +8,13 @@ from typing import Any
 
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
+from trace.tasks.geometry.shared.option_count import resolve_geometry_option_count
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
+from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from trace.tasks.geometry.shared.option_count import resolve_geometry_option_count
-
-from ._lifecycle import VolumeEquivalenceTaskBinding, prepare_volume_equivalence_task_parts
-from .shared.annotations import OPTION_ANNOTATION_KEYS
+from .shared.annotations import OPTION_ANNOTATION_KEYS, projected_annotation
 from .shared.construction import (
     CONE_SOURCE_OPTION_CASES,
     CUBOID_SOURCE_OPTION_CASES,
@@ -23,11 +23,13 @@ from .shared.construction import (
     resolve_cone_matching_cylinder_option,
     resolve_cuboid_matching_cylinder_option,
     resolve_cylinder_matching_cone_option,
+    solid_volume,
 )
 from .shared.defaults import DOMAIN, SCENE_ID, load_volume_equivalence_defaults
+from .shared.output import common_trace_sections, prepare_volume_equivalence_artifacts, prompt_render_spec
 from .shared.rendering import render_option_scene
 from .shared.sampling import select_conversion_case
-from .shared.state import ResolvedProblem
+from .shared.state import RenderedScene, ResolvedProblem
 
 
 TASK_ID = "task_geometry__volume_equivalence_conversion__equal_volume_option_label"
@@ -42,13 +44,6 @@ SUPPORTED_QUERY_IDS: tuple[str, ...] = (
 )
 EQUAL_VOLUME_OPTION_QUERY_IDS = SUPPORTED_QUERY_IDS
 PROMPT_TASK_KEY = "equal_volume_option_label_query"
-TASK_BINDING = VolumeEquivalenceTaskBinding(
-    prompt_task_key=PROMPT_TASK_KEY,
-    annotation_keys=OPTION_ANNOTATION_KEYS,
-    answer_hint_key="answer_hint_option",
-    answer_type="option_letter",
-    render_scene=render_option_scene,
-)
 _OptionResolver = Callable[..., ResolvedProblem]
 
 
@@ -141,6 +136,116 @@ def _resolve_problem(
     )
 
 
+def _query_params(
+    *,
+    selected_branch: str,
+    branch_probabilities: Mapping[str, float],
+    problem: ResolvedProblem,
+) -> dict[str, Any]:
+    option_labels = [str(option.label) for option in problem.option_specs]
+    return {
+        "task_id": TASK_ID,
+        "scene_id": SCENE_ID,
+        "query_id": str(selected_branch),
+        "query_id_probabilities": dict(branch_probabilities),
+        "case_probabilities": dict(problem.case_probabilities),
+        "answer_support_probabilities": dict(problem.answer_support_probabilities),
+        "option_count_probabilities": dict(problem.option_count_probabilities),
+        "source_shape": problem.source.shape,
+        "target_shape": problem.target.shape,
+        "source_volume": int(solid_volume(problem.source)),
+        "target_volume": int(solid_volume(problem.target)),
+        "target_unknown_role": str(problem.target_unknown_role),
+        "selected_option_label": str(problem.selected_option_label),
+        "option_labels": option_labels,
+        "option_shapes": {str(option.label): option.solid.shape for option in problem.option_specs},
+        "option_volumes": {str(option.label): int(option.volume) for option in problem.option_specs},
+    }
+
+
+def _option_trace(problem: ResolvedProblem) -> list[dict[str, Any]]:
+    """Serialize the visual option candidates for this selection objective."""
+
+    return [
+        {
+            "label": str(option.label),
+            "shape": option.solid.shape,
+            "base_area": int(option.solid.base_area),
+            "height": int(option.solid.height),
+            "length": int(option.solid.length),
+            "width": int(option.solid.width),
+            "volume": int(option.volume),
+            "is_selected": str(option.label) == str(problem.selected_option_label),
+        }
+        for option in problem.option_specs
+    ]
+
+
+def _selected_option_position(problem: ResolvedProblem) -> int:
+    """Return the one-based visible position of the selected option."""
+
+    labels = [str(option.label) for option in problem.option_specs]
+    return int(labels.index(str(problem.selected_option_label)) + 1)
+
+
+def _trace_payload(
+    *,
+    selected_branch: str,
+    branch_probabilities: Mapping[str, float],
+    problem: ResolvedProblem,
+    rendered: RenderedScene,
+    prompt_artifacts: Any,
+    annotation_value: Mapping[str, list[float]],
+    noise_meta: Mapping[str, Any],
+    image_size: tuple[int, int],
+) -> dict[str, Any]:
+    """Build task-specific trace sections from the resolved option-selection problem."""
+
+    params = _query_params(
+        selected_branch=str(selected_branch),
+        branch_probabilities=branch_probabilities,
+        problem=problem,
+    )
+    query_spec = build_prompt_query_spec(
+        prompt_artifacts=prompt_artifacts,
+        query_id=str(selected_branch),
+        params=params,
+    )
+    query_spec["task_id"] = TASK_ID
+    query_spec["scene_id"] = SCENE_ID
+    trace_payload = common_trace_sections(
+        problem=problem,
+        rendered=rendered,
+        annotation_keys=OPTION_ANNOTATION_KEYS,
+        noise_meta=noise_meta,
+        image_size=image_size,
+        option_count=len(problem.option_specs),
+    )
+    trace_payload["scene_ir"].update({"task_id": TASK_ID, "query_id": str(selected_branch)})
+    trace_payload["query_spec"] = query_spec
+    trace_payload["render_spec"].update(
+        {
+            "task_id": TASK_ID,
+            "query_id": str(selected_branch),
+            "prompt": prompt_render_spec(prompt_artifacts),
+        }
+    )
+    trace_payload["render_map"] = {"query_id": str(selected_branch), **dict(trace_payload["render_map"])}
+    trace_payload["execution_trace"].update(
+        {
+            "task_id": TASK_ID,
+            "query_id": str(selected_branch),
+            "selected_option_label": str(problem.selected_option_label),
+            "selected_option_position": _selected_option_position(problem),
+            "options": _option_trace(problem),
+            "answer": str(problem.answer),
+        }
+    )
+    trace_payload["witness_symbolic"] = dict(params)
+    trace_payload["projected_annotation"] = projected_annotation(dict(annotation_value))
+    return trace_payload
+
+
 @register_task
 class GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask:
     """Select the option solid that has equal volume to the source solid."""
@@ -151,6 +256,8 @@ class GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask:
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Generate one visual option-selection task after binding its query branch."""
+
         selected_branch, branch_probabilities, task_params = select_task_query_id(
             instance_seed=int(instance_seed),
             params=params,
@@ -164,27 +271,41 @@ class GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask:
             instance_seed=int(instance_seed),
             params=task_params,
         )
-        parts = prepare_volume_equivalence_task_parts(
-            public_identifier=TASK_ID,
-            branch_key=str(selected_branch),
-            branch_probabilities=branch_probabilities,
+        _generation_defaults, render_defaults, prompt_defaults = load_volume_equivalence_defaults(TASK_ID)
+        artifacts = prepare_volume_equivalence_artifacts(
             problem=problem,
-            binding=TASK_BINDING,
+            render_scene=render_option_scene,
+            prompt_task_key=PROMPT_TASK_KEY,
+            prompt_branch_key=str(selected_branch),
+            annotation_keys=OPTION_ANNOTATION_KEYS,
+            answer=str(problem.answer),
             instance_seed=int(instance_seed),
             params=task_params,
             max_attempts=int(max_attempts),
+            render_defaults=render_defaults,
+            prompt_defaults=prompt_defaults,
+            random_namespace=TASK_ID,
         )
         return TaskOutput(
-            prompt=parts.prompt,
+            prompt=str(artifacts.prompt_artifacts.prompt),
             answer_gt=TypedValue(type="option_letter", value=str(problem.answer)),
-            annotation_gt=TypedValue(type="bbox_map", value=dict(parts.annotation_value)),
-            image=parts.image,
+            annotation_gt=TypedValue(type="bbox_map", value=dict(artifacts.annotation_value)),
+            image=artifacts.image,
             image_id="img0",
-            trace_payload=parts.trace_payload,
-            task_versions=parts.task_versions,
-            scene_id=parts.scene_id,
+            trace_payload=_trace_payload(
+                selected_branch=str(selected_branch),
+                branch_probabilities=branch_probabilities,
+                problem=problem,
+                rendered=artifacts.rendered,
+                prompt_artifacts=artifacts.prompt_artifacts,
+                annotation_value=artifacts.annotation_value,
+                noise_meta=artifacts.noise_meta,
+                image_size=artifacts.image.size,
+            ),
+            task_versions=default_task_versions(),
+            scene_id=SCENE_ID,
             query_id=str(selected_branch),
-            prompt_variants=dict(parts.prompt_variants),
+            prompt_variants=dict(artifacts.prompt_artifacts.prompt_variants),
         )
 
 

@@ -8,17 +8,19 @@ import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.volume_equivalence_conversion.equal_volume_option_label import GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask
+from trace.tasks.geometry.volume_equivalence_conversion.equal_volume_option_label import (
+    QUERY_ID_CONE_MATCHES_CYLINDER_OPTION,
+    TASK_ID_EQUAL_VOLUME_OPTION,
+    GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask,
+)
 from trace.tasks.geometry.volume_equivalence_conversion.missing_dimension_value import (
     MISSING_DIMENSION_ANNOTATION_KEYS,
-    OPTION_ANNOTATION_KEYS,
-    QUERY_ID_CONE_MATCHES_CYLINDER_OPTION,
     QUERY_ID_CUBOID_TO_CYLINDER_LENGTH,
     SCENE_ID,
-    TASK_ID_EQUAL_VOLUME_OPTION,
     TASK_ID_MISSING_DIMENSION,
     GeometryVolumeEquivalenceConversionMissingDimensionValueTask,
 )
+from trace.tasks.geometry.volume_equivalence_conversion.shared.annotations import OPTION_ANNOTATION_KEYS
 
 
 def _generate(seed: int, *, task_id: str = TASK_ID_MISSING_DIMENSION, **params):

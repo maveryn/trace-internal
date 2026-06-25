@@ -337,59 +337,98 @@ def sample_enemy_ship_count_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample
 
 
 def sample_enemy_ship_hit_scene(*, rng, axes: SceneAxes, target_answer: int) -> SpaceShooterSample:
-    """Construct lanes where visible blue shots can destroy target enemy ships."""
+    """Construct lanes where blue-shot/enemy counts realize the target hit count."""
 
-    lane_count = max(int(target_answer), int(axes.lane_count))
-    target = min(int(target_answer), lane_count)
-    lanes = list(range(lane_count))
-    rng.shuffle(lanes)
-    hit_lanes = tuple(sorted(lanes[:target]))
-    distractor_lanes = [lane for lane in range(lane_count) if lane not in set(hit_lanes)]
+    lane_count = int(axes.lane_count)
+    target = int(target_answer)
+    if target < 0 or target > lane_count * 3:
+        raise ValueError("space-shooter hit count target does not fit lane capacity")
     occupied: set[Tuple[int, int]] = set()
     enemies: list[SpaceEnemy] = []
     projectiles: list[SpaceProjectile] = []
     annotation_ids: list[str] = []
 
-    for lane in hit_lanes:
-        enemy_slot = int(rng.choice((0, 1, 2)))
-        occupied.add((int(lane), enemy_slot))
-        enemy = _make_enemy(enemy_index=len(enemies), lane=int(lane), y_slot=enemy_slot, rng=rng)
-        enemies.append(enemy)
-        annotation_ids.append(str(enemy.enemy_id))
-        occupied.add((int(lane), 5))
-        projectiles.append(
-            _make_projectile(
-                projectile_index=len(projectiles),
-                lane=int(lane),
-                y_slot=5,
-                owner="player",
-                rng=rng,
-            )
-        )
+    hit_counts_by_lane = {lane: 0 for lane in range(lane_count)}
+    remaining_hits = int(target)
+    if remaining_hits >= 2 and lane_count > 0:
+        lane = int(rng.randrange(lane_count))
+        first_count = min(3, remaining_hits, int(rng.choice((2, 3))))
+        hit_counts_by_lane[lane] = int(first_count)
+        remaining_hits -= int(first_count)
+    for _ in range(remaining_hits):
+        candidates = [lane for lane, count in hit_counts_by_lane.items() if int(count) < 3]
+        lane = int(rng.choice(candidates))
+        hit_counts_by_lane[lane] += 1
 
-    enemy_target = min(
-        int(axes.enemy_count),
-        len(enemies) + (len(distractor_lanes) * 3),
-    )
-    distractor_slots = (0, 1, 2)
-    while len(enemies) < enemy_target and distractor_lanes:
-        try:
-            lane, slot = _claim_position(
-                rng=rng,
-                occupied=occupied,
-                lane_candidates=distractor_lanes,
-                slot_candidates=distractor_slots,
+    lanes_with_hits = tuple(sorted(lane for lane, count in hit_counts_by_lane.items() if int(count) > 0))
+    for lane in lanes_with_hits:
+        hit_count = int(hit_counts_by_lane[int(lane)])
+        count_options = [(hit_count, hit_count)]
+        if hit_count < 3:
+            count_options.append((hit_count + 1, hit_count))
+            count_options.append((hit_count, hit_count + 1))
+        enemy_count, player_count = rng.choice(count_options)
+        enemy_slots = sorted(rng.sample((0, 1, 2), int(enemy_count)))
+        lane_enemies: list[SpaceEnemy] = []
+        for slot in enemy_slots:
+            occupied.add((int(lane), int(slot)))
+            enemy = _make_enemy(enemy_index=len(enemies), lane=int(lane), y_slot=int(slot), rng=rng)
+            enemies.append(enemy)
+            lane_enemies.append(enemy)
+        for slot in sorted(rng.sample((3, 4, 5), int(player_count))):
+            occupied.add((int(lane), int(slot)))
+            projectiles.append(
+                _make_projectile(
+                    projectile_index=len(projectiles),
+                    lane=int(lane),
+                    y_slot=int(slot),
+                    owner="player",
+                    rng=rng,
+                )
             )
-        except ValueError:
+        lower_enemies = sorted(lane_enemies, key=lambda enemy: int(enemy.y_slot), reverse=True)[:hit_count]
+        annotation_ids.extend(str(enemy.enemy_id) for enemy in lower_enemies)
+
+    distractor_lanes = [lane for lane in range(lane_count) if lane not in set(lanes_with_hits)]
+    rng.shuffle(distractor_lanes)
+    enemy_target = min(max(int(axes.enemy_count), target + 2), lane_count * 3)
+    enemy_only_lanes: list[int] = []
+    for lane in distractor_lanes:
+        if len(enemies) >= enemy_target:
             break
-        enemies.append(_make_enemy(enemy_index=len(enemies), lane=lane, y_slot=slot, rng=rng))
+        enemy_only_lanes.append(int(lane))
+        enemy_count = int(rng.randint(1, 4))
+        for slot in sorted(rng.sample((0, 1, 2), min(enemy_count, enemy_target - len(enemies)))):
+            occupied.add((int(lane), int(slot)))
+            enemies.append(_make_enemy(enemy_index=len(enemies), lane=int(lane), y_slot=int(slot), rng=rng))
 
-    red_lanes = list(distractor_lanes)
+    player_only_lanes = [
+        lane
+        for lane in range(lane_count)
+        if lane not in set(lanes_with_hits)
+        and lane not in set(enemy_only_lanes)
+    ]
+    rng.shuffle(player_only_lanes)
+    for lane in player_only_lanes[: max(0, min(2, len(player_only_lanes)))]:
+        player_count = int(rng.randint(1, 4))
+        for slot in sorted(rng.sample((3, 4, 5), int(player_count))):
+            occupied.add((int(lane), int(slot)))
+            projectiles.append(
+                _make_projectile(
+                    projectile_index=len(projectiles),
+                    lane=int(lane),
+                    y_slot=int(slot),
+                    owner="player",
+                    rng=rng,
+                )
+            )
+
+    red_lanes = list(enemy_only_lanes)
     rng.shuffle(red_lanes)
-    red_line_added = False
     can_force_multi_shot_line = any(int(value) >= 2 for value in axes.enemy_projectile_per_lane_support)
+    red_line_added = False
     for lane in red_lanes:
-        if red_line_added and rng.random() < 0.55:
+        if red_line_added and rng.random() < 0.60:
             continue
         try:
             _add_enemy_projectile_line(
@@ -406,31 +445,11 @@ def sample_enemy_ship_hit_scene(*, rng, axes: SceneAxes, target_answer: int) -> 
             continue
         red_line_added = True
 
-    blue_distractor_lanes = [
-        lane
-        for lane in distractor_lanes
-        if all(int(enemy.lane) != int(lane) for enemy in enemies)
-    ]
-    rng.shuffle(blue_distractor_lanes)
-    for lane in blue_distractor_lanes[: max(0, min(2, lane_count - target))]:
-        if (int(lane), 5) in occupied:
-            continue
-        occupied.add((int(lane), 5))
-        projectiles.append(
-            _make_projectile(
-                projectile_index=len(projectiles),
-                lane=int(lane),
-                y_slot=5,
-                owner="player",
-                rng=rng,
-            )
-        )
-
     sample = SpaceShooterSample(
         lane_count=lane_count,
         scene_variant=str(axes.scene_variant),
         answer=int(len(annotation_ids)),
-        player_lane=int(rng.choice(hit_lanes if hit_lanes else tuple(range(lane_count)))),
+        player_lane=int(rng.choice(lanes_with_hits if lanes_with_hits else tuple(range(lane_count)))),
         enemies=tuple(enemies),
         projectiles=tuple(projectiles),
         safe_lane_indices=tuple(),
@@ -440,7 +459,7 @@ def sample_enemy_ship_hit_scene(*, rng, axes: SceneAxes, target_answer: int) -> 
         metadata={
             "target_answer": int(target),
             "target_answer_support": list(DEFAULTS.enemy_ship_hit_count_support),
-            "hit_lane_indices": [int(lane) for lane in hit_lanes],
+            "hit_lane_indices": [int(lane) for lane in lanes_with_hits],
         },
     )
     validate_basic_space_shooter_sample(sample)

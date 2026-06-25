@@ -31,7 +31,7 @@ def test_games_space_shooter_defaults_present() -> None:
     assert list(generation["lane_count_support"]) == [4, 5, 6, 7, 8]
     assert list(generation["enemy_count_support"]) == [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
     assert list(generation["safe_lane_count_support"]) == [1, 2, 3, 4, 5]
-    assert list(generation["enemy_ship_hit_count_support"]) == [1, 2, 3, 4, 5]
+    assert list(generation["enemy_ship_hit_count_support"]) == [0, 1, 2, 3, 4, 5, 6]
     assert list(generation["enemy_projectile_per_lane_support"]) == [1, 2, 3]
     assert int(rendering["canvas_width"]) == 1060
     assert int(rendering["canvas_height"]) == 820

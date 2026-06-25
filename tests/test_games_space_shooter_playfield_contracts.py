@@ -32,9 +32,9 @@ from tests.helpers import read_jsonl
         ),
         (
             GamesSpaceShooterEnemyShipHitCountTask,
-            {"target_answer": 4, "lane_count": 7, "enemy_count": 12, "style_variant": "vector"},
+            {"target_answer": 6, "lane_count": 7, "enemy_count": 12, "style_variant": "vector"},
             "enemy_ship_hit_count",
-            4,
+            6,
         ),
         (
             GamesSpaceShooterSafeLaneCountTask,
@@ -108,32 +108,53 @@ def test_games_space_shooter_enemy_ship_count_matches_trace() -> None:
 def test_games_space_shooter_enemy_ship_hit_count_matches_trace() -> None:
     out = GamesSpaceShooterEnemyShipHitCountTask().generate(
         88122,
-        params={"target_answer": 4, "lane_count": 7, "enemy_count": 12},
+        params={"target_answer": 6, "lane_count": 7, "enemy_count": 12},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
     enemies_by_lane = {}
     for enemy in execution["enemies"]:
         enemies_by_lane.setdefault(int(enemy["lane"]), []).append(enemy)
-    player_projectile_lanes = {
+    player_projectile_counts_by_lane = Counter(
         int(projectile["lane"])
         for projectile in execution["projectiles"]
         if str(projectile["owner"]) == "player"
-    }
+    )
     expected_ids = []
-    for lane in sorted(player_projectile_lanes):
+    for lane in sorted(enemies_by_lane):
+        player_count = int(player_projectile_counts_by_lane.get(int(lane), 0))
         lane_enemies = sorted(enemies_by_lane.get(int(lane), []), key=lambda enemy: int(enemy["y_slot"]), reverse=True)
-        if lane_enemies:
-            expected_ids.append(str(lane_enemies[0]["enemy_id"]))
+        expected_ids.extend(str(enemy["enemy_id"]) for enemy in lane_enemies[: min(player_count, len(lane_enemies))])
 
-    assert int(out.answer_gt.value) == len(expected_ids) == 4
+    assert int(out.answer_gt.value) == len(expected_ids) == 6
     assert list(execution["annotation_entity_ids"]) == expected_ids
     assert out.trace_payload["render_map"]["show_enemy_labels"] is False
+    assert max(player_projectile_counts_by_lane.values()) >= 2
     assert len(out.annotation_gt.value) == len(expected_ids)
     for entity_id, bbox in zip(expected_ids, out.annotation_gt.value):
         assert entity_id in out.trace_payload["render_map"]["enemy_bboxes_px"]
         assert float(bbox[2]) - float(bbox[0]) >= 24.0
         assert float(bbox[3]) - float(bbox[1]) >= 24.0
+
+
+def test_games_space_shooter_enemy_ship_hit_count_supports_zero_answer() -> None:
+    out = GamesSpaceShooterEnemyShipHitCountTask().generate(
+        88123,
+        params={"target_answer": 0, "lane_count": 5, "enemy_count": 8},
+        max_attempts=256,
+    )
+    execution = out.trace_payload["execution_trace"]
+    player_lanes = {
+        int(projectile["lane"])
+        for projectile in execution["projectiles"]
+        if str(projectile["owner"]) == "player"
+    }
+    enemy_lanes = {int(enemy["lane"]) for enemy in execution["enemies"]}
+
+    assert int(out.answer_gt.value) == 0
+    assert out.annotation_gt.value == []
+    assert list(execution["annotation_entity_ids"]) == []
+    assert not (player_lanes & enemy_lanes)
 
 
 def test_games_space_shooter_safe_lane_count_matches_trace() -> None:

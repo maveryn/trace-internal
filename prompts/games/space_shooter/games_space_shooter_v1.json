@@ -30,11 +30,11 @@
         "Count every enemy ship shown in the playfield; do not count lane pads, shots, or the player ship."
       ],
       "enemy_ship_hit_count": [
-        "{space_shooter_lane_rule_text} Each blue player shot can destroy one enemy ship above it in the same lane. How many enemy ships can be destroyed by the current blue shots?",
-        "{space_shooter_lane_rule_text} Count enemy ships that have a blue player shot below them in the same lane.",
-        "Blue player shots move upward and enemy ships stay in their lanes. Count the enemy ships that can be hit by the current blue shots.",
-        "{space_shooter_lane_rule_text} A blue player shot can hit one enemy ship above it in its lane. How many enemy ships can the visible blue shots destroy?",
-        "Count enemy ships that are above a blue player shot in the same vertical lane. {space_shooter_lane_rule_text}"
+        "{space_shooter_lane_rule_text} Each blue player shot can destroy one enemy ship above it in the same lane, hitting the lower enemy ships first. How many enemy ships can be destroyed by the current blue shots?",
+        "{space_shooter_lane_rule_text} Count enemy ships destroyed by blue shots in their lane; each blue shot destroys at most one ship, starting with the lower ships.",
+        "Blue player shots move upward and enemy ships stay in their lanes. Each blue shot can destroy one enemy ship above it, with lower ships hit first. How many ships can be destroyed?",
+        "{space_shooter_lane_rule_text} A blue player shot can hit one enemy ship above it in its lane. If a lane has several ships, lower ships are hit first. How many enemy ships can the visible blue shots destroy?",
+        "Count enemy ships that can be destroyed by the current blue shots. Each blue shot hits one ship above it in the same vertical lane, starting from the lower ships. {space_shooter_lane_rule_text}"
       ],
       "safe_lane_count": [
         "{space_shooter_lane_rule_text} Count bottom lane pads with no red enemy shot in that lane.",

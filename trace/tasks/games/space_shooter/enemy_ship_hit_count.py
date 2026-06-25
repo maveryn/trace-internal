@@ -32,8 +32,8 @@ def _prepare_enemy_ship_hit_objective(rng, params: Mapping[str, Any], axes: Scen
         support_key="enemy_ship_hit_count_support",
         fallback_support=DEFAULTS.enemy_ship_hit_count_support,
     )
-    if int(target) > int(axes.lane_count) and params.get("lane_count") is not None:
-        raise ValueError("target_answer cannot exceed lane_count for enemy_ship_hit_count")
+    if int(target) > (int(axes.lane_count) * 3) and params.get("lane_count") is not None:
+        raise ValueError("target_answer cannot exceed three hits per lane for enemy_ship_hit_count")
     sample = sample_enemy_ship_hit_scene(rng=rng, axes=axes, target_answer=int(target))
     sample = replace(
         sample,

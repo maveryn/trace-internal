@@ -298,6 +298,51 @@ def test_geometry_graph_paper_length_extremum_includes_oblique_lattice_segments(
 
 
 @pytest.mark.parametrize(
+    ("task_cls", "shape_kind"),
+    (
+        (GeometryGraphPaperPolygonAreaValueTask, "rectangle"),
+        (GeometryGraphPaperPolygonAreaValueTask, "right_triangle"),
+        (GeometryGraphPaperPolygonAreaValueTask, "parallelogram"),
+        (GeometryGraphPaperPolygonPerimeterValueTask, "rectangle"),
+        (GeometryGraphPaperPolygonPerimeterValueTask, "right_triangle"),
+        (GeometryGraphPaperPolygonPerimeterValueTask, "parallelogram"),
+    ),
+)
+def test_geometry_graph_paper_polygon_measurement_shape_families_are_lattice_integer(
+    task_cls,
+    shape_kind: str,
+) -> None:
+    out = task_cls().generate(
+        23171,
+        params={"shape_kind": shape_kind},
+        max_attempts=40,
+    )
+    assert out.answer_gt.type == "integer"
+    assert isinstance(out.answer_gt.value, int)
+    assert out.trace_payload["execution_trace"]["shape_kind"] in {
+        "rectangle",
+        "right triangle",
+        "parallelogram",
+    }
+    _assert_all_graph_points_are_lattice(out)
+
+
+@pytest.mark.parametrize(
+    "task_cls",
+    (
+        GeometryGraphPaperPolygonAreaValueTask,
+        GeometryGraphPaperPolygonPerimeterValueTask,
+    ),
+)
+def test_geometry_graph_paper_polygon_measurements_sample_all_shape_families(task_cls) -> None:
+    seen: set[str] = set()
+    for seed in range(100):
+        out = task_cls().generate(seed, params={}, max_attempts=40)
+        seen.add(str(out.trace_payload["execution_trace"]["shape_kind"]))
+    assert {"rectangle", "right triangle", "parallelogram"} <= seen
+
+
+@pytest.mark.parametrize(
     ("scene_variant", "task_cls", "transform_rule", "expected_points"),
     (
         ("triangle", GeometryShapeGalleryTranslationMatchTask, "translation", 3),

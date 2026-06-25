@@ -453,6 +453,21 @@ def _corner_right_triangle_points(width: int, height: int) -> tuple[Point, ...]:
     return ((0.0, 0.0), (float(width), 0.0), (0.0, float(height)))
 
 
+def _corner_parallelogram_points(
+    base_width: int,
+    side_dx: int,
+    side_dy: int,
+) -> tuple[Point, ...]:
+    """Return integer-lattice slanted parallelogram vertices from the origin."""
+
+    return (
+        (0.0, 0.0),
+        (float(base_width), 0.0),
+        (float(base_width + side_dx), float(side_dy)),
+        (float(side_dx), float(side_dy)),
+    )
+
+
 def _translated_corner_shape(
     *,
     left: int,
@@ -697,11 +712,7 @@ def _single_polygon_points(
 
     task_params = dict(context["task_params"])
     rng = rng_for(int(context["instance_seed"]), str(salt))
-    shapes = (
-        ("rectangle", "right_triangle_3_4_5")
-        if perimeter_mode
-        else ("rectangle", "right_triangle")
-    )
+    shapes = ("rectangle", "right_triangle", "parallelogram")
     shape_kind = str(
         task_params.get(
             "shape_kind",
@@ -711,11 +722,37 @@ def _single_polygon_points(
         )
     )
     if shape_kind == "right_triangle_3_4_5":
-        scale = int(task_params.get("scale", rng.choice([1, 2])))
-        return _corner_right_triangle_points(3 * scale, 4 * scale), "right triangle"
+        shape_kind = "right_triangle"
+    if shape_kind == "parallelogram":
+        base_width = int(task_params.get("base_width", rng.randint(3, 6)))
+        side_dx, side_dy = (
+            (3, 4)
+            if int(rng.randrange(0, 2)) == 0
+            else (4, 3)
+        )
+        if "side_dx" in task_params and "side_dy" in task_params:
+            side_dx = int(task_params["side_dx"])
+            side_dy = int(task_params["side_dy"])
+        return (
+            _corner_parallelogram_points(base_width, side_dx, side_dy),
+            "parallelogram",
+        )
     width = int(task_params.get("width", rng.randint(3, 6)))
     height = int(task_params.get("height", rng.randint(3, 6)))
     if shape_kind == "right_triangle":
+        if perimeter_mode:
+            scale = int(task_params.get("scale", rng.choice([1, 2])))
+            return (
+                _corner_right_triangle_points(3 * scale, 4 * scale),
+                "right triangle",
+            )
+        for _ in range(20):
+            if (width * height) % 2 == 0:
+                break
+            width = int(rng.randint(3, 6))
+            height = int(rng.randint(3, 6))
+        if (width * height) % 2 != 0:
+            width += 1
         return _corner_right_triangle_points(width, height), "right triangle"
     return _corner_rectangle_points(width, height), "rectangle"
 

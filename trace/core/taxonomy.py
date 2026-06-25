@@ -915,6 +915,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__rpg_tactical_map__movement_reachable_tile_label": _entry(
         "illustrations", "rpg_tactical_map", "illustrations", "rpg_tactical_map"
     ),
+    "task_illustrations__rpg_tactical_map__movement_sequence_endpoint_label": _entry(
+        "illustrations", "rpg_tactical_map", "illustrations", "rpg_tactical_map"
+    ),
     "task_illustrations__isometric_farmstead__terrain_elevation_extremum_label": _entry(
         "illustrations", "isometric_farmstead", "illustrations", "isometric_farmstead"
     ),

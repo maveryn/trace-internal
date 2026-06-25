@@ -5,6 +5,7 @@ from trace.tasks.illustrations.rpg_tactical_map.counterfactual_terrain_conversio
 from trace.tasks.illustrations.rpg_tactical_map.movement_cost_value import TASK_ID as COST_VALUE_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_count import TASK_ID as COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_label import TASK_ID as LABEL_TASK_ID
+from trace.tasks.illustrations.rpg_tactical_map.movement_sequence_endpoint_label import TASK_ID as SEQUENCE_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.terrain_type_tile_count import TASK_ID as TERRAIN_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.water_barrier_unreachable_tile_label import TASK_ID as WATER_BARRIER_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.shared.relations import (
@@ -330,6 +331,80 @@ def test_rpg_tactical_map_water_barrier_unreachable_tile_contract() -> None:
                 for col in cols
             }
             assert len({min(rows) for rows in rows_by_col.values()}) > 1
+
+
+def test_rpg_tactical_map_movement_sequence_endpoint_label_contract() -> None:
+    task = create_task(SEQUENCE_TASK_ID)
+    out = task.generate(
+        2026063001,
+        params={
+            "canvas_profile": "square",
+            "sequence_length": 5,
+        },
+        max_attempts=40,
+    )
+    assert out.scene_id == "rpg_tactical_map"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value in {"A", "B", "C", "D"}
+    assert out.annotation_gt.type == "bbox"
+    width, height = out.image.size
+    _assert_bbox_inside_canvas(out.annotation_gt.value, width=width, height=height)
+    prompt_lower = out.prompt.lower()
+    assert "up" in prompt_lower or "down" in prompt_lower or "left" in prompt_lower or "right" in prompt_lower
+    assert "movement points" not in prompt_lower
+    assert "mountains cost" not in prompt_lower
+    assert "water cannot be entered" not in prompt_lower
+
+    trace = out.trace_payload
+    render_map = trace["render_map"]
+    answer_label = str(out.answer_gt.value)
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert render_map["selected_label"] == answer_label
+    assert render_map["selected_tile_bbox_px"] == out.annotation_gt.value
+    assert sorted(render_map["candidate_tile_ids_by_label"]) == ["A", "B", "C", "D"]
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_tactical_map_v0"
+    assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_tactical_map"
+
+    tiles_by_id = {str(tile["tile_id"]): tile for tile in trace["scene_ir"]["tiles"]}
+    tiles_by_coord = {
+        (int(tile["row"]), int(tile["col"])): str(tile["tile_id"])
+        for tile in trace["scene_ir"]["tiles"]
+    }
+    move_sequence = [str(direction) for direction in trace["execution_trace"]["move_sequence"]]
+    path_tile_ids = [str(tile_id) for tile_id in trace["execution_trace"]["path_tile_ids"]]
+    assert len(move_sequence) == 5
+    assert len(path_tile_ids) == len(move_sequence) + 1
+    assert path_tile_ids == [str(tile_id) for tile_id in render_map["path_tile_ids"]]
+    assert path_tile_ids[0] == str(trace["scene_ir"]["units"][0]["tile_id"])
+    assert path_tile_ids[-1] == str(render_map["selected_tile_id"])
+    assert render_map["candidate_tile_ids_by_label"][answer_label] == path_tile_ids[-1]
+
+    current_coord = (
+        int(tiles_by_id[path_tile_ids[0]]["row"]),
+        int(tiles_by_id[path_tile_ids[0]]["col"]),
+    )
+    direction_delta = {
+        "up": (-1, 0),
+        "down": (1, 0),
+        "left": (0, -1),
+        "right": (0, 1),
+    }
+    replayed_path = [path_tile_ids[0]]
+    for direction in move_sequence:
+        drow, dcol = direction_delta[direction]
+        current_coord = (current_coord[0] + drow, current_coord[1] + dcol)
+        assert current_coord in tiles_by_coord
+        replayed_tile_id = tiles_by_coord[current_coord]
+        assert bool(tiles_by_id[replayed_tile_id]["passable"])
+        replayed_path.append(replayed_tile_id)
+    assert replayed_path == path_tile_ids
+    for left_id, right_id in zip(path_tile_ids, path_tile_ids[1:]):
+        left = tiles_by_id[left_id]
+        right = tiles_by_id[right_id]
+        step = abs(int(left["row"]) - int(right["row"])) + abs(int(left["col"]) - int(right["col"]))
+        assert step == 1
 
 
 def test_rpg_tactical_map_movement_distractors_are_plausible_and_spread() -> None:

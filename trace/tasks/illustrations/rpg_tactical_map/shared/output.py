@@ -160,6 +160,52 @@ def movement_reachable_count_render_map(
     }
 
 
+def movement_sequence_endpoint_render_map(
+    *,
+    scene: RpgTacticalMapScene,
+    candidate_tile_ids_by_label: Mapping[str, str],
+    selected_label: str,
+    move_sequence: Sequence[str],
+    path_tile_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Return render-map fields for explicit cardinal move-sequence selection."""
+
+    tiles_by_id = {str(tile.tile_id): tile for tile in scene.tiles}
+    candidate_tile_bboxes = {
+        str(label): rounded_bbox(tiles_by_id[str(tile_id)].bbox_xyxy)
+        for label, tile_id in candidate_tile_ids_by_label.items()
+    }
+    candidate_label_bboxes = {
+        str(label): rounded_bbox(scene.label_bboxes_by_tile_id[str(tile_id)])
+        for label, tile_id in candidate_tile_ids_by_label.items()
+        if str(tile_id) in scene.label_bboxes_by_tile_id
+    }
+    selected_tile_id = str(candidate_tile_ids_by_label[str(selected_label)])
+    start_tile_id = str(path_tile_ids[0]) if path_tile_ids else ""
+    return {
+        "image_id": "img0",
+        "move_sequence": [str(direction) for direction in move_sequence],
+        "path_tile_ids": [str(tile_id) for tile_id in path_tile_ids],
+        "path_tile_bboxes_px": [
+            rounded_bbox(tiles_by_id[str(tile_id)].bbox_xyxy)
+            for tile_id in path_tile_ids
+        ],
+        "start_tile_id": start_tile_id,
+        "start_tile_bbox_px": rounded_bbox(tiles_by_id[start_tile_id].bbox_xyxy) if start_tile_id else [],
+        "candidate_tile_ids_by_label": dict(candidate_tile_ids_by_label),
+        "candidate_tile_bboxes_px_by_label": candidate_tile_bboxes,
+        "candidate_label_bboxes_px_by_label": candidate_label_bboxes,
+        "candidate_terrain_by_label": {
+            str(label): str(tiles_by_id[str(tile_id)].terrain)
+            for label, tile_id in candidate_tile_ids_by_label.items()
+        },
+        "selected_label": str(selected_label),
+        "selected_tile_id": selected_tile_id,
+        "selected_tile_bbox_px": rounded_bbox(tiles_by_id[selected_tile_id].bbox_xyxy),
+        "player_unit": scene.units[0].as_dict() if scene.units else {},
+    }
+
+
 def water_barrier_unreachable_render_map(
     *,
     scene: RpgTacticalMapScene,
@@ -352,6 +398,7 @@ __all__ = [
     "movement_cost_value_render_map",
     "movement_reachable_count_render_map",
     "movement_reachable_render_map",
+    "movement_sequence_endpoint_render_map",
     "rounded_bbox",
     "rpg_tactical_map_render_spec",
     "rpg_tactical_map_scene_ir",

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Tuple
 
-from .defaults import REEL_COUNT, ROW_COUNT, SUPPORTED_SCENE_VARIANTS, SUPPORTED_STYLE_VARIANTS, SYMBOL_KEYS
+from .defaults import PAYLINE_COORDS, PAYLINE_IDS, REEL_COUNT, ROW_COUNT, SUPPORTED_SCENE_VARIANTS, SUPPORTED_STYLE_VARIANTS, SYMBOL_KEYS
 
 
 @dataclass(frozen=True)
@@ -24,7 +24,7 @@ class SlotMachineScene:
     scene_variant: str
     style_variant: str
     cells: Tuple[SlotCell, ...]
-    winning_rows: Tuple[int, ...]
+    winning_payline_ids: Tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -43,10 +43,19 @@ def slot_cell_id(row: int, col: int) -> str:
     return f"cell_{int(row)}_{int(col)}"
 
 
-def payline_id(row: int) -> str:
-    """Return the stable rendered entity id for one horizontal payline."""
+PAYLINE_CELLS_BY_ID = {
+    str(payline_id): tuple((int(row), int(col)) for row, col in coords)
+    for payline_id, coords in zip(PAYLINE_IDS, PAYLINE_COORDS)
+}
 
-    return f"payline_{int(row)}"
+
+def payline_entity_id(payline_key: str) -> str:
+    """Return the stable rendered entity id for one conceptual payline."""
+
+    key = str(payline_key)
+    if key not in PAYLINE_CELLS_BY_ID:
+        raise ValueError(f"unsupported slot-machine payline: {key}")
+    return f"payline_{key}"
 
 
 def cell_grid(scene: SlotMachineScene) -> tuple[tuple[str, ...], ...]:
@@ -58,6 +67,18 @@ def cell_grid(scene: SlotMachineScene) -> tuple[tuple[str, ...], ...]:
     return tuple(tuple(row) for row in grid)
 
 
+def winning_payline_ids_for_grid(grid: tuple[tuple[str, ...], ...]) -> tuple[str, ...]:
+    """Return conceptual payline ids whose three symbols match."""
+
+    winners: list[str] = []
+    for payline_key in PAYLINE_IDS:
+        cells = PAYLINE_CELLS_BY_ID[str(payline_key)]
+        symbols = {str(grid[int(row)][int(col)]) for row, col in cells}
+        if len(symbols) == 1:
+            winners.append(str(payline_key))
+    return tuple(winners)
+
+
 def validate_slot_machine_scene(scene: SlotMachineScene) -> None:
     """Validate scene consistency independent of one public objective."""
 
@@ -66,7 +87,7 @@ def validate_slot_machine_scene(scene: SlotMachineScene) -> None:
     if scene.style_variant not in SUPPORTED_STYLE_VARIANTS:
         raise ValueError(f"unsupported slot-machine style variant: {scene.style_variant}")
     if len(scene.cells) != REEL_COUNT * ROW_COUNT:
-        raise ValueError("slot-machine scene must contain exactly 5 x 3 visible cells")
+        raise ValueError("slot-machine scene must contain exactly 3 x 3 visible cells")
     seen = {(int(cell.row), int(cell.col)) for cell in scene.cells}
     expected = {(row, col) for row in range(ROW_COUNT) for col in range(REEL_COUNT)}
     if seen != expected:
@@ -74,17 +95,19 @@ def validate_slot_machine_scene(scene: SlotMachineScene) -> None:
     if any(str(cell.symbol_key) not in SYMBOL_KEYS for cell in scene.cells):
         raise ValueError("slot-machine cells use unsupported symbols")
     grid = cell_grid(scene)
-    actual_winning_rows = tuple(row for row in range(ROW_COUNT) if len(set(grid[row])) == 1)
-    if tuple(scene.winning_rows) != actual_winning_rows:
-        raise ValueError("slot-machine winning rows must match the symbol grid")
+    actual_winning_paylines = winning_payline_ids_for_grid(grid)
+    if tuple(scene.winning_payline_ids) != actual_winning_paylines:
+        raise ValueError("slot-machine winning paylines must match the symbol grid")
 
 
 __all__ = [
     "SlotCell",
     "SlotMachineAxes",
     "SlotMachineScene",
+    "PAYLINE_CELLS_BY_ID",
     "cell_grid",
-    "payline_id",
+    "payline_entity_id",
     "slot_cell_id",
     "validate_slot_machine_scene",
+    "winning_payline_ids_for_grid",
 ]

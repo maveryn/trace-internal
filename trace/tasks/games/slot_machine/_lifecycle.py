@@ -35,7 +35,7 @@ class SlotMachineAttemptResult:
 
     scene: SlotMachineScene
     answer_gt: TypedValue
-    annotation_payline_rows: tuple[int, ...]
+    annotation_payline_ids: tuple[str, ...]
     query_params: Mapping[str, Any]
     execution_extra: Mapping[str, Any]
 
@@ -117,14 +117,14 @@ def run_slot_machine_lifecycle(
             )
             annotation_artifacts: AnnotationArtifacts = payline_segment_set_annotation(
                 rendered_scene,
-                attempt_result.annotation_payline_rows,
+                attempt_result.annotation_payline_ids,
             )
             trace_payload = build_slot_machine_trace_payload(
                 axes=axes,
                 scene=attempt_result.scene,
                 rendered_scene=rendered_scene,
                 annotation_artifacts=annotation_artifacts,
-                annotation_payline_rows=attempt_result.annotation_payline_rows,
+                annotation_payline_ids=attempt_result.annotation_payline_ids,
                 query_spec=query_spec,
                 answer_value=int(attempt_result.answer_gt.value),
                 execution_extra={

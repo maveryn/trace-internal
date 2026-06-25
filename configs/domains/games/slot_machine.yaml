@@ -16,18 +16,19 @@ generation:
     - 1
     - 2
     - 3
+    - 4
+    - 5
 rendering:
   shared:
-    canvas_width: 900
-    canvas_height: 720
-    cabinet_width_px: 660
-    cabinet_height_px: 560
+    canvas_width: 760
+    canvas_height: 680
+    cabinet_width_px: 540
+    cabinet_height_px: 540
     reel_cell_width_px: 104
     reel_cell_height_px: 106
     reel_gap_px: 10
     row_gap_px: 10
     cabinet_pad_px: 34
-    payline_width_px: 6
     label_font_size_px: 24
     symbol_font_size_px: 28
 prompt:

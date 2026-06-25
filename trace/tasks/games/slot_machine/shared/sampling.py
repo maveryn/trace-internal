@@ -2,19 +2,23 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
+from itertools import product
 from typing import Any, Mapping, Sequence
 
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
 
 from .defaults import (
-    PAYLINE_ROW_IDS,
+    PAYLINE_IDS,
+    REEL_COUNT,
+    ROW_COUNT,
     SCENE_NAMESPACE,
     SUPPORTED_SCENE_VARIANTS,
     SUPPORTED_STYLE_VARIANTS,
     SYMBOL_KEYS,
 )
-from .state import SlotCell, SlotMachineAxes, SlotMachineScene, validate_slot_machine_scene
+from .state import SlotCell, SlotMachineAxes, SlotMachineScene, validate_slot_machine_scene, winning_payline_ids_for_grid
 
 
 def _uniform_probability(values: Sequence[str]) -> dict[str, float]:
@@ -90,37 +94,53 @@ def resolve_slot_machine_axes(
     )
 
 
+@lru_cache(maxsize=1)
+def _patterns_by_winning_payline_count() -> dict[int, tuple[tuple[int, ...], ...]]:
+    """Enumerate compact 3x3 symbol patterns by conceptual payline count."""
+
+    patterns: dict[int, list[tuple[int, ...]]] = {count: [] for count in range(len(PAYLINE_IDS) + 1)}
+    for values in product(range(3), repeat=REEL_COUNT * ROW_COUNT):
+        grid = tuple(
+            tuple(int(values[row * REEL_COUNT + col]) for col in range(REEL_COUNT))
+            for row in range(ROW_COUNT)
+        )
+        count = len(winning_payline_ids_for_grid(grid))
+        patterns[int(count)].append(tuple(int(value) for value in values))
+    return {count: tuple(values) for count, values in patterns.items()}
+
+
 def sample_slot_machine_grid(
     *,
     rng: Any,
     axes: SlotMachineAxes,
     target_winning_count: int,
 ) -> SlotMachineScene:
-    """Sample a 5 x 3 reel window with exactly the requested winning rows."""
+    """Sample a 3 x 3 reel window with exactly the requested winning paylines."""
 
     target = int(target_winning_count)
-    if target < 0 or target > len(PAYLINE_ROW_IDS):
-        raise ValueError("target_winning_count must be between 0 and 3")
-    winning_rows = tuple(sorted(rng.sample(list(PAYLINE_ROW_IDS), target)))
+    if target < 0 or target > len(PAYLINE_IDS):
+        raise ValueError("target_winning_count must be between 0 and 5")
+    candidate_patterns = _patterns_by_winning_payline_count().get(target, ())
+    if not candidate_patterns:
+        raise ValueError(f"no slot-machine pattern can produce {target} winning paylines")
+    pattern = tuple(int(value) for value in rng.choice(candidate_patterns))
+    labels = tuple(sorted(set(pattern)))
+    sampled_symbols = list(rng.sample(list(SYMBOL_KEYS), len(labels)))
+    symbol_by_label = {int(label): str(symbol) for label, symbol in zip(labels, sampled_symbols)}
     cells: list[SlotCell] = []
-    for row in range(3):
-        if row in winning_rows:
-            symbol = str(rng.choice(SYMBOL_KEYS))
-            row_symbols = [symbol for _ in range(5)]
-        else:
-            first = str(rng.choice(SYMBOL_KEYS))
-            second_choices = [symbol for symbol in SYMBOL_KEYS if symbol != first]
-            second = str(rng.choice(second_choices))
-            row_symbols = [str(rng.choice(SYMBOL_KEYS)) for _ in range(5)]
-            row_symbols[0] = first
-            row_symbols[int(rng.randrange(1, 5))] = second
-        for col, symbol in enumerate(row_symbols):
+    for row in range(ROW_COUNT):
+        for col in range(REEL_COUNT):
+            symbol = symbol_by_label[int(pattern[row * REEL_COUNT + col])]
             cells.append(SlotCell(row=int(row), col=int(col), symbol_key=str(symbol)))
+    grid = tuple(
+        tuple(symbol_by_label[int(pattern[row * REEL_COUNT + col])] for col in range(REEL_COUNT))
+        for row in range(ROW_COUNT)
+    )
     scene = SlotMachineScene(
         scene_variant=str(axes.scene_variant),
         style_variant=str(axes.style_variant),
         cells=tuple(cells),
-        winning_rows=tuple(winning_rows),
+        winning_payline_ids=winning_payline_ids_for_grid(grid),
     )
     validate_slot_machine_scene(scene)
     return scene

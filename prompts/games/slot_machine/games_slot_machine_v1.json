@@ -23,11 +23,11 @@
     },
     "query": {
       "winning_payline_count": [
-        "A payline wins only when all five symbols on that horizontal row match. How many paylines win?",
-        "Count the horizontal paylines where all five visible symbols are the same.",
-        "How many of the three horizontal paylines show five matching symbols?",
-        "A row is a winning payline if every reel in that row shows the same symbol. How many winning paylines are shown?",
-        "Report how many horizontal rows have the same symbol in all five reel positions."
+        "Here, a payline is any full row or either long diagonal. How many paylines contain three matching symbols?",
+        "A payline means one complete row or one of the two long diagonals. Count the paylines where all three symbols match.",
+        "Count the winning paylines. A winning payline is a full row or long diagonal with the same symbol in all three cells.",
+        "Use only the three rows and the two long diagonals as paylines. How many of those paylines show three matching symbols?",
+        "How many paylines win, where paylines are the full rows plus the two long diagonals and a win has three identical symbols?"
       ]
     },
     "output": {
@@ -87,10 +87,10 @@
     }
   },
   "code_prompt_defaults": {
-    "object_description": "a toy slot machine with five reels, three visible horizontal paylines, and simple symbol icons",
+    "object_description": "a toy slot machine with three reels, three visible rows, and simple symbol icons",
     "json_output_contract": "Return JSON with exactly two keys: \"annotation\" and \"answer\".",
     "json_output_contract_answer_only": "Return JSON with exactly one key: \"answer\".",
-    "annotation_hint_winning_payline_count": "set \"annotation\" to a JSON array of pixel segments [[x1, y1], [x2, y2]], one segment along each winning payline; use [] if no payline wins",
+    "annotation_hint_winning_payline_count": "set \"annotation\" to a JSON array of image-pixel segments [[x1, y1], [x2, y2]], one segment along each winning row or diagonal payline; use [] if no payline wins",
     "answer_hint_winning_payline_count": "set \"answer\" to the integer count of winning paylines"
   }
 }

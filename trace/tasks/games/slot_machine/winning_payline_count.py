@@ -81,8 +81,8 @@ def _prepare_winning_payline_count_objective(
         )
         return SlotMachineAttemptResult(
             scene=scene,
-            answer_gt=TypedValue(type="integer", value=int(len(scene.winning_rows))),
-            annotation_payline_rows=tuple(int(row) for row in scene.winning_rows),
+            answer_gt=TypedValue(type="integer", value=int(len(scene.winning_payline_ids))),
+            annotation_payline_ids=tuple(str(payline_id) for payline_id in scene.winning_payline_ids),
             query_params={},
             execution_extra={
                 "target_winning_payline_count": int(target_count),
@@ -112,7 +112,7 @@ def _prepare_winning_payline_count_objective(
 
 @register_task
 class GamesSlotMachineWinningPaylineCountTask:
-    """Count horizontal paylines whose five visible symbols all match."""
+    """Count row or diagonal paylines whose three visible symbols all match."""
 
     task_id = TASK_ID
     domain = "games"

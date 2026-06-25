@@ -10,11 +10,12 @@
 7. Annotation schema: `segment_set`
 
 ## Program Contract
-`count(row for row in horizontal_slot_paylines if all_symbols_match(row)); scene=slot_machine; scope=winning_payline_count`
+`count(payline for payline in rows_plus_long_diagonals if all_symbols_match(payline)); scene=slot_machine; scope=winning_payline_count`
 
 ## Generation Notes
-1. The scene renders a front-view toy slot machine with five reels and three horizontal paylines.
-2. A payline wins only when all five visible symbols on that row match.
-3. The answer is balanced across `0..3` winning paylines by construction.
-4. Annotation is an unordered segment set, one centerline segment for each winning payline.
-5. Scalar annotation checked: true.
+1. The scene renders a front-view toy slot machine with a 3x3 visible reel window.
+2. Paylines are the three full rows plus the two long diagonals; columns are not paylines.
+3. A payline wins only when all three visible symbols on that row or diagonal match.
+4. The answer is balanced across `0..5` winning paylines by construction.
+5. Annotation is an unordered segment set, one centerline segment for each winning payline.
+6. Scalar annotation checked: true.

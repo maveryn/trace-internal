@@ -10,9 +10,16 @@ from trace.tasks.games.shared.visual_defaults import load_games_scene_noise_defa
 
 SCENE_ID = "slot_machine"
 SCENE_NAMESPACE = "games.slot_machine"
-REEL_COUNT = 5
+REEL_COUNT = 3
 ROW_COUNT = 3
-PAYLINE_ROW_IDS: Tuple[int, ...] = (0, 1, 2)
+PAYLINE_IDS: Tuple[str, ...] = ("row_0", "row_1", "row_2", "diag_down", "diag_up")
+PAYLINE_COORDS: Tuple[Tuple[Tuple[int, int], ...], ...] = (
+    ((0, 0), (0, 1), (0, 2)),
+    ((1, 0), (1, 1), (1, 2)),
+    ((2, 0), (2, 1), (2, 2)),
+    ((0, 0), (1, 1), (2, 2)),
+    ((2, 0), (1, 1), (0, 2)),
+)
 SYMBOL_KEYS: Tuple[str, ...] = ("seven", "bar", "gem", "star", "bell", "coin")
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("front_cabinet",)
 SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
@@ -22,23 +29,22 @@ SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
     "candy_arcade",
     "paper_ticket",
 )
-WINNING_PAYLINE_COUNT_SUPPORT: Tuple[int, ...] = (0, 1, 2, 3)
+WINNING_PAYLINE_COUNT_SUPPORT: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
 
 
 @dataclass(frozen=True)
 class SlotMachineDefaults:
     """Stable fallback defaults for slot-machine scenes."""
 
-    canvas_width: int = 900
-    canvas_height: int = 720
-    cabinet_width_px: int = 660
-    cabinet_height_px: int = 560
+    canvas_width: int = 760
+    canvas_height: int = 680
+    cabinet_width_px: int = 540
+    cabinet_height_px: int = 540
     reel_cell_width_px: int = 104
     reel_cell_height_px: int = 106
     reel_gap_px: int = 10
     row_gap_px: int = 10
     cabinet_pad_px: int = 34
-    payline_width_px: int = 6
     label_font_size_px: int = 24
     symbol_font_size_px: int = 28
 
@@ -49,7 +55,8 @@ POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id=SCENE_ID, a
 
 __all__ = [
     "DEFAULTS",
-    "PAYLINE_ROW_IDS",
+    "PAYLINE_COORDS",
+    "PAYLINE_IDS",
     "POST_IMAGE_NOISE_DEFAULTS",
     "REEL_COUNT",
     "ROW_COUNT",

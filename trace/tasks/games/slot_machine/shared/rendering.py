@@ -16,8 +16,8 @@ from trace.tasks.games.shared.text import draw_centered_game_text
 from trace.tasks.shared.config_defaults import group_default
 from trace.core.visual.noise import apply_post_image_noise
 
-from .defaults import DEFAULTS, PAYLINE_ROW_IDS, POST_IMAGE_NOISE_DEFAULTS, REEL_COUNT, ROW_COUNT, SCENE_NAMESPACE
-from .state import SlotMachineScene, cell_grid, payline_id, slot_cell_id, validate_slot_machine_scene
+from .defaults import DEFAULTS, PAYLINE_IDS, POST_IMAGE_NOISE_DEFAULTS, REEL_COUNT, ROW_COUNT, SCENE_NAMESPACE
+from .state import PAYLINE_CELLS_BY_ID, SlotMachineScene, cell_grid, payline_entity_id, slot_cell_id, validate_slot_machine_scene
 
 
 @dataclass(frozen=True)
@@ -33,7 +33,6 @@ class SlotMachineRenderParams:
     reel_gap_px: int
     row_gap_px: int
     cabinet_pad_px: int
-    payline_width_px: int
     label_font_size_px: int
     symbol_font_size_px: int
 
@@ -63,7 +62,6 @@ def resolve_slot_machine_render_params(params: Mapping[str, Any], render_default
         reel_gap_px=int(params.get("reel_gap_px", group_default(render_defaults, "reel_gap_px", DEFAULTS.reel_gap_px))),
         row_gap_px=int(params.get("row_gap_px", group_default(render_defaults, "row_gap_px", DEFAULTS.row_gap_px))),
         cabinet_pad_px=int(params.get("cabinet_pad_px", group_default(render_defaults, "cabinet_pad_px", DEFAULTS.cabinet_pad_px))),
-        payline_width_px=int(params.get("payline_width_px", group_default(render_defaults, "payline_width_px", DEFAULTS.payline_width_px))),
         label_font_size_px=int(params.get("label_font_size_px", group_default(render_defaults, "label_font_size_px", DEFAULTS.label_font_size_px))),
         symbol_font_size_px=int(params.get("symbol_font_size_px", group_default(render_defaults, "symbol_font_size_px", DEFAULTS.symbol_font_size_px))),
     )
@@ -186,7 +184,7 @@ def render_slot_machine_scene(
     render_params: SlotMachineRenderParams,
     instance_seed: int,
 ) -> RenderedSlotMachineScene:
-    """Render a front-view slot machine and record cell/payline projections."""
+    """Render a front-view slot machine and record conceptual payline projections."""
 
     validate_slot_machine_scene(scene)
     panel_style, panel_style_meta = resolve_game_panel_scene_style(
@@ -262,27 +260,24 @@ def render_slot_machine_scene(
             )
 
     payline_segments: dict[str, list[list[float]]] = {}
-    payline_bboxes: dict[str, list[float]] = {}
-    for row in PAYLINE_ROW_IDS:
-        first_center = cell_centers[slot_cell_id(int(row), 0)]
-        last_center = cell_centers[slot_cell_id(int(row), REEL_COUNT - 1)]
+    for payline_key in PAYLINE_IDS:
+        cells = PAYLINE_CELLS_BY_ID[str(payline_key)]
+        first_row, first_col = cells[0]
+        last_row, last_col = cells[-1]
+        first_center = cell_centers[slot_cell_id(int(first_row), int(first_col))]
+        last_center = cell_centers[slot_cell_id(int(last_row), int(last_col))]
         segment = [list(first_center), list(last_center)]
-        payline_segments[payline_id(int(row))] = segment
-        y = float(first_center[1])
-        x0 = float(first_center[0])
-        x1 = float(last_center[0])
-        width = int(render_params.payline_width_px)
-        line_color = colors["payline"] if row in scene.winning_rows else tuple(int(v * 0.55) for v in colors["trim"])
-        draw.line([(x0, y), (x1, y)], fill=line_color, width=width)
-        payline_bboxes[payline_id(int(row))] = [round(x0, 3), round(y - width / 2.0, 3), round(x1, 3), round(y + width / 2.0, 3)]
+        entity_id = payline_entity_id(str(payline_key))
+        payline_segments[entity_id] = segment
         scene_entities.append(
             {
-                "id": payline_id(int(row)),
-                "kind": "payline",
-                "row": int(row),
+                "id": entity_id,
+                "kind": "conceptual_payline",
+                "payline_key": str(payline_key),
+                "cells": [[int(row), int(col)] for row, col in cells],
                 "segment_px": segment,
-                "bbox_px": list(payline_bboxes[payline_id(int(row))]),
-                "is_winning": bool(row in scene.winning_rows),
+                "is_winning": bool(str(payline_key) in scene.winning_payline_ids),
+                "visible": False,
             }
         )
 
@@ -291,7 +286,6 @@ def render_slot_machine_scene(
     lever_y1 = top + 312
     draw.line([(lever_x, lever_y0), (lever_x + 54, lever_y1)], fill=colors["cabinet_dark"], width=11)
     draw.ellipse([lever_x + 34, lever_y1 - 18, lever_x + 76, lever_y1 + 24], fill=colors["trim"], outline=colors["cabinet_dark"], width=3)
-    draw.rounded_rectangle([left + 82, bottom - 92, right - 82, bottom - 36], radius=18, fill=(34, 36, 43), outline=colors["trim"], width=3)
 
     noisy_image, post_noise_meta = apply_post_image_noise(
         image,
@@ -305,7 +299,6 @@ def render_slot_machine_scene(
             "cell_bboxes_px": cell_bboxes,
             "cell_centers_px": cell_centers,
             "payline_segments_px": payline_segments,
-            "payline_bboxes_px": payline_bboxes,
             "cabinet_bbox_px": [round(left, 3), round(top, 3), round(right, 3), round(bottom, 3)],
             "window_bbox_px": [round(float(v), 3) for v in window_bbox],
             "style_colors": {key: list(value) for key, value in colors.items()},

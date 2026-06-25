@@ -31,7 +31,7 @@ def slot_integer_segment_set_json_examples() -> tuple[str, str]:
     return (
         json.dumps(
             {
-                "annotation": [[[210, 250], [690, 250]], [[210, 480], [690, 480]]],
+                "annotation": [[[250, 250], [510, 250]], [[250, 470], [510, 250]]],
                 "answer": 2,
             },
             separators=(",", ":"),

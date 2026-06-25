@@ -374,7 +374,7 @@ OBJECT_SCENE_SMALL_DIMENSIONS: Dict[str, Tuple[float, float, float]] = {
     "kite": (0.64, 0.18, 0.74),
     "cactus": (0.58, 0.22, 0.84),
     "drum": (0.62, 0.62, 0.82),
-    "ruler": (0.42, 0.88, 0.12),
+    "ruler": (0.42, 0.70, 0.12),
     "remote_control": (0.46, 0.18, 0.78),
     "plug": (0.68, 0.22, 0.54),
     "torus": (0.62, 0.62, 0.30),
@@ -384,8 +384,8 @@ OBJECT_SCENE_SMALL_DIMENSIONS: Dict[str, Tuple[float, float, float]] = {
     "half_cylinder": (0.72, 0.52, 0.50),
 }
 OBJECT_CLUSTER_EXTRA_DIMENSIONS: Dict[str, Tuple[float, float, float]] = {
-    "pen": (0.30, 1.14, 0.16),
-    "pencil": (0.32, 1.16, 0.18),
+    "pen": (0.30, 0.88, 0.16),
+    "pencil": (0.32, 0.90, 0.18),
     "card": (0.66, 0.88, 0.06),
     "bookmark": (0.40, 1.02, 0.06),
     "candy_disc": (0.42, 0.42, 0.12),

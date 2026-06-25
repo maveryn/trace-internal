@@ -172,8 +172,8 @@ def _draw_ruler_object(
         frame,
         center_height_frac=0.62,
         length_scale=0.88,
-        min_length_px=66.0,
-        max_length_px=112.0,
+        min_length_px=54.0,
+        max_length_px=94.0,
     )
     half_width = max(12.5, min(16.0, length_px * 0.110))
 

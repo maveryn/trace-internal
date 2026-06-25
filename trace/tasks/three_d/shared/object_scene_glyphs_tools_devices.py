@@ -82,8 +82,8 @@ def _draw_pencil_object(
             frame,
             center_height_frac=0.58,
             length_scale=0.84,
-            min_length_px=64.0,
-            max_length_px=108.0,
+            min_length_px=52.0,
+            max_length_px=92.0,
         )
         radius = max(3.8, min(6.0, length_px * 0.060))
 
@@ -196,8 +196,8 @@ def _draw_pencil_object(
         frame,
         center_height_frac=0.56,
         length_scale=0.86,
-        min_length_px=66.0,
-        max_length_px=110.0,
+        min_length_px=54.0,
+        max_length_px=94.0,
     )
     radius = max(6.6, min(9.5, length_px * 0.085))
 

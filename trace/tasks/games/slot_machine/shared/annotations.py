@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, segment_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_annotation_artifacts, segment_set_annotation_artifacts
 
 from .rendering import RenderedSlotMachineScene
 from .state import payline_entity_id
@@ -23,4 +23,17 @@ def payline_segment_set_annotation(
     return segment_set_annotation_artifacts(segments)
 
 
-__all__ = ["payline_segment_set_annotation"]
+def option_bbox_annotation(
+    rendered_scene: RenderedSlotMachineScene,
+    option_label: str,
+) -> AnnotationArtifacts:
+    """Build a bbox annotation for one selected third-reel option."""
+
+    bboxes = dict(rendered_scene.render_map.get("option_bboxes_px", {}))
+    label = str(option_label)
+    if label not in bboxes:
+        raise ValueError(f"missing rendered slot-machine option bbox for {label}")
+    return bbox_annotation_artifacts(bboxes[label])
+
+
+__all__ = ["option_bbox_annotation", "payline_segment_set_annotation"]

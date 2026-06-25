@@ -40,6 +40,21 @@ def slot_integer_segment_set_json_examples(answer_value: int = 2) -> tuple[str, 
     )
 
 
+def slot_label_bbox_json_examples(answer_label: str = "B") -> tuple[str, str]:
+    """Return valid JSON examples for option-label tasks with bbox annotation."""
+
+    return (
+        json.dumps(
+            {
+                "annotation": [620, 170, 746, 440],
+                "answer": str(answer_label),
+            },
+            separators=(",", ":"),
+        ),
+        json.dumps({"answer": str(answer_label)}, separators=(",", ":")),
+    )
+
+
 def slot_output_slots(
     *,
     prompt_query_key: str,
@@ -113,5 +128,6 @@ def build_slot_machine_prompt_artifacts(
 __all__ = [
     "build_slot_machine_prompt_artifacts",
     "slot_integer_segment_set_json_examples",
+    "slot_label_bbox_json_examples",
     "slot_output_slots",
 ]

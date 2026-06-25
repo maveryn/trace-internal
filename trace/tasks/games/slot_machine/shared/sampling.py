@@ -19,7 +19,17 @@ from .defaults import (
     SUPPORTED_STYLE_VARIANTS,
     SYMBOL_KEYS,
 )
-from .state import PaytableEntry, SlotCell, SlotMachineAxes, SlotMachineScene, validate_slot_machine_scene, winning_payline_ids_for_grid
+from .state import (
+    PaytableEntry,
+    SlotCell,
+    SlotCompletionOption,
+    SlotCompletionScene,
+    SlotMachineAxes,
+    SlotMachineScene,
+    validate_slot_completion_scene,
+    validate_slot_machine_scene,
+    winning_payline_ids_for_grid,
+)
 
 
 def _uniform_probability(values: Sequence[str]) -> dict[str, float]:
@@ -110,6 +120,50 @@ def _patterns_by_winning_payline_count() -> dict[int, tuple[tuple[int, ...], ...
     return {count: tuple(values) for count, values in patterns.items()}
 
 
+def _grid_from_two_reels_and_option(
+    base_pattern: Sequence[int],
+    option_pattern: Sequence[int],
+) -> tuple[tuple[int, ...], ...]:
+    """Return a compact 3x3 symbol grid from first-two-reel and third-reel codes."""
+
+    base = tuple(int(value) for value in base_pattern)
+    option = tuple(int(value) for value in option_pattern)
+    return tuple(
+        (
+            int(base[row * 2]),
+            int(base[row * 2 + 1]),
+            int(option[row]),
+        )
+        for row in range(ROW_COUNT)
+    )
+
+
+@lru_cache(maxsize=1)
+def _reel_completion_cases() -> tuple[tuple[tuple[int, ...], tuple[tuple[int, ...], ...], tuple[tuple[int, ...], ...]], ...]:
+    """Enumerate first-two-reel states with valid winning and non-winning options."""
+
+    cases = []
+    for base_pattern in product(range(3), repeat=ROW_COUNT * (REEL_COUNT - 1)):
+        winning_options: list[tuple[int, ...]] = []
+        nonwinning_options: list[tuple[int, ...]] = []
+        for option_pattern in product(range(3), repeat=ROW_COUNT):
+            grid = _grid_from_two_reels_and_option(base_pattern, option_pattern)
+            winning_count = len(winning_payline_ids_for_grid(grid))
+            if winning_count == 1:
+                winning_options.append(tuple(int(value) for value in option_pattern))
+            elif winning_count == 0:
+                nonwinning_options.append(tuple(int(value) for value in option_pattern))
+        if winning_options and len(nonwinning_options) >= 3:
+            cases.append(
+                (
+                    tuple(int(value) for value in base_pattern),
+                    tuple(winning_options),
+                    tuple(nonwinning_options),
+                )
+            )
+    return tuple(cases)
+
+
 def sample_slot_machine_grid(
     *,
     rng: Any,
@@ -159,8 +213,76 @@ def sample_slot_paytable(rng: Any) -> tuple[PaytableEntry, ...]:
     )
 
 
+def sample_slot_reel_completion_scene(
+    *,
+    rng: Any,
+    axes: SlotMachineAxes,
+    option_labels: Sequence[str] = ("A", "B", "C", "D"),
+) -> SlotCompletionScene:
+    """Sample two fixed reels and four third-reel options with one winning choice."""
+
+    labels = tuple(str(label) for label in option_labels)
+    if len(labels) != 4 or len(set(labels)) != 4:
+        raise ValueError("slot reel completion requires exactly four unique option labels")
+    cases = _reel_completion_cases()
+    if not cases:
+        raise ValueError("slot reel completion has no valid compact cases")
+    base_pattern, winning_options, nonwinning_options = rng.choice(cases)
+    correct_option_pattern = tuple(int(value) for value in rng.choice(winning_options))
+    distractor_patterns = [tuple(int(value) for value in pattern) for pattern in rng.sample(list(nonwinning_options), 3)]
+    pattern_items = [correct_option_pattern, *distractor_patterns]
+    shuffled_labels = list(labels)
+    rng.shuffle(shuffled_labels)
+    sampled_symbols = list(rng.sample(list(SYMBOL_KEYS), 3))
+    symbol_by_code = {code: str(symbol) for code, symbol in enumerate(sampled_symbols)}
+    base_cells = tuple(
+        SlotCell(
+            row=int(row),
+            col=int(col),
+            symbol_key=symbol_by_code[int(base_pattern[row * 2 + col])],
+        )
+        for row in range(ROW_COUNT)
+        for col in range(REEL_COUNT - 1)
+    )
+    options: list[SlotCompletionOption] = []
+    answer_label = ""
+    answer_completed_paylines: tuple[str, ...] = ()
+    for label, option_pattern in zip(shuffled_labels, pattern_items):
+        cells = tuple(
+            SlotCell(
+                row=int(row),
+                col=REEL_COUNT - 1,
+                symbol_key=symbol_by_code[int(option_pattern[row])],
+            )
+            for row in range(ROW_COUNT)
+        )
+        grid = _grid_from_two_reels_and_option(base_pattern, option_pattern)
+        completed_paylines = winning_payline_ids_for_grid(grid)
+        if tuple(option_pattern) == correct_option_pattern:
+            answer_label = str(label)
+            answer_completed_paylines = tuple(str(payline_id) for payline_id in completed_paylines)
+        options.append(
+            SlotCompletionOption(
+                label=str(label),
+                cells=cells,
+                completed_payline_ids=tuple(str(payline_id) for payline_id in completed_paylines),
+            )
+        )
+    scene = SlotCompletionScene(
+        scene_variant=str(axes.scene_variant),
+        style_variant=str(axes.style_variant),
+        base_cells=base_cells,
+        options=tuple(options),
+        answer_label=str(answer_label),
+        answer_completed_payline_ids=answer_completed_paylines,
+    )
+    validate_slot_completion_scene(scene)
+    return scene
+
+
 __all__ = [
     "resolve_slot_machine_axes",
+    "sample_slot_reel_completion_scene",
     "sample_slot_paytable",
     "sample_slot_machine_grid",
 ]

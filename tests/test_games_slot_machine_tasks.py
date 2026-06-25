@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.games.slot_machine.paytable_score_value import GamesSlotMachinePaytableScoreValueTask
+from trace.tasks.games.slot_machine.reel_completion_label import GamesSlotMachineReelCompletionLabelTask
 from trace.tasks.games.slot_machine.winning_payline_count import GamesSlotMachineWinningPaylineCountTask
 
 
@@ -86,6 +87,38 @@ def test_games_slot_machine_paytable_score_value_contract() -> None:
 def test_games_slot_machine_paytable_score_value_taxonomy() -> None:
     taxonomy = resolve_task_taxonomy(
         "task_games__slot_machine__paytable_score_value",
+        source_domain="games",
+        source_scene_id="",
+    )
+    assert taxonomy.domain == "games"
+    assert taxonomy.scene_id == "slot_machine"
+
+
+def test_games_slot_machine_reel_completion_label_contract() -> None:
+    out = GamesSlotMachineReelCompletionLabelTask().generate(
+        26062601,
+        params={},
+        max_attempts=64,
+    )
+    execution = out.trace_payload["execution_trace"]
+    answer_label = str(out.answer_gt.value)
+    option_records = {str(record["label"]): record for record in execution["options"]}
+
+    assert out.scene_id == "slot_machine"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert answer_label in {"A", "B", "C", "D"}
+    assert out.annotation_gt.type == "bbox"
+    assert out.annotation_gt.value == out.trace_payload["render_map"]["option_bboxes_px"][answer_label]
+    assert len(option_records[answer_label]["completed_payline_ids"]) == 1
+    assert all(
+        len(record["completed_payline_ids"]) == (1 if label == answer_label else 0)
+        for label, record in option_records.items()
+    )
+    assert execution["prompt_query_key"] == "reel_completion_label"
+
+    taxonomy = resolve_task_taxonomy(
+        "task_games__slot_machine__reel_completion_label",
         source_domain="games",
         source_scene_id="",
     )

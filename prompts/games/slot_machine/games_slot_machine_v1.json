@@ -35,6 +35,13 @@
         "A winning payline is a full row or long diagonal with the same symbol in all three cells. Add the side-paytable scores for all winning paylines.",
         "Using only the three rows and two long diagonals as paylines, total the paytable values for the paylines whose three symbols match.",
         "Each row or long diagonal with three identical symbols scores the value printed for that symbol in the side paytable. What is the total score?"
+      ],
+      "reel_completion_label": [
+        "A payline is any full row or either long diagonal. The first two reels are fixed. Which labeled option for the third reel completes a payline?",
+        "Use the three rows and the two long diagonals as paylines. Choose the third-reel option that makes three matching symbols on a payline.",
+        "Only rows and the two long diagonals count as paylines. Which option for the third reel creates one matching-symbol payline?",
+        "The left two reels stay as shown. Which labeled third-reel option gives a full row or long diagonal with three identical symbols?",
+        "Pick the third-reel option that completes a payline, where a payline is one row or either long diagonal with all three symbols matching."
       ]
     },
     "output": {
@@ -100,6 +107,8 @@
     "annotation_hint_winning_payline_count": "set \"annotation\" to a JSON array of image-pixel segments [[x1, y1], [x2, y2]], one segment along each winning row or diagonal payline; use [] if no payline wins",
     "answer_hint_winning_payline_count": "set \"answer\" to the integer count of winning paylines",
     "annotation_hint_paytable_score_value": "set \"annotation\" to a JSON array of image-pixel segments [[x1, y1], [x2, y2]], one segment along each winning row or diagonal payline that contributes to the score",
-    "answer_hint_paytable_score_value": "set \"answer\" to the integer total score from the side paytable"
+    "answer_hint_paytable_score_value": "set \"answer\" to the integer total score from the side paytable",
+    "annotation_hint_reel_completion_label": "set \"annotation\" to the image-pixel bounding box [x0, y0, x1, y1] around the selected third-reel option",
+    "answer_hint_reel_completion_label": "set \"answer\" to the selected option letter"
   }
 }

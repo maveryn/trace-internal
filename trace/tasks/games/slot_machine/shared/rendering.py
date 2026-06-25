@@ -17,7 +17,17 @@ from trace.tasks.shared.config_defaults import group_default
 from trace.core.visual.noise import apply_post_image_noise
 
 from .defaults import DEFAULTS, PAYLINE_IDS, POST_IMAGE_NOISE_DEFAULTS, REEL_COUNT, ROW_COUNT, SCENE_NAMESPACE
-from .state import PAYLINE_CELLS_BY_ID, SlotMachineScene, cell_grid, payline_entity_id, slot_cell_id, validate_slot_machine_scene
+from .state import (
+    PAYLINE_CELLS_BY_ID,
+    SlotCompletionScene,
+    SlotMachineScene,
+    cell_grid,
+    completion_option_grid,
+    payline_entity_id,
+    slot_cell_id,
+    validate_slot_completion_scene,
+    validate_slot_machine_scene,
+)
 
 
 @dataclass(frozen=True)
@@ -386,9 +396,230 @@ def render_slot_machine_scene(
     )
 
 
+def render_slot_completion_scene(
+    *,
+    scene: SlotCompletionScene,
+    render_params: SlotMachineRenderParams,
+    instance_seed: int,
+) -> RenderedSlotMachineScene:
+    """Render two fixed reels with four labeled third-reel option panels."""
+
+    validate_slot_completion_scene(scene)
+    panel_style, panel_style_meta = resolve_game_panel_scene_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.panel_style",
+        treatments=("bare_canvas", "plain_sheet", "soft_panel", "game_table", "arcade_screen"),
+    )
+    image, background_meta = make_panel_scene_background(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        style=panel_style,
+    )
+    draw = ImageDraw.Draw(image)
+    colors = _style_colors(str(scene.style_variant))
+    source_cell_w = float(render_params.reel_cell_width_px)
+    source_cell_h = float(render_params.reel_cell_height_px)
+    source_gap_x = float(render_params.reel_gap_px)
+    source_gap_y = float(render_params.row_gap_px)
+    source_grid_w = 2.0 * source_cell_w + source_gap_x
+    source_grid_h = ROW_COUNT * source_cell_h + (ROW_COUNT - 1) * source_gap_y
+    source_pad_x = 32.0
+    source_pad_y = 36.0
+    source_w = source_grid_w + source_pad_x * 2.0
+    source_h = source_grid_h + source_pad_y * 2.0 + 58.0
+    source_left = 58.0
+    source_top = (float(render_params.canvas_height) - source_h) / 2.0
+    source_right = source_left + source_w
+    source_bottom = source_top + source_h
+
+    draw.rounded_rectangle(
+        [source_left, source_top, source_right, source_bottom],
+        radius=28,
+        fill=colors["cabinet_dark"],
+        outline=colors["trim"],
+        width=5,
+    )
+    draw.rounded_rectangle(
+        [source_left + 16, source_top + 16, source_right - 16, source_bottom - 16],
+        radius=20,
+        fill=colors["cabinet"],
+        outline=colors["trim"],
+        width=2,
+    )
+    title_bbox = [source_left + 42, source_top + 24, source_right - 42, source_top + 70]
+    draw.rounded_rectangle(title_bbox, radius=15, fill=colors["trim"], outline=colors["cabinet_dark"], width=2)
+    draw_centered_game_text(
+        draw,
+        text="SLOTS",
+        center=((title_bbox[0] + title_bbox[2]) / 2.0, (title_bbox[1] + title_bbox[3]) / 2.0 + 2.0),
+        font=_font(26, bold=True),
+        fill=colors["cabinet_dark"],
+        stroke_fill=colors["trim"],
+        surface_rgbs=(colors["trim"],),
+        role="readout",
+        required=True,
+    )
+    source_grid_left = source_left + source_pad_x
+    source_grid_top = source_top + 94.0
+    window_bbox = [
+        source_grid_left - 14.0,
+        source_grid_top - 14.0,
+        source_grid_left + source_grid_w + 14.0,
+        source_grid_top + source_grid_h + 14.0,
+    ]
+    draw.rounded_rectangle(window_bbox, radius=20, fill=(28, 30, 36), outline=colors["trim"], width=4)
+
+    base_cell_bboxes: dict[str, list[float]] = {}
+    base_cell_centers: dict[str, list[float]] = {}
+    scene_entities: list[dict[str, Any]] = []
+    base_by_position = {(int(cell.row), int(cell.col)): str(cell.symbol_key) for cell in scene.base_cells}
+    for row in range(ROW_COUNT):
+        for col in range(REEL_COUNT - 1):
+            x0 = source_grid_left + col * (source_cell_w + source_gap_x)
+            y0 = source_grid_top + row * (source_cell_h + source_gap_y)
+            bbox = [round(x0, 3), round(y0, 3), round(x0 + source_cell_w, 3), round(y0 + source_cell_h, 3)]
+            center = [round((bbox[0] + bbox[2]) / 2.0, 3), round((bbox[1] + bbox[3]) / 2.0, 3)]
+            cell_id = slot_cell_id(row, col)
+            base_cell_bboxes[cell_id] = bbox
+            base_cell_centers[cell_id] = center
+            draw.rounded_rectangle(bbox, radius=12, fill=colors["reel"], outline=(76, 76, 82), width=2)
+            _draw_symbol(draw, bbox, base_by_position[(row, col)], colors=colors)
+            scene_entities.append(
+                {
+                    "id": cell_id,
+                    "kind": "slot_completion_base_cell",
+                    "row": int(row),
+                    "col": int(col),
+                    "symbol_key": base_by_position[(row, col)],
+                    "bbox_px": list(bbox),
+                    "center_px": list(center),
+                }
+            )
+
+    option_cell_w = 76.0
+    option_cell_h = 64.0
+    option_gap_y = 8.0
+    option_panel_w = 126.0
+    option_panel_h = 270.0
+    option_gap_x = 30.0
+    option_gap_block_y = 26.0
+    option_block_w = option_panel_w * 2.0 + option_gap_x
+    option_block_h = option_panel_h * 2.0 + option_gap_block_y
+    options_left = source_right + 64.0
+    if options_left + option_block_w > float(render_params.canvas_width) - 24.0:
+        options_left = float(render_params.canvas_width) - option_block_w - 32.0
+    options_top = (float(render_params.canvas_height) - option_block_h) / 2.0
+
+    option_bboxes: dict[str, list[float]] = {}
+    option_cell_bboxes: dict[str, list[float]] = {}
+    option_completed_paylines: dict[str, list[str]] = {}
+    for index, option in enumerate(scene.options):
+        row_index = int(index // 2)
+        col_index = int(index % 2)
+        panel_left = options_left + col_index * (option_panel_w + option_gap_x)
+        panel_top = options_top + row_index * (option_panel_h + option_gap_block_y)
+        panel_bbox = [panel_left, panel_top, panel_left + option_panel_w, panel_top + option_panel_h]
+        rounded_panel_bbox = [round(float(value), 3) for value in panel_bbox]
+        option_bboxes[str(option.label)] = rounded_panel_bbox
+        draw.rounded_rectangle(
+            panel_bbox,
+            radius=20,
+            fill=colors["cabinet_dark"],
+            outline=colors["trim"],
+            width=4,
+        )
+        label_center = (panel_left + option_panel_w / 2.0, panel_top + 28.0)
+        draw.ellipse(
+            [
+                label_center[0] - 18.0,
+                label_center[1] - 18.0,
+                label_center[0] + 18.0,
+                label_center[1] + 18.0,
+            ],
+            fill=(252, 246, 231),
+            outline=colors["trim"],
+            width=3,
+        )
+        draw_centered_game_text(
+            draw,
+            text=str(option.label),
+            center=(label_center[0], label_center[1] + 1.0),
+            font=_font(22, bold=True),
+            fill=colors["cabinet_dark"],
+            stroke_fill=(252, 246, 231),
+            surface_rgbs=((252, 246, 231),),
+            role="option_label",
+            required=True,
+        )
+        cells_left = panel_left + (option_panel_w - option_cell_w) / 2.0
+        cells_top = panel_top + 58.0
+        option_symbols = {int(cell.row): str(cell.symbol_key) for cell in option.cells}
+        option_completed_paylines[str(option.label)] = [str(payline_id) for payline_id in option.completed_payline_ids]
+        for option_row in range(ROW_COUNT):
+            y0 = cells_top + option_row * (option_cell_h + option_gap_y)
+            cell_bbox = [cells_left, y0, cells_left + option_cell_w, y0 + option_cell_h]
+            rounded_cell_bbox = [round(float(value), 3) for value in cell_bbox]
+            key = f"option_{option.label}_cell_{option_row}_2"
+            option_cell_bboxes[key] = rounded_cell_bbox
+            draw.rounded_rectangle(rounded_cell_bbox, radius=10, fill=colors["reel"], outline=(76, 76, 82), width=2)
+            _draw_symbol(draw, rounded_cell_bbox, option_symbols[option_row], colors=colors)
+            scene_entities.append(
+                {
+                    "id": key,
+                    "kind": "slot_completion_option_cell",
+                    "option_label": str(option.label),
+                    "row": int(option_row),
+                    "col": REEL_COUNT - 1,
+                    "symbol_key": option_symbols[option_row],
+                    "bbox_px": list(rounded_cell_bbox),
+                    "center_px": [
+                        round((rounded_cell_bbox[0] + rounded_cell_bbox[2]) / 2.0, 3),
+                        round((rounded_cell_bbox[1] + rounded_cell_bbox[3]) / 2.0, 3),
+                    ],
+                }
+            )
+        scene_entities.append(
+            {
+                "id": f"option_{option.label}",
+                "kind": "slot_completion_option",
+                "label": str(option.label),
+                "bbox_px": list(rounded_panel_bbox),
+                "completed_payline_ids": [str(payline_id) for payline_id in option.completed_payline_ids],
+                "completed_grid": [list(row) for row in completion_option_grid(scene.base_cells, option.cells)],
+            }
+        )
+
+    noisy_image, post_noise_meta = apply_post_image_noise(
+        image,
+        instance_seed=int(instance_seed),
+        params={},
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    return RenderedSlotMachineScene(
+        image=noisy_image,
+        render_map={
+            "base_cell_bboxes_px": base_cell_bboxes,
+            "base_cell_centers_px": base_cell_centers,
+            "option_bboxes_px": option_bboxes,
+            "option_cell_bboxes_px": option_cell_bboxes,
+            "option_completed_payline_ids": option_completed_paylines,
+            "answer_label": str(scene.answer_label),
+            "answer_completed_payline_ids": [str(payline_id) for payline_id in scene.answer_completed_payline_ids],
+            "source_cabinet_bbox_px": [round(source_left, 3), round(source_top, 3), round(source_right, 3), round(source_bottom, 3)],
+            "source_window_bbox_px": [round(float(value), 3) for value in window_bbox],
+            "style_colors": {key: list(value) for key, value in colors.items()},
+        },
+        scene_entities=tuple(scene_entities),
+        panel_style_meta=game_panel_scene_style_metadata(panel_style),
+        background_meta=dict(background_meta),
+        post_noise_meta=dict(post_noise_meta),
+    )
+
+
 __all__ = [
     "RenderedSlotMachineScene",
     "SlotMachineRenderParams",
+    "render_slot_completion_scene",
     "render_slot_machine_scene",
     "resolve_slot_machine_render_params",
 ]

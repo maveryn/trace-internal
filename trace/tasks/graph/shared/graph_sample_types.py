@@ -25,7 +25,6 @@ SUPPORTED_LABEL_VARIANTS: Tuple[str, ...] = SUPPORTED_GRAPH_LABEL_VARIANTS
 SUPPORTED_NODE_LINK_LABEL_VARIANTS: Tuple[str, ...] = SUPPORTED_GRAPH_LABEL_VARIANTS
 SUPPORTED_DEGREE_QUERY_IDS: Tuple[str, ...] = ("degree_count", "directed_degree_count")
 SUPPORTED_DIRECTED_DEGREE_MODES: Tuple[str, ...] = ("in_degree", "out_degree")
-SUPPORTED_SOURCE_SINK_MODES: Tuple[str, ...] = ("source", "sink")
 SUPPORTED_NODE_COLOR_COUNT_DIRECTIONS: Tuple[str, ...] = ("undirected", "directed")
 SUPPORTED_EDGE_COLOR_COUNT_DIRECTIONS: Tuple[str, ...] = ("undirected", "directed")
 SUPPORTED_EDGE_ATTRIBUTE_LABEL_DIRECTIONS: Tuple[str, ...] = ("undirected", "directed")
@@ -110,18 +109,6 @@ class GraphCountSample(GraphTopologySample):
     out_degree_sequence: Tuple[int, ...]
     query_degree: int
     degree_mode: str
-
-
-@dataclass(frozen=True)
-class GraphSourceSinkSample(GraphTopologySample):
-    """Trace-ready directed graph sample for source/sink count tasks."""
-
-    target_labels: Tuple[str, ...]
-    target_count: int
-    source_sink_mode: str
-    degree_mode: str
-    in_degree_sequence: Tuple[int, ...]
-    out_degree_sequence: Tuple[int, ...]
 
 
 @dataclass(frozen=True)
@@ -546,7 +533,6 @@ __all__ = [
     "SUPPORTED_NODE_LINK_LABEL_VARIANTS",
     "SUPPORTED_NODE_COLOR_COUNT_DIRECTIONS",
     "SUPPORTED_LONGEST_PATH_QUERY_IDS",
-    "SUPPORTED_SOURCE_SINK_MODES",
     "SUPPORTED_OPTIMIZATION_QUERY_IDS",
     "SUPPORTED_ORDER_QUERY_IDS",
     "SUPPORTED_REACHABLE_EDGE_EDIT_MODES",
@@ -576,7 +562,6 @@ __all__ = [
     "GraphReachableAfterEdgeEditSample",
     "GraphReachableSample",
     "GraphShortestPathSample",
-    "GraphSourceSinkSample",
     "GraphTopologicalOrderSample",
     "GraphTopologySample",
     "GraphUniqueCycleSample",

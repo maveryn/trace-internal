@@ -15,20 +15,10 @@
       "",
       "",
       ""
-    ],
-    "metro_transfer_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
     ]
   },
   "required_slots_by_key": {
     "scene:single_graph_path": [
-      "object_description"
-    ],
-    "scene:metro_route_path": [
       "object_description"
     ],
     "query:shortest_path_length": [
@@ -40,19 +30,6 @@
       "goal_label"
     ],
     "query:directed_longest_path_length": [],
-    "query:pipe_shortest_path_length": [
-      "source_label",
-      "goal_label"
-    ],
-    "query:metro_shortest_path_length": [
-      "source_label",
-      "goal_label"
-    ],
-    "query:metro_transfer_count": [
-      "source_label",
-      "via_label",
-      "goal_label"
-    ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -88,13 +65,6 @@
       "The visual shows {object_description}.",
       "The diagram shows {object_description}.",
       "This diagram shows {object_description}."
-    ],
-    "metro_route_path": [
-      "The image shows {object_description}.",
-      "The figure shows {object_description}.",
-      "The visual shows {object_description}.",
-      "The diagram shows {object_description}.",
-      "This diagram shows {object_description}."
     ]
   },
   "query_templates": {
@@ -118,27 +88,6 @@
       "What is the length, in directed edges, of the graph's unique longest path?",
       "Among all arrow-following paths in the directed acyclic graph, the longest one is unique. How many edges are on it?",
       "How many directed edges lie on the unique longest directed path in the graph?"
-    ],
-    "pipe_shortest_path_length": [
-      "The pipe network has a unique shortest open route from junction {source_label} to junction {goal_label}. Ignoring blocked pipes, how many open pipe segments are in that route?",
-      "Using only open pipes, how many pipe segments are in the unique shortest route from {source_label} to {goal_label}?",
-      "Ignoring blocked pipes, what is the length in pipe segments of the shortest open route from junction {source_label} to junction {goal_label}?",
-      "Find the unique shortest route through open pipes from {source_label} to {goal_label}. How many open pipe segments does it use?",
-      "How many open pipe segments lie on the unique shortest open route from junction {source_label} to junction {goal_label}?"
-    ],
-    "metro_shortest_path_length": [
-      "The metro map has a unique shortest station path from station {source_label} to station {goal_label}. How many route segments are in that path?",
-      "Following route segments, how many segments are in the unique shortest path from {source_label} to {goal_label}?",
-      "What is the shortest-path length in route segments from station {source_label} to station {goal_label}?",
-      "Find the unique shortest station path from {source_label} to {goal_label}. How many route segments does it contain?",
-      "How many route segments lie on the unique shortest metro path from station {source_label} to station {goal_label}?"
-    ],
-    "metro_transfer_count": [
-      "Travel from station {source_label} to station {goal_label}, stopping at station {via_label}. What is the fewest number of colored-route changes needed?",
-      "Starting at {source_label}, going through {via_label}, and ending at {goal_label}, what is the minimum number of route changes?",
-      "How many times must the trip switch colored routes at minimum when traveling from {source_label} through {via_label} to {goal_label}?",
-      "Find a minimum-transfer trip from {source_label} to {goal_label} that stops at {via_label}. How many route changes does it use?",
-      "What is the fewest route switches needed for a trip from station {source_label} to station {goal_label} via station {via_label}?"
     ]
   },
   "allow_empty_task_templates": true

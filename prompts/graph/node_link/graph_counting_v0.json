@@ -9,28 +9,7 @@
       "",
       ""
     ],
-    "adjacency_component_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "adjacency_pair_reciprocity_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "named_node_degree_value_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "source_sink_count_query": [
       "",
       "",
       "",
@@ -92,40 +71,10 @@
       "",
       "",
       ""
-    ],
-    "metro_transfer_station_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "metro_single_route_station_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "binary_tree_node_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
     ]
   },
   "required_slots_by_key": {
     "scene:single_graph_counting": [
-      "object_description"
-    ],
-    "scene:adjacency_representation_counting": [
-      "object_description"
-    ],
-    "scene:metro_route_counting": [
-      "object_description"
-    ],
-    "scene:binary_tree_counting": [
       "object_description"
     ],
     "query:degree_count": [
@@ -149,8 +98,6 @@
     "query:named_node_total_degree_value": [
       "query_label"
     ],
-    "query:source_count": [],
-    "query:sink_count": [],
     "query:node_color_count": [
       "target_color_label"
     ],
@@ -176,20 +123,6 @@
     "query:directed_out_degree_one_filter_remaining_count": [],
     "query:articulation_point_count": [],
     "query:bridge_count": [],
-    "query:undirected_component_count": [],
-    "query:directed_strong_component_count": [],
-    "query:one_way_pair_count": [],
-    "query:mutual_pair_count": [],
-    "query:pipe_bridge_count": [],
-    "query:metro_transfer_station_count": [],
-    "query:metro_single_route_station_count": [],
-    "query:leaf_node_count": [],
-    "query:internal_node_count": [],
-    "query:single_child_node_count": [],
-    "query:two_child_node_count": [],
-    "query:depth_level_node_count": [
-      "target_depth"
-    ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -225,65 +158,9 @@
       "The visual shows {object_description}.",
       "The diagram shows {object_description}.",
       "This diagram shows {object_description}."
-    ],
-    "adjacency_representation_counting": [
-      "The image shows {object_description}.",
-      "The figure shows {object_description}.",
-      "The visual shows {object_description}.",
-      "The diagram shows {object_description}.",
-      "This diagram shows {object_description}."
-    ],
-    "metro_route_counting": [
-      "The image shows {object_description}.",
-      "The figure shows {object_description}.",
-      "The visual shows {object_description}.",
-      "The diagram shows {object_description}.",
-      "This diagram shows {object_description}."
-    ],
-    "binary_tree_counting": [
-      "The image shows {object_description}.",
-      "The figure shows {object_description}.",
-      "The visual shows {object_description}.",
-      "The diagram shows {object_description}.",
-      "This diagram shows {object_description}."
     ]
   },
   "query_templates": {
-    "leaf_node_count": [
-      "How many leaf nodes are there?",
-      "Count the nodes with no children. How many are there?",
-      "What is the number of leaf nodes?",
-      "How many nodes have neither a left child nor a right child?",
-      "Find all childless nodes in the tree. How many are there?"
-    ],
-    "internal_node_count": [
-      "How many internal nodes are there?",
-      "Count the nodes that have at least one child. How many are there?",
-      "What is the number of non-leaf nodes?",
-      "How many nodes have one or more children?",
-      "Find every node with a child. How many are there?"
-    ],
-    "single_child_node_count": [
-      "How many nodes have exactly one child?",
-      "Count the nodes with only one child. How many are there?",
-      "What is the number of nodes that have a left child or a right child, but not both?",
-      "How many nodes have exactly one outgoing branch to a child?",
-      "Find all nodes with a single child. How many are there?"
-    ],
-    "two_child_node_count": [
-      "How many nodes have two children?",
-      "Count the nodes with both a left child and a right child.",
-      "What is the number of nodes that have two child branches?",
-      "How many nodes have both children present?",
-      "Find all nodes with a left and right child. How many are there?"
-    ],
-    "depth_level_node_count": [
-      "How many nodes are at depth {target_depth}, where the root has depth 0?",
-      "Count the nodes at depth {target_depth}; the root is depth 0.",
-      "What is the number of nodes on depth level {target_depth}, counting the root as depth 0?",
-      "How many nodes are exactly {target_depth} edges below the root?",
-      "Find all nodes at depth {target_depth} from the root. How many are there?"
-    ],
     "degree_count": [
       "How many nodes have degree {query_degree}?",
       "Count the nodes with degree {query_degree}.",
@@ -332,20 +209,6 @@
       "Count all arrows incident to node {query_label}. What is its total degree?",
       "How many directed edges either enter or leave node {query_label}?",
       "Find the total number of incoming plus outgoing edges for node {query_label}."
-    ],
-    "source_count": [
-      "How many source nodes are there, meaning nodes with no incoming arrows?",
-      "Count the nodes with zero incoming arrows.",
-      "What is the number of nodes that no arrow points into?",
-      "How many labeled nodes have in-degree 0?",
-      "Find every node with no incoming directed edges. How many are there?"
-    ],
-    "sink_count": [
-      "How many sink nodes are there, meaning nodes with no outgoing arrows?",
-      "Count the nodes with zero outgoing arrows.",
-      "What is the number of nodes that do not send an arrow to another node?",
-      "How many labeled nodes have out-degree 0?",
-      "Find every node with no outgoing directed edges. How many are there?"
     ],
     "node_color_count": [
       "How many nodes are colored {target_color_label}?",
@@ -423,55 +286,6 @@
       "How many edges would disconnect part of the graph if removed?",
       "What is the number of bridges in the graph?",
       "Find every bridge edge. How many are there?"
-    ],
-    "undirected_component_count": [
-      "How many connected components does the graph have?",
-      "Count the connected components in the graph.",
-      "What is the number of connected components?",
-      "How many separate connected pieces are represented?",
-      "Find the groups of mutually connected nodes. How many groups are there?"
-    ],
-    "directed_strong_component_count": [
-      "How many strongly connected components does the directed graph have?",
-      "Count the strongly connected components in the directed graph.",
-      "What is the number of strongly connected components?",
-      "How many maximal groups have directed paths both ways between every pair of nodes in the group?",
-      "Find the strongly connected groups. How many groups are there?"
-    ],
-    "one_way_pair_count": [
-      "How many unordered node pairs have an edge in exactly one direction?",
-      "Count the node pairs where exactly one of the two mirrored off-diagonal cells is 1.",
-      "What is the number of node pairs with a directed edge one way but not back?",
-      "How many pairs have one matrix cell marked 1 and the mirrored cell marked 0?",
-      "Find every one-way node pair in the directed matrix. How many are there?"
-    ],
-    "mutual_pair_count": [
-      "How many unordered node pairs have edges in both directions?",
-      "Count the node pairs where both mirrored off-diagonal cells are 1.",
-      "What is the number of node pairs connected by directed edges both ways?",
-      "How many pairs have a 1 in each of the two mirrored matrix cells?",
-      "Find every mutual node pair in the directed matrix. How many are there?"
-    ],
-    "pipe_bridge_count": [
-      "How many open pipes would disconnect part of the open-pipe network if removed?",
-      "Count the open pipes whose removal would disconnect part of the open-pipe network.",
-      "How many open pipe segments are bridge pipes, meaning their removal would disconnect part of the open-pipe network?",
-      "What is the number of open pipes whose removal would disconnect part of the open-pipe network?",
-      "Find every open pipe that would disconnect part of the network if removed. How many are there?"
-    ],
-    "metro_transfer_station_count": [
-      "How many transfer stations are shown?",
-      "Count the stations served by two or more colored routes.",
-      "What is the number of transfer stations in the map?",
-      "How many stations allow transfer between routes?",
-      "Find all stations used by multiple routes. How many are there?"
-    ],
-    "metro_single_route_station_count": [
-      "How many non-transfer stations are shown? Count stations served by exactly one colored route, and do not count transfer stations where two or more routes meet.",
-      "Count the non-transfer stations that lie on only one colored route.",
-      "What is the number of stations served by exactly one route, excluding transfer stations?",
-      "How many stations do not allow transfer between routes?",
-      "Find every station used by exactly one route. Do not count transfer stations. How many are there?"
     ]
   },
   "allow_empty_task_templates": true

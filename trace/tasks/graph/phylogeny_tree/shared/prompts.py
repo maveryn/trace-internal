@@ -4,12 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from ....shared.prompt_variants import (
-    PROMPT_OUTPUT_MODES,
-    PromptTraceArtifacts,
-    build_prompt_trace_artifacts,
-    render_scene_prompt_variants,
-)
+from trace.tasks.graph.shared.prompting import build_graph_scene_prompt_artifacts
+from trace.tasks.shared.prompt_variants import PromptTraceArtifacts
 
 
 PROMPT_BUNDLE_ID = "graph_phylogeny_tree_v1"
@@ -29,18 +25,16 @@ def build_phylogeny_prompt_artifacts(
 ) -> PromptTraceArtifacts:
     """Render prompt variants with task-owned dynamic slots."""
 
-    prompt_selection = render_scene_prompt_variants(
+    return build_graph_scene_prompt_artifacts(
         domain=str(domain),
         scene_id="phylogeny_tree",
         bundle_id=str(bundle_id),
         scene_key=str(scene_key),
         task_key=TASK_PROMPT_KEY,
         query_key=str(prompt_key),
-        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         dynamic_slots={str(key): value for key, value in dynamic_slots.items()},
         instance_seed=int(instance_seed),
     )
-    return build_prompt_trace_artifacts(prompt_selection)
 
 
 __all__ = [

@@ -1,9 +1,7 @@
 """Node-link scene sampling and visual-axis resolution.
 
-The visual-axis resolver is scene-local. The graph sampler implementations are
-still narrow graph-shared family modules during this migration step; public
-node-link task files import them through this scene-local surface instead of
-the old broad ``graph_sampling`` facade.
+The visual-axis resolver is scene-local. Public node-link task files import
+domain-shared graph sampler primitives through this scene-local surface.
 """
 
 from __future__ import annotations

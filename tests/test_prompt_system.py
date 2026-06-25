@@ -528,11 +528,10 @@ def test_icons_venn_field_bundle_supports_region_count_queries() -> None:
 
 
 def test_graph_counting_bundle_supports_degree_count_query() -> None:
-    bundle = load_prompt_bundle("graph", "counting", "graph_counting_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_counting_v0")
     assert "single_graph_counting" in bundle.scene_templates
     assert len(bundle.task_templates["degree_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["named_node_degree_value_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["source_sink_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["node_color_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["edge_color_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["isolated_node_count_after_node_removal_query"]) == REQUIRED_PROMPT_VARIANTS
@@ -543,8 +542,6 @@ def test_graph_counting_bundle_supports_degree_count_query() -> None:
     assert len(bundle.query_templates["named_node_in_degree_value"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["named_node_out_degree_value"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["named_node_total_degree_value"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["source_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["sink_count"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["node_color_count"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["edge_color_count"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["isolated_node_count_after_node_removal"]) == REQUIRED_PROMPT_VARIANTS
@@ -555,47 +552,43 @@ def test_graph_counting_bundle_supports_degree_count_query() -> None:
     assert list(bundle.required_slots_by_key["query:named_node_in_degree_value"]) == ["query_label"]
     assert list(bundle.required_slots_by_key["query:named_node_out_degree_value"]) == ["query_label"]
     assert list(bundle.required_slots_by_key["query:named_node_total_degree_value"]) == ["query_label"]
-    assert list(bundle.required_slots_by_key["query:source_count"]) == []
-    assert list(bundle.required_slots_by_key["query:sink_count"]) == []
     assert list(bundle.required_slots_by_key["query:node_color_count"]) == ["target_color_label"]
     assert list(bundle.required_slots_by_key["query:edge_color_count"]) == ["target_color_label"]
     assert list(bundle.required_slots_by_key["query:isolated_node_count_after_node_removal"]) == ["query_label"]
 
 
 def test_graph_counting_bundle_supports_articulation_point_count_query() -> None:
-    bundle = load_prompt_bundle("graph", "counting", "graph_counting_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_counting_v0")
     assert "single_graph_counting" in bundle.scene_templates
     assert len(bundle.task_templates["articulation_point_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["articulation_point_count"]) == REQUIRED_PROMPT_VARIANTS
 
 
 def test_graph_counting_bundle_supports_bridge_count_query() -> None:
-    bundle = load_prompt_bundle("graph", "counting", "graph_counting_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_counting_v0")
     assert "single_graph_counting" in bundle.scene_templates
     assert len(bundle.task_templates["bridge_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["bridge_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["pipe_bridge_count"]) == REQUIRED_PROMPT_VARIANTS
 
 
 def test_graph_counting_bundle_supports_metro_transfer_station_count_query() -> None:
-    bundle = load_prompt_bundle("graph", "counting", "graph_counting_v0")
-    assert "metro_route_counting" in bundle.scene_templates
-    assert len(bundle.task_templates["metro_transfer_station_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    bundle = load_scene_prompt_bundle("graph", "metro", "graph_metro_v1")
+    assert "metro_route_map" in bundle.scene_templates
+    assert len(bundle.task_templates["metro_route_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["metro_transfer_station_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["metro_single_route_station_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["metro_single_route_station_count"]) == REQUIRED_PROMPT_VARIANTS
 
 
 def test_graph_relation_bundle_supports_metro_exact_distance_count_query() -> None:
-    bundle = load_prompt_bundle("graph", "relation", "graph_relation_v0")
-    assert "metro_route_relation" in bundle.scene_templates
+    bundle = load_scene_prompt_bundle("graph", "metro", "graph_metro_v1")
+    assert "metro_route_map" in bundle.scene_templates
     assert len(bundle.query_templates["metro_exact_distance_count"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["query:metro_exact_distance_count"]) == ["query_label", "query_distance"]
 
 
 def test_graph_path_bundle_supports_metro_shortest_path_length_query() -> None:
-    bundle = load_prompt_bundle("graph", "path", "graph_path_v0")
-    assert "metro_route_path" in bundle.scene_templates
+    bundle = load_scene_prompt_bundle("graph", "metro", "graph_metro_v1")
+    assert "metro_route_map" in bundle.scene_templates
     assert len(bundle.query_templates["metro_shortest_path_length"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["query:metro_shortest_path_length"]) == ["source_label", "goal_label"]
 
@@ -613,8 +606,6 @@ def test_graph_relation_bundle_supports_reachable_count_query() -> None:
     assert "single_graph_relation" in bundle.scene_templates
     assert len(bundle.task_templates["reachable_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["reachable_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["pipe_reachable_junction_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["pipe_exact_distance_count"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["query:reachable_count"]) == ["query_label"]
 
 
@@ -976,7 +967,7 @@ def test_pages_mixed_infographic_page_scene_bundle_supports_lookup_queries() -> 
 
 
 def test_graph_comparison_bundle_supports_largest_component_size_query() -> None:
-    bundle = load_prompt_bundle("graph", "comparison", "graph_comparison_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_comparison_v0")
     assert "single_graph_comparison" in bundle.scene_templates
     assert len(bundle.task_templates["largest_component_size_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["extreme_degree_value_query"]) == REQUIRED_PROMPT_VARIANTS
@@ -996,14 +987,13 @@ def test_graph_comparison_bundle_supports_largest_component_size_query() -> None
 
 
 def test_graph_path_bundle_supports_shortest_path_length_query() -> None:
-    bundle = load_prompt_bundle("graph", "path", "graph_path_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_path_v0")
     assert "single_graph_path" in bundle.scene_templates
     assert len(bundle.task_templates["shortest_path_length_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["longest_path_length_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["shortest_path_length"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["directed_shortest_path_length"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["directed_longest_path_length"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["pipe_shortest_path_length"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["query:directed_longest_path_length"]) == []
 
 
@@ -1108,7 +1098,7 @@ def test_pages_schema_bundle_supports_relationship_endpoint_query() -> None:
 
 
 def test_graph_optimization_bundle_supports_minimum_spanning_tree_weight_query() -> None:
-    bundle = load_prompt_bundle("graph", "optimization", "graph_optimization_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_optimization_v0")
     assert "single_graph_optimization" in bundle.scene_templates
     assert len(bundle.task_templates["minimum_spanning_tree_weight_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["minimum_spanning_tree_weight"]) == REQUIRED_PROMPT_VARIANTS

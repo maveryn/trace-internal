@@ -135,7 +135,7 @@
     "task_key": "pipe_network_query",
     "json_output_contract": "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.",
     "json_output_contract_answer_only": "Use a valid JSON object with key \"answer\" for the final answer.",
-    "object_description": "a labeled pipe-junction network with open pipes and blocked pipes",
+    "object_description": "a labeled pipe-junction network with open pipes and blocked pipes (blocked pipes are marked with a red X)",
     "answer_hint": "set \"answer\" to the requested count or length as an integer",
     "json_example": "{\"annotation\":[[180,220],[310,220],[430,300]],\"answer\":3}",
     "json_example_answer_only": "{\"answer\":3}",

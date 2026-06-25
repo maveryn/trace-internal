@@ -11,7 +11,7 @@ SCENE_PROMPT_KEY = "pipe_network"
 TASK_PROMPT_KEY = "pipe_network_query"
 JSON_OUTPUT_CONTRACT = 'Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.'
 JSON_OUTPUT_CONTRACT_ANSWER_ONLY = 'Use a valid JSON object with key "answer" for the final answer.'
-OBJECT_DESCRIPTION = "a labeled pipe-junction network with open pipes and blocked pipes"
+OBJECT_DESCRIPTION = "a labeled pipe-junction network with open pipes and blocked pipes (blocked pipes are marked with a red X)"
 ANSWER_HINT = 'set "answer" to the requested count or length as an integer'
 
 

@@ -34,6 +34,7 @@ def test_pipe_shortest_path_contract() -> None:
     assert out.annotation_gt.type == "point_sequence"
     assert len(out.annotation_gt.value) == len(paths[0])
     assert "blocked pipes" in out.prompt
+    assert "(blocked pipes are marked with a red X)" in out.prompt
 
 
 def test_pipe_reachable_count_contract() -> None:

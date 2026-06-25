@@ -70,7 +70,7 @@ def keyed_pit_bbox_annotation(
     rendered: RenderedMancalaScene,
     role_pit_ids: Mapping[str, str],
 ) -> MancalaAnnotationBundle:
-    """Project keyed bbox roles from task-selected pit ids."""
+    """Project bbox-map roles from task-selected pit ids."""
 
     pit_bboxes = rendered.render_map["pit_bboxes_px"]
     values = {
@@ -79,13 +79,13 @@ def keyed_pit_bbox_annotation(
     }
     ids = {str(role): str(pit_id) for role, pit_id in dict(role_pit_ids).items()}
     return MancalaAnnotationBundle(
-        annotation_gt=TypedValue(type="keyed_bbox_map", value=dict(values)),
+        annotation_gt=TypedValue(type="bbox_map", value=dict(values)),
         projected_annotation={
-            "type": "keyed_bbox_map",
-            "keyed_bbox_map": dict(values),
-            "pixel_keyed_bbox_map": dict(values),
+            "type": "bbox_map",
+            "bbox_map": dict(values),
+            "pixel_bbox_map": dict(values),
         },
-        witness_symbolic={"type": "keyed_bbox_map", "ids": dict(ids)},
+        witness_symbolic={"type": "bbox_map", "ids": dict(ids)},
         entity_ids=dict(ids),
     )
 

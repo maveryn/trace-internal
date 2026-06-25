@@ -200,6 +200,18 @@ def build_cards_rule_trace_payload(
     """Assemble trace payload for labelled card-rule tasks."""
 
     rendered_scene = rendered_context.rendered_scene
+    if str(annotation_gt.type) == "bbox":
+        projected_annotation = {
+            "type": "bbox",
+            "bbox": list(annotation_gt.value),
+            "pixel_bbox": list(annotation_gt.value),
+        }
+    else:
+        projected_annotation = {
+            "type": "bbox_set",
+            "bbox_set": [list(bbox) for bbox in annotation_gt.value],
+            "pixel_bbox_set": [list(bbox) for bbox in annotation_gt.value],
+        }
     return {
         "scene_ir": {
             "scene_kind": f"games_cards_hand_{str(sample.scene_variant)}",
@@ -241,7 +253,7 @@ def build_cards_rule_trace_payload(
             **dict(sample.metadata),
         },
         "witness_symbolic": {"type": "object_set", "ids": [str(card_id) for card_id in sample.annotation_card_ids]},
-        "projected_annotation": {"bbox_set": [list(bbox) for bbox in annotation_gt.value]},
+        "projected_annotation": dict(projected_annotation),
         "background": dict(rendered_context.background_meta),
         "post_image_noise": dict(rendered_context.post_noise_meta),
     }

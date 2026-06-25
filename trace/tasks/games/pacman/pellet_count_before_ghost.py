@@ -12,7 +12,7 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
 from ._lifecycle import AttemptPacmanResult, ObjectivePacmanPlan, run_pacman_lifecycle
-from .shared.annotations import keyed_point_set_for_entity_ids
+from .shared.annotations import point_set_map_for_entity_ids
 from .shared.defaults import DEFAULTS, PACMAN_GHOST_COLOR_KEYS, SCENE_ID
 from .shared.sampling import (
     available_open_cells,
@@ -145,8 +145,8 @@ def _construct_pellet_count_before_ghost_attempt(*, rng: Any, axes: Any, target:
         scene=scene,
         answer_gt=TypedValue(type="integer", value=int(target)),
         annotation_entity_ids=annotation_ids,
-        build_annotation=lambda rendered: keyed_point_set_for_entity_ids(rendered.rendered_scene, keyed_ids),
-        execution_extra={"target_answer": int(target), "annotation_keyed_entity_ids": {key: list(value) for key, value in keyed_ids.items()}},
+        build_annotation=lambda rendered: point_set_map_for_entity_ids(rendered.rendered_scene, keyed_ids),
+        execution_extra={"target_answer": int(target), "annotation_entity_id_map": {key: list(value) for key, value in keyed_ids.items()}},
     )
 
 

@@ -6,7 +6,7 @@
 3. Public task id: `task_games__cards__poker_draw_card_label`
 4. Supported `query_id` values: `single`
 5. Answer schema: `string_label`
-6. Annotation schema: `bbox_set`
+6. Annotation schema: `bbox`
 7. Program schema: `label(arg_extreme(candidate_cards, metric=poker_hand_rank(partial_hand + candidate_card), direction=best)); scene=cards; scope=poker_draw_card_label`
 
 ## Program Contract

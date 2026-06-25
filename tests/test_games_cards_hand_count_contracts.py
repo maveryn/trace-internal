@@ -71,18 +71,18 @@ def test_games_cards_hand_count_emits_expected_contract(
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
-    assert out.query_id == "default"
-    assert trace["query_spec"]["query_id"] == "default"
+    assert out.query_id == "single"
+    assert trace["query_spec"]["query_id"] == "single"
     assert trace["query_spec"]["params"]["hand_kind"] == prompt_key
     assert execution["hand_kind"] == prompt_key
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
     if prompt_key == "exact_triple_count":
-        assert out.annotation_gt.type == "keyed_bbox_set_map"
+        assert out.annotation_gt.type == "bbox_set_map"
         assert len(out.annotation_gt.value) == int(expected_answer)
         assert sum(len(value) for value in out.annotation_gt.value.values()) == int(expected_annotation_count)
-        assert trace["projected_annotation"]["keyed_bbox_set_map"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_keyed_bbox_set_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["bbox_set_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_set_map"] == out.annotation_gt.value
     else:
         assert out.annotation_gt.type == "bbox_set"
         assert len(out.annotation_gt.value) == int(expected_annotation_count)
@@ -113,7 +113,7 @@ def test_games_cards_exact_triple_count_uses_exact_triples_only() -> None:
         if int(rank_counts[int(spec["rank_value"])]) == 3
     }
     assert all(len(card_ids) == 3 for card_ids in annotation_rank_card_ids.values())
-    assert out.annotation_gt.type == "keyed_bbox_set_map"
+    assert out.annotation_gt.type == "bbox_set_map"
     assert set(out.annotation_gt.value) == set(annotation_rank_card_ids)
 
 
@@ -165,7 +165,7 @@ def test_games_cards_reference_condition_ref_is_leftmost_top_row_card(
     trace = out.trace_payload
     reference_card_id = str(trace["execution_trace"]["reference_card_id"])
 
-    assert out.query_id == "default"
+    assert out.query_id == "single"
     assert trace["render_map"]["row_card_ids"][0][0] == reference_card_id
     assert trace["execution_trace"]["hand_kind"] == prompt_key
     assert trace["execution_trace"]["card_ordering"] == "sampled"
@@ -227,16 +227,17 @@ def test_games_cards_build_smoke(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize(
-    ("task_id", "pattern_kind", "min_annotation_count"),
+    ("task_id", "pattern_kind", "annotation_type", "min_annotation_count"),
     (
-        ("task_games__cards__blackjack_best_hand_label", "blackjack_best_hand_label", 3),
-        ("task_games__cards__poker_best_hand_label", "poker_best_hand_label", 5),
-        ("task_games__cards__trick_taking_winner_label", "trick_taking_winner_label", 1),
+        ("task_games__cards__blackjack_best_hand_label", "blackjack_best_hand_label", "bbox_set", 3),
+        ("task_games__cards__poker_best_hand_label", "poker_best_hand_label", "bbox_set", 5),
+        ("task_games__cards__trick_taking_winner_label", "trick_taking_winner_label", "bbox", 1),
     ),
 )
 def test_games_cards_rule_tasks_emit_label_contracts(
     task_id: str,
     pattern_kind: str,
+    annotation_type: str,
     min_annotation_count: int,
 ) -> None:
     out = create_task(task_id).generate(25101, params={}, max_attempts=160)
@@ -244,8 +245,8 @@ def test_games_cards_rule_tasks_emit_label_contracts(
     execution = trace["execution_trace"]
     answer = str(out.answer_gt.value)
 
-    assert out.query_id == "default"
-    assert trace["query_spec"]["query_id"] == "default"
+    assert out.query_id == "single"
+    assert trace["query_spec"]["query_id"] == "single"
     assert trace["query_spec"]["params"]["pattern_kind"] == pattern_kind
     assert execution["pattern_kind"] == pattern_kind
     assert out.answer_gt.type == "string"
@@ -257,9 +258,13 @@ def test_games_cards_rule_tasks_emit_label_contracts(
     assert str(execution[label_key]).startswith(label_prefix)
     assert str(execution[option_key]) == answer
     assert str(execution[label_key]).endswith(answer)
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) >= int(min_annotation_count)
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.type == str(annotation_type)
+    if str(annotation_type) == "bbox_set":
+        assert len(out.annotation_gt.value) >= int(min_annotation_count)
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    else:
+        assert len(out.annotation_gt.value) == 4
+        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
 
 
 def test_games_cards_blackjack_best_hand_enforces_unique_non_bust_winner() -> None:
@@ -373,10 +378,10 @@ def test_games_cards_missing_card_completion_has_one_valid_candidate(pattern_kin
     assert out.answer_gt.value == "D"
     assert execution["correct_candidate_label"] == "D"
     assert [label for label, matches in completions.items() if matches] == ["D"]
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 1
+    assert out.annotation_gt.type == "bbox"
+    assert len(out.annotation_gt.value) == 4
     assert execution["annotation_entity_ids"] == [execution["candidate_card_ids_by_label"]["D"]]
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
     assert trace["render_map"]["row_card_counts"] == [4, 6]
     assert "candidate" in out.prompt.lower()
 
@@ -409,15 +414,16 @@ def test_games_cards_trick_winning_play_has_one_winning_candidate() -> None:
         if tuple(int(value) for value in spec["trick_score"]) > current_best
     ]
 
-    assert out.query_id == "default"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "C"
     assert execution["correct_candidate_label"] == "C"
     assert winning_labels == ["C"]
     assert execution["annotation_entity_ids"] == [execution["candidate_card_ids_by_label"]["C"]]
     assert trace["render_map"]["row_card_counts"] == [execution["played_count"], 6]
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert len(out.annotation_gt.value) == 1
+    assert out.annotation_gt.type == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert len(out.annotation_gt.value) == 4
     assert "candidate" in out.prompt.lower()
 
 
@@ -444,7 +450,7 @@ def test_games_cards_poker_draw_card_has_one_best_candidate() -> None:
     best_score = max(scores.values())
     winning_labels = [str(label) for label, score in scores.items() if score == best_score]
 
-    assert out.query_id == "default"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "D"
     assert execution["correct_candidate_label"] == "D"
@@ -452,5 +458,6 @@ def test_games_cards_poker_draw_card_has_one_best_candidate() -> None:
     assert execution["winning_category"] == "flush"
     assert execution["annotation_entity_ids"] == [execution["candidate_card_ids_by_label"]["D"]]
     assert trace["render_map"]["row_card_counts"] == [4, 6]
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
-    assert len(out.annotation_gt.value) == 1
+    assert out.annotation_gt.type == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert len(out.annotation_gt.value) == 4

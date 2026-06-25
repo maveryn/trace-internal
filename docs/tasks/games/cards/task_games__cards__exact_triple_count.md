@@ -6,7 +6,7 @@
 3. Public task id: `task_games__cards__exact_triple_count`
 4. Supported `query_id` values: `single`
 5. Answer schema: `integer_count`
-6. Annotation schema: `keyed_bbox_set_map`
+6. Annotation schema: `bbox_set_map`
 7. Program schema: `count(filter(ranks, count(cards_of_rank(rank)) = 3)); scene=cards; scope=exact_triple_count`
 
 ## Program Contract

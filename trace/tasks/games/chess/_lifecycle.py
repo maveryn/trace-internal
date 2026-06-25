@@ -16,9 +16,9 @@ from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
 from .shared.annotations import (
     bbox_set_for_entities,
-    keyed_move_points,
+    move_point_map,
     projected_bbox_payload,
-    projected_keyed_point_payload,
+    projected_point_map_payload,
 )
 from .shared.prompts import build_chess_prompt_artifacts
 from .shared.rendering import RenderedChessTaskContext
@@ -338,17 +338,17 @@ def keyed_checkmate_annotation_for_sample(
     sample: ChessCheckmateSample,
     rendered_context: RenderedChessTaskContext,
 ) -> ChessAnnotationArtifacts:
-    """Project source, destination, and opposing king cells to keyed points."""
+    """Project source, destination, and opposing king cells to point-map entries."""
 
-    annotation_map = keyed_move_points(
+    annotation_map = move_point_map(
         rendered_context.rendered_scene,
         source=sample.correct_option.source,
         destination=sample.correct_option.destination,
         king=sample.defender_king_coord,
     )
     return ChessAnnotationArtifacts(
-        annotation_gt=TypedValue(type="keyed_point_map", value=annotation_map),
-        projected_annotation=projected_keyed_point_payload(annotation_map),
+        annotation_gt=TypedValue(type="point_map", value=annotation_map),
+        projected_annotation=projected_point_map_payload(annotation_map),
         witness_symbolic={
             "type": "cell_map",
             "ids": {

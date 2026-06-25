@@ -140,7 +140,7 @@ def common_checkmate_trace_sections(*, sample: ChessCheckmateSample, rendered_co
             "answer_option_label": str(sample.correct_option.label),
             "answer_support": [str(label) for label in sample.option_label_support],
             "move_options": checkmate_move_options_trace(sample),
-            "annotation_kind": "keyed_point_map",
+            "annotation_kind": "point_map",
             "annotation_keys": ["from", "to", "king"],
             "annotation_cell_ids": {
                 "from": coord_to_cell_id(sample.correct_option.source),

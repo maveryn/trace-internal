@@ -35,17 +35,17 @@ def keyed_ludo_point_annotation(
     role_points: Mapping[str, Sequence[float]],
     role_entity_ids: Mapping[str, str],
 ) -> LudoAnnotationBundle:
-    """Create a keyed point annotation from already task-bound visual roles."""
+    """Create a point-map annotation from already task-bound visual roles."""
 
     value = {str(role): _round_point(point) for role, point in role_points.items()}
     artifacts = AnnotationArtifacts(
-        annotation_type="keyed_point_map",
+        annotation_type="point_map",
         value=dict(value),
-        annotation_gt=TypedValue(type="keyed_point_map", value=dict(value)),
+        annotation_gt=TypedValue(type="point_map", value=dict(value)),
         projected_annotation={
-            "type": "keyed_point_map",
-            "keyed_point_map": dict(value),
-            "pixel_keyed_point_map": dict(value),
+            "type": "point_map",
+            "point_map": dict(value),
+            "pixel_point_map": dict(value),
         },
     )
     ids = {str(role): str(entity_id) for role, entity_id in role_entity_ids.items()}
@@ -78,7 +78,7 @@ def keyed_ludo_render_map_point_annotation(
     role_sources: Mapping[str, Sequence[str]],
     role_entity_ids: Mapping[str, str],
 ) -> LudoAnnotationBundle:
-    """Project keyed point roles from renderer map paths chosen by the task."""
+    """Project point-map roles from renderer map paths chosen by the task."""
 
     return keyed_ludo_point_annotation(
         role_points={

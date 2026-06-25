@@ -6,7 +6,7 @@
 3. Public task id: `task_games__cards__missing_card_to_complete_hand_label`
 4. Supported `query_id` values: `missing_flush_card_label`, `missing_straight_card_label`, `missing_full_house_card_label`, `missing_three_of_kind_card_label`
 5. Answer schema: `string_label`
-6. Annotation schema: `bbox_set`
+6. Annotation schema: `bbox`
 7. Program schema: `label(select(candidate_cards, completes_pattern(partial_hand, candidate_card, target_pattern))); scene=cards; scope=missing_card_to_complete_hand_label`
 
 ## Program Contract

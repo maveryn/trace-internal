@@ -17,8 +17,8 @@ class BattleshipAnnotationProjection:
     annotation_points: list[list[float]]
     annotation_bboxes: list[list[float]]
     annotation_entity_ids: tuple[str, ...]
-    annotation_keyed_point_sets: Dict[str, list[list[float]]]
-    annotation_keyed_bbox_sets: Dict[str, list[list[float]]]
+    annotation_point_set_map: Dict[str, list[list[float]]]
+    annotation_bbox_set_map: Dict[str, list[list[float]]]
     annotation_key_to_ship_id: Dict[str, str]
     annotation_hit_cell_ids_by_key: Dict[str, list[str]]
 
@@ -64,8 +64,8 @@ def project_point_set_annotation(
             for cell_id in annotation_cell_ids
         ],
         annotation_entity_ids=tuple(str(cell_id) for cell_id in annotation_cell_ids),
-        annotation_keyed_point_sets={},
-        annotation_keyed_bbox_sets={},
+        annotation_point_set_map={},
+        annotation_bbox_set_map={},
         annotation_key_to_ship_id={},
         annotation_hit_cell_ids_by_key={},
     )
@@ -91,8 +91,8 @@ def project_bbox_set_annotation(
         ],
         annotation_bboxes=annotation_bboxes,
         annotation_entity_ids=tuple(str(cell_id) for cell_id in annotation_cell_ids),
-        annotation_keyed_point_sets={},
-        annotation_keyed_bbox_sets={},
+        annotation_point_set_map={},
+        annotation_bbox_set_map={},
         annotation_key_to_ship_id={},
         annotation_hit_cell_ids_by_key={},
     )
@@ -104,11 +104,11 @@ def project_ship_status_annotation(
     annotation_ship_ids: Sequence[str],
     rendered_scene: RenderedBattleshipScene,
 ) -> BattleshipAnnotationProjection:
-    """Project ship-status witness ships to keyed hit-cell point sets."""
+    """Project ship-status witness ships to hit-cell point-set maps."""
 
     ships_by_id = {str(ship.ship_id): ship for ship in ship_placements}
-    annotation_keyed_point_sets: Dict[str, list[list[float]]] = {}
-    annotation_keyed_bbox_sets: Dict[str, list[list[float]]] = {}
+    annotation_point_set_map: Dict[str, list[list[float]]] = {}
+    annotation_bbox_set_map: Dict[str, list[list[float]]] = {}
     annotation_key_to_ship_id: Dict[str, str] = {}
     annotation_hit_cell_ids_by_key: Dict[str, list[str]] = {}
     annotation_coords = tuple(
@@ -134,11 +134,11 @@ def project_ship_status_annotation(
         ]
         if not hit_cell_ids:
             raise ValueError("cannot build annotation points for ship with no hit cells")
-        annotation_keyed_point_sets[str(key)] = [
+        annotation_point_set_map[str(key)] = [
             bbox_center(rendered_scene.render_map["cell_bboxes_px"][str(cell_id)])
             for cell_id in hit_cell_ids
         ]
-        annotation_keyed_bbox_sets[str(key)] = [
+        annotation_bbox_set_map[str(key)] = [
             rounded_bbox(rendered_scene.render_map["cell_bboxes_px"][str(cell_id)])
             for cell_id in hit_cell_ids
         ]
@@ -149,8 +149,8 @@ def project_ship_status_annotation(
         annotation_points=annotation_points,
         annotation_bboxes=annotation_bboxes,
         annotation_entity_ids=tuple(str(ship_id) for ship_id in annotation_ship_ids),
-        annotation_keyed_point_sets=annotation_keyed_point_sets,
-        annotation_keyed_bbox_sets=annotation_keyed_bbox_sets,
+        annotation_point_set_map=annotation_point_set_map,
+        annotation_bbox_set_map=annotation_bbox_set_map,
         annotation_key_to_ship_id=annotation_key_to_ship_id,
         annotation_hit_cell_ids_by_key=annotation_hit_cell_ids_by_key,
     )

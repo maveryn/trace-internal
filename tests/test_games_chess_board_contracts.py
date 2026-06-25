@@ -55,7 +55,7 @@ from tests.helpers import read_jsonl
         (
             GamesChessPlayerCapturePieceCountTask,
             {"target_answer": 3, "player_color": "white"},
-            "player_capture_piece_count",
+            "single",
         ),
         (
             GamesChessTargetSquareAttackerCountTask,
@@ -70,22 +70,21 @@ from tests.helpers import read_jsonl
         (
             GamesChessKingEscapeSquareCountTask,
             {"target_answer": 3},
-            "king_escape_square_count",
+            "single",
         ),
         (
             GamesChessPieceKindCountTask,
-            {"query_id": "piece_kind_count", "target_answer": 4, "target_piece_kind": "pawn"},
-            "piece_kind_count",
+            {"target_answer": 4, "target_piece_kind": "pawn"},
+            "single",
         ),
         (
             GamesChessColoredPieceKindCountTask,
             {
-                "query_id": "colored_piece_kind_count",
                 "target_answer": 2,
                 "target_piece_kind": "knight",
                 "target_piece_color": "black",
             },
-            "colored_piece_kind_count",
+            "single",
         ),
     ),
 )
@@ -99,14 +98,14 @@ def test_games_chess_board_emits_expected_contract(
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert out.query_id == str(expected_query)
     assert trace["query_spec"]["query_id"] == str(expected_query)
     assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
     assert execution["query_id"] == str(expected_query)
     assert int(execution["target_answer"]) == int(out.answer_gt.value)
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
     assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
 
 
@@ -361,7 +360,6 @@ def test_games_chess_piece_type_count_matches_visible_pieces() -> None:
     out = GamesChessColoredPieceKindCountTask().generate(
         50261,
         params={
-            "query_id": "colored_piece_kind_count",
             "target_answer": 3,
             "target_piece_kind": "bishop",
             "target_piece_color": "white",
@@ -387,7 +385,6 @@ def test_games_chess_piece_type_count_zero_answer_uses_empty_annotation() -> Non
     out = GamesChessPieceKindCountTask().generate(
         50262,
         params={
-            "query_id": "piece_kind_count",
             "target_answer": 0,
             "target_piece_kind": "queen",
             "piece_count_distractor_count": 5,
@@ -413,14 +410,14 @@ def test_games_chess_checkmate_move_label_has_unique_mating_option() -> None:
     board = _board_from_execution(execution)
 
     assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert out.answer_gt.value == "D"
     assert execution["answer_option_label"] == out.answer_gt.value
     assert trace["query_spec"]["params"]["answer_support"] == ["A", "B", "C", "D", "E", "F"]
     assert set(out.annotation_gt.value) == {"from", "to", "king"}
-    assert trace["projected_annotation"]["type"] == "keyed_point_map"
-    assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "point_map"
+    assert trace["projected_annotation"]["point_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_map"] == out.annotation_gt.value
     assert trace["render_map"]["coordinate_label_bboxes_px"]["files"]
     assert set(trace["render_map"]["move_option_panel"]["option_bboxes_px"]) == {"A", "B", "C", "D", "E", "F"}
 
@@ -495,15 +492,23 @@ def test_games_chess_public_tasks_cover_declared_integer_answer_support(
 ) -> None:
     seen = set()
     for index, target_answer in enumerate(support):
-        params: dict[str, Any] = {"query_id": str(query_id), "target_answer": int(target_answer)}
+        params: dict[str, Any] = {"target_answer": int(target_answer)}
+        if str(query_id) not in {
+            "player_capture_piece_count",
+            "king_escape_square_count",
+            "piece_kind_count",
+            "colored_piece_kind_count",
+        }:
+            params["query_id"] = str(query_id)
         if str(query_id) == "piece_kind_count":
             params["target_piece_kind"] = "pawn"
         if str(query_id) == "colored_piece_kind_count":
             params["target_piece_kind"] = "bishop"
             params["target_piece_color"] = "white"
         out = task_cls().generate(50301 + (37 * int(index)), params=params, max_attempts=256)
-        assert out.query_id == str(query_id)
-        assert out.trace_payload["query_spec"]["params"]["query_id"] == str(query_id)
+        expected_public_query = "single" if "query_id" not in params else str(query_id)
+        assert out.query_id == expected_public_query
+        assert out.trace_payload["query_spec"]["params"]["query_id"] == expected_public_query
         seen.add(int(out.answer_gt.value))
 
     assert seen == set(int(value) for value in support)
@@ -571,19 +576,23 @@ def test_games_chess_board_prompt_bundle_requires_rule_texts() -> None:
         assert all("attackers" not in str(template).lower() for template in bundle["templates"]["query"][query_key])
         assert any("pieces attack" in str(template).lower() for template in bundle["templates"]["query"][query_key])
     assert "from" in static["query:checkmate_move_label"]["annotation_hint"]
-    for slots in static.values():
+    for key, slots in static.items():
         annotation_hint = str(slots.get("annotation_hint", ""))
         if annotation_hint:
-            assert "bounding" not in annotation_hint.lower()
-            assert "bbox" not in annotation_hint.lower()
-            assert "[x0" not in annotation_hint.lower()
-            assert "pixel-space point" in annotation_hint
+            if key == "query:checkmate_move_label":
+                assert "pixel-space point" in annotation_hint
+                assert '"from"' in annotation_hint
+                assert '"to"' in annotation_hint
+                assert '"king"' in annotation_hint
+            else:
+                assert "pixel-space" in annotation_hint
+                assert "boxes" in annotation_hint
         json_example = str(slots.get("json_example", ""))
         if json_example:
             example = json.loads(json_example)
             annotation = example["annotation"]
             if isinstance(annotation, list):
-                assert all(len(point) == 2 for point in annotation)
+                assert all(len(bbox) == 4 for bbox in annotation)
             else:
                 assert set(annotation) == {"from", "to", "king"}
                 assert all(len(point) == 2 for point in annotation.values())

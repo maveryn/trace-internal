@@ -46,22 +46,22 @@ def point_for_entity_id(rendered_scene, entity_id: str) -> AnnotationArtifacts:
     return point_annotation_artifacts(point)
 
 
-def keyed_point_set_for_entity_ids(
+def point_set_map_for_entity_ids(
     rendered_scene,
-    keyed_entity_ids: Mapping[str, Sequence[str]],
+    entity_ids_by_key: Mapping[str, Sequence[str]],
 ) -> AnnotationArtifacts:
-    """Project keyed semantic witness roles to keyed point sets."""
+    """Project map annotation roles to point-set maps."""
 
-    keyed_points = {
+    point_sets_by_key = {
         str(key): entity_points_for_ids(rendered_scene, tuple(str(entity_id) for entity_id in entity_ids))
-        for key, entity_ids in keyed_entity_ids.items()
+        for key, entity_ids in entity_ids_by_key.items()
     }
     projected = {
         "type": "point_set_map",
-        "point_set_map": {key: [list(point) for point in points] for key, points in keyed_points.items()},
-        "pixel_point_set_map": {key: [list(point) for point in points] for key, points in keyed_points.items()},
+        "point_set_map": {key: [list(point) for point in points] for key, points in point_sets_by_key.items()},
+        "pixel_point_set_map": {key: [list(point) for point in points] for key, points in point_sets_by_key.items()},
     }
-    value = {key: [list(point) for point in points] for key, points in keyed_points.items()}
+    value = {key: [list(point) for point in points] for key, points in point_sets_by_key.items()}
     return AnnotationArtifacts(
         annotation_type="point_set_map",
         value=value,
@@ -70,17 +70,17 @@ def keyed_point_set_for_entity_ids(
     )
 
 
-def keyed_bbox_set_for_entity_ids(
+def bbox_set_map_for_entity_ids(
     rendered_scene,
-    keyed_entity_ids: Mapping[str, Sequence[str]],
+    entity_ids_by_key: Mapping[str, Sequence[str]],
 ) -> AnnotationArtifacts:
-    """Project keyed semantic witness roles to keyed bbox sets."""
+    """Project map annotation roles to bbox-set maps."""
 
-    keyed_bboxes = {
+    bbox_sets_by_key = {
         str(key): entity_bboxes_for_ids(rendered_scene, tuple(str(entity_id) for entity_id in entity_ids))
-        for key, entity_ids in keyed_entity_ids.items()
+        for key, entity_ids in entity_ids_by_key.items()
     }
-    value = {key: [list(bbox) for bbox in bboxes] for key, bboxes in keyed_bboxes.items()}
+    value = {key: [list(bbox) for bbox in bboxes] for key, bboxes in bbox_sets_by_key.items()}
     projected = {
         "type": "bbox_set_map",
         "bbox_set_map": {key: [list(bbox) for bbox in bboxes] for key, bboxes in value.items()},
@@ -98,8 +98,8 @@ __all__ = [
     "bbox_set_for_entity_ids",
     "entity_bboxes_for_ids",
     "entity_points_for_ids",
-    "keyed_bbox_set_for_entity_ids",
-    "keyed_point_set_for_entity_ids",
+    "bbox_set_map_for_entity_ids",
+    "point_set_map_for_entity_ids",
     "point_for_entity_id",
     "point_set_for_entity_ids",
 ]

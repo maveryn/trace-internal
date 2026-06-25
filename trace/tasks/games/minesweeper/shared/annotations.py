@@ -58,12 +58,12 @@ def minesweeper_point_annotation(
     return point_annotation_artifacts(_point_for_cell(rendered, coord))
 
 
-def minesweeper_keyed_point_sets_annotation(
+def minesweeper_point_set_map_annotation(
     *,
     rendered: RenderedMinesweeperScene,
     coords_by_role: Mapping[str, Sequence[Coord]],
 ) -> AnnotationArtifacts:
-    """Project role-bound cell witness groups to keyed point-set annotation."""
+    """Project role-bound cell witness groups to point-set-map annotation."""
 
     value: dict[str, list[list[float]]] = {}
     for role, coords in sorted(coords_by_role.items()):
@@ -72,16 +72,16 @@ def minesweeper_keyed_point_sets_annotation(
             for coord in coords
         ]
     return AnnotationArtifacts(
-        annotation_type="keyed_point_set_map",
+        annotation_type="point_set_map",
         value={str(role): [list(point) for point in points] for role, points in value.items()},
         annotation_gt=TypedValue(
-            type="keyed_point_set_map",
+            type="point_set_map",
             value={str(role): [list(point) for point in points] for role, points in value.items()},
         ),
         projected_annotation={
-            "type": "keyed_point_set_map",
-            "keyed_point_set_map": {str(role): [list(point) for point in points] for role, points in value.items()},
-            "pixel_keyed_point_set_map": {str(role): [list(point) for point in points] for role, points in value.items()},
+            "type": "point_set_map",
+            "point_set_map": {str(role): [list(point) for point in points] for role, points in value.items()},
+            "pixel_point_set_map": {str(role): [list(point) for point in points] for role, points in value.items()},
         },
     )
 
@@ -102,7 +102,7 @@ __all__ = [
     "cell_ids_for_coords",
     "keyed_cell_ids_for_coords",
     "minesweeper_bbox_set_annotation",
-    "minesweeper_keyed_point_sets_annotation",
+    "minesweeper_point_set_map_annotation",
     "minesweeper_point_annotation",
     "minesweeper_point_set_annotation",
 ]

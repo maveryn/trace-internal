@@ -36,10 +36,10 @@ objectives.
 ## Annotation Policy
 Prompt-facing annotation should stay on visible game witnesses: cells, pieces,
 move paths, merge pairs, captured groups, option boards, score/status readouts,
-or rule-table entries. Use keyed annotation when source and destination, before
+or rule-table entries. Use map annotation when source and destination, before
 and after, or reference and candidate roles must be bound correctly.
 
-For games counting tasks, prefer `bbox` / `bbox_set` / keyed bbox maps when the
+For games counting tasks, prefer `bbox` / `bbox_set` / bbox maps when the
 counted witnesses are selectable area-like objects: grid cells, tiles, board
 squares, cards, bricks, gems, bubbles, blocks, discs, tokens, pellets, balls, or
 scoreable objects. Prefer `point` / `point_set` for localization-style tasks and

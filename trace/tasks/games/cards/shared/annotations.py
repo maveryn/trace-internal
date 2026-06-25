@@ -15,7 +15,7 @@ def card_bboxes_for_ids(render_map: Mapping[str, object], card_ids: Sequence[str
 
 
 def keyed_card_bbox_set_map(render_map: Mapping[str, object], keyed_card_ids: Sequence[tuple[str, Sequence[str]]]) -> dict[str, list[list[float]]]:
-    """Return keyed card bbox-set annotations for rank-group witnesses."""
+    """Return card bbox-set-map annotations for rank-group witnesses."""
 
     return {
         str(key): card_bboxes_for_ids(render_map, card_ids)

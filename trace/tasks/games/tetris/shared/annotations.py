@@ -84,7 +84,7 @@ def tetris_annotation_bundle(sample: TetrisSample, rendered: RenderedTetrisScene
     if kind == "collision_keyed_cell_sets":
         raw_map = sample.metadata.get("annotation_entity_id_map", {})
         if not isinstance(raw_map, Mapping):
-            raise ValueError("Tetris collision annotation requires keyed entity ids")
+            raise ValueError("Tetris collision annotation requires entity id maps")
         value = {
             str(role): _entity_bboxes(rendered, tuple(str(entity_id) for entity_id in ids))
             for role, ids in raw_map.items()

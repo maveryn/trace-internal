@@ -37,14 +37,14 @@ def _coords(values: list[list[int]]) -> tuple[tuple[int, int], ...]:
             {"query_id": "forced_mine_count", "target_answer": 3, "scene_variant": "mixed_grid", "board_size": 5},
             "forced_mine_count",
             "integer",
-            "point_set",
+            "bbox_set",
         ),
         (
             GamesMinesweeperForcedCellCountTask,
             {"query_id": "forced_safe_count", "target_answer": 4, "scene_variant": "open_grid", "board_size": 5},
             "forced_safe_count",
             "integer",
-            "point_set",
+            "bbox_set",
         ),
         (
             GamesMinesweeperForcedMineCellLabelTask,
@@ -82,8 +82,11 @@ def test_games_minesweeper_grid_emits_expected_contract(
     if str(expected_annotation_type) == "point":
         assert trace["projected_annotation"]["point"] == out.annotation_gt.value
         assert len(execution["annotation_entity_ids"]) == 1
-    else:
+    elif str(expected_annotation_type) == "point_set":
         assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+        assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
+    else:
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
         assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
     assert "panel_scene_style" in trace["render_spec"]
     assert trace["render_spec"]["text_style"]["font_family"]

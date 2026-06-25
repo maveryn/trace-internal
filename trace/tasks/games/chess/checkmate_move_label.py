@@ -103,7 +103,7 @@ def _prepare_checkmate_move_objective(
         build_trace_payload=lambda sample, rendered: common_checkmate_trace_sections(sample=sample, rendered_context=rendered),
         build_prompt_dynamic_slots=prompt_slots,
         build_query_params=query_params,
-        execution_extra={"annotation_kind": "keyed_point_map"},
+        execution_extra={"annotation_kind": "point_map"},
     )
 
 

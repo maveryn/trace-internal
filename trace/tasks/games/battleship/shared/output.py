@@ -96,16 +96,16 @@ def projected_annotation_payload(
             "point": list(annotation_gt.value),
             "pixel_point": list(annotation_gt.value),
         }
-    if str(annotation_gt.type) == "keyed_bbox_set_map":
+    if str(annotation_gt.type) == "bbox_set_map":
         return {
-            "type": "keyed_bbox_set_map",
-            "keyed_bbox_set_map": dict(annotation_projection.annotation_keyed_bbox_sets),
-            "pixel_keyed_bbox_set_map": dict(annotation_projection.annotation_keyed_bbox_sets),
+            "type": "bbox_set_map",
+            "bbox_set_map": dict(annotation_projection.annotation_bbox_set_map),
+            "pixel_bbox_set_map": dict(annotation_projection.annotation_bbox_set_map),
         }
     return {
-        "type": "keyed_point_set_map",
-        "keyed_point_set_map": dict(annotation_projection.annotation_keyed_point_sets),
-        "pixel_keyed_point_set_map": dict(annotation_projection.annotation_keyed_point_sets),
+        "type": "point_set_map",
+        "point_set_map": dict(annotation_projection.annotation_point_set_map),
+        "pixel_point_set_map": dict(annotation_projection.annotation_point_set_map),
     }
 
 

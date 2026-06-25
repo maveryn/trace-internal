@@ -38,9 +38,9 @@ def _exact_triple_annotation(rendered_context, sampled_hand):
         rendered_context.rendered_scene.render_map,
         sampled_hand.keyed_annotation_card_ids,
     )
-    return TypedValue(type="keyed_bbox_set_map", value=dict(annotation_bbox_map)), {
-        "keyed_bbox_set_map": dict(annotation_bbox_map),
-        "pixel_keyed_bbox_set_map": dict(annotation_bbox_map),
+    return TypedValue(type="bbox_set_map", value=dict(annotation_bbox_map)), {
+        "bbox_set_map": dict(annotation_bbox_map),
+        "pixel_bbox_set_map": dict(annotation_bbox_map),
     }
 
 

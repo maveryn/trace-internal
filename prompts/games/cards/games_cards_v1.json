@@ -178,50 +178,50 @@
     },
     "query:poker_draw_card_label": {
       "poker_rule_text": "Use standard five-card poker ranking. Compare categories first; if categories match, use the usual rank tie-breakers with Ace high.",
-      "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the selected candidate card",
+      "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] for the selected candidate card",
       "answer_hint": "set \"answer\" to only the selected candidate option letter",
-      "json_example": "{\"annotation\":[[320,300,400,420]],\"answer\":\"B\"}",
+      "json_example": "{\"annotation\":[320,300,400,420],\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
     },
     "query:trick_taking_winner_label": {
       "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only.",
       "trick_winner_rule_text": "The leftmost card is the led card. If any trump card is played, the highest trump wins; otherwise the highest card in the led suit wins.",
-      "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the single winning played card",
+      "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] for the single winning played card",
       "answer_hint": "set \"answer\" to only the winning player option letter",
-      "json_example": "{\"annotation\":[[320,120,400,250]],\"answer\":\"B\"}",
+      "json_example": "{\"annotation\":[320,120,400,250],\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
     },
     "query:trick_winning_play_label": {
       "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only.",
       "trick_play_rule_text": "The top row shows cards already played. The card marked LED led the trick. If any trump card is played or chosen, the highest trump wins; otherwise the highest card in the led suit wins.",
-      "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the selected candidate card",
+      "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] for the selected candidate card",
       "answer_hint": "set \"answer\" to only the selected candidate option letter",
-      "json_example": "{\"annotation\":[[320,300,400,420]],\"answer\":\"B\"}",
+      "json_example": "{\"annotation\":[320,300,400,420],\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
     },
     "query:missing_flush_card_label": {
-      "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the selected candidate card",
+      "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] for the selected candidate card",
       "answer_hint": "set \"answer\" to only the selected candidate option letter",
-      "json_example": "{\"annotation\":[[320,300,400,420]],\"answer\":\"B\"}",
+      "json_example": "{\"annotation\":[320,300,400,420],\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
     },
     "query:missing_straight_card_label": {
       "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only.",
-      "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the selected candidate card",
+      "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] for the selected candidate card",
       "answer_hint": "set \"answer\" to only the selected candidate option letter",
-      "json_example": "{\"annotation\":[[320,300,400,420]],\"answer\":\"B\"}",
+      "json_example": "{\"annotation\":[320,300,400,420],\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
     },
     "query:missing_full_house_card_label": {
-      "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the selected candidate card",
+      "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] for the selected candidate card",
       "answer_hint": "set \"answer\" to only the selected candidate option letter",
-      "json_example": "{\"annotation\":[[320,300,400,420]],\"answer\":\"B\"}",
+      "json_example": "{\"annotation\":[320,300,400,420],\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
     },
     "query:missing_three_of_kind_card_label": {
-      "annotation_hint": "set \"annotation\" to an array with the bounding box [x0, y0, x1, y1] for the selected candidate card",
+      "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] for the selected candidate card",
       "answer_hint": "set \"answer\" to only the selected candidate option letter",
-      "json_example": "{\"annotation\":[[320,300,400,420]],\"answer\":\"B\"}",
+      "json_example": "{\"annotation\":[320,300,400,420],\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
     }
   },

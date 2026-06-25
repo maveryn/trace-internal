@@ -6,7 +6,7 @@
 3. Public task id: `task_games__cards__trick_taking_winner_label`
 4. Supported `query_id` values: `single`
 5. Answer schema: `string_label`
-6. Annotation schema: `bbox_set`
+6. Annotation schema: `bbox`
 7. Program schema: `label(arg_extreme(played_cards, metric=trick_order_metric(card, lead_suit, trump_suit), direction=winning)); scene=cards; scope=trick_taking_winner_label`
 
 ## Program Contract

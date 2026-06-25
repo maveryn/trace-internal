@@ -10,7 +10,7 @@ The scene renders a simplified two-row pit board with 10 unlabeled pits, visible
 
 Answer schema: `integer`.
 
-Annotation schema: `keyed_bbox_map` with `source_pit` and `target_pit`.
+Annotation schema: `bbox_map` with `source_pit` and `target_pit`.
 
 Supported `query_id`: `single`.
 

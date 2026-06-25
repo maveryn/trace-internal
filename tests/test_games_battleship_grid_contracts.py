@@ -34,36 +34,47 @@ def _bbox_center(bbox: list[float]) -> list[float]:
     ]
 
 
-def _assert_keyed_hit_marker_annotation(trace: dict, annotation: dict[str, list[list[float]]]) -> None:
-    """Assert keyed ship annotation point sets mark every hit-marker cell for each ship."""
+def _assert_hit_marker_bbox_map_annotation(trace: dict, annotation: dict[str, list[list[float]]]) -> None:
+    """Assert ship-status bbox-set-map annotations mark every hit-marker cell for each ship."""
 
     execution = trace["execution_trace"]
-    assert trace["projected_annotation"]["type"] == "keyed_point_set_map"
-    assert trace["projected_annotation"]["keyed_point_set_map"] == annotation
-    assert trace["projected_annotation"]["pixel_keyed_point_set_map"] == annotation
+    assert trace["projected_annotation"]["type"] == "bbox_set_map"
+    assert trace["projected_annotation"]["bbox_set_map"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_set_map"] == annotation
     assert set(annotation.keys()) == set(execution["annotation_ship_name_to_ship_id"].keys())
     assert set(annotation.keys()) == set(execution["annotation_hit_cell_ids_by_ship_name"].keys())
-    for ship_name, points in annotation.items():
+    for ship_name, bboxes in annotation.items():
         hit_cell_ids = execution["annotation_hit_cell_ids_by_ship_name"][ship_name]
         expected = [
-            _bbox_center(trace["render_map"]["cell_bboxes_px"][str(cell_id)])
+            trace["render_map"]["cell_bboxes_px"][str(cell_id)]
             for cell_id in hit_cell_ids
         ]
-        assert points == expected
+        assert bboxes == expected
 
 
-def _assert_point_annotation_matches_cells(trace: dict, annotation: list[list[float]]) -> None:
-    """Assert homogeneous point-set annotation marks the recorded cell ids."""
+def _assert_bbox_annotation_matches_cells(trace: dict, annotation: list[list[float]]) -> None:
+    """Assert homogeneous bbox-set annotation marks the recorded cell ids."""
 
     execution = trace["execution_trace"]
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == annotation
-    assert trace["projected_annotation"]["pixel_point_set"] == annotation
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_set"] == annotation
     expected = [
-        _bbox_center(trace["render_map"]["cell_bboxes_px"][str(cell_id)])
+        trace["render_map"]["cell_bboxes_px"][str(cell_id)]
         for cell_id in execution["annotation_cell_ids"]
     ]
     assert annotation == expected
+    assert execution["annotation_entity_ids"] == execution["annotation_cell_ids"]
+
+
+def _assert_point_annotation_matches_cell(trace: dict, annotation: list[float]) -> None:
+    """Assert scalar point annotation marks the recorded cell id."""
+
+    execution = trace["execution_trace"]
+    assert trace["projected_annotation"]["type"] == "point"
+    assert trace["projected_annotation"]["point"] == annotation
+    assert trace["projected_annotation"]["pixel_point"] == annotation
+    assert annotation == _bbox_center(trace["render_map"]["cell_bboxes_px"][execution["annotation_cell_ids"][0]])
     assert execution["annotation_entity_ids"] == execution["annotation_cell_ids"]
 
 
@@ -90,7 +101,7 @@ def test_games_battleship_sunk_ship_count_emits_expected_contract() -> None:
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
-    assert out.annotation_gt.type == "keyed_point_set_map"
+    assert out.annotation_gt.type == "bbox_set_map"
     assert out.query_id == "sunk_ship_count"
     assert out.scene_id == "battleship"
     assert trace["query_spec"]["query_id"] == "sunk_ship_count"
@@ -100,7 +111,7 @@ def test_games_battleship_sunk_ship_count_emits_expected_contract() -> None:
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
     assert trace["render_spec"]["text_style"]["font_family"]
     assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
-    _assert_keyed_hit_marker_annotation(trace, out.annotation_gt.value)
+    _assert_hit_marker_bbox_map_annotation(trace, out.annotation_gt.value)
     for shape in FLEET_SHAPES:
         assert str(shape.display_name) in out.prompt
 
@@ -153,7 +164,7 @@ def test_games_battleship_partial_ship_count_emits_expected_contract() -> None:
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
-    assert out.annotation_gt.type == "keyed_point_set_map"
+    assert out.annotation_gt.type == "bbox_set_map"
     assert out.query_id == "partial_ship_count"
     assert out.scene_id == "battleship"
     assert trace["query_spec"]["query_id"] == "partial_ship_count"
@@ -163,7 +174,7 @@ def test_games_battleship_partial_ship_count_emits_expected_contract() -> None:
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
     assert trace["render_spec"]["text_style"]["font_family"]
     assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
-    _assert_keyed_hit_marker_annotation(trace, out.annotation_gt.value)
+    _assert_hit_marker_bbox_map_annotation(trace, out.annotation_gt.value)
 
 
 def test_games_battleship_partial_ship_count_places_each_ship_once_and_counts_partial_ships() -> None:
@@ -224,7 +235,7 @@ def test_games_battleship_named_hit_cell_count_emits_expected_contract() -> None
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert out.query_id == "named_ship_hit_cell_count"
     assert out.scene_id == "battleship"
     assert trace["query_spec"]["query_id"] == "named_ship_hit_cell_count"
@@ -237,7 +248,7 @@ def test_games_battleship_named_hit_cell_count_emits_expected_contract() -> None
     assert execution["target_ship_cell_ids"] == [f"r{row}_c{col}" for row, col in _coords(target_ship["coords"])]
     assert set(_coords(execution["annotation_coords"])) == set(_coords(target_ship["hit_coords"]))
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
-    _assert_point_annotation_matches_cells(trace, out.annotation_gt.value)
+    _assert_bbox_annotation_matches_cells(trace, out.annotation_gt.value)
 
 
 def test_games_battleship_named_unhit_cell_count_emits_expected_contract() -> None:
@@ -258,14 +269,14 @@ def test_games_battleship_named_unhit_cell_count_emits_expected_contract() -> No
     hit_coords = set(_coords(target_ship["hit_coords"]))
 
     assert int(out.answer_gt.value) == 2
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert out.query_id == "named_ship_unhit_cell_count"
     assert execution["target_ship_id"] == "square4"
     assert execution["target_ship_display_name"] == "Square 2x2"
     assert execution["target_cell_status"] == "unhit"
     assert set(_coords(execution["annotation_coords"])) == target_coords - hit_coords
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
-    _assert_point_annotation_matches_cells(trace, out.annotation_gt.value)
+    _assert_bbox_annotation_matches_cells(trace, out.annotation_gt.value)
 
 
 def test_games_battleship_grid_query_cycle_covers_answer_board_and_style_support() -> None:
@@ -295,7 +306,7 @@ def test_games_battleship_grid_query_cycle_covers_answer_board_and_style_support
         "sunk_ship_count",
         "named_ship_hit_cell_count",
         "named_ship_unhit_cell_count",
-        "last_ship_cell_label",
+            "single",
     }
     assert boards == {8, 9, 10}
     assert styles == set(SUPPORTED_BATTLESHIP_STYLE_VARIANTS)
@@ -336,16 +347,16 @@ def test_games_battleship_zero_count_uses_empty_annotation() -> None:
         execution = out.trace_payload["execution_trace"]
 
         assert int(out.answer_gt.value) == 0
-        assert out.annotation_gt.type == "keyed_point_set_map"
+        assert out.annotation_gt.type == "bbox_set_map"
         assert out.annotation_gt.value == {}
-        assert out.trace_payload["projected_annotation"]["keyed_point_set_map"] == {}
-        assert out.trace_payload["projected_annotation"]["pixel_keyed_point_set_map"] == {}
+        assert out.trace_payload["projected_annotation"]["bbox_set_map"] == {}
+        assert out.trace_payload["projected_annotation"]["pixel_bbox_set_map"] == {}
         assert execution["annotation_entity_ids"] == []
         assert execution["annotation_ship_ids"] == []
         assert execution["annotation_coords"] == []
 
 
-def test_games_battleship_named_cell_zero_count_uses_empty_point_set() -> None:
+def test_games_battleship_named_cell_zero_count_uses_empty_bbox_set() -> None:
     task = GamesBattleshipShipCellStatusCountTask()
     cases = (
         ("named_ship_hit_cell_count", "line4", 0),
@@ -364,10 +375,10 @@ def test_games_battleship_named_cell_zero_count_uses_empty_point_set() -> None:
         execution = out.trace_payload["execution_trace"]
 
         assert int(out.answer_gt.value) == 0
-        assert out.annotation_gt.type == "point_set"
+        assert out.annotation_gt.type == "bbox_set"
         assert out.annotation_gt.value == []
-        assert out.trace_payload["projected_annotation"]["point_set"] == []
-        assert out.trace_payload["projected_annotation"]["pixel_point_set"] == []
+        assert out.trace_payload["projected_annotation"]["bbox_set"] == []
+        assert out.trace_payload["projected_annotation"]["pixel_bbox_set"] == []
         assert execution["annotation_entity_ids"] == []
         assert execution["annotation_cell_ids"] == []
         assert execution["annotation_coords"] == []
@@ -429,20 +440,19 @@ def test_games_battleship_last_ship_cell_label_emits_expected_contract() -> None
 
     assert out.answer_gt.type == "string"
     assert answer in {"A", "B", "C", "D", "E", "F"}
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == 1
-    assert out.query_id == "last_ship_cell_label"
+    assert out.annotation_gt.type == "point"
+    assert out.query_id == "single"
     assert out.scene_id == "battleship"
-    assert trace["query_spec"]["query_id"] == "last_ship_cell_label"
-    assert execution["query_id"] == "last_ship_cell_label"
+    assert trace["query_spec"]["query_id"] == "single"
+    assert execution["query_id"] == "single"
     assert trace["render_map"]["show_ship_bodies"] is False
     assert answer_option["label"] == answer
     assert tuple(answer_option["coord"]) == missing_coord
     assert target_coords - target_hits == {missing_coord}
     assert set(_coords(execution["annotation_coords"])) == {missing_coord}
-    _assert_point_annotation_matches_cells(trace, out.annotation_gt.value)
+    _assert_point_annotation_matches_cell(trace, out.annotation_gt.value)
     assert trace["render_map"]["candidate_label_cell_ids"][answer] == execution["annotation_cell_ids"][0]
-    assert trace["render_map"]["candidate_label_points_px"][answer] == out.annotation_gt.value[0]
+    assert trace["render_map"]["candidate_label_points_px"][answer] == out.annotation_gt.value
     assert all(
         bool(ship["is_sunk"])
         for ship in execution["ship_placements"]
@@ -480,7 +490,7 @@ def test_games_battleship_grid_build_dataset_smoke(tmp_path) -> None:
     assert all(row["domain"] == "games" for row in rows)
     assert all(row.get("scene_id") == "battleship" for row in rows)
     assert all(row["answer_gt"]["type"] == "integer" for row in rows)
-    assert all(row["annotation_gt"]["type"] == "keyed_point_set_map" for row in rows)
+    assert all(row["annotation_gt"]["type"] == "bbox_set_map" for row in rows)
 
 
 def test_games_battleship_named_cell_status_build_dataset_smoke(tmp_path) -> None:
@@ -507,4 +517,4 @@ def test_games_battleship_named_cell_status_build_dataset_smoke(tmp_path) -> Non
     assert all(row["domain"] == "games" for row in rows)
     assert all(row.get("scene_id") == "battleship" for row in rows)
     assert all(row["answer_gt"]["type"] == "integer" for row in rows)
-    assert all(row["annotation_gt"]["type"] == "point_set" for row in rows)
+    assert all(row["annotation_gt"]["type"] == "bbox_set" for row in rows)

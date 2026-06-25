@@ -166,6 +166,7 @@ def render_rpg_tactical_map_scene(
     tile_px: int = DEFAULT_TILE_PX,
     player_tile_id: str | None = None,
     candidate_tile_ids_by_label: Mapping[str, str] | None = None,
+    target_tile_ids: Sequence[str] | None = None,
     label_font_family: str | None = None,
     label_font_trace: Mapping[str, Any] | None = None,
     render_metadata: Mapping[str, Any] | None = None,
@@ -192,6 +193,13 @@ def render_rpg_tactical_map_scene(
     for tile in tiles:
         _draw_tile(draw, tile=tile, tile_px=tile_size, theme=theme, rng=rng)
     _draw_grid(draw, cols=cols, rows=rows, tile_px=tile_size, theme=theme)
+    resolved_target_tile_ids = [str(tile_id) for tile_id in (target_tile_ids or ())]
+    _draw_target_markers(
+        draw,
+        tiles_by_id=tiles_by_id,
+        target_tile_ids=resolved_target_tile_ids,
+        tile_px=tile_size,
+    )
 
     player_unit = _draw_player_unit(
         draw,
@@ -219,6 +227,7 @@ def render_rpg_tactical_map_scene(
         "terrain_rows": [[str(value) for value in row] for row in terrain_grid],
         "player_tile_id": resolved_player_tile_id,
         "candidate_tile_ids_by_label": {str(label): str(tile_id) for label, tile_id in (candidate_tile_ids_by_label or {}).items()},
+        "target_tile_ids": list(resolved_target_tile_ids),
         "label_font": dict(label_font_trace or {}),
         **dict(render_metadata or {}),
     }
@@ -654,6 +663,35 @@ def _draw_candidate_labels(
         )
         label_bboxes[str(tile.tile_id)] = bbox
     return label_bboxes
+
+
+def _draw_target_markers(
+    draw: ImageDraw.ImageDraw,
+    *,
+    tiles_by_id: Mapping[str, RpgTacticalTile],
+    target_tile_ids: Sequence[str],
+    tile_px: int,
+) -> None:
+    """Draw visible destination markers without introducing option labels."""
+
+    for tile_id in target_tile_ids:
+        if str(tile_id) not in tiles_by_id:
+            raise ValueError(f"unknown target tile id {tile_id!r}")
+        tile = tiles_by_id[str(tile_id)]
+        x0, y0, x1, y1 = [int(round(value)) for value in tile.bbox_xyxy]
+        margin = max(7, int(tile_px * 0.13))
+        ring = (216, 26, 42)
+        ring_dark = (92, 12, 22)
+        fill = (255, 235, 95)
+        bbox = (x0 + margin, y0 + margin, x1 - margin, y1 - margin)
+        draw.ellipse(bbox, fill=fill, outline=ring_dark, width=max(4, int(tile_px * 0.07)))
+        inner_margin = max(8, int(tile_px * 0.23))
+        inner_bbox = (x0 + inner_margin, y0 + inner_margin, x1 - inner_margin, y1 - inner_margin)
+        draw.ellipse(inner_bbox, outline=ring, width=max(3, int(tile_px * 0.05)))
+        cx, cy = tile.point_xy
+        arm = max(12, int(tile_px * 0.25))
+        draw.line((cx - arm, cy, cx + arm, cy), fill=ring_dark, width=max(3, int(tile_px * 0.045)))
+        draw.line((cx, cy - arm, cx, cy + arm), fill=ring_dark, width=max(3, int(tile_px * 0.045)))
 
 
 __all__ = [

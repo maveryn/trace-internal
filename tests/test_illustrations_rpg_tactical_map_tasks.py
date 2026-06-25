@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from trace.tasks.registry import create_task
 from trace.tasks.illustrations.rpg_tactical_map.movement_attack_range_tile_label import TASK_ID as ATTACK_TASK_ID
+from trace.tasks.illustrations.rpg_tactical_map.movement_cost_value import TASK_ID as COST_VALUE_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_count import TASK_ID as COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_label import TASK_ID as LABEL_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.terrain_type_tile_count import TASK_ID as TERRAIN_COUNT_TASK_ID
@@ -361,3 +362,52 @@ def test_rpg_tactical_map_attack_candidates_do_not_default_to_nearest_tile() -> 
             unique_nearest_count += 1
 
     assert unique_nearest_count <= 12
+
+
+def test_rpg_tactical_map_movement_cost_value_contract() -> None:
+    task = create_task(COST_VALUE_TASK_ID)
+    out = task.generate(
+        2026062601,
+        params={
+            "canvas_profile": "square",
+            "min_movement_cost": 3,
+            "max_movement_cost": 10,
+        },
+        max_attempts=40,
+    )
+    assert out.scene_id == "rpg_tactical_map"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "integer"
+    assert 3 <= int(out.answer_gt.value) <= 10
+    assert out.annotation_gt.type == "bbox"
+    width, height = out.image.size
+    _assert_bbox_inside_canvas(out.annotation_gt.value, width=width, height=height)
+    assert "marked" in out.prompt
+    assert "movement" in out.prompt
+    assert "water cannot be entered" in out.prompt
+
+    trace = out.trace_payload
+    render_map = trace["render_map"]
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert render_map["target_tile_bbox_px"] == out.annotation_gt.value
+    assert int(render_map["answer_value"]) == int(out.answer_gt.value)
+    assert int(render_map["target_shortest_movement_cost"]) == int(out.answer_gt.value)
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_tactical_map_v0"
+    assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_tactical_map"
+
+    tiles_by_id = {str(tile["tile_id"]): tile for tile in trace["scene_ir"]["tiles"]}
+    target_tile_id = str(render_map["target_tile_id"])
+    start_tile_id = str(render_map["start_tile_id"])
+    assert target_tile_id != start_tile_id
+    assert target_tile_id in tiles_by_id
+    assert start_tile_id in tiles_by_id
+    assert trace["scene_ir"]["relations"]["target_tile_id"] == target_tile_id
+    assert trace["execution_trace"]["target_tile_id"] == target_tile_id
+    assert trace["execution_trace"]["movement_costs_by_tile_id"][target_tile_id] == int(out.answer_gt.value)
+
+    target_tile = tiles_by_id[target_tile_id]
+    start_tile = tiles_by_id[start_tile_id]
+    manhattan = abs(int(target_tile["row"]) - int(start_tile["row"])) + abs(int(target_tile["col"]) - int(start_tile["col"]))
+    assert render_map["target_manhattan_distance"] == manhattan
+    assert int(out.answer_gt.value) >= manhattan

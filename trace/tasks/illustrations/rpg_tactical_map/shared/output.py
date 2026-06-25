@@ -233,6 +233,36 @@ def movement_attack_range_render_map(
     }
 
 
+def movement_cost_value_render_map(
+    *,
+    scene: RpgTacticalMapScene,
+    target_tile_id: str,
+    movement_costs_by_tile_id: Mapping[str, int],
+    start_tile_id: str,
+    target_manhattan_distance: int,
+    answer_value: int,
+) -> dict[str, Any]:
+    """Return render-map fields for marked-destination movement-cost value tasks."""
+
+    tiles_by_id = {str(tile.tile_id): tile for tile in scene.tiles}
+    target_tile = tiles_by_id[str(target_tile_id)]
+    return {
+        "image_id": "img0",
+        "target_tile_id": str(target_tile_id),
+        "target_tile_bbox_px": rounded_bbox(target_tile.bbox_xyxy),
+        "target_terrain": str(target_tile.terrain),
+        "start_tile_id": str(start_tile_id),
+        "target_manhattan_distance": int(target_manhattan_distance),
+        "movement_costs_by_tile_id": {
+            str(tile_id): int(cost)
+            for tile_id, cost in movement_costs_by_tile_id.items()
+        },
+        "target_shortest_movement_cost": int(answer_value),
+        "answer_value": int(answer_value),
+        "player_unit": scene.units[0].as_dict() if scene.units else {},
+    }
+
+
 def terrain_type_count_render_map(
     *,
     scene: RpgTacticalMapScene,
@@ -260,6 +290,7 @@ __all__ = [
     "bbox_projection",
     "bbox_set_projection",
     "movement_attack_range_render_map",
+    "movement_cost_value_render_map",
     "movement_reachable_count_render_map",
     "movement_reachable_render_map",
     "rounded_bbox",

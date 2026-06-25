@@ -44,6 +44,13 @@
       "",
       ""
     ],
+    "pixel_village_territory_tile_membership_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "pixel_village_river_side_object_count_task": [
       "",
       "",
@@ -64,6 +71,9 @@
       "territory_name",
       "target_plural",
       "target_unit"
+    ],
+    "query:territory_tile_membership_label": [
+      "territory_name"
     ],
     "query:river_side_object_count": [
       "river_relation",
@@ -137,6 +147,13 @@
       "What is the number of {target_plural} in the {territory_name}?",
       "How many {target_plural} can be seen inside the {territory_name}?",
       "Find every {target_unit} in the {territory_name}. What is the count?"
+    ],
+    "territory_tile_membership_label": [
+      "Which lettered ground tile is inside the {territory_name}?",
+      "Select the lettered ground tile inside the {territory_name}.",
+      "Which marked ground tile lies inside the {territory_name}?",
+      "Look at the lettered ground tiles. Which one is inside the {territory_name}?",
+      "Choose the lettered ground tile inside the {territory_name}."
     ],
     "river_side_object_count": [
       "How many {target_plural} are {river_relation} the river?",

@@ -35,6 +35,13 @@
         "Looking only at the {belt_label} belt, how many objects are {target_color_label}?",
         "On the {belt_label} conveyor belt, how many {target_color_label} objects are there?",
         "What is the number of {target_color_label} objects on the {belt_label} belt?"
+      ],
+      "belt_total_count": [
+        "How many objects are on the {belt_label} belt?",
+        "Count all objects on the {belt_label} belt. How many are there?",
+        "Looking only at the {belt_label} belt, how many objects are visible?",
+        "On the {belt_label} conveyor belt, how many objects are there?",
+        "What is the total number of objects on the {belt_label} belt?"
       ]
     },
     "output": {
@@ -66,6 +73,12 @@
       "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted colored object on the requested belt",
       "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:belt_total_count": {
+      "answer_hint": "set \"answer\" to the count as an integer",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted object on the requested belt",
+      "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
     }
   },
   "dynamic_slots": {
@@ -75,6 +88,7 @@
   },
   "required_slots_by_key": {
     "query:object_type_belt_count": ["belt_label", "target_object_plural"],
-    "query:color_belt_count": ["belt_label", "target_color_label"]
+    "query:color_belt_count": ["belt_label", "target_color_label"],
+    "query:belt_total_count": ["belt_label"]
   }
 }

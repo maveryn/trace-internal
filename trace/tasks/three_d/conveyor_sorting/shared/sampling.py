@@ -43,6 +43,7 @@ from .state import (
 
 PREDICATE_OBJECT_TYPE = "object_type"
 PREDICATE_COLOR = "color"
+PREDICATE_BELT_TOTAL = "belt_total"
 
 CAMERA_YAW_BANDS_DEGREES: Tuple[Tuple[float, float], ...] = (
     (-66.0, -42.0),
@@ -164,6 +165,31 @@ def _resolve_target_belt(
         return belt_key, _uniform_string_probability_map(support, selected=belt_key)
     belt_key = str(support[int(rng.randrange(len(support)))])
     return belt_key, _uniform_string_probability_map(support)
+
+
+def _resolve_belt_total_target_count(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+    belt_key: str,
+) -> tuple[int, Dict[str, float]]:
+    """Resolve answer count with belt-specific support for total belt counts."""
+
+    default_max = 8 if str(belt_key) == "inner" else 12
+    count, probabilities = resolve_count_for_namespace(
+        params,
+        namespace=f"{namespace}.{belt_key}.target_count",
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        key="target_count",
+        default_min=1,
+        default_max=int(default_max),
+        lower=1,
+        upper=int(default_max),
+    )
+    return int(count), dict(probabilities)
 
 
 def _belt_point(belt_key: str, theta: float, radial_offset: float = 0.0) -> tuple[float, float]:
@@ -404,32 +430,44 @@ def build_belt_count_dataset(
     rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
     target_belt_key, target_belt_probabilities = _resolve_target_belt(params=params, rng=rng)
     target_belt_label = str(BELT_LABELS[str(target_belt_key)])
-    target_count, target_count_probabilities = resolve_count_for_namespace(
-        params,
-        namespace=f"{namespace}.target_count",
-        gen_defaults=gen_defaults,
-        instance_seed=int(instance_seed),
-        key="target_count",
-        default_min=1,
-        default_max=8,
-        lower=1,
-        upper=8,
-    )
-    object_count_min = _configured_int(params, gen_defaults, "object_count_min", 9)
-    object_count_max = _configured_int(params, gen_defaults, "object_count_max", 18)
-    total_min = max(int(target_count) + 4, int(object_count_min))
-    total_max = max(total_min, int(object_count_max))
-    object_count, object_count_probabilities = resolve_count_for_namespace(
-        params,
-        namespace=f"{namespace}.object_count",
-        gen_defaults=gen_defaults,
-        instance_seed=int(instance_seed),
-        key="object_count",
-        default_min=total_min,
-        default_max=total_max,
-        lower=total_min,
-        upper=22,
-    )
+    if str(predicate_kind) == PREDICATE_BELT_TOTAL:
+        target_count, target_count_probabilities = _resolve_belt_total_target_count(
+            params=params,
+            gen_defaults=gen_defaults,
+            instance_seed=int(instance_seed),
+            namespace=str(namespace),
+            belt_key=str(target_belt_key),
+        )
+    else:
+        target_count, target_count_probabilities = resolve_count_for_namespace(
+            params,
+            namespace=f"{namespace}.target_count",
+            gen_defaults=gen_defaults,
+            instance_seed=int(instance_seed),
+            key="target_count",
+            default_min=1,
+            default_max=8,
+            lower=1,
+            upper=8,
+        )
+    object_count = 0
+    object_count_probabilities: Dict[str, float] = {}
+    if str(predicate_kind) != PREDICATE_BELT_TOTAL:
+        object_count_min = _configured_int(params, gen_defaults, "object_count_min", 9)
+        object_count_max = _configured_int(params, gen_defaults, "object_count_max", 18)
+        total_min = max(int(target_count) + 4, int(object_count_min))
+        total_max = max(total_min, int(object_count_max))
+        object_count, object_count_probabilities = resolve_count_for_namespace(
+            params,
+            namespace=f"{namespace}.object_count",
+            gen_defaults=gen_defaults,
+            instance_seed=int(instance_seed),
+            key="object_count",
+            default_min=total_min,
+            default_max=total_max,
+            lower=total_min,
+            upper=22,
+        )
     slots_per_belt = max(24, _configured_int(params, gen_defaults, "slots_per_belt", 30))
     min_angle_gap_degrees = float(params.get("min_same_belt_angle_gap_degrees", group_default(gen_defaults, "min_same_belt_angle_gap_degrees", 20.0)))
     dimension_scale = float(params.get("object_dimension_scale", group_default(gen_defaults, "object_dimension_scale", 0.64)))
@@ -451,7 +489,77 @@ def build_belt_count_dataset(
     object_specs: List[Dict[str, Any]] = []
     target_object_ids: list[str] = []
 
-    if str(predicate_kind) == PREDICATE_OBJECT_TYPE:
+    if str(predicate_kind) == PREDICATE_BELT_TOTAL:
+        target_shape, target_shape_probabilities = _resolve_target_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_OBJECT_SHAPE_TYPES,
+        )
+        active_colors = sample_named_color_palette(rng, palette_size=4)
+        color_names = tuple(str(name) for name, _rgb in active_colors)
+        if not color_names:
+            raise ValueError("empty conveyor visual color palette")
+        target_color_name = ""
+        target_color_probabilities: Dict[str, float] = {}
+        other_belt_key = str("outer" if str(target_belt_key) == "inner" else "inner")
+        other_default_max = 8 if other_belt_key == "inner" else 12
+        other_count, _other_count_probabilities = resolve_count_for_namespace(
+            params,
+            namespace=f"{namespace}.{other_belt_key}.distractor_count",
+            gen_defaults=gen_defaults,
+            instance_seed=int(instance_seed),
+            key="other_belt_object_count",
+            default_min=1,
+            default_max=int(other_default_max),
+            lower=1,
+            upper=int(other_default_max),
+        )
+        for index in range(int(target_count)):
+            slot = _sample_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                belt_key=target_belt_key,
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
+            object_id = f"obj_{len(object_specs):03d}"
+            target_object_ids.append(object_id)
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=object_id,
+                    shape_type=str(target_shape),
+                    color_name=str(color_names[index % len(color_names)]),
+                    slot=slot,
+                    belt_key=target_belt_key,
+                    matches_query=True,
+                    count_role="target",
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+        for index in range(int(other_count)):
+            slot = _sample_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                belt_key=other_belt_key,
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=f"obj_{len(object_specs):03d}",
+                    shape_type=str(target_shape),
+                    color_name=str(color_names[(index + int(target_count)) % len(color_names)]),
+                    slot=slot,
+                    belt_key=other_belt_key,
+                    matches_query=False,
+                    count_role="other_belt_distractor",
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+        object_count = len(object_specs)
+        object_count_probabilities = {str(object_count): 1.0}
+        target_prompt_phrase = "objects"
+    elif str(predicate_kind) == PREDICATE_OBJECT_TYPE:
         target_shape, target_shape_probabilities = _resolve_target_shape(
             params=params,
             rng=rng,
@@ -624,8 +732,9 @@ def build_belt_count_dataset(
         "belt_counts": {str(key): int(value) for key, value in sorted(belt_counts.items())},
         "target_shape_type_probabilities": dict(target_shape_probabilities),
         "target_color_name_probabilities": dict(target_color_probabilities),
-        "target_count_probabilities": dict(target_count_probabilities),
-        "object_count_probabilities": dict(object_count_probabilities),
+        "target_count_probabilities": {} if str(predicate_kind) == PREDICATE_BELT_TOTAL else dict(target_count_probabilities),
+        "object_count_probabilities": {} if str(predicate_kind) == PREDICATE_BELT_TOTAL else dict(object_count_probabilities),
+        "target_belt_key_probabilities": dict(target_belt_probabilities),
         "target_belt_probabilities": dict(target_belt_probabilities),
         "slots_per_belt": int(slots_per_belt),
         "min_same_belt_angle_gap_degrees": round(float(min_angle_gap_degrees), 3),
@@ -650,6 +759,7 @@ def build_belt_count_dataset(
 
 
 __all__ = [
+    "PREDICATE_BELT_TOTAL",
     "PREDICATE_COLOR",
     "PREDICATE_OBJECT_TYPE",
     "ResolvedConveyorAxes",

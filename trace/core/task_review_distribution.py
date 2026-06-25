@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Mapping, Sequence
 
 from .answer_distribution import evaluate_answer_distribution
+from .query_ids import LEGACY_DEFAULT_QUERY_ID, NO_BRANCH_QUERY_IDS, SINGLE_QUERY_ID
 from .taxonomy import resolve_task_query_id
 from .task_review_calibration import CURRENT_CALIBRATION_BASELINE
 from .task_review_sampling import resolve_review_query_id
@@ -108,7 +109,7 @@ def extract_sampling_axes(output: Any) -> Dict[str, Dict[str, Any]]:
                 observed = execution_trace.get(str(axis), query_params.get(str(axis), ""))
             _set_axis(str(axis), observed=observed, expected=probs, source=str(source_name))
 
-    if str(getattr(output, "query_id", "") or "").strip() in {"", "default"}:
+    if str(getattr(output, "query_id", "") or "").strip() in NO_BRANCH_QUERY_IDS:
         query_axis = axes.get("query_id", {})
         if isinstance(query_axis, Mapping) and query_axis.get("expected_probabilities"):
             axes["query_id"] = {
@@ -158,9 +159,11 @@ def extract_replay_generation_params(output: Any) -> Dict[str, Any]:
     query_id = str(getattr(output, "query_id", "") or "")
     review_query_id = resolve_review_query_id(output)
     if review_query_id:
-        if query_id.strip() in {"", "default"}:
+        if query_id.strip() == SINGLE_QUERY_ID:
+            replay["query_id"] = SINGLE_QUERY_ID
+        elif query_id.strip() in NO_BRANCH_QUERY_IDS:
             internal_query_id = str(execution_trace.get("internal_query_id", "") or "").strip()
-            if internal_query_id and internal_query_id != "default":
+            if internal_query_id and internal_query_id not in {LEGACY_DEFAULT_QUERY_ID, SINGLE_QUERY_ID}:
                 replay["query_id"] = str(internal_query_id)
             else:
                 replay["query_id"] = str(review_query_id)
@@ -253,7 +256,7 @@ def build_query_id_review_warnings(
         {
             str(key)
             for key in [*list(query_id_counts.keys()), *list(expected_probabilities.keys())]
-            if str(key).strip() not in {"", "default"}
+            if str(key).strip() not in NO_BRANCH_QUERY_IDS
         }
     )
     thin = [

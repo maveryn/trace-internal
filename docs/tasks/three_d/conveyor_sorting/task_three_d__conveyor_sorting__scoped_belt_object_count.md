@@ -31,8 +31,8 @@ by canonical named color.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around
-each counted target object. Other objects, belt surfaces, arrows, inspection
-gates, and decorative station context are not annotation.
+each counted target object. Other objects, belt surfaces, arrows, and
+decorative station context are not annotation.
 
 ## Prompt And Trace
 The prompt bundle is `three_d_conveyor_sorting_v1` under

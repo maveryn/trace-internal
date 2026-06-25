@@ -35,6 +35,10 @@ generation:
       difference_answer_min: 1
       difference_answer_max: 5
       object_dimension_scale: 0.64
+    task_three_d__carousel__adjacent_pair_count:
+      target_count_min: 1
+      target_count_max: 5
+      object_dimension_scale: 0.60
 
 rendering:
   shared:
@@ -87,5 +91,8 @@ prompt:
       scene_key: carousel
       task_key: carousel_count_query
     task_three_d__carousel__belt_count_arithmetic_value:
+      scene_key: carousel
+      task_key: carousel_count_query
+    task_three_d__carousel__adjacent_pair_count:
       scene_key: carousel
       task_key: carousel_count_query

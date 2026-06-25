@@ -8,6 +8,7 @@ from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
     bbox_set_annotation_artifacts,
     bbox_set_map_annotation_artifacts,
+    segment_set_annotation_artifacts,
 )
 
 from .rendering import RenderedConveyor
@@ -44,8 +45,25 @@ def bbox_set_map_annotation_for_object_groups(
     return bbox_set_map_annotation_artifacts(keyed_bboxes)
 
 
+def segment_set_annotation_for_object_pairs(
+    rendered: RenderedConveyor,
+    object_id_pairs: Sequence[Sequence[str]],
+) -> AnnotationArtifacts:
+    """Build segment-set annotation artifacts for adjacent ordered object pairs."""
+
+    segments = [
+        [
+            list(rendered.object_centers_px[str(pair[0])]),
+            list(rendered.object_centers_px[str(pair[1])]),
+        ]
+        for pair in object_id_pairs
+    ]
+    return segment_set_annotation_artifacts(segments)
+
+
 __all__ = [
     "bbox_set_annotation_for_objects",
     "bbox_set_map_annotation_for_object_groups",
     "object_bboxes_for_ids",
+    "segment_set_annotation_for_object_pairs",
 ]

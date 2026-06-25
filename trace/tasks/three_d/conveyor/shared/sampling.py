@@ -58,6 +58,8 @@ PREDICATE_COLOR = "color"
 PREDICATE_COLOR_TYPE = "color_type"
 PREDICATE_OBJECT_TYPE_ARITHMETIC = "object_type_count_arithmetic"
 PREDICATE_COLOR_ARITHMETIC = "color_count_arithmetic"
+PREDICATE_ORDERED_OBJECT_PAIR = "ordered_object_pair"
+PREDICATE_ORDERED_COLOR_PAIR = "ordered_color_pair"
 ARITHMETIC_SUM = "sum"
 ARITHMETIC_DIFFERENCE = "difference"
 LAYOUT_HORIZONTAL = "horizontal_lanes"
@@ -234,6 +236,27 @@ def _resolve_scoped_target_count(
     return int(count), dict(probabilities)
 
 
+def _resolve_ordered_pair_count(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> tuple[int, Dict[str, float]]:
+    count, probabilities = resolve_count_for_namespace(
+        params,
+        namespace=str(namespace),
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        key="target_count",
+        default_min=int(params.get("target_count_min", group_default(gen_defaults, "target_count_min", 1))),
+        default_max=int(params.get("target_count_max", group_default(gen_defaults, "target_count_max", 5))),
+        lower=1,
+        upper=5,
+    )
+    return int(count), dict(probabilities)
+
+
 def _resolve_arithmetic_operand_counts(
     *,
     params: Mapping[str, Any],
@@ -382,6 +405,76 @@ def _slot_positions_for_lane(
             slots.append((round(float(x), 4), round(float(y), 4), 90.0))
     rng.shuffle(slots)
     return slots
+
+
+def _ordered_slot_positions_for_lane(
+    *,
+    rng: Any,
+    layout_orientation: str,
+    lane_key: str,
+    count: int,
+) -> list[tuple[float, float, float]]:
+    """Return slot positions in belt-arrow order for ordered-neighbor tasks."""
+
+    count = int(count)
+    if count <= 0:
+        return []
+    center = _lane_center_value(str(layout_orientation), str(lane_key))
+    slots: list[tuple[float, float, float]] = []
+    if str(layout_orientation) == LAYOUT_HORIZONTAL:
+        length = float(HORIZONTAL_SLOT_LENGTH)
+        spacing = length / float(max(1, count))
+        start = -0.5 * length + 0.5 * spacing
+        for index in range(count):
+            x = start + spacing * float(index) + rng.uniform(-0.45 * float(LANE_SLOT_JITTER_ALONG), 0.45 * float(LANE_SLOT_JITTER_ALONG))
+            y = center + rng.uniform(-0.55 * float(LANE_SLOT_JITTER_ACROSS), 0.55 * float(LANE_SLOT_JITTER_ACROSS))
+            slots.append((round(float(x), 4), round(float(y), 4), 0.0))
+    else:
+        length = float(VERTICAL_SLOT_LENGTH)
+        spacing = length / float(max(1, count))
+        start = -0.5 * length + 0.5 * spacing
+        for index in range(count):
+            x = center + rng.uniform(-0.55 * float(LANE_SLOT_JITTER_ACROSS), 0.55 * float(LANE_SLOT_JITTER_ACROSS))
+            y = start + spacing * float(index) + rng.uniform(-0.45 * float(LANE_SLOT_JITTER_ALONG), 0.45 * float(LANE_SLOT_JITTER_ALONG))
+            slots.append((round(float(x), 4), round(float(y), 4), 90.0))
+    return slots
+
+
+def _ordered_pair_symbol_sequence(
+    *,
+    rng: Any,
+    first_symbol: str,
+    second_symbol: str,
+    filler_symbols: Sequence[str],
+    pair_count: int,
+    total_count: int,
+    circular: bool = False,
+) -> tuple[str, ...]:
+    """Construct a sequence with exactly `pair_count` adjacent first->second pairs."""
+
+    pair_count = int(pair_count)
+    total_count = int(total_count)
+    if total_count < 2 * pair_count:
+        raise ValueError("ordered pair sequence needs at least two slots per target pair")
+    fillers = [str(symbol) for symbol in filler_symbols if str(symbol) not in {str(first_symbol), str(second_symbol)}]
+    if not fillers and total_count > 2 * pair_count:
+        raise ValueError("ordered pair sequence needs filler symbols")
+    units: list[tuple[str, ...]] = [(str(first_symbol), str(second_symbol)) for _ in range(pair_count)]
+    filler_count = total_count - 2 * pair_count
+    for index in range(filler_count):
+        units.append((str(fillers[index % len(fillers)]),))
+    rng.shuffle(units)
+    sequence = tuple(symbol for unit in units for symbol in unit)
+    observed = sum(
+        1
+        for index, symbol in enumerate(sequence)
+        if str(symbol) == str(first_symbol)
+        and str(sequence[(index + 1) % len(sequence)]) == str(second_symbol)
+        and (bool(circular) or index + 1 < len(sequence))
+    )
+    if int(observed) != int(pair_count):
+        raise ValueError("ordered pair sequence construction produced the wrong count")
+    return tuple(sequence)
 
 
 def _make_object_spec(
@@ -1109,6 +1202,247 @@ def build_lane_count_arithmetic_dataset(
     }
 
 
+def build_ordered_pair_count_dataset(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    render_params: Any,
+    axes: ResolvedConveyorAxes,
+    predicate_kind: str,
+    namespace: str,
+) -> dict[str, Any]:
+    """Build a straight-conveyor dataset for ordered adjacent-pair counting."""
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
+    layout_orientation, layout_orientation_probabilities = _resolve_layout_orientation(
+        params=params,
+        rng=rng,
+        render_params=render_params,
+    )
+    lane_keys = _lane_keys_for_orientation(str(layout_orientation))
+    target_lane_key, target_lane_probabilities = _resolve_target_lane(params=params, rng=rng, lane_keys=lane_keys)
+    target_count, target_count_probabilities = _resolve_ordered_pair_count(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.{target_lane_key}.target_count",
+    )
+    target_total_min = max(6, 2 * int(target_count))
+    target_total = int(rng.randrange(int(target_total_min), 11))
+    lane_counts: Dict[str, int] = {
+        str(lane_key): (int(target_total) if str(lane_key) == str(target_lane_key) else int(rng.randrange(3, 9)))
+        for lane_key in lane_keys
+    }
+    dimension_scale = float(params.get("object_dimension_scale", group_default(gen_defaults, "object_dimension_scale", 0.66)))
+
+    if str(predicate_kind) == PREDICATE_ORDERED_COLOR_PAIR:
+        target_shape, target_shape_probabilities = _resolve_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        first_color, first_color_probabilities = _resolve_target_color(params=params, rng=rng)
+        palette = list(_sample_readout_palette(rng, target_color=str(first_color), size=6))
+        second_explicit = params.get("second_target_color_name")
+        if second_explicit is not None:
+            second_color = str(second_explicit)
+            if second_color == str(first_color) or second_color not in set(palette):
+                raise ValueError(f"unsupported second_target_color_name: {second_color}")
+        else:
+            candidates = [str(color) for color in palette if str(color) != str(first_color)]
+            second_color = str(candidates[int(rng.randrange(len(candidates)))])
+        filler_symbols = [str(color) for color in palette if str(color) not in {str(first_color), str(second_color)}]
+        target_color_name = str(first_color)
+        second_target_color_name = str(second_color)
+        target_color_probabilities = dict(first_color_probabilities)
+        target_shape_pair = ("", "")
+        target_object_name_pair = ("", "")
+        target_object_plural_pair = ("", "")
+    elif str(predicate_kind) == PREDICATE_ORDERED_OBJECT_PAIR:
+        first_shape, target_shape_probabilities = _resolve_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        second_explicit = params.get("second_target_shape_type")
+        second_candidates = list(compatible_distractor_pool(str(first_shape), support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES))
+        if second_explicit is not None:
+            second_shape = str(second_explicit)
+            if second_shape not in set(second_candidates):
+                raise ValueError(f"unsupported second_target_shape_type: {second_shape}")
+        else:
+            second_shape = str(second_candidates[int(rng.randrange(len(second_candidates)))])
+        filler_pool = list(compatible_distractor_pool(str(first_shape), support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES))
+        filler_pool = list(compatible_distractor_pool(str(second_shape), support=filler_pool))
+        filler_symbols = [str(shape) for shape in filler_pool if str(shape) not in {str(first_shape), str(second_shape)}]
+        target_color_name = ""
+        second_target_color_name = ""
+        target_color_probabilities: Dict[str, float] = {}
+        target_shape = str(first_shape)
+        target_shape_pair = (str(first_shape), str(second_shape))
+        target_object_name_pair = (public_object_name(str(first_shape)), public_object_name(str(second_shape)))
+        target_object_plural_pair = (public_object_plural(str(first_shape)), public_object_plural(str(second_shape)))
+        palette = list(sample_visual_color_names(rng, palette_size=4))
+    else:
+        raise ValueError(f"unsupported straight conveyor ordered-pair predicate: {predicate_kind}")
+    if not filler_symbols:
+        raise ValueError("ordered pair task needs at least one filler symbol")
+
+    target_sequence = _ordered_pair_symbol_sequence(
+        rng=rng,
+        first_symbol=str(target_color_name if predicate_kind == PREDICATE_ORDERED_COLOR_PAIR else target_shape_pair[0]),
+        second_symbol=str(second_target_color_name if predicate_kind == PREDICATE_ORDERED_COLOR_PAIR else target_shape_pair[1]),
+        filler_symbols=filler_symbols,
+        pair_count=int(target_count),
+        total_count=int(target_total),
+        circular=False,
+    )
+
+    object_specs: List[Dict[str, Any]] = []
+    object_sequences_by_lane: Dict[str, list[str]] = {}
+    target_pair_object_id_pairs: list[list[str]] = []
+    target_object_ids: list[str] = []
+
+    for lane_key in lane_keys:
+        slots = _ordered_slot_positions_for_lane(
+            rng=rng,
+            layout_orientation=str(layout_orientation),
+            lane_key=str(lane_key),
+            count=int(lane_counts[str(lane_key)]),
+        )
+        if str(lane_key) == str(target_lane_key):
+            sequence = tuple(target_sequence)
+        else:
+            if str(predicate_kind) == PREDICATE_ORDERED_COLOR_PAIR:
+                sequence = tuple(str(palette[int(rng.randrange(len(palette)))]) for _ in slots)
+            else:
+                distractor_shapes = [*list(target_shape_pair), *list(filler_symbols)]
+                sequence = tuple(str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))]) for _ in slots)
+        lane_object_ids: list[str] = []
+        for index, slot in enumerate(slots):
+            object_id = f"obj_{len(object_specs):03d}"
+            lane_object_ids.append(str(object_id))
+            if str(predicate_kind) == PREDICATE_ORDERED_COLOR_PAIR:
+                shape_type = str(target_shape)
+                color_name = str(sequence[index])
+            else:
+                shape_type = str(sequence[index])
+                color_name = str(palette[(index + len(object_specs)) % len(palette)])
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=str(object_id),
+                    shape_type=str(shape_type),
+                    color_name=str(color_name),
+                    lane_key=str(lane_key),
+                    layout_orientation=str(layout_orientation),
+                    slot=slot,
+                    matches_query=False,
+                    count_role="ordered_pair_scope" if str(lane_key) == str(target_lane_key) else "lane_distractor",
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+        object_sequences_by_lane[str(lane_key)] = list(lane_object_ids)
+        if str(lane_key) == str(target_lane_key):
+            first_symbol = str(target_color_name if predicate_kind == PREDICATE_ORDERED_COLOR_PAIR else target_shape_pair[0])
+            second_symbol = str(second_target_color_name if predicate_kind == PREDICATE_ORDERED_COLOR_PAIR else target_shape_pair[1])
+            for index in range(len(sequence) - 1):
+                if str(sequence[index]) == first_symbol and str(sequence[index + 1]) == second_symbol:
+                    pair = [str(lane_object_ids[index]), str(lane_object_ids[index + 1])]
+                    target_pair_object_id_pairs.append(pair)
+                    target_object_ids.extend(pair)
+
+    target_object_ids = list(dict.fromkeys(target_object_ids))
+    if len(target_pair_object_id_pairs) != int(target_count):
+        raise ValueError("ordered pair dataset target pair count mismatch")
+    for object_id in set(target_object_ids):
+        for spec in object_specs:
+            if str(spec["object_id"]) == str(object_id):
+                spec["matches_query"] = True
+                spec["object_role"] = "target"
+
+    camera, frame, camera_meta, frame_meta = _finalize_camera_and_projection(
+        rng=rng,
+        render_params=render_params,
+        layout_orientation=str(layout_orientation),
+        object_specs=object_specs,
+    )
+    finalized_specs = _screen_finalize_specs(object_specs=object_specs, camera=camera, frame=frame)
+    shape_counts = Counter(str(spec["shape_type"]) for spec in finalized_specs)
+    color_counts = Counter(str(spec["color_name"]) for spec in finalized_specs)
+    lane_counts_final = Counter(str(spec["lane_key"]) for spec in finalized_specs)
+    target_lane_object_ids = [
+        str(spec["object_id"])
+        for spec in finalized_specs
+        if str(spec["lane_key"]) == str(target_lane_key)
+    ]
+    return {
+        "scene_id": SCENE_ID,
+        "scene_variant": str(axes.scene_variant),
+        "layout_family": "straight_parallel_conveyors",
+        "layout_orientation": str(layout_orientation),
+        "layout_orientation_probabilities": dict(layout_orientation_probabilities),
+        "predicate_kind": str(predicate_kind),
+        "lane_records": _lane_records(str(layout_orientation)),
+        "target_lane_key": str(target_lane_key),
+        "target_lane_label": str(LANE_LABELS[str(target_lane_key)]),
+        "target_belt_key": str(target_lane_key),
+        "target_belt_label": str(LANE_LABELS[str(target_lane_key)]),
+        "target_shape_type": str(target_shape),
+        "target_object_name": public_object_name(str(target_shape)),
+        "target_object_plural": public_object_plural(str(target_shape)),
+        "target_shape_pair": [str(shape) for shape in target_shape_pair],
+        "target_object_name_pair": [str(name) for name in target_object_name_pair],
+        "target_object_plural_pair": [str(name) for name in target_object_plural_pair],
+        "target_color_name": str(target_color_name),
+        "second_target_color_name": str(second_target_color_name),
+        "target_color_label": semantic_color_label(str(target_color_name)) if str(target_color_name) else "",
+        "second_target_color_label": semantic_color_label(str(second_target_color_name)) if str(second_target_color_name) else "",
+        "answer_value": int(target_count),
+        "target_count": int(target_count),
+        "target_object_ids": [str(object_id) for object_id in target_object_ids],
+        "target_pair_object_id_pairs": [list(pair) for pair in target_pair_object_id_pairs],
+        "target_lane_object_ids": list(target_lane_object_ids),
+        "target_belt_object_ids": list(target_lane_object_ids),
+        "object_sequences_by_lane": {str(key): list(value) for key, value in object_sequences_by_lane.items()},
+        "object_count": int(len(finalized_specs)),
+        "object_specs": [dict(spec) for spec in finalized_specs],
+        "shape_counts": {str(key): int(value) for key, value in sorted(shape_counts.items())},
+        "color_counts": {str(key): int(value) for key, value in sorted(color_counts.items())},
+        "lane_counts": {str(key): int(value) for key, value in sorted(lane_counts_final.items())},
+        "belt_counts": {str(key): int(value) for key, value in sorted(lane_counts_final.items())},
+        "target_shape_type_probabilities": dict(target_shape_probabilities),
+        "target_color_name_probabilities": dict(target_color_probabilities),
+        "target_count_probabilities": dict(target_count_probabilities),
+        "lane_count_probabilities": {str(lane_key): {str(count): 1.0} for lane_key, count in lane_counts.items()},
+        "target_lane_key_probabilities": dict(target_lane_probabilities),
+        "target_belt_key_probabilities": dict(target_lane_probabilities),
+        "target_belt_probabilities": dict(target_lane_probabilities),
+        "semantic_color_palette": {str(key): list(value) for key, value in sorted(SEMANTIC_COLOR_RGB.items())},
+        "camera": dict(camera_meta),
+        "projection_frame": dict(frame_meta),
+        "solver_trace": {
+            "count_predicate": str(predicate_kind),
+            "scope": {
+                "lane_key": str(target_lane_key),
+                "lane_label": str(LANE_LABELS[str(target_lane_key)]),
+            },
+            "ordered_pair": {
+                "first_color_name": str(target_color_name),
+                "second_color_name": str(second_target_color_name),
+                "first_shape_type": str(target_shape_pair[0]),
+                "second_shape_type": str(target_shape_pair[1]),
+            },
+            "target_count": int(target_count),
+            "target_object_ids": [str(object_id) for object_id in target_object_ids],
+            "target_pair_object_id_pairs": [list(pair) for pair in target_pair_object_id_pairs],
+            "answer_value": int(target_count),
+            "unique_integer_answer": True,
+        },
+    }
+
+
 __all__ = [
     "ARITHMETIC_DIFFERENCE",
     "ARITHMETIC_SUM",
@@ -1118,11 +1452,14 @@ __all__ = [
     "PREDICATE_COLOR",
     "PREDICATE_COLOR_ARITHMETIC",
     "PREDICATE_COLOR_TYPE",
+    "PREDICATE_ORDERED_COLOR_PAIR",
+    "PREDICATE_ORDERED_OBJECT_PAIR",
     "PREDICATE_OBJECT_TYPE",
     "PREDICATE_OBJECT_TYPE_ARITHMETIC",
     "ResolvedConveyorAxes",
     "build_belt_total_count_dataset",
     "build_lane_count_arithmetic_dataset",
+    "build_ordered_pair_count_dataset",
     "build_scoped_belt_count_dataset",
     "resolve_conveyor_axes",
 ]

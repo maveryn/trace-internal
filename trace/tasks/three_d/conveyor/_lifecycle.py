@@ -16,7 +16,11 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.three_d.shared.object_scene import _resolve_render_params
 
-from .shared.annotations import bbox_set_annotation_for_objects, bbox_set_map_annotation_for_object_groups
+from .shared.annotations import (
+    bbox_set_annotation_for_objects,
+    bbox_set_map_annotation_for_object_groups,
+    segment_set_annotation_for_object_pairs,
+)
 from .shared.prompts import build_prompt_artifacts, dynamic_slots_for_conveyor
 from .shared.rendering import RenderedConveyor, render_conveyor
 from .shared.sampling import (
@@ -24,11 +28,14 @@ from .shared.sampling import (
     PREDICATE_COLOR,
     PREDICATE_COLOR_ARITHMETIC,
     PREDICATE_COLOR_TYPE,
+    PREDICATE_ORDERED_COLOR_PAIR,
+    PREDICATE_ORDERED_OBJECT_PAIR,
     PREDICATE_OBJECT_TYPE,
     PREDICATE_OBJECT_TYPE_ARITHMETIC,
     ResolvedConveyorAxes,
     build_belt_total_count_dataset,
     build_lane_count_arithmetic_dataset,
+    build_ordered_pair_count_dataset,
     build_scoped_belt_count_dataset,
     resolve_conveyor_axes,
 )
@@ -44,6 +51,7 @@ class ConveyorTaskPlan:
     target_object_ids: tuple[str, ...]
     objective_params: Mapping[str, Any]
     target_object_ids_by_annotation_key: Mapping[str, tuple[str, ...]] | None = None
+    target_object_id_pairs: tuple[tuple[str, str], ...] | None = None
 
 
 _DOMAIN_DEFAULTS = get_domain_defaults("three_d")
@@ -105,6 +113,17 @@ def _build_trace_payload(
         str(object_id): list(rendered.object_centers_px[str(object_id)])
         for object_id in target_ids
     }
+    target_pair_ids = [
+        [str(pair[0]), str(pair[1])]
+        for pair in dataset.get("target_pair_object_id_pairs", [])
+    ]
+    target_pair_segments = [
+        [
+            list(rendered.object_centers_px[str(pair[0])]),
+            list(rendered.object_centers_px[str(pair[1])]),
+        ]
+        for pair in target_pair_ids
+    ]
     solver_trace = dict(dataset["solver_trace"])
     solver_trace.update(
         {
@@ -114,6 +133,13 @@ def _build_trace_payload(
             "target_object_centers_px": dict(target_centers),
         }
     )
+    if target_pair_ids:
+        solver_trace.update(
+            {
+                "target_pair_object_id_pairs": [list(pair) for pair in target_pair_ids],
+                "target_pair_segments_px": [[list(point) for point in segment] for segment in target_pair_segments],
+            }
+        )
     execution_trace = {
         "query_id": str(selected_branch),
         "scene_id": SCENE_ID,
@@ -129,13 +155,24 @@ def _build_trace_payload(
         "target_shape_type": str(dataset.get("target_shape_type", "")),
         "target_object_name": str(dataset.get("target_object_name", "")),
         "target_object_plural": str(dataset.get("target_object_plural", "")),
+        "target_shape_pair": [str(shape) for shape in dataset.get("target_shape_pair", [])],
+        "target_object_name_pair": [str(name) for name in dataset.get("target_object_name_pair", [])],
+        "target_object_plural_pair": [str(name) for name in dataset.get("target_object_plural_pair", [])],
         "target_color_name": str(dataset.get("target_color_name", "")),
+        "second_target_color_name": str(dataset.get("second_target_color_name", "")),
         "target_color_label": str(dataset.get("target_color_label", "")),
+        "second_target_color_label": str(dataset.get("second_target_color_label", "")),
         "target_object_ids": list(target_ids),
         "target_object_bboxes_px": dict(target_bboxes),
         "target_object_centers_px": dict(target_centers),
+        "target_pair_object_id_pairs": [list(pair) for pair in target_pair_ids],
+        "target_pair_segments_px": [[list(point) for point in segment] for segment in target_pair_segments],
         "target_lane_object_ids": list(dataset["target_lane_object_ids"]),
         "target_belt_object_ids": list(dataset["target_belt_object_ids"]),
+        "object_sequences_by_lane": {
+            str(key): [str(object_id) for object_id in value]
+            for key, value in dict(dataset.get("object_sequences_by_lane", {})).items()
+        },
         "object_count": int(dataset["object_count"]),
         "lane_records": [dict(record) for record in dataset["lane_records"]],
         "object_specs": [dict(spec) for spec in dataset["object_specs"]],
@@ -183,6 +220,17 @@ def _build_trace_payload(
             "operand_counts_by_scope": dict(dataset.get("operand_counts_by_scope", {})),
             "answer_value": int(dataset["answer_value"]),
         }
+    if target_pair_ids:
+        witness_symbolic = {
+            "type": "conveyor_ordered_pair_set",
+            "ordered_pair_object_id_pairs": [list(pair) for pair in target_pair_ids],
+            "segments_px": [[list(point) for point in segment] for segment in target_pair_segments],
+            "count": int(dataset["answer_value"]),
+            "scope": {
+                "lane_key": str(dataset["target_lane_key"]),
+                "lane_label": str(dataset["target_lane_label"]),
+            },
+        }
     return {
         "scene_ir": {
             "scene_kind": f"three_d_conveyor_{public_name.rsplit('__', 1)[-1]}",
@@ -225,6 +273,7 @@ def _build_trace_payload(
             "object_centers_px": dict(rendered.object_centers_px),
             "target_object_bboxes_px": dict(target_bboxes),
             "target_object_centers_px": dict(target_centers),
+            "target_pair_segments_px": [[list(point) for point in segment] for segment in target_pair_segments],
             "belt_bboxes_px": dict(rendered.belt_bboxes_px),
         },
         "execution_trace": execution_trace,
@@ -260,8 +309,13 @@ def _trace_params(
         "object_count": int(dataset["object_count"]),
         "target_shape_type": str(dataset.get("target_shape_type", "")),
         "target_shape_type_probabilities": dict(dataset["target_shape_type_probabilities"]),
+        "target_shape_pair": [str(shape) for shape in dataset.get("target_shape_pair", [])],
+        "target_object_name_pair": [str(name) for name in dataset.get("target_object_name_pair", [])],
+        "target_object_plural_pair": [str(name) for name in dataset.get("target_object_plural_pair", [])],
         "target_color_name": str(dataset.get("target_color_name", "")),
         "target_color_label": str(dataset.get("target_color_label", "")),
+        "second_target_color_name": str(dataset.get("second_target_color_name", "")),
+        "second_target_color_label": str(dataset.get("second_target_color_label", "")),
         "target_color_name_probabilities": dict(dataset.get("target_color_name_probabilities", {})),
     }
     if "arithmetic_operation" in dataset:
@@ -274,6 +328,140 @@ def _trace_params(
             }
         )
     return params
+
+
+def run_conveyor_ordered_pair_count_lifecycle(
+    *,
+    public_name: str,
+    domain_name: str,
+    prompt_query_key_by_branch: Mapping[str, str],
+    predicate_kind_by_branch: Mapping[str, str],
+    supported_branches: Sequence[str],
+    default_branch: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+) -> TaskOutput:
+    """Run the ordered adjacent-pair count lifecycle for straight conveyor tasks."""
+
+    from trace.core.scene_config import get_scene_defaults
+    from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
+
+    scene_defaults = get_scene_defaults(str(domain_name), SCENE_ID)
+    gen_defaults, render_defaults, _prompt_defaults = split_scene_generation_rendering_prompt_defaults(
+        scene_defaults if isinstance(scene_defaults, Mapping) else {},
+        task_id=str(public_name),
+    )
+    selected_branch, branch_probabilities, clean_params = select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=tuple(str(branch) for branch in supported_branches),
+        default_query_id=str(default_branch),
+        task_id=str(public_name),
+        namespace=f"{public_name}.query",
+    )
+    axes = resolve_conveyor_axes(
+        params=clean_params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(public_name),
+    )
+    prompt_query_key = str(prompt_query_key_by_branch[str(selected_branch)])
+    predicate_kind = str(predicate_kind_by_branch[str(selected_branch)])
+    if predicate_kind not in {PREDICATE_ORDERED_OBJECT_PAIR, PREDICATE_ORDERED_COLOR_PAIR}:
+        raise ValueError(f"unsupported straight conveyor ordered-pair predicate: {predicate_kind}")
+    min_bbox_side_px = float(clean_params.get("min_rendered_bbox_side_px", gen_defaults.get("min_rendered_bbox_side_px", 24.0)))
+    last_error: Exception | None = None
+    for attempt_index in range(max(1, int(max_attempts))):
+        attempt_seed = _attempt_seed(int(instance_seed), public_name=str(public_name), attempt_index=int(attempt_index))
+        try:
+            render_params = _resolve_render_params(
+                clean_params,
+                render_defaults=render_defaults,
+                instance_seed=int(attempt_seed),
+                namespace=f"{public_name}.canvas",
+            )
+            dataset = build_ordered_pair_count_dataset(
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                gen_defaults=gen_defaults,
+                render_params=render_params,
+                axes=axes,
+                predicate_kind=str(predicate_kind),
+                namespace=str(public_name),
+            )
+            target_pair_ids = tuple(
+                (str(pair[0]), str(pair[1]))
+                for pair in dataset["target_pair_object_id_pairs"]
+            )
+            plan = ConveyorTaskPlan(
+                dataset=dict(dataset),
+                answer_gt=TypedValue(type="integer", value=int(dataset["answer_value"])),
+                target_object_ids=tuple(str(object_id) for object_id in dataset["target_object_ids"]),
+                objective_params={},
+                target_object_id_pairs=target_pair_ids,
+            )
+            background, background_meta = make_background_canvas(
+                canvas_width=int(render_params.canvas_width),
+                canvas_height=int(render_params.canvas_height),
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                default_config=_BACKGROUND_DEFAULTS,
+            )
+            rendered = render_conveyor(background, dataset=plan.dataset, render_params=render_params)
+            if not _rendered_bboxes_are_readable(rendered, min_side_px=float(min_bbox_side_px)):
+                raise ValueError("rendered conveyor object boxes failed readability constraints")
+            image, post_noise_meta = apply_post_image_noise(
+                rendered.image,
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                default_config=_NOISE_DEFAULTS,
+            )
+            annotation_artifacts = segment_set_annotation_for_object_pairs(rendered, target_pair_ids)
+            _prompt_defaults, prompt_artifacts = build_prompt_artifacts(
+                prompt_query_key=str(prompt_query_key),
+                dynamic_slot_values=dynamic_slots_for_conveyor(plan.dataset),
+                instance_seed=int(attempt_seed),
+            )
+            query_spec = build_prompt_query_spec(
+                prompt_artifacts=prompt_artifacts,
+                query_id=str(selected_branch),
+                params=_trace_params(
+                    axes=axes,
+                    dataset=plan.dataset,
+                    branch_probabilities=branch_probabilities,
+                ),
+            )
+            trace_payload = _build_trace_payload(
+                public_name=str(public_name),
+                selected_branch=str(selected_branch),
+                axes=axes,
+                plan=plan,
+                rendered=rendered,
+                annotation_artifacts=annotation_artifacts,
+                prompt_artifacts=prompt_artifacts,
+                query_spec=query_spec,
+                render_params=render_params,
+                image=image,
+                background_meta=background_meta,
+                post_noise_meta=post_noise_meta,
+            )
+            return TaskOutput(
+                prompt=str(prompt_artifacts.prompt),
+                prompt_variants=dict(prompt_artifacts.prompt_variants),
+                answer_gt=plan.answer_gt,
+                annotation_gt=annotation_artifacts.annotation_gt,
+                image=image,
+                image_id="img0",
+                trace_payload=trace_payload,
+                task_versions=default_task_versions(),
+                scene_id=SCENE_ID,
+                query_id=str(selected_branch),
+            )
+        except Exception as exc:
+            last_error = exc
+            continue
+    raise RuntimeError(f"{public_name} failed to generate a valid straight conveyor ordered-pair scene after {max_attempts} attempts: {last_error}")
 
 
 def run_conveyor_lifecycle(
@@ -552,4 +740,9 @@ def run_conveyor_count_arithmetic_lifecycle(
     raise RuntimeError(f"{public_name} failed to generate a valid straight conveyor arithmetic scene after {max_attempts} attempts: {last_error}")
 
 
-__all__ = ["ConveyorTaskPlan", "run_conveyor_count_arithmetic_lifecycle", "run_conveyor_lifecycle"]
+__all__ = [
+    "ConveyorTaskPlan",
+    "run_conveyor_count_arithmetic_lifecycle",
+    "run_conveyor_lifecycle",
+    "run_conveyor_ordered_pair_count_lifecycle",
+]

@@ -36,6 +36,18 @@ def dynamic_slots_for_conveyor(dataset: Mapping[str, Any]) -> dict[str, Any]:
         "belt_label": str(dataset.get("target_belt_label", "")),
         "target_object_plural": str(dataset.get("target_object_plural", "")),
         "target_color_label": semantic_color_label(target_color_name) if target_color_name else "",
+        "first_target_color_label": str(dataset.get("target_color_label", "")),
+        "second_target_color_label": str(dataset.get("second_target_color_label", "")),
+        "first_target_object_plural": (
+            str(dataset.get("target_object_plural_pair", [""])[0])
+            if dataset.get("target_object_plural_pair")
+            else str(dataset.get("target_object_plural", ""))
+        ),
+        "second_target_object_plural": (
+            str(dataset.get("target_object_plural_pair", ["", ""])[1])
+            if len(dataset.get("target_object_plural_pair", [])) > 1
+            else ""
+        ),
     }
     if "arithmetic_operation" in dataset:
         annotation_keys = [str(dataset["annotation_key_by_scope"][scope]) for scope in dataset.get("scope_keys", [])]

@@ -7,6 +7,11 @@ from pathlib import Path
 from trace.core import task_review_distribution
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks import create_task
+from trace.tasks.three_d.carousel.adjacent_pair_count import (
+    COLOR_ORDERED_PAIR_QUERY_ID,
+    OBJECT_ORDERED_PAIR_QUERY_ID,
+    TASK_ID as ADJACENT_PAIR_TASK_ID,
+)
 from trace.tasks.three_d.carousel.belt_total_object_count import (
     QUERY_ID as TOTAL_QUERY_ID,
     TASK_ID as TOTAL_TASK_ID,
@@ -30,6 +35,13 @@ from trace.tasks.three_d.carousel.shared.state import CONVEYOR_OBJECT_SHAPE_TYPE
 from trace.tasks.three_d.shared.object_confusions import confusable_shape_names
 from trace.tasks.three_d.shared.semantic_colors import confusable_color_names
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
+
+
+def _rounded_segment_for_pair(render_map: dict, pair: list[str]) -> list[list[float]]:
+    return [
+        [round(float(value), 3) for value in render_map["object_centers_px"][str(pair[0])]],
+        [round(float(value), 3) for value in render_map["object_centers_px"][str(pair[1])]],
+    ]
 
 
 def test_carousel_object_pool_excludes_cylinder_confusers() -> None:
@@ -323,6 +335,57 @@ def test_carousel_belt_count_arithmetic_query_ids() -> None:
         else:
             assert trace["predicate_kind"] == "object_type_count_arithmetic"
             assert trace["target_object_plural"]
+
+
+def test_carousel_adjacent_pair_count_query_ids() -> None:
+    task = create_task(ADJACENT_PAIR_TASK_ID)
+    cases = (
+        (COLOR_ORDERED_PAIR_QUERY_ID, 2026062803),
+        (OBJECT_ORDERED_PAIR_QUERY_ID, 2026062804),
+    )
+    for query_id, seed in cases:
+        output = task.generate(
+            seed,
+            params={"query_id": query_id, "post_image_noise_apply_prob": 0.0},
+            max_attempts=220,
+        )
+        trace = output.trace_payload["execution_trace"]
+        render_map = output.trace_payload["render_map"]
+        object_by_id = {str(spec["object_id"]): spec for spec in trace["object_specs"]}
+        pair_ids = [[str(pair[0]), str(pair[1])] for pair in trace["target_pair_object_id_pairs"]]
+        target_belt = str(trace["target_belt_key"])
+        belt_sequence = [str(object_id) for object_id in trace["object_sequences_by_belt"][target_belt]]
+
+        assert output.scene_id == "carousel"
+        assert output.query_id == query_id
+        assert output.answer_gt.type == "integer"
+        assert output.annotation_gt.type == "segment_set"
+        assert 1 <= int(output.answer_gt.value) <= 5
+        assert len(pair_ids) == int(output.answer_gt.value)
+        assert output.annotation_gt.value == [_rounded_segment_for_pair(render_map, pair) for pair in pair_ids]
+        assert output.trace_payload["projected_annotation"]["segment_set"] == output.annotation_gt.value
+        assert output.trace_payload["projected_annotation"]["pixel_segment_set"] == output.annotation_gt.value
+        assert "{target_" not in output.prompt
+        assert "unlettered" not in output.prompt.lower()
+        assert_three_d_canvas_contract(output)
+
+        for first_id, second_id in pair_ids:
+            first_index = belt_sequence.index(str(first_id))
+            assert belt_sequence[(first_index + 1) % len(belt_sequence)] == str(second_id)
+            assert str(object_by_id[first_id]["belt_key"]) == target_belt
+            assert str(object_by_id[second_id]["belt_key"]) == target_belt
+            if query_id == COLOR_ORDERED_PAIR_QUERY_ID:
+                assert trace["predicate_kind"] == "ordered_color_pair"
+                assert str(object_by_id[first_id]["color_name"]) == str(trace["target_color_name"])
+                assert str(object_by_id[second_id]["color_name"]) == str(trace["second_target_color_name"])
+                assert trace["target_color_label"]
+                assert trace["second_target_color_label"]
+            else:
+                assert trace["predicate_kind"] == "ordered_object_pair"
+                assert str(object_by_id[first_id]["shape_type"]) == str(trace["target_shape_pair"][0])
+                assert str(object_by_id[second_id]["shape_type"]) == str(trace["target_shape_pair"][1])
+                assert trace["target_object_plural_pair"][0]
+                assert trace["target_object_plural_pair"][1]
 
 
 def test_carousel_renderer_has_no_unqueried_gate_decoration() -> None:

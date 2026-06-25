@@ -49,6 +49,8 @@ PREDICATE_COLOR_TYPE = "color_type"
 PREDICATE_BELT_TOTAL = "belt_total"
 PREDICATE_OBJECT_TYPE_ARITHMETIC = "object_type_count_arithmetic"
 PREDICATE_COLOR_ARITHMETIC = "color_count_arithmetic"
+PREDICATE_ORDERED_OBJECT_PAIR = "ordered_object_pair"
+PREDICATE_ORDERED_COLOR_PAIR = "ordered_color_pair"
 ARITHMETIC_SUM = "sum"
 ARITHMETIC_DIFFERENCE = "difference"
 
@@ -195,6 +197,27 @@ def _resolve_belt_total_target_count(
     return int(count), dict(probabilities)
 
 
+def _resolve_ordered_pair_count(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> tuple[int, Dict[str, float]]:
+    count, probabilities = resolve_count_for_namespace(
+        params,
+        namespace=str(namespace),
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        key="target_count",
+        default_min=int(params.get("target_count_min", group_default(gen_defaults, "target_count_min", 1))),
+        default_max=int(params.get("target_count_max", group_default(gen_defaults, "target_count_max", 5))),
+        lower=1,
+        upper=5,
+    )
+    return int(count), dict(probabilities)
+
+
 def _belt_max_object_count(belt_key: str) -> int:
     return 8 if str(belt_key) == "inner" else 12
 
@@ -315,6 +338,73 @@ def _slot_positions_for_belt(
         slots.append((float(x), float(y), round(math.degrees(float(theta)) % 360.0, 3)))
     rng.shuffle(slots)
     return slots
+
+
+def _ordered_slot_positions_for_belt(
+    *,
+    rng: Any,
+    belt_key: str,
+    count: int,
+) -> list[tuple[float, float, float]]:
+    """Return belt slots in carousel arrow order for ordered-neighbor tasks."""
+
+    count = int(count)
+    if count <= 0:
+        return []
+    start = float(rng.uniform(0.0, 2.0 * math.pi))
+    width = float(BELT_GEOMETRY[str(belt_key)]["band_width"])
+    jitter = min(0.03, (math.pi / float(max(2, count))) * 0.18)
+    slots: list[tuple[float, float, float]] = []
+    for index in range(count):
+        theta = start + (2.0 * math.pi * float(index) / float(count)) + rng.uniform(-float(jitter), float(jitter))
+        radial_offset = rng.uniform(-0.14 * width, 0.14 * width)
+        x, y = _belt_point(str(belt_key), float(theta), radial_offset=float(radial_offset))
+        slots.append((float(x), float(y), round(math.degrees(float(theta)) % 360.0, 3)))
+    return slots
+
+
+def _ordered_pair_symbol_sequence(
+    *,
+    rng: Any,
+    first_symbol: str,
+    second_symbol: str,
+    filler_symbols: Sequence[str],
+    pair_count: int,
+    total_count: int,
+    circular: bool,
+) -> tuple[str, ...]:
+    """Construct a sequence with exactly `pair_count` adjacent first->second pairs."""
+
+    pair_count = int(pair_count)
+    total_count = int(total_count)
+    if total_count < 2 * pair_count:
+        raise ValueError("ordered pair sequence needs at least two slots per target pair")
+    fillers = [str(symbol) for symbol in filler_symbols if str(symbol) not in {str(first_symbol), str(second_symbol)}]
+    if not fillers and total_count > 2 * pair_count:
+        raise ValueError("ordered pair sequence needs filler symbols")
+    units: list[tuple[str, ...]] = [(str(first_symbol), str(second_symbol)) for _ in range(pair_count)]
+    for index in range(total_count - 2 * pair_count):
+        units.append((str(fillers[index % len(fillers)]),))
+    rng.shuffle(units)
+    sequence = tuple(symbol for unit in units for symbol in unit)
+    observed = 0
+    for index, symbol in enumerate(sequence):
+        if not circular and index == len(sequence) - 1:
+            continue
+        next_symbol = sequence[(index + 1) % len(sequence)]
+        if str(symbol) == str(first_symbol) and str(next_symbol) == str(second_symbol):
+            observed += 1
+    if int(observed) != int(pair_count):
+        return _ordered_pair_symbol_sequence(
+            rng=rng,
+            first_symbol=str(first_symbol),
+            second_symbol=str(second_symbol),
+            filler_symbols=fillers,
+            pair_count=int(pair_count),
+            total_count=int(total_count),
+            circular=bool(circular),
+        )
+    return tuple(sequence)
 
 
 def _angular_distance_degrees(a: float, b: float) -> float:
@@ -1212,6 +1302,248 @@ def build_belt_count_arithmetic_dataset(
     }
 
 
+def build_ordered_pair_count_dataset(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    render_params: Any,
+    axes: ResolvedConveyorAxes,
+    predicate_kind: str,
+    namespace: str,
+) -> dict[str, Any]:
+    """Build an elliptical-carousel dataset for ordered adjacent-pair counting."""
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
+    target_belt_key, target_belt_probabilities = _resolve_target_belt(params=params, rng=rng)
+    target_belt_label = str(BELT_LABELS[str(target_belt_key)])
+    target_count, target_count_probabilities = _resolve_ordered_pair_count(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.{target_belt_key}.target_count",
+    )
+    target_total_min = max(6, 2 * int(target_count))
+    target_total_max = max(int(_belt_max_object_count(str(target_belt_key))), int(target_total_min))
+    belt_counts: Dict[str, int] = {}
+    for belt_key in BELT_KEYS:
+        if str(belt_key) == str(target_belt_key):
+            belt_counts[str(belt_key)] = int(rng.randrange(int(target_total_min), int(target_total_max) + 1))
+        else:
+            belt_counts[str(belt_key)] = int(rng.randrange(3, int(_belt_max_object_count(str(belt_key))) + 1))
+
+    dimension_scale = float(params.get("object_dimension_scale", group_default(gen_defaults, "object_dimension_scale", 0.60)))
+    if str(predicate_kind) == PREDICATE_ORDERED_COLOR_PAIR:
+        target_shape, target_shape_probabilities = _resolve_target_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        first_color, first_color_probabilities = _resolve_target_color(params=params, rng=rng)
+        palette = list(_sample_readout_palette(rng, target_color=str(first_color), size=6))
+        second_explicit = params.get("second_target_color_name")
+        if second_explicit is not None:
+            second_color = str(second_explicit)
+            if second_color == str(first_color) or second_color not in set(palette):
+                raise ValueError(f"unsupported second_target_color_name: {second_color}")
+        else:
+            candidates = [str(color) for color in palette if str(color) != str(first_color)]
+            second_color = str(candidates[int(rng.randrange(len(candidates)))])
+        filler_symbols = [str(color) for color in palette if str(color) not in {str(first_color), str(second_color)}]
+        target_color_name = str(first_color)
+        second_target_color_name = str(second_color)
+        target_color_probabilities = dict(first_color_probabilities)
+        target_shape_pair = ("", "")
+        target_object_name_pair = ("", "")
+        target_object_plural_pair = ("", "")
+    elif str(predicate_kind) == PREDICATE_ORDERED_OBJECT_PAIR:
+        first_shape, target_shape_probabilities = _resolve_target_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        second_explicit = params.get("second_target_shape_type")
+        second_candidates = list(compatible_distractor_pool(str(first_shape), support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES))
+        if second_explicit is not None:
+            second_shape = str(second_explicit)
+            if second_shape not in set(second_candidates):
+                raise ValueError(f"unsupported second_target_shape_type: {second_shape}")
+        else:
+            second_shape = str(second_candidates[int(rng.randrange(len(second_candidates)))])
+        filler_pool = list(compatible_distractor_pool(str(first_shape), support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES))
+        filler_pool = list(compatible_distractor_pool(str(second_shape), support=filler_pool))
+        filler_symbols = [str(shape) for shape in filler_pool if str(shape) not in {str(first_shape), str(second_shape)}]
+        target_shape = str(first_shape)
+        target_shape_pair = (str(first_shape), str(second_shape))
+        target_object_name_pair = (public_object_name(str(first_shape)), public_object_name(str(second_shape)))
+        target_object_plural_pair = (public_object_plural(str(first_shape)), public_object_plural(str(second_shape)))
+        target_color_name = ""
+        second_target_color_name = ""
+        target_color_probabilities = {}
+        active_colors = sample_named_color_palette(rng, palette_size=4)
+        palette = [str(name) for name, _rgb in active_colors]
+    else:
+        raise ValueError(f"unsupported carousel ordered-pair predicate: {predicate_kind}")
+    if not filler_symbols:
+        raise ValueError("ordered pair task needs at least one filler symbol")
+    if not palette:
+        raise ValueError("ordered pair task needs a visual color palette")
+
+    first_symbol = str(target_color_name if predicate_kind == PREDICATE_ORDERED_COLOR_PAIR else target_shape_pair[0])
+    second_symbol = str(second_target_color_name if predicate_kind == PREDICATE_ORDERED_COLOR_PAIR else target_shape_pair[1])
+    target_sequence = _ordered_pair_symbol_sequence(
+        rng=rng,
+        first_symbol=str(first_symbol),
+        second_symbol=str(second_symbol),
+        filler_symbols=filler_symbols,
+        pair_count=int(target_count),
+        total_count=int(belt_counts[str(target_belt_key)]),
+        circular=True,
+    )
+    belt_records = [
+        {
+            "belt_key": str(belt_key),
+            "belt_label": str(BELT_LABELS[str(belt_key)]),
+            "geometry": dict(BELT_GEOMETRY[str(belt_key)]),
+            "slot_count": int(belt_counts[str(belt_key)]),
+        }
+        for belt_key in BELT_KEYS
+    ]
+    object_specs: List[Dict[str, Any]] = []
+    object_sequences_by_belt: Dict[str, list[str]] = {}
+    target_pair_object_id_pairs: list[list[str]] = []
+    target_object_ids: list[str] = []
+
+    for belt_key in BELT_KEYS:
+        slots = _ordered_slot_positions_for_belt(
+            rng=rng,
+            belt_key=str(belt_key),
+            count=int(belt_counts[str(belt_key)]),
+        )
+        if str(belt_key) == str(target_belt_key):
+            sequence = tuple(target_sequence)
+        elif str(predicate_kind) == PREDICATE_ORDERED_COLOR_PAIR:
+            sequence = tuple(str(palette[int(rng.randrange(len(palette)))]) for _ in slots)
+        else:
+            distractor_shapes = [*list(target_shape_pair), *list(filler_symbols)]
+            sequence = tuple(str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))]) for _ in slots)
+
+        belt_object_ids: list[str] = []
+        for index, slot in enumerate(slots):
+            object_id = f"obj_{len(object_specs):03d}"
+            belt_object_ids.append(str(object_id))
+            if str(predicate_kind) == PREDICATE_ORDERED_COLOR_PAIR:
+                shape_type = str(target_shape)
+                color_name = str(sequence[index])
+            else:
+                shape_type = str(sequence[index])
+                color_name = str(palette[(index + len(object_specs)) % len(palette)])
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=str(object_id),
+                    shape_type=str(shape_type),
+                    color_name=str(color_name),
+                    slot=slot,
+                    belt_key=str(belt_key),
+                    matches_query=False,
+                    count_role="ordered_pair_scope" if str(belt_key) == str(target_belt_key) else "belt_distractor",
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+        object_sequences_by_belt[str(belt_key)] = list(belt_object_ids)
+        if str(belt_key) == str(target_belt_key):
+            for index, symbol in enumerate(sequence):
+                next_index = (index + 1) % len(sequence)
+                if str(symbol) == str(first_symbol) and str(sequence[next_index]) == str(second_symbol):
+                    pair = [str(belt_object_ids[index]), str(belt_object_ids[next_index])]
+                    target_pair_object_id_pairs.append(pair)
+                    target_object_ids.extend(pair)
+
+    target_object_ids = list(dict.fromkeys(target_object_ids))
+    if len(target_pair_object_id_pairs) != int(target_count):
+        raise ValueError("carousel ordered pair dataset target pair count mismatch")
+    for object_id in set(target_object_ids):
+        for spec in object_specs:
+            if str(spec["object_id"]) == str(object_id):
+                spec["matches_query"] = True
+                spec["object_role"] = "target"
+
+    camera, frame, camera_meta, frame_meta = _finalize_camera_and_projection(
+        rng=rng,
+        render_params=render_params,
+        object_specs=object_specs,
+    )
+    finalized_specs = _screen_finalize_specs(object_specs=object_specs, camera=camera, frame=frame)
+    shape_counts = Counter(str(spec["shape_type"]) for spec in finalized_specs)
+    color_counts = Counter(str(spec["color_name"]) for spec in finalized_specs)
+    belt_counts_final = Counter(str(spec["belt_key"]) for spec in finalized_specs)
+    target_belt_object_ids = [
+        str(spec["object_id"])
+        for spec in finalized_specs
+        if str(spec["belt_key"]) == str(target_belt_key)
+    ]
+    return {
+        "scene_id": SCENE_ID,
+        "scene_variant": str(axes.scene_variant),
+        "layout_family": "elliptical_carousel",
+        "predicate_kind": str(predicate_kind),
+        "belt_records": [dict(record) for record in belt_records],
+        "target_belt_key": str(target_belt_key),
+        "target_belt_label": str(target_belt_label),
+        "target_shape_type": str(target_shape),
+        "target_object_name": public_object_name(str(target_shape)),
+        "target_object_plural": public_object_plural(str(target_shape)),
+        "target_shape_pair": [str(shape) for shape in target_shape_pair],
+        "target_object_name_pair": [str(name) for name in target_object_name_pair],
+        "target_object_plural_pair": [str(name) for name in target_object_plural_pair],
+        "target_color_name": str(target_color_name),
+        "second_target_color_name": str(second_target_color_name),
+        "target_color_label": semantic_color_label(str(target_color_name)) if str(target_color_name) else "",
+        "second_target_color_label": semantic_color_label(str(second_target_color_name)) if str(second_target_color_name) else "",
+        "answer_value": int(target_count),
+        "target_count": int(target_count),
+        "target_object_ids": [str(object_id) for object_id in target_object_ids],
+        "target_pair_object_id_pairs": [list(pair) for pair in target_pair_object_id_pairs],
+        "target_belt_object_ids": list(target_belt_object_ids),
+        "object_sequences_by_belt": {str(key): list(value) for key, value in object_sequences_by_belt.items()},
+        "object_count": int(len(finalized_specs)),
+        "object_specs": [dict(spec) for spec in finalized_specs],
+        "shape_counts": {str(key): int(value) for key, value in sorted(shape_counts.items())},
+        "color_counts": {str(key): int(value) for key, value in sorted(color_counts.items())},
+        "belt_counts": {str(key): int(value) for key, value in sorted(belt_counts_final.items())},
+        "target_shape_type_probabilities": dict(target_shape_probabilities),
+        "target_color_name_probabilities": dict(target_color_probabilities),
+        "target_count_probabilities": dict(target_count_probabilities),
+        "object_count_probabilities": {str(len(finalized_specs)): 1.0},
+        "target_belt_key_probabilities": dict(target_belt_probabilities),
+        "target_belt_probabilities": dict(target_belt_probabilities),
+        "slots_per_belt": int(max(belt_counts.values())),
+        "min_same_belt_angle_gap_degrees": 0.0,
+        "semantic_color_palette": {str(key): list(value) for key, value in sorted(SEMANTIC_COLOR_RGB.items())},
+        "camera": dict(camera_meta),
+        "projection_frame": dict(frame_meta),
+        "solver_trace": {
+            "count_predicate": str(predicate_kind),
+            "scope": {
+                "belt_key": str(target_belt_key),
+                "belt_label": str(target_belt_label),
+            },
+            "ordered_pair": {
+                "first_color_name": str(target_color_name),
+                "second_color_name": str(second_target_color_name),
+                "first_shape_type": str(target_shape_pair[0]),
+                "second_shape_type": str(target_shape_pair[1]),
+            },
+            "target_count": int(target_count),
+            "target_object_ids": [str(object_id) for object_id in target_object_ids],
+            "target_pair_object_id_pairs": [list(pair) for pair in target_pair_object_id_pairs],
+            "answer_value": int(target_count),
+            "unique_integer_answer": True,
+        },
+    }
+
+
 __all__ = [
     "ARITHMETIC_DIFFERENCE",
     "ARITHMETIC_SUM",
@@ -1219,10 +1551,13 @@ __all__ = [
     "PREDICATE_COLOR",
     "PREDICATE_COLOR_ARITHMETIC",
     "PREDICATE_COLOR_TYPE",
+    "PREDICATE_ORDERED_COLOR_PAIR",
+    "PREDICATE_ORDERED_OBJECT_PAIR",
     "PREDICATE_OBJECT_TYPE",
     "PREDICATE_OBJECT_TYPE_ARITHMETIC",
     "ResolvedConveyorAxes",
     "build_belt_count_arithmetic_dataset",
     "build_belt_count_dataset",
+    "build_ordered_pair_count_dataset",
     "resolve_conveyor_axes",
 ]

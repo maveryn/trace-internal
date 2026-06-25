@@ -263,6 +263,30 @@ def _add_player_projectile(
     )
 
 
+def enemy_ship_ids_hit_by_player_shots(sample: SpaceShooterSample) -> Tuple[str, ...]:
+    """Return enemy ids hit by blue shots under the per-lane lower-first rule."""
+
+    player_counts_by_lane: dict[int, int] = {}
+    for projectile in sample.projectiles:
+        if str(projectile.owner) != "player":
+            continue
+        lane = int(projectile.lane)
+        player_counts_by_lane[lane] = int(player_counts_by_lane.get(lane, 0)) + 1
+    enemies_by_lane: dict[int, list[SpaceEnemy]] = {}
+    for enemy in sample.enemies:
+        enemies_by_lane.setdefault(int(enemy.lane), []).append(enemy)
+    hit_ids: list[str] = []
+    for lane in sorted(enemies_by_lane):
+        player_count = int(player_counts_by_lane.get(int(lane), 0))
+        lane_enemies = sorted(
+            enemies_by_lane[int(lane)],
+            key=lambda enemy: int(enemy.y_slot),
+            reverse=True,
+        )
+        hit_ids.extend(str(enemy.enemy_id) for enemy in lane_enemies[: min(player_count, len(lane_enemies))])
+    return tuple(hit_ids)
+
+
 def sample_enemy_ship_count_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample:
     """Construct a scene where every visible enemy ship is counted."""
 
@@ -463,6 +487,9 @@ def sample_enemy_ship_hit_scene(*, rng, axes: SceneAxes, target_answer: int) -> 
         },
     )
     validate_basic_space_shooter_sample(sample)
+    computed_annotation_ids = enemy_ship_ids_hit_by_player_shots(sample)
+    if tuple(annotation_ids) != tuple(computed_annotation_ids):
+        raise ValueError("space-shooter hit construction does not match lower-first lane rule")
     return sample
 
 

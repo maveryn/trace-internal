@@ -15,6 +15,9 @@ from trace.tasks.games.space_shooter.enemy_ship_count import (
 from trace.tasks.games.space_shooter.enemy_ship_hit_count import (
     GamesSpaceShooterEnemyShipHitCountTask,
 )
+from trace.tasks.games.space_shooter.hit_enemy_ship_label import (
+    GamesSpaceShooterHitEnemyShipLabelTask,
+)
 from trace.tasks.games.space_shooter.safe_lane_count import (
     GamesSpaceShooterSafeLaneCountTask,
 )
@@ -157,6 +160,41 @@ def test_games_space_shooter_enemy_ship_hit_count_supports_zero_answer() -> None
     assert not (player_lanes & enemy_lanes)
 
 
+def test_games_space_shooter_hit_enemy_ship_label_matches_trace() -> None:
+    out = GamesSpaceShooterHitEnemyShipLabelTask().generate(
+        88127,
+        params={"correct_option_index": 2, "lane_count": 7, "enemy_count": 9},
+        max_attempts=256,
+    )
+    execution = out.trace_payload["execution_trace"]
+    render_map = out.trace_payload["render_map"]
+    hit_ids = set(str(enemy_id) for enemy_id in execution["hit_enemy_ids"])
+    candidate_ids = tuple(str(enemy_id) for enemy_id in execution["candidate_enemy_ids"])
+    selected_id = str(execution["selected_enemy_id"])
+    visible_label_ids = tuple(str(enemy_id) for enemy_id in render_map["visible_enemy_label_ids"])
+    visible_enemy_entities = [
+        entity
+        for entity in out.trace_payload["scene_ir"]["entities"]
+        if entity["entity_type"] == "enemy_ship" and bool(entity["text_visible"])
+    ]
+
+    assert out.answer_gt.type == "option_letter"
+    assert str(out.answer_gt.value) == "C"
+    assert out.annotation_gt.type == "bbox"
+    assert out.query_id == "single"
+    assert execution["prompt_query_key"] == "hit_enemy_ship_label"
+    assert selected_id in hit_ids
+    assert list(execution["annotation_entity_ids"]) == [selected_id]
+    assert len(candidate_ids) == 4
+    assert visible_label_ids == candidate_ids
+    assert sorted(str(entity["display_text"]) for entity in visible_enemy_entities) == ["A", "B", "C", "D"]
+    assert sum(1 for enemy_id in candidate_ids if enemy_id in hit_ids) == 1
+    assert execution["candidate_labels"][selected_id] == "C"
+    assert out.annotation_gt.value == render_map["enemy_bboxes_px"][selected_id]
+    assert float(out.annotation_gt.value[2]) - float(out.annotation_gt.value[0]) >= 24.0
+    assert float(out.annotation_gt.value[3]) - float(out.annotation_gt.value[1]) >= 24.0
+
+
 def test_games_space_shooter_safe_lane_count_matches_trace() -> None:
     out = GamesSpaceShooterSafeLaneCountTask().generate(
         88140,
@@ -229,6 +267,7 @@ def test_games_space_shooter_ships_and_projectiles_are_centered_on_lane_pads() -
     (
         (GamesSpaceShooterEnemyShipCountTask, {"lane_count": 8, "enemy_count": 12}),
         (GamesSpaceShooterEnemyShipHitCountTask, {"target_answer": 4, "lane_count": 8, "enemy_count": 12}),
+        (GamesSpaceShooterHitEnemyShipLabelTask, {"lane_count": 8, "enemy_count": 12}),
         (GamesSpaceShooterSafeLaneCountTask, {"target_answer": 3, "lane_count": 7, "enemy_count": 12}),
     ),
 )
@@ -291,6 +330,7 @@ def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:
         tasks=[
             BuildTaskConfig(task_id="task_games__space_shooter__enemy_ship_count", count=1, params={"enemy_count": 7}),
             BuildTaskConfig(task_id="task_games__space_shooter__enemy_ship_hit_count", count=1, params={"target_answer": 3}),
+            BuildTaskConfig(task_id="task_games__space_shooter__hit_enemy_ship_label", count=1, params={}),
             BuildTaskConfig(task_id="task_games__space_shooter__safe_lane_count", count=1, params={"target_answer": 4}),
         ],
         max_attempts_per_instance=256,
@@ -299,6 +339,6 @@ def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:
     final_path = build_dataset(config, code_hash="games-space-shooter-smoke")
     rows = read_jsonl(final_path / "train_instances.jsonl")
 
-    assert len(rows) == 3
+    assert len(rows) == 4
     assert all(row["domain"] == "games" for row in rows)
     assert all(row.get("scene_id") == "space_shooter" for row in rows)

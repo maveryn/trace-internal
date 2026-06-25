@@ -1,0 +1,72 @@
+generation:
+  shared:
+    scene_variant_weights:
+      airport_carousel: 1.0
+      inspection_carousel: 1.0
+      warehouse_carousel: 1.0
+    balanced_scene_variant_sampling: true
+    object_count_min: 9
+    object_count_max: 18
+    target_count_min: 1
+    target_count_max: 8
+    slots_per_belt: 30
+    min_same_belt_angle_gap_degrees: 20.0
+    object_dimension_scale: 0.64
+    min_rendered_bbox_side_px: 24.0
+  task_overrides:
+    task_three_d__carousel__scoped_belt_object_count:
+      object_count_min: 9
+      object_count_max: 18
+      target_count_min: 1
+      target_count_max: 8
+    task_three_d__carousel__belt_total_object_count:
+      target_count_min: 1
+      target_count_max: 12
+
+rendering:
+  shared:
+    scene_margin_left_px: 32
+    scene_margin_right_px: 32
+    scene_margin_top_px: 32
+    scene_margin_bottom_px: 32
+    room_extent: 2.45
+    room_height: 2.8
+    grid_step: 0.0
+    marker_radius_px: 22
+    label_font_size_px: 24
+    line_width_px: 2
+    floor_rgb:
+      - 244
+      - 247
+      - 249
+    grid_rgb:
+      - 184
+      - 197
+      - 207
+    edge_rgb:
+      - 88
+      - 104
+      - 120
+    text_rgb:
+      - 30
+      - 34
+      - 42
+    text_stroke_rgb:
+      - 255
+      - 255
+      - 255
+    full_bleed_floor: true
+    full_bleed_floor_extent_multiplier: 3.2
+
+prompt:
+  shared:
+    bundle_id: three_d_carousel_v1
+    scene_key: carousel
+    task_key: carousel_count_query
+  task_overrides:
+    task_three_d__carousel__scoped_belt_object_count:
+      scene_key: carousel
+      task_key: carousel_count_query
+    task_three_d__carousel__belt_total_object_count:
+      scene_key: carousel
+      task_key: carousel_count_query

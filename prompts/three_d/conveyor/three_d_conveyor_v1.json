@@ -5,11 +5,11 @@
   "templates": {
     "scene": {
       "conveyor": [
-        "The image shows a 3D airport-style conveyor carousel with an inner and an outer elliptical belt.",
-        "The scene shows small 3D objects riding on two concentric elliptical conveyor belts.",
-        "A 3D conveyor carousel is shown with objects on the inner and outer belts.",
-        "The picture shows a baggage-style conveyor carousel with small objects on two oval belts.",
-        "The visual shows small objects arranged on concentric inner and outer conveyor belts."
+        "The image shows three straight parallel conveyor belts with small 3D objects on them.",
+        "The scene shows small 3D objects arranged on three straight conveyor lanes.",
+        "A 3D conveyor setup is shown with three parallel belts carrying objects.",
+        "The picture shows three separate straight conveyor belts with objects on the belts.",
+        "The visual shows a three-lane conveyor with small objects on each lane."
       ]
     },
     "task": {
@@ -22,26 +22,12 @@
       ]
     },
     "query": {
-      "object_type_belt_count": [
-        "How many {target_object_plural} are on the {belt_label} belt?",
-        "Count the {target_object_plural} on the {belt_label} belt. How many are there?",
-        "Looking only at the {belt_label} belt, how many {target_object_plural} are visible?",
-        "On the {belt_label} conveyor belt, how many {target_object_plural} are there?",
-        "What is the number of {target_object_plural} on the {belt_label} belt?"
-      ],
-      "color_belt_count": [
-        "How many {target_color_label} objects are on the {belt_label} belt?",
-        "Count the {target_color_label} objects on the {belt_label} belt. How many are there?",
-        "Looking only at the {belt_label} belt, how many objects are {target_color_label}?",
-        "On the {belt_label} conveyor belt, how many {target_color_label} objects are there?",
-        "What is the number of {target_color_label} objects on the {belt_label} belt?"
-      ],
       "belt_total_count": [
-        "How many objects are on the {belt_label} belt?",
-        "Count all objects on the {belt_label} belt. How many are there?",
-        "Looking only at the {belt_label} belt, how many objects are visible?",
-        "On the {belt_label} conveyor belt, how many objects are there?",
-        "What is the total number of objects on the {belt_label} belt?"
+        "How many objects are on the {lane_label} belt?",
+        "Count all objects on the {lane_label} belt. How many are there?",
+        "Looking only at the {lane_label} belt, how many objects are visible?",
+        "On the {lane_label} conveyor belt, how many objects are there?",
+        "What is the total number of objects on the {lane_label} belt?"
       ]
     },
     "output": {
@@ -62,18 +48,6 @@
     }
   },
   "static_slots_by_key": {
-    "query:object_type_belt_count": {
-      "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted object on the requested belt",
-      "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
-    "query:color_belt_count": {
-      "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted colored object on the requested belt",
-      "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
     "query:belt_total_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
       "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted object on the requested belt",
@@ -82,13 +56,10 @@
     }
   },
   "dynamic_slots": {
-    "belt_label": {"type": "string"},
-    "target_object_plural": {"type": "string"},
-    "target_color_label": {"type": "string"}
+    "lane_label": {"type": "string"},
+    "belt_label": {"type": "string"}
   },
   "required_slots_by_key": {
-    "query:object_type_belt_count": ["belt_label", "target_object_plural"],
-    "query:color_belt_count": ["belt_label", "target_color_label"],
-    "query:belt_total_count": ["belt_label"]
+    "query:belt_total_count": ["lane_label"]
   }
 }

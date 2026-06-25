@@ -1,12 +1,12 @@
-"""Scene state and catalogs for synthetic 3D conveyor scenes."""
+"""Scene state and object catalogs for straight 3D conveyor scenes."""
 
 from __future__ import annotations
 
 from typing import Mapping, Tuple
 
-from trace.tasks.shared.color_format import format_named_color_with_hex
-from trace.tasks.shared.named_colors import available_named_colors
+from trace.tasks.shared.named_colors import available_named_colors, sample_named_color_palette
 from trace.tasks.three_d.shared.object_resources import (
+    OBJECT_CLUSTER_DIMENSIONS,
     OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE,
     OBJECT_CLUSTER_SHAPE_TYPES,
 )
@@ -15,27 +15,25 @@ from trace.tasks.three_d.shared.object_resources import (
 SCENE_ID = "conveyor"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
-    "airport_carousel",
-    "inspection_carousel",
-    "warehouse_carousel",
+    "warehouse_line",
+    "factory_line",
+    "parcel_line",
 )
 
-BELT_KEYS: Tuple[str, ...] = ("inner", "outer")
-BELT_LABELS: Mapping[str, str] = {
-    "inner": "INNER",
-    "outer": "OUTER",
+SEMANTIC_COLOR_RGB: Mapping[str, Tuple[int, int, int]] = {
+    str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+    for name, rgb in available_named_colors()
 }
-BELT_GEOMETRY: Mapping[str, Mapping[str, float]] = {
-    "inner": {
-        "radius_x": 1.95,
-        "radius_y": 0.98,
-        "band_width": 0.42,
-    },
-    "outer": {
-        "radius_x": 3.2,
-        "radius_y": 1.68,
-        "band_width": 0.52,
-    },
+
+HORIZONTAL_LANE_KEYS: Tuple[str, ...] = ("top", "middle", "bottom")
+VERTICAL_LANE_KEYS: Tuple[str, ...] = ("left", "middle", "right")
+
+LANE_LABELS: Mapping[str, str] = {
+    "top": "TOP",
+    "bottom": "BOTTOM",
+    "left": "LEFT",
+    "right": "RIGHT",
+    "middle": "MIDDLE",
 }
 
 CONVEYOR_OBJECT_SHAPE_TYPES: Tuple[str, ...] = tuple(
@@ -88,70 +86,9 @@ CONVEYOR_OBJECT_SHAPE_TYPES: Tuple[str, ...] = tuple(
     if shape in set(OBJECT_CLUSTER_SHAPE_TYPES)
 )
 
-CONVEYOR_COLOR_READOUT_SHAPE_TYPES: Tuple[str, ...] = tuple(
-    shape
-    for shape in (
-        "sphere",
-        "cube",
-        "cylinder",
-        "cone",
-        "torus",
-        "pyramid",
-        "wedge",
-        "star_prism",
-        "diamond",
-        "heart",
-        "puzzle_piece",
-        "cup",
-        "bowl",
-        "flower",
-        "tray",
-        "chess_piece",
-        "shield",
-        "dice",
-        "pencil",
-        "ruler",
-        "bell",
-        "candle",
-        "trophy",
-        "hat",
-        "umbrella",
-        "button",
-        "card",
-        "mail_envelope",
-        "glove",
-        "key",
-        "plate",
-    )
-    if shape in set(CONVEYOR_OBJECT_SHAPE_TYPES)
-)
-
-SEMANTIC_COLOR_RGB: Mapping[str, Tuple[int, int, int]] = {
-    str(name): (int(rgb[0]), int(rgb[1]), int(rgb[2]))
-    for name, rgb in available_named_colors()
-}
-SEMANTIC_COLOR_SUPPORT: Tuple[str, ...] = tuple(SEMANTIC_COLOR_RGB.keys())
-
-COLOR_CONFUSION_EXCLUSIONS: Mapping[str, Tuple[str, ...]] = {
-    "blue": ("cyan", "purple"),
-    "red": ("maroon", "magenta"),
-    "yellow": ("orange", "brown"),
-    "orange": ("yellow", "brown"),
-    "cyan": ("blue",),
-    "maroon": ("red", "magenta"),
-    "magenta": ("red", "maroon"),
-    "brown": ("yellow", "orange"),
-}
-
-
-def semantic_color_label(color_name: str) -> str:
-    """Return prompt-facing canonical named color text."""
-
-    return format_named_color_with_hex(str(color_name), SEMANTIC_COLOR_RGB[str(color_name)])
-
 
 def public_object_name(shape_type: str) -> str:
-    """Return the short prompt-facing object name for one conveyor object."""
+    """Return the prompt-facing object name for one conveyor object."""
 
     return str(OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE.get(str(shape_type), str(shape_type).replace("_", " ")))
 
@@ -169,18 +106,30 @@ def public_object_plural(shape_type: str) -> str:
     return f"{raw}s"
 
 
+def object_dimensions(shape_type: str, *, scale: float) -> tuple[float, float, float]:
+    """Return scaled base dimensions for one scene object."""
+
+    base = OBJECT_CLUSTER_DIMENSIONS.get(str(shape_type), (0.52, 0.52, 0.52))
+    return tuple(round(float(value) * float(scale), 4) for value in base)
+
+
+def sample_visual_color_names(rng: object, *, palette_size: int = 4) -> tuple[str, ...]:
+    """Sample canonical named colors for non-semantic visual variety."""
+
+    palette = sample_named_color_palette(rng, palette_size=int(palette_size))
+    return tuple(str(name) for name, _rgb in palette)
+
+
 __all__ = [
-    "BELT_GEOMETRY",
-    "BELT_KEYS",
-    "BELT_LABELS",
-    "COLOR_CONFUSION_EXCLUSIONS",
-    "CONVEYOR_COLOR_READOUT_SHAPE_TYPES",
     "CONVEYOR_OBJECT_SHAPE_TYPES",
+    "HORIZONTAL_LANE_KEYS",
+    "LANE_LABELS",
     "SCENE_ID",
     "SEMANTIC_COLOR_RGB",
-    "SEMANTIC_COLOR_SUPPORT",
     "SUPPORTED_SCENE_VARIANTS",
+    "VERTICAL_LANE_KEYS",
+    "object_dimensions",
     "public_object_name",
     "public_object_plural",
-    "semantic_color_label",
+    "sample_visual_color_names",
 ]

@@ -1,16 +1,16 @@
-# `task_three_d__conveyor__scoped_belt_object_count`
+# `task_three_d__carousel__scoped_belt_object_count`
 
 ## Summary
 - Domain: `three_d`
-- Scene id: `conveyor`
-- Scene package: `conveyor`
+- Scene id: `carousel`
+- Scene package: `carousel`
 - Query ids: `object_type_belt_count`, `color_belt_count`
 - Answer type: `integer`
 - Annotation type: unordered `bbox_set`
 - Annotation schema: `bbox_set`
 
 ## Program Contract
-- `count(filter(conveyor_objects, belt_key=target_belt_key, target_attribute_match=true)); scene=conveyor; scope=scoped_belt_object_count`
+- `count(filter(conveyor_objects, belt_key=target_belt_key, target_attribute_match=true)); scene=carousel; scope=scoped_belt_object_count`
 
 ## Contract
 The image shows one 3D airport-style conveyor carousel with two visible
@@ -35,8 +35,8 @@ each counted target object. Other objects, belt surfaces, arrows, and
 decorative station context are not annotation.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_conveyor_v1` under
-`prompts/three_d/conveyor/`. Named color prompts use the canonical
+The prompt bundle is `three_d_carousel_v1` under
+`prompts/three_d/carousel/`. Named color prompts use the canonical
 repo-wide color format, such as `blue [#2D75E6]`.
 
 The trace records scene variant, belt records, target belt, target attribute,

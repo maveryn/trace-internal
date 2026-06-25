@@ -1,4 +1,4 @@
-"""Count all objects on one straight conveyor lane."""
+"""Count all objects on an inner or outer carousel belt."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from ._lifecycle import run_conveyor_lifecycle
 from .shared.sampling import PREDICATE_BELT_TOTAL
 
 
-TASK_ID = "task_three_d__conveyor__belt_total_object_count"
+TASK_ID = "task_three_d__carousel__belt_total_object_count"
 QUERY_ID = "belt_total_count"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 PROMPT_QUERY_KEY_BY_BRANCH = {
@@ -23,7 +23,7 @@ PREDICATE_KIND_BY_BRANCH = {
 
 @register_task
 class ThreeDConveyorBeltTotalObjectCountTask:
-    """Count all visible objects on one selected straight conveyor lane."""
+    """Count all visible objects on one selected conveyor belt."""
 
     task_id = TASK_ID
     domain = "three_d"

@@ -1,9 +1,9 @@
-"""Scene-private lifecycle orchestration for straight conveyor public tasks."""
+"""Scene-private lifecycle orchestration for conveyor public tasks."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Mapping, Sequence
+from typing import Any, Callable, Dict, Mapping, Sequence
 
 from trace.core.scene_config import get_domain_defaults
 from trace.core.seed import spawn_rng
@@ -20,17 +20,31 @@ from .shared.annotations import bbox_set_annotation_for_objects
 from .shared.prompts import build_prompt_artifacts, dynamic_slots_for_conveyor
 from .shared.rendering import RenderedConveyor, render_conveyor
 from .shared.sampling import (
-    PREDICATE_BELT_TOTAL,
     ResolvedConveyorAxes,
-    build_belt_total_count_dataset,
+    build_belt_count_dataset,
     resolve_conveyor_axes,
 )
 from .shared.state import SCENE_ID
 
 
+DatasetBuilder = Callable[
+    [
+        int,
+        Mapping[str, Any],
+        Mapping[str, Any],
+        Any,
+        ResolvedConveyorAxes,
+        str,
+        Mapping[str, float],
+        str,
+    ],
+    Mapping[str, Any],
+]
+
+
 @dataclass(frozen=True)
 class ConveyorTaskPlan:
-    """Task-owned objective data for one straight conveyor instance."""
+    """Task-owned objective data for one conveyor instance."""
 
     dataset: Mapping[str, Any]
     answer_gt: TypedValue
@@ -85,7 +99,12 @@ def _build_trace_payload(
     background_meta: Mapping[str, Any],
     post_noise_meta: Mapping[str, Any],
 ) -> Dict[str, Any]:
-    """Assemble public trace sections after rendering and annotation binding."""
+    """Assemble public trace sections after rendering and annotation binding.
+
+    The trace preserves both the semantic count predicate and the projected
+    object boxes used for annotation, keeping answer and annotation grounded in
+    the same rendered conveyor objects.
+    """
 
     dataset = dict(plan.dataset)
     target_ids = [str(object_id) for object_id in plan.target_object_ids]
@@ -111,31 +130,27 @@ def _build_trace_payload(
         "scene_id": SCENE_ID,
         "scene_variant": str(axes.scene_variant),
         "layout_family": str(dataset.get("layout_family", "")),
-        "layout_orientation": str(dataset.get("layout_orientation", "")),
         "predicate_kind": str(dataset["predicate_kind"]),
         "answer_value": int(dataset["answer_value"]),
-        "target_lane_key": str(dataset["target_lane_key"]),
-        "target_lane_label": str(dataset["target_lane_label"]),
-        "target_belt_key": str(dataset["target_belt_key"]),
-        "target_belt_label": str(dataset["target_belt_label"]),
-        "target_shape_type": str(dataset.get("target_shape_type", "")),
-        "target_object_name": str(dataset.get("target_object_name", "")),
-        "target_object_plural": str(dataset.get("target_object_plural", "")),
+            "target_belt_key": str(dataset["target_belt_key"]),
+            "target_belt_label": str(dataset["target_belt_label"]),
+            "target_shape_type": str(dataset.get("target_shape_type", "")),
+            "target_object_name": str(dataset.get("target_object_name", "")),
+            "target_object_plural": str(dataset.get("target_object_plural", "")),
+        "target_color_name": str(dataset.get("target_color_name", "")),
         "target_object_ids": list(target_ids),
         "target_object_bboxes_px": dict(target_bboxes),
         "target_object_centers_px": dict(target_centers),
-        "target_lane_object_ids": list(dataset["target_lane_object_ids"]),
-        "target_belt_object_ids": list(dataset["target_belt_object_ids"]),
-        "object_count": int(dataset["object_count"]),
-        "lane_records": [dict(record) for record in dataset["lane_records"]],
-        "object_specs": [dict(spec) for spec in dataset["object_specs"]],
-        "shape_counts": dict(dataset["shape_counts"]),
-        "color_counts": dict(dataset["color_counts"]),
-        "lane_counts": dict(dataset["lane_counts"]),
-        "belt_counts": dict(dataset["belt_counts"]),
-        "camera": dict(dataset["camera"]),
-        "projection_frame": dict(dataset["projection_frame"]),
-        "question_format": str(selected_branch),
+            "target_belt_object_ids": list(dataset["target_belt_object_ids"]),
+            "object_count": int(dataset["object_count"]),
+            "belt_records": [dict(record) for record in dataset["belt_records"]],
+            "object_specs": [dict(spec) for spec in dataset["object_specs"]],
+            "shape_counts": dict(dataset["shape_counts"]),
+            "color_counts": dict(dataset["color_counts"]),
+            "belt_counts": dict(dataset["belt_counts"]),
+            "camera": dict(dataset["camera"]),
+            "projection_frame": dict(dataset["projection_frame"]),
+            "question_format": str(selected_branch),
         "solver_trace": dict(solver_trace),
     }
     return {
@@ -145,8 +160,7 @@ def _build_trace_payload(
             "relations": {
                 "scene_variant": str(axes.scene_variant),
                 "layout_family": str(dataset.get("layout_family", "")),
-                "layout_orientation": str(dataset.get("layout_orientation", "")),
-                "target_lane_label": str(dataset["target_lane_label"]),
+                "target_belt_label": str(dataset["target_belt_label"]),
                 "target_object_ids": list(target_ids),
                 "answer_value": int(dataset["answer_value"]),
             },
@@ -165,7 +179,6 @@ def _build_trace_payload(
             "coord_space": "pixel",
             "scene_variant": str(axes.scene_variant),
             "layout_family": str(dataset.get("layout_family", "")),
-            "layout_orientation": str(dataset.get("layout_orientation", "")),
             "background_style": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
             "camera": dict(dataset["camera"]),
@@ -184,12 +197,12 @@ def _build_trace_payload(
         },
         "execution_trace": execution_trace,
         "witness_symbolic": {
-            "type": "conveyor_lane_object_set",
+            "type": "conveyor_scoped_object_set",
             "object_ids": list(target_ids),
             "count": int(dataset["answer_value"]),
             "scope": {
-                "lane_key": str(dataset["target_lane_key"]),
-                "lane_label": str(dataset["target_lane_label"]),
+                "belt_key": str(dataset["target_belt_key"]),
+                "belt_label": str(dataset["target_belt_label"]),
             },
         },
         "projected_annotation": dict(annotation_artifacts.projected_annotation),
@@ -210,19 +223,17 @@ def _trace_params(
         "scene_variant": str(axes.scene_variant),
         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
         "layout_family": str(dataset.get("layout_family", "")),
-        "layout_orientation": str(dataset.get("layout_orientation", "")),
-        "layout_orientation_probabilities": dict(dataset["layout_orientation_probabilities"]),
-        "target_lane_key": str(dataset["target_lane_key"]),
-        "target_lane_label": str(dataset["target_lane_label"]),
-        "target_lane_key_probabilities": dict(dataset["target_lane_key_probabilities"]),
         "target_belt_key": str(dataset["target_belt_key"]),
         "target_belt_label": str(dataset["target_belt_label"]),
-        "target_belt_key_probabilities": dict(dataset["target_belt_key_probabilities"]),
+        "target_belt_key_probabilities": dict(dataset.get("target_belt_key_probabilities", dataset["target_belt_probabilities"])),
         "target_count": int(dataset["target_count"]),
         "target_count_probabilities": dict(dataset["target_count_probabilities"]),
         "object_count": int(dataset["object_count"]),
+        "object_count_probabilities": dict(dataset["object_count_probabilities"]),
         "target_shape_type": str(dataset.get("target_shape_type", "")),
         "target_shape_type_probabilities": dict(dataset["target_shape_type_probabilities"]),
+        "target_color_name": str(dataset.get("target_color_name", "")),
+        "target_color_name_probabilities": dict(dataset["target_color_name_probabilities"]),
     }
 
 
@@ -264,8 +275,6 @@ def run_conveyor_lifecycle(
     )
     prompt_query_key = str(prompt_query_key_by_branch[str(selected_branch)])
     predicate_kind = str(predicate_kind_by_branch[str(selected_branch)])
-    if predicate_kind != PREDICATE_BELT_TOTAL:
-        raise ValueError(f"unsupported straight conveyor predicate: {predicate_kind}")
     min_bbox_side_px = float(clean_params.get("min_rendered_bbox_side_px", gen_defaults.get("min_rendered_bbox_side_px", 24.0)))
     last_error: Exception | None = None
     for attempt_index in range(max(1, int(max_attempts))):
@@ -277,12 +286,13 @@ def run_conveyor_lifecycle(
                 instance_seed=int(attempt_seed),
                 namespace=f"{public_name}.canvas",
             )
-            dataset = build_belt_total_count_dataset(
+            dataset = build_belt_count_dataset(
                 instance_seed=int(attempt_seed),
                 params=clean_params,
                 gen_defaults=gen_defaults,
                 render_params=render_params,
                 axes=axes,
+                predicate_kind=str(predicate_kind),
                 namespace=str(public_name),
             )
             plan = ConveyorTaskPlan(
@@ -351,7 +361,7 @@ def run_conveyor_lifecycle(
         except Exception as exc:
             last_error = exc
             continue
-    raise RuntimeError(f"{public_name} failed to generate a valid straight conveyor scene after {max_attempts} attempts: {last_error}")
+    raise RuntimeError(f"{public_name} failed to generate a valid conveyor scene after {max_attempts} attempts: {last_error}")
 
 
 __all__ = ["ConveyorTaskPlan", "run_conveyor_lifecycle"]

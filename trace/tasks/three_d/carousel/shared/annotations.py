@@ -1,4 +1,4 @@
-"""Annotation helpers for straight conveyor objects."""
+"""Annotation helpers for rendered conveyor objects."""
 
 from __future__ import annotations
 

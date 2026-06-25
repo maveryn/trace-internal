@@ -1,4 +1,4 @@
-"""Rendering helpers for straight 3D conveyor belt scenes."""
+"""Rendering helpers for synthetic 3D conveyor carousel scenes."""
 
 from __future__ import annotations
 
@@ -8,7 +8,11 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from trace.tasks.three_d.shared.camera_projection import CameraSpec, ProjectionFrame, project_xy
+from trace.tasks.three_d.shared.camera_projection import (
+    CameraSpec,
+    ProjectionFrame,
+    project_xy,
+)
 from trace.tasks.three_d.shared.object_rendering import (
     ThreeDObjectSpec,
     ThreeDRenderContext,
@@ -16,16 +20,15 @@ from trace.tasks.three_d.shared.object_rendering import (
 )
 from trace.tasks.three_d.shared.object_scene_rendering import _bbox_union, _draw_line
 
-from .sampling import LAYOUT_HORIZONTAL, LAYOUT_VERTICAL
-from .state import HORIZONTAL_LANE_KEYS, LANE_LABELS, VERTICAL_LANE_KEYS
+from .state import BELT_GEOMETRY, BELT_KEYS, BELT_LABELS
 
 
-FLOOR_RGB = (242, 246, 248)
+FLOOR_RGB = (244, 247, 249)
 
 
 @dataclass(frozen=True)
 class RenderedConveyor:
-    """Rendered straight conveyor scene with projected object geometry."""
+    """Rendered conveyor carousel scene with projected object geometry."""
 
     image: Image.Image
     entities: List[Dict[str, Any]]
@@ -72,21 +75,24 @@ def _projected_bbox(points: Sequence[Sequence[float]]) -> List[float]:
     ]
 
 
-def _lane_center_value(layout_orientation: str, lane_key: str) -> float:
-    if str(layout_orientation) == LAYOUT_HORIZONTAL:
-        return {"top": 1.55, "middle": 0.0, "bottom": -1.55}[str(lane_key)]
-    return {"left": -2.25, "middle": 0.0, "right": 2.25}[str(lane_key)]
-
-
-def _lane_polygon_world(layout_orientation: str, lane_key: str) -> list[tuple[float, float, float]]:
-    half_width = 0.34
-    if str(layout_orientation) == LAYOUT_HORIZONTAL:
-        x0, x1 = -3.45, 3.45
-        y = _lane_center_value(str(layout_orientation), str(lane_key))
-        return [(x0, y - half_width, 0.03), (x1, y - half_width, 0.03), (x1, y + half_width, 0.03), (x0, y + half_width, 0.03)]
-    y0, y1 = -2.95, 2.95
-    x = _lane_center_value(str(layout_orientation), str(lane_key))
-    return [(x - half_width, y0, 0.03), (x + half_width, y0, 0.03), (x + half_width, y1, 0.03), (x - half_width, y1, 0.03)]
+def _ellipse_points(
+    *,
+    belt_key: str,
+    radial_offset: float,
+    z: float,
+    steps: int = 96,
+) -> list[tuple[float, float, float]]:
+    geometry = BELT_GEOMETRY[str(belt_key)]
+    radius_x = float(geometry["radius_x"]) + float(radial_offset)
+    radius_y = float(geometry["radius_y"]) + float(radial_offset) * 0.62
+    return [
+        (
+            float(radius_x * math.cos(2.0 * math.pi * float(index) / float(steps))),
+            float(radius_y * math.sin(2.0 * math.pi * float(index) / float(steps))),
+            float(z),
+        )
+        for index in range(int(steps))
+    ]
 
 
 def _draw_arrow(
@@ -100,7 +106,7 @@ def _draw_arrow(
     ex, ey = float(end_xy[0]), float(end_xy[1])
     _draw_line(draw, (sx, sy), (ex, ey), fill=fill, width=3)
     angle = math.atan2(ey - sy, ex - sx)
-    length = 10.0
+    length = 11.0
     spread = 0.58
     left = (
         ex - length * math.cos(angle - spread),
@@ -113,58 +119,46 @@ def _draw_arrow(
     draw.polygon([(ex, ey), left, right], fill=fill)
 
 
-def _draw_lane_belt(
+def _draw_belt(
     draw: ImageDraw.ImageDraw,
     *,
-    lane_key: str,
-    layout_orientation: str,
+    belt_key: str,
     camera: CameraSpec,
     frame: ProjectionFrame,
     fill: Tuple[int, int, int],
     outline: Tuple[int, int, int],
 ) -> tuple[List[float], Dict[str, Any]]:
-    """Draw one lane from the same projected rectangle used for lane metadata.
+    """Draw one annular ellipse belt from shared belt geometry.
 
-    The lane bbox and entity attrs are derived from the projected belt polygon,
-    keeping prompt lane positions, visual belt geometry, and trace records in
-    one coordinate contract without drawing lane labels on the image.
+    The belt bbox and rendered surface come from the same projected
+    centerline/band-width geometry used by the sampler, so inner/outer belt
+    scope stays visually bound to metadata without drawing text labels.
     """
 
-    polygon_world = _lane_polygon_world(str(layout_orientation), str(lane_key))
-    polygon_screen = [project_xy(point, camera, frame) for point in polygon_world]
-    draw.polygon(polygon_screen, fill=fill)
-    draw.line([*polygon_screen, polygon_screen[0]], fill=outline, width=3)
-
-    if str(layout_orientation) == LAYOUT_HORIZONTAL:
-        y = _lane_center_value(str(layout_orientation), str(lane_key))
-        for x in (-2.15, 0.15, 2.45):
-            _draw_arrow(
-                draw,
-                start_xy=project_xy((x - 0.30, y, 0.065), camera, frame),
-                end_xy=project_xy((x + 0.30, y, 0.065), camera, frame),
-                fill=(60, 74, 88),
-            )
-    else:
-        x = _lane_center_value(str(layout_orientation), str(lane_key))
-        for y in (-1.95, 0.00, 1.95):
-            _draw_arrow(
-                draw,
-                start_xy=project_xy((x, y - 0.26, 0.065), camera, frame),
-                end_xy=project_xy((x, y + 0.26, 0.065), camera, frame),
-                fill=(60, 74, 88),
-            )
-
-    bbox = _projected_bbox(polygon_screen)
+    width = float(BELT_GEOMETRY[str(belt_key)]["band_width"])
+    outer_world = _ellipse_points(belt_key=str(belt_key), radial_offset=0.5 * width, z=0.035)
+    inner_world = _ellipse_points(belt_key=str(belt_key), radial_offset=-0.5 * width, z=0.04)
+    outer_screen = [project_xy(point, camera, frame) for point in outer_world]
+    inner_screen = [project_xy(point, camera, frame) for point in inner_world]
+    draw.polygon(outer_screen, fill=fill)
+    draw.polygon(inner_screen, fill=FLOOR_RGB)
+    draw.line([*outer_screen, outer_screen[0]], fill=outline, width=3)
+    draw.line([*inner_screen, inner_screen[0]], fill=outline, width=3)
+    for theta in (0.42 * math.pi, 1.06 * math.pi, 1.64 * math.pi):
+        radius_x = float(BELT_GEOMETRY[str(belt_key)]["radius_x"])
+        radius_y = float(BELT_GEOMETRY[str(belt_key)]["radius_y"])
+        start = (radius_x * math.cos(theta - 0.055), radius_y * math.sin(theta - 0.055), 0.065)
+        end = (radius_x * math.cos(theta + 0.055), radius_y * math.sin(theta + 0.055), 0.065)
+        _draw_arrow(draw, start_xy=project_xy(start, camera, frame), end_xy=project_xy(end, camera, frame), fill=(55, 69, 85))
+    bbox = _projected_bbox([*outer_screen, *inner_screen])
     entity = {
-        "entity_id": f"belt_{lane_key}",
+        "entity_id": f"belt_{belt_key}",
         "entity_type": "three_d_conveyor_belt",
         "bbox_px": list(bbox),
         "attrs": {
-            "belt_key": str(lane_key),
-            "belt_label": str(LANE_LABELS[str(lane_key)]),
-            "lane_key": str(lane_key),
-            "lane_label": str(LANE_LABELS[str(lane_key)]),
-            "layout_orientation": str(layout_orientation),
+            "belt_key": str(belt_key),
+            "belt_label": str(BELT_LABELS[str(belt_key)]),
+            "geometry": dict(BELT_GEOMETRY[str(belt_key)]),
         },
     }
     return list(bbox), entity
@@ -177,24 +171,34 @@ def _draw_conveyor_belts(
     camera: CameraSpec,
     frame: ProjectionFrame,
 ) -> tuple[Image.Image, List[float], Dict[str, List[float]], List[Dict[str, Any]]]:
+    """Draw the full two-belt carousel surface.
+
+    Invariant: both belt entities are generated from shared belt geometry in
+    fixed outer-then-inner draw order, so object scope, visual belt shape, and
+    trace bboxes agree even though no text labels are drawn on the belts.
+    """
+
     draw = ImageDraw.Draw(image)
-    layout_orientation = str(dataset["layout_orientation"])
-    lane_keys = HORIZONTAL_LANE_KEYS if layout_orientation == LAYOUT_HORIZONTAL else VERTICAL_LANE_KEYS
-    fill_cycle = ((194, 211, 224), (205, 219, 230), (188, 205, 219))
-    outlines = (76, 92, 110)
     belt_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
-    for index, lane_key in enumerate(lane_keys):
-        bbox, entity = _draw_lane_belt(
+    fills = {
+        "outer": (198, 214, 226),
+        "inner": (211, 224, 234),
+    }
+    outlines = {
+        "outer": (82, 97, 115),
+        "inner": (92, 108, 126),
+    }
+    for belt_key in ("outer", "inner"):
+        bbox, entity = _draw_belt(
             draw,
-            lane_key=str(lane_key),
-            layout_orientation=str(layout_orientation),
+            belt_key=str(belt_key),
             camera=camera,
             frame=frame,
-            fill=fill_cycle[index % len(fill_cycle)],
-            outline=outlines,
+            fill=fills[str(belt_key)],
+            outline=outlines[str(belt_key)],
         )
-        belt_bboxes[str(lane_key)] = list(bbox)
+        belt_bboxes[str(belt_key)] = list(bbox)
         entities.append(dict(entity))
     conveyor_bbox = _bbox_union(*belt_bboxes.values())
     return image, list(conveyor_bbox), belt_bboxes, entities
@@ -205,12 +209,12 @@ def _draw_object_shadow(draw: ImageDraw.ImageDraw, bbox: Sequence[float]) -> Non
     width = max(6.0, x1 - x0)
     height = max(5.0, y1 - y0)
     shadow = [
-        x0 + width * 0.10,
-        y1 - height * 0.20,
-        x1 - width * 0.10,
-        y1 + height * 0.07,
+        x0 + width * 0.12,
+        y1 - height * 0.18,
+        x1 - width * 0.12,
+        y1 + height * 0.08,
     ]
-    draw.ellipse(tuple(shadow), fill=(95, 105, 115))
+    draw.ellipse(tuple(shadow), fill=(92, 102, 112))
 
 
 def render_conveyor(
@@ -219,7 +223,7 @@ def render_conveyor(
     dataset: Mapping[str, Any],
     render_params: Any,
 ) -> RenderedConveyor:
-    """Render one straight conveyor scene and project object boxes."""
+    """Render one conveyor carousel scene and project object boxes."""
 
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
@@ -279,8 +283,6 @@ def render_conveyor(
                     "shape_type": str(spec["shape_type"]),
                     "object_name": str(spec["object_name"]),
                     "color_name": str(spec["color_name"]),
-                    "lane_key": str(spec["lane_key"]),
-                    "lane_label": str(spec["lane_label"]),
                     "belt_key": str(spec["belt_key"]),
                     "belt_label": str(spec["belt_label"]),
                     "matches_query": bool(spec.get("matches_query", False)),

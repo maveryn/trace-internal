@@ -1,1 +1,1 @@
-"""Scene-local helpers for 3D conveyor tasks."""
+"""Scene-local helpers for straight conveyor belt tasks."""

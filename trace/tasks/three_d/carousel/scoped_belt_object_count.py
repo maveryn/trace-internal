@@ -10,7 +10,7 @@ from ._lifecycle import run_conveyor_lifecycle
 from .shared.sampling import PREDICATE_COLOR, PREDICATE_OBJECT_TYPE
 
 
-TASK_ID = "task_three_d__conveyor__scoped_belt_object_count"
+TASK_ID = "task_three_d__carousel__scoped_belt_object_count"
 OBJECT_TYPE_QUERY_ID = "object_type_belt_count"
 COLOR_QUERY_ID = "color_belt_count"
 SUPPORTED_QUERY_IDS = (OBJECT_TYPE_QUERY_ID, COLOR_QUERY_ID)

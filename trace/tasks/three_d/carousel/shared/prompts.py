@@ -1,4 +1,4 @@
-"""Prompt assembly for straight conveyor tasks."""
+"""Prompt assembly for conveyor tasks."""
 
 from __future__ import annotations
 
@@ -15,11 +15,11 @@ from trace.tasks.shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 
-from .state import SCENE_ID
+from .state import SCENE_ID, semantic_color_label
 
 
 DOMAIN = "three_d"
-PROMPT_BUNDLE_ID = "three_d_conveyor_v1"
+PROMPT_BUNDLE_ID = "three_d_carousel_v1"
 PROMPT_WIRING_KEYS = ("bundle_id", "scene_key", "task_key")
 
 _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
@@ -31,9 +31,11 @@ _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS = load_scene_gen
 def dynamic_slots_for_conveyor(dataset: Mapping[str, Any]) -> dict[str, Any]:
     """Return dynamic prompt slots bound to one conveyor dataset."""
 
+    target_color_name = str(dataset.get("target_color_name", ""))
     return {
-        "lane_label": str(dataset.get("target_lane_label", dataset.get("target_belt_label", ""))),
-        "belt_label": str(dataset.get("target_belt_label", dataset.get("target_lane_label", ""))),
+        "belt_label": str(dataset.get("target_belt_label", "")),
+        "target_object_plural": str(dataset.get("target_object_plural", "")),
+        "target_color_label": semantic_color_label(target_color_name) if target_color_name else "",
     }
 
 
@@ -43,12 +45,12 @@ def build_prompt_artifacts(
     dynamic_slot_values: Mapping[str, Any],
     instance_seed: int,
 ) -> tuple[dict[str, Any], PromptTraceArtifacts]:
-    """Build prompt artifacts for one straight conveyor objective."""
+    """Build prompt artifacts for one conveyor objective."""
 
     prompt_defaults = required_group_defaults(
         _PROMPT_DEFAULTS,
         PROMPT_WIRING_KEYS,
-        context="conveyor prompt wiring defaults",
+        context="carousel prompt wiring defaults",
     )
     rendered_prompt = render_scene_prompt_variants(
         domain=DOMAIN,

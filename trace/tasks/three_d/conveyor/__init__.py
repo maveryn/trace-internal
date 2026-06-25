@@ -1,1 +1,1 @@
-"""Conveyor 3D scene tasks."""
+"""Straight conveyor belt 3D scene tasks."""

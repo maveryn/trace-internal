@@ -25,7 +25,7 @@ from ._lifecycle import (
     _select_relatedness_options,
     _select_variant,
     _trace_payload,
-    projected_keyed_pedigree_person_annotation,
+    projected_pedigree_person_bbox_set_annotation,
     sample_pedigree_relatedness,
 )
 
@@ -45,7 +45,7 @@ class GraphPedigreeRelatednessCoefficientLabelTask:
     supported_query_ids = (SINGLE_QUERY_ID,)
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Sample one relatedness objective and bind fraction-option answer plus keyed path witnesses."""
+        """Sample one relatedness objective and bind fraction-option answer plus person-box witnesses."""
 
         for selector_key in ("query_id", "query_variant"):
             requested = params.get(selector_key)
@@ -87,7 +87,7 @@ class GraphPedigreeRelatednessCoefficientLabelTask:
             render_params=render_params,
             option_values_by_label=option_values,
         )
-        annotation_projection = projected_keyed_pedigree_person_annotation(rendered_scene, sample_query.annotation_roles)
+        annotation_projection = projected_pedigree_person_bbox_set_annotation(rendered_scene, sample_query.annotation_roles)
         prompt_artifacts = _prompt_artifacts(
             domain=self.domain,
             scene_id=SCENE_ID,
@@ -157,8 +157,8 @@ class GraphPedigreeRelatednessCoefficientLabelTask:
         )
         answer_gt = TypedValue(type="option_letter", value=str(correct_option))
         annotation_gt = TypedValue(
-            type="bbox_map",
-            value=dict(annotation_projection["bbox_map"]),
+            type="bbox_set",
+            value=list(annotation_projection["bbox_set"]),
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),

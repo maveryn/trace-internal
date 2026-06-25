@@ -56,9 +56,12 @@ def test_pedigree_relationship_label_branches() -> None:
         assert execution["answer_relationship"] == relationship
         assert len(option_values) == 6
         assert len(set(option_values.values())) == 6
-        assert out.annotation_gt.type == "bbox_map"
-        assert {"person_a", "person_b"}.issubset(set(out.annotation_gt.value))
-        assert "selected_option" not in out.annotation_gt.value
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) >= 2
+        assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert {"person_a", "person_b"}.issubset(
+            set(out.trace_payload["projected_annotation"]["role_person_id_map"])
+        )
         assert execution["answer"] == out.answer_gt.value
         assert out.query_id == SINGLE_QUERY_ID
         assert out.trace_payload["query_spec"]["internal_query_id"] == "relationship_label_between_two_people"
@@ -80,9 +83,12 @@ def test_pedigree_relatedness_coefficient_label_branches() -> None:
         assert option_values[out.answer_gt.value] == relatedness
         assert len(option_values) == 6
         assert len(set(option_values.values())) == 6
-        assert out.annotation_gt.type == "bbox_map"
-        assert {"person_a", "person_b"}.issubset(set(out.annotation_gt.value))
-        assert "selected_option" not in out.annotation_gt.value
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) >= 2
+        assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+        assert {"person_a", "person_b"}.issubset(
+            set(out.trace_payload["projected_annotation"]["role_person_id_map"])
+        )
         assert out.query_id == SINGLE_QUERY_ID
         assert out.trace_payload["query_spec"]["internal_query_id"] == "relatedness_coefficient_between_two_people"
 

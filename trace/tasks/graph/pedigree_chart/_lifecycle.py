@@ -17,7 +17,7 @@ from ...shared.variant_sampling import resolve_variant
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
 from ..shared.task_support import resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_scene_background_defaults, load_graph_scene_noise_defaults
-from .shared.annotations import projected_keyed_pedigree_person_annotation
+from .shared.annotations import projected_pedigree_person_bbox_set_annotation
 from .shared.option_rendering import OPTION_LABELS, draw_pedigree_options
 from .shared.rendering import pedigree_connector_relations, pedigree_scene_entities, render_pedigree_chart_scene
 from .shared.sampling import sample_pedigree_relatedness, sample_pedigree_relationship
@@ -226,10 +226,7 @@ def _prompt_artifacts(
 
 
 def _json_examples(answer: str) -> Tuple[str, str]:
-    annotation = {
-        "person_a": [220, 210, 260, 250],
-        "person_b": [410, 340, 450, 380],
-    }
+    annotation = [[220, 210, 260, 250], [410, 340, 450, 380]]
     return (
         json.dumps({"annotation": annotation, "answer": str(answer)}, separators=(",", ":")),
         json.dumps({"answer": str(answer)}, separators=(",", ":")),
@@ -363,5 +360,5 @@ def _trace_payload(
         "render_map": {"image_id": "img0", "anchors": {}},
         "execution_trace": dict(execution_trace),
         "witness_symbolic": dict(witness_symbolic),
-        "projected_annotation": {"type": "bbox_map", **dict(projected_annotation)},
+        "projected_annotation": dict(projected_annotation),
     }

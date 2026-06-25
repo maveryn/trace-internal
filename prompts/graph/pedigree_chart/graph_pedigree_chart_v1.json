@@ -113,9 +113,9 @@
     "json_output_contract": "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.",
     "json_output_contract_answer_only": "Use a valid JSON object with key \"answer\" for the final answer.",
     "object_description": "a labeled pedigree chart with family connections and answer options",
-    "annotation_hint": "set \"annotation\" to a JSON object with keys \"person_a\" and \"person_b\", each mapped to the [x0,y0,x1,y1] pixel box around the corresponding person symbol",
+    "annotation_hint": "set \"annotation\" to a JSON array of [x0,y0,x1,y1] pixel boxes around the relevant person symbols needed to verify the answer",
     "answer_hint": "set \"answer\" to the selected option letter as a string",
-    "json_example": "{\"annotation\":{\"person_a\":[220,210,260,250],\"person_b\":[410,340,450,380]},\"answer\":\"A\"}",
+    "json_example": "{\"annotation\":[[220,210,260,250],[410,340,450,380]],\"answer\":\"A\"}",
     "json_example_answer_only": "{\"answer\":\"A\"}"
   }
 }

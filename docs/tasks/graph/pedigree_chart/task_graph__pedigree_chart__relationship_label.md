@@ -8,16 +8,16 @@
 5. Objective: select the rendered option letter that gives the family relationship of one labeled person to another.
 
 ## Program Contract
-- `select(option_label where option_value == relationship(person_a, person_b)); output=option_letter; annotation=bbox_map(person_symbol_witnesses); scene=pedigree_chart; scope=relationship_label`
+- `select(option_label where option_value == relationship(person_a, person_b)); output=option_letter; annotation=bbox_set(person_symbol_witnesses); scene=pedigree_chart; scope=relationship_label`
 - Supported `query_id`: `single`
 - Internal prompt query key: `relationship_label_between_two_people`
 
 ## Answer And Annotation
 1. Answer type: `option_letter`.
-2. Annotation schema: `bbox_map`.
-3. Required annotation keys: `person_a`, `person_b`.
-4. Optional annotation keys include relationship witnesses such as `shared_parent_1`, `shared_parent_2`, or `middle_parent`.
-5. Annotation marks minimal person-symbol boxes for the pedigree witnesses. The selected option is the answer, not annotation.
+2. Annotation schema: `bbox_set`.
+3. Annotation boxes mark the queried people plus any intermediate/shared person symbols needed to verify the relationship.
+4. Role-to-person ids are recorded in trace metadata.
+5. The selected option is the answer, not annotation.
 
 ## Rendering Contract
 1. The scene uses pedigree notation: squares are male individuals and circles are female individuals.
@@ -28,4 +28,4 @@
 ## Prompt Contract
 1. Prompt text comes from `prompts/graph/pedigree_chart/graph_pedigree_chart_v1.json`.
 2. Answer-only mode emits `{"answer": ...}`.
-3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with keyed bbox annotation.
+3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with bbox-set annotation.

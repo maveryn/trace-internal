@@ -24,7 +24,7 @@ from ._lifecycle import (
     _select_relationship_options,
     _select_variant,
     _trace_payload,
-    projected_keyed_pedigree_person_annotation,
+    projected_pedigree_person_bbox_set_annotation,
     sample_pedigree_relationship,
 )
 
@@ -119,8 +119,8 @@ def _relationship_task_output(
         prompt=str(prompt_artifacts.prompt),
         answer_gt=TypedValue(type="option_letter", value=str(correct_option)),
         annotation_gt=TypedValue(
-            type="bbox_map",
-            value=dict(annotation_projection["bbox_map"]),
+            type="bbox_set",
+            value=list(annotation_projection["bbox_set"]),
         ),
         image=image,
         image_id="img0",
@@ -142,7 +142,7 @@ class GraphPedigreeRelationshipLabelTask:
     supported_query_ids = (SINGLE_QUERY_ID,)
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Sample one relationship objective and bind option-letter answer plus keyed person boxes."""
+        """Sample one relationship objective and bind option-letter answer plus person-box witnesses."""
 
         for selector_key in ("query_id", "query_variant"):
             requested = params.get(selector_key)
@@ -180,7 +180,7 @@ class GraphPedigreeRelationshipLabelTask:
             render_params=render_params,
             option_values_by_label=option_values,
         )
-        annotation_projection = projected_keyed_pedigree_person_annotation(rendered_scene, sample_query.annotation_roles)
+        annotation_projection = projected_pedigree_person_bbox_set_annotation(rendered_scene, sample_query.annotation_roles)
         prompt_artifacts = _prompt_artifacts(
             domain=self.domain,
             scene_id=SCENE_ID,

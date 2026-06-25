@@ -53,6 +53,32 @@ def projected_keyed_pedigree_person_annotation(
     }
 
 
+def projected_pedigree_person_bbox_set_annotation(
+    rendered_scene: RenderedPedigreeScene,
+    role_person_ids: Sequence[Tuple[str, str]],
+) -> Dict[str, Any]:
+    """Project role-bound person ids to an unordered de-duplicated bbox-set annotation."""
+
+    keyed_projection = projected_keyed_pedigree_person_annotation(rendered_scene, role_person_ids)
+    bbox_by_person_id: Dict[str, List[int]] = {}
+    person_ids: List[str] = []
+    for role, person_id in role_person_ids:
+        person_key = str(person_id)
+        if person_key in bbox_by_person_id:
+            continue
+        role_key = str(role)
+        bbox_by_person_id[person_key] = list(keyed_projection["bbox_map"][role_key])
+        person_ids.append(person_key)
+    bbox_set = [list(bbox_by_person_id[person_id]) for person_id in person_ids]
+    return {
+        "type": "bbox_set",
+        "bbox_set": [list(bbox) for bbox in bbox_set],
+        "pixel_bbox_set": [list(bbox) for bbox in bbox_set],
+        "person_symbol_bbox_map": {person_id: list(bbox_by_person_id[person_id]) for person_id in person_ids},
+        "role_person_id_map": dict(keyed_projection["role_person_id_map"]),
+    }
+
+
 def projected_pedigree_generation_annotation(
     rendered_scene: RenderedPedigreeScene,
     *,
@@ -82,6 +108,7 @@ def projected_pedigree_generation_annotation(
 
 __all__ = [
     "projected_keyed_pedigree_person_annotation",
+    "projected_pedigree_person_bbox_set_annotation",
     "projected_pedigree_generation_annotation",
     "projected_pedigree_person_point_annotation",
 ]

@@ -17,6 +17,10 @@ generation:
       target_count_min: 0
       target_count_max: 5
       object_dimension_scale: 0.74
+    task_three_d__conveyor__scoped_color_type_count:
+      target_count_min: 0
+      target_count_max: 5
+      object_dimension_scale: 0.74
 
 rendering:
   shared:
@@ -63,5 +67,8 @@ prompt:
       scene_key: conveyor
       task_key: conveyor_count_query
     task_three_d__conveyor__scoped_belt_object_count:
+      scene_key: conveyor
+      task_key: conveyor_count_query
+    task_three_d__conveyor__scoped_color_type_count:
       scene_key: conveyor
       task_key: conveyor_count_query

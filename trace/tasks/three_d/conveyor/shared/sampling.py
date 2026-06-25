@@ -53,6 +53,7 @@ from .state import (
 PREDICATE_BELT_TOTAL = "belt_total"
 PREDICATE_OBJECT_TYPE = "object_type"
 PREDICATE_COLOR = "color"
+PREDICATE_COLOR_TYPE = "color_type"
 LAYOUT_HORIZONTAL = "horizontal_lanes"
 LAYOUT_VERTICAL = "vertical_lanes"
 
@@ -695,6 +696,19 @@ def build_scoped_belt_count_dataset(
         distractor_shapes = [str(target_shape)]
         target_color_name, target_color_probabilities = _resolve_target_color(params=params, rng=rng)
         color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=4)
+    elif str(predicate_kind) == PREDICATE_COLOR_TYPE:
+        lane_counts[str(target_lane_key)] = max(
+            int(lane_counts[str(target_lane_key)]),
+            min(8, max(4, int(target_count) + 3)),
+        )
+        target_shape, target_shape_probabilities = _resolve_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        distractor_shapes = [str(shape) for shape in CONVEYOR_COLOR_READOUT_SHAPE_TYPES if str(shape) != str(target_shape)]
+        target_color_name, target_color_probabilities = _resolve_target_color(params=params, rng=rng)
+        color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=4)
     else:
         raise ValueError(f"unsupported straight conveyor scoped predicate: {predicate_kind}")
     if not color_names:
@@ -715,14 +729,52 @@ def build_scoped_belt_count_dataset(
                     distractor_shapes[int(rng.randrange(len(distractor_shapes)))]
                 )
                 color_name = str(color_names[(index + len(object_specs)) % len(color_names)])
+                count_role = "target" if bool(matches_query) else ("same_belt_distractor" if str(lane_key) == str(target_lane_key) else "lane_distractor")
             else:
-                shape_type = str(target_shape)
-                if bool(matches_query):
-                    color_name = str(target_color_name)
-                elif str(lane_key) != str(target_lane_key) and rng.random() < 0.35:
-                    color_name = str(target_color_name)
+                if str(predicate_kind) == PREDICATE_COLOR:
+                    shape_type = str(target_shape)
+                    if bool(matches_query):
+                        color_name = str(target_color_name)
+                    elif str(lane_key) != str(target_lane_key) and rng.random() < 0.35:
+                        color_name = str(target_color_name)
+                    else:
+                        color_name = str(wrong_colors[(index + len(object_specs)) % len(wrong_colors)])
+                    count_role = "target" if bool(matches_query) else ("same_belt_distractor" if str(lane_key) == str(target_lane_key) else "lane_distractor")
                 else:
-                    color_name = str(wrong_colors[(index + len(object_specs)) % len(wrong_colors)])
+                    if bool(matches_query):
+                        shape_type = str(target_shape)
+                        color_name = str(target_color_name)
+                        count_role = "target"
+                    elif str(lane_key) == str(target_lane_key):
+                        pattern = (int(index) - int(target_count)) % 3
+                        if pattern == 0:
+                            shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
+                            color_name = str(target_color_name)
+                            count_role = "same_belt_same_color_wrong_type"
+                        elif pattern == 1:
+                            shape_type = str(target_shape)
+                            color_name = str(wrong_colors[index % len(wrong_colors)])
+                            count_role = "same_belt_same_type_wrong_color"
+                        else:
+                            shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
+                            color_name = str(wrong_colors[index % len(wrong_colors)])
+                            count_role = "same_belt_wrong_type_wrong_color"
+                    elif int(index) == 0:
+                        shape_type = str(target_shape)
+                        color_name = str(target_color_name)
+                        count_role = "other_belt_same_color_type"
+                    elif int(index) % 3 == 1:
+                        shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
+                        color_name = str(target_color_name)
+                        count_role = "other_belt_same_color_wrong_type"
+                    elif int(index) % 3 == 2:
+                        shape_type = str(target_shape)
+                        color_name = str(wrong_colors[index % len(wrong_colors)])
+                        count_role = "other_belt_same_type_wrong_color"
+                    else:
+                        shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
+                        color_name = str(wrong_colors[index % len(wrong_colors)])
+                        count_role = "other_belt_wrong_type_wrong_color"
             object_id = f"obj_{len(object_specs):03d}"
             if bool(matches_query):
                 target_object_ids.append(str(object_id))
@@ -736,7 +788,7 @@ def build_scoped_belt_count_dataset(
                     layout_orientation=str(layout_orientation),
                     slot=slot,
                     matches_query=bool(matches_query),
-                    count_role="target" if bool(matches_query) else ("same_belt_distractor" if str(lane_key) == str(target_lane_key) else "lane_distractor"),
+                    count_role=str(count_role),
                     dimension_scale=float(dimension_scale),
                 )
             )
@@ -773,6 +825,7 @@ __all__ = [
     "LAYOUT_VERTICAL",
     "PREDICATE_BELT_TOTAL",
     "PREDICATE_COLOR",
+    "PREDICATE_COLOR_TYPE",
     "PREDICATE_OBJECT_TYPE",
     "ResolvedConveyorAxes",
     "build_belt_total_count_dataset",

@@ -43,6 +43,7 @@ from .state import (
 
 PREDICATE_OBJECT_TYPE = "object_type"
 PREDICATE_COLOR = "color"
+PREDICATE_COLOR_TYPE = "color_type"
 PREDICATE_BELT_TOTAL = "belt_total"
 
 CAMERA_YAW_BANDS_DEGREES: Tuple[Tuple[float, float], ...] = (
@@ -735,6 +736,124 @@ def build_belt_count_dataset(
         object_count = len(object_specs)
         object_count_probabilities = {str(object_count): 1.0}
         target_prompt_phrase = str(target_color_name)
+    elif str(predicate_kind) == PREDICATE_COLOR_TYPE:
+        scoped_belt_totals = _sample_scoped_belt_totals(
+            rng=rng,
+            target_belt_key=str(target_belt_key),
+            target_count=int(target_count),
+        )
+        target_belt_max = int(_belt_max_object_count(str(target_belt_key)))
+        scoped_belt_totals[str(target_belt_key)] = max(
+            int(scoped_belt_totals[str(target_belt_key)]),
+            min(int(target_belt_max), max(4, int(target_count) + 3)),
+        )
+        target_shape, target_shape_probabilities = _resolve_target_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        distractor_shapes = [str(shape) for shape in CONVEYOR_COLOR_READOUT_SHAPE_TYPES if str(shape) != str(target_shape)]
+        target_color_name, target_color_probabilities = _resolve_target_color(params=params, rng=rng)
+        color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=4)
+        wrong_colors = [str(color) for color in color_names if str(color) != str(target_color_name)]
+        for _index in range(int(target_count)):
+            slot = _sample_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                belt_key=target_belt_key,
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
+            object_id = f"obj_{len(object_specs):03d}"
+            target_object_ids.append(object_id)
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=object_id,
+                    shape_type=str(target_shape),
+                    color_name=str(target_color_name),
+                    slot=slot,
+                    belt_key=target_belt_key,
+                    matches_query=True,
+                    count_role="target",
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+        same_belt_distractor_count = max(0, int(scoped_belt_totals[str(target_belt_key)]) - int(target_count))
+        for index in range(int(same_belt_distractor_count)):
+            slot = _sample_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                belt_key=target_belt_key,
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
+            pattern = int(index) % 3
+            if pattern == 0:
+                shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
+                color_name = str(target_color_name)
+                count_role = "same_belt_same_color_wrong_type"
+            elif pattern == 1:
+                shape_type = str(target_shape)
+                color_name = str(wrong_colors[index % len(wrong_colors)])
+                count_role = "same_belt_same_type_wrong_color"
+            else:
+                shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
+                color_name = str(wrong_colors[index % len(wrong_colors)])
+                count_role = "same_belt_wrong_type_wrong_color"
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=f"obj_{len(object_specs):03d}",
+                    shape_type=str(shape_type),
+                    color_name=str(color_name),
+                    slot=slot,
+                    belt_key=target_belt_key,
+                    matches_query=False,
+                    count_role=str(count_role),
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+        for belt_key in BELT_KEYS:
+            if str(belt_key) == str(target_belt_key):
+                continue
+            for index in range(int(scoped_belt_totals[str(belt_key)])):
+                slot = _sample_slot(
+                    slots_by_belt,
+                    used_angles_by_belt,
+                    belt_key=str(belt_key),
+                    min_angle_gap_degrees=float(min_angle_gap_degrees),
+                )
+                if int(index) == 0:
+                    shape_type = str(target_shape)
+                    color_name = str(target_color_name)
+                    count_role = "other_belt_same_color_type"
+                elif int(index) % 3 == 1:
+                    shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
+                    color_name = str(target_color_name)
+                    count_role = "other_belt_same_color_wrong_type"
+                elif int(index) % 3 == 2:
+                    shape_type = str(target_shape)
+                    color_name = str(wrong_colors[index % len(wrong_colors)])
+                    count_role = "other_belt_same_type_wrong_color"
+                else:
+                    shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
+                    color_name = str(wrong_colors[index % len(wrong_colors)])
+                    count_role = "other_belt_wrong_type_wrong_color"
+                object_specs.append(
+                    _make_object_spec(
+                        rng=rng,
+                        object_id=f"obj_{len(object_specs):03d}",
+                        shape_type=str(shape_type),
+                        color_name=str(color_name),
+                        slot=slot,
+                        belt_key=str(belt_key),
+                        matches_query=False,
+                        count_role=str(count_role),
+                        dimension_scale=float(dimension_scale),
+                    )
+                )
+        object_count = len(object_specs)
+        object_count_probabilities = {str(object_count): 1.0}
+        target_prompt_phrase = f"{target_color_name} {public_object_plural(str(target_shape))}"
     else:
         raise ValueError(f"unsupported conveyor predicate kind: {predicate_kind}")
 
@@ -805,6 +924,7 @@ def build_belt_count_dataset(
 __all__ = [
     "PREDICATE_BELT_TOTAL",
     "PREDICATE_COLOR",
+    "PREDICATE_COLOR_TYPE",
     "PREDICATE_OBJECT_TYPE",
     "ResolvedConveyorAxes",
     "build_belt_count_dataset",

@@ -22,6 +22,7 @@ from .shared.rendering import RenderedConveyor, render_conveyor
 from .shared.sampling import (
     PREDICATE_BELT_TOTAL,
     PREDICATE_COLOR,
+    PREDICATE_COLOR_TYPE,
     PREDICATE_OBJECT_TYPE,
     ResolvedConveyorAxes,
     build_belt_total_count_dataset,
@@ -272,7 +273,7 @@ def run_conveyor_lifecycle(
     )
     prompt_query_key = str(prompt_query_key_by_branch[str(selected_branch)])
     predicate_kind = str(predicate_kind_by_branch[str(selected_branch)])
-    if predicate_kind not in {PREDICATE_BELT_TOTAL, PREDICATE_OBJECT_TYPE, PREDICATE_COLOR}:
+    if predicate_kind not in {PREDICATE_BELT_TOTAL, PREDICATE_OBJECT_TYPE, PREDICATE_COLOR, PREDICATE_COLOR_TYPE}:
         raise ValueError(f"unsupported straight conveyor predicate: {predicate_kind}")
     min_bbox_side_px = float(clean_params.get("min_rendered_bbox_side_px", gen_defaults.get("min_rendered_bbox_side_px", 24.0)))
     last_error: Exception | None = None

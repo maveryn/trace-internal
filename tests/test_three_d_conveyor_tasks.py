@@ -14,6 +14,9 @@ from trace.tasks.three_d.conveyor.scoped_belt_object_count import (
     OBJECT_TYPE_QUERY_ID,
     TASK_ID as SCOPED_TASK_ID,
 )
+from trace.tasks.three_d.conveyor.scoped_color_type_count import (
+    TASK_ID as COLOR_TYPE_TASK_ID,
+)
 from trace.tasks.three_d.conveyor.shared.state import CONVEYOR_OBJECT_SHAPE_TYPES
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
@@ -32,11 +35,13 @@ def _assert_count_output(output) -> None:
         "belt_total": SINGLE_QUERY_ID,
         "object_type": OBJECT_TYPE_QUERY_ID,
         "color": COLOR_QUERY_ID,
+        "color_type": SINGLE_QUERY_ID,
     }
     expected_internal_query_id_by_predicate = {
         "belt_total": TOTAL_QUERY_ID,
         "object_type": OBJECT_TYPE_QUERY_ID,
         "color": COLOR_QUERY_ID,
+        "color_type": SINGLE_QUERY_ID,
     }
 
     assert output.scene_id == "conveyor"
@@ -166,6 +171,52 @@ def test_conveyor_scoped_belt_count_supports_zero_and_five() -> None:
         assert output.query_id == query_id
         assert int(output.answer_gt.value) == int(target_count)
         if int(target_count) == 0:
+            assert output.annotation_gt.value == []
+
+
+def test_conveyor_scoped_color_type_count_uses_conjunction_distractors() -> None:
+    task = create_task(COLOR_TYPE_TASK_ID)
+    cases = (
+        ({"canvas_preset": "landscape", "target_lane_key": "top", "target_count": 0}, 2026062603),
+        ({"canvas_preset": "portrait", "target_lane_key": "left", "target_count": 5}, 2026062604),
+    )
+    for params, seed in cases:
+        output = task.generate(
+            seed,
+            params={**params, "post_image_noise_apply_prob": 0.0},
+            max_attempts=120,
+        )
+        _assert_count_output(output)
+        trace = output.trace_payload["execution_trace"]
+        target_ids = [str(object_id) for object_id in trace["target_object_ids"]]
+        target_shape = str(trace["target_shape_type"])
+        target_color = str(trace["target_color_name"])
+        target_lane = str(trace["target_lane_key"])
+
+        assert trace["predicate_kind"] == "color_type"
+        assert int(output.answer_gt.value) == int(params["target_count"])
+        assert len(target_ids) == int(params["target_count"])
+        assert output.trace_payload["query_spec"]["internal_query_id"] == SINGLE_QUERY_ID
+        for spec in trace["object_specs"]:
+            is_target = str(spec["object_id"]) in set(target_ids)
+            if is_target:
+                assert str(spec["lane_key"]) == target_lane
+                assert str(spec["shape_type"]) == target_shape
+                assert str(spec["color_name"]) == target_color
+        same_lane_roles = {
+            str(spec["count_role"])
+            for spec in trace["object_specs"]
+            if str(spec["lane_key"]) == target_lane and not bool(spec["matches_query"])
+        }
+        assert "same_belt_same_color_wrong_type" in same_lane_roles
+        assert "same_belt_same_type_wrong_color" in same_lane_roles
+        assert any(
+            str(spec["lane_key"]) != target_lane
+            and str(spec["shape_type"]) == target_shape
+            and str(spec["color_name"]) == target_color
+            for spec in trace["object_specs"]
+        )
+        if int(params["target_count"]) == 0:
             assert output.annotation_gt.value == []
 
 

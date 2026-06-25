@@ -2,19 +2,22 @@
 
 from __future__ import annotations
 
-from trace.tasks.registry import register_task
+from trace.core import types as core_types
+from trace.tasks import base as task_base
+from trace.tasks import registry as task_registry
+from trace.tasks.shared import fixed_query
 
-from ._lifecycle import build_solid_revolution_plan, run_solid_revolution_public_entry
-from .shared.defaults import SCENE_ID
+from . import _lifecycle as lifecycle
+from .shared.defaults import DOMAIN, SCENE_ID
 from .shared.measurements import answer_support_probability_map, round_volume, volume_cone
 from .shared.rendering import render_cone_revolution
-from .shared.sampling import cone_case_pool, select_case_from_pool, support_from_cases
+from .shared import sampling as revolution_sampling
 from .shared.state import SolidRevolutionProblem
 
-TASK_ID = "task_geometry__solid_revolution__revolution_cone_volume_value"
-QUERY_ID = "single"
-SUPPORTED_QUERY_IDS = (QUERY_ID,)
-ANNOTATION_KEYS = (
+CONE_TASK_ID = "task_geometry__solid_revolution__revolution_cone_volume_value"
+CONE_QUERY_ID = "single"
+CONE_QUERY_IDS = (CONE_QUERY_ID,)
+CONE_ANNOTATION_KEYS = (
     "generating_shape",
     "rotation_axis",
     "solid_preview",
@@ -32,14 +35,14 @@ def _prepare_cone_objective(
     branch_probabilities,
 ):
     # This task binds cone measurements and volume before rendering.
-    cases = cone_case_pool()
-    case = select_case_from_pool(
+    cases = revolution_sampling.cone_case_pool()
+    case = revolution_sampling.select_case_from_pool(
         instance_seed=instance_seed,
         params=params,
-        namespace=f"{TASK_ID}.{selected_query}.case",
+        namespace=f"{CONE_TASK_ID}.{selected_query}.case",
         cases=cases,
     )
-    support = support_from_cases(cases)
+    support = revolution_sampling.support_from_cases(cases)
     support_probabilities = answer_support_probability_map(support, case.answer)
     answer = round_volume(volume_cone(radius=case.radius, height=case.height))
     problem = SolidRevolutionProblem(
@@ -54,36 +57,74 @@ def _prepare_cone_objective(
         answer_support_probabilities=support_probabilities,
         construction_case_count_for_answer=1,
     )
-    return build_solid_revolution_plan(
-        prompt_key=QUERY_ID,
+    return lifecycle.build_solid_revolution_plan(
+        prompt_key=CONE_QUERY_ID,
         problem=problem,
         render_scene=render_cone_revolution,
-        annotation_keys=ANNOTATION_KEYS,
+        annotation_keys=CONE_ANNOTATION_KEYS,
         branch_probabilities=branch_probabilities,
         support_probabilities=support_probabilities,
     )
 
 
-@register_task
+@task_registry.register_task
 class GeometrySolidRevolutionConeVolumeValueTask:
-    task_id = TASK_ID
-    domain = "geometry"
+    task_id = CONE_TASK_ID
+    domain = DOMAIN
     default_dataset_enabled = True
-    supported_query_ids = SUPPORTED_QUERY_IDS
-    default_query_id = QUERY_ID
-    prepare_objective = staticmethod(_prepare_cone_objective)
+    supported_query_ids = CONE_QUERY_IDS
+    default_query_id = CONE_QUERY_ID
 
-    def generate(self, instance_seed, *, params, max_attempts):
-        return run_solid_revolution_public_entry(
-            self,
-            instance_seed,
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int) -> task_base.TaskOutput:
+        """Generate one cone-revolution volume task with task-owned output binding."""
+
+        selected_query, query_probabilities, task_params = fixed_query.select_task_query_id(
+            instance_seed=int(instance_seed),
             params=params,
-            max_attempts=max_attempts,
+            supported_query_ids=CONE_QUERY_IDS,
+            default_query_id=CONE_QUERY_ID,
+            task_id=CONE_TASK_ID,
+            namespace=f"{CONE_TASK_ID}.query",
+        )
+        plan = _prepare_cone_objective(
+            instance_seed=int(instance_seed),
+            params=task_params,
+            selected_query=str(selected_query),
+            branch_probabilities=query_probabilities,
+        )
+        parts = lifecycle.prepare_solid_revolution_task_parts(
+            task_id=CONE_TASK_ID,
+            selected_query=str(selected_query),
+            branch_probabilities=query_probabilities,
+            params=task_params,
+            plan=plan,
+            instance_seed=int(instance_seed),
+            max_attempts=int(max_attempts),
+        )
+        return task_base.TaskOutput(
+            prompt=parts.prompt,
+            answer_gt=core_types.TypedValue(type="number", value=float(plan.answer_value)),
+            annotation_gt=core_types.TypedValue(type="bbox_map", value=dict(parts.annotation_value)),
+            image=parts.image,
+            image_id="img0",
+            trace_payload=parts.trace_payload,
+            task_versions=parts.task_versions,
+            scene_id=SCENE_ID,
+            query_id=str(selected_query),
+            prompt_variants=dict(parts.prompt_variants),
         )
 
 
+# Backward-compatible module constants for focused scene tests.
+TASK_ID = CONE_TASK_ID
+SUPPORTED_QUERY_IDS = CONE_QUERY_IDS
+ANNOTATION_KEYS = CONE_ANNOTATION_KEYS
+
 __all__ = [
     "ANNOTATION_KEYS",
+    "CONE_ANNOTATION_KEYS",
+    "CONE_QUERY_IDS",
+    "CONE_TASK_ID",
     "GeometrySolidRevolutionConeVolumeValueTask",
     "SCENE_ID",
     "SUPPORTED_QUERY_IDS",

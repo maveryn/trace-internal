@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from trace.core.types import TypedValue
+from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
+from trace.tasks.shared.fixed_query import select_task_query_id
 
-from ._lifecycle import build_solid_revolution_plan, run_solid_revolution_public_entry
-from .shared.defaults import SCENE_ID
+from ._lifecycle import build_solid_revolution_plan, prepare_solid_revolution_task_parts
+from .shared.defaults import DOMAIN, SCENE_ID
 from .shared.measurements import answer_support_probability_map, round_volume, volume_double_cone
 from .shared.rendering import render_double_cone_revolution
 from .shared.sampling import double_cone_case_pool, select_case_from_pool, support_from_cases
@@ -67,19 +70,66 @@ def _prepare_double_cone_objective(
 @register_task
 class GeometrySolidRevolutionDoubleConeVolumeValueTask:
     task_id = TASK_ID
-    domain = "geometry"
+    domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_query_id = QUERY_ID
-    prepare_objective = staticmethod(_prepare_double_cone_objective)
 
-    def generate(self, instance_seed, *, params, max_attempts):
-        return run_solid_revolution_public_entry(
-            self,
-            instance_seed,
+    @staticmethod
+    def _bind_double_cone_plan(instance_seed: int, params: dict, query_id: str, query_probabilities: dict) -> object:
+        """Bind the double-cone target volume and prompt/annotation roles."""
+
+        return _prepare_double_cone_objective(
+            instance_seed=int(instance_seed),
             params=params,
-            max_attempts=max_attempts,
+            selected_query=str(query_id),
+            branch_probabilities=query_probabilities,
         )
+
+    @staticmethod
+    def _emit_output(*, parts, plan, query_id: str) -> TaskOutput:
+        """Return the public task output after task-owned answer binding."""
+
+        return TaskOutput(
+            prompt=parts.prompt,
+            answer_gt=TypedValue(type="number", value=float(plan.answer_value)),
+            annotation_gt=TypedValue(type="bbox_map", value=dict(parts.annotation_value)),
+            image=parts.image,
+            image_id="img0",
+            trace_payload=parts.trace_payload,
+            task_versions=parts.task_versions,
+            scene_id=SCENE_ID,
+            query_id=str(query_id),
+            prompt_variants=dict(parts.prompt_variants),
+        )
+
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int) -> TaskOutput:
+        """Generate one double-cone revolution volume task with task-owned output binding."""
+
+        selected_query, probabilities, task_params = select_task_query_id(
+            instance_seed=int(instance_seed),
+            params=params,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
+            default_query_id=QUERY_ID,
+            task_id=TASK_ID,
+            namespace=f"{TASK_ID}.query",
+        )
+        plan = self._bind_double_cone_plan(
+            int(instance_seed),
+            task_params,
+            str(selected_query),
+            dict(probabilities),
+        )
+        parts = prepare_solid_revolution_task_parts(
+            task_id=TASK_ID,
+            selected_query=str(selected_query),
+            branch_probabilities=probabilities,
+            params=task_params,
+            plan=plan,
+            instance_seed=int(instance_seed),
+            max_attempts=int(max_attempts),
+        )
+        return self._emit_output(parts=parts, plan=plan, query_id=str(selected_query))
 
 
 __all__ = [

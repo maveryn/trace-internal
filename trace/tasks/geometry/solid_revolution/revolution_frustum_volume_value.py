@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
-from trace.tasks.registry import register_task
+from dataclasses import dataclass
 
-from ._lifecycle import build_solid_revolution_plan, run_solid_revolution_public_entry
-from .shared.defaults import SCENE_ID
+from trace.core.types import TypedValue
+from trace.tasks.base import TaskOutput
+from trace.tasks.registry import register_task
+from trace.tasks.shared.fixed_query import select_task_query_id
+
+from ._lifecycle import build_solid_revolution_plan, prepare_solid_revolution_task_parts
+from .shared.defaults import DOMAIN, SCENE_ID
 from .shared.measurements import answer_support_probability_map, round_volume, volume_frustum
 from .shared.rendering import render_frustum_revolution
 from .shared.sampling import frustum_case_pool, select_case_from_pool, support_from_cases
@@ -25,23 +30,25 @@ ANNOTATION_KEYS = (
 )
 
 
-def _prepare_frustum_objective(
-    *,
-    instance_seed,
-    params,
-    selected_query,
-    branch_probabilities,
-):
-    # This task binds frustum measurements and volume before rendering.
+@dataclass(frozen=True)
+class FrustumVolumeBinding:
+    """Task-local selected frustum case and one-hot answer support."""
+
+    problem: SolidRevolutionProblem
+    support_probabilities: dict[str, float]
+
+
+def _select_frustum_binding(*, instance_seed: int, params: dict, query_id: str) -> FrustumVolumeBinding:
+    """Select a frustum construction and bind the public volume objective."""
+
     cases = frustum_case_pool()
     case = select_case_from_pool(
-        instance_seed=instance_seed,
+        instance_seed=int(instance_seed),
         params=params,
-        namespace=f"{TASK_ID}.{selected_query}.case",
+        namespace=f"{TASK_ID}.{query_id}.case",
         cases=cases,
     )
-    support = support_from_cases(cases)
-    support_probabilities = answer_support_probability_map(support, case.answer)
+    support_probabilities = answer_support_probability_map(support_from_cases(cases), case.answer)
     answer = round_volume(
         volume_frustum(
             top_radius=case.top_radius,
@@ -61,12 +68,8 @@ def _prepare_frustum_objective(
         answer_support_probabilities=support_probabilities,
         construction_case_count_for_answer=1,
     )
-    return build_solid_revolution_plan(
-        prompt_key=QUERY_ID,
+    return FrustumVolumeBinding(
         problem=problem,
-        render_scene=render_frustum_revolution,
-        annotation_keys=ANNOTATION_KEYS,
-        branch_probabilities=branch_probabilities,
         support_probabilities=support_probabilities,
     )
 
@@ -74,18 +77,57 @@ def _prepare_frustum_objective(
 @register_task
 class GeometrySolidRevolutionFrustumVolumeValueTask:
     task_id = TASK_ID
-    domain = "geometry"
+    domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_query_id = QUERY_ID
-    prepare_objective = staticmethod(_prepare_frustum_objective)
 
-    def generate(self, instance_seed, *, params, max_attempts):
-        return run_solid_revolution_public_entry(
-            self,
-            instance_seed,
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int) -> TaskOutput:
+        """Generate one frustum-revolution volume task with task-owned output binding."""
+
+        query_id, query_probabilities, resolved_params = select_task_query_id(
+            instance_seed=int(instance_seed),
             params=params,
-            max_attempts=max_attempts,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
+            default_query_id=QUERY_ID,
+            task_id=TASK_ID,
+            namespace=f"{TASK_ID}.query",
+        )
+        binding = _select_frustum_binding(
+            instance_seed=int(instance_seed),
+            params=resolved_params,
+            query_id=str(query_id),
+        )
+        plan = build_solid_revolution_plan(
+            prompt_key=QUERY_ID,
+            problem=binding.problem,
+            render_scene=render_frustum_revolution,
+            annotation_keys=ANNOTATION_KEYS,
+            branch_probabilities=query_probabilities,
+            support_probabilities=binding.support_probabilities,
+        )
+        parts = prepare_solid_revolution_task_parts(
+            task_id=TASK_ID,
+            selected_query=str(query_id),
+            branch_probabilities=query_probabilities,
+            params=resolved_params,
+            plan=plan,
+            instance_seed=int(instance_seed),
+            max_attempts=int(max_attempts),
+        )
+        answer = TypedValue(type="number", value=float(plan.answer_value))
+        annotation = TypedValue(type="bbox_map", value=dict(parts.annotation_value))
+        return TaskOutput(
+            parts.prompt,
+            answer,
+            annotation,
+            parts.image,
+            "img0",
+            parts.trace_payload,
+            parts.task_versions,
+            SCENE_ID,
+            str(query_id),
+            dict(parts.prompt_variants),
         )
 
 

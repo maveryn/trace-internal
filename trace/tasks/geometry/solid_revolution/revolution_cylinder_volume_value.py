@@ -2,19 +2,22 @@
 
 from __future__ import annotations
 
-from trace.tasks.registry import register_task
+from trace.core.types import TypedValue as GeometryTypedValue
+from trace.tasks.base import TaskOutput as GeometryTaskOutput
+from trace.tasks.registry import register_task as register_geometry_task
+from trace.tasks.shared.fixed_query import select_task_query_id as select_fixed_query
 
-from ._lifecycle import build_solid_revolution_plan, run_solid_revolution_public_entry
-from .shared.defaults import SCENE_ID
+from ._lifecycle import build_solid_revolution_plan, prepare_solid_revolution_task_parts
+from .shared.defaults import DOMAIN, SCENE_ID
 from .shared.measurements import answer_support_probability_map, round_volume, volume_cylinder
 from .shared.rendering import render_cylinder_revolution
 from .shared.sampling import cylinder_case_pool, select_case_from_pool, support_from_cases
 from .shared.state import SolidRevolutionProblem
 
-TASK_ID = "task_geometry__solid_revolution__revolution_cylinder_volume_value"
-QUERY_ID = "single"
-SUPPORTED_QUERY_IDS = (QUERY_ID,)
-ANNOTATION_KEYS = (
+CYLINDER_TASK_ID = "task_geometry__solid_revolution__revolution_cylinder_volume_value"
+CYLINDER_QUERY_ID = "single"
+CYLINDER_QUERY_IDS = (CYLINDER_QUERY_ID,)
+CYLINDER_ANNOTATION_KEYS = (
     "generating_shape",
     "rotation_axis",
     "solid_preview",
@@ -24,73 +27,100 @@ ANNOTATION_KEYS = (
 )
 
 
-def _prepare_cylinder_objective(
-    *,
-    instance_seed,
-    params,
-    selected_query,
-    branch_probabilities,
-):
-    # This task binds cylinder dimensions and volume before rendering.
-    cases = cylinder_case_pool()
-    case = select_case_from_pool(
-        instance_seed=instance_seed,
-        params=params,
-        namespace=f"{TASK_ID}.{selected_query}.case",
-        cases=cases,
-    )
-    support = support_from_cases(cases)
-    support_probabilities = answer_support_probability_map(support, case.answer)
-    if str(case.radial_input_kind) == "diagonal":
-        formula = "d^2 = q^2 - h^2, then V = pi (d/2)^2 h"
-    else:
-        formula = "V = pi (d/2)^2 h"
-    answer = round_volume(volume_cylinder(diameter=case.diameter, height=case.height))
-    problem = SolidRevolutionProblem(
-        solid_kind="cylinder",
-        generating_shape="rectangle",
-        answer=answer,
-        formula_family="cylinder_volume_from_rectangle",
-        formula=formula,
-        radius=float(case.diameter) / 2.0,
-        diameter=float(case.diameter),
-        radial_input_kind=str(case.radial_input_kind),
-        height=float(case.height),
-        diagonal=None if case.diagonal is None else float(case.diagonal),
-        answer_support_probabilities=support_probabilities,
-        construction_case_count_for_answer=1,
-    )
-    return build_solid_revolution_plan(
-        prompt_key=QUERY_ID,
-        problem=problem,
-        render_scene=render_cylinder_revolution,
-        annotation_keys=ANNOTATION_KEYS,
-        branch_probabilities=branch_probabilities,
-        support_probabilities=support_probabilities,
-    )
-
-
-@register_task
+@register_geometry_task
 class GeometrySolidRevolutionCylinderVolumeValueTask:
-    task_id = TASK_ID
-    domain = "geometry"
+    task_id = CYLINDER_TASK_ID
+    domain = DOMAIN
     default_dataset_enabled = True
-    supported_query_ids = SUPPORTED_QUERY_IDS
-    default_query_id = QUERY_ID
-    prepare_objective = staticmethod(_prepare_cylinder_objective)
+    supported_query_ids = CYLINDER_QUERY_IDS
+    default_query_id = CYLINDER_QUERY_ID
 
-    def generate(self, instance_seed, *, params, max_attempts):
-        return run_solid_revolution_public_entry(
-            self,
-            instance_seed,
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int) -> GeometryTaskOutput:
+        """Generate one cylinder-revolution volume task with task-owned output binding."""
+
+        query_id, query_distribution, resolved_params = select_fixed_query(
+            instance_seed=int(instance_seed),
             params=params,
-            max_attempts=max_attempts,
+            supported_query_ids=CYLINDER_QUERY_IDS,
+            default_query_id=CYLINDER_QUERY_ID,
+            task_id=CYLINDER_TASK_ID,
+            namespace=f"{CYLINDER_TASK_ID}.query",
         )
+        cylinder_cases = cylinder_case_pool()
+        cylinder_case = select_case_from_pool(
+            instance_seed=int(instance_seed),
+            params=resolved_params,
+            namespace=f"{CYLINDER_TASK_ID}.{query_id}.case",
+            cases=cylinder_cases,
+        )
+        cylinder_support = support_from_cases(cylinder_cases)
+        support_distribution = answer_support_probability_map(cylinder_support, cylinder_case.answer)
+        radial_source = str(cylinder_case.radial_input_kind)
+        formula_text = (
+            "d^2 = q^2 - h^2, then V = pi (d/2)^2 h"
+            if radial_source == "diagonal"
+            else "V = pi (d/2)^2 h"
+        )
+        cylinder_problem = SolidRevolutionProblem(
+            solid_kind="cylinder",
+            generating_shape="rectangle",
+            answer=round_volume(
+                volume_cylinder(diameter=cylinder_case.diameter, height=cylinder_case.height)
+            ),
+            formula_family="cylinder_volume_from_rectangle",
+            formula=formula_text,
+            radius=float(cylinder_case.diameter) / 2.0,
+            diameter=float(cylinder_case.diameter),
+            radial_input_kind=radial_source,
+            height=float(cylinder_case.height),
+            diagonal=None if cylinder_case.diagonal is None else float(cylinder_case.diagonal),
+            answer_support_probabilities=support_distribution,
+            construction_case_count_for_answer=1,
+        )
+        plan = build_solid_revolution_plan(
+            prompt_key=CYLINDER_QUERY_ID,
+            problem=cylinder_problem,
+            render_scene=render_cylinder_revolution,
+            annotation_keys=CYLINDER_ANNOTATION_KEYS,
+            branch_probabilities=query_distribution,
+            support_probabilities=support_distribution,
+        )
+        parts = prepare_solid_revolution_task_parts(
+            task_id=CYLINDER_TASK_ID,
+            selected_query=str(query_id),
+            branch_probabilities=query_distribution,
+            params=resolved_params,
+            plan=plan,
+            instance_seed=int(instance_seed),
+            max_attempts=int(max_attempts),
+        )
+        output_payload = {
+            "prompt": parts.prompt,
+            "answer_gt": GeometryTypedValue(type="number", value=float(plan.answer_value)),
+            "annotation_gt": GeometryTypedValue(type="bbox_map", value=dict(parts.annotation_value)),
+            "image": parts.image,
+            "image_id": "img0",
+            "trace_payload": parts.trace_payload,
+            "task_versions": parts.task_versions,
+            "scene_id": SCENE_ID,
+            "query_id": str(query_id),
+            "prompt_variants": dict(parts.prompt_variants),
+        }
+        return GeometryTaskOutput(**output_payload)
 
+
+TASK_ID = CYLINDER_TASK_ID
+QUERY_ID = CYLINDER_QUERY_ID
+SUPPORTED_QUERY_IDS = CYLINDER_QUERY_IDS
+ANNOTATION_KEYS = CYLINDER_ANNOTATION_KEYS
 
 __all__ = [
     "ANNOTATION_KEYS",
+    "CYLINDER_ANNOTATION_KEYS",
+    "CYLINDER_QUERY_IDS",
+    "CYLINDER_TASK_ID",
     "GeometrySolidRevolutionCylinderVolumeValueTask",
+    "QUERY_ID",
     "SCENE_ID",
     "SUPPORTED_QUERY_IDS",
     "TASK_ID",

@@ -24,6 +24,7 @@ from .state import BELT_GEOMETRY, BELT_KEYS, BELT_LABELS
 
 
 FLOOR_RGB = (244, 247, 249)
+BELT_ARROW_RGB = (128, 142, 156)
 
 
 @dataclass(frozen=True)
@@ -149,7 +150,7 @@ def _draw_belt(
         radius_y = float(BELT_GEOMETRY[str(belt_key)]["radius_y"])
         start = (radius_x * math.cos(theta - 0.055), radius_y * math.sin(theta - 0.055), 0.065)
         end = (radius_x * math.cos(theta + 0.055), radius_y * math.sin(theta + 0.055), 0.065)
-        _draw_arrow(draw, start_xy=project_xy(start, camera, frame), end_xy=project_xy(end, camera, frame), fill=(55, 69, 85))
+        _draw_arrow(draw, start_xy=project_xy(start, camera, frame), end_xy=project_xy(end, camera, frame), fill=BELT_ARROW_RGB)
     bbox = _projected_bbox([*outer_screen, *inner_screen])
     entity = {
         "entity_id": f"belt_{belt_key}",

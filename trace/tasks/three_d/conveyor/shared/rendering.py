@@ -30,6 +30,7 @@ from .state import (
 
 
 FLOOR_RGB = (242, 246, 248)
+BELT_ARROW_RGB = (130, 142, 154)
 
 
 @dataclass(frozen=True)
@@ -109,9 +110,9 @@ def _draw_arrow(
 ) -> None:
     sx, sy = float(start_xy[0]), float(start_xy[1])
     ex, ey = float(end_xy[0]), float(end_xy[1])
-    _draw_line(draw, (sx, sy), (ex, ey), fill=fill, width=3)
+    _draw_line(draw, (sx, sy), (ex, ey), fill=fill, width=2)
     angle = math.atan2(ey - sy, ex - sx)
-    length = 10.0
+    length = 7.0
     spread = 0.58
     left = (
         ex - length * math.cos(angle - spread),
@@ -151,18 +152,18 @@ def _draw_lane_belt(
         for x in (-2.65, 0.0, 2.65):
             _draw_arrow(
                 draw,
-                start_xy=project_xy((x - 0.38, y, 0.065), camera, frame),
-                end_xy=project_xy((x + 0.38, y, 0.065), camera, frame),
-                fill=(60, 74, 88),
+                start_xy=project_xy((x - 0.24, y, 0.065), camera, frame),
+                end_xy=project_xy((x + 0.24, y, 0.065), camera, frame),
+                fill=BELT_ARROW_RGB,
             )
     else:
         x = _lane_center_value(str(layout_orientation), str(lane_key))
         for y in (-2.75, 0.0, 2.75):
             _draw_arrow(
                 draw,
-                start_xy=project_xy((x, y - 0.34, 0.065), camera, frame),
-                end_xy=project_xy((x, y + 0.34, 0.065), camera, frame),
-                fill=(60, 74, 88),
+                start_xy=project_xy((x, y - 0.22, 0.065), camera, frame),
+                end_xy=project_xy((x, y + 0.22, 0.065), camera, frame),
+                fill=BELT_ARROW_RGB,
             )
 
     bbox = _projected_bbox(polygon_screen)

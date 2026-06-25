@@ -402,7 +402,7 @@ class GeometrySplitTriangleAngleChaseTargetAngleValueTask:
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
         """Select the theorem branch, bind answer/annotation, and return output."""
 
-        _generation_defaults, render_defaults, prompt_defaults = load_split_triangle_defaults(TASK_ID)
+        _generation_defaults, render_defaults, prompt_defaults = load_split_triangle_defaults()
         branch_key, branch_probabilities, task_params = select_task_query_id(
             instance_seed=int(instance_seed),
             params=params,

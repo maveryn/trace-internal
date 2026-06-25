@@ -655,7 +655,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__parallel_segment_proportion__segment_length_value": _entry("geometry", "parallel_segment_proportion", "geometry", "measurement"),
     "task_geometry__parallel_segment_proportion__variable_value": _entry("geometry", "parallel_segment_proportion", "geometry", "measurement"),
     "task_geometry__split_triangle_angle_chase__target_angle_value": _entry("geometry", "split_triangle_angle_chase", "geometry", "split_triangle_angle_chase"),
-    "task_geometry__split_triangle_trig_chain__side_length_value": _entry("geometry", "split_triangle_trig_chain", "geometry", "measurement"),
+    "task_geometry__split_triangle_trig_chain__side_length_value": _entry("geometry", "split_triangle_trig_chain", "geometry", "split_triangle_trig_chain"),
     "task_geometry__solid_revolution__revolution_cone_volume_value": _entry("geometry", "solid_revolution", "geometry", "solid_revolution"),
     "task_geometry__solid_revolution__revolution_cylinder_volume_value": _entry("geometry", "solid_revolution", "geometry", "solid_revolution"),
     "task_geometry__solid_revolution__revolution_double_cone_volume_value": _entry("geometry", "solid_revolution", "geometry", "solid_revolution"),

@@ -18,12 +18,11 @@ SCENE_KIND = "split_triangle_trig_chain"
 _SCENE_DEFAULTS = get_scene_defaults(DOMAIN, SCENE_ID)
 
 
-def load_split_triangle_trig_defaults(namespace: str) -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
-    """Load scene defaults using the public task namespace supplied by the caller."""
+def load_split_triangle_trig_defaults() -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+    """Load scene defaults without public task routing."""
 
     return split_scene_generation_rendering_prompt_defaults(
         _SCENE_DEFAULTS,
-        task_id=str(namespace),
     )
 
 
@@ -37,4 +36,3 @@ __all__ = [
     "TASK_PROMPT_KEY",
     "load_split_triangle_trig_defaults",
 ]
-

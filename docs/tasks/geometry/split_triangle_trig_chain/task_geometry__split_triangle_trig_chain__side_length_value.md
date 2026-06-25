@@ -3,9 +3,10 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `split_triangle_trig_chain`
-5. Supported `query_id`: `shared_altitude_two_angles_side`, `shared_altitude_side_then_hypotenuse`, or `isosceles_altitude_trig_side`
-6. Answer schema: `number`
-7. Annotation schema: `point_map`
+3. Task id: `task_geometry__split_triangle_trig_chain__side_length_value`
+4. Supported `query_id`: `shared_altitude_two_angles_side`, `shared_altitude_side_then_hypotenuse`, or `isosceles_altitude_trig_side`
+5. Answer schema: `number`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(right_triangle_trig_chain, unknown_role=target_side_length, given_pattern=shared_altitude_two_angles_side|shared_altitude_side_then_hypotenuse|isosceles_altitude_trig_side); scene=split_triangle_trig_chain; scope=side_length_value`

@@ -22,6 +22,13 @@
       "",
       "",
       ""
+    ],
+    "movement_attack_range_tile_label_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -37,6 +44,11 @@
     ],
     "query:terrain_type_tile_count": [
       "terrain_label"
+    ],
+    "query:movement_attack_range_tile": [
+      "movement_points",
+      "attack_range_text",
+      "terrain_rules"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -103,6 +115,13 @@
       "What is the number of visible {terrain_label} tiles?",
       "How many grid cells are {terrain_label} terrain?",
       "Count every visible tile whose terrain type is {terrain_label}."
+    ],
+    "movement_attack_range_tile": [
+      "{terrain_rules} The blue unit may first spend up to {movement_points} movement points. After moving, it can attack a tile up to {attack_range_text} away horizontally or vertically, and attack range ignores terrain cost. Which lettered tile can be attacked?",
+      "The blue unit can move first using at most {movement_points} movement points. {terrain_rules} Then it can attack up to {attack_range_text} horizontally or vertically, ignoring terrain cost for the attack. Choose the attackable lettered tile.",
+      "{terrain_rules} After moving up to {movement_points} movement points, the blue unit can attack any tile within {attack_range_text} in one cardinal direction, and attack range ignores terrain cost. Which candidate letter marks a tile it can attack?",
+      "First move the blue unit up to {movement_points} movement points. {terrain_rules} Then count attack range as up to {attack_range_text} only up, down, left, or right, ignoring terrain cost. Which lettered tile is attackable?",
+      "The blue unit may spend up to {movement_points} movement points before attacking. {terrain_rules} Its attack reaches up to {attack_range_text} horizontally or vertically and ignores terrain cost. Select the lettered tile it can attack."
     ]
   },
   "allow_empty_task_templates": true

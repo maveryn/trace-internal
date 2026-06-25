@@ -143,6 +143,69 @@ def movement_reachable_count_render_map(
     }
 
 
+def movement_attack_range_render_map(
+    *,
+    scene: RpgTacticalMapScene,
+    candidate_tile_ids_by_label: Mapping[str, str],
+    selected_label: str,
+    movement_costs_by_tile_id: Mapping[str, int],
+    movement_budget: int,
+    attack_range: int,
+    reachable_move_tile_ids: Sequence[str],
+    attackable_tile_ids: Sequence[str],
+    attack_sources_by_tile_id: Mapping[str, Sequence[str]],
+) -> dict[str, Any]:
+    """Return render-map fields for move-then-cardinal-attack selection."""
+
+    tiles_by_id = {str(tile.tile_id): tile for tile in scene.tiles}
+    selected_tile_id = str(candidate_tile_ids_by_label[str(selected_label)])
+    candidate_tile_bboxes = {
+        str(label): rounded_bbox(tiles_by_id[str(tile_id)].bbox_xyxy)
+        for label, tile_id in candidate_tile_ids_by_label.items()
+    }
+    candidate_label_bboxes = {
+        str(label): rounded_bbox(scene.label_bboxes_by_tile_id[str(tile_id)])
+        for label, tile_id in candidate_tile_ids_by_label.items()
+        if str(tile_id) in scene.label_bboxes_by_tile_id
+    }
+    attackable_set = {str(tile_id) for tile_id in attackable_tile_ids}
+    return {
+        "image_id": "img0",
+        "movement_budget": int(movement_budget),
+        "attack_range": int(attack_range),
+        "attack_rule": "after_movement_cardinal_distance_ignores_terrain_cost",
+        "candidate_tile_ids_by_label": dict(candidate_tile_ids_by_label),
+        "candidate_tile_bboxes_px_by_label": candidate_tile_bboxes,
+        "candidate_label_bboxes_px_by_label": candidate_label_bboxes,
+        "candidate_terrain_by_label": {
+            str(label): str(tiles_by_id[str(tile_id)].terrain)
+            for label, tile_id in candidate_tile_ids_by_label.items()
+        },
+        "candidate_shortest_move_costs_by_label": {
+            str(label): (
+                int(movement_costs_by_tile_id[str(tile_id)])
+                if str(tile_id) in movement_costs_by_tile_id
+                else None
+            )
+            for label, tile_id in candidate_tile_ids_by_label.items()
+        },
+        "candidate_attackable_by_label": {
+            str(label): str(tile_id) in attackable_set
+            for label, tile_id in candidate_tile_ids_by_label.items()
+        },
+        "candidate_attack_source_tile_ids_by_label": {
+            str(label): [str(source_id) for source_id in attack_sources_by_tile_id.get(str(tile_id), ())]
+            for label, tile_id in candidate_tile_ids_by_label.items()
+        },
+        "reachable_move_tile_ids": [str(tile_id) for tile_id in reachable_move_tile_ids],
+        "attackable_tile_ids": [str(tile_id) for tile_id in attackable_tile_ids],
+        "selected_label": str(selected_label),
+        "selected_tile_id": selected_tile_id,
+        "selected_tile_bbox_px": rounded_bbox(tiles_by_id[selected_tile_id].bbox_xyxy),
+        "player_unit": scene.units[0].as_dict() if scene.units else {},
+    }
+
+
 def terrain_type_count_render_map(
     *,
     scene: RpgTacticalMapScene,
@@ -169,6 +232,7 @@ def terrain_type_count_render_map(
 __all__ = [
     "bbox_projection",
     "bbox_set_projection",
+    "movement_attack_range_render_map",
     "movement_reachable_count_render_map",
     "movement_reachable_render_map",
     "rounded_bbox",

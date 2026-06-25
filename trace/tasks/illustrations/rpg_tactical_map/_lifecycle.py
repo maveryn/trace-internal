@@ -10,8 +10,10 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.illustrations.shared.option_rendering import sample_visual_label_font_trace
 
 from .shared.output import (
+    bbox_projection,
     bbox_set_projection,
     rounded_bbox,
     rpg_tactical_map_render_spec,
@@ -30,6 +32,9 @@ from .shared.state import RpgTacticalMapScene, RpgTacticalTile
 TileSelector = Callable[[RpgTacticalMapScene], Sequence[RpgTacticalTile]]
 RenderMapBuilder = Callable[[RpgTacticalMapScene, Sequence[str]], Mapping[str, Any]]
 CountPlanBuilder = Callable[[int, Mapping[str, Any], Mapping[str, float], str], "RpgTacticalMapTileCountPlan"]
+OptionAttemptBuilder = Callable[[RpgTacticalMapScene, int], "RpgTacticalMapOptionAttempt"]
+OptionRenderMapBuilder = Callable[[RpgTacticalMapScene, "RpgTacticalMapOptionAttempt"], Mapping[str, Any]]
+OptionPlanBuilder = Callable[[int, Mapping[str, Any], Mapping[str, float], str], "RpgTacticalMapOptionPlan"]
 
 
 @dataclass(frozen=True)
@@ -51,6 +56,33 @@ class RpgTacticalMapTileCountPlan:
     select_tiles: TileSelector
     build_render_map: RenderMapBuilder
     failure_label: str = "tile count"
+
+
+@dataclass(frozen=True)
+class RpgTacticalMapOptionAttempt:
+    """Task-owned selected option semantics for one rendered tactical map."""
+
+    candidate_tile_ids_by_label: Mapping[str, str]
+    selected_label: str
+    relation_fields: Mapping[str, Any]
+    execution_fields: Mapping[str, Any]
+    witness_fields: Mapping[str, Any]
+
+
+@dataclass(frozen=True)
+class RpgTacticalMapOptionPlan:
+    """Task-owned option-selection semantics consumed by neutral rendering."""
+
+    prompt_query_key: str
+    prompt_slots: Mapping[str, str]
+    answer_hint_key: str
+    annotation_hint_key: str
+    json_example_key: str
+    json_example_answer_only_key: str
+    query_params: Mapping[str, Any]
+    build_attempt: OptionAttemptBuilder
+    build_render_map: OptionRenderMapBuilder
+    failure_label: str = "option selection"
 
 
 def run_rpg_tactical_map_tile_count_lifecycle(
@@ -199,10 +231,195 @@ def run_rpg_tactical_map_tile_count_lifecycle(
     )
 
 
+def run_rpg_tactical_map_option_lifecycle(
+    *,
+    task_id: str,
+    domain: str,
+    supported_query_ids: tuple[str, ...],
+    prompt_defaults_source: Mapping[str, Any],
+    rendering_defaults: Mapping[str, Any],
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+    prepare_plan: OptionPlanBuilder,
+) -> TaskOutput:
+    """Run neutral retry, option-label rendering, trace, and output plumbing."""
+
+    query_id, query_probabilities, task_params = select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=tuple(str(value) for value in supported_query_ids),
+        default_query_id=SINGLE_QUERY_ID,
+        task_id=str(task_id),
+        namespace=f"{task_id}:query",
+    )
+    plan = prepare_plan(
+        int(instance_seed),
+        task_params,
+        dict(query_probabilities),
+        str(query_id),
+    )
+    render_params = resolve_tactical_map_render_params(
+        task_params,
+        rendering_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}:canvas_profile",
+    )
+    label_font_trace = sample_visual_label_font_trace(
+        namespace_prefix=str(task_id),
+        instance_seed=int(instance_seed),
+        params=task_params,
+        namespace_suffix="candidate_labels",
+        explicit_key="candidate_label_font_family",
+        weights_key="candidate_label_font_family_weights",
+    )
+    _prompt_defaults, prompt_artifacts = build_rpg_tactical_map_task_prompt_with_default_slots(
+        domain=str(domain),
+        scene_id=SCENE_ID,
+        prompt_defaults_source=prompt_defaults_source,
+        prompt_query_key=str(plan.prompt_query_key),
+        answer_hint_key=str(plan.answer_hint_key),
+        annotation_hint_key=str(plan.annotation_hint_key),
+        json_example_key=str(plan.json_example_key),
+        json_example_answer_only_key=str(plan.json_example_answer_only_key),
+        context_label=str(task_id),
+        slots=dict(plan.prompt_slots),
+        instance_seed=int(instance_seed),
+    )
+
+    selected_scene: RpgTacticalMapScene | None = None
+    selected_attempt: RpgTacticalMapOptionAttempt | None = None
+    rejection_notes: list[str] = []
+    for attempt_index in range(max(1, int(max_attempts))):
+        scene_seed = int(instance_seed) + int(attempt_index) * 7919
+        base_scene = render_rpg_tactical_map_scene(
+            scene_seed,
+            width=int(render_params["canvas_width"]),
+            height=int(render_params["canvas_height"]),
+            grid_cols=int(render_params["grid_cols"]),
+            grid_rows=int(render_params["grid_rows"]),
+            tile_px=int(render_params.get("tile_px", DEFAULT_TILE_PX)),
+            render_metadata=render_params,
+        )
+        try:
+            attempt = plan.build_attempt(base_scene, int(instance_seed) + int(attempt_index) * 104729)
+        except ValueError as exc:
+            rejection_notes.append(str(exc))
+            continue
+        candidate_tile_ids_by_label = {
+            str(label): str(tile_id)
+            for label, tile_id in attempt.candidate_tile_ids_by_label.items()
+        }
+        if str(attempt.selected_label) not in candidate_tile_ids_by_label:
+            rejection_notes.append("selected label is not present in candidate labels")
+            continue
+        selected_scene = render_rpg_tactical_map_scene(
+            scene_seed,
+            width=int(render_params["canvas_width"]),
+            height=int(render_params["canvas_height"]),
+            grid_cols=int(render_params["grid_cols"]),
+            grid_rows=int(render_params["grid_rows"]),
+            tile_px=int(render_params.get("tile_px", DEFAULT_TILE_PX)),
+            player_tile_id=str(base_scene.units[0].tile_id),
+            candidate_tile_ids_by_label=candidate_tile_ids_by_label,
+            label_font_family=str(label_font_trace.get("font_family", "")),
+            label_font_trace=label_font_trace,
+            render_metadata=render_params,
+        )
+        selected_attempt = attempt
+        break
+    if selected_scene is None or selected_attempt is None:
+        raise ValueError(f"failed to generate valid tactical-map {plan.failure_label}: " + "; ".join(rejection_notes[-3:]))
+
+    tiles_by_id = {str(tile.tile_id): tile for tile in selected_scene.tiles}
+    selected_label = str(selected_attempt.selected_label)
+    candidate_tile_ids_by_label = {
+        str(label): str(tile_id)
+        for label, tile_id in selected_attempt.candidate_tile_ids_by_label.items()
+    }
+    selected_tile_id = str(candidate_tile_ids_by_label[selected_label])
+    selected_tile = tiles_by_id[selected_tile_id]
+    annotation_value = rounded_bbox(selected_tile.bbox_xyxy)
+    render_map = dict(plan.build_render_map(selected_scene, selected_attempt))
+    query_params = {
+        "query_id": str(query_id),
+        "prompt_query_key": str(plan.prompt_query_key),
+        "query_id_probabilities": dict(query_probabilities),
+        **dict(plan.query_params),
+        "candidate_count": int(len(candidate_tile_ids_by_label)),
+        "candidate_labels": list(candidate_tile_ids_by_label),
+        "candidate_tile_ids_by_label": dict(candidate_tile_ids_by_label),
+        "selected_label": selected_label,
+        "selected_tile_id": selected_tile_id,
+        "canvas_profile": str(render_params.get("canvas_profile", "")),
+        "canvas_profile_probabilities": dict(render_params.get("canvas_profile_probabilities", {})),
+    }
+    trace_payload = {
+        "scene_ir": rpg_tactical_map_scene_ir(
+            domain=str(domain),
+            scene_id=SCENE_ID,
+            scene=selected_scene,
+            relations={
+                **dict(selected_attempt.relation_fields),
+                "candidate_tile_ids_by_label": dict(candidate_tile_ids_by_label),
+                "selected_label": selected_label,
+                "selected_tile_id": selected_tile_id,
+            },
+        ),
+        "query_spec": {
+            "task_id": str(task_id),
+            "query_id": str(query_id),
+            "prompt_query_key": str(plan.prompt_query_key),
+            "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
+            "prompt_variant": dict(prompt_artifacts.prompt_variant),
+            "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
+            "params": query_params,
+        },
+        "render_spec": rpg_tactical_map_render_spec(selected_scene, scene_id=SCENE_ID),
+        "render_map": render_map,
+        "execution_trace": {
+            "query_id": str(query_id),
+            "prompt_query_key": str(plan.prompt_query_key),
+            "scene_id": SCENE_ID,
+            "answer": selected_label,
+            "candidate_tile_ids_by_label": dict(candidate_tile_ids_by_label),
+            "selected_label": selected_label,
+            "selected_tile_id": selected_tile_id,
+            "renderer": dict(selected_scene.trace),
+            **dict(selected_attempt.execution_fields),
+        },
+        "witness_symbolic": {
+            "answer_label": selected_label,
+            "selected_tile_id": selected_tile_id,
+            "selected_tile_bbox": list(annotation_value),
+            **dict(selected_attempt.witness_fields),
+        },
+        "projected_annotation": bbox_projection(annotation_value),
+    }
+    return TaskOutput(
+        prompt=str(prompt_artifacts.prompt),
+        prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
+        answer_gt=TypedValue(type="option_letter", value=selected_label),
+        annotation_gt=TypedValue(type="bbox", value=list(annotation_value)),
+        image=selected_scene.image,
+        image_id="img0",
+        trace_payload=trace_payload,
+        task_versions=default_task_versions(),
+        scene_id=SCENE_ID,
+        query_id=str(query_id),
+    )
+
+
 __all__ = [
     "CountPlanBuilder",
+    "OptionAttemptBuilder",
+    "OptionPlanBuilder",
+    "OptionRenderMapBuilder",
     "RenderMapBuilder",
+    "RpgTacticalMapOptionAttempt",
+    "RpgTacticalMapOptionPlan",
     "RpgTacticalMapTileCountPlan",
     "TileSelector",
+    "run_rpg_tactical_map_option_lifecycle",
     "run_rpg_tactical_map_tile_count_lifecycle",
 ]

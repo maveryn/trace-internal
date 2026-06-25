@@ -16,4 +16,5 @@
 1. `single` is the only public query id; the task-specific prompt key is trace metadata.
 2. Annotation is the bbox set of safe bottom lane pads; only red enemy shots make a lane unsafe.
 3. An unsafe lane may contain one to three visible red enemy shots.
-4. Scalar annotation checked: true.
+4. Blue player shots are placed below all same-lane enemy ships and red enemy shots.
+5. Scalar annotation checked: true.

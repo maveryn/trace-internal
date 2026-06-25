@@ -220,6 +220,49 @@ def _add_enemy_projectile_line(
     return int(shot_count)
 
 
+def _add_player_projectile(
+    *,
+    rng,
+    occupied: set[Tuple[int, int]],
+    projectiles: list[SpaceProjectile],
+    lane_candidates: Sequence[int],
+    enemies: Sequence[SpaceEnemy],
+    slot_candidates: Sequence[int] = (5,),
+) -> None:
+    """Add one blue player shot below all same-lane enemies and red shots."""
+
+    candidates = [
+        (int(lane), int(slot))
+        for lane in lane_candidates
+        for slot in slot_candidates
+        if (int(lane), int(slot)) not in occupied
+        and any(int(enemy.lane) == int(lane) for enemy in enemies)
+        and all(
+            int(enemy.y_slot) < int(slot)
+            for enemy in enemies
+            if int(enemy.lane) == int(lane)
+        )
+        and all(
+            int(projectile.y_slot) < int(slot)
+            for projectile in projectiles
+            if str(projectile.owner) == "enemy" and int(projectile.lane) == int(lane)
+        )
+    ]
+    if not candidates:
+        raise ValueError("no valid below-threat player projectile slot remains")
+    lane, slot = rng.choice(candidates)
+    occupied.add((int(lane), int(slot)))
+    projectiles.append(
+        _make_projectile(
+            projectile_index=len(projectiles),
+            lane=int(lane),
+            y_slot=int(slot),
+            owner="player",
+            rng=rng,
+        )
+    )
+
+
 def sample_enemy_ship_count_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample:
     """Construct a scene where every visible enemy ship is counted."""
 
@@ -232,7 +275,7 @@ def sample_enemy_ship_count_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample
             rng=rng,
             occupied=occupied,
             lane_candidates=range(lane_count),
-            slot_candidates=(0, 1, 2, 3, 4, 5),
+            slot_candidates=(0, 1, 2, 3),
         )
         enemies.append(_make_enemy(enemy_index=len(enemies), lane=lane, y_slot=slot, rng=rng))
 
@@ -254,7 +297,7 @@ def sample_enemy_ship_count_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample
                 enemies=enemies,
                 support=axes.enemy_projectile_per_lane_support,
                 min_count=2 if can_force_multi_shot_line and not multi_shot_line_added else 1,
-                slot_candidates=(2, 3, 4, 5),
+                slot_candidates=(2, 3, 4),
             )
         except ValueError:
             continue
@@ -262,23 +305,15 @@ def sample_enemy_ship_count_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample
         multi_shot_line_added = bool(multi_shot_line_added or added >= 2)
     for _ in range(max(1, lane_count // 4)):
         try:
-            lane, slot = _claim_position(
+            _add_player_projectile(
                 rng=rng,
                 occupied=occupied,
+                projectiles=projectiles,
                 lane_candidates=range(lane_count),
-                slot_candidates=(4, 5),
+                enemies=enemies,
             )
         except ValueError:
             continue
-        projectiles.append(
-            _make_projectile(
-                projectile_index=len(projectiles),
-                lane=lane,
-                y_slot=slot,
-                owner="player",
-                rng=rng,
-            )
-        )
 
     annotation_ids = tuple(str(enemy.enemy_id) for enemy in enemies)
     sample = SpaceShooterSample(
@@ -326,27 +361,24 @@ def sample_safe_lane_scene(*, rng, axes: SceneAxes, target_answer: int) -> Space
             enemies=enemies,
             support=axes.enemy_projectile_per_lane_support,
             min_count=2 if int(unsafe_index) == 0 and can_force_multi_shot_line else 1,
-            slot_candidates=(3, 4, 5),
+            slot_candidates=(2, 3, 4),
         )
-    for lane in safe_lanes:
-        if rng.random() < 0.45:
-            try:
-                _, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=(4, 5))
-            except ValueError:
-                continue
-            projectiles.append(
-                _make_projectile(
-                    projectile_index=len(projectiles),
-                    lane=lane,
-                    y_slot=slot,
-                    owner="player",
-                    rng=rng,
-                )
-            )
     enemy_target = min(int(axes.enemy_count), lane_count + int(rng.randrange(0, 3)))
     while len(enemies) < enemy_target:
         lane, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=range(lane_count), slot_candidates=(0, 1, 2))
         enemies.append(_make_enemy(enemy_index=len(enemies), lane=lane, y_slot=slot, rng=rng))
+    for lane in safe_lanes:
+        if rng.random() < 0.45:
+            try:
+                _add_player_projectile(
+                    rng=rng,
+                    occupied=occupied,
+                    projectiles=projectiles,
+                    lane_candidates=(lane,),
+                    enemies=enemies,
+                )
+            except ValueError:
+                continue
     annotation_ids = tuple(lane_entity_id(lane) for lane in safe_lanes)
     sample = SpaceShooterSample(
         lane_count=lane_count,

@@ -184,6 +184,41 @@ def test_games_space_shooter_enemy_projectiles_have_visible_same_lane_shooter(ta
         )
 
 
+@pytest.mark.parametrize(
+    ("task_cls", "params"),
+    (
+        (GamesSpaceShooterEnemyShipCountTask, {"lane_count": 8, "enemy_count": 12}),
+        (GamesSpaceShooterSafeLaneCountTask, {"target_answer": 3, "lane_count": 7, "enemy_count": 12}),
+    ),
+)
+def test_games_space_shooter_projectiles_follow_gameplay_ordering(task_cls, params) -> None:
+    for seed in range(88180, 88190):
+        out = task_cls().generate(seed, params=params, max_attempts=256)
+        execution = out.trace_payload["execution_trace"]
+        enemies = tuple(execution["enemies"])
+        enemy_projectiles = tuple(
+            projectile for projectile in execution["projectiles"] if str(projectile["owner"]) == "enemy"
+        )
+        player_projectiles = tuple(
+            projectile for projectile in execution["projectiles"] if str(projectile["owner"]) == "player"
+        )
+
+        for projectile in enemy_projectiles:
+            assert int(projectile["y_slot"]) <= 4
+        for projectile in player_projectiles:
+            assert int(projectile["y_slot"]) == 5
+            same_lane_enemies = [
+                enemy for enemy in enemies if int(enemy["lane"]) == int(projectile["lane"])
+            ]
+            assert same_lane_enemies
+            assert all(int(enemy["y_slot"]) < int(projectile["y_slot"]) for enemy in same_lane_enemies)
+            assert all(
+                int(enemy_projectile["y_slot"]) < int(projectile["y_slot"])
+                for enemy_projectile in enemy_projectiles
+                if int(enemy_projectile["lane"]) == int(projectile["lane"])
+            )
+
+
 def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:
     output_root = tmp_path / "task_games__space_shooter"
     config = BuildConfig(

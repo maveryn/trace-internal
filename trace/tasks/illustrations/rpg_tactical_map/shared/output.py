@@ -354,6 +354,62 @@ def movement_cost_value_render_map(
     }
 
 
+def counterfactual_terrain_conversion_cost_render_map(
+    *,
+    scene: RpgTacticalMapScene,
+    target_tile_id: str,
+    changed_tile_id: str,
+    shortest_path_tile_ids: Sequence[str],
+    counterfactual_movement_costs_by_tile_id: Mapping[str, int],
+    start_tile_id: str,
+    original_target_cost: int | None,
+    answer_value: int,
+) -> dict[str, Any]:
+    """Return render-map fields for one-tile-to-road counterfactual movement cost."""
+
+    tiles_by_id = {str(tile.tile_id): tile for tile in scene.tiles}
+    target_tile = tiles_by_id[str(target_tile_id)]
+    changed_tile = tiles_by_id[str(changed_tile_id)]
+    path_tile_ids = [str(tile_id) for tile_id in shortest_path_tile_ids]
+    return {
+        "image_id": "img0",
+        "counterfactual_rule": "change_exactly_one_non_road_tile_to_road_before_moving",
+        "target_tile_id": str(target_tile_id),
+        "target_tile_bbox_px": rounded_bbox(target_tile.bbox_xyxy),
+        "target_terrain": str(target_tile.terrain),
+        "changed_tile_id": str(changed_tile_id),
+        "changed_tile_bbox_px": rounded_bbox(changed_tile.bbox_xyxy),
+        "changed_tile_original_terrain": str(changed_tile.terrain),
+        "changed_tile_counterfactual_terrain": "road",
+        "start_tile_id": str(start_tile_id),
+        "original_target_cost": None if original_target_cost is None else int(original_target_cost),
+        "shortest_path_tile_ids": list(path_tile_ids),
+        "shortest_path_tile_bboxes_px": [
+            rounded_bbox(tiles_by_id[str(tile_id)].bbox_xyxy)
+            for tile_id in path_tile_ids
+        ],
+        "shortest_path_terrains_original": [
+            str(tiles_by_id[str(tile_id)].terrain)
+            for tile_id in path_tile_ids
+        ],
+        "shortest_path_entry_costs_after_conversion": [
+            0
+            if index == 0
+            else 1
+            if str(tile_id) == str(changed_tile_id)
+            else int(tiles_by_id[str(tile_id)].movement_cost or 0)
+            for index, tile_id in enumerate(path_tile_ids)
+        ],
+        "counterfactual_movement_costs_by_tile_id": {
+            str(tile_id): int(cost)
+            for tile_id, cost in counterfactual_movement_costs_by_tile_id.items()
+        },
+        "counterfactual_shortest_movement_cost": int(answer_value),
+        "answer_value": int(answer_value),
+        "player_unit": scene.units[0].as_dict() if scene.units else {},
+    }
+
+
 def terrain_type_count_render_map(
     *,
     scene: RpgTacticalMapScene,
@@ -382,6 +438,7 @@ __all__ = [
     "bbox_projection",
     "bbox_sequence_projection",
     "bbox_set_projection",
+    "counterfactual_terrain_conversion_cost_render_map",
     "movement_attack_range_render_map",
     "movement_cost_value_render_map",
     "movement_reachable_count_render_map",

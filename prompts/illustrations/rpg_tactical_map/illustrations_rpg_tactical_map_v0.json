@@ -37,6 +37,13 @@
             "",
             ""
         ],
+        "counterfactual_terrain_conversion_cost_value_task": [
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
         "water_barrier_unreachable_tile_label_task": [
             "",
             "",
@@ -66,6 +73,10 @@
         ],
         "query:movement_cost_value": [
             "terrain_rules"
+        ],
+        "query:counterfactual_terrain_conversion_cost_value": [
+            "terrain_rules",
+            "conversion_rule"
         ],
         "query:water_barrier_unreachable_tile": [
             "water_rule"
@@ -163,6 +174,13 @@
             "The blue unit starts on its current tile. {terrain_rules} How many movement points are needed to reach the marked destination tile using the cheapest path?",
             "{terrain_rules} Count the minimum total movement cost from the blue unit to the marked target tile.",
             "The blue unit may move only up, down, left, or right. {terrain_rules} What is the shortest movement cost to the marked target tile?"
+        ],
+        "counterfactual_terrain_conversion_cost_value": [
+            "{terrain_rules} {conversion_rule} What is the fewest number of movement points the blue unit needs to reach the marked target tile?",
+            "Using the terrain costs, choose the best single terrain-to-road conversion before moving. {terrain_rules} {conversion_rule} What is the minimum movement-point cost to reach the marked target tile?",
+            "The blue unit starts on its current tile. {terrain_rules} {conversion_rule} After that conversion, how many movement points are needed to reach the marked destination tile using the cheapest path?",
+            "{terrain_rules} {conversion_rule} Count the minimum total movement cost from the blue unit to the marked target tile after the best conversion.",
+            "The blue unit may move only up, down, left, or right. {terrain_rules} {conversion_rule} What is the shortest movement cost to the marked target tile?"
         ],
         "water_barrier_unreachable_tile": [
             "{water_rule} Which lettered tile cannot be reached from the blue unit?",

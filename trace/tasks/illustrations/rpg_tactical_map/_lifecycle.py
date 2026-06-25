@@ -537,8 +537,8 @@ def run_rpg_tactical_map_value_lifecycle(
         for key, tile_id in selected_attempt.annotation_tile_id_map.items()
     }
     required_annotation_keys = {"player_cell", "target_cell"}
-    if set(annotation_tile_id_map) != required_annotation_keys:
-        raise ValueError("value task annotation map must contain player_cell and target_cell")
+    if not required_annotation_keys.issubset(set(annotation_tile_id_map)):
+        raise ValueError("value task annotation map must contain at least player_cell and target_cell")
     if annotation_tile_id_map["target_cell"] != target_tile_id:
         raise ValueError("value task target_cell annotation must match the marked target tile")
     if any(str(tile_id) not in tiles_by_id for tile_id in annotation_tile_id_map.values()):

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from trace.tasks.registry import create_task
 from trace.tasks.illustrations.rpg_tactical_map.movement_attack_range_tile_label import TASK_ID as ATTACK_TASK_ID
+from trace.tasks.illustrations.rpg_tactical_map.counterfactual_terrain_conversion_cost_value import TASK_ID as COUNTERFACTUAL_COST_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.movement_cost_value import TASK_ID as COST_VALUE_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_count import TASK_ID as COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_label import TASK_ID as LABEL_TASK_ID
@@ -628,3 +629,68 @@ def test_rpg_tactical_map_movement_cost_value_contract() -> None:
     manhattan = abs(int(target_tile["row"]) - int(start_tile["row"])) + abs(int(target_tile["col"]) - int(start_tile["col"]))
     assert render_map["target_manhattan_distance"] == manhattan
     assert int(out.answer_gt.value) >= manhattan
+
+
+def test_rpg_tactical_map_counterfactual_terrain_conversion_cost_value_contract() -> None:
+    task = create_task(COUNTERFACTUAL_COST_TASK_ID)
+    out = task.generate(
+        2026062900,
+        params={
+            "canvas_profile": "square",
+            "min_counterfactual_cost": 2,
+            "max_counterfactual_cost": 6,
+        },
+        max_attempts=80,
+    )
+    assert out.scene_id == "rpg_tactical_map"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "integer"
+    assert 2 <= int(out.answer_gt.value) <= 6
+    assert out.annotation_gt.type == "bbox_map"
+    assert set(out.annotation_gt.value) == {"player_cell", "target_cell", "changed_cell"}
+    width, height = out.image.size
+    for bbox in out.annotation_gt.value.values():
+        _assert_bbox_inside_canvas(bbox, width=width, height=height)
+    prompt_lower = out.prompt.lower()
+    assert "marked" in prompt_lower
+    assert "changed into a road" in prompt_lower or "terrain-to-road" in prompt_lower
+    assert "water cannot be entered" in prompt_lower
+
+    trace = out.trace_payload
+    render_map = trace["render_map"]
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+    assert int(render_map["answer_value"]) == int(out.answer_gt.value)
+    assert int(render_map["counterfactual_shortest_movement_cost"]) == int(out.answer_gt.value)
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_tactical_map_v0"
+    assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_tactical_map"
+
+    tiles_by_id = {str(tile["tile_id"]): tile for tile in trace["scene_ir"]["tiles"]}
+    start_tile_id = str(render_map["start_tile_id"])
+    target_tile_id = str(render_map["target_tile_id"])
+    changed_tile_id = str(render_map["changed_tile_id"])
+    assert len({start_tile_id, target_tile_id, changed_tile_id}) == 3
+    assert out.annotation_gt.value["player_cell"] == tiles_by_id[start_tile_id]["bbox"]
+    assert out.annotation_gt.value["target_cell"] == tiles_by_id[target_tile_id]["bbox"]
+    assert out.annotation_gt.value["changed_cell"] == tiles_by_id[changed_tile_id]["bbox"]
+    assert trace["execution_trace"]["annotation_tile_id_map"] == {
+        "player_cell": start_tile_id,
+        "target_cell": target_tile_id,
+        "changed_cell": changed_tile_id,
+    }
+    assert trace["scene_ir"]["relations"]["unique_best_changed_tile"] is True
+    assert render_map["changed_tile_original_terrain"] in {"water", "mountain", "forest"}
+    assert render_map["changed_tile_counterfactual_terrain"] == "road"
+
+    path_tile_ids = [str(tile_id) for tile_id in render_map["shortest_path_tile_ids"]]
+    assert path_tile_ids[0] == start_tile_id
+    assert path_tile_ids[-1] == target_tile_id
+    assert changed_tile_id in set(path_tile_ids)
+    assert len(path_tile_ids) == len(render_map["shortest_path_entry_costs_after_conversion"])
+    for left_id, right_id in zip(path_tile_ids, path_tile_ids[1:]):
+        left = tiles_by_id[left_id]
+        right = tiles_by_id[right_id]
+        step = abs(int(left["row"]) - int(right["row"])) + abs(int(left["col"]) - int(right["col"]))
+        assert step == 1
+    assert render_map["shortest_path_entry_costs_after_conversion"][0] == 0
+    assert sum(int(cost) for cost in render_map["shortest_path_entry_costs_after_conversion"]) == int(out.answer_gt.value)

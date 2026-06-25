@@ -38,6 +38,17 @@ def scalar_bbox_artifacts(box: BBox) -> tuple[list[float], dict[str, Any]]:
     }
 
 
+def scalar_point_artifacts(point: Point) -> tuple[list[float], dict[str, Any]]:
+    """Build scalar point annotation value and projection payload."""
+
+    value = _round_point(point)
+    return value, {
+        "type": "point",
+        "point": list(value),
+        "pixel_point": list(value),
+    }
+
+
 def scalar_segment_artifacts(
     start: Point, end: Point
 ) -> tuple[list[list[float]], dict[str, Any]]:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from math import atan2, ceil, cos, degrees, floor, radians, sin
+from math import atan2, ceil, cos, degrees, floor, radians, sin, sqrt
 from typing import Any, Mapping, Sequence
 
 from PIL import ImageDraw
@@ -457,29 +457,73 @@ def draw_ellipse_or_circle(
 
 
 def slot_centers(
-    ctx: GraphPaperContext, count: int, *, rng: Any | None = None
+    ctx: GraphPaperContext,
+    count: int,
+    *,
+    rng: Any | None = None,
+    footprint_units: float = 1.2,
 ) -> list[Point]:
-    """Return graph-unit slot centers for multi-object scenes."""
+    """Return spread-out graph-unit slot centers for multi-object scenes.
 
-    cols = 3 if int(count) > 4 else 2
-    rows = (int(count) + cols - 1) // cols
-    x_values = [-(cols - 1) * 3.2 / 2.0 + index * 3.2 for index in range(cols)]
-    y_values = [(rows - 1) * 3.0 / 2.0 - index * 3.0 for index in range(rows)]
-    centers: list[Point] = []
-    for y in y_values:
-        for x in x_values:
-            centers.append((float(x), float(y)))
-            if len(centers) == int(count):
-                if rng is None:
-                    return centers
-                return list(
-                    random_shift_points(
-                        ctx, centers, rng, margin_units=1.6, step=0.5
-                    )
-                )
-    if rng is None:
-        return centers
-    return list(random_shift_points(ctx, centers, rng, margin_units=1.6, step=0.5))
+    The graph-paper scene shows independent objects, so the slot layout should
+    use the available grid area instead of clustering every sample near the
+    origin. Slots are sampled from a broad in-bounds lattice with a minimum
+    separation, then shuffled deterministically for visual variety.
+    """
+
+    resolved_count = max(0, int(count))
+    if resolved_count == 0:
+        return []
+    limit = max(2.0, float(ctx.graph_half_range) - max(1.6, float(footprint_units)))
+    step = 0.5
+    grid_values = [
+        round((-limit + (index * step)), 3)
+        for index in range(int(floor((2.0 * limit) / step)) + 1)
+    ]
+    candidates = [
+        (float(x), float(y))
+        for x in grid_values
+        for y in grid_values
+        if -limit <= float(x) <= limit and -limit <= float(y) <= limit
+    ]
+    if rng is not None:
+        rng.shuffle(candidates)
+    else:
+        # Keep deterministic fallback broad rather than centered.
+        candidates.sort(
+            key=lambda point: (
+                abs(point[0]) + abs(point[1]),
+                point[1],
+                point[0],
+            ),
+            reverse=True,
+        )
+
+    min_distance = max(2.2, float(footprint_units) * 1.75)
+    selected: list[Point] = []
+    for candidate in candidates:
+        if all(_distance(candidate, existing) >= min_distance for existing in selected):
+            selected.append(candidate)
+            if len(selected) == resolved_count:
+                return selected
+
+    # If a dense sample cannot satisfy the ideal separation, keep the broadest
+    # remaining candidates rather than falling back to a centered grid.
+    for candidate in candidates:
+        if candidate not in selected:
+            selected.append(candidate)
+            if len(selected) == resolved_count:
+                break
+    return selected
+
+
+def _distance(first: Point, second: Point) -> float:
+    """Return Euclidean distance in graph units."""
+
+    return sqrt(
+        (float(first[0]) - float(second[0])) ** 2
+        + (float(first[1]) - float(second[1])) ** 2
+    )
 
 
 def render_metadata(ctx: GraphPaperContext) -> dict[str, Any]:

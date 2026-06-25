@@ -13,9 +13,9 @@ from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
 from .shared.annotations import (
     bbox_set_artifacts,
-    point_map_artifacts,
     point_set_artifacts,
     scalar_bbox_artifacts,
+    scalar_point_artifacts,
     scalar_segment_artifacts,
 )
 from .shared.construction import (
@@ -722,12 +722,17 @@ def _build_angle_extremum_label(
     values = unique_metric_values(rng, count=object_count, low=35, high=150)
     objects = []
     for index, (label, value, center) in enumerate(
-        zip(labels, values, slot_centers(ctx, object_count, rng=rng), strict=True)
+        zip(
+            labels,
+            values,
+            slot_centers(ctx, object_count, rng=rng, footprint_units=2.0),
+            strict=True,
+        )
     ):
         obj = draw_angle(
             ctx,
             label,
-            angle_points(center, float(value), radius=1.7),
+            angle_points(center, float(value), radius=2.35),
             color=object_color(ctx, index),
         )
         objects.append(replace(obj, metric_value=float(value)))
@@ -736,20 +741,14 @@ def _build_angle_extremum_label(
         if plan.role_for(str(context["branch_name"])) == "max"
         else min(objects, key=lambda item: item.metric_value)
     )
-    annotation_value, projected = point_map_artifacts(
-        {
-            "ray_a": winner.points_px[0],
-            "vertex": winner.points_px[1],
-            "ray_b": winner.points_px[2],
-        }
-    )
+    annotation_value, projected = scalar_point_artifacts(winner.points_px[1])
     branch_name = str(context["branch_name"])
     prompt_plan = _make_prompt(
         context["prompt_defaults"],
         prompt_key=plan.prompt_key_for(branch_name),
         answer_hint='set "answer" to the selected angle label as a capital letter shown in the image',
-        annotation_hint='set "annotation" to an object with pixel points for the selected angle keys "ray_a", "vertex", and "ray_b"',
-        json_example='{"annotation":{"ray_a":[210,320],"vertex":[330,320],"ray_b":[402,245]},"answer":"B"}',
+        annotation_hint='set "annotation" to the selected angle vertex point [x,y] in pixels',
+        json_example='{"annotation":[330,320],"answer":"B"}',
         json_example_answer_only='{"answer":"B"}',
         target_text=f"{branch_name} angle",
         metric_text="angle measure",
@@ -760,7 +759,7 @@ def _build_angle_extremum_label(
         prompt_plan=prompt_plan,
         answer_type="option_letter",
         answer_value=str(winner.label),
-        annotation_type="point_map",
+        annotation_type="point",
         annotation_value=annotation_value,
         projected_annotation=projected,
         witness_symbolic={
@@ -1116,12 +1115,16 @@ def _build_angle_type_count(
     )
     objects = []
     for index, (cls_name, center) in enumerate(
-        zip(class_sequence, slot_centers(ctx, object_count, rng=rng), strict=True)
+        zip(
+            class_sequence,
+            slot_centers(ctx, object_count, rng=rng, footprint_units=1.9),
+            strict=True,
+        )
     ):
         obj = draw_angle(
             ctx,
             "",
-            angle_points(center, ANGLE_VALUE_BY_CLASS[cls_name], radius=1.45),
+            angle_points(center, ANGLE_VALUE_BY_CLASS[cls_name], radius=2.15),
             color=object_color(ctx, index),
         )
         objects.append(

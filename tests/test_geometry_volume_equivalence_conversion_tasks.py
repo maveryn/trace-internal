@@ -58,12 +58,13 @@ def test_cuboid_to_cylinder_missing_dimension_formula_and_annotation() -> None:
     assert execution["target_volume"] == execution["source_volume"]
     assert execution["formula_family"] == "volume_equivalence_missing_dimension"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == MISSING_DIMENSION_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_volume_equivalence_conversion_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_volume_equivalence_conversion_v1"
+    assert trace["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=MISSING_DIMENSION_ANNOTATION_KEYS)
 
@@ -81,7 +82,7 @@ def test_equal_volume_option_formula_and_annotation() -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id == QUERY_ID_CONE_MATCHES_CYLINDER_OPTION
     assert out.answer_gt.type == "option_letter"
-    assert out.answer_gt.value in {"A", "B", "C", "D", "E"}
+    assert out.answer_gt.value in {"A", "B", "C", "D", "E", "F"}
     assert execution["answer"] == out.answer_gt.value
     assert execution["source_shape"] == "cone"
     assert execution["target_shape"] == "cylinder"
@@ -91,8 +92,9 @@ def test_equal_volume_option_formula_and_annotation() -> None:
 
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == OPTION_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_volume_equivalence_conversion_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_volume_equivalence_conversion_v1"
+    assert trace["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=OPTION_ANNOTATION_KEYS)
 

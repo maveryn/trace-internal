@@ -42,7 +42,7 @@ def _prepare_tableau_movable_card_count_objective(
         build_annotation=entity_bbox_set,
         json_example=JSON_EXAMPLE,
         json_example_answer_only=JSON_EXAMPLE_ANSWER_ONLY,
-        prompt_slots={"object_description": "a solitaire tableau with visible columns"},
+        prompt_slots={"object_description": "solitaire columns"},
     )
 
 

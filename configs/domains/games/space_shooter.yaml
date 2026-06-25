@@ -39,6 +39,12 @@ generation:
     - 3
     - 4
     - 5
+    enemy_ship_hit_count_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
     enemy_projectile_per_lane_support:
     - 1
     - 2

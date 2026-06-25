@@ -336,6 +336,117 @@ def sample_enemy_ship_count_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample
     return sample
 
 
+def sample_enemy_ship_hit_scene(*, rng, axes: SceneAxes, target_answer: int) -> SpaceShooterSample:
+    """Construct lanes where visible blue shots can destroy target enemy ships."""
+
+    lane_count = max(int(target_answer), int(axes.lane_count))
+    target = min(int(target_answer), lane_count)
+    lanes = list(range(lane_count))
+    rng.shuffle(lanes)
+    hit_lanes = tuple(sorted(lanes[:target]))
+    distractor_lanes = [lane for lane in range(lane_count) if lane not in set(hit_lanes)]
+    occupied: set[Tuple[int, int]] = set()
+    enemies: list[SpaceEnemy] = []
+    projectiles: list[SpaceProjectile] = []
+    annotation_ids: list[str] = []
+
+    for lane in hit_lanes:
+        enemy_slot = int(rng.choice((0, 1, 2)))
+        occupied.add((int(lane), enemy_slot))
+        enemy = _make_enemy(enemy_index=len(enemies), lane=int(lane), y_slot=enemy_slot, rng=rng)
+        enemies.append(enemy)
+        annotation_ids.append(str(enemy.enemy_id))
+        occupied.add((int(lane), 5))
+        projectiles.append(
+            _make_projectile(
+                projectile_index=len(projectiles),
+                lane=int(lane),
+                y_slot=5,
+                owner="player",
+                rng=rng,
+            )
+        )
+
+    enemy_target = min(
+        int(axes.enemy_count),
+        len(enemies) + (len(distractor_lanes) * 3),
+    )
+    distractor_slots = (0, 1, 2)
+    while len(enemies) < enemy_target and distractor_lanes:
+        try:
+            lane, slot = _claim_position(
+                rng=rng,
+                occupied=occupied,
+                lane_candidates=distractor_lanes,
+                slot_candidates=distractor_slots,
+            )
+        except ValueError:
+            break
+        enemies.append(_make_enemy(enemy_index=len(enemies), lane=lane, y_slot=slot, rng=rng))
+
+    red_lanes = list(distractor_lanes)
+    rng.shuffle(red_lanes)
+    red_line_added = False
+    can_force_multi_shot_line = any(int(value) >= 2 for value in axes.enemy_projectile_per_lane_support)
+    for lane in red_lanes:
+        if red_line_added and rng.random() < 0.55:
+            continue
+        try:
+            _add_enemy_projectile_line(
+                rng=rng,
+                occupied=occupied,
+                projectiles=projectiles,
+                lane=int(lane),
+                enemies=enemies,
+                support=axes.enemy_projectile_per_lane_support,
+                min_count=2 if can_force_multi_shot_line and not red_line_added else 1,
+                slot_candidates=(3, 4),
+            )
+        except ValueError:
+            continue
+        red_line_added = True
+
+    blue_distractor_lanes = [
+        lane
+        for lane in distractor_lanes
+        if all(int(enemy.lane) != int(lane) for enemy in enemies)
+    ]
+    rng.shuffle(blue_distractor_lanes)
+    for lane in blue_distractor_lanes[: max(0, min(2, lane_count - target))]:
+        if (int(lane), 5) in occupied:
+            continue
+        occupied.add((int(lane), 5))
+        projectiles.append(
+            _make_projectile(
+                projectile_index=len(projectiles),
+                lane=int(lane),
+                y_slot=5,
+                owner="player",
+                rng=rng,
+            )
+        )
+
+    sample = SpaceShooterSample(
+        lane_count=lane_count,
+        scene_variant=str(axes.scene_variant),
+        answer=int(len(annotation_ids)),
+        player_lane=int(rng.choice(hit_lanes if hit_lanes else tuple(range(lane_count)))),
+        enemies=tuple(enemies),
+        projectiles=tuple(projectiles),
+        safe_lane_indices=tuple(),
+        annotation_entity_ids=tuple(annotation_ids),
+        target_answer=int(target),
+        construction_mode="blue_shot_ship_alignment",
+        metadata={
+            "target_answer": int(target),
+            "target_answer_support": list(DEFAULTS.enemy_ship_hit_count_support),
+            "hit_lane_indices": [int(lane) for lane in hit_lanes],
+        },
+    )
+    validate_basic_space_shooter_sample(sample)
+    return sample
+
+
 def sample_safe_lane_scene(*, rng, axes: SceneAxes, target_answer: int) -> SpaceShooterSample:
     """Construct a scene where target answer is the number of safe bottom lanes."""
 

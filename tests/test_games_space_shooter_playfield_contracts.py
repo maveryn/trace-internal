@@ -12,6 +12,9 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.space_shooter.enemy_ship_count import (
     GamesSpaceShooterEnemyShipCountTask,
 )
+from trace.tasks.games.space_shooter.enemy_ship_hit_count import (
+    GamesSpaceShooterEnemyShipHitCountTask,
+)
 from trace.tasks.games.space_shooter.safe_lane_count import (
     GamesSpaceShooterSafeLaneCountTask,
 )
@@ -26,6 +29,12 @@ from tests.helpers import read_jsonl
             {"lane_count": 7, "enemy_count": 9, "style_variant": "deep_space"},
             "enemy_ship_count",
             9,
+        ),
+        (
+            GamesSpaceShooterEnemyShipHitCountTask,
+            {"target_answer": 4, "lane_count": 7, "enemy_count": 12, "style_variant": "vector"},
+            "enemy_ship_hit_count",
+            4,
         ),
         (
             GamesSpaceShooterSafeLaneCountTask,
@@ -92,6 +101,37 @@ def test_games_space_shooter_enemy_ship_count_matches_trace() -> None:
     assert max(enemy_projectile_counts_by_lane.values()) >= 2
     assert all(1 <= int(count) <= 3 for count in enemy_projectile_counts_by_lane.values())
     for bbox in out.annotation_gt.value:
+        assert float(bbox[2]) - float(bbox[0]) >= 24.0
+        assert float(bbox[3]) - float(bbox[1]) >= 24.0
+
+
+def test_games_space_shooter_enemy_ship_hit_count_matches_trace() -> None:
+    out = GamesSpaceShooterEnemyShipHitCountTask().generate(
+        88122,
+        params={"target_answer": 4, "lane_count": 7, "enemy_count": 12},
+        max_attempts=256,
+    )
+    execution = out.trace_payload["execution_trace"]
+    enemies_by_lane = {}
+    for enemy in execution["enemies"]:
+        enemies_by_lane.setdefault(int(enemy["lane"]), []).append(enemy)
+    player_projectile_lanes = {
+        int(projectile["lane"])
+        for projectile in execution["projectiles"]
+        if str(projectile["owner"]) == "player"
+    }
+    expected_ids = []
+    for lane in sorted(player_projectile_lanes):
+        lane_enemies = sorted(enemies_by_lane.get(int(lane), []), key=lambda enemy: int(enemy["y_slot"]), reverse=True)
+        if lane_enemies:
+            expected_ids.append(str(lane_enemies[0]["enemy_id"]))
+
+    assert int(out.answer_gt.value) == len(expected_ids) == 4
+    assert list(execution["annotation_entity_ids"]) == expected_ids
+    assert out.trace_payload["render_map"]["show_enemy_labels"] is False
+    assert len(out.annotation_gt.value) == len(expected_ids)
+    for entity_id, bbox in zip(expected_ids, out.annotation_gt.value):
+        assert entity_id in out.trace_payload["render_map"]["enemy_bboxes_px"]
         assert float(bbox[2]) - float(bbox[0]) >= 24.0
         assert float(bbox[3]) - float(bbox[1]) >= 24.0
 
@@ -167,6 +207,7 @@ def test_games_space_shooter_ships_and_projectiles_are_centered_on_lane_pads() -
     ("task_cls", "params"),
     (
         (GamesSpaceShooterEnemyShipCountTask, {"lane_count": 8, "enemy_count": 12}),
+        (GamesSpaceShooterEnemyShipHitCountTask, {"target_answer": 4, "lane_count": 8, "enemy_count": 12}),
         (GamesSpaceShooterSafeLaneCountTask, {"target_answer": 3, "lane_count": 7, "enemy_count": 12}),
     ),
 )
@@ -228,6 +269,7 @@ def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:
         image_format="png",
         tasks=[
             BuildTaskConfig(task_id="task_games__space_shooter__enemy_ship_count", count=1, params={"enemy_count": 7}),
+            BuildTaskConfig(task_id="task_games__space_shooter__enemy_ship_hit_count", count=1, params={"target_answer": 3}),
             BuildTaskConfig(task_id="task_games__space_shooter__safe_lane_count", count=1, params={"target_answer": 4}),
         ],
         max_attempts_per_instance=256,
@@ -236,6 +278,6 @@ def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:
     final_path = build_dataset(config, code_hash="games-space-shooter-smoke")
     rows = read_jsonl(final_path / "train_instances.jsonl")
 
-    assert len(rows) == 2
+    assert len(rows) == 3
     assert all(row["domain"] == "games" for row in rows)
     assert all(row.get("scene_id") == "space_shooter" for row in rows)

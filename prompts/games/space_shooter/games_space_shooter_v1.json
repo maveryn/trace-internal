@@ -29,6 +29,13 @@
         "What is the total number of visible enemy ships?",
         "Count every enemy ship shown in the playfield; do not count lane pads, shots, or the player ship."
       ],
+      "enemy_ship_hit_count": [
+        "{space_shooter_lane_rule_text} Each blue player shot can destroy one enemy ship above it in the same lane. How many enemy ships can be destroyed by the current blue shots?",
+        "{space_shooter_lane_rule_text} Count enemy ships that have a blue player shot below them in the same lane.",
+        "Blue player shots move upward and enemy ships stay in their lanes. Count the enemy ships that can be hit by the current blue shots.",
+        "{space_shooter_lane_rule_text} A blue player shot can hit one enemy ship above it in its lane. How many enemy ships can the visible blue shots destroy?",
+        "Count enemy ships that are above a blue player shot in the same vertical lane. {space_shooter_lane_rule_text}"
+      ],
       "safe_lane_count": [
         "{space_shooter_lane_rule_text} Count bottom lane pads with no red enemy shot in that lane.",
         "A safe bottom lane pad has no falling red enemy shot in its lane. {space_shooter_lane_rule_text} How many safe pads are shown?",
@@ -59,6 +66,9 @@
       "object_description"
     ],
     "query:enemy_ship_count": [],
+    "query:enemy_ship_hit_count": [
+      "space_shooter_lane_rule_text"
+    ],
     "query:safe_lane_count": [
       "space_shooter_lane_rule_text"
     ],
@@ -105,6 +115,8 @@
     "space_shooter_lane_rule_text": "Bottom lane pads define the vertical lanes. Enemy ships and shots stay in their own lane; red enemy shots move downward and blue player shots move upward.",
     "annotation_hint_enemy_ship_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for every visible enemy ship",
     "answer_hint_enemy_ship_count": "set \"answer\" to the number of visible enemy ships",
+    "annotation_hint_enemy_ship_hit_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for the enemy ships that can be destroyed by blue player shots",
+    "answer_hint_enemy_ship_hit_count": "set \"answer\" to the number of enemy ships that can be destroyed by the current blue shots",
     "annotation_hint_safe_lane_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for the safe bottom lane pads",
     "answer_hint_safe_lane_count": "set \"answer\" to the number of bottom lane pads with no red enemy shot in that lane"
   }

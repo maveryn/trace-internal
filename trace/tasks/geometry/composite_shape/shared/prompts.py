@@ -22,12 +22,12 @@ def _prompt_examples(
     annotation_keys: Sequence[str],
     answer: int | float,
 ) -> tuple[str, str]:
-    if str(annotation_type) == "keyed_point_map":
+    if str(annotation_type) == "point_map":
         annotation = {
             str(key): [120.0 + (42.0 * index), 180.0 + (22.0 * index)]
             for index, key in enumerate(annotation_keys or ("A", "B"))
         }
-    elif str(annotation_type) == "keyed_bbox_map":
+    elif str(annotation_type) == "bbox_map":
         annotation = {}
         for index, key in enumerate(annotation_keys or ("target_shape",)):
             x0 = 70.0 + (70.0 * index)

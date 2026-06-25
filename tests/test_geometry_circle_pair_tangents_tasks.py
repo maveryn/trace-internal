@@ -94,11 +94,11 @@ def test_circle_pair_tangent_formula_and_annotation(
     assert trace["witness_symbolic"]["formula_family"] == "external_common_tangent_right_triangle"
     assert trace["witness_symbolic"]["unknown_role"] == unknown_role
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_point_map"] == annotation
-    assert trace["projected_annotation"]["pixel_keyed_point_map"] == annotation
+    assert trace["projected_annotation"]["point_map"] == annotation
+    assert trace["projected_annotation"]["pixel_point_map"] == annotation
     assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_circle_pair_tangents_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_point_map_inside_image(annotation, out.image.size)

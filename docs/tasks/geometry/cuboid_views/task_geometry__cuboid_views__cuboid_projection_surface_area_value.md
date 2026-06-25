@@ -5,7 +5,7 @@
 2. Scene id: `cuboid_views`
 5. Query id: `single`
 6. Answer schema: `integer`
-7. Annotation schema: `keyed_bbox_map`
+7. Annotation schema: `bbox_map`
 
 ## Program Contract
 - `solve_formula(visible_cuboid_views_measurements, unknown_role=surface_area, formula_schema=surface_area_from_orthographic_views); scene=cuboid_views; scope=cuboid_projection_surface_area_value`

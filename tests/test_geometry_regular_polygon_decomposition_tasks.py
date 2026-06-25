@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 
 import trace.tasks  # noqa: F401
-from trace.tasks.registry import create_task, list_task_ids
+from trace.tasks.registry import create_task
 
 
 TASK_QUERIES = {
@@ -34,9 +34,8 @@ def _generate(task_id: str, query_id: str, seed: int = 20260605):
 
 
 def test_regular_polygon_decomposition_tasks_are_registered() -> None:
-    registered = set(list_task_ids())
     for task_id in TASK_QUERIES:
-        assert task_id in registered
+        assert create_task(task_id).task_id == task_id
 
 
 def test_regular_polygon_decomposition_queries_emit_keyed_point_annotation() -> None:

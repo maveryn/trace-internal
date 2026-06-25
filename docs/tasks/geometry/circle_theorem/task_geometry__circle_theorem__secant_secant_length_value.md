@@ -5,7 +5,7 @@
 2. Scene id: `circle_theorem`
 5. Query id: `secant_secant_length`, `secant_secant_variable_segment_length`
 6. Answer schema: `integer_value`
-7. Annotation schema: `keyed_point_map`
+7. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(visible_circle_theorem_measurements, unknown_role=length_measure, formula_schema=secant_secant_length); scene=circle_theorem; scope=secant_secant_length_value`
@@ -15,7 +15,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+Prompt-facing annotation uses pixel-space witnesses only. Map annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 Both query branches use the same keyed point witnesses: `P`, `A`, `B`, `C`, and `D`.
 

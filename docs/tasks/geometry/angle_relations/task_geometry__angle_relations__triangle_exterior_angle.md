@@ -3,9 +3,9 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `angle_relations`
-4. Query id: `triangle_exterior_angle`
+4. Query id: `single`
 5. Answer schema: `integer_value`
-6. Annotation schema: `keyed_point_map`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `derive_geometry_metric(visible_angle_relations_measurements, derivation_rule=triangle_exterior_angle, output_role=angle_measure); scene=angle_relations; scope=triangle_exterior_angle`

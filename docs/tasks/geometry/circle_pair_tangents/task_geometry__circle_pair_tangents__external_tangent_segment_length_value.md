@@ -5,7 +5,7 @@
 2. Scene id: `circle_pair_tangents`
 4. Query ids: `tangent_segment_length_from_center_distance`, `center_distance_from_tangent_segment_length`
 5. Answer schema: `integer_value`
-6. Annotation schema: `keyed_point_map`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(visible_external_common_tangent_measurements, unknown_role=tangent_length|center_distance, formula_schema=external_common_tangent_right_triangle); scene=circle_pair_tangents; scope=external_tangent_segment_length_value`

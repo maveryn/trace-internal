@@ -64,11 +64,11 @@ def projected_keyed_point_annotation(
     """Return normalized keyed-point annotation payloads for review/reward."""
 
     return {
-        "type": "keyed_point_map",
-        "keyed_bbox_map": dict(annotation_keyed_bboxes),
-        "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
-        "keyed_point_map": dict(annotation_keyed_points),
-        "pixel_keyed_point_map": dict(annotation_keyed_points),
+        "type": "point_map",
+        "bbox_map": dict(annotation_keyed_bboxes),
+        "pixel_bbox_map": dict(annotation_keyed_bboxes),
+        "point_map": dict(annotation_keyed_points),
+        "pixel_point_map": dict(annotation_keyed_points),
         "bbox_set": list(annotation_bboxes),
         "pixel_bbox_set": list(annotation_bboxes),
         "point_set": list(annotation_points),

@@ -5,7 +5,7 @@
 2. Scene id: `circle_polygon_composite`
 4. Query id: `single`
 5. Answer schema: `integer_value`
-6. Annotation schema: `keyed_point_map`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(circle_polygon_tangent_angle_construction, unknown_role=target_angle, formula_schema=tangent_radius_perpendicular_angle_transfer); scene=circle_polygon_composite; scope=tangent_angle_value`

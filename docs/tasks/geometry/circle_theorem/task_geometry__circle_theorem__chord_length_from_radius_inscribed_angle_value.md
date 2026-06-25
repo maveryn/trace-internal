@@ -5,7 +5,7 @@
 2. Scene id: `circle_theorem`
 4. Query id: `single`
 5. Answer schema: `decimal_value_1dp`
-6. Annotation schema: `keyed_point_map`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(visible_circle_radius_and_inscribed_angle, unknown_role=chord_length, formula_schema=inscribed_angle_to_central_angle_then_chord_length); scene=circle_theorem; scope=chord_length_from_radius_inscribed_angle_value`

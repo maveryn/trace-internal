@@ -40,11 +40,11 @@ def keyed_point_annotation_artifacts(
     selected_roles = [str(role) for role in roles] if roles is not None else [str(role) for role in points.keys()]
     value = {role: _round_point(points[role]) for role in selected_roles}
     projected = {
-        "type": "keyed_point_map",
-        "keyed_point_map": dict(value),
-        "pixel_keyed_point_map": dict(value),
+        "type": "point_map",
+        "point_map": dict(value),
+        "pixel_point_map": dict(value),
     }
-    return PixelAnnotationArtifacts(annotation_type="keyed_point_map", value=dict(value), projected_annotation=projected)
+    return PixelAnnotationArtifacts(annotation_type="point_map", value=dict(value), projected_annotation=projected)
 
 
 def keyed_bbox_annotation_artifacts(
@@ -58,15 +58,15 @@ def keyed_bbox_annotation_artifacts(
     selected_roles = [str(role) for role in roles] if roles is not None else [str(role) for role in bboxes.keys()]
     value = {role: _round_bbox(bboxes[role]) for role in selected_roles}
     projected = {
-        "type": "keyed_bbox_map",
-        "keyed_bbox_map": dict(value),
-        "pixel_keyed_bbox_map": dict(value),
+        "type": "bbox_map",
+        "bbox_map": dict(value),
+        "pixel_bbox_map": dict(value),
     }
     if bool(include_point_centers):
         centers = {role: _bbox_center(bbox) for role, bbox in value.items()}
-        projected["keyed_point_map"] = dict(centers)
-        projected["pixel_keyed_point_map"] = dict(centers)
-    return PixelAnnotationArtifacts(annotation_type="keyed_bbox_map", value=dict(value), projected_annotation=projected)
+        projected["point_map"] = dict(centers)
+        projected["pixel_point_map"] = dict(centers)
+    return PixelAnnotationArtifacts(annotation_type="bbox_map", value=dict(value), projected_annotation=projected)
 
 
 def bbox_set_annotation_artifacts(bboxes: Sequence[Sequence[float]]) -> PixelAnnotationArtifacts:

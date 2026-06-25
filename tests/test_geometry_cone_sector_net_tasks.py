@@ -34,7 +34,7 @@ def test_cone_sector_net_task_emits_public_contract(task_cls) -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id
     assert out.answer_gt.type == "number"
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert set(out.annotation_gt.value) in (
         {"S", "P", "Q", "C", "R"},
         {"S", "P", "Q", "C", "A"},
@@ -47,8 +47,8 @@ def test_cone_sector_net_task_emits_public_contract(task_cls) -> None:
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
     assert trace["execution_trace"]["internal_query_id"] == INTERNAL_QUERY_ID_BY_TASK[task_cls]
-    assert trace["projected_annotation"]["type"] == "keyed_point_map"
-    assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "point_map"
+    assert trace["projected_annotation"]["point_map"] == out.annotation_gt.value
     assert trace["execution_trace"]["slant_height"] > 0
     assert 0 < trace["execution_trace"]["theta_degrees"] < 360
 
@@ -133,7 +133,7 @@ def test_cone_sector_net_annotation_uses_labeled_construction_points_not_labels(
             max_attempts=20,
         )
         expected_keys = expected_keys_by_task[task_cls]
-        assert out.annotation_gt.type == "keyed_point_map"
+        assert out.annotation_gt.type == "point_map"
         assert set(out.annotation_gt.value) == expected_keys
         assert set(out.trace_payload["execution_trace"]["annotation_roles"]) == expected_keys
         assert all(

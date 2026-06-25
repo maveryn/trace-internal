@@ -25,8 +25,8 @@ ANSWER_TYPE_BY_TASK = {
 }
 
 ANNOTATION_TYPE_BY_TASK = {
-    GeometryBearingRouteFinalBearingValueTask: "keyed_point_map",
-    GeometryBearingRouteEndpointPositionLabelTask: "keyed_point_map",
+    GeometryBearingRouteFinalBearingValueTask: "point_map",
+    GeometryBearingRouteEndpointPositionLabelTask: "point_map",
 }
 
 ANNOTATION_KEYS_BY_TASK = {
@@ -59,12 +59,12 @@ def test_bearing_route_tasks_emit_public_contract(task_cls) -> None:
     assert trace["query_spec"]["query_id"] == query_id
     assert trace["execution_trace"]["query_id"] == query_id
     assert trace["projected_annotation"]["type"] == ANNOTATION_TYPE_BY_TASK[task_cls]
-    if out.annotation_gt.type == "keyed_bbox_map":
-        assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+    if out.annotation_gt.type == "bbox_map":
+        assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox_map"] == out.annotation_gt.value
     else:
-        assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
-        assert trace["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["point_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_point_map"] == out.annotation_gt.value
     assert trace["render_spec"]["font_family"]["font_family"]
 
 
@@ -87,7 +87,7 @@ def test_bearing_route_final_bearing_uses_requested_bearing() -> None:
     trace = out.trace_payload["execution_trace"]
 
     assert out.answer_gt.value == 135
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert set(out.annotation_gt.value) == {"S", "F"}
     assert "compass_rose" not in out.annotation_gt.value
     assert int(trace["final_bearing"]) == 135
@@ -104,7 +104,7 @@ def test_bearing_endpoint_uses_selected_candidate_label() -> None:
 
     assert out.answer_gt.value == labels[2]
     assert trace["answer_value"] == labels[2]
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert set(out.annotation_gt.value) == {"S", str(labels[2])}
     assert "route_instructions" not in out.annotation_gt.value
     assert "instruction_panel_bbox" in out.trace_payload["render_map"]
@@ -137,7 +137,7 @@ def test_bearing_route_annotation_stays_inside_canvas(task_cls) -> None:
     task = task_cls()
     out = task.generate(78041, params={}, max_attempts=20)
     width, height = out.image.size
-    if out.annotation_gt.type == "keyed_bbox_map":
+    if out.annotation_gt.type == "bbox_map":
         for x0, y0, x1, y1 in out.annotation_gt.value.values():
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)

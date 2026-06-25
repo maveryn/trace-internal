@@ -64,7 +64,7 @@ def test_curvilinear_tasks_emit_public_contract(task_cls) -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id
     assert out.answer_gt.type == "number"
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert set(out.annotation_gt.value) == EXPECTED_ANNOTATION_KEYS_BY_TASK[task_cls]
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
@@ -117,7 +117,7 @@ def test_curvilinear_annotation_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        assert out.annotation_gt.type == "keyed_point_map"
+        assert out.annotation_gt.type == "point_map"
         assert set(out.annotation_gt.value) == EXPECTED_ANNOTATION_KEYS_BY_TASK[task_cls]
         for x, y in out.annotation_gt.value.values():
             assert 0.0 <= x <= float(width)
@@ -176,8 +176,8 @@ def test_curvilinear_public_annotation_avoids_measurement_label_boxes(task_cls) 
     for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
         out = task.generate(54061 + index, params={"query_id": query_id}, max_attempts=20)
         assert out.trace_payload["projected_annotation"]["type"] == out.annotation_gt.type
-        assert out.trace_payload["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
-        assert out.trace_payload["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
+        assert out.trace_payload["projected_annotation"]["point_map"] == out.annotation_gt.value
+        assert out.trace_payload["projected_annotation"]["pixel_point_map"] == out.annotation_gt.value
         assert set(out.annotation_gt.value) == set(out.trace_payload["execution_trace"]["annotation_roles"])
         assert set(out.annotation_gt.value) == EXPECTED_ANNOTATION_KEYS_BY_TASK[task_cls]
         assert all("label" not in str(role) for role in out.trace_payload["execution_trace"]["annotation_roles"])

@@ -64,7 +64,7 @@ def test_tangential_quadrilateral_side_length_formula(missing_side: str, expecte
     assert execution["answer"] == side_lengths[missing_side]
     assert execution["missing_side"] == missing_side
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     annotation = out.annotation_gt.value
     assert set(annotation) == {
         "A",
@@ -123,7 +123,7 @@ def test_circle_polygon_tangent_angle_contract(construction_kind: str, side_sign
     assert execution["construction_kind"] == construction_kind
     assert trace["query_spec"]["params"]["construction_kind"] == construction_kind
 
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     annotation = out.annotation_gt.value
     assert set(annotation) == {"A", "B", "C", "D", "O", "T"}
     render_map = trace["render_map"]

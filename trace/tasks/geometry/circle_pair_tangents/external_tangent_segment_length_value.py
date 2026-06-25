@@ -129,7 +129,7 @@ class GeometryCirclePairTangentsExternalTangentSegmentLengthValueTask:
         return TaskOutput(
             prompt=str(prepared.prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(problem.answer)),
-            annotation_gt=TypedValue(type="keyed_point_map", value=dict(prepared.annotation_value)),
+            annotation_gt=TypedValue(type="point_map", value=dict(prepared.annotation_value)),
             image=prepared.image,
             image_id="img0",
             trace_payload=trace_payload,

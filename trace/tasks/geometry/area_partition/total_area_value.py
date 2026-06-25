@@ -173,16 +173,16 @@ class GeometryAreaPartitionTotalAreaValueTask:
                 "scene_id": SCENE_ID,
                 "query_id": str(selected_query),
                 "answer_value": int(answer_value),
-                "source_witness_type": "keyed_bbox_map",
+                "source_witness_type": "bbox_map",
                 "original_annotation_value": dict(annotation_keyed_bboxes),
                 **dict(witness_payload),
             },
             "projected_annotation": {
-                "type": "keyed_bbox_map",
-                "keyed_bbox_map": dict(annotation_keyed_bboxes),
-                "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
-                "keyed_point_map": dict(annotation_keyed_points),
-                "pixel_keyed_point_map": dict(annotation_keyed_points),
+                "type": "bbox_map",
+                "bbox_map": dict(annotation_keyed_bboxes),
+                "pixel_bbox_map": dict(annotation_keyed_bboxes),
+                "point_map": dict(annotation_keyed_points),
+                "pixel_point_map": dict(annotation_keyed_points),
             },
         }
         return TaskOutput(

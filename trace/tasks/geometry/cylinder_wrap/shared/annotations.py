@@ -8,17 +8,17 @@ from typing import Any, Dict, Mapping
 def projected_keyed_annotation(annotation_type: str, annotation_value: Mapping[str, Any]) -> Dict[str, Any]:
     """Return the review/reward projection for a keyed point or bbox map."""
 
-    if str(annotation_type) == "keyed_bbox_map":
+    if str(annotation_type) == "bbox_map":
         return {
-            "type": "keyed_bbox_map",
-            "keyed_bbox_map": dict(annotation_value),
-            "pixel_keyed_bbox_map": dict(annotation_value),
+            "type": "bbox_map",
+            "bbox_map": dict(annotation_value),
+            "pixel_bbox_map": dict(annotation_value),
         }
-    if str(annotation_type) == "keyed_point_map":
+    if str(annotation_type) == "point_map":
         return {
-            "type": "keyed_point_map",
-            "keyed_point_map": dict(annotation_value),
-            "pixel_keyed_point_map": dict(annotation_value),
+            "type": "point_map",
+            "point_map": dict(annotation_value),
+            "pixel_point_map": dict(annotation_value),
         }
     raise ValueError(f"unsupported keyed annotation type: {annotation_type}")
 

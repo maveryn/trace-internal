@@ -5,7 +5,7 @@
 2. Scene id: `circle_theorem`
 5. Query id: `single`
 6. Answer schema: `integer_value`
-7. Annotation schema: `keyed_point_map`
+7. Annotation schema: `point_map`
 
 ## Program Contract
 - `derive_geometry_metric(visible_cyclic_quadrilateral_with_extension_angles, derivation_rule=exterior_angle_equals_opposite_interior_angle, output_role=angle_measure); scene=circle_theorem; scope=cyclic_quadrilateral_exterior_angle_value`

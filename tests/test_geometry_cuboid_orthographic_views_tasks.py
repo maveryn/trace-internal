@@ -26,7 +26,7 @@ def test_cuboid_orthographic_tasks_emit_public_contract(task_cls) -> None:
     assert out.query_id
     assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert set(out.annotation_gt.value) == {"top_view", "front_view", "right_view"}
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
@@ -35,8 +35,8 @@ def test_cuboid_orthographic_tasks_emit_public_contract(task_cls) -> None:
     assert trace["query_spec"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
 
     length = int(trace["execution_trace"]["length"])
     width = int(trace["execution_trace"]["width"])

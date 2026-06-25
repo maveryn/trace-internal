@@ -17,12 +17,12 @@ def test_keyed_point_annotation_artifacts_round_and_project() -> None:
         roles=("source", "target"),
     )
 
-    assert artifacts.annotation_type == "keyed_point_map"
+    assert artifacts.annotation_type == "point_map"
     assert artifacts.value == {"source": [30.0, 40.0], "target": [10.123, 20.988]}
     assert artifacts.projected_annotation == {
-        "type": "keyed_point_map",
-        "keyed_point_map": {"source": [30.0, 40.0], "target": [10.123, 20.988]},
-        "pixel_keyed_point_map": {"source": [30.0, 40.0], "target": [10.123, 20.988]},
+        "type": "point_map",
+        "point_map": {"source": [30.0, 40.0], "target": [10.123, 20.988]},
+        "pixel_point_map": {"source": [30.0, 40.0], "target": [10.123, 20.988]},
     }
 
 
@@ -33,12 +33,12 @@ def test_keyed_bbox_annotation_artifacts_can_preserve_bbox_only_projection() -> 
         include_point_centers=False,
     )
 
-    assert artifacts.annotation_type == "keyed_bbox_map"
+    assert artifacts.annotation_type == "bbox_map"
     assert artifacts.value == {"region": [1.235, 2.0, 11.0, 12.988]}
     assert artifacts.projected_annotation == {
-        "type": "keyed_bbox_map",
-        "keyed_bbox_map": {"region": [1.235, 2.0, 11.0, 12.988]},
-        "pixel_keyed_bbox_map": {"region": [1.235, 2.0, 11.0, 12.988]},
+        "type": "bbox_map",
+        "bbox_map": {"region": [1.235, 2.0, 11.0, 12.988]},
+        "pixel_bbox_map": {"region": [1.235, 2.0, 11.0, 12.988]},
     }
 
 

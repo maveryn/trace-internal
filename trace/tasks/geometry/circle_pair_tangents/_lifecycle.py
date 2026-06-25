@@ -170,9 +170,9 @@ def pair_tangent_trace_base(
         },
         "render_map": dict(prepared.rendered.render_map),
         "projected_annotation": {
-            "type": "keyed_point_map",
-            "keyed_point_map": dict(prepared.annotation_value),
-            "pixel_keyed_point_map": dict(prepared.annotation_value),
+            "type": "point_map",
+            "point_map": dict(prepared.annotation_value),
+            "pixel_point_map": dict(prepared.annotation_value),
         },
     }
 

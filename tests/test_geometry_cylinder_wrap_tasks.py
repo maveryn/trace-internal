@@ -32,8 +32,8 @@ ANNOTATION_COUNT_BY_TASK = {
 }
 
 ANNOTATION_TYPE_BY_TASK = {
-    GeometryCylinderWrapSurfacePathLengthValueTask: "keyed_bbox_map",
-    GeometryCylinderWrapWrappedMarkPositionLabelTask: "keyed_point_map",
+    GeometryCylinderWrapSurfacePathLengthValueTask: "bbox_map",
+    GeometryCylinderWrapWrappedMarkPositionLabelTask: "point_map",
 }
 
 ANNOTATION_KEYS_BY_TASK = {
@@ -112,14 +112,14 @@ def test_cylinder_wrap_annotation_stays_inside_canvas(task_cls) -> None:
     task = task_cls()
     out = task.generate(76041, params={}, max_attempts=20)
     width, height = out.image.size
-    if out.annotation_gt.type == "keyed_bbox_map":
+    if out.annotation_gt.type == "bbox_map":
         for x0, y0, x1, y1 in out.annotation_gt.value.values():
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0
             assert (y1 - y0) > 8.0
     else:
-        assert out.annotation_gt.type == "keyed_point_map"
+        assert out.annotation_gt.type == "point_map"
         for x, y in out.annotation_gt.value.values():
             assert 0.0 <= x <= float(width)
             assert 0.0 <= y <= float(height)

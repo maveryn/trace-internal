@@ -74,7 +74,7 @@ class GeometryBearingRouteFinalBearingValueTask:
         answer_value = int(route_case.final_bearing)
         answer_gt = TypedValue(type="integer", value=answer_value)
         annotation_gt = TypedValue(
-            type="keyed_point_map", value=dict(prepared.annotation_keyed_points)
+            type="point_map", value=dict(prepared.annotation_keyed_points)
         )
         query_params = {
             "scene_id": SCENE_ID,

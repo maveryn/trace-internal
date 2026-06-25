@@ -302,14 +302,14 @@ def _trace_payload(
             "scene_id": SCENE_ID,
             "query_id": str(problem.query_id),
             "answer_value": int(problem.answer),
-            "source_witness_type": "keyed_bbox_map",
+            "source_witness_type": "bbox_map",
             "original_annotation_value": list(rendered.annotation_roles),
             **dict(witness),
         },
         "projected_annotation": {
-            "type": "keyed_bbox_map",
-            "keyed_bbox_map": dict(annotation_bbox_map),
-            "pixel_keyed_bbox_map": dict(annotation_bbox_map),
+            "type": "bbox_map",
+            "bbox_map": dict(annotation_bbox_map),
+            "pixel_bbox_map": dict(annotation_bbox_map),
         },
     }
 
@@ -371,7 +371,7 @@ class GeometryCuboidProjectionSurfaceAreaValueTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(problem.answer)),
-            annotation_gt=TypedValue(type="keyed_bbox_map", value=dict(annotation_bbox_map)),
+            annotation_gt=TypedValue(type="bbox_map", value=dict(annotation_bbox_map)),
             image=image,
             image_id="img0",
             trace_payload=_trace_payload(

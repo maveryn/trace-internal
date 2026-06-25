@@ -5,7 +5,7 @@
 2. Scene id: `container_volume_transfer`
 5. Query ids: `repeated_cone_pours_total_volume`, `repeated_cylinder_pours_total_volume`
 6. Answer schema: `integer_value`
-7. Annotation schema: `keyed_bbox_map`
+7. Annotation schema: `bbox_map`
 
 ## Program Contract
 - `solve_formula(visible_source_container_and_repeated_pours, target=total_transferred_volume, formula_schema=container_volume_transfer_transferred_volume); scene=container_volume_transfer; scope=transferred_volume_value`

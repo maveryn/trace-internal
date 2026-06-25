@@ -5,7 +5,7 @@
 2. Scene id: `container_volume_transfer`
 5. Query id: `single`
 6. Answer schema: `integer_value`
-7. Annotation schema: `keyed_bbox_map`
+7. Annotation schema: `bbox_map`
 
 ## Program Contract
 - `solve_formula(visible_source_target_container_transfer, unknown_role=target_capacity, formula_schema=container_volume_transfer_target_capacity); scene=container_volume_transfer; scope=target_capacity_value`

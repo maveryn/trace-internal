@@ -28,7 +28,7 @@ from trace.tasks.shared.fixed_query import select_geometry_query_id
 from trace.tasks.geometry.shape_gallery.shared.construction import _resolve_axes as _resolve_transform_axes
 from trace.tasks.geometry.shape_gallery.shared.relations import _resolve_axes as _resolve_relation_axes
 from trace.tasks.geometry.shape_gallery.translation_match import GeometryShapeGalleryTranslationMatchTask
-from trace.tasks import TASK_REGISTRY
+from trace.tasks.registry import create_task
 
 REQUIRED_GEOMETRY_SPLIT_TASKS = {
     "task_geometry__function_panels__function_status_label",
@@ -56,15 +56,10 @@ REQUIRED_GEOMETRY_SPLIT_TASKS = {
 }
 
 def test_geometry_registry_includes_consolidated_value_tasks_plus_new_visual_families() -> None:
-    geometry_tasks = {
-        task_id
-        for task_id, task_cls in TASK_REGISTRY.items()
-        if task_id.startswith("task_geometry__")
-        and getattr(task_cls, "default_dataset_enabled", False)
-    }
-
-    assert REQUIRED_GEOMETRY_SPLIT_TASKS <= geometry_tasks
-    assert len(geometry_tasks) >= len(REQUIRED_GEOMETRY_SPLIT_TASKS)
+    for task_id in REQUIRED_GEOMETRY_SPLIT_TASKS:
+        task = create_task(task_id)
+        assert task.task_id == task_id
+        assert getattr(task, "default_dataset_enabled", False)
 
 
 def test_geometry_query_selection_prefers_query_id_over_legacy_query_variant() -> None:

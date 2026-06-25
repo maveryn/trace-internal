@@ -5,7 +5,7 @@
 2. Scene id: `bearing_route`
 5. Query id: `single`
 6. Answer schema: `option_letter`
-7. Annotation schema: `keyed_point_map`
+7. Annotation schema: `point_map`
 
 ## Program Contract
 - `follow_cardinal_bearing_steps_on_graph_paper(route_steps, candidate_endpoint_labels, unknown_role=selected_label); scene=bearing_route; scope=endpoint_position_label`
@@ -17,7 +17,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+Prompt-facing annotation uses pixel-space witnesses only. Map annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

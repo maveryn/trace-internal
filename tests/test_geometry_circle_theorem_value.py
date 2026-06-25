@@ -239,12 +239,12 @@ def test_circle_chord_length_from_radius_angle_contract(
     assert execution["answer_rounding"] == "nearest_tenth"
     assert execution["central_angle_degrees"] == expected_central
     assert execution["answer_value"] == pytest.approx(expected_answer)
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert tuple(out.annotation_gt.value) == tuple(expected_keys)
     assert set(out.annotation_gt.value) == set(execution["annotation_point_labels"])
-    assert out.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
+    assert out.trace_payload["projected_annotation"]["type"] == "point_map"
     assert (
-        out.trace_payload["projected_annotation"]["keyed_point_map"]
+        out.trace_payload["projected_annotation"]["point_map"]
         == out.annotation_gt.value
     )
     assert "visible point-label keys" in out.prompt
@@ -322,12 +322,12 @@ def test_circle_tangent_radius_right_triangle_length_contract(
     assert (radius * radius) + (tangent * tangent) == pytest.approx(
         external * external
     )
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert tuple(out.annotation_gt.value) == ("O", "T", "P")
     assert set(out.annotation_gt.value) == set(execution["annotation_point_labels"])
-    assert out.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
+    assert out.trace_payload["projected_annotation"]["type"] == "point_map"
     assert (
-        out.trace_payload["projected_annotation"]["keyed_point_map"]
+        out.trace_payload["projected_annotation"]["point_map"]
         == out.annotation_gt.value
     )
     assert "visible point-label keys" in out.prompt
@@ -454,7 +454,7 @@ def test_geometry_circle_theorem_value_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert len(out.annotation_gt.value) == int(expected_annotation_count)
     assert (
         out.trace_payload["execution_trace"]["canonical_answer_segment"]
@@ -489,9 +489,9 @@ def test_geometry_circle_theorem_value_emits_expected_contract(
         assert token in out.trace_payload["render_map"]["measurement_token_bboxes"]
 
     projected = out.trace_payload["projected_annotation"]
-    assert projected["type"] == "keyed_point_map"
-    assert projected["keyed_point_map"] == out.annotation_gt.value
-    assert projected["pixel_keyed_point_map"] == out.annotation_gt.value
+    assert projected["type"] == "point_map"
+    assert projected["point_map"] == out.annotation_gt.value
+    assert projected["pixel_point_map"] == out.annotation_gt.value
     assert len(projected["point_set"]) == int(expected_annotation_count)
     assert all(
         isinstance(point, list) and len(point) == 2 for point in projected["point_set"]
@@ -735,7 +735,7 @@ def test_intersecting_chords_arc_variant_uses_angle_arc_relationship() -> None:
     assert "arc " in out.prompt
     assert "arcCD" not in out.prompt
     assert len(out.annotation_gt.value) == 5
-    assert len(out.trace_payload["projected_annotation"]["pixel_keyed_point_map"]) == 5
+    assert len(out.trace_payload["projected_annotation"]["pixel_point_map"]) == 5
     _assert_arc_measure_tokens_use_degrees(out)
 
 
@@ -753,7 +753,7 @@ def test_multi_step_angle_variant_uses_intersecting_chord_arc_sum() -> None:
     assert "∠" in out.prompt
     assert "angleAEB" not in out.prompt
     assert len(out.annotation_gt.value) == 5
-    assert len(out.trace_payload["projected_annotation"]["pixel_keyed_point_map"]) == 5
+    assert len(out.trace_payload["projected_annotation"]["pixel_point_map"]) == 5
     _assert_arc_measure_tokens_use_degrees(out)
 
 

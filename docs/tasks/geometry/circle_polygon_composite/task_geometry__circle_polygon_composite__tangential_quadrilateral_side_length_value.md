@@ -5,7 +5,7 @@
 2. Scene id: `circle_polygon_composite`
 4. Query ids: `missing_side_from_tangent_quadrilateral`
 5. Answer schema: `integer_value`
-6. Annotation schema: `keyed_point_map`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(tangential_quadrilateral, unknown_role=missing_side_length, formula_schema=pitot_theorem); scene=circle_polygon_composite; scope=tangential_quadrilateral_side_length_value`

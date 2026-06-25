@@ -32,7 +32,7 @@ def keyed_region_points(keyed_bboxes: dict[str, list[float]]) -> dict[str, list[
 def keyed_bbox_annotation(rendered: RenderedAreaPartitionScene) -> TypedValue:
     """Build the public keyed-bbox annotation value."""
 
-    return TypedValue(type="keyed_bbox_map", value=keyed_region_bboxes(rendered))
+    return TypedValue(type="bbox_map", value=keyed_region_bboxes(rendered))
 
 
 __all__ = ["keyed_bbox_annotation", "keyed_region_bboxes", "keyed_region_points"]

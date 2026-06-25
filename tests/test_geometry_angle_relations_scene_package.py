@@ -64,8 +64,8 @@ def test_angle_relations_tasks_generate_keyed_angle_points(task_id: str, query_i
         assert output.scene_id == "angle_relations"
         assert output.query_id == query_id
         assert output.answer_gt.type == "integer"
-        assert output.annotation_gt.type == "keyed_point_map"
-        assert output.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
+        assert output.annotation_gt.type == "point_map"
+        assert output.trace_payload["projected_annotation"]["type"] == "point_map"
         assert set(output.annotation_gt.value) == set(output.trace_payload["execution_trace"]["annotation_roles"])
         if task_id == "task_geometry__angle_relations__algebraic_angle_value":
             assert set(output.annotation_gt.value) == {"A", "B", "C", "D"}

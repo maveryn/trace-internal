@@ -5,7 +5,7 @@
 2. Scene id: `angle_relations`
 4. Query ids: `target_angle_value`, `variable_x_value`
 5. Answer schema: `integer_value`
-6. Annotation schema: `keyed_point_map`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `derive_geometry_metric(visible_angle_relations_measurements, derivation_rule=algebraic_triangle_extension_expression, output_role=target_angle_measure|variable_x); scene=angle_relations; scope=algebraic_angle_value`

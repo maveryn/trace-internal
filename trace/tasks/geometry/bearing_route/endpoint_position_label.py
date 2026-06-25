@@ -105,7 +105,7 @@ class GeometryBearingRouteEndpointPositionLabelTask:
         answer_value = str(route_case.option_labels[int(route_case.target_index)])
         answer_gt = core_types.TypedValue(type="option_letter", value=answer_value)
         annotation_gt = core_types.TypedValue(
-            type="keyed_point_map", value=dict(prepared.annotation_keyed_points)
+            type="point_map", value=dict(prepared.annotation_keyed_points)
         )
         query_params = {
             "scene_id": bearing_state.SCENE_ID,

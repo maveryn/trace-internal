@@ -400,7 +400,7 @@ def render_surface_path_scene(
         image=ctx.image,
         answer=int(problem.path_length),
         answer_type="integer",
-        annotation_type="keyed_bbox_map",
+        annotation_type="bbox_map",
         annotation_value={
             "marked_surface_path": bbox_to_list(path_bbox),
             "circumference_dimension": bbox_to_list(circumference_dimension_bbox),
@@ -555,7 +555,7 @@ def render_wrapped_mark_scene(
         image=ctx.image,
         answer=str(problem.answer_label),
         answer_type="option_letter",
-        annotation_type="keyed_point_map",
+        annotation_type="point_map",
         annotation_value={
             "source_strip_mark": [round(mark_x, 3), round(mark_y, 3)],
             "matching_rim_candidate": [round(selected_center[0], 3), round(selected_center[1], 3)],

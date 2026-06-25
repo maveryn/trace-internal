@@ -5,7 +5,7 @@
 2. Scene id: `circle_theorem`
 5. Query id: `radius_from_external_distance_and_angle`, `tangent_length_from_radius_and_external_distance`
 6. Answer schema: `decimal_value_1dp`
-7. Annotation schema: `keyed_point_map`
+7. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(visible_tangent_radius_right_triangle, unknown_role=length_measure, formula_schema=tangent_radius_right_triangle); scene=circle_theorem; scope=tangent_radius_right_triangle_length_value`

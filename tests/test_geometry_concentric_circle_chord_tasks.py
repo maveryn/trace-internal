@@ -40,7 +40,7 @@ def test_concentric_circle_chord_task_emits_public_contract(task_cls) -> None:
     assert out.query_id
     assert out.answer_gt.type == "integer"
     assert isinstance(out.answer_gt.value, int)
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert set(out.annotation_gt.value) == {"O", "A", "B", "T"}
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
@@ -51,8 +51,8 @@ def test_concentric_circle_chord_task_emits_public_contract(task_cls) -> None:
     assert trace["query_spec"]["params"]["internal_query_id"] == INTERNAL_QUERY_ID_BY_TASK[task_cls]
     assert trace["execution_trace"]["query_id"] == out.query_id
     assert trace["execution_trace"]["internal_query_id"] == INTERNAL_QUERY_ID_BY_TASK[task_cls]
-    assert trace["projected_annotation"]["type"] == "keyed_point_map"
-    assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "point_map"
+    assert trace["projected_annotation"]["point_map"] == out.annotation_gt.value
     assert trace["execution_trace"]["outer_radius"] ** 2 == (
         trace["execution_trace"]["inner_radius"] ** 2
         + trace["execution_trace"]["half_chord"] ** 2
@@ -116,7 +116,7 @@ def test_concentric_circle_chord_annotation_uses_construction_points_not_labels(
             params={"query_id": query_id},
             max_attempts=20,
         )
-        assert out.annotation_gt.type == "keyed_point_map"
+        assert out.annotation_gt.type == "point_map"
         assert set(out.annotation_gt.value) == {"O", "A", "B", "T"}
         assert set(out.trace_payload["execution_trace"]["annotation_roles"]) == {
             "O",

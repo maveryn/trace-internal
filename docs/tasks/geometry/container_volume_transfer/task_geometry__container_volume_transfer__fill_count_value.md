@@ -5,7 +5,7 @@
 2. Scene id: `container_volume_transfer`
 5. Query ids: `cone_to_cylinder_fill_count`, `cylinder_to_cuboid_fill_count`
 6. Answer schema: `integer_value`
-7. Annotation schema: `keyed_bbox_map`
+7. Annotation schema: `bbox_map`
 
 ## Program Contract
 - `solve_formula(visible_source_target_container_transfer, unknown_role=full_pour_count, formula_schema=container_volume_transfer_fill_count); scene=container_volume_transfer; scope=fill_count_value`

@@ -161,7 +161,7 @@ def build_bearing_route_trace_payload(
         "scene_id": SCENE_ID,
         "scene_variant": str(scene_variant),
         "query_id": str(branch_name),
-        "source_witness_type": "keyed_point_map",
+        "source_witness_type": "point_map",
         "original_annotation_value": dict(annotation_keyed_points),
         "answer_value": answer_value,
         **dict(runtime.rendered.witness),

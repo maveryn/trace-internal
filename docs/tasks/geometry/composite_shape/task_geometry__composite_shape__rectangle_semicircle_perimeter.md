@@ -5,7 +5,7 @@
 2. Scene id: `composite_shape`
 5. Query id: `cap_perimeter`, `cutout_perimeter`
 6. Answer schema: `decimal_value_1dp`
-7. Annotation schema: `keyed_point_map`
+7. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(visible_composite_shape_measurements, unknown_role=perimeter_measure, formula_schema=rectangle_semicircle_boundary_with_side_remainders); scene=composite_shape; scope=rectangle_semicircle_perimeter`
@@ -15,7 +15,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Keyed annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+Prompt-facing annotation uses pixel-space witnesses only. Map annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

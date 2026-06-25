@@ -9,7 +9,7 @@
 6. Annotation schema: `point_map`
 
 ## Program Contract
-- `solve_formula(visible_special_quadrilateral_algebraic_segment_relation, unknown_role=target_segment_length, formula_schema=special_quadrilateral_segment_equation); scene=special_quadrilateral; scope=segment_length_value`
+- `formula.solve_unknown(visible_quadrilateral=parallelogram|rhombus|kite, visible_expressions=two_marked_side_or_diagonal_segment_expressions, relation=opposite_sides_equal|all_sides_equal|adjacent_kite_sides_equal|diagonals_bisect, target=marked_segment_length); scene=special_quadrilateral; scope=segment_length_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_special_quadrilateral_v1`.

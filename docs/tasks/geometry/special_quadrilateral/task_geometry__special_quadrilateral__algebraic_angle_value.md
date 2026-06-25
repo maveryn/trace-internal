@@ -9,7 +9,7 @@
 6. Annotation schema: `point_map`
 
 ## Program Contract
-- `solve_formula(visible_special_quadrilateral_algebraic_angle_relation, unknown_role=target_angle_value, formula_schema=special_quadrilateral_angle_equation); scene=special_quadrilateral; scope=algebraic_angle_value`
+- `formula.solve_unknown(visible_quadrilateral=parallelogram|rhombus|kite, visible_expressions=two_marked_angle_expressions, relation=opposite_angles_equal|consecutive_angles_supplementary|diagonal_bisects_angle, target=marked_angle_measure); scene=special_quadrilateral; scope=algebraic_angle_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_special_quadrilateral_v1`.

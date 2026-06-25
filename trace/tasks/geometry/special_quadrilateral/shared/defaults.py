@@ -17,12 +17,11 @@ SCENE_KIND = "analytical_special_quadrilateral"
 _SCENE_DEFAULTS = get_scene_defaults(DOMAIN, SCENE_ID)
 
 
-def load_special_quadrilateral_defaults(namespace: str) -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
-    """Load scene defaults using the public task namespace supplied by the caller."""
+def load_special_quadrilateral_defaults() -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+    """Load scene defaults without public task routing."""
 
     return split_scene_generation_rendering_prompt_defaults(
         _SCENE_DEFAULTS,
-        task_id=str(namespace),
     )
 
 

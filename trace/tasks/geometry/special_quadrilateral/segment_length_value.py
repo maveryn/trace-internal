@@ -8,8 +8,10 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
+from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from ._lifecycle import prepare_special_quadrilateral_task_parts
+from ._lifecycle import expression_payload, render_special_quadrilateral_problem
+from .shared.output import common_trace_sections, prompt_artifacts_for_bound_case
 from .shared.rendering import (
     RENDER_KITE_ADJACENT_SIDES,
     RENDER_PARALLELOGRAM_BISECTED_DIAGONAL,
@@ -125,47 +127,6 @@ def _prepare_problem(*, selected_query: str, params: Mapping[str, Any], instance
     return SpecialQuadrilateralProblem(case=case, case_index=int(case_index), layout_seed=int(instance_seed)), dict(answer_probabilities)
 
 
-def generate_segment_length_value(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
-    """Select the theorem branch, bind the answer, then render final output."""
-
-    selected_query, branch_probabilities, task_params = select_task_query_id(
-        instance_seed=int(instance_seed),
-        params=params,
-        supported_query_ids=SUPPORTED_QUERY_IDS,
-        default_query_id=SUPPORTED_QUERY_IDS[0],
-        task_id=TASK_ID,
-        namespace=f"{TASK_ID}.query",
-    )
-    problem, answer_probabilities = _prepare_problem(
-        selected_query=str(selected_query),
-        params=task_params,
-        instance_seed=int(instance_seed),
-    )
-    parts = prepare_special_quadrilateral_task_parts(
-        public_task_id=TASK_ID,
-        selected_query=str(selected_query),
-        branch_probabilities=branch_probabilities,
-        answer_probabilities=answer_probabilities,
-        problem=problem,
-        prompt_task_key=TASK_PROMPT_KEY,
-        instance_seed=int(instance_seed),
-        params=task_params,
-        max_attempts=int(max_attempts),
-    )
-    return TaskOutput(
-        prompt=parts.prompt,
-        answer_gt=TypedValue(type="integer", value=int(problem.case.answer)),
-        annotation_gt=TypedValue(type=parts.annotation_artifacts.annotation_type, value=parts.annotation_artifacts.value),
-        image=parts.image,
-        image_id="img0",
-        trace_payload=parts.trace_payload,
-        task_versions=parts.task_versions,
-        scene_id=SCENE_ID,
-        query_id=str(selected_query),
-        prompt_variants=dict(parts.prompt_variants),
-    )
-
-
 @register_task
 class GeometrySpecialQuadrilateralSegmentLengthValueTask:
     """Solve algebraic side or diagonal segment lengths in a special quadrilateral."""
@@ -175,19 +136,172 @@ class GeometrySpecialQuadrilateralSegmentLengthValueTask:
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
+    def _bind_segment_case(
+        self,
+        *,
+        seed: int,
+        params: dict[str, Any],
+    ) -> tuple[str, dict[str, float], dict[str, Any], SpecialQuadrilateralProblem, dict[str, float]]:
+        """Choose one segment relation query and one valid equation case."""
+
+        branch, branch_probs, task_params = select_task_query_id(
+            instance_seed=int(seed),
+            params=params,
+            supported_query_ids=self.supported_query_ids,
+            default_query_id=self.supported_query_ids[0],
+            task_id=self.task_id,
+            namespace=f"{self.task_id}.query",
+        )
+        problem, answer_probs = _prepare_problem(
+            selected_query=str(branch),
+            params=task_params,
+            instance_seed=int(seed),
+        )
+        return str(branch), dict(branch_probs), dict(task_params), problem, dict(answer_probs)
+
+    def _draw_segment_problem(
+        self,
+        *,
+        seed: int,
+        max_attempts: int,
+        params: Mapping[str, Any],
+        branch: str,
+        problem: SpecialQuadrilateralProblem,
+    ):
+        """Render a resolved segment relation and task prompt artifacts."""
+
+        parts = render_special_quadrilateral_problem(
+            problem=problem,
+            instance_seed=int(seed),
+            params=params,
+            max_attempts=int(max_attempts),
+        )
+        prompt_artifacts = prompt_artifacts_for_bound_case(
+            prompt_defaults=parts.prompt_defaults,
+            task_prompt_key=TASK_PROMPT_KEY,
+            branch_prompt_key=str(branch),
+            target_name=str(problem.case.target_name),
+            annotation_roles=tuple(parts.annotation_artifacts.value.keys()),
+            answer_value=int(problem.case.answer),
+            instance_seed=int(seed),
+        )
+        return parts, prompt_artifacts
+
+    def _segment_query_params(
+        self,
+        *,
+        branch_probs: Mapping[str, float],
+        answer_probs: Mapping[str, float],
+        problem: SpecialQuadrilateralProblem,
+    ) -> dict[str, Any]:
+        """Return query metadata specific to the segment-length objective."""
+
+        return {
+            "scene_id": SCENE_ID,
+            "query_id_probabilities": dict(branch_probs),
+            "answer_support_probabilities": dict(answer_probs),
+            "case_index": int(problem.case_index),
+            "shape_kind": str(problem.case.shape_kind),
+            "theorem": str(problem.case.theorem),
+            **expression_payload(problem.case),
+        }
+
+    def _segment_trace(
+        self,
+        *,
+        branch: str,
+        branch_probs: Mapping[str, float],
+        answer_probs: Mapping[str, float],
+        problem: SpecialQuadrilateralProblem,
+        parts: Any,
+        prompt_artifacts: Any,
+    ) -> dict[str, Any]:
+        """Attach this public task's ids and equation metadata to the trace."""
+
+        trace_payload = common_trace_sections(
+            branch_probabilities=dict(branch_probs),
+            answer_probabilities=answer_probs,
+            prompt_artifacts=prompt_artifacts,
+            problem=problem,
+            parts=parts,
+            extra_case_values=expression_payload(problem.case),
+        )
+        query_spec = build_prompt_query_spec(
+            prompt_artifacts=prompt_artifacts,
+            query_id=str(branch),
+            params=self._segment_query_params(
+                branch_probs=branch_probs,
+                answer_probs=answer_probs,
+                problem=problem,
+            ),
+        )
+        query_spec["scene_id"] = SCENE_ID
+        trace_payload["query_spec"] = query_spec
+        trace_payload["scene_ir"].update({"task_id": self.task_id, "query_id": str(branch)})
+        trace_payload["scene_ir"]["relations"]["query_id"] = str(branch)
+        trace_payload["render_spec"].update({"task_id": self.task_id, "query_id": str(branch)})
+        trace_payload["execution_trace"]["query_id"] = str(branch)
+        trace_payload["witness_symbolic"] = {
+            "type": "special_quadrilateral_segment_length_relation",
+            "task_id": self.task_id,
+            **dict(trace_payload["execution_trace"]),
+        }
+        return trace_payload
+
+    def _segment_output(
+        self,
+        *,
+        branch: str,
+        problem: SpecialQuadrilateralProblem,
+        parts: Any,
+        prompt_artifacts: Any,
+        trace_payload: dict[str, Any],
+    ) -> TaskOutput:
+        """Construct final output after segment answer and annotation binding."""
+
+        return TaskOutput(
+            prompt=str(prompt_artifacts.prompt),
+            answer_gt=TypedValue(type="integer", value=int(problem.case.answer)),
+            annotation_gt=TypedValue(type=parts.annotation_artifacts.annotation_type, value=parts.annotation_artifacts.value),
+            image=parts.image,
+            image_id="img0",
+            trace_payload=trace_payload,
+            task_versions=parts.task_versions,
+            scene_id=SCENE_ID,
+            query_id=str(branch),
+            prompt_variants=dict(prompt_artifacts.prompt_variants),
+        )
+
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Delegate to this public file's segment-length implementation."""
+        """Generate one segment-length instance with task-owned binding."""
 
         task_seed = int(instance_seed)
-        task_params = dict(params)
-        attempt_limit = max(1, int(max_attempts))
-        result = generate_segment_length_value(
-            self,
-            task_seed,
-            params=task_params,
-            max_attempts=attempt_limit,
+        branch, branch_probs, task_params, problem, answer_probs = self._bind_segment_case(
+            seed=task_seed,
+            params=dict(params),
         )
-        return result
+        parts, prompt_artifacts = self._draw_segment_problem(
+            seed=task_seed,
+            max_attempts=max(1, int(max_attempts)),
+            params=task_params,
+            branch=branch,
+            problem=problem,
+        )
+        trace_payload = self._segment_trace(
+            branch=branch,
+            branch_probs=branch_probs,
+            answer_probs=answer_probs,
+            problem=problem,
+            parts=parts,
+            prompt_artifacts=prompt_artifacts,
+        )
+        return self._segment_output(
+            branch=branch,
+            problem=problem,
+            parts=parts,
+            prompt_artifacts=prompt_artifacts,
+            trace_payload=trace_payload,
+        )
 
 
 __all__ = ["GeometrySpecialQuadrilateralSegmentLengthValueTask", "SUPPORTED_QUERY_IDS", "TASK_ID"]

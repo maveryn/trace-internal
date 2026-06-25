@@ -9,7 +9,7 @@
 6. Annotation schema: `point_map`
 
 ## Program Contract
-- `solve_formula(visible_special_quadrilateral_diagonal_relation, unknown_role=target_angle, formula_schema=diagonal_angle_theorem); scene=special_quadrilateral; scope=diagonal_angle_value`
+- `formula.apply_diagonal_theorem(visible_quadrilateral=rhombus|kite, visible_diagonal_marks=angle_bisector|perpendicular_diagonals, given_angle=marked_angle_measure, target=marked_diagonal_angle_measure); scene=special_quadrilateral; scope=diagonal_angle_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_special_quadrilateral_v1`.

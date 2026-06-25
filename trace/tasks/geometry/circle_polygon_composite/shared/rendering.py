@@ -44,6 +44,30 @@ from .state import (
 )
 
 
+def render_with_layout_retry(
+    *,
+    instance_seed: int,
+    task_params: Mapping[str, Any],
+    max_attempts: int,
+    build_context: Callable[[int, Mapping[str, Any]], Any],
+    draw_scene: Callable[[Any, int], Any],
+) -> tuple[Any, Any]:
+    """Retry stochastic layout without choosing task/query behavior."""
+
+    last_error: Exception | None = None
+    for attempt in range(max(1, int(max_attempts))):
+        attempt_params = dict(task_params)
+        attempt_params["_render_attempt"] = int(attempt)
+        attempt_seed = int(instance_seed) + int(attempt)
+        try:
+            render_context = build_context(attempt_seed, attempt_params)
+            rendered = draw_scene(render_context, attempt_seed)
+            return render_context, rendered
+        except Exception as exc:
+            last_error = exc
+    raise RuntimeError("failed to render circle-polygon-composite scene") from last_error
+
+
 def create_circle_polygon_render_context(
     *,
     instance_seed: int,

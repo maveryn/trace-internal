@@ -16,11 +16,10 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.geometry.shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 
-from ._lifecycle import projected_keyed_point_payload, render_spec_payload, render_with_layout_retry
-from .shared.annotations import keyed_point_annotation
+from .shared.annotations import keyed_point_annotation, projected_keyed_point_payload
 from .shared.construction import select_angle_degrees, select_construction_kind, select_side_sign
 from .shared.prompts import tangent_angle_prompt_artifacts
-from .shared.rendering import create_circle_polygon_render_context, render_angle_scene
+from .shared.rendering import create_circle_polygon_render_context, render_angle_scene, render_with_layout_retry
 from .shared.state import ANGLE_ANNOTATION_KEYS, SCENE_ID, AngleDiagramSpec, RenderedAngleScene
 
 
@@ -184,15 +183,26 @@ class GeometryCirclePolygonCompositeTangentAngleValueTask:
                 "target_angle_degrees": answer_degrees,
             },
         }
-        render_spec = render_spec_payload(
-            scene_id=SCENE_ID,
-            task_id=TASK_ID,
-            query_id=query,
-            image_size=image_size,
-            render_context=render_context,
-            noise_meta=noise_meta,
-            prompt_artifacts=prompt_artifacts,
-        )
+        render_spec = {
+            "task_id": TASK_ID,
+            "scene_id": SCENE_ID,
+            "query_id": query,
+            "canvas": {
+                "width": int(image_size[0]),
+                "height": int(image_size[1]),
+            },
+            "single_object_scene_rotation": render_context.scene_transform.metadata(),
+            "style": {
+                "technical_diagram": dict(render_context.diagram_style_meta),
+                "background": dict(render_context.background_meta),
+                "post_image_noise": dict(noise_meta),
+            },
+            "prompt": {
+                "prompt_variant": dict(prompt_artifacts.prompt_variant),
+                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
+                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
+            },
+        }
         execution_trace = {
             "task_id": TASK_ID,
             "scene_id": SCENE_ID,
@@ -278,7 +288,7 @@ class GeometryCirclePolygonCompositeTangentAngleValueTask:
         output_fields = dict(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(problem.answer)),
-            annotation_gt=TypedValue(type="keyed_point_map", value=dict(annotation_value)),
+            annotation_gt=TypedValue(type="point_map", value=dict(annotation_value)),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

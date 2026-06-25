@@ -90,19 +90,19 @@ def _resolve_layout_orientation(
     rng: Any,
     render_params: Any,
 ) -> tuple[str, Dict[str, float]]:
-    explicit = params.get("layout_orientation")
     support = (LAYOUT_HORIZONTAL, LAYOUT_VERTICAL)
-    if explicit is not None:
-        orientation = str(explicit)
-        if orientation not in set(support):
-            raise ValueError(f"unsupported layout_orientation: {orientation}")
-        return orientation, _uniform_string_probability_map(support, selected=orientation)
     width = int(render_params.canvas_width)
     height = int(render_params.canvas_height)
     if width > height:
         return LAYOUT_HORIZONTAL, {LAYOUT_HORIZONTAL: 1.0, LAYOUT_VERTICAL: 0.0}
     if height > width:
         return LAYOUT_VERTICAL, {LAYOUT_HORIZONTAL: 0.0, LAYOUT_VERTICAL: 1.0}
+    explicit = params.get("layout_orientation")
+    if explicit is not None:
+        orientation = str(explicit)
+        if orientation not in set(support):
+            raise ValueError(f"unsupported layout_orientation: {orientation}")
+        return orientation, _uniform_string_probability_map(support, selected=orientation)
     orientation = str(support[int(rng.randrange(len(support)))])
     return orientation, _uniform_string_probability_map(support)
 

@@ -75,6 +75,64 @@ def test_conveyor_belt_total_count_uses_lane_positions() -> None:
             assert trace["layout_orientation"] == "vertical_lanes"
 
 
+def test_conveyor_sampled_canvas_orientation_follows_long_axis() -> None:
+    task = create_task(TOTAL_TASK_ID)
+    seen_presets = set()
+    for seed in range(2026062510, 2026062570):
+        output = task.generate(
+            seed,
+            params={"post_image_noise_apply_prob": 0.0},
+            max_attempts=120,
+        )
+        _assert_count_output(output)
+        render_spec = output.trace_payload["render_spec"]
+        trace = output.trace_payload["execution_trace"]
+        width = int(render_spec["scene_canvas_width"])
+        height = int(render_spec["scene_canvas_height"])
+        seen_presets.add(str(render_spec["scene_canvas_preset"]))
+        if width > height:
+            assert trace["layout_orientation"] == "horizontal_lanes"
+        elif height > width:
+            assert trace["layout_orientation"] == "vertical_lanes"
+        else:
+            assert trace["layout_orientation"] in {"horizontal_lanes", "vertical_lanes"}
+        if {"landscape", "portrait", "square"}.issubset(seen_presets):
+            break
+    assert {"landscape", "portrait", "square"}.issubset(seen_presets)
+
+
+def test_conveyor_non_square_canvas_ignores_conflicting_layout_orientation() -> None:
+    task = create_task(TOTAL_TASK_ID)
+    cases = (
+        (
+            {
+                "canvas_preset": "portrait",
+                "layout_orientation": "horizontal_lanes",
+                "target_lane_key": "left",
+                "post_image_noise_apply_prob": 0.0,
+            },
+            "vertical_lanes",
+        ),
+        (
+            {
+                "canvas_preset": "landscape",
+                "layout_orientation": "vertical_lanes",
+                "target_lane_key": "top",
+                "post_image_noise_apply_prob": 0.0,
+            },
+            "horizontal_lanes",
+        ),
+    )
+    for params, expected_orientation in cases:
+        output = task.generate(
+            2026062571,
+            params=dict(params),
+            max_attempts=120,
+        )
+        _assert_count_output(output)
+        assert output.trace_payload["execution_trace"]["layout_orientation"] == expected_orientation
+
+
 def test_conveyor_replay_uses_single_public_query_id() -> None:
     task = create_task(TOTAL_TASK_ID)
     output = task.generate(

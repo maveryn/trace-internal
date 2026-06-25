@@ -55,6 +55,7 @@ class GraphOrderBinaryTreeTraversalLabelTask:
     task_id = TASK_ID
     domain = "graph"
     supported_query_ids = SUPPORTED_QUERY_IDS
+    default_dataset_enabled = True
 
     def _build_objective_plan(self) -> BinaryTreeTraversalPlan:
         """Return this task's local traversal objective plan."""

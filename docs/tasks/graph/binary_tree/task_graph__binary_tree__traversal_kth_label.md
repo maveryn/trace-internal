@@ -18,7 +18,7 @@
 
 ## Annotation
 1. Answer type: `string`.
-2. Annotation type: `point_sequence`.
+2. Annotation schema: `point_sequence`.
 3. Annotation points are an ordered prefix of node-center `[x,y]` pixel points, from the first visited node through the answer node.
 
 ## Generation Notes

@@ -11,7 +11,7 @@ from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
-from ...shared.config_defaults import group_default
+from ...shared.config_defaults import group_default, required_group_default
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.fixed_query import force_query_id_params, select_task_query_id
 from ...shared.output_metadata import default_task_versions
@@ -122,6 +122,12 @@ class BinaryTreeOperationPlan:
     annotation_roles: tuple[str, ...] = ()
 
 
+def _prompt_default(prompt_defaults: Mapping[str, Any], key: str) -> Any:
+    """Resolve prompt defaults from scene config or the v1 prompt asset."""
+
+    return required_group_default(prompt_defaults, str(key), context="binary_tree prompt defaults")
+
+
 def prepare_binary_tree_frame(
     *,
     instance_seed: int,
@@ -230,6 +236,15 @@ def render_binary_tree_prompt_artifacts(
 ) -> PromptTraceArtifacts:
     """Render scene prompt variants and return normalized prompt trace artifacts."""
 
+    numeric_slot_keys = {"target_depth", "target_key", "traversal_position"}
+    dynamic_slots: dict[str, Any] = {}
+    for key, value in dict(slots).items():
+        if value == "":
+            continue
+        if str(key) in numeric_slot_keys:
+            dynamic_slots[str(key)] = int(value)
+        else:
+            dynamic_slots[str(key)] = value
     prompt_selection = render_scene_prompt_variants(
         domain="graph",
         scene_id=SCENE_ID,
@@ -238,7 +253,7 @@ def render_binary_tree_prompt_artifacts(
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(branch_name),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots=dict(slots),
+        dynamic_slots=dynamic_slots,
         instance_seed=int(instance_seed),
     )
     return build_prompt_trace_artifacts(prompt_selection)
@@ -260,16 +275,20 @@ def common_prompt_slots(
     """Return the common prompt slot map used by binary-tree templates."""
 
     return {
-        "object_description": str(object_description if object_description is not None else prompt_defaults["object_description"]),
+        "object_description": str(
+            object_description
+            if object_description is not None
+            else _prompt_default(prompt_defaults, "object_description")
+        ),
         "target_depth": str(target_depth),
         "target_key": str(target_key),
         "query_label": str(query_label),
         "query_label_a": str(query_label_a),
         "query_label_b": str(query_label_b),
-        "json_output_contract": str(prompt_defaults["json_output_contract"]),
-        "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
+        "json_output_contract": str(_prompt_default(prompt_defaults, "json_output_contract")),
+        "json_output_contract_answer_only": str(_prompt_default(prompt_defaults, "json_output_contract_answer_only")),
         "annotation_hint": str(annotation_hint),
-        "answer_hint": str(prompt_defaults["answer_hint"]),
+        "answer_hint": str(_prompt_default(prompt_defaults, "answer_hint")),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
     }
@@ -493,7 +512,7 @@ def run_binary_tree_count_plan(
     annotation_points = rounded_points(annotation_projection["pixel_point_set"])
     prompt_defaults_map = dict(prompt_defaults)
     json_example, json_example_answer_only = count_prompt_json_examples()
-    annotation_hint = str(prompt_defaults_map[f"annotation_hint_{branch_name}"])
+    annotation_hint = str(_prompt_default(prompt_defaults_map, f"annotation_hint_{branch_name}"))
     if target_depth is not None:
         annotation_hint = annotation_hint.format(target_depth=str(target_depth))
     prompt_artifacts = render_binary_tree_prompt_artifacts(
@@ -650,7 +669,7 @@ def run_binary_tree_traversal_plan(
                 prompt_defaults=prompt_defaults_map,
                 json_example=str(json_example),
                 json_example_answer_only=str(json_example_answer_only),
-                annotation_hint=str(prompt_defaults_map[f"annotation_hint_{branch_name}"]),
+                annotation_hint=str(_prompt_default(prompt_defaults_map, f"annotation_hint_{branch_name}")),
             ),
             "traversal_position": str(traversal_position),
         },
@@ -817,7 +836,7 @@ def run_binary_tree_relation_plan(
             query_label_b=str(prompt_query_labels[1]) if len(prompt_query_labels) > 1 else "",
             json_example=str(json_example),
             json_example_answer_only=str(json_example_answer_only),
-            annotation_hint=str(prompt_defaults_map[f"annotation_hint_{branch_name}"]),
+            annotation_hint=str(_prompt_default(prompt_defaults_map, f"annotation_hint_{branch_name}")),
         ),
         instance_seed=int(instance_seed),
     )
@@ -881,11 +900,11 @@ def run_binary_tree_relation_plan(
             **relation_answer_scope_fields,
         },
         projected_annotation={
-            "type": "keyed_point_map",
-            "keyed_point_map": dict(annotation_keyed_points),
-            "pixel_keyed_point_map": dict(annotation_keyed_points),
-            "keyed_bbox_map": dict(annotation_keyed_bboxes),
-            "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
+            "type": "point_map",
+            "point_map": dict(annotation_keyed_points),
+            "pixel_point_map": dict(annotation_keyed_points),
+            "bbox_map": dict(annotation_keyed_bboxes),
+            "pixel_bbox_map": dict(annotation_keyed_bboxes),
             "bbox_sequence": list(annotation_keyed_bboxes.values()),
             "pixel_bbox_sequence": list(annotation_keyed_bboxes.values()),
             "pixel_point_sequence": list(annotation_projection["pixel_point_set"]),
@@ -895,7 +914,7 @@ def run_binary_tree_relation_plan(
     return binary_tree_task_output(
         prompt_artifacts=prompt_artifacts,
         answer_gt=TypedValue(type="string", value=str(relation.answer_label)),
-        annotation_gt=TypedValue(type="keyed_point_map", value=dict(annotation_keyed_points)),
+        annotation_gt=TypedValue(type="point_map", value=dict(annotation_keyed_points)),
         rendered=rendered,
         trace_payload=trace_payload,
         branch_name=str(branch_name),
@@ -962,7 +981,7 @@ def run_binary_tree_operation_plan(
     )
     annotation_projection = project_node_label_bboxes(rendered.rendered_scene, operation.annotation_labels)
     prompt_defaults_map = dict(prompt_defaults)
-    object_description = str(prompt_defaults_map.get(str(plan.object_description_key), prompt_defaults_map["object_description"]))
+    object_description = str(_prompt_default(prompt_defaults_map, str(plan.object_description_key)))
     if str(plan.prompt_family) == "heap":
         json_example, json_example_answer_only = heap_violation_prompt_json_examples()
         annotation_roles = tuple(plan.annotation_roles)
@@ -970,13 +989,12 @@ def run_binary_tree_operation_plan(
         annotation_keyed_points = keyed_points_for_roles(roles=annotation_roles, projection=annotation_projection)
         annotation_role_to_label = role_to_label_map(roles=annotation_roles, labels=operation.annotation_labels)
         annotation_roles_by_label = roles_by_label(annotation_role_to_label)
-        annotation_gt = TypedValue(type="keyed_point_map", value=dict(annotation_keyed_points))
+        annotation_gt = TypedValue(type="point_map", value=dict(annotation_keyed_points))
         projected_annotation = {
-            "type": "keyed_point_map",
-            "keyed_point_map": dict(annotation_keyed_points),
-            "pixel_keyed_point_map": dict(annotation_keyed_points),
-            "keyed_bbox_map": dict(annotation_keyed_bboxes),
-            "pixel_keyed_bbox_map": dict(annotation_keyed_bboxes),
+            "type": "point_map",
+            "point_map": dict(annotation_keyed_points),
+            "pixel_point_map": dict(annotation_keyed_points),
+            "bbox_map": dict(annotation_keyed_bboxes),
             "pixel_bbox_map": dict(annotation_keyed_bboxes),
             "pixel_point_sequence": list(annotation_projection["pixel_point_sequence"]),
         }
@@ -1004,7 +1022,7 @@ def run_binary_tree_operation_plan(
             target_key=str(target_key),
             json_example=str(json_example),
             json_example_answer_only=str(json_example_answer_only),
-            annotation_hint=str(prompt_defaults_map[f"annotation_hint_{branch_name}"] if f"annotation_hint_{branch_name}" in prompt_defaults_map else prompt_defaults_map["annotation_hint"]),
+            annotation_hint=str(_prompt_default(prompt_defaults_map, f"annotation_hint_{branch_name}")),
         ),
         instance_seed=int(instance_seed),
     )

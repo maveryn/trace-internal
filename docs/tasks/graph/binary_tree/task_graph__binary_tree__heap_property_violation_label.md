@@ -11,11 +11,11 @@
 5. Objective: find the child node that violates a min-heap property.
 
 ## Query IDs
-1. `heap_property_violation_label`: find the child node whose key is smaller than its parent key.
+1. `single`: find the child node whose key is smaller than its parent key.
 
 ## Annotation
 1. Answer type: `string`.
-2. Annotation type: `keyed_point_map`.
+2. Annotation schema: `point_map`.
 3. Annotation uses keys `parent` and `child`, with each value a node-center `[x,y]` pixel point.
 
 ## Generation Notes

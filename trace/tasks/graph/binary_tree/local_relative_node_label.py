@@ -62,6 +62,7 @@ class GraphRelationBinaryTreeLocalRelativeNodeLabelTask:
     task_id = TASK_ID
     domain = "graph"
     supported_query_ids = SUPPORTED_QUERY_IDS
+    default_dataset_enabled = True
 
     def _build_objective_plan(self) -> BinaryTreeRelationPlan:
         """Return this task's local relation objective plan."""

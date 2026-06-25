@@ -55,6 +55,7 @@ class GraphCountingBinaryTreeChildStructureNodeCountTask:
     task_id = TASK_ID
     domain = "graph"
     supported_query_ids = SUPPORTED_QUERY_IDS
+    default_dataset_enabled = True
 
     def _build_objective_plan(self) -> BinaryTreeCountPlan:
         """Return this task's local count objective plan."""

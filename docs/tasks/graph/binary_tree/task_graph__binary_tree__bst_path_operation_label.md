@@ -16,7 +16,7 @@
 
 ## Annotation
 1. Answer type: `string`.
-2. Annotation type: `point_sequence`.
+2. Annotation schema: `point_sequence`.
 3. Annotation points are the ordered node-center search or insertion path from the root through the answer node.
 
 ## Generation Notes

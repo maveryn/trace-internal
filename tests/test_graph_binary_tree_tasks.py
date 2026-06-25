@@ -166,7 +166,7 @@ def test_graph_relation_binary_tree_node_label_contracts() -> None:
         assert out.scene_id == "binary_tree"
         assert out.query_id == ("single" if query_id == "lowest_common_ancestor_label" else query_id)
         assert out.answer_gt.type == "string"
-        assert out.annotation_gt.type == "keyed_point_map"
+        assert out.annotation_gt.type == "point_map"
         assert str(out.answer_gt.value) == str(execution["answer_label"])
         assert set(out.annotation_gt.value) == expected_role_keys[query_id]
         assert set(execution["annotation_role_to_label"]) == expected_role_keys[query_id]
@@ -175,10 +175,10 @@ def test_graph_relation_binary_tree_node_label_contracts() -> None:
         )
         assert len(nodes) == int(execution["node_count"])
         assert len(edges) == len(nodes) - 1
-        assert trace["projected_annotation"]["type"] == "keyed_point_map"
-        assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["type"] == "point_map"
+        assert trace["projected_annotation"]["point_map"] == out.annotation_gt.value
         assert (
-            trace["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
+            trace["projected_annotation"]["pixel_point_map"] == out.annotation_gt.value
         )
         assert sum(1 for node in nodes if node["is_answer_node"]) == 1
         assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
@@ -266,15 +266,15 @@ def test_graph_relation_heap_property_violation_label_contracts() -> None:
     assert out.scene_id == "binary_tree"
     assert out.query_id == "single"
     assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert str(out.answer_gt.value) == str(execution["answer_label"])
     assert set(out.annotation_gt.value) == {"parent", "child"}
     assert len(out.annotation_gt.value) == 2
     assert len(nodes) == int(execution["node_count"])
     assert len(edges) == len(nodes) - 1
     assert trace["scene_ir"]["scene_kind"] == "search_tree_operation_diagram"
-    assert trace["projected_annotation"]["type"] == "keyed_point_map"
-    assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "point_map"
+    assert trace["projected_annotation"]["point_map"] == out.annotation_gt.value
     assert execution["annotation_role_to_label"]["child"] == str(out.answer_gt.value)
     assert sum(1 for node in nodes if node["is_answer_node"]) == 1
     assert execution["target_key"] is None

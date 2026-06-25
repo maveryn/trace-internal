@@ -11,12 +11,12 @@
 5. Objective: count binary-tree nodes at a specified depth.
 
 ## Query IDs
-1. `depth_level_node_count`
+1. `single`
 2. Query ids are internal replay metadata; public sampling is at the task-id level.
 
 ## Answer And Annotation
 1. Answer type: `integer`.
-2. Annotation type: `point_set`.
+2. Annotation schema: `point_set`.
 3. Annotation marks node-center pixel points for every node at the requested depth.
 4. Count tasks require `answer_gt.value == len(annotation_gt.value)` unless the annotation schema is keyed or sequence based.
 
@@ -26,6 +26,6 @@
 3. Annotation projection is computed after final layout and style placement.
 
 ## Prompt Contract
-1. Prompt text comes from graph prompt templates and scene config, not hardcoded user-facing text.
+1. Prompt text comes from graph prompt assets, not hardcoded user-facing text.
 2. Answer-only mode emits `{"answer": ...}`.
 3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with annotation matching the schema above.

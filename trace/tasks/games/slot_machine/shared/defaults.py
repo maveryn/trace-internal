@@ -31,7 +31,7 @@ SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
     "paper_ticket",
 )
 WINNING_PAYLINE_COUNT_SUPPORT: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-SCORE_TASK_WINNING_PAYLINE_COUNT_SUPPORT: Tuple[int, ...] = (1, 2, 3, 4, 5)
+SCORE_TASK_WINNING_PAYLINE_COUNT_SUPPORT: Tuple[int, ...] = (1, 2, 3)
 
 
 @dataclass(frozen=True)

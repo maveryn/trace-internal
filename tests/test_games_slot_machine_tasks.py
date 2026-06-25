@@ -79,6 +79,7 @@ def test_games_slot_machine_paytable_score_value_contract() -> None:
     assert out.annotation_gt.value == expected_segments
     assert len(execution["paytable_scores"]) == 6
     assert out.trace_payload["query_spec"]["params"]["target_score_winning_payline_count"] == 3
+    assert out.trace_payload["query_spec"]["params"]["score_task_winning_payline_count_support"] == [1, 2, 3]
     assert execution["prompt_query_key"] == "paytable_score_value"
 
 

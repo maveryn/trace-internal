@@ -18,5 +18,6 @@
 3. A payline scores only when all three visible symbols on that row or diagonal match.
 4. The score for a winning payline is the side-paytable value for the matching symbol.
 5. The answer is the integer sum over all winning paylines.
-6. Annotation is an unordered segment set, one centerline segment for each scoring payline.
-7. Scalar annotation checked: true.
+6. Generation samples one, two, or three scoring paylines to keep the score-reading task compact.
+7. Annotation is an unordered segment set, one centerline segment for each scoring payline.
+8. Scalar annotation checked: true.

@@ -672,79 +672,6 @@ def build_arithmetic_sequence(
     )
 
 
-def build_frequency_sequence(
-    *,
-    mode: str,
-    target_shape_type: str | None,
-    singleton_shape_types: Sequence[str],
-    target_count: int,
-    object_count: int,
-    rng,
-) -> tuple[list[ClusterSequenceItem], PredicateTarget]:
-    """Build frequency-targeted clusters for most-common or singleton-type counts."""
-
-    shape_support_values = list(safe_shape_support())
-    sequence: list[ClusterSequenceItem] = []
-    if str(mode) == "most_common":
-        if target_shape_type is None:
-            raise ValueError("most-common frequency count needs a target shape")
-        sequence.extend(
-            ClusterSequenceItem(str(target_shape_type), random_color(rng), True, "target")
-            for _ in range(int(target_count))
-        )
-        remaining = int(object_count) - int(target_count)
-        distractor_shapes = [shape for shape in shape_support_values if str(shape) != str(target_shape_type)]
-        rng.shuffle(distractor_shapes)
-        for shape in distractor_shapes:
-            if remaining <= 0:
-                break
-            count = min(max(1, int(rng.randint(1, max(1, min(4, int(target_count) - 1))))), int(remaining))
-            sequence.extend(
-                ClusterSequenceItem(str(shape), random_color(rng), False, "lower_frequency_distractor")
-                for _ in range(int(count))
-            )
-            remaining -= int(count)
-        if remaining > 0:
-            raise ValueError("not enough distractor support for most-common count")
-        name = object_name_for_shape(str(target_shape_type))
-        target = PredicateTarget(
-            mode="frequency_max",
-            target_shape_type=str(target_shape_type),
-            target_object_name=str(name),
-            target_object_plural=object_plural(str(name)),
-            target_property_phrase=f"objects of the most frequent type ({object_plural(str(name))})",
-        )
-    else:
-        singleton_shapes = [str(shape) for shape in singleton_shape_types]
-        sequence.extend(
-            ClusterSequenceItem(str(shape), random_color(rng), True, "target")
-            for shape in singleton_shapes
-        )
-        remaining = int(object_count) - len(singleton_shapes)
-        repeated_shapes = [shape for shape in shape_support_values if str(shape) not in set(singleton_shapes)]
-        rng.shuffle(repeated_shapes)
-        for shape in repeated_shapes:
-            if remaining <= 0:
-                break
-            count = min(max(2, int(rng.randint(2, min(4, max(2, remaining))))), int(remaining))
-            if remaining - count == 1:
-                count += 1
-            sequence.extend(
-                ClusterSequenceItem(str(shape), random_color(rng), False, "repeated_type_distractor")
-                for _ in range(int(count))
-            )
-            remaining -= int(count)
-        if remaining > 0:
-            raise ValueError("not enough repeated-shape support for singleton count")
-        target = PredicateTarget(
-            mode="frequency_singletons",
-            singleton_shape_types=tuple(singleton_shapes),
-            target_property_phrase="objects whose type appears exactly once",
-        )
-    rng.shuffle(sequence)
-    return sequence, target
-
-
 def resolve_shape_choice(
     *,
     params: Mapping[str, Any],
@@ -832,7 +759,6 @@ __all__ = [
     "build_arithmetic_sequence",
     "build_color_membership_sequence",
     "build_exclusion_sequence",
-    "build_frequency_sequence",
     "build_or_sequence",
     "build_total_sequence",
     "build_type_and_color_sequence",

@@ -20,8 +20,7 @@
       "object_cluster_counterfactual_count_query": ["", "", "", "", ""],
       "object_cluster_multi_attribute_or_count_query": ["", "", "", "", ""],
       "object_cluster_multi_attribute_exclusion_count_query": ["", "", "", "", ""],
-      "object_cluster_count_arithmetic_query": ["", "", "", "", ""],
-      "object_cluster_type_frequency_count_query": ["", "", "", "", ""]
+      "object_cluster_count_arithmetic_query": ["", "", "", "", ""]
     },
     "query": {
       "total_object_count": [
@@ -101,27 +100,13 @@
         "Add the number of {left_operand_phrase} and {right_operand_phrase}. What is the total?",
         "How many objects are in these two groups: {left_operand_phrase} and {right_operand_phrase}?"
       ],
-      "two_color_difference_count": [
-        "What is the absolute difference between the number of {left_operand_phrase} and {right_operand_phrase}?",
-        "What is the difference between the counts of {left_operand_phrase} and {right_operand_phrase}?",
-        "Count the {left_operand_phrase} and {right_operand_phrase}. What is the count difference?",
-        "After subtracting the smaller count from the larger count for {left_operand_phrase} and {right_operand_phrase}, what is the difference?",
-        "What is the absolute count difference for {left_operand_phrase} and {right_operand_phrase}?"
-      ],
-      "most_frequent_type_count": [
-        "How many objects belong to the most frequent object type in the cluster?",
-        "Find the object type that appears the most often. How many objects of that type are there?",
-        "What is the count of the most common object type in the cluster?",
-        "How many objects are in the largest same-type group?",
-        "What is the size of the most frequent object-type group?"
-      ],
-      "singleton_type_count": [
-        "How many objects have an object type that appears exactly once in the cluster?",
-        "Count the clustered objects whose type occurs only one time. How many are there?",
-        "What is the number of objects that are the only object of their type?",
-        "How many objects belong to singleton object types?",
-        "How many visible objects have no same-type partner in the cluster?"
-      ]
+            "two_color_difference_count": [
+                "What is the absolute difference between the number of {left_operand_phrase} and {right_operand_phrase}?",
+                "What is the difference between the counts of {left_operand_phrase} and {right_operand_phrase}?",
+                "Count the {left_operand_phrase} and {right_operand_phrase}. What is the count difference?",
+                "After subtracting the smaller count from the larger count for {left_operand_phrase} and {right_operand_phrase}, what is the difference?",
+                "What is the absolute count difference for {left_operand_phrase} and {right_operand_phrase}?"
+            ]
     },
     "output": {
       "answer_only": [

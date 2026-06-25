@@ -18,7 +18,6 @@ from .relations import (
     build_arithmetic_sequence,
     build_color_membership_sequence,
     build_exclusion_sequence,
-    build_frequency_sequence,
     build_or_sequence,
     build_total_sequence,
     build_type_and_color_sequence,
@@ -484,30 +483,7 @@ def build_count_request(
         keyed_annotation = True
         count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": {"derived_from_operands": 1.0}, "left_operand_count": int(left_count), "left_operand_count_probabilities": dict(left_probabilities), "right_operand_count": int(right_count), "right_operand_count_probabilities": dict(right_probabilities), "target_shape_probabilities": shape_probabilities, "target_color_probabilities": color_probabilities, "cluster_object_pool_size": int(pool_size)})
     else:
-        object_count, object_probabilities = resolve_uniform_count(params=params, explicit_key="object_count", minimum=int(gen_defaults.get("object_count_min", 16)), maximum=int(gen_defaults.get("object_count_max", 30)), instance_seed=int(instance_seed), namespace=f"{namespace}.object_count")
-        if str(mode) == "frequency_max":
-            target_count, target_probabilities = resolve_uniform_count(params=params, explicit_key="target_count", minimum=int(gen_defaults.get("target_count_min", 3)), maximum=min(int(gen_defaults.get("target_count_max", 9)), max(3, int(object_count) - 6)), instance_seed=int(instance_seed), namespace=f"{namespace}.target_count")
-            target_shape, shape_probabilities = resolve_shape_choice(params=params, key="target_shape_type", instance_seed=int(instance_seed), namespace=f"{namespace}.target_shape_type", support=NAMED_CLUSTER_SHAPE_TYPES)
-            singleton_shapes: list[str] = []
-        else:
-            explicit_value = params.get("target_shape_types")
-            if explicit_value is not None:
-                singleton_shapes = [str(value).strip() for value in explicit_value] if not isinstance(explicit_value, str) else [value.strip() for value in explicit_value.split(",") if value.strip()]
-                target_count = len(singleton_shapes)
-                target_probabilities = {str(target_count): 1.0}
-                shape_probabilities = {str(shape): (1.0 / len(singleton_shapes) if str(shape) in set(singleton_shapes) else 0.0) for shape in NAMED_CLUSTER_SHAPE_TYPES}
-            else:
-                target_count, target_probabilities = resolve_uniform_count(params=params, explicit_key="target_count", minimum=int(gen_defaults.get("target_count_min", 3)), maximum=min(int(gen_defaults.get("target_count_max", 9)), max(1, int(object_count) - 4)), instance_seed=int(instance_seed), namespace=f"{namespace}.target_count")
-                singleton_shapes, shape_probabilities = resolve_two_shapes(params=params, key="target_shape_types", instance_seed=int(instance_seed), namespace=f"{namespace}.singleton_shape_types")
-                while len(singleton_shapes) < int(target_count):
-                    singleton_shapes.append(str(NAMED_CLUSTER_SHAPE_TYPES[len(singleton_shapes) % len(NAMED_CLUSTER_SHAPE_TYPES)]))
-            target_shape = None
-        sequence, target = build_frequency_sequence(mode="most_common" if str(mode) == "frequency_max" else "singletons", target_shape_type=target_shape, singleton_shape_types=singleton_shapes, target_count=int(target_count), object_count=int(object_count), rng=rng)
-        answer_value = int(target_count)
-        expected_annotation_count = int(target_count)
-        scene_kind = "three_d_object_cluster_type_frequency_count"
-        extra_trace = {"cluster_object_pool_size": len(NAMED_CLUSTER_SHAPE_TYPES)}
-        count_probabilities.update({"object_count_probabilities": dict(object_probabilities), "target_count_probabilities": dict(target_probabilities), "target_shape_probabilities": dict(shape_probabilities)})
+        raise ValueError(f"unsupported object-cluster count mode: {mode}")
 
     dataset = build_dataset_from_sequence(
         source_namespace=str(namespace),

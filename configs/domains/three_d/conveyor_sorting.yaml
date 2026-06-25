@@ -9,7 +9,8 @@ generation:
     object_count_max: 18
     target_count_min: 1
     target_count_max: 8
-    slots_per_belt: 20
+    slots_per_belt: 30
+    min_same_belt_angle_gap_degrees: 20.0
     object_dimension_scale: 0.64
     min_rendered_bbox_side_px: 24.0
   task_overrides:
@@ -21,11 +22,11 @@ generation:
 
 rendering:
   shared:
-    scene_margin_left_px: 54
-    scene_margin_right_px: 54
-    scene_margin_top_px: 42
-    scene_margin_bottom_px: 52
-    room_extent: 3.45
+    scene_margin_left_px: 32
+    scene_margin_right_px: 32
+    scene_margin_top_px: 32
+    scene_margin_bottom_px: 32
+    room_extent: 2.45
     room_height: 2.8
     grid_step: 0.0
     marker_radius_px: 22

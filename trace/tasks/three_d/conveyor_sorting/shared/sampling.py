@@ -190,6 +190,11 @@ def _slot_positions_for_belt(
     return slots
 
 
+def _angular_distance_degrees(a: float, b: float) -> float:
+    distance = abs(float(a) - float(b)) % 360.0
+    return min(float(distance), 360.0 - float(distance))
+
+
 def _object_dimensions(shape_type: str, *, scale: float) -> tuple[float, float, float]:
     base = OBJECT_CLUSTER_DIMENSIONS.get(str(shape_type), (0.52, 0.52, 0.52))
     return tuple(round(float(value) * float(scale), 4) for value in base)
@@ -243,20 +248,34 @@ def _make_object_spec(
 
 def _sample_slot(
     slots_by_belt: Dict[str, list[tuple[float, float, float]]],
+    used_angles_by_belt: Dict[str, list[float]],
     *,
     belt_key: str,
+    min_angle_gap_degrees: float,
 ) -> tuple[float, float, float]:
     slots = slots_by_belt.get(str(belt_key), [])
     if not slots:
         raise ValueError(f"no free conveyor carousel slots for {belt_key}")
-    return slots.pop()
+    used_angles = used_angles_by_belt.setdefault(str(belt_key), [])
+    fallback_index = len(slots) - 1
+    selected_index = fallback_index
+    for index in range(len(slots) - 1, -1, -1):
+        candidate_angle = float(slots[index][2])
+        if all(_angular_distance_degrees(candidate_angle, used_angle) >= float(min_angle_gap_degrees) for used_angle in used_angles):
+            selected_index = index
+            break
+    slot = slots.pop(selected_index)
+    used_angles.append(float(slot[2]))
+    return slot
 
 
 def _sample_other_belt_slot(
     slots_by_belt: Dict[str, list[tuple[float, float, float]]],
+    used_angles_by_belt: Dict[str, list[float]],
     *,
     rng: Any,
     target_belt_key: str,
+    min_angle_gap_degrees: float,
 ) -> tuple[str, tuple[float, float, float]]:
     candidates = [
         str(belt_key)
@@ -266,7 +285,12 @@ def _sample_other_belt_slot(
     if not candidates:
         raise ValueError("no non-target conveyor carousel slots available")
     belt_key = str(candidates[int(rng.randrange(len(candidates)))])
-    return belt_key, _sample_slot(slots_by_belt, belt_key=belt_key)
+    return belt_key, _sample_slot(
+        slots_by_belt,
+        used_angles_by_belt,
+        belt_key=belt_key,
+        min_angle_gap_degrees=float(min_angle_gap_degrees),
+    )
 
 
 def _sample_carousel_camera(rng: Any, yaw_band_degrees: Sequence[float]) -> CameraSpec:
@@ -405,12 +429,14 @@ def build_belt_count_dataset(
         lower=total_min,
         upper=22,
     )
-    slots_per_belt = max(14, _configured_int(params, gen_defaults, "slots_per_belt", 20))
+    slots_per_belt = max(24, _configured_int(params, gen_defaults, "slots_per_belt", 30))
+    min_angle_gap_degrees = float(params.get("min_same_belt_angle_gap_degrees", group_default(gen_defaults, "min_same_belt_angle_gap_degrees", 20.0)))
     dimension_scale = float(params.get("object_dimension_scale", group_default(gen_defaults, "object_dimension_scale", 0.64)))
     slots_by_belt = {
         str(belt_key): _slot_positions_for_belt(rng=rng, belt_key=str(belt_key), slots_per_belt=int(slots_per_belt))
         for belt_key in BELT_KEYS
     }
+    used_angles_by_belt: Dict[str, list[float]] = {str(belt_key): [] for belt_key in BELT_KEYS}
     belt_records = [
         {
             "belt_key": str(belt_key),
@@ -433,7 +459,12 @@ def build_belt_count_dataset(
         target_color_name = ""
         target_color_probabilities: Dict[str, float] = {}
         for index in range(int(target_count)):
-            slot = _sample_slot(slots_by_belt, belt_key=target_belt_key)
+            slot = _sample_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                belt_key=target_belt_key,
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
             color_name = str(color_names[index % len(color_names)])
             object_id = f"obj_{len(object_specs):03d}"
             target_object_ids.append(object_id)
@@ -451,7 +482,12 @@ def build_belt_count_dataset(
                 )
             )
         if slots_by_belt[str(target_belt_key)] and int(target_count) <= 6:
-            slot = _sample_slot(slots_by_belt, belt_key=target_belt_key)
+            slot = _sample_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                belt_key=target_belt_key,
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
             object_specs.append(
                 _make_object_spec(
                     rng=rng,
@@ -466,7 +502,13 @@ def build_belt_count_dataset(
                 )
             )
         while len(object_specs) < int(object_count):
-            belt_key, slot = _sample_other_belt_slot(slots_by_belt, rng=rng, target_belt_key=target_belt_key)
+            belt_key, slot = _sample_other_belt_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                rng=rng,
+                target_belt_key=target_belt_key,
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
             same_shape_elsewhere = len(object_specs) < int(target_count) + 4 and rng.random() < 0.75
             shape_type = str(target_shape) if same_shape_elsewhere else _sample_shape(rng, CONVEYOR_OBJECT_SHAPE_TYPES)
             object_specs.append(
@@ -489,7 +531,12 @@ def build_belt_count_dataset(
         target_shape_probabilities = {}
         color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=4)
         for _index in range(int(target_count)):
-            slot = _sample_slot(slots_by_belt, belt_key=target_belt_key)
+            slot = _sample_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                belt_key=target_belt_key,
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
             object_id = f"obj_{len(object_specs):03d}"
             target_object_ids.append(object_id)
             object_specs.append(
@@ -507,7 +554,12 @@ def build_belt_count_dataset(
             )
         if slots_by_belt[str(target_belt_key)] and int(target_count) <= 6:
             wrong_colors = [color for color in color_names if str(color) != str(target_color_name)]
-            slot = _sample_slot(slots_by_belt, belt_key=target_belt_key)
+            slot = _sample_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                belt_key=target_belt_key,
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
             object_specs.append(
                 _make_object_spec(
                     rng=rng,
@@ -522,7 +574,13 @@ def build_belt_count_dataset(
                 )
             )
         while len(object_specs) < int(object_count):
-            belt_key, slot = _sample_other_belt_slot(slots_by_belt, rng=rng, target_belt_key=target_belt_key)
+            belt_key, slot = _sample_other_belt_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                rng=rng,
+                target_belt_key=target_belt_key,
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
             same_color_elsewhere = len(object_specs) < int(target_count) + 4 and rng.random() < 0.75
             color_name = str(target_color_name) if same_color_elsewhere else str(color_names[int(rng.randrange(len(color_names)))])
             object_specs.append(
@@ -583,6 +641,8 @@ def build_belt_count_dataset(
         "target_count_probabilities": dict(target_count_probabilities),
         "object_count_probabilities": dict(object_count_probabilities),
         "target_belt_probabilities": dict(target_belt_probabilities),
+        "slots_per_belt": int(slots_per_belt),
+        "min_same_belt_angle_gap_degrees": round(float(min_angle_gap_degrees), 3),
         "semantic_color_palette": {str(key): list(value) for key, value in sorted(SEMANTIC_COLOR_RGB.items())},
         "camera": dict(camera_meta),
         "projection_frame": dict(frame_meta),

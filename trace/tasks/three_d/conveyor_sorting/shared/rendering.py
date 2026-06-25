@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.three_d.shared.camera_projection import (
     CameraSpec,
     ProjectionFrame,
@@ -96,28 +95,6 @@ def _ellipse_points(
     ]
 
 
-def _draw_label_badge(
-    draw: ImageDraw.ImageDraw,
-    *,
-    text: str,
-    center_xy: Sequence[float],
-    fill: Tuple[int, int, int],
-) -> List[float]:
-    font = load_font(21, bold=True)
-    text_bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=1)
-    text_w = int(text_bbox[2] - text_bbox[0])
-    text_h = int(text_bbox[3] - text_bbox[1])
-    pad_x = 12
-    pad_y = 7
-    x0 = float(center_xy[0]) - 0.5 * float(text_w) - float(pad_x)
-    y0 = float(center_xy[1]) - 0.5 * float(text_h) - float(pad_y)
-    x1 = x0 + float(text_w) + 2.0 * float(pad_x)
-    y1 = y0 + float(text_h) + 2.0 * float(pad_y)
-    draw.rounded_rectangle((x0, y0, x1, y1), radius=9, fill=fill, outline=(255, 255, 255), width=2)
-    draw.text((x0 + pad_x, y0 + pad_y - 1), str(text), font=font, fill=(255, 255, 255))
-    return [round(x0, 3), round(y0, 3), round(x1, 3), round(y1, 3)]
-
-
 def _draw_arrow(
     draw: ImageDraw.ImageDraw,
     *,
@@ -153,9 +130,9 @@ def _draw_belt(
 ) -> tuple[List[float], Dict[str, Any]]:
     """Draw one annular ellipse belt from shared belt geometry.
 
-    The belt bbox, visible label, and rendered surface all come from the same
-    projected centerline/band-width geometry used by the sampler, so belt scope
-    stays visually bound to metadata.
+    The belt bbox and rendered surface come from the same projected
+    centerline/band-width geometry used by the sampler, so inner/outer belt
+    scope stays visually bound to metadata without drawing text labels.
     """
 
     width = float(BELT_GEOMETRY[str(belt_key)]["band_width"])
@@ -173,18 +150,6 @@ def _draw_belt(
         start = (radius_x * math.cos(theta - 0.055), radius_y * math.sin(theta - 0.055), 0.065)
         end = (radius_x * math.cos(theta + 0.055), radius_y * math.sin(theta + 0.055), 0.065)
         _draw_arrow(draw, start_xy=project_xy(start, camera, frame), end_xy=project_xy(end, camera, frame), fill=(55, 69, 85))
-    label_theta = 0.18 * math.pi if str(belt_key) == "outer" else 1.18 * math.pi
-    label_point = (
-        float(BELT_GEOMETRY[str(belt_key)]["radius_x"]) * math.cos(label_theta),
-        float(BELT_GEOMETRY[str(belt_key)]["radius_y"]) * math.sin(label_theta),
-        0.075,
-    )
-    label_bbox = _draw_label_badge(
-        draw,
-        text=str(BELT_LABELS[str(belt_key)]),
-        center_xy=project_xy(label_point, camera, frame),
-        fill=(35, 46, 60),
-    )
     bbox = _projected_bbox([*outer_screen, *inner_screen])
     entity = {
         "entity_id": f"belt_{belt_key}",
@@ -193,7 +158,6 @@ def _draw_belt(
         "attrs": {
             "belt_key": str(belt_key),
             "belt_label": str(BELT_LABELS[str(belt_key)]),
-            "label_bbox_px": list(label_bbox),
             "geometry": dict(BELT_GEOMETRY[str(belt_key)]),
         },
     }
@@ -207,7 +171,12 @@ def _draw_conveyor_belts(
     camera: CameraSpec,
     frame: ProjectionFrame,
 ) -> tuple[Image.Image, List[float], Dict[str, List[float]], List[Dict[str, Any]]]:
-    """Draw concentric airport-style carousel belts and labels."""
+    """Draw the full two-belt carousel surface.
+
+    Invariant: both belt entities are generated from shared belt geometry in
+    fixed outer-then-inner draw order, so object scope, visual belt shape, and
+    trace bboxes agree even though no text labels are drawn on the belts.
+    """
 
     draw = ImageDraw.Draw(image)
     belt_bboxes: Dict[str, List[float]] = {}

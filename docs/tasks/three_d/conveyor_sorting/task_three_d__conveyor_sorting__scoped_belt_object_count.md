@@ -14,8 +14,9 @@
 
 ## Contract
 The image shows one 3D airport-style conveyor carousel with two visible
-concentric elliptical belts labeled `INNER` and `OUTER`. Small 3D objects sit on
-the belt surfaces.
+concentric elliptical belts: an inner belt and an outer belt. The belts are
+distinguished by position, not by text written on the image. Small 3D objects
+sit on the belt surfaces.
 
 For `object_type_belt_count`, the task asks for the number of objects of one
 sampled object type on the requested belt. For `color_belt_count`, the task asks
@@ -26,8 +27,8 @@ attribute match the query.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around
-each counted target object. Other objects, belt labels, belt surfaces, arrows,
-inspection gates, and decorative station context are not annotation.
+each counted target object. Other objects, belt surfaces, arrows, inspection
+gates, and decorative station context are not annotation.
 
 ## Prompt And Trace
 The prompt bundle is `three_d_conveyor_sorting_v1` under

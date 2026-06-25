@@ -27,14 +27,14 @@ BELT_LABELS: Mapping[str, str] = {
 }
 BELT_GEOMETRY: Mapping[str, Mapping[str, float]] = {
     "inner": {
-        "radius_x": 1.58,
-        "radius_y": 0.76,
-        "band_width": 0.36,
+        "radius_x": 1.95,
+        "radius_y": 0.98,
+        "band_width": 0.42,
     },
     "outer": {
-        "radius_x": 2.78,
-        "radius_y": 1.42,
-        "band_width": 0.42,
+        "radius_x": 3.2,
+        "radius_y": 1.68,
+        "band_width": 0.52,
     },
 }
 

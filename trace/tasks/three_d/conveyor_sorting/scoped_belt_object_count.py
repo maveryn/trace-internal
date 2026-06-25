@@ -26,7 +26,7 @@ PREDICATE_KIND_BY_BRANCH = {
 
 @register_task
 class ThreeDConveyorSortingScopedBeltObjectCountTask:
-    """Count objects matching one target attribute on a labeled carousel belt."""
+    """Count objects matching one target attribute on an inner or outer carousel belt."""
 
     task_id = TASK_ID
     domain = "three_d"

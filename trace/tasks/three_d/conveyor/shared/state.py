@@ -78,7 +78,6 @@ CONVEYOR_OBJECT_SHAPE_TYPES: Tuple[str, ...] = tuple(
         "cup",
         "cylinder",
         "dice",
-        "drum",
         "mail_envelope",
         "flower",
         "glove",

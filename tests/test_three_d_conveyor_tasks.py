@@ -14,7 +14,13 @@ from trace.tasks.three_d.conveyor.scoped_belt_object_count import (
     OBJECT_TYPE_QUERY_ID,
     TASK_ID as SCOPED_TASK_ID,
 )
+from trace.tasks.three_d.conveyor.shared.state import CONVEYOR_OBJECT_SHAPE_TYPES
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
+
+
+def test_conveyor_object_pool_excludes_cylinder_confusers() -> None:
+    assert "cylinder" in CONVEYOR_OBJECT_SHAPE_TYPES
+    assert "drum" not in CONVEYOR_OBJECT_SHAPE_TYPES
 
 
 def _assert_count_output(output) -> None:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, Tuple
+from typing import Any, Dict, Tuple
 
 from ....core.seed import spawn_rng
 from ...base import TaskOutput
@@ -49,7 +49,9 @@ class GraphPathMetroShortestPathLengthTask:
             explicit_target_keys=("target_shortest_path_length", "target_count"),
         )
         sample = sample_shortest_path_network(spawn_rng(int(instance_seed), f"{TASK_ID}.metro_network"), target_length=int(axes.target_count), route_count=int(axes.route_count), label_variant=str(axes.label_variant))
-        assets = prepare_metro_assets(owner_id=TASK_ID, branch_name=str(branch_name), prompt_query_key=PROMPT_QUERY_KEY, prompt_annotation_key=PROMPT_ANNOTATION_KEY, instance_seed=int(instance_seed), params=forced_params, sample=sample, axes=axes, answer_value=int(sample.target_shortest_path_length), annotation_labels=tuple(sample.target_labels), ordered_annotation=True)
+        path_labels = tuple(str(label) for label in sample.target_labels)
+        annotation_labels = path_labels[1:]
+        assets = prepare_metro_assets(owner_id=TASK_ID, branch_name=str(branch_name), prompt_query_key=PROMPT_QUERY_KEY, prompt_annotation_key=PROMPT_ANNOTATION_KEY, instance_seed=int(instance_seed), params=forced_params, sample=sample, axes=axes, answer_value=int(sample.target_shortest_path_length), annotation_labels=annotation_labels, ordered_annotation=True, witness_extra={"full_path_labels": list(path_labels)}, json_example_key="json_example_shortest_path_length")
         return finish_metro_result(assets=assets, branch_name=str(branch_name))
 
 

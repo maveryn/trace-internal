@@ -27,7 +27,7 @@ generation:
 rendering:
   shared:
     canvas_width: 920
-    canvas_height: 660
+    canvas_height: 800
     outer_margin_px: 28
     panel_padding_px: 24
     panel_corner_radius_px: 20

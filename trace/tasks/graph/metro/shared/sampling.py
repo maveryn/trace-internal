@@ -14,12 +14,9 @@ from .algorithms import (
     matching_exact_distance_route_combos,
     matching_shortest_path_route_combos,
     matching_single_route_station_route_combos,
-    matching_transfer_change_route_combos,
     matching_transfer_station_route_combos,
-    route_change_station_coords,
     route_combo_coords,
     single_route_coords,
-    transfer_trip_candidates,
     unique_shortest_coord_path,
 )
 from .state import GridPoint, LabelEdge, MetroRouteNetworkSample, MetroRouteTemplate
@@ -128,19 +125,7 @@ def sample_shortest_path_network(rng: random.Random, *, target_length: int, rout
     return MetroRouteNetworkSample(**{**sample.__dict__, "source_label": str(sample.label_by_coord[source_coord]), "goal_label": str(sample.label_by_coord[goal_coord]), "target_labels": tuple(path_labels), "target_shortest_path_length": int(len(path_labels) - 1)})
 
 
-def sample_transfer_change_network(rng: random.Random, *, transfer_count_value: int, route_count: int, label_variant: str) -> MetroRouteNetworkSample:
-    routes = choose_routes(rng, matching_transfer_change_route_combos(transfer_count_value=int(transfer_count_value), route_count_min=int(route_count), route_count_max=int(route_count)))
-    sample = build_labeled_metro_sample(rng, routes=routes, label_variant=str(label_variant))
-    candidates = [candidate for candidate in transfer_trip_candidates(routes) if int(candidate.route_transfer_count) == int(transfer_count_value)]
-    if not candidates:
-        raise ValueError("sampled metro transfer-count target has no matching trip")
-    candidate = rng.choice(candidates)
-    path_labels = tuple(str(sample.label_by_coord[coord]) for coord in candidate.path_coords)
-    transfer_labels = tuple(str(sample.label_by_coord[coord]) for coord in route_change_station_coords(candidate.path_coords, candidate.route_sequence))
-    return MetroRouteNetworkSample(**{**sample.__dict__, "query_label": str(sample.label_by_coord[candidate.via_coord]), "source_label": str(sample.label_by_coord[candidate.source_coord]), "goal_label": str(sample.label_by_coord[candidate.goal_coord]), "target_labels": tuple(path_labels), "target_route_transfer_count": int(candidate.route_transfer_count), "target_route_sequence": tuple(str(route_id) for route_id in candidate.route_sequence), "target_path_transfer_labels": tuple(transfer_labels)})
-
-
 __all__ = [
     "sample_exact_distance_station_network", "sample_shortest_path_network", "sample_single_route_station_network",
-    "sample_transfer_change_network", "sample_transfer_station_network",
+    "sample_transfer_station_network",
 ]

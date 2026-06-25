@@ -49,13 +49,6 @@
         "What is the shortest-path length in route segments from station {source_label} to station {goal_label}?",
         "Find the unique shortest station path from {source_label} to {goal_label}. How many route segments does it contain?",
         "How many route segments lie on the unique shortest metro path from station {source_label} to station {goal_label}?"
-      ],
-      "metro_transfer_count": [
-        "Travel from station {source_label} to station {goal_label}, stopping at station {via_label}. What is the fewest number of colored-route changes needed?",
-        "Starting at {source_label}, going through {via_label}, and ending at {goal_label}, what is the minimum number of route changes?",
-        "How many times must the trip switch colored routes at minimum when traveling from {source_label} through {via_label} to {goal_label}?",
-        "Find a minimum-transfer trip from {source_label} to {goal_label} that stops at {via_label}. How many route changes does it use?",
-        "What is the fewest route switches needed for a trip from station {source_label} to station {goal_label} via station {via_label}?"
       ]
     },
     "output": {
@@ -85,11 +78,6 @@
     ],
     "query:metro_shortest_path_length": [
       "source_label",
-      "goal_label"
-    ],
-    "query:metro_transfer_count": [
-      "source_label",
-      "via_label",
       "goal_label"
     ],
     "answer_or_annotation:answer_only": [
@@ -150,11 +138,11 @@
     "object_description": "a labeled metro route map with colored routes and stations",
     "answer_hint": "set \"answer\" to the requested count or length as an integer",
     "json_example": "{\"annotation\":[[180,220],[310,180]],\"answer\":2}",
+    "json_example_shortest_path_length": "{\"annotation\":[[180,220],[310,180]],\"answer\":2}",
     "json_example_answer_only": "{\"answer\":2}",
     "annotation_hint_transfer_station_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all transfer stations",
     "annotation_hint_single_route_station_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all stations served by exactly one route",
     "annotation_hint_exact_distance_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all stations whose shortest metro-route distance from {query_label} is exactly {query_distance} route segments",
-    "annotation_hint_shortest_path_length": "set \"annotation\" to an ordered array of [x,y] pixel points at station centers along the unique shortest path from {source_label} to {goal_label}, including both endpoints",
-    "annotation_hint_transfer_count": "set \"annotation\" to an ordered array of [x,y] pixel points at station centers along a minimum-transfer route from {source_label} through {via_label} to {goal_label}, including endpoints"
+    "annotation_hint_shortest_path_length": "set \"annotation\" to an ordered array of [x,y] pixel points at station centers along the unique shortest path from {source_label} to {goal_label}, excluding {source_label} and including {goal_label}"
   }
 }

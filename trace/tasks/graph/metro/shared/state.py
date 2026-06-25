@@ -51,9 +51,6 @@ class MetroRouteNetworkSample:
     target_single_route_count: int = 0
     target_exact_distance_count: int = 0
     target_shortest_path_length: int = 0
-    target_route_transfer_count: int = 0
-    target_route_sequence: Tuple[str, ...] = ()
-    target_path_transfer_labels: Tuple[str, ...] = ()
     label_source_kind: str = ""
     label_bucket: str = ""
     label_manifest: str = ""
@@ -98,18 +95,6 @@ class RenderedMetroRouteScene:
     transfer_station_radius_px: int
 
 
-@dataclass(frozen=True)
-class MetroTransferTripCandidate:
-    """One source-via-goal trip with a unique minimum-transfer station path."""
-
-    source_coord: GridPoint
-    via_coord: GridPoint
-    goal_coord: GridPoint
-    path_coords: Tuple[GridPoint, ...]
-    route_sequence: Tuple[str, ...]
-    route_transfer_count: int
-
-
 METRO_ROUTE_TEMPLATES: Tuple[MetroRouteTemplate, ...] = (
     MetroRouteTemplate("R", "Red", (217, 72, 69), ((1, 3), (3, 3), (5, 3), (7, 3), (9, 3))),
     MetroRouteTemplate("B", "Blue", (56, 111, 197), ((5, 1), (5, 3), (5, 5), (5, 7), (5, 9))),
@@ -122,6 +107,6 @@ METRO_ROUTE_TEMPLATE_BY_ID: Dict[str, MetroRouteTemplate] = {str(route.route_id)
 
 __all__ = [
     "GridPoint", "LabelEdge", "METRO_ROUTE_TEMPLATE_BY_ID", "METRO_ROUTE_TEMPLATES", "MetroRouteNetworkSample",
-    "MetroRouteTemplate", "MetroTransferTripCandidate", "RenderedMetroRoute", "RenderedMetroRouteScene",
+    "MetroRouteTemplate", "RenderedMetroRoute", "RenderedMetroRouteScene",
     "RenderedMetroStation", "SCENE_ID", "SUPPORTED_METRO_LABEL_VARIANTS",
 ]

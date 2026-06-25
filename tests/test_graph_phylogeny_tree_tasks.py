@@ -87,6 +87,21 @@ def test_phylogeny_mrca_case_does_not_request_visual_clade_marker() -> None:
     assert clade_case.marked_node_id == str(clade_case.semantic_payload["target_node_id"])
 
 
+def test_phylogeny_leaf_spacing_has_terminal_line_headroom() -> None:
+    out = create_task(MRCA_TASK_ID).generate(5002, params={}, max_attempts=240)
+    canvas_width, canvas_height = out.trace_payload["render_spec"]["canvas_size"]
+    leaf_ys = sorted(
+        float(entity["center_px"][1])
+        for entity in out.trace_payload["scene_ir"]["entities"]
+        if entity.get("entity_kind") == "phylogeny_leaf"
+    )
+    assert canvas_width == 920
+    assert canvas_height >= 800
+    assert out.trace_payload["query_spec"]["params"]["leaf_count"] == 12
+    assert len(leaf_ys) == 12
+    assert min(right - left for left, right in zip(leaf_ys, leaf_ys[1:])) >= 42.0
+
+
 def test_phylogeny_topology_outlier_contract() -> None:
     out = create_task(TOPOLOGY_TASK_ID).generate(6104, params={}, max_attempts=240)
     trace = out.trace_payload

@@ -732,7 +732,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_graph__node_link__topological_endpoint_node_label": _entry("graph", "node_link", "graph", "node_link"),
     "task_graph__node_link__longest_path_length": _entry("graph", "node_link", "graph", "node_link"),
     "task_graph__metro__shortest_path_length": _entry("graph", "metro", "graph", "metro"),
-    "task_graph__metro__transfer_count": _entry("graph", "metro", "graph", "metro"),
     "task_graph__pipe_network__shortest_path_length": _entry("graph", "pipe_network", "graph", "pipe_network"),
     "task_graph__node_link__shortest_path_length": _entry("graph", "node_link", "graph", "node_link"),
     "task_graph__automaton__state_after_input_label": _entry("graph", "automaton", "graph", "automaton"),

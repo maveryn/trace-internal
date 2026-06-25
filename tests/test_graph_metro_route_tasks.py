@@ -7,7 +7,6 @@ from trace.tasks.graph.metro.station_membership_count import (
     GraphCountingSingleRouteStationCountTask,
     GraphCountingTransferStationCountTask,
 )
-from trace.tasks.graph.metro.transfer_count import GraphPathMetroTransferCountTask
 
 
 def test_metro_transfer_station_count_contract() -> None:
@@ -35,7 +34,6 @@ def test_metro_transfer_station_count_is_registered() -> None:
     assert "task_graph__metro__station_membership_count" in TASK_REGISTRY
     assert "task_graph__metro__exact_distance_station_count" in TASK_REGISTRY
     assert "task_graph__metro__shortest_path_length" in TASK_REGISTRY
-    assert "task_graph__metro__transfer_count" in TASK_REGISTRY
 
 
 def test_metro_single_route_station_count_contract() -> None:
@@ -91,31 +89,8 @@ def test_metro_shortest_path_length_contract() -> None:
     assert out.query_id == "single"
     assert out.answer_gt.value == int(trace["target_shortest_path_length"]) == 4
     assert out.annotation_gt.type == "point_sequence"
-    assert len(out.annotation_gt.value) == out.answer_gt.value + 1
+    assert len(out.annotation_gt.value) == out.answer_gt.value
     assert trace["matching_labels"][0] == trace["source_label"]
-    assert trace["matching_labels"][-1] == trace["goal_label"]
-
-
-def test_metro_transfer_count_contract() -> None:
-    out = GraphPathMetroTransferCountTask().generate(
-        2026051912,
-        params={"target_count": 4, "route_count": 4, "label_variant": "letters"},
-        max_attempts=100,
-    )
-    trace = out.trace_payload["execution_trace"]
-    route_sequence = [str(route_id) for route_id in trace["route_sequence"]]
-    route_change_count = sum(
-        1
-        for left, right in zip(route_sequence, route_sequence[1:])
-        if str(left) != str(right)
-    )
-    assert out.scene_id == "metro"
-    assert out.query_id == "single"
-    assert out.answer_gt.value == int(trace["target_route_transfer_count"]) == route_change_count == 4
-    assert out.annotation_gt.type == "point_sequence"
-    assert len(out.annotation_gt.value) == len(trace["matching_labels"])
-    assert trace["matching_labels"][0] == trace["source_label"]
-    assert trace["via_label"] in trace["matching_labels"]
     assert trace["matching_labels"][-1] == trace["goal_label"]
 
 

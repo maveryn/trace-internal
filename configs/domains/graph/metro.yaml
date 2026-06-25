@@ -35,11 +35,6 @@ generation:
       target_shortest_path_length_max: 6
       route_count_min: 3
       route_count_max: 5
-    task_graph__metro__transfer_count:
-      target_count_min: 1
-      target_count_max: 4
-      route_count_min: 3
-      route_count_max: 5
 rendering:
   shared:
     canvas_width: 864

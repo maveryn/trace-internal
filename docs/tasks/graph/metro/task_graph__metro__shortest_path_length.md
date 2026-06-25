@@ -19,13 +19,13 @@
 4. Path length target, route count, station labels, route colors, style, font, background, and layout jitter are generation/render metadata, not public query branches.
 
 ## Program Contract
-- `length(unique_shortest_station_path(source, goal)); output=integer; annotation=point_sequence(path_station_centers_in_order); scene=metro; scope=shortest_path_length`
+- `length(unique_shortest_station_path(source, goal)); output=integer; annotation=point_sequence(path_station_centers_after_source_in_order); scene=metro; scope=shortest_path_length`
 
 ## Answer And Annotation
 1. Answer type: `integer`.
 2. Annotation type: `point_sequence`.
-3. Annotation marks the ordered station-center points along the unique shortest path, including both endpoints.
-4. `answer == len(annotation) - 1`, and both come from the same finalized metro-route graph.
+3. Annotation marks the ordered station-center points along the unique shortest path after the source station, including the goal station.
+4. `answer == len(annotation)`, and both come from the same finalized metro-route graph.
 
 ## Rendering Contract
 1. The scene shows a labeled metro route map with colored routes and station nodes.

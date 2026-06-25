@@ -45,11 +45,11 @@ LEN_EQ_ANSWER_TASKS = {
 
 PATH_LEN_EQ_ANSWER_PLUS_ONE_TASKS = {
     "task_graph__node_link__longest_path_length",
-    "task_graph__metro__shortest_path_length",
     "task_graph__pipe_network__shortest_path_length",
 }
 
 PATH_LEN_EQ_ANSWER_TASKS = {
+    "task_graph__metro__shortest_path_length",
     "task_graph__node_link__shortest_path_length",
 }
 
@@ -115,7 +115,6 @@ GRAPH_QUERY_IDS = {
         "metro_single_route_station_count",
         "metro_transfer_station_count",
     ),
-    "task_graph__metro__transfer_count": ("single",),
     "task_graph__node_link__articulation_point_count": ("single",),
     "task_graph__node_link__bridge_count": ("single",),
     "task_graph__node_link__common_related_node_count": (
@@ -432,9 +431,10 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
             )
         _check_len(
             errors,
-            name="matching_labels",
+            name="annotation path labels",
             annotation_len=annotation_len,
-            values=execution_trace.get("matching_labels"),
+            values=execution_trace.get("annotation_labels")
+            or execution_trace.get("matching_labels"),
         )
 
     if task_id in SINGLE_ANNOTATION_LABEL_TASKS and annotation_len != 1:
@@ -619,20 +619,6 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
                 errors.append(
                     f"max-flow annotation cut capacity {cut_capacity} != answer {answer_value}"
                 )
-
-    if task_id == "task_graph__metro__transfer_count":
-        if int(answer_value) != len(
-            execution_trace.get("route_change_station_labels") or []
-        ):
-            errors.append(
-                "metro transfer answer does not match route_change_station_labels length"
-            )
-        _check_len(
-            errors,
-            name="matching_labels",
-            annotation_len=annotation_len,
-            values=execution_trace.get("matching_labels"),
-        )
 
     if task_id in {
         "task_graph__binary_tree__traversal_kth_label",

@@ -316,7 +316,6 @@ def _station_entities(sample: MetroRouteNetworkSample, rendered_scene: Any, bran
             "is_witness_node": bool(str(station.label) in target_label_set),
             "is_query_node": bool(str(station.label) == str(sample.query_label)),
             "is_source_node": bool(str(station.label) == str(sample.source_label)),
-            "is_via_node": bool(str(branch_name) == "metro_transfer_count" and str(station.label) == str(sample.query_label)),
             "is_goal_node": bool(str(station.label) == str(sample.goal_label)),
             "center_px": list(station.center_xy),
             "bbox_xyxy": list(station.bbox_xyxy),
@@ -347,20 +346,15 @@ def _common_trace_fields(sample: MetroRouteNetworkSample, axes: MetroRouteResolv
         "station_count": int(sample.station_count),
         "query_distance": int(axes.query_distance),
         "query_label": str(sample.query_label),
-        "via_label": str(sample.query_label),
         "source_label": str(sample.source_label),
         "goal_label": str(sample.goal_label),
         "matching_labels": list(sample.target_labels or sample.transfer_labels),
-        "route_transfer_count": int(sample.target_route_transfer_count),
-        "route_sequence": list(sample.target_route_sequence),
-        "route_change_station_labels": list(sample.target_path_transfer_labels),
         "transfer_station_labels": list(sample.transfer_labels),
         "single_route_station_labels": [str(label) for label, route_ids in sample.station_route_ids_by_label.items() if len(route_ids) == 1],
         "terminal_station_labels": list(sample.terminal_labels),
         "target_single_route_count": int(sample.target_single_route_count),
         "target_exact_distance_count": int(sample.target_exact_distance_count),
         "target_shortest_path_length": int(sample.target_shortest_path_length),
-        "target_route_transfer_count": int(sample.target_route_transfer_count),
         "route_station_labels": {str(key): list(values) for key, values in sample.route_station_labels.items()},
         "station_route_ids_by_label": {str(key): list(values) for key, values in sample.station_route_ids_by_label.items()},
         "adjacency_by_label": {str(key): list(values) for key, values in sample.adjacency_by_label.items()},
@@ -384,6 +378,7 @@ def prepare_metro_assets(
     annotation_labels: Sequence[str],
     ordered_annotation: bool,
     witness_extra: Mapping[str, Any] | None = None,
+    json_example_key: str | None = None,
 ) -> MetroPreparedAssets:
     """Render a metro sample, compose the prompt, and build common trace metadata."""
 
@@ -439,6 +434,7 @@ def prepare_metro_assets(
             "answer_hint",
             "json_example",
             "json_example_answer_only",
+            *((str(json_example_key),) if json_example_key else ()),
         ),
         context=f"prompt defaults for {owner_id}",
     )
@@ -450,6 +446,8 @@ def prepare_metro_assets(
         "query_distance": int(axes.query_distance),
     }
     prompt_json_example, prompt_json_example_answer_only = json_examples_for_annotation(str(answer_annotation.annotation_type))
+    if json_example_key:
+        prompt_json_example = str(prompt_defaults_required[str(json_example_key)])
     annotation_hint = str(prompt_defaults_required[str(prompt_annotation_key)]).format(**question_slots)
     prompt_selection = render_scene_prompt_variants(
         domain="graph",
@@ -473,6 +471,7 @@ def prepare_metro_assets(
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
     common_trace = _common_trace_fields(sample, axes)
+    common_trace["annotation_labels"] = [str(label) for label in annotation_labels]
     query_params = {
         "query_id": str(branch_name),
         "scene_id": SCENE_ID,
@@ -482,9 +481,6 @@ def prepare_metro_assets(
         "route_count": int(axes.route_count),
         "route_count_probabilities": dict(axes.route_count_probabilities or {}),
         "station_count": int(sample.station_count),
-        "route_transfer_count": int(sample.target_route_transfer_count),
-        "route_sequence": list(sample.target_route_sequence),
-        "route_change_station_labels": list(sample.target_path_transfer_labels),
         "label_variant": str(axes.label_variant),
         "label_variant_probabilities": dict(axes.label_variant_probabilities or {}),
         "node_color_name": str(axes.node_color_name),

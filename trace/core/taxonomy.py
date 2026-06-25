@@ -833,6 +833,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__library__filtered_book_in_section_count": _entry("illustrations", "library", "illustrations", "library"),
     "task_illustrations__library__missing_patch_label": _entry("illustrations", "library", "illustrations", "library"),
     "task_illustrations__library__rotated_tile_label": _entry("illustrations", "library", "illustrations", "library"),
+    "task_illustrations__library__swapped_tile_pair_label": _entry("illustrations", "library", "illustrations", "library"),
     "task_illustrations__indoor_room__surface_object_count": _entry(
         "illustrations", "indoor_room", "illustrations", "indoor_room"
     ),

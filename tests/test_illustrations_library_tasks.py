@@ -11,6 +11,9 @@ from trace.tasks.illustrations.library.books_in_section_count import _sample_spe
 from trace.tasks.illustrations.library.filtered_book_in_section_count import _sample_spec as _sample_filtered_book_spec
 
 
+SWAPPED_TILE_PAIR_TASK_ID = "task_illustrations__library__swapped_tile_pair_label"
+
+
 def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
     assert sorted(counts) == sorted(expected_keys)
     expected = sum(counts.values()) / max(1, len(counts))
@@ -229,3 +232,36 @@ def test_missing_patch_label_contract() -> None:
     assert len(render_map["option_bboxes_px_by_label"]) == 4
     assert len(render_map["option_source_crop_boxes_px"]) == 4
     assert render_map["option_source_crop_boxes_px"][2] == render_map["source_crop_box_px"]
+
+
+def test_swapped_tile_pair_label_contract() -> None:
+    out = create_task(SWAPPED_TILE_PAIR_TASK_ID).generate(
+        hash64(2026063002, "library-swapped-tile-pair", 0),
+        params={"section_count": 5, "correct_index": 1, "canvas_profile": "landscape"},
+        max_attempts=160,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
+
+    assert out.scene_id == "library"
+    assert out.query_id == SINGLE_QUERY_ID
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "B"
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 2
+    assert execution["query_id"] == SINGLE_QUERY_ID
+    assert execution["prompt_query_key"] == "swapped_tile_pair_label"
+    assert execution["answer_label"] == out.answer_gt.value
+    assert execution["grid_shape"] == [3, 3]
+    assert render_map["grid_shape"] == [3, 3]
+    assert len(render_map["tile_bboxes_px_by_number"]) == 9
+    assert len(render_map["option_bboxes_px_by_label"]) == 4
+    assert sorted(render_map["option_pairs_by_label"]) == ["A", "B", "C", "D"]
+    assert render_map["option_pairs_by_label"][out.answer_gt.value] == execution["swapped_cell_numbers"]
+    assert render_map["option_pair_indices_by_label"][out.answer_gt.value] == execution["swapped_pair_indices"]
+    assert sorted(out.annotation_gt.value) == sorted(render_map["swapped_cell_bboxes_px"])
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert sorted(trace["projected_annotation"]["bbox_set"]) == sorted(out.annotation_gt.value)
+    assert int(trace["query_spec"]["params"]["source_size"][0]) % 3 == 0
+    assert int(trace["query_spec"]["params"]["source_size"][1]) % 3 == 0

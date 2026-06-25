@@ -29,6 +29,7 @@ MIGRATED_ILLUSTRATION_TASK_IDS: tuple[str, ...] = (
     "task_illustrations__library__filtered_book_in_section_count",
     "task_illustrations__library__missing_patch_label",
     "task_illustrations__library__rotated_tile_label",
+    "task_illustrations__library__swapped_tile_pair_label",
     "task_illustrations__park_playground__jigsaw_arrangement_label",
     "task_illustrations__park_playground__missing_patch_label",
     "task_illustrations__park_playground__person_count",

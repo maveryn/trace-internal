@@ -41,6 +41,13 @@ generation:
         - 270
       min_tile_detail_score: 160
       min_rotation_delta: 7
+    task_illustrations__library__swapped_tile_pair_label:
+      section_count_min: 4
+      section_count_max: 6
+      section_book_count_min: 8
+      section_book_count_max: 14
+      min_tile_detail_score: 130
+      min_pair_difference: 7
     task_illustrations__library__missing_patch_label:
       section_count_min: 4
       section_count_max: 6
@@ -128,6 +135,21 @@ rendering:
         soft_shadow: 1.0
         ink_sketch: 1.0
         watercolor_wash: 1.0
+    task_illustrations__library__swapped_tile_pair_label:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
     task_illustrations__library__missing_patch_label:
       art_style_support:
         - flat_vector
@@ -175,6 +197,14 @@ prompt:
         y1] box around the rotated tile in image pixel coordinates
       json_example_rotated_tile: '{"annotation":[350,42,670,362],"answer":"B"}'
       json_example_answer_only_rotated_tile: '{"answer":"B"}'
+    task_illustrations__library__swapped_tile_pair_label:
+      bundle_id: illustrations_library_v0
+      scene_key: library_canvas
+      task_key: swapped_tile_pair_label_task
+      answer_hint_swapped_tile_pair: set "answer" to the option letter naming the two swapped cells
+      annotation_hint_swapped_tile_pair: set "annotation" to a JSON array containing exactly two [x0, y0, x1, y1] boxes around the swapped cells in image pixel coordinates
+      json_example_swapped_tile_pair: '{"annotation":[[0,0,400,266],[800,532,1200,798]],"answer":"C"}'
+      json_example_answer_only_swapped_tile_pair: '{"answer":"C"}'
     task_illustrations__library__missing_patch_label:
       bundle_id: illustrations_library_v0
       scene_key: library_canvas

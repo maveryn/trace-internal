@@ -74,6 +74,7 @@ class SceneAxes:
     lane_count: int
     enemy_count: int
     clear_shot_score_value_support: Tuple[int, ...]
+    enemy_projectile_per_lane_support: Tuple[int, ...]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     lane_count_probabilities: Dict[str, float]

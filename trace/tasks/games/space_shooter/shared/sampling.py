@@ -76,12 +76,19 @@ def resolve_scene_axes(*, namespace: str, instance_seed: int, params: Mapping[st
         key="clear_shot_score_value_support",
         fallback=DEFAULTS.clear_shot_score_value_support,
     )
+    enemy_projectile_per_lane_support = resolve_integer_support(
+        params,
+        gen_defaults=GEN_DEFAULTS,
+        key="enemy_projectile_per_lane_support",
+        fallback=DEFAULTS.enemy_projectile_per_lane_support,
+    )
     return SceneAxes(
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         lane_count=int(lane_count),
         enemy_count=int(enemy_count),
         clear_shot_score_value_support=score_support,
+        enemy_projectile_per_lane_support=tuple(int(value) for value in enemy_projectile_per_lane_support),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         lane_count_probabilities=dict(lane_count_probabilities),
@@ -197,6 +204,52 @@ def _claim_enemy_projectile_position(
     lane, slot = rng.choice(candidates)
     occupied.add((int(lane), int(slot)))
     return int(lane), int(slot)
+
+
+def _add_enemy_projectile_line(
+    *,
+    rng,
+    occupied: set[Tuple[int, int]],
+    projectiles: list[SpaceProjectile],
+    lane: int,
+    enemies: Sequence[SpaceEnemy],
+    support: Sequence[int],
+    min_count: int = 1,
+    slot_candidates: Sequence[int] = (3, 4, 5),
+) -> int:
+    """Add a visible vertical line of one to three red shots in a lane."""
+
+    free_slots = [
+        int(slot)
+        for slot in slot_candidates
+        if (int(lane), int(slot)) not in occupied
+        and any(int(enemy.lane) == int(lane) and int(enemy.y_slot) < int(slot) for enemy in enemies)
+    ]
+    if len(free_slots) < int(min_count):
+        raise ValueError("not enough slots for requested enemy projectile line")
+    supported_counts = sorted(
+        {
+            int(count)
+            for count in support
+            if int(min_count) <= int(count) <= min(3, len(free_slots))
+        }
+    )
+    if not supported_counts:
+        raise ValueError("enemy projectile support does not fit available slots")
+    shot_count = int(rng.choice(supported_counts))
+    rng.shuffle(free_slots)
+    for slot in free_slots[:shot_count]:
+        occupied.add((int(lane), int(slot)))
+        projectiles.append(
+            _make_projectile(
+                projectile_index=len(projectiles),
+                lane=int(lane),
+                y_slot=int(slot),
+                owner="enemy",
+                rng=rng,
+            )
+        )
+    return int(shot_count)
 
 
 def sample_clear_shot_scene(
@@ -329,26 +382,29 @@ def sample_enemy_ship_count_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample
         enemies.append(_make_enemy(enemy_index=len(enemies), lane=lane, y_slot=slot, rng=rng))
 
     projectiles: list[SpaceProjectile] = []
-    for _ in range(max(1, lane_count // 3)):
+    projectile_lanes = list(range(lane_count))
+    rng.shuffle(projectile_lanes)
+    projectile_lines_added = 0
+    multi_shot_line_added = False
+    can_force_multi_shot_line = any(int(value) >= 2 for value in axes.enemy_projectile_per_lane_support)
+    for lane in projectile_lanes:
+        if projectile_lines_added >= max(1, lane_count // 3) and multi_shot_line_added:
+            break
         try:
-            lane, slot = _claim_enemy_projectile_position(
+            added = _add_enemy_projectile_line(
                 rng=rng,
                 occupied=occupied,
-                lane_candidates=range(lane_count),
-                slot_candidates=(2, 3, 4, 5),
+                projectiles=projectiles,
+                lane=int(lane),
                 enemies=enemies,
+                support=axes.enemy_projectile_per_lane_support,
+                min_count=2 if can_force_multi_shot_line and not multi_shot_line_added else 1,
+                slot_candidates=(2, 3, 4, 5),
             )
         except ValueError:
             continue
-        projectiles.append(
-            _make_projectile(
-                projectile_index=len(projectiles),
-                lane=lane,
-                y_slot=slot,
-                owner="enemy",
-                rng=rng,
-            )
-        )
+        projectile_lines_added += 1
+        multi_shot_line_added = bool(multi_shot_line_added or added >= 2)
     for _ in range(max(1, lane_count // 4)):
         try:
             lane, slot = _claim_position(
@@ -594,22 +650,17 @@ def sample_safe_lane_scene(*, rng, axes: SceneAxes, target_answer: int) -> Space
         _, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=(0, 1, 2))
         enemies.append(_make_enemy(enemy_index=len(enemies), lane=lane, y_slot=slot, rng=rng))
     projectiles: list[SpaceProjectile] = []
-    for lane in unsafe_lanes:
-        _, slot = _claim_enemy_projectile_position(
+    can_force_multi_shot_line = any(int(value) >= 2 for value in axes.enemy_projectile_per_lane_support)
+    for unsafe_index, lane in enumerate(unsafe_lanes):
+        _add_enemy_projectile_line(
             rng=rng,
             occupied=occupied,
-            lane_candidates=(lane,),
-            slot_candidates=(3, 4, 5),
+            projectiles=projectiles,
+            lane=int(lane),
             enemies=enemies,
-        )
-        projectiles.append(
-            _make_projectile(
-                projectile_index=len(projectiles),
-                lane=lane,
-                y_slot=slot,
-                owner="enemy",
-                rng=rng,
-            )
+            support=axes.enemy_projectile_per_lane_support,
+            min_count=2 if int(unsafe_index) == 0 and can_force_multi_shot_line else 1,
+            slot_candidates=(3, 4, 5),
         )
     for lane in safe_lanes:
         if rng.random() < 0.45:

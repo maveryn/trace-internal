@@ -63,6 +63,10 @@ generation:
     - 3
     - 4
     - 5
+    enemy_projectile_per_lane_support:
+    - 1
+    - 2
+    - 3
 rendering:
   shared:
     canvas_width: 1060
@@ -75,8 +79,8 @@ rendering:
     lane_pad_gap_px: 10
     enemy_width_px: 62
     enemy_height_px: 48
-    projectile_width_px: 28
-    projectile_height_px: 42
+    projectile_width_px: 24
+    projectile_height_px: 36
     player_ship_width_px: 72
     player_ship_height_px: 58
     label_font_size_px: 24

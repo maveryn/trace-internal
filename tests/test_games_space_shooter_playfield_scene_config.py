@@ -35,10 +35,12 @@ def test_games_space_shooter_defaults_present() -> None:
     assert list(generation["clear_shot_score_value_support"]) == [1, 2, 3, 5, 10]
     assert list(generation["projectile_intercept_count_support"]) == [1, 2, 3, 4, 5]
     assert list(generation["safe_lane_count_support"]) == [1, 2, 3, 4, 5]
+    assert list(generation["enemy_projectile_per_lane_support"]) == [1, 2, 3]
     assert int(rendering["canvas_width"]) == 1060
     assert int(rendering["canvas_height"]) == 820
     assert int(rendering["enemy_width_px"]) > 0
-    assert int(rendering["projectile_width_px"]) == 28
+    assert int(rendering["projectile_width_px"]) == 24
+    assert int(rendering["projectile_height_px"]) == 36
     assert "blocker_width_px" not in rendering
     assert "blocker_height_px" not in rendering
     assert set(generation["style_variant_weights"].keys()) == {

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -118,6 +119,11 @@ def test_games_space_shooter_enemy_ship_count_matches_trace() -> None:
     )
     execution = out.trace_payload["execution_trace"]
     enemy_ids = [str(enemy["enemy_id"]) for enemy in execution["enemies"]]
+    enemy_projectile_counts_by_lane = Counter(
+        int(projectile["lane"])
+        for projectile in execution["projectiles"]
+        if str(projectile["owner"]) == "enemy"
+    )
 
     assert int(out.answer_gt.value) == len(enemy_ids) == 11
     assert list(execution["annotation_entity_ids"]) == enemy_ids
@@ -131,6 +137,9 @@ def test_games_space_shooter_enemy_ship_count_matches_trace() -> None:
     assert all(entity["text_visible"] is False for entity in enemy_entities)
     assert all(entity["display_text"] is None for entity in enemy_entities)
     assert len(out.annotation_gt.value) == len(enemy_ids)
+    assert enemy_projectile_counts_by_lane
+    assert max(enemy_projectile_counts_by_lane.values()) >= 2
+    assert all(1 <= int(count) <= 3 for count in enemy_projectile_counts_by_lane.values())
     for bbox in out.annotation_gt.value:
         assert float(bbox[2]) - float(bbox[0]) >= 24.0
         assert float(bbox[3]) - float(bbox[1]) >= 24.0
@@ -262,12 +271,20 @@ def test_games_space_shooter_safe_lane_count_matches_trace() -> None:
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
-    threatened_lanes = {int(projectile["lane"]) for projectile in execution["projectiles"] if str(projectile["owner"]) == "enemy"}
+    enemy_projectile_counts_by_lane = Counter(
+        int(projectile["lane"])
+        for projectile in execution["projectiles"]
+        if str(projectile["owner"]) == "enemy"
+    )
+    threatened_lanes = set(enemy_projectile_counts_by_lane)
     expected_ids = [f"lane_{int(lane)}" for lane in range(int(execution["lane_count"])) if int(lane) not in threatened_lanes]
 
     assert int(out.answer_gt.value) == len(expected_ids) == 3
     assert list(execution["annotation_entity_ids"]) == expected_ids
     assert out.trace_payload["render_map"]["show_enemy_labels"] is False
+    assert enemy_projectile_counts_by_lane
+    assert max(enemy_projectile_counts_by_lane.values()) >= 2
+    assert all(1 <= int(count) <= 3 for count in enemy_projectile_counts_by_lane.values())
 
 
 def test_games_space_shooter_non_lane_entities_do_not_share_lane_slots() -> None:

@@ -11,10 +11,10 @@
 
 ## Program Contract
 
-`count(path_node for path_node in path_nodes if any(path_node_center inside tower_range_circle for tower in towers)); scene=tower_defense; scope=covered_path_segment_count`
+`count(path_enemy for path_enemy in path_enemies if any(path_enemy_center inside tower_range_circle for tower in towers)); scene=tower_defense; scope=covered_path_segment_count`
 
 ## Generation Notes
-1. The path is drawn as discrete visible nodes along a winding or switchback route.
+1. The path is drawn with small visible enemy markers along a winding or switchback route.
 2. Towers are placed off the path and display circular range rings.
-3. A path node is covered when its center lies inside at least one tower range ring.
-4. Annotation contains one point at the center of every covered path node.
+3. A path enemy is covered when its center lies inside at least one tower range ring.
+4. Annotation contains one point at the center of every covered path enemy.

@@ -30,11 +30,11 @@
         "{coverage_rule_text} Count only the towers that cover the marked enemy."
       ],
       "covered_path_segment_count": [
-        "{coverage_rule_text} How many path nodes are covered?",
-        "{coverage_rule_text} Count the path nodes covered by one or more towers.",
-        "{coverage_rule_text} What is the number of covered path nodes?",
-        "{coverage_rule_text} Report how many path nodes lie inside at least one tower range ring.",
-        "{coverage_rule_text} Count only the path nodes covered by at least one tower."
+        "{coverage_rule_text} How many path enemies are covered?",
+        "{coverage_rule_text} Count the path enemies covered by one or more towers.",
+        "{coverage_rule_text} What is the number of covered path enemies?",
+        "{coverage_rule_text} Report how many path enemies lie inside at least one tower range ring.",
+        "{coverage_rule_text} Count only the path enemies covered by at least one tower."
       ]
     },
     "output": {
@@ -103,15 +103,15 @@
     }
   },
   "code_prompt_defaults": {
-    "object_description_winding_path_marked_enemy_covered_by_tower_count": "a tower-defense map with a winding path, circular tower range rings, and one marked enemy on the path",
-    "object_description_switchback_path_marked_enemy_covered_by_tower_count": "a tower-defense map with a switchback path, circular tower range rings, and one marked enemy on the path",
-    "object_description_winding_path_covered_path_segment_count": "a tower-defense map with a winding path, circular tower range rings, and discrete path nodes",
-    "object_description_switchback_path_covered_path_segment_count": "a tower-defense map with a switchback path, circular tower range rings, and discrete path nodes",
+    "object_description_winding_path_marked_enemy_covered_by_tower_count": "a tower-defense map with a winding path, circular tower range rings, small enemies on the path, and one marked enemy",
+    "object_description_switchback_path_marked_enemy_covered_by_tower_count": "a tower-defense map with a switchback path, circular tower range rings, small enemies on the path, and one marked enemy",
+    "object_description_winding_path_covered_path_segment_count": "a tower-defense map with a winding path, circular tower range rings, and small enemy markers on the path",
+    "object_description_switchback_path_covered_path_segment_count": "a tower-defense map with a switchback path, circular tower range rings, and small enemy markers on the path",
     "coverage_rule_text_marked_enemy_covered_by_tower_count": "A tower covers the marked enemy when the enemy is inside that tower's visible range ring.",
-    "coverage_rule_text_covered_path_segment_count": "A path node is covered when its center is inside at least one visible tower range ring.",
+    "coverage_rule_text_covered_path_segment_count": "A path enemy is covered when its center is inside at least one visible tower range ring.",
     "annotation_hint_marked_enemy_covered_by_tower_count": "set \"annotation\" to bounding boxes [x1, y1, x2, y2] around every tower whose range ring covers the marked enemy; use an empty array when none do",
     "answer_hint_marked_enemy_covered_by_tower_count": "set \"answer\" to the number of towers whose range rings cover the marked enemy",
-    "annotation_hint_covered_path_segment_count": "set \"annotation\" to [x, y] pixel points at the centers of every covered path node",
-    "answer_hint_covered_path_segment_count": "set \"answer\" to the number of path nodes covered by at least one tower range ring"
+    "annotation_hint_covered_path_segment_count": "set \"annotation\" to [x, y] pixel points at the centers of every covered path enemy",
+    "answer_hint_covered_path_segment_count": "set \"answer\" to the number of path enemies covered by at least one tower range ring"
   }
 }

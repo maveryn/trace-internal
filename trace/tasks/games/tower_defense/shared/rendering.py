@@ -379,19 +379,13 @@ def render_tower_defense_scene(
             joint="curve",
         )
     for index, point in enumerate(global_path_points):
-        node_bbox = _circle_bbox(point, float(params.path_node_radius_px))
-        halo_bbox = _circle_bbox(point, float(params.path_node_radius_px) + 3.0)
-        draw.ellipse(
-            halo_bbox,
-            fill=theme.map_fill_rgb,
-            outline=theme.path_outline_rgb,
-            width=max(2, int(round(params.path_node_radius_px * 0.18))),
-        )
-        draw.ellipse(
-            node_bbox,
-            fill=theme.path_node_rgb,
-            outline=theme.path_outline_rgb,
-            width=max(2, int(round(params.path_node_radius_px * 0.18))),
+        halo_bbox = _circle_bbox(point, float(params.path_node_radius_px) + 4.0)
+        draw.ellipse(halo_bbox, fill=theme.map_fill_rgb, outline=theme.path_outline_rgb, width=2)
+        node_bbox = _draw_enemy(
+            draw,
+            center=point,
+            radius=max(7.0, float(params.path_node_radius_px)),
+            theme=theme,
         )
         entity_id = path_segment_entity_id(index)
         entity_bboxes[entity_id] = node_bbox
@@ -399,7 +393,7 @@ def render_tower_defense_scene(
         entities.append(
             {
                 "entity_id": entity_id,
-                "type": "path_segment",
+                "type": "path_enemy",
                 "path_index": int(index),
                 "bbox_px": list(node_bbox),
                 "point_px": list(entity_points[entity_id]),

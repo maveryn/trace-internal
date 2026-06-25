@@ -15,6 +15,9 @@ from trace.tasks.games.space_shooter.enemy_ship_count import (
 from trace.tasks.games.space_shooter.enemy_ship_hit_count import (
     GamesSpaceShooterEnemyShipHitCountTask,
 )
+from trace.tasks.games.space_shooter.first_player_shot_hit_label import (
+    GamesSpaceShooterFirstPlayerShotHitLabelTask,
+)
 from trace.tasks.games.space_shooter.hit_enemy_ship_label import (
     GamesSpaceShooterHitEnemyShipLabelTask,
 )
@@ -212,6 +215,59 @@ def test_games_space_shooter_hit_enemy_ship_label_not_tied_to_player_lane() -> N
     assert same_lane_count <= 30
 
 
+def test_games_space_shooter_first_player_shot_hit_label_matches_trace() -> None:
+    out = GamesSpaceShooterFirstPlayerShotHitLabelTask().generate(
+        88131,
+        params={"correct_option_index": 1, "lane_count": 7, "enemy_count": 10},
+        max_attempts=256,
+    )
+    execution = out.trace_payload["execution_trace"]
+    render_map = out.trace_payload["render_map"]
+    candidate_projectile_ids = tuple(str(value) for value in execution["candidate_projectile_ids"])
+    selected_id = str(execution["selected_projectile_id"])
+    visible_projectile_ids = tuple(str(value) for value in render_map["visible_projectile_label_ids"])
+    visible_projectile_entities = [
+        entity
+        for entity in out.trace_payload["scene_ir"]["entities"]
+        if entity["entity_type"] == "player_projectile" and bool(entity["text_visible"])
+    ]
+    projectiles_by_id = {str(projectile["projectile_id"]): projectile for projectile in execution["projectiles"]}
+    enemies = tuple(execution["enemies"])
+    computed_distances = {}
+    for projectile_id in candidate_projectile_ids:
+        projectile = projectiles_by_id[str(projectile_id)]
+        same_lane_above = [
+            enemy
+            for enemy in enemies
+            if int(enemy["lane"]) == int(projectile["lane"])
+            and int(enemy["y_slot"]) < int(projectile["y_slot"])
+        ]
+        assert same_lane_above
+        first_enemy = max(same_lane_above, key=lambda enemy: int(enemy["y_slot"]))
+        computed_distances[str(projectile_id)] = int(projectile["y_slot"]) - int(first_enemy["y_slot"])
+
+    assert out.answer_gt.type == "option_letter"
+    assert str(out.answer_gt.value) == "B"
+    assert out.annotation_gt.type == "bbox"
+    assert out.query_id == "single"
+    assert execution["prompt_query_key"] == "first_player_shot_hit_label"
+    assert len(candidate_projectile_ids) == 4
+    assert visible_projectile_ids == candidate_projectile_ids
+    assert sorted(str(entity["display_text"]) for entity in visible_projectile_entities) == ["A", "B", "C", "D"]
+    assert list(execution["annotation_entity_ids"]) == [selected_id]
+    assert execution["candidate_labels"][selected_id] == "B"
+    assert out.annotation_gt.value == render_map["projectile_bboxes_px"][selected_id]
+    assert computed_distances == {
+        str(key): int(value)
+        for key, value in execution["first_hit_distance_by_projectile"].items()
+    }
+    selected_distance = int(computed_distances[selected_id])
+    assert selected_distance == min(computed_distances.values())
+    assert sum(1 for distance in computed_distances.values() if int(distance) == selected_distance) == 1
+    assert float(out.annotation_gt.value[2]) - float(out.annotation_gt.value[0]) >= 24.0
+    assert float(out.annotation_gt.value[3]) - float(out.annotation_gt.value[1]) >= 24.0
+
+
 def test_games_space_shooter_safe_lane_count_matches_trace() -> None:
     out = GamesSpaceShooterSafeLaneCountTask().generate(
         88140,
@@ -284,6 +340,7 @@ def test_games_space_shooter_ships_and_projectiles_are_centered_on_lane_pads() -
     (
         (GamesSpaceShooterEnemyShipCountTask, {"lane_count": 8, "enemy_count": 12}),
         (GamesSpaceShooterEnemyShipHitCountTask, {"target_answer": 4, "lane_count": 8, "enemy_count": 12}),
+        (GamesSpaceShooterFirstPlayerShotHitLabelTask, {"lane_count": 8, "enemy_count": 12}),
         (GamesSpaceShooterHitEnemyShipLabelTask, {"lane_count": 8, "enemy_count": 12}),
         (GamesSpaceShooterSafeLaneCountTask, {"target_answer": 3, "lane_count": 7, "enemy_count": 12}),
     ),
@@ -347,6 +404,7 @@ def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:
         tasks=[
             BuildTaskConfig(task_id="task_games__space_shooter__enemy_ship_count", count=1, params={"enemy_count": 7}),
             BuildTaskConfig(task_id="task_games__space_shooter__enemy_ship_hit_count", count=1, params={"target_answer": 3}),
+            BuildTaskConfig(task_id="task_games__space_shooter__first_player_shot_hit_label", count=1, params={}),
             BuildTaskConfig(task_id="task_games__space_shooter__hit_enemy_ship_label", count=1, params={}),
             BuildTaskConfig(task_id="task_games__space_shooter__safe_lane_count", count=1, params={"target_answer": 4}),
         ],
@@ -356,6 +414,6 @@ def test_games_space_shooter_build_smoke(tmp_path: Path) -> None:
     final_path = build_dataset(config, code_hash="games-space-shooter-smoke")
     rows = read_jsonl(final_path / "train_instances.jsonl")
 
-    assert len(rows) == 4
+    assert len(rows) == 5
     assert all(row["domain"] == "games" for row in rows)
     assert all(row.get("scene_id") == "space_shooter" for row in rows)

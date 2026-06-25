@@ -418,6 +418,48 @@ def _draw_projectile(
     draw.polygon(core, fill=hot_core + (245,))
 
 
+def _draw_projectile_label(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox: Tuple[float, float, float, float],
+    label: str,
+    theme: SpaceShooterTheme,
+    label_font_size_px: int,
+    font_family: str = "",
+) -> None:
+    """Draw an option badge beside one projectile without hiding the shot."""
+
+    left, top, right, bottom = bbox
+    cy = 0.5 * (float(top) + float(bottom))
+    radius = max(10.0, min(15.0, 0.42 * float(bottom - top)))
+    badge_cx = float(right) + radius + 6.0
+    badge = (
+        round(badge_cx - radius, 3),
+        round(cy - radius, 3),
+        round(badge_cx + radius, 3),
+        round(cy + radius, 3),
+    )
+    draw.line(
+        (float(right) + 1.5, cy, badge[0] - 1.5, cy),
+        fill=tuple(int(v) for v in theme.projectile_outline_rgb) + (210,),
+        width=2,
+    )
+    draw.ellipse(
+        badge,
+        fill=tuple(int(v) for v in theme.accent_rgb) + (244,),
+        outline=tuple(int(v) for v in theme.projectile_outline_rgb) + (255,),
+        width=2,
+    )
+    _fit_text(
+        draw,
+        bbox=(badge[0] + 3.0, badge[1] + 2.0, badge[2] - 3.0, badge[3] - 2.0),
+        text=str(label),
+        fill=(18, 20, 26),
+        max_size_px=int(label_font_size_px),
+        font_family=str(font_family),
+    )
+
+
 def _draw_player(
     draw: ImageDraw.ImageDraw,
     *,
@@ -453,6 +495,9 @@ def render_space_shooter_scene(
     highlight_player_lane: bool = False,
     show_enemy_labels: bool = True,
     visible_enemy_label_ids: Tuple[str, ...] | None = None,
+    show_projectile_labels: bool = False,
+    visible_projectile_label_ids: Tuple[str, ...] | None = None,
+    projectile_label_by_id: Mapping[str, str] | None = None,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedSpaceShooterScene:
     """Render one playfield and record every object box used by annotations."""
@@ -580,6 +625,15 @@ def render_space_shooter_scene(
         )
 
     projectile_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
+    visible_projectile_label_id_set = (
+        None
+        if visible_projectile_label_ids is None
+        else {str(projectile_id) for projectile_id in visible_projectile_label_ids}
+    )
+    projectile_labels = {
+        str(key): str(value)
+        for key, value in dict(projectile_label_by_id or {}).items()
+    }
     for projectile in projectiles:
         bbox = object_bbox(
             lane=int(projectile.lane),
@@ -590,6 +644,20 @@ def render_space_shooter_scene(
             dy_px=float(projectile.dy_px),
         )
         _draw_projectile(draw, bbox=bbox, projectile=projectile, theme=theme)
+        projectile_label_visible = bool(show_projectile_labels) and (
+            visible_projectile_label_id_set is None
+            or str(projectile.projectile_id) in visible_projectile_label_id_set
+        )
+        display_text = projectile_labels.get(str(projectile.projectile_id))
+        if projectile_label_visible and display_text:
+            _draw_projectile_label(
+                draw,
+                bbox=bbox,
+                label=str(display_text),
+                theme=theme,
+                label_font_size_px=int(params.label_font_size_px),
+                font_family=str(params.font_family),
+            )
         projectile_bboxes[str(projectile.projectile_id)] = bbox
         entity_bboxes[str(projectile.projectile_id)] = bbox
         scene_entities.append(
@@ -598,6 +666,8 @@ def render_space_shooter_scene(
                 "entity_type": f"{str(projectile.owner)}_projectile",
                 "owner": str(projectile.owner),
                 "direction": "up" if str(projectile.owner) == "player" else "down",
+                "display_text": str(display_text) if projectile_label_visible and display_text else None,
+                "text_visible": bool(projectile_label_visible and display_text),
                 "lane": int(projectile.lane),
                 "y_slot": int(projectile.y_slot),
                 "bbox_px": list(bbox),
@@ -666,6 +736,13 @@ def render_space_shooter_scene(
             if visible_enemy_label_ids is None
             else [str(enemy_id) for enemy_id in visible_enemy_label_ids]
         ),
+        "show_projectile_labels": bool(show_projectile_labels),
+        "visible_projectile_label_ids": (
+            None
+            if visible_projectile_label_ids is None
+            else [str(projectile_id) for projectile_id in visible_projectile_label_ids]
+        ),
+        "projectile_label_by_id": dict(projectile_labels),
     }
     return RenderedSpaceShooterScene(
         image=image.convert("RGB"),

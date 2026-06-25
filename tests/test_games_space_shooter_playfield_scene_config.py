@@ -33,6 +33,7 @@ def test_games_space_shooter_defaults_present() -> None:
     assert list(generation["safe_lane_count_support"]) == [1, 2, 3, 4, 5]
     assert list(generation["enemy_ship_hit_count_support"]) == [0, 1, 2, 3, 4, 5, 6]
     assert list(generation["hit_enemy_ship_label_option_support"]) == [0, 1, 2, 3]
+    assert list(generation["first_player_shot_hit_label_option_support"]) == [0, 1, 2, 3]
     assert bool(generation["balanced_correct_option_sampling"]) is True
     assert list(generation["enemy_projectile_per_lane_support"]) == [1, 2, 3]
     assert int(rendering["canvas_width"]) == 1060
@@ -61,4 +62,7 @@ def test_games_space_shooter_defaults_present() -> None:
     assert "enemy ships that can be destroyed" in str(code_defaults["annotation_hint_enemy_ship_hit_count"]).lower()
     assert "selected enemy ship label" in str(code_defaults["answer_hint_hit_enemy_ship_label"]).lower()
     assert "labeled enemy ship selected" in str(code_defaults["annotation_hint_hit_enemy_ship_label"]).lower()
+    assert "selected blue shot label" in str(code_defaults["answer_hint_first_player_shot_hit_label"]).lower()
+    assert "selected blue projectile itself" in str(code_defaults["annotation_hint_first_player_shot_hit_label"]).lower()
+    assert "not the nearby label badge" in str(code_defaults["annotation_hint_first_player_shot_hit_label"]).lower()
     assert "bounding boxes" in str(code_defaults["annotation_hint_safe_lane_count"])

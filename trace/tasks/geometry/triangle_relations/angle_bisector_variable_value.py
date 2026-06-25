@@ -7,14 +7,12 @@ from typing import Any, Mapping
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.registry import register_task
 
-from ._lifecycle import (
-    TriangleRelationsObjectivePlan,
-    bind_triangle_relations_plan,
-    run_triangle_relations_public_entry,
-)
+from ._lifecycle import run_triangle_relations_public_entry
+from .shared.annotations import triangle_relations_annotation_mode
 from .shared.construction import angle_bisector_variable_cases, case_trace_values
 from .shared.sampling import choose_case_by_answer
-from .shared.state import DOMAIN, SCENE_ID
+from .shared.rendering import render_triangle_relations_scene
+from .shared.state import DOMAIN, SCENE_ID, TriangleRelationsProblem
 
 TASK_ID = "task_geometry__triangle_relations__angle_bisector_variable_value"
 TASK_PROMPT_KEY = "angle_bisector_variable_value_query"
@@ -28,7 +26,7 @@ def _prepare_angle_bisector_variable(
     params: Mapping[str, Any],
     selected_branch: str,
     branch_probabilities: Mapping[str, float],
-) -> TriangleRelationsObjectivePlan:
+) -> tuple[TriangleRelationsProblem, int | float, dict[str, Any]]:
     """Bind one angle-bisector variable equation case."""
 
     if str(selected_branch) != SINGLE_QUERY_ID:
@@ -40,13 +38,17 @@ def _prepare_angle_bisector_variable(
         instance_seed=int(instance_seed),
         namespace=TASK_ID,
     )
-    return bind_triangle_relations_plan(
-        prompt_key=TASK_PROMPT_KEY,
+    trace_values = {
+        "target_support_probabilities": dict(answer_probs),
+        **case_trace_values(case),
+    }
+    problem = TriangleRelationsProblem(
         case=case,
-        answer_support_probabilities=answer_probs,
-        branch_probabilities=branch_probabilities,
-        trace_values=case_trace_values(case),
+        answer_support_probabilities=dict(answer_probs),
+        prompt_target=str(case.trace_values.get("target_name", "target value")),
+        annotation_mode=triangle_relations_annotation_mode(case),
     )
+    return problem, case.answer, trace_values
 
 
 @register_task
@@ -58,6 +60,8 @@ class GeometryTriangleRelationsAngleBisectorVariableValueTask:
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_query_id = SINGLE_QUERY_ID
+    task_prompt_key = TASK_PROMPT_KEY
+    render_scene = staticmethod(render_triangle_relations_scene)
     prepare_objective = staticmethod(_prepare_angle_bisector_variable)
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

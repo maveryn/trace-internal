@@ -19,32 +19,17 @@ from .shared.annotations import triangle_relations_annotation
 from .shared.construction import case_trace_values
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS, load_triangle_relations_defaults
 from .shared.prompts import build_triangle_relations_prompt_artifacts
-from .shared.rendering import create_render_context, render_triangle_relations_scene
+from .shared.rendering import create_render_context
 from .shared.state import (
     DOMAIN,
     SCENE_ID,
     SCENE_KIND,
     RenderContext,
     RenderedTriangleRelationsScene,
-    TriangleRelationsCase,
     TriangleRelationsProblem,
 )
 
 RenderBuilder = Callable[[RenderContext, TriangleRelationsProblem], RenderedTriangleRelationsScene]
-
-
-@dataclass(frozen=True)
-class TriangleRelationsObjectivePlan:
-    """Task-owned objective binding prepared by one public task file."""
-
-    prompt_key: str
-    problem: TriangleRelationsProblem
-    render_scene: RenderBuilder
-    answer_value: int | float
-    answer_type: str
-    answer_rounding: str
-    query_params: Mapping[str, Any]
-    trace_values: Mapping[str, Any]
 
 
 @dataclass(frozen=True)
@@ -58,49 +43,10 @@ class TriangleRelationsRenderedAttempt:
     annotation_artifacts: PixelAnnotationArtifacts
 
 
-def bind_triangle_relations_plan(
+def render_triangle_relations_attempts(
     *,
-    prompt_key: str,
-    case: TriangleRelationsCase,
-    answer_support_probabilities: Mapping[str, float],
-    branch_probabilities: Mapping[str, float],
-    trace_values: Mapping[str, Any] | None = None,
-) -> TriangleRelationsObjectivePlan:
-    """Bind a task-selected construction case into lifecycle-neutral state."""
-
-    if case.point_annotation_labels:
-        annotation_mode = "point_map"
-    elif case.target_point is not None:
-        annotation_mode = "point"
-    elif case.target_segment is not None:
-        annotation_mode = "segment"
-    else:
-        raise ValueError("triangle-relations case must define an annotation witness")
-    combined_trace = {
-        "target_support_probabilities": dict(answer_support_probabilities),
-        "query_id_probabilities": dict(branch_probabilities),
-        **dict(trace_values or {}),
-    }
-    return TriangleRelationsObjectivePlan(
-        prompt_key=str(prompt_key),
-        problem=TriangleRelationsProblem(
-            case=case,
-            answer_support_probabilities=dict(answer_support_probabilities),
-            prompt_target=str(case.trace_values.get("target_name", "target value")),
-            annotation_mode=annotation_mode,
-        ),
-        render_scene=render_triangle_relations_scene,
-        answer_value=case.answer,
-        answer_type=str(case.answer_type),
-        answer_rounding=str(case.answer_rounding),
-        query_params=dict(combined_trace),
-        trace_values=dict(combined_trace),
-    )
-
-
-def _render_attempts(
-    *,
-    plan: TriangleRelationsObjectivePlan,
+    problem: TriangleRelationsProblem,
+    render_scene: RenderBuilder,
     instance_seed: int,
     params: Mapping[str, Any],
     max_attempts: int,
@@ -117,7 +63,7 @@ def _render_attempts(
                 params={**dict(params), "_render_attempt": attempt_index},
                 render_defaults=dict(render_defaults),
             )
-            rendered = plan.render_scene(context, plan.problem)
+            rendered = render_scene(context, problem)
             image, noise_meta = apply_post_image_noise(
                 rendered.image,
                 instance_seed=attempt_seed,
@@ -141,23 +87,28 @@ def _render_attempts(
     raise RuntimeError("failed to render triangle-relations scene") from last_error
 
 
-def _trace_payload(
+def build_triangle_relations_trace_payload(
     *,
     task_identity: str,
     selected_branch: str,
     branch_probabilities: Mapping[str, float],
     prompt_artifacts: PromptTraceArtifacts,
     attempt: TriangleRelationsRenderedAttempt,
-    plan: TriangleRelationsObjectivePlan,
+    problem: TriangleRelationsProblem,
+    answer_value: int | float,
+    answer_type: str,
+    answer_rounding: str,
+    query_params_extra: Mapping[str, Any],
+    trace_values: Mapping[str, Any],
 ) -> dict[str, Any]:
     """Build trace sections from task-owned formula and witness metadata."""
 
     rendered = attempt.rendered
-    case = plan.problem.case
+    case = problem.case
     query_params = {
         "scene_id": SCENE_ID,
         "query_id_probabilities": dict(branch_probabilities),
-        **dict(plan.query_params),
+        **dict(query_params_extra),
     }
     query_spec = build_prompt_query_spec(
         prompt_artifacts=prompt_artifacts,
@@ -170,13 +121,13 @@ def _trace_payload(
         "task_id": str(task_identity),
         "scene_id": SCENE_ID,
         "query_id": str(selected_branch),
-        "answer": plan.answer_value,
-        "answer_type": str(plan.answer_type),
-        "answer_rounding": str(plan.answer_rounding),
+        "answer": answer_value,
+        "answer_type": str(answer_type),
+        "answer_rounding": str(answer_rounding),
         "annotation_type": str(attempt.annotation_artifacts.annotation_type),
         "annotation_roles": list(rendered.annotation_roles),
         **case_trace_values(case),
-        **dict(plan.trace_values),
+        **dict(trace_values),
     }
     return {
         "scene_ir": {
@@ -188,7 +139,7 @@ def _trace_payload(
             "entities": [dict(entity) for entity in rendered.scene_entities],
             "relations": {
                 "formula_family": str(case.formula_family),
-                "answer": plan.answer_value,
+                "answer": answer_value,
                 "annotation_type": str(attempt.annotation_artifacts.annotation_type),
             },
         },
@@ -198,7 +149,10 @@ def _trace_payload(
             "scene_id": SCENE_ID,
             "query_id": str(selected_branch),
             "canvas": {"width": int(attempt.image.size[0]), "height": int(attempt.image.size[1])},
-            "style": {**dict(attempt.render_meta), "post_image_noise": dict(attempt.noise_meta)},
+            "style": {
+                **dict(attempt.render_meta),
+                "post_image_noise": dict(attempt.noise_meta),
+            },
             "prompt": {
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -219,6 +173,17 @@ def _trace_payload(
     }
 
 
+def triangle_relations_output_metadata(*, prompt_artifacts: PromptTraceArtifacts, selected_branch: str) -> dict[str, Any]:
+    """Return neutral TaskOutput metadata that is not objective-specific."""
+
+    return {
+        "task_versions": default_task_versions(),
+        "scene_id": SCENE_ID,
+        "query_id": str(selected_branch),
+        "prompt_variants": dict(prompt_artifacts.prompt_variants),
+    }
+
+
 def run_triangle_relations_public_entry(
     task: Any,
     instance_seed: int,
@@ -226,7 +191,7 @@ def run_triangle_relations_public_entry(
     params: Mapping[str, Any],
     max_attempts: int,
 ) -> TaskOutput:
-    """Run common plumbing after one public task binds its objective plan."""
+    """Run neutral lifecycle plumbing around task-owned formula hooks."""
 
     selected_branch, branch_probabilities, task_params = select_task_query_id(
         instance_seed=int(instance_seed),
@@ -236,15 +201,18 @@ def run_triangle_relations_public_entry(
         task_id=str(task.task_id),
         namespace=f"{task.task_id}.query",
     )
-    _generation_defaults, render_defaults, prompt_defaults = load_triangle_relations_defaults(str(task.task_id))
-    plan = task.prepare_objective(
+    _generation_defaults, render_defaults, prompt_defaults = load_triangle_relations_defaults()
+    problem, answer_value, trace_values = task.prepare_objective(
         instance_seed=int(instance_seed),
         params=task_params,
         selected_branch=str(selected_branch),
         branch_probabilities=branch_probabilities,
     )
-    attempt = _render_attempts(
-        plan=plan,
+    answer_type = str(problem.case.answer_type)
+    answer_rounding = str(problem.case.answer_rounding)
+    attempt = render_triangle_relations_attempts(
+        problem=problem,
+        render_scene=task.render_scene,
         instance_seed=int(instance_seed),
         params=task_params,
         max_attempts=int(max_attempts),
@@ -252,36 +220,46 @@ def run_triangle_relations_public_entry(
     )
     prompt_artifacts = build_triangle_relations_prompt_artifacts(
         prompt_defaults=prompt_defaults,
-        task_prompt_key=str(plan.prompt_key),
+        task_prompt_key=str(task.task_prompt_key),
         prompt_branch_key=str(selected_branch),
-        annotation_mode=str(plan.problem.annotation_mode),
+        annotation_mode=str(problem.annotation_mode),
         annotation_roles=tuple(attempt.rendered.annotation_roles),
-        answer_value=plan.answer_value,
+        answer_value=answer_value,
         instance_seed=int(instance_seed),
-    )
-    trace_payload = _trace_payload(
-        task_identity=str(task.task_id),
-        selected_branch=str(selected_branch),
-        branch_probabilities=branch_probabilities,
-        prompt_artifacts=prompt_artifacts,
-        attempt=attempt,
-        plan=plan,
     )
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
-        answer_gt=TypedValue(type=str(plan.answer_type), value=plan.answer_value),
+        answer_gt=TypedValue(type=answer_type, value=answer_value),
         annotation_gt=TypedValue(
             type=str(attempt.annotation_artifacts.annotation_type),
             value=attempt.annotation_artifacts.value,
         ),
         image=attempt.image,
         image_id="img0",
-        trace_payload=trace_payload,
-        task_versions=default_task_versions(),
-        scene_id=SCENE_ID,
-        query_id=str(selected_branch),
-        prompt_variants=dict(prompt_artifacts.prompt_variants),
+        trace_payload=build_triangle_relations_trace_payload(
+            task_identity=str(task.task_id),
+            selected_branch=str(selected_branch),
+            branch_probabilities=branch_probabilities,
+            prompt_artifacts=prompt_artifacts,
+            attempt=attempt,
+            problem=problem,
+            answer_value=answer_value,
+            answer_type=answer_type,
+            answer_rounding=answer_rounding,
+            query_params_extra=trace_values,
+            trace_values=trace_values,
+        ),
+        **triangle_relations_output_metadata(
+            prompt_artifacts=prompt_artifacts,
+            selected_branch=str(selected_branch),
+        ),
     )
 
 
-__all__ = ["TriangleRelationsObjectivePlan", "bind_triangle_relations_plan", "run_triangle_relations_public_entry"]
+__all__ = [
+    "TriangleRelationsRenderedAttempt",
+    "build_triangle_relations_trace_payload",
+    "render_triangle_relations_attempts",
+    "run_triangle_relations_public_entry",
+    "triangle_relations_output_metadata",
+]

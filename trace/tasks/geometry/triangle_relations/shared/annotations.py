@@ -5,7 +5,19 @@ from __future__ import annotations
 from trace.tasks.geometry.shared.annotation_values import PixelAnnotationArtifacts, keyed_point_annotation_artifacts
 from trace.tasks.shared.annotation_artifacts import point_annotation_artifacts, segment_annotation_artifacts
 
-from .state import RenderedTriangleRelationsScene
+from .state import RenderedTriangleRelationsScene, TriangleRelationsCase
+
+
+def triangle_relations_annotation_mode(case: TriangleRelationsCase) -> str:
+    """Return the public annotation mode implied by one resolved case."""
+
+    if case.point_annotation_labels:
+        return "point_map"
+    if case.target_point is not None:
+        return "point"
+    if case.target_segment is not None:
+        return "segment"
+    raise ValueError("triangle-relations case must define an annotation witness")
 
 
 def triangle_relations_annotation(rendered: RenderedTriangleRelationsScene) -> PixelAnnotationArtifacts:
@@ -34,4 +46,4 @@ def triangle_relations_annotation(rendered: RenderedTriangleRelationsScene) -> P
     raise ValueError(f"unsupported triangle-relations annotation mode: {rendered.annotation_mode}")
 
 
-__all__ = ["triangle_relations_annotation"]
+__all__ = ["triangle_relations_annotation", "triangle_relations_annotation_mode"]

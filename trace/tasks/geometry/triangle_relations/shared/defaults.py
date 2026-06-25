@@ -11,15 +11,13 @@ from trace.tasks.shared.config_defaults import split_scene_generation_rendering_
 from .state import SCENE_ID
 
 POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id=SCENE_ID)
+_SCENE_DEFAULTS = get_scene_defaults("geometry", SCENE_ID)
 
 
-def load_triangle_relations_defaults(_owner: str = "") -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+def load_triangle_relations_defaults() -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
     """Load scene defaults without task-owned routing or query overrides."""
 
-    return split_scene_generation_rendering_prompt_defaults(
-        get_scene_defaults("geometry", SCENE_ID),
-        task_id="",
-    )
+    return split_scene_generation_rendering_prompt_defaults(_SCENE_DEFAULTS)
 
 
 __all__ = ["POST_IMAGE_NOISE_DEFAULTS", "load_triangle_relations_defaults"]
